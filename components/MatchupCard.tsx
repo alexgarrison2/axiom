@@ -70,17 +70,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     const widthPercentage = Math.min(100, (totalGoals / maxTotalGoals) * 100);
 
     return (
-        <div className="glass-panel glass-panel-hover p-5 rounded-3xl relative overflow-hidden group/card w-full mx-auto max-w-7xl">
+        <div className="glass-panel glass-panel-hover p-3 md:p-5 rounded-3xl relative overflow-hidden group/card w-full mx-auto max-w-7xl">
 
             {/* Background Decor - Gradient specific to match */}
             <div className="absolute inset-0 z-0 opacity-20 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none group-hover/card:opacity-30 transition-opacity duration-500"></div>
 
-            <div className="flex flex-col md:grid md:grid-cols-[1fr_minmax(300px,400px)_1fr] gap-6 items-center relative z-10">
+            <div className="flex flex-col md:grid md:grid-cols-[1fr_minmax(300px,400px)_1fr] gap-4 md:gap-6 items-center relative z-10">
 
                 {/* LEFT: Away Team */}
-                <div className="relative flex items-center justify-end h-full">
+                <div className="relative flex items-center justify-start md:justify-end h-full">
                     {/* Background Logo */}
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none translate-x-12 opacity-20 group-hover/card:opacity-40 group-hover/card:scale-110 transition-all duration-700">
+                    <div className="absolute left-0 md:right-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none -translate-x-12 md:translate-x-12 opacity-20 group-hover/card:opacity-40 group-hover/card:scale-110 transition-all duration-700">
                         <img
                             src={awayTeam.logoUrl}
                             alt={awayTeam.name}
@@ -89,7 +89,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     </div>
 
                     {/* Content */}
-                    <div className="text-right relative z-10 flex flex-col items-end pr-4">
+                    <div className="text-left md:text-right relative z-10 flex flex-col items-start md:items-end pr-0 pl-2 md:pl-0 md:pr-4">
                         {/* Wager/EV Badge */}
                         {(awayEvBadge || awayWager) && (
                             <div className="mb-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-green/10 border border-neon-green/50 text-neon-green text-xs font-bold shadow-[0_0_15px_rgba(10,255,0,0.2)] animate-pulse-glow">
@@ -99,7 +99,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         )}
 
                         {/* xG Display (Moved here to avoid overlap) */}
-                        <div className="flex flex-col items-end -mt-1 mb-1">
+                        <div className="flex flex-col items-start md:items-end -mt-1 mb-1">
                             <span className="text-4xl font-black text-white tabular-nums tracking-tighter drop-shadow-2xl leading-none">{formatXg(awayXg)}</span>
                             <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase opacity-60 mr-1">Expected Goals</span>
                         </div>
@@ -134,22 +134,20 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             {/* Away Bar (Left) */}
                             <div className="relative flex items-center justify-end h-full flex-1 group/bar">
                                 <div
-                                    className="h-full rounded-l-lg border-r border-black/50 transition-all duration-700 ease-out relative overflow-hidden backdrop-blur-sm shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+                                    className="h-full rounded-l-lg border-r border-black/50 transition-all duration-700 ease-out relative overflow-hidden backdrop-blur-sm shadow-[0_0_20px_rgba(0,0,0,0.3)] w-[var(--mobile-width)] md:w-[var(--desktop-width)]"
                                     style={{
-                                        width: `${(awayModelWinPct / 100) * widthPercentage}%`,
-                                        backgroundColor: awayColor,
-                                        boxShadow: `inset 0 0 20px rgba(0,0,0,0.2), 0 0 15px ${awayColor}40`
+                                        ['--mobile-width' as string]: `${awayModelWinPct}%`,
+                                        ['--desktop-width' as string]: `${(awayModelWinPct / 100) * widthPercentage}%`,
                                     }}
                                 >
-                                    {/* Gloss Overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
                                     <div className="absolute inset-0 bg-black/10 group-hover/bar:bg-transparent transition-colors duration-300"></div>
-
-                                    <div className="w-full h-full flex items-center justify-start pl-3 relative z-10">
-                                        <div className="flex flex-col items-start leading-none drop-shadow-md">
-                                            <span className="text-lg font-black text-white mb-0.5">{formatPct(awayModelWinPct)}</span>
-                                            {awayModelOdds && <span className="text-[11px] font-mono text-white/90 font-bold bg-black/20 px-1.5 py-0.5 rounded">{formatOdds(awayModelOdds)}</span>}
-                                        </div>
+                                    <div className="absolute inset-0" style={{ backgroundColor: awayColor, boxShadow: `inset 0 0 20px rgba(0,0,0,0.2), 0 0 15px ${awayColor}40` }}></div>
+                                </div>
+                                <div className="absolute inset-0 flex items-center justify-start pointer-events-none pl-3 z-20">
+                                    <div className="flex flex-col items-start leading-none drop-shadow-md">
+                                        <span className="text-lg font-black text-white mb-0.5">{formatPct(awayModelWinPct)}</span>
+                                        {awayModelOdds && <span className="text-[11px] font-mono text-white/90 font-bold bg-black/20 px-1.5 py-0.5 rounded">{formatOdds(awayModelOdds)}</span>}
                                     </div>
                                 </div>
                             </div>
@@ -157,25 +155,24 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             {/* Home Bar (Right) */}
                             <div className="relative flex items-center justify-start h-full flex-1 group/bar">
                                 <div
-                                    className="h-full rounded-r-lg border-l border-black/50 transition-all duration-700 ease-out relative overflow-hidden backdrop-blur-sm shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+                                    className="h-full rounded-r-lg border-l border-black/50 transition-all duration-700 ease-out relative overflow-hidden backdrop-blur-sm shadow-[0_0_20px_rgba(0,0,0,0.3)] w-[var(--mobile-width)] md:w-[var(--desktop-width)]"
                                     style={{
-                                        width: `${(homeModelWinPct / 100) * widthPercentage}%`,
-                                        backgroundColor: homeColor,
-                                        boxShadow: `inset 0 0 20px rgba(0,0,0,0.2), 0 0 15px ${homeColor}40`
+                                        ['--mobile-width' as string]: `${homeModelWinPct}%`,
+                                        ['--desktop-width' as string]: `${(homeModelWinPct / 100) * widthPercentage}%`,
                                     }}
                                 >
-                                    {/* Gloss Overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
                                     <div className="absolute inset-0 bg-black/10 group-hover/bar:bg-transparent transition-colors duration-300"></div>
-
-                                    <div className="w-full h-full flex items-center justify-end pr-3 relative z-10">
-                                        <div className="flex flex-col items-end leading-none drop-shadow-md">
-                                            <span className="text-lg font-black text-white mb-0.5">{formatPct(homeModelWinPct)}</span>
-                                            {homeModelOdds && <span className="text-[11px] font-mono text-white/90 font-bold bg-black/20 px-1.5 py-0.5 rounded">{formatOdds(homeModelOdds)}</span>}
-                                        </div>
+                                    <div className="absolute inset-0" style={{ backgroundColor: homeColor, boxShadow: `inset 0 0 20px rgba(0,0,0,0.2), 0 0 15px ${homeColor}40` }}></div>
+                                </div>
+                                <div className="absolute inset-0 flex items-center justify-end pointer-events-none pr-3 z-20">
+                                    <div className="flex flex-col items-end leading-none drop-shadow-md">
+                                        <span className="text-lg font-black text-white mb-0.5">{formatPct(homeModelWinPct)}</span>
+                                        {homeModelOdds && <span className="text-[11px] font-mono text-white/90 font-bold bg-black/20 px-1.5 py-0.5 rounded">{formatOdds(homeModelOdds)}</span>}
                                     </div>
                                 </div>
                             </div>
+
                         </div>
 
                         {/* ROW 2: VEGAS WIN % (More subtle) */}
@@ -211,13 +208,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
                 {/* RIGHT: Home Team */}
-                <div className="relative flex items-center justify-start h-full">
+                <div className="relative flex items-center justify-end md:justify-start h-full">
                     {/* Background Logo */}
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none -translate-x-12 opacity-20 group-hover/card:opacity-40 group-hover/card:scale-110 transition-all duration-700">
+                    <div className="absolute right-0 md:left-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none translate-x-12 md:-translate-x-12 opacity-20 group-hover/card:opacity-40 group-hover/card:scale-110 transition-all duration-700">
                         <img
                             src={homeTeam.logoUrl}
                             alt={homeTeam.name}
@@ -226,7 +224,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     </div>
 
                     {/* Content */}
-                    <div className="text-left relative z-10 flex flex-col items-start pl-4">
+                    <div className="text-right md:text-left relative z-10 flex flex-col items-end md:items-start pl-0 pr-2 md:pl-4 md:pr-0">
                         {/* Wager/EV Badge */}
                         {(homeEvBadge || homeWager) && (
                             <div className="mb-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-green/10 border border-neon-green/50 text-neon-green text-xs font-bold shadow-[0_0_15px_rgba(10,255,0,0.2)] animate-pulse-glow">
@@ -236,7 +234,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         )}
 
                         {/* xG Display (Moved here to avoid overlap) */}
-                        <div className="flex flex-col items-start -mt-1 mb-1">
+                        <div className="flex flex-col items-end md:items-start -mt-1 mb-1">
                             <span className="text-4xl font-black text-white tabular-nums tracking-tighter drop-shadow-2xl leading-none">{formatXg(homeXg)}</span>
                             <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase opacity-60 ml-1">Expected Goals</span>
                         </div>
