@@ -11,7 +11,8 @@ const Legend: React.FC = () => {
                     How to Read
                 </div>
 
-                <div className="grid grid-cols-[1fr_minmax(300px,400px)_1fr] gap-6 items-center opacity-80 hover:opacity-100 transition-opacity duration-300">
+                {/* Main Grid: Matchup Card Layout Sync */}
+                <div className="flex flex-col md:grid md:grid-cols-[1fr_minmax(300px,400px)_1fr] gap-6 items-center relative z-10 w-full opacity-80 hover:opacity-100 transition-opacity duration-300">
 
                     {/* LEFT: Team Info */}
                     <div className="relative flex items-center justify-end h-full">

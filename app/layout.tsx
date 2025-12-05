@@ -18,7 +18,7 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "VANTAGE POINT // NHL",
+  title: "The Source | powered by Axiom",
   description: "Advanced Hockey Analytics & Prediction Model",
 };
 

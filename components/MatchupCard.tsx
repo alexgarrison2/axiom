@@ -75,7 +75,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             {/* Background Decor - Gradient specific to match */}
             <div className="absolute inset-0 z-0 opacity-20 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none group-hover/card:opacity-30 transition-opacity duration-500"></div>
 
-            <div className="grid grid-cols-[1fr_minmax(300px,400px)_1fr] gap-6 items-center relative z-10">
+            <div className="flex flex-col md:grid md:grid-cols-[1fr_minmax(300px,400px)_1fr] gap-6 items-center relative z-10">
 
                 {/* LEFT: Away Team */}
                 <div className="relative flex items-center justify-end h-full">
