@@ -26,6 +26,12 @@ export interface GamePrediction {
   homeEv: number;
   awayEv: number;
   totalGoals: number;
+  homeWager: string | null;
+  awayWager: string | null;
+  homeModelOdds: string;
+  awayModelOdds: string;
+  homeVegasOdds: string;
+  awayVegasOdds: string;
 }
 
 interface RawPrediction {
@@ -43,6 +49,11 @@ interface RawPrediction {
   away_win_pct: string;
   away_vegas_win_pct: string;
   away_ev: string;
+  wager_recommendation: string;
+  home_model_odds: string;
+  away_model_odds: string;
+  home_vegas_odds: string;
+  away_vegas_odds: string;
 }
 
 interface RawTeam {
@@ -55,7 +66,7 @@ interface RawTeam {
 
 export async function getPredictions(): Promise<GamePrediction[]> {
   const dataDir = path.join(process.cwd(), 'data');
-  
+
   const teamsCsv = fs.readFileSync(path.join(dataDir, 'nhl_teams.csv'), 'utf8');
   const predictionsCsv = fs.readFileSync(path.join(dataDir, 'predictions_detailed.csv'), 'utf8');
 
@@ -102,8 +113,23 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       homeEv: row.home_ev ? parseFloat(row.home_ev) : 0,
       awayEv: row.away_ev ? parseFloat(row.away_ev) : 0,
       totalGoals,
+      homeWager: parseWager(row.wager_recommendation, 'Home'),
+      awayWager: parseWager(row.wager_recommendation, 'Away'),
+      homeModelOdds: row.home_model_odds || '',
+      awayModelOdds: row.away_model_odds || '',
+      homeVegasOdds: row.home_vegas_odds || '',
+      awayVegasOdds: row.away_vegas_odds || '',
     };
   }).filter((p): p is GamePrediction => p !== null);
 
   return predictions;
+}
+
+function parseWager(recommendation: string, side: 'Home' | 'Away'): string | null {
+  if (!recommendation) return null;
+  if (recommendation.includes(side) && recommendation.toLowerCase().includes('unit')) {
+    const match = recommendation.match(/(\d+(\.\d+)?)\s*Unit/i);
+    return match ? `${match[1]}u` : null;
+  }
+  return null;
 }

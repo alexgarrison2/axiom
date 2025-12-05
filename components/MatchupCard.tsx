@@ -3,9 +3,10 @@ import { GamePrediction } from '@/utils/data';
 
 interface MatchupCardProps {
     prediction: GamePrediction;
+    maxTotalGoals: number;
 }
 
-const MatchupCard: React.FC<MatchupCardProps> = ({ prediction }) => {
+const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) => {
     const {
         homeTeam,
         awayTeam,
@@ -20,134 +21,235 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction }) => {
         homeEv,
         awayEv,
         totalGoals,
+        homeWager,
+        awayWager,
+        homeModelOdds,
+        awayModelOdds,
+        homeVegasOdds,
+        awayVegasOdds,
+        date, // Make sure date is available if needed, though mostly unused here
     } = prediction;
 
-    // Handle missing Vegas odds (e.g. Detroit case)
+    // Handle missing Vegas odds
     const finalHomeVegas = homeVegasWinPct || (awayVegasWinPct ? 100 - awayVegasWinPct : 50);
     const finalAwayVegas = awayVegasWinPct || (homeVegasWinPct ? 100 - homeVegasWinPct : 50);
 
-    // Format numbers
     const formatPct = (n: number) => n.toFixed(1) + '%';
     const formatXg = (n: number) => n.toFixed(2);
     const formatEv = (n: number) => `+${Math.round(n)}%`;
+    const formatOdds = (odds: string) => {
+        if (!odds || odds === 'N/A') return null;
+        if (odds.startsWith('+') || odds.startsWith('-')) return odds;
+        return `+${odds}`;
+    };
 
-    // Determine EV badges
+    const formatStarter = (starter: string, color: string) => {
+        const isConfirmed = starter.toLowerCase().includes('confirmed');
+        // Stronger, multi-layered glow for prominence
+        return isConfirmed ? {
+            textShadow: `0 0 10px ${color}, 0 0 20px ${color}, 0 0 40px ${color}`,
+            color: '#fff',
+            opacity: 1,
+            fontWeight: 700
+        } : {
+            opacity: 0.8
+        };
+    };
+
+    const getStarterName = (starter: string) => {
+        return starter.replace(/\s*\(Confirmed\)/i, '');
+    };
+
     const homeEvBadge = homeEv > 0 ? formatEv(homeEv) : null;
     const awayEvBadge = awayEv > 0 ? formatEv(awayEv) : null;
 
-    // Team Colors (fallback to defaults if missing)
     const homeColor = homeTeam.color1 || '#000';
     const awayColor = awayTeam.color1 || '#000';
 
-    // Determine bar widths
-    const homeModelWidth = `${homeModelWinPct}%`;
-    const awayModelWidth = `${awayModelWinPct}%`;
-    const homeVegasWidth = `${finalHomeVegas}%`;
-    const awayVegasWidth = `${finalAwayVegas}%`;
+    // Width calculations
+    const widthPercentage = Math.min(100, (totalGoals / maxTotalGoals) * 100);
 
     return (
-        <div className="flex items-center justify-between py-6 border-b border-gray-800 relative">
-            {/* Vertical Grid Lines (Background) - simplified, maybe add to parent */}
+        <div className="glass-panel glass-panel-hover p-5 rounded-3xl relative overflow-hidden group/card w-full mx-auto max-w-7xl">
 
-            {/* Left Side: Away Team */}
-            <div className="flex items-center flex-1 justify-end gap-4 pr-4">
-                <div className="text-right">
-                    <div className="text-white font-medium text-lg">{awayStarter}</div>
-                    <div className="text-gray-400 text-sm hidden">{awayTeam.commonName}</div>
+            {/* Background Decor - Gradient specific to match */}
+            <div className="absolute inset-0 z-0 opacity-20 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none group-hover/card:opacity-30 transition-opacity duration-500"></div>
+
+            <div className="grid grid-cols-[1fr_minmax(300px,400px)_1fr] gap-6 items-center relative z-10">
+
+                {/* LEFT: Away Team */}
+                <div className="relative flex items-center justify-end h-full">
+                    {/* Background Logo */}
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none translate-x-12 opacity-20 group-hover/card:opacity-40 group-hover/card:scale-110 transition-all duration-700">
+                        <img
+                            src={awayTeam.logoUrl}
+                            alt={awayTeam.name}
+                            className="h-48 w-48 object-contain grayscale-[0.5] contrast-125"
+                        />
+                    </div>
+
+                    {/* Content */}
+                    <div className="text-right relative z-10 flex flex-col items-end pr-4">
+                        {/* Wager/EV Badge */}
+                        {(awayEvBadge || awayWager) && (
+                            <div className="mb-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-green/10 border border-neon-green/50 text-neon-green text-xs font-bold shadow-[0_0_15px_rgba(10,255,0,0.2)] animate-pulse-glow">
+                                {awayEvBadge && <span>EV: {awayEvBadge}</span>}
+                                {awayWager && <span className="opacity-90 border-l border-neon-green/30 pl-2">{awayWager}</span>}
+                            </div>
+                        )}
+
+                        {/* xG Display (Moved here to avoid overlap) */}
+                        <div className="flex flex-col items-end -mt-1 mb-1">
+                            <span className="text-4xl font-black text-white tabular-nums tracking-tighter drop-shadow-2xl leading-none">{formatXg(awayXg)}</span>
+                            <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase opacity-60 mr-1">Expected Goals</span>
+                        </div>
+
+                        <div className="font-hand text-xl text-gray-400 -rotate-3 mb-2 transition-all duration-500"
+                            style={formatStarter(awayStarter, awayColor)}
+                        >
+                            {getStarterName(awayStarter)}
+                        </div>
+                    </div>
                 </div>
-                <img src={awayTeam.logoUrl} alt={awayTeam.name} className="w-16 h-16 object-contain" />
+
+                {/* CENTER: Visualization */}
+                <div className="relative w-full flex flex-col items-center justify-center py-2 h-full min-h-[140px]">
+
+                    {/* Center Reference Line */}
+                    <div className="absolute top-0 bottom-0 w-[1px] bg-white/10 z-0"></div>
+
+                    {/* Total Goals Floating Badge */}
+                    <div className="absolute top-0 z-30 -translate-y-1/2">
+                        <div className="bg-black/80 backdrop-blur-md text-white font-mono font-bold text-xs px-3 py-1 rounded-full border border-white/20 shadow-xl tracking-wider">
+                            TOTAL: {totalGoals.toFixed(1)}
+                        </div>
+                    </div>
+
+                    {/* VISUALIZATION CONTAINER */}
+                    <div className="w-full flex flex-col gap-4 relative z-10 mt-2">
+
+                        {/* ROW 1: MODEL WIN % */}
+                        <div className="flex items-center justify-center h-14 w-full">
+
+                            {/* Away Bar (Left) */}
+                            <div className="relative flex items-center justify-end h-full flex-1 group/bar">
+                                <div
+                                    className="h-full rounded-l-lg border-r border-black/50 transition-all duration-700 ease-out relative overflow-hidden backdrop-blur-sm shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+                                    style={{
+                                        width: `${(awayModelWinPct / 100) * widthPercentage}%`,
+                                        backgroundColor: awayColor,
+                                        boxShadow: `inset 0 0 20px rgba(0,0,0,0.2), 0 0 15px ${awayColor}40`
+                                    }}
+                                >
+                                    {/* Gloss Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
+                                    <div className="absolute inset-0 bg-black/10 group-hover/bar:bg-transparent transition-colors duration-300"></div>
+
+                                    <div className="w-full h-full flex items-center justify-start pl-3 relative z-10">
+                                        <div className="flex flex-col items-start leading-none drop-shadow-md">
+                                            <span className="text-lg font-black text-white mb-0.5">{formatPct(awayModelWinPct)}</span>
+                                            {awayModelOdds && <span className="text-[11px] font-mono text-white/90 font-bold bg-black/20 px-1.5 py-0.5 rounded">{formatOdds(awayModelOdds)}</span>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Home Bar (Right) */}
+                            <div className="relative flex items-center justify-start h-full flex-1 group/bar">
+                                <div
+                                    className="h-full rounded-r-lg border-l border-black/50 transition-all duration-700 ease-out relative overflow-hidden backdrop-blur-sm shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+                                    style={{
+                                        width: `${(homeModelWinPct / 100) * widthPercentage}%`,
+                                        backgroundColor: homeColor,
+                                        boxShadow: `inset 0 0 20px rgba(0,0,0,0.2), 0 0 15px ${homeColor}40`
+                                    }}
+                                >
+                                    {/* Gloss Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
+                                    <div className="absolute inset-0 bg-black/10 group-hover/bar:bg-transparent transition-colors duration-300"></div>
+
+                                    <div className="w-full h-full flex items-center justify-end pr-3 relative z-10">
+                                        <div className="flex flex-col items-end leading-none drop-shadow-md">
+                                            <span className="text-lg font-black text-white mb-0.5">{formatPct(homeModelWinPct)}</span>
+                                            {homeModelOdds && <span className="text-[11px] font-mono text-white/90 font-bold bg-black/20 px-1.5 py-0.5 rounded">{formatOdds(homeModelOdds)}</span>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ROW 2: VEGAS WIN % (More subtle) */}
+                        <div className="flex items-center justify-center h-8 w-full opacity-80 hover:opacity-100 transition-opacity">
+                            {/* Away Vegas */}
+                            <div className="flex items-center justify-end h-full flex-1">
+                                <div
+                                    className="h-full rounded-l-sm bg-slate-800 border-r border-black/50 shadow-inner flex items-center justify-start pl-2"
+                                    style={{ width: `${(finalAwayVegas / 100) * widthPercentage}%` }}
+                                >
+                                    <div className="flex items-baseline gap-2 whitespace-nowrap overflow-hidden">
+                                        {/* Prioritize odds if bar is small (< 40%) */}
+                                        {(!awayVegasOdds || finalAwayVegas >= 40) && (
+                                            <span className="text-xs font-mono text-gray-300">{finalAwayVegas.toFixed(0)}%</span>
+                                        )}
+                                        {awayVegasOdds && <span className="text-[10px] text-gray-500 font-mono font-bold">{formatOdds(awayVegasOdds)}</span>}
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Home Vegas */}
+                            <div className="flex items-center justify-start h-full flex-1">
+                                <div
+                                    className="h-full rounded-r-sm bg-slate-700 border-l border-black/50 shadow-inner flex items-center justify-end pr-2"
+                                    style={{ width: `${(finalHomeVegas / 100) * widthPercentage}%` }}
+                                >
+                                    <div className="flex items-baseline gap-2 flex-row-reverse whitespace-nowrap overflow-hidden">
+                                        {/* Prioritize odds if bar is small (< 40%) */}
+                                        {(!homeVegasOdds || finalHomeVegas >= 40) && (
+                                            <span className="text-xs font-mono text-gray-300">{finalHomeVegas.toFixed(0)}%</span>
+                                        )}
+                                        {homeVegasOdds && <span className="text-[10px] text-gray-500 font-mono font-bold">{formatOdds(homeVegasOdds)}</span>}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* RIGHT: Home Team */}
+                <div className="relative flex items-center justify-start h-full">
+                    {/* Background Logo */}
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none -translate-x-12 opacity-20 group-hover/card:opacity-40 group-hover/card:scale-110 transition-all duration-700">
+                        <img
+                            src={homeTeam.logoUrl}
+                            alt={homeTeam.name}
+                            className="h-48 w-48 object-contain grayscale-[0.5] contrast-125"
+                        />
+                    </div>
+
+                    {/* Content */}
+                    <div className="text-left relative z-10 flex flex-col items-start pl-4">
+                        {/* Wager/EV Badge */}
+                        {(homeEvBadge || homeWager) && (
+                            <div className="mb-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-green/10 border border-neon-green/50 text-neon-green text-xs font-bold shadow-[0_0_15px_rgba(10,255,0,0.2)] animate-pulse-glow">
+                                {homeEvBadge && <span>EV: {homeEvBadge}</span>}
+                                {homeWager && <span className="opacity-90 border-l border-neon-green/30 pl-2">{homeWager}</span>}
+                            </div>
+                        )}
+
+                        {/* xG Display (Moved here to avoid overlap) */}
+                        <div className="flex flex-col items-start -mt-1 mb-1">
+                            <span className="text-4xl font-black text-white tabular-nums tracking-tighter drop-shadow-2xl leading-none">{formatXg(homeXg)}</span>
+                            <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase opacity-60 ml-1">Expected Goals</span>
+                        </div>
+
+                        <div className="font-hand text-xl text-gray-400 -rotate-3 mb-2 transition-all duration-500"
+                            style={formatStarter(homeStarter, homeColor)}
+                        >
+                            {getStarterName(homeStarter)}
+                        </div>
+                    </div>
+                </div>
+
             </div>
-
-            {/* Center Visualization */}
-            <div className="flex flex-col items-center w-[500px] shrink-0 relative">
-
-                {/* xG Values and EV Badges - Absolute positioning or Flex */}
-                <div className="absolute left-[-80px] top-1/2 -translate-y-1/2 flex items-center gap-2">
-                    {/* Away xG */}
-                    <span className="text-2xl font-bold text-white">{formatXg(awayXg)}</span>
-                    {awayEvBadge && (
-                        <span className="bg-green-500 text-black text-xs font-bold px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(34,197,94,0.6)]">
-                            {awayEvBadge}
-                        </span>
-                    )}
-                </div>
-
-                <div className="absolute right-[-80px] top-1/2 -translate-y-1/2 flex items-center gap-2 flex-row-reverse">
-                    {/* Home xG */}
-                    <span className="text-2xl font-bold text-white">{formatXg(homeXg)}</span>
-                    {homeEvBadge && (
-                        <span className="bg-green-500 text-black text-xs font-bold px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(34,197,94,0.6)]">
-                            {homeEvBadge}
-                        </span>
-                    )}
-                </div>
-
-                {/* Top Bar: Model Win % */}
-                <div className="w-full h-10 flex rounded-t-lg overflow-hidden relative">
-                    {/* Left: Away Model */}
-                    <div
-                        style={{ width: awayModelWidth, backgroundColor: awayColor }}
-                        className="h-full flex items-center justify-start pl-2 relative transition-all"
-                    >
-                        <span className="bg-white/90 text-black text-xs font-bold px-1 rounded shadow-sm ml-1">
-                            {formatPct(awayModelWinPct)}
-                        </span>
-                    </div>
-                    {/* Right: Home Model */}
-                    <div
-                        style={{ width: homeModelWidth, backgroundColor: homeColor }}
-                        className="h-full flex items-center justify-end pr-2 relative transition-all"
-                    >
-                        <span className="bg-white/90 text-black text-xs font-bold px-1 rounded shadow-sm mr-1">
-                            {formatPct(homeModelWinPct)}
-                        </span>
-                    </div>
-
-                    {/* Center Divider Line */}
-                    <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white z-10"></div>
-                </div>
-
-                {/* Middle: Total Goals Box */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 bg-white text-black font-bold text-lg px-3 py-1 rounded shadow-lg border-2 border-gray-200 min-w-[60px] text-center">
-                    {totalGoals.toFixed(2)}
-                </div>
-
-                {/* Bottom Bar: Vegas Win % */}
-                <div className="w-full h-6 flex rounded-b-lg overflow-hidden mt-0.5 relative opacity-90">
-                    {/* Left: Away Vegas */}
-                    <div
-                        className="h-full bg-gray-700 flex items-center justify-start pl-2 relative"
-                        style={{ width: awayVegasWidth }}
-                    >
-                        <span className="text-white text-[10px] font-bold ml-1 drop-shadow-md">
-                            {formatPct(finalAwayVegas)}
-                        </span>
-                    </div>
-                    {/* Right: Home Vegas */}
-                    <div
-                        className="h-full bg-gray-600 flex items-center justify-end pr-2 relative"
-                        style={{ width: homeVegasWidth }}
-                    >
-                        <span className="text-white text-[10px] font-bold mr-1 drop-shadow-md">
-                            {formatPct(finalHomeVegas)}
-                        </span>
-                    </div>
-
-                    {/* Center Divider Line */}
-                    <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/50 z-10"></div>
-                </div>
-
-            </div>
-
-            {/* Right Side: Home Team */}
-            <div className="flex items-center flex-1 justify-start gap-4 pl-4">
-                <img src={homeTeam.logoUrl} alt={homeTeam.name} className="w-16 h-16 object-contain" />
-                <div className="text-left">
-                    <div className="text-white font-medium text-lg">{homeStarter}</div>
-                    <div className="text-gray-400 text-sm hidden">{homeTeam.commonName}</div>
-                </div>
-            </div>
-
         </div>
     );
 };
