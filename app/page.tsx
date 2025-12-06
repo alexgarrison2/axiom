@@ -30,7 +30,7 @@ export default async function Home() {
                             priority
                         />
                     </div>
-                    <h1 className="text-7xl md:text-9xl font-[family-name:var(--font-neonderthaw)] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-cyan-400 tracking-wide drop-shadow-[0_0_15px_rgba(0,243,255,0.6)] py-4 px-2 leading-relaxed">
+                    <h1 className="text-7xl md:text-9xl font-[family-name:var(--font-neonderthaw)] tracking-wide drop-shadow-[0_0_15px_rgba(0,243,255,0.6)] py-4 px-2 leading-relaxed animate-shine-flow">
                         Pony xG
                     </h1>
                 </div>

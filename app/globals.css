@@ -37,4 +37,75 @@
   .text-glow-green {
     text-shadow: 0 0 10px rgba(10, 255, 0, 0.5);
   }
+
+  @keyframes shine-flow {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    100% {
+      background-position: 200% 50%;
+    }
+  }
+
+  .animate-shine-flow {
+    background: linear-gradient(90deg, #22d3ee, #ffffff, #22d3ee);
+    /* cyan-400, white, cyan-400 */
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine-flow 3s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+
+  .high-ev-border-mask {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.5rem;
+    /* rounded-3xl */
+    padding: 3px;
+    /* Border width */
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  .high-ev-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg,
+        transparent 0deg,
+        #0891b2 90deg,
+        /* cyan-600 */
+        #22d3ee 180deg,
+        /* cyan-400 */
+        #ffffff 225deg,
+        /* white highlight */
+        #22d3ee 270deg,
+        /* cyan-400 */
+        #0891b2 300deg,
+        /* cyan-600 */
+        transparent 360deg);
+    animation: spin 4s linear infinite;
+  }
 }

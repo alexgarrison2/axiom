@@ -70,8 +70,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     // Width calculations
     const widthPercentage = Math.min(100, (totalGoals / maxTotalGoals) * 100);
 
+    const isHighEv = (homeEv && homeEv >= 20) || (awayEv && awayEv >= 20);
+
     return (
         <div className="glass-panel glass-panel-hover p-3 md:p-5 rounded-3xl relative overflow-hidden group/card w-full mx-auto max-w-7xl">
+
+            {/* High EV Rotating Glow Border */}
+            {isHighEv && (
+                <div className="high-ev-border-mask">
+                    <div className="high-ev-spinner"></div>
+                </div>
+            )}
 
             {/* Background Decor - Gradient specific to match */}
             <div className="absolute inset-0 z-0 opacity-20 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none group-hover/card:opacity-30 transition-opacity duration-500"></div>
