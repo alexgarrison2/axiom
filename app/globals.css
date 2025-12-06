@@ -81,10 +81,12 @@
     mask:
       linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
+    -webkit-mask-composite: destination-out;
+    /* Changed from xor */
     mask-composite: exclude;
     pointer-events: none;
-    z-index: 50;
+    z-index: 20;
+    /* Lower z-index to be safe, though pointer-events: none handles clicks */
   }
 
   .high-ev-spinner {
