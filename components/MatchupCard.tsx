@@ -27,6 +27,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         awayModelOdds,
         homeVegasOdds,
         awayVegasOdds,
+        startTime,
         date, // Make sure date is available if needed, though mostly unused here
     } = prediction;
 
@@ -113,10 +114,19 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 </div>
 
                 {/* CENTER: Visualization */}
-                <div className="relative w-full flex flex-col items-center justify-center py-2 h-full min-h-[140px]">
+                <div className="relative w-full flex flex-col items-center justify-center pt-10 pb-2 h-full min-h-[140px]">
 
                     {/* Center Reference Line */}
                     <div className="absolute top-0 bottom-0 w-[1px] bg-white/10 z-0"></div>
+
+                    {/* Game Start Time */}
+                    {startTime && (
+                        <div className="absolute top-4 z-30">
+                            <span className="text-[10px] font-mono font-bold text-gray-400 tracking-widest bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm border border-white/5 uppercase">
+                                {startTime} CT
+                            </span>
+                        </div>
+                    )}
 
                     {/* Total Goals Floating Badge */}
                     <div className="absolute top-0 z-30 -translate-y-1/2">

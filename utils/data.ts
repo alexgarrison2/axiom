@@ -32,6 +32,7 @@ export interface GamePrediction {
   awayModelOdds: string;
   homeVegasOdds: string;
   awayVegasOdds: string;
+  startTime: string;
 }
 
 interface RawPrediction {
@@ -54,6 +55,7 @@ interface RawPrediction {
   away_model_odds: string;
   home_vegas_odds: string;
   away_vegas_odds: string;
+  game_start_time: string;
 }
 
 interface RawTeam {
@@ -119,6 +121,7 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       awayModelOdds: row.away_model_odds || '',
       homeVegasOdds: row.home_vegas_odds || '',
       awayVegasOdds: row.away_vegas_odds || '',
+      startTime: row.game_start_time || '',
     };
   }).filter((p): p is GamePrediction => p !== null);
 
