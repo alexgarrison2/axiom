@@ -70,7 +70,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     // Width calculations
     const widthPercentage = Math.min(100, (totalGoals / maxTotalGoals) * 100);
 
-    const isHighEv = (homeEv && homeEv >= 20) || (awayEv && awayEv >= 20);
+    const isHighEv = ((homeEv || 0) >= 20) || ((awayEv || 0) >= 20);
+
+    // Check if we have valid odds for the Vegas bar
+    const hasVegasOdds = (homeVegasOdds && homeVegasOdds !== 'N/A') || (awayVegasOdds && awayVegasOdds !== 'N/A');
 
     return (
         <div className="glass-panel glass-panel-hover p-3 md:p-5 rounded-3xl relative overflow-hidden group/card w-full mx-auto max-w-7xl">
@@ -194,40 +197,46 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                         </div>
 
-                        {/* ROW 2: VEGAS WIN % (More subtle) */}
-                        <div className="flex items-center justify-center h-8 w-full opacity-80 hover:opacity-100 transition-opacity">
-                            {/* Away Vegas */}
-                            <div className="flex items-center justify-end h-full flex-1">
-                                <div
-                                    className="h-full rounded-l-sm bg-slate-800 border-r border-black/50 shadow-inner flex items-center justify-start pl-2"
-                                    style={{ width: `${(finalAwayVegas / 100) * widthPercentage}%` }}
-                                >
-                                    <div className="flex items-baseline gap-2 whitespace-nowrap overflow-hidden">
-                                        {/* Prioritize odds if bar is small (< 40%) */}
-                                        {(!awayVegasOdds || finalAwayVegas >= 40) && (
-                                            <span className="text-xs font-mono text-gray-300">{finalAwayVegas.toFixed(0)}%</span>
-                                        )}
-                                        {awayVegasOdds && <span className="text-[10px] text-gray-500 font-mono font-bold">{formatOdds(awayVegasOdds)}</span>}
+                        {/* ROW 2: VEGAS WIN % (More subtle) OR TBD */}
+                        {!hasVegasOdds ? (
+                            <div className="flex items-center justify-center h-8 w-full">
+                                <div className="w-full h-full bg-white/5 rounded border border-white/10 flex items-center justify-center text-[10px] font-mono text-gray-500 tracking-widest uppercase">
+                                    Odds TBD
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-8 w-full opacity-80 hover:opacity-100 transition-opacity">
+                                {/* Away Vegas */}
+                                <div className="flex items-center justify-end h-full flex-1">
+                                    <div
+                                        className="h-full rounded-l-sm bg-slate-800 border-r border-black/50 shadow-inner flex items-center justify-start pl-2"
+                                        style={{ width: `${(finalAwayVegas / 100) * widthPercentage}%` }}
+                                    >
+                                        <div className="flex items-baseline gap-2 whitespace-nowrap overflow-hidden">
+                                            {/* Prioritize odds if bar is small (< 40%) */}
+                                            {(!awayVegasOdds || finalAwayVegas >= 40) && (
+                                                <span className="text-xs font-mono text-gray-300">{finalAwayVegas.toFixed(0)}%</span>
+                                            )}
+                                            {awayVegasOdds && <span className="text-[10px] text-gray-500 font-mono font-bold">{formatOdds(awayVegasOdds)}</span>}
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Home Vegas */}
+                                <div className="flex items-center justify-start h-full flex-1">
+                                    <div
+                                        className="h-full rounded-r-sm bg-slate-700 border-l border-black/50 shadow-inner flex items-center justify-end pr-2"
+                                        style={{ width: `${(finalHomeVegas / 100) * widthPercentage}%` }}
+                                    >
+                                        <div className="flex items-baseline gap-2 flex-row-reverse whitespace-nowrap overflow-hidden">
+                                            {(!homeVegasOdds || finalHomeVegas >= 40) && (
+                                                <span className="text-xs font-mono text-gray-300">{finalHomeVegas.toFixed(0)}%</span>
+                                            )}
+                                            {homeVegasOdds && <span className="text-[10px] text-gray-500 font-mono font-bold">{formatOdds(homeVegasOdds)}</span>}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            {/* Home Vegas */}
-                            <div className="flex items-center justify-start h-full flex-1">
-                                <div
-                                    className="h-full rounded-r-sm bg-slate-700 border-l border-black/50 shadow-inner flex items-center justify-end pr-2"
-                                    style={{ width: `${(finalHomeVegas / 100) * widthPercentage}%` }}
-                                >
-                                    <div className="flex items-baseline gap-2 flex-row-reverse whitespace-nowrap overflow-hidden">
-                                        {/* Prioritize odds if bar is small (< 40%) */}
-                                        {(!homeVegasOdds || finalHomeVegas >= 40) && (
-                                            <span className="text-xs font-mono text-gray-300">{finalHomeVegas.toFixed(0)}%</span>
-                                        )}
-                                        {homeVegasOdds && <span className="text-[10px] text-gray-500 font-mono font-bold">{formatOdds(homeVegasOdds)}</span>}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                        )}
                     </div>
                 </div>
 
