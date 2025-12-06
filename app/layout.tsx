@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Caveat } from "next/font/google";
+import { Geist, Geist_Mono, Caveat, Neonderthaw } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,9 +17,15 @@ const caveat = Caveat({
   subsets: ["latin"],
 });
 
+const neonderthaw = Neonderthaw({
+  variable: "--font-neonderthaw",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
-  title: "The Source | powered by Axiom",
-  description: "Advanced Hockey Analytics & Prediction Model",
+  title: "Pony xG",
+  description: "Advanced NHL Analytics & Predictions",
 };
 
 export default function RootLayout({
@@ -31,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${neonderthaw.variable} antialiased`}
       >
         {children}
       </body>

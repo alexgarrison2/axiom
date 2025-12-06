@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { getPredictions } from '@/utils/data';
 import PredictionsViewer from '@/components/PredictionsViewer';
 
@@ -19,7 +20,10 @@ export default async function Home() {
 
             <div className="max-w-[1800px] mx-auto relative z-10">
                 {/* Header Section */}
-                <div className="flex flex-col items-center mb-8 mt-8">
+                <div className="flex flex-row items-center justify-center mb-12 mt-8 gap-6">
+                    <h1 className="text-7xl md:text-9xl font-[family-name:var(--font-neonderthaw)] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-cyan-400 tracking-wide drop-shadow-[0_0_15px_rgba(0,243,255,0.6)] py-4 px-2 leading-relaxed">
+                        Pony xG
+                    </h1>
                 </div>
 
                 {/* Interactive Predictions Viewer */}
