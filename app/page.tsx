@@ -20,8 +20,8 @@ export default async function Home() {
 
             <div className="max-w-[1800px] mx-auto relative z-10">
                 {/* Header Section */}
-                <div className="flex flex-row items-center justify-center mb-12 mt-8 gap-6">
-                    <div className="relative w-24 h-24">
+                <div className="flex flex-row items-center justify-center mb-12 mt-8 gap-2 md:gap-6">
+                    <div className="relative w-16 h-16 md:w-24 md:h-24 shrink-0">
                         <Image
                             src="/logo_vector.png"
                             alt="Pony xG Logo"
@@ -30,7 +30,7 @@ export default async function Home() {
                             priority
                         />
                     </div>
-                    <h1 className="text-7xl md:text-9xl font-[family-name:var(--font-neonderthaw)] tracking-wide drop-shadow-[0_0_15px_rgba(0,243,255,0.6)] py-4 px-2 leading-relaxed animate-shine-flow">
+                    <h1 className="text-5xl md:text-9xl font-[family-name:var(--font-neonderthaw)] tracking-wide drop-shadow-[0_0_15px_rgba(0,243,255,0.6)] py-4 px-2 leading-relaxed animate-shine-flow whitespace-nowrap">
                         Pony xG
                     </h1>
                 </div>
