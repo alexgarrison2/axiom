@@ -248,9 +248,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                     boxShadow: `0 0 15px ${awayColor}66`
                                 }}
                             ></div>
-                            <div className="h-full bg-neutral-700/30 flex-1 relative">
-                                {/* Optional: Hint of Home Color on the right side if desired, or keep neutral */}
-                            </div>
+                            <div
+                                className="h-full flex-1 relative"
+                                style={{
+                                    background: `linear-gradient(90deg, ${homeColor}dd 0%, ${homeColor} 100%)`, // Home Color for the rest
+                                    boxShadow: `0 0 15px ${homeColor}66`
+                                }}
+                            ></div>
                         </div>
 
                         {/* Odds Comparison Box */}
@@ -325,18 +329,18 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                             {/* Bottom: Wager Pill (if exists) */}
                             {awayWager ? (
-                                <div className="flex flex-col items-end px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)] mt-auto">
-                                    <span className="text-[9px] font-bold text-emerald-400 leading-none mb-0.5">EV+{Math.round(awayEv || 0)}%</span>
-                                    <span className="text-[10px] font-bold text-emerald-100 leading-none">{awayWager}</span>
+                                <div className="mt-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                    <span>EV: +{Math.round(awayEv || 0)}%</span>
+                                    <span className="opacity-90 border-l border-neon-green/30 pl-1.5">{awayWager}</span>
                                 </div>
-                            ) : <div className="h-8"></div>}
+                            ) : <div className="h-6"></div>}
                         </div>
                     </div>
 
                     {/* CENTER: Time + Bar (Simplified) */}
                     <div className="flex flex-col items-center justify-center w-[20%] gap-1.5">
                         <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap">{formatTime(startTime || '')}</span>
-                        {/* Mini Bar */}
+                        {/* Mini Bar Mobile */}
                         <div className="w-full h-2.5 bg-neutral-800/80 rounded-full overflow-hidden flex shadow-inner border border-white/5">
                             <div
                                 className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)]"
@@ -344,6 +348,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                     width: `${awayModelWinPct}%`,
                                     background: `linear-gradient(90deg, ${awayColor} 0%, ${awayColor}dd 100%)`,
                                     boxShadow: `0 0 10px ${awayColor}66`
+                                }}
+                            ></div>
+                            <div
+                                className="h-full flex-1"
+                                style={{
+                                    background: `linear-gradient(90deg, ${homeColor}dd 0%, ${homeColor} 100%)`,
+                                    boxShadow: `0 0 10px ${homeColor}66`
                                 }}
                             ></div>
                         </div>
@@ -366,13 +377,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 <span className="text-[9px] font-mono text-neutral-500 font-bold uppercase tracking-wider">xG</span>
                             </div>
 
-                            {/* Bottom: Wager Pill (if exists) */}
+                            {/* Bottom: Wager Pill (if exists) - Styled like Desktop */}
                             {homeWager ? (
-                                <div className="flex flex-col items-end px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)] mt-auto">
-                                    <span className="text-[9px] font-bold text-emerald-400 leading-none mb-0.5">EV+{Math.round(homeEv || 0)}%</span>
-                                    <span className="text-[10px] font-bold text-emerald-100 leading-none">{homeWager}</span>
+                                <div className="mt-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                    <span>EV: +{Math.round(homeEv || 0)}%</span>
+                                    <span className="opacity-90 border-l border-neon-green/30 pl-1.5">{homeWager}</span>
                                 </div>
-                            ) : <div className="h-8"></div>}
+                            ) : <div className="h-6"></div>}
                         </div>
                     </div>
                 </div>
