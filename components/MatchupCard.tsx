@@ -66,9 +66,15 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
     const getGlowColor = (homeWager: string | null, awayWager: string | null) => {
         if (homeWager || awayWager) {
-            return 'border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]';
+            // "Nebula" Glow: Soft shadow, subtle ring, no hard border
+            return 'border-white/10 ring-1 ring-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)]';
         }
-        return 'border-white/10';
+        return 'border-white/5 hover:border-white/10';
+    };
+
+    const cleanStarterName = (starter: string | null) => {
+        if (!starter) return '';
+        return starter.replace(/\s*\(.*?\)$/, '');
     };
 
 
@@ -134,7 +140,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wide truncate max-w-full">{starterName}</span>
                         {status && (
                             <span className={`text-[9px] md:text-[10px] font-mono uppercase tracking-wider ${(status.toUpperCase() === 'CONFIRMED' || status.toUpperCase().includes('CONFIRMED')) ? 'text-neon-green' :
-                                    (status.toUpperCase() === 'LIKELY' || status.toUpperCase().includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
+                                (status.toUpperCase() === 'LIKELY' || status.toUpperCase().includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
                                 }`}>
                                 {status}
                             </span>
@@ -299,20 +305,20 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 {awayXg.toFixed(2)}
                             </span>
                             {awayWager && (
-                                <div className="flex flex-col items-start px-1.5 py-0.5 rounded bg-emerald-900/40 border border-emerald-500/40">
-                                    <span className="text-[9px] font-bold text-emerald-400 leading-none">EV+{Math.round(awayEv || 0)}%</span>
-                                    <span className="text-[9px] font-bold text-emerald-200 leading-none">{awayWager}</span>
+                                <div className="flex flex-col items-start px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                    <span className="text-[9px] font-bold text-emerald-400 leading-none mb-0.5">EV+{Math.round(awayEv || 0)}%</span>
+                                    <span className="text-[10px] font-bold text-emerald-100 leading-none">{awayWager}</span>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* CENTER: Time + Bar (Simplified) */}
-                    <div className="flex flex-col items-center justify-center w-[16%]">
-                        <span className="text-[9px] font-mono text-neutral-500 tracking-wider mb-1 whitespace-nowrap">{formatTime(startTime || '')}</span>
+                    <div className="flex flex-col items-center justify-center w-[20%] gap-1.5">
+                        <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap">{formatTime(startTime || '')}</span>
                         {/* Mini Bar */}
-                        <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-blue-600" style={{ width: `${awayModelWinPct * 100}%` }}></div>
+                        <div className="w-full h-2 bg-neutral-800/80 rounded-full overflow-hidden flex shadow-inner border border-white/5">
+                            <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.5)]" style={{ width: `${awayModelWinPct * 100}%` }}></div>
                         </div>
                     </div>
 
@@ -328,9 +334,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 {homeXg.toFixed(2)}
                             </span>
                             {homeWager && (
-                                <div className="flex flex-col items-end px-1.5 py-0.5 rounded bg-red-900/40 border border-red-500/40">
-                                    <span className="text-[9px] font-bold text-red-400 leading-none">EV+{Math.round(homeEv || 0)}%</span>
-                                    <span className="text-[9px] font-bold text-red-200 leading-none">{homeWager}</span>
+                                <div className="flex flex-col items-end px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]">
+                                    <span className="text-[9px] font-bold text-rose-400 leading-none mb-0.5">EV+{Math.round(homeEv || 0)}%</span>
+                                    <span className="text-[10px] font-bold text-rose-100 leading-none">{homeWager}</span>
                                 </div>
                             )}
                         </div>
@@ -344,17 +350,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex flex-col items-start w-[48%]">
                                 <span className={`text-[10px] font-bold uppercase ${getGoalieStatusColor(awayStarter, prediction.id, 'away')}`}>
-                                    {awayStarter}
+                                    {cleanStarterName(awayStarter)}
                                 </span>
-                                <span className="text-[9px] text-neutral-500 font-mono uppercase">
+                                <span className="text-[9px] text-neutral-500 font-mono uppercase mt-0.5">
                                     {getGoalieStatusText(awayStarter, prediction.id, 'away')}
                                 </span>
                             </div>
                             <div className="flex flex-col items-end w-[48%]">
                                 <span className={`text-[10px] font-bold uppercase text-right ${getGoalieStatusColor(homeStarter, prediction.id, 'home')}`}>
-                                    {homeStarter}
+                                    {cleanStarterName(homeStarter)}
                                 </span>
-                                <span className="text-[9px] text-neutral-500 font-mono uppercase text-right">
+                                <span className="text-[9px] text-neutral-500 font-mono uppercase text-right mt-0.5">
                                     {getGoalieStatusText(homeStarter, prediction.id, 'home')}
                                 </span>
                             </div>
