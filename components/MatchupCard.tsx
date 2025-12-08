@@ -287,7 +287,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             {/* MOBILE VIEW (md:hidden) - Condensed + Expand */}
             {/* ========================================= */}
             <div
-                className={`flex md:hidden flex-col w-full mx-auto rounded-3xl mb-4 text-white overflow-hidden transition-all duration-300 border backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
+                className={`flex md:hidden flex-col w-full mx-auto rounded-3xl mb-1 text-white overflow-hidden transition-all duration-300 border backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
                 onClick={() => setIsExpanded(!isExpanded)}
             >
                 {/* Background Glass */}
@@ -351,9 +351,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                             {/* Bottom: Wager Pill (if exists) */}
                             {homeWager ? (
-                                <div className="flex flex-col items-end px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)] mt-auto">
-                                    <span className="text-[9px] font-bold text-rose-400 leading-none mb-0.5">EV+{Math.round(homeEv || 0)}%</span>
-                                    <span className="text-[10px] font-bold text-rose-100 leading-none">{homeWager}</span>
+                                <div className="flex flex-col items-end px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)] mt-auto">
+                                    <span className="text-[9px] font-bold text-emerald-400 leading-none mb-0.5">EV+{Math.round(homeEv || 0)}%</span>
+                                    <span className="text-[10px] font-bold text-emerald-100 leading-none">{homeWager}</span>
                                 </div>
                             ) : <div className="h-8"></div>}
                         </div>
