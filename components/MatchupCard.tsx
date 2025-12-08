@@ -495,17 +495,37 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* Goalies Row */}
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex flex-col items-start w-[48%]">
-                                <span className={`text-[10px] font-bold uppercase ${getGoalieStatusColor(awayStarter, prediction.id, 'away')}`}>
-                                    {cleanStarterName(awayStarter)}
-                                </span>
+                                <div className="flex items-center gap-1 flex-wrap">
+                                    <span className={`text-[10px] font-bold uppercase ${getGoalieStatusColor(awayStarter, prediction.id, 'away')}`}>
+                                        {cleanStarterName(awayStarter)}
+                                    </span>
+                                    {prediction.away_gsax_total !== undefined && prediction.away_gsax_pct !== undefined && (
+                                        <span
+                                            className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5"
+                                            style={{ color: getGsaxColorValue(prediction.away_gsax_pct) }}
+                                        >
+                                            {formatGsax(prediction.away_gsax_total)}
+                                        </span>
+                                    )}
+                                </div>
                                 <span className="text-[9px] text-neutral-500 font-mono uppercase mt-0.5">
                                     {getGoalieStatusText(awayStarter, prediction.id, 'away')}
                                 </span>
                             </div>
                             <div className="flex flex-col items-end w-[48%]">
-                                <span className={`text-[10px] font-bold uppercase text-right ${getGoalieStatusColor(homeStarter, prediction.id, 'home')}`}>
-                                    {cleanStarterName(homeStarter)}
-                                </span>
+                                <div className="flex items-center gap-1 flex-wrap justify-end">
+                                    {prediction.home_gsax_total !== undefined && prediction.home_gsax_pct !== undefined && (
+                                        <span
+                                            className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5"
+                                            style={{ color: getGsaxColorValue(prediction.home_gsax_pct) }}
+                                        >
+                                            {formatGsax(prediction.home_gsax_total)}
+                                        </span>
+                                    )}
+                                    <span className={`text-[10px] font-bold uppercase text-right ${getGoalieStatusColor(homeStarter, prediction.id, 'home')}`}>
+                                        {cleanStarterName(homeStarter)}
+                                    </span>
+                                </div>
                                 <span className="text-[9px] text-neutral-500 font-mono uppercase text-right mt-0.5">
                                     {getGoalieStatusText(homeStarter, prediction.id, 'home')}
                                 </span>
