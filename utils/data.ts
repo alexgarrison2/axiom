@@ -33,6 +33,13 @@ export interface GamePrediction {
   homeVegasOdds: string;
   awayVegasOdds: string;
   startTime: string;
+
+  home_pp_rank?: number;
+  home_pk_rank?: number;
+  away_pp_rank?: number;
+  away_pk_rank?: number;
+  home_l7?: string;
+  away_l7?: string;
 }
 
 interface RawPrediction {
@@ -56,6 +63,13 @@ interface RawPrediction {
   home_vegas_odds: string;
   away_vegas_odds: string;
   game_start_time: string;
+
+  home_pp_rank?: string;
+  home_pk_rank?: string;
+  away_pp_rank?: string;
+  away_pk_rank?: string;
+  home_l7?: string;
+  away_l7?: string;
 }
 
 interface RawTeam {
@@ -86,7 +100,7 @@ export async function getPredictions(): Promise<GamePrediction[]> {
     });
   });
 
-  const predictions: GamePrediction[] = predictionsParsed.data.map((row) => {
+  const predictions = predictionsParsed.data.map((row): GamePrediction | null => {
     const homeTeam = teamsMap.get(row.home_team);
     const awayTeam = teamsMap.get(row.away_team);
 
@@ -122,6 +136,13 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       homeVegasOdds: row.home_vegas_odds || '',
       awayVegasOdds: row.away_vegas_odds || '',
       startTime: row.game_start_time || '',
+
+      home_pp_rank: row.home_pp_rank ? parseInt(row.home_pp_rank) : undefined,
+      home_pk_rank: row.home_pk_rank ? parseInt(row.home_pk_rank) : undefined,
+      away_pp_rank: row.away_pp_rank ? parseInt(row.away_pp_rank) : undefined,
+      away_pk_rank: row.away_pk_rank ? parseInt(row.away_pk_rank) : undefined,
+      home_l7: row.home_l7 || undefined,
+      away_l7: row.away_l7 || undefined,
     };
   }).filter((p): p is GamePrediction => p !== null);
 

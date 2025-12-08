@@ -77,7 +77,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, maxT
             </div>
 
             {/* Grid Layout - Staggered Fade In */}
-            <div className="grid grid-cols-1 2xl:grid-cols-2 gap-6 w-full animate-fade-in-up">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 w-full animate-fade-in-up pb-24">
                 {filteredPredictions.map((prediction, index) => (
                     <div key={prediction.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-fade-in-up fill-mode-backwards">
                         <MatchupCard prediction={prediction} maxTotalGoals={maxTotalGoals} />

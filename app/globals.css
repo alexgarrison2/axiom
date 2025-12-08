@@ -30,12 +30,41 @@
     border-color: rgba(255, 255, 255, 0.2);
   }
 
+  /* Premium Glass Effect */
+  .glass-premium {
+    background: rgba(23, 23, 23, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
   .text-glow-blue {
     text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
   }
 
   .text-glow-green {
     text-shadow: 0 0 10px rgba(10, 255, 0, 0.5);
+  }
+
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(to right, #fff, #94a3b8);
+  }
+
+  /* Scrollbar Hide Utility */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   @keyframes shine-flow {
@@ -73,8 +102,8 @@
     inset: 0;
     border-radius: 1.5rem;
     /* rounded-3xl */
-    padding: 3px;
-    /* Border width */
+    padding: 2px;
+    /* Border width reduced for finer look */
     -webkit-mask:
       linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
@@ -108,6 +137,7 @@
         #0891b2 300deg,
         /* cyan-600 */
         transparent 360deg);
-    animation: spin 12s linear infinite;
+    animation: spin 8s linear infinite;
+    /* Faster spin */
   }
 }
