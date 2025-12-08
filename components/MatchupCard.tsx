@@ -209,8 +209,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                 <div className="flex flex-row items-stretch justify-between w-full relative z-10">
 
-                    {/* AWAY TEAM (Left) */}
-                    <div className="w-1/3">
+                    {/* AWAY TEAM (Left) - Flex-1 to push to edge */}
+                    <div className="flex-1 min-w-0">
                         <TeamColumn
                             team={awayTeam}
                             isHome={false}
@@ -224,8 +224,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         />
                     </div>
 
-                    {/* CENTER INFO (Time, Total, Bar) */}
-                    <div className="flex flex-col items-center justify-center w-1/3 px-4">
+                    {/* CENTER INFO (Time, Total, Bar) - Bracketed by dividers */}
+                    <div className="flex flex-col items-center justify-center w-[30%] px-6 border-l border-r border-white/5 mx-4">
                         <div className="flex flex-col items-center mb-6">
                             <span className="text-xs font-mono text-neutral-400 tracking-[0.2em] mb-3">{formatTime(startTime || '')}</span>
                             <div className="px-5 py-2 rounded-full border border-neutral-700 bg-neutral-800/50 backdrop-blur-md min-w-[56px] text-center">
@@ -279,8 +279,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     </div>
 
 
-                    {/* HOME TEAM (Right) */}
-                    <div className="w-1/3">
+                    {/* HOME TEAM (Right) - Flex-1 to push to edge */}
+                    <div className="flex-1 min-w-0">
                         <TeamColumn
                             team={homeTeam}
                             isHome={true}
@@ -330,7 +330,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             {/* Bottom: Wager Pill (if exists) */}
                             {awayWager ? (
                                 <div className="mt-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
-                                    <span>EV: +{Math.round(awayEv || 0)}%</span>
+                                    <span>+{Math.round(awayEv || 0)}%</span>
                                     <span className="opacity-90 border-l border-neon-green/30 pl-1.5">{awayWager}</span>
                                 </div>
                             ) : <div className="h-6"></div>}
@@ -380,7 +380,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             {/* Bottom: Wager Pill (if exists) - Styled like Desktop */}
                             {homeWager ? (
                                 <div className="mt-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
-                                    <span>EV: +{Math.round(homeEv || 0)}%</span>
+                                    <span>+{Math.round(homeEv || 0)}%</span>
                                     <span className="opacity-90 border-l border-neon-green/30 pl-1.5">{homeWager}</span>
                                 </div>
                             ) : <div className="h-6"></div>}
