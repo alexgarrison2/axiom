@@ -29,9 +29,25 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         homeVegasOdds,
         awayVegasOdds,
         startTime,
+        home_gas,
+        away_gas
     } = prediction;
 
     // --- Helpers ---
+    const getGasColor = (gas: number | undefined) => {
+        if (gas === undefined) return 'text-neutral-500 bg-neutral-500/10 border-neutral-500/20';
+        if (gas >= 90) return 'text-neon-green bg-neon-green/10 border-neon-green/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]';
+        if (gas >= 75) return 'text-blue-400 bg-blue-400/10 border-blue-400/20 shadow-[0_0_10px_rgba(96,165,250,0.2)]';
+        if (gas >= 50) return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+        return 'text-red-500 bg-red-500/10 border-red-500/20';
+    };
+
+    const GasGauge = ({ gas }: { gas?: number }) => (
+        <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-wider ${getGasColor(gas)}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-80"><path d="M3 22v-8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8" /><line x1="12" x2="12" y1="16" y2="22" /><rect width="18" height="8" x="3" y="2" rx="2" /><path d="M14 10V2H6v8" /></svg>
+            <span>{gas !== undefined ? `${gas}% GAS` : 'N/A'}</span>
+        </div>
+    );
     const formatPct = (n: number) => n.toFixed(1) + '%';
     const formatXg = (n: number) => n.toFixed(2);
     const formatEv = (n: number) => `+${Math.round(n)}%`;
@@ -421,7 +437,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                     <span className="font-mono">{awayVegasOdds}</span>
                                 </div>
                                 <div className="h-px bg-white/10 my-1"></div>
-                                <div className="flex flex-wrap gap-1.5">
+                                {/* Badges & Gas */}
+                                <div className="flex flex-wrap gap-1 mb-2">
+                                    <GasGauge gas={away_gas} />
                                     {prediction.away_pp_rank && prediction.away_pp_rank <= 5 && <Badge color="blue">#{prediction.away_pp_rank} PP</Badge>}
                                     {prediction.away_pp_rank && prediction.away_pp_rank >= 28 && <Badge color="red">#{prediction.away_pp_rank} PP</Badge>}
                                     {prediction.away_pk_rank && prediction.away_pk_rank <= 5 && <Badge color="blue">#{prediction.away_pk_rank} PK</Badge>}
@@ -441,7 +459,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                     <span className="font-mono">{homeVegasOdds}</span>
                                 </div>
                                 <div className="h-px bg-white/10 my-1"></div>
-                                <div className="flex flex-wrap gap-1.5">
+                                {/* Badges & Gas */}
+                                <div className="flex flex-wrap gap-1 mb-2 justify-end">
+                                    <GasGauge gas={home_gas} />
                                     {prediction.home_pp_rank && prediction.home_pp_rank <= 5 && <Badge color="blue">#{prediction.home_pp_rank} PP</Badge>}
                                     {prediction.home_pp_rank && prediction.home_pp_rank >= 28 && <Badge color="red">#{prediction.home_pp_rank} PP</Badge>}
                                     {prediction.home_pk_rank && prediction.home_pk_rank <= 5 && <Badge color="blue">#{prediction.home_pk_rank} PK</Badge>}
