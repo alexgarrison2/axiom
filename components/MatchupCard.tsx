@@ -83,10 +83,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
+        const safeStarter = starter || '';
         // Extract status from parentheses, e.g. "Name (Confirmed)" or "Name (Likely)"
-        const statusMatch = starter.match(/\((.*?)\)$/);
+        const statusMatch = safeStarter.match(/\((.*?)\)$/);
         const status = statusMatch ? statusMatch[1] : null;
-        const starterName = starter.replace(/\s*\(.*?\)$/, '');
+        const starterName = safeStarter.replace(/\s*\(.*?\)$/, '');
 
         return (
             <div className={`flex flex-col items-center py-4 relative z-10 w-full ${alignClass}`}>
