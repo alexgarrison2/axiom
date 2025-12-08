@@ -157,3 +157,15 @@ function parseWager(recommendation: string, side: 'Home' | 'Away'): string | nul
   }
   return null;
 }
+
+export async function getLastRefresh(): Promise<string> {
+  const filePath = path.join(process.cwd(), 'data/last_updated.json');
+  try {
+    const fileContents = await fs.promises.readFile(filePath, 'utf8');
+    const data = JSON.parse(fileContents);
+    return data.last_refresh || "Unknown";
+  } catch (error) {
+    console.error("Error reading last_updated.json:", error);
+    return "Unknown";
+  }
+}
