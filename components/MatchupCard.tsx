@@ -46,8 +46,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
     const getGoalieStatusColor = (starter: string | null, gameId: string, team: 'home' | 'away') => {
         if (!starter) return 'text-neutral-500';
-        if (starter.toLowerCase().includes('confirmed')) return 'text-neon-green';
-        if (starter.toLowerCase().includes('likely')) return 'text-yellow-400';
+        const lower = starter.toLowerCase();
+        // Explicitly check for unconfirmed first
+        if (lower.includes('unconfirmed')) return 'text-neutral-500';
+        if (lower.includes('confirmed')) return 'text-neon-green';
+        if (lower.includes('likely')) return 'text-yellow-400';
         return 'text-neutral-500';
     };
 
@@ -66,8 +69,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
     const getGlowColor = (homeWager: string | null, awayWager: string | null) => {
         if (homeWager || awayWager) {
-            // "Nebula" Glow: Soft shadow, subtle ring, no hard border
-            return 'border-white/10 ring-1 ring-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)]';
+            // "Nebula" Glow: Soft green glow, but GREY physical border
+            return 'border-white/10 shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)] hover:shadow-[0_0_40px_-5px_rgba(16,185,129,0.4)]';
         }
         return 'border-white/5 hover:border-white/10';
     };
@@ -231,12 +234,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                         {/* Win Probability Bar */}
                         <div className="w-full flex justify-between text-[10px] font-bold text-neutral-500 tracking-widest mb-2 px-1">
-                            <span>{Math.round(awayModelWinPct * 100)}%</span>
+                            <span>{Math.round(awayModelWinPct)}%</span>
                             <span>MODEL WIN %</span>
-                            <span>{Math.round(homeModelWinPct * 100)}%</span>
+                            <span>{Math.round(homeModelWinPct)}%</span>
                         </div>
                         <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden flex relative shadow-inner">
-                            <div className="h-full bg-gradient-to-r from-blue-900 to-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" style={{ width: `${awayModelWinPct * 100}%` }}></div>
+                            <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_10px_rgba(6,182,212,0.5)]" style={{ width: `${awayModelWinPct}%` }}></div>
                             <div className="h-full bg-neutral-700/30 flex-1"></div>
                         </div>
 
@@ -291,25 +294,32 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 <div className="absolute inset-0 bg-[#0a0a0a]/90 -z-10" />
 
                 {/* --- SUPER CONDENSED HEADER ROW --- */}
-                <div className="flex flex-row items-center justify-between p-4 h-24 relative select-none cursor-pointer active:bg-white/5 transition-colors">
+                <div className="flex flex-row items-center justify-between p-4 h-28 relative select-none cursor-pointer active:bg-white/5 transition-colors">
 
                     {/* LEFT: Away Team (Logo + xG/Wager) */}
-                    <div className="flex items-center gap-3 w-[42%]">
-                        {/* Logo */}
-                        <div className="relative w-16 h-16 shrink-0 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.15)]">
+                    <div className="flex items-start justify-between w-[40%] h-full pl-2">
+                        {/* Logo Container - Top Aligned */}
+                        <div className="relative w-16 h-16 shrink-0 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.15)] mt-1">
                             <Image src={awayTeam.logoUrl} alt={awayTeam.name} fill className="object-contain" />
                         </div>
-                        {/* Data */}
-                        <div className="flex flex-col items-start gap-1">
-                            <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_8px_rgba(0,243,255,0.5)] leading-none">
-                                {awayXg.toFixed(2)}
-                            </span>
-                            {awayWager && (
-                                <div className="flex flex-col items-start px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+
+                        {/* Data Column - Height 100% to push EV to bottom */}
+                        <div className="flex flex-col items-end h-full justify-between py-1 min-w-[60px]">
+                            {/* Top: xG */}
+                            <div className="flex flex-col items-end">
+                                <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_8px_rgba(0,243,255,0.5)] leading-none">
+                                    {awayXg.toFixed(2)}
+                                </span>
+                                <span className="text-[9px] font-mono text-neutral-500 font-bold uppercase tracking-wider">xG</span>
+                            </div>
+
+                            {/* Bottom: Wager Pill (if exists) */}
+                            {awayWager ? (
+                                <div className="flex flex-col items-end px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)] mt-auto">
                                     <span className="text-[9px] font-bold text-emerald-400 leading-none mb-0.5">EV+{Math.round(awayEv || 0)}%</span>
                                     <span className="text-[10px] font-bold text-emerald-100 leading-none">{awayWager}</span>
                                 </div>
-                            )}
+                            ) : <div className="h-8"></div>}
                         </div>
                     </div>
 
@@ -317,28 +327,35 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     <div className="flex flex-col items-center justify-center w-[20%] gap-1.5">
                         <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap">{formatTime(startTime || '')}</span>
                         {/* Mini Bar */}
-                        <div className="w-full h-2 bg-neutral-800/80 rounded-full overflow-hidden flex shadow-inner border border-white/5">
-                            <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.5)]" style={{ width: `${awayModelWinPct * 100}%` }}></div>
+                        <div className="w-full h-2.5 bg-neutral-800/80 rounded-full overflow-hidden flex shadow-inner border border-white/5">
+                            <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_8px_rgba(6,182,212,0.5)]" style={{ width: `${awayModelWinPct}%` }}></div>
                         </div>
                     </div>
 
                     {/* RIGHT: Home Team (Logo + xG/Wager) */}
-                    <div className="flex flex-row-reverse items-center gap-3 w-[42%]">
-                        {/* Logo */}
-                        <div className="relative w-16 h-16 shrink-0 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.15)]">
+                    <div className="flex flex-row-reverse items-start justify-between w-[40%] h-full pr-2">
+                        {/* Logo Container - Top Aligned */}
+                        <div className="relative w-16 h-16 shrink-0 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.15)] mt-1">
                             <Image src={homeTeam.logoUrl} alt={homeTeam.name} fill className="object-contain" />
                         </div>
-                        {/* Data */}
-                        <div className="flex flex-col items-end gap-1">
-                            <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_8px_rgba(0,243,255,0.5)] leading-none">
-                                {homeXg.toFixed(2)}
-                            </span>
-                            {homeWager && (
-                                <div className="flex flex-col items-end px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]">
+
+                        {/* Data Column - Height 100% to push EV to bottom */}
+                        <div className="flex flex-col items-start h-full justify-between py-1 min-w-[60px]">
+                            {/* Top: xG */}
+                            <div className="flex flex-col items-start">
+                                <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_8px_rgba(0,243,255,0.5)] leading-none">
+                                    {homeXg.toFixed(2)}
+                                </span>
+                                <span className="text-[9px] font-mono text-neutral-500 font-bold uppercase tracking-wider">xG</span>
+                            </div>
+
+                            {/* Bottom: Wager Pill (if exists) */}
+                            {homeWager ? (
+                                <div className="flex flex-col items-end px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)] mt-auto">
                                     <span className="text-[9px] font-bold text-rose-400 leading-none mb-0.5">EV+{Math.round(homeEv || 0)}%</span>
                                     <span className="text-[10px] font-bold text-rose-100 leading-none">{homeWager}</span>
                                 </div>
-                            )}
+                            ) : <div className="h-8"></div>}
                         </div>
                     </div>
                 </div>
