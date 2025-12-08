@@ -30,7 +30,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         awayVegasOdds,
         startTime,
         home_gas,
-        away_gas
+        away_gas,
+        home_gas_breakdown,
+        away_gas_breakdown
     } = prediction;
 
     // --- Helpers ---
@@ -42,10 +44,29 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         return 'text-red-500 bg-red-500/10 border-red-500/20';
     };
 
-    const GasGauge = ({ gas }: { gas?: number }) => (
-        <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-wider ${getGasColor(gas)}`}>
+    const GasGauge = ({ gas, breakdown }: { gas?: number, breakdown?: string[] }) => (
+        <div className={`group relative flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-wider cursor-help ${getGasColor(gas)}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-80"><path d="M3 22v-8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8" /><line x1="12" x2="12" y1="16" y2="22" /><rect width="18" height="8" x="3" y="2" rx="2" /><path d="M14 10V2H6v8" /></svg>
             <span>{gas !== undefined ? `${gas}% GAS` : 'N/A'}</span>
+
+            {/* Tooltip */}
+            {breakdown && breakdown.length > 0 && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-40 bg-zinc-950 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md">
+                    <div className="text-[10px] text-zinc-400 mb-1 border-b border-white/5 pb-1">Gas Analysis</div>
+                    <div className="flex flex-col gap-0.5">
+                        {breakdown.map((item, i) => {
+                            const isPos = item.includes('+');
+                            const isNeg = item.includes('-');
+                            return (
+                                <div key={i} className={`text-[9px] flex justify-between ${isPos ? 'text-green-400' : isNeg ? 'text-red-400' : 'text-zinc-300'}`}>
+                                    <span>{item.split(':')[0]}</span>
+                                    <span className="font-mono">{item.split(':')[1] || ''}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
         </div>
     );
     const formatPct = (n: number) => n.toFixed(1) + '%';
@@ -439,7 +460,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 <div className="h-px bg-white/10 my-1"></div>
                                 {/* Badges & Gas */}
                                 <div className="flex flex-wrap gap-1 mb-2">
-                                    <GasGauge gas={away_gas} />
+                                    <GasGauge gas={away_gas} breakdown={away_gas_breakdown} />
                                     {prediction.away_pp_rank && prediction.away_pp_rank <= 5 && <Badge color="blue">#{prediction.away_pp_rank} PP</Badge>}
                                     {prediction.away_pp_rank && prediction.away_pp_rank >= 28 && <Badge color="red">#{prediction.away_pp_rank} PP</Badge>}
                                     {prediction.away_pk_rank && prediction.away_pk_rank <= 5 && <Badge color="blue">#{prediction.away_pk_rank} PK</Badge>}
@@ -461,7 +482,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 <div className="h-px bg-white/10 my-1"></div>
                                 {/* Badges & Gas */}
                                 <div className="flex flex-wrap gap-1 mb-2 justify-end">
-                                    <GasGauge gas={home_gas} />
+                                    <GasGauge gas={home_gas} breakdown={home_gas_breakdown} />
                                     {prediction.home_pp_rank && prediction.home_pp_rank <= 5 && <Badge color="blue">#{prediction.home_pp_rank} PP</Badge>}
                                     {prediction.home_pp_rank && prediction.home_pp_rank >= 28 && <Badge color="red">#{prediction.home_pp_rank} PP</Badge>}
                                     {prediction.home_pk_rank && prediction.home_pk_rank <= 5 && <Badge color="blue">#{prediction.home_pk_rank} PK</Badge>}
