@@ -83,8 +83,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
-        const starterName = starter.replace(/\s*\(Confirmed\)/i, '');
-        const isConfirmed = starter.toLowerCase().includes('confirmed');
+        // Extract status from parentheses, e.g. "Name (Confirmed)" or "Name (Likely)"
+        const statusMatch = starter.match(/\((.*?)\)$/);
+        const status = statusMatch ? statusMatch[1] : null;
+        const starterName = starter.replace(/\s*\(.*?\)$/, '');
 
         return (
             <div className={`flex flex-col items-center py-4 relative z-10 w-full ${alignClass}`}>
@@ -98,7 +100,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     />
                     <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
                         <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wide truncate max-w-full">{starterName}</span>
-                        {isConfirmed && <span className="text-[9px] md:text-[10px] text-neon-green font-mono uppercase tracking-wider">Confirmed</span>}
+                        {status && (
+                            <span className={`text-[9px] md:text-[10px] font-mono uppercase tracking-wider ${status.toUpperCase() === 'CONFIRMED' ? 'text-neon-green' :
+                                status.toUpperCase() === 'LIKELY' ? 'text-yellow-400' : 'text-gray-500'
+                                }`}>
+                                {status}
+                            </span>
+                        )}
                     </div>
                 </div>
 
