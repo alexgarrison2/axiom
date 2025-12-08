@@ -40,6 +40,8 @@ export interface GamePrediction {
   away_pk_rank?: number;
   home_l7?: string;
   away_l7?: string;
+  home_gas?: number;
+  away_gas?: number;
 }
 
 interface RawPrediction {
@@ -70,6 +72,8 @@ interface RawPrediction {
   away_pk_rank?: string;
   home_l7?: string;
   away_l7?: string;
+  home_gas?: string;
+  away_gas?: string;
 }
 
 interface RawTeam {
@@ -143,6 +147,8 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       away_pk_rank: row.away_pk_rank ? parseInt(row.away_pk_rank) : undefined,
       home_l7: row.home_l7 || undefined,
       away_l7: row.away_l7 || undefined,
+      home_gas: row.home_gas ? parseInt(row.home_gas) : undefined,
+      away_gas: row.away_gas ? parseInt(row.away_gas) : undefined,
     };
   }).filter((p): p is GamePrediction => p !== null);
 
