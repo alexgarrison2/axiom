@@ -90,6 +90,34 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         return `+${odds}`;
     };
 
+    const formatGsax = (val: number) => {
+        if (val >= 0) return `+${val.toFixed(1)}`;
+        return `(${Math.abs(val).toFixed(1)})`;
+    };
+
+    const getGsaxColorValue = (percentile: number) => {
+        // Red (0) -> Grey (50) -> Blue (100)
+        // Red: rgb(240, 80, 80)
+        // Grey: rgb(160, 160, 160)
+        // Blue: rgb(60, 130, 240)
+
+        let r, g, b;
+        if (percentile <= 50) {
+            // Red to Grey
+            const ratio = percentile / 50;
+            r = Math.round(240 + (160 - 240) * ratio);
+            g = Math.round(80 + (160 - 80) * ratio);
+            b = Math.round(80 + (160 - 80) * ratio);
+        } else {
+            // Grey to Blue
+            const ratio = (percentile - 50) / 50;
+            r = Math.round(160 + (60 - 160) * ratio);
+            g = Math.round(160 + (130 - 160) * ratio);
+            b = Math.round(160 + (240 - 160) * ratio);
+        }
+        return `rgb(${r}, ${g}, ${b})`;
+    };
+
     // New Helpers for Mobile
     const formatTime = (time: string) => time; // Simplified
 
@@ -162,7 +190,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         ev,
         wager,
         gas,
-        gasBreakdown
+        gasBreakdown,
+        gsaxTotal,
+        gsaxPct
     }: {
         team: any,
         isHome: boolean,
@@ -174,7 +204,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         ev: number | null,
         wager: string | null,
         gas?: number,
-        gasBreakdown?: string[]
+        gasBreakdown?: string[],
+        gsaxTotal?: number,
+        gsaxPct?: number
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
@@ -193,7 +225,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <Image src={team.logoUrl} alt={team.name} fill className="object-contain" />
                     </div>
                     <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
-                        <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wide truncate max-w-full">{starterName}</span>
+                        <div className="flex items-center gap-1.5 flex-wrap justify-center md:justify-start">
+                            <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wide truncate max-w-full">{starterName}</span>
+                            {gsaxTotal !== undefined && gsaxPct !== undefined && (
+                                <span
+                                    className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5"
+                                    style={{ color: getGsaxColorValue(gsaxPct) }}
+                                >
+                                    {formatGsax(gsaxTotal)}
+                                </span>
+                            )}
+                        </div>
                         {status && (
                             <span className={`text-[9px] md:text-[10px] font-mono uppercase tracking-wider ${(status.toUpperCase().includes('UNCONFIRMED')) ? 'text-gray-500' :
                                 (status.toUpperCase().includes('CONFIRMED')) ? 'text-neon-green' :
@@ -277,6 +319,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             wager={awayWager}
                             gas={prediction.away_gas}
                             gasBreakdown={prediction.away_gas_breakdown}
+                            gsaxTotal={prediction.away_gsax_total}
+                            gsaxPct={prediction.away_gsax_pct}
                         />
                     </div>
 
@@ -349,6 +393,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             wager={homeWager}
                             gas={prediction.home_gas}
                             gasBreakdown={prediction.home_gas_breakdown}
+                            gsaxTotal={prediction.home_gsax_total}
+                            gsaxPct={prediction.home_gsax_pct}
                         />
                     </div>
                 </div>

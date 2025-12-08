@@ -44,6 +44,10 @@ export interface GamePrediction {
   away_gas?: number;
   home_gas_breakdown?: string[];
   away_gas_breakdown?: string[];
+  home_gsax_total?: number;
+  home_gsax_pct?: number;
+  away_gsax_total?: number;
+  away_gsax_pct?: number;
 }
 
 interface RawPrediction {
@@ -78,6 +82,10 @@ interface RawPrediction {
   away_gas?: string;
   home_gas_breakdown?: string;
   away_gas_breakdown?: string;
+  home_gsax_total?: string;
+  home_gsax_pct?: string;
+  away_gsax_total?: string;
+  away_gsax_pct?: string;
 }
 
 interface RawTeam {
@@ -155,6 +163,10 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       away_gas: row.away_gas ? parseInt(row.away_gas) : undefined,
       home_gas_breakdown: row.home_gas_breakdown ? row.home_gas_breakdown.split('|') : [],
       away_gas_breakdown: row.away_gas_breakdown ? row.away_gas_breakdown.split('|') : [],
+      home_gsax_total: row.home_gsax_total ? parseFloat(row.home_gsax_total) : undefined,
+      home_gsax_pct: row.home_gsax_pct ? parseFloat(row.home_gsax_pct) : undefined,
+      away_gsax_total: row.away_gsax_total ? parseFloat(row.away_gsax_total) : undefined,
+      away_gsax_pct: row.away_gsax_pct ? parseFloat(row.away_gsax_pct) : undefined,
     };
   }).filter((p): p is GamePrediction => p !== null);
 
