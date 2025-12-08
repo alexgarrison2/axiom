@@ -239,8 +239,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             <span>{Math.round(homeModelWinPct)}%</span>
                         </div>
                         <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden flex relative shadow-inner">
-                            <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_10px_rgba(6,182,212,0.5)]" style={{ width: `${awayModelWinPct}%` }}></div>
-                            <div className="h-full bg-neutral-700/30 flex-1"></div>
+                            <div
+                                className="h-full shadow-[0_0_15px_rgba(255,255,255,0.2)] relative z-10"
+                                style={{
+                                    width: `${awayModelWinPct}%`,
+                                    background: `linear-gradient(90deg, ${awayColor} 0%, ${awayColor}dd 100%)`,
+                                    boxShadow: `0 0 15px ${awayColor}66`
+                                }}
+                            ></div>
+                            <div className="h-full bg-neutral-700/30 flex-1 relative">
+                                {/* Optional: Hint of Home Color on the right side if desired, or keep neutral */}
+                            </div>
                         </div>
 
                         {/* Odds Comparison Box */}
@@ -328,7 +337,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap">{formatTime(startTime || '')}</span>
                         {/* Mini Bar */}
                         <div className="w-full h-2.5 bg-neutral-800/80 rounded-full overflow-hidden flex shadow-inner border border-white/5">
-                            <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_8px_rgba(6,182,212,0.5)]" style={{ width: `${awayModelWinPct}%` }}></div>
+                            <div
+                                className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                                style={{
+                                    width: `${awayModelWinPct}%`,
+                                    background: `linear-gradient(90deg, ${awayColor} 0%, ${awayColor}dd 100%)`,
+                                    boxShadow: `0 0 10px ${awayColor}66`
+                                }}
+                            ></div>
                         </div>
                     </div>
 
