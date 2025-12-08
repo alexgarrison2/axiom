@@ -308,28 +308,28 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 <div className="absolute inset-0 bg-[#0a0a0a]/90 -z-10" />
 
                 {/* --- SUPER CONDENSED HEADER ROW --- */}
-                <div className="flex flex-row items-center justify-between p-4 h-28 relative select-none cursor-pointer active:bg-white/5 transition-colors">
+                <div className="flex flex-row items-center justify-between px-2 py-3 h-32 relative select-none cursor-pointer active:bg-white/5 transition-colors">
 
                     {/* LEFT: Away Team (Logo + xG/Wager) */}
-                    <div className="flex items-start justify-between w-[40%] h-full pl-2">
-                        {/* Logo Container - Top Aligned */}
-                        <div className="relative w-16 h-16 shrink-0 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.15)] mt-1">
+                    <div className="flex items-start justify-between w-[35%] h-full pl-1">
+                        {/* Logo Container - Bigger */}
+                        <div className="relative w-20 h-20 shrink-0 filter drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">
                             <Image src={awayTeam.logoUrl} alt={awayTeam.name} fill className="object-contain" />
                         </div>
 
-                        {/* Data Column - Height 100% to push EV to bottom */}
-                        <div className="flex flex-col items-end h-full justify-between py-1 min-w-[60px]">
+                        {/* Data Column */}
+                        <div className="flex flex-col items-end h-full justify-between py-1 min-w-[50px] relative z-10">
                             {/* Top: xG */}
-                            <div className="flex flex-col items-end">
-                                <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_8px_rgba(0,243,255,0.5)] leading-none">
+                            <div className="flex flex-col items-end -mr-1">
+                                <span className="text-4xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
                                     {awayXg.toFixed(2)}
                                 </span>
-                                <span className="text-[9px] font-mono text-neutral-500 font-bold uppercase tracking-wider">xG</span>
+                                <span className="text-[9px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
                             </div>
 
-                            {/* Bottom: Wager Pill (if exists) */}
+                            {/* Bottom: Wager Pill */}
                             {awayWager ? (
-                                <div className="mt-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                <div className="mt-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[10px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)] -mr-2">
                                     <span>+{Math.round(awayEv || 0)}%</span>
                                     <span className="opacity-90 border-l border-neon-green/30 pl-1.5">{awayWager}</span>
                                 </div>
@@ -338,10 +338,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     </div>
 
                     {/* CENTER: Time + Bar (Simplified) */}
-                    <div className="flex flex-col items-center justify-center w-[20%] gap-1.5">
+                    <div className="flex flex-col items-center justify-center w-[30%] gap-2 px-1">
                         <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap">{formatTime(startTime || '')}</span>
-                        {/* Mini Bar Mobile */}
-                        <div className="w-full h-2.5 bg-neutral-800/80 rounded-full overflow-hidden flex shadow-inner border border-white/5">
+                        {/* Mini Bar Mobile - Bigger */}
+                        <div className="w-full h-4 bg-neutral-800/80 rounded-full overflow-hidden flex shadow-inner border border-white/5">
                             <div
                                 className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)]"
                                 style={{
@@ -361,25 +361,25 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     </div>
 
                     {/* RIGHT: Home Team (Logo + xG/Wager) */}
-                    <div className="flex flex-row-reverse items-start justify-between w-[40%] h-full pr-2">
-                        {/* Logo Container - Top Aligned */}
-                        <div className="relative w-16 h-16 shrink-0 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.15)] mt-1">
+                    <div className="flex flex-row-reverse items-start justify-between w-[35%] h-full pr-1">
+                        {/* Logo Container - Bigger */}
+                        <div className="relative w-20 h-20 shrink-0 filter drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">
                             <Image src={homeTeam.logoUrl} alt={homeTeam.name} fill className="object-contain" />
                         </div>
 
-                        {/* Data Column - Height 100% to push EV to bottom */}
-                        <div className="flex flex-col items-start h-full justify-between py-1 min-w-[60px]">
+                        {/* Data Column */}
+                        <div className="flex flex-col items-start h-full justify-between py-1 min-w-[50px] relative z-10">
                             {/* Top: xG */}
-                            <div className="flex flex-col items-start">
-                                <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_8px_rgba(0,243,255,0.5)] leading-none">
+                            <div className="flex flex-col items-start -ml-1">
+                                <span className="text-4xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
                                     {homeXg.toFixed(2)}
                                 </span>
-                                <span className="text-[9px] font-mono text-neutral-500 font-bold uppercase tracking-wider">xG</span>
+                                <span className="text-[9px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
                             </div>
 
-                            {/* Bottom: Wager Pill (if exists) - Styled like Desktop */}
+                            {/* Bottom: Wager Pill */}
                             {homeWager ? (
-                                <div className="mt-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                <div className="mt-auto inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[10px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)] -ml-2">
                                     <span>+{Math.round(homeEv || 0)}%</span>
                                     <span className="opacity-90 border-l border-neon-green/30 pl-1.5">{homeWager}</span>
                                 </div>
