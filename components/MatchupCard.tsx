@@ -424,9 +424,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                     <span className="font-mono">{awayVegasOdds}</span>
                                 </div>
                                 <div className="h-px bg-white/10 my-1"></div>
-                                <div className="flex justify-between items-center">
-                                    <span className={`text-[9px] px-1.5 py-0.5 rounded border ${getRankColor(prediction.away_pk_rank)}`}>#{prediction.away_pk_rank} PK</span>
-                                    <span className="text-[9px] font-mono text-neutral-400">{prediction.away_l7} (L7)</span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {prediction.away_pp_rank && prediction.away_pp_rank <= 5 && <Badge color="blue">#{prediction.away_pp_rank} PP</Badge>}
+                                    {prediction.away_pp_rank && prediction.away_pp_rank >= 28 && <Badge color="red">#{prediction.away_pp_rank} PP</Badge>}
+                                    {prediction.away_pk_rank && prediction.away_pk_rank <= 5 && <Badge color="blue">#{prediction.away_pk_rank} PK</Badge>}
+                                    {prediction.away_pk_rank && prediction.away_pk_rank >= 28 && <Badge color="red">#{prediction.away_pk_rank} PK</Badge>}
+                                    {prediction.away_l7 && <Badge color="gray">{prediction.away_l7}</Badge>}
                                 </div>
                             </div>
 
@@ -441,9 +444,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                     <span className="font-mono">{homeVegasOdds}</span>
                                 </div>
                                 <div className="h-px bg-white/10 my-1"></div>
-                                <div className="flex justify-between items-center">
-                                    <span className={`text-[9px] px-1.5 py-0.5 rounded border ${getRankColor(prediction.home_pp_rank)}`}>#{prediction.home_pp_rank} PP</span>
-                                    <span className="text-[9px] font-mono text-neutral-400">{prediction.home_l7} (L7)</span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {prediction.home_pp_rank && prediction.home_pp_rank <= 5 && <Badge color="blue">#{prediction.home_pp_rank} PP</Badge>}
+                                    {prediction.home_pp_rank && prediction.home_pp_rank >= 28 && <Badge color="red">#{prediction.home_pp_rank} PP</Badge>}
+                                    {prediction.home_pk_rank && prediction.home_pk_rank <= 5 && <Badge color="blue">#{prediction.home_pk_rank} PK</Badge>}
+                                    {prediction.home_pk_rank && prediction.home_pk_rank >= 28 && <Badge color="red">#{prediction.home_pk_rank} PK</Badge>}
+                                    {prediction.home_l7 && <Badge color="gray">{prediction.home_l7}</Badge>}
                                 </div>
                             </div>
                         </div>
