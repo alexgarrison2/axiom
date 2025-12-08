@@ -142,8 +142,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
                         <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wide truncate max-w-full">{starterName}</span>
                         {status && (
-                            <span className={`text-[9px] md:text-[10px] font-mono uppercase tracking-wider ${(status.toUpperCase() === 'CONFIRMED' || status.toUpperCase().includes('CONFIRMED')) ? 'text-neon-green' :
-                                (status.toUpperCase() === 'LIKELY' || status.toUpperCase().includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
+                            <span className={`text-[9px] md:text-[10px] font-mono uppercase tracking-wider ${(status.toUpperCase().includes('UNCONFIRMED')) ? 'text-gray-500' :
+                                    (status.toUpperCase().includes('CONFIRMED')) ? 'text-neon-green' :
+                                        (status.toUpperCase().includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
                                 }`}>
                                 {status}
                             </span>
