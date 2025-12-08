@@ -132,7 +132,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         const starterName = safeStarter.replace(/\s*\(.*?\)$/, '');
 
         return (
-            <div className={`flex flex-col items-center py-4 relative z-10 w-full ${alignClass}`}>
+            <div className={`flex flex-col items-center py-4 relative z-10 w-full h-full ${alignClass}`}>
 
                 {/* Team Info Header */}
                 <div className={`flex flex-col gap-1 mb-4 w-full ${isHome ? 'md:flex-row' : 'md:flex-row-reverse'} items-center md:items-start`}>
@@ -143,8 +143,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wide truncate max-w-full">{starterName}</span>
                         {status && (
                             <span className={`text-[9px] md:text-[10px] font-mono uppercase tracking-wider ${(status.toUpperCase().includes('UNCONFIRMED')) ? 'text-gray-500' :
-                                    (status.toUpperCase().includes('CONFIRMED')) ? 'text-neon-green' :
-                                        (status.toUpperCase().includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
+                                (status.toUpperCase().includes('CONFIRMED')) ? 'text-neon-green' :
+                                    (status.toUpperCase().includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
                                 }`}>
                                 {status}
                             </span>
@@ -162,22 +162,22 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     </div>
                 </div>
 
-                {/* Wager Callout */}
-                {(evBadge || wager) && (
-                    <div className={`mb-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-xs font-bold shadow-[0_0_15px_rgba(10,255,0,0.1)] hover:shadow-[0_0_20px_rgba(10,255,0,0.3)] transition-all ${isHighEv ? 'animate-pulse-glow' : ''}`}>
-                        {evBadge && <span>EV: {evBadge}</span>}
-                        {wager && <span className="opacity-90 border-l border-neon-green/30 pl-2">{wager}</span>}
-                    </div>
-                )}
-
-                {/* Secondary Badges Row */}
-                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                {/* Secondary Badges Row (Aligned immediately under xG) */}
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
                     {ppRank && ppRank <= 5 && <Badge color="blue">#{ppRank} PP</Badge>}
                     {ppRank && ppRank >= 28 && <Badge color="red">#{ppRank} PP</Badge>}
                     {pkRank && pkRank <= 5 && <Badge color="blue">#{pkRank} PK</Badge>}
                     {pkRank && pkRank >= 28 && <Badge color="red">#{pkRank} PK</Badge>}
                     {l7 && <Badge color="gray">{l7} (L7)</Badge>}
                 </div>
+
+                {/* Wager Callout (Pushed to bottom) */}
+                {(evBadge || wager) && (
+                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-xs font-bold shadow-[0_0_15px_rgba(10,255,0,0.1)] hover:shadow-[0_0_20px_rgba(10,255,0,0.3)] transition-all ${isHighEv ? 'animate-pulse-glow' : ''}`}>
+                        {evBadge && <span>EV: {evBadge}</span>}
+                        {wager && <span className="opacity-90 border-l border-neon-green/30 pl-2">{wager}</span>}
+                    </div>
+                )}
 
             </div>
         );
@@ -207,7 +207,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 </div>
 
-                <div className="flex flex-row items-center justify-between w-full relative z-10">
+                <div className="flex flex-row items-stretch justify-between w-full relative z-10">
 
                     {/* AWAY TEAM (Left) */}
                     <div className="w-1/3">
