@@ -45,7 +45,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     };
 
     const GasGauge = ({ gas, breakdown, align = 'center' }: { gas?: number, breakdown?: string[], align?: 'left' | 'right' | 'center' }) => {
-        let tooltipClasses = "absolute bottom-full mb-2 hidden group-hover:block w-40 bg-zinc-950 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
+        let tooltipClasses = "absolute bottom-full mb-2 hidden group-hover/gas:block w-40 bg-zinc-950 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
 
         if (align === 'left') {
             tooltipClasses += " left-0 origin-bottom-left";
@@ -56,7 +56,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         }
 
         return (
-            <div className={`group relative flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-wider cursor-help ${getGasColor(gas)}`}>
+            <div className={`group/gas relative flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-wider cursor-help ${getGasColor(gas)}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-80"><path d="M3 22v-8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8" /><line x1="12" x2="12" y1="16" y2="22" /><rect width="18" height="8" x="3" y="2" rx="2" /><path d="M14 10V2H6v8" /></svg>
                 <span>{gas !== undefined ? `${gas}% GAS` : 'N/A'}</span>
 
