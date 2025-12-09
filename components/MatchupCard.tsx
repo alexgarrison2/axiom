@@ -220,7 +220,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gas,
         gasBreakdown,
         gsaxTotal,
-        gsaxTotal,
         gsaxPct,
         isProjectedWinner,
         teamColor
