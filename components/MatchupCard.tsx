@@ -7,6 +7,7 @@ import { useGSAP } from '@gsap/react';
 import { Flip } from 'gsap/Flip';
 import AnimatedNumber from './AnimatedNumber';
 import LogoDisplay from './LogoDisplay';
+import RecentGamesList from './RecentGamesList';
 
 gsap.registerPlugin(useGSAP, Flip);
 
@@ -40,12 +41,15 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         home_gas,
         away_gas,
         home_gas_breakdown,
-        away_gas_breakdown
+        away_gas_breakdown,
+        home_recent_games,
+        away_recent_games
     } = prediction;
 
     const cardRef = useRef<HTMLDivElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
+    const desktopCardRef = useRef<HTMLDivElement>(null); // Ref for desktop card
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isDesktopExpanded, setIsDesktopExpanded] = useState(false); // New state for desktop
 
     // FLIP Animation Context
     const { contextSafe } = useGSAP({ scope: cardRef });
@@ -75,6 +79,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             });
         });
     });
+
+    // Desktop Toggle (Simple height/opacity transition)
+    const toggleDesktopExpand = () => {
+        setIsDesktopExpanded(!isDesktopExpanded);
+    };
 
     // --- Helpers ---
     const getGasColor = (gas: number | undefined) => {
@@ -329,7 +338,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             {/* ========================================= */}
             {/* DESKTOP VIEW (md:flex) - The Original Card */}
             {/* ========================================= */}
-            <div className={`hidden md:flex relative flex-col w-full max-w-4xl mx-auto rounded-3xl p-6 mb-6 transition-all duration-300 border backdrop-blur-xl group hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] ${getGlowColor(homeWager, awayWager)}`}>
+            <div
+                className={`hidden md:flex relative flex-col w-full max-w-4xl mx-auto rounded-3xl mb-6 transition-all duration-300 border backdrop-blur-xl group hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] cursor-pointer ${getGlowColor(homeWager, awayWager)} ${isDesktopExpanded ? 'bg-white/[0.02]' : 'bg-transparent'}`}
+                onClick={toggleDesktopExpand}
+                ref={desktopCardRef}
+            >
 
                 {/* Background Glass Layer */}
                 <div className="absolute inset-0 bg-[#0a0a0a]/80 rounded-3xl -z-10" />
@@ -340,12 +353,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 )}
 
                 {/* Decorative Background Gradients */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
                     <div className="absolute -left-20 -top-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
                     <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 </div>
 
-                <div className="flex flex-row items-stretch justify-between w-full relative z-10">
+                <div className="p-6 flex flex-row items-stretch justify-between w-full relative z-10">
 
                     {/* AWAY TEAM (Left) - Flex-1 to push to edge */}
                     <div className="flex-1 min-w-0">
@@ -440,6 +453,26 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         />
                     </div>
                 </div>
+
+                {/* --- DESKTOP EXPANDED: Recent Games --- */}
+                <div className={`overflow-hidden transition-all duration-300 ${isDesktopExpanded ? 'max-h-[800px] border-t border-white/5 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="p-6 grid grid-cols-2 gap-8 bg-black/20">
+                        {/* Away Team Recent Games */}
+                        <div>
+                            <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} />
+                        </div>
+                        {/* Home Team Recent Games */}
+                        <div>
+                            <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Expand Hint */}
+                <div className={`absolute bottom-2 left-1/2 -translate-x-1/2 text-neutral-600 transition-opacity duration-300 ${isDesktopExpanded ? 'opacity-0' : 'opacity-100'}`}>
+                    <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+
             </div>
 
 
@@ -533,7 +566,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 </div>
 
                 {/* --- EXPANDED DETAILS BODY --- */}
-                <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[500px] opacity-100 border-t border-white/5' : 'max-h-0 opacity-0'}`}>
+                <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[1200px] opacity-100 border-t border-white/5' : 'max-h-0 opacity-0'}`}>
                     <div className="p-4 bg-black/20">
                         {/* Goalies Row */}
                         <div className="flex justify-between items-start mb-4">
@@ -620,6 +653,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                     {prediction.home_l7 && <Badge color="gray">{prediction.home_l7}</Badge>}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Recent Games Lists (Stacked on Mobile) */}
+                        <div className="flex flex-col gap-4 mt-4">
+                            <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} />
+                            <div className="h-px bg-white/5 w-full"></div>
+                            <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} />
                         </div>
 
                         {/* Total Display in Center */}

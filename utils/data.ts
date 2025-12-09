@@ -11,6 +11,15 @@ export interface Team {
   triCode: string;
 }
 
+export interface RecentGame {
+  date: string;
+  opponent: string;
+  opponentLogo: string;
+  isHome: boolean;
+  score: string;
+  result: 'W' | 'L' | 'O';
+}
+
 export interface GamePrediction {
   id: string;
   date: string;
@@ -41,6 +50,8 @@ export interface GamePrediction {
   away_pk_rank?: number;
   home_l7?: string;
   away_l7?: string;
+  home_recent_games?: RecentGame[];
+  away_recent_games?: RecentGame[];
   home_gas?: number;
   away_gas?: number;
   home_gas_breakdown?: string[];
@@ -79,6 +90,8 @@ interface RawPrediction {
   away_pk_rank?: string;
   home_l7?: string;
   away_l7?: string;
+  home_l7_games?: string;
+  away_l7_games?: string;
   home_gas?: string;
   away_gas?: string;
   home_gas_breakdown?: string;
@@ -108,6 +121,8 @@ export async function getPredictions(): Promise<GamePrediction[]> {
   const predictionsParsed = Papa.parse<RawPrediction>(predictionsCsv, { header: true, skipEmptyLines: true });
 
   const teamsMap = new Map<string, Team>();
+  const triCodeToLogoMap = new Map<string, string>();
+
   teamsParsed.data.forEach((row) => {
     teamsMap.set(row['Common Name'], {
       name: row['Team Name'],
@@ -117,11 +132,30 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       color2: row['Hex Color 2'],
       triCode: row['Team Tricode'],
     });
+    // Map Tricode to Logo
+    if (row['Team Tricode']) {
+      triCodeToLogoMap.set(row['Team Tricode'], row['Team Logo URL']);
+    }
   });
 
   const predictions = predictionsParsed.data.map((row): GamePrediction | null => {
     const homeTeam = teamsMap.get(row.home_team);
     const awayTeam = teamsMap.get(row.away_team);
+
+    // Parse Recent Games with Logo Mapping
+    const parseRecent = (jsonStr?: string): RecentGame[] => {
+      if (!jsonStr) return [];
+      try {
+        const games = JSON.parse(jsonStr) as Omit<RecentGame, 'opponentLogo'>[];
+        return games.map(g => ({
+          ...g,
+          opponentLogo: triCodeToLogoMap.get(g.opponent) || ''
+        }));
+      } catch (e) {
+        console.error("Error parsing recent games", e);
+        return [];
+      }
+    };
 
     if (!homeTeam || !awayTeam) {
       console.warn(`Team not found for game ${row.game_id}: ${row.home_team} vs ${row.away_team}`);
@@ -162,6 +196,8 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       away_pk_rank: row.away_pk_rank ? parseInt(row.away_pk_rank) : undefined,
       home_l7: row.home_l7 || undefined,
       away_l7: row.away_l7 || undefined,
+      home_recent_games: parseRecent(row.home_l7_games),
+      away_recent_games: parseRecent(row.away_l7_games),
       home_gas: row.home_gas ? parseInt(row.home_gas) : undefined,
       away_gas: row.away_gas ? parseInt(row.away_gas) : undefined,
       home_gas_breakdown: row.home_gas_breakdown ? row.home_gas_breakdown.split('|') : [],
