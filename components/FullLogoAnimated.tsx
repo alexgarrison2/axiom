@@ -84,6 +84,24 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
                     { attr: { scale: 0 }, duration: 1.2, ease: "elastic.out(1, 0.5)" },
                     "-=1.2"
                 );
+
+            // Animate Goal Light (Red Thing)
+            const goalLight = svg.querySelector('path[fill="#FF0000"]');
+            if (goalLight) {
+                // Initial state
+                gsap.set(goalLight, {
+                    filter: "drop-shadow(0px 0px 2px #FF0000)"
+                });
+
+                // Pulsing glow animation
+                gsap.to(goalLight, {
+                    filter: "drop-shadow(0px 0px 12px #FF0000)",
+                    duration: 1.5,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: "sine.inOut"
+                });
+            }
         }
     }, { dependencies: [svgContent], scope: container });
 
