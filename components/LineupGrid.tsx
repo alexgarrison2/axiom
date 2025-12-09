@@ -46,15 +46,14 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                 const player = line[colIndex]; // 0=LW, 1=C, 2=RW (Data is sorted lw,c,rw)
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-x border-white/5' : ''}`}>
-                                        {/* PP Indicator */}
-                                        {player && player.ppUnit === 1 && (
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#21D28B]" title="PP1" />
-                                        )}
-                                        {player && player.ppUnit === 2 && (
-                                            <div className="w-1.5 h-1.5 rounded-full border border-[#F48317]" title="PP2" />
-                                        )}
-
-                                        <span className="text-[10px] font-medium text-neutral-300 leading-tight">
+                                        <span
+                                            className="text-[10px] font-medium leading-tight select-none"
+                                            style={{
+                                                color: player && player.ppUnit === 1 ? '#0DFF00' :
+                                                    player && player.ppUnit === 2 ? '#FFCC00' :
+                                                        '#d4d4d4' // neutral-300
+                                            }}
+                                        >
                                             {player ? formatName(player.name) : '-'}
                                         </span>
                                     </div>
@@ -79,15 +78,14 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                 const player = pair[colIndex];
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-l border-white/5' : ''}`}>
-                                        {/* PP Indicator */}
-                                        {player && player.ppUnit === 1 && (
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#21D28B]" title="PP1" />
-                                        )}
-                                        {player && player.ppUnit === 2 && (
-                                            <div className="w-1.5 h-1.5 rounded-full border border-[#F48317]" title="PP2" />
-                                        )}
-
-                                        <span className="text-[10px] font-medium text-neutral-300 leading-tight">
+                                        <span
+                                            className="text-[10px] font-medium leading-tight select-none"
+                                            style={{
+                                                color: player && player.ppUnit === 1 ? '#0DFF00' :
+                                                    player && player.ppUnit === 2 ? '#FFCC00' :
+                                                        '#d4d4d4' // neutral-300
+                                            }}
+                                        >
                                             {player ? formatName(player.name) : '-'}
                                         </span>
                                     </div>
