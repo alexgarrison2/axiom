@@ -5,6 +5,7 @@ import PredictionsViewer from '@/components/PredictionsViewer';
 
 // Force dynamic revalidation to ensure data is fresh on every request
 export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
     const predictions = await getPredictions();
