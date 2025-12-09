@@ -11,6 +11,8 @@ gsap.registerPlugin(useGSAP);
 interface LogoDisplayProps {
     src: string;
     alt: string;
+    triCode?: string;
+    className?: string;
     isProjectedWinner?: boolean;
     teamColor?: string;
 }
