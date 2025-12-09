@@ -8,6 +8,7 @@ export interface Team {
   logoUrl: string;
   color1: string;
   color2: string;
+  triCode: string;
 }
 
 export interface GamePrediction {
@@ -86,6 +87,7 @@ interface RawPrediction {
   home_gsax_pct?: string;
   away_gsax_total?: string;
   away_gsax_pct?: string;
+  away_gsax_pct?: string;
 }
 
 interface RawTeam {
@@ -94,6 +96,7 @@ interface RawTeam {
   'Team Logo URL': string;
   'Hex Color 1': string;
   'Hex Color 2': string;
+  'Team Tricode': string;
 }
 
 export async function getPredictions(): Promise<GamePrediction[]> {
@@ -113,6 +116,7 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       logoUrl: row['Team Logo URL'],
       color1: row['Hex Color 1'],
       color2: row['Hex Color 2'],
+      triCode: row['Team Tricode'],
     });
   });
 
