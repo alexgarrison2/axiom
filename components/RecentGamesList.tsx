@@ -23,17 +23,30 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
                 {games.slice(0, 5).map((game, i) => {
                     // Format Date (Already formatted "12/6" in backend, but let's be safe)
 
-                    // Result Badge Color
-                    const getBadgeColor = (res: string) => {
-                        if (res === 'W' || res.startsWith('W-')) return 'text-neon-green border-neon-green/30 bg-neon-green/10';
-                        if (res === 'L') return 'text-red-500 border-red-500/30 bg-red-500/10';
-                        if (res === 'O') return 'text-orange-400 border-orange-400/30 bg-orange-400/10';
-                        return 'text-neutral-500';
+                    // Result Badge Styles
+                    const getBadgeStyles = (res: string) => {
+                        const base = "w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center border shrink-0";
+
+                        if (res === 'W') return `${base} text-neon-green border-neon-green/30 bg-neon-green/10`;
+
+                        // OT Win: Green Text, Orange Border (Solid)
+                        if (res === 'W-OT') return `${base} text-neon-green border-orange-400/50 bg-neon-green/10`;
+
+                        // SO Win: Green Text, Orange Border (Dotted)
+                        if (res === 'W-SO') return `${base} text-neon-green border-orange-400/50 border-dotted bg-neon-green/10`;
+
+                        // Losses
+                        if (res === 'L') return `${base} text-red-500 border-red-500/30 bg-red-500/10`;
+                        if (res === 'O') return `${base} text-orange-400 border-orange-400/30 bg-orange-400/10`;
+
+                        return `${base} text-neutral-500`;
                     };
 
-                    // Result Symbol (W, L, O)
-                    // User requested "Orange 'O' inside an orange circle if the game was lost in OT/SO"
-                    // We use a circle badge for all.
+                    const getDisplayText = (res: string) => {
+                        // User wants to keep "W" green, implying single letter
+                        if (res.startsWith('W')) return 'W';
+                        return res;
+                    };
 
                     return (
                         <div key={i} className="flex items-center justify-between p-2 rounded hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
@@ -65,9 +78,9 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
 
                             {/* Right: Result & Score */}
                             <div className="flex items-center gap-2">
-                                {/* Result Badge - Pill if longer text */}
-                                <div className={`h-4 md:h-5 min-w-[1rem] md:min-w-[1.25rem] px-1 rounded-full flex items-center justify-center border shrink-0 ${getBadgeColor(game.result)}`}>
-                                    <span className="text-[8px] md:text-[10px] font-bold whitespace-nowrap">{game.result.replace('W-', 'W ')}</span>
+                                {/* Result Badge */}
+                                <div className={getBadgeStyles(game.result)}>
+                                    <span className="text-[9px] md:text-[10px] font-bold">{getDisplayText(game.result)}</span>
                                 </div>
 
                                 {/* Score */}
