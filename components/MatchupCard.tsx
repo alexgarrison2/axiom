@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { GamePrediction } from '@/utils/data';
 import Image from 'next/image';
+import Link from 'next/link';
+import AnimatedNumber from './AnimatedNumber';
 
 interface MatchupCardProps {
     prediction: GamePrediction;
@@ -251,7 +253,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 <div className={`flex flex-col ${alignClass} mb-4 items-center`}>
                     <div className="flex items-baseline gap-2">
                         <span className="text-4xl md:text-5xl font-black text-white tracking-tighter tabular-nums text-glow-blue">
-                            {formatXg(xg)}
+                            <AnimatedNumber value={xg} toFixed={2} />
                         </span>
                         <span className="text-xs font-mono text-gray-500 font-bold uppercase">xG</span>
                     </div>
@@ -432,7 +434,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             {/* Top: xG */}
                             <div className="flex flex-col items-end -mr-1">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
-                                    {awayXg.toFixed(2)}
+                                    <AnimatedNumber value={awayXg} toFixed={2} />
                                 </span>
                                 <span className="text-[8px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
                             </div>
@@ -473,7 +475,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             {/* Top: xG */}
                             <div className="flex flex-col items-start -ml-1">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
-                                    {homeXg.toFixed(2)}
+                                    <AnimatedNumber value={homeXg} toFixed={2} />
                                 </span>
                                 <span className="text-[8px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
                             </div>
