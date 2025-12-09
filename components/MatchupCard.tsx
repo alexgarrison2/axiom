@@ -467,7 +467,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 <div className="absolute inset-0 bg-[#0a0a0a]/90 -z-10" />
 
                 {/* --- SUPER CONDENSED HEADER ROW --- */}
-                <div className="flex flex-row items-center justify-center relative select-none cursor-pointer active:bg-white/5 transition-colors h-32 overflow-hidden px-4">
+                {/* --- SUPER CONDENSED HEADER ROW --- */}
+                <div className="flex flex-row items-center justify-center relative select-none cursor-pointer active:bg-white/5 transition-colors h-36 overflow-visible px-2">
 
                     {/* ABSOLUTE BACKGROUND LOGOS */}
                     {/* Left: Away Logo (Oversized & Clipped) */}
@@ -479,21 +480,22 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <LogoDisplay src={homeTeam.logoUrl} alt={homeTeam.name} triCode={homeTeam.triCode} className="w-full h-full scale-110 object-contain" />
                     </div>
 
-                    {/* CENTRAL CONTENT CONTAINER (Relative z-10) */}
-                    <div className="flex flex-row items-center justify-center w-full max-w-[80%] gap-3 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-2 px-1 border border-white/5 shadow-xl">
+                    {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Increased Height, Reduced Margin */}
+                    <div className="flex flex-row items-stretch justify-center w-full max-w-[95%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-2 px-1 border border-white/5 shadow-xl h-[85%]">
 
                         {/* LEFT DATA (Away xG/Wager) */}
-                        <div className="flex flex-col items-end gap-1">
-                            {/* Top: xG */}
-                            <div className="flex flex-col items-end -mr-1">
+                        <div className="flex flex-col items-end justify-between w-[30%]">
+                            {/* Top: xG - Inline Layout */}
+                            <div className="flex flex-row items-baseline gap-1 mt-1">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
                                     <AnimatedNumber value={awayXg} toFixed={2} />
                                 </span>
-                                <span className="text-[8px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
+                                <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
                             </div>
-                            {/* Bottom: Wager Pill */}
+
+                            {/* Bottom: Wager Pill - Hug Bottom */}
                             {awayWager ? (
-                                <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)] mb-[2px]">
                                     <span>+{Math.round(awayEv || 0)}%</span>
                                     <span className="opacity-90 border-l border-neon-green/30 pl-1">{awayWager}</span>
                                 </div>
@@ -501,40 +503,45 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         </div>
 
                         {/* CENTER (Time + Bar) */}
-                        <div className="flex flex-col items-center justify-center w-[35%] gap-1.5">
-                            <span className="text-[9px] font-mono text-neutral-400 tracking-wider whitespace-nowrap">{formatTime(startTime || '')}</span>
-                            {/* Bar */}
-                            <div className="w-full h-3 bg-neutral-800/80 rounded-full overflow-hidden flex shadow-inner border border-white/5">
+                        <div className="flex flex-col items-center justify-center flex-1 gap-2 pt-2">
+                            <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap mb-1">{formatTime(startTime || '')}</span>
+                            {/* Bar - Taller (h-5) & Wider */}
+                            <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden flex shadow-inner border border-white/5 relative">
                                 <div
-                                    className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                                    className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)] flex items-center justify-start pl-1"
                                     style={{
                                         width: `${awayModelWinPct}%`,
                                         background: `linear-gradient(90deg, ${awayColor} 0%, ${awayColor}dd 100%)`,
                                         boxShadow: `0 0 10px ${awayColor}66`
                                     }}
-                                ></div>
+                                >
+                                    <span className="text-[9px] font-bold text-white drop-shadow-md z-10">{Math.round(awayModelWinPct)}%</span>
+                                </div>
                                 <div
-                                    className="h-full flex-1"
+                                    className="h-full flex-1 flex items-center justify-end pr-1"
                                     style={{
                                         background: `linear-gradient(90deg, ${homeColor}dd 0%, ${homeColor} 100%)`,
                                         boxShadow: `0 0 10px ${homeColor}66`
                                     }}
-                                ></div>
+                                >
+                                    <span className="text-[9px] font-bold text-white drop-shadow-md z-10">{Math.round(homeModelWinPct)}%</span>
+                                </div>
                             </div>
                         </div>
 
                         {/* RIGHT DATA (Home xG/Wager) */}
-                        <div className="flex flex-col items-start gap-1">
-                            {/* Top: xG */}
-                            <div className="flex flex-col items-start -ml-1">
+                        <div className="flex flex-col items-start justify-between w-[30%]">
+                            {/* Top: xG - Inline Layout */}
+                            <div className="flex flex-row items-baseline gap-1 mt-1">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
                                     <AnimatedNumber value={homeXg} toFixed={2} />
                                 </span>
-                                <span className="text-[8px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
+                                <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
                             </div>
-                            {/* Bottom: Wager Pill */}
+
+                            {/* Bottom: Wager Pill - Hug Bottom */}
                             {homeWager ? (
-                                <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)] mb-[2px]">
                                     <span>+{Math.round(homeEv || 0)}%</span>
                                     <span className="opacity-90 border-l border-neon-green/30 pl-1">{homeWager}</span>
                                 </div>
