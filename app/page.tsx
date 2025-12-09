@@ -3,8 +3,8 @@ import Image from 'next/image';
 import { getPredictions, getLastRefresh } from '@/utils/data';
 import PredictionsViewer from '@/components/PredictionsViewer';
 
-// Revalidate data every 60 seconds (Incremental Static Regeneration)
-export const revalidate = 60;
+// Force dynamic revalidation to ensure data is fresh on every request
+export const revalidate = 0;
 
 export default async function Home() {
     const predictions = await getPredictions();
