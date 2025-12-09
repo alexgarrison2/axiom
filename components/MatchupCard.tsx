@@ -593,11 +593,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             <div className="flex flex-col gap-2 p-2 rounded bg-white/5">
                                 <div className="flex justify-between text-[10px]">
                                     <span className="text-neutral-500">Model</span>
-                                    <span className="font-bold">{awayModelOdds}</span>
+                                    <span className="font-bold">{formatOdds(awayModelOdds)}</span>
                                 </div>
                                 <div className="flex justify-between text-[10px]">
                                     <span className="text-neutral-500">Vegas</span>
-                                    <span className="font-mono">{awayVegasOdds}</span>
+                                    <span className="font-mono">{formatOdds(awayVegasOdds)}</span>
                                 </div>
                                 <div className="h-px bg-white/10 my-1"></div>
                                 {/* Badges & Gas */}
@@ -615,11 +615,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             <div className="flex flex-col gap-2 p-2 rounded bg-white/5">
                                 <div className="flex justify-between text-[10px]">
                                     <span className="text-neutral-500">Model</span>
-                                    <span className="font-bold">{homeModelOdds}</span>
+                                    <span className="font-bold">{formatOdds(homeModelOdds)}</span>
                                 </div>
                                 <div className="flex justify-between text-[10px]">
                                     <span className="text-neutral-500">Vegas</span>
-                                    <span className="font-mono">{homeVegasOdds}</span>
+                                    <span className="font-mono">{formatOdds(homeVegasOdds)}</span>
                                 </div>
                                 <div className="h-px bg-white/10 my-1"></div>
                                 {/* Badges & Gas */}
