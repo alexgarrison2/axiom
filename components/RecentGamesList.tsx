@@ -65,9 +65,9 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
 
                             {/* Right: Result & Score */}
                             <div className="flex items-center gap-2">
-                                {/* Result Circle Badge */}
-                                <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center border shrink-0 ${getBadgeColor(game.result)}`}>
-                                    <span className="text-[9px] md:text-[10px] font-bold">{game.result}</span>
+                                {/* Result Badge - Pill if longer text */}
+                                <div className={`h-4 md:h-5 min-w-[1rem] md:min-w-[1.25rem] px-1 rounded-full flex items-center justify-center border shrink-0 ${getBadgeColor(game.result)}`}>
+                                    <span className="text-[8px] md:text-[10px] font-bold whitespace-nowrap">{game.result.replace('W-', 'W ')}</span>
                                 </div>
 
                                 {/* Score */}
