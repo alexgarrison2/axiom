@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { getPredictions, getLastRefresh } from '@/utils/data';
 import PredictionsViewer from '@/components/PredictionsViewer';
+import FullLogoAnimated from '@/components/FullLogoAnimated';
 
 // Force dynamic revalidation to ensure data is fresh on every request
 export const revalidate = 0;
@@ -23,19 +24,8 @@ export default async function Home() {
             <div className="max-w-[1800px] mx-auto relative z-10">
                 {/* Header Section */}
                 <div className="flex flex-col items-center justify-center mb-12 mt-8">
-                    <div className="flex flex-row items-center gap-2 md:gap-6">
-                        <div className="relative w-16 h-16 md:w-24 md:h-24 shrink-0">
-                            <Image
-                                src="/logo_vector.png"
-                                alt="Pony xG Logo"
-                                fill
-                                className="object-contain drop-shadow-[0_0_15px_rgba(0,243,255,0.4)]"
-                                priority
-                            />
-                        </div>
-                        <h1 className="text-5xl md:text-9xl font-[family-name:var(--font-neonderthaw)] tracking-wide drop-shadow-[0_0_15px_rgba(0,243,255,0.6)] py-4 px-2 leading-relaxed animate-shine-flow whitespace-nowrap">
-                            Pony xG
-                        </h1>
+                    <div className="w-full max-w-[300px] md:max-w-[600px] h-auto">
+                        <FullLogoAnimated />
                     </div>
                     {/* Last Refresh Text */}
                     <div className="text-neutral-500 text-xs md:text-sm font-mono tracking-widest uppercase mt-4 opacity-80">
