@@ -111,7 +111,7 @@ export default function LogoDisplay({ src, alt, triCode, className, isProjectedW
             {isProjectedWinner && (
                 <svg className="absolute inset-[-20%] w-[140%] h-[140%] pointer-events-none z-0 overflow-visible">
                     <defs>
-                        <filter id="glow-blur" x="-50%" y="-50%" width="200%" height="200%">
+                        <filter id={`glow-blur-${triCode}`} x="-50%" y="-50%" width="200%" height="200%">
                             <feGaussianBlur stdDeviation="4" result="coloredBlur" />
                             <feMerge>
                                 <feMergeNode in="coloredBlur" />
@@ -124,11 +124,11 @@ export default function LogoDisplay({ src, alt, triCode, className, isProjectedW
                         x="10%" y="10%" width="80%" height="80%" rx="50%" ry="50%"
                         fill="none"
                         stroke={teamColor}
-                        strokeWidth="2"
+                        strokeWidth="3"
                         strokeLinecap="round"
                         strokeDasharray="20 180" // Create the "comet" look (short dash, long gap)
-                        filter="url(#glow-blur)"
-                        className="opacity-80"
+                        filter={`url(#glow-blur-${triCode})`}
+                        className="opacity-100"
                     />
                 </svg>
             )}
