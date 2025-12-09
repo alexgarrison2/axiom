@@ -30,38 +30,60 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
     useGSAP(() => {
         if (!container.current || !svgContent) return;
 
-        const wrapper = container.current.querySelector('.logo-wrapper');
-        const beam = container.current.querySelector('.scan-beam');
+        const svg = container.current.querySelector('svg');
+        if (svg) {
+            // 1. Setup Filters
+            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            defs.innerHTML = `
+                <filter id="liquidFilter">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" result="turbulence" />
+                    <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="0" xChannelSelector="R" yChannelSelector="G" />
+                </filter>
+            `;
+            svg.prepend(defs);
 
-        if (wrapper && beam) {
-            const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+            // 2. Identify Parts
+            // The "Pony" is paths 1 & 2 (Cyan/Teal). The Text is the white paths (subsequent paths).
+            const paths = Array.from(svg.querySelectorAll('path'));
+            const ponyPaths = paths.slice(0, 2);
+            const textPaths = paths.slice(2);
 
-            // Set initial states
-            gsap.set(wrapper, { clipPath: 'inset(0 100% 0 0)' });
-            gsap.set(beam, { xPercent: -100, opacity: 1 });
+            // 3. Set Initial State
+            // Group text paths for animation
+            textPaths.forEach(p => {
+                p.style.filter = 'url(#liquidFilter)';
+                p.style.opacity = '0';
+            });
 
-            // Create the wiping reveal
-            tl.to(wrapper, {
+            // Initial clip - hide text part (approx right 55% of SVG)
+            // Pony is roughly 260px of 573px total ~ 45%
+            gsap.set(container.current, { clipPath: 'inset(0 55% 0 0)' });
+
+            const tl = gsap.timeline({ defaults: { ease: "power3.inOut" } });
+
+            // 4. Animation Sequence
+
+            // Step 1: Expand Container (Reveal space for text)
+            tl.to(container.current, {
                 clipPath: 'inset(0 0% 0 0)',
-                duration: 1.2,
-                ease: "power3.inOut"
-            })
-                .to(beam, {
-                    left: '100%',
-                    duration: 1.2,
-                    ease: "power3.inOut"
-                }, "<")
-                .to(beam, {
-                    opacity: 0,
-                    duration: 0.2
-                });
-
-            // Add a subtle scale pop at the end for extra dynamism
-            tl.from(wrapper, {
-                scale: 1.05,
                 duration: 1.5,
-                ease: "elastic.out(1, 0.75)"
-            }, 0);
+                ease: "power2.inOut"
+            })
+
+                // Step 2: "Morph/Liquid" form the text
+                .to(textPaths, {
+                    opacity: 1,
+                    duration: 0.5,
+                    stagger: 0.05,
+                    ease: "power2.out"
+                }, "-=1.0") // Start appearing while expanding
+
+                // Animate turbulence (liquid forming effect)
+                .fromTo(svg.querySelectorAll('feDisplacementMap'),
+                    { attr: { scale: 50 } },
+                    { attr: { scale: 0 }, duration: 1.2, ease: "elastic.out(1, 0.5)" },
+                    "-=1.2"
+                );
         }
     }, { dependencies: [svgContent], scope: container });
 
@@ -69,29 +91,13 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
         <div
             ref={container}
             className={`relative ${className}`}
-            style={{ width: '100%', height: 'auto' }}
+            style={{ width: '100%', height: 'auto', overflow: 'hidden' }}
         >
             {svgContent ? (
-                <div className="relative w-full h-full">
-                    {/* Main Logo Container with Clip Path */}
-                    <div className="logo-wrapper relative w-full h-full will-change-[clip-path]">
-                        <div
-                            dangerouslySetInnerHTML={{ __html: svgContent }}
-                            className="w-full h-full"
-                        />
-                    </div>
-
-                    {/* Energy Beam / Leading Edge */}
-                    <div
-                        className="scan-beam absolute top-0 bottom-0 w-[40px] z-10 pointer-events-none"
-                        style={{
-                            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), rgba(79, 245, 247, 0.6), transparent)',
-                            mixBlendMode: 'overlay',
-                            left: '0',
-                            transform: 'translateX(-50%)'
-                        }}
-                    />
-                </div>
+                <div
+                    dangerouslySetInnerHTML={{ __html: svgContent }}
+                    className="w-full h-full"
+                />
             ) : (
                 <div className="w-full pb-[30%]" />
             )}
