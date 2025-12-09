@@ -62,9 +62,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     // --- Helpers ---
     const getGasColor = (gas: number | undefined) => {
         if (gas === undefined) return 'text-neutral-500 bg-neutral-500/10 border-neutral-500/20';
-        if (gas >= 90) return 'text-neon-green bg-neon-green/10 border-neon-green/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]';
-        if (gas >= 75) return 'text-blue-400 bg-blue-400/10 border-blue-400/20 shadow-[0_0_10px_rgba(96,165,250,0.2)]';
-        if (gas >= 50) return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+        if (gas >= 75) return 'text-neon-green bg-neon-green/10 border-neon-green/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]';
+        if (gas >= 60) return 'text-green-400 bg-green-400/10 border-green-400/20 shadow-[0_0_10px_rgba(74,222,128,0.2)]';
+        if (gas > 35) return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
         return 'text-red-500 bg-red-500/10 border-red-500/20';
     };
 
