@@ -21,6 +21,13 @@ export interface RecentGame {
   result: 'W' | 'L' | 'O' | 'W-OT' | 'W-SO';
 }
 
+export interface PlayerNewsItem {
+  player: string;
+  news: string;
+  category: string;
+  date: string;
+}
+
 export interface GamePrediction {
   id: string;
   date: string;
@@ -61,6 +68,9 @@ export interface GamePrediction {
   home_gsax_pct?: number;
   away_gsax_total?: number;
   away_gsax_pct?: number;
+
+  home_news?: PlayerNewsItem[];
+  away_news?: PlayerNewsItem[];
 }
 
 interface RawPrediction {
@@ -101,6 +111,8 @@ interface RawPrediction {
   home_gsax_pct?: string;
   away_gsax_total?: string;
   away_gsax_pct?: string;
+  home_news?: string;
+  away_news?: string;
 }
 
 interface RawTeam {
@@ -158,6 +170,17 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       }
     };
 
+    // Parse News
+    const parseNews = (jsonStr?: string): PlayerNewsItem[] => {
+      if (!jsonStr) return [];
+      try {
+        return JSON.parse(jsonStr) as PlayerNewsItem[];
+      } catch (e) {
+        console.error("Error parsing news", e);
+        return [];
+      }
+    };
+
     if (!homeTeam || !awayTeam) {
       console.warn(`Team not found for game ${row.game_id}: ${row.home_team} vs ${row.away_team}`);
       return null;
@@ -207,6 +230,9 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       home_gsax_pct: row.home_gsax_pct ? parseFloat(row.home_gsax_pct) : undefined,
       away_gsax_total: row.away_gsax_total ? parseFloat(row.away_gsax_total) : undefined,
       away_gsax_pct: row.away_gsax_pct ? parseFloat(row.away_gsax_pct) : undefined,
+
+      home_news: parseNews(row.home_news),
+      away_news: parseNews(row.away_news),
     };
   }).filter((p): p is GamePrediction => p !== null);
 

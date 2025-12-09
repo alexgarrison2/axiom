@@ -7,6 +7,7 @@ import { useGSAP } from '@gsap/react';
 import AnimatedNumber from './AnimatedNumber';
 import LogoDisplay from './LogoDisplay';
 import RecentGamesList from './RecentGamesList';
+import PlayerNewsList from './PlayerNewsList';
 
 gsap.registerPlugin(useGSAP);
 
@@ -171,7 +172,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     const getGlowColor = (homeWager: string | null, awayWager: string | null) => {
         if (homeWager || awayWager) {
             // "Nebula" Glow: Soft green glow, but GREY physical border
-            return 'border-white/10 shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)] hover:shadow-[0_0_40px_-5px_rgba(16,185,129,0.4)]';
+            return 'border-white/10 shadow-[0_0_30px_-5px_rgba(0,243,255,0.15)] hover:shadow-[0_0_40px_-5px_rgba(0,243,255,0.25)]';
         }
         return 'border-white/5 hover:border-white/10';
     };
@@ -434,16 +435,18 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 <div className={`overflow-hidden transition-all duration-300 ${isDesktopExpanded ? 'max-h-[800px] border-t border-white/5 opacity-100' : 'max-h-0 opacity-0'}`}>
                     <div className="p-6 flex flex-row bg-black/20">
                         {/* Away Team Recent Games */}
-                        <div className="flex-1 pr-6">
+                        <div className="flex-1 pr-6 flex flex-col gap-6">
                             <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} />
+                            <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                         </div>
 
                         {/* Vertical Divider */}
                         <div className="w-px bg-white/10 self-stretch"></div>
 
                         {/* Home Team Recent Games */}
-                        <div className="flex-1 pl-6">
+                        <div className="flex-1 pl-6 flex flex-col gap-6">
                             <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} />
+                            <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                         </div>
                     </div>
                 </div>
@@ -660,12 +663,20 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* Recent Games Lists (Side-by-Side on Mobile) */}
                         <div className="flex flex-row gap-2 mt-4 relative">
                             <div className="flex-1 min-w-0">
-                                <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} />
+                                {/* Recent Games & News */}
+                                <div className="mt-4 flex flex-col gap-4">
+                                    <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} />
+                                    <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
+                                </div>
                             </div>
                             {/* Vertical Divider */}
                             <div className="w-px bg-white/10 self-stretch mx-1"></div>
                             <div className="flex-1 min-w-0">
-                                <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} />
+                                {/* Recent Games & News */}
+                                <div className="mt-4 flex flex-col gap-4">
+                                    <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} />
+                                    <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
+                                </div>
                             </div>
                         </div>
 
