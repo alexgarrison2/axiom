@@ -45,7 +45,15 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                             {[0, 1, 2].map(colIndex => {
                                 const player = line[colIndex]; // 0=LW, 1=C, 2=RW (Data is sorted lw,c,rw)
                                 return (
-                                    <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center ${colIndex === 1 ? 'border-x border-white/5' : ''}`}>
+                                    <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-x border-white/5' : ''}`}>
+                                        {/* PP Indicator */}
+                                        {player && player.ppUnit === 1 && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#F48317]" title="PP1" />
+                                        )}
+                                        {player && player.ppUnit === 2 && (
+                                            <div className="w-1.5 h-1.5 rounded-full border border-[#F48317]" title="PP2" />
+                                        )}
+
                                         <span className="text-[10px] font-medium text-neutral-300 leading-tight">
                                             {player ? formatName(player.name) : '-'}
                                         </span>
@@ -70,7 +78,15 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                             {[0, 1].map(colIndex => {
                                 const player = pair[colIndex];
                                 return (
-                                    <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center ${colIndex === 1 ? 'border-l border-white/5' : ''}`}>
+                                    <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-l border-white/5' : ''}`}>
+                                        {/* PP Indicator */}
+                                        {player && player.ppUnit === 1 && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#F48317]" title="PP1" />
+                                        )}
+                                        {player && player.ppUnit === 2 && (
+                                            <div className="w-1.5 h-1.5 rounded-full border border-[#F48317]" title="PP2" />
+                                        )}
+
                                         <span className="text-[10px] font-medium text-neutral-300 leading-tight">
                                             {player ? formatName(player.name) : '-'}
                                         </span>

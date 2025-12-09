@@ -33,6 +33,7 @@ export interface LineupPlayer {
   name: string;
   number: number | null;
   pos: string;
+  ppUnit?: number; // 1 or 2
 }
 
 export interface TeamLineup {
