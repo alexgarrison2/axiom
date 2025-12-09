@@ -467,7 +467,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             {/* MOBILE VIEW (md:hidden) - Condensed + Expand */}
             {/* ========================================= */}
             <div
-                className={`flex md:hidden flex-col w-full mx-auto rounded-[2.5rem] mb-1 text-white overflow-hidden transition-all duration-300 border backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
+                className={`flex md:hidden relative flex-col w-full mx-auto rounded-[2.5rem] mb-1 text-white overflow-hidden transition-all duration-300 border backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
                 onClick={toggleExpand}
                 ref={cardRef}
             >
@@ -571,6 +571,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         </div>
 
                     </div>
+                </div>
+
+                {/* Mobile Expand Hint */}
+                <div className={`absolute bottom-3 left-1/2 -translate-x-1/2 text-neutral-500/70 transition-opacity duration-300 pointer-events-none z-20 ${isExpanded ? 'opacity-0' : 'opacity-100'}`}>
+                    <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
                 </div>
 
                 {/* --- EXPANDED DETAILS BODY --- */}
