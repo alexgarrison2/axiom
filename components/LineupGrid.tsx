@@ -48,7 +48,7 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-x border-white/5' : ''}`}>
                                         {/* PP Indicator */}
                                         {player && player.ppUnit === 1 && (
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#F48317]" title="PP1" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#21D28B]" title="PP1" />
                                         )}
                                         {player && player.ppUnit === 2 && (
                                             <div className="w-1.5 h-1.5 rounded-full border border-[#F48317]" title="PP2" />
@@ -81,7 +81,7 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-l border-white/5' : ''}`}>
                                         {/* PP Indicator */}
                                         {player && player.ppUnit === 1 && (
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#F48317]" title="PP1" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#21D28B]" title="PP1" />
                                         )}
                                         {player && player.ppUnit === 2 && (
                                             <div className="w-1.5 h-1.5 rounded-full border border-[#F48317]" title="PP2" />
