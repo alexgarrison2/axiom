@@ -468,7 +468,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                 {/* --- SUPER CONDENSED HEADER ROW --- */}
                 {/* --- SUPER CONDENSED HEADER ROW --- */}
-                <div className="flex flex-row items-center justify-center relative select-none cursor-pointer active:bg-white/5 transition-colors h-36 overflow-visible px-2">
+                <div className="flex flex-row items-center justify-center relative select-none cursor-pointer active:bg-white/5 transition-colors h-28 overflow-visible px-2">
 
                     {/* ABSOLUTE BACKGROUND LOGOS */}
                     {/* Left: Away Logo (Oversized & Clipped) */}
@@ -480,31 +480,33 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <LogoDisplay src={homeTeam.logoUrl} alt={homeTeam.name} triCode={homeTeam.triCode} className="w-full h-full scale-110 object-contain" />
                     </div>
 
-                    {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Increased Height, Reduced Margin */}
-                    <div className="flex flex-row items-stretch justify-center w-full max-w-[80%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-2 px-1 border border-white/5 shadow-xl h-[85%]">
+                    {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Compact & Aligned */}
+                    <div className="flex flex-row items-center justify-center w-full max-w-[80%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
 
                         {/* LEFT DATA (Away xG/Wager) */}
-                        <div className="flex flex-col items-end justify-between w-[30%]">
+                        <div className="flex flex-col items-end justify-center w-[30%] gap-1">
                             {/* Top: xG - Inline Layout */}
-                            <div className="flex flex-row items-baseline gap-1 mt-1">
+                            <div className="flex flex-row items-baseline gap-1">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
                                     <AnimatedNumber value={awayXg} toFixed={2} />
                                 </span>
                                 <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
                             </div>
 
-                            {/* Bottom: Wager Pill - Hug Bottom */}
-                            {awayWager ? (
-                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)] mb-[2px]">
-                                    <span>+{Math.round(awayEv || 0)}%</span>
-                                    <span className="opacity-90 border-l border-neon-green/30 pl-1">{awayWager}</span>
-                                </div>
-                            ) : <div className="h-5"></div>}
+                            {/* Bottom: Wager Pill - Aligned with Bar */}
+                            <div className="h-5 flex items-center">
+                                {awayWager ? (
+                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                        <span>+{Math.round(awayEv || 0)}%</span>
+                                        <span className="opacity-90 border-l border-neon-green/30 pl-1">{awayWager}</span>
+                                    </div>
+                                ) : null}
+                            </div>
                         </div>
 
                         {/* CENTER (Time + Bar) */}
-                        <div className="flex flex-col items-center justify-center flex-1 gap-2 pt-2">
-                            <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap mb-1">{formatTime(startTime || '')}</span>
+                        <div className="flex flex-col items-center justify-center flex-1 gap-1">
+                            <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap mb-0.5">{formatTime(startTime || '')}</span>
                             {/* Bar - Taller (h-5) & Wider */}
                             <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden flex shadow-inner border border-white/5 relative">
                                 <div
@@ -530,22 +532,24 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         </div>
 
                         {/* RIGHT DATA (Home xG/Wager) */}
-                        <div className="flex flex-col items-start justify-between w-[30%]">
+                        <div className="flex flex-col items-start justify-center w-[30%] gap-1">
                             {/* Top: xG - Inline Layout */}
-                            <div className="flex flex-row items-baseline gap-1 mt-1">
+                            <div className="flex flex-row items-baseline gap-1">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
                                     <AnimatedNumber value={homeXg} toFixed={2} />
                                 </span>
                                 <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
                             </div>
 
-                            {/* Bottom: Wager Pill - Hug Bottom */}
-                            {homeWager ? (
-                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)] mb-[2px]">
-                                    <span>+{Math.round(homeEv || 0)}%</span>
-                                    <span className="opacity-90 border-l border-neon-green/30 pl-1">{homeWager}</span>
-                                </div>
-                            ) : <div className="h-5"></div>}
+                            {/* Bottom: Wager Pill - Aligned with Bar */}
+                            <div className="h-5 flex items-center">
+                                {homeWager ? (
+                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                        <span>+{Math.round(homeEv || 0)}%</span>
+                                        <span className="opacity-90 border-l border-neon-green/30 pl-1">{homeWager}</span>
+                                    </div>
+                                ) : null}
+                            </div>
                         </div>
 
                     </div>
