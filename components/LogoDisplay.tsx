@@ -103,7 +103,7 @@ export default function LogoDisplay({ src, alt, triCode, className }: LogoDispla
                     dangerouslySetInnerHTML={{ __html: svgContent }}
                     className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:drop-shadow-sm"
                 />
-            ) : (
+            ) : src ? (
                 <Image
                     src={src}
                     alt={alt}
@@ -111,6 +111,10 @@ export default function LogoDisplay({ src, alt, triCode, className }: LogoDispla
                     className="object-contain"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
+            ) : (
+                <div className="w-full h-full bg-neutral-800/50 rounded-full flex items-center justify-center">
+                    <span className="text-[8px] text-neutral-500 font-bold">?</span>
+                </div>
             )}
         </motion.div>
     );
