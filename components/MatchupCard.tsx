@@ -481,7 +481,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     </div>
 
                     {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Increased Height, Reduced Margin */}
-                    <div className="flex flex-row items-stretch justify-center w-full max-w-[95%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-2 px-1 border border-white/5 shadow-xl h-[85%]">
+                    <div className="flex flex-row items-stretch justify-center w-full max-w-[80%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-2 px-1 border border-white/5 shadow-xl h-[85%]">
 
                         {/* LEFT DATA (Away xG/Wager) */}
                         <div className="flex flex-col items-end justify-between w-[30%]">
