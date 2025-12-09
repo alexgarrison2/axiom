@@ -8,18 +8,18 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(useGSAP);
 
+// ... (we are replacing the whole component logic essentially to strip the glow)
+// Actually standard replacement for the props and the effect hook should be enough.
+
 interface LogoDisplayProps {
     src: string;
     alt: string;
     triCode?: string;
     className?: string;
-    isProjectedWinner?: boolean;
-    teamColor?: string;
 }
 
-export default function LogoDisplay({ src, alt, triCode, className, isProjectedWinner, teamColor = '#ffffff' }: LogoDisplayProps) {
+export default function LogoDisplay({ src, alt, triCode, className }: LogoDisplayProps) {
     const container = useRef<HTMLDivElement>(null);
-    const glowRef = useRef<SVGRectElement>(null);
     const [svgContent, setSvgContent] = useState<string | null>(null);
 
     // Fetch SVG if triCode is present
@@ -41,7 +41,7 @@ export default function LogoDisplay({ src, alt, triCode, className, isProjectedW
     useGSAP(() => {
         if (!container.current) return;
 
-        // 1. Existing SVG Path Animation (DrawSVG)
+        // Existing SVG Path Animation (DrawSVG)
         if (svgContent) {
             const svgElement = container.current.querySelector('svg');
             if (svgElement) {
@@ -67,28 +67,7 @@ export default function LogoDisplay({ src, alt, triCode, className, isProjectedW
                 }
             }
         }
-
-        // 2. Projected Winner Orbital Glow
-        if (isProjectedWinner && glowRef.current) {
-            // Kill any existing tweens to prevent stacking if props change quickly
-            gsap.killTweensOf(glowRef.current);
-
-            // Orbit Animation
-            gsap.to(glowRef.current, {
-                strokeDashoffset: -200, // Move the dash pattern
-                duration: 3,
-                ease: "none",
-                repeat: -1
-            });
-
-            // Pulse Opacity
-            gsap.fromTo(glowRef.current,
-                { opacity: 0.6 },
-                { opacity: 1, duration: 1.5, yoyo: true, repeat: -1, ease: "sine.inOut" }
-            );
-        }
-
-    }, { dependencies: [svgContent, isProjectedWinner], scope: container });
+    }, { dependencies: [svgContent], scope: container });
 
     return (
         <motion.div
@@ -107,32 +86,6 @@ export default function LogoDisplay({ src, alt, triCode, className, isProjectedW
                 transition: { type: "spring", stiffness: 200, damping: 12 }
             }}
         >
-            {/* Winner Glow Overlay */}
-            {isProjectedWinner && (
-                <svg className="absolute inset-[-20%] w-[140%] h-[140%] pointer-events-none z-0 overflow-visible">
-                    <defs>
-                        <filter id={`glow-blur-${triCode}`} x="-50%" y="-50%" width="200%" height="200%">
-                            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                            <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                        </filter>
-                    </defs>
-                    <rect
-                        ref={glowRef}
-                        x="10%" y="10%" width="80%" height="80%" rx="50%" ry="50%"
-                        fill="none"
-                        stroke={teamColor}
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeDasharray="20 180" // Create the "comet" look (short dash, long gap)
-                        filter={`url(#glow-blur-${triCode})`}
-                        className="opacity-100"
-                    />
-                </svg>
-            )}
-
             {svgContent ? (
                 <div
                     dangerouslySetInnerHTML={{ __html: svgContent }}
