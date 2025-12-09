@@ -32,13 +32,18 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
 
         const svg = container.current.querySelector('svg');
         if (svg) {
-            // 1. Setup Filters
+            // 1. Setup Filters & Gradients
             const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
             defs.innerHTML = `
                 <filter id="liquidFilter">
                     <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" result="turbulence" />
                     <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="0" xChannelSelector="R" yChannelSelector="G" />
                 </filter>
+                <linearGradient id="goalLightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#FF0000" />
+                    <stop offset="50%" stop-color="#FFCCCC" />
+                    <stop offset="100%" stop-color="#FF0000" />
+                </linearGradient>
             `;
             svg.prepend(defs);
 
@@ -51,15 +56,24 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
             // 3. Set Initial State
             // Group text paths for animation
             textPaths.forEach(p => {
+                // If it's the goal light (Red), skip the liquid filter
+                if (p.getAttribute('fill') === '#FF0000') return;
+
                 p.style.filter = 'url(#liquidFilter)';
                 p.style.opacity = '0';
             });
 
             // Initial clip - hide text part (approx right 55% of SVG)
-            // Pony is roughly 260px of 573px total ~ 45%
             gsap.set(container.current, { clipPath: 'inset(0 55% 0 0)' });
 
-            const tl = gsap.timeline({ defaults: { ease: "power3.inOut" } });
+            const tl = gsap.timeline({
+                defaults: { ease: "power3.inOut" },
+                onComplete: () => {
+                    if (container.current) {
+                        container.current.style.overflow = 'visible'; // Allow glows to spill out
+                    }
+                }
+            });
 
             // 4. Animation Sequence
 
@@ -71,7 +85,7 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
             })
 
                 // Step 2: "Morph/Liquid" form the text
-                .to(textPaths, {
+                .to(textPaths.filter(p => p.getAttribute('fill') !== '#FF0000'), {
                     opacity: 1,
                     duration: 0.5,
                     stagger: 0.05,
@@ -85,22 +99,44 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
                     "-=1.2"
                 );
 
-            // Animate Goal Light (Red Thing)
+            // Animate Goal Light (Rotating Effect)
             const goalLight = svg.querySelector('path[fill="#FF0000"]');
             if (goalLight) {
-                // Initial state
-                gsap.set(goalLight, {
-                    filter: "drop-shadow(0px 0px 2px #FF0000)"
-                });
+                // Use the gradient
+                goalLight.setAttribute('fill', 'url(#goalLightGradient)');
 
-                // Pulsing glow animation
-                gsap.to(goalLight, {
-                    filter: "drop-shadow(0px 0px 12px #FF0000)",
-                    duration: 1.5,
-                    yoyo: true,
-                    repeat: -1,
-                    ease: "sine.inOut"
-                });
+                // Animate the gradient to simulate rotation
+                // We access the gradient element directly
+                const gradient = svg.querySelector('#goalLightGradient');
+                if (gradient) {
+                    gsap.to(gradient, {
+                        attr: { x1: "100%", x2: "200%" }, // Move window across
+                        duration: 1.0,
+                        repeat: -1,
+                        ease: "linear",
+                        modifiers: {
+                            attr: (val: any) => {
+                                // Reset mechanism not needed if we sweep correctly, or just use repeat
+                                // Actually, standard gradient loop:
+                                return val;
+                            }
+                        }
+                    });
+
+                    // Better loop strategy for linear gradient:
+                    gsap.fromTo(gradient,
+                        { attr: { x1: "-100%", x2: "0%" } },
+                        {
+                            attr: { x1: "100%", x2: "200%" },
+                            duration: 1.5,
+                            repeat: -1,
+                            ease: "linear"
+                        }
+                    );
+                }
+
+                // Subtle glow (filter)
+                gsap.set(goalLight, { filter: 'drop-shadow(0 0 5px #FF0000)' });
             }
         }
     }, { dependencies: [svgContent], scope: container });
