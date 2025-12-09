@@ -30,43 +30,38 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
     useGSAP(() => {
         if (!container.current || !svgContent) return;
 
-        const svgElement = container.current.querySelector('svg');
-        if (svgElement) {
-            // Ensure SVG scales correctly
-            svgElement.setAttribute('width', '100%');
-            svgElement.setAttribute('height', '100%');
+        const wrapper = container.current.querySelector('.logo-wrapper');
+        const beam = container.current.querySelector('.scan-beam');
 
-            const paths = svgElement.querySelectorAll('path');
-            if (paths.length > 0) {
-                // Prepare paths for line drawing
-                paths.forEach((path) => {
-                    const length = path.getTotalLength();
-                    // Set initial styles for animation
-                    path.style.stroke = 'rgba(255,255,255,0.5)'; // Subtle white outline
-                    path.style.strokeWidth = '2px';
-                    path.style.strokeDasharray = `${length}`;
-                    path.style.strokeDashoffset = `${length}`;
-                    path.style.fillOpacity = '0'; // Hide fill initially
+        if (wrapper && beam) {
+            const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+
+            // Set initial states
+            gsap.set(wrapper, { clipPath: 'inset(0 100% 0 0)' });
+            gsap.set(beam, { xPercent: -100, opacity: 1 });
+
+            // Create the wiping reveal
+            tl.to(wrapper, {
+                clipPath: 'inset(0 0% 0 0)',
+                duration: 1.2,
+                ease: "power3.inOut"
+            })
+                .to(beam, {
+                    left: '100%',
+                    duration: 1.2,
+                    ease: "power3.inOut"
+                }, "<")
+                .to(beam, {
+                    opacity: 0,
+                    duration: 0.2
                 });
 
-                const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
-
-                // Animate stroke (draw)
-                tl.to(paths, {
-                    strokeDashoffset: 0,
-                    duration: 2.5,
-                    stagger: 0.1
-                })
-                    // Fade in fill and remove stroke
-                    .to(paths, {
-                        fillOpacity: 1,
-                        strokeOpacity: 0,
-                        duration: 1
-                    }, "-=1.0"); // Overlap slightly
-            } else {
-                // Fallback fade in if no paths
-                gsap.fromTo(svgElement, { opacity: 0 }, { opacity: 1, duration: 1 });
-            }
+            // Add a subtle scale pop at the end for extra dynamism
+            tl.from(wrapper, {
+                scale: 1.05,
+                duration: 1.5,
+                ease: "elastic.out(1, 0.75)"
+            }, 0);
         }
     }, { dependencies: [svgContent], scope: container });
 
@@ -74,15 +69,30 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
         <div
             ref={container}
             className={`relative ${className}`}
-            style={{ width: '100%', height: 'auto' }} // Ensure container is responsive
+            style={{ width: '100%', height: 'auto' }}
         >
             {svgContent ? (
-                <div
-                    dangerouslySetInnerHTML={{ __html: svgContent }}
-                    className="w-full h-full"
-                />
+                <div className="relative w-full h-full">
+                    {/* Main Logo Container with Clip Path */}
+                    <div className="logo-wrapper relative w-full h-full will-change-[clip-path]">
+                        <div
+                            dangerouslySetInnerHTML={{ __html: svgContent }}
+                            className="w-full h-full"
+                        />
+                    </div>
+
+                    {/* Energy Beam / Leading Edge */}
+                    <div
+                        className="scan-beam absolute top-0 bottom-0 w-[40px] z-10 pointer-events-none"
+                        style={{
+                            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), rgba(79, 245, 247, 0.6), transparent)',
+                            mixBlendMode: 'overlay',
+                            left: '0',
+                            transform: 'translateX(-50%)'
+                        }}
+                    />
+                </div>
             ) : (
-                // Spacer/Placeholder to prevent layout shift before load
                 <div className="w-full pb-[30%]" />
             )}
         </div>
