@@ -3,6 +3,7 @@ import { GamePrediction } from '@/utils/data';
 import Image from 'next/image';
 import Link from 'next/link';
 import AnimatedNumber from './AnimatedNumber';
+import LogoDisplay from './LogoDisplay';
 
 interface MatchupCardProps {
     prediction: GamePrediction;
@@ -223,9 +224,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                 {/* Team Info Header */}
                 <div className={`flex flex-col gap-1 mb-4 w-full ${isHome ? 'md:flex-row' : 'md:flex-row-reverse'} items-center md:items-start`}>
-                    <div className="relative w-16 h-16 md:w-20 md:h-20 drop-shadow-lg">
-                        <Image src={team.logoUrl} alt={team.name} fill className="object-contain" />
-                    </div>
+                    <LogoDisplay
+                        src={team.logoUrl}
+                        alt={team.name}
+                        className="w-16 h-16 md:w-20 md:h-20"
+                    />
                     <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
                         <div className="flex items-center gap-1.5 flex-wrap justify-center md:justify-start">
                             <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wide truncate max-w-full">{starterName}</span>
