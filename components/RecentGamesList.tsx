@@ -5,9 +5,10 @@ import LogoDisplay from './LogoDisplay';
 interface RecentGamesListProps {
     games: RecentGame[];
     teamTriCode: string;
+    isMobile?: boolean;
 }
 
-const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode }) => {
+const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, isMobile = false }) => {
     if (!games || games.length === 0) return null;
 
     return (
@@ -38,16 +39,20 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode })
                         <div key={i} className="flex items-center justify-between p-2 rounded hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
 
                             {/* Left: Date & Opponent */}
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs text-neutral-400 font-mono w-10">{game.date}</span>
-
-                                <span className="text-[10px] text-neutral-500 font-bold">
-                                    {game.isHome ? 'vs' : '@'}
+                            <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                                <span className={`text-[10px] md:text-xs text-neutral-400 font-mono ${isMobile ? 'w-auto' : 'w-10'}`}>
+                                    {isMobile ? game.date.split('/')[1] : game.date}
                                 </span>
 
+                                {!isMobile && (
+                                    <span className="text-[10px] text-neutral-500 font-bold">
+                                        {game.isHome ? 'vs' : '@'}
+                                    </span>
+                                )}
+
                                 {/* Opponent Logo + Tricode */}
-                                <div className="flex items-center gap-2 w-16">
-                                    <div className="w-6 h-6 relative shrink-0">
+                                <div className="flex items-center gap-1.5 md:gap-2">
+                                    <div className="w-5 h-5 md:w-6 md:h-6 relative shrink-0">
                                         <LogoDisplay
                                             src={game.opponentLogo}
                                             alt={game.opponent}
@@ -55,19 +60,20 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode })
                                             className="w-full h-full object-contain"
                                         />
                                     </div>
-                                    <span className="text-xs font-bold text-neutral-300">{game.opponent}</span>
+                                    {!isMobile && <span className="text-xs font-bold text-neutral-300">{game.opponent}</span>}
+                                    {isMobile && <span className="text-[10px] font-bold text-neutral-300">{game.opponent}</span>}
                                 </div>
                             </div>
 
                             {/* Right: Result & Score */}
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                                 {/* Result Circle Badge */}
-                                <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${getBadgeColor(game.result)}`}>
-                                    <span className="text-[10px] font-bold">{game.result}</span>
+                                <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center border shrink-0 ${getBadgeColor(game.result)}`}>
+                                    <span className="text-[9px] md:text-[10px] font-bold">{game.result}</span>
                                 </div>
 
                                 {/* Score */}
-                                <span className="text-xs font-mono font-bold text-white w-12 text-right">
+                                <span className={`text-[10px] md:text-xs font-mono font-bold text-white text-right ${isMobile ? 'w-auto' : 'w-12'}`}>
                                     {game.score}
                                 </span>
                             </div>
