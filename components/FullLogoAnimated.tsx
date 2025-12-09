@@ -90,13 +90,13 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
     return (
         <div
             ref={container}
-            className={`relative ${className} [&>svg]:w-full [&>svg]:h-auto [&>svg]:block`}
+            className={`relative ${className}`}
             style={{ width: '100%', height: 'auto', overflow: 'hidden' }}
         >
             {svgContent ? (
                 <div
                     dangerouslySetInnerHTML={{ __html: svgContent }}
-                    className="w-full h-full"
+                    className="w-full h-full [&>svg]:w-full [&>svg]:h-auto [&>svg]:block"
                 />
             ) : (
                 <div className="w-full pb-[30%]" />
