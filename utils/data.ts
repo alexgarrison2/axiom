@@ -87,7 +87,6 @@ interface RawPrediction {
   home_gsax_pct?: string;
   away_gsax_total?: string;
   away_gsax_pct?: string;
-  away_gsax_pct?: string;
 }
 
 interface RawTeam {

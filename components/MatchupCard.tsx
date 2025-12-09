@@ -227,6 +227,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     <LogoDisplay
                         src={team.logoUrl}
                         alt={team.name}
+                        triCode={team.triCode}
                         className="w-16 h-16 md:w-20 md:h-20"
                     />
                     <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
