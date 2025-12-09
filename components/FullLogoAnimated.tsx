@@ -80,7 +80,7 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
 
                 // Animate turbulence (liquid forming effect)
                 .fromTo(svg.querySelectorAll('feDisplacementMap'),
-                    { attr: { scale: 50 } },
+                    { attr: { scale: 20 } },
                     { attr: { scale: 0 }, duration: 1.2, ease: "elastic.out(1, 0.5)" },
                     "-=1.2"
                 );
@@ -90,7 +90,7 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
     return (
         <div
             ref={container}
-            className={`relative ${className}`}
+            className={`relative ${className} [&>svg]:w-full [&>svg]:h-auto [&>svg]:block`}
             style={{ width: '100%', height: 'auto', overflow: 'hidden' }}
         >
             {svgContent ? (

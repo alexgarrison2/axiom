@@ -24,7 +24,7 @@ export default async function Home() {
             <div className="max-w-[1800px] mx-auto relative z-10">
                 {/* Header Section */}
                 <div className="flex flex-col items-center justify-center mb-12 mt-8">
-                    <div className="w-full max-w-[300px] md:max-w-[600px] h-auto">
+                    <div className="w-full max-w-[340px] md:max-w-[600px] h-auto">
                         <FullLogoAnimated />
                     </div>
                     {/* Last Refresh Text */}
