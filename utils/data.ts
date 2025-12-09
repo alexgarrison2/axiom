@@ -13,6 +13,7 @@ export interface Team {
 
 export interface RecentGame {
   date: string;
+  gameNumber?: string;
   opponent: string;
   opponentLogo: string;
   isHome: boolean;

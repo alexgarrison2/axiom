@@ -54,7 +54,7 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
                             {/* Left: Date & Opponent */}
                             <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                                 <span className={`text-[10px] md:text-xs text-neutral-400 font-mono ${isMobile ? 'w-auto' : 'w-10'}`}>
-                                    {isMobile ? (game.date.includes('/') ? game.date.split('/')[1] : game.date) : game.date}
+                                    {isMobile ? (game.gameNumber || game.date) : game.date}
                                 </span>
 
                                 <span className="text-[10px] text-neutral-500 font-bold">
