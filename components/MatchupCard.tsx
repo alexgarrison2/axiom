@@ -189,6 +189,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     const widthPercentage = Math.min(100, (totalGoals / maxTotalGoals) * 100);
     const isHighEv = ((homeEv || 0) >= 20) || ((awayEv || 0) >= 20);
 
+    // Winner Calculation
+    const homeIsWinner = homeXg > awayXg;
+    const awayIsWinner = awayXg > homeXg;
+
     // Helper for Badges
     const Badge = ({ children, color = 'blue' }: { children: React.ReactNode, color?: 'blue' | 'red' | 'gray' }) => {
         const colorClasses = {
@@ -216,7 +220,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gas,
         gasBreakdown,
         gsaxTotal,
-        gsaxPct
+        gsaxTotal,
+        gsaxPct,
+        isProjectedWinner,
+        teamColor
     }: {
         team: any,
         isHome: boolean,
@@ -230,7 +237,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gas?: number,
         gasBreakdown?: string[],
         gsaxTotal?: number,
-        gsaxPct?: number
+        gsaxPct?: number,
+        isProjectedWinner?: boolean,
+        teamColor?: string
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
@@ -250,6 +259,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         alt={team.name}
                         triCode={team.triCode}
                         className="w-16 h-16 md:w-20 md:h-20"
+                        isProjectedWinner={isProjectedWinner}
+                        teamColor={teamColor}
                     />
                     <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
                         <div className="flex items-center gap-1.5 flex-wrap justify-center md:justify-start">
@@ -350,6 +361,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             gasBreakdown={prediction.away_gas_breakdown}
                             gsaxTotal={prediction.away_gsax_total}
                             gsaxPct={prediction.away_gsax_pct}
+                            isProjectedWinner={awayIsWinner}
+                            teamColor={awayColor}
                         />
                     </div>
 
@@ -424,6 +437,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             gasBreakdown={prediction.home_gas_breakdown}
                             gsaxTotal={prediction.home_gsax_total}
                             gsaxPct={prediction.home_gsax_pct}
+                            isProjectedWinner={homeIsWinner}
+                            teamColor={homeColor}
                         />
                     </div>
                 </div>
@@ -473,11 +488,25 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     {/* ABSOLUTE BACKGROUND LOGOS */}
                     {/* Left: Away Logo (Oversized & Clipped) */}
                     <div className="absolute left-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
-                        <LogoDisplay src={awayTeam.logoUrl} alt={awayTeam.name} triCode={awayTeam.triCode} className="w-full h-full scale-110 object-contain" />
+                        <LogoDisplay
+                            src={awayTeam.logoUrl}
+                            alt={awayTeam.name}
+                            triCode={awayTeam.triCode}
+                            className="w-full h-full scale-110 object-contain"
+                            isProjectedWinner={awayIsWinner}
+                            teamColor={awayColor}
+                        />
                     </div>
                     {/* Right: Home Logo (Oversized & Clipped) */}
                     <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
-                        <LogoDisplay src={homeTeam.logoUrl} alt={homeTeam.name} triCode={homeTeam.triCode} className="w-full h-full scale-110 object-contain" />
+                        <LogoDisplay
+                            src={homeTeam.logoUrl}
+                            alt={homeTeam.name}
+                            triCode={homeTeam.triCode}
+                            className="w-full h-full scale-110 object-contain"
+                            isProjectedWinner={homeIsWinner}
+                            teamColor={homeColor}
+                        />
                     </div>
 
                     {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Compact & Aligned */}
