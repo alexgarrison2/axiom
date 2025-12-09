@@ -423,11 +423,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     {/* ABSOLUTE BACKGROUND LOGOS */}
                     {/* Left: Away Logo (Oversized & Clipped) */}
                     <div className="absolute left-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
-                        <Image src={awayTeam.logoUrl} alt={awayTeam.name} fill className="object-contain scale-110" />
+                        <LogoDisplay src={awayTeam.logoUrl} alt={awayTeam.name} triCode={awayTeam.triCode} className="w-full h-full scale-110 object-contain" />
                     </div>
                     {/* Right: Home Logo (Oversized & Clipped) */}
                     <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
-                        <Image src={homeTeam.logoUrl} alt={homeTeam.name} fill className="object-contain scale-110" />
+                        <LogoDisplay src={homeTeam.logoUrl} alt={homeTeam.name} triCode={homeTeam.triCode} className="w-full h-full scale-110 object-contain" />
                     </div>
 
                     {/* CENTRAL CONTENT CONTAINER (Relative z-10) */}

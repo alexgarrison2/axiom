@@ -39,25 +39,37 @@ export default function LogoDisplay({ src, alt, triCode, className }: LogoDispla
     // Animate SVG paths on load
     useGSAP(() => {
         if (svgContent && container.current) {
-            // Target all common shapes
-            const shapes = container.current.querySelectorAll('path, circle, rect, ellipse, polygon, polyline');
-            if (shapes.length > 0) {
-                gsap.fromTo(shapes,
-                    {
-                        scale: 0,
-                        opacity: 0,
-                        transformOrigin: "center center"
-                    },
-                    {
-                        scale: 1,
-                        opacity: 1,
-                        stagger: { amount: 0.6, from: "center" },
-                        duration: 0.8,
-                        ease: "back.out(1.4)"
-                    }
-                );
+            const paths = container.current.querySelectorAll('path');
+
+            if (paths.length > 0) {
+                // Prepare paths for "DrawSVG" effect
+                paths.forEach((path) => {
+                    const length = path.getTotalLength();
+                    // Set stroke properties manually to mimic DrawSVG
+                    path.style.stroke = 'rgba(255,255,255,0.8)';
+                    path.style.strokeWidth = '1px';
+                    path.style.strokeDasharray = `${length}`;
+                    path.style.strokeDashoffset = `${length}`;
+                    path.style.fillOpacity = '0'; // Hide fill initially
+                });
+
+                const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+
+                // 1. Draw the strokes
+                tl.to(paths, {
+                    strokeDashoffset: 0,
+                    duration: 1.5,
+                    stagger: 0.05
+                })
+                    // 2. Fade in fill and remove stroke
+                    .to(paths, {
+                        fillOpacity: 1,
+                        strokeOpacity: 0,
+                        duration: 0.8
+                    }, "-=0.5");
+
             } else {
-                // Fallback for SVGs without discrete shapes
+                // Fallback for simple SVGs
                 gsap.fromTo("svg",
                     { scale: 0.5, opacity: 0 },
                     { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }
