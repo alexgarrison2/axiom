@@ -25,7 +25,7 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
 
                     // Result Badge Color
                     const getBadgeColor = (res: string) => {
-                        if (res === 'W') return 'text-neon-green border-neon-green/30 bg-neon-green/10';
+                        if (res === 'W' || res.startsWith('W-')) return 'text-neon-green border-neon-green/30 bg-neon-green/10';
                         if (res === 'L') return 'text-red-500 border-red-500/30 bg-red-500/10';
                         if (res === 'O') return 'text-orange-400 border-orange-400/30 bg-orange-400/10';
                         return 'text-neutral-500';
@@ -44,11 +44,9 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
                                     {isMobile ? (game.date.includes('/') ? game.date.split('/')[1] : game.date) : game.date}
                                 </span>
 
-                                {!isMobile && (
-                                    <span className="text-[10px] text-neutral-500 font-bold">
-                                        {game.isHome ? 'vs' : '@'}
-                                    </span>
-                                )}
+                                <span className="text-[10px] text-neutral-500 font-bold">
+                                    {game.isHome ? 'vs' : '@'}
+                                </span>
 
                                 {/* Opponent Logo + Tricode */}
                                 <div className="flex items-center gap-1.5 md:gap-2">

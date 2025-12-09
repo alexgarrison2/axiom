@@ -17,7 +17,7 @@ export interface RecentGame {
   opponentLogo: string;
   isHome: boolean;
   score: string;
-  result: 'W' | 'L' | 'O';
+  result: 'W' | 'L' | 'O' | 'W-OT' | 'W-SO';
 }
 
 export interface GamePrediction {
