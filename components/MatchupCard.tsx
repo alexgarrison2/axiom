@@ -4,12 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Flip } from 'gsap/Flip';
 import AnimatedNumber from './AnimatedNumber';
 import LogoDisplay from './LogoDisplay';
 import RecentGamesList from './RecentGamesList';
 
-gsap.registerPlugin(useGSAP, Flip);
+gsap.registerPlugin(useGSAP);
 
 interface MatchupCardProps {
     prediction: GamePrediction;
@@ -51,34 +50,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     const [isExpanded, setIsExpanded] = useState(false);
     const [isDesktopExpanded, setIsDesktopExpanded] = useState(false); // New state for desktop
 
-    // FLIP Animation Context
-    const { contextSafe } = useGSAP({ scope: cardRef });
-
-    const toggleExpand = contextSafe(() => {
-        const state = Flip.getState(cardRef.current);
-
-        // Update State (triggers render)
+    const toggleExpand = () => {
         setIsExpanded(!isExpanded);
-
-        // Animate from previous state after DOM update
-        // We use a small timeout to allow React to render the class change
-        // Or better, use flushSync? Or just rely on GSAP's tick?
-        // Actually, in React, we need useEffect to catch the post-render state.
-        // But for simplicity in this "event" driven flow:
-
-        // Wait for next tick to let React render the class change
-        requestAnimationFrame(() => {
-            Flip.from(state, {
-                duration: 0.6,
-                ease: "power3.inOut",
-                absolute: true, // Use absolute positioning for smoother reflow
-                onEnter: elements => gsap.fromTo(elements, { opacity: 0 }, { opacity: 1, duration: 0.3 }),
-                onLeave: elements => gsap.to(elements, { opacity: 0, duration: 0.3 }),
-                // Targets the card itself resizing
-                targets: cardRef.current
-            });
-        });
-    });
+    };
 
     // Desktop Toggle (Simple height/opacity transition)
     const toggleDesktopExpand = () => {
