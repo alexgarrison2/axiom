@@ -8,6 +8,7 @@ import AnimatedNumber from './AnimatedNumber';
 import LogoDisplay from './LogoDisplay';
 import RecentGamesList from './RecentGamesList';
 import PlayerNewsList from './PlayerNewsList';
+import LineupGrid from './LineupGrid';
 
 gsap.registerPlugin(useGSAP);
 
@@ -437,6 +438,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* Away Team Recent Games */}
                         <div className="flex-1 pr-6 flex flex-col gap-6">
                             <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} />
+                            <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} />
                             <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                         </div>
 
@@ -446,6 +448,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* Home Team Recent Games */}
                         <div className="flex-1 pl-6 flex flex-col gap-6">
                             <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} />
+                            <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} />
                             <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                         </div>
                     </div>
@@ -663,18 +666,20 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* Recent Games Lists (Side-by-Side on Mobile) */}
                         <div className="flex flex-row gap-2 mt-4 relative">
                             <div className="flex-1 min-w-0">
-                                {/* Recent Games & News */}
+                                {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} />
+                                    <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} />
                                     <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                                 </div>
                             </div>
                             {/* Vertical Divider */}
                             <div className="w-px bg-white/10 self-stretch mx-1"></div>
                             <div className="flex-1 min-w-0">
-                                {/* Recent Games & News */}
+                                {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} />
+                                    <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} />
                                     <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                                 </div>
                             </div>

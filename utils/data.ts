@@ -28,6 +28,17 @@ export interface PlayerNewsItem {
   date: string;
 }
 
+export interface LineupPlayer {
+  id: number;
+  name: string;
+  number: number | null;
+  pos: string;
+}
+
+export interface TeamLineup {
+  [key: string]: LineupPlayer[]; // f1, f2, f3, f4, d1, d2, d3
+}
+
 export interface GamePrediction {
   id: string;
   date: string;
@@ -71,6 +82,9 @@ export interface GamePrediction {
 
   home_news?: PlayerNewsItem[];
   away_news?: PlayerNewsItem[];
+
+  home_lineup?: TeamLineup;
+  away_lineup?: TeamLineup;
 }
 
 interface RawPrediction {
@@ -113,6 +127,8 @@ interface RawPrediction {
   away_gsax_pct?: string;
   home_news?: string;
   away_news?: string;
+  home_lineup?: string;
+  away_lineup?: string;
 }
 
 interface RawTeam {
@@ -181,6 +197,17 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       }
     };
 
+    // Parse Lineups
+    const parseLineup = (jsonStr?: string): TeamLineup | undefined => {
+      if (!jsonStr || jsonStr === '{}') return undefined; // Empty or null
+      try {
+        return JSON.parse(jsonStr) as TeamLineup;
+      } catch (e) {
+        console.error("Error parsing lineup", e);
+        return undefined;
+      }
+    };
+
     if (!homeTeam || !awayTeam) {
       console.warn(`Team not found for game ${row.game_id}: ${row.home_team} vs ${row.away_team}`);
       return null;
@@ -233,6 +260,8 @@ export async function getPredictions(): Promise<GamePrediction[]> {
 
       home_news: parseNews(row.home_news),
       away_news: parseNews(row.away_news),
+      home_lineup: parseLineup(row.home_lineup),
+      away_lineup: parseLineup(row.away_lineup),
     };
   }).filter((p): p is GamePrediction => p !== null);
 
