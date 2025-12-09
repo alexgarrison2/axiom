@@ -39,7 +39,10 @@ export default function LogoDisplay({ src, alt, triCode, className }: LogoDispla
     // Animate SVG paths on load
     useGSAP(() => {
         if (svgContent && container.current) {
-            const paths = container.current.querySelectorAll('path');
+            const svgElement = container.current.querySelector('svg');
+            if (!svgElement) return;
+
+            const paths = svgElement.querySelectorAll('path');
 
             if (paths.length > 0) {
                 // Prepare paths for "DrawSVG" effect
@@ -69,10 +72,10 @@ export default function LogoDisplay({ src, alt, triCode, className }: LogoDispla
                     }, "-=0.5");
 
             } else {
-                // Fallback for simple SVGs
-                gsap.fromTo("svg",
-                    { scale: 0.5, opacity: 0 },
-                    { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)" }
+                // Fallback for simple SVGs (e.g., those without paths, like some logos)
+                gsap.fromTo(svgElement,
+                    { scale: 0.8, opacity: 0 },
+                    { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)", transformOrigin: "center center" }
                 );
             }
         }

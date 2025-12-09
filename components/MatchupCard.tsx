@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { GamePrediction } from '@/utils/data';
 import Image from 'next/image';
 import Link from 'next/link';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { Flip } from 'gsap/Flip';
 import AnimatedNumber from './AnimatedNumber';
 import LogoDisplay from './LogoDisplay';
+
+gsap.registerPlugin(useGSAP, Flip);
 
 interface MatchupCardProps {
     prediction: GamePrediction;
@@ -37,6 +42,39 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         home_gas_breakdown,
         away_gas_breakdown
     } = prediction;
+
+    const cardRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    // FLIP Animation Context
+    const { contextSafe } = useGSAP({ scope: cardRef });
+
+    const toggleExpand = contextSafe(() => {
+        const state = Flip.getState(cardRef.current);
+
+        // Update State (triggers render)
+        setIsExpanded(!isExpanded);
+
+        // Animate from previous state after DOM update
+        // We use a small timeout to allow React to render the class change
+        // Or better, use flushSync? Or just rely on GSAP's tick?
+        // Actually, in React, we need useEffect to catch the post-render state.
+        // But for simplicity in this "event" driven flow:
+
+        // Wait for next tick to let React render the class change
+        requestAnimationFrame(() => {
+            Flip.from(state, {
+                duration: 0.6,
+                ease: "power3.inOut",
+                absolute: true, // Use absolute positioning for smoother reflow
+                onEnter: elements => gsap.fromTo(elements, { opacity: 0 }, { opacity: 1, duration: 0.3 }),
+                onLeave: elements => gsap.to(elements, { opacity: 0, duration: 0.3 }),
+                // Targets the card itself resizing
+                targets: cardRef.current
+            });
+        });
+    });
 
     // --- Helpers ---
     const getGasColor = (gas: number | undefined) => {
@@ -285,8 +323,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         );
     };
 
-    // --- State for Mobile Expansion ---
-    const [isExpanded, setIsExpanded] = useState(false);
 
     return (
         <>
@@ -412,7 +448,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             {/* ========================================= */}
             <div
                 className={`flex md:hidden flex-col w-full mx-auto rounded-[2.5rem] mb-1 text-white overflow-hidden transition-all duration-300 border backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={toggleExpand}
+                ref={cardRef}
             >
                 {/* Background Glass */}
                 <div className="absolute inset-0 bg-[#0a0a0a]/90 -z-10" />
