@@ -47,11 +47,12 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-x border-white/5' : ''}`}>
                                         <span
-                                            className="text-[10px] font-medium leading-tight select-none"
+                                            className="text-[10px] leading-tight select-none"
                                             style={{
-                                                color: player && player.ppUnit === 1 ? '#0DFF00' :
-                                                    player && player.ppUnit === 2 ? '#FFCC00' :
-                                                        '#d4d4d4' // neutral-300
+                                                color: player && player.ppUnit === 1 ? '#FFFFFF' :
+                                                    player && player.ppUnit === 2 ? '#FFFFFF' :
+                                                        '#697281',
+                                                fontWeight: player && player.ppUnit === 1 ? 700 : 500
                                             }}
                                         >
                                             {player ? formatName(player.name) : '-'}
@@ -79,11 +80,12 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-l border-white/5' : ''}`}>
                                         <span
-                                            className="text-[10px] font-medium leading-tight select-none"
+                                            className="text-[10px] leading-tight select-none"
                                             style={{
-                                                color: player && player.ppUnit === 1 ? '#0DFF00' :
-                                                    player && player.ppUnit === 2 ? '#FFCC00' :
-                                                        '#d4d4d4' // neutral-300
+                                                color: player && player.ppUnit === 1 ? '#FFFFFF' :
+                                                    player && player.ppUnit === 2 ? '#FFFFFF' :
+                                                        '#697281',
+                                                fontWeight: player && player.ppUnit === 1 ? 700 : 500
                                             }}
                                         >
                                             {player ? formatName(player.name) : '-'}
