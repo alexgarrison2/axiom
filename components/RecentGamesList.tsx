@@ -78,6 +78,7 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
                                             alt={game.opponent}
                                             triCode={game.opponent}
                                             className="w-full h-full object-contain"
+                                            primaryColor={game.opponentColor}
                                         />
                                     </div>
                                     {!isMobile && <span className="text-xs font-bold text-neutral-300">{game.opponent}</span>}

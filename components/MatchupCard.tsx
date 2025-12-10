@@ -269,6 +269,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         alt={team.name}
                         triCode={team.triCode}
                         className="w-16 h-16 md:w-20 md:h-20"
+                        primaryColor={team.color1}
                     />
                     <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
                         <div className="flex items-center gap-1.5 flex-wrap justify-center md:justify-start">
@@ -508,6 +509,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             alt={awayTeam.name}
                             triCode={awayTeam.triCode}
                             className="w-full h-full scale-110 object-contain"
+                            primaryColor={awayTeam.color1}
                         />
                     </div>
                     {/* Right: Home Logo (Oversized & Clipped) */}
@@ -517,6 +519,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             alt={homeTeam.name}
                             triCode={homeTeam.triCode}
                             className="w-full h-full scale-110 object-contain"
+                            primaryColor={homeTeam.color1}
                         />
                     </div>
 

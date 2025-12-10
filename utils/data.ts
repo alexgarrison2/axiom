@@ -19,6 +19,7 @@ export interface RecentGame {
   isHome: boolean;
   score: string;
   result: 'W' | 'L' | 'O' | 'W-OT' | 'W-SO';
+  opponentColor?: string;
 }
 
 export interface PlayerNewsItem {
@@ -157,6 +158,7 @@ export async function getPredictions(): Promise<GamePrediction[]> {
 
   const teamsMap = new Map<string, Team>();
   const triCodeToLogoMap = new Map<string, string>();
+  const triCodeToColorMap = new Map<string, string>();
 
   teamsParsed.data.forEach((row) => {
     teamsMap.set(row['Common Name'], {
@@ -170,6 +172,7 @@ export async function getPredictions(): Promise<GamePrediction[]> {
     // Map Tricode to Logo
     if (row['Team Tricode']) {
       triCodeToLogoMap.set(row['Team Tricode'], row['Team Logo URL']);
+      triCodeToColorMap.set(row['Team Tricode'], row['Hex Color 1']);
     }
   });
 
@@ -184,7 +187,8 @@ export async function getPredictions(): Promise<GamePrediction[]> {
         const games = JSON.parse(jsonStr) as Omit<RecentGame, 'opponentLogo'>[];
         return games.map(g => ({
           ...g,
-          opponentLogo: triCodeToLogoMap.get(g.opponent) || ''
+          opponentLogo: triCodeToLogoMap.get(g.opponent) || '',
+          opponentColor: triCodeToColorMap.get(g.opponent) || ''
         }));
       } catch (e) {
         console.error("Error parsing recent games", e);

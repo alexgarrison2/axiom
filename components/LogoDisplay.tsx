@@ -16,9 +16,20 @@ interface LogoDisplayProps {
     alt: string;
     triCode?: string;
     className?: string;
+    primaryColor?: string;
 }
 
-export default function LogoDisplay({ src, alt, triCode, className }: LogoDisplayProps) {
+function isColorDark(color: string): boolean {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    // Standard luminance formula
+    const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    return luminance < 40; // Threshold for "very dark"
+}
+
+export default function LogoDisplay({ src, alt, triCode, className, primaryColor }: LogoDisplayProps) {
     const container = useRef<HTMLDivElement>(null);
     const [svgContent, setSvgContent] = useState<string | null>(null);
 
@@ -29,6 +40,7 @@ export default function LogoDisplay({ src, alt, triCode, className }: LogoDispla
             .then(async (res) => {
                 if (res.ok) {
                     const text = await res.text();
+                    // Ensure it's an SVG
                     if (text.includes('<svg')) {
                         setSvgContent(text);
                     }
@@ -47,9 +59,15 @@ export default function LogoDisplay({ src, alt, triCode, className }: LogoDispla
             if (svgElement) {
                 const paths = svgElement.querySelectorAll('path');
                 if (paths.length > 0) {
+                    // Determine stroke color
+                    let strokeColor = 'rgba(255,255,255,0.8)';
+                    if (primaryColor && !isColorDark(primaryColor)) {
+                        strokeColor = primaryColor;
+                    }
+
                     paths.forEach((path) => {
                         const length = path.getTotalLength();
-                        path.style.stroke = 'rgba(255,255,255,0.8)';
+                        path.style.stroke = strokeColor;
                         path.style.strokeWidth = '0.3px';
                         path.style.strokeDasharray = `${length}`;
                         path.style.strokeDashoffset = `${length}`;
