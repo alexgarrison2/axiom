@@ -60,43 +60,66 @@ export default function LogoDisplay({ src, alt, triCode, className, primaryColor
     useGSAP(() => {
         if (variant !== 'animated' || !container.current) return;
 
-        // Existing SVG Path Animation (DrawSVG)
         if (svgContent) {
             const svgElement = container.current.querySelector('svg');
 
-            // Performance Check: logical heuristic to skip expensive path animation
-            // 1. If file size is massive (>50KB string length approx)
-            // 2. If it contains embedded images (base64) which implies it's not a pure vector
-            // 3. If path count is too high (>50)
-            const isHeavy = svgContent.length > 50000 || svgContent.includes('data:image');
-            const paths = svgElement ? svgElement.querySelectorAll('path') : [];
+            if (svgElement) {
+                // Hybrid Animation Strategy
+                // 1. "Heavy" Elements (Filters, Images): Fade In (Low Cost)
+                // 2. "Clean" Vectors (Paths): Draw In (High Polish)
 
-            if (svgElement && !isHeavy && paths.length > 0 && paths.length < 50) {
-                // Determine stroke color
-                let strokeColor = 'rgba(255,255,255,0.8)';
-                if (primaryColor && !isColorDark(primaryColor)) {
-                    strokeColor = primaryColor;
-                }
+                // Find all elements that cause performance issues (Filters, Images)
+                // We assume these are the "texture" or "background" layers
+                const heavyElements = Array.from(svgElement.querySelectorAll('[filter], image, defs > pattern'));
 
-                paths.forEach((path) => {
-                    const length = path.getTotalLength();
-                    path.style.stroke = strokeColor;
-                    path.style.strokeWidth = '0.3px';
-                    path.style.strokeDasharray = `${length}`;
-                    path.style.strokeDashoffset = `${length}`;
-                    path.style.fillOpacity = '0';
+                // Find all paths that represent the clean line art
+                // Exclude paths that are inside a heavy element (filtered group) to avoid lag
+                const allPaths = Array.from(svgElement.querySelectorAll('path'));
+                const cleanPaths = allPaths.filter(path => {
+                    const parentFilter = path.closest('[filter]');
+                    const hasFilter = path.hasAttribute('filter');
+                    // Only animate paths that aren't filtered (or inside a filter)
+                    return !parentFilter && !hasFilter;
                 });
 
-                const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
-                tl.to(paths, { strokeDashoffset: 0, duration: 1.5, stagger: 0.05 })
-                    .to(paths, { fillOpacity: 1, strokeOpacity: 0, duration: 0.8 }, "-=0.5");
-            } else if (svgElement) {
-                // Fallback for heavy SVGs or those without paths: Simple Fade In
-                // This prevents choking on massive base64 strings or 1000s of grunge paths
-                gsap.fromTo(svgElement,
-                    { scale: 0.8, opacity: 0 },
-                    { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)", transformOrigin: "center center" }
-                );
+                // Helper: Animate Heavy Elements (Fade In)
+                // If there are heavy elements, fade them in immediately or with slight delay
+                if (heavyElements.length > 0) {
+                    gsap.fromTo(heavyElements,
+                        { opacity: 0, scale: 0.95 },
+                        { opacity: 1, scale: 1, duration: 0.8, ease: "power2.out", stagger: 0.1 }
+                    );
+                }
+
+                // Helper: Animate Clean Paths (Draw In)
+                if (cleanPaths.length > 0) {
+                    // Determine stroke color
+                    let strokeColor = 'rgba(255,255,255,0.8)';
+                    if (primaryColor && !isColorDark(primaryColor)) {
+                        strokeColor = primaryColor;
+                    }
+
+                    cleanPaths.forEach((path) => {
+                        const length = path.getTotalLength();
+                        path.style.stroke = strokeColor;
+                        path.style.strokeWidth = '0.3px';
+                        path.style.strokeDasharray = `${length}`;
+                        path.style.strokeDashoffset = `${length}`;
+                        path.style.fillOpacity = '0';
+                    });
+
+                    const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+                    tl.to(cleanPaths, { strokeDashoffset: 0, duration: 1.5, stagger: 0.05 })
+                        .to(cleanPaths, { fillOpacity: 1, strokeOpacity: 0, duration: 0.8 }, "-=0.5");
+                }
+
+                // Fallback: If absolutely nothing was found to animate (weird edge case), fade whole SVG
+                if (heavyElements.length === 0 && cleanPaths.length === 0) {
+                    gsap.fromTo(svgElement,
+                        { scale: 0.8, opacity: 0 },
+                        { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)", transformOrigin: "center center" }
+                    );
+                }
             }
         }
     }, { dependencies: [svgContent, variant], scope: container });
