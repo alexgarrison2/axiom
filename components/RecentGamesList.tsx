@@ -6,9 +6,10 @@ interface RecentGamesListProps {
     games: RecentGame[];
     teamTriCode: string;
     isMobile?: boolean;
+    currentStarter?: string;
 }
 
-const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, isMobile = false }) => {
+const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, isMobile = false, currentStarter }) => {
     if (!games || games.length === 0) return null;
 
     return (
@@ -21,6 +22,10 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
             {/* List */}
             <div className="flex flex-col gap-1">
                 {games.slice(0, 5).map((game, i) => {
+                    // Check for historical starter match
+                    const cleanCurrent = currentStarter?.split('(')[0].trim().toLowerCase();
+                    const cleanGameStarter = game.starter?.trim().toLowerCase();
+                    const isStarterMatch = cleanCurrent && cleanGameStarter && cleanCurrent === cleanGameStarter;
                     // Format Date (Already formatted "12/6" in backend, but let's be safe)
                     const formatDate = (dateStr: string) => {
                         const [m, d] = dateStr.split('/');
@@ -62,8 +67,11 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
 
                             {/* Left: Date & Opponent */}
                             <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                                <span className={`text-[10px] md:text-xs text-neutral-400 font-mono ${isMobile ? 'w-auto' : 'w-10'}`}>
+                                <span className={`text-[10px] md:text-xs text-neutral-400 font-mono ${isMobile ? 'w-auto' : 'w-10'} flex items-center gap-1`}>
                                     {isMobile ? formatDate(game.date) : game.date}
+                                    {isStarterMatch && (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_5px_rgba(168,85,247,0.5)]" title={`Starter: ${game.starter}`} />
+                                    )}
                                 </span>
 
                                 <span className="text-[10px] text-neutral-500 font-bold">

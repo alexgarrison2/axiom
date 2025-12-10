@@ -20,6 +20,7 @@ export interface RecentGame {
   score: string;
   result: 'W' | 'L' | 'O' | 'W-OT' | 'W-SO';
   opponentColor?: string;
+  starter?: string;
 }
 
 export interface PlayerNewsItem {

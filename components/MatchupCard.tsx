@@ -713,7 +713,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             <div className="flex-1 min-w-0">
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
-                                    <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} />
+                                    <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} currentStarter={awayStarter} />
                                     <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} />
                                     <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                                 </div>
@@ -723,7 +723,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             <div className="flex-1 min-w-0">
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
-                                    <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} />
+                                    <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} currentStarter={homeStarter} />
                                     <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} />
                                     <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                                 </div>
