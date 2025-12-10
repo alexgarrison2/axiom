@@ -63,33 +63,40 @@ export default function LogoDisplay({ src, alt, triCode, className, primaryColor
         // Existing SVG Path Animation (DrawSVG)
         if (svgContent) {
             const svgElement = container.current.querySelector('svg');
-            if (svgElement) {
-                const paths = svgElement.querySelectorAll('path');
-                if (paths.length > 0) {
-                    // Determine stroke color
-                    let strokeColor = 'rgba(255,255,255,0.8)';
-                    if (primaryColor && !isColorDark(primaryColor)) {
-                        strokeColor = primaryColor;
-                    }
 
-                    paths.forEach((path) => {
-                        const length = path.getTotalLength();
-                        path.style.stroke = strokeColor;
-                        path.style.strokeWidth = '0.3px';
-                        path.style.strokeDasharray = `${length}`;
-                        path.style.strokeDashoffset = `${length}`;
-                        path.style.fillOpacity = '0';
-                    });
+            // Performance Check: logical heuristic to skip expensive path animation
+            // 1. If file size is massive (>50KB string length approx)
+            // 2. If it contains embedded images (base64) which implies it's not a pure vector
+            // 3. If path count is too high (>50)
+            const isHeavy = svgContent.length > 50000 || svgContent.includes('data:image');
+            const paths = svgElement ? svgElement.querySelectorAll('path') : [];
 
-                    const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
-                    tl.to(paths, { strokeDashoffset: 0, duration: 1.5, stagger: 0.05 })
-                        .to(paths, { fillOpacity: 1, strokeOpacity: 0, duration: 0.8 }, "-=0.5");
-                } else {
-                    gsap.fromTo(svgElement,
-                        { scale: 0.8, opacity: 0 },
-                        { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)", transformOrigin: "center center" }
-                    );
+            if (svgElement && !isHeavy && paths.length > 0 && paths.length < 50) {
+                // Determine stroke color
+                let strokeColor = 'rgba(255,255,255,0.8)';
+                if (primaryColor && !isColorDark(primaryColor)) {
+                    strokeColor = primaryColor;
                 }
+
+                paths.forEach((path) => {
+                    const length = path.getTotalLength();
+                    path.style.stroke = strokeColor;
+                    path.style.strokeWidth = '0.3px';
+                    path.style.strokeDasharray = `${length}`;
+                    path.style.strokeDashoffset = `${length}`;
+                    path.style.fillOpacity = '0';
+                });
+
+                const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+                tl.to(paths, { strokeDashoffset: 0, duration: 1.5, stagger: 0.05 })
+                    .to(paths, { fillOpacity: 1, strokeOpacity: 0, duration: 0.8 }, "-=0.5");
+            } else if (svgElement) {
+                // Fallback for heavy SVGs or those without paths: Simple Fade In
+                // This prevents choking on massive base64 strings or 1000s of grunge paths
+                gsap.fromTo(svgElement,
+                    { scale: 0.8, opacity: 0 },
+                    { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.4)", transformOrigin: "center center" }
+                );
             }
         }
     }, { dependencies: [svgContent, variant], scope: container });
