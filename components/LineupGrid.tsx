@@ -49,7 +49,7 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                         <span
                                             className="text-[10px] leading-tight select-none"
                                             style={{
-                                                color: player && player.ppUnit === 1 ? '#FFFFFF' :
+                                                color: player && player.ppUnit === 1 ? '#5382BD' :
                                                     player && player.ppUnit === 2 ? '#FFFFFF' :
                                                         '#697281',
                                                 fontWeight: player && player.ppUnit === 1 ? 700 : 500
@@ -82,7 +82,7 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                         <span
                                             className="text-[10px] leading-tight select-none"
                                             style={{
-                                                color: player && player.ppUnit === 1 ? '#FFFFFF' :
+                                                color: player && player.ppUnit === 1 ? '#5382BD' :
                                                     player && player.ppUnit === 2 ? '#FFFFFF' :
                                                         '#697281',
                                                 fontWeight: player && player.ppUnit === 1 ? 700 : 500
