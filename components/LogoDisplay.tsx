@@ -17,6 +17,7 @@ interface LogoDisplayProps {
     triCode?: string;
     className?: string;
     primaryColor?: string;
+    variant?: 'standard' | 'animated';
 }
 
 function isColorDark(color: string): boolean {
@@ -29,14 +30,20 @@ function isColorDark(color: string): boolean {
     return luminance < 40; // Threshold for "very dark"
 }
 
-export default function LogoDisplay({ src, alt, triCode, className, primaryColor }: LogoDisplayProps) {
+export default function LogoDisplay({ src, alt, triCode, className, primaryColor, variant = 'standard' }: LogoDisplayProps) {
     const container = useRef<HTMLDivElement>(null);
     const [svgContent, setSvgContent] = useState<string | null>(null);
 
-    // Fetch SVG if triCode is present
+    // If variant is standard, just use the provided src (which points to standard logo url)
+    // Or if src is missing but triCode exists, point to local standard logos
+    const imageSrc = variant === 'standard' && triCode ? `/logos/${triCode}.svg` : src;
+
+    // Fetch Animated SVG if variant is 'animated'
     useEffect(() => {
-        if (!triCode) return;
-        fetch(`/logos/${triCode}.svg`)
+        if (variant !== 'animated' || !triCode) return;
+
+        // Fetch from the new animated logos directory
+        fetch(`/logos-animated/${triCode}.svg`)
             .then(async (res) => {
                 if (res.ok) {
                     const text = await res.text();
@@ -46,12 +53,12 @@ export default function LogoDisplay({ src, alt, triCode, className, primaryColor
                     }
                 }
             })
-            .catch((err) => console.warn(`Failed to load logo for ${triCode}`, err));
-    }, [triCode]);
+            .catch((err) => console.warn(`Failed to load animated logo for ${triCode}`, err));
+    }, [triCode, variant]);
 
-    // Animate SVG paths on load
+    // Animate SVG paths (Only for 'animated' variant)
     useGSAP(() => {
-        if (!container.current) return;
+        if (variant !== 'animated' || !container.current) return;
 
         // Existing SVG Path Animation (DrawSVG)
         if (svgContent) {
@@ -85,43 +92,45 @@ export default function LogoDisplay({ src, alt, triCode, className, primaryColor
                 }
             }
         }
-    }, { dependencies: [svgContent], scope: container });
+    }, { dependencies: [svgContent, variant], scope: container });
 
+    // Standard Render (Image)
+    if (variant === 'standard') {
+        return (
+            <div className={`relative ${className}`}>
+                <Image
+                    src={imageSrc}
+                    alt={alt}
+                    fill
+                    className="object-contain"
+                />
+            </div>
+        );
+    }
+
+    // Animated Render (SVG)
     return (
-        <motion.div
+        <div
             ref={container}
-            className={`relative drop-shadow-lg ${className} flex items-center justify-center`}
-            whileHover={{
-                scale: 1.15,
-                rotate: 2,
-                filter: "drop-shadow(0 0 15px rgba(255,255,255,0.4))"
-            }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{
-                scale: 1,
-                opacity: 1,
-                transition: { type: "spring", stiffness: 200, damping: 12 }
-            }}
+            className={`relative flex items-center justify-center ${className}`}
         >
             {svgContent ? (
                 <div
+                    className="w-full h-full [&>svg]:w-full [&>svg]:h-full"
                     dangerouslySetInnerHTML={{ __html: svgContent }}
-                    className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:drop-shadow-sm relative z-10"
-                />
-            ) : src ? (
-                <Image
-                    src={src}
-                    alt={alt}
-                    fill
-                    className="object-contain relative z-10"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
             ) : (
-                <div className="w-full h-full bg-neutral-800/50 rounded-full flex items-center justify-center relative z-10">
-                    <span className="text-[8px] text-neutral-500 font-bold">?</span>
+                <div className="w-full h-full flex items-center justify-center">
+                    <div className="relative w-full h-full">
+                        <Image
+                            src={imageSrc || src}
+                            alt={alt}
+                            fill
+                            className="object-contain opacity-50"
+                        />
+                    </div>
                 </div>
             )}
-        </motion.div>
+        </div>
     );
 }
