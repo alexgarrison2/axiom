@@ -504,7 +504,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                     {/* ABSOLUTE BACKGROUND LOGOS */}
                     {/* Left: Away Logo (Oversized & Clipped) */}
-                    <div className="absolute left-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-80 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
+                    <div className="absolute left-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
                         <LogoDisplay
                             src={awayTeam.logoUrl}
                             alt={awayTeam.name}
@@ -515,7 +515,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         />
                     </div>
                     {/* Right: Home Logo (Oversized & Clipped) */}
-                    <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-80 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
+                    <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
                         <LogoDisplay
                             src={homeTeam.logoUrl}
                             alt={homeTeam.name}
