@@ -609,8 +609,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 </div>
 
                 {/* --- EXPANDED DETAILS BODY --- */}
-                <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[1200px] opacity-100 border-t border-white/5' : 'max-h-0 opacity-0'}`}>
-                    <div className="p-4 bg-black/20">
+                <div className={`relative z-20 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[1200px] opacity-100 border-t border-white/5' : 'max-h-0 opacity-0'}`}>
+                    <div className="p-4 bg-black/80 backdrop-blur-md">
                         {/* Goalies Row */}
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex flex-col items-start w-[48%]">
