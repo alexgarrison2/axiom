@@ -50,7 +50,7 @@ export default function LogoDisplay({ src, alt, triCode, className }: LogoDispla
                     paths.forEach((path) => {
                         const length = path.getTotalLength();
                         path.style.stroke = 'rgba(255,255,255,0.8)';
-                        path.style.strokeWidth = '1px';
+                        path.style.strokeWidth = '0.5px';
                         path.style.strokeDasharray = `${length}`;
                         path.style.strokeDashoffset = `${length}`;
                         path.style.fillOpacity = '0';
