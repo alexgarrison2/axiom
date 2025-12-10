@@ -233,7 +233,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gas,
         gasBreakdown,
         gsaxTotal,
-        gsaxPct
+        gsaxPct,
+        goalieStats
     }: {
         team: any,
         isHome: boolean,
@@ -247,14 +248,15 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gas?: number,
         gasBreakdown?: string[],
         gsaxTotal?: number,
-        gsaxPct?: number
+        gsaxPct?: number,
+        goalieStats?: string
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
         const safeStarter = starter || '';
         // Extract status from parentheses, e.g. "Name (Confirmed)" or "Name (Likely)"
         const statusMatch = safeStarter.match(/\((.*?)\)$/);
-        const status = statusMatch ? statusMatch[1] : null;
+        const status = statusMatch ? statusMatch[1] : 'UNCONFIRMED';
         const starterName = safeStarter.replace(/\s*\(.*?\)$/, '');
 
         return (
@@ -287,6 +289,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 }`}>
                                 {status}
                             </span>
+                        )}
+                        {goalieStats && (
+                            <div className="mt-0.5 text-[9px] text-neutral-500 font-mono tracking-wide">
+                                {goalieStats}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -367,6 +374,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             gasBreakdown={prediction.away_gas_breakdown}
                             gsaxTotal={prediction.away_gsax_total}
                             gsaxPct={prediction.away_gsax_pct}
+                            goalieStats={prediction.away_goalie_stats}
                         />
                     </div>
 
@@ -441,6 +449,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             gasBreakdown={prediction.home_gas_breakdown}
                             gsaxTotal={prediction.home_gsax_total}
                             gsaxPct={prediction.home_gsax_pct}
+                            goalieStats={prediction.home_goalie_stats}
                         />
                     </div>
                 </div>
@@ -615,6 +624,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 <span className="text-[9px] text-neutral-500 font-mono uppercase mt-0.5">
                                     {getGoalieStatusText(awayStarter, prediction.id, 'away')}
                                 </span>
+                                {prediction.away_goalie_stats && (
+                                    <span className="text-[9px] text-neutral-500 font-mono tracking-wide mt-0.5">
+                                        {prediction.away_goalie_stats}
+                                    </span>
+                                )}
                             </div>
                             <div className="flex flex-col items-end w-[48%]">
                                 <div className="flex items-center gap-1 flex-wrap justify-end">
@@ -633,6 +647,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 <span className="text-[9px] text-neutral-500 font-mono uppercase text-right mt-0.5">
                                     {getGoalieStatusText(homeStarter, prediction.id, 'home')}
                                 </span>
+                                {prediction.home_goalie_stats && (
+                                    <span className="text-[9px] text-neutral-500 font-mono tracking-wide text-right mt-0.5">
+                                        {prediction.home_goalie_stats}
+                                    </span>
+                                )}
                             </div>
                         </div>
 
