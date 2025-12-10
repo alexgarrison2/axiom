@@ -116,7 +116,7 @@ export default function LogoDisplay({ src, alt, triCode, className, primaryColor
         >
             {svgContent ? (
                 <div
-                    className="w-full h-full [&>svg]:w-full [&>svg]:h-full"
+                    className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:overflow-visible"
                     dangerouslySetInnerHTML={{ __html: svgContent }}
                 />
             ) : (
