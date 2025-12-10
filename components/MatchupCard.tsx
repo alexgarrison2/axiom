@@ -73,7 +73,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     const GasGauge = ({ gas, breakdown, align = 'center' }: { gas?: number, breakdown?: string[], align?: 'left' | 'right' | 'center' }) => {
         const [isOpen, setIsOpen] = useState(false);
         // Base classes
-        let tooltipClasses = "absolute bottom-full mb-2 w-40 bg-zinc-950 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
+        let tooltipClasses = "absolute bottom-full mb-2 w-40 bg-zinc-950/85 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
 
         // Toggle visibility: standard hover for desktop + isOpen state for mobile click
         // We use 'hidden group-hover/gas:block' for desktop hover
