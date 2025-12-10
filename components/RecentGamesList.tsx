@@ -22,6 +22,15 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
             <div className="flex flex-col gap-1">
                 {games.slice(0, 5).map((game, i) => {
                     // Format Date (Already formatted "12/6" in backend, but let's be safe)
+                    const formatDate = (dateStr: string) => {
+                        const [m, d] = dateStr.split('/');
+                        const month = parseInt(m);
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        if (month >= 1 && month <= 12) {
+                            return `${months[month - 1]}/${d}`;
+                        }
+                        return dateStr;
+                    };
 
                     // Result Badge Styles
                     const getBadgeStyles = (res: string) => {
@@ -54,7 +63,7 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
                             {/* Left: Date & Opponent */}
                             <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                                 <span className={`text-[10px] md:text-xs text-neutral-400 font-mono ${isMobile ? 'w-auto' : 'w-10'}`}>
-                                    {isMobile ? (game.gameNumber || game.date) : game.date}
+                                    {isMobile ? formatDate(game.date) : game.date}
                                 </span>
 
                                 <span className="text-[10px] text-neutral-500 font-bold">
@@ -72,7 +81,6 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
                                         />
                                     </div>
                                     {!isMobile && <span className="text-xs font-bold text-neutral-300">{game.opponent}</span>}
-                                    {isMobile && <span className="text-[10px] font-bold text-neutral-300">{game.opponent}</span>}
                                 </div>
                             </div>
 
