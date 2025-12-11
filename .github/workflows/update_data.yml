@@ -2,8 +2,22 @@ name: Update NHL Data
 
 on:
   schedule:
-    # Run every 30 minutes
-    - cron: '*/30 * * * *'
+    # Note: GitHub Actions uses UTC time.
+    # CT is UTC-6 (Standard) or UTC-5 (DST). Assuming UTC-6 (Winter).
+    
+    # 1. 06:30 AM - 09:30 AM CT (12:30 - 15:30 UTC): Every 20 mins
+    # Covers morning updates
+    - cron: '*/20 12-15 * * *'
+    
+    # 2. 09:30 AM - 12:00 PM CT (15:30 - 18:00 UTC): Every 15 mins
+    # Covers late morning / goalie start confirmations (Peak)
+    - cron: '*/15 15-17 * * *'
+    
+    # 3. 12:00 PM - 09:30 PM CT (18:00 - 03:30 UTC): Every 20 mins
+    # Covers afternoon and live evening games
+    - cron: '*/20 18-23 * * *'
+    - cron: '*/20 0-3 * * *'
+
   workflow_dispatch: # Allow manual trigger
 
 jobs:
