@@ -257,11 +257,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         </div>
     );
 
-    const NewsIndicator = ({ hasNews }: { hasNews: boolean }) => {
+    const NewsIndicator = ({ hasNews, className = "absolute bottom-2 right-2" }: { hasNews: boolean, className?: string }) => {
         if (!hasNews) return null;
         return (
-            <div className="absolute bottom-2 right-2 z-20" title="Player News Available">
-                <div className="bg-yellow-500/10 border border-yellow-500/20 p-1.5 rounded-full animate-pulse">
+            <div className={`${className} z-50`} title="Player News Available">
+                <div className="bg-yellow-500/10 border border-yellow-500/20 p-1.5 rounded-full animate-pulse shadow-[0_0_15px_rgba(234,179,8,0.4)] backdrop-blur-sm">
                     <svg
                         width="14"
                         height="14"
@@ -455,7 +455,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             vsOppStats={prediction.awayGoalieVsOpp}
                             opponentTriCode={homeTeam.triCode}
                         />
-                        <NewsIndicator hasNews={!!(prediction.away_news && prediction.away_news.length > 0)} />
+                        <NewsIndicator
+                            hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
+                            className="absolute bottom-2 left-2"
+                        />
                     </div>
 
                     {/* CENTER INFO (Time, Total, Bar) - Bracketed by dividers */}
@@ -599,18 +602,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             variant="animated"
                         />
                         {/* Mobile Away News Indicator */}
-                        {prediction.away_news && prediction.away_news.length > 0 && (
-                            <div className="absolute left-4 top-14 z-20 pointer-events-none">
-                                <div className="bg-yellow-500/10 border border-yellow-500/20 p-1 rounded-full animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.3)]">
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-                                        <path d="M18 14h-8" />
-                                        <path d="M15 18h-5" />
-                                        <path d="M10 6h8v4h-8V6Z" />
-                                    </svg>
-                                </div>
-                            </div>
-                        )}
+                        <NewsIndicator
+                            hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
+                            className="absolute left-6 top-1/2 -translate-y-1/2 md:hidden"
+                        />
                     </div>
 
                     {/* Right: Home Logo (Oversized & Clipped) */}
@@ -624,18 +619,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             variant="animated"
                         />
                         {/* Mobile Home News Indicator */}
-                        {prediction.home_news && prediction.home_news.length > 0 && (
-                            <div className="absolute right-4 top-14 z-20 pointer-events-none">
-                                <div className="bg-yellow-500/10 border border-yellow-500/20 p-1 rounded-full animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.3)]">
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-                                        <path d="M18 14h-8" />
-                                        <path d="M15 18h-5" />
-                                        <path d="M10 6h8v4h-8V6Z" />
-                                    </svg>
-                                </div>
-                            </div>
-                        )}
+                        <NewsIndicator
+                            hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
+                            className="absolute right-6 top-1/2 -translate-y-1/2 md:hidden"
+                        />
                     </div>
                     {/* Right: Home Logo (Oversized & Clipped) */}
                     <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
