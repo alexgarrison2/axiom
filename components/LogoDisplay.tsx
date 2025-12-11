@@ -75,7 +75,7 @@ export default function LogoDisplay({ src, alt, triCode, className, primaryColor
 
             // Fade in Fill + Fade out Stroke (to return to "Normal" look)
             gsap.to(paths, {
-                attr: { fill: (i, t) => t.dataset.originalFill }, // Restore fill
+                fill: (i, t) => t.dataset.originalFill, // Update CSS style.fill directly (overriding 'none')
                 fillOpacity: 1,
                 strokeOpacity: 0, // Fade out the temporary strokes
                 duration: 1.0,
