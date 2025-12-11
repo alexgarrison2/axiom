@@ -220,6 +220,27 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         );
     };
 
+    const VsOppStatsDisplay = ({ statsStr, oppTriCode, align = 'left' }: { statsStr: string | undefined, oppTriCode: string, align?: 'left' | 'right' }) => {
+        if (!statsStr) return null;
+        try {
+            const vsOpp = JSON.parse(statsStr);
+            return (
+                <div className={`mt-0.5 text-[9px] font-mono tracking-wide text-neutral-400 ${align === 'right' ? 'text-right' : 'text-left'}`}>
+                    <span className="text-neutral-500">vs {oppTriCode}: </span>
+                    <span className={`${vsOpp.win_pct >= 0.700 ? 'text-neon-green font-bold' : vsOpp.win_pct <= 0.300 ? 'text-red-400' : 'text-neutral-300'}`}>
+                        {vsOpp.record}
+                    </span>
+                    <span className="text-neutral-600 mx-1">|</span>
+                    <span className={`${vsOpp.sv >= 0.910 ? 'text-neon-green font-bold' : vsOpp.sv <= 0.890 ? 'text-red-400' : 'text-neutral-300'}`}>
+                        {vsOpp.sv.toFixed(3).substring(1)}
+                    </span>
+                    <span className="text-neutral-600 mx-1">|</span>
+                    <span>{vsOpp.gaa.toFixed(2)}</span>
+                </div>
+            );
+        } catch (e) { return null; }
+    };
+
     const TeamColumn = ({
         team,
         isHome,
@@ -309,20 +330,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 {goalieStats}
                             </div>
                         )}
-                        {vsOpp && (
-                            <div className="mt-0.5 text-[9px] font-mono tracking-wide text-neutral-400">
-                                <span className="text-neutral-500">vs {opponentTriCode}: </span>
-                                <span className={`${vsOpp.win_pct >= 0.700 ? 'text-neon-green font-bold' : vsOpp.win_pct <= 0.300 ? 'text-red-400' : 'text-neutral-300'}`}>
-                                    {vsOpp.record}
-                                </span>
-                                <span className="text-neutral-600 mx-1">|</span>
-                                <span className={`${vsOpp.sv >= 0.910 ? 'text-neon-green font-bold' : vsOpp.sv <= 0.890 ? 'text-red-400' : 'text-neutral-300'}`}>
-                                    {vsOpp.sv.toFixed(3).substring(1)}
-                                </span>
-                                <span className="text-neutral-600 mx-1">|</span>
-                                <span>{vsOpp.gaa.toFixed(2)}</span>
-                            </div>
-                        )}
+                        <VsOppStatsDisplay statsStr={vsOppStats} oppTriCode={opponentTriCode || ''} align="left" />
                     </div>
                 </div>
 
@@ -665,6 +673,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                         {prediction.away_goalie_stats}
                                     </span>
                                 )}
+                                <VsOppStatsDisplay
+                                    statsStr={prediction.awayGoalieVsOpp}
+                                    oppTriCode={homeTeam.triCode}
+                                    align="left"
+                                />
                             </div>
                             <div className="flex flex-col items-end w-[48%]">
                                 <div className="flex items-center gap-1 flex-wrap justify-end">
@@ -688,6 +701,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                         {prediction.home_goalie_stats}
                                     </span>
                                 )}
+                                <VsOppStatsDisplay
+                                    statsStr={prediction.homeGoalieVsOpp}
+                                    oppTriCode={awayTeam.triCode}
+                                    align="right"
+                                />
                             </div>
                         </div>
 
