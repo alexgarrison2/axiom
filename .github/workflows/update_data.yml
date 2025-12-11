@@ -1,0 +1,56 @@
+name: Update NHL Data
+
+on:
+  schedule:
+    # Run every 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Data Pipeline
+        run: |
+          cd pipeline
+          python fetch_upcoming.py
+          python predict_games.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Check if there are changes to the CSVs
+          if [ -n "$(git status --porcelain)" ]; then
+            git add requirements.txt
+            git add data/predictions_detailed.csv
+            git add nhl-predictions-app/data/predictions_detailed.csv
+            git add upcoming_games.json
+            git add dailyfaceoff_goalies.json
+            git add player_news.json
+            
+            # Commit if changes exist
+            git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"
+            
+            # Push changes
+            git push
+          else
+            echo "No changes detected."
+          fi
