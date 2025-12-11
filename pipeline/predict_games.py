@@ -1169,8 +1169,11 @@ def predict():
     df_pred.to_csv('predictions_detailed.csv', index=False)
     print("Saved predictions_detailed.csv")
     
-    # Save Last Update Timestamp for Frontend
-    timestamp = datetime.now().strftime("%B %d, %I:%M %p %Z")
+    # Save Last Update Timestamp for Frontend (US/Central)
+    utc_now = datetime.now(pytz.utc)
+    central = pytz.timezone('US/Central')
+    timestamp = utc_now.astimezone(central).strftime("%B %d, %I:%M %p")
+    
     with open('last_updated.json', 'w') as f:
         json.dump({"last_refresh": timestamp}, f)
         
