@@ -254,14 +254,16 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
                 <span className="text-white">PP2</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
-                <span className="text-neon-green font-bold">Confirmed</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
-                <span className="text-yellow-400 font-bold">Likely</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
-                <span className="text-gray-500 font-bold">Unconfirmed</span>
+            {/* Goalie Status Group */}
+            <div className="flex items-center bg-neutral-900/50 rounded border border-white/5 divide-x divide-white/10">
+                <div className="px-2 py-1 bg-white/5">
+                    <span className="text-neutral-400 font-bold">Goalie Status</span>
+                </div>
+                <div className="flex items-center gap-3 px-3 py-1">
+                    <span className="text-neon-green font-bold">Confirmed</span>
+                    <span className="text-yellow-400 font-bold">Likely</span>
+                    <span className="text-gray-500 font-bold">Unconfirmed</span>
+                </div>
             </div>
         </div>
     );
