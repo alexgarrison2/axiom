@@ -67,10 +67,13 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
 
                             {/* Left: Date & Opponent */}
                             <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                                <span className={`text-[10px] md:text-xs text-neutral-400 font-mono ${isMobile ? 'w-auto' : 'w-10'} flex items-center gap-1.5`}>
+                                <span
+                                    className={`text-[10px] md:text-xs text-neutral-400 font-mono ${isMobile ? 'w-auto' : 'w-10'} flex items-center gap-1.5 cursor-help`}
+                                    title={`Match Logic: '${cleanCurrent}' vs '${cleanGameStarter}' (Current: ${currentStarter} | Game: ${game.starter})`}
+                                >
                                     {isMobile ? formatDate(game.date) : game.date}
                                     {isStarterMatch && (
-                                        <div className="w-2 h-2 min-w-[8px] rounded-full bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.8)]" title={`Starter: ${game.starter}`} />
+                                        <div className="w-2 h-2 min-w-[8px] rounded-full bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.8)]" />
                                     )}
                                 </span>
 
