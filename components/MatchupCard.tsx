@@ -455,6 +455,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             vsOppStats={prediction.awayGoalieVsOpp}
                             opponentTriCode={homeTeam.triCode}
                         />
+                        <NewsIndicator hasNews={!!(prediction.away_news && prediction.away_news.length > 0)} />
                     </div>
 
                     {/* CENTER INFO (Time, Total, Bar) - Bracketed by dividers */}
