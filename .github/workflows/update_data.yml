@@ -45,6 +45,7 @@ jobs:
             git add pipeline/dailyfaceoff_goalies.json
             git add pipeline/player_news.json
             git add pipeline/team_lineups.json
+            git add data/last_updated.json
             
             # Commit if changes exist
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"
