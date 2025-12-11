@@ -436,7 +436,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 <div className="p-6 flex flex-row items-stretch justify-between w-full relative z-10">
 
                     {/* AWAY TEAM (Left) - Flex-1 to push to edge */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 relative">
                         <TeamColumn
                             team={awayTeam}
                             isHome={false}
@@ -514,7 +514,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
 
                     {/* HOME TEAM (Right) - Flex-1 to push to edge */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 relative">
                         <TeamColumn
                             team={homeTeam}
                             isHome={true}
@@ -598,6 +598,44 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             primaryColor={awayTeam.color1}
                             variant="animated"
                         />
+                        {/* Mobile Away News Indicator */}
+                        {prediction.away_news && prediction.away_news.length > 0 && (
+                            <div className="absolute left-4 top-14 z-20 pointer-events-none">
+                                <div className="bg-yellow-500/10 border border-yellow-500/20 p-1 rounded-full animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+                                        <path d="M18 14h-8" />
+                                        <path d="M15 18h-5" />
+                                        <path d="M10 6h8v4h-8V6Z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right: Home Logo (Oversized & Clipped) */}
+                    <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
+                        <LogoDisplay
+                            src={homeTeam.logoUrl}
+                            alt={homeTeam.name}
+                            triCode={homeTeam.triCode}
+                            className="w-full h-full scale-110 object-contain"
+                            primaryColor={homeTeam.color1}
+                            variant="animated"
+                        />
+                        {/* Mobile Home News Indicator */}
+                        {prediction.home_news && prediction.home_news.length > 0 && (
+                            <div className="absolute right-4 top-14 z-20 pointer-events-none">
+                                <div className="bg-yellow-500/10 border border-yellow-500/20 p-1 rounded-full animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+                                        <path d="M18 14h-8" />
+                                        <path d="M15 18h-5" />
+                                        <path d="M10 6h8v4h-8V6Z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        )}
                     </div>
                     {/* Right: Home Logo (Oversized & Clipped) */}
                     <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
