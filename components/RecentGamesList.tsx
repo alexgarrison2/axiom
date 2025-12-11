@@ -72,6 +72,8 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
                                     {isStarterMatch && (
                                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_5px_rgba(168,85,247,0.5)]" title={`Starter: ${game.starter}`} />
                                     )}
+                                    {/* DEBUG: */}
+                                    <span className="text-[6px] text-red-500">{game.starter} vs {currentStarter}</span>
                                 </span>
 
                                 <span className="text-[10px] text-neutral-500 font-bold">
@@ -109,8 +111,8 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
                         </div>
                     );
                 })}
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
