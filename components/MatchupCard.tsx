@@ -234,7 +234,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gasBreakdown,
         gsaxTotal,
         gsaxPct,
-        goalieStats
+        goalieStats,
+        vsOppStats,
+        opponentTriCode
     }: {
         team: any,
         isHome: boolean,
@@ -249,7 +251,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gasBreakdown?: string[],
         gsaxTotal?: number,
         gsaxPct?: number,
-        goalieStats?: string
+        goalieStats?: string,
+        vsOppStats?: string,
+        opponentTriCode?: string
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
@@ -258,6 +262,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         const statusMatch = safeStarter.match(/\((.*?)\)$/);
         const status = statusMatch ? statusMatch[1] : 'UNCONFIRMED';
         const starterName = safeStarter.replace(/\s*\(.*?\)$/, '');
+
+        // Parse vsOppStats if available
+        let vsOpp = null;
+        if (vsOppStats) {
+            try {
+                vsOpp = JSON.parse(vsOppStats);
+            } catch (e) { }
+        }
 
         return (
             <div className={`flex flex-col items-center py-4 relative z-10 w-full h-full ${alignClass}`}>
@@ -295,6 +307,20 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {goalieStats && (
                             <div className="mt-0.5 text-[9px] text-neutral-500 font-mono tracking-wide">
                                 {goalieStats}
+                            </div>
+                        )}
+                        {vsOpp && (
+                            <div className="mt-0.5 text-[9px] font-mono tracking-wide text-neutral-400">
+                                <span className="text-neutral-500">vs {opponentTriCode}: </span>
+                                <span className={`${vsOpp.win_pct >= 0.700 ? 'text-neon-green font-bold' : vsOpp.win_pct <= 0.300 ? 'text-red-400' : 'text-neutral-300'}`}>
+                                    {vsOpp.record}
+                                </span>
+                                <span className="text-neutral-600 mx-1">|</span>
+                                <span className={`${vsOpp.sv >= 0.920 ? 'text-neon-green font-bold' : vsOpp.sv <= 0.890 ? 'text-red-400' : 'text-neutral-300'}`}>
+                                    {vsOpp.sv.toFixed(3).substring(1)}
+                                </span>
+                                <span className="text-neutral-600 mx-1">|</span>
+                                <span>{vsOpp.gaa.toFixed(2)}</span>
                             </div>
                         )}
                     </div>
@@ -377,6 +403,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             gsaxTotal={prediction.away_gsax_total}
                             gsaxPct={prediction.away_gsax_pct}
                             goalieStats={prediction.away_goalie_stats}
+                            vsOppStats={prediction.awayGoalieVsOpp}
+                            opponentTriCode={homeTeam.triCode}
                         />
                     </div>
 
@@ -452,6 +480,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             gsaxTotal={prediction.home_gsax_total}
                             gsaxPct={prediction.home_gsax_pct}
                             goalieStats={prediction.home_goalie_stats}
+                            vsOppStats={prediction.homeGoalieVsOpp}
+                            opponentTriCode={awayTeam.triCode}
                         />
                     </div>
                 </div>

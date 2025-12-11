@@ -91,6 +91,8 @@ export interface GamePrediction {
 
   home_goalie_stats?: string;
   away_goalie_stats?: string;
+  homeGoalieVsOpp?: string; // JSON string
+  awayGoalieVsOpp?: string; // JSON string
 }
 
 interface RawPrediction {
@@ -137,6 +139,8 @@ interface RawPrediction {
   away_lineup?: string;
   home_goalie_stats?: string;
   away_goalie_stats?: string;
+  home_starter_vs_opp?: string;
+  away_starter_vs_opp?: string;
 }
 
 interface RawTeam {
@@ -276,6 +280,9 @@ export async function getPredictions(): Promise<GamePrediction[]> {
 
       home_goalie_stats: row.home_goalie_stats || undefined,
       away_goalie_stats: row.away_goalie_stats || undefined,
+
+      homeGoalieVsOpp: row.home_starter_vs_opp || undefined,
+      awayGoalieVsOpp: row.away_starter_vs_opp || undefined,
     };
   }).filter((p): p is GamePrediction => p !== null);
 
