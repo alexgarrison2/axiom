@@ -254,6 +254,15 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
                 <span className="text-white">PP2</span>
             </div>
+            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
+                <span className="text-neon-green font-bold">Confirmed</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
+                <span className="text-yellow-400 font-bold">Likely</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
+                <span className="text-gray-500 font-bold">Unconfirmed</span>
+            </div>
         </div>
     );
 
@@ -348,7 +357,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     />
                     <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
                         <div className="flex items-center gap-1.5 flex-wrap justify-center md:justify-start">
-                            <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wide truncate max-w-full">{starterName}</span>
+                            <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wide truncate max-w-full ${(status?.toUpperCase()?.includes('UNCONFIRMED')) ? 'text-gray-500' :
+                                (status?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
+                                    (status?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
+                                }`}>
+                                {starterName}
+                            </span>
                             {gsaxTotal !== undefined && gsaxPct !== undefined && (
                                 <span
                                     className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5"
@@ -358,14 +372,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 </span>
                             )}
                         </div>
-                        {status && (
-                            <span className={`text-[9px] md:text-[10px] font-mono uppercase tracking-wider ${(status.toUpperCase().includes('UNCONFIRMED')) ? 'text-gray-500' :
-                                (status.toUpperCase().includes('CONFIRMED')) ? 'text-neon-green' :
-                                    (status.toUpperCase().includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
-                                }`}>
-                                {status}
-                            </span>
-                        )}
+                        {/* Status Label Removed - Color applied to Name */}
                         {goalieStats && (
                             <div className="mt-0.5 text-[9px] text-neutral-500 font-mono tracking-wide">
                                 {goalieStats}
@@ -725,7 +732,16 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex flex-col items-start w-[48%]">
                                 <div className="flex items-center gap-1 flex-wrap">
-                                    <span className={`text-[10px] font-bold uppercase ${getGoalieStatusColor(awayStarter, prediction.id, 'away')}`}>
+                                    {/* Mobile Away Name - Color Logic Manual or using Helper? 
+                                        The snippet used `getGoalieStatusColor`. I haven't seen that function def, but lines 363+ implemented logic manually in TeamColumn. 
+                                        I will apply the same manual logic here to be safe and consistent, OR assume getGoalieStatusColor works.
+                                        Wait, line 728 used `getGoalieStatusColor`. If that function exists, I should trust it or check it.
+                                        But I'll replicate the logic to ensure "Confirmed"=NeonGreen, etc.
+                                     */}
+                                    <span className={`text-[10px] font-bold uppercase ${(awayStarter?.toUpperCase()?.includes('UNCONFIRMED') || !awayStarter) ? 'text-gray-500' :
+                                        (awayStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
+                                            (awayStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
+                                        }`}>
                                         {cleanStarterName(awayStarter)}
                                     </span>
                                     {prediction.away_gsax_total !== undefined && prediction.away_gsax_pct !== undefined && (
@@ -737,9 +753,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                         </span>
                                     )}
                                 </div>
-                                <span className="text-[9px] text-neutral-500 font-mono uppercase mt-0.5">
-                                    {getGoalieStatusText(awayStarter, prediction.id, 'away')}
-                                </span>
+                                {/* Removed Status Label */}
                                 {prediction.away_goalie_stats && (
                                     <span className="text-[9px] text-neutral-500 font-mono tracking-wide mt-0.5">
                                         {prediction.away_goalie_stats}
@@ -761,13 +775,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                             {formatGsax(prediction.home_gsax_total)}
                                         </span>
                                     )}
-                                    <span className={`text-[10px] font-bold uppercase text-right ${getGoalieStatusColor(homeStarter, prediction.id, 'home')}`}>
+                                    <span className={`text-[10px] font-bold uppercase text-right ${(homeStarter?.toUpperCase()?.includes('UNCONFIRMED') || !homeStarter) ? 'text-gray-500' :
+                                            (homeStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
+                                                (homeStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
+                                        }`}>
                                         {cleanStarterName(homeStarter)}
                                     </span>
                                 </div>
-                                <span className="text-[9px] text-neutral-500 font-mono uppercase text-right mt-0.5">
-                                    {getGoalieStatusText(homeStarter, prediction.id, 'home')}
-                                </span>
+                                {/* Removed Status Label */}
                                 {prediction.home_goalie_stats && (
                                     <span className="text-[9px] text-neutral-500 font-mono tracking-wide text-right mt-0.5">
                                         {prediction.home_goalie_stats}
