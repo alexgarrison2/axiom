@@ -196,6 +196,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         return starter.replace(/\s*\(.*?\)$/, '');
     };
 
+    const formatGoalieName = (name: string) => {
+        if (!name) return '';
+        if (name.length > 15) {
+            const parts = name.split(' ');
+            if (parts.length > 1) {
+                return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
+            }
+        }
+        return name;
+    };
+
 
     const homeColor = homeTeam.color1 || '#000';
     const awayColor = awayTeam.color1 || '#000';
@@ -383,12 +394,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         variant="animated"
                     />
                     <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
-                        <div className="flex items-center gap-1.5 flex-wrap justify-center md:justify-start">
+                        <div className="flex items-center gap-1.5 flex-nowrap justify-center md:justify-start">
                             <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wide truncate max-w-full ${(status?.toUpperCase()?.includes('UNCONFIRMED')) ? 'text-gray-500' :
                                 (status?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
                                     (status?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
                                 }`}>
-                                {starterName}
+                                {formatGoalieName(starterName)}
                             </span>
                             {gsaxTotal !== undefined && gsaxPct !== undefined && (
                                 <span
@@ -749,18 +760,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* Goalies Row */}
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex flex-col items-start w-[48%]">
-                                <div className="flex items-center gap-1 flex-wrap">
-                                    {/* Mobile Away Name - Color Logic Manual or using Helper? 
-                                        The snippet used `getGoalieStatusColor`. I haven't seen that function def, but lines 363+ implemented logic manually in TeamColumn. 
-                                        I will apply the same manual logic here to be safe and consistent, OR assume getGoalieStatusColor works.
-                                        Wait, line 728 used `getGoalieStatusColor`. If that function exists, I should trust it or check it.
-                                        But I'll replicate the logic to ensure "Confirmed"=NeonGreen, etc.
-                                     */}
+                                <div className="flex items-center gap-1 flex-nowrap">
                                     <span className={`text-[10px] font-bold uppercase ${(awayStarter?.toUpperCase()?.includes('UNCONFIRMED') || !awayStarter) ? 'text-gray-500' :
                                         (awayStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
                                             (awayStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
                                         }`}>
-                                        {cleanStarterName(awayStarter)}
+                                        {formatGoalieName(cleanStarterName(awayStarter))}
                                     </span>
                                     {prediction.away_gsax_total !== undefined && prediction.away_gsax_pct !== undefined && (
                                         <span
@@ -784,7 +789,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 />
                             </div>
                             <div className="flex flex-col items-end w-[48%]">
-                                <div className="flex items-center gap-1 flex-wrap justify-end">
+                                <div className="flex items-center gap-1 flex-nowrap justify-end">
                                     {prediction.home_gsax_total !== undefined && prediction.home_gsax_pct !== undefined && (
                                         <span
                                             className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5"
@@ -797,7 +802,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                         (homeStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
                                             (homeStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
                                         }`}>
-                                        {cleanStarterName(homeStarter)}
+                                        {formatGoalieName(cleanStarterName(homeStarter))}
                                     </span>
                                 </div>
                                 {/* Removed Status Label */}
