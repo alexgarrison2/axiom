@@ -198,7 +198,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
     const formatGoalieName = (name: string) => {
         if (!name) return '';
-        if (name.length > 15) {
+        // Lower threshold to 12 to catch "Jonas Johansson" (15 chars) and ensure it doesn't clip
+        if (name.length > 12) {
             const parts = name.split(' ');
             if (parts.length > 1) {
                 return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
@@ -258,7 +259,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         try {
             const vsOpp = JSON.parse(statsStr);
             return (
-                <div className={`mt-0.5 text-[9px] font-mono tracking-wide text-neutral-400 ${align === 'right' ? 'text-right' : 'text-left'}`}>
+                <div className={`mt-0.5 text-[9px] font-mono tracking-wide text-neutral-400 whitespace-nowrap ${align === 'right' ? 'text-right' : 'text-left'}`}>
                     <span className="text-neutral-500">vs {oppTriCode}: </span>
                     <span className={`${vsOpp.win_pct >= 0.700 ? 'text-neon-green font-bold' : vsOpp.win_pct <= 0.300 ? 'text-red-400' : 'text-neutral-300'}`}>
                         {vsOpp.record}
