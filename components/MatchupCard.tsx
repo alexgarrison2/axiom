@@ -241,6 +241,24 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         } catch (e) { return null; }
     };
 
+    const Legend = ({ className = "" }: { className?: string }) => (
+        <div className={`flex flex-wrap items-center justify-center gap-4 text-[9px] font-mono text-neutral-500 ${className}`}>
+            <span className="uppercase tracking-widest opacity-50 hidden sm:inline">Legend:</span>
+            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_5px_rgba(168,85,247,0.6)]"></div>
+                <span className="text-gray-300">Starter Match</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
+                <span className="font-bold text-[#5382BD]">PP1</span>
+                <span>Unit 1</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
+                <span className="text-white">PP2</span>
+                <span>Unit 2</span>
+            </div>
+        </div>
+    );
+
     const TeamColumn = ({
         team,
         isHome,
@@ -514,6 +532,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                         </div>
                     </div>
+                    {/* Legend Footer */}
+                    <div className="w-full bg-black/40 border-t border-white/5 py-3 flex justify-center">
+                        <Legend />
+                    </div>
                 </div>
 
                 {/* Expand Hint */}
@@ -786,6 +808,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         </div>
                     </div>
                 </div>
+                {/* Mobile Legend */}
+                {isExpanded && (
+                    <div className="relative z-20 bg-black/90 pb-4 pt-2 px-4 flex justify-center border-t border-white/5">
+                        <Legend />
+                    </div>
+                )}
             </div>
         </>
     );
