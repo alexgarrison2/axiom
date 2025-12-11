@@ -316,7 +316,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                     {vsOpp.record}
                                 </span>
                                 <span className="text-neutral-600 mx-1">|</span>
-                                <span className={`${vsOpp.sv >= 0.920 ? 'text-neon-green font-bold' : vsOpp.sv <= 0.890 ? 'text-red-400' : 'text-neutral-300'}`}>
+                                <span className={`${vsOpp.sv >= 0.910 ? 'text-neon-green font-bold' : vsOpp.sv <= 0.890 ? 'text-red-400' : 'text-neutral-300'}`}>
                                     {vsOpp.sv.toFixed(3).substring(1)}
                                 </span>
                                 <span className="text-neutral-600 mx-1">|</span>
