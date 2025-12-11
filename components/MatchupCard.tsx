@@ -390,7 +390,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         src={team.logoUrl}
                         alt={team.name}
                         triCode={team.triCode}
-                        className="w-16 h-16 md:w-20 md:h-20"
+                        className="w-20 h-20 md:w-28 md:h-28"
                         primaryColor={team.color1}
                         variant="animated"
                     />
