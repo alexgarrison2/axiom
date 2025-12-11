@@ -610,12 +610,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             primaryColor={awayTeam.color1}
                             variant="animated"
                         />
-                        {/* Mobile Away News Indicator */}
-                        <NewsIndicator
-                            hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
-                            className="absolute bottom-3 left-7 md:hidden"
-                        />
                     </div>
+                    {/* Mobile Away News Indicator - Hoisted */}
+                    <NewsIndicator
+                        hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
+                        className="absolute bottom-3 left-7 md:hidden z-20"
+                    />
 
                     {/* Right: Home Logo (Oversized & Clipped) */}
                     <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
@@ -627,12 +627,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             primaryColor={homeTeam.color1}
                             variant="animated"
                         />
-                        {/* Mobile Home News Indicator */}
-                        <NewsIndicator
-                            hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
-                            className="absolute bottom-3 right-7 md:hidden"
-                        />
                     </div>
+                    {/* Mobile Home News Indicator - Hoisted */}
+                    <NewsIndicator
+                        hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
+                        className="absolute bottom-3 right-7 md:hidden z-20"
+                    />
 
                     {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Compact & Aligned */}
                     <div className="flex flex-row items-center justify-center w-full max-w-[80%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
