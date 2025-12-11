@@ -200,6 +200,28 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     const homeColor = homeTeam.color1 || '#000';
     const awayColor = awayTeam.color1 || '#000';
 
+    const getPillColors = (wagerStr: string | null | undefined, oddsVal: string | number | null | undefined) => {
+        // Condition: < 0.3u AND <= +110
+        let units = 0;
+        let odds = 1000;
+
+        if (wagerStr) {
+            const uMatch = wagerStr.match(/([\d\.]+)u/);
+            if (uMatch) units = parseFloat(uMatch[1]);
+        }
+
+        if (oddsVal !== null && oddsVal !== undefined) {
+            if (typeof oddsVal === 'number') odds = oddsVal;
+            else if (typeof oddsVal === 'string') odds = parseInt(oddsVal, 10);
+        }
+
+        if (units < 0.3 && odds <= 110) {
+            return "bg-neutral-800/80 border border-neutral-600 text-neutral-400 shadow-none hover:border-neutral-500";
+        }
+        return "bg-neon-green/10 border border-neon-green/30 text-neon-green shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]";
+    };
+
+
     // Width calculations
     const widthPercentage = Math.min(100, (totalGoals / maxTotalGoals) * 100);
     const isHighEv = ((homeEv || 0) >= 20) || ((awayEv || 0) >= 20);
@@ -309,7 +331,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gsaxPct,
         goalieStats,
         vsOppStats,
-        opponentTriCode
+        opponentTriCode,
+        odds
     }: {
         team: any,
         isHome: boolean,
@@ -326,7 +349,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gsaxPct?: number,
         goalieStats?: string,
         vsOppStats?: string,
-        opponentTriCode?: string
+
+        opponentTriCode?: string,
+        odds?: string | number | null
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
@@ -406,9 +431,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                 {/* Wager Callout (Pushed to bottom) */}
                 {(evBadge || wager) && (
-                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-xs font-bold shadow-[0_0_15px_rgba(10,255,0,0.1)] hover:shadow-[0_0_20px_rgba(10,255,0,0.3)] transition-all ${isHighEv ? 'animate-pulse-glow' : ''}`}>
+                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold ${getPillColors(wager, odds)} ${isHighEv ? 'animate-pulse-glow' : ''}`}>
                         {evBadge && <span>EV: {evBadge}</span>}
-                        {wager && <span className="opacity-90 border-l border-neon-green/30 pl-2">{wager}</span>}
+                        {wager && <span className={`opacity-90 border-l pl-2 ${wager && wager.includes('u') && parseFloat(wager) < 0.3 && odds && (typeof odds === 'string' ? parseInt(odds) : odds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{wager}</span>}
                     </div>
                 )}
 
@@ -463,6 +488,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             goalieStats={prediction.away_goalie_stats}
                             vsOppStats={prediction.awayGoalieVsOpp}
                             opponentTriCode={homeTeam.triCode}
+                            odds={awayVegasOdds}
                         />
                         <NewsIndicator
                             hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
@@ -544,6 +570,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             goalieStats={prediction.home_goalie_stats}
                             vsOppStats={prediction.homeGoalieVsOpp}
                             opponentTriCode={awayTeam.triCode}
+                            odds={homeVegasOdds}
                         />
                         <NewsIndicator hasNews={!!(prediction.home_news && prediction.home_news.length > 0)} />
                     </div>
@@ -650,9 +677,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             {/* Bottom: Wager Pill - Aligned with Bar */}
                             <div className="h-5 flex items-center">
                                 {awayWager ? (
-                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(awayWager, awayVegasOdds)}`}>
                                         <span>+{Math.round(awayEv || 0)}%</span>
-                                        <span className="opacity-90 border-l border-neon-green/30 pl-1">{awayWager}</span>
+                                        <span className={`opacity-90 border-l pl-1 ${awayWager && awayWager.includes('u') && parseFloat(awayWager) < 0.3 && awayVegasOdds && (typeof awayVegasOdds === 'string' ? parseInt(awayVegasOdds) : awayVegasOdds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{awayWager}</span>
                                     </div>
                                 ) : null}
                             </div>
@@ -698,9 +725,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             {/* Bottom: Wager Pill - Aligned with Bar */}
                             <div className="h-5 flex items-center">
                                 {homeWager ? (
-                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-[9px] font-bold shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(homeWager, homeVegasOdds)}`}>
                                         <span>+{Math.round(homeEv || 0)}%</span>
-                                        <span className="opacity-90 border-l border-neon-green/30 pl-1">{homeWager}</span>
+                                        <span className={`opacity-90 border-l pl-1 ${homeWager && homeWager.includes('u') && parseFloat(homeWager) < 0.3 && homeVegasOdds && (typeof homeVegasOdds === 'string' ? parseInt(homeVegasOdds) : homeVegasOdds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{homeWager}</span>
                                     </div>
                                 ) : null}
                             </div>
