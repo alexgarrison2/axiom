@@ -46,12 +46,14 @@ export default function LogoDisplay({ src, alt, triCode, className, primaryColor
                 const pathEl = p as SVGPathElement;
                 const length = pathEl.getTotalLength ? pathEl.getTotalLength() : 1000;
 
-                // FORCE STROKE: The SVG has fills but no strokes. 
-                // We grab the fill color and apply it as the stroke color.
-                const originalFill = pathEl.getAttribute('fill') || '#FFFFFF'; // Default to white if null
-                pathEl.style.fill = 'none'; // Hide fill initially
-                pathEl.style.stroke = originalFill; // Use fill color as stroke
-                pathEl.style.strokeWidth = '1.5px'; // Thicker stroke for visibility
+                // FORCE STROKE: Use Primary Color and Thin Line (0.3px)
+                const originalFill = pathEl.getAttribute('fill') || '#FFFFFF';
+                // Use primaryColor prop if available, otherwise default or white
+                const strokeColor = primaryColor || '#FFFFFF';
+
+                pathEl.style.fill = 'none';
+                pathEl.style.stroke = strokeColor;
+                pathEl.style.strokeWidth = '0.3px'; // Thin line as requested
                 pathEl.style.strokeLinecap = 'round';
                 pathEl.style.strokeLinejoin = 'round';
 
