@@ -73,6 +73,9 @@ jobs:
             # Commit if changes exist
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"
             
+            # Discard any leftover changes (logs, uncommitted files) to ensure clean rebase
+            git reset --hard HEAD
+            
             # Pull latest changes (rebase) to avoid conflicts if we pushed UI updates meanwhile
             git pull --rebase origin main
             
