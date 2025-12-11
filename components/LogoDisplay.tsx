@@ -46,29 +46,42 @@ export default function LogoDisplay({ src, alt, triCode, className, primaryColor
                 const pathEl = p as SVGPathElement;
                 const length = pathEl.getTotalLength ? pathEl.getTotalLength() : 1000;
 
+                // FORCE STROKE: The SVG has fills but no strokes. 
+                // We grab the fill color and apply it as the stroke color.
+                const originalFill = pathEl.getAttribute('fill') || '#FFFFFF'; // Default to white if null
+                pathEl.style.fill = 'none'; // Hide fill initially
+                pathEl.style.stroke = originalFill; // Use fill color as stroke
+                pathEl.style.strokeWidth = '1.5px'; // Thicker stroke for visibility
+                pathEl.style.strokeLinecap = 'round';
+                pathEl.style.strokeLinejoin = 'round';
+
                 pathEl.style.strokeDasharray = `${length}`;
                 pathEl.style.strokeDashoffset = `${length}`;
                 pathEl.style.opacity = '1';
-                // Ensure stroke is visible (some logos rely on fill only)
-                // For "Line Draw", we usually need stroke.
-                // Assuming the user's SJS.svg is prepared for this (has strokes).
+
+                // Store original fill for later restoration
+                pathEl.dataset.originalFill = originalFill;
             });
 
             gsap.to(paths, {
                 strokeDashoffset: 0,
-                duration: 2.5,
+                duration: 2.0,
                 ease: "power2.out",
                 stagger: {
-                    amount: 0.5,
+                    amount: 0.8,
                     from: "random"
                 }
             });
 
-            // Optional: Fade in fill after lines
-            gsap.fromTo(paths,
-                { fillOpacity: 0 },
-                { fillOpacity: 1, duration: 1, delay: 2 }
-            );
+            // Fade in Fill + Fade out Stroke (to return to "Normal" look)
+            gsap.to(paths, {
+                attr: { fill: (i, t) => t.dataset.originalFill }, // Restore fill
+                fillOpacity: 1,
+                strokeOpacity: 0, // Fade out the temporary strokes
+                duration: 1.0,
+                delay: 1.8,
+                ease: "power2.inOut"
+            });
         }
     }, { dependencies: [isSJS, svgContent], scope: container });
 
