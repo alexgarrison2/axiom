@@ -611,7 +611,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* Mobile Away News Indicator */}
                         <NewsIndicator
                             hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
-                            className="absolute left-6 top-1/2 -translate-y-1/2 md:hidden"
+                            className="absolute bottom-3 left-7 md:hidden"
                         />
                     </div>
 
@@ -628,18 +628,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* Mobile Home News Indicator */}
                         <NewsIndicator
                             hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
-                            className="absolute right-6 top-1/2 -translate-y-1/2 md:hidden"
-                        />
-                    </div>
-                    {/* Right: Home Logo (Oversized & Clipped) */}
-                    <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
-                        <LogoDisplay
-                            src={homeTeam.logoUrl}
-                            alt={homeTeam.name}
-                            triCode={homeTeam.triCode}
-                            className="w-full h-full scale-110 object-contain"
-                            primaryColor={homeTeam.color1}
-                            variant="animated"
+                            className="absolute bottom-3 right-7 md:hidden"
                         />
                     </div>
 
@@ -776,8 +765,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                         </span>
                                     )}
                                     <span className={`text-[10px] font-bold uppercase text-right ${(homeStarter?.toUpperCase()?.includes('UNCONFIRMED') || !homeStarter) ? 'text-gray-500' :
-                                            (homeStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
-                                                (homeStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
+                                        (homeStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
+                                            (homeStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
                                         }`}>
                                         {cleanStarterName(homeStarter)}
                                     </span>
