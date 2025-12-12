@@ -121,7 +121,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                     className="w-full"
                 >
                     {/* Aggregate Stats Header */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-8">
                         {(() => {
                             const totalGames = history.length;
                             const correctPicks = history.filter(h => h.isCorrect).length;
@@ -133,9 +133,6 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                                 : '0.0000';
 
                             // Log Loss Calculation
-                            // Log Loss = -1/N * Σ (y_i * log(p_i) + (1-y_i) * log(1-p_i))
-                            // y_i = 1 if Home Win, 0 if Away Win
-                            // p_i = Home Win Prob (stored as percentage, so divide by 100)
                             const logLossSum = history.reduce((acc, curr) => {
                                 const p = Math.max(0.0001, Math.min(0.9999, curr.homeWinProb / 100)); // Convert % to Prob & Clip
                                 const y = curr.actualWinner === curr.homeTeam.commonName ? 1 : 0;
@@ -146,38 +143,48 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                             return (
                                 <>
                                     {/* Accuracy Card */}
-                                    <div className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                    <div className="glass-panel p-2 md:p-6 rounded-xl md:rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                        <span className="text-gray-400 text-xs font-mono uppercase tracking-widest mb-2 z-10">Model Accuracy</span>
-                                        <div className="text-4xl font-bold text-white z-10 text-glow-green">
+                                        <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-1 md:mb-2 z-10 text-center">
+                                            <span className="md:hidden">Accuracy</span>
+                                            <span className="hidden md:inline">Model Accuracy</span>
+                                        </span>
+                                        <div className="text-lg md:text-4xl font-bold text-white z-10 text-glow-green">
                                             {accuracy}%
                                         </div>
-                                        <div className="text-emerald-400/60 text-xs mt-1 font-mono">
-                                            {correctPicks} / {totalGames} Correct
+                                        <div className="text-emerald-400/60 text-[8px] md:text-xs mt-0.5 md:mt-1 font-mono text-center leading-tight">
+                                            {correctPicks}/{totalGames} <span className="hidden md:inline">Correct</span>
                                         </div>
                                     </div>
 
                                     {/* Brier Score Card */}
-                                    <div className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                    <div className="glass-panel p-2 md:p-6 rounded-xl md:rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                        <span className="text-gray-400 text-xs font-mono uppercase tracking-widest mb-2 z-10">Avg Brier Score</span>
-                                        <div className="text-4xl font-bold text-white z-10 text-glow-blue">
+                                        <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-1 md:mb-2 z-10 text-center">
+                                            <span className="md:hidden">Brier</span>
+                                            <span className="hidden md:inline">Avg Brier Score</span>
+                                        </span>
+                                        <div className="text-lg md:text-4xl font-bold text-white z-10 text-glow-blue">
                                             {avgBrier}
                                         </div>
-                                        <div className="text-blue-400/60 text-xs mt-1 font-mono">
-                                            Lower is Better
+                                        <div className="text-blue-400/60 text-[8px] md:text-xs mt-0.5 md:mt-1 font-mono text-center leading-tight">
+                                            <span className="md:hidden">Lower=Best</span>
+                                            <span className="hidden md:inline">Lower is Better</span>
                                         </div>
                                     </div>
 
                                     {/* Log Loss Card */}
-                                    <div className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                    <div className="glass-panel p-2 md:p-6 rounded-xl md:rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                        <span className="text-gray-400 text-xs font-mono uppercase tracking-widest mb-2 z-10">Log Loss</span>
-                                        <div className="text-4xl font-bold text-white z-10 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
+                                        <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-1 md:mb-2 z-10 text-center">
+                                            Log Loss
+                                        </span>
+                                        <div className="text-lg md:text-4xl font-bold text-white z-10 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
                                             {avgLogLoss}
                                         </div>
-                                        <div className="text-purple-400/60 text-xs mt-1 font-mono">
-                                            Probabilistic Error
+                                        <div className="text-purple-400/60 text-[8px] md:text-xs mt-0.5 md:mt-1 font-mono text-center leading-tight">
+                                            <span className="md:hidden">Prob Error</span>
+                                            <span className="hidden md:inline">Probabilistic Error</span>
                                         </div>
                                     </div>
                                 </>
