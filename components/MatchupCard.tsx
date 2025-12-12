@@ -396,7 +396,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         const statusMatch = safeStarter.match(/\((.*?)\)$/);
         const status = statusMatch ? statusMatch[1] : 'UNCONFIRMED';
         const starterName = safeStarter.replace(/\s*\(.*?\)$/, '');
-        const isHighEv = ev && ev > 0.05;
+        const isHighEv = (ev || 0) > 0.05;
 
         // Parse vsOppStats if available
         let vsOpp = null;
@@ -473,7 +473,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         );
     };
 
-    const isHighEv = (homeEv && homeEv > 0.05) || (awayEv && awayEv > 0.05);
+    const isHighEv = ((homeEv || 0) > 0.05) || ((awayEv || 0) > 0.05);
 
     return (
         <>
