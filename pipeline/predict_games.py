@@ -1067,31 +1067,12 @@ def predict():
         home_gas_breakdown = "|".join(home_gas_bd)
         away_gas_breakdown = "|".join(away_gas_bd)
 
-        # --- [V2] CONTINUOUS GAS LOGIC ---
-        
-        h_gas_gap = home_gas - away_gas
-        a_gas_gap = away_gas - home_gas
-        
-        # Base multiplier 1.0
-        h_boost = 1.0
-        a_boost = 1.0
-        
-        if h_gas_gap > 0:
-            boost_val = h_gas_gap * 0.004
-            h_boost = 1.0 + min(0.25, boost_val)
-            
-        if a_gas_gap > 0:
-            boost_val = a_gas_gap * 0.004
-            a_boost = 1.0 + min(0.25, boost_val)
-            
-        # Log significant boosts (>5%)
-        if h_boost > 1.05:
-            print(f"  [GAS BOOST] {home_team} gets {int((h_boost-1)*100)}% boost (Gas: {home_gas}, Gap: {h_gas_gap})")
-        if a_boost > 1.05:
-            print(f"  [GAS BOOST] {away_team} gets {int((a_boost-1)*100)}% boost (Gas: {away_gas}, Gap: {a_gas_gap})")
+        # --- GAS LOGIC REMOVED (Replaced by Data-Driven B2B/3in4 Penalties) ---
+        # h_boost = 1.0
+        # a_boost = 1.0
 
-        h_xg_adj = max(0.1, h_xg - (a_gsax * GOALIE_IMPACT_FACTOR)) * h_boost + h_hist_adj
-        a_xg_adj = max(0.1, a_xg - (h_gsax * GOALIE_IMPACT_FACTOR)) * a_boost + a_hist_adj
+        h_xg_adj = max(0.1, h_xg - (a_gsax * GOALIE_IMPACT_FACTOR)) + h_hist_adj
+        a_xg_adj = max(0.1, a_xg - (h_gsax * GOALIE_IMPACT_FACTOR)) + a_hist_adj
         
         # --- [V3] THE ORACLE UPGRADES (Anti-Hits & PDO) ---
         

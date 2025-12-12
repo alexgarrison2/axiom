@@ -107,10 +107,50 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         pk_pct = 1 - (pk_goals_ag / pk_opps) if pk_opps > 0 else 0.80 # League Avg approx 80%
         penalties_taken_per_game = pk_opps / games_played if games_played > 0 else 3.0
         
-        # Regress Special Teams to Mean (20% PP, 80% PK) using 20 games weight (ST is volatile)
-        ST_REGRESSION = 20
-        pp_rating = ((pp_goals + (0.20 * ST_REGRESSION)) / (pp_opps + ST_REGRESSION)) * 100
-        pk_rating = ((1 - (pk_goals_ag + (0.20 * ST_REGRESSION)) / (pk_opps + ST_REGRESSION))) * 100
+        # Weighted Special Teams Ratings (User Request: 40% L10, 50% L20, 10% Season)
+        
+        # Helper to calc efficiency safely
+        def calc_eff(goals, opps, default=0.0):
+             return goals / opps if opps > 0 else default
+
+        # 1. Season (10%)
+        # already calculated: pp_goals, pp_opps, pk_goals_ag, pk_opps
+        season_pp_pct = calc_eff(pp_goals, pp_opps, 0.20)
+        season_pk_pct = 1 - calc_eff(pk_goals_ag, pk_opps, 0.20)
+        
+        # 2. Last 20 Games (50%)
+        l20_games = team_games.tail(20)
+        l20_pp_goals = l20_games['pp_goals'].sum()
+        l20_pp_opps = l20_games['pp_opportunities'].sum()
+        l20_pp_pct = calc_eff(l20_pp_goals, l20_pp_opps, season_pp_pct)
+        
+        l20_pk_ga = l20_games['pp_goals_against'].sum()
+        l20_pk_opps = l20_games['pk_opportunities'].sum()
+        l20_pk_pct = 1 - calc_eff(l20_pk_ga, l20_pk_opps, 1 - season_pk_pct)
+        
+        # 3. Last 10 Games (40%)
+        l10_games = team_games.tail(10)
+        l10_pp_goals = l10_games['pp_goals'].sum()
+        l10_pp_opps = l10_games['pp_opportunities'].sum()
+        l10_pp_pct = calc_eff(l10_pp_goals, l10_pp_opps, season_pp_pct)
+        
+        l10_pk_ga = l10_games['pp_goals_against'].sum()
+        l10_pk_opps = l10_games['pk_opportunities'].sum()
+        l10_pk_pct = 1 - calc_eff(l10_pk_ga, l10_pk_opps, 1 - season_pk_pct)
+        
+        # Weighted Average
+        # pp_rating = (l10 * 0.4) + (l20 * 0.5) + (season * 0.1)
+        # Note: If < 10 games, use season for all. If < 20 games, use season for L20.
+        
+        w_l10 = 0.4
+        w_l20 = 0.5
+        w_sea = 0.1
+        
+        pp_rating_val = (l10_pp_pct * w_l10) + (l20_pp_pct * w_l20) + (season_pp_pct * w_sea)
+        pk_rating_val = (l10_pk_pct * w_l10) + (l20_pk_pct * w_l20) + (season_pk_pct * w_sea)
+
+        pp_rating = pp_rating_val * 100
+        pk_rating = pk_rating_val * 100
         
         team_ratings[team] = {
             'xgf_rating': xgf_rating,

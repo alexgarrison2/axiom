@@ -75,6 +75,10 @@ def analyze_drivers():
     # `home_away` column.
     df['is_home'] = (df['home_away'] == 'Home').astype(int)
 
+    df['is_home'] = (df['home_away'] == 'Home').astype(int)
+    
+    # --- GAS CALCULATIONS REMOVED (Validation Failed) ---
+    
     # TARGET
     # Filter out Empty Net Goals to avoid skewing "true" offensive generation
     # If stats are missing, assume 0.
@@ -97,6 +101,11 @@ def analyze_drivers():
     # - B2B (Fatigue penalty)
     # - 3in4 (Fatigue penalty - severe)
     # - Home (Home advantage)
+    # - GAS Diff (New Validation)
+    
+    # features = ['base_xg', 'pp_opportunities', 'is_b2b', 'is_3in4', 'gas_diff']
+    # Removed gas_diff because it killed Home Ice (collinearity) and had low coeff (0.001).
+    # Reverting to proven features.
     
     features = ['base_xg', 'pp_opportunities', 'is_b2b', 'is_3in4', 'is_home']
     
@@ -129,7 +138,7 @@ def analyze_drivers():
     print(f"2. A Power Play Opportunity is worth {pp_val:.2f} goals (League Avg).")
     print(f"3. Playing a Back-to-Back costs a team {b2b_val:.2f} goals.")
     print(f"4. Playing 3-in-4 Nights costs a team {coeffs['is_3in4']:.2f} goals.")
-    print(f"5. Home Ice is worth {home_val:.2f} goals.")
+    print(f"5. Home Ice is worth {coeffs['is_home']:.2f} goals.")
     
     # Define Goals Against Drivers?
     # We could flip it: GA drivers.
@@ -166,11 +175,10 @@ def analyze_drivers():
         "pp_opp_val": pp_val,
         "pk_opp_cost": pk_val,
         "b2b_cost_gf": b2b_val,
-        "b2b_cost_gf": b2b_val,
         "b2b_cost_ga": coeffs_ga['is_b2b'],
         "3in4_cost_gf": coeffs['is_3in4'],
         "3in4_cost_ga": coeffs_ga['is_3in4'],
-        "home_ice_gf": home_val,
+        "home_ice_gf": coeffs['is_home'],
         "home_ice_ga": coeffs_ga['is_home']
     }
     
