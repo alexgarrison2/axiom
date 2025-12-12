@@ -63,10 +63,10 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries }) => {
                                 {/* Prediction */}
                                 <td className="p-4 text-center">
                                     <div className="flex flex-col items-center">
-                                        <span className={`text-sm font-bold ${entry.homeWinProb > 50 ? 'text-blue-400' : 'text-neutral-400'}`}>
-                                            {entry.homeTeam.triCode} {entry.homeWinProb}%
+                                        <span className="text-sm font-bold text-blue-400">
+                                            {entry.awayXg.toFixed(2)} - {entry.homeXg.toFixed(2)}
                                         </span>
-                                        <span className="text-[10px] text-neutral-500">Win Prob</span>
+                                        <span className="text-[10px] text-neutral-500">xG Model</span>
                                     </div>
                                 </td>
 

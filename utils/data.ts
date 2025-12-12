@@ -101,8 +101,11 @@ export interface HistoryEntry {
   awayTeam: Team;
   homeScore: number;
   awayScore: number;
+  homeXg: number;
+  awayXg: number;
   homeWinProb: number;
   predictedWinner: string;
+
   actualWinner: string;
   isCorrect: boolean;
   brierScore: number;
@@ -336,6 +339,8 @@ export async function getHistory(): Promise<HistoryEntry[]> {
       awayTeam,
       homeScore: row.homeScore,
       awayScore: row.awayScore,
+      homeXg: row.homeXg,
+      awayXg: row.awayXg,
       homeWinProb: row.homeWinProb,
       predictedWinner: row.predictedWinner,
       actualWinner: row.actualWinner,

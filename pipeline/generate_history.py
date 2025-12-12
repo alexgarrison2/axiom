@@ -159,6 +159,8 @@ def generate_history():
                 'awayTeam': away_team,
                 'homeScore': h_score,
                 'awayScore': a_score,
+                'homeXg': round(h_final_xg, 2),
+                'awayXg': round(a_final_xg, 2),
                 'homeWinProb': round(h_win_prob * 100, 1),
                 'predictedWinner': predicted_winner,
                 'actualWinner': actual_winner,
