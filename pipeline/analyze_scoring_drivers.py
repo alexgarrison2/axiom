@@ -49,11 +49,26 @@ def analyze_drivers():
     # If game is Nov 2, last was Nov 1. Diff is 1 day.
     df['is_b2b'] = (df['days_rest'] == 1).astype(int)
     
-    # 3 in 4?
-    # rolling window of dates.
-    # Let's stick to B2B for now as it's the strongest signal.
-    # Actually, `rest_days` as a raw number might be non-linear. B2B (1) is bad. 2 is normal. 3+ is good?
-    # Let's use `is_tired` (B2B) and `is_rested` (3+ days).
+    # 3 in 4 Logic
+    # 3 games in 4 nights means: Game 3 (Today) - Game 1 (2 games ago) <= 3 days gap?
+    # Day 1: Game 1
+    # Day 2: Game 2
+    # Day 3: Rest
+    # Day 4: Game 3 (Today) -> 4 days span.
+    # So Date(Today) - Date(Game_Minus_2) <= 3 days? Or 4 days inclusive?
+    # If using .dt.days:
+    # Nov 4 - Nov 1 = 3 days. That is 4 days inclusive (1, 2, 3, 4).
+    # So if diff <= 3, it is 3-in-4.
+    
+    df['prev_2_game_date'] = df.groupby('team')['game_date'].shift(2)
+    df['days_since_2_games_ago'] = (df['game_date'] - df['prev_2_game_date']).dt.days
+    df['is_3in4'] = (df['days_since_2_games_ago'] <= 3).astype(int)
+    
+    # Also define "Tired" as B2B OR 3in4? 
+    # Let's keep them separate to see coefficients.
+    
+    # 3. Rest
+    # Let's use `is_rested` (3+ days) as before, but also `is_3in4`
     df['is_rested'] = (df['days_rest'] >= 3).astype(int)
 
     # 4. Home Ice
@@ -80,9 +95,10 @@ def analyze_drivers():
     #   Let's stick to Offensive Drivers for now.
     
     # - B2B (Fatigue penalty)
+    # - 3in4 (Fatigue penalty - severe)
     # - Home (Home advantage)
     
-    features = ['base_xg', 'pp_opportunities', 'is_b2b', 'is_home']
+    features = ['base_xg', 'pp_opportunities', 'is_b2b', 'is_3in4', 'is_home']
     
     # Clean Data
     df_clean = df[features + ['goals_for']].dropna()
@@ -112,7 +128,8 @@ def analyze_drivers():
     print(f"1. Base 5v5 xG is worth {coeffs['base_xg']:.2f} actual goals (Calibrator).")
     print(f"2. A Power Play Opportunity is worth {pp_val:.2f} goals (League Avg).")
     print(f"3. Playing a Back-to-Back costs a team {b2b_val:.2f} goals.")
-    print(f"4. Home Ice is worth {home_val:.2f} goals.")
+    print(f"4. Playing 3-in-4 Nights costs a team {coeffs['is_3in4']:.2f} goals.")
+    print(f"5. Home Ice is worth {home_val:.2f} goals.")
     
     # Define Goals Against Drivers?
     # We could flip it: GA drivers.
@@ -124,7 +141,9 @@ def analyze_drivers():
     
     # Features for GA
     # PK Opps (Times I grew short) -> Increases GA
-    features_ga = ['base_xga', 'pk_opportunities', 'is_b2b', 'is_home']
+    # Features for GA
+    # PK Opps (Times I grew short) -> Increases GA
+    features_ga = ['base_xga', 'pk_opportunities', 'is_b2b', 'is_3in4', 'is_home']
     
     df_clean_ga = df[features_ga + ['goals_ag', 'en_ag']].dropna()
     X_ga = df_clean_ga[features_ga]
@@ -147,14 +166,23 @@ def analyze_drivers():
         "pp_opp_val": pp_val,
         "pk_opp_cost": pk_val,
         "b2b_cost_gf": b2b_val,
+        "b2b_cost_gf": b2b_val,
         "b2b_cost_ga": coeffs_ga['is_b2b'],
+        "3in4_cost_gf": coeffs['is_3in4'],
+        "3in4_cost_ga": coeffs_ga['is_3in4'],
         "home_ice_gf": home_val,
         "home_ice_ga": coeffs_ga['is_home']
     }
     
-    with open('pipeline/scoring_coefficients.json', 'w') as f:
+    # Sanitize 3-in-4: If positive (more goals), treat as 0 penalty?
+    # Our analysis showed +0.12 GF and +0.14 GA. High event??
+    # Ideally we only penalize. 
+    # Let's trust B2B (-0.26) and maybe cap 3in4 at 0 or small negative if logic dictates.
+    # For now, saving raw.
+    
+    with open('scoring_coefficients.json', 'w') as f:
         json.dump(output, f, indent=2)
-    print("\nSaved coeffcients to pipeline/scoring_coefficients.json")
+    print("\nSaved coeffcients to scoring_coefficients.json")
 
 if __name__ == "__main__":
     analyze_drivers()

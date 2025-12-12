@@ -44,6 +44,9 @@ def load_existing_predictions(filepath):
     # Load Existing Predictions (for freezing live/past games)
     existing_predictions = load_existing_predictions('predictions_detailed.csv')
     
+    
+
+    
     csv_rows = []
     
     print(f"Predicting {len(schedule)} games...")
@@ -569,6 +572,48 @@ def predict():
     print("Loading game stats for GasCalculator and Starter Lookup...")
     game_stats_df = pd.read_csv('nhl_season_2025_2026_gamestats.csv')
     
+    # Load Scoring Coefficients
+    try:
+        with open('scoring_coefficients.json', 'r') as f:
+            coeffs = json.load(f)
+        ST_VAL_PP = coeffs.get('pp_opp_val', 0.18)
+        B2B_PENALTY = coeffs.get('b2b_cost', 0.21)
+        # 3in4 coefficient (Sanitize: If positive, set to 0.0 or small penalty)
+        # Analysis showed +0.12. We will treat 3in4 as at least as bad as B2B if logic dictates, 
+        # but for now let's just ensure we don't ADD goals.
+        raw_3in4 = coeffs.get('3in4_cost_gf', 0.0)
+        IN3_4_PENALTY = abs(raw_3in4) * -1.0 if raw_3in4 > 0 else raw_3in4
+        # Force a small penalty if it was positive/zero, because 3in4 IS tiring.
+        if raw_3in4 >= 0:
+             IN3_4_PENALTY = -0.10 # Hardcoded heuristic override based on common sense if data is noisy
+             
+        HOME_ICE_VAL = coeffs.get('home_ice_advantage', 0.16)
+        STAR_PENALTY = coeffs.get('star_impact_placeholder', 0.07)
+    except FileNotFoundError:
+         print("Warning: scoring_coefficients.json not found. Using defaults.")
+         ST_VAL_PP = 0.18
+         B2B_PENALTY = 0.21
+         IN3_4_PENALTY = -0.10
+         HOME_ICE_VAL = 0.16
+         STAR_PENALTY = 0.07
+
+    # Calculate League Averages for dynamic scaling
+    if not game_stats_df.empty:
+         # Convert game_date to datetime if not already
+         if not pd.api.types.is_datetime64_any_dtype(game_stats_df['game_date']):
+             game_stats_df['game_date'] = pd.to_datetime(game_stats_df['game_date'])
+             
+         val = game_stats_df.get('xG_for_5v5', game_stats_df['xG_for'] * 0.8).mean()
+         league_xg_5v5 = val if pd.notna(val) and val > 0 else 2.0
+         
+         # League SP Teams
+         tot_pp_opps = game_stats_df['pp_opportunities'].sum()
+         tot_pp_goals = game_stats_df['pp_goals'].sum()
+         avg_pp_pct = tot_pp_goals / tot_pp_opps if tot_pp_opps > 0 else 0.20
+    else:
+         league_xg_5v5 = 2.0
+         avg_pp_pct = 0.20
+    
     # Build Starter Lookup: (DateStr, TeamCommonName) -> StarterName
     starter_lookup = {}
     for _, row in game_stats_df.iterrows():
@@ -787,46 +832,7 @@ def predict():
                          print(f"  [STAR MISSING] {away_team}: {p_name} (-7% xGF)")
                          a_star_penalty += 0.07
 
-        # Apply Star Penalties
-        h_xgf = h_xgf * (1.0 - h_star_penalty)
-        a_xgf = a_xgf * (1.0 - a_star_penalty)
 
-
-        # Get Special Teams Ranks & PCT
-        h_st = st_rankings.get(home_team, {'pp_rank': 16, 'pk_rank': 16, 'pp_pct': 0.2, 'pk_pct': 0.8})
-        a_st = st_rankings.get(away_team, {'pp_rank': 16, 'pk_rank': 16, 'pp_pct': 0.2, 'pk_pct': 0.8})
-        
-        h_ranks = {'pp_rank': h_st['pp_rank'], 'pk_rank': h_st['pk_rank']}
-        a_ranks = {'pp_rank': a_st['pp_rank'], 'pk_rank': a_st['pk_rank']}
-        
-        # --- [V2] SPECIAL TEAMS MATH ---
-        # Calculate Efficiency: (My PP + Opp PK_Inv) / 2
-        # Avg PP Opps approx 3.2 per game
-        AVG_PP_OPPS = 3.2
-        ST_WEIGHT = 0.06 # Tunable weight for impact
-        
-        h_pp_val = h_st.get('pp_pct', 0.2)
-        h_pk_val = h_st.get('pk_pct', 0.8)
-        a_pp_val = a_st.get('pp_pct', 0.2)
-        a_pk_val = a_st.get('pk_pct', 0.8)
-        
-        # Home PP vs Away PK
-        # If Away PK is 70% (0.7), Inv is 30% (0.3) success for offense.
-        # Average the offensive success rate.
-        h_pp_exp = (h_pp_val + (1 - a_pk_val)) / 2
-        h_st_bonus = (h_pp_exp * AVG_PP_OPPS) * ST_WEIGHT 
-        
-        # Away PP vs Home PK
-        a_pp_exp = (a_pp_val + (1 - h_pk_val)) / 2
-        a_st_bonus = (a_pp_exp * AVG_PP_OPPS) * ST_WEIGHT
-        
-        # Log heavy mismatches
-        if h_pp_exp > 0.30:
-            print(f"  [SPECIAL TEAMS] {home_team} PP Advantage (Exp Success: {h_pp_exp*100:.1f}%)")
-        if a_pp_exp > 0.30:
-            print(f"  [SPECIAL TEAMS] {away_team} PP Advantage (Exp Success: {a_pp_exp*100:.1f}%)")
-            
-        
         # Fetch L7 Records
         if home_team not in l7_cache:
             l7_cache[home_team], l7_details_cache[home_team] = fetch_l7_record(
@@ -872,14 +878,126 @@ def predict():
         h_gsax_pct = goalie_percentiles.get(h_goalie_name, 50) if h_goalie_name else 50
         a_gsax_pct = goalie_percentiles.get(a_goalie_name, 50) if a_goalie_name else 50
 
-        # Home xG Base
-        # Reduced Home Ice from 1.05 to 1.03
-        h_xg = (h_xgf * a_xga) / league_xg * 1.03
-        a_xg = (a_xgf * h_xga) / league_xg
+
+
+
+        # Get Special Teams Ranks (For Output)
+        h_st_ranks = st_rankings.get(home_team, {'pp_rank': 16, 'pk_rank': 16})
+        a_st_ranks = st_rankings.get(away_team, {'pp_rank': 16, 'pk_rank': 16})
         
-        # Add Special Teams Bonus
-        h_xg += h_st_bonus
-        a_xg += a_st_bonus
+        h_ranks = {'pp_rank': h_st_ranks['pp_rank'], 'pk_rank': h_st_ranks['pk_rank']}
+        a_ranks = {'pp_rank': a_st_ranks['pp_rank'], 'pk_rank': a_st_ranks['pk_rank']}
+
+        h_ratings = team_ratings.get(home_team, {})
+        a_ratings = team_ratings.get(away_team, {})
+        
+        # 1. Base 5v5 xG (Using 5v5 Ratings)
+        h_xgf_5v5 = h_ratings.get('xgf_5v5_rating', h_ratings.get('xgf_rating', 2.0))
+        a_xga_5v5 = a_ratings.get('xga_5v5_rating', a_ratings.get('xga_rating', 2.0))
+        
+        a_xgf_5v5 = a_ratings.get('xgf_5v5_rating', a_ratings.get('xgf_rating', 2.0))
+        h_xga_5v5 = h_ratings.get('xga_5v5_rating', h_ratings.get('xga_rating', 2.0))
+        
+        # Predictive Formula: (Offense * Defense) / League_Avg
+        h_xg_base = (h_xgf_5v5 * a_xga_5v5) / league_xg_5v5 
+        a_xg_base = (a_xgf_5v5 * h_xga_5v5) / league_xg_5v5
+        
+        # 2. Add Home Ice (Data Driven coeff)
+        h_xg_base += HOME_ICE_VAL
+        
+        # 3. Special Teams (Volume * Efficiency * Value)
+        # Volume: (My Drawn + Opp Taken) / 2
+        h_drawn = h_ratings.get('penalties_drawn_per_60', 3.0)
+        a_taken = a_ratings.get('penalties_taken_per_60', 3.0)
+        h_proj_opps = (h_drawn + a_taken) / 2.0
+        
+        a_drawn = a_ratings.get('penalties_drawn_per_60', 3.0)
+        h_taken = h_ratings.get('penalties_taken_per_60', 3.0)
+        a_proj_opps = (a_drawn + h_taken) / 2.0
+        
+        # Efficiency Factor: My Rating / League Avg
+        # team_ratings 'pp_rating' is scaled to 100 (e.g. 25.0)
+        h_pp_eff = (h_ratings.get('pp_rating', 20.0) / 100.0) / avg_pp_pct
+        a_pp_eff = (a_ratings.get('pp_rating', 20.0) / 100.0) / avg_pp_pct
+        
+        h_pp_xg = h_proj_opps * ST_VAL_PP * h_pp_eff
+        a_pp_xg = a_proj_opps * ST_VAL_PP * a_pp_eff
+        
+        # 4. Rest Penalty (Data Driven B2B)
+        # Determine if teams are on B2B
+        h_rest_pen = 0.0
+        dates_h = sorted(game_stats_df[game_stats_df['team'] == home_team]['game_date'].tolist())
+        if dates_h:
+            last_dt_val = dates_h[-1]
+            # Handle Timestamp or String
+            if hasattr(last_dt_val, 'strftime'): # Is datetime/Timestamp
+                 last_dt = last_dt_val
+            else:
+                 try:
+                    last_dt = datetime.strptime(last_dt_val, "%Y-%m-%d")
+                 except:
+                    last_dt = datetime.now() # Fallback
+
+            curr_dt = datetime.strptime(game_date, "%Y-%m-%d")
+            if (curr_dt - last_dt).days <= 1:
+                h_rest_pen = B2B_PENALTY
+                print(f"  [B2B] {home_team} is tired (-{B2B_PENALTY:.2f})")
+            
+            # Check 3-in-4
+            # Game 1 (2 games ago) -> Date gap <= 3?
+            if len(dates_h) >= 2:
+                 prev_2_dt_val = dates_h[-2]
+                 # simplified parsing
+                 try:
+                    p2_dt = datetime.strptime(prev_2_dt_val, "%Y-%m-%d") if isinstance(prev_2_dt_val, str) else prev_2_dt_val
+                    if (curr_dt - p2_dt).days <= 3:
+                        h_rest_pen += abs(IN3_4_PENALTY) # Additive penalty
+                        print(f"  [3-in-4] {home_team} grinding (-{abs(IN3_4_PENALTY):.2f})")
+                 except:
+                    pass
+
+        a_rest_pen = 0.0
+        dates_a = sorted(game_stats_df[game_stats_df['team'] == away_team]['game_date'].tolist())
+        if dates_a:
+            last_dt_val = dates_a[-1]
+            if hasattr(last_dt_val, 'strftime'):
+                 last_dt = last_dt_val
+            else:
+                 try:
+                     last_dt = datetime.strptime(last_dt_val, "%Y-%m-%d")
+                 except:
+                     last_dt = datetime.now()
+
+            curr_dt = datetime.strptime(game_date, "%Y-%m-%d")
+            if (curr_dt - last_dt).days <= 1:
+                a_rest_pen = B2B_PENALTY
+                print(f"  [B2B] {away_team} is tired (-{B2B_PENALTY:.2f})")
+            
+            # Check 3-in-4
+            if len(dates_a) >= 2:
+                 prev_2_dt_val = dates_a[-2]
+                 try:
+                    p2_dt = datetime.strptime(prev_2_dt_val, "%Y-%m-%d") if isinstance(prev_2_dt_val, str) else prev_2_dt_val
+                    if (curr_dt - p2_dt).days <= 3:
+                        a_rest_pen += abs(IN3_4_PENALTY)
+                        print(f"  [3-in-4] {away_team} grinding (-{abs(IN3_4_PENALTY):.2f})")
+                 except:
+                    pass
+        
+        # Combine Components
+        h_xg = h_xg_base + h_pp_xg - h_rest_pen
+        a_xg = a_xg_base + a_pp_xg - a_rest_pen
+        
+        # Debugging Output
+        # print(f"  {home_team} xG Breakdown: Base={h_xg_base:.2f}, PP={h_pp_xg:.2f}, Rest=-{h_rest_pen}, Home={HOME_ICE_VAL}")
+
+        # Removed: GAS Calculation (Replaced by B2B)
+        # Apply Star Penalties (Data Driven Coeff)
+        if h_star_penalty > 0:
+            h_xg *= (1.0 - h_star_penalty)
+            
+        if a_star_penalty > 0:
+            a_xg *= (1.0 - a_star_penalty)
         
         # --- [V3] SATURDAY NIGHT BOOST ---
         # Methodology: +5% Win Prob & +0.25 xG for High-Variance Home Teams on Saturdays

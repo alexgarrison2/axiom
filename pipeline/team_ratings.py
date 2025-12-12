@@ -14,8 +14,16 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
     
     # League Averages for normalization
     league_xg_for = df['xG_for'].mean()
-    league_xg_5v5 = df.get('xG_for_5v5', df['xG_for'] * 0.8).mean()
-    # print(f"League Average xG: {league_xg_for:.2f}, 5v5: {league_xg_5v5:.2f}")
+    league_xg_for = df['xG_for'].mean()
+    # Check if 5v5 data is valid (sum > 0)
+    has_5v5_data = 'xG_for_5v5' in df.columns and df['xG_for_5v5'].sum() > 0
+    
+    if has_5v5_data:
+        league_xg_5v5 = df['xG_for_5v5'].mean()
+    else:
+        league_xg_5v5 = df['xG_for'].mean() * 0.8 # Fallback to 80%
+        
+    # print(f"League Average xG: {league_xg_for:.2f}, 5v5: {league_xg_5v5:.2f} (Has Data: {has_5v5_data})")
     
     # Regression Parameters
     REGRESSION_GAMES = 10
@@ -28,8 +36,9 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         season_xgf = team_games['xG_for'].mean()
         
         # 5v5 xGF
-        col_5v5 = 'xG_for_5v5' if 'xG_for_5v5' in team_games.columns else 'xG_for' # Fallback
+        col_5v5 = 'xG_for_5v5' if has_5v5_data else 'xG_for' # Fallback
         rolling_xgf_5v5 = team_games[col_5v5].rolling(window=10, min_periods=1).mean().iloc[-1]
+        season_xgf_5v5 = team_games[col_5v5].mean()
         season_xgf_5v5 = team_games[col_5v5].mean()
         
         # Regress Season Average to League Mean
@@ -49,19 +58,21 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
              xgf_rating = league_xg_for * 1.0
              
         # Regress 5v5
-        if 'xG_for_5v5' in team_games.columns:
+        if has_5v5_data:
              regressed_season_5v5 = ((season_xgf_5v5 * games_played) + (league_xg_5v5 * REGRESSION_GAMES)) / (games_played + REGRESSION_GAMES)
              xgf_5v5_rating = (rolling_xgf_5v5 * 0.5) + (regressed_season_5v5 * 0.5)
         else:
              xgf_5v5_rating = xgf_rating * 0.8 # Fallback heuristic
+             # print(f"DEBUG: {team} 5v5 Fallback. xgf_rating={xgf_rating:.2f} -> 5v5={xgf_5v5_rating:.2f}")
         
         # xGA Strength (Defense)
         rolling_xga = team_games['xG_against'].rolling(window=10, min_periods=1).mean().iloc[-1]
         season_xga = team_games['xG_against'].mean()
         
         # 5v5 xGA
-        col_ga_5v5 = 'xG_against_5v5' if 'xG_against_5v5' in team_games.columns else 'xG_against'
+        col_ga_5v5 = 'xG_against_5v5' if has_5v5_data else 'xG_against'
         rolling_xga_5v5 = team_games[col_ga_5v5].rolling(window=10, min_periods=1).mean().iloc[-1]
+        season_xga_5v5 = team_games[col_ga_5v5].mean()
         season_xga_5v5 = team_games[col_ga_5v5].mean()
         
         # Regress to League Mean (League Avg xG For is approx League Avg xG Against)
@@ -74,7 +85,7 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
             xga_rating = league_xg_for * 1.0
             
         # Regress 5v5 Def
-        if 'xG_against_5v5' in team_games.columns:
+        if has_5v5_data:
              reg_season_xga_5v5 = ((season_xga_5v5 * games_played) + (league_xg_5v5 * REGRESSION_GAMES)) / (games_played + REGRESSION_GAMES)
              xga_5v5_rating = (rolling_xga_5v5 * 0.5) + (reg_season_xga_5v5 * 0.5)
         else:
