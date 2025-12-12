@@ -71,40 +71,32 @@ const RecentGamesList: React.FC<RecentGamesListProps> = ({ games, teamTriCode, i
                             </div>
 
                             {/* Right: Result & Score */}
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                                 {/* Result Badge */}
                                 {(() => {
-                                    let prefix = null;
-                                    let mainText = game.result;
-                                    let colorClass = "text-neutral-500 border-neutral-500";
+                                    const getBadgeStyles = (res: string) => {
+                                        const base = "w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center border shrink-0";
 
-                                    if (game.result === 'W') {
-                                        mainText = 'W';
-                                        colorClass = 'text-green-500 border-green-500';
-                                    } else if (game.result === 'L') {
-                                        mainText = 'L';
-                                        colorClass = 'text-red-500 border-red-500';
-                                    } else if (game.result === 'O') {
-                                        mainText = 'O';
-                                        colorClass = 'text-orange-500 border-orange-500';
-                                    } else if (game.result === 'W-OT') {
-                                        prefix = 'OT';
-                                        mainText = 'W';
-                                        colorClass = 'text-green-500 border-green-500';
-                                    } else if (game.result === 'W-SO') {
-                                        prefix = 'SO';
-                                        mainText = 'W'; // Although image shows W inside box, verifying if user wants W or just W check
-                                        colorClass = 'text-green-500 border-green-500';
-                                    }
+                                        if (res === 'W') return `${base} text-neon-green border-neon-green/30 bg-neon-green/10`;
+
+                                        // OT Win: Green Text, Orange Border (Solid)
+                                        if (res === 'W-OT') return `${base} text-neon-green border-orange-400/50 bg-neon-green/10`;
+
+                                        // SO Win: Green Text, Orange Border (Dotted)
+                                        if (res === 'W-SO') return `${base} text-neon-green border-orange-400/50 border-dotted bg-neon-green/10`;
+
+                                        // Losses
+                                        if (res === 'L') return `${base} text-red-500 border-red-500/30 bg-red-500/10`;
+                                        if (res === 'O') return `${base} text-orange-400 border-orange-400/30 bg-orange-400/10`;
+
+                                        return `${base} text-neutral-500`;
+                                    };
+
+                                    const displayText = game.result.startsWith('W') ? 'W' : game.result;
 
                                     return (
-                                        <div className="flex items-center gap-1.5 justify-end w-[4.5rem]">
-                                            {prefix && (
-                                                <span className="text-orange-500 text-[10px] font-bold tracking-tighter">{prefix}</span>
-                                            )}
-                                            <div className={`w-6 h-6 md:w-7 md:h-7 rounded-md border-2 flex items-center justify-center shrink-0 bg-black/40 ${colorClass}`}>
-                                                <span className="text-xs md:text-sm font-bold">{mainText}</span>
-                                            </div>
+                                        <div className={getBadgeStyles(game.result)}>
+                                            <span className="text-[9px] md:text-[10px] font-bold">{displayText}</span>
                                         </div>
                                     );
                                 })()}
