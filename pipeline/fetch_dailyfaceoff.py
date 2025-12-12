@@ -4,122 +4,96 @@ import re
 import datetime
 
 def fetch_dailyfaceoff_goalies():
-    print("Fetching Daily Faceoff data...")
+    print("Fetching Daily Faceoff data (Today + Tomorrow)...")
     
-    # Use curl to mimic a browser and avoid 403
-    cmd = [
-        'curl', 
-        '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
-        'https://www.dailyfaceoff.com/starting-goalies'
-    ]
+    goalie_info = {}
     
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        html = result.stdout
+    # Dates to fetch: Today and Tomorrow
+    # Use Central Time to align with App logic, or just standard local date
+    # DFO likely uses Eastern or Local. Let's send YYYY-MM-DD.
+    dates_to_fetch = []
+    today = datetime.date.today()
+    dates_to_fetch.append(today.strftime("%Y-%m-%d"))
+    dates_to_fetch.append((today + datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
+    
+    for date_str in dates_to_fetch:
+        # URL logic: /starting-goalies/YYYY-MM-DD
+        url = f"https://www.dailyfaceoff.com/starting-goalies/{date_str}"
         
-        # Extract the __NEXT_DATA__ JSON blob
-        match = re.search(r'<script[^>]*id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL)
-        if not match:
-            print("Could not find __NEXT_DATA__ in HTML.")
-            return {}
-            
-        data = json.loads(match.group(1))
+        cmd = [
+            'curl', 
+            '-s',
+            '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
+            url
+        ]
         
-        # The structure seems to be props -> pageProps -> data (array of games)
-        # Note: The URL is /starting-goalies, so it likely returns today's games or a range.
-        games = data.get('props', {}).get('pageProps', {}).get('data', [])
-        
-        goalie_info = {}
-        
-        print(f"Found {len(games)} games in DFO data.")
-        
-        for game in games:
-            date = game.get('date') # YYYY-MM-DD
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            html = result.stdout
             
-            # Check if game is for today or tomorrow (we care about near future)
-            # Actually, let's just store ALL of them keyed by team.
-            # If duplicates exist (same team next day), the latest one might overwrite, 
-            # or we should key by Date + Team.
-            # Current consumer (fetch_upcoming) iterates by date and looks up team.
-            # So if we store {Team: {Goalie, Status, Date}}, we might have a collision if back-to-back.
-            # BETTER: Store {Team: [List of entries]} or just check date matching in consumer?
-            # For now, let's just see what dates we have.
-            # Users want TODAY's goalie. 
-            # Let's verify if DFO returns multiple days.
-            
-            home_team = game.get('homeTeamName')
-            away_team = game.get('awayTeamName')
-            
-            home_goalie = game.get('homeGoalieName')
-            home_news_status = game.get('homeNewsStrengthName')
-            
-            # Use 'homeTeam' dict if available for more robustness? 
-            # game['homeTeam']['name'] might be safer?
-            # data structure: "homeTeam": { "name": "Toronto Maple Leafs", ... }
-            if not home_team and 'homeTeam' in game:
-                home_team = game['homeTeam'].get('name')
+            # Extract the __NEXT_DATA__ JSON blob
+            match = re.search(r'<script[^>]*id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL)
+            if not match:
+                print(f"Could not find __NEXT_DATA__ in HTML for {date_str}.")
+                continue
                 
-            if not away_team and 'awayTeam' in game:
-                away_team = game['awayTeam'].get('name')
-
-            # Goalie objects?
-            # "homeGoalie": { "name": "...", "newsStrength": "..." }
-            # PRIMARY SOURCE: game.get('homeGoalieName') should be the actual card name.
-            # Only use nested object if top level is missing.
-            if 'homeGoalie' in game and game['homeGoalie'] and not home_goalie:
-                 home_goalie = game['homeGoalie'].get('name')
-                 # newsStrength might be inside?
-                 # Inspecting previous code: it used game.get('homeNewsStrengthName')
-                 
-            # Fallback status logic
-            home_status = home_news_status
-            if not home_status and home_goalie:
-                home_status = "Unconfirmed"
+            data = json.loads(match.group(1))
+            games = data.get('props', {}).get('pageProps', {}).get('data', [])
             
-            away_goalie = game.get('awayGoalieName')
-            away_news_status = game.get('awayNewsStrengthName')
+            print(f"Found {len(games)} games for {date_str} in DFO data.")
             
-            if 'awayGoalie' in game and game['awayGoalie']:
-                away_goalie = game['awayGoalie'].get('name')
-
-            away_status = away_news_status
-            if not away_status and away_goalie:
-                away_status = "Unconfirmed"
-            
-            # Key by Team Name for easy lookup
-            # We will append the date to the key OR store a list to handle back-to-backs
-            # Consumer expects: goalie_info[team] -> dict
-            # If we detect a collision, we might need a smarter key.
-            # Let's try to match the EXACT name fetch_upcoming uses.
-            
-            if home_team:
-                # Store with Date key to be safe?
-                # Or just update if it's the 'next' game?
-                # For now, just store.
-                goalie_info[home_team] = {
-                    'goalie': home_goalie,
-                    'status': home_status,
-                    'date': date
-                }
+            for game in games:
+                date = game.get('date') # YYYY-MM-DD from DFO
+                if not date: date = date_str # Fallback
                 
-            if away_team:
-                goalie_info[away_team] = {
-                    'goalie': away_goalie,
-                    'status': away_status,
-                    'date': date
-                }
+                home_team = game.get('homeTeamName')
+                away_team = game.get('awayTeamName')
+                
+                # Extract Goalies
+                home_goalie = game.get('homeGoalieName')
+                if not home_goalie and 'homeGoalie' in game and game['homeGoalie']:
+                    home_goalie = game['homeGoalie'].get('name')
+                    
+                away_goalie = game.get('awayGoalieName')
+                if not away_goalie and 'awayGoalie' in game and game['awayGoalie']:
+                    away_goalie = game['awayGoalie'].get('name')
+                    
+                # Status
+                home_status = game.get('homeNewsStrengthName')
+                if not home_status and home_goalie: home_status = "Unconfirmed"
+                
+                away_status = game.get('awayNewsStrengthName')
+                if not away_status and away_goalie: away_status = "Unconfirmed"
+                
+                # Store keyed by "TeamName_Date" to allow easy JSON serialization AND uniqueness
+                # We can't use tuple keys in JSON dump.
+                # So we will use a string key: f"{TeamName}_{Date}"
+                
+                if home_team:
+                    key = f"{home_team}_{date}"
+                    goalie_info[key] = {
+                        'goalie': home_goalie,
+                        'status': home_status,
+                        'date': date,
+                        'team': home_team
+                    }
+                    
+                if away_team:
+                    key = f"{away_team}_{date}"
+                    goalie_info[key] = {
+                        'goalie': away_goalie,
+                        'status': away_status,
+                        'date': date,
+                        'team': away_team
+                    }
+                    
+        except Exception as e:
+            print(f"Error fetching DFO for {date_str}: {e}")
+
+    with open('dailyfaceoff_goalies.json', 'w') as f:
+        json.dump(goalie_info, f, indent=4)
         
-        with open('dailyfaceoff_goalies.json', 'w') as f:
-            json.dump(goalie_info, f, indent=4)
-            
-        return goalie_info
-        
-    except subprocess.CalledProcessError as e:
-        print(f"Error running curl: {e}")
-        return {}
-    except Exception as e:
-        print(f"Error parsing Daily Faceoff data: {e}")
-        return {}
+    return goalie_info
 
 
 def fetch_player_news():

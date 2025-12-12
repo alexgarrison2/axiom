@@ -58,15 +58,35 @@ def fetch_schedule():
                         away_status = "Unconfirmed"
                         
                         # Check DFO first
+                        # Check DFO first
+                        # Keys are now "Team Name_YYYY-MM-DD"
+                        
                         h_dfo_info = None
-                        for dfo_team_name, info in dfo_goalies.items():
+                        # Try to match key directly first (Optimization)
+                        # We don't know the exact DFO team name (e.g. "Chicago Blackhawks") vs API "Blackhawks"
+                        # So we still iterate but filter by date in the key suffix.
+                        
+                        # Iterate dfo_goalies looking for team name substring match AND date match
+                        for key, info in dfo_goalies.items():
+                            if target_date not in key:
+                                continue
+                                
+                            # Check if team name part matches
+                            # key is "Team Name_YYYY-MM-DD"
+                            dfo_team_name = key.replace(f"_{target_date}", "")
+                            
                             if home_team_common in dfo_team_name:
                                 h_dfo_info = info
                                 print(f"Matched Home: {home_team_common} -> {dfo_team_name} (Status: {info.get('status')})")
                                 break
                         
                         a_dfo_info = None
-                        for dfo_team_name, info in dfo_goalies.items():
+                        for key, info in dfo_goalies.items():
+                            if target_date not in key:
+                                continue
+
+                            dfo_team_name = key.replace(f"_{target_date}", "")
+                            
                             if away_team_common in dfo_team_name:
                                 a_dfo_info = info
                                 print(f"Matched Away: {away_team_common} -> {dfo_team_name} (Status: {info.get('status')})")
