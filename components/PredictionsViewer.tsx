@@ -120,11 +120,70 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                     transition={{ duration: 0.3 }}
                     className="w-full"
                 >
-                    {/* Stats Header for History inside the tab? */}
-                    {/* Let's replicate the stats header from the old history page just for context, or keep it simple table? 
-                         User didn't ask for stats header removal, but keeping it inside the tab view is nice.
-                         Actually, let's keep it simple and just show the table as requested.
-                     */}
+                    {/* Aggregate Stats Header */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        {(() => {
+                            const totalGames = history.length;
+                            const correctPicks = history.filter(h => h.isCorrect).length;
+                            const accuracy = totalGames > 0 ? ((correctPicks / totalGames) * 100).toFixed(1) : '0.0';
+
+                            // Average Brier Score
+                            const avgBrier = totalGames > 0
+                                ? (history.reduce((acc, curr) => acc + curr.brierScore, 0) / totalGames).toFixed(4)
+                                : '0.0000';
+
+                            // Log Loss Calculation
+                            // Log Loss = -1/N * Σ (y_i * log(p_i) + (1-y_i) * log(1-p_i))
+                            // y_i = 1 if Home Win, 0 if Away Win
+                            // p_i = Home Win Prob
+                            const logLossSum = history.reduce((acc, curr) => {
+                                const p = Math.max(0.0001, Math.min(0.9999, curr.homeWinProb)); // Clip to avoid log(0)
+                                const y = curr.actualWinner === curr.homeTeam.commonName ? 1 : 0;
+                                return acc + (y * Math.log(p) + (1 - y) * Math.log(1 - p));
+                            }, 0);
+                            const avgLogLoss = totalGames > 0 ? (-1 * (logLossSum / totalGames)).toFixed(4) : '0.0000';
+
+                            return (
+                                <>
+                                    {/* Accuracy Card */}
+                                    <div className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                        <span className="text-gray-400 text-xs font-mono uppercase tracking-widest mb-2 z-10">Model Accuracy</span>
+                                        <div className="text-4xl font-bold text-white z-10 text-glow-green">
+                                            {accuracy}%
+                                        </div>
+                                        <div className="text-emerald-400/60 text-xs mt-1 font-mono">
+                                            {correctPicks} / {totalGames} Correct
+                                        </div>
+                                    </div>
+
+                                    {/* Brier Score Card */}
+                                    <div className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                        <span className="text-gray-400 text-xs font-mono uppercase tracking-widest mb-2 z-10">Avg Brier Score</span>
+                                        <div className="text-4xl font-bold text-white z-10 text-glow-blue">
+                                            {avgBrier}
+                                        </div>
+                                        <div className="text-blue-400/60 text-xs mt-1 font-mono">
+                                            Lower is Better
+                                        </div>
+                                    </div>
+
+                                    {/* Log Loss Card */}
+                                    <div className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                        <span className="text-gray-400 text-xs font-mono uppercase tracking-widest mb-2 z-10">Log Loss</span>
+                                        <div className="text-4xl font-bold text-white z-10 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
+                                            {avgLogLoss}
+                                        </div>
+                                        <div className="text-purple-400/60 text-xs mt-1 font-mono">
+                                            Probabilistic Error
+                                        </div>
+                                    </div>
+                                </>
+                            );
+                        })()}
+                    </div>
 
                     <HistoryTable entries={history} />
                 </motion.div>
