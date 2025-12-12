@@ -31,7 +31,7 @@ def backtest():
         
         # 2. Calculate Ratings based on History
         # We suppress file saving to avoid overwriting production data
-        team_ratings, goalie_ratings, league_xg = calculate_ratings(history_df, save_files=False)
+        team_ratings, goalie_ratings, league_xg, _ = calculate_ratings(history_df, save_files=False)
         
         # 3. Get Games for TODAY
         todays_games = df[df['game_date'] == current_date]
