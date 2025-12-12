@@ -618,11 +618,17 @@ def predict():
     starter_lookup = {}
     for _, row in game_stats_df.iterrows():
         try:
-             # row['game_date'] is YYYY-MM-DD
+             # Ensure date is YYYY-MM-DD string
+             d_val = row['game_date']
+             if isinstance(d_val, pd.Timestamp):
+                 d_str = d_val.strftime('%Y-%m-%d')
+             else:
+                 d_str = str(d_val).split(' ')[0] # Handle strings or other formats
+
              # row['team'] is Common Name (e.g. "Rangers")
              # row['starting_goalie'] is Name
              if pd.notna(row['starting_goalie']):
-                 starter_lookup[(row['game_date'], row['team'])] = row['starting_goalie']
+                 starter_lookup[(d_str, row['team'])] = row['starting_goalie']
         except Exception as e:
             pass
 
