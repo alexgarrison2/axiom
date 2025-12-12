@@ -95,6 +95,19 @@ export interface GamePrediction {
   awayGoalieVsOpp?: string; // JSON string
 }
 
+export interface HistoryEntry {
+  date: string;
+  homeTeam: Team;
+  awayTeam: Team;
+  homeScore: number;
+  awayScore: number;
+  homeWinProb: number;
+  predictedWinner: string;
+  actualWinner: string;
+  isCorrect: boolean;
+  brierScore: number;
+}
+
 interface RawPrediction {
   game_date: string;
   game_id: string;
@@ -287,6 +300,51 @@ export async function getPredictions(): Promise<GamePrediction[]> {
   }).filter((p): p is GamePrediction => p !== null);
 
   return predictions;
+}
+
+export async function getHistory(): Promise<HistoryEntry[]> {
+  const dataDir = path.join(process.cwd(), 'data');
+  const teamsCsv = fs.readFileSync(path.join(dataDir, 'nhl_teams.csv'), 'utf8');
+  const historyJson = fs.readFileSync(path.join(dataDir, 'prediction_history.json'), 'utf8');
+
+  const teamsParsed = Papa.parse<RawTeam>(teamsCsv, { header: true, skipEmptyLines: true });
+  const rawHistory = JSON.parse(historyJson);
+
+  const teamsMap = new Map<string, Team>();
+  teamsParsed.data.forEach((row) => {
+    teamsMap.set(row['Common Name'], {
+      name: row['Team Name'],
+      commonName: row['Common Name'],
+      logoUrl: row['Team Logo URL'],
+      color1: row['Hex Color 1'],
+      color2: row['Hex Color 2'],
+      triCode: row['Team Tricode'],
+    });
+  });
+
+  // Sort Descending by Date
+  // rawHistory is list of objects.
+  const history: HistoryEntry[] = rawHistory.map((row: any) => {
+    const homeTeam = teamsMap.get(row.homeTeam);
+    const awayTeam = teamsMap.get(row.awayTeam);
+
+    if (!homeTeam || !awayTeam) return null;
+
+    return {
+      date: row.date,
+      homeTeam,
+      awayTeam,
+      homeScore: row.homeScore,
+      awayScore: row.awayScore,
+      homeWinProb: row.homeWinProb,
+      predictedWinner: row.predictedWinner,
+      actualWinner: row.actualWinner,
+      isCorrect: row.isCorrect,
+      brierScore: row.brierScore
+    };
+  }).filter((h: any) => h !== null);
+
+  return history.reverse(); // Newest first (assuming generation was chronological)
 }
 
 function parseWager(recommendation: string, side: 'Home' | 'Away'): string | null {

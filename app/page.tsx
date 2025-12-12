@@ -28,8 +28,13 @@ export default async function Home() {
                         <FullLogoAnimated />
                     </div>
                     {/* Last Refresh Text */}
-                    <div className="text-neutral-500 text-xs md:text-sm font-mono tracking-widest uppercase mt-4 opacity-80">
-                        Last Refresh: {lastRefresh}
+                    <div className="flex flex-col items-center gap-2 mt-4 opacity-80">
+                        <div className="text-neutral-500 text-xs md:text-sm font-mono tracking-widest uppercase">
+                            Last Refresh: {lastRefresh}
+                        </div>
+                        <a href="/history" className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-widest border-b border-transparent hover:border-blue-300 transition-all">
+                            View Model History &rarr;
+                        </a>
                     </div>
                 </div>
 
