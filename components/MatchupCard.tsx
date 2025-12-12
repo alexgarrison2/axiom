@@ -694,7 +694,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                     {/* ABSOLUTE BACKGROUND LOGOS - Moved INSIDE mask to clip correctly */}
                     {/* Left: Away Logo (Oversized & Clipped) */}
-                    <div className="absolute left-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
+                    <div className="absolute left-[-2rem] top-14 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
                         <LogoDisplay
                             src={awayTeam.logoUrl}
                             alt={awayTeam.name}
@@ -705,7 +705,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         />
                     </div>
                     {/* Right: Home Logo (Oversized & Clipped) */}
-                    <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
+                    <div className="absolute right-[-2rem] top-14 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
                         <LogoDisplay
                             src={homeTeam.logoUrl}
                             alt={homeTeam.name}
@@ -829,7 +829,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                 {/* --- EXPANDED DETAILS BODY --- */}
                 <div className={`relative z-20 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[1200px] opacity-100 border-t border-white/5' : 'max-h-0 opacity-0'}`}>
-                    <div className="p-4 bg-black/80 backdrop-blur-md">
+                    <div className="p-4">
                         {/* Goalies Row */}
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex flex-col items-start w-[48%]">
