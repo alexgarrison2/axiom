@@ -64,15 +64,15 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
             <div className="flex flex-col items-center mb-12 gap-8">
 
                 {/* Controls Row */}
-                <div className="flex items-center gap-8 flex-wrap justify-center w-full relative z-20">
+                <div className="flex items-center gap-2 md:gap-8 flex-nowrap justify-center w-full relative z-20 max-w-full overflow-hidden">
 
                     {/* Date Selector */}
-                    <div className="flex items-center gap-4 flex-wrap justify-center bg-black/40 p-2 rounded-full backdrop-blur-md border border-white/5">
+                    <div className="flex items-center gap-2 md:gap-4 flex-nowrap justify-center bg-black/40 p-1 md:p-2 rounded-full backdrop-blur-md border border-white/5 w-auto max-w-full overflow-x-auto scrollbar-hide">
 
                         {/* History Button */}
                         <button
                             onClick={() => setSelectedTab('History')}
-                            className={`relative px-6 py-2 rounded-full font-bold text-sm tracking-wider transition-all duration-300 border ${selectedTab === 'History'
+                            className={`relative px-3 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 ${selectedTab === 'History'
                                 ? 'text-amber-400 border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)] text-glow-amber'
                                 : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                 }`}
@@ -92,7 +92,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                             <button
                                 key={date}
                                 onClick={() => setSelectedTab(date)}
-                                className={`relative px-6 py-2 rounded-full font-bold text-sm tracking-wider transition-all duration-300 border ${selectedTab === date
+                                className={`relative px-3 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 ${selectedTab === date
                                     ? 'text-neon-blue border-neon-blue shadow-[0_0_20px_rgba(0,243,255,0.3)] text-glow-blue'
                                     : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
