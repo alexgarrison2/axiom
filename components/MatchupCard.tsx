@@ -122,14 +122,35 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     };
 
     // --- xG Explanation Helper ---
-    const ExplanationPopover = ({ items, align = 'center' }: { items?: string[], align?: 'left' | 'right' | 'center' }) => {
+    const ExplanationPopover = ({
+        items,
+        align = 'center',
+        transparentTrigger = false,
+        placement = 'top'  // 'top' means tooltip is ABOVE trigger (default), 'bottom' means BELOW
+    }: {
+        items?: string[],
+        align?: 'left' | 'right' | 'center',
+        transparentTrigger?: boolean,
+        placement?: 'top' | 'bottom'
+    }) => {
         const [isOpen, setIsOpen] = useState(false);
 
         if (!items || items.length === 0) return null;
 
-        let tooltipClasses = "absolute bottom-full mb-2 w-48 bg-zinc-950/95 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
+        // Base tooltip classes
+        let tooltipClasses = "absolute w-48 bg-zinc-950/95 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
+
+        // Vertical Placement
+        if (placement === 'top') {
+            tooltipClasses += " bottom-full mb-1";
+        } else {
+            tooltipClasses += " top-full mt-1";
+        }
+
+        // Visibility
         tooltipClasses += isOpen ? " block" : " hidden group-hover/info:block";
 
+        // Horizontal Alignment
         if (align === 'left') {
             tooltipClasses += " left-0 origin-bottom-left";
         } else if (align === 'right') {
@@ -138,15 +159,19 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             tooltipClasses += " left-1/2 -translate-x-1/2 origin-bottom";
         }
 
+        const triggerClass = transparentTrigger
+            ? "p-0.5 text-neutral-500 hover:text-white cursor-help transition-colors"
+            : "p-1 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white cursor-help transition-colors";
+
         return (
             <div
-                className="group/info relative ml-2 inline-flex"
+                className={`group/info relative inline-flex ${transparentTrigger ? '' : 'ml-2'}`}
                 onClick={(e) => {
                     e.stopPropagation();
                     setIsOpen(!isOpen);
                 }}
             >
-                <div className="p-1 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white cursor-help transition-colors">
+                <div className={triggerClass}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
                     </svg>
@@ -460,8 +485,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <span className="text-xs font-mono text-gray-500 font-bold uppercase">xG</span>
                         {/* Info Icon for Explanation */}
                         {isHome ?
-                            <ExplanationPopover items={prediction.home_xg_explained} align="left" /> :
-                            <ExplanationPopover items={prediction.away_xg_explained} align="right" />
+                            <ExplanationPopover items={prediction.home_xg_explained} align="left" placement="bottom" /> :
+                            <ExplanationPopover items={prediction.away_xg_explained} align="right" placement="bottom" />
                         }
                     </div>
                 </div>
@@ -711,15 +736,15 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     <div className="flex flex-row items-center justify-center w-[95%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
 
                         {/* LEFT DATA (Away xG/Wager) */}
-                        <div className="flex flex-col items-end justify-center w-[30%] gap-1">
+                        <div className="flex flex-col items-end justify-center w-[36%] gap-1">
                             {/* Top: xG - Inline Layout */}
-                            <div className="flex flex-row items-baseline gap-1 relative">
+                            <div className="flex flex-row items-center gap-1.5 relative">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
                                     <AnimatedNumber value={awayXg} toFixed={2} />
                                 </span>
-                                <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
-                                <div className="ml-1 -mt-2">
-                                    <ExplanationPopover items={prediction.away_xg_explained} align="left" />
+                                <div className="flex flex-col items-center leading-none -mt-1">
+                                    <ExplanationPopover items={prediction.away_xg_explained} align="left" transparentTrigger={true} />
+                                    <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider -mt-0.5">xG</span>
                                 </div>
                             </div>
 
@@ -768,15 +793,15 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         </div>
 
                         {/* RIGHT DATA (Home xG/Wager) */}
-                        <div className="flex flex-col items-start justify-center w-[30%] gap-1">
+                        <div className="flex flex-col items-start justify-center w-[36%] gap-1">
                             {/* Top: xG - Inline Layout */}
-                            <div className="flex flex-row items-baseline gap-1 relative">
-                                <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
+                            <div className="flex flex-row items-center gap-1.5 relative">
+                                <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white order-last">
                                     <AnimatedNumber value={homeXg} toFixed={2} />
                                 </span>
-                                <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
-                                <div className="ml-1 -mt-2">
-                                    <ExplanationPopover items={prediction.home_xg_explained} align="right" />
+                                <div className="flex flex-col items-center leading-none -mt-1">
+                                    <ExplanationPopover items={prediction.home_xg_explained} align="right" transparentTrigger={true} />
+                                    <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider -mt-0.5">xG</span>
                                 </div>
                             </div>
 
