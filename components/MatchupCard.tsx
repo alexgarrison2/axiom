@@ -534,7 +534,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 <div className="p-6 flex flex-row items-stretch justify-between w-full relative z-10">
 
                     {/* AWAY TEAM (Left) */}
-                    <div className="flex-1 min-w-0 relative">
+                    <div className="flex-1 min-w-0 relative z-20">
                         <TeamColumn
                             team={awayTeam}
                             isHome={false}
@@ -621,7 +621,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     </div>
 
                     {/* HOME TEAM (Right) */}
-                    <div className="flex-1 min-w-0 relative">
+                    <div className="flex-1 min-w-0 relative z-20">
                         <TeamColumn
                             team={homeTeam}
                             isHome={true}
@@ -737,7 +737,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     <div className="flex flex-row items-center justify-center w-[95%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
 
                         {/* LEFT DATA (Away xG/Wager) */}
-                        <div className="flex flex-col items-end justify-center w-[36%] gap-1">
+                        <div className="flex flex-col items-end justify-center w-[36%] gap-1 relative z-20">
                             {/* Top: xG - Inline Layout */}
                             <div className="flex flex-row items-center gap-1.5 relative">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
@@ -794,7 +794,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         </div>
 
                         {/* RIGHT DATA (Home xG/Wager) */}
-                        <div className="flex flex-col items-start justify-center w-[36%] gap-1">
+                        <div className="flex flex-col items-start justify-center w-[36%] gap-1 relative z-20">
                             {/* Top: xG - Inline Layout */}
                             <div className="flex flex-row items-center gap-1.5 relative">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white order-last">
