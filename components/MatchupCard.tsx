@@ -120,212 +120,90 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             </div>
         );
     };
-    const formatPct = (n: number) => n.toFixed(1) + '%';
-    const formatXg = (n: number) => n.toFixed(2);
-    const formatEv = (n: number) => `+${Math.round(n)}%`;
-    const formatOdds = (odds: string) => {
-        if (!odds || odds === 'N/A') return null;
-        if (odds.startsWith('+') || odds.startsWith('-')) return odds;
-        return `+${odds}`;
-    };
 
-    const formatGsax = (val: number) => {
-        if (val >= 0) return `+${val.toFixed(1)}`;
-        return `(${Math.abs(val).toFixed(1)})`;
-    };
+    // --- xG Explanation Helper ---
+    const ExplanationPopover = ({ items, align = 'center' }: { items?: string[], align?: 'left' | 'right' | 'center' }) => {
+        const [isOpen, setIsOpen] = useState(false);
 
-    const getGsaxColorValue = (percentile: number) => {
-        // Red (0) -> Grey (50) -> Blue (100)
-        // Red: rgb(240, 80, 80)
-        // Grey: rgb(160, 160, 160)
-        // Blue: rgb(60, 130, 240)
+        if (!items || items.length === 0) return null;
 
-        let r, g, b;
-        if (percentile <= 50) {
-            // Red to Grey
-            const ratio = percentile / 50;
-            r = Math.round(240 + (160 - 240) * ratio);
-            g = Math.round(80 + (160 - 80) * ratio);
-            b = Math.round(80 + (160 - 80) * ratio);
+        let tooltipClasses = "absolute bottom-full mb-2 w-48 bg-zinc-950/95 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
+        tooltipClasses += isOpen ? " block" : " hidden group-hover/info:block";
+
+        if (align === 'left') {
+            tooltipClasses += " left-0 origin-bottom-left";
+        } else if (align === 'right') {
+            tooltipClasses += " right-0 origin-bottom-right";
         } else {
-            // Grey to Blue
-            const ratio = (percentile - 50) / 50;
-            r = Math.round(160 + (60 - 160) * ratio);
-            g = Math.round(160 + (130 - 160) * ratio);
-            b = Math.round(160 + (240 - 160) * ratio);
-        }
-        return `rgb(${r}, ${g}, ${b})`;
-    };
-
-    // New Helpers for Mobile
-    const formatTime = (time: string) => time; // Simplified
-
-    const getGoalieStatusColor = (starter: string | null, gameId: string, team: 'home' | 'away') => {
-        if (!starter) return 'text-neutral-500';
-        const lower = starter.toLowerCase();
-        // Explicitly check for unconfirmed first
-        if (lower.includes('unconfirmed')) return 'text-neutral-500';
-        if (lower.includes('confirmed')) return 'text-neon-green';
-        if (lower.includes('likely')) return 'text-yellow-400';
-        return 'text-neutral-500';
-    };
-
-    const getGoalieStatusText = (starter: string | null, gameId: string, team: 'home' | 'away') => {
-        if (!starter) return 'Unconfirmed';
-        const match = starter.match(/\((.*?)\)$/);
-        return match ? match[1] : 'Unconfirmed';
-    };
-
-    const getRankColor = (rank: number | undefined) => {
-        if (rank === undefined) return 'border-neutral-700 bg-neutral-900/50 text-neutral-400';
-        if (rank <= 5) return 'border-blue-500 bg-blue-900/30 text-blue-400';
-        if (rank >= 28) return 'border-red-500 bg-red-900/30 text-red-400';
-        return 'border-neutral-700 bg-neutral-900/50 text-neutral-400';
-    };
-
-    const getGlowColor = (homeWager: string | null, awayWager: string | null) => {
-        if (homeWager || awayWager) {
-            // "Nebula" Glow: Soft green glow, but GREY physical border
-            return 'border-white/10 shadow-[0_0_30px_-5px_rgba(0,243,255,0.15)] hover:shadow-[0_0_40px_-5px_rgba(0,243,255,0.25)]';
-        }
-        return 'border-white/5 hover:border-white/10';
-    };
-
-    const cleanStarterName = (starter: string | null) => {
-        if (!starter) return '';
-        return starter.replace(/\s*\(.*?\)$/, '');
-    };
-
-    const formatGoalieName = (name: string) => {
-        if (!name) return '';
-        // Lower threshold to 12 to catch "Jonas Johansson" (15 chars) and ensure it doesn't clip
-        if (name.length > 12) {
-            const parts = name.split(' ');
-            if (parts.length > 1) {
-                return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
-            }
-        }
-        return name;
-    };
-
-
-    const homeColor = homeTeam.color1 || '#000';
-    const awayColor = awayTeam.color1 || '#000';
-
-    const getPillColors = (wagerStr: string | null | undefined, oddsVal: string | number | null | undefined) => {
-        // Condition: < 0.3u AND <= +110
-        let units = 0;
-        let odds = 1000;
-
-        if (wagerStr) {
-            const uMatch = wagerStr.match(/([\d\.]+)u/);
-            if (uMatch) units = parseFloat(uMatch[1]);
+            tooltipClasses += " left-1/2 -translate-x-1/2 origin-bottom";
         }
 
-        if (oddsVal !== null && oddsVal !== undefined) {
-            if (typeof oddsVal === 'number') odds = oddsVal;
-            else if (typeof oddsVal === 'string') odds = parseInt(oddsVal, 10);
-        }
-
-        if (units < 0.3 && odds <= 110) {
-            return "bg-neutral-800/80 border border-neutral-600 text-neutral-400 shadow-none hover:border-neutral-500";
-        }
-        return "bg-neon-green/10 border border-neon-green/30 text-neon-green shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]";
-    };
-
-
-    // Width calculations
-    const widthPercentage = Math.min(100, (totalGoals / maxTotalGoals) * 100);
-    const isHighEv = ((homeEv || 0) >= 20) || ((awayEv || 0) >= 20);
-
-    // Winner Calculation - REMOVED
-
-    // Helper for Badges
-    const Badge = ({ children, color = 'blue' }: { children: React.ReactNode, color?: 'blue' | 'red' | 'gray' }) => {
-        const colorClasses = {
-            blue: 'text-blue-400 bg-blue-400/10 border-blue-400/30',
-            red: 'text-red-500 bg-red-500/10 border-red-500/30',
-            gray: 'text-gray-400 bg-white/5 border-white/10'
-        };
         return (
-            <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border backdrop-blur-sm ${colorClasses[color]}`}>
-                {children}
-            </span>
-        );
-    };
-
-    const VsOppStatsDisplay = ({ statsStr, oppTriCode, align = 'left' }: { statsStr: string | undefined, oppTriCode: string, align?: 'left' | 'right' }) => {
-        if (!statsStr) return null;
-        try {
-            const vsOpp = JSON.parse(statsStr);
-            return (
-                <div className={`mt-0.5 text-[9px] font-mono tracking-wide text-neutral-400 whitespace-nowrap ${align === 'right' ? 'text-right' : 'text-left'}`}>
-                    <span className="text-neutral-500">vs {oppTriCode}: </span>
-                    <span className={`${vsOpp.win_pct >= 0.700 ? 'text-neon-green font-bold' : vsOpp.win_pct <= 0.300 ? 'text-red-400' : 'text-neutral-300'}`}>
-                        {vsOpp.record}
-                    </span>
-                    <span className="text-neutral-600 mx-1">|</span>
-                    <span className={`${vsOpp.sv >= 0.910 ? 'text-neon-green font-bold' : vsOpp.sv <= 0.890 ? 'text-red-400' : 'text-neutral-300'}`}>
-                        {vsOpp.sv.toFixed(3).substring(1)}
-                    </span>
-                    <span className="text-neutral-600 mx-1">|</span>
-                    <span>{vsOpp.gaa.toFixed(2)}</span>
-                </div>
-            );
-        } catch (e) { return null; }
-    };
-
-    const Legend = ({ className = "" }: { className?: string }) => (
-        <div className={`flex flex-wrap items-center justify-center gap-4 text-[9px] font-mono text-neutral-500 ${className}`}>
-            <span className="uppercase tracking-widest opacity-50 hidden sm:inline">Legend:</span>
-            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_5px_rgba(168,85,247,0.6)]"></div>
-                <span className="text-gray-300">Current Goalie Starts</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
-                <span className="font-bold text-[#5382BD]">PP1</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-neutral-900/50 px-2 py-1 rounded border border-white/5">
-                <span className="text-white">PP2</span>
-            </div>
-            {/* Goalie Status Group */}
-            <div className="flex items-center bg-neutral-900/50 rounded border border-white/5 divide-x divide-white/10">
-                <div className="px-2 py-1 bg-white/5">
-                    <span className="text-neutral-400 font-bold">Goalie Status</span>
-                </div>
-                <div className="flex items-center gap-3 px-3 py-1">
-                    <span className="text-neon-green font-bold">Confirmed</span>
-                    <span className="text-yellow-400 font-bold">Likely</span>
-                    <span className="text-gray-500 font-bold">Unconfirmed</span>
-                </div>
-            </div>
-        </div>
-    );
-
-    const NewsIndicator = ({ hasNews, className = "absolute bottom-2 right-2" }: { hasNews: boolean, className?: string }) => {
-        if (!hasNews) return null;
-        return (
-            <div className={`${className} z-50`} title="Player News Available">
-                <div className="bg-yellow-500/10 border border-yellow-500/20 p-1.5 rounded-full animate-pulse shadow-[0_0_15px_rgba(234,179,8,0.4)] backdrop-blur-sm">
-                    <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#EAB308"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-                        <path d="M18 14h-8" />
-                        <path d="M15 18h-5" />
-                        <path d="M10 6h8v4h-8V6Z" />
+            <div
+                className="group/info relative ml-2 inline-flex"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setIsOpen(!isOpen);
+                }}
+            >
+                <div className="p-1 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white cursor-help transition-colors">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
                     </svg>
                 </div>
+
+                <div className={tooltipClasses}>
+                    <div className="text-[10px] font-bold text-zinc-300 mb-1.5 border-b border-white/10 pb-1">Model Adjustments</div>
+                    <div className="flex flex-col gap-1">
+                        {items.map((item, i) => {
+                            const parts = item.split(':');
+                            const label = parts[0];
+                            const valStr = parts[1] || '';
+                            const val = parseFloat(valStr);
+
+                            // Color logic
+                            let valColor = 'text-zinc-400';
+                            if (!isNaN(val)) {
+                                if (val > 0) valColor = 'text-neon-green';
+                                else if (val < 0) valColor = 'text-red-400';
+                            }
+                            // Base model is neutral
+                            if (label.includes('Base')) valColor = 'text-zinc-100 font-bold';
+
+                            return (
+                                <div key={i} className="flex justify-between items-baseline text-[9px] leading-tight">
+                                    <span className="text-zinc-500">{label}</span>
+                                    <span className={`font-mono ${valColor}`}>{valStr}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
         );
     };
+
+    const getBarColor = (team: any) => {
+        // Teams with very dark/black primary colors that blend into the background
+        const darkTeams = ['PIT', 'LAK', 'UTA', 'SEA', 'TBL', 'BOS', 'ANA'];
+        if (darkTeams.includes(team.triCode)) {
+            // Use secondary color if available and distinct
+            if (team.color2 && team.color2 !== '#000000' && team.color2 !== '#FFFFFF') return team.color2;
+            // Fallback for teams like LAK where color2 might be silver/grey (ok) or white
+            return team.color2 || '#FFFFFF';
+        }
+        return team.color1;
+    };
+
+    const homeBarColor = getBarColor(homeTeam);
+    const awayBarColor = getBarColor(awayTeam);
+
+    // Animation State
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        const timer = setTimeout(() => setIsMounted(true), 100);
+        return () => clearTimeout(timer);
+    }, []);
 
     const TeamColumn = ({
         team,
@@ -361,7 +239,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         gsaxPct?: number,
         goalieStats?: string,
         vsOppStats?: string,
-
         opponentTriCode?: string,
         odds?: string | number | null
     }) => {
@@ -381,9 +258,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             } catch (e) { }
         }
 
+        const isHighEv = ev && ev > 0.05;
+
         return (
             <div className={`flex flex-col items-center py-4 relative z-10 w-full h-full ${alignClass}`}>
-
                 {/* Team Info Header */}
                 <div className={`flex flex-col gap-1 mb-4 w-full ${isHome ? 'md:flex-row' : 'md:flex-row-reverse'} items-center md:items-start`}>
                     <LogoDisplay
@@ -411,501 +289,454 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                 </span>
                             )}
                         </div>
-                        {/* Status Label Removed - Color applied to Name */}
                         {goalieStats && (
                             <div className="mt-0.5 text-[9px] text-neutral-500 font-mono tracking-wide">
                                 {goalieStats}
                             </div>
                         )}
-                        <VsOppStatsDisplay statsStr={vsOppStats} oppTriCode={opponentTriCode || ''} align="left" />
-                    </div>
-                </div>
-
-                {/* Main Stats (xG) */}
-                <div className={`flex flex-col ${alignClass} mb-4 items-center`}>
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-4xl md:text-5xl font-black text-white tracking-tighter tabular-nums text-glow-blue">
-                            <AnimatedNumber value={xg} toFixed={2} />
-                        </span>
-                        <span className="text-xs font-mono text-gray-500 font-bold uppercase">xG</span>
-                    </div>
-                </div>
-
-                {/* Secondary Badges Row (Aligned immediately under xG) */}
-                <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                    {ppRank && ppRank <= 5 && <Badge color="blue">#{ppRank} PP</Badge>}
-                    {ppRank && ppRank >= 28 && <Badge color="red">#{ppRank} PP</Badge>}
-                    {pkRank && pkRank <= 5 && <Badge color="blue">#{pkRank} PK</Badge>}
-                    {pkRank && pkRank >= 28 && <Badge color="red">#{pkRank} PK</Badge>}
-                    {l7 && <Badge color="gray">{l7} (L7)</Badge>}
-                    <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'left' : 'right'} />
-                </div>
-
-                {/* Wager Callout (Pushed to bottom) */}
-                {(evBadge || wager) && (
-                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold ${getPillColors(wager, odds)} ${isHighEv ? 'animate-pulse-glow' : ''}`}>
-                        {evBadge && <span>EV: {evBadge}</span>}
-                        {wager && <span className={`opacity-90 border-l pl-2 ${wager && wager.includes('u') && parseFloat(wager) < 0.3 && odds && (typeof odds === 'string' ? parseInt(odds) : odds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{wager}</span>}
-                    </div>
-                )}
-
-            </div>
-        );
-    };
-
-
-    return (
-        <>
-            {/* ========================================= */}
-            {/* DESKTOP VIEW (md:flex) - The Original Card */}
-            {/* ========================================= */}
-            <div
-                className={`hidden md:flex relative flex-col w-full max-w-4xl mx-auto rounded-3xl mb-6 transition-all duration-300 border backdrop-blur-xl group hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] cursor-pointer ${getGlowColor(homeWager, awayWager)} ${isDesktopExpanded ? 'bg-white/[0.02]' : 'bg-transparent'}`}
-                onClick={toggleDesktopExpand}
-                ref={desktopCardRef}
-            >
-
-                {/* Background Glass Layer */}
-                <div className="absolute inset-0 bg-[#0a0a0a]/80 rounded-3xl -z-10" />
-
-                {/* High EV Border Pulse */}
-                {isHighEv && (
-                    <div className="absolute inset-0 rounded-3xl border border-neon-green/50 animate-pulse pointer-events-none"></div>
-                )}
-
-                {/* Decorative Background Gradients */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-                    <div className="absolute -left-20 -top-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                    <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                </div>
-
-                <div className="p-6 flex flex-row items-stretch justify-between w-full relative z-10">
-
-                    {/* AWAY TEAM (Left) - Flex-1 to push to edge */}
-                    <div className="flex-1 min-w-0 relative">
-                        <TeamColumn
-                            team={awayTeam}
-                            isHome={false}
-                            starter={awayStarter}
-                            xg={awayXg}
-                            ppRank={prediction.away_pp_rank}
-                            pkRank={prediction.away_pk_rank}
-                            l7={prediction.away_l7}
-                            ev={awayEv}
-                            wager={awayWager}
-                            gas={prediction.away_gas}
-                            gasBreakdown={prediction.away_gas_breakdown}
-                            gsaxTotal={prediction.away_gsax_total}
-                            gsaxPct={prediction.away_gsax_pct}
-                            goalieStats={prediction.away_goalie_stats}
-                            vsOppStats={prediction.awayGoalieVsOpp}
-                            opponentTriCode={homeTeam.triCode}
-                            odds={awayVegasOdds}
-                        />
-                        <NewsIndicator
-                            hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
-                            className="absolute bottom-2 left-2"
-                        />
-                    </div>
-
-                    {/* CENTER INFO (Time, Total, Bar) - Bracketed by dividers */}
-                    <div className="flex flex-col items-center justify-center w-[30%] px-6 border-l border-r border-white/5 mx-4">
-                        <div className="flex flex-col items-center mb-6">
-                            <span className="text-xs font-mono text-neutral-400 tracking-[0.2em] mb-3">{formatTime(startTime || '')}</span>
-                            <div className="px-5 py-2 rounded-full border border-neutral-700 bg-neutral-800/50 backdrop-blur-md min-w-[56px] text-center">
-                                <span className="text-sm font-bold text-neutral-200 tracking-wider">TOTAL: {totalGoals.toFixed(1)}</span>
-                            </div>
-                        </div>
-
-                        {/* Win Probability Bar */}
-                        <div className="w-full flex justify-between text-[10px] font-bold text-neutral-500 tracking-widest mb-2 px-1">
-                            <span>{Math.round(awayModelWinPct)}%</span>
-                            <span>MODEL WIN %</span>
-                            <span>{Math.round(homeModelWinPct)}%</span>
-                        </div>
-                        <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden flex relative shadow-inner">
-                            <div
-                                className="h-full shadow-[0_0_15px_rgba(255,255,255,0.2)] relative z-10"
-                                style={{
-                                    width: `${awayModelWinPct}%`,
-                                    background: `linear-gradient(90deg, ${awayColor} 0%, ${awayColor}dd 100%)`,
-                                    boxShadow: `0 0 15px ${awayColor}66`
-                                }}
-                            ></div>
-                            <div
-                                className="h-full flex-1 relative"
-                                style={{
-                                    background: `linear-gradient(90deg, ${homeColor}dd 0%, ${homeColor} 100%)`, // Home Color for the rest
-                                    boxShadow: `0 0 15px ${homeColor}66`
-                                }}
-                            ></div>
-                        </div>
-
-                        {/* Odds Comparison Box */}
-                        <div className="flex flex-row justify-between w-full mt-6 px-2 gap-4">
-                            {/* Away Odds */}
-                            <div className="flex flex-col items-center flex-1">
-                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-2">MODEL</span>
-                                <span className="text-base font-bold text-white mb-1">{formatOdds(awayModelOdds)}</span>
-                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-1 mt-1">VEGAS</span>
-                                <span className="text-xs font-mono text-neutral-400">{formatOdds(awayVegasOdds)}</span>
-                            </div>
-                            {/* Divider */}
-                            <div className="w-px bg-neutral-800 h-12 self-center"></div>
-                            {/* Home Odds */}
-                            <div className="flex flex-col items-center flex-1">
-                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-2">MODEL</span>
-                                <span className="text-base font-bold text-white mb-1">{formatOdds(homeModelOdds)}</span>
-                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-1 mt-1">VEGAS</span>
-                                <span className="text-xs font-mono text-neutral-400">{formatOdds(homeVegasOdds)}</span>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    {/* HOME TEAM (Right) - Flex-1 to push to edge */}
-                    <div className="flex-1 min-w-0 relative">
-                        <TeamColumn
-                            team={homeTeam}
-                            isHome={true}
-                            starter={homeStarter}
-                            xg={homeXg}
-                            ppRank={prediction.home_pp_rank}
-                            pkRank={prediction.home_pk_rank}
-                            l7={prediction.home_l7}
-                            ev={homeEv}
-                            wager={homeWager}
-                            gas={prediction.home_gas}
-                            gasBreakdown={prediction.home_gas_breakdown}
-                            gsaxTotal={prediction.home_gsax_total}
-                            gsaxPct={prediction.home_gsax_pct}
-                            goalieStats={prediction.home_goalie_stats}
-                            vsOppStats={prediction.homeGoalieVsOpp}
-                            opponentTriCode={awayTeam.triCode}
-                            odds={homeVegasOdds}
-                        />
-                        <NewsIndicator hasNews={!!(prediction.home_news && prediction.home_news.length > 0)} />
-                    </div>
-                </div>
-
-                {/* --- DESKTOP EXPANDED: Recent Games --- */}
-                <div className={`overflow-hidden transition-all duration-300 ${isDesktopExpanded ? 'max-h-[800px] border-t border-white/5 opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <div className="p-6 flex flex-row bg-black/20">
-                        {/* Away Team Recent Games */}
-                        <div className="flex-1 pr-6 flex flex-col gap-6">
-                            <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} currentStarter={awayStarter} />
-                            <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} />
-                            <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
-                        </div>
-
-                        {/* Vertical Divider */}
-                        <div className="w-px bg-white/10 self-stretch"></div>
-
-                        {/* Home Team Recent Games */}
-                        <div className="flex-1 pl-6 flex flex-col gap-6">
-                            <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} currentStarter={homeStarter} />
-                            <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} />
-                            <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
-                        </div>
-                    </div>
-                    {/* Legend Footer */}
-                    <div className="w-full bg-black/40 border-t border-white/5 py-3 flex justify-center">
-                        <Legend />
-                    </div>
-                </div>
-
-                {/* Expand Hint */}
-                <div className={`absolute bottom-2 left-1/2 -translate-x-1/2 text-neutral-600 transition-opacity duration-300 ${isDesktopExpanded ? 'opacity-0' : 'opacity-100'}`}>
-                    <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-
-                </div>
-
-
-            </div>
-
-            {/* ========================================= */}
-            {/* MOBILE VIEW (md:hidden) - Condensed + Expand */}
-            {/* ========================================= */}
-            <div
-                className={`flex md:hidden relative flex-col w-full mx-auto rounded-[2.5rem] mb-1 text-white overflow-hidden transition-all duration-300 border backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
-                onClick={toggleExpand}
-                ref={cardRef}
-            >
-                {/* Background Glass */}
-                <div className="absolute inset-0 bg-[#0a0a0a]/90 -z-10" />
-
-                {/* --- SUPER CONDENSED HEADER ROW --- */}
-                {/* --- SUPER CONDENSED HEADER ROW --- */}
-                <div className="flex flex-row items-center justify-center relative select-none cursor-pointer active:bg-white/5 transition-colors h-28 overflow-visible px-2">
-
-                    {/* ABSOLUTE BACKGROUND LOGOS */}
-                    {/* Left: Away Logo (Oversized & Clipped) */}
-                    <div className="absolute left-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
-                        <LogoDisplay
-                            src={awayTeam.logoUrl}
-                            alt={awayTeam.name}
-                            triCode={awayTeam.triCode}
-                            className="w-full h-full scale-110 object-contain"
-                            primaryColor={awayTeam.color1}
-                            variant="animated"
-                        />
-                    </div>
-                    {/* Mobile Away News Indicator - Hoisted */}
-                    <NewsIndicator
-                        hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
-                        className="absolute bottom-3 left-7 md:hidden z-20"
-                    />
-
-                    {/* Right: Home Logo (Oversized & Clipped) */}
-                    <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
-                        <LogoDisplay
-                            src={homeTeam.logoUrl}
-                            alt={homeTeam.name}
-                            triCode={homeTeam.triCode}
-                            className="w-full h-full scale-110 object-contain"
-                            primaryColor={homeTeam.color1}
-                            variant="animated"
-                        />
-                    </div>
-                    {/* Mobile Home News Indicator - Hoisted */}
-                    <NewsIndicator
-                        hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
-                        className="absolute bottom-3 right-7 md:hidden z-20"
-                    />
-
-                    {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Compact & Aligned */}
-                    <div className="flex flex-row items-center justify-center w-full max-w-[80%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
-
-                        {/* LEFT DATA (Away xG/Wager) */}
-                        <div className="flex flex-col items-end justify-center w-[30%] gap-1">
-                            {/* Top: xG - Inline Layout */}
-                            <div className="flex flex-row items-baseline gap-1">
-                                <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
-                                    <AnimatedNumber value={awayXg} toFixed={2} />
-                                </span>
-                                <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
+                        <div
+                            className={`hidden md:flex relative flex-col w-full max-w-4xl mx-auto rounded-3xl mb-6 transition-all duration-300 border backdrop-blur-xl group hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] cursor-pointer ${getGlowColor(homeWager, awayWager)} ${isDesktopExpanded ? 'bg-white/[0.02]' : 'bg-transparent'}`}
+                            onClick={toggleDesktopExpand}
+                            ref={desktopCardRef}
+                        >
+                            {/* ... (Background layers) ... */}
+                            <div className="absolute inset-0 bg-[#0a0a0a]/80 rounded-3xl -z-10" />
+                            {isHighEv && (
+                                <div className="absolute inset-0 rounded-3xl border border-neon-green/50 animate-pulse pointer-events-none"></div>
+                            )}
+                            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+                                <div className="absolute -left-20 -top-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                                <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
                             </div>
 
-                            {/* Bottom: Wager Pill - Aligned with Bar */}
-                            <div className="h-5 flex items-center">
-                                {awayWager ? (
-                                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(awayWager, awayVegasOdds)}`}>
-                                        <span>+{Math.round(awayEv || 0)}%</span>
-                                        <span className={`opacity-90 border-l pl-1 ${awayWager && awayWager.includes('u') && parseFloat(awayWager) < 0.3 && awayVegasOdds && (typeof awayVegasOdds === 'string' ? parseInt(awayVegasOdds) : awayVegasOdds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{awayWager}</span>
+                            <div className="p-6 flex flex-row items-stretch justify-between w-full relative z-10">
+
+                                {/* AWAY TEAM (Left) */}
+                                <div className="flex-1 min-w-0 relative">
+                                    <TeamColumn
+                                        team={awayTeam}
+                                        isHome={false}
+                                        starter={awayStarter}
+                                        xg={awayXg}
+                                        ppRank={prediction.away_pp_rank}
+                                        pkRank={prediction.away_pk_rank}
+                                        l7={prediction.away_l7}
+                                        ev={awayEv}
+                                        wager={awayWager}
+                                        gas={prediction.away_gas}
+                                        gasBreakdown={prediction.away_gas_breakdown}
+                                        gsaxTotal={prediction.away_gsax_total}
+                                        gsaxPct={prediction.away_gsax_pct}
+                                        goalieStats={prediction.away_goalie_stats}
+                                        vsOppStats={prediction.awayGoalieVsOpp}
+                                        opponentTriCode={homeTeam.triCode}
+                                        odds={awayVegasOdds}
+                                    />
+                                    <NewsIndicator
+                                        hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
+                                        className="absolute bottom-2 left-2"
+                                    />
+                                </div>
+
+                                {/* CENTER INFO */}
+                                <div className="flex flex-col items-center justify-center w-[30%] px-6 border-l border-r border-white/5 mx-4">
+                                    <div className="flex flex-col items-center mb-6">
+                                        <span className="text-xs font-mono text-neutral-400 tracking-[0.2em] mb-3">{formatTime(startTime || '')}</span>
+                                        <div className="px-5 py-2 rounded-full border border-neutral-700 bg-neutral-800/50 backdrop-blur-md min-w-[56px] text-center">
+                                            <span className="text-sm font-bold text-neutral-200 tracking-wider">TOTAL: {totalGoals.toFixed(1)}</span>
+                                        </div>
                                     </div>
-                                ) : null}
-                            </div>
-                        </div>
 
-                        {/* CENTER (Time + Bar) */}
-                        <div className="flex flex-col items-center justify-center flex-1 gap-1">
-                            <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap mb-0.5">{formatTime(startTime || '')}</span>
-                            {/* Bar - Taller (h-5) & Wider */}
-                            <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden flex shadow-inner border border-white/5 relative">
-                                <div
-                                    className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)] flex items-center justify-start pl-1"
-                                    style={{
-                                        width: `${awayModelWinPct}%`,
-                                        background: `linear-gradient(90deg, ${awayColor} 0%, ${awayColor}dd 100%)`,
-                                        boxShadow: `0 0 10px ${awayColor}66`
-                                    }}
-                                >
-                                    <span className="text-[9px] font-bold text-white drop-shadow-md z-10">{Math.round(awayModelWinPct)}%</span>
-                                </div>
-                                <div
-                                    className="h-full flex-1 flex items-center justify-end pr-1"
-                                    style={{
-                                        background: `linear-gradient(90deg, ${homeColor}dd 0%, ${homeColor} 100%)`,
-                                        boxShadow: `0 0 10px ${homeColor}66`
-                                    }}
-                                >
-                                    <span className="text-[9px] font-bold text-white drop-shadow-md z-10">{Math.round(homeModelWinPct)}%</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* RIGHT DATA (Home xG/Wager) */}
-                        <div className="flex flex-col items-start justify-center w-[30%] gap-1">
-                            {/* Top: xG - Inline Layout */}
-                            <div className="flex flex-row items-baseline gap-1">
-                                <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
-                                    <AnimatedNumber value={homeXg} toFixed={2} />
-                                </span>
-                                <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
-                            </div>
-
-                            {/* Bottom: Wager Pill - Aligned with Bar */}
-                            <div className="h-5 flex items-center">
-                                {homeWager ? (
-                                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(homeWager, homeVegasOdds)}`}>
-                                        <span>+{Math.round(homeEv || 0)}%</span>
-                                        <span className={`opacity-90 border-l pl-1 ${homeWager && homeWager.includes('u') && parseFloat(homeWager) < 0.3 && homeVegasOdds && (typeof homeVegasOdds === 'string' ? parseInt(homeVegasOdds) : homeVegasOdds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{homeWager}</span>
+                                    {/* Win Probability Bar */}
+                                    <div className="w-full flex justify-between text-[10px] font-bold text-neutral-500 tracking-widest mb-2 px-1">
+                                        <span>{Math.round(awayModelWinPct)}%</span>
+                                        <span>MODEL WIN %</span>
+                                        <span>{Math.round(homeModelWinPct)}%</span>
                                     </div>
-                                ) : null}
+                                    <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden flex relative shadow-inner">
+                                        <div
+                                            className="h-full shadow-[0_0_15px_rgba(255,255,255,0.2)] relative z-10"
+                                            style={{
+                                                width: `${awayModelWinPct}%`,
+                                                background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
+                                                boxShadow: `0 0 15px ${awayBarColor}66`
+                                            }}
+                                        ></div>
+                                        {/* Separator Line */}
+                                        <div className="w-[2px] h-full bg-neutral-900/50 z-20"></div>
+                                        <div
+                                            className="h-full flex-1 relative"
+                                            style={{
+                                                background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`, // Home Color for the rest
+                                                boxShadow: `0 0 15px ${homeBarColor}66`
+                                            }}
+                                        ></div>
+                                    </div>
+
+                                    {/* Odds Comparison Box */}
+                                    <div className="flex flex-row justify-between w-full mt-6 px-2 gap-4">
+                                        {/* Away Odds */}
+                                        <div className="flex flex-col items-center flex-1">
+                                            <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-2">MODEL</span>
+                                            <span className="text-base font-bold text-white mb-1">{formatOdds(awayModelOdds)}</span>
+                                            <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-1 mt-1">VEGAS</span>
+                                            <span className="text-xs font-mono text-neutral-400">{formatOdds(awayVegasOdds)}</span>
+                                        </div>
+                                        {/* Divider */}
+                                        <div className="w-px bg-neutral-800 h-12 self-center"></div>
+                                        {/* Home Odds */}
+                                        <div className="flex flex-col items-center flex-1">
+                                            <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-2">MODEL</span>
+                                            <span className="text-base font-bold text-white mb-1">{formatOdds(homeModelOdds)}</span>
+                                            <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-1 mt-1">VEGAS</span>
+                                            <span className="text-xs font-mono text-neutral-400">{formatOdds(homeVegasOdds)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* HOME TEAM (Right) */}
+                                <div className="flex-1 min-w-0 relative">
+                                    <TeamColumn
+                                        team={homeTeam}
+                                        isHome={true}
+                                        starter={homeStarter}
+                                        xg={homeXg}
+                                        ppRank={prediction.home_pp_rank}
+                                        pkRank={prediction.home_pk_rank}
+                                        l7={prediction.home_l7}
+                                        ev={homeEv}
+                                        wager={homeWager}
+                                        gas={prediction.home_gas}
+                                        gasBreakdown={prediction.home_gas_breakdown}
+                                        gsaxTotal={prediction.home_gsax_total}
+                                        gsaxPct={prediction.home_gsax_pct}
+                                        goalieStats={prediction.home_goalie_stats}
+                                        vsOppStats={prediction.homeGoalieVsOpp}
+                                        opponentTriCode={awayTeam.triCode}
+                                        odds={homeVegasOdds}
+                                    />
+                                    <NewsIndicator hasNews={!!(prediction.home_news && prediction.home_news.length > 0)} />
+                                </div>
                             </div>
+
+                            {/* --- DESKTOP EXPANDED: Recent Games --- */}
+                            <div className={`overflow-hidden transition-all duration-300 ${isDesktopExpanded ? 'max-h-[800px] border-t border-white/5 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                <div className="p-6 flex flex-row bg-black/20">
+                                    {/* Away Team Recent Games */}
+                                    <div className="flex-1 pr-6 flex flex-col gap-6">
+                                        <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} currentStarter={awayStarter} />
+                                        <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} />
+                                        <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
+                                    </div>
+
+                                    {/* Vertical Divider */}
+                                    <div className="w-px bg-white/10 self-stretch"></div>
+
+                                    {/* Home Team Recent Games */}
+                                    <div className="flex-1 pl-6 flex flex-col gap-6">
+                                        <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} currentStarter={homeStarter} />
+                                        <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} />
+                                        <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
+                                    </div>
+                                </div>
+                                {/* Legend Footer */}
+                                <div className="w-full bg-black/40 border-t border-white/5 py-3 flex justify-center">
+                                    <Legend />
+                                </div>
+                            </div>
+
+                            {/* Expand Hint */}
+                            <div className={`absolute bottom-2 left-1/2 -translate-x-1/2 text-neutral-600 transition-opacity duration-300 ${isDesktopExpanded ? 'opacity-0' : 'opacity-100'}`}>
+                                <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+
+                            </div>
+
+
                         </div>
 
-                    </div>
-                </div>
+                        {/* ========================================= */}
+                        {/* MOBILE VIEW (md:hidden) - Condensed + Expand */}
+                        {/* ========================================= */}
+                        <div
+                            className={`flex md:hidden relative flex-col w-full mx-auto rounded-[2.5rem] mb-1 text-white overflow-hidden transition-all duration-300 border backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
+                            onClick={toggleExpand}
+                            ref={cardRef}
+                        >
+                            {/* Background Glass */}
+                            <div className="absolute inset-0 bg-[#0a0a0a]/90 -z-10" />
 
-                {/* Mobile Expand Hint */}
-                <div className={`absolute bottom-3 left-1/2 -translate-x-1/2 text-neutral-500/70 transition-opacity duration-300 pointer-events-none z-20 ${isExpanded ? 'opacity-0' : 'opacity-100'}`}>
-                    <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </div>
+                            {/* --- SUPER CONDENSED HEADER ROW --- */}
+                            {/* --- SUPER CONDENSED HEADER ROW --- */}
+                            <div className="flex flex-row items-center justify-center relative select-none cursor-pointer active:bg-white/5 transition-colors h-28 overflow-visible px-2">
 
-                {/* --- EXPANDED DETAILS BODY --- */}
-                <div className={`relative z-20 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[1200px] opacity-100 border-t border-white/5' : 'max-h-0 opacity-0'}`}>
-                    <div className="p-4 bg-black/80 backdrop-blur-md">
-                        {/* Goalies Row */}
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="flex flex-col items-start w-[48%]">
-                                <div className="flex items-center gap-1 flex-nowrap">
-                                    <span className={`text-[10px] font-bold uppercase ${(awayStarter?.toUpperCase()?.includes('UNCONFIRMED') || !awayStarter) ? 'text-gray-500' :
-                                        (awayStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
-                                            (awayStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
-                                        }`}>
-                                        {formatGoalieName(cleanStarterName(awayStarter))}
-                                    </span>
-                                    {prediction.away_gsax_total !== undefined && prediction.away_gsax_pct !== undefined && (
-                                        <span
-                                            className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5"
-                                            style={{ color: getGsaxColorValue(prediction.away_gsax_pct) }}
-                                        >
-                                            {formatGsax(prediction.away_gsax_total)}
-                                        </span>
-                                    )}
+                                {/* ABSOLUTE BACKGROUND LOGOS */}
+                                {/* Left: Away Logo (Oversized & Clipped) */}
+                                <div className="absolute left-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
+                                    <LogoDisplay
+                                        src={awayTeam.logoUrl}
+                                        alt={awayTeam.name}
+                                        triCode={awayTeam.triCode}
+                                        className="w-full h-full scale-110 object-contain"
+                                        primaryColor={awayTeam.color1}
+                                        variant="animated"
+                                    />
                                 </div>
-                                {/* Removed Status Label */}
-                                {prediction.away_goalie_stats && (
-                                    <span className="text-[9px] text-neutral-500 font-mono tracking-wide mt-0.5">
-                                        {prediction.away_goalie_stats}
-                                    </span>
-                                )}
-                                <VsOppStatsDisplay
-                                    statsStr={prediction.awayGoalieVsOpp}
-                                    oppTriCode={homeTeam.triCode}
-                                    align="left"
+                                {/* Mobile Away News Indicator - Hoisted */}
+                                <NewsIndicator
+                                    hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
+                                    className="absolute bottom-3 left-7 md:hidden z-20"
                                 />
-                            </div>
-                            <div className="flex flex-col items-end w-[48%]">
-                                <div className="flex items-center gap-1 flex-nowrap justify-end">
-                                    {prediction.home_gsax_total !== undefined && prediction.home_gsax_pct !== undefined && (
-                                        <span
-                                            className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5"
-                                            style={{ color: getGsaxColorValue(prediction.home_gsax_pct) }}
-                                        >
-                                            {formatGsax(prediction.home_gsax_total)}
-                                        </span>
-                                    )}
-                                    <span className={`text-[10px] font-bold uppercase text-right ${(homeStarter?.toUpperCase()?.includes('UNCONFIRMED') || !homeStarter) ? 'text-gray-500' :
-                                        (homeStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
-                                            (homeStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
-                                        }`}>
-                                        {formatGoalieName(cleanStarterName(homeStarter))}
-                                    </span>
+
+                                {/* Right: Home Logo (Oversized & Clipped) */}
+                                <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
+                                    <LogoDisplay
+                                        src={homeTeam.logoUrl}
+                                        alt={homeTeam.name}
+                                        triCode={homeTeam.triCode}
+                                        className="w-full h-full scale-110 object-contain"
+                                        primaryColor={homeTeam.color1}
+                                        variant="animated"
+                                    />
                                 </div>
-                                {/* Removed Status Label */}
-                                {prediction.home_goalie_stats && (
-                                    <span className="text-[9px] text-neutral-500 font-mono tracking-wide text-right mt-0.5">
-                                        {prediction.home_goalie_stats}
-                                    </span>
-                                )}
-                                <VsOppStatsDisplay
-                                    statsStr={prediction.homeGoalieVsOpp}
-                                    oppTriCode={awayTeam.triCode}
-                                    align="right"
+                                {/* Mobile Home News Indicator - Hoisted */}
+                                <NewsIndicator
+                                    hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
+                                    className="absolute bottom-3 right-7 md:hidden z-20"
                                 />
-                            </div>
-                        </div>
 
-                        {/* Odds & Stats Grid */}
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* Away Details */}
-                            <div className="flex flex-col gap-2 p-2 rounded bg-white/5">
-                                <div className="flex justify-between text-[10px]">
-                                    <span className="text-neutral-500">Model</span>
-                                    <span className="font-bold">{formatOdds(awayModelOdds)}</span>
-                                </div>
-                                <div className="flex justify-between text-[10px]">
-                                    <span className="text-neutral-500">Vegas</span>
-                                    <span className="font-mono">{formatOdds(awayVegasOdds)}</span>
-                                </div>
-                                <div className="h-px bg-white/10 my-1"></div>
-                                {/* Badges & Gas */}
-                                <div className="flex flex-wrap gap-1 mb-2">
-                                    <GasGauge gas={away_gas} breakdown={away_gas_breakdown} align="left" />
-                                    {prediction.away_pp_rank && prediction.away_pp_rank <= 5 && <Badge color="blue">#{prediction.away_pp_rank} PP</Badge>}
-                                    {prediction.away_pp_rank && prediction.away_pp_rank >= 28 && <Badge color="red">#{prediction.away_pp_rank} PP</Badge>}
-                                    {prediction.away_pk_rank && prediction.away_pk_rank <= 5 && <Badge color="blue">#{prediction.away_pk_rank} PK</Badge>}
-                                    {prediction.away_pk_rank && prediction.away_pk_rank >= 28 && <Badge color="red">#{prediction.away_pk_rank} PK</Badge>}
-                                    {prediction.away_l7 && <Badge color="gray">{prediction.away_l7}</Badge>}
+                                {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Compact & Aligned */}
+                                <div className="flex flex-row items-center justify-center w-full max-w-[80%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
+
+                                    {/* LEFT DATA (Away xG/Wager) */}
+                                    <div className="flex flex-col items-end justify-center w-[30%] gap-1">
+                                        {/* Top: xG - Inline Layout */}
+                                        <div className="flex flex-row items-baseline gap-1">
+                                            <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
+                                                <AnimatedNumber value={awayXg} toFixed={2} />
+                                            </span>
+                                            <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
+                                        </div>
+
+                                        {/* Bottom: Wager Pill - Aligned with Bar */}
+                                        <div className="h-5 flex items-center">
+                                            {awayWager ? (
+                                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(awayWager, awayVegasOdds)}`}>
+                                                    <span>+{Math.round(awayEv || 0)}%</span>
+                                                    <span className={`opacity-90 border-l pl-1 ${awayWager && awayWager.includes('u') && parseFloat(awayWager) < 0.3 && awayVegasOdds && (typeof awayVegasOdds === 'string' ? parseInt(awayVegasOdds) : awayVegasOdds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{awayWager}</span>
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    </div>
+
+                                    {/* CENTER (Time + Bar) */}
+                                    <div className="flex flex-col items-center justify-center flex-1 gap-1">
+                                        <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap mb-0.5">{formatTime(startTime || '')}</span>
+                                        {/* Bar - Taller (h-5) & Wider */}
+                                        <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden flex shadow-inner border border-white/5 relative">
+                                            <div
+                                                className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)] flex items-center justify-start pl-1"
+                                                style={{
+                                                    width: `${awayModelWinPct}%`,
+                                                    background: `linear-gradient(90deg, ${awayColor} 0%, ${awayColor}dd 100%)`,
+                                                    boxShadow: `0 0 10px ${awayColor}66`
+                                                }}
+                                            >
+                                                <span className="text-[9px] font-bold text-white drop-shadow-md z-10">{Math.round(awayModelWinPct)}%</span>
+                                            </div>
+                                            <div
+                                                className="h-full flex-1 flex items-center justify-end pr-1"
+                                                style={{
+                                                    background: `linear-gradient(90deg, ${homeColor}dd 0%, ${homeColor} 100%)`,
+                                                    boxShadow: `0 0 10px ${homeColor}66`
+                                                }}
+                                            >
+                                                <span className="text-[9px] font-bold text-white drop-shadow-md z-10">{Math.round(homeModelWinPct)}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* RIGHT DATA (Home xG/Wager) */}
+                                    <div className="flex flex-col items-start justify-center w-[30%] gap-1">
+                                        {/* Top: xG - Inline Layout */}
+                                        <div className="flex flex-row items-baseline gap-1">
+                                            <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
+                                                <AnimatedNumber value={homeXg} toFixed={2} />
+                                            </span>
+                                            <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
+                                        </div>
+
+                                        {/* Bottom: Wager Pill - Aligned with Bar */}
+                                        <div className="h-5 flex items-center">
+                                            {homeWager ? (
+                                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(homeWager, homeVegasOdds)}`}>
+                                                    <span>+{Math.round(homeEv || 0)}%</span>
+                                                    <span className={`opacity-90 border-l pl-1 ${homeWager && homeWager.includes('u') && parseFloat(homeWager) < 0.3 && homeVegasOdds && (typeof homeVegasOdds === 'string' ? parseInt(homeVegasOdds) : homeVegasOdds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{homeWager}</span>
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
 
-                            {/* Home Details */}
-                            <div className="flex flex-col gap-2 p-2 rounded bg-white/5">
-                                <div className="flex justify-between text-[10px]">
-                                    <span className="text-neutral-500">Model</span>
-                                    <span className="font-bold">{formatOdds(homeModelOdds)}</span>
-                                </div>
-                                <div className="flex justify-between text-[10px]">
-                                    <span className="text-neutral-500">Vegas</span>
-                                    <span className="font-mono">{formatOdds(homeVegasOdds)}</span>
-                                </div>
-                                <div className="h-px bg-white/10 my-1"></div>
-                                {/* Badges & Gas */}
-                                <div className="flex flex-wrap gap-1 mb-2 justify-end">
-                                    <GasGauge gas={home_gas} breakdown={home_gas_breakdown} align="right" />
-                                    {prediction.home_pp_rank && prediction.home_pp_rank <= 5 && <Badge color="blue">#{prediction.home_pp_rank} PP</Badge>}
-                                    {prediction.home_pp_rank && prediction.home_pp_rank >= 28 && <Badge color="red">#{prediction.home_pp_rank} PP</Badge>}
-                                    {prediction.home_pk_rank && prediction.home_pk_rank <= 5 && <Badge color="blue">#{prediction.home_pk_rank} PK</Badge>}
-                                    {prediction.home_pk_rank && prediction.home_pk_rank >= 28 && <Badge color="red">#{prediction.home_pk_rank} PK</Badge>}
-                                    {prediction.home_l7 && <Badge color="gray">{prediction.home_l7}</Badge>}
-                                </div>
+                            {/* Mobile Expand Hint */}
+                            <div className={`absolute bottom-3 left-1/2 -translate-x-1/2 text-neutral-500/70 transition-opacity duration-300 pointer-events-none z-20 ${isExpanded ? 'opacity-0' : 'opacity-100'}`}>
+                                <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
                             </div>
-                        </div>
 
-                        {/* Recent Games Lists (Side-by-Side on Mobile) */}
-                        <div className="flex flex-row gap-2 mt-4 relative">
-                            <div className="flex-1 min-w-0">
-                                {/* Recent Games & Lineups & News */}
-                                <div className="mt-4 flex flex-col gap-4">
-                                    <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} currentStarter={awayStarter} />
-                                    <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} />
-                                    <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
-                                </div>
-                            </div>
-                            {/* Vertical Divider */}
-                            <div className="w-px bg-white/10 self-stretch mx-1"></div>
-                            <div className="flex-1 min-w-0">
-                                {/* Recent Games & Lineups & News */}
-                                <div className="mt-4 flex flex-col gap-4">
-                                    <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} currentStarter={homeStarter} />
-                                    <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} />
-                                    <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
-                                </div>
-                            </div>
-                        </div>
+                            {/* --- EXPANDED DETAILS BODY --- */}
+                            <div className={`relative z-20 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[1200px] opacity-100 border-t border-white/5' : 'max-h-0 opacity-0'}`}>
+                                <div className="p-4 bg-black/80 backdrop-blur-md">
+                                    {/* Goalies Row */}
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex flex-col items-start w-[48%]">
+                                            <div className="flex items-center gap-1 flex-nowrap">
+                                                <span className={`text-[10px] font-bold uppercase ${(awayStarter?.toUpperCase()?.includes('UNCONFIRMED') || !awayStarter) ? 'text-gray-500' :
+                                                    (awayStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
+                                                        (awayStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
+                                                    }`}>
+                                                    {formatGoalieName(cleanStarterName(awayStarter))}
+                                                </span>
+                                                {prediction.away_gsax_total !== undefined && prediction.away_gsax_pct !== undefined && (
+                                                    <span
+                                                        className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5"
+                                                        style={{ color: getGsaxColorValue(prediction.away_gsax_pct) }}
+                                                    >
+                                                        {formatGsax(prediction.away_gsax_total)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {/* Removed Status Label */}
+                                            {prediction.away_goalie_stats && (
+                                                <span className="text-[9px] text-neutral-500 font-mono tracking-wide mt-0.5">
+                                                    {prediction.away_goalie_stats}
+                                                </span>
+                                            )}
+                                            <VsOppStatsDisplay
+                                                statsStr={prediction.awayGoalieVsOpp}
+                                                oppTriCode={homeTeam.triCode}
+                                                align="left"
+                                            />
+                                        </div>
+                                        <div className="flex flex-col items-end w-[48%]">
+                                            <div className="flex items-center gap-1 flex-nowrap justify-end">
+                                                {prediction.home_gsax_total !== undefined && prediction.home_gsax_pct !== undefined && (
+                                                    <span
+                                                        className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5"
+                                                        style={{ color: getGsaxColorValue(prediction.home_gsax_pct) }}
+                                                    >
+                                                        {formatGsax(prediction.home_gsax_total)}
+                                                    </span>
+                                                )}
+                                                <span className={`text-[10px] font-bold uppercase text-right ${(homeStarter?.toUpperCase()?.includes('UNCONFIRMED') || !homeStarter) ? 'text-gray-500' :
+                                                    (homeStarter?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
+                                                        (homeStarter?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
+                                                    }`}>
+                                                    {formatGoalieName(cleanStarterName(homeStarter))}
+                                                </span>
+                                            </div>
+                                            {/* Removed Status Label */}
+                                            {prediction.home_goalie_stats && (
+                                                <span className="text-[9px] text-neutral-500 font-mono tracking-wide text-right mt-0.5">
+                                                    {prediction.home_goalie_stats}
+                                                </span>
+                                            )}
+                                            <VsOppStatsDisplay
+                                                statsStr={prediction.homeGoalieVsOpp}
+                                                oppTriCode={awayTeam.triCode}
+                                                align="right"
+                                            />
+                                        </div>
+                                    </div>
 
-                        {/* Total Display in Center */}
-                        <div className="flex justify-center mt-4">
-                            <div className="px-4 py-1 rounded-full border border-neutral-800 bg-neutral-900">
-                                <span className="text-xs font-bold text-neutral-300">TOTAL: {totalGoals.toFixed(1)}</span>
+                                    {/* Odds & Stats Grid */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Away Details */}
+                                        <div className="flex flex-col gap-2 p-2 rounded bg-white/5">
+                                            <div className="flex justify-between text-[10px]">
+                                                <span className="text-neutral-500">Model</span>
+                                                <span className="font-bold">{formatOdds(awayModelOdds)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[10px]">
+                                                <span className="text-neutral-500">Vegas</span>
+                                                <span className="font-mono">{formatOdds(awayVegasOdds)}</span>
+                                            </div>
+                                            <div className="h-px bg-white/10 my-1"></div>
+                                            {/* Badges & Gas */}
+                                            <div className="flex flex-wrap gap-1 mb-2">
+                                                <GasGauge gas={away_gas} breakdown={away_gas_breakdown} align="left" />
+                                                {prediction.away_pp_rank && prediction.away_pp_rank <= 5 && <Badge color="blue">#{prediction.away_pp_rank} PP</Badge>}
+                                                {prediction.away_pp_rank && prediction.away_pp_rank >= 28 && <Badge color="red">#{prediction.away_pp_rank} PP</Badge>}
+                                                {prediction.away_pk_rank && prediction.away_pk_rank <= 5 && <Badge color="blue">#{prediction.away_pk_rank} PK</Badge>}
+                                                {prediction.away_pk_rank && prediction.away_pk_rank >= 28 && <Badge color="red">#{prediction.away_pk_rank} PK</Badge>}
+                                                {prediction.away_l7 && <Badge color="gray">{prediction.away_l7}</Badge>}
+                                            </div>
+                                        </div>
+
+                                        {/* Home Details */}
+                                        <div className="flex flex-col gap-2 p-2 rounded bg-white/5">
+                                            <div className="flex justify-between text-[10px]">
+                                                <span className="text-neutral-500">Model</span>
+                                                <span className="font-bold">{formatOdds(homeModelOdds)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[10px]">
+                                                <span className="text-neutral-500">Vegas</span>
+                                                <span className="font-mono">{formatOdds(homeVegasOdds)}</span>
+                                            </div>
+                                            <div className="h-px bg-white/10 my-1"></div>
+                                            {/* Badges & Gas */}
+                                            <div className="flex flex-wrap gap-1 mb-2 justify-end">
+                                                <GasGauge gas={home_gas} breakdown={home_gas_breakdown} align="right" />
+                                                {prediction.home_pp_rank && prediction.home_pp_rank <= 5 && <Badge color="blue">#{prediction.home_pp_rank} PP</Badge>}
+                                                {prediction.home_pp_rank && prediction.home_pp_rank >= 28 && <Badge color="red">#{prediction.home_pp_rank} PP</Badge>}
+                                                {prediction.home_pk_rank && prediction.home_pk_rank <= 5 && <Badge color="blue">#{prediction.home_pk_rank} PK</Badge>}
+                                                {prediction.home_pk_rank && prediction.home_pk_rank >= 28 && <Badge color="red">#{prediction.home_pk_rank} PK</Badge>}
+                                                {prediction.home_l7 && <Badge color="gray">{prediction.home_l7}</Badge>}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Recent Games Lists (Side-by-Side on Mobile) */}
+                                    <div className="flex flex-row gap-2 mt-4 relative">
+                                        <div className="flex-1 min-w-0">
+                                            {/* Recent Games & Lineups & News */}
+                                            <div className="mt-4 flex flex-col gap-4">
+                                                <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} currentStarter={awayStarter} />
+                                                <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} />
+                                                <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
+                                            </div>
+                                        </div>
+                                        {/* Vertical Divider */}
+                                        <div className="w-px bg-white/10 self-stretch mx-1"></div>
+                                        <div className="flex-1 min-w-0">
+                                            {/* Recent Games & Lineups & News */}
+                                            <div className="mt-4 flex flex-col gap-4">
+                                                <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} currentStarter={homeStarter} />
+                                                <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} />
+                                                <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Total Display in Center */}
+                                    <div className="flex justify-center mt-4">
+                                        <div className="px-4 py-1 rounded-full border border-neutral-800 bg-neutral-900">
+                                            <span className="text-xs font-bold text-neutral-300">TOTAL: {totalGoals.toFixed(1)}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            {/* Mobile Legend */}
+                            {isExpanded && (
+                                <div className="relative z-20 bg-black/90 pb-4 pt-2 px-4 flex justify-center border-t border-white/5">
+                                    <Legend />
+                                </div>
+                            )}
                         </div>
-                    </div>
-                </div>
-                {/* Mobile Legend */}
-                {isExpanded && (
-                    <div className="relative z-20 bg-black/90 pb-4 pt-2 px-4 flex justify-center border-t border-white/5">
-                        <Legend />
-                    </div>
-                )}
-            </div>
-        </>
-    );
+                    </>
+                    );
 };
 
-export default MatchupCard;
+                    export default MatchupCard;

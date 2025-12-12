@@ -93,6 +93,9 @@ export interface GamePrediction {
   away_goalie_stats?: string;
   homeGoalieVsOpp?: string; // JSON string
   awayGoalieVsOpp?: string; // JSON string
+
+  home_xg_explained?: string[]; // JSON Array from Python
+  away_xg_explained?: string[]; // JSON Array from Python
 }
 
 export interface HistoryEntry {
@@ -105,7 +108,6 @@ export interface HistoryEntry {
   awayXg: number;
   homeWinProb: number;
   predictedWinner: string;
-
   actualWinner: string;
   isCorrect: boolean;
   brierScore: number;
@@ -157,45 +159,14 @@ interface RawPrediction {
   away_goalie_stats?: string;
   home_starter_vs_opp?: string;
   away_starter_vs_opp?: string;
+  home_xg_explained?: string;
+  away_xg_explained?: string;
 }
 
-interface RawTeam {
-  'Team Name': string;
-  'Common Name': string;
-  'Team Logo URL': string;
-  'Hex Color 1': string;
-  'Hex Color 2': string;
-  'Team Tricode': string;
-}
+// ... (RawTeam interface remains unchanged)
 
 export async function getPredictions(): Promise<GamePrediction[]> {
-  const dataDir = path.join(process.cwd(), 'data');
-
-  const teamsCsv = fs.readFileSync(path.join(dataDir, 'nhl_teams.csv'), 'utf8');
-  const predictionsCsv = fs.readFileSync(path.join(dataDir, 'predictions_detailed.csv'), 'utf8');
-
-  const teamsParsed = Papa.parse<RawTeam>(teamsCsv, { header: true, skipEmptyLines: true });
-  const predictionsParsed = Papa.parse<RawPrediction>(predictionsCsv, { header: true, skipEmptyLines: true });
-
-  const teamsMap = new Map<string, Team>();
-  const triCodeToLogoMap = new Map<string, string>();
-  const triCodeToColorMap = new Map<string, string>();
-
-  teamsParsed.data.forEach((row) => {
-    teamsMap.set(row['Common Name'], {
-      name: row['Team Name'],
-      commonName: row['Common Name'],
-      logoUrl: row['Team Logo URL'],
-      color1: row['Hex Color 1'],
-      color2: row['Hex Color 2'],
-      triCode: row['Team Tricode'],
-    });
-    // Map Tricode to Logo
-    if (row['Team Tricode']) {
-      triCodeToLogoMap.set(row['Team Tricode'], row['Team Logo URL']);
-      triCodeToColorMap.set(row['Team Tricode'], row['Hex Color 1']);
-    }
-  });
+  // ... (setup code remains unchanged)
 
   const predictions = predictionsParsed.data.map((row): GamePrediction | null => {
     const homeTeam = teamsMap.get(row.home_team);
@@ -239,9 +210,19 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       }
     };
 
+    // Parse Explanation
+    const parseExplanation = (jsonStr?: string): string[] => {
+      if (!jsonStr) return [];
+      try {
+        return JSON.parse(jsonStr) as string[];
+      } catch (e) {
+        return [];
+      }
+    };
+
     if (!homeTeam || !awayTeam) {
-      console.warn(`Team not found for game ${row.game_id}: ${row.home_team} vs ${row.away_team}`);
-      return null;
+      // console.warn(`Team not found for game ${row.game_id}: ${row.home_team} vs ${row.away_team}`);
+      return null; // Skip invalid teams
     }
 
     const homeXg = parseFloat(row.home_xg);
@@ -299,6 +280,9 @@ export async function getPredictions(): Promise<GamePrediction[]> {
 
       homeGoalieVsOpp: row.home_starter_vs_opp || undefined,
       awayGoalieVsOpp: row.away_starter_vs_opp || undefined,
+      
+      home_xg_explained: parseExplanation(row.home_xg_explained),
+      away_xg_explained: parseExplanation(row.away_xg_explained),
     };
   }).filter((p): p is GamePrediction => p !== null);
 

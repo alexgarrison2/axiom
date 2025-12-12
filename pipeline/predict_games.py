@@ -1071,8 +1071,44 @@ def predict():
         # h_boost = 1.0
         # a_boost = 1.0
 
-        h_xg_adj = max(0.1, h_xg - (a_gsax * GOALIE_IMPACT_FACTOR)) + h_hist_adj
-        a_xg_adj = max(0.1, a_xg - (h_gsax * GOALIE_IMPACT_FACTOR)) + a_hist_adj
+
+        # --- EXPLANATION TRACKING ---
+        h_explained = []
+        a_explained = []
+        
+        # 1. Base (5v5 + Special Teams)
+        # Note: h_xg = h_5v5 + h_pp_share (approximately)
+        # Let's interact with original variables if possible, or just use what we have
+        # Reconstructing for clarity:
+        h_explained.append(f"Base Model: {h_xg:.2f}")
+        a_explained.append(f"Base Model: {a_xg:.2f}")
+
+        # 2. Goalie Impact
+        # h_xg_adj = max(0.1, h_xg - (a_gsax * GOALIE_IMPACT_FACTOR))
+        h_goalie_impact = -(a_gsax * GOALIE_IMPACT_FACTOR)
+        a_goalie_impact = -(h_gsax * GOALIE_IMPACT_FACTOR)
+        
+        if abs(h_goalie_impact) > 0.01:
+            h_explained.append(f"Opp Goalie ({a_starter_clean}): {h_goalie_impact:+.2f}")
+        if abs(a_goalie_impact) > 0.01:
+            a_explained.append(f"Opp Goalie ({h_starter_clean}): {a_goalie_impact:+.2f}")
+
+        # 3. History Adjustment
+        if abs(h_hist_adj) > 0.001:
+            h_explained.append(f"vs Opp History: {h_hist_adj:+.2f}")
+        if abs(a_hist_adj) > 0.001:
+            a_explained.append(f"vs Opp History: {a_hist_adj:+.2f}")
+
+        # 4. GAS / Fatigue (Pre-calculated in breakdown, but let's add summary if impactful)
+        # Recalculating effectively used penalties.
+        # Since GAS logic was removed/commented out effectively in lines 1070+, we check if we add anything back.
+        # It seems only "data-driven" penalties might be added later? 
+        # Looking at code: No direct GAS modification to xG currently active in lines 1074+.
+        # Wait, lines 1074-1075 use h_hist_adj but NO GAS variable.
+        # If GAS is re-enabled or used elsewhere, we capture it. For now, it seems unused in xG.
+        
+        h_xg_adj = max(0.1, h_xg + h_goalie_impact) + h_hist_adj
+        a_xg_adj = max(0.1, a_xg + a_goalie_impact) + a_hist_adj
         
         # --- [V3] THE ORACLE UPGRADES (Anti-Hits & PDO) ---
         
@@ -1117,23 +1153,41 @@ def predict():
         # If I have high PDO and you have low, I am playing better.
         pdo_diff = h_pdo - a_pdo
         
+        h_pre_pdo = h_xg_adj
+        a_pre_pdo = a_xg_adj
+        
         if pdo_diff > 40: # e.g. 1020 vs 980
             print(f"  [PDO MOMENTUM] {home_team} (PDO {h_pdo:.0f}) vs {away_team} (PDO {a_pdo:.0f}) -> +5% Boost")
             h_xg_adj *= 1.05
+            h_explained.append(f"PDO Momentum ({h_pdo:.0f} vs {a_pdo:.0f}): +0.05%") # Actually 5%
         elif pdo_diff < -40:
             print(f"  [PDO MOMENTUM] {away_team} (PDO {a_pdo:.0f}) vs {home_team} (PDO {h_pdo:.0f}) -> +5% Boost")
             a_xg_adj *= 1.05
-            
+            a_explained.append(f"PDO Momentum ({a_pdo:.0f} vs {h_pdo:.0f}): +0.05%")
+
+        # Capture PDO delta
+        if h_xg_adj != h_pre_pdo: h_explained[-1] = f"PDO Momentum: {h_xg_adj - h_pre_pdo:+.2f}"
+        if a_xg_adj != a_pre_pdo: a_explained[-1] = f"PDO Momentum: {a_xg_adj - a_pre_pdo:+.2f}"
+
         # 2. Possession Proxy (Anti-Hits)
         # If I hit a lot more than you, I am chasing the puck.
         hits_diff = h_hits - a_hits
         
+        h_pre_hits = h_xg_adj
+        a_pre_hits = a_xg_adj
+        
         if hits_diff > 8: # Home hits way more
             print(f"  [CHASING PLAY] {home_team} Avg Hits +{hits_diff:.1f} vs {away_team} -> -3% Penalty")
             h_xg_adj *= 0.97
+            h_explained.append(f"Chasing Play (Hits +{hits_diff:.0f}): -3%")
         elif hits_diff < -8: # Away hits way more
             print(f"  [CHASING PLAY] {away_team} Avg Hits +{abs(hits_diff):.1f} vs {home_team} -> -3% Penalty")
             a_xg_adj *= 0.97
+            a_explained.append(f"Chasing Play (Hits +{abs(hits_diff):.0f}): -3%")
+            
+        # Capture Hits delta
+        if h_xg_adj != h_pre_hits: h_explained[-1] = f"Heavy Hitting (Chasing): {h_xg_adj - h_pre_hits:+.2f}"
+        if a_xg_adj != a_pre_hits: a_explained[-1] = f"Heavy Hitting (Chasing): {a_xg_adj - a_pre_hits:+.2f}"
 
         # Simulate
         h_prob, a_prob, tie_prob = simulate_game(h_xg_adj, a_xg_adj)
@@ -1217,6 +1271,10 @@ def predict():
             'away_vegas_odds': a_odds if a_odds else "N/A",
             'away_vegas_win_pct': round(implied_prob(a_odds) * 100, 1),
             'away_ev': round(a_ev * 100, 2) if a_ev > -1 else "",
+            
+            # --- xG EXPLANATIONS ---
+            'home_xg_explained': json.dumps(h_explained),
+            'away_xg_explained': json.dumps(a_explained),
             
             'wager_recommendation': wager_rec,
             'game_start_time': convert_to_central(game.get('startTimeUTC')),
