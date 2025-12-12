@@ -536,25 +536,24 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             <span>MODEL WIN %</span>
                             <span>{Math.round(homeModelWinPct)}%</span>
                         </div>
-                        <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden relative shadow-inner">
-                            {/* Separator Line (Center) */}
-                            <div className="absolute left-1/2 -translate-x-1/2 w-[2px] h-full bg-neutral-900/50 z-20"></div>
-
-                            {/* Away Bar (Left) - Grows Right-to-Left from Center */}
+                        <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden flex relative shadow-inner">
+                            {/* Away Bar (Left) - Animated Width */}
                             <div
-                                className="absolute top-0 bottom-0 right-1/2 shadow-[0_0_15px_rgba(255,255,255,0.2)] z-10 transition-all duration-1000 ease-out origin-right"
+                                className="h-full shadow-[0_0_15px_rgba(255,b255,255,0.2)] z-10 transition-all duration-1000 ease-out flex justify-start items-center relative overflow-hidden"
                                 style={{
-                                    width: isMounted ? `${awayModelWinPct}%` : '0%',
+                                    width: isMounted ? `${awayModelWinPct}%` : '50%',
                                     background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
                                     boxShadow: `0 0 15px ${awayBarColor}66`
                                 }}
                             ></div>
 
-                            {/* Home Bar (Right) - Grows Left-to-Right from Center */}
+                            {/* Center Separator - Moves with Layout */}
+                            <div className="w-[2px] h-full bg-neutral-900/50 z-20"></div>
+
+                            {/* Home Bar (Right) - Fills remaining space */}
                             <div
-                                className="absolute top-0 bottom-0 left-1/2 z-10 transition-all duration-1000 ease-out origin-left"
+                                className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex justify-end items-center relative overflow-hidden"
                                 style={{
-                                    width: isMounted ? `${homeModelWinPct}%` : '0%',
                                     background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
                                     boxShadow: `0 0 15px ${homeBarColor}66`
                                 }}
@@ -720,32 +719,32 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <div className="flex flex-col items-center justify-center flex-1 gap-1">
                             <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap mb-0.5">{formatTime(startTime || '')}</span>
                             {/* Bar - Taller (h-5) & Animated */}
-                            <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden relative shadow-inner border border-white/5">
-                                {/* Separator Line (Center) */}
-                                <div className="absolute left-1/2 -translate-x-1/2 w-[2px] h-full bg-neutral-900/50 z-20"></div>
-
-                                {/* Away Bar (Left) - Grows Right-to-Left */}
+                            {/* Bar - Taller (h-5) & Animated */}
+                            <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden flex relative shadow-inner border border-white/5">
+                                {/* Away Bar (Left) - Animated Width */}
                                 <div
-                                    className="absolute top-0 bottom-0 right-1/2 shadow-[0_0_10px_rgba(255,255,255,0.2)] flex items-center justify-start pl-1 z-10 transition-all duration-1000 ease-out origin-right"
+                                    className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)] flex items-center justify-start pl-1 z-10 transition-all duration-1000 ease-out overflow-hidden whitespace-nowrap"
                                     style={{
-                                        width: isMounted ? `${awayModelWinPct}%` : '0%',
+                                        width: isMounted ? `${awayModelWinPct}%` : '50%',
                                         background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
                                         boxShadow: `0 0 10px ${awayBarColor}66`
                                     }}
                                 >
-                                    <span className="text-[9px] font-bold text-white drop-shadow-md whitespace-nowrap">{Math.round(awayModelWinPct)}%</span>
+                                    <span className="text-[9px] font-bold text-white drop-shadow-md whitespace-nowrap pl-1">{Math.round(awayModelWinPct)}%</span>
                                 </div>
 
-                                {/* Home Bar (Right) - Grows Left-to-Right */}
+                                {/* Center Separator */}
+                                <div className="w-[2px] h-full bg-neutral-900/50 z-20"></div>
+
+                                {/* Home Bar (Right) - Fills remaining space */}
                                 <div
-                                    className="absolute top-0 bottom-0 left-1/2 flex items-center justify-end pr-1 z-10 transition-all duration-1000 ease-out origin-left"
+                                    className="h-full flex-1 flex items-center justify-end pr-1 z-10 transition-all duration-1000 ease-out overflow-hidden whitespace-nowrap"
                                     style={{
-                                        width: isMounted ? `${homeModelWinPct}%` : '0%',
                                         background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
                                         boxShadow: `0 0 10px ${homeBarColor}66`
                                     }}
                                 >
-                                    <span className="text-[9px] font-bold text-white drop-shadow-md whitespace-nowrap">{Math.round(homeModelWinPct)}%</span>
+                                    <span className="text-[9px] font-bold text-white drop-shadow-md whitespace-nowrap pr-1">{Math.round(homeModelWinPct)}%</span>
                                 </div>
                             </div>
                         </div>
