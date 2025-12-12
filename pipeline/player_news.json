@@ -1,16 +1,70 @@
 {
-    "SEA": [
+    "NYI": [
         {
-            "player": "Jared McCann",
-            "news": "McCann (lower-body) is expected to be out for three weeks. ",
+            "player": "Bo Horvat",
+            "news": "Horvat (lower-body) will be out vs. Tampa Bay on Saturday and is considered day-to-day. ",
+            "category": "Injury",
+            "date": "2025-12-12"
+        },
+        {
+            "player": "Jonathan Drouin",
+            "news": "Drouin (lower-body) practiced on Friday and is expected to return on Saturday vs. Tampa Bay.",
+            "category": "Injury",
+            "date": "2025-12-12"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "Olli Maatta",
+            "news": "Maatta (upper-body) is expected to return vs. Seattle on Friday. ",
+            "category": "Injury",
+            "date": "2025-12-12"
+        },
+        {
+            "player": "Brandon Tanev",
+            "news": "Tanev is expected to be a healthy scratch vs. Seattle on Friday. ",
+            "category": "Line Change",
+            "date": "2025-12-12"
+        },
+        {
+            "player": "Kailer Yamamoto",
+            "news": "Yamamoto will draw back into Utah's lineup vs. Seattle on Friday. ",
+            "category": "Line Change",
+            "date": "2025-12-12"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Arseny Gritsyuk",
+            "news": "Grtisyuk will be out for New Jersey's two games over the weekend with an undisclosed injury. ",
             "category": "Injury",
             "date": "2025-12-12"
         }
     ],
     "TOR": [
         {
+            "player": "Marshall Rifai",
+            "news": "Rifai (wrist) has a chance to return vs. Edmonton on Saturday. ",
+            "category": "Injury",
+            "date": "2025-12-12"
+        },
+        {
+            "player": "Brandon Carlo",
+            "news": "Carlo underwent succesful foot surgery and is expected to be out indefinitely. ",
+            "category": "Injury",
+            "date": "2025-12-12"
+        },
+        {
             "player": "Joseph Woll",
             "news": "Woll (lower-body) will remain out vs. Edmonton on Saturday despite skating on Friday. ",
+            "category": "Injury",
+            "date": "2025-12-12"
+        }
+    ],
+    "SEA": [
+        {
+            "player": "Jared McCann",
+            "news": "McCann (lower-body) is expected to be out for three weeks. ",
             "category": "Injury",
             "date": "2025-12-12"
         }
@@ -45,18 +99,6 @@
             "news": "Pittsburgh has placed Matt Dumba on the non-roster list for the purpose of being waived. ",
             "category": "$125 Waivers",
             "date": "2025-12-12"
-        },
-        {
-            "player": "Brett Kulak",
-            "news": "Pittsburgh has acquired Brett Kulak, Stuart Skinner and a 2029 2nd round pick from Edmonton for Tristan Jarry and Sam Poulin. ",
-            "category": "Trade",
-            "date": "2025-12-12"
-        },
-        {
-            "player": "Stuart Skinner",
-            "news": "Pittsburgh has acquired Stuart Skinner, Brett Kulak and a a 2029 2nd round pick from Edmonton for Tristan Jarry and Sam Poulin. ",
-            "category": "Trade",
-            "date": "2025-12-12"
         }
     ],
     "MIN": [
@@ -78,62 +120,6 @@
             "player": "Riley Stillman",
             "news": "Stillman has been recalled from Bakersfield (AHL). ",
             "category": "Call Up",
-            "date": "2025-12-12"
-        },
-        {
-            "player": "Samuel Poulin",
-            "news": "Edmonton has acquired Sam Poulin and Tristan Jarry from Pittsburgh for Brett Kulak, Stuart Skinner and a 2029 2nd round pick. ",
-            "category": "Trade",
-            "date": "2025-12-12"
-        },
-        {
-            "player": "Tristan Jarry",
-            "news": "Edmonton has acquired Tristan Jarry and Sam Poulin from Pittsburgh for Stuart Skinner, Brett Kulak and a 2029 2nd round pick. ",
-            "category": "Trade",
-            "date": "2025-12-12"
-        },
-        {
-            "player": "Spencer Stastney",
-            "news": "Edmonton has acquired Spencer Stastney from Nashville for a 2027 3rd round pick. ",
-            "category": "Trade",
-            "date": "2025-12-12"
-        }
-    ],
-    "NYI": [
-        {
-            "player": "Jonathan Drouin",
-            "news": "Drouin (lower-body) practiced on Friday and is expected to return on Saturday vs. Tampa Bay.",
-            "category": "Injury",
-            "date": "2025-12-12"
-        }
-    ],
-    "BOS": [
-        {
-            "player": "Viktor Arvidsson",
-            "news": "Arvidsson (lower body) exited Thursday's game and did not return. ",
-            "category": "Injury",
-            "date": "2025-12-12"
-        },
-        {
-            "player": "Jonathan Aspirot",
-            "news": "Aspirot (upper body) exited Thursday's game and did not return. ",
-            "category": "Injury",
-            "date": "2025-12-12"
-        }
-    ],
-    "DAL": [
-        {
-            "player": "Roope Hintz",
-            "news": "Hintz (lower body) left Thursday's game and did not return.",
-            "category": "Injury",
-            "date": "2025-12-12"
-        }
-    ],
-    "OTT": [
-        {
-            "player": "Lars Eller",
-            "news": "Eller (lower-body) left Thursday\u2019s game and did not return. ",
-            "category": "Injury",
             "date": "2025-12-12"
         }
     ]
