@@ -135,9 +135,9 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                             // Log Loss Calculation
                             // Log Loss = -1/N * Σ (y_i * log(p_i) + (1-y_i) * log(1-p_i))
                             // y_i = 1 if Home Win, 0 if Away Win
-                            // p_i = Home Win Prob
+                            // p_i = Home Win Prob (stored as percentage, so divide by 100)
                             const logLossSum = history.reduce((acc, curr) => {
-                                const p = Math.max(0.0001, Math.min(0.9999, curr.homeWinProb)); // Clip to avoid log(0)
+                                const p = Math.max(0.0001, Math.min(0.9999, curr.homeWinProb / 100)); // Convert % to Prob & Clip
                                 const y = curr.actualWinner === curr.homeTeam.commonName ? 1 : 0;
                                 return acc + (y * Math.log(p) + (1 - y) * Math.log(1 - p));
                             }, 0);
