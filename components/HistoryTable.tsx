@@ -58,11 +58,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries }) => {
 
                                 {/* Score */}
                                 <td className="p-2 md:p-4 text-center font-mono text-[10px] md:text-sm whitespace-nowrap">
-                                    <div className="flex flex-col md:block">
-                                        <span>{entry.awayScore}</span>
-                                        <span className="md:hidden opacity-50">-</span>
-                                        <span>{entry.homeScore}</span>
-                                    </div>
+                                    {entry.awayScore} - {entry.homeScore}
                                 </td>
 
                                 {/* Prediction */}
