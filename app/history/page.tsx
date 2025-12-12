@@ -11,7 +11,7 @@ export default async function HistoryPage() {
 
     // Calculate stats
     const totalGames = history.length;
-    const correct picks = history.filter(h => h.isCorrect).length; // Oops, syntax error in variable name
+
     const correctPicks = history.filter(h => h.isCorrect).length;
     const accuracy = totalGames > 0 ? (correctPicks / totalGames) * 100 : 0;
     const avgBrier = totalGames > 0 ? history.reduce((sum, h) => sum + h.brierScore, 0) / totalGames : 0;
