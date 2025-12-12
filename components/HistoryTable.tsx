@@ -34,40 +34,70 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries }) => {
 
                                 {/* Matchup */}
                                 <td className="p-2 md:p-4">
-                                    <div className="flex flex-col md:flex-row items-center gap-1 md:gap-4">
-                                        {/* Away */}
-                                        <div className="flex items-center gap-1 md:gap-2 w-auto md:w-24 justify-start md:justify-end opacity-80">
-                                            <div className="relative w-5 h-5 md:w-8 md:h-8 order-2 md:order-2">
+                                    {/* Desktop View */}
+                                    <div className="hidden md:flex items-center gap-4">
+                                        <div className="flex items-center gap-2 w-24 justify-end opacity-80">
+                                            <span className="text-sm font-bold">{entry.awayTeam.triCode}</span>
+                                            <div className="relative w-8 h-8">
                                                 <Image src={entry.awayTeam.logoUrl} alt={entry.awayTeam.name} fill className="object-contain" />
                                             </div>
-                                            <span className="text-[10px] md:text-sm font-bold order-1 md:order-1">{entry.awayTeam.triCode}</span>
                                         </div>
-
-                                        <span className="text-neutral-600 text-[10px] md:text-xs hidden md:inline">@</span>
-                                        {/* Mobile 'vs' spacer or just stack? Stack implies @ visually usually. */}
-
-                                        {/* Home */}
-                                        <div className="flex items-center gap-1 md:gap-2 w-auto md:w-24 opacity-80">
-                                            <div className="relative w-5 h-5 md:w-8 md:h-8">
+                                        <span className="text-neutral-600 text-xs">@</span>
+                                        <div className="flex items-center gap-2 w-24 opacity-80">
+                                            <div className="relative w-8 h-8">
                                                 <Image src={entry.homeTeam.logoUrl} alt={entry.homeTeam.name} fill className="object-contain" />
                                             </div>
-                                            <span className="text-[10px] md:text-sm font-bold">{entry.homeTeam.triCode}</span>
+                                            <span className="text-sm font-bold">{entry.homeTeam.triCode}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Mobile View - Stacked Custom Layout */}
+                                    <div className="flex flex-col gap-0.5 md:hidden">
+                                        <div className="flex items-center gap-2 h-5">
+                                            <span className="text-[10px] font-bold w-6">{entry.awayTeam.triCode}</span>
+                                            <div className="relative w-5 h-5">
+                                                <Image src={entry.awayTeam.logoUrl} alt={entry.awayTeam.name} fill className="object-contain" />
+                                            </div>
+                                        </div>
+                                        {/* Spacer to align with Score hyphen */}
+                                        <div className="h-[10px] w-full invisible"></div>
+                                        <div className="flex items-center gap-2 h-5">
+                                            <span className="text-[10px] font-bold w-6">{entry.homeTeam.triCode}</span>
+                                            <div className="relative w-5 h-5">
+                                                <Image src={entry.homeTeam.logoUrl} alt={entry.homeTeam.name} fill className="object-contain" />
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
 
                                 {/* Score */}
                                 <td className="p-2 md:p-4 text-center font-mono text-[10px] md:text-sm whitespace-nowrap">
-                                    {entry.awayScore} - {entry.homeScore}
+                                    {/* Desktop */}
+                                    <span className="hidden md:inline">
+                                        {entry.awayScore} - {entry.homeScore}
+                                    </span>
+                                    {/* Mobile Stack */}
+                                    <div className="flex flex-col items-center md:hidden gap-0.5">
+                                        <span className="h-5 flex items-center">{entry.awayScore}</span>
+                                        <span className="text-neutral-600 text-[8px] leading-none h-[10px] flex items-center">-</span>
+                                        <span className="h-5 flex items-center">{entry.homeScore}</span>
+                                    </div>
                                 </td>
 
                                 {/* Prediction */}
                                 <td className="p-2 md:p-4 text-center">
-                                    <div className="flex flex-col items-center">
-                                        <span className="text-[10px] md:text-sm font-bold text-blue-400 whitespace-nowrap">
+                                    {/* Desktop */}
+                                    <div className="hidden md:flex flex-col items-center">
+                                        <span className="text-sm font-bold text-blue-400 whitespace-nowrap">
                                             {entry.awayXg.toFixed(1)} - {entry.homeXg.toFixed(1)}
                                         </span>
-                                        <span className="text-[8px] md:text-[10px] text-neutral-500 scale-75 md:scale-100 origin-center">xG</span>
+                                        <span className="text-[10px] text-neutral-500">xG Model</span>
+                                    </div>
+                                    {/* Mobile Stack aligned with scores */}
+                                    <div className="flex flex-col items-center md:hidden gap-0.5">
+                                        <span className="text-blue-400 font-bold text-[10px] h-5 flex items-center">{entry.awayXg.toFixed(1)}</span>
+                                        <span className="invisible text-[8px] leading-none h-[10px] flex items-center">-</span>
+                                        <span className="text-blue-400 font-bold text-[10px] h-5 flex items-center">{entry.homeXg.toFixed(1)}</span>
                                     </div>
                                 </td>
 
