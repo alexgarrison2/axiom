@@ -684,7 +684,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             {/* MOBILE VIEW (md:hidden) - Condensed + Expand */}
             {/* ========================================= */}
             <div
-                className={`flex md:hidden relative flex-col w-full mx-auto mb-1 text-white transition-all duration-300 ${getGlowColor(homeWager, awayWager)}`}
+                className={`flex md:hidden relative flex-col w-full mx-auto mb-1 text-white transition-all duration-300 rounded-[2.5rem] ${getGlowColor(homeWager, awayWager)}`}
                 onClick={toggleExpand}
                 ref={cardRef}
             >
