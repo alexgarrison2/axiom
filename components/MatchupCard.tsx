@@ -659,12 +659,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             {/* MOBILE VIEW (md:hidden) - Condensed + Expand */}
             {/* ========================================= */}
             <div
-                className={`flex md:hidden relative flex-col w-full mx-auto rounded-[2.5rem] mb-1 text-white overflow-hidden transition-all duration-300 border backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
+                className={`flex md:hidden relative flex-col w-full mx-auto mb-1 text-white transition-all duration-300 backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
                 onClick={toggleExpand}
                 ref={cardRef}
             >
-                {/* Background Glass */}
-                <div className="absolute inset-0 bg-[#0a0a0a]/90 -z-10" />
+                {/* Background Mask (Inner) - Handles Order/Border/Radius */}
+                <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] border border-white/10 -z-10 pointer-events-none">
+                    <div className="absolute inset-0 bg-[#0a0a0a]/90" />
+                </div>
 
                 {/* --- SUPER CONDENSED HEADER ROW --- */}
                 {/* --- SUPER CONDENSED HEADER ROW --- */}
@@ -706,7 +708,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                     />
 
                     {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Compact & Aligned */}
-                    <div className="flex flex-row items-center justify-center w-full max-w-[80%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
+                    <div className="flex flex-row items-center justify-center w-[95%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
 
                         {/* LEFT DATA (Away xG/Wager) */}
                         <div className="flex flex-col items-end justify-center w-[30%] gap-1">
