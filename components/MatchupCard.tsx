@@ -138,7 +138,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         if (!items || items.length === 0) return null;
 
         // Base tooltip classes
-        let tooltipClasses = "absolute w-48 bg-zinc-950/95 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
+        let tooltipClasses = "absolute w-auto min-w-[12rem] whitespace-nowrap bg-zinc-950/95 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
 
         // Vertical Placement
         if (placement === 'top') {
@@ -691,13 +691,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 {/* Background Mask (Inner) - Handles Order/Border/Radius */}
                 <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] border border-white/10 -z-10 pointer-events-none">
                     <div className="absolute inset-0 bg-[#0a0a0a]/90" />
-                </div>
 
-                {/* --- SUPER CONDENSED HEADER ROW --- */}
-                {/* --- SUPER CONDENSED HEADER ROW --- */}
-                <div className="flex flex-row items-center justify-center relative select-none cursor-pointer active:bg-white/5 transition-colors h-28 overflow-visible px-2">
-
-                    {/* ABSOLUTE BACKGROUND LOGOS */}
+                    {/* ABSOLUTE BACKGROUND LOGOS - Moved INSIDE mask to clip correctly */}
                     {/* Left: Away Logo (Oversized & Clipped) */}
                     <div className="absolute left-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
                         <LogoDisplay
@@ -709,12 +704,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             variant="animated"
                         />
                     </div>
-                    {/* Mobile Away News Indicator - Hoisted */}
-                    <NewsIndicator
-                        hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
-                        className="absolute bottom-3 left-7 md:hidden z-20"
-                    />
-
                     {/* Right: Home Logo (Oversized & Clipped) */}
                     <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
                         <LogoDisplay
@@ -726,6 +715,18 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             variant="animated"
                         />
                     </div>
+                </div>
+
+                {/* --- SUPER CONDENSED HEADER ROW --- */}
+                {/* --- SUPER CONDENSED HEADER ROW --- */}
+                <div className="flex flex-row items-center justify-center relative select-none cursor-pointer active:bg-white/5 transition-colors h-28 overflow-visible px-2">
+
+                    {/* Mobile Away News Indicator - Hoisted */}
+                    <NewsIndicator
+                        hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
+                        className="absolute bottom-3 left-7 md:hidden z-20"
+                    />
+
                     {/* Mobile Home News Indicator - Hoisted */}
                     <NewsIndicator
                         hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
