@@ -1076,12 +1076,40 @@ def predict():
         h_explained = []
         a_explained = []
         
-        # 1. Base (5v5 + Special Teams)
-        # Note: h_xg = h_5v5 + h_pp_share (approximately)
-        # Let's interact with original variables if possible, or just use what we have
-        # Reconstructing for clarity:
-        h_explained.append(f"Base Model: {h_xg:.2f}")
-        a_explained.append(f"Base Model: {a_xg:.2f}")
+        # 1. Base Components Breakdown
+        # 5v5 Raw
+        h_5v5_raw = (h_xgf_5v5 * a_xga_5v5) / league_xg_5v5
+        a_5v5_raw = (a_xgf_5v5 * h_xga_5v5) / league_xg_5v5
+        
+        h_explained.append(f"5v5 Matchup: {h_5v5_raw:.2f}")
+        a_explained.append(f"5v5 Matchup: {a_5v5_raw:.2f}")
+        
+        # Home Ice
+        h_explained.append(f"Home Ice: +{HOME_ICE_VAL:.2f}")
+        
+        # Special Teams
+        h_explained.append(f"Special Teams: +{h_pp_xg:.2f}")
+        a_explained.append(f"Special Teams: +{a_pp_xg:.2f}")
+        
+        # Rest
+        if h_rest_pen > 0: h_explained.append(f"Rest Penalty: -{h_rest_pen:.2f}")
+        if a_rest_pen > 0: a_explained.append(f"Rest Penalty: -{a_rest_pen:.2f}")
+
+        # Star Penalty impact
+        if h_star_penalty > 0:
+             # Calculate raw impact
+             h_pre_star = h_xg_base + h_pp_xg - h_rest_pen
+             h_loss = h_pre_star * h_star_penalty
+             h_explained.append(f"Missing Key Players: -{h_loss:.2f}")
+
+        if a_star_penalty > 0:
+             a_pre_star = a_xg_base + a_pp_xg - a_rest_pen
+             a_loss = a_pre_star * a_star_penalty
+             a_explained.append(f"Missing Key Players: -{a_loss:.2f}")
+
+        # Saturday Boost
+        if is_sat_boost:
+             h_explained.append("Saturday Boost: +0.25")
 
         # 2. Goalie Impact
         # h_xg_adj = max(0.1, h_xg - (a_gsax * GOALIE_IMPACT_FACTOR))

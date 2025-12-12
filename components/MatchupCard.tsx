@@ -207,6 +207,20 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         return `+${str}`;
     };
 
+    const getContrastTextClass = (hexColor: string): string => {
+        if (!hexColor) return 'text-white';
+        // Convert hex to RGB
+        const r = parseInt(hexColor.substring(1, 3), 16);
+        const g = parseInt(hexColor.substring(3, 5), 16);
+        const b = parseInt(hexColor.substring(5, 7), 16);
+
+        // Calculate brightness (rec 601)
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+        // Threshold of 128 is standard, but let's go a bit higher for safety on mid-tones
+        return brightness > 140 ? 'text-black' : 'text-white';
+    };
+
     const formatGsax = (val: number) => {
         if (val >= 0) return `+${val.toFixed(1)}`;
         return `(${Math.abs(val).toFixed(1)})`;
@@ -697,11 +711,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* LEFT DATA (Away xG/Wager) */}
                         <div className="flex flex-col items-end justify-center w-[30%] gap-1">
                             {/* Top: xG - Inline Layout */}
-                            <div className="flex flex-row items-baseline gap-1">
+                            <div className="flex flex-row items-baseline gap-1 relative">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
                                     <AnimatedNumber value={awayXg} toFixed={2} />
                                 </span>
                                 <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
+                                <div className="ml-1 -mt-2">
+                                    <ExplanationPopover items={prediction.away_xg_explained} align="left" />
+                                </div>
                             </div>
 
                             {/* Bottom: Wager Pill - Aligned with Bar */}
@@ -719,7 +736,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <div className="flex flex-col items-center justify-center flex-1 gap-1">
                             <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap mb-0.5">{formatTime(startTime || '')}</span>
                             {/* Bar - Taller (h-5) & Animated */}
-                            {/* Bar - Taller (h-5) & Animated */}
                             <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden flex relative shadow-inner border border-white/5">
                                 {/* Away Bar (Left) - Animated Width */}
                                 <div
@@ -730,7 +746,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                         boxShadow: `0 0 10px ${awayBarColor}66`
                                     }}
                                 >
-                                    <span className="text-[9px] font-bold text-white drop-shadow-md whitespace-nowrap pl-1">{Math.round(awayModelWinPct)}%</span>
+                                    <span className={`text-[9px] font-bold drop-shadow-md whitespace-nowrap pl-1 ${getContrastTextClass(awayBarColor)}`}>{Math.round(awayModelWinPct)}%</span>
                                 </div>
 
                                 {/* Center Separator */}
@@ -744,7 +760,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                                         boxShadow: `0 0 10px ${homeBarColor}66`
                                     }}
                                 >
-                                    <span className="text-[9px] font-bold text-white drop-shadow-md whitespace-nowrap pr-1">{Math.round(homeModelWinPct)}%</span>
+                                    <span className={`text-[9px] font-bold drop-shadow-md whitespace-nowrap pr-1 ${getContrastTextClass(homeBarColor)}`}>{Math.round(homeModelWinPct)}%</span>
                                 </div>
                             </div>
                         </div>
@@ -752,11 +768,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         {/* RIGHT DATA (Home xG/Wager) */}
                         <div className="flex flex-col items-start justify-center w-[30%] gap-1">
                             {/* Top: xG - Inline Layout */}
-                            <div className="flex flex-row items-baseline gap-1">
+                            <div className="flex flex-row items-baseline gap-1 relative">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
                                     <AnimatedNumber value={homeXg} toFixed={2} />
                                 </span>
                                 <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider">xG</span>
+                                <div className="ml-1 -mt-2">
+                                    <ExplanationPopover items={prediction.home_xg_explained} align="right" />
+                                </div>
                             </div>
 
                             {/* Bottom: Wager Pill - Aligned with Bar */}
