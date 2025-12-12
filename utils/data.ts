@@ -163,10 +163,43 @@ interface RawPrediction {
   away_xg_explained?: string;
 }
 
-// ... (RawTeam interface remains unchanged)
+interface RawTeam {
+  'Team Name': string;
+  'Common Name': string;
+  'Team Logo URL': string;
+  'Hex Color 1': string;
+  'Hex Color 2': string;
+  'Team Tricode': string;
+}
 
 export async function getPredictions(): Promise<GamePrediction[]> {
-  // ... (setup code remains unchanged)
+  const dataDir = path.join(process.cwd(), 'data');
+  const predictionsCsv = fs.readFileSync(path.join(dataDir, 'predictions_detailed.csv'), 'utf8');
+  const teamsCsv = fs.readFileSync(path.join(dataDir, 'nhl_teams.csv'), 'utf8');
+  // const lastUpdate = fs.readFileSync(path.join(dataDir, 'last_update.txt'), 'utf8');
+
+  const predictionsParsed = Papa.parse<RawPrediction>(predictionsCsv, { header: true, skipEmptyLines: true });
+  const teamsParsed = Papa.parse<RawTeam>(teamsCsv, { header: true, skipEmptyLines: true });
+
+  const teamsMap = new Map<string, Team>();
+  teamsParsed.data.forEach((row) => {
+    teamsMap.set(row['Common Name'], {
+      name: row['Team Name'],
+      commonName: row['Common Name'],
+      logoUrl: row['Team Logo URL'],
+      color1: row['Hex Color 1'],
+      color2: row['Hex Color 2'],
+      triCode: row['Team Tricode'],
+    });
+  });
+
+  // Create TriCode maps for recent games parsing
+  const triCodeToLogoMap = new Map<string, string>();
+  const triCodeToColorMap = new Map<string, string>();
+  teamsParsed.data.forEach((row) => {
+    triCodeToLogoMap.set(row['Team Tricode'], row['Team Logo URL']);
+    triCodeToColorMap.set(row['Team Tricode'], row['Hex Color 1']);
+  });
 
   const predictions = predictionsParsed.data.map((row): GamePrediction | null => {
     const homeTeam = teamsMap.get(row.home_team);
@@ -280,7 +313,7 @@ export async function getPredictions(): Promise<GamePrediction[]> {
 
       homeGoalieVsOpp: row.home_starter_vs_opp || undefined,
       awayGoalieVsOpp: row.away_starter_vs_opp || undefined,
-      
+
       home_xg_explained: parseExplanation(row.home_xg_explained),
       away_xg_explained: parseExplanation(row.away_xg_explained),
     };
