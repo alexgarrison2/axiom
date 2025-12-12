@@ -15,8 +15,11 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries }) => {
                         <tr className="bg-white/5 border-b border-white/10 text-neutral-400 text-[10px] md:text-xs uppercase tracking-widest">
                             <th className="p-2 md:p-4 font-normal w-12 md:w-auto">Date</th>
                             <th className="p-2 md:p-4 font-normal w-20 md:w-auto">Matchup</th>
-                            <th className="p-2 md:p-4 font-normal text-center w-12 md:w-auto">Score</th>
-                            <th className="p-2 md:p-4 font-normal text-center w-20 md:w-auto">Pred</th>
+                            <th className="p-2 md:p-4 font-normal w-12 md:w-auto">Score</th>
+                            <th className="p-2 md:p-4 font-normal text-center w-20 md:w-auto">
+                                <span className="md:hidden">Pred</span>
+                                <span className="hidden md:inline">xG Model</span>
+                            </th>
                             <th className="p-2 md:p-4 font-normal text-center w-10 md:w-auto">Res</th>
                             <th className="p-2 md:p-4 font-normal text-right hidden md:table-cell">Brier</th>
                         </tr>
@@ -91,7 +94,6 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries }) => {
                                         <span className="text-sm font-bold text-blue-400 whitespace-nowrap">
                                             {entry.awayXg.toFixed(1)} - {entry.homeXg.toFixed(1)}
                                         </span>
-                                        <span className="text-[10px] text-neutral-500">xG Model</span>
                                     </div>
                                     {/* Mobile Stack aligned with scores */}
                                     <div className="flex flex-col items-center md:hidden gap-0.5">
