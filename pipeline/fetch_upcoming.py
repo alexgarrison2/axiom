@@ -5,14 +5,18 @@ import ssl
 
 import fetch_dailyfaceoff
 
+import pytz
+
 def fetch_schedule():
     # Fetch Daily Faceoff Data first
     print("Fetching confirmed goalies from Daily Faceoff...")
     dfo_goalies = fetch_dailyfaceoff.fetch_dailyfaceoff_goalies()
     
-    # Fetch Today and Tomorrow
+    # Fetch Today and Tomorrow (US/Central Time)
     dates_to_fetch = []
-    today = datetime.date.today()
+    central_tz = pytz.timezone('US/Central')
+    today = datetime.datetime.now(central_tz).date()
+    
     dates_to_fetch.append(today.strftime("%Y-%m-%d"))
     tomorrow = today + datetime.timedelta(days=1)
     dates_to_fetch.append(tomorrow.strftime("%Y-%m-%d"))
