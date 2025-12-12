@@ -138,7 +138,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         if (!items || items.length === 0) return null;
 
         // Base tooltip classes
-        let tooltipClasses = "absolute w-auto min-w-[12rem] whitespace-nowrap bg-zinc-950/95 border border-white/10 rounded-lg p-2 z-50 shadow-xl backdrop-blur-md";
+        let tooltipClasses = "absolute w-auto min-w-[12rem] whitespace-nowrap bg-zinc-950/95 border border-white/10 rounded-lg p-2 z-[70] shadow-xl backdrop-blur-md";
 
         // Vertical Placement
         if (placement === 'top') {
@@ -148,7 +148,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         }
 
         // Visibility
-        tooltipClasses += isOpen ? " block" : " hidden group-hover/info:block";
+        tooltipClasses += isOpen ? " block" : " hidden md:group-hover/info:block";
 
         // Horizontal Alignment
         if (align === 'left') {
@@ -485,8 +485,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <span className="text-xs font-mono text-gray-500 font-bold uppercase">xG</span>
                         {/* Info Icon for Explanation */}
                         {isHome ?
-                            <ExplanationPopover items={prediction.home_xg_explained} align="left" placement="bottom" /> :
-                            <ExplanationPopover items={prediction.away_xg_explained} align="right" placement="bottom" />
+                            <ExplanationPopover items={prediction.home_xg_explained} align="left" placement="top" /> :
+                            <ExplanationPopover items={prediction.away_xg_explained} align="right" placement="top" />
                         }
                     </div>
                 </div>
@@ -684,12 +684,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
             {/* MOBILE VIEW (md:hidden) - Condensed + Expand */}
             {/* ========================================= */}
             <div
-                className={`flex md:hidden relative flex-col w-full mx-auto mb-1 text-white transition-all duration-300 backdrop-blur-xl ${getGlowColor(homeWager, awayWager)}`}
+                className={`flex md:hidden relative flex-col w-full mx-auto mb-1 text-white transition-all duration-300 ${getGlowColor(homeWager, awayWager)}`}
                 onClick={toggleExpand}
                 ref={cardRef}
             >
                 {/* Background Mask (Inner) - Handles Order/Border/Radius */}
-                <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] border border-white/10 -z-10 pointer-events-none">
+                <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] border border-white/10 -z-10 pointer-events-none backdrop-blur-xl">
                     <div className="absolute inset-0 bg-[#0a0a0a]/90" />
 
                     {/* ABSOLUTE BACKGROUND LOGOS - Moved INSIDE mask to clip correctly */}
