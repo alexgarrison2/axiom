@@ -485,8 +485,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                         <span className="text-xs font-mono text-gray-500 font-bold uppercase">xG</span>
                         {/* Info Icon for Explanation */}
                         {isHome ?
-                            <ExplanationPopover items={prediction.home_xg_explained} align="left" placement="top" /> :
-                            <ExplanationPopover items={prediction.away_xg_explained} align="right" placement="top" />
+                            <ExplanationPopover items={prediction.home_xg_explained} align="right" placement="top" /> :
+                            <ExplanationPopover items={prediction.away_xg_explained} align="left" placement="top" />
                         }
                     </div>
                 </div>
