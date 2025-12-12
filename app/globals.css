@@ -50,6 +50,10 @@
     text-shadow: 0 0 10px rgba(10, 255, 0, 0.5);
   }
 
+  .text-glow-amber {
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+  }
+
   .text-gradient {
     background-clip: text;
     -webkit-background-clip: text;

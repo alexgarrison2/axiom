@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { getPredictions, getLastRefresh } from '@/utils/data';
+import { getPredictions, getLastRefresh, getHistory } from '@/utils/data';
 import PredictionsViewer from '@/components/PredictionsViewer';
 import FullLogoAnimated from '@/components/FullLogoAnimated';
 
@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function Home() {
     const predictions = await getPredictions();
+    const history = await getHistory();
     const lastRefresh = await getLastRefresh();
 
     // Calculate max total goals for proportional sizing
@@ -28,18 +29,17 @@ export default async function Home() {
                         <FullLogoAnimated />
                     </div>
                     {/* Last Refresh Text */}
-                    <div className="flex flex-col items-center gap-2 mt-4 opacity-80">
-                        <div className="text-neutral-500 text-xs md:text-sm font-mono tracking-widest uppercase">
-                            Last Refresh: {lastRefresh}
-                        </div>
-                        <a href="/history" className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-widest border-b border-transparent hover:border-blue-300 transition-all">
-                            View Model History &rarr;
-                        </a>
+                    <div className="text-neutral-500 text-xs md:text-sm font-mono tracking-widest uppercase mt-4 opacity-80">
+                        Last Refresh: {lastRefresh}
                     </div>
                 </div>
 
                 {/* Interactive Predictions Viewer */}
-                <PredictionsViewer predictions={predictions} maxTotalGoals={maxTotalGoals} />
+                <PredictionsViewer
+                    predictions={predictions}
+                    history={history}
+                    maxTotalGoals={maxTotalGoals}
+                />
             </div>
         </main>
     );
