@@ -38,6 +38,7 @@ def fetch_odds():
         "Tampa Bay Lightning": "Lightning",
         "Toronto Maple Leafs": "Maple Leafs",
         "Utah Hockey Club": "Mammoth", # App uses 'Mammoth' for Utah
+        "Utah Mammoth": "Mammoth",
         "Vancouver Canucks": "Canucks",
         "Vegas Golden Knights": "Golden Knights",
         "Washington Capitals": "Capitals",
