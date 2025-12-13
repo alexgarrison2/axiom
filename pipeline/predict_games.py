@@ -1240,12 +1240,9 @@ def predict():
         h_odds = odds_data.get(home_team)
         a_odds = odds_data.get(away_team)
         
-        today_str = datetime.now().strftime("%Y-%m-%d")
-        
-        # Safe heuristic: Only apply odds to Today's games.
-        if game_date != today_str:
-             h_odds = None
-             a_odds = None
+        # Date check removed to allow odds for upcoming games (e.g. tomorrow)
+        # Verify odds are relevant in fetch_odds logic, but trust odds.json here.
+
              
         # Override: Manual odds might be for tomorrow.
         # But for now, safety first to prevent the false EV alerts described by user.
