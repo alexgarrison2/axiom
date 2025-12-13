@@ -138,6 +138,11 @@ def refresh_pipeline():
     # 6. Predict Games
     print("Running Predictions...")
     predict()
+
+    # 7. Generate History
+    print("Generating Prediction History...")
+    import generate_history
+    generate_history.generate_history()
     
     print("--- Pipeline Refresh Complete ---")
 
