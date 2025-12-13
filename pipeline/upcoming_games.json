@@ -1,31 +1,5 @@
 [
     {
-        "id": 2025020493,
-        "gameDate": "2025-12-12",
-        "startTimeUTC": "2025-12-13T01:00:00Z",
-        "homeTeam": "Blues",
-        "awayTeam": "Blackhawks",
-        "homeTeamAbbrev": "STL",
-        "awayTeamAbbrev": "CHI",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020494,
-        "gameDate": "2025-12-12",
-        "startTimeUTC": "2025-12-13T02:00:00Z",
-        "homeTeam": "Mammoth",
-        "awayTeam": "Kraken",
-        "homeTeamAbbrev": "UTA",
-        "awayTeamAbbrev": "SEA",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025020495,
         "gameDate": "2025-12-13",
         "startTimeUTC": "2025-12-13T17:30:00Z",
@@ -33,9 +7,9 @@
         "awayTeam": "Ducks",
         "homeTeamAbbrev": "NJD",
         "awayTeamAbbrev": "ANA",
-        "homeGoalieConfirmed": "Jacob Markstrom",
+        "homeGoalieConfirmed": "Jake Allen",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Ville Husso",
+        "awayGoalieConfirmed": "Lukas Dostal",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -59,7 +33,7 @@
         "awayTeam": "Sharks",
         "homeTeamAbbrev": "PIT",
         "awayTeamAbbrev": "SJS",
-        "homeGoalieConfirmed": "Tristan Jarry",
+        "homeGoalieConfirmed": "Arturs Silovs",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Yaroslav Askarov",
         "awayGoalieStatus": "Unconfirmed"
@@ -150,9 +124,9 @@
         "awayTeam": "Red Wings",
         "homeTeamAbbrev": "CHI",
         "awayTeamAbbrev": "DET",
-        "homeGoalieConfirmed": "Spencer Knight",
+        "homeGoalieConfirmed": "Arvid Soderblom",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Cam Talbot",
+        "awayGoalieConfirmed": "John Gibson",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -165,7 +139,7 @@
         "awayTeamAbbrev": "FLA",
         "homeGoalieConfirmed": "Jake Oettinger",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Daniil Tarasov",
+        "awayGoalieConfirmed": "Sergei Bobrovsky",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -192,6 +166,84 @@
         "homeGoalieConfirmed": "Darcy Kuemper",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Dustin Wolf",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020508,
+        "gameDate": "2025-12-14",
+        "startTimeUTC": "2025-12-14T17:30:00Z",
+        "homeTeam": "Devils",
+        "awayTeam": "Canucks",
+        "homeTeamAbbrev": "NJD",
+        "awayTeamAbbrev": "VAN",
+        "homeGoalieConfirmed": "Jake Allen",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Thatcher Demko",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020509,
+        "gameDate": "2025-12-14",
+        "startTimeUTC": "2025-12-14T20:00:00Z",
+        "homeTeam": "Penguins",
+        "awayTeam": "Mammoth",
+        "homeTeamAbbrev": "PIT",
+        "awayTeamAbbrev": "UTA",
+        "homeGoalieConfirmed": "Arturs Silovs",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Karel Vejmelka",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020510,
+        "gameDate": "2025-12-14",
+        "startTimeUTC": "2025-12-14T22:00:00Z",
+        "homeTeam": "Hurricanes",
+        "awayTeam": "Flyers",
+        "homeTeamAbbrev": "CAR",
+        "awayTeamAbbrev": "PHI",
+        "homeGoalieConfirmed": "Brandon Bussi",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Dan Vladar",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020511,
+        "gameDate": "2025-12-14",
+        "startTimeUTC": "2025-12-14T23:00:00Z",
+        "homeTeam": "Wild",
+        "awayTeam": "Bruins",
+        "homeTeamAbbrev": "MIN",
+        "awayTeamAbbrev": "BOS",
+        "homeGoalieConfirmed": "Jesper Wallstedt",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jeremy Swayman",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020512,
+        "gameDate": "2025-12-14",
+        "startTimeUTC": "2025-12-15T00:00:00Z",
+        "homeTeam": "Canadiens",
+        "awayTeam": "Oilers",
+        "homeTeamAbbrev": "MTL",
+        "awayTeamAbbrev": "EDM",
+        "homeGoalieConfirmed": "Jacob Fowler",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Tristan Jarry",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020513,
+        "gameDate": "2025-12-14",
+        "startTimeUTC": "2025-12-15T01:00:00Z",
+        "homeTeam": "Kraken",
+        "awayTeam": "Sabres",
+        "homeTeamAbbrev": "SEA",
+        "awayTeamAbbrev": "BUF",
+        "homeGoalieConfirmed": "Joey Daccord",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Ukko-Pekka Luukkonen",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
