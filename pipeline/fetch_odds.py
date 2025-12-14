@@ -50,98 +50,123 @@ def fetch_odds():
         # Keep empty unless needed for manual overrides
     }
     
-    url = "https://www.bovada.lv/services/sports/event/coupon/events/A/description/hockey/nhl"
+    # Fetch from Bovada (Multiple endpoints)
+    urls = [
+        "https://www.bovada.lv/services/sports/event/v2/events/A/description/hockey/nhl",
+        "https://www.bovada.lv/services/sports/event/v2/events/A/description/hockey"
+    ]
     
-    try:
-        # Use simple requests or urllib, but since we used curl before, let's use requests if available or urllib
-        # Using curl via subprocess to match previous style and avoid dependency issues if requests is missing
-        cmd = [
-            'curl', 
-            '-s',
-            '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
-            url
-        ]
-        
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        raw_json = result.stdout
-        data = json.loads(raw_json)
-        
-        # Parse Bovada JSON
-        # Structure: List -> Path Items -> 'events' -> 'displayGroups' -> 'Game Lines' -> 'markets'
-        
-        parsed_count = 0
-        
-        for item in data:
-            events = item.get('events', [])
-            for event in events:
-                # Get Teams
-                # Description usually "Away Team @ Home Team"
-                desc = event.get('description', '') # e.g. "Chicago Blackhawks @ St. Louis Blues"
-                if '@' not in desc:
-                    continue
-                    
-                parts = desc.split(' @ ')
-                if len(parts) != 2:
-                    continue
-                    
-                away_raw = parts[0].strip()
-                home_raw = parts[1].strip()
+    data = []
+    
+    for url in urls:
+        try:
+            cmd = [
+                'curl', 
+                '-s',
+                '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
+                url
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            raw_json = result.stdout
+            chunk = json.loads(raw_json)
+            if isinstance(chunk, list):
+                data.extend(chunk)
+                print(f"Fetched {len(chunk)} items from {url}")
                 
-                away_team = TEAM_MAPPING.get(away_raw)
-                home_team = TEAM_MAPPING.get(home_raw)
+        except Exception as e:
+            print(f"Error fetching {url}: {e}")
+            
+    print(f"Total aggregated items: {len(data)}")
+    
+    parsed_count = 0
+    
+    for item in data:
+        events = item.get('events', [])
+        print(f"Processing league/group: {item.get('description')} with {len(events)} events.")
+        
+        for event in events:
+            # Get Teams
+            # Description usually "Away Team @ Home Team"
+            desc = event.get('description', 'Unknown') # e.g. "Chicago Blackhawks @ St. Louis Blues"
+            
+            # Check if it's a game (Matchup)
+            if ' @ ' not in desc:
+               # print(f"  Skipping non-game event: {desc}")
+               print(f"  Skipping non-game event (no '@' separator): {desc}")
+               continue
+               
+            # Parse Teams
+            try:
+                away_raw, home_raw = desc.split(' @ ')
+            except ValueError:
+                print(f"  Could not parse teams from: {desc}")
+                continue
+            
+            # Check mapping
+            away_team = TEAM_MAPPING.get(away_raw)
+            home_team = TEAM_MAPPING.get(home_raw)
+            
+            if not away_team or not home_team:
+                print(f"  Mapping failed for {desc} (Away: {away_team}, Home: {home_team})")
+                # Debug which one failed
+                if not away_team: print(f"    Unknown Away: '{away_raw}'")
+                if not home_team: print(f"    Unknown Home: '{home_raw}'")
+                continue
+            
+            # Find Game Lines
+            game_lines = None
+            for group in event.get('displayGroups', []):
+                if group.get('description') == 'Game Lines':
+                    game_lines = group
+                    break
+            
+            if not game_lines:
+                continue
                 
-                if not away_team or not home_team:
-                    # Try fuzzy match or warn?
-                    # print(f"Warning: Could not map teams: {away_raw}, {home_raw}")
-                    continue
-                
-                # Find Game Lines
-                game_lines = None
-                for group in event.get('displayGroups', []):
-                    if group.get('description') == 'Game Lines':
-                        game_lines = group
-                        break
-                
-                if not game_lines:
-                    continue
-                    
-                # Extract Moneyline
-                # Market description is "Moneyline"
-                for market in game_lines.get('markets', []):
-                    if market.get('description') == 'Moneyline':
-                        outcomes = market.get('outcomes', [])
-                        for outcome in outcomes:
-                            # outcome['description'] is usually the team name or 'Draw'
-                            # outcome['price']['american'] is the odds string (e.g. "-115", "+105")
-                            
-                            out_desc = outcome.get('description', '')
-                            price = outcome.get('price', {}).get('american', 'N/A')
-                            
-                            if price == 'N/A' or price == 'EVEN':
-                                if price == 'EVEN': price = "100"
-                                else: continue
-                                
+            # Extract Moneyline
+            # Market description is "Moneyline"
+            for market in game_lines.get('markets', []):
+                if market.get('description') == 'Moneyline':
+                    outcomes = market.get('outcomes', [])
+                    for outcome in outcomes:
+                        # outcome['description'] is usually the team name or 'Draw'
+                        # outcome['price']['american'] is the odds string (e.g. "-115", "+105")
+                        
+                        out_desc = outcome.get('description')
+                        price = outcome.get('price', {})
+                        odds_american = price.get('american')
+                        
+                        if odds_american and out_desc:
                             try:
-                                odds_int = int(price)
-                            except:
-                                continue
+                                if odds_american == 'EVEN':
+                                    odds_int = 100
+                                else:
+                                    odds_int = int(odds_american)
                                 
-                            # Map outcome description to team
-                            target_team = None
-                            if out_desc == away_raw: target_team = away_team
-                            elif out_desc == home_raw: target_team = home_team
-                            
-                            if target_team:
-                                odds_data[target_team] = odds_int
+                                # Map outcome description to team using the SAME mapping
+                                # This handles cases where Title is "Utah Mammoth" but Outcome is "Utah Hockey Club"
+                                mapped_outcome = TEAM_MAPPING.get(out_desc)
+                                
+                                target_team = None
+                                
+                                # 1. Direct match with raw names (Legacy)
+                                if out_desc == away_raw: target_team = away_team
+                                elif out_desc == home_raw: target_team = home_team
+                                
+                                # 2. Mapped match (Robust)
+                                elif mapped_outcome == away_team: target_team = away_team
+                                elif mapped_outcome == home_team: target_team = home_team
+                                
+                                if target_team:
+                                    odds_data[target_team] = odds_int
+                                    
+                            except ValueError:
+                                pass
 
-                parsed_count += 1
+            parsed_count += 1
 
-        print(f"Parsed {parsed_count} games from Bovada.")
-        
-    except Exception as e:
-        print(f"Error fetching Bovada odds: {e}")
-        # Could fallback to scraping here if we kept the code, but we are replacing it.
-        pass
+    print(f"Parsed {parsed_count} games from Bovada.")
     
     print(f"Found odds for {len(odds_data)} teams.")
     
