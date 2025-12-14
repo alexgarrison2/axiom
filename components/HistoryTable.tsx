@@ -74,33 +74,38 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries }) => {
                                         onClick={() => toggleDate(date)}
                                         className="cursor-pointer hover:bg-white/5 transition-colors bg-white/[0.02] border-b border-white/5"
                                     >
-                                        <td className="p-2 md:p-4 text-xs md:text-sm font-bold text-white font-mono flex items-center gap-2">
-                                            <motion.div
-                                                animate={{ rotate: isExpanded ? 90 : 0 }}
-                                                transition={{ duration: 0.2 }}
-                                                className="text-neutral-500"
-                                            >
-                                                ▶
-                                            </motion.div>
-                                            {displayDate}
-                                        </td>
-
-                                        {/* Summary Stats Spanning Columns */}
-                                        <td colSpan={5} className="p-2 md:p-4 text-xs md:text-sm text-neutral-300">
-                                            <div className="flex items-center gap-4">
-                                                <span className="font-mono">
-                                                    <span className="text-emerald-400">{correctCount}</span>
-                                                    <span className="text-neutral-600 mx-1">-</span>
-                                                    <span className="text-red-400">{wrongCount}</span>
-                                                </span>
-                                                <div className="h-4 pl-4 border-l border-white/10 flex items-center">
-                                                    <span className="font-bold font-mono" style={{ color: getAccuracyColor(percentage) }}>
-                                                        {percentage.toFixed(0)}%
+                                        <td colSpan={6} className="p-2 md:p-4">
+                                            <div className="flex items-center justify-between w-full">
+                                                {/* Left: Expand Icon + Date */}
+                                                <div className="flex items-center gap-2">
+                                                    <motion.div
+                                                        animate={{ rotate: isExpanded ? 90 : 0 }}
+                                                        transition={{ duration: 0.2 }}
+                                                        className="text-neutral-500 text-xs md:text-sm"
+                                                    >
+                                                        ▶
+                                                    </motion.div>
+                                                    <span className="text-xs md:text-sm font-bold text-white font-mono">
+                                                        {displayDate}
                                                     </span>
                                                 </div>
-                                                <span className="hidden md:inline text-neutral-500 ml-auto text-[10px] uppercase tracking-wider">
-                                                    {dayEntries.length} Games
-                                                </span>
+
+                                                {/* Right: Stats Summary */}
+                                                <div className="flex items-center gap-2 md:gap-4">
+                                                    <span className="font-mono text-xs md:text-sm">
+                                                        <span className="text-emerald-400">{correctCount}</span>
+                                                        <span className="text-neutral-600 mx-1">-</span>
+                                                        <span className="text-red-400">{wrongCount}</span>
+                                                    </span>
+                                                    <div className="h-4 pl-2 md:pl-4 border-l border-white/10 flex items-center">
+                                                        <span className="font-bold font-mono text-xs md:text-sm" style={{ color: getAccuracyColor(percentage) }}>
+                                                            {percentage.toFixed(0)}%
+                                                        </span>
+                                                    </div>
+                                                    <span className="hidden md:inline text-neutral-500 ml-auto text-[10px] uppercase tracking-wider">
+                                                        {dayEntries.length} Games
+                                                    </span>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
