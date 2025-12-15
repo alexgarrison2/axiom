@@ -1,0 +1,27 @@
+import TeamsTable from '@/components/TeamsTable';
+import Header from '@/components/Header';
+
+export const metadata = {
+    title: 'Team Stats | Pony xG',
+    description: 'Advanced NHL team statistics including xG, PP/PK performance, and more.',
+};
+
+export default function TeamsPage() {
+    return (
+        <main className="min-h-screen bg-black text-white p-4 font-sans relative overflow-x-hidden selection:bg-emerald-500/30">
+            {/* Background Ambient Glow */}
+            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
+
+            <div className="max-w-[1800px] mx-auto relative z-10">
+                <Header compact />
+
+                <header className="mb-8">
+                    <h1 className="text-4xl font-black text-white mb-2 tracking-tighter">TEAM STATISTICS</h1>
+                    <p className="text-neutral-400">Sortable advanced metrics for the current NHL season.</p>
+                </header>
+
+                <TeamsTable />
+            </div>
+        </main>
+    );
+}
