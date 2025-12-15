@@ -263,7 +263,6 @@ const TeamsTable = () => {
 
                 const statsText = await statsRes.text();
                 const teamsText = await teamsRes.text();
-                const predsText = await predsRes.text();
 
                 // Parse Teams Meta
                 const teamsMeta: Record<string, TeamInfo> = {};
@@ -297,11 +296,14 @@ const TeamsTable = () => {
                 // Parse Predictions (Today's Games) - Only if file exists/loads
                 if (predsRes.ok) {
                     const predsText = await predsRes.text();
+                    console.log("Predictions CSV loaded, length:", predsText.length);
                     const parsedPreds = Papa.parse(predsText, {
                         header: true,
                         skipEmptyLines: true,
                         transformHeader: (h) => h.trim()
                     }).data as any[];
+
+                    console.log("Parsed Predictions Rows:", parsedPreds.length);
 
                     const matchups: Matchup[] = parsedPreds
                         .map((row: any) => ({
@@ -309,9 +311,11 @@ const TeamsTable = () => {
                             away: row.away_team?.trim()
                         }))
                         .filter(m => m.home && m.away);
+
+                    console.log("Valid Matchups:", matchups);
                     setTodayMatchups(matchups);
                 } else {
-                    console.warn("Could not load predictions_detailed.csv");
+                    console.error("Could not load predictions_detailed.csv", predsRes.status, predsRes.statusText);
                 }
 
             } catch (err) {
