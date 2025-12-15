@@ -56,6 +56,7 @@ interface TeamStat {
 
     gf_per_game: number;
     ga_per_game: number;
+    goal_diff: number;
 
     pp_goals: number;
     pp_opps: number;
@@ -83,19 +84,16 @@ interface TeamStat {
     xga_per_game: number;
     xgf_pct: number;
 
-    xgf_5v5_per_game: number;
-    xga_5v5_per_game: number;
-    xgf_pct_5v5: number;
-
     gsax: number; // Goals Saved Above Expected (xGA - GA)
 }
 
-type SortKey = keyof TeamStat;
-
-interface SortConfig {
-    key: SortKey;
-    direction: 'asc' | 'desc';
+interface Matchup {
+    home: string;
+    away: string;
 }
+
+type SortKey = keyof TeamStat;
+type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation';
 
 const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -138,12 +136,112 @@ const getGradientColor = (value: number, min: number, max: number, inverse: bool
     return `rgb(${r}, ${g}, ${b})`;
 };
 
+const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamStat => {
+    if (teamGames.length === 0) {
+        // Return zeroed stats
+        return {
+            team: teamName, gp: 0, wins: 0, losses: 0, otl: 0, points: 0, pt_pct: 0,
+            gf_per_game: 0, ga_per_game: 0, goal_diff: 0, pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_time_per_game: '0:00',
+            pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_time_per_game: '0:00',
+            sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
+            engf: 0, enga: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0
+        };
+    }
+
+    let gp = 0, wins = 0, losses = 0, otl = 0;
+    let gf = 0, ga = 0;
+    let pp_goals = 0, pp_opps = 0, pp_time = 0;
+    let pk_goals_allowed = 0, pk_opps = 0, pk_time = 0;
+    let sf = 0, sa = 0;
+    let cf = 0, ca = 0;
+    let saves = 0;
+    let engf = 0, enga = 0;
+    let xgf = 0, xga = 0;
+
+    teamGames.forEach(g => {
+        gp++;
+        if (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') wins++;
+        else if (g.result === 'RL') losses++;
+        else otl++;
+
+        gf += parseFloat(g.goals_for || '0');
+        ga += parseFloat(g.goals_ag || '0');
+
+        pp_goals += parseFloat(g.pp_goals || '0');
+        pp_opps += parseFloat(g.pp_opportunities || '0');
+        pp_time += parseFloat(g.pp_time || '0');
+
+        pk_goals_allowed += parseFloat(g.pp_goals_against || '0');
+        pk_opps += parseFloat(g.pk_opportunities || '0');
+        pk_time += parseFloat(g.pk_time || '0');
+
+        sf += parseFloat(g.sog_for || '0');
+        sa += parseFloat(g.sog_ag || '0');
+
+        cf += parseFloat(g.attempts_for || '0');
+        ca += parseFloat(g.attempts_ag || '0');
+
+        saves += parseFloat(g.saves_for || '0');
+
+        engf += parseFloat(g.emptynet_goalsfor || '0');
+        enga += parseFloat(g.emptynet_goalsagainst || '0');
+
+        xgf += parseFloat(g.xG_for || '0');
+        xga += parseFloat(g.xG_against || '0');
+    });
+
+    const points = wins * 2 + otl;
+
+    return {
+        team: teamName,
+        gp,
+        wins,
+        losses,
+        otl,
+        points,
+        pt_pct: points / (gp * 2),
+
+        gf_per_game: gf / gp,
+        ga_per_game: ga / gp,
+        goal_diff: gf - ga,
+
+        pp_goals,
+        pp_opps,
+        pp_pct: pp_opps > 0 ? (pp_goals / pp_opps) * 100 : 0,
+        pp_time_per_game: formatTime(pp_time / gp),
+
+        pk_goals_allowed,
+        pk_opps,
+        pk_pct: pk_opps > 0 ? ((pk_opps - pk_goals_allowed) / pk_opps) * 100 : 0,
+        pk_time_per_game: formatTime(pk_time / gp),
+
+        sf_per_game: sf / gp,
+        sa_per_game: sa / gp,
+
+        cf_per_game: cf / gp,
+        ca_per_game: ca / gp,
+
+        sh_pct: sf > 0 ? (gf / sf) * 100 : 0,
+        sv_pct: sa > 0 ? (saves / sa) * 100 : 0,
+
+        engf,
+        enga,
+
+        xgf_per_game: xgf / gp,
+        xga_per_game: xga / gp,
+        xgf_pct: (xgf + xga) > 0 ? (xgf / (xgf + xga)) * 100 : 0,
+
+        gsax: xga - ga // Cumulative GSAx
+    };
+};
+
 const TeamsTable = () => {
     const [stats, setStats] = useState<TeamStat[]>([]);
     const [loading, setLoading] = useState(true);
     const [teams, setTeams] = useState<Record<string, TeamInfo>>({});
 
     // Filters
+    const [viewMode, setViewMode] = useState<ViewMode>('All');
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
     const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
 
@@ -152,17 +250,20 @@ const TeamsTable = () => {
     const [sortDesc, setSortDesc] = useState(true);
 
     const [rawData, setRawData] = useState<RawGameStat[]>([]);
+    const [todayMatchups, setTodayMatchups] = useState<Matchup[]>([]);
 
     useEffect(() => {
         const initLoad = async () => {
             try {
-                const [statsRes, teamsRes] = await Promise.all([
+                const [statsRes, teamsRes, predsRes] = await Promise.all([
                     fetch('/data/gamestats.csv'),
-                    fetch('/data/nhl_teams.csv')
+                    fetch('/data/nhl_teams.csv'),
+                    fetch('/data/predictions_detailed.csv')
                 ]);
 
                 const statsText = await statsRes.text();
                 const teamsText = await teamsRes.text();
+                const predsText = await predsRes.text();
 
                 // Parse Teams Meta
                 const teamsMeta: Record<string, TeamInfo> = {};
@@ -186,6 +287,14 @@ const TeamsTable = () => {
                 const parsedStats = Papa.parse(statsText, { header: true, skipEmptyLines: true }).data as RawGameStat[];
                 setRawData(parsedStats);
 
+                // Parse Today's Matchups
+                const parsedPreds = Papa.parse(predsText, { header: true, skipEmptyLines: true }).data as any[];
+                const matchups: Matchup[] = parsedPreds.map((row: any) => ({
+                    home: row.home_team,
+                    away: row.away_team
+                })).filter(m => m.home && m.away);
+                setTodayMatchups(matchups);
+
             } catch (err) {
                 console.error("Failed to load data", err);
             } finally {
@@ -196,150 +305,79 @@ const TeamsTable = () => {
         initLoad();
     }, []);
 
-    // Process data when filters change
+
+    // Process data when filters/mode change
     useEffect(() => {
         if (rawData.length === 0) return;
 
-        // 1. Filter Raw Data
-        let filteredGames = [...rawData];
+        // Helper to get filtered games for a team
+        const getGames = (teamName: string, locationFilter: 'All' | 'Home' | 'Away') => {
+            let games = rawData.filter(g => g.team === teamName);
 
-        // Sort by date desc for "Last N"
-        filteredGames.sort((a, b) => new Date(b.game_date).getTime() - new Date(a.game_date).getTime());
+            // Apply Date Sort (descending) first so "Last N" takes most recent
+            games.sort((a, b) => new Date(b.game_date).getTime() - new Date(a.game_date).getTime());
 
-        // Group by Team to apply "Last N" per team
-        const gamesByTeam: Record<string, RawGameStat[]> = {};
-        filteredGames.forEach(game => {
-            if (!gamesByTeam[game.team]) gamesByTeam[game.team] = [];
-            gamesByTeam[game.team].push(game);
-        });
+            // Apply Location
+            if (locationFilter === 'Home') games = games.filter(g => g.home_away === 'Home');
+            if (locationFilter === 'Away') games = games.filter(g => g.home_away === 'Away');
+
+            // Apply Last N (Always applies unless 'All')
+            if (filterLastN !== 'All') {
+                games = games.slice(0, filterLastN);
+            }
+            return games;
+        };
 
         const processedTeams: TeamStat[] = [];
 
-        Object.keys(gamesByTeam).forEach(teamName => {
-            let teamGames = gamesByTeam[teamName];
-
-            // Filter Home/Away
-            if (filterHomeAway === 'Home') {
-                teamGames = teamGames.filter(g => g.home_away === 'Home');
-            } else if (filterHomeAway === 'Away') {
-                teamGames = teamGames.filter(g => g.home_away === 'Away');
-            }
-
-            // Filter Last N
-            if (filterLastN !== 'All') {
-                teamGames = teamGames.slice(0, filterLastN);
-            }
-
-            if (teamGames.length === 0) return;
-
-            // Aggregation
-            let gp = 0, wins = 0, losses = 0, otl = 0;
-            let gf = 0, ga = 0;
-            let pp_goals = 0, pp_opps = 0, pp_time = 0;
-            let pk_goals_allowed = 0, pk_opps = 0, pk_time = 0;
-            let sf = 0, sa = 0;
-            let cf = 0, ca = 0;
-            let saves = 0;
-            let engf = 0, enga = 0;
-            let xgf = 0, xga = 0, xgf_5v5 = 0, xga_5v5 = 0;
-
-            teamGames.forEach(g => {
-                gp++;
-                // Result
-                if (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') wins++;
-                else if (g.result === 'RL') losses++;
-                else otl++;
-
-                gf += parseFloat(g.goals_for || '0');
-                ga += parseFloat(g.goals_ag || '0');
-
-                pp_goals += parseFloat(g.pp_goals || '0');
-                pp_opps += parseFloat(g.pp_opportunities || '0');
-                pp_time += parseFloat(g.pp_time || '0');
-
-                pk_goals_allowed += parseFloat(g.pp_goals_against || '0');
-                pk_opps += parseFloat(g.pk_opportunities || '0');
-                pk_time += parseFloat(g.pk_time || '0');
-
-                sf += parseFloat(g.sog_for || '0');
-                sa += parseFloat(g.sog_ag || '0');
-
-                cf += parseFloat(g.attempts_for || '0');
-                ca += parseFloat(g.attempts_ag || '0');
-
-                saves += parseFloat(g.saves_for || '0');
-
-                engf += parseFloat(g.emptynet_goalsfor || '0');
-                enga += parseFloat(g.emptynet_goalsagainst || '0');
-
-                xgf += parseFloat(g.xG_for || '0');
-                xga += parseFloat(g.xG_against || '0');
-                xgf_5v5 += parseFloat(g.xG_for_5v5 || '0');
-                xga_5v5 += parseFloat(g.xG_against_5v5 || '0');
+        if (viewMode === 'All') {
+            // Standard View
+            const allTeams = Array.from(new Set(rawData.map(g => g.team)));
+            allTeams.forEach(teamName => {
+                const games = getGames(teamName, filterHomeAway);
+                if (games.length > 0) {
+                    processedTeams.push(calculateTeamStats(teamName, games));
+                }
             });
+        } else {
+            // Playing Today Views (Force specific order: Away, Home, Away, Home...)
+            todayMatchups.forEach(matchup => {
+                const { home, away } = matchup;
 
-            const points = wins * 2 + otl;
+                // Determine Location Filter based on Mode
+                const awayLoc = viewMode === 'PlayingTodayLocation' ? 'Away' : 'All';
+                const homeLoc = viewMode === 'PlayingTodayLocation' ? 'Home' : 'All';
 
-            processedTeams.push({
-                team: teamName,
-                gp,
-                wins,
-                losses,
-                otl,
-                points,
-                pt_pct: points / (gp * 2),
+                // We still respect filterLastN if set by user
+                const awayGames = getGames(away, awayLoc);
+                const homeGames = getGames(home, homeLoc);
 
-                gf_per_game: gf / gp,
-                ga_per_game: ga / gp,
-
-                pp_goals,
-                pp_opps,
-                pp_pct: pp_opps > 0 ? (pp_goals / pp_opps) * 100 : 0,
-                pp_time_per_game: formatTime(pp_time / gp),
-
-                pk_goals_allowed,
-                pk_opps,
-                pk_pct: pk_opps > 0 ? ((pk_opps - pk_goals_allowed) / pk_opps) * 100 : 0,
-                pk_time_per_game: formatTime(pk_time / gp),
-
-                sf_per_game: sf / gp,
-                sa_per_game: sa / gp,
-
-                cf_per_game: cf / gp,
-                ca_per_game: ca / gp,
-
-                sh_pct: sf > 0 ? (gf / sf) * 100 : 0,
-                sv_pct: sa > 0 ? (saves / sa) * 100 : 0,
-
-                engf,
-                enga,
-
-                xgf_per_game: xgf / gp,
-                xga_per_game: xga / gp,
-                xgf_pct: (xgf + xga) > 0 ? (xgf / (xgf + xga)) * 100 : 0,
-
-                xgf_5v5_per_game: xgf_5v5 / gp,
-                xga_5v5_per_game: xga_5v5 / gp,
-                xgf_pct_5v5: (xgf_5v5 + xga_5v5) > 0 ? (xgf_5v5 / (xgf_5v5 + xga_5v5)) * 100 : 0,
-
-                gsax: xga - ga // Cumulative GSAx
+                processedTeams.push(calculateTeamStats(away, awayGames));
+                processedTeams.push(calculateTeamStats(home, homeGames));
             });
-        });
+        }
 
         setStats(processedTeams);
 
-    }, [rawData, filterHomeAway, filterLastN]);
+    }, [rawData, viewMode, filterHomeAway, filterLastN, todayMatchups]);
+
 
     const handleSort = (key: SortKey) => {
+        // Disable sorting in Matchup Filter modes to preserve pairing
+        if (viewMode !== 'All') return;
+
         if (sortKey === key) {
             setSortDesc(!sortDesc);
         } else {
             setSortKey(key);
-            setSortDesc(true); // Default to desc for most stats
+            setSortDesc(true); // Default to desc
         }
     };
 
     const sortedStats = useMemo(() => {
+        // If in Playing Today modes, PRESERVE ORDER created in useEffect
+        if (viewMode !== 'All') return stats;
+
         const sorted = [...stats];
         sorted.sort((a, b) => {
             const valA = a[sortKey];
@@ -355,9 +393,9 @@ const TeamsTable = () => {
                 : (valA as number) - (valB as number);
         });
         return sorted;
-    }, [stats, sortKey, sortDesc]);
+    }, [stats, sortKey, sortDesc, viewMode]);
 
-    // Calculate min/max for gradients
+    // Calculate min/max for gradients (always based on currently visible/filtered stats)
     const ranges = useMemo(() => {
         const calculateRange = (key: keyof TeamStat) => {
             if (stats.length === 0) return { min: 0, max: 0 };
@@ -373,6 +411,11 @@ const TeamsTable = () => {
             pt_pct: calculateRange('pt_pct'),
             gf_per_game: calculateRange('gf_per_game'),
             ga_per_game: calculateRange('ga_per_game'),
+            goal_diff: calculateRange('goal_diff'),
+            pp_goals: calculateRange('pp_goals'),
+            pp_opps: calculateRange('pp_opps'),
+            pk_goals_allowed: calculateRange('pk_goals_allowed'),
+            pk_opps: calculateRange('pk_opps'),
             pp_pct: calculateRange('pp_pct'),
             pk_pct: calculateRange('pk_pct'),
             sf_per_game: calculateRange('sf_per_game'),
@@ -384,7 +427,6 @@ const TeamsTable = () => {
             xgf_per_game: calculateRange('xgf_per_game'),
             xga_per_game: calculateRange('xga_per_game'),
             xgf_pct: calculateRange('xgf_pct'),
-            xgf_pct_5v5: calculateRange('xgf_pct_5v5'),
             gsax: calculateRange('gsax'),
         };
     }, [stats]);
@@ -427,6 +469,12 @@ const TeamsTable = () => {
                 value = value.toFixed(1);
             } else if (key.toString().includes('per_game') || key.toString() === 'gsax') {
                 value = value.toFixed(2);
+            } else if (key === 'goal_diff') {
+                // +#,##0;(#,##0);"E"
+                const paramVal = value as number;
+                if (Math.abs(paramVal) < 0.1) value = 'E'; // Treat 0 or near 0 as Even
+                else if (paramVal > 0) value = '+' + Math.round(paramVal).toLocaleString();
+                else value = '(' + Math.round(Math.abs(paramVal)).toLocaleString() + ')';
             }
         } else if (isTime) {
             // Time strings
@@ -442,9 +490,9 @@ const TeamsTable = () => {
         );
     };
 
-    const ButtonGroup = ({ options, current, onChange }: { options: (number | string)[], current: string | number, onChange: (val: any) => void }) => (
+    const ButtonGroup = ({ options, current, onChange, labels }: { options: (string | number)[], current: string | number, onChange: (val: any) => void, labels?: string[] }) => (
         <div className="flex bg-gray-800 rounded-lg p-1 gap-1">
-            {options.map(opt => (
+            {options.map((opt, idx) => (
                 <button
                     key={opt}
                     onClick={() => onChange(opt)}
@@ -453,7 +501,7 @@ const TeamsTable = () => {
                         : 'text-gray-400 hover:text-white hover:bg-gray-700'
                         }`}
                 >
-                    {opt === 'All' ? 'All Games' : (typeof opt === 'number' ? `Last ${opt}` : opt)}
+                    {labels ? labels[idx] : (opt === 'All' ? 'All' : (typeof opt === 'number' ? `Last ${opt}` : opt))}
                 </button>
             ))}
         </div>
@@ -461,23 +509,42 @@ const TeamsTable = () => {
 
     return (
         <div className="w-full">
-            {/* Filters */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            {/* View Mode & Filters */}
+            <div className="flex flex-col gap-4 mb-6">
+
+                {/* Top Row: View Mode */}
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</label>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Mode</label>
                     <ButtonGroup
-                        options={['All', 'Home', 'Away']}
-                        current={filterHomeAway}
-                        onChange={setFilterHomeAway}
+                        options={['All', 'PlayingToday', 'PlayingTodayLocation']}
+                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location']}
+                        current={viewMode}
+                        onChange={setViewMode}
                     />
                 </div>
-                <div className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent</label>
-                    <ButtonGroup
-                        options={['All', 5, 10, 20]}
-                        current={filterLastN}
-                        onChange={setFilterLastN}
-                    />
+
+                {/* Bottom Row: Filters (Only manual filters) */}
+                <div className="flex flex-row gap-4 items-center">
+                    {/* Location Filter: Only show if NOT in PlayingTodayLocation mode (since that enforces location) */}
+                    {viewMode !== 'PlayingTodayLocation' && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</label>
+                            <ButtonGroup
+                                options={['All', 'Home', 'Away']}
+                                current={filterHomeAway}
+                                onChange={setFilterHomeAway}
+                            />
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent</label>
+                        <ButtonGroup
+                            options={['All', 5, 10, 20]}
+                            current={filterLastN}
+                            onChange={setFilterLastN}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -496,8 +563,13 @@ const TeamsTable = () => {
                                 { k: 'pt_pct', l: 'P%' },
                                 { k: 'gf_per_game', l: 'GF/G' },
                                 { k: 'ga_per_game', l: 'GA/G', inv: true },
+                                { k: 'goal_diff', l: 'GΔ' },
+                                { k: 'pp_goals', l: 'PPG' },
+                                { k: 'pp_opps', l: 'PP Opp' },
                                 { k: 'pp_pct', l: 'PP%' },
                                 { k: 'pp_time_per_game', l: 'PP T/GP', isTime: true },
+                                { k: 'pk_goals_allowed', l: 'PPGA', inv: true },
+                                { k: 'pk_opps', l: 'PK Opp' },
                                 { k: 'pk_pct', l: 'PK%' },
                                 { k: 'pk_time_per_game', l: 'PK T/GP', isTime: true, inv: true },
                                 { k: 'sf_per_game', l: 'SF/G' },
@@ -515,12 +587,12 @@ const TeamsTable = () => {
                             ].map(({ k, l }) => (
                                 <th
                                     key={k}
-                                    className="px-4 py-3 font-semibold cursor-pointer hover:text-white transition-colors text-center whitespace-nowrap"
+                                    className={`px-4 py-3 font-semibold transition-colors text-center whitespace-nowrap ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'}`}
                                     onClick={() => handleSort(k as SortKey)}
                                 >
                                     <div className="flex items-center justify-center gap-1">
                                         {l}
-                                        {sortKey === k && (
+                                        {viewMode === 'All' && sortKey === k && (
                                             <span className="text-[10px] text-blue-400">{sortDesc ? '▼' : '▲'}</span>
                                         )}
                                     </div>
@@ -531,11 +603,22 @@ const TeamsTable = () => {
                     <tbody className="divide-y divide-gray-800 text-sm">
                         {sortedStats.map((team, idx) => {
                             const meta = teams[team.team] || {};
+
+                            // Determine row styling for Matchup Mode
+                            let rowStyle = "hover:bg-gray-800/50 transition-colors";
+                            if (viewMode !== 'All') {
+                                // Add thick border after every 2nd row (end of matchup)
+                                // except the last one
+                                if ((idx + 1) % 2 === 0 && idx !== sortedStats.length - 1) {
+                                    rowStyle += " border-b-4 border-gray-700";
+                                }
+                            }
+
                             return (
-                                <tr key={team.team} className="hover:bg-gray-800/50 transition-colors">
+                                <tr key={`${team.team}-${idx}`} className={rowStyle}>
                                     <td className="px-4 py-3 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-10">
                                         <div className="flex items-center justify-center md:justify-start gap-3">
-                                            <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>
+                                            {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
                                             {meta.logoUrl && (
                                                 <div className="w-10 h-10 md:w-8 md:h-8 relative shrink-0">
                                                     <Image
@@ -549,6 +632,13 @@ const TeamsTable = () => {
                                             <span className="truncate max-w-[120px] hidden md:block" title={meta.commonName || team.team}>
                                                 {meta.commonName || team.team}
                                             </span>
+
+                                            {/* Matchup visual indicator for Location Mode */}
+                                            {viewMode === 'PlayingTodayLocation' && (
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase ml-2 bg-gray-800 px-1 rounded">
+                                                    {idx % 2 === 0 ? 'AWAY' : 'HOME'}
+                                                </span>
+                                            )}
                                         </div>
                                     </td>
 
@@ -563,8 +653,13 @@ const TeamsTable = () => {
                                     {renderCell(team, 'pt_pct')}
                                     {renderCell(team, 'gf_per_game')}
                                     {renderCell(team, 'ga_per_game', undefined, true)}
+                                    {renderCell(team, 'goal_diff')}
+                                    {renderCell(team, 'pp_goals')}
+                                    {renderCell(team, 'pp_opps')}
                                     {renderCell(team, 'pp_pct')}
                                     {renderCell(team, 'pp_time_per_game', undefined, false, true)}
+                                    {renderCell(team, 'pk_goals_allowed', undefined, true)}
+                                    {renderCell(team, 'pk_opps')}
                                     {renderCell(team, 'pk_pct')}
                                     {renderCell(team, 'pk_time_per_game', undefined, true, true)}
                                     {renderCell(team, 'sf_per_game')}
