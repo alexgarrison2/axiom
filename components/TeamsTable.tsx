@@ -630,10 +630,10 @@ const TeamsTable = () => {
                             // Determine row styling for Matchup Mode
                             let rowStyle = "hover:bg-gray-800/50 transition-colors";
                             if (viewMode !== 'All') {
-                                // Add thick border after every 2nd row (end of matchup)
+                                // Add distinct separation after every 2nd row (end of matchup)
                                 // except the last one
                                 if ((idx + 1) % 2 === 0 && idx !== sortedStats.length - 1) {
-                                    rowStyle += " border-b-4 border-gray-700";
+                                    rowStyle += " border-b-[12px] border-black";
                                 }
                             }
 
