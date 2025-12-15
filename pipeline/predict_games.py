@@ -1351,10 +1351,11 @@ def predict():
     # Create DataFrame from csv_rows
     df_pred = pd.DataFrame(csv_rows)
     
-    # Save to current directory
     # Save detailed predictions
-    df_pred.to_csv('nhl-predictions-app/public/data/predictions_detailed.csv', index=False)
-    print(" detailed predictions saved to nhl-predictions-app/public/data/predictions_detailed.csv")
+    # Assuming execution from pipeline/ dir
+    output_path = '../public/data/predictions_detailed.csv'
+    df_pred.to_csv(output_path, index=False)
+    print(f" detailed predictions saved to {output_path}")
     
     # Save Last Update Timestamp for Frontend (US/Central)
     utc_now = datetime.now(pytz.utc)
