@@ -40,6 +40,8 @@ interface RawGameStat {
     xG_for_5v5: string;
     xG_against_5v5: string;
 
+    starting_goalie: string;
+    starting_goalie_opp: string;
     saves_for: string;
     emptynet_goalsfor: string;
     emptynet_goalsagainst: string;
@@ -90,15 +92,22 @@ interface TeamStat {
 interface Matchup {
     home: string;
     away: string;
+    homeStarter?: string;
+    awayStarter?: string;
 }
 
 type SortKey = keyof TeamStat;
-type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation';
+type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter';
 
 const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+const cleanName = (name: string) => {
+    if (!name) return '';
+    return name.replace(/\s*\(.*?\)\s*/g, '').trim();
 };
 
 const getGradientColor = (value: number, min: number, max: number, inverse: boolean = false) => {
@@ -308,7 +317,9 @@ const TeamsTable = () => {
                     const matchups: Matchup[] = parsedPreds
                         .map((row: any) => ({
                             home: row.home_team?.trim(),
-                            away: row.away_team?.trim()
+                            away: row.away_team?.trim(),
+                            homeStarter: cleanName(row.home_starter),
+                            awayStarter: cleanName(row.away_starter)
                         }))
                         .filter(m => m.home && m.away);
 
@@ -334,7 +345,7 @@ const TeamsTable = () => {
         if (rawData.length === 0) return;
 
         // Helper to get filtered games for a team
-        const getGames = (teamName: string, locationFilter: 'All' | 'Home' | 'Away') => {
+        const getGames = (teamName: string, locationFilter: 'All' | 'Home' | 'Away', targetStarter?: string) => {
             let games = rawData.filter(g => g.team === teamName);
 
             // Apply Date Sort (descending) first so "Last N" takes most recent
@@ -343,6 +354,16 @@ const TeamsTable = () => {
             // Apply Location
             if (locationFilter === 'Home') games = games.filter(g => g.home_away === 'Home');
             if (locationFilter === 'Away') games = games.filter(g => g.home_away === 'Away');
+
+            // Apply Starter Filter (if provided)
+            if (targetStarter) {
+                games = games.filter(g => {
+                    // Fuzzy match or exact match? Exact match after cleaning should be fine.
+                    // But names in gamestats might be "J. Oettinger" or "Jake Oettinger".
+                    // Let's assume gamestats has full names as seen in checking (e.g. "Sergei Bobrovsky").
+                    return g.starting_goalie === targetStarter;
+                });
+            }
 
             // Apply Last N (Always applies unless 'All')
             if (filterLastN !== 'All') {
@@ -365,15 +386,19 @@ const TeamsTable = () => {
         } else {
             // Playing Today Views (Force specific order: Away, Home, Away, Home...)
             todayMatchups.forEach(matchup => {
-                const { home, away } = matchup;
+                const { home, away, homeStarter, awayStarter } = matchup;
 
                 // Determine Location Filter based on Mode
-                const awayLoc = viewMode === 'PlayingTodayLocation' ? 'Away' : 'All';
-                const homeLoc = viewMode === 'PlayingTodayLocation' ? 'Home' : 'All';
+                const awayLoc = (viewMode === 'PlayingTodayLocation' || viewMode === 'PlayingTodayStarter') ? 'Away' : 'All';
+                const homeLoc = (viewMode === 'PlayingTodayLocation' || viewMode === 'PlayingTodayStarter') ? 'Home' : 'All';
+
+                // Determine Starter Filter
+                const starterHome = viewMode === 'PlayingTodayStarter' ? homeStarter : undefined;
+                const starterAway = viewMode === 'PlayingTodayStarter' ? awayStarter : undefined;
 
                 // We still respect filterLastN if set by user
-                const awayGames = getGames(away, awayLoc);
-                const homeGames = getGames(home, homeLoc);
+                const awayGames = getGames(away, awayLoc, starterAway);
+                const homeGames = getGames(home, homeLoc, starterHome);
 
                 processedTeams.push(calculateTeamStats(away, awayGames));
                 processedTeams.push(calculateTeamStats(home, homeGames));
@@ -539,8 +564,8 @@ const TeamsTable = () => {
                 <div className="flex flex-col gap-2">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Mode</label>
                     <ButtonGroup
-                        options={['All', 'PlayingToday', 'PlayingTodayLocation']}
-                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location']}
+                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter']}
+                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter']}
                         current={viewMode}
                         onChange={setViewMode}
                     />
@@ -548,8 +573,8 @@ const TeamsTable = () => {
 
                 {/* Bottom Row: Filters (Only manual filters) */}
                 <div className="flex flex-row gap-4 items-center">
-                    {/* Location Filter: Only show if NOT in PlayingTodayLocation mode (since that enforces location) */}
-                    {viewMode !== 'PlayingTodayLocation' && (
+                    {/* Location Filter: Only show if NOT in PlayingTodayLocation/Starter mode (since those enforce location) */}
+                    {viewMode !== 'PlayingTodayLocation' && viewMode !== 'PlayingTodayStarter' && (
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</label>
                             <ButtonGroup
