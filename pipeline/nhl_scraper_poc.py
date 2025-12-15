@@ -763,13 +763,15 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
     if xg_model and shot_rows:
         try:
             import pandas as pd
+            from xg_model import preprocess_data
+            
             df_shots = pd.DataFrame(shot_rows)
-            # Ensure columns match training features
-            # feature_cols = ['distance', 'angle', 'shot_type', 'strength_state', 'is_rebound', 'score_differential']
-            # The model pipeline handles encoding, so we just pass the raw columns
+            
+            # Preprocess features (Spatial Bin, Off Wing, etc.)
+            X, _ = preprocess_data(df_shots)
             
             # Predict
-            probs = xg_model.predict_proba(df_shots)[:, 1]
+            probs = xg_model.predict_proba(X)[:, 1]
             
             # Add to DataFrame for summing
             df_shots['xG'] = probs
