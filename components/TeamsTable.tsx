@@ -1,10 +1,8 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Papa from 'papaparse';
 import Image from 'next/image';
-
-// --- Interfaces ---
 
 interface TeamInfo {
     name: string;
@@ -16,135 +14,144 @@ interface TeamInfo {
 interface RawGameStat {
     game_id: string;
     game_date: string;
-    team: string; // Common Name e.g. "Panthers"
-    opponent: string; // Common Name
+    team: string; // Common name e.g. "Panthers"
+    opponent: string;
     home_away: 'Home' | 'Away';
-    result: string; // RW, OTW, SOW, RL, OTL, SOL
+    result: string; // "RW", "RL", "OTW", "OTL", "SOW", "SOL"
 
     // Stats
     goals_for: string;
     goals_ag: string;
     sog_for: string;
     sog_ag: string;
-    attempts_for: string; // Corsi For
-    attempts_ag: string;  // Corsi Against
+    attempts_for: string; // CF
+    attempts_ag: string;  // CA
 
-    pp_goals: string;
     pp_opportunities: string;
+    pp_goals: string;
+    pk_opportunities: string; // Times shorthanded
+    pp_goals_against: string; // PP goals against (PK goals allowed)
+
     pp_time: string; // seconds
-
-    pp_goals_against: string; // PPGA (Goals we gave up while on PK? No, usually tracked as PP Goals Against us)
-    // Wait, let's verify semantics. 
-    // In gamestats.csv:
-    // pp_goals = goals I scored on PP
-    // pp_goals_against = goals opponent scored on PP (so my PK goals against)
-
-    pk_opportunities: string; // Times I was shorthanded
-    pk_time: string; // Time I was shorthanded
+    pk_time: string; // seconds
 
     xG_for: string;
     xG_against: string;
     xG_for_5v5: string;
     xG_against_5v5: string;
 
+    saves_for: string;
     emptynet_goalsfor: string;
     emptynet_goalsagainst: string;
-
-    saves_for: string;
-    saves_against: string;
 }
 
-interface AggregatedTeamStats {
+interface TeamStat {
     team: string;
     gp: number;
     wins: number;
     losses: number;
     otl: number;
     points: number;
+    pt_pct: number;
 
-    gf: number;
-    ga: number;
+    gf_per_game: number;
+    ga_per_game: number;
 
     pp_goals: number;
     pp_opps: number;
-    pp_time: number;
-    pp_goals_against: number; // PPGA (Goals allowed on PK)
+    pp_pct: number;
+    pp_time_per_game: string; // Formatted mm:ss
 
+    pk_goals_allowed: number;
     pk_opps: number;
-    pk_time: number; // Time shorthanded
-    // PK Goals Allowed is pp_goals_against
+    pk_pct: number;
+    pk_time_per_game: string; // Formatted mm:ss
 
-    shots_for: number;
-    shots_against: number;
+    sf_per_game: number;
+    sa_per_game: number;
 
-    attempts_for: number;
-    attempts_against: number;
+    cf_per_game: number; // Attempts For
+    ca_per_game: number; // Attempts Against
 
-    xg_for: number;
-    xg_against: number;
-    xg_for_5v5: number;
-    xg_against_5v5: number;
+    sh_pct: number;
+    sv_pct: number;
 
     engf: number;
     enga: number;
 
-    saves_for: number;
-    saves_against: number; // Not really needed for team stats unless we want Opp Sv%
+    xgf_per_game: number;
+    xga_per_game: number;
+    xgf_pct: number;
+
+    xgf_5v5_per_game: number;
+    xga_5v5_per_game: number;
+    xgf_pct_5v5: number;
+
+    gsax: number; // Goals Saved Above Expected (xGA - GA)
 }
 
-interface DisplayStats extends AggregatedTeamStats {
-    logoUrl: string;
-    color: string;
+type SortKey = keyof TeamStat;
 
-    // Derived
-    pt_pct: number;
-    gf_per_game: number;
-    ga_per_game: number;
-    pp_pct: number;
-    pk_pct: number;
-    sf_per_game: number;
-    sa_per_game: number;
-    cf_per_game: number; // Attempts
-    ca_per_game: number;
-    sh_pct: number;
-    sv_pct: number;
-    xg_for_pct: number;
-    xg_for_pct_5v5: number;
-    pp_time_per_game: string; // mm:ss
+interface SortConfig {
+    key: SortKey;
+    direction: 'asc' | 'desc';
 }
 
-type SortKey = keyof DisplayStats;
-
-// --- Helper Functions ---
-
-const parseFloatSafe = (val: string) => {
-    const f = parseFloat(val);
-    return isNaN(f) ? 0 : f;
+const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-const parseIntSafe = (val: string) => {
-    const i = parseInt(val, 10);
-    return isNaN(i) ? 0 : i;
+const getGradientColor = (value: number, min: number, max: number, inverse: boolean = false) => {
+    if (value === null || value === undefined || isNaN(value)) return 'inherit';
+
+    if (max === min) return '#DADADA';
+
+    let ratio = (value - min) / (max - min);
+    if (ratio < 0) ratio = 0;
+    if (ratio > 1) ratio = 1;
+
+    if (inverse) ratio = 1 - ratio;
+
+    // Pink (#FF44A5) -> Grey (#DADADA) -> Blue (#0083E7)
+    const pink = { r: 255, g: 68, b: 165 };
+    const grey = { r: 218, g: 218, b: 218 };
+    const blue = { r: 0, g: 131, b: 231 };
+
+    let r, g, b;
+
+    if (ratio < 0.5) {
+        // 0 to 0.5 -> Pink to Grey
+        const subRatio = ratio * 2;
+        r = Math.round(pink.r + (grey.r - pink.r) * subRatio);
+        g = Math.round(pink.g + (grey.g - pink.g) * subRatio);
+        b = Math.round(pink.b + (grey.b - pink.b) * subRatio);
+    } else {
+        // 0.5 to 1.0 -> Grey to Blue
+        const subRatio = (ratio - 0.5) * 2;
+        r = Math.round(grey.r + (blue.r - grey.r) * subRatio);
+        g = Math.round(grey.g + (blue.g - grey.g) * subRatio);
+        b = Math.round(grey.b + (blue.b - grey.b) * subRatio);
+    }
+
+    return `rgb(${r}, ${g}, ${b})`;
 };
 
-const formatPct = (val: number) => `${(val * 100).toFixed(1)}%`;
-const formatDec = (val: number, digits = 2) => val.toFixed(digits);
-
-const TeamsTable: React.FC = () => {
+const TeamsTable = () => {
+    const [stats, setStats] = useState<TeamStat[]>([]);
     const [loading, setLoading] = useState(true);
-    const [teamsData, setTeamsData] = useState<DisplayStats[]>([]);
+    const [teams, setTeams] = useState<Record<string, TeamInfo>>({});
+
+    // Filters
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
     const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
+
+    // Sorting
     const [sortKey, setSortKey] = useState<SortKey>('pt_pct');
     const [sortDesc, setSortDesc] = useState(true);
 
-
-    // Actually, filtering by Last N requires sorting games by date first. 
-    // Let's load RAW data once, then process in a separate effect or useMemo.
-
-    // Refactor: Load once
     const [rawData, setRawData] = useState<RawGameStat[]>([]);
-    const [teamsMeta, setTeamsMeta] = useState<Record<string, TeamInfo>>({});
 
     useEffect(() => {
         const initLoad = async () => {
@@ -153,321 +160,434 @@ const TeamsTable: React.FC = () => {
                     fetch('/data/gamestats.csv'),
                     fetch('/data/nhl_teams.csv')
                 ]);
+
                 const statsText = await statsRes.text();
                 const teamsText = await teamsRes.text();
 
-                const parsedTeams: Record<string, TeamInfo> = {};
+                // Parse Teams Meta
+                const teamsMeta: Record<string, TeamInfo> = {};
                 Papa.parse(teamsText, {
                     header: true,
                     skipEmptyLines: true,
                     complete: (results: any) => {
                         results.data.forEach((row: any) => {
-                            parsedTeams[row['Common Name']] = {
+                            teamsMeta[row['Common Name']] = {
                                 name: row['Team Name'],
                                 commonName: row['Common Name'],
                                 logoUrl: row['Team Logo URL'],
                                 color: row['Hex Color 1']
                             };
                         });
+                        setTeams(teamsMeta);
                     }
                 });
-                setTeamsMeta(parsedTeams);
 
+                // Parse Game Stats
                 const parsedStats = Papa.parse(statsText, { header: true, skipEmptyLines: true }).data as RawGameStat[];
-                // Sort by date descending for easier "Last N" processing
-                parsedStats.sort((a, b) => new Date(b.game_date).getTime() - new Date(a.game_date).getTime());
                 setRawData(parsedStats);
-            } catch (e) {
-                console.error(e);
+
+            } catch (err) {
+                console.error("Failed to load data", err);
             } finally {
                 setLoading(false);
             }
         };
+
         initLoad();
     }, []);
 
-    // Aggregation Logic
+    // Process data when filters change
     useEffect(() => {
         if (rawData.length === 0) return;
 
-        const aggregation: Record<string, AggregatedTeamStats> = {};
+        // 1. Filter Raw Data
+        let filteredGames = [...rawData];
 
-        // Initialize Teams
-        Object.keys(teamsMeta).forEach(teamName => {
-            aggregation[teamName] = {
-                team: teamName,
-                gp: 0, wins: 0, losses: 0, otl: 0, points: 0,
-                gf: 0, ga: 0,
-                pp_goals: 0, pp_opps: 0, pp_time: 0, pp_goals_against: 0,
-                pk_opps: 0, pk_time: 0,
-                shots_for: 0, shots_against: 0,
-                attempts_for: 0, attempts_against: 0,
-                xg_for: 0, xg_against: 0, xg_for_5v5: 0, xg_against_5v5: 0,
-                engf: 0, enga: 0,
-                saves_for: 0, saves_against: 0
-            };
+        // Sort by date desc for "Last N"
+        filteredGames.sort((a, b) => new Date(b.game_date).getTime() - new Date(a.game_date).getTime());
+
+        // Group by Team to apply "Last N" per team
+        const gamesByTeam: Record<string, RawGameStat[]> = {};
+        filteredGames.forEach(game => {
+            if (!gamesByTeam[game.team]) gamesByTeam[game.team] = [];
+            gamesByTeam[game.team].push(game);
         });
 
-        // We process per TEAM to handle "Last N" correctly.
-        // For "Last N", we take the first N games for THAT team from the sorted list.
+        const processedTeams: TeamStat[] = [];
 
-        Object.keys(teamsMeta).forEach(teamName => {
-            let teamGames = rawData.filter(row => row.team === teamName);
+        Object.keys(gamesByTeam).forEach(teamName => {
+            let teamGames = gamesByTeam[teamName];
 
-            // Apply Filters
-            if (filterHomeAway !== 'All') {
-                teamGames = teamGames.filter(g => g.home_away === filterHomeAway);
+            // Filter Home/Away
+            if (filterHomeAway === 'Home') {
+                teamGames = teamGames.filter(g => g.home_away === 'Home');
+            } else if (filterHomeAway === 'Away') {
+                teamGames = teamGames.filter(g => g.home_away === 'Away');
             }
 
+            // Filter Last N
             if (filterLastN !== 'All') {
                 teamGames = teamGames.slice(0, filterLastN);
             }
 
-            const agg = aggregation[teamName];
-            if (!agg) return; // Should allow 'Unknown' teams? No.
+            if (teamGames.length === 0) return;
+
+            // Aggregation
+            let gp = 0, wins = 0, losses = 0, otl = 0;
+            let gf = 0, ga = 0;
+            let pp_goals = 0, pp_opps = 0, pp_time = 0;
+            let pk_goals_allowed = 0, pk_opps = 0, pk_time = 0;
+            let sf = 0, sa = 0;
+            let cf = 0, ca = 0;
+            let saves = 0;
+            let engf = 0, enga = 0;
+            let xgf = 0, xga = 0, xgf_5v5 = 0, xga_5v5 = 0;
 
             teamGames.forEach(g => {
-                agg.gp++;
-
+                gp++;
                 // Result
-                if (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') {
-                    agg.wins++;
-                    agg.points += 2;
-                } else if (g.result === 'OTL' || g.result === 'SOL') {
-                    agg.otl++;
-                    agg.points += 1;
-                } else {
-                    agg.losses++;
-                }
+                if (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') wins++;
+                else if (g.result === 'RL') losses++;
+                else otl++;
 
-                agg.gf += parseIntSafe(g.goals_for);
-                agg.ga += parseIntSafe(g.goals_ag);
-                agg.pp_goals += parseIntSafe(g.pp_goals);
-                agg.pp_opps += parseIntSafe(g.pp_opportunities);
-                agg.pp_time += parseIntSafe(g.pp_time);
+                gf += parseFloat(g.goals_for || '0');
+                ga += parseFloat(g.goals_ag || '0');
 
-                // PPGA (Goals allowed by this team's PK)
-                // In CSV, 'pp_goals_against' for Team A is effectively goals scored by Opponent on PP.
-                agg.pp_goals_against += parseIntSafe(g.pp_goals_against);
+                pp_goals += parseFloat(g.pp_goals || '0');
+                pp_opps += parseFloat(g.pp_opportunities || '0');
+                pp_time += parseFloat(g.pp_time || '0');
 
-                agg.pk_opps += parseIntSafe(g.pk_opportunities);
-                agg.pk_time += parseIntSafe(g.pk_time); // This is my PK time
+                pk_goals_allowed += parseFloat(g.pp_goals_against || '0');
+                pk_opps += parseFloat(g.pk_opportunities || '0');
+                pk_time += parseFloat(g.pk_time || '0');
 
-                agg.shots_for += parseIntSafe(g.sog_for);
-                agg.shots_against += parseIntSafe(g.sog_ag);
-                agg.attempts_for += parseIntSafe(g.attempts_for);
-                agg.attempts_against += parseIntSafe(g.attempts_ag);
+                sf += parseFloat(g.sog_for || '0');
+                sa += parseFloat(g.sog_ag || '0');
 
-                agg.xg_for += parseFloatSafe(g.xG_for);
-                agg.xg_against += parseFloatSafe(g.xG_against);
-                agg.xg_for_5v5 += parseFloatSafe(g.xG_for_5v5);
-                agg.xg_against_5v5 += parseFloatSafe(g.xG_against_5v5);
+                cf += parseFloat(g.attempts_for || '0');
+                ca += parseFloat(g.attempts_ag || '0');
 
-                agg.engf += parseIntSafe(g.emptynet_goalsfor);
-                agg.enga += parseIntSafe(g.emptynet_goalsagainst);
+                saves += parseFloat(g.saves_for || '0');
 
-                agg.saves_for += parseIntSafe(g.saves_for);
+                engf += parseFloat(g.emptynet_goalsfor || '0');
+                enga += parseFloat(g.emptynet_goalsagainst || '0');
+
+                xgf += parseFloat(g.xG_for || '0');
+                xga += parseFloat(g.xG_against || '0');
+                xgf_5v5 += parseFloat(g.xG_for_5v5 || '0');
+                xga_5v5 += parseFloat(g.xG_against_5v5 || '0');
+            });
+
+            const points = wins * 2 + otl;
+
+            processedTeams.push({
+                team: teamName,
+                gp,
+                wins,
+                losses,
+                otl,
+                points,
+                pt_pct: points / (gp * 2),
+
+                gf_per_game: gf / gp,
+                ga_per_game: ga / gp,
+
+                pp_goals,
+                pp_opps,
+                pp_pct: pp_opps > 0 ? (pp_goals / pp_opps) * 100 : 0,
+                pp_time_per_game: formatTime(pp_time / gp),
+
+                pk_goals_allowed,
+                pk_opps,
+                pk_pct: pk_opps > 0 ? ((pk_opps - pk_goals_allowed) / pk_opps) * 100 : 0,
+                pk_time_per_game: formatTime(pk_time / gp),
+
+                sf_per_game: sf / gp,
+                sa_per_game: sa / gp,
+
+                cf_per_game: cf / gp,
+                ca_per_game: ca / gp,
+
+                sh_pct: sf > 0 ? (gf / sf) * 100 : 0,
+                sv_pct: sa > 0 ? (saves / sa) * 100 : 0,
+
+                engf,
+                enga,
+
+                xgf_per_game: xgf / gp,
+                xga_per_game: xga / gp,
+                xgf_pct: (xgf + xga) > 0 ? (xgf / (xgf + xga)) * 100 : 0,
+
+                xgf_5v5_per_game: xgf_5v5 / gp,
+                xga_5v5_per_game: xga_5v5 / gp,
+                xgf_pct_5v5: (xgf_5v5 + xga_5v5) > 0 ? (xgf_5v5 / (xgf_5v5 + xga_5v5)) * 100 : 0,
+
+                gsax: xga - ga // Cumulative GSAx
             });
         });
 
-        // Convert to DisplayStats
-        const display: DisplayStats[] = Object.values(aggregation).map(agg => {
-            const gp = agg.gp || 1; // Avoid div by zero
+        setStats(processedTeams);
 
-            const pt_pct = agg.points / (agg.gp * 2);
-            const pp_pct = agg.pp_opps > 0 ? agg.pp_goals / agg.pp_opps : 0;
-            // PK% = 1 - (PP Goals Against / PK Opps)
-            const pk_pct = agg.pk_opps > 0 ? 1 - (agg.pp_goals_against / agg.pk_opps) : 0;
-
-            // Save %
-            const sv_pct = agg.shots_against > 0 ? agg.saves_for / agg.shots_against : 0;
-            // Shooting %
-            const sh_pct = agg.shots_for > 0 ? agg.gf / agg.shots_for : 0;
-
-            const xg_total = agg.xg_for + agg.xg_against;
-            const xg_for_pct = xg_total > 0 ? agg.xg_for / xg_total : 0;
-
-            const xg_5v5_total = agg.xg_for_5v5 + agg.xg_against_5v5;
-            const xg_for_pct_5v5 = xg_5v5_total > 0 ? agg.xg_for_5v5 / xg_5v5_total : 0;
-
-            // PP Time per Game
-            const pp_seconds_pg = agg.pp_time / gp;
-            const pp_min = Math.floor(pp_seconds_pg / 60);
-            const pp_sec = Math.round(pp_seconds_pg % 60);
-            const pp_time_fmt = `${pp_min}:${pp_sec.toString().padStart(2, '0')}`;
-
-            return {
-                ...agg,
-                logoUrl: teamsMeta[agg.team]?.logoUrl || '',
-                color: teamsMeta[agg.team]?.color || '#000',
-                pt_pct,
-                gf_per_game: agg.gf / gp,
-                ga_per_game: agg.ga / gp,
-                pp_pct,
-                pk_pct,
-                sf_per_game: agg.shots_for / gp,
-                sa_per_game: agg.shots_against / gp,
-                cf_per_game: agg.attempts_for / gp,
-                ca_per_game: agg.attempts_against / gp,
-                sh_pct,
-                sv_pct,
-                xg_for_pct,
-                xg_for_pct_5v5,
-                pp_time_per_game: pp_time_fmt
-            };
-        });
-
-        setTeamsData(display);
-
-    }, [rawData, teamsMeta, filterHomeAway, filterLastN]); // Dependencies
-
-    // Sorting
-    const sortedData = useMemo(() => {
-        const data = [...teamsData];
-        data.sort((a, b) => {
-            // @ts-ignore
-            const valA = a[sortKey];
-            // @ts-ignore
-            const valB = b[sortKey];
-
-            if (valA < valB) return sortDesc ? 1 : -1;
-            if (valA > valB) return sortDesc ? -1 : 1;
-            return 0;
-        });
-        return data;
-    }, [teamsData, sortKey, sortDesc]);
+    }, [rawData, filterHomeAway, filterLastN]);
 
     const handleSort = (key: SortKey) => {
         if (sortKey === key) {
             setSortDesc(!sortDesc);
         } else {
             setSortKey(key);
-            setSortDesc(true); // Default desc for stats
+            setSortDesc(true); // Default to desc for most stats
         }
     };
 
-    if (loading) return <div className="text-white p-8">Loading stats...</div>;
+    const sortedStats = useMemo(() => {
+        const sorted = [...stats];
+        sorted.sort((a, b) => {
+            const valA = a[sortKey];
+            const valB = b[sortKey];
+
+            if (typeof valA === 'string' && typeof valB === 'string') {
+                return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
+            }
+
+            // Assume numbers
+            return sortDesc
+                ? (valB as number) - (valA as number)
+                : (valA as number) - (valB as number);
+        });
+        return sorted;
+    }, [stats, sortKey, sortDesc]);
+
+    // Calculate min/max for gradients
+    const ranges = useMemo(() => {
+        const calculateRange = (key: keyof TeamStat) => {
+            if (stats.length === 0) return { min: 0, max: 0 };
+            const values = stats.map(s => {
+                const val = s[key];
+                return typeof val === 'number' ? val : 0;
+            });
+            return { min: Math.min(...values), max: Math.max(...values) };
+        };
+
+        return {
+            points: calculateRange('points'),
+            pt_pct: calculateRange('pt_pct'),
+            gf_per_game: calculateRange('gf_per_game'),
+            ga_per_game: calculateRange('ga_per_game'),
+            pp_pct: calculateRange('pp_pct'),
+            pk_pct: calculateRange('pk_pct'),
+            sf_per_game: calculateRange('sf_per_game'),
+            sa_per_game: calculateRange('sa_per_game'),
+            cf_per_game: calculateRange('cf_per_game'),
+            ca_per_game: calculateRange('ca_per_game'),
+            sh_pct: calculateRange('sh_pct'),
+            sv_pct: calculateRange('sv_pct'),
+            xgf_per_game: calculateRange('xgf_per_game'),
+            xga_per_game: calculateRange('xga_per_game'),
+            xgf_pct: calculateRange('xgf_pct'),
+            xgf_pct_5v5: calculateRange('xgf_pct_5v5'),
+            gsax: calculateRange('gsax'),
+        };
+    }, [stats]);
+
+    const getTimeSeconds = (timeStr: string) => {
+        const [m, s] = timeStr.split(':').map(Number);
+        return m * 60 + s;
+    };
+
+    const timeRanges = useMemo(() => {
+        if (stats.length === 0) return { pp: { min: 0, max: 0 }, pk: { min: 0, max: 0 } };
+        const ppTimes = stats.map(s => getTimeSeconds(s.pp_time_per_game));
+        const pkTimes = stats.map(s => getTimeSeconds(s.pk_time_per_game));
+        return {
+            pp: { min: Math.min(...ppTimes), max: Math.max(...ppTimes) },
+            pk: { min: Math.min(...pkTimes), max: Math.max(...pkTimes) }
+        };
+    }, [stats]);
+
+
+    if (loading) return <div className="p-8 text-center bg-gray-900 border border-gray-800 rounded-xl text-gray-400">Loading Stats...</div>;
+
+    // Helper for columns
+    const renderCell = (team: TeamStat, key: keyof TeamStat, label?: string, isInverse: boolean = false, isTime: boolean = false) => {
+        let value = team[key];
+        let color = '#DADADA'; // Default grey
+
+        if (typeof value === 'number') {
+            // Numbers
+            const r = ranges[key as keyof typeof ranges];
+            if (r) {
+                color = getGradientColor(value, r.min, r.max, isInverse);
+            }
+            // Format
+            if (key.toString().includes('pct')) {
+                value = value.toFixed(1) + '%';
+            } else if (key.toString().includes('per_game') || key.toString() === 'gsax') {
+                value = value.toFixed(2);
+            }
+        } else if (isTime) {
+            // Time strings
+            const seconds = getTimeSeconds(value as string);
+            const r = key === 'pp_time_per_game' ? timeRanges.pp : timeRanges.pk;
+            color = getGradientColor(seconds, r.min, r.max, isInverse);
+        }
+
+        return (
+            <td className="px-4 py-3 text-sm font-medium whitespace-nowrap text-center" style={{ color }}>
+                {value}
+            </td>
+        );
+    };
+
+    const ButtonGroup = ({ options, current, onChange }: { options: (number | string)[], current: string | number, onChange: (val: any) => void }) => (
+        <div className="flex bg-gray-800 rounded-lg p-1 gap-1">
+            {options.map(opt => (
+                <button
+                    key={opt}
+                    onClick={() => onChange(opt)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${current === opt
+                            ? 'bg-blue-600 text-white shadow-lg'
+                            : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                        }`}
+                >
+                    {opt === 'All' ? 'All Games' : (typeof opt === 'number' ? `Last ${opt}` : opt)}
+                </button>
+            ))}
+        </div>
+    );
 
     return (
-        <div className="w-full bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-2xl">
-            {/* Controls */}
-            <div className="p-4 bg-neutral-900 border-b border-neutral-800 flex flex-wrap gap-4 items-center justify-between">
-                <h2 className="text-2xl font-bold text-white tracking-widest uppercase">Team Statistics</h2>
-
-                <div className="flex gap-4">
-                    <select
-                        className="bg-neutral-800 text-white text-sm p-2 rounded border border-neutral-700 focus:outline-none focus:border-cyan-500 transition-colors"
-                        value={filterHomeAway}
-                        onChange={(e) => setFilterHomeAway(e.target.value as any)}
-                    >
-                        <option value="All">All Games</option>
-                        <option value="Home">Home</option>
-                        <option value="Away">Away</option>
-                    </select>
-
-                    <select
-                        className="bg-neutral-800 text-white text-sm p-2 rounded border border-neutral-700 focus:outline-none focus:border-cyan-500 transition-colors"
-                        value={filterLastN}
-                        onChange={(e) => setFilterLastN(e.target.value === 'All' ? 'All' : parseInt(e.target.value))}
-                    >
-                        <option value="All">Full Season</option>
-                        <option value="5">Last 5</option>
-                        <option value="10">Last 10</option>
-                        <option value="20">Last 20</option>
-                    </select>
+        <div className="w-full">
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</label>
+                    <ButtonGroup
+                        options={['All', 'Home', 'Away']}
+                        current={filterHomeAway}
+                        onChange={setFilterHomeAway}
+                    />
+                </div>
+                <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent</label>
+                    <ButtonGroup
+                        options={['All', 5, 10, 20]}
+                        current={filterLastN}
+                        onChange={setFilterLastN}
+                    />
                 </div>
             </div>
 
-            {/* Table Container */}
-            <div className="overflow-x-auto">
+            {/* Table */}
+            <div className="overflow-x-auto bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-neutral-950 text-xs text-neutral-400 font-bold uppercase tracking-wider">
-                            <th className="p-3 sticky left-0 bg-neutral-950 z-10 border-b border-neutral-800 min-w-[200px]">Team</th>
-                            <SortHeader label="GP" id="gp" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="W" id="wins" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="L" id="losses" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="OTL" id="otl" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="PTS" id="points" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="P%" id="pt_pct" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-
-                            <SortHeader label="GF/G" id="gf_per_game" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="GA/G" id="ga_per_game" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-
-                            <SortHeader label="PP%" id="pp_pct" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="PK%" id="pk_pct" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="PP Time" id="pp_time_per_game" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-
-                            <SortHeader label="SF/G" id="sf_per_game" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="SA/G" id="sa_per_game" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="CF/G" id="cf_per_game" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-
-                            <SortHeader label="xGF" id="xg_for" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="xGA" id="xg_against" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-                            <SortHeader label="xGF%" id="xg_for_pct" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
-
-                            <SortHeader label="xGF% 5v5" id="xg_for_pct_5v5" sortKey={sortKey} sortDesc={sortDesc} onSort={handleSort} />
+                        <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
+                            <th className="px-4 py-3 font-semibold sticky left-0 bg-gray-900 z-20 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
+                            {[
+                                { k: 'gp', l: 'GP' },
+                                { k: 'wins', l: 'W' },
+                                { k: 'losses', l: 'L' },
+                                { k: 'otl', l: 'OT' },
+                                { k: 'points', l: 'PTS' },
+                                { k: 'pt_pct', l: 'P%' },
+                                { k: 'gf_per_game', l: 'GF/G' },
+                                { k: 'ga_per_game', l: 'GA/G', inv: true },
+                                { k: 'pp_pct', l: 'PP%' },
+                                { k: 'pp_time_per_game', l: 'PP T/GP', isTime: true },
+                                { k: 'pk_pct', l: 'PK%' },
+                                { k: 'pk_time_per_game', l: 'PK T/GP', isTime: true, inv: true },
+                                { k: 'sf_per_game', l: 'SF/G' },
+                                { k: 'sa_per_game', l: 'SA/G', inv: true },
+                                { k: 'cf_per_game', l: 'CF/G' },
+                                { k: 'ca_per_game', l: 'CA/G', inv: true },
+                                { k: 'sh_pct', l: 'Sh%' },
+                                { k: 'sv_pct', l: 'Sv%' },
+                                { k: 'engf', l: 'EN GF' },
+                                { k: 'enga', l: 'EN GA', inv: true },
+                                { k: 'xgf_per_game', l: 'xGF/G' },
+                                { k: 'xga_per_game', l: 'xGA/G', inv: true },
+                                { k: 'xgf_pct', l: 'xGF%' },
+                                { k: 'xgf_5v5_per_game', l: '5v5 xGF/G' },
+                                { k: 'xga_5v5_per_game', l: '5v5 xGA/G', inv: true },
+                                { k: 'xgf_pct_5v5', l: '5v5 xGF%' },
+                                { k: 'gsax', l: 'GSAx' }
+                            ].map(({ k, l }) => (
+                                <th
+                                    key={k}
+                                    className="px-4 py-3 font-semibold cursor-pointer hover:text-white transition-colors text-center whitespace-nowrap"
+                                    onClick={() => handleSort(k as SortKey)}
+                                >
+                                    <div className="flex items-center justify-center gap-1">
+                                        {l}
+                                        {sortKey === k && (
+                                            <span className="text-[10px] text-blue-400">{sortDesc ? '▼' : '▲'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                            ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-800 text-sm font-medium">
-                        {sortedData.map((row, i) => (
-                            <tr key={row.team} className="group hover:bg-neutral-800/50 transition-colors">
-                                <td className="p-3 sticky left-0 bg-neutral-900 group-hover:bg-neutral-800 border-r border-neutral-800 flex items-center gap-3">
-                                    <div className="w-8 h-8 relative flex-shrink-0">
-                                        <Image src={row.logoUrl} alt={row.team} fill className="object-contain" />
-                                    </div>
-                                    <span className="text-white font-bold">{row.team}</span>
-                                </td>
-                                <td className="p-3 text-neutral-300">{row.gp}</td>
-                                <td className="p-3 text-white">{row.wins}</td>
-                                <td className="p-3 text-neutral-400">{row.losses}</td>
-                                <td className="p-3 text-neutral-400">{row.otl}</td>
-                                <td className="p-3 text-cyan-400 font-bold">{row.points}</td>
-                                <td className="p-3 text-neutral-300">{formatPct(row.pt_pct)}</td>
+                    <tbody className="divide-y divide-gray-800 text-sm">
+                        {sortedStats.map((team, idx) => {
+                            const meta = teams[team.team] || {};
+                            return (
+                                <tr key={team.team} className="hover:bg-gray-800/50 transition-colors">
+                                    <td className="px-4 py-3 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-10">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-gray-600 text-xs w-4">{idx + 1}</span>
+                                            {meta.logoUrl && (
+                                                <div className="w-8 h-8 relative shrink-0">
+                                                    <Image
+                                                        src={meta.logoUrl}
+                                                        alt={team.team}
+                                                        fill
+                                                        className="object-contain"
+                                                    />
+                                                </div>
+                                            )}
+                                            <span className="truncate max-w-[120px]" title={meta.commonName || team.team}>
+                                                {meta.commonName || team.team}
+                                            </span>
+                                        </div>
+                                    </td>
 
-                                <td className="p-3 text-neutral-300">{formatDec(row.gf_per_game, 2)}</td>
-                                <td className="p-3 text-neutral-300">{formatDec(row.ga_per_game, 2)}</td>
+                                    {/* Basic Stats - No Gradient */}
+                                    <td className="px-4 py-3 text-gray-300 text-center">{team.gp}</td>
+                                    <td className="px-4 py-3 text-gray-300 text-center">{team.wins}</td>
+                                    <td className="px-4 py-3 text-gray-300 text-center">{team.losses}</td>
+                                    <td className="px-4 py-3 text-gray-300 text-center">{team.otl}</td>
 
-                                <td className="p-3 text-blue-400">{formatPct(row.pp_pct)}</td>
-                                <td className="p-3 text-red-400">{formatPct(row.pk_pct)}</td>
-                                <td className="p-3 text-neutral-400 text-xs">{row.pp_time_per_game}</td>
-
-                                <td className="p-3 text-neutral-300">{formatDec(row.sf_per_game, 1)}</td>
-                                <td className="p-3 text-neutral-300">{formatDec(row.sa_per_game, 1)}</td>
-                                <td className="p-3 text-neutral-400">{formatDec(row.cf_per_game, 1)}</td>
-
-                                <td className="p-3 text-neutral-400">{formatDec(row.xg_for, 1)}</td>
-                                <td className="p-3 text-neutral-400">{formatDec(row.xg_against, 1)}</td>
-                                <td className={`p-3 font-bold ${row.xg_for_pct >= 0.5 ? 'text-green-400' : 'text-orange-400'}`}>
-                                    {formatPct(row.xg_for_pct)}
-                                </td>
-
-                                <td className="p-3 text-neutral-300">{formatPct(row.xg_for_pct_5v5)}</td>
-                            </tr>
-                        ))}
+                                    {/* Advanced Stats - With Gradient */}
+                                    {renderCell(team, 'points')}
+                                    {renderCell(team, 'pt_pct')}
+                                    {renderCell(team, 'gf_per_game')}
+                                    {renderCell(team, 'ga_per_game', undefined, true)}
+                                    {renderCell(team, 'pp_pct')}
+                                    {renderCell(team, 'pp_time_per_game', undefined, false, true)}
+                                    {renderCell(team, 'pk_pct')}
+                                    {renderCell(team, 'pk_time_per_game', undefined, true, true)}
+                                    {renderCell(team, 'sf_per_game')}
+                                    {renderCell(team, 'sa_per_game', undefined, true)}
+                                    {renderCell(team, 'cf_per_game')}
+                                    {renderCell(team, 'ca_per_game', undefined, true)}
+                                    {renderCell(team, 'sh_pct')}
+                                    {renderCell(team, 'sv_pct')}
+                                    {renderCell(team, 'engf')}
+                                    {renderCell(team, 'enga', undefined, true)}
+                                    {renderCell(team, 'xgf_per_game')}
+                                    {renderCell(team, 'xga_per_game', undefined, true)}
+                                    {renderCell(team, 'xgf_pct')}
+                                    {renderCell(team, 'xgf_5v5_per_game')}
+                                    {renderCell(team, 'xga_5v5_per_game', undefined, true)}
+                                    {renderCell(team, 'xgf_pct_5v5')}
+                                    {renderCell(team, 'gsax')}
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
         </div>
-    );
-};
-
-const SortHeader = ({ label, id, sortKey, sortDesc, onSort }: {
-    label: string, id: SortKey, sortKey: SortKey, sortDesc: boolean, onSort: (k: SortKey) => void
-}) => {
-    const active = sortKey === id;
-    return (
-        <th
-            className={`p-3 cursor-pointer hover:text-white transition-colors select-none whitespace-nowrap ${active ? 'text-cyan-400' : ''}`}
-            onClick={() => onSort(id)}
-        >
-            <div className="flex items-center gap-1">
-                {label}
-                {active && (
-                    <span className="text-[10px]">{sortDesc ? '▼' : '▲'}</span>
-                )}
-            </div>
-        </th>
     );
 };
 
