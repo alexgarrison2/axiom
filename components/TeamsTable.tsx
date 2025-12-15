@@ -97,7 +97,7 @@ interface Matchup {
 }
 
 type SortKey = keyof TeamStat;
-type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter';
+type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter';
 
 const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -389,14 +389,18 @@ const TeamsTable = () => {
                 const { home, away, homeStarter, awayStarter } = matchup;
 
                 // Determine Location Filter based on Mode
-                // If PlayingTodayLocation, FORCE Home/Away.
+                // If PlayingTodayLocation OR PlayingTodayLocationStarter, FORCE Home/Away.
                 // Otherwise (PlayingToday, PlayingTodayStarter), use the user's manual filter (filterHomeAway).
-                const awayLoc = viewMode === 'PlayingTodayLocation' ? 'Away' : filterHomeAway;
-                const homeLoc = viewMode === 'PlayingTodayLocation' ? 'Home' : filterHomeAway;
+                const isForcedLocation = viewMode === 'PlayingTodayLocation' || viewMode === 'PlayingTodayLocationStarter';
+
+                const awayLoc = isForcedLocation ? 'Away' : filterHomeAway;
+                const homeLoc = isForcedLocation ? 'Home' : filterHomeAway;
 
                 // Determine Starter Filter
-                const starterHome = viewMode === 'PlayingTodayStarter' ? homeStarter : undefined;
-                const starterAway = viewMode === 'PlayingTodayStarter' ? awayStarter : undefined;
+                const useStarter = viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter';
+
+                const starterHome = useStarter ? homeStarter : undefined;
+                const starterAway = useStarter ? awayStarter : undefined;
 
                 // We still respect filterLastN if set by user
                 const awayGames = getGames(away, awayLoc, starterAway);
@@ -566,8 +570,8 @@ const TeamsTable = () => {
                 <div className="flex flex-col gap-2">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Mode</label>
                     <ButtonGroup
-                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter']}
-                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter']}
+                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter', 'PlayingTodayLocationStarter']}
+                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter', 'Playing Today w/ Loc & Starter']}
                         current={viewMode}
                         onChange={setViewMode}
                     />
@@ -575,8 +579,8 @@ const TeamsTable = () => {
 
                 {/* Bottom Row: Filters (Only manual filters) */}
                 <div className="flex flex-row gap-4 items-center">
-                    {/* Location Filter: Only show if NOT in PlayingTodayLocation mode (since that enforces location) */}
-                    {viewMode !== 'PlayingTodayLocation' && (
+                    {/* Location Filter: Only show if NOT in PlayingTodayLocation/Starter(Location) mode (since those enforce location) */}
+                    {viewMode !== 'PlayingTodayLocation' && viewMode !== 'PlayingTodayLocationStarter' && (
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</label>
                             <ButtonGroup
