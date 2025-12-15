@@ -270,30 +270,49 @@ const TeamsTable = () => {
                 Papa.parse(teamsText, {
                     header: true,
                     skipEmptyLines: true,
+                    transformHeader: (h) => h.trim(),
                     complete: (results: any) => {
                         results.data.forEach((row: any) => {
-                            teamsMeta[row['Common Name']] = {
-                                name: row['Team Name'],
-                                commonName: row['Common Name'],
-                                logoUrl: row['Team Logo URL'],
-                                color: row['Hex Color 1']
-                            };
+                            if (row['Common Name']) {
+                                teamsMeta[row['Common Name'].trim()] = {
+                                    name: row['Team Name'],
+                                    commonName: row['Common Name'].trim(),
+                                    logoUrl: row['Team Logo URL'],
+                                    color: row['Hex Color 1']
+                                };
+                            }
                         });
                         setTeams(teamsMeta);
                     }
                 });
 
                 // Parse Game Stats
-                const parsedStats = Papa.parse(statsText, { header: true, skipEmptyLines: true }).data as RawGameStat[];
+                const parsedStats = Papa.parse(statsText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    transformHeader: (h) => h.trim()
+                }).data as RawGameStat[];
                 setRawData(parsedStats);
 
-                // Parse Today's Matchups
-                const parsedPreds = Papa.parse(predsText, { header: true, skipEmptyLines: true }).data as any[];
-                const matchups: Matchup[] = parsedPreds.map((row: any) => ({
-                    home: row.home_team,
-                    away: row.away_team
-                })).filter(m => m.home && m.away);
-                setTodayMatchups(matchups);
+                // Parse Predictions (Today's Games) - Only if file exists/loads
+                if (predsRes.ok) {
+                    const predsText = await predsRes.text();
+                    const parsedPreds = Papa.parse(predsText, {
+                        header: true,
+                        skipEmptyLines: true,
+                        transformHeader: (h) => h.trim()
+                    }).data as any[];
+
+                    const matchups: Matchup[] = parsedPreds
+                        .map((row: any) => ({
+                            home: row.home_team?.trim(),
+                            away: row.away_team?.trim()
+                        }))
+                        .filter(m => m.home && m.away);
+                    setTodayMatchups(matchups);
+                } else {
+                    console.warn("Could not load predictions_detailed.csv");
+                }
 
             } catch (err) {
                 console.error("Failed to load data", err);

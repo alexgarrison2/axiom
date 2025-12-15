@@ -1352,10 +1352,9 @@ def predict():
     df_pred = pd.DataFrame(csv_rows)
     
     # Save to current directory
-    output_file = 'predictions_detailed.csv'
-    # Save predictions
-    df_pred.to_csv('predictions_detailed.csv', index=False)
-    print("Saved predictions_detailed.csv")
+    # Save detailed predictions
+    df_pred.to_csv('nhl-predictions-app/public/data/predictions_detailed.csv', index=False)
+    print(" detailed predictions saved to nhl-predictions-app/public/data/predictions_detailed.csv")
     
     # Save Last Update Timestamp for Frontend (US/Central)
     utc_now = datetime.now(pytz.utc)
