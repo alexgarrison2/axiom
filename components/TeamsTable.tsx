@@ -419,8 +419,12 @@ const TeamsTable = () => {
                 color = getGradientColor(value, r.min, r.max, isInverse);
             }
             // Format
-            if (key.toString().includes('pct')) {
+            if (key === 'pt_pct') {
+                value = (value as number).toFixed(3).replace(/^0+/, ''); // .650
+            } else if (key.toString().includes('pct')) {
                 value = value.toFixed(1) + '%';
+            } else if (['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game'].includes(key)) {
+                value = value.toFixed(1);
             } else if (key.toString().includes('per_game') || key.toString() === 'gsax') {
                 value = value.toFixed(2);
             }
@@ -445,8 +449,8 @@ const TeamsTable = () => {
                     key={opt}
                     onClick={() => onChange(opt)}
                     className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${current === opt
-                            ? 'bg-blue-600 text-white shadow-lg'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-700'
                         }`}
                 >
                     {opt === 'All' ? 'All Games' : (typeof opt === 'number' ? `Last ${opt}` : opt)}
@@ -507,9 +511,6 @@ const TeamsTable = () => {
                                 { k: 'xgf_per_game', l: 'xGF/G' },
                                 { k: 'xga_per_game', l: 'xGA/G', inv: true },
                                 { k: 'xgf_pct', l: 'xGF%' },
-                                { k: 'xgf_5v5_per_game', l: '5v5 xGF/G' },
-                                { k: 'xga_5v5_per_game', l: '5v5 xGA/G', inv: true },
-                                { k: 'xgf_pct_5v5', l: '5v5 xGF%' },
                                 { k: 'gsax', l: 'GSAx' }
                             ].map(({ k, l }) => (
                                 <th
@@ -533,10 +534,10 @@ const TeamsTable = () => {
                             return (
                                 <tr key={team.team} className="hover:bg-gray-800/50 transition-colors">
                                     <td className="px-4 py-3 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-10">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-gray-600 text-xs w-4">{idx + 1}</span>
+                                        <div className="flex items-center justify-center md:justify-start gap-3">
+                                            <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>
                                             {meta.logoUrl && (
-                                                <div className="w-8 h-8 relative shrink-0">
+                                                <div className="w-10 h-10 md:w-8 md:h-8 relative shrink-0">
                                                     <Image
                                                         src={meta.logoUrl}
                                                         alt={team.team}
@@ -545,7 +546,7 @@ const TeamsTable = () => {
                                                     />
                                                 </div>
                                             )}
-                                            <span className="truncate max-w-[120px]" title={meta.commonName || team.team}>
+                                            <span className="truncate max-w-[120px] hidden md:block" title={meta.commonName || team.team}>
                                                 {meta.commonName || team.team}
                                             </span>
                                         </div>
@@ -577,9 +578,6 @@ const TeamsTable = () => {
                                     {renderCell(team, 'xgf_per_game')}
                                     {renderCell(team, 'xga_per_game', undefined, true)}
                                     {renderCell(team, 'xgf_pct')}
-                                    {renderCell(team, 'xgf_5v5_per_game')}
-                                    {renderCell(team, 'xga_5v5_per_game', undefined, true)}
-                                    {renderCell(team, 'xgf_pct_5v5')}
                                     {renderCell(team, 'gsax')}
                                 </tr>
                             );
