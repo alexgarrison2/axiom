@@ -389,8 +389,10 @@ const TeamsTable = () => {
                 const { home, away, homeStarter, awayStarter } = matchup;
 
                 // Determine Location Filter based on Mode
-                const awayLoc = (viewMode === 'PlayingTodayLocation' || viewMode === 'PlayingTodayStarter') ? 'Away' : 'All';
-                const homeLoc = (viewMode === 'PlayingTodayLocation' || viewMode === 'PlayingTodayStarter') ? 'Home' : 'All';
+                // If PlayingTodayLocation, FORCE Home/Away.
+                // Otherwise (PlayingToday, PlayingTodayStarter), use the user's manual filter (filterHomeAway).
+                const awayLoc = viewMode === 'PlayingTodayLocation' ? 'Away' : filterHomeAway;
+                const homeLoc = viewMode === 'PlayingTodayLocation' ? 'Home' : filterHomeAway;
 
                 // Determine Starter Filter
                 const starterHome = viewMode === 'PlayingTodayStarter' ? homeStarter : undefined;
@@ -573,8 +575,8 @@ const TeamsTable = () => {
 
                 {/* Bottom Row: Filters (Only manual filters) */}
                 <div className="flex flex-row gap-4 items-center">
-                    {/* Location Filter: Only show if NOT in PlayingTodayLocation/Starter mode (since those enforce location) */}
-                    {viewMode !== 'PlayingTodayLocation' && viewMode !== 'PlayingTodayStarter' && (
+                    {/* Location Filter: Only show if NOT in PlayingTodayLocation mode (since that enforces location) */}
+                    {viewMode !== 'PlayingTodayLocation' && (
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</label>
                             <ButtonGroup
