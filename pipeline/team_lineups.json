@@ -1310,29 +1310,6 @@
                 "ppUnit": 1
             },
             {
-                "name": "Alex Laferriere",
-                "number": 14,
-                "pos": "c",
-                "id": 32954,
-                "ppUnit": 2
-            },
-            {
-                "name": "Joel Armia",
-                "number": 40,
-                "pos": "rw",
-                "id": 1952,
-                "ppUnit": 1
-            }
-        ],
-        "f3": [
-            {
-                "name": "Warren Foegele",
-                "number": 37,
-                "pos": "lw",
-                "id": 3911,
-                "ppUnit": null
-            },
-            {
                 "name": "Alex Turcotte",
                 "number": 15,
                 "pos": "c",
@@ -1345,6 +1322,29 @@
                 "pos": "rw",
                 "id": 2878,
                 "ppUnit": 2
+            }
+        ],
+        "f3": [
+            {
+                "name": "Warren Foegele",
+                "number": 37,
+                "pos": "lw",
+                "id": 3911,
+                "ppUnit": null
+            },
+            {
+                "name": "Alex Laferriere",
+                "number": 14,
+                "pos": "c",
+                "id": 32954,
+                "ppUnit": 2
+            },
+            {
+                "name": "Joel Armia",
+                "number": 40,
+                "pos": "rw",
+                "id": 1952,
+                "ppUnit": 1
             }
         ],
         "f4": [
@@ -1388,18 +1388,18 @@
         ],
         "d2": [
             {
-                "name": "Brandt Clarke",
-                "number": 92,
-                "pos": "ld",
-                "id": 30833,
-                "ppUnit": 2
-            },
-            {
                 "name": "Joel Edmundson",
                 "number": 6,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 2532,
                 "ppUnit": null
+            },
+            {
+                "name": "Brandt Clarke",
+                "number": 92,
+                "pos": "rd",
+                "id": 30833,
+                "ppUnit": 2
             }
         ],
         "d3": [
@@ -3598,17 +3598,17 @@
         ],
         "f3": [
             {
-                "name": "Connor Zary",
-                "number": 47,
+                "name": "Dryden Hunt",
+                "number": null,
                 "pos": "lw",
-                "id": 29510,
-                "ppUnit": 2
+                "id": 2916,
+                "ppUnit": null
             },
             {
-                "name": "Mikael Backlund",
-                "number": 11,
+                "name": "Connor Zary",
+                "number": 47,
                 "pos": "c",
-                "id": 193,
+                "id": 29510,
                 "ppUnit": 2
             },
             {
@@ -3639,7 +3639,7 @@
                 "number": 43,
                 "pos": "rw",
                 "id": 34398,
-                "ppUnit": null
+                "ppUnit": 2
             }
         ],
         "d1": [
