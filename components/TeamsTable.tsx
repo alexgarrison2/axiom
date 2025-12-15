@@ -138,48 +138,7 @@ const TeamsTable: React.FC = () => {
     const [sortKey, setSortKey] = useState<SortKey>('pt_pct');
     const [sortDesc, setSortDesc] = useState(true);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [statsRes, teamsRes] = await Promise.all([
-                    fetch('/data/gamestats.csv'),
-                    fetch('/data/nhl_teams.csv')
-                ]);
 
-                const statsText = await statsRes.text();
-                const teamsText = await teamsRes.text();
-
-                // Parse Teams Meta
-                const teamsMeta: Record<string, TeamInfo> = {};
-                Papa.parse(teamsText, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (results: any) => {
-                        results.data.forEach((row: any) => {
-                            teamsMeta[row['Common Name']] = {
-                                name: row['Team Name'],
-                                commonName: row['Common Name'],
-                                logoUrl: row['Team Logo URL'],
-                                color: row['Hex Color 1']
-                            };
-                        });
-                    }
-                });
-
-                // Parse Game Stats
-                const rawStats: RawGameStat[] = Papa.parse(statsText, { header: true, skipEmptyLines: true }).data as RawGameStat[];
-
-                processData(rawStats, teamsMeta);
-
-            } catch (err) {
-                console.error("Failed to load data", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [filterHomeAway, filterLastN]); // Re-process when filters change? No, better to process once and filter in memory if possible. 
     // Actually, filtering by Last N requires sorting games by date first. 
     // Let's load RAW data once, then process in a separate effect or useMemo.
 
