@@ -572,11 +572,11 @@ const TeamsTable = () => {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative">
+            <div className="overflow-auto bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative max-h-[85vh]">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
-                            <th className="px-4 py-3 font-semibold sticky left-0 bg-gray-900 z-20 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
+                        <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-0 z-30 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
+                            <th className="px-4 py-3 font-semibold sticky left-0 bg-gray-900 z-40 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
                             {[
                                 { k: 'gp', l: 'GP' },
                                 { k: 'wins', l: 'W' },
@@ -638,66 +638,75 @@ const TeamsTable = () => {
                             }
 
                             return (
-                                <tr key={`${team.team}-${idx}`} className={rowStyle}>
-                                    <td className="px-4 py-3 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-10">
-                                        <div className="flex items-center justify-center md:justify-start gap-3">
-                                            {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
-                                            {meta.logoUrl && (
-                                                <div className="w-10 h-10 md:w-8 md:h-8 relative shrink-0">
-                                                    <Image
-                                                        src={meta.logoUrl}
-                                                        alt={team.team}
-                                                        fill
-                                                        className="object-contain"
-                                                    />
-                                                </div>
-                                            )}
-                                            <span className="truncate max-w-[120px] hidden md:block" title={meta.commonName || team.team}>
-                                                {meta.commonName || team.team}
-                                            </span>
-
-                                            {/* Matchup visual indicator for Location Mode */}
-                                            {viewMode === 'PlayingTodayLocation' && (
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase ml-2 bg-gray-800 px-1 rounded">
-                                                    {idx % 2 === 0 ? 'AWAY' : 'HOME'}
+                                <React.Fragment key={`${team.team}-${idx}`}>
+                                    <tr className={rowStyle}>
+                                        <td className="px-4 py-3 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-20">
+                                            <div className="flex items-center justify-center md:justify-start gap-3">
+                                                {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
+                                                {meta.logoUrl && (
+                                                    <div className="w-10 h-10 md:w-8 md:h-8 relative shrink-0">
+                                                        <Image
+                                                            src={meta.logoUrl}
+                                                            alt={team.team}
+                                                            fill
+                                                            className="object-contain"
+                                                        />
+                                                    </div>
+                                                )}
+                                                <span className="truncate max-w-[120px] hidden md:block" title={meta.commonName || team.team}>
+                                                    {meta.commonName || team.team}
                                                 </span>
-                                            )}
-                                        </div>
-                                    </td>
 
-                                    {/* Basic Stats - No Gradient */}
-                                    <td className="px-4 py-3 text-gray-300 text-center">{team.gp}</td>
-                                    <td className="px-4 py-3 text-gray-300 text-center">{team.wins}</td>
-                                    <td className="px-4 py-3 text-gray-300 text-center">{team.losses}</td>
-                                    <td className="px-4 py-3 text-gray-300 text-center">{team.otl}</td>
+                                                {/* Matchup visual indicator for Location Mode */}
+                                                {viewMode === 'PlayingTodayLocation' && (
+                                                    <span className="text-[10px] font-bold text-gray-500 uppercase ml-2 bg-gray-800 px-1 rounded">
+                                                        {idx % 2 === 0 ? 'AWAY' : 'HOME'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
 
-                                    {/* Advanced Stats - With Gradient */}
-                                    {renderCell(team, 'points')}
-                                    {renderCell(team, 'pt_pct')}
-                                    {renderCell(team, 'gf_per_game')}
-                                    {renderCell(team, 'ga_per_game', undefined, true)}
-                                    {renderCell(team, 'goal_diff')}
-                                    {renderCell(team, 'pp_goals')}
-                                    {renderCell(team, 'pp_opps')}
-                                    {renderCell(team, 'pp_pct')}
-                                    {renderCell(team, 'pp_time_per_game', undefined, false, true)}
-                                    {renderCell(team, 'pk_goals_allowed', undefined, true)}
-                                    {renderCell(team, 'pk_opps')}
-                                    {renderCell(team, 'pk_pct')}
-                                    {renderCell(team, 'pk_time_per_game', undefined, true, true)}
-                                    {renderCell(team, 'sf_per_game')}
-                                    {renderCell(team, 'sa_per_game', undefined, true)}
-                                    {renderCell(team, 'cf_per_game')}
-                                    {renderCell(team, 'ca_per_game', undefined, true)}
-                                    {renderCell(team, 'sh_pct')}
-                                    {renderCell(team, 'sv_pct')}
-                                    {renderCell(team, 'engf')}
-                                    {renderCell(team, 'enga', undefined, true)}
-                                    {renderCell(team, 'xgf_per_game')}
-                                    {renderCell(team, 'xga_per_game', undefined, true)}
-                                    {renderCell(team, 'xgf_pct')}
-                                    {renderCell(team, 'gsax')}
-                                </tr>
+                                        {/* Basic Stats - No Gradient */}
+                                        <td className="px-4 py-3 text-gray-300 text-center">{team.gp}</td>
+                                        <td className="px-4 py-3 text-gray-300 text-center">{team.wins}</td>
+                                        <td className="px-4 py-3 text-gray-300 text-center">{team.losses}</td>
+                                        <td className="px-4 py-3 text-gray-300 text-center">{team.otl}</td>
+
+                                        {/* Advanced Stats - With Gradient */}
+                                        {renderCell(team, 'points')}
+                                        {renderCell(team, 'pt_pct')}
+                                        {renderCell(team, 'gf_per_game')}
+                                        {renderCell(team, 'ga_per_game', undefined, true)}
+                                        {renderCell(team, 'goal_diff')}
+                                        {renderCell(team, 'pp_goals')}
+                                        {renderCell(team, 'pp_opps')}
+                                        {renderCell(team, 'pp_pct')}
+                                        {renderCell(team, 'pp_time_per_game', undefined, false, true)}
+                                        {renderCell(team, 'pk_goals_allowed', undefined, true)}
+                                        {renderCell(team, 'pk_opps')}
+                                        {renderCell(team, 'pk_pct')}
+                                        {renderCell(team, 'pk_time_per_game', undefined, true, true)}
+                                        {renderCell(team, 'sf_per_game')}
+                                        {renderCell(team, 'sa_per_game', undefined, true)}
+                                        {renderCell(team, 'cf_per_game')}
+                                        {renderCell(team, 'ca_per_game', undefined, true)}
+                                        {renderCell(team, 'sh_pct')}
+                                        {renderCell(team, 'sv_pct')}
+                                        {renderCell(team, 'engf')}
+                                        {renderCell(team, 'enga', undefined, true)}
+                                        {renderCell(team, 'xgf_per_game')}
+                                        {renderCell(team, 'xga_per_game', undefined, true)}
+                                        {renderCell(team, 'xgf_pct')}
+                                        {renderCell(team, 'gsax')}
+                                    </tr>
+
+                                    {/* Spacer Row for Matchups */}
+                                    {viewMode !== 'All' && (idx + 1) % 2 === 0 && idx !== sortedStats.length - 1 && (
+                                        <tr>
+                                            <td colSpan={100} className="h-4 bg-black border-none"></td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
                             );
                         })}
                     </tbody>

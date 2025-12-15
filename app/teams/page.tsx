@@ -15,11 +15,6 @@ export default function TeamsPage() {
             <div className="max-w-[1800px] mx-auto relative z-10">
                 <Header compact />
 
-                <header className="mb-8">
-                    <h1 className="text-4xl font-black text-white mb-2 tracking-tighter">TEAM STATISTICS</h1>
-                    <p className="text-neutral-400">Sortable advanced metrics for the current NHL season.</p>
-                </header>
-
                 <TeamsTable />
             </div>
         </main>
