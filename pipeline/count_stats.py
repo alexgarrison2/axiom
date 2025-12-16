@@ -10,13 +10,16 @@ games = 0
 with open(FILENAME, 'r') as f:
     reader = csv.DictReader(f)
     for row in reader:
-        if row['team'] == TEAM:
-            games += 1
-            opps = int(row['pp_opportunities'])
-            total_opps += opps
-            # print(f"Game {row['game_id']}: {opps}")
+        team_name = row['team']
+        if team_name not in team_stats:
+            team_stats[team_name] = {'games': 0, 'pp_opps': 0}
 
-print(f"Team: {TEAM}")
-print(f"Games: {games}")
-print(f"Total Opps: {total_opps}")
-print(f"Avg: {total_opps/games if games else 0}")
+        team_stats[team_name]['games'] += 1
+        opps = int(row['pp_opportunities'])
+        team_stats[team_name]['pp_opps'] += opps
+        # print(f"Game {row['game_id']}: {opps}")
+
+print(f"{'Team':<20} {'GP':<5} {'PP Opps':<10}")
+print("-" * 35)
+for team, stats in sorted(team_stats.items()):
+    print(f"{team:<20} {stats['games']:<5} {stats['pp_opps']:<10}")
