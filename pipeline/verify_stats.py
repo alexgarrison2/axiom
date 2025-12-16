@@ -17,31 +17,21 @@ headers = [
 ]
 
 with open(FILENAME, 'r') as f:
-    reader = csv.reader(f)
-    # Skip actual header if it exists (it does)
-    next(reader) 
-    
+    reader = csv.DictReader(f)
+    found = False
     for row in reader:
-        if row[0] == TARGET_GAME and row[2] == TARGET_TEAM:
+        if row['game_id'] == TARGET_GAME and row['team'] == TARGET_TEAM:
             print(f"Found {TARGET_TEAM} Game {TARGET_GAME}")
-            # Map headers
-            start_idx = 0
-            # Manually map likely indices if header length mismatch
-            # But let's verify length
-            # The headers list above is approximate from memory/scraper.
-            # Let's print relevant indices.
+            print(f"Score: {row['goals_for']} - {row['goals_ag']}")
+            print(f"PP Goals: {row['pp_goals']}")
+            print(f"PP Opps: {row['pp_opportunities']}")
+            print(f"PP Time: {row['pp_time']}")
+            print(f"PK Opps: {row['pk_opportunities']}")
+            print(f"PK Time: {row['pk_time']}")
+            print(f"xG 5v5: {row['xG_for_5v5']}")
+            print(f"Hits For: {row['hits_for']}")
+            found = True
+            break
             
-            # xG 5v5 is index 10
-            print(f"xG 5v5: {row[10]}")
-            
-            # PP Stats are after hits.
-            # Hits total is index 35.
-            # So PP Goals = 36
-            # PP Opps = 37
-            # PP Time = 38
-            
-            # Let's verify by printing a range
-            print(f"Values around index 35-40: {row[35:41]}")
-            
-            # Also check totals
-            print(f"Goals Total (simulated idx 20): {row[20]}")
+    if not found:
+        print("Game not found.")

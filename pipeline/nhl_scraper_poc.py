@@ -246,6 +246,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             })
 
     for play in sorted_plays:
+        print(f"DEBUG_AGG: Event {play.get('eventId')} Type {play.get('typeCode')}")
         event_id = play.get("eventId")
         type_code = play.get("typeCode")
         details = play.get("details", {})
@@ -671,17 +672,18 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 has_existing_penalty = any(p['team_id'] == owner_id and p['end_time'] > current_seconds for p in active_penalties)
                 
                 if duration_min < 10 and not is_coincidental:
-                    # If Home took penalty
                     if owner_id == home_id:
-                        # TRIGGER if PP Active (Standard Stacked) OR Existing Penalty (Concurrent Start)
-                        if away_pp_active or has_existing_penalty:
+                        # TRIGGER ONLY if Existing Penalty (Concurrent Start / Stacked)
+                        # We removed 'away_pp_active' check because it causes double-counting if State Logic (SituationCode)
+                        # updates before this event in the same second/loop.
+                        if has_existing_penalty:
                             teams[away_id]['pp']['opportunities'] += 1
                             teams[home_id]['pk']['opportunities'] += 1
                             
                     # If Away took penalty
                     elif owner_id == away_id:
-                        # TRIGGER if PP Active (Standard Stacked) OR Existing Penalty (Concurrent Start)
-                        if home_pp_active or has_existing_penalty:
+                        # TRIGGER ONLY if Existing Penalty
+                        if has_existing_penalty:
                             teams[home_id]['pp']['opportunities'] += 1
                             teams[away_id]['pk']['opportunities'] += 1
 
@@ -1059,9 +1061,21 @@ def main():
     
     all_rows = []
     all_shots = []
+    all_rows = []
+    all_shots = []
     current_date = start_date
     team_game_counts = {} # Track games played per team ID
     team_game_dates = defaultdict(list) # Track game dates for rest calc
+    processed_game_ids = set()
+    
+    if os.path.exists(OUTPUT_FILENAME):
+        try:
+            df_existing = pd.read_csv(OUTPUT_FILENAME)
+            if 'game_id' in df_existing.columns:
+                processed_game_ids = set(df_existing['game_id'].unique())
+                print(f"  Loaded {len(processed_game_ids)} existing Game IDs.")
+        except:
+            pass
     
     # Load xG Model
     xg_model = None
@@ -1096,6 +1110,12 @@ def main():
                 if len(game_id_str) >= 6 and game_id_str[4:6] == "01":
                     print(f"    Skipping Preseason Game {game_id}")
                     continue
+                
+                # Deduplication Check
+                if game_id in processed_game_ids:
+                    print(f"    Skipping Duplicate Game {game_id}")
+                    continue
+                processed_game_ids.add(game_id)
                 
                 # Get current game numbers for this game
                 home_id = game.get("homeTeam", {}).get("id")
