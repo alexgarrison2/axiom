@@ -652,16 +652,15 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 
                 # 1. Double Minor (4 min) -> Always +1 extra opportunity (first one caught by state or stacked)
                 # BUT ONLY IF NOT COINCIDENTAL (e.g. 4 vs 2 is 1 opp, handled by state change later)
-                # HYPOTHESIS: NHL counts Double Minor as 1 Opportunity initially.
-                # Only if a goal is scored in the first 2 mins does it become 2?
-                # For now, let's DISABLE the extra count to see if it aligns with 2539.
-                # if duration_min == 4 and not is_coincidental:
-                #     if owner_id == home_id:
-                #         teams[away_id]['pp']['opportunities'] += 1
-                #         teams[home_id]['pk']['opportunities'] += 1
-                #     elif owner_id == away_id:
-                #         teams[home_id]['pp']['opportunities'] += 1
-                #         teams[away_id]['pk']['opportunities'] += 1
+                # NHL counts Double Minor as 1 Opportunity initially, but usually credits 2 total.
+                # Re-enabling to fix undercounting represented in comparison.
+                if duration_min == 4 and not is_coincidental:
+                    if owner_id == home_id:
+                        teams[away_id]['pp']['opportunities'] += 1
+                        teams[home_id]['pk']['opportunities'] += 1
+                    elif owner_id == away_id:
+                        teams[home_id]['pp']['opportunities'] += 1
+                        teams[away_id]['pk']['opportunities'] += 1
                         
                 # 2. Stacked Penalty (5v3 or overlapping)
                 # If Opponent is ALREADY on PP, and we take a NEW penalty, that's a new opportunity.
