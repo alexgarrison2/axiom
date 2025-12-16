@@ -117,13 +117,21 @@ def refresh_pipeline():
             
             # Sync to app data folders
             try:
-                # Sync to public/data (for Frontend)
-                df_stats.to_csv(f'../public/data/{gamestats_file}', index=False)
-                print(f"Synced {gamestats_file} to ../public/data/")
+                # Sync to public/data (for Frontend) - MUST be named gamestats.csv
+                df_stats.to_csv('../public/data/gamestats.csv', index=False)
+                print(f"Synced {gamestats_file} to ../public/data/gamestats.csv")
                 
                 # Sync to data/ (as backup/legacy)
-                df_stats.to_csv(f'../data/{gamestats_file}', index=False) 
-                print(f"Synced {gamestats_file} to ../data/")
+                df_stats.to_csv('../data/gamestats.csv', index=False) 
+                print(f"Synced {gamestats_file} to ../data/gamestats.csv")
+                
+                # Remove the incorrectly named file if it exists (cleanup)
+                import os
+                wrong_file = f'../public/data/{gamestats_file}'
+                if os.path.exists(wrong_file):
+                    os.remove(wrong_file)
+                    print(f"Removed incorrectly named file: {wrong_file}")
+                    
             except Exception as e:
                 print(f"Warning: Could not sync gamestats file to app folders: {e}")
             
