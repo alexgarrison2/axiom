@@ -12,6 +12,51 @@ import xgboost as xgb
 from datetime import datetime, timedelta
 from collections import defaultdict
 
+# Global H-Ref Stats Cache
+# Key: (date_str, team_tricode) -> {pp_goals, pp_opps, opp_pp_goals, opp_pp_opps}
+HREF_STATS = {}
+HREF_STATS_FILE = "href_stats.csv"
+
+def load_href_stats():
+    """Load H-Ref stats into global dict."""
+    global HREF_STATS
+    if not os.path.exists(HREF_STATS_FILE):
+        print(f"Warning: {HREF_STATS_FILE} not found. access to reliable PP/PK stats unavailable.")
+        return
+
+    print(f"Loading H-Ref stats from {HREF_STATS_FILE}...")
+    try:
+        with open(HREF_STATS_FILE, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            count = 0
+            for row in reader:
+                # Key: Date + Team (e.g. "2025-10-09", "ANA")
+                # H-Ref uses "VEG" for VGK, "UTA" for UTA.
+                # The pipeline will need to map API tricodes to H-Ref codes.
+                key = (row['date'], row['team'])
+                HREF_STATS[key] = {
+                    'pp_goals': int(row['pp_goals']),
+                    'pp_opportunities': int(row['pp_opportunities']),
+                    'opp_pp_goals': int(row['opp_pp_goals']),
+                    'opp_pp_opportunities': int(row['opp_pp_opportunities'])
+                }
+                count += 1
+            print(f"  Loaded {count} H-Ref stats rows.")
+    except Exception as e:
+        print(f"Error loading H-Ref stats: {e}")
+
+def get_href_stats(date_str, tricode):
+    """
+    Get official stats for a team/date.
+    Handles tricode mapping (VGK->VEG).
+    """
+    # Map API Tricodes to H-Ref Codes
+    mapping = {"VGK": "VEG", "UTA": "UTA"} # Add others if needed
+    href_code = mapping.get(tricode, tricode)
+    
+    return HREF_STATS.get((date_str, href_code))
+
+
 # Constants
 BASE_URL = "https://api-web.nhle.com/v1"
 SEASON_START_DATE = "2025-10-04" 
@@ -148,6 +193,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
     teams = {
         home_id: {
             "name": home_team.get("commonName", {}).get("default", "Home"),
+            "abbrev": home_team.get("abbrev", "HOM"),
             "opponent": away_team.get("commonName", {}).get("default", "Away"),
             "team_game_number": 0, # Placeholder
             "goals": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
@@ -171,6 +217,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
         },
         away_id: {
             "name": away_team.get("commonName", {}).get("default", "Away"),
+            "abbrev": away_team.get("abbrev", "AWY"),
             "opponent": home_team.get("commonName", {}).get("default", "Home"),
             "team_game_number": 0, # Placeholder
             "goals": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
@@ -1077,6 +1124,9 @@ def main():
                 print(f"  Loaded {len(processed_game_ids)} existing Game IDs.")
         except:
             pass
+            
+    # Load H-Ref Stats
+    load_href_stats()
     
     # Load xG Model
     xg_model = None
@@ -1177,6 +1227,36 @@ def main():
                         else:
                             row['team_game_number'] = away_game_num
                             row['opponent_game_number'] = home_game_num
+                            
+                        # --- MERGE H-REF STATS ---
+                        # Use the 'abbrev' we stored (need to expose it in row or access via teams dict?)
+                        # The row['team'] is currently the Common Name (e.g. "Ducks").
+                        # We need the tricode.
+                        # We can get it from the game object (home_id/away_id) since we serve it row by row.
+                        
+                        row_team_id = home_id if row['home_away'] == 'Home' else away_id
+                        # Retrieve abbrev from 'game' object
+                        # We already have 'game' available here in the loop
+                        team_obj = game.get("homeTeam") if row['home_away'] == 'Home' else game.get("awayTeam")
+                        team_abbrev = team_obj.get("abbrev")
+                        
+                        href_data = get_href_stats(date_str, team_abbrev)
+                        
+                        if href_data:
+                            # Overwrite PP/PK Stats
+                            row['pp_goals'] = href_data['pp_goals']
+                            row['pp_opportunities'] = href_data['pp_opportunities']
+                            row['pp_goals_against'] = href_data['opp_pp_goals']
+                            row['pk_opportunities'] = href_data['opp_pp_opportunities'] # PK Opps = Opponent PP Opps
+                            
+                            # Note: pp_time and pk_time are not in H-Ref gamelog (only total mins, not seconds)
+                            # We stick with our PBP time calculation as it's the best we have, or could zero it out.
+                            # Users prefer accurate Opp counts over Time.
+                        else:
+                            # If missing (e.g. today's game not yet in gamelog?), keep calculated stats
+                            # But warn?
+                            # For backfill, it should exist.
+                            pass
 
                     all_rows.extend(game_rows)
                     all_shots.extend(shot_rows)

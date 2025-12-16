@@ -57,7 +57,8 @@ def parse_gamelog(html, tricode):
     # Indices based on previous inspection (approximate, better to parse by data-stat)
     
     # Regex for a row
-    row_pattern = re.findall(r'<tr id="gamelog\..*?>(.*?)</tr>', html, re.DOTALL)
+    # Found id="team_games.1" format in raw HTML
+    row_pattern = re.findall(r'<tr id="team_games\..*?>(.*?)</tr>', html, re.DOTALL)
     
     for row_html in row_pattern:
         try:
@@ -72,15 +73,15 @@ def parse_gamelog(html, tricode):
                 content = re.sub(r'<[^>]+>', '', content).strip()
                 return content
 
-            date_str = get_stat("date_game") # 2025-10-09
-            opp_code = get_stat("opp_name")  # PHI
+            date_str = get_stat("date") # 2025-10-09
+            opp_code = get_stat("opp_name_abbr")  # PHI
             
             # Team PP
             pp_goals = get_stat("goals_pp")
             pp_opps = get_stat("chances_pp")
             
             # Opponent PP
-            opp_pp_goals = get_stat("opp_goals_pp")
+            opp_pp_goals = get_stat("goals_against_pp")
             opp_pp_opps = get_stat("opp_chances_pp")
             
             if date_str and opp_code:
