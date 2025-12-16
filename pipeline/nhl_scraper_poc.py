@@ -1048,6 +1048,8 @@ def main():
             print(f"Error reading existing file: {e}. Starting from scratch.")
 
     end_date = datetime.now() - timedelta(days=1) # Yesterday
+    # end_date = datetime(2025, 12, 10) # FORCE DEBUG DATE
+    # start_date = datetime(2025, 12, 10) # FORCE DEBUG DATE
     
     if start_date > end_date:
         print("Data is already up to date!")
