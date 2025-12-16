@@ -17,9 +17,10 @@ gsap.registerPlugin(useGSAP);
 interface MatchupCardProps {
     prediction: GamePrediction;
     maxTotalGoals: number;
+    isSocial?: boolean;
 }
 
-const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) => {
+const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, isSocial = false }) => {
     const {
         homeTeam,
         awayTeam,
@@ -102,7 +103,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 <span>{gas !== undefined ? `${gas}% GAS` : 'N/A'}</span>
 
                 {/* Tooltip */}
-                {breakdown && breakdown.length > 0 && (
+                {breakdown && breakdown.length > 0 && !isSocial && (
                     <div className={tooltipClasses}>
                         <div className="text-[10px] text-zinc-400 mb-1 border-b border-white/5 pb-1">Gas Analysis</div>
                         <div className="flex flex-col gap-0.5">
@@ -138,6 +139,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
         const [isOpen, setIsOpen] = useState(false);
 
         if (!items || items.length === 0) return null;
+        if (isSocial) return null; // No popovers/interactive elements in social/print view
 
         // Base tooltip classes
         let tooltipClasses = "absolute w-auto min-w-[12rem] whitespace-nowrap bg-zinc-950/95 border border-white/10 rounded-lg p-2 z-[70] shadow-xl backdrop-blur-md";
@@ -272,6 +274,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     const formatTime = (time: string) => time;
 
     const getGlowColor = (homeWager: string | null, awayWager: string | null) => {
+        if (isSocial) return 'border-white/10'; // Social: no hover glow
         if (homeWager || awayWager) {
             return 'border-white/10 shadow-[0_0_30px_-5px_rgba(0,243,255,0.15)] hover:shadow-[0_0_40px_-5px_rgba(0,243,255,0.25)]';
         }
@@ -373,6 +376,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
     const NewsIndicator = ({ hasNews, className = "absolute bottom-2 right-2" }: { hasNews: boolean, className?: string }) => {
         if (!hasNews) return null;
+        if (isSocial) return null; // Hide in social mode
         return (
             <div className={`${className} z-50`} title="Player News Available">
                 <div className="bg-yellow-500/10 border border-yellow-500/20 p-1.5 rounded-full animate-pulse shadow-[0_0_15px_rgba(234,179,8,0.4)] backdrop-blur-sm">
@@ -485,11 +489,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                             <AnimatedNumber value={xg} toFixed={2} />
                         </span>
                         <span className="text-xs font-mono text-gray-500 font-bold uppercase">xG</span>
-                        {/* Info Icon for Explanation */}
-                        {isHome ?
+                        {/* Info Icon for Explanation: Hide in Social */}
+                        {!isSocial && (isHome ?
                             <ExplanationPopover items={prediction.home_xg_explained} align="right" placement="top" /> :
                             <ExplanationPopover items={prediction.away_xg_explained} align="left" placement="top" />
-                        }
+                        )}
                     </div>
                 </div>
 
@@ -505,7 +509,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
 
                 {/* Wager Callout (Pushed to bottom) */}
                 {(evBadge || wager) && (
-                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold ${getPillColors(wager, odds)} ${isHighEv ? 'animate-pulse-glow' : ''}`}>
+                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold ${getPillColors(wager, odds)} ${isHighEv && !isSocial ? 'animate-pulse-glow' : ''}`}>
                         {evBadge && <span>EV: {evBadge}</span>}
                         {wager && <span className={`opacity-90 border-l pl-2 ${wager && wager.includes('u') && parseFloat(wager) < 0.3 && odds && (typeof odds === 'string' ? parseInt(odds) : odds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{wager}</span>}
                     </div>
@@ -519,21 +523,30 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
     return (
         <>
             <div
-                className={`hidden md:flex relative flex-col w-full max-w-4xl mx-auto rounded-3xl mb-6 transition-all duration-300 border backdrop-blur-xl group hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] cursor-pointer ${getGlowColor(homeWager, awayWager)} ${isDesktopExpanded ? 'bg-white/[0.02]' : 'bg-transparent'}`}
-                onClick={toggleDesktopExpand}
+                className={`hidden md:flex relative flex-col w-full max-w-4xl mx-auto rounded-3xl ${isSocial ? 'mb-0' : 'mb-6'} transition-all duration-300 border backdrop-blur-xl group ${!isSocial && 'hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] cursor-pointer'} ${getGlowColor(homeWager, awayWager)} ${isDesktopExpanded ? 'bg-white/[0.02]' : 'bg-transparent'}`}
+                onClick={!isSocial ? toggleDesktopExpand : undefined}
                 ref={desktopCardRef}
             >
                 {/* ... (Background layers) ... */}
                 <div className="absolute inset-0 bg-[#0a0a0a]/80 rounded-3xl -z-10" />
-                {isHighEv && (
+                {isHighEv && !isSocial && (
                     <div className="absolute inset-0 rounded-3xl border border-neon-green/50 animate-pulse pointer-events-none"></div>
                 )}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-                    <div className="absolute -left-20 -top-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                    <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                </div>
+                {/* Simplified Background for Social */}
+                {isSocial ? (
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+                        {/* Static subtle gradients for Social */}
+                        <div className="absolute -left-20 -top-20 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] opacity-20"></div>
+                        <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px] opacity-20"></div>
+                    </div>
+                ) : (
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+                        <div className="absolute -left-20 -top-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                        <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                    </div>
+                )}
 
-                <div className="p-6 flex flex-row items-stretch justify-between w-full relative z-10">
+                <div className={`${isSocial ? 'p-3' : 'p-6'} flex flex-row items-stretch justify-between w-full relative z-10`}>
 
                     {/* AWAY TEAM (Left) */}
                     <div className="flex-1 min-w-0 relative z-20">
@@ -680,7 +693,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals }) 
                 </div>
 
 
-            </div>
+            </div >
 
             {/* ========================================= */}
             {/* MOBILE VIEW (md:hidden) - Condensed + Expand */}

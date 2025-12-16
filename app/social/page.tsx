@@ -1,6 +1,7 @@
 import React from 'react';
 import { getPredictions, getLastRefresh } from '@/utils/data';
 import MatchupCard from '@/components/MatchupCard';
+import FullLogoAnimated from '@/components/FullLogoAnimated';
 
 // Force dynamic revalidation
 export const revalidate = 0;
@@ -35,35 +36,20 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
     const displayDate = selectedPredictions[0]?.date || new Date().toISOString().split('T')[0];
 
     return (
-        <div className="w-[1080px] h-[1350px] bg-[#111] text-white overflow-hidden relative font-sans flex flex-col">
-
-            {/* Validating Dimensions: 
-                Header: 135px
-                Grid: 1080px (height) -> 2x3 = 360px per row.
-                Footer: 135px
-                Total: 1350px.
-            */}
+        <div className="w-[1080px] h-[1350px] bg-[#050505] text-white overflow-hidden relative font-sans flex flex-col">
 
             {/* HEADER - 135px */}
-            <div className="h-[135px] w-full flex items-center justify-between px-12 border-b border-gray-800 relative z-20 bg-[#111]">
+            <div className="h-[135px] w-full flex items-center justify-between px-12 border-b border-white/5 relative z-20 bg-[#0a0a0a]">
 
                 {/* Logo & Refresh Time */}
                 <div className="flex flex-col justify-center">
                     <div className="flex items-center gap-4">
-                        {/* Pony Logo */}
-                        <div className="relative w-64 h-20">
-                            {/* Reusing the logo text svg or image if available. 
-                                The user's image shows the Pony xG text logo.
-                                I'll assume standard text or image availability.
-                                Using simple text if image not found, but better to use the Header's logo logic.
-                            */}
-                            <div className="text-4xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 font-outfit" style={{ textShadow: '0 0 30px rgba(6,182,212,0.5)' }}>
-                                <span className="font-mono mr-2 text-cyan-400 text-5xl">♞</span>
-                                pony<span className="text-white">xG</span>
-                            </div>
+                        {/* Pony Logo Component */}
+                        <div className="relative w-64 h-20 -ml-4">
+                            <FullLogoAnimated />
                         </div>
                     </div>
-                    <div className="text-[10px] text-gray-500 font-mono mt-1 tracking-widest uppercase">
+                    <div className="text-[10px] text-gray-500 font-mono mt-1 tracking-widest uppercase pl-1">
                         Last Refresh: {lastRefresh}
                     </div>
                 </div>
@@ -75,43 +61,33 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
             </div>
 
             {/* GRID CONTENT - 1080px (Rest of space minus footer) */}
-            <div className="flex-1 w-full p-6">
+            <div className="flex-1 w-full p-8">
                 <div className="grid grid-cols-2 grid-rows-3 gap-6 h-full">
                     {selectedPredictions.map((pred) => (
-                        <div key={pred.id} className="w-full h-full overflow-hidden relative rounded-2xl border border-gray-800 bg-[#151515]">
+                        <div key={pred.id} className="w-full h-full relative">
                             {/* 
-                                We wrap MatchupCard to force scale it to fit if necessary.
-                                540x360 is the cell size (minus gap).
-                                Gap 6 (1.5rem = 24px).
-                                Grid width = 1080 - 48 (padding) = 1032.
-                                Col width = 504px.
-                                Row height = ~330px.
-                                
-                                MatchupCard is designed for ~w-full. 
-                                We might need to scale it down to fit 330px height nicely.
-                                Let's apply a subtle scale if it fits poorly, or just let CSS handle it.
-                                Actually, standard MatchupCard assumes vertical stacking of details.
-                                We should pass `isSocial` prop if we had one, but we don't.
-                                I will just render it and use CSS zoom/scale on the container.
+                                isSocial Mode:
+                                - No Box Shadows
+                                - Content fits 500x320 approx
+                                - No duplicate borders
                             */}
-                            <div className="origin-top-left transform scale-[0.85] w-[117%] h-[117%] p-2">
-                                <MatchupCard
-                                    prediction={pred}
-                                    maxTotalGoals={9} // Adjusted for visual
-                                />
-                            </div>
+                            <MatchupCard
+                                prediction={pred}
+                                maxTotalGoals={9}
+                                isSocial={true}
+                            />
                         </div>
                     ))}
 
                     {/* Fill empty slots if any */}
                     {Array.from({ length: pageSize - selectedPredictions.length }).map((_, i) => (
-                        <div key={`empty-${i}`} className="w-full h-full rounded-2xl border border-gray-800/30 bg-[#111]"></div>
+                        <div key={`empty-${i}`} className="w-full h-full rounded-2xl border border-white/5 bg-[#111]"></div>
                     ))}
                 </div>
             </div>
 
             {/* FOOTER - 135px */}
-            <div className="h-[135px] w-full flex items-center justify-center border-t border-gray-800 bg-[#111] relative z-20">
+            <div className="h-[135px] w-full flex items-center justify-center border-t border-white/5 bg-[#0a0a0a] relative z-20">
                 <div className="text-gray-500 font-mono text-sm tracking-widest">
                     <span className="text-blue-500 font-bold">Sources:</span> Bovada, DailyFaceoff, Hockey-Reference, api-web.nhle.com
                 </div>
