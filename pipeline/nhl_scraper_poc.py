@@ -246,7 +246,6 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             })
 
     for play in sorted_plays:
-        print(f"DEBUG_AGG: Event {play.get('eventId')} Type {play.get('typeCode')}")
         event_id = play.get("eventId")
         type_code = play.get("typeCode")
         details = play.get("details", {})
@@ -669,21 +668,27 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 
                 # Check if there is ALREADY an active penalty for this team (Opponent of owner)
                 # This covers "Simultaneous penalties" where state hasn't updated yet (e.g. 2 minors same time).
-                has_existing_penalty = any(p['team_id'] == owner_id and p['end_time'] > current_seconds for p in active_penalties)
-                
                 if duration_min < 10 and not is_coincidental:
+                    # Determine if this penalty creates/maintains an advantage (PP Opportunity)
+                    # We check the strength state BEFORE this penalty is applied.
+                    # If Opponent Skaters >= My Skaters, then losing one puts me at disadvantage (or extends it).
+                    # 5v5 -> 5v4 (Advantage)
+                    # 5v4 -> 5v3 (Advantage)
+                    # 4v5 -> 4v4 (No Advantage - offsets)
+                    
+                    hs, as_num, hg, ag = current_strength
+                    
                     if owner_id == home_id:
-                        # TRIGGER ONLY if Existing Penalty (Concurrent Start / Stacked)
-                        # We removed 'away_pp_active' check because it causes double-counting if State Logic (SituationCode)
-                        # updates before this event in the same second/loop.
-                        if has_existing_penalty:
+                        # Home took penalty. Opponent is Away.
+                        # Check: Away Skaters >= Home Skaters?
+                        if as_num >= hs:
                             teams[away_id]['pp']['opportunities'] += 1
                             teams[home_id]['pk']['opportunities'] += 1
                             
-                    # If Away took penalty
                     elif owner_id == away_id:
-                        # TRIGGER ONLY if Existing Penalty
-                        if has_existing_penalty:
+                        # Away took penalty. Opponent is Home.
+                        # Check: Home Skaters >= Away Skaters?
+                        if hs >= as_num:
                             teams[home_id]['pp']['opportunities'] += 1
                             teams[away_id]['pk']['opportunities'] += 1
 
@@ -751,15 +756,15 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             is_away_pp = (as_num > hs_num) and (hs_num < 5)
             
             if is_home_pp and not home_pp_active:
-                teams[home_id]['pp']['opportunities'] += 1
-                teams[away_id]['pk']['opportunities'] += 1
+                # teams[home_id]['pp']['opportunities'] += 1
+                # teams[away_id]['pk']['opportunities'] += 1
                 home_pp_active = True
             elif not is_home_pp:
                 home_pp_active = False
                 
             if is_away_pp and not away_pp_active:
-                teams[away_id]['pp']['opportunities'] += 1
-                teams[home_id]['pk']['opportunities'] += 1
+                # teams[away_id]['pp']['opportunities'] += 1
+                # teams[home_id]['pk']['opportunities'] += 1
                 away_pp_active = True
             elif not is_away_pp:
                 away_pp_active = False
