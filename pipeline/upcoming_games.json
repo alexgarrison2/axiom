@@ -1,70 +1,5 @@
 [
     {
-        "id": 2025020514,
-        "gameDate": "2025-12-15",
-        "startTimeUTC": "2025-12-16T00:00:00Z",
-        "homeTeam": "Lightning",
-        "awayTeam": "Panthers",
-        "homeTeamAbbrev": "TBL",
-        "awayTeamAbbrev": "FLA",
-        "homeGoalieConfirmed": "Jonas Johansson",
-        "homeGoalieStatus": "Confirmed",
-        "awayGoalieConfirmed": "Sergei Bobrovsky",
-        "awayGoalieStatus": "Confirmed"
-    },
-    {
-        "id": 2025020515,
-        "gameDate": "2025-12-15",
-        "startTimeUTC": "2025-12-16T00:00:00Z",
-        "homeTeam": "Rangers",
-        "awayTeam": "Ducks",
-        "homeTeamAbbrev": "NYR",
-        "awayTeamAbbrev": "ANA",
-        "homeGoalieConfirmed": "Igor Shesterkin",
-        "homeGoalieStatus": "Likely",
-        "awayGoalieConfirmed": "Lukas Dostal",
-        "awayGoalieStatus": "Confirmed"
-    },
-    {
-        "id": 2025020516,
-        "gameDate": "2025-12-15",
-        "startTimeUTC": "2025-12-16T00:30:00Z",
-        "homeTeam": "Jets",
-        "awayTeam": "Senators",
-        "homeTeamAbbrev": "WPG",
-        "awayTeamAbbrev": "OTT",
-        "homeGoalieConfirmed": "Connor Hellebuyck",
-        "homeGoalieStatus": "Confirmed",
-        "awayGoalieConfirmed": "Linus Ullmark",
-        "awayGoalieStatus": "Likely"
-    },
-    {
-        "id": 2025020517,
-        "gameDate": "2025-12-15",
-        "startTimeUTC": "2025-12-16T01:00:00Z",
-        "homeTeam": "Blues",
-        "awayTeam": "Predators",
-        "homeTeamAbbrev": "STL",
-        "awayTeamAbbrev": "NSH",
-        "homeGoalieConfirmed": "Joel Hofer",
-        "homeGoalieStatus": "Likely",
-        "awayGoalieConfirmed": "Juuse Saros",
-        "awayGoalieStatus": "Confirmed"
-    },
-    {
-        "id": 2025020518,
-        "gameDate": "2025-12-15",
-        "startTimeUTC": "2025-12-16T01:00:00Z",
-        "homeTeam": "Stars",
-        "awayTeam": "Kings",
-        "homeTeamAbbrev": "DAL",
-        "awayTeamAbbrev": "LAK",
-        "homeGoalieConfirmed": "Casey DeSmith",
-        "homeGoalieStatus": "Confirmed",
-        "awayGoalieConfirmed": "Darcy Kuemper",
-        "awayGoalieStatus": "Likely"
-    },
-    {
         "id": 2025020519,
         "gameDate": "2025-12-16",
         "startTimeUTC": "2025-12-17T00:00:00Z",
@@ -126,7 +61,7 @@
         "awayTeamAbbrev": "VAN",
         "homeGoalieConfirmed": "Igor Shesterkin",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Kevin Lankinen",
+        "awayGoalieConfirmed": "Thatcher Demko",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -139,7 +74,7 @@
         "awayTeamAbbrev": "ANA",
         "homeGoalieConfirmed": "Jet Greaves",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Lukas Dostal",
+        "awayGoalieConfirmed": "Ville Husso",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -192,6 +127,71 @@
         "homeGoalieConfirmed": "Joey Daccord",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Mackenzie Blackwood",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020529,
+        "gameDate": "2025-12-17",
+        "startTimeUTC": "2025-12-18T00:00:00Z",
+        "homeTeam": "Panthers",
+        "awayTeam": "Kings",
+        "homeTeamAbbrev": "FLA",
+        "awayTeamAbbrev": "LAK",
+        "homeGoalieConfirmed": "Sergei Bobrovsky",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Darcy Kuemper",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020530,
+        "gameDate": "2025-12-17",
+        "startTimeUTC": "2025-12-18T00:30:00Z",
+        "homeTeam": "Red Wings",
+        "awayTeam": "Mammoth",
+        "homeTeamAbbrev": "DET",
+        "awayTeamAbbrev": "UTA",
+        "homeGoalieConfirmed": "John Gibson",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Karel Vejmelka",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020531,
+        "gameDate": "2025-12-17",
+        "startTimeUTC": "2025-12-18T01:00:00Z",
+        "homeTeam": "Blues",
+        "awayTeam": "Jets",
+        "homeTeamAbbrev": "STL",
+        "awayTeamAbbrev": "WPG",
+        "homeGoalieConfirmed": "Joel Hofer",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Connor Hellebuyck",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020532,
+        "gameDate": "2025-12-17",
+        "startTimeUTC": "2025-12-18T01:00:00Z",
+        "homeTeam": "Predators",
+        "awayTeam": "Hurricanes",
+        "homeTeamAbbrev": "NSH",
+        "awayTeamAbbrev": "CAR",
+        "homeGoalieConfirmed": "Juuse Saros",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Brandon Bussi",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020533,
+        "gameDate": "2025-12-17",
+        "startTimeUTC": "2025-12-18T03:00:00Z",
+        "homeTeam": "Golden Knights",
+        "awayTeam": "Devils",
+        "homeTeamAbbrev": "VGK",
+        "awayTeamAbbrev": "NJD",
+        "homeGoalieConfirmed": "Carter Hart",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jacob Markstrom",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
