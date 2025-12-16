@@ -314,14 +314,18 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         return "bg-neon-green/10 border border-neon-green/30 text-neon-green shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]";
     };
 
-    const Badge = ({ children, color = 'blue' }: { children: React.ReactNode, color?: 'blue' | 'red' | 'gray' }) => {
+    const Badge = ({ children, color = 'blue', size = 'sm' }: { children: React.ReactNode, color?: 'blue' | 'red' | 'gray', size?: 'xs' | 'sm' }) => {
         const colorClasses = {
             blue: 'text-blue-400 bg-blue-400/10 border-blue-400/30',
             red: 'text-red-500 bg-red-500/10 border-red-500/30',
             gray: 'text-gray-400 bg-white/5 border-white/10'
         };
+        const sizeClasses = {
+            xs: 'text-[9px] px-1 py-0',
+            sm: 'text-[10px] px-1.5 py-0.5'
+        };
         return (
-            <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border backdrop-blur-sm ${colorClasses[color]}`}>
+            <span className={`font-mono font-bold rounded border backdrop-blur-sm ${colorClasses[color]} ${sizeClasses[size]}`}>
                 {children}
             </span>
         );
@@ -415,7 +419,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         goalieStats,
         vsOppStats,
         opponentTriCode,
-        odds
+        odds,
+        isSocial
     }: {
         team: any,
         isHome: boolean,
@@ -433,7 +438,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         goalieStats?: string,
         vsOppStats?: string,
         opponentTriCode?: string,
-        odds?: string | number | null
+        odds?: string | number | null,
+        isSocial?: boolean
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
@@ -448,20 +454,20 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         if (vsOppStats) { try { vsOpp = JSON.parse(vsOppStats); } catch (e) { } }
 
         return (
-            <div className={`flex flex-col items-center py-4 relative z-10 w-full h-full ${alignClass}`}>
+            <div className={`flex flex-col items-center ${isSocial ? 'py-0.5' : 'py-4'} relative z-10 w-full h-full ${alignClass}`}>
                 {/* Team Info Header */}
-                <div className={`flex flex-col gap-1 mb-4 w-full ${isHome ? 'md:flex-row' : 'md:flex-row-reverse'} items-center md:items-start`}>
+                <div className={`flex flex-col gap-1 ${isSocial ? 'mb-0.5' : 'mb-4'} w-full ${isHome ? 'md:flex-row' : 'md:flex-row-reverse'} items-center md:items-start`}>
                     <LogoDisplay
                         src={team.logoUrl}
                         alt={team.name}
                         triCode={team.triCode}
-                        className="w-20 h-20 md:w-28 md:h-28"
+                        className={isSocial ? "w-14 h-14" : "w-20 h-20 md:w-28 md:h-28"}
                         primaryColor={team.color1}
                         variant="animated"
                     />
-                    <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-1`}>
+                    <div className={`flex flex-col ${alignClass} items-center min-w-0 max-w-full justify-center gap-0.5`}>
                         <div className="flex items-center gap-1.5 flex-nowrap justify-center md:justify-start">
-                            <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wide truncate max-w-full ${(status?.toUpperCase()?.includes('UNCONFIRMED')) ? 'text-gray-500' :
+                            <span className={`${isSocial ? 'text-[9px]' : 'text-[10px] md:text-xs'} font-bold uppercase tracking-wide truncate max-w-full ${(status?.toUpperCase()?.includes('UNCONFIRMED')) ? 'text-gray-500' :
                                 (status?.toUpperCase()?.includes('CONFIRMED')) ? 'text-neon-green' :
                                     (status?.toUpperCase()?.includes('LIKELY')) ? 'text-yellow-400' : 'text-gray-500'
                                 }`}>
@@ -483,9 +489,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                 </div>
 
                 {/* Main Stats (xG) */}
-                <div className={`flex flex-col ${alignClass} mb-4 items-center`}>
+                <div className={`flex flex-col ${alignClass} ${isSocial ? 'mb-0.5' : 'mb-4'} items-center`}>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-4xl md:text-5xl font-black text-white tracking-tighter tabular-nums text-glow-blue">
+                        <span className={`${isSocial ? 'text-2xl' : 'text-4xl md:text-5xl'} font-black text-white tracking-tighter tabular-nums text-glow-blue`}>
                             <AnimatedNumber value={xg} toFixed={2} />
                         </span>
                         <span className="text-xs font-mono text-gray-500 font-bold uppercase">xG</span>
@@ -498,18 +504,18 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                 </div>
 
                 {/* Secondary Badges Row (Aligned immediately under xG) */}
-                <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                    {ppRank && ppRank <= 5 && <Badge color="blue">#{ppRank} PP</Badge>}
-                    {ppRank && ppRank >= 28 && <Badge color="red">#{ppRank} PP</Badge>}
-                    {pkRank && pkRank <= 5 && <Badge color="blue">#{pkRank} PK</Badge>}
-                    {pkRank && pkRank >= 28 && <Badge color="red">#{pkRank} PK</Badge>}
+                <div className={`flex flex-wrap gap-2 justify-center md:justify-start ${isSocial ? 'mb-0.5' : 'mb-4'}`}>
+                    {ppRank && ppRank <= 5 && <Badge color="blue" size={isSocial ? "xs" : "sm"}>#{ppRank} PP</Badge>}
+                    {ppRank && ppRank >= 28 && <Badge color="red" size={isSocial ? "xs" : "sm"}>#{ppRank} PP</Badge>}
+                    {pkRank && pkRank <= 5 && <Badge color="blue" size={isSocial ? "xs" : "sm"}>#{pkRank} PK</Badge>}
+                    {pkRank && pkRank >= 28 && <Badge color="red" size={isSocial ? "xs" : "sm"}>#{pkRank} PK</Badge>}
                     {l7 && <Badge color="gray">{l7} (L7)</Badge>}
-                    <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'left' : 'right'} />
+                    {!isSocial && <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'left' : 'right'} />}
                 </div>
 
                 {/* Wager Callout (Pushed to bottom) */}
                 {(evBadge || wager) && (
-                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold ${getPillColors(wager, odds)} ${isHighEv && !isSocial ? 'animate-pulse-glow' : ''}`}>
+                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold ${getPillColors(wager, odds)} ${isHighEv && !isSocial ? 'animate-pulse-glow' : ''} ${isSocial ? 'scale-90 origin-right' : ''}`}>
                         {evBadge && <span>EV: {evBadge}</span>}
                         {wager && <span className={`opacity-90 border-l pl-2 ${wager && wager.includes('u') && parseFloat(wager) < 0.3 && odds && (typeof odds === 'string' ? parseInt(odds) : odds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{wager}</span>}
                     </div>
@@ -546,7 +552,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     </div>
                 )}
 
-                <div className={`${isSocial ? 'p-3' : 'p-6'} flex flex-row items-stretch justify-between w-full relative z-10`}>
+                <div className={`${isSocial ? 'p-2' : 'p-6'} flex flex-row items-stretch justify-between w-full relative z-10`}>
 
                     {/* AWAY TEAM (Left) */}
                     <div className="flex-1 min-w-0 relative z-20">
@@ -557,17 +563,18 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                             xg={awayXg}
                             ppRank={prediction.away_pp_rank}
                             pkRank={prediction.away_pk_rank}
-                            l7={prediction.away_l7}
+                            l7={isSocial ? undefined : prediction.away_l7} // Hide L7 in social
                             ev={awayEv}
                             wager={awayWager}
-                            gas={prediction.away_gas}
+                            gas={isSocial ? undefined : prediction.away_gas} // Hide gas in social
                             gasBreakdown={prediction.away_gas_breakdown}
                             gsaxTotal={prediction.away_gsax_total}
                             gsaxPct={prediction.away_gsax_pct}
                             goalieStats={prediction.away_goalie_stats}
-                            vsOppStats={prediction.awayGoalieVsOpp}
+                            vsOppStats={isSocial ? undefined : prediction.awayGoalieVsOpp} // Hide vsOpp in social
                             opponentTriCode={homeTeam.triCode}
                             odds={awayVegasOdds}
+                            isSocial={isSocial}
                         />
                         <NewsIndicator
                             hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
@@ -644,19 +651,23 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                             xg={homeXg}
                             ppRank={prediction.home_pp_rank}
                             pkRank={prediction.home_pk_rank}
-                            l7={prediction.home_l7}
+                            l7={isSocial ? undefined : prediction.home_l7}
                             ev={homeEv}
                             wager={homeWager}
-                            gas={prediction.home_gas}
+                            gas={isSocial ? undefined : prediction.home_gas}
                             gasBreakdown={prediction.home_gas_breakdown}
                             gsaxTotal={prediction.home_gsax_total}
                             gsaxPct={prediction.home_gsax_pct}
                             goalieStats={prediction.home_goalie_stats}
-                            vsOppStats={prediction.homeGoalieVsOpp}
+                            vsOppStats={isSocial ? undefined : prediction.homeGoalieVsOpp}
                             opponentTriCode={awayTeam.triCode}
                             odds={homeVegasOdds}
+                            isSocial={isSocial}
                         />
-                        <NewsIndicator hasNews={!!(prediction.home_news && prediction.home_news.length > 0)} />
+                        <NewsIndicator
+                            hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
+                            className="absolute bottom-2 right-2"
+                        />
                     </div>
                 </div>
 

@@ -71,6 +71,9 @@ const OUTPUT_DIR = path.join(__dirname, '../DailyImages');
                 break;
             }
 
+            // Wait for logo animation and fonts (added delay)
+            await new Promise(r => setTimeout(r, 5000));
+
             // Screenshot
             const outFile = path.join(dayDir, `social_cards_batch_${batch + 1}.png`);
             await page.screenshot({ path: outFile }); // "fullPage" not needed as main div is fixed size
