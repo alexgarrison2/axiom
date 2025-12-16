@@ -412,6 +412,24 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             teams[away_id]['toi'][opp_strength_key] = teams[away_id]['toi'].get(opp_strength_key, 0) + duration
 
         prev_time_seconds = current_seconds
+        
+        # --- Sync Strength found in API (Source of Truth) ---
+        # situationCode: [AG][AS][HS][HG]
+        sit_code = play.get("situationCode")
+        if sit_code and len(sit_code) == 4:
+            try:
+                # Parse manually to ensure correct mapping
+                # parse_situation returns (ag, as, hs, hg)
+                ag_p = int(sit_code[0])
+                as_p = int(sit_code[1])
+                hs_p = int(sit_code[2])
+                hg_p = int(sit_code[3])
+                
+                # current_strength is (HS, AS, HG, AG)
+                current_strength = (hs_p, as_p, hg_p, ag_p)
+            except:
+                pass
+
         # --- Process Event Logic ---
         
         owner_id = details.get("eventOwnerTeamId")
