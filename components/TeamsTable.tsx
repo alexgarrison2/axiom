@@ -87,6 +87,7 @@ interface TeamStat {
     xgf_pct: number;
 
     gsax: number; // Goals Saved Above Expected (xGA - GA)
+    starterName?: string;
 }
 
 interface Matchup {
@@ -143,6 +144,14 @@ const getGradientColor = (value: number, min: number, max: number, inverse: bool
     }
 
     return `rgb(${r}, ${g}, ${b})`;
+};
+
+const formatStarterName = (name?: string) => {
+    if (!name) return '';
+    const parts = name.trim().split(' ');
+    if (parts.length < 2) return name;
+    // Handle names like "Casey DeSmith" -> "C. DeSmith"
+    return `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
 };
 
 const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamStat => {
@@ -406,8 +415,14 @@ const TeamsTable = () => {
                 const awayGames = getGames(away, awayLoc, starterAway);
                 const homeGames = getGames(home, homeLoc, starterHome);
 
-                processedTeams.push(calculateTeamStats(away, awayGames));
-                processedTeams.push(calculateTeamStats(home, homeGames));
+                // Calculate stats and attach starter name if applicable
+                const awayStats = calculateTeamStats(away, awayGames);
+                if (starterAway) awayStats.starterName = starterAway;
+                processedTeams.push(awayStats);
+
+                const homeStats = calculateTeamStats(home, homeGames);
+                if (starterHome) homeStats.starterName = starterHome;
+                processedTeams.push(homeStats);
             });
         }
 
@@ -685,11 +700,13 @@ const TeamsTable = () => {
                                                     </div>
                                                 )}
                                                 <span className="truncate max-w-[120px] hidden md:block" title={meta.commonName || team.team}>
-                                                    {meta.commonName || team.team}
+                                                    {(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterName
+                                                        ? formatStarterName(team.starterName)
+                                                        : (meta.commonName || team.team)}
                                                 </span>
 
                                                 {/* Matchup visual indicator for Location Mode */}
-                                                {viewMode === 'PlayingTodayLocation' && (
+                                                {(viewMode === 'PlayingTodayLocation' || viewMode === 'PlayingTodayLocationStarter') && (
                                                     <span className="text-[10px] font-bold text-gray-500 uppercase ml-2 bg-gray-800 px-1 rounded">
                                                         {idx % 2 === 0 ? 'AWAY' : 'HOME'}
                                                     </span>
