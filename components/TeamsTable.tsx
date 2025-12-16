@@ -265,6 +265,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
 
 const TeamsTable = () => {
     const [stats, setStats] = useState<TeamStat[]>([]);
+    const [leagueStats, setLeagueStats] = useState<TeamStat[]>([]); // For consistent ranges
     const [loading, setLoading] = useState(true);
     const [teams, setTeams] = useState<Record<string, TeamInfo>>({});
 
@@ -393,15 +394,21 @@ const TeamsTable = () => {
 
         const processedTeams: TeamStat[] = [];
 
+        // ALWAYS calculate league-wide stats for consistent ranges
+        const allTeamsList = Array.from(new Set(rawData.map(g => g.team)));
+        const leagueBaseline: TeamStat[] = [];
+        allTeamsList.forEach(teamName => {
+            const games = getGames(teamName, filterHomeAway); // Use current filters but for ALL teams
+            if (games.length > 0) {
+                leagueBaseline.push(calculateTeamStats(teamName, games));
+            }
+        });
+        setLeagueStats(leagueBaseline);
+
         if (viewMode === 'All') {
-            // Standard View
-            const allTeams = Array.from(new Set(rawData.map(g => g.team)));
-            allTeams.forEach(teamName => {
-                const games = getGames(teamName, filterHomeAway);
-                if (games.length > 0) {
-                    processedTeams.push(calculateTeamStats(teamName, games));
-                }
-            });
+            // Standard View - matches leagueBaseline 
+            // (duplicate work technically but keeps logic clean if filters for baseline diverge later)
+            processedTeams.push(...leagueBaseline);
         } else {
             // Playing Today Views (Force specific order: Away, Home, Away, Home...)
             todayMatchups.forEach(matchup => {
@@ -474,11 +481,12 @@ const TeamsTable = () => {
         return sorted;
     }, [stats, sortKey, sortDesc, viewMode]);
 
-    // Calculate min/max for gradients (always based on currently visible/filtered stats)
+    // Calculate min/max for gradients (ALWAYS based on leagueStats for consistency)
     const ranges = useMemo(() => {
+        const sourceStats = leagueStats.length > 0 ? leagueStats : stats;
         const calculateRange = (key: keyof TeamStat) => {
-            if (stats.length === 0) return { min: 0, max: 0 };
-            const values = stats.map(s => {
+            if (sourceStats.length === 0) return { min: 0, max: 0 };
+            const values = sourceStats.map(s => {
                 const val = s[key];
                 return typeof val === 'number' ? val : 0;
             });
@@ -511,7 +519,7 @@ const TeamsTable = () => {
             en_attempts: calculateRange('en_attempts'),
             ens_pct: calculateRange('ens_pct'),
         };
-    }, [stats]);
+    }, [stats, leagueStats]);
 
     const getTimeSeconds = (timeStr: string) => {
         const [m, s] = timeStr.split(':').map(Number);
@@ -519,20 +527,30 @@ const TeamsTable = () => {
     };
 
     const timeRanges = useMemo(() => {
-        if (stats.length === 0) return { pp: { min: 0, max: 0 }, pk: { min: 0, max: 0 } };
-        const ppTimes = stats.map(s => getTimeSeconds(s.pp_time_per_game));
-        const pkTimes = stats.map(s => getTimeSeconds(s.pk_time_per_game));
+        const sourceStats = leagueStats.length > 0 ? leagueStats : stats;
+        if (sourceStats.length === 0) return { pp: { min: 0, max: 0 }, pk: { min: 0, max: 0 } };
+        const ppTimes = sourceStats.map(s => getTimeSeconds(s.pp_time_per_game));
+        const pkTimes = sourceStats.map(s => getTimeSeconds(s.pk_time_per_game));
         return {
             pp: { min: Math.min(...ppTimes), max: Math.max(...ppTimes) },
             pk: { min: Math.min(...pkTimes), max: Math.max(...pkTimes) }
         };
-    }, [stats]);
+    }, [stats, leagueStats]);
 
 
     if (loading) return <div className="p-8 text-center bg-gray-900 border border-gray-800 rounded-xl text-gray-400">Loading Stats...</div>;
 
     // Helper for columns
     const renderCell = (team: TeamStat, key: keyof TeamStat, label?: string, isInverse: boolean = false, isTime: boolean = false) => {
+        // Handle 0 GP (First Start) -> Show Blank
+        if (team.gp === 0) {
+            return (
+                <td className="px-4 py-3 text-sm font-medium whitespace-nowrap text-center text-gray-600">
+                    —
+                </td>
+            );
+        }
+
         let value = team[key];
         let color = '#DADADA'; // Default grey
 
@@ -567,6 +585,7 @@ const TeamsTable = () => {
 
         return (
             <td className="px-4 py-3 text-sm font-medium whitespace-nowrap text-center" style={{ color }}>
+
                 {value}
             </td>
         );
@@ -660,14 +679,14 @@ const TeamsTable = () => {
                                 { k: 'ca_per_game', l: 'CA/G', inv: true },
                                 { k: 'sh_pct', l: 'Sh%' },
                                 { k: 'sv_pct', l: 'Sv%' },
-                                { k: 'engf', l: 'EN GF' },
-                                { k: 'en_attempts', l: 'EN Att' },
-                                { k: 'ens_pct', l: 'ENS%' },
-                                { k: 'enga', l: 'EN GA', inv: true },
+                                { k: 'gsax', l: 'GSAx' },
                                 { k: 'xgf_per_game', l: 'xGF/G' },
                                 { k: 'xga_per_game', l: 'xGA/G', inv: true },
                                 { k: 'xgf_pct', l: 'xGF%' },
-                                { k: 'gsax', l: 'GSAx' }
+                                { k: 'engf', l: 'EN GF' },
+                                { k: 'en_attempts', l: 'EN Att' },
+                                { k: 'ens_pct', l: 'ENS%' },
+                                { k: 'enga', l: 'EN GA', inv: true }
                             ].map(({ k, l }) => (
                                 <th
                                     key={k}
@@ -755,14 +774,14 @@ const TeamsTable = () => {
                                         {renderCell(team, 'ca_per_game', undefined, true)}
                                         {renderCell(team, 'sh_pct')}
                                         {renderCell(team, 'sv_pct')}
+                                        {renderCell(team, 'gsax')}
+                                        {renderCell(team, 'xgf_per_game')}
+                                        {renderCell(team, 'xga_per_game', undefined, true)}
+                                        {renderCell(team, 'xgf_pct')}
                                         {renderCell(team, 'engf')}
                                         {renderCell(team, 'en_attempts')}
                                         {renderCell(team, 'ens_pct')}
                                         {renderCell(team, 'enga', undefined, true)}
-                                        {renderCell(team, 'xgf_per_game')}
-                                        {renderCell(team, 'xga_per_game', undefined, true)}
-                                        {renderCell(team, 'xgf_pct')}
-                                        {renderCell(team, 'gsax')}
                                     </tr>
 
                                     {/* Spacer Row for Matchups */}
