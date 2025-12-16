@@ -665,24 +665,45 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 # 2. Stacked Penalty (5v3 or overlapping)
                 # If Opponent is ALREADY on PP, and we take a NEW penalty, that's a new opportunity.
                 # EXCLUDE Misconducts (10 min) - they don't give advantage.
+                
+                # Check if there is ALREADY an active penalty for this team (Opponent of owner)
+                # This covers "Simultaneous penalties" where state hasn't updated yet (e.g. 2 minors same time).
+                has_existing_penalty = any(p['team_id'] == owner_id and p['end_time'] > current_seconds for p in active_penalties)
+                
                 if duration_min < 10 and not is_coincidental:
-                    # If Home took penalty, check if Away is ALREADY on PP
+                    # If Home took penalty
                     if owner_id == home_id:
-                        # Check if Away is ALREADY on PP (and not just because of a penalty ending right now)
-                        # We need to check if there are active penalties for Home that extend BEYOND now
-                        has_future_penalty = any(p['team_id'] == home_id and p['end_time'] > current_seconds for p in active_penalties)
-                        
-                        if away_pp_active and has_future_penalty:
+                        # TRIGGER if PP Active (Standard Stacked) OR Existing Penalty (Concurrent Start)
+                        if away_pp_active or has_existing_penalty:
                             teams[away_id]['pp']['opportunities'] += 1
                             teams[home_id]['pk']['opportunities'] += 1
-                    # If Away took penalty, check if Home is ALREADY on PP
+                            
+                    # If Away took penalty
                     elif owner_id == away_id:
-                        has_future_penalty = any(p['team_id'] == away_id and p['end_time'] > current_seconds for p in active_penalties)
-                        
-                        if home_pp_active and has_future_penalty:
+                        # TRIGGER if PP Active (Standard Stacked) OR Existing Penalty (Concurrent Start)
+                        if home_pp_active or has_existing_penalty:
                             teams[home_id]['pp']['opportunities'] += 1
                             teams[away_id]['pk']['opportunities'] += 1
 
+                # Add to Active Penalties
+                # Handle Consecutive Penalties for Same Player (Rule 27.2)
+                # If player already has an active penalty, this new one starts when the previous one ends.
+                start_penalty_time = current_seconds
+                committed_by = details.get("committedByPlayerId")
+                
+                if committed_by:
+                    same_player_penalties = [p for p in active_penalties if p.get('player_id') == committed_by]
+                    if same_player_penalties:
+                        max_end = max(p['end_time'] for p in same_player_penalties)
+                        if max_end > start_penalty_time:
+                            start_penalty_time = max_end
+                
+                active_penalties.append({
+                    "team_id": owner_id,
+                    "end_time": start_penalty_time + (duration_min * 60),
+                    "duration": duration_min,
+                    "player_id": committed_by
+                })
         # --- Update State for NEXT Interval ---
         
         # Update Score (if Goal)
