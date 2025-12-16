@@ -9,6 +9,7 @@ games = 0
 
 with open(FILENAME, 'r') as f:
     reader = csv.DictReader(f)
+    team_stats = {}
     for row in reader:
         team_name = row['team']
         if team_name not in team_stats:

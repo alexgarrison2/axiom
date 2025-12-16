@@ -643,18 +643,17 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 key = (period_num, current_seconds)
                 concurrent_penalties = penalty_map.get(key, [])
                 
+                max_opp_duration = 0
                 for p in concurrent_penalties:
                     if p['team_id'] == opp_id:
-                        # Found ANY penalty for opponent starting at same time
-                        # This makes it coincidental for the purpose of Double Minor extra count
-                        is_coincidental = True
-                        break
+                        # Found opponent penalty starting at same time
+                        if p['duration'] > max_opp_duration:
+                            max_opp_duration = p['duration']
                 
-                # 1. Double Minor (4 min) -> Always +1 extra opportunity (first one caught by state or stacked)
-                # BUT ONLY IF NOT COINCIDENTAL (e.g. 4 vs 2 is 1 opp, handled by state change later)
-                # NHL counts Double Minor as 1 Opportunity initially, but usually credits 2 total.
-                # Re-enabling to fix undercounting represented in comparison.
-                if duration_min == 4 and not is_coincidental:
+                # 1. Double Minor (4 min) -> Always +1 extra opportunity (first one caught by logic below)
+                # BUT ONLY IF NO OPPONENT PENALTY (Clean 5v4 or 5v3)
+                # If 4 vs 2, it's 1 Opp (handled below), not 2.
+                if duration_min == 4 and max_opp_duration == 0:
                     if owner_id == home_id:
                         teams[away_id]['pp']['opportunities'] += 1
                         teams[home_id]['pk']['opportunities'] += 1
@@ -662,19 +661,16 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                         teams[home_id]['pp']['opportunities'] += 1
                         teams[away_id]['pk']['opportunities'] += 1
                         
-                # 2. Stacked Penalty (5v3 or overlapping)
-                # If Opponent is ALREADY on PP, and we take a NEW penalty, that's a new opportunity.
-                # EXCLUDE Misconducts (10 min) - they don't give advantage.
+                # 2. General Opportunity Logic
+                # If this penalty creates a Net Advantage (Duration > Opponent Duration)
+                # e.g. 2 vs 0 -> 2 > 0 -> Count (1)
+                # e.g. 5 vs 2 -> 5 > 2 -> Count (1)
+                # e.g. 2 vs 2 -> 2 > 2 False -> No Count.
+                # e.g. 2 vs 5 -> 2 > 5 False -> No Count.
                 
-                # Check if there is ALREADY an active penalty for this team (Opponent of owner)
-                # This covers "Simultaneous penalties" where state hasn't updated yet (e.g. 2 minors same time).
-                if duration_min < 10 and not is_coincidental:
+                if duration_min > max_opp_duration and duration_min < 10:
                     # Determine if this penalty creates/maintains an advantage (PP Opportunity)
                     # We check the strength state BEFORE this penalty is applied.
-                    # If Opponent Skaters >= My Skaters, then losing one puts me at disadvantage (or extends it).
-                    # 5v5 -> 5v4 (Advantage)
-                    # 5v4 -> 5v3 (Advantage)
-                    # 4v5 -> 4v4 (No Advantage - offsets)
                     
                     hs, as_num, hg, ag = current_strength
                     
