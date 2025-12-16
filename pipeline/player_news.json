@@ -1,15 +1,93 @@
 {
+    "SJS": [
+        {
+            "player": "Will Smith",
+            "news": "Smith (undisclosed) will be out for the upcoming week and will be re-evaluated on Monday, December 22nd. ",
+            "category": "Injury",
+            "date": "2025-12-16"
+        },
+        {
+            "player": "Philipp Kurashev",
+            "news": "Kurashev is considered week-to-week with an upper-body injury. ",
+            "category": "Injury",
+            "date": "2025-12-16"
+        },
+        {
+            "player": "Nick Leddy",
+            "news": "Leddy is expected to be a healthy scratch vs. Calgary on Tuesday. ",
+            "category": "Line Change",
+            "date": "2025-12-16"
+        },
+        {
+            "player": "Sam Dickinson",
+            "news": "Dickinson is expected to be a healthy scratch vs. Calgary on Tuesday. ",
+            "category": "Line Change",
+            "date": "2025-12-16"
+        },
+        {
+            "player": "Vincent Iorio",
+            "news": "Iorio is expected to draw back into San Jose's lineup vs. Calgary on Tuesday. ",
+            "category": "Line Change",
+            "date": "2025-12-16"
+        },
+        {
+            "player": "Shakir Mukhamadullin",
+            "news": "Mukhamadullin (upper-body) will return to San Jose's lineup vs. Calgary on Tuesday. ",
+            "category": "Injury",
+            "date": "2025-12-16"
+        },
+        {
+            "player": "Igor Chernyshov",
+            "news": "Chernyshov is expected to make his NHL debut vs. Calgary on Tuesday. ",
+            "category": "Line Change",
+            "date": "2025-12-16"
+        }
+    ],
+    "MIN": [
+        {
+            "player": "Hunter Haight",
+            "news": "Haight has been reassigned to Iowa (AHL) on Tuesday. ",
+            "category": "Send Down",
+            "date": "2025-12-16"
+        }
+    ],
+    "CHI": [
+        {
+            "player": "Laurent Brossoit",
+            "news": "Brossoit has cleared waivers and been assigned to Rockford (AHL). ",
+            "category": "Send Down",
+            "date": "2025-12-16"
+        }
+    ],
+    "BOS": [
+        {
+            "player": "Vladislav Kolyachonok",
+            "news": "Boston has claimed Vladislav Kolyachonok from Dallas off of waivers. ",
+            "category": "Waiver Move",
+            "date": "2025-12-16"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Jonatan Berggren",
+            "news": "St. Louis has claimed Jonatan Berggren from Detroit off waivers. ",
+            "category": "Waiver Move",
+            "date": "2025-12-16"
+        }
+    ],
+    "TBL": [
+        {
+            "player": "Andrei Vasilevskiy",
+            "news": "Vasilevskiy (undisclosed) has been activated from IR. ",
+            "category": "Injury",
+            "date": "2025-12-16"
+        }
+    ],
     "TOR": [
         {
             "player": "Artur Akhtyamov",
             "news": "Akhtyamov has been assigned to the Toronto Marlies (AHL). ",
             "category": "Send Down",
-            "date": "2025-12-16"
-        },
-        {
-            "player": "Anthony Stolarz",
-            "news": "Stolarz (upper-body) is not progressing as hoped and will see a specialist shortly. ",
-            "category": "Injury",
             "date": "2025-12-16"
         }
     ],
@@ -25,12 +103,6 @@
             "news": "Pesce (upper-body) is expected to return vs. Vegas on Wednesday. ",
             "category": "Injury",
             "date": "2025-12-16"
-        },
-        {
-            "player": "Brett Pesce",
-            "news": "Pesce (upper-body) was a full participant in Tuesday's practice and is expected to return on New Jersey's road trip. ",
-            "category": "Injury",
-            "date": "2025-12-16"
         }
     ],
     "LAK": [
@@ -44,68 +116,6 @@
             "player": "Darcy Kuemper",
             "news": "Kuemper (upper-body) has been placed on IR. ",
             "category": "Injury",
-            "date": "2025-12-16"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "David Jiricek",
-            "news": "Jiricek (lower-body) will play on Tuesday vs. Washington after leaving last game due to injury. ",
-            "category": "Injury",
-            "date": "2025-12-16"
-        },
-        {
-            "player": "Jonas Brodin",
-            "news": "Brodin (lower-body) will remain out vs. Washington on Tuesday and is considered day-to-day. ",
-            "category": "Injury",
-            "date": "2025-12-16"
-        },
-        {
-            "player": "Marcus Johansson",
-            "news": "Johansson (lower-body) will be out vs. Washington and is considered day-to-day. ",
-            "category": "Injury",
-            "date": "2025-12-16"
-        }
-    ],
-    "PHI": [
-        {
-            "player": "Rasmus Ristolainen",
-            "news": "Ristolainen (uptured right tricep tendon) will make his season debut in Montreal on Tuesday. ",
-            "category": "Injury",
-            "date": "2025-12-16"
-        },
-        {
-            "player": "Nicolas Deslauriers",
-            "news": "Deslauriers is expected to draw back into Philadelphia's lineup in Montreal on Tuesday. ",
-            "category": "Line Change",
-            "date": "2025-12-16"
-        },
-        {
-            "player": "Nikita Grebenkin",
-            "news": "Grebenkin is expected to be a healthy scratch in Montreal on Tuesday. ",
-            "category": "Line Change",
-            "date": "2025-12-16"
-        }
-    ],
-    "WSH": [
-        {
-            "player": "Bogdan Trineyev",
-            "news": "Trineyev will be a healthy scratch in Minnesota on Tuesday. ",
-            "category": "Line Change",
-            "date": "2025-12-16"
-        },
-        {
-            "player": "Sonny Milano",
-            "news": "Milano will draw back into Washington's lineup in Minnesota on Tuesday. ",
-            "category": "Line Change",
-            "date": "2025-12-16"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Ethan Del Mastro",
-            "news": "Del Mastro is expected to draw back into Chicago's lineup in Toronto on Tuesday. ",
-            "category": "Line Change",
             "date": "2025-12-16"
         }
     ]

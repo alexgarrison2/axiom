@@ -753,7 +753,7 @@
                 "number": 74,
                 "pos": "rw",
                 "id": 2786,
-                "ppUnit": null
+                "ppUnit": 2
             }
         ],
         "f3": [
@@ -831,7 +831,7 @@
                 "number": 9,
                 "pos": "rd",
                 "id": 29756,
-                "ppUnit": 2
+                "ppUnit": 1
             }
         ],
         "d3": [
@@ -1030,7 +1030,7 @@
                 "number": 64,
                 "pos": "c",
                 "id": 35084,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Maxim Shabanov",
@@ -1307,7 +1307,7 @@
                 "number": 21,
                 "pos": "lw",
                 "id": 30614,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "David Kampf",
@@ -2274,29 +2274,6 @@
     "SJS": {
         "f1": [
             {
-                "name": "William Eklund",
-                "number": 72,
-                "pos": "lw",
-                "id": 34666,
-                "ppUnit": 1
-            },
-            {
-                "name": "Macklin Celebrini",
-                "number": 71,
-                "pos": "c",
-                "id": 37106,
-                "ppUnit": 1
-            },
-            {
-                "name": "Tyler Toffoli",
-                "number": 73,
-                "pos": "rw",
-                "id": 1656,
-                "ppUnit": 1
-            }
-        ],
-        "f2": [
-            {
                 "name": "Igor Chernyshov",
                 "number": null,
                 "pos": "lw",
@@ -2304,10 +2281,10 @@
                 "ppUnit": 2
             },
             {
-                "name": "Alexander Wennberg",
-                "number": 21,
+                "name": "Macklin Celebrini",
+                "number": 71,
                 "pos": "c",
-                "id": 2145,
+                "id": 37106,
                 "ppUnit": 1
             },
             {
@@ -2318,13 +2295,36 @@
                 "ppUnit": 2
             }
         ],
+        "f2": [
+            {
+                "name": "William Eklund",
+                "number": 72,
+                "pos": "lw",
+                "id": 34666,
+                "ppUnit": 1
+            },
+            {
+                "name": "Alexander Wennberg",
+                "number": 21,
+                "pos": "c",
+                "id": 2145,
+                "ppUnit": 1
+            },
+            {
+                "name": "Tyler Toffoli",
+                "number": 73,
+                "pos": "rw",
+                "id": 1656,
+                "ppUnit": 1
+            }
+        ],
         "f3": [
             {
-                "name": "Jeff Skinner",
-                "number": 53,
+                "name": "Ethan Cardwell",
+                "number": 56,
                 "pos": "lw",
-                "id": 1550,
-                "ppUnit": 2
+                "id": 29835,
+                "ppUnit": null
             },
             {
                 "name": "Ty Dellandrea",
@@ -2334,11 +2334,11 @@
                 "ppUnit": null
             },
             {
-                "name": "Ethan Cardwell",
-                "number": 56,
+                "name": "Jeff Skinner",
+                "number": 53,
                 "pos": "rw",
-                "id": 29835,
-                "ppUnit": null
+                "id": 1550,
+                "ppUnit": 2
             }
         ],
         "f4": [
@@ -2354,7 +2354,7 @@
                 "number": 81,
                 "pos": "c",
                 "id": 4646,
-                "ppUnit": 2
+                "ppUnit": null
             },
             {
                 "name": "Ryan Reaves",
@@ -2365,6 +2365,22 @@
             }
         ],
         "d1": [
+            {
+                "name": "Mario Ferraro",
+                "number": 38,
+                "pos": "ld",
+                "id": 27666,
+                "ppUnit": null
+            },
+            {
+                "name": "Timothy Liljegren",
+                "number": 37,
+                "pos": "rd",
+                "id": 2805,
+                "ppUnit": 2
+            }
+        ],
+        "d2": [
             {
                 "name": "Dmitry Orlov",
                 "number": 9,
@@ -2380,28 +2396,12 @@
                 "ppUnit": 1
             }
         ],
-        "d2": [
-            {
-                "name": "Mario Ferraro",
-                "number": 38,
-                "pos": "ld",
-                "id": 27666,
-                "ppUnit": null
-            },
-            {
-                "name": "Nick Leddy",
-                "number": 4,
-                "pos": "rd",
-                "id": 311,
-                "ppUnit": null
-            }
-        ],
         "d3": [
             {
-                "name": "Sam Dickinson",
+                "name": "Shakir Mukhamadullin",
                 "number": null,
                 "pos": "ld",
-                "id": 37090,
+                "id": 33038,
                 "ppUnit": null
             },
             {
@@ -2704,7 +2704,7 @@
                 "number": 62,
                 "pos": "lw",
                 "id": 2679,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Nathan MacKinnon",
@@ -2734,7 +2734,7 @@
                 "number": 11,
                 "pos": "c",
                 "id": 1921,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Valeri Nichushkin",
