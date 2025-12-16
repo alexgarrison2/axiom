@@ -50,6 +50,8 @@ def test_aggregate():
     
     for row in rows:
         print(f"Team {row['team']}: Goals {row['goals_for']}, PP Opps {row['pp_opportunities']}")
+        print(f"  EN Goals For: {row['emptynet_goalsfor']}, EN Attempts For: {row['en_attempts_for']}")
+        print(f"  EN Goals Ag: {row['emptynet_goalsagainst']}, EN Attempts Ag: {row['en_attempts_against']}")
 
     # Simulate Merge Logic
     print("\n--- Testing H-Ref Merge ---")

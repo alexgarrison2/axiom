@@ -213,7 +213,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "starting_goalie": None,
             "rest": home_rest,
             "scored_first": 0,
-            "max_lead": 0
+            "max_lead": 0,
+            "en_attempts": 0 # New: Empty Net Attempts
         },
         away_id: {
             "name": away_team.get("commonName", {}).get("default", "Away"),
@@ -237,7 +238,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "starting_goalie": None,
             "rest": away_rest,
             "scored_first": 0,
-            "max_lead": 0
+            "max_lead": 0,
+            "en_attempts": 0 # New
         }
     }
     
@@ -292,7 +294,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 'duration': details.get("duration", 2)
             })
 
-    for play in sorted_plays:
+    for i, play in enumerate(sorted_plays):
         event_id = play.get("eventId")
         type_code = play.get("typeCode")
         details = play.get("details", {})
@@ -619,6 +621,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 if (owner_id == home_id and current_strength[3] == 0) or \
                    (owner_id == away_id and current_strength[0] == 0): # Opponent goalie
                      teams[owner_id]['empty_net_goals'] += 1
+                     teams[owner_id]['en_attempts'] += 1 # Goal is an attempt
 
         # Shots (506)
         elif type_code == 506:
@@ -642,6 +645,16 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 reason = details.get("reason", "").lower()
                 if "post" in reason or "crossbar" in reason:
                     teams[owner_id]['posts'] += 1
+
+                # Empty Net Attempt (Miss)?
+                # If Home shoots, check Away Goal
+                h_skaters, a_skaters, hg, ag = current_strength
+                is_opp_net_empty = False
+                if owner_id == home_id and ag == 0: is_opp_net_empty = True
+                elif owner_id == away_id and hg == 0: is_opp_net_empty = True
+
+                if is_opp_net_empty:
+                    teams[owner_id]['en_attempts'] += 1
                     
         # Blocked Shot (508)
         elif type_code == 508:
@@ -652,6 +665,18 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             if shooter_id in teams:
                 teams[shooter_id]['attempts'][period_key] += 1
                 teams[shooter_id]['attempts']['total'] += 1
+
+                # Empty Net Attempt (Blocked)?
+                # If Shooter is Home, check Away Goal.
+                # In this event, we don't have direct shooter info usually, but we have inferred IDs.
+                # current_strength has goalie info.
+                h_skaters, a_skaters, hg, ag = current_strength
+                is_opp_net_empty = False
+                if shooter_id == home_id and ag == 0: is_opp_net_empty = True
+                elif shooter_id == away_id and hg == 0: is_opp_net_empty = True
+                
+                if is_opp_net_empty:
+                    teams[shooter_id]['en_attempts'] += 1
                 
         # Hit (503)
         elif type_code == 503:
@@ -754,6 +779,73 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                     "duration": duration_min,
                     "player_id": committed_by
                 })
+
+        # Icing (516) - Infers Empty Net Attempt?
+        # Requires Lookahead to identify offender
+        elif type_code == 516:
+            details = play.get("details", {})
+            reason = details.get("reason", "").lower()
+            
+            if "icing" in reason:
+                # Need to look ahead to find Faceoff (502)
+                # Faceoff will be in Def Zone of the icing team.
+                # Assuming simple check: xCoord sign + homeDefendingSide
+                
+                # Default unknown
+                icing_team_id = None
+                
+                # Peek ahead
+                # We need to scan forward until we find a faceoff or game event that resets play, 
+                # but Icing should be followed immediately by a faceoff unless a penalty/timeout occurs.
+                # We'll just look at the very next play for now, or scan a few.
+                for offset in range(1, 5): # Check next 4 events
+                    if i + offset >= len(sorted_plays): break
+                    
+                    next_play = sorted_plays[i + offset]
+                    if next_play.get("typeCode") == 502: # Faceoff
+                        f_details = next_play.get("details", {})
+                        f_x = f_details.get("xCoord")
+                        f_zone = f_details.get("zoneCode")
+                        
+                        # Get Home Defending Side from CURRENT play context or somewhere stable
+                        # The API usually provides `homeTeamDefendingSide` on plays or current period info.
+                        # It is on the play object itself usually.
+                        h_def_side = play.get("homeTeamDefendingSide", "left").lower()
+                        
+                        # Determine OFFENSIVE / DEFENSIVE zone for Home Team
+                        # If Home Defends Left (Min X):
+                        #   Def Zone < -25 (approx)
+                        #   Off Zone > 25
+                        
+                        # Strict Icing Rule: Faceoff is in the offending team's Def Zone.
+                        
+                        is_home_def_zone = False
+                        if h_def_side == 'left':
+                             if f_x < 0: is_home_def_zone = True
+                        else: # right
+                             if f_x > 0: is_home_def_zone = True
+                        
+                        # If faceoff is in Home Def Zone -> Home Iced it.
+                        if is_home_def_zone:
+                            icing_team_id = home_id
+                        else:
+                            # It must be Away Def Zone (unless neutral zone? Icing faceoffs are rarely neutral)
+                            icing_team_id = away_id
+                            
+                        break
+
+                if icing_team_id:
+                     # Check if OPPONENT net is empty
+                     h_skaters, a_skaters, hg, ag = current_strength
+                     is_opp_net_empty = False
+                     
+                     if icing_team_id == home_id and ag == 0: is_opp_net_empty = True
+                     elif icing_team_id == away_id and hg == 0: is_opp_net_empty = True
+                     
+                     if is_opp_net_empty:
+                         if icing_team_id in teams:
+                             teams[icing_team_id]['en_attempts'] += 1
+
         # --- Update State for NEXT Interval ---
         
         # Update Score (if Goal)
@@ -1050,6 +1142,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             # Other
             "emptynet_goalsfor": stats['empty_net_goals'],
             "emptynet_goalsagainst": opp_stats['empty_net_goals'],
+            "en_attempts_for": stats['en_attempts'],
+            "en_attempts_against": opp_stats['en_attempts'],
             "hitpost_for": stats['posts'],
             "hitpost_against": opp_stats['posts'],
             
