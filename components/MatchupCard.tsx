@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
 import { GamePrediction } from '@/utils/data';
 import Image from 'next/image';
