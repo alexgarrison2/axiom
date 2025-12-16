@@ -115,6 +115,18 @@ def refresh_pipeline():
             df_stats.to_csv(gamestats_file, index=False)
             print(f"Updated {gamestats_file} with aggregated xG.")
             
+            # Sync to app data folders
+            try:
+                # Sync to public/data (for Frontend)
+                df_stats.to_csv(f'../public/data/{gamestats_file}', index=False)
+                print(f"Synced {gamestats_file} to ../public/data/")
+                
+                # Sync to data/ (as backup/legacy)
+                df_stats.to_csv(f'../data/{gamestats_file}', index=False) 
+                print(f"Synced {gamestats_file} to ../data/")
+            except Exception as e:
+                print(f"Warning: Could not sync gamestats file to app folders: {e}")
+            
     except FileNotFoundError:
         print("GameStats file not found.")
 
