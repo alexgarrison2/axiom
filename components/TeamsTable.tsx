@@ -45,6 +45,8 @@ interface RawGameStat {
     saves_for: string;
     emptynet_goalsfor: string;
     emptynet_goalsagainst: string;
+    en_attempts_for: string;
+    en_attempts_against: string;
 }
 
 interface TeamStat {
@@ -81,6 +83,8 @@ interface TeamStat {
 
     engf: number;
     enga: number;
+    en_attempts: number;
+    ens_pct: number;
 
     xgf_per_game: number;
     xga_per_game: number;
@@ -162,7 +166,8 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
             gf_per_game: 0, ga_per_game: 0, goal_diff: 0, pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_time_per_game: '0:00',
             pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_time_per_game: '0:00',
             sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
-            engf: 0, enga: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0
+
+            engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0
         };
     }
 
@@ -174,6 +179,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
     let cf = 0, ca = 0;
     let saves = 0;
     let engf = 0, enga = 0;
+    let en_attempts = 0;
     let xgf = 0, xga = 0;
 
     teamGames.forEach(g => {
@@ -203,6 +209,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
 
         engf += parseFloat(g.emptynet_goalsfor || '0');
         enga += parseFloat(g.emptynet_goalsagainst || '0');
+        en_attempts += parseFloat(g.en_attempts_for || '0');
 
         xgf += parseFloat(g.xG_for || '0');
         xga += parseFloat(g.xG_against || '0');
@@ -243,7 +250,10 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         sv_pct: sa > 0 ? (saves / sa) * 100 : 0,
 
         engf,
+
         enga,
+        en_attempts,
+        ens_pct: en_attempts > 0 ? (engf / en_attempts) * 100 : 0,
 
         xgf_per_game: xgf / gp,
         xga_per_game: xga / gp,
@@ -496,7 +506,10 @@ const TeamsTable = () => {
             xgf_per_game: calculateRange('xgf_per_game'),
             xga_per_game: calculateRange('xga_per_game'),
             xgf_pct: calculateRange('xgf_pct'),
+
             gsax: calculateRange('gsax'),
+            en_attempts: calculateRange('en_attempts'),
+            ens_pct: calculateRange('ens_pct'),
         };
     }, [stats]);
 
@@ -648,6 +661,8 @@ const TeamsTable = () => {
                                 { k: 'sh_pct', l: 'Sh%' },
                                 { k: 'sv_pct', l: 'Sv%' },
                                 { k: 'engf', l: 'EN GF' },
+                                { k: 'en_attempts', l: 'EN Att' },
+                                { k: 'ens_pct', l: 'ENS%' },
                                 { k: 'enga', l: 'EN GA', inv: true },
                                 { k: 'xgf_per_game', l: 'xGF/G' },
                                 { k: 'xga_per_game', l: 'xGA/G', inv: true },
@@ -741,6 +756,8 @@ const TeamsTable = () => {
                                         {renderCell(team, 'sh_pct')}
                                         {renderCell(team, 'sv_pct')}
                                         {renderCell(team, 'engf')}
+                                        {renderCell(team, 'en_attempts')}
+                                        {renderCell(team, 'ens_pct')}
                                         {renderCell(team, 'enga', undefined, true)}
                                         {renderCell(team, 'xgf_per_game')}
                                         {renderCell(team, 'xga_per_game', undefined, true)}
