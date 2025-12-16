@@ -25,29 +25,6 @@
         ],
         "f2": [
             {
-                "name": "Alexander Steeves",
-                "number": 21,
-                "pos": "lw",
-                "id": 26446,
-                "ppUnit": null
-            },
-            {
-                "name": "Fraser Minten",
-                "number": 93,
-                "pos": "c",
-                "id": 31575,
-                "ppUnit": null
-            },
-            {
-                "name": "Michael Eyssimont",
-                "number": 81,
-                "pos": "rw",
-                "id": 4693,
-                "ppUnit": 2
-            }
-        ],
-        "f3": [
-            {
                 "name": "Casey Mittelstadt",
                 "number": 11,
                 "pos": "lw",
@@ -66,6 +43,29 @@
                 "number": 92,
                 "pos": "rw",
                 "id": 31738,
+                "ppUnit": 2
+            }
+        ],
+        "f3": [
+            {
+                "name": "Alexander Steeves",
+                "number": 21,
+                "pos": "lw",
+                "id": 26446,
+                "ppUnit": null
+            },
+            {
+                "name": "Fraser Minten",
+                "number": 93,
+                "pos": "c",
+                "id": 31575,
+                "ppUnit": null
+            },
+            {
+                "name": "Michael Eyssimont",
+                "number": 81,
+                "pos": "rw",
+                "id": 4693,
                 "ppUnit": 2
             }
         ],
@@ -1752,11 +1752,11 @@
         ],
         "f3": [
             {
-                "name": "Ville Koivunen",
-                "number": 41,
+                "name": "Kevin Hayes",
+                "number": 13,
                 "pos": "lw",
-                "id": 34677,
-                "ppUnit": null
+                "id": 2386,
+                "ppUnit": 2
             },
             {
                 "name": "Tommy Novak",
@@ -1782,11 +1782,11 @@
                 "ppUnit": null
             },
             {
-                "name": "Kevin Hayes",
-                "number": 13,
+                "name": "Danton Heinen",
+                "number": 43,
                 "pos": "c",
-                "id": 2386,
-                "ppUnit": 2
+                "id": 2691,
+                "ppUnit": null
             },
             {
                 "name": "Noel Acciari",
@@ -1797,22 +1797,6 @@
             }
         ],
         "d1": [
-            {
-                "name": "Ryan Shea",
-                "number": 5,
-                "pos": "ld",
-                "id": 26606,
-                "ppUnit": null
-            },
-            {
-                "name": "Kris Letang",
-                "number": 58,
-                "pos": "rd",
-                "id": 1233,
-                "ppUnit": 2
-            }
-        ],
-        "d2": [
             {
                 "name": "Parker Wotherspoon",
                 "number": 29,
@@ -1828,19 +1812,35 @@
                 "ppUnit": 1
             }
         ],
-        "d3": [
+        "d2": [
             {
-                "name": "Ryan Graves",
-                "number": 27,
+                "name": "Ryan Shea",
+                "number": 5,
                 "pos": "ld",
-                "id": 3689,
+                "id": 26606,
                 "ppUnit": null
             },
             {
-                "name": "Connor Clifton",
-                "number": 75,
+                "name": "Kris Letang",
+                "number": 58,
                 "pos": "rd",
-                "id": 4833,
+                "id": 1233,
+                "ppUnit": 2
+            }
+        ],
+        "d3": [
+            {
+                "name": "Brett Kulak",
+                "number": 27,
+                "pos": "ld",
+                "id": 2466,
+                "ppUnit": null
+            },
+            {
+                "name": "Jack St. Ivany",
+                "number": null,
+                "pos": "rd",
+                "id": 25428,
                 "ppUnit": null
             }
         ]
