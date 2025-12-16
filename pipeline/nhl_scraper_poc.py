@@ -637,7 +637,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                     
                 # Empty Net?
                 if (owner_id == home_id and current_strength[3] == 0) or \
-                   (owner_id == away_id and current_strength[0] == 0): # Opponent goalie
+                   (owner_id == away_id and current_strength[2] == 0): # Opponent goalie
                      teams[owner_id]['empty_net_goals'] += 1
                      teams[owner_id]['en_attempts'] += 1 # Goal is an attempt
 
