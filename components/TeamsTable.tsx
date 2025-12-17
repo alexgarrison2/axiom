@@ -584,7 +584,10 @@ const TeamsTable = () => {
         if (typeof value === 'number') {
             // Numbers
             const r = ranges[key as keyof typeof ranges];
-            if (r) {
+            // Exclude specific columns from gradient coloring
+            const noColorKeys = ['pp_goals', 'pp_opps', 'pk_goals_allowed', 'pk_opps'];
+
+            if (r && !noColorKeys.includes(key)) {
                 color = getGradientColor(value, r.min, r.max, isInverse);
             }
             // Format
@@ -594,8 +597,14 @@ const TeamsTable = () => {
                 value = value.toFixed(1) + '%';
             } else if (['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game'].includes(key)) {
                 value = value.toFixed(1);
-            } else if (key.toString().includes('per_game') || key.toString() === 'gsax') {
+            } else if (key.toString().includes('per_game')) {
                 value = value.toFixed(2);
+            } else if (key === 'gsax') {
+                // +#,##0.00;(#,##0.00);"E"
+                const paramVal = value as number;
+                if (Math.abs(paramVal) < 0.01) value = 'E';
+                else if (paramVal > 0) value = '+' + paramVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                else value = '(' + Math.abs(paramVal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ')';
             } else if (key === 'goal_diff') {
                 // +#,##0;(#,##0);"E"
                 const paramVal = value as number;
