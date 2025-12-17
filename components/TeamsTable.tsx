@@ -26,6 +26,8 @@ interface RawGameStat {
     sog_ag: string;
     attempts_for: string; // CF
     attempts_ag: string;  // CA
+    attempts_for_5v5: string; // CF 5v5
+    attempts_ag_5v5: string; // CA 5v5
 
     pp_opportunities: string;
     pp_goals: string;
@@ -213,8 +215,8 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         sf += parseFloat(g.sog_for || '0');
         sa += parseFloat(g.sog_ag || '0');
 
-        cf += parseFloat(g.attempts_for || '0');
-        ca += parseFloat(g.attempts_ag || '0');
+        cf += parseFloat(g.attempts_for_5v5 || '0');
+        ca += parseFloat(g.attempts_ag_5v5 || '0');
 
         saves += parseFloat(g.saves_for || '0');
 
