@@ -1431,7 +1431,7 @@ def main():
         print("No new game data found.")
         
     # Export Shot Data to CSV
-    SHOTS_FILENAME = OUTPUT_FILENAME.replace("_gamestats.csv", "_shots.csv")
+    SHOTS_FILENAME = "../data/shots.csv"
     if all_shots:
         print(f"Writing {len(all_shots)} shots to {SHOTS_FILENAME}...")
         new_shots_df = pd.DataFrame(all_shots)
