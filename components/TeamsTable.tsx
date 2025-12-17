@@ -839,6 +839,7 @@ const TeamsTable = () => {
                                         {renderCell(team, 'engf')}
                                         {renderCell(team, 'en_attempts')}
                                         {renderCell(team, 'ens_pct')}
+                                        {renderCell(team, 'otml', undefined, true)}
                                         {renderCell(team, 'enga', undefined, true)}
                                     </tr>
 
