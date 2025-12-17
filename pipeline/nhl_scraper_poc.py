@@ -1392,15 +1392,21 @@ def main():
     # Export Game Stats to CSV
     if all_rows:
         print(f"Writing {len(all_rows)} rows to {OUTPUT_FILENAME}...")
-        file_exists = os.path.exists(OUTPUT_FILENAME)
-        mode = 'a' if file_exists else 'w'
-        
-        headers = list(all_rows[0].keys())
-        with open(OUTPUT_FILENAME, mode, newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=headers)
-            if not file_exists:
-                writer.writeheader()
-            writer.writerows(all_rows)
+        new_df = pd.DataFrame(all_rows)
+        if os.path.exists(OUTPUT_FILENAME):
+            try:
+                existing_df = pd.read_csv(OUTPUT_FILENAME)
+                combined_df = pd.concat([existing_df, new_df])
+                combined_df.drop_duplicates(subset=['game_id', 'team'], keep='last', inplace=True)
+                combined_df.to_csv(OUTPUT_FILENAME, index=False)
+            except Exception as e:
+                print(f"Error merging with existing gamestats: {e}. Overwriting/Appending safely.")
+                # Fallback to append if read fails, but try to avoid simple append if possible
+                mode = 'a'
+                header = False
+                new_df.to_csv(OUTPUT_FILENAME, mode=mode, header=header, index=False)
+        else:
+            new_df.to_csv(OUTPUT_FILENAME, index=False)
         print("Game Stats Done!")
     else:
         print("No new game data found.")
@@ -1409,15 +1415,21 @@ def main():
     SHOTS_FILENAME = OUTPUT_FILENAME.replace("_gamestats.csv", "_shots.csv")
     if all_shots:
         print(f"Writing {len(all_shots)} shots to {SHOTS_FILENAME}...")
-        file_exists_shots = os.path.exists(SHOTS_FILENAME)
-        mode_shots = 'a' if file_exists_shots else 'w'
-        
-        headers = list(all_shots[0].keys())
-        with open(SHOTS_FILENAME, mode_shots, newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=headers)
-            if not file_exists_shots:
-                writer.writeheader()
-            writer.writerows(all_shots)
+        new_shots_df = pd.DataFrame(all_shots)
+        if os.path.exists(SHOTS_FILENAME):
+            try:
+                existing_shots_df = pd.read_csv(SHOTS_FILENAME)
+                combined_shots_df = pd.concat([existing_shots_df, new_shots_df])
+                # Deduplicate: Shot ID is best, but if missing, use strict row drift
+                combined_shots_df.drop_duplicates(keep='last', inplace=True) 
+                combined_shots_df.to_csv(SHOTS_FILENAME, index=False)
+            except Exception as e:
+                print(f"Error merging with existing shots: {e}")
+                mode = 'a'
+                header = False
+                new_shots_df.to_csv(SHOTS_FILENAME, mode=mode, header=header, index=False)
+        else:
+            new_shots_df.to_csv(SHOTS_FILENAME, index=False)
         print("Shot Data Done!")
     else:
         print("No new shot data found.")

@@ -752,9 +752,10 @@ const TeamsTable = () => {
                                                 )}
                                                 <span
                                                     className={`truncate max-w-[120px] hidden md:block ${(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterStatus
-                                                        ? (team.starterStatus?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green font-bold'
-                                                            : team.starterStatus?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400 font-bold'
-                                                                : 'text-gray-500 font-bold')
+                                                        ? (team.starterStatus?.toUpperCase()?.includes('UNCONFIRMED') ? 'text-gray-500 font-bold'
+                                                            : team.starterStatus?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green font-bold'
+                                                                : team.starterStatus?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400 font-bold'
+                                                                    : 'text-gray-500 font-bold')
                                                         : ''
                                                         }`}
                                                     title={meta.commonName || team.team}
