@@ -42,7 +42,7 @@ def load_existing_predictions(filepath):
 # ... (inside predict function)
 
     # Load Existing Predictions (for freezing live/past games)
-    existing_predictions = load_existing_predictions('predictions_detailed.csv')
+    existing_predictions = load_existing_predictions('../data/predictions_detailed.csv')
     
     
 
@@ -640,7 +640,7 @@ def predict():
     league_xg = 3.13 
     
     # Load Existing Predictions (for freezing live/past games)
-    existing_predictions = load_existing_predictions('predictions_detailed.csv')
+    existing_predictions = load_existing_predictions('../data/predictions_detailed.csv')
     
     # Load Goalie Stats
     print("Loading official goalie stats...")
