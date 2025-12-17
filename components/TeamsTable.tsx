@@ -593,6 +593,8 @@ const TeamsTable = () => {
             // Format
             if (key === 'pt_pct') {
                 value = (value as number).toFixed(3).replace(/^0+/, ''); // .650
+            } else if (key === 'sv_pct') {
+                value = ((value as number) / 100).toFixed(3).replace(/^0+/, ''); // .925
             } else if (key.toString().includes('pct')) {
                 value = value.toFixed(1) + '%';
             } else if (['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game'].includes(key)) {
