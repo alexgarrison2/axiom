@@ -92,13 +92,16 @@ interface TeamStat {
 
     gsax: number; // Goals Saved Above Expected (xGA - GA)
     starterName?: string;
+    starterStatus?: string;
 }
 
 interface Matchup {
     home: string;
     away: string;
     homeStarter?: string;
+    homeStarterStatus?: string;
     awayStarter?: string;
+    awayStarterStatus?: string;
 }
 
 type SortKey = keyof TeamStat;
@@ -113,6 +116,12 @@ const formatTime = (seconds: number) => {
 const cleanName = (name: string) => {
     if (!name) return '';
     return name.replace(/\s*\(.*?\)\s*/g, '').trim();
+};
+
+const getStarterStatus = (name: string) => {
+    if (!name) return 'UNCONFIRMED';
+    const match = name.match(/\((.*?)\)$/);
+    return match ? match[1] : 'UNCONFIRMED';
 };
 
 const getGradientColor = (value: number, min: number, max: number, inverse: boolean = false) => {
@@ -339,7 +348,9 @@ const TeamsTable = () => {
                             home: row.home_team?.trim(),
                             away: row.away_team?.trim(),
                             homeStarter: cleanName(row.home_starter),
-                            awayStarter: cleanName(row.away_starter)
+                            homeStarterStatus: getStarterStatus(row.home_starter),
+                            awayStarter: cleanName(row.away_starter),
+                            awayStarterStatus: getStarterStatus(row.away_starter)
                         }))
                         .filter(m => m.home && m.away);
 
@@ -412,7 +423,7 @@ const TeamsTable = () => {
         } else {
             // Playing Today Views (Force specific order: Away, Home, Away, Home...)
             todayMatchups.forEach(matchup => {
-                const { home, away, homeStarter, awayStarter } = matchup;
+                const { home, away, homeStarter, awayStarter, homeStarterStatus, awayStarterStatus } = matchup;
 
                 // Determine Location Filter based on Mode
                 // If PlayingTodayLocation OR PlayingTodayLocationStarter, FORCE Home/Away.
@@ -434,11 +445,17 @@ const TeamsTable = () => {
 
                 // Calculate stats and attach starter name if applicable
                 const awayStats = calculateTeamStats(away, awayGames);
-                if (starterAway) awayStats.starterName = starterAway;
+                if (starterAway) {
+                    awayStats.starterName = starterAway;
+                    awayStats.starterStatus = awayStarterStatus;
+                }
                 processedTeams.push(awayStats);
 
                 const homeStats = calculateTeamStats(home, homeGames);
-                if (starterHome) homeStats.starterName = starterHome;
+                if (starterHome) {
+                    homeStats.starterName = starterHome;
+                    homeStats.starterStatus = homeStarterStatus;
+                }
                 processedTeams.push(homeStats);
             });
         }
@@ -733,7 +750,15 @@ const TeamsTable = () => {
                                                         />
                                                     </div>
                                                 )}
-                                                <span className="truncate max-w-[120px] hidden md:block" title={meta.commonName || team.team}>
+                                                <span
+                                                    className={`truncate max-w-[120px] hidden md:block ${(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterStatus
+                                                        ? (team.starterStatus?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green font-bold'
+                                                            : team.starterStatus?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400 font-bold'
+                                                                : 'text-gray-500 font-bold')
+                                                        : ''
+                                                        }`}
+                                                    title={meta.commonName || team.team}
+                                                >
                                                     {(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterName
                                                         ? formatStarterName(team.starterName)
                                                         : (meta.commonName || team.team)}
