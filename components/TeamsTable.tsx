@@ -91,6 +91,7 @@ interface TeamStat {
     xgf_pct: number;
 
     gsax: number; // Goals Saved Above Expected (xGA - GA)
+    otml: number; // Off the Mat Losses
     starterName?: string;
     starterStatus?: string;
 }
@@ -176,7 +177,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
             pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_time_per_game: '0:00',
             sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
 
-            engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0
+            engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0
         };
     }
 
@@ -190,6 +191,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
     let engf = 0, enga = 0;
     let en_attempts = 0;
     let xgf = 0, xga = 0;
+    let otml = 0;
 
     teamGames.forEach(g => {
         gp++;
@@ -222,6 +224,13 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
 
         xgf += parseFloat(g.xG_for || '0');
         xga += parseFloat(g.xG_against || '0');
+
+        // OtmL Logic: EN Att > 0 AND EN GF < 1 AND Result is Loss (RL, OTL, SOL)
+        const g_en_attempts = parseFloat(g.en_attempts_for || '0');
+        const g_en_goals = parseFloat(g.emptynet_goalsfor || '0');
+        if (g_en_attempts > 0 && g_en_goals < 1 && (g.result === 'RL' || g.result === 'OTL' || g.result === 'SOL')) {
+            otml++;
+        }
     });
 
     const points = wins * 2 + otl;
@@ -267,7 +276,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         xgf_per_game: xgf / gp,
         xga_per_game: xga / gp,
         xgf_pct: (xgf + xga) > 0 ? (xgf / (xgf + xga)) * 100 : 0,
-
+        otml,
         gsax: xga - ga // Cumulative GSAx
     };
 };
@@ -543,6 +552,7 @@ const TeamsTable = () => {
             xgf_pct: calculateRange('xgf_pct'),
 
             gsax: calculateRange('gsax'),
+            otml: calculateRange('otml'),
             en_attempts: calculateRange('en_attempts'),
             ens_pct: calculateRange('ens_pct'),
         };
@@ -724,6 +734,7 @@ const TeamsTable = () => {
                                 { k: 'engf', l: 'EN GF' },
                                 { k: 'en_attempts', l: 'EN Att' },
                                 { k: 'ens_pct', l: 'ENS%' },
+                                { k: 'otml', l: 'OtmL', inv: true },
                                 { k: 'enga', l: 'EN GA', inv: true }
                             ].map(({ k, l }) => (
                                 <th
