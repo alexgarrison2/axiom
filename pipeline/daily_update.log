@@ -1,0 +1,674 @@
+========================================
+Starting Daily Update: Wed Dec 17 09:06:29 CST 2025
+--- Starting Full Pipeline Refresh ---
+Fetching missing game data...
+Checking existing data in nhl_season_2025_2026_gamestats.csv...
+  Last data found: 2025-12-15
+Starting scrape from 2025-12-16 to 2025-12-16...
+  Loaded 518 existing Game IDs.
+Loading H-Ref stats from href_stats.csv...
+  Loaded 1036 H-Ref stats rows.
+Loaded xG Model: xg_model_xgb.pkl
+Processing 2025-12-16...
+  Found 10 games.
+    Fetching PBP for Game 2025020519... 313 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 70 shots.
+    Fetching PBP for Game 2025020520... 287 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 73 shots.
+    Fetching PBP for Game 2025020521... 289 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 73 shots.
+    Fetching PBP for Game 2025020522... 283 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 71 shots.
+    Fetching PBP for Game 2025020523... 275 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 70 shots.
+    Fetching PBP for Game 2025020525... 308 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 76 shots.
+    Fetching PBP for Game 2025020524... 299 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 90 shots.
+    Fetching PBP for Game 2025020526... 317 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 90 shots.
+    Fetching PBP for Game 2025020527... 338 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 83 shots.
+    Fetching PBP for Game 2025020528... 364 events.Preprocessing data with Spatial Bins & Handedness...
+ -> Added 2 stats rows, 114 shots.
+Writing 20 rows to nhl_season_2025_2026_gamestats.csv...
+Game Stats Done!
+Writing 810 shots to nhl_season_2025_2026_shots.csv...
+Shot Data Done!
+Loading XGBoost model...
+Processing nhl_historical_shots.csv...
+Preprocessing data with Spatial Bins & Handedness...
+Updated nhl_historical_shots.csv with new xG values.
+Processing nhl_season_2025_2026_shots.csv...
+Preprocessing data with Spatial Bins & Handedness...
+Updated nhl_season_2025_2026_shots.csv with new xG values.
+Updating GameStats...
+Updated nhl_season_2025_2026_gamestats.csv with aggregated xG.
+Synced nhl_season_2025_2026_gamestats.csv to ../public/data/gamestats.csv
+Synced nhl_season_2025_2026_gamestats.csv to ../data/gamestats.csv
+Regenerating Team & Goalie Ratings...
+Loading data from nhl_season_2025_2026_gamestats.csv...
+Saved team_ratings.json
+Saved goalie_ratings.json
+Fetching latest Schedule & Goalies...
+Fetching confirmed goalies from Daily Faceoff...
+Fetching Daily Faceoff data (Today + Tomorrow)...
+Found 5 games for 2025-12-17 in DFO data.
+Found 10 games for 2025-12-18 in DFO data.
+Fetching schedule for 2025-12-17...
+Matched Home: Panthers -> Florida Panthers (Status: Unconfirmed)
+Matched Away: Kings -> Los Angeles Kings (Status: Unconfirmed)
+Matched Home: Red Wings -> Detroit Red Wings (Status: Unconfirmed)
+Matched Away: Mammoth -> Utah Mammoth (Status: Unconfirmed)
+Matched Home: Blues -> St Louis Blues (Status: Unconfirmed)
+Matched Away: Jets -> Winnipeg Jets (Status: Unconfirmed)
+Matched Home: Predators -> Nashville Predators (Status: Unconfirmed)
+Matched Away: Hurricanes -> Carolina Hurricanes (Status: Unconfirmed)
+Matched Home: Golden Knights -> Vegas Golden Knights (Status: Unconfirmed)
+Matched Away: Devils -> New Jersey Devils (Status: Unconfirmed)
+Fetching schedule for 2025-12-18...
+Matched Home: Bruins -> Boston Bruins (Status: Unconfirmed)
+Matched Away: Oilers -> Edmonton Oilers (Status: Unconfirmed)
+Matched Home: Canadiens -> Montreal Canadiens (Status: Unconfirmed)
+Matched Away: Blackhawks -> Chicago Blackhawks (Status: Unconfirmed)
+Matched Home: Senators -> Ottawa Senators (Status: Unconfirmed)
+Matched Away: Penguins -> Pittsburgh Penguins (Status: Unconfirmed)
+Matched Home: Lightning -> Tampa Bay Lightning (Status: Unconfirmed)
+Matched Away: Kings -> Los Angeles Kings (Status: Unconfirmed)
+Matched Home: Capitals -> Washington Capitals (Status: Unconfirmed)
+Matched Away: Maple Leafs -> Toronto Maple Leafs (Status: Unconfirmed)
+Matched Home: Blue Jackets -> Columbus Blue Jackets (Status: Unconfirmed)
+Matched Away: Wild -> Minnesota Wild (Status: Unconfirmed)
+Matched Home: Sabres -> Buffalo Sabres (Status: Unconfirmed)
+Matched Away: Flyers -> Philadelphia Flyers (Status: Unconfirmed)
+Matched Home: Blues -> St Louis Blues (Status: Unconfirmed)
+Matched Away: Rangers -> New York Rangers (Status: Unconfirmed)
+Matched Home: Flames -> Calgary Flames (Status: Unconfirmed)
+Matched Away: Kraken -> Seattle Kraken (Status: Unconfirmed)
+Matched Home: Sharks -> San Jose Sharks (Status: Unconfirmed)
+Matched Away: Stars -> Dallas Stars (Status: Unconfirmed)
+Found 15 games total.
+Saved upcoming_games.json
+Fetching official goalie stats...
+Fetching Goalie Stats from NHL API...
+Found 83 goalies.
+Error fetching goalie stats: '<' not supported between instances of 'NoneType' and 'int'
+Fetching latest Odds...
+Fetching odds from Bovada API...
+Fetched 1 items from https://www.bovada.lv/services/sports/event/v2/events/A/description/hockey/nhl
+Fetched 52 items from https://www.bovada.lv/services/sports/event/v2/events/A/description/hockey
+Total aggregated items: 53
+Processing league/group: None with 5 events.
+Processing league/group: None with 5 events.
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): NHL Daily Specials - Wed 17th Dec
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Stanley Cup 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Eastern Conference 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Western Conference 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Atlantic Division 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Central Division 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Metropolitan Division 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Pacific Division 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): President's Trophy 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): NHL 2025/26 Worst Regular Season Record
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Art Ross Trophy 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Calder Memorial Trophy 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Hart Memorial Trophy 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Jack Adams Award 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): James Norris Memorial Trophy 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Rocket Richard Trophy 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): Vezina Trophy 2025/26
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): NHL 2025/26 - To Make The Playoffs
+Processing league/group: None with 10 events.
+  Mapping failed for Milwaukee Admirals @ Chicago Wolves (Away: None, Home: None)
+    Unknown Away: 'Milwaukee Admirals'
+    Unknown Home: 'Chicago Wolves'
+  Mapping failed for Syracuse Crunch @ Bridgeport Islanders (Away: None, Home: None)
+    Unknown Away: 'Syracuse Crunch'
+    Unknown Home: 'Bridgeport Islanders'
+  Mapping failed for Springfield Thunderbirds @ Lehigh Valley Phantoms (Away: None, Home: None)
+    Unknown Away: 'Springfield Thunderbirds'
+    Unknown Home: 'Lehigh Valley Phantoms'
+  Mapping failed for Utica Comets @ Rochester Americans (Away: None, Home: None)
+    Unknown Away: 'Utica Comets'
+    Unknown Home: 'Rochester Americans'
+  Mapping failed for Grand Rapids Griffins @ Iowa Wild (Away: None, Home: None)
+    Unknown Away: 'Grand Rapids Griffins'
+    Unknown Home: 'Iowa Wild'
+  Mapping failed for Ontario Reign @ Bakersfield Condors (Away: None, Home: None)
+    Unknown Away: 'Ontario Reign'
+    Unknown Home: 'Bakersfield Condors'
+  Mapping failed for San Jose Barracuda @ Coachella Valley Firebirds (Away: None, Home: None)
+    Unknown Away: 'San Jose Barracuda'
+    Unknown Home: 'Coachella Valley Firebirds'
+  Mapping failed for Laval Rocket @ Cleveland Monsters (Away: None, Home: None)
+    Unknown Away: 'Laval Rocket'
+    Unknown Home: 'Cleveland Monsters'
+  Mapping failed for San Diego Gulls @ Calgary Wranglers (Away: None, Home: None)
+    Unknown Away: 'San Diego Gulls'
+    Unknown Home: 'Calgary Wranglers'
+  Mapping failed for Rockford Icehogs @ Manitoba Moose (Away: None, Home: None)
+    Unknown Away: 'Rockford Icehogs'
+    Unknown Home: 'Manitoba Moose'
+Processing league/group: None with 1 events.
+  Skipping non-game event (no '@' separator): NCAA Hockey Championship 2025/26 
+Processing league/group: None with 7 events.
+  Mapping failed for Halifax Mooseheads @ Saint John Sea Dogs (Away: None, Home: None)
+    Unknown Away: 'Halifax Mooseheads'
+    Unknown Home: 'Saint John Sea Dogs'
+  Mapping failed for Baie Comeau Drakkar @ Quebec Remparts (Away: None, Home: None)
+    Unknown Away: 'Baie Comeau Drakkar'
+    Unknown Home: 'Quebec Remparts'
+  Mapping failed for Blainville-Boisbriand Armada @ Gatineau Olympiques (Away: None, Home: None)
+    Unknown Away: 'Blainville-Boisbriand Armada'
+    Unknown Home: 'Gatineau Olympiques'
+  Mapping failed for Rimouski Oceanic @ Chicoutimi Saguenéens (Away: None, Home: None)
+    Unknown Away: 'Rimouski Oceanic'
+    Unknown Home: 'Chicoutimi Saguenéens'
+  Mapping failed for Rouyn-Noranda Huskies @ Sherbrooke Phoenix (Away: None, Home: None)
+    Unknown Away: 'Rouyn-Noranda Huskies'
+    Unknown Home: 'Sherbrooke Phoenix'
+  Mapping failed for Shawinigan Cataractes @ Victoriaville Tigres (Away: None, Home: None)
+    Unknown Away: 'Shawinigan Cataractes'
+    Unknown Home: 'Victoriaville Tigres'
+  Mapping failed for Val-d'Or Foreurs @ Drummondville Voltigeurs (Away: None, Home: None)
+    Unknown Away: 'Val-d'Or Foreurs'
+    Unknown Home: 'Drummondville Voltigeurs'
+Processing league/group: None with 7 events.
+  Mapping failed for London Knights @ Owen Sound Attack (Away: None, Home: None)
+    Unknown Away: 'London Knights'
+    Unknown Home: 'Owen Sound Attack'
+  Mapping failed for Kitchener Rangers @ Sarnia Sting (Away: None, Home: None)
+    Unknown Away: 'Kitchener Rangers'
+    Unknown Home: 'Sarnia Sting'
+  Mapping failed for Sault Ste. Marie Greyhounds @ Saginaw Spirit (Away: None, Home: None)
+    Unknown Away: 'Sault Ste. Marie Greyhounds'
+    Unknown Home: 'Saginaw Spirit'
+  Mapping failed for Guelph Storm @ North Bay Battalion (Away: None, Home: None)
+    Unknown Away: 'Guelph Storm'
+    Unknown Home: 'North Bay Battalion'
+  Mapping failed for Sudbury Wolves @ Barrie Colts (Away: None, Home: None)
+    Unknown Away: 'Sudbury Wolves'
+    Unknown Home: 'Barrie Colts'
+  Mapping failed for Niagara Icedogs @ Peterborough Petes (Away: None, Home: None)
+    Unknown Away: 'Niagara Icedogs'
+    Unknown Home: 'Peterborough Petes'
+  Mapping failed for Brantford Bulldogs @ Kingston Frontenacs (Away: None, Home: None)
+    Unknown Away: 'Brantford Bulldogs'
+    Unknown Home: 'Kingston Frontenacs'
+Processing league/group: None with 7 events.
+  Mapping failed for Kelowna Rockets @ Saskatoon Blades (Away: None, Home: None)
+    Unknown Away: 'Kelowna Rockets'
+    Unknown Home: 'Saskatoon Blades'
+  Mapping failed for Prince Albert Raiders @ Regina Pats (Away: None, Home: None)
+    Unknown Away: 'Prince Albert Raiders'
+    Unknown Home: 'Regina Pats'
+  Mapping failed for Brandon Wheat Kings @ Medicine Hat Tigers (Away: None, Home: None)
+    Unknown Away: 'Brandon Wheat Kings'
+    Unknown Home: 'Medicine Hat Tigers'
+  Mapping failed for Swift Current Broncos @ Calgary Hitmen (Away: None, Home: None)
+    Unknown Away: 'Swift Current Broncos'
+    Unknown Home: 'Calgary Hitmen'
+  Mapping failed for Tri-City Americans @ Kamloops Blazers (Away: None, Home: None)
+    Unknown Away: 'Tri-City Americans'
+    Unknown Home: 'Kamloops Blazers'
+  Mapping failed for Wenatchee Wild @ Everett Silvertips (Away: None, Home: None)
+    Unknown Away: 'Wenatchee Wild'
+    Unknown Home: 'Everett Silvertips'
+  Mapping failed for Vancouver Giants @ Victoria Royals (Away: None, Home: None)
+    Unknown Away: 'Vancouver Giants'
+    Unknown Home: 'Victoria Royals'
+Processing league/group: None with 13 events.
+  Mapping failed for Metallurg Magnitogorsk @ HC Sochi (Away: None, Home: None)
+    Unknown Away: 'Metallurg Magnitogorsk'
+    Unknown Home: 'HC Sochi'
+  Mapping failed for Dinamo Minsk @ Avtomobilist Yekaterinburg (Away: None, Home: None)
+    Unknown Away: 'Dinamo Minsk'
+    Unknown Home: 'Avtomobilist Yekaterinburg'
+  Mapping failed for Avangard Omsk @ Neftekhimik Nizhnekamsk (Away: None, Home: None)
+    Unknown Away: 'Avangard Omsk'
+    Unknown Home: 'Neftekhimik Nizhnekamsk'
+  Mapping failed for CSKA Moscow @ Lokomotiv Yaroslavl (Away: None, Home: None)
+    Unknown Away: 'CSKA Moscow'
+    Unknown Home: 'Lokomotiv Yaroslavl'
+  Mapping failed for Salavat Yulaev Ufa @ Severstal Cherepovets (Away: None, Home: None)
+    Unknown Away: 'Salavat Yulaev Ufa'
+    Unknown Home: 'Severstal Cherepovets'
+  Mapping failed for Ak Bars Kazan @ SKA Saint Petersburg (Away: None, Home: None)
+    Unknown Away: 'Ak Bars Kazan'
+    Unknown Home: 'SKA Saint Petersburg'
+  Mapping failed for HC Barys @ Dynamo Moscow (Away: None, Home: None)
+    Unknown Away: 'HC Barys'
+    Unknown Home: 'Dynamo Moscow'
+  Mapping failed for Admiral Vladivostok @ Sibir Novosibirsk (Away: None, Home: None)
+    Unknown Away: 'Admiral Vladivostok'
+    Unknown Home: 'Sibir Novosibirsk'
+  Mapping failed for Metallurg Magnitogorsk @ Traktor Chelyabinsk (Away: None, Home: None)
+    Unknown Away: 'Metallurg Magnitogorsk'
+    Unknown Home: 'Traktor Chelyabinsk'
+  Mapping failed for Lada Togliatti @ Shanghai Dragons (Away: None, Home: None)
+    Unknown Away: 'Lada Togliatti'
+    Unknown Home: 'Shanghai Dragons'
+  Mapping failed for Ak Bars Kazan @ Salavat Yulaev Ufa (Away: None, Home: None)
+    Unknown Away: 'Ak Bars Kazan'
+    Unknown Home: 'Salavat Yulaev Ufa'
+  Mapping failed for Avangard Omsk @ Lokomotiv Yaroslavl (Away: None, Home: None)
+    Unknown Away: 'Avangard Omsk'
+    Unknown Home: 'Lokomotiv Yaroslavl'
+  Mapping failed for Spartak Moscow @ SKA Saint Petersburg (Away: None, Home: None)
+    Unknown Away: 'Spartak Moscow'
+    Unknown Home: 'SKA Saint Petersburg'
+Processing league/group: None with 10 events.
+  Mapping failed for Mountfield HK @ Ocelari Trinec (Away: None, Home: None)
+    Unknown Away: 'Mountfield HK'
+    Unknown Home: 'Ocelari Trinec'
+  Mapping failed for HC Plzen @ HC Vitkovice (Away: None, Home: None)
+    Unknown Away: 'HC Plzen'
+    Unknown Home: 'HC Vitkovice'
+  Mapping failed for HC Olomouc @ Dynamo Pardubice (Away: None, Home: None)
+    Unknown Away: 'HC Olomouc'
+    Unknown Home: 'Dynamo Pardubice'
+  Mapping failed for HC Plzen @ Ocelari Trinec (Away: None, Home: None)
+    Unknown Away: 'HC Plzen'
+    Unknown Home: 'Ocelari Trinec'
+  Mapping failed for Mlada Boleslav @ HC Vitkovice (Away: None, Home: None)
+    Unknown Away: 'Mlada Boleslav'
+    Unknown Home: 'HC Vitkovice'
+  Mapping failed for Sparta Prague @ HC Litvinov (Away: None, Home: None)
+    Unknown Away: 'Sparta Prague'
+    Unknown Home: 'HC Litvinov'
+  Mapping failed for Bili Tygri Liberec @ Kometa Brno (Away: None, Home: None)
+    Unknown Away: 'Bili Tygri Liberec'
+    Unknown Home: 'Kometa Brno'
+  Mapping failed for Ceske Budejovice @ Rytiri Kladno (Away: None, Home: None)
+    Unknown Away: 'Ceske Budejovice'
+    Unknown Home: 'Rytiri Kladno'
+  Mapping failed for Mountfield HK @ Energie Karlovy Vary (Away: None, Home: None)
+    Unknown Away: 'Mountfield HK'
+    Unknown Home: 'Energie Karlovy Vary'
+  Skipping non-game event (no '@' separator): Czech Extraliga 25/26
+Processing league/group: None with 8 events.
+  Mapping failed for HPK @ HIFK (Away: None, Home: None)
+    Unknown Away: 'HPK'
+    Unknown Home: 'HIFK'
+  Mapping failed for Kiekko-Espoo @ Kärpät (Away: None, Home: None)
+    Unknown Away: 'Kiekko-Espoo'
+    Unknown Home: 'Kärpät'
+  Mapping failed for KooKoo @ JYP (Away: None, Home: None)
+    Unknown Away: 'KooKoo'
+    Unknown Home: 'JYP'
+  Mapping failed for Pelicans @ Lukko (Away: None, Home: None)
+    Unknown Away: 'Pelicans'
+    Unknown Home: 'Lukko'
+  Mapping failed for Vaasan Sport @ Jukurit (Away: None, Home: None)
+    Unknown Away: 'Vaasan Sport'
+    Unknown Home: 'Jukurit'
+  Mapping failed for Lukko @ SaiPa (Away: None, Home: None)
+    Unknown Away: 'Lukko'
+    Unknown Home: 'SaiPa'
+  Mapping failed for Pelicans @ Ässät (Away: None, Home: None)
+    Unknown Away: 'Pelicans'
+    Unknown Home: 'Ässät'
+  Skipping non-game event (no '@' separator): Liiga 2025/26
+Processing league/group: None with 8 events.
+  Mapping failed for Eisbären Berlin @ ERC Ingolstadt (Away: None, Home: None)
+    Unknown Away: 'Eisbären Berlin'
+    Unknown Home: 'ERC Ingolstadt'
+  Mapping failed for Grizzlys Wolfsburg @ Kölner Haie (Away: None, Home: None)
+    Unknown Away: 'Grizzlys Wolfsburg'
+    Unknown Home: 'Kölner Haie'
+  Mapping failed for Schwenninger Wild Wings @ EHC Red Bull München (Away: None, Home: None)
+    Unknown Away: 'Schwenninger Wild Wings'
+    Unknown Home: 'EHC Red Bull München'
+  Mapping failed for Augsburger Panther @ Löwen Frankfurt (Away: None, Home: None)
+    Unknown Away: 'Augsburger Panther'
+    Unknown Home: 'Löwen Frankfurt'
+  Mapping failed for Dresdner Eislöwen @ Nürnberg Ice Tigers (Away: None, Home: None)
+    Unknown Away: 'Dresdner Eislöwen'
+    Unknown Home: 'Nürnberg Ice Tigers'
+  Mapping failed for Iserlohn Roosters @ Adler Mannheim (Away: None, Home: None)
+    Unknown Away: 'Iserlohn Roosters'
+    Unknown Home: 'Adler Mannheim'
+  Mapping failed for Pinguins Bremerhaven @ Straubing Tigers (Away: None, Home: None)
+    Unknown Away: 'Pinguins Bremerhaven'
+    Unknown Home: 'Straubing Tigers'
+  Skipping non-game event (no '@' separator): Deutsche Eishockey Liga 2025/26
+Processing league/group: None with 6 events.
+  Mapping failed for HC Norilsk @ Neftjanik Almetjevsk (Away: None, Home: None)
+    Unknown Away: 'HC Norilsk'
+    Unknown Home: 'Neftjanik Almetjevsk'
+  Mapping failed for Toros Neftekamsk @ HC Khimik Voskresensk (Away: None, Home: None)
+    Unknown Away: 'Toros Neftekamsk'
+    Unknown Home: 'HC Khimik Voskresensk'
+  Mapping failed for HC Yugra @ JHC Molot U20 (Away: None, Home: None)
+    Unknown Away: 'HC Yugra'
+    Unknown Home: 'JHC Molot U20'
+  Mapping failed for HC Tambov @ Kristall Saratov (Away: None, Home: None)
+    Unknown Away: 'HC Tambov'
+    Unknown Home: 'Kristall Saratov'
+  Mapping failed for Bars Kazan @ Buran Voronezh (Away: None, Home: None)
+    Unknown Away: 'Bars Kazan'
+    Unknown Home: 'Buran Voronezh'
+  Mapping failed for HK Torpedo Gorkii @ Gornyak Uchaly (Away: None, Home: None)
+    Unknown Away: 'HK Torpedo Gorkii'
+    Unknown Home: 'Gornyak Uchaly'
+Processing league/group: None with 11 events.
+  Mapping failed for Dinamo St Petersburg U20 @ Loko Yaroslavl U20 (Away: None, Home: None)
+    Unknown Away: 'Dinamo St Petersburg U20'
+    Unknown Home: 'Loko Yaroslavl U20'
+  Mapping failed for Mamonty Yugry U20 @ Chaika Nizhny Novgorod U20 (Away: None, Home: None)
+    Unknown Away: 'Mamonty Yugry U20'
+    Unknown Home: 'Chaika Nizhny Novgorod U20'
+  Mapping failed for SKA-1946 U20 @ Almaz Cherepovets U20 (Away: None, Home: None)
+    Unknown Away: 'SKA-1946 U20'
+    Unknown Home: 'Almaz Cherepovets U20'
+  Mapping failed for JHC Spartak Mah U20 @ Dinamo Shinnik Bobruysk U20 (Away: None, Home: None)
+    Unknown Away: 'JHC Spartak Mah U20'
+    Unknown Home: 'Dinamo Shinnik Bobruysk U20'
+  Mapping failed for Kuznetskie Medvedi U20 @ Akm Novomoskovsk (Away: None, Home: None)
+    Unknown Away: 'Kuznetskie Medvedi U20'
+    Unknown Home: 'Akm Novomoskovsk'
+  Mapping failed for Dynamo Moscow U20 @ Krasnaya Armiya U20 (Away: None, Home: None)
+    Unknown Away: 'Dynamo Moscow U20'
+    Unknown Home: 'Krasnaya Armiya U20'
+  Mapping failed for Mikhaylov Academy U20 @ Spartak Moskow U20 (Away: None, Home: None)
+    Unknown Away: 'Mikhaylov Academy U20'
+    Unknown Home: 'Spartak Moskow U20'
+  Mapping failed for Sibirskie Snaipery U20 @ Sputnik Almetievsk U20 (Away: None, Home: None)
+    Unknown Away: 'Sibirskie Snaipery U20'
+    Unknown Home: 'Sputnik Almetievsk U20'
+  Mapping failed for AKM Novomoskovsk U20 @ Sahalinskie Akuly U20 (Away: None, Home: None)
+    Unknown Away: 'AKM Novomoskovsk U20'
+    Unknown Home: 'Sahalinskie Akuly U20'
+  Mapping failed for Kapitan Stupino U20 @ HC Taifun U20 (Away: None, Home: None)
+    Unknown Away: 'Kapitan Stupino U20'
+    Unknown Home: 'HC Taifun U20'
+  Mapping failed for Avto Yekaterinburg U20 @ Tyumenskiy Legion U20 (Away: None, Home: None)
+    Unknown Away: 'Avto Yekaterinburg U20'
+    Unknown Home: 'Tyumenskiy Legion U20'
+Processing league/group: None with 8 events.
+  Mapping failed for Brynäs IF @ Rögle BK (Away: None, Home: None)
+    Unknown Away: 'Brynäs IF'
+    Unknown Home: 'Rögle BK'
+  Mapping failed for Djurgårdens IF @ Linköping HC (Away: None, Home: None)
+    Unknown Away: 'Djurgårdens IF'
+    Unknown Home: 'Linköping HC'
+  Mapping failed for HV 71 @ Frölunda HC (Away: None, Home: None)
+    Unknown Away: 'HV 71'
+    Unknown Home: 'Frölunda HC'
+  Mapping failed for Luleå HF @ Växjö Lakers (Away: None, Home: None)
+    Unknown Away: 'Luleå HF'
+    Unknown Home: 'Växjö Lakers'
+  Mapping failed for Malmö Redhawks @ Leksands IF (Away: None, Home: None)
+    Unknown Away: 'Malmö Redhawks'
+    Unknown Home: 'Leksands IF'
+  Mapping failed for Skellefteå AIK @ Timrå IK (Away: None, Home: None)
+    Unknown Away: 'Skellefteå AIK'
+    Unknown Home: 'Timrå IK'
+  Mapping failed for Örebro HK @ Färjestad BK (Away: None, Home: None)
+    Unknown Away: 'Örebro HK'
+    Unknown Home: 'Färjestad BK'
+  Skipping non-game event (no '@' separator): SHL 2025/26
+Processing league/group: None with 7 events.
+  Mapping failed for AIK IF @ Almtuna IS (Away: None, Home: None)
+    Unknown Away: 'AIK IF'
+    Unknown Home: 'Almtuna IS'
+  Mapping failed for IF Björklöven @ Nybro Vikings IF (Away: None, Home: None)
+    Unknown Away: 'IF Björklöven'
+    Unknown Home: 'Nybro Vikings IF'
+  Mapping failed for IK Oskarshamn @ Östersunds IK (Away: None, Home: None)
+    Unknown Away: 'IK Oskarshamn'
+    Unknown Home: 'Östersunds IK'
+  Mapping failed for Mora IK @ IF Troja-Ljungby (Away: None, Home: None)
+    Unknown Away: 'Mora IK'
+    Unknown Home: 'IF Troja-Ljungby'
+  Mapping failed for Södertälje SK @ Kalmar HC (Away: None, Home: None)
+    Unknown Away: 'Södertälje SK'
+    Unknown Home: 'Kalmar HC'
+  Mapping failed for Vimmerby HC @ BIK Karlskoga (Away: None, Home: None)
+    Unknown Away: 'Vimmerby HC'
+    Unknown Home: 'BIK Karlskoga'
+  Mapping failed for Västerås IK @ MoDo Hockey (Away: None, Home: None)
+    Unknown Away: 'Västerås IK'
+    Unknown Home: 'MoDo Hockey'
+Processing league/group: None with 10 events.
+  Mapping failed for EHC Kloten @ EV Zug (Away: None, Home: None)
+    Unknown Away: 'EHC Kloten'
+    Unknown Home: 'EV Zug'
+  Mapping failed for HC Ajoie @ Fribourg-Gottéron (Away: None, Home: None)
+    Unknown Away: 'HC Ajoie'
+    Unknown Home: 'Fribourg-Gottéron'
+  Mapping failed for HC Lugano @ ZSC Lions (Away: None, Home: None)
+    Unknown Away: 'HC Lugano'
+    Unknown Home: 'ZSC Lions'
+  Mapping failed for EHC Biel @ EV Zug (Away: None, Home: None)
+    Unknown Away: 'EHC Biel'
+    Unknown Home: 'EV Zug'
+  Mapping failed for Fribourg-Gottéron @ HC Ambri-Piotta (Away: None, Home: None)
+    Unknown Away: 'Fribourg-Gottéron'
+    Unknown Home: 'HC Ambri-Piotta'
+  Mapping failed for HC Davos @ SC Bern (Away: None, Home: None)
+    Unknown Away: 'HC Davos'
+    Unknown Home: 'SC Bern'
+  Mapping failed for HC Lausanne @ HC Ajoie (Away: None, Home: None)
+    Unknown Away: 'HC Lausanne'
+    Unknown Home: 'HC Ajoie'
+  Mapping failed for SC Rapperswil-Jona Lakers @ EHC Kloten (Away: None, Home: None)
+    Unknown Away: 'SC Rapperswil-Jona Lakers'
+    Unknown Home: 'EHC Kloten'
+  Mapping failed for SCL Tigers @ Genève-Servette HC (Away: None, Home: None)
+    Unknown Away: 'SCL Tigers'
+    Unknown Home: 'Genève-Servette HC'
+  Skipping non-game event (no '@' separator): Swiss National League 25/26
+Processing league/group: None with 7 events.
+  Mapping failed for EHC Bregenzerwald @ Die Adler Kitzbühel (Away: None, Home: None)
+    Unknown Away: 'EHC Bregenzerwald'
+    Unknown Home: 'Die Adler Kitzbühel'
+  Mapping failed for HC Gherdeina @ Zeller Eisbaren (Away: None, Home: None)
+    Unknown Away: 'HC Gherdeina'
+    Unknown Home: 'Zeller Eisbaren'
+  Mapping failed for SG Cortina @ Khl Sisak (Away: None, Home: None)
+    Unknown Away: 'SG Cortina'
+    Unknown Home: 'Khl Sisak'
+  Mapping failed for HC Merano @ HC Asiago (Away: None, Home: None)
+    Unknown Away: 'HC Merano'
+    Unknown Home: 'HC Asiago'
+  Mapping failed for HDD SIJ Acroni Jesenice @ Hockey Unterland Cavaliers (Away: None, Home: None)
+    Unknown Away: 'HDD SIJ Acroni Jesenice'
+    Unknown Home: 'Hockey Unterland Cavaliers'
+  Mapping failed for SSI Vipiteno Weihenstephan @ Ritten Sport (Away: None, Home: None)
+    Unknown Away: 'SSI Vipiteno Weihenstephan'
+    Unknown Home: 'Ritten Sport'
+  Mapping failed for Zeller Eisbaren @ HDD SIJ Acroni Jesenice (Away: None, Home: None)
+    Unknown Away: 'Zeller Eisbaren'
+    Unknown Home: 'HDD SIJ Acroni Jesenice'
+Processing league/group: None with 7 events.
+  Mapping failed for HK Olimpija @ Graz 99ers (Away: None, Home: None)
+    Unknown Away: 'HK Olimpija'
+    Unknown Home: 'Graz 99ers'
+  Mapping failed for FTC-Telekom @ Vienna Capitals (Away: None, Home: None)
+    Unknown Away: 'FTC-Telekom'
+    Unknown Home: 'Vienna Capitals'
+  Mapping failed for KAC Klagenfurt @ Fehervar AV19 (Away: None, Home: None)
+    Unknown Away: 'KAC Klagenfurt'
+    Unknown Home: 'Fehervar AV19'
+  Mapping failed for Pioneers Vorarlberg @ RB Salzburg (Away: None, Home: None)
+    Unknown Away: 'Pioneers Vorarlberg'
+    Unknown Home: 'RB Salzburg'
+  Mapping failed for Black Wings Linz @ Bolzano-Bozen Foxes (Away: None, Home: None)
+    Unknown Away: 'Black Wings Linz'
+    Unknown Home: 'Bolzano-Bozen Foxes'
+  Mapping failed for TWK Innsbruck @ Pustertal Wolfe (Away: None, Home: None)
+    Unknown Away: 'TWK Innsbruck'
+    Unknown Home: 'Pustertal Wolfe'
+  Skipping non-game event (no '@' separator): ICE Hockey League 25/26
+Processing league/group: None with 7 events.
+  Mapping failed for Lida @ Yunost Minsk (Away: None, Home: None)
+    Unknown Away: 'Lida'
+    Unknown Home: 'Yunost Minsk'
+  Mapping failed for Metallurg Zhlobin @ Shakhtyor Soligorsk (Away: None, Home: None)
+    Unknown Away: 'Metallurg Zhlobin'
+    Unknown Home: 'Shakhtyor Soligorsk'
+  Mapping failed for Slavutych Smolensk @ Aviator Baranovichi (Away: None, Home: None)
+    Unknown Away: 'Slavutych Smolensk'
+    Unknown Home: 'Aviator Baranovichi'
+  Mapping failed for Dinamo Molodechno @ Khimik-SKA (Away: None, Home: None)
+    Unknown Away: 'Dinamo Molodechno'
+    Unknown Home: 'Khimik-SKA'
+  Mapping failed for Lokomotiv Orsha @ Mogilev (Away: None, Home: None)
+    Unknown Away: 'Lokomotiv Orsha'
+    Unknown Home: 'Mogilev'
+  Mapping failed for Gomel @ Neman Grodno (Away: None, Home: None)
+    Unknown Away: 'Gomel'
+    Unknown Home: 'Neman Grodno'
+  Mapping failed for Vitebsk @ Brest (Away: None, Home: None)
+    Unknown Away: 'Vitebsk'
+    Unknown Home: 'Brest'
+Processing league/group: None with 7 events.
+  Mapping failed for Dukla Jihlava @ Frydek Mistek (Away: None, Home: None)
+    Unknown Away: 'Dukla Jihlava'
+    Unknown Home: 'Frydek Mistek'
+  Mapping failed for HC Chomutov @ Zubr Prerov (Away: None, Home: None)
+    Unknown Away: 'HC Chomutov'
+    Unknown Home: 'Zubr Prerov'
+  Mapping failed for PSG Berani Zlin @ VHK Vsetin (Away: None, Home: None)
+    Unknown Away: 'PSG Berani Zlin'
+    Unknown Home: 'VHK Vsetin'
+  Mapping failed for HC Tábor @ RT Torax Poruba (Away: None, Home: None)
+    Unknown Away: 'HC Tábor'
+    Unknown Home: 'RT Torax Poruba'
+  Mapping failed for Horacka Slavia Trebic @ SC Kolin (Away: None, Home: None)
+    Unknown Away: 'Horacka Slavia Trebic'
+    Unknown Home: 'SC Kolin'
+  Mapping failed for Slavia Prague @ Banik Sokolov (Away: None, Home: None)
+    Unknown Away: 'Slavia Prague'
+    Unknown Home: 'Banik Sokolov'
+  Mapping failed for Stadion Litomerice @ Dynamo Pardubice B (Away: None, Home: None)
+    Unknown Away: 'Stadion Litomerice'
+    Unknown Home: 'Dynamo Pardubice B'
+Processing league/group: None with 5 events.
+  Mapping failed for Herlev Eagles @ Frederikshavn White Hawks (Away: None, Home: None)
+    Unknown Away: 'Herlev Eagles'
+    Unknown Home: 'Frederikshavn White Hawks'
+  Mapping failed for Esbjerg Energy @ Rungsted Ishockey (Away: None, Home: None)
+    Unknown Away: 'Esbjerg Energy'
+    Unknown Home: 'Rungsted Ishockey'
+  Mapping failed for IK SønderjyskE @ Rødovre Mighty Bulls (Away: None, Home: None)
+    Unknown Away: 'IK SønderjyskE'
+    Unknown Home: 'Rødovre Mighty Bulls'
+  Mapping failed for Odense Bulldogs @ Herning Blue Fox (Away: None, Home: None)
+    Unknown Away: 'Odense Bulldogs'
+    Unknown Home: 'Herning Blue Fox'
+  Skipping non-game event (no '@' separator): Metal Ligaen 25/26
+Processing league/group: None with 1 events.
+  Mapping failed for Fife Flyers @ Glasgow Clan (Away: None, Home: None)
+    Unknown Away: 'Fife Flyers'
+    Unknown Home: 'Glasgow Clan'
+Processing league/group: None with 4 events.
+  Mapping failed for Kiekko-Vantaa @ Pyry (Away: None, Home: None)
+    Unknown Away: 'Kiekko-Vantaa'
+    Unknown Home: 'Pyry'
+  Mapping failed for IPK @ RoKi (Away: None, Home: None)
+    Unknown Away: 'IPK'
+    Unknown Home: 'RoKi'
+  Mapping failed for Jokerit Helsinki @ KeuPa HT (Away: None, Home: None)
+    Unknown Away: 'Jokerit Helsinki'
+    Unknown Home: 'KeuPa HT'
+  Mapping failed for TUTO Hockey @ Hermes (Away: None, Home: None)
+    Unknown Away: 'TUTO Hockey'
+    Unknown Home: 'Hermes'
+Processing league/group: None with 7 events.
+  Mapping failed for K-Espoo U20 @ Lukko U20 (Away: None, Home: None)
+    Unknown Away: 'K-Espoo U20'
+    Unknown Home: 'Lukko U20'
+  Mapping failed for KalPa U20 @ Pelicans U20 (Away: None, Home: None)
+    Unknown Away: 'KalPa U20'
+    Unknown Home: 'Pelicans U20'
+  Mapping failed for Kärpät U20 @ KooKoo U20 (Away: None, Home: None)
+    Unknown Away: 'Kärpät U20'
+    Unknown Home: 'KooKoo U20'
+  Mapping failed for Sport U20 @ JYP U20 (Away: None, Home: None)
+    Unknown Away: 'Sport U20'
+    Unknown Home: 'JYP U20'
+  Mapping failed for TPS U20 @ Jukurit U20 (Away: None, Home: None)
+    Unknown Away: 'TPS U20'
+    Unknown Home: 'Jukurit U20'
+  Mapping failed for RoKi U20 @ Tappara U20 (Away: None, Home: None)
+    Unknown Away: 'RoKi U20'
+    Unknown Home: 'Tappara U20'
+  Mapping failed for HIFK U20 @ Jokerit U20 (Away: None, Home: None)
+    Unknown Away: 'HIFK U20'
+    Unknown Home: 'Jokerit U20'
+Processing league/group: None with 1 events.
+  Mapping failed for Rouen HE @ Ducs d'Angers (Away: None, Home: None)
+    Unknown Away: 'Rouen HE'
+    Unknown Home: 'Ducs d'Angers'
+Processing league/group: None with 7 events.
+  Mapping failed for Ducs d'Angers @ Les Aigles de Nice (Away: None, Home: None)
+    Unknown Away: 'Ducs d'Angers'
+    Unknown Home: 'Les Aigles de Nice'
+  Mapping failed for Anglet Hormadi Élite @ Spartiates de Marseille (Away: None, Home: None)
+    Unknown Away: 'Anglet Hormadi Élite'
+    Unknown Home: 'Spartiates de Marseille'
+  Mapping failed for Chamonix Mont-Blanc Pionieers @ HC Amiens Somme (Away: None, Home: None)
+    Unknown Away: 'Chamonix Mont-Blanc Pionieers'
+    Unknown Home: 'HC Amiens Somme'
+  Mapping failed for Rapaces de Gap @ Grenoble Brûleurs de loups (Away: None, Home: None)
+    Unknown Away: 'Rapaces de Gap'
+    Unknown Home: 'Grenoble Brûleurs de loups'
+  Mapping failed for Boxers de Bordeaux @ Jokers de Cergy-Pontoise (Away: None, Home: None)
+    Unknown Away: 'Boxers de Bordeaux'
+    Unknown Home: 'Jokers de Cergy-Pontoise'
+  Mapping failed for Rouen HE @ Diables Rouges de Briançon (Away: None, Home: None)
+    Unknown Away: 'Rouen HE'
+    Unknown Home: 'Diables Rouges de Briançon'
+  Mapping failed for Grenoble Brûleurs de loups @ Boxers de Bordeaux (Away: None, Home: None)
+    Unknown Away: 'Grenoble Brûleurs de loups'
+    Unknown Home: 'Boxers de Bordeaux'
+Processing league/group: None with 6 events.
+  Mapping failed for Bad Nauheim @ ESV Kaufbeuren (Away: None, Home: None)
+    Unknown Away: 'Bad Nauheim'
+    Unknown Home: 'ESV Kaufbeuren'
+  Mapping failed for Düsseldorfer EG @ Lausitzer Füchse (Away: None, Home: None)
+    Unknown Away: 'Düsseldorfer EG'
+    Unknown Home: 'Lausitzer Füchse'
+  Mapping failed for EV Blue Devils Weiden @ Starbulls Rosenheim (Away: None, Home: None)
+    Unknown Away: 'EV Blue Devils Weiden'
+    Unknown Home: 'Starbulls Rosenheim'
+  Mapping failed for EV Landshut @ Kassel Huskies (Away: None, Home: None)
+    Unknown Away: 'EV Landshut'
+    Unknown Home: 'Kassel Huskies'
+  Mapping failed for Eispiraten Crimmitschau @ EHC Freiburg (Away: None, Home: None)
+    Unknown Away: 'Eispiraten Crimmitschau'
+    Unknown Home: 'EHC Freiburg'
+  Mapping failed for Eisbären Regensburg @ Ravensburg Towerstars (Away: None, Home: None)
+    Unknown Away: 'Eisbären Regensburg'
+    Unknown Home: 'Ravensburg Towerstars'
+Processing league/group: None with 2 events.
+  Mapping failed for Gornyak Rudny U20 @ Aktobe U20 (Away: None, Home: None)
+    Unknown Away: 'Gornyak Rudny U20'
+    Unknown Home: 'Aktobe U20'
+  Mapping failed for Jas Batyr U20 @ Turan Tigers U20 (Away: None, Home: None)
+    Unknown Away: 'Jas Batyr U20'
+    Unknown Home: 'Turan Tigers U20'
+Processing league/group: None with 2 events.
+  Mapping failed for Kyiv Capitals @ Airwell Energija (Away: None, Home: None)
+    Unknown Away: 'Kyiv Capitals'
+    Unknown Home: 'Airwell Energija'
