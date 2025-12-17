@@ -60,7 +60,7 @@ def get_href_stats(date_str, tricode):
 # Constants
 BASE_URL = "https://api-web.nhle.com/v1"
 SEASON_START_DATE = "2025-10-04" 
-OUTPUT_FILENAME = "nhl_season_2025_2026_gamestats.csv"
+OUTPUT_FILENAME = "../data/gamestats.csv"
 
 
 # Create unverified context for SSL to avoid cert errors
@@ -214,7 +214,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "rest": home_rest,
             "scored_first": 0,
             "max_lead": 0,
-            "en_attempts": 0 # New: Empty Net Attempts
+            "en_attempts": 0, # New: Empty Net Attempts
+            "attempts_5v5": 0 # New: 5v5 Attempts
         },
         away_id: {
             "name": away_team.get("commonName", {}).get("default", "Away"),
@@ -239,7 +240,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "rest": away_rest,
             "scored_first": 0,
             "max_lead": 0,
-            "en_attempts": 0 # New
+            "en_attempts": 0, # New
+            "attempts_5v5": 0 # New: 5v5 Attempts
         }
     }
     
@@ -574,6 +576,10 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 teams[owner_id]['attempts'][period_key] += 1 # Goal is an Attempt
                 teams[owner_id]['attempts']['total'] += 1
                 
+                # 5v5 Check
+                if current_strength == (5, 5, 1, 1):
+                    teams[owner_id]['attempts_5v5'] += 1
+                
                 # PP Goal?
                 # Exclude Penalty Shots
                 sec_type = details.get("secondaryType", "").lower()
@@ -649,6 +655,9 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 teams[owner_id]['attempts'][period_key] += 1
                 teams[owner_id]['attempts']['total'] += 1
                 
+                if current_strength == (5, 5, 1, 1):
+                    teams[owner_id]['attempts_5v5'] += 1
+                
                 # Save for opponent
                 opp_id = away_id if owner_id == home_id else home_id
                 teams[opp_id]['saves'] += 1
@@ -658,6 +667,9 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             if owner_id in teams:
                 teams[owner_id]['attempts'][period_key] += 1
                 teams[owner_id]['attempts']['total'] += 1
+                
+                if current_strength == (5, 5, 1, 1):
+                    teams[owner_id]['attempts_5v5'] += 1
                 
                 # Post/Crossbar?
                 reason = details.get("reason", "").lower()
@@ -683,6 +695,9 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             if shooter_id in teams:
                 teams[shooter_id]['attempts'][period_key] += 1
                 teams[shooter_id]['attempts']['total'] += 1
+
+                if current_strength == (5, 5, 1, 1):
+                    teams[shooter_id]['attempts_5v5'] += 1
 
                 # Empty Net Attempt (Blocked)?
                 # If Shooter is Home, check Away Goal.
@@ -1126,6 +1141,10 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "attempts_ag_1P": opp_stats['attempts']['1'], "attempts_ag_2P": opp_stats['attempts']['2'],
             "attempts_ag_3P": opp_stats['attempts']['3'], "attempts_ag_OT": opp_stats['attempts']['4'],
             "attempts_ag": opp_stats['attempts']['total'],
+            
+            # 5v5 Attempts
+            "attempts_for_5v5": stats['attempts_5v5'],
+            "attempts_ag_5v5": opp_stats['attempts_5v5'],
             
             # Goals
             "goals_for_1P": stats['goals']['1'], "goals_for_2P": stats['goals']['2'],
