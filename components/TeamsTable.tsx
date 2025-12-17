@@ -343,7 +343,17 @@ const TeamsTable = () => {
 
                     console.log("Parsed Predictions Rows:", parsedPreds.length);
 
+                    // Get today's date in YYYY-MM-DD (Local Time)
+                    const today = new Date();
+                    const year = today.getFullYear();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+                    const todayStr = `${year}-${month}-${day}`;
+
+                    console.log("Filtering for today:", todayStr);
+
                     const matchups: Matchup[] = parsedPreds
+                        .filter((row: any) => row.game_date === todayStr)
                         .map((row: any) => ({
                             home: row.home_team?.trim(),
                             away: row.away_team?.trim(),
