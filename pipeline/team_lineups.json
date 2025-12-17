@@ -1138,29 +1138,6 @@
     "VGK": {
         "f1": [
             {
-                "name": "Ivan Barbashev",
-                "number": 49,
-                "pos": "lw",
-                "id": 2737,
-                "ppUnit": 2
-            },
-            {
-                "name": "Jack Eichel",
-                "number": 9,
-                "pos": "c",
-                "id": 2472,
-                "ppUnit": 1
-            },
-            {
-                "name": "Mark Stone",
-                "number": 61,
-                "pos": "rw",
-                "id": 1779,
-                "ppUnit": 1
-            }
-        ],
-        "f2": [
-            {
                 "name": "Mitch Marner",
                 "number": 16,
                 "pos": "lw",
@@ -1175,20 +1152,20 @@
                 "ppUnit": null
             },
             {
-                "name": "Braeden Bowman",
-                "number": 42,
+                "name": "Mark Stone",
+                "number": 61,
                 "pos": "rw",
-                "id": 30925,
-                "ppUnit": 2
+                "id": 1779,
+                "ppUnit": 1
             }
         ],
-        "f3": [
+        "f2": [
             {
-                "name": "Brandon Saad",
-                "number": 20,
+                "name": "Ivan Barbashev",
+                "number": 49,
                 "pos": "lw",
-                "id": 1785,
-                "ppUnit": null
+                "id": 2737,
+                "ppUnit": 2
             },
             {
                 "name": "Tomas Hertl",
@@ -1203,6 +1180,29 @@
                 "pos": "rw",
                 "id": 30622,
                 "ppUnit": 1
+            }
+        ],
+        "f3": [
+            {
+                "name": "Brandon Saad",
+                "number": 20,
+                "pos": "lw",
+                "id": 1785,
+                "ppUnit": null
+            },
+            {
+                "name": "Reilly Smith",
+                "number": 19,
+                "pos": "c",
+                "id": 1853,
+                "ppUnit": 2
+            },
+            {
+                "name": "Braeden Bowman",
+                "number": 42,
+                "pos": "rw",
+                "id": 30925,
+                "ppUnit": 2
             }
         ],
         "f4": [
@@ -1230,27 +1230,11 @@
         ],
         "d1": [
             {
-                "name": "Brayden McNabb",
-                "number": 3,
-                "pos": "ld",
-                "id": 1681,
-                "ppUnit": null
-            },
-            {
-                "name": "Shea Theodore",
-                "number": 27,
-                "pos": "rd",
-                "id": 2157,
-                "ppUnit": 2
-            }
-        ],
-        "d2": [
-            {
                 "name": "Noah Hanifin",
                 "number": 15,
                 "pos": "ld",
                 "id": 2473,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Zach Whitecloud",
@@ -1260,12 +1244,12 @@
                 "ppUnit": null
             }
         ],
-        "d3": [
+        "d2": [
             {
-                "name": "Ben Hutton",
-                "number": 17,
+                "name": "Brayden McNabb",
+                "number": 3,
                 "pos": "ld",
-                "id": 2508,
+                "id": 1681,
                 "ppUnit": null
             },
             {
@@ -1273,6 +1257,22 @@
                 "number": 6,
                 "pos": "rd",
                 "id": 28524,
+                "ppUnit": null
+            }
+        ],
+        "d3": [
+            {
+                "name": "Ben Hutton",
+                "number": 17,
+                "pos": "ld",
+                "id": 2508,
+                "ppUnit": 2
+            },
+            {
+                "name": "Dylan Coghlan",
+                "number": null,
+                "pos": "rd",
+                "id": 4601,
                 "ppUnit": null
             }
         ]
