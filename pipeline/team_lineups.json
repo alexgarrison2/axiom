@@ -144,11 +144,11 @@
     "LAK": {
         "f1": [
             {
-                "name": "Andrei Kuzmenko",
-                "number": 96,
+                "name": "Alex Laferriere",
+                "number": 14,
                 "pos": "lw",
-                "id": 25254,
-                "ppUnit": 1
+                "id": 32954,
+                "ppUnit": 2
             },
             {
                 "name": "Anze Kopitar",
@@ -174,6 +174,29 @@
                 "ppUnit": 1
             },
             {
+                "name": "Quinton Byfield",
+                "number": 55,
+                "pos": "c",
+                "id": 29855,
+                "ppUnit": 1
+            },
+            {
+                "name": "Warren Foegele",
+                "number": 37,
+                "pos": "rw",
+                "id": 3911,
+                "ppUnit": null
+            }
+        ],
+        "f3": [
+            {
+                "name": "Andrei Kuzmenko",
+                "number": 96,
+                "pos": "lw",
+                "id": 25254,
+                "ppUnit": 1
+            },
+            {
                 "name": "Alex Turcotte",
                 "number": 15,
                 "pos": "c",
@@ -188,35 +211,12 @@
                 "ppUnit": null
             }
         ],
-        "f3": [
-            {
-                "name": "Warren Foegele",
-                "number": 37,
-                "pos": "lw",
-                "id": 3911,
-                "ppUnit": null
-            },
-            {
-                "name": "Alex Laferriere",
-                "number": 14,
-                "pos": "c",
-                "id": 32954,
-                "ppUnit": 2
-            },
+        "f4": [
             {
                 "name": "Joel Armia",
                 "number": 40,
-                "pos": "rw",
-                "id": 1952,
-                "ppUnit": 2
-            }
-        ],
-        "f4": [
-            {
-                "name": "Jeff Malott",
-                "number": 39,
                 "pos": "lw",
-                "id": 34555,
+                "id": 1952,
                 "ppUnit": null
             },
             {
@@ -247,7 +247,7 @@
                 "number": 8,
                 "pos": "rd",
                 "id": 744,
-                "ppUnit": 1
+                "ppUnit": 2
             }
         ],
         "d2": [
@@ -1120,18 +1120,18 @@
         ],
         "d3": [
             {
-                "name": "Alexander Nikishin",
-                "number": 21,
-                "pos": "ld",
-                "id": 32897,
-                "ppUnit": 2
-            },
-            {
                 "name": "Jaccob Slavin",
                 "number": 74,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 2516,
                 "ppUnit": null
+            },
+            {
+                "name": "Alexander Nikishin",
+                "number": 21,
+                "pos": "rd",
+                "id": 32897,
+                "ppUnit": 2
             }
         ]
     },
