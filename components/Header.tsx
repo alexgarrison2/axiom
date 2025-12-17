@@ -16,21 +16,7 @@ const Header: React.FC<HeaderProps> = ({ lastRefresh, compact = false }) => {
                 <FullLogoAnimated />
             </Link>
 
-            {/* Navigation */}
-            <nav className="flex gap-8 mt-6 text-sm font-bold tracking-widest uppercase items-center">
-                <Link
-                    href="/"
-                    className="text-neutral-400 hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all duration-300"
-                >
-                    Predictions
-                </Link>
-                <Link
-                    href="/teams"
-                    className="text-neutral-400 hover:text-cyan-400 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] transition-all duration-300"
-                >
-                    Teams
-                </Link>
-            </nav>
+
 
             {lastRefresh && (
                 <div className="text-neutral-500 text-xs md:text-sm font-mono tracking-widest uppercase mt-4 opacity-80">

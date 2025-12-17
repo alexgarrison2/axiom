@@ -5,6 +5,7 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { GamePrediction, HistoryEntry } from '@/utils/data';
 import MatchupCard from './MatchupCard';
 import HistoryTable from './HistoryTable';
+import TeamsTable from './TeamsTable';
 
 interface PredictionsViewerProps {
     predictions: GamePrediction[];
@@ -50,7 +51,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
 
     // Filter predictions for the selected date
     const filteredPredictions = useMemo(() => {
-        if (selectedTab === 'History') return [];
+        if (selectedTab === 'History' || selectedTab === 'Teams') return [];
         return predictions.filter(p => p.date === selectedTab);
     }, [predictions, selectedTab]);
 
@@ -64,11 +65,9 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
             <div className="flex flex-col items-center mb-12 gap-8">
 
                 {/* Controls Row */}
-                <div className="flex items-center gap-2 md:gap-8 flex-nowrap justify-center w-full relative z-20 max-w-full overflow-hidden">
-
+                <div className="flex items-center justify-center w-full relative z-20 max-w-full">
                     {/* Date Selector */}
-                    <div className="flex items-center gap-2 md:gap-4 flex-nowrap justify-center bg-black/40 p-1 md:p-2 rounded-full backdrop-blur-md border border-white/5 w-auto max-w-full overflow-x-auto scrollbar-hide">
-
+                    <div className="grid grid-cols-2 md:flex items-center gap-2 md:gap-4 bg-black/40 p-1 md:p-2 rounded-2xl md:rounded-full backdrop-blur-md border border-white/5 w-auto max-w-full overflow-hidden">
                         {/* History Button */}
                         <button
                             onClick={() => setSelectedTab('History')}
@@ -85,6 +84,24 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                                 />
                             )}
                             <span className="relative z-10">HISTORY</span>
+                        </button>
+
+                        {/* Teams Button */}
+                        <button
+                            onClick={() => setSelectedTab('Teams')}
+                            className={`relative px-3 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 ${selectedTab === 'Teams'
+                                ? 'text-purple-400 border-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.3)] text-glow-purple'
+                                : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
+                                }`}
+                        >
+                            {selectedTab === 'Teams' && (
+                                <motion.div
+                                    layoutId="activeTab"
+                                    className="absolute inset-0 bg-purple-400/10 rounded-full"
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                />
+                            )}
+                            <span className="relative z-10">TEAMS</span>
                         </button>
 
                         {/* Date Buttons */}
@@ -193,6 +210,16 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                     </div>
 
                     <HistoryTable entries={history} />
+                </motion.div>
+            ) : selectedTab === 'Teams' ? (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full"
+                >
+                    <TeamsTable />
                 </motion.div>
             ) : (
                 /* Grid Layout - Staggered Fade In */
