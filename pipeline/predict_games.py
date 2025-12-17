@@ -1,5 +1,6 @@
 import fetch_dailyfaceoff
 import fetch_goalie_history # New Module
+import shutil
 import json
 import math
 import csv
@@ -1385,6 +1386,24 @@ def predict():
             print("Synced to data/ (Fallback)")
         except:
             print("Failed to sync data.")
+
+    # --- ROBUST SYNC TO PUBLIC ---
+    # Ensure public/data is perfectly in sync with data/
+    try:
+        src = '../data/predictions_detailed.csv'
+        dst = '../public/data/predictions_detailed.csv'
+        if os.path.exists(src):
+            shutil.copy(src, dst)
+            print(f"Verified Sync: Copied {src} to {dst}")
+        else:
+            # Maybe running from root?
+            src = 'data/predictions_detailed.csv'
+            dst = 'public/data/predictions_detailed.csv'
+            if os.path.exists(src):
+                shutil.copy(src, dst)
+                print(f"Verified Sync (Root): Copied {src} to {dst}")
+    except Exception as e:
+        print(f"Final Sync Failed: {e}")
 
 if __name__ == "__main__":
     predict()
