@@ -1210,13 +1210,19 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
     return rows, shot_rows
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='NHL Scraper POC')
+    parser.add_argument('--full', action='store_true', help='Perform a full season re-scrape')
+    args = parser.parse_args()
+
     # Calculate date range
     # Check for existing file to determine Start Date (Incremental Update)
     start_date = datetime.strptime(SEASON_START_DATE, "%Y-%m-%d")
     existing_dates = set()
-    
-    if os.path.exists(OUTPUT_FILENAME):
-        print(f"Checking existing data in {OUTPUT_FILENAME}...")
+    is_full = args.full
+
+    if not is_full and os.path.exists(OUTPUT_FILENAME):
+        print(f"Checking existing data in {OUTPUT_FILENAME} (Incremental Mode)...")
         try:
             df_existing = pd.read_csv(OUTPUT_FILENAME)
             if 'game_date' in df_existing.columns and not df_existing.empty:
@@ -1227,6 +1233,8 @@ def main():
                 existing_dates = set(df_existing['game_date'].dt.date)
         except Exception as e:
             print(f"Error reading existing file: {e}. Starting from scratch.")
+    elif is_full:
+        print(f"Full re-scrape requested. Starting from {SEASON_START_DATE}...")
 
     end_date = datetime.now() - timedelta(days=1) # Yesterday
     # end_date = datetime(2025, 12, 10) # FORCE DEBUG DATE
@@ -1247,7 +1255,7 @@ def main():
     team_game_dates = defaultdict(list) # Track game dates for rest calc
     processed_game_ids = set()
     
-    if os.path.exists(OUTPUT_FILENAME):
+    if not is_full and os.path.exists(OUTPUT_FILENAME):
         try:
             df_existing = pd.read_csv(OUTPUT_FILENAME)
             if 'game_id' in df_existing.columns:
