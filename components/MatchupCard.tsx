@@ -577,7 +577,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                             isSocial={isSocial}
                         />
                         <NewsIndicator
-                            hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
+                            hasNews={prediction.away_news?.some(n => n.category !== 'Goalie Start') ?? false}
                             className="absolute bottom-2 left-2"
                         />
                     </div>
@@ -665,7 +665,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                             isSocial={isSocial}
                         />
                         <NewsIndicator
-                            hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
+                            hasNews={prediction.home_news?.some(n => n.category !== 'Goalie Start') ?? false}
                             className="absolute bottom-2 right-2"
                         />
                     </div>
@@ -749,13 +749,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
 
                     {/* Mobile Away News Indicator - Hoisted */}
                     <NewsIndicator
-                        hasNews={!!(prediction.away_news && prediction.away_news.length > 0)}
+                        hasNews={prediction.away_news?.some(n => n.category !== 'Goalie Start') ?? false}
                         className="absolute bottom-3 left-7 md:hidden z-20"
                     />
 
                     {/* Mobile Home News Indicator - Hoisted */}
                     <NewsIndicator
-                        hasNews={!!(prediction.home_news && prediction.home_news.length > 0)}
+                        hasNews={prediction.home_news?.some(n => n.category !== 'Goalie Start') ?? false}
                         className="absolute bottom-3 right-7 md:hidden z-20"
                     />
 
