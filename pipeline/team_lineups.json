@@ -854,6 +854,29 @@
     "TBL": {
         "f1": [
             {
+                "name": "Oliver Bjorkstrand",
+                "number": 22,
+                "pos": "lw",
+                "id": 2603,
+                "ppUnit": 1
+            },
+            {
+                "name": "Brayden Point",
+                "number": 21,
+                "pos": "c",
+                "id": 2456,
+                "ppUnit": 1
+            },
+            {
+                "name": "Nikita Kucherov",
+                "number": 86,
+                "pos": "rw",
+                "id": 2031,
+                "ppUnit": 1
+            }
+        ],
+        "f2": [
+            {
                 "name": "Jake Guentzel",
                 "number": 59,
                 "pos": "lw",
@@ -868,34 +891,11 @@
                 "ppUnit": 2
             },
             {
-                "name": "Nikita Kucherov",
-                "number": 86,
+                "name": "Nick Paul",
+                "number": 20,
                 "pos": "rw",
-                "id": 2031,
-                "ppUnit": 1
-            }
-        ],
-        "f2": [
-            {
-                "name": "Gage Goncalves",
-                "number": 93,
-                "pos": "lw",
-                "id": 32521,
+                "id": 2357,
                 "ppUnit": 2
-            },
-            {
-                "name": "Brayden Point",
-                "number": 21,
-                "pos": "c",
-                "id": 2456,
-                "ppUnit": 1
-            },
-            {
-                "name": "Oliver Bjorkstrand",
-                "number": 22,
-                "pos": "rw",
-                "id": 2603,
-                "ppUnit": 1
             }
         ],
         "f3": [
@@ -930,17 +930,17 @@
                 "ppUnit": null
             },
             {
-                "name": "Nick Paul",
-                "number": 20,
+                "name": "Dominic James",
+                "number": 17,
                 "pos": "c",
-                "id": 2357,
+                "id": 32816,
                 "ppUnit": 2
             },
             {
-                "name": "Dominic James",
-                "number": 17,
+                "name": "Gage Goncalves",
+                "number": 93,
                 "pos": "rw",
-                "id": 32816,
+                "id": 32521,
                 "ppUnit": 2
             }
         ],
@@ -969,26 +969,26 @@
                 "ppUnit": null
             },
             {
-                "name": "Maxwell Crozier",
-                "number": 24,
+                "name": "Charle-Edouard D'Astous",
+                "number": 51,
                 "pos": "rd",
-                "id": 28863,
-                "ppUnit": null
+                "id": 26500,
+                "ppUnit": 2
             }
         ],
         "d3": [
             {
-                "name": "Charle-Edouard D'Astous",
-                "number": 51,
+                "name": "Declan Carlile",
+                "number": 67,
                 "pos": "ld",
-                "id": 26500,
-                "ppUnit": 2
+                "id": 30124,
+                "ppUnit": null
             },
             {
-                "name": "Steven Santini",
-                "number": null,
+                "name": "Maxwell Crozier",
+                "number": 24,
                 "pos": "rd",
-                "id": 2624,
+                "id": 28863,
                 "ppUnit": null
             }
         ]
@@ -1152,11 +1152,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "Justin Sourdif",
-                "number": 34,
+                "name": "Anthony Beauvillier",
+                "number": 72,
                 "pos": "rw",
-                "id": 29606,
-                "ppUnit": null
+                "id": 2487,
+                "ppUnit": 2
             }
         ],
         "f2": [
@@ -1168,11 +1168,11 @@
                 "ppUnit": null
             },
             {
-                "name": "Connor McMichael",
-                "number": 24,
+                "name": "Justin Sourdif",
+                "number": 34,
                 "pos": "c",
-                "id": 29203,
-                "ppUnit": 2
+                "id": 29606,
+                "ppUnit": null
             },
             {
                 "name": "Tom Wilson",
@@ -1191,11 +1191,11 @@
                 "ppUnit": 2
             },
             {
-                "name": "Hendrix Lapierre",
-                "number": null,
+                "name": "Connor McMichael",
+                "number": 24,
                 "pos": "c",
-                "id": 29894,
-                "ppUnit": null
+                "id": 29203,
+                "ppUnit": 2
             },
             {
                 "name": "Ethen Frank",
@@ -1221,11 +1221,11 @@
                 "ppUnit": null
             },
             {
-                "name": "Anthony Beauvillier",
-                "number": 72,
+                "name": "Bogdan Trineyev",
+                "number": null,
                 "pos": "rw",
-                "id": 2487,
-                "ppUnit": 2
+                "id": 33047,
+                "ppUnit": null
             }
         ],
         "d1": [
@@ -1269,10 +1269,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Trevor van Riemsdyk",
-                "number": 57,
+                "name": "Declan Chisholm",
+                "number": 47,
                 "pos": "rd",
-                "id": 2383,
+                "id": 28803,
                 "ppUnit": null
             }
         ]
