@@ -301,6 +301,63 @@ const TeamsTable = () => {
     const [rawData, setRawData] = useState<RawGameStat[]>([]);
     const [todayMatchups, setTodayMatchups] = useState<Matchup[]>([]);
 
+    // Groups for Desktop headers and Mobile filtering
+    const STAT_GROUPS = useMemo(() => [
+        { name: 'Record', columns: ['gp', 'wins', 'losses', 'otl', 'points', 'pt_pct'] },
+        { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff'] },
+        { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_time_per_game'] },
+        { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_time_per_game'] },
+        { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'sh_pct'] },
+        { name: 'Saves', columns: ['sv_pct', 'gsax'] },
+        { name: 'xGoals', columns: ['xgf_per_game', 'xga_per_game', 'xgf_pct'] },
+        { name: 'Empty Net', columns: ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga'] },
+    ], []);
+
+    const [activeCategory, setActiveCategory] = useState(STAT_GROUPS[0].name);
+
+    const COLUMNS = useMemo(() => [
+        { k: 'gp', l: 'GP' },
+        { k: 'wins', l: 'W' },
+        { k: 'losses', l: 'L' },
+        { k: 'otl', l: 'OT' },
+        { k: 'points', l: 'PTS' },
+        { k: 'pt_pct', l: 'P%' },
+        { k: 'gf_per_game', l: 'GF/G' },
+        { k: 'ga_per_game', l: 'GA/G', inv: true },
+        { k: 'goal_diff', l: 'GΔ' },
+        { k: 'pp_goals', l: 'PPG' },
+        { k: 'pp_opps', l: 'PP Opp' },
+        { k: 'pp_pct', l: 'PP%' },
+        { k: 'pp_time_per_game', l: 'PP T/GP', isTime: true },
+        { k: 'pk_goals_allowed', l: 'PPGA', inv: true },
+        { k: 'pk_opps', l: 'PK Opp' },
+        { k: 'pk_pct', l: 'PK%' },
+        { k: 'pk_time_per_game', l: 'PK T/GP', isTime: true, inv: true },
+        { k: 'sf_per_game', l: 'SF/G' },
+        { k: 'sa_per_game', l: 'SA/G', inv: true },
+        { k: 'cf_per_game', l: 'CF/G' },
+        { k: 'ca_per_game', l: 'CA/G', inv: true },
+        { k: 'sh_pct', l: 'Sh%' },
+        { k: 'sv_pct', l: 'Sv%' },
+        { k: 'gsax', l: 'GSAx' },
+        { k: 'xgf_per_game', l: 'xGF/G' },
+        { k: 'xga_per_game', l: 'xGA/G', inv: true },
+        { k: 'xgf_pct', l: 'xGF%' },
+        { k: 'engf', l: 'EN GF' },
+        { k: 'en_attempts', l: 'EN Att' },
+        { k: 'ens_pct', l: 'ENS%' },
+        { k: 'otml', l: 'OtmL', inv: true },
+        { k: 'enga', l: 'EN GA', inv: true }
+    ], []);
+
+    // Filter columns for mobile
+    const displayedColumns = useMemo(() => {
+        // This is a simple client-side check. In a real SSR app, you might use a hook.
+        // But for this project, simple window check or CSS is fine.
+        // We will complement this with CSS hidden classes if needed.
+        return COLUMNS;
+    }, [COLUMNS]);
+
     useEffect(() => {
         const initLoad = async () => {
             try {
@@ -580,11 +637,11 @@ const TeamsTable = () => {
     if (loading) return <div className="p-8 text-center bg-gray-900 border border-gray-800 rounded-xl text-gray-400">Loading Stats...</div>;
 
     // Helper for columns
-    const renderCell = (team: TeamStat, key: keyof TeamStat, label?: string, isInverse: boolean = false, isTime: boolean = false) => {
+    const renderCell = (team: TeamStat, key: keyof TeamStat, label?: string, isInverse: boolean = false, isTime: boolean = false, isGroupEnd: boolean = false, isHidden: boolean = false) => {
         // Handle 0 GP (First Start) -> Show Blank
         if (team.gp === 0) {
             return (
-                <td className="px-4 py-3 text-sm font-medium whitespace-nowrap text-center text-gray-600">
+                <td className={`px-4 py-3 text-sm font-medium whitespace-nowrap text-center text-gray-600 ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`}>
                     —
                 </td>
             );
@@ -634,8 +691,7 @@ const TeamsTable = () => {
         }
 
         return (
-            <td className="px-4 py-3 text-sm font-medium whitespace-nowrap text-center" style={{ color }}>
-
+            <td className={`px-4 py-3 text-sm font-medium whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`} style={{ color }}>
                 {value}
             </td>
         );
@@ -700,58 +756,66 @@ const TeamsTable = () => {
             </div>
 
             {/* Table */}
+            <div className="flex flex-col gap-2 md:hidden mb-4">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Stat Category</label>
+                <div className="flex flex-wrap gap-2">
+                    {STAT_GROUPS.map(group => (
+                        <button
+                            key={group.name}
+                            onClick={() => setActiveCategory(group.name)}
+                            className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-tight rounded-full transition-all border ${activeCategory === group.name
+                                ? 'bg-blue-600 border-blue-500 text-white shadow-lg'
+                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                }`}
+                        >
+                            {group.name}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             <div className="overflow-auto bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative max-h-[85vh]">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-0 z-30 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
-                            <th className="px-4 py-3 font-semibold sticky left-0 bg-gray-900 z-40 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
-                            {[
-                                { k: 'gp', l: 'GP' },
-                                { k: 'wins', l: 'W' },
-                                { k: 'losses', l: 'L' },
-                                { k: 'otl', l: 'OT' },
-                                { k: 'points', l: 'PTS' },
-                                { k: 'pt_pct', l: 'P%' },
-                                { k: 'gf_per_game', l: 'GF/G' },
-                                { k: 'ga_per_game', l: 'GA/G', inv: true },
-                                { k: 'goal_diff', l: 'GΔ' },
-                                { k: 'pp_goals', l: 'PPG' },
-                                { k: 'pp_opps', l: 'PP Opp' },
-                                { k: 'pp_pct', l: 'PP%' },
-                                { k: 'pp_time_per_game', l: 'PP T/GP', isTime: true },
-                                { k: 'pk_goals_allowed', l: 'PPGA', inv: true },
-                                { k: 'pk_opps', l: 'PK Opp' },
-                                { k: 'pk_pct', l: 'PK%' },
-                                { k: 'pk_time_per_game', l: 'PK T/GP', isTime: true, inv: true },
-                                { k: 'sf_per_game', l: 'SF/G' },
-                                { k: 'sa_per_game', l: 'SA/G', inv: true },
-                                { k: 'cf_per_game', l: 'CF/G' },
-                                { k: 'ca_per_game', l: 'CA/G', inv: true },
-                                { k: 'sh_pct', l: 'Sh%' },
-                                { k: 'sv_pct', l: 'Sv%' },
-                                { k: 'gsax', l: 'GSAx' },
-                                { k: 'xgf_per_game', l: 'xGF/G' },
-                                { k: 'xga_per_game', l: 'xGA/G', inv: true },
-                                { k: 'xgf_pct', l: 'xGF%' },
-                                { k: 'engf', l: 'EN GF' },
-                                { k: 'en_attempts', l: 'EN Att' },
-                                { k: 'ens_pct', l: 'ENS%' },
-                                { k: 'otml', l: 'OtmL', inv: true },
-                                { k: 'enga', l: 'EN GA', inv: true }
-                            ].map(({ k, l }) => (
+                        {/* Desktop Group Headers */}
+                        <tr className="hidden md:table-row bg-gray-950/50 border-b border-gray-800">
+                            <th className="sticky left-0 bg-gray-950/50 z-40 border-r border-gray-800"></th>
+                            {STAT_GROUPS.map(group => (
                                 <th
-                                    key={k}
-                                    className={`px-4 py-3 font-semibold transition-colors text-center whitespace-nowrap ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'}`}
-                                    onClick={() => handleSort(k as SortKey)}
+                                    key={group.name}
+                                    colSpan={group.columns.length}
+                                    className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-center text-blue-500/80 border-r border-gray-800/50"
                                 >
-                                    <div className="flex items-center justify-center gap-1">
-                                        {l}
-                                        {viewMode === 'All' && sortKey === k && (
-                                            <span className="text-[10px] text-blue-400">{sortDesc ? '▼' : '▲'}</span>
-                                        )}
-                                    </div>
+                                    <span className="bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                                        {group.name}
+                                    </span>
                                 </th>
                             ))}
+                        </tr>
+
+                        <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-0 z-30 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
+                            <th className="px-4 py-3 font-semibold sticky left-0 bg-gray-900 z-40 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
+                            {COLUMNS.map(({ k, l }) => {
+                                // Determine if this is the last column in any group for vertical grid lines
+                                const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === k);
+                                const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
+
+                                return (
+                                    <th
+                                        key={k}
+                                        className={`px-4 py-3 font-semibold transition-colors text-center whitespace-nowrap ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
+                                            } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                        onClick={() => handleSort(k as SortKey)}
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            {l}
+                                            {viewMode === 'All' && sortKey === k && (
+                                                <span className="text-[10px] text-blue-400">{sortDesc ? '▼' : '▲'}</span>
+                                            )}
+                                        </div>
+                                    </th>
+                                );
+                            })}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800 text-sm">
@@ -808,41 +872,16 @@ const TeamsTable = () => {
                                             </div>
                                         </td>
 
-                                        {/* Basic Stats - No Gradient */}
-                                        <td className="px-4 py-3 text-gray-300 text-center">{team.gp}</td>
-                                        <td className="px-4 py-3 text-gray-300 text-center">{team.wins}</td>
-                                        <td className="px-4 py-3 text-gray-300 text-center">{team.losses}</td>
-                                        <td className="px-4 py-3 text-gray-300 text-center">{team.otl}</td>
+                                        {COLUMNS.map(col => {
+                                            const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === col.k);
+                                            const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
 
-                                        {/* Advanced Stats - With Gradient */}
-                                        {renderCell(team, 'points')}
-                                        {renderCell(team, 'pt_pct')}
-                                        {renderCell(team, 'gf_per_game')}
-                                        {renderCell(team, 'ga_per_game', undefined, true)}
-                                        {renderCell(team, 'goal_diff')}
-                                        {renderCell(team, 'pp_goals')}
-                                        {renderCell(team, 'pp_opps')}
-                                        {renderCell(team, 'pp_pct')}
-                                        {renderCell(team, 'pp_time_per_game', undefined, false, true)}
-                                        {renderCell(team, 'pk_goals_allowed', undefined, true)}
-                                        {renderCell(team, 'pk_opps')}
-                                        {renderCell(team, 'pk_pct')}
-                                        {renderCell(team, 'pk_time_per_game', undefined, true, true)}
-                                        {renderCell(team, 'sf_per_game')}
-                                        {renderCell(team, 'sa_per_game', undefined, true)}
-                                        {renderCell(team, 'cf_per_game')}
-                                        {renderCell(team, 'ca_per_game', undefined, true)}
-                                        {renderCell(team, 'sh_pct')}
-                                        {renderCell(team, 'sv_pct')}
-                                        {renderCell(team, 'gsax')}
-                                        {renderCell(team, 'xgf_per_game')}
-                                        {renderCell(team, 'xga_per_game', undefined, true)}
-                                        {renderCell(team, 'xgf_pct')}
-                                        {renderCell(team, 'engf')}
-                                        {renderCell(team, 'en_attempts')}
-                                        {renderCell(team, 'ens_pct')}
-                                        {renderCell(team, 'otml', undefined, true)}
-                                        {renderCell(team, 'enga', undefined, true)}
+                                            return (
+                                                <React.Fragment key={col.k}>
+                                                    {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isInActiveCategory)}
+                                                </React.Fragment>
+                                            );
+                                        })}
                                     </tr>
 
                                     {/* Spacer Row for Matchups */}
