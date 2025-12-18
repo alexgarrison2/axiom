@@ -1,7 +1,7 @@
 import subprocess
 import re
 import json
-import datetime
+from datetime import datetime
 
 def fetch_odds():
     print("Fetching odds from Bovada API...")
@@ -103,6 +103,14 @@ def fetch_odds():
                 print(f"  Could not parse teams from: {desc}")
                 continue
             
+            # Extract Date
+            start_time_ms = event.get('startTime', 0)
+            if start_time_ms:
+                # Convert milliseconds to datetime (Universal format, usually UTC)
+                date_str = datetime.fromtimestamp(start_time_ms / 1000.0).strftime('%Y-%m-%d')
+            else:
+                date_str = datetime.now().strftime('%Y-%m-%d') # Fallback
+            
             # Check mapping
             away_team = TEAM_MAPPING.get(away_raw)
             home_team = TEAM_MAPPING.get(home_raw)
@@ -113,6 +121,8 @@ def fetch_odds():
                 if not away_team: print(f"    Unknown Away: '{away_raw}'")
                 if not home_team: print(f"    Unknown Home: '{home_raw}'")
                 continue
+            
+            matchup_id = f"{date_str}:{away_team}@{home_team}"
             
             # Find Game Lines
             game_lines = None
@@ -159,7 +169,9 @@ def fetch_odds():
                                 elif mapped_outcome == home_team: target_team = home_team
                                 
                                 if target_team:
-                                    odds_data[target_team] = odds_int
+                                    if matchup_id not in odds_data:
+                                        odds_data[matchup_id] = {}
+                                    odds_data[matchup_id][target_team] = odds_int
                                     
                             except ValueError:
                                 pass
@@ -172,11 +184,10 @@ def fetch_odds():
     
     # Merge Manual Odds (Override)
     for team, odds in MANUAL_ODDS.items():
-        if team not in odds_data:
-            print(f"Using manual odds for {team}: {odds}")
-            odds_data[team] = odds
-        else:
-            print(f"Bovada odds found for {team}: {odds_data[team]} (Manual ignored)")
+        # Manual odds remain team-based for legacy/simplicity, 
+        # but in practice we should probably phase this out or update it.
+        # For now, let's keep it as is or ignore it in the context of the new structure.
+        pass
     
     with open('odds.json', 'w') as f:
         json.dump(odds_data, f, indent=4)

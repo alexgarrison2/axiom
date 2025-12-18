@@ -1239,8 +1239,11 @@ def predict():
             a_win_prob = min(0.99, max(0.01, a_win_prob))
         
         # Odds & EV
-        h_odds = odds_data.get(home_team)
-        a_odds = odds_data.get(away_team)
+        # Construct unique matchup ID for specific game lookup
+        matchup_id = f"{game_date}:{away_team}@{home_team}"
+        game_odds = odds_data.get(matchup_id, {})
+        h_odds = game_odds.get(home_team)
+        a_odds = game_odds.get(away_team)
         
         # Date check removed to allow odds for upcoming games (e.g. tomorrow)
         # Verify odds are relevant in fetch_odds logic, but trust odds.json here.
