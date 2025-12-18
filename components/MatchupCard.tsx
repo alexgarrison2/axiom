@@ -534,19 +534,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
 
     if (isUltraCompact) {
         return (
-            <div className={`w-[377px] h-[162px] bg-[#050505] rounded-2xl border ${getUltraCompactGlow(homeWager, awayWager)} relative overflow-hidden flex flex-col p-2 text-white font-sans select-none tracking-tight`}>
-                {/* Background Logos */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none flex justify-between px-2 overflow-hidden">
-                    <div className="w-32 h-32 -ml-8 -mt-4 rotate-[-10deg]">
-                        <LogoDisplay src={awayTeam.logoUrl} alt={awayTeam.name} triCode={awayTeam.triCode} className="w-full h-full object-contain" primaryColor={awayTeam.color1} />
-                    </div>
-                    <div className="w-32 h-32 -mr-8 -mt-4 rotate-[10deg]">
-                        <LogoDisplay src={homeTeam.logoUrl} alt={homeTeam.name} triCode={homeTeam.triCode} className="w-full h-full object-contain" primaryColor={homeTeam.color1} />
-                    </div>
+            <div className={`w-[377px] h-[162px] bg-[#020617] rounded-2xl border ${getUltraCompactGlow(homeWager, awayWager)} relative overflow-hidden flex flex-col p-2 text-white font-sans select-none tracking-tight`}>
+                {/* Sharp Corner Logos - Round 3: Small, 100% opacity, no blur */}
+                <div className="absolute top-1 left-1 w-9 h-9 z-0">
+                    <LogoDisplay src={awayTeam.logoUrl} alt={awayTeam.name} triCode={awayTeam.triCode} className="w-full h-full object-contain" primaryColor={awayTeam.color1} />
+                </div>
+                <div className="absolute top-1 right-1 w-9 h-9 z-0">
+                    <LogoDisplay src={homeTeam.logoUrl} alt={homeTeam.name} triCode={homeTeam.triCode} className="w-full h-full object-contain" primaryColor={homeTeam.color1} />
                 </div>
 
-                {/* Top Row: xG and Time */}
-                <div className="relative z-10 flex justify-between items-start mb-1 px-1">
+                {/* Top Row: xG and Time - Adjusted for corner logos */}
+                <div className="relative z-10 flex justify-between items-start mb-0.5 px-10">
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-1">
                             <span className="text-3xl font-black tabular-nums text-glow-blue leading-none">
@@ -572,12 +570,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     </div>
                 </div>
 
-                {/* Goalie Row */}
-                <div className="relative z-10 flex justify-between items-start mb-1 h-8 px-1">
+                {/* Goalie Row - Expanded for Season + vs Opp stats */}
+                <div className="relative z-10 flex justify-between items-start mb-0.5 px-1">
                     {/* Away Goalie */}
                     <div className="flex flex-col max-w-[48%]">
                         <div className="flex items-center gap-1 overflow-hidden">
-                            <span className={`text-[10px] font-bold uppercase truncate whitespace-nowrap ${awayStarter?.includes('Confirmed') ? 'text-neon-green' : awayStarter?.includes('Likely') ? 'text-yellow-400' : 'text-neutral-400'}`}>
+                            <span className={`text-[11px] font-bold uppercase truncate whitespace-nowrap ${awayStarter?.includes('Confirmed') ? 'text-neon-green' : awayStarter?.includes('Likely') ? 'text-yellow-400' : 'text-neutral-400'}`}>
                                 {formatGoalieName(cleanStarterName(awayStarter))}
                             </span>
                             {prediction.away_gsax_total !== undefined && (
@@ -586,8 +584,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                                 </span>
                             )}
                         </div>
-                        <div className="text-[8px] font-mono text-neutral-500 leading-tight">
-                            {prediction.away_goalie_stats}
+                        <div className="flex flex-col leading-tight">
+                            <div className="text-[8.5px] font-mono text-neutral-400">
+                                {prediction.away_goalie_stats}
+                            </div>
+                            <div className="transform scale-[0.85] origin-left mt-0.5">
+                                <VsOppStatsDisplay statsStr={prediction.awayGoalieVsOpp} oppTriCode={homeTeam.triCode} align="left" />
+                            </div>
                         </div>
                     </div>
 
@@ -599,67 +602,88 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                                     {formatGsax(prediction.home_gsax_total)}
                                 </span>
                             )}
-                            <span className={`text-[10px] font-bold uppercase truncate whitespace-nowrap ${homeStarter?.includes('Confirmed') ? 'text-neon-green' : homeStarter?.includes('Likely') ? 'text-yellow-400' : 'text-neutral-400'}`}>
+                            <span className={`text-[11px] font-bold uppercase truncate whitespace-nowrap ${homeStarter?.includes('Confirmed') ? 'text-neon-green' : homeStarter?.includes('Likely') ? 'text-yellow-400' : 'text-neutral-400'}`}>
                                 {formatGoalieName(cleanStarterName(homeStarter))}
                             </span>
                         </div>
-                        <div className="text-[8px] font-mono text-neutral-500 leading-tight">
-                            {prediction.home_goalie_stats}
+                        <div className="flex flex-col items-end leading-tight">
+                            <div className="text-[8.5px] font-mono text-neutral-400">
+                                {prediction.home_goalie_stats}
+                            </div>
+                            <div className="transform scale-[0.85] origin-right mt-0.5">
+                                <VsOppStatsDisplay statsStr={prediction.homeGoalieVsOpp} oppTriCode={awayTeam.triCode} align="right" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Model / Vegas Labels and Prob Bar */}
-                <div className="relative z-10 flex flex-col gap-1 mb-2 px-1">
-                    <div className="flex justify-between text-[8px] font-bold text-neutral-500 tracking-widest px-1">
-                        <span>{Math.round(awayModelWinPct)}%</span>
-                        <div className="flex gap-4">
-                            <span>MODEL</span>
-                            <span>WIN %</span>
+                {/* Spacer to push bars down */}
+                <div className="flex-1"></div>
+
+                {/* Win Prob Bar - Slide down to hug odds */}
+                <div className="relative z-10 flex flex-col gap-1 mb-1 px-1">
+                    <div className="w-full h-5 bg-neutral-900/50 rounded-md overflow-hidden flex relative border border-white/5 shadow-inner">
+                        <div
+                            className="h-full transition-all duration-1000 ease-out flex items-center justify-start pl-2"
+                            style={{
+                                width: `${awayModelWinPct}%`,
+                                backgroundColor: awayBarColor
+                            }}
+                        >
+                            <span className={`text-[10px] font-black ${getContrastTextClass(awayBarColor)} leading-none`}>
+                                {Math.round(awayModelWinPct)}%
+                            </span>
                         </div>
-                        <span>{Math.round(homeModelWinPct)}%</span>
-                    </div>
-                    {/* Simplified Bar */}
-                    <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden flex">
-                        <div className="h-full" style={{ width: `${awayModelWinPct}%`, backgroundColor: awayBarColor }}></div>
-                        <div className="h-full flex-1" style={{ backgroundColor: homeBarColor }}></div>
+                        <div className="absolute left-1/2 -translate-x-1/2 h-full w-px bg-white/20 z-20"></div>
+                        <div
+                            className="h-full flex-1 transition-all duration-1000 ease-out flex items-center justify-end pr-2"
+                            style={{
+                                backgroundColor: homeBarColor
+                            }}
+                        >
+                            <span className={`text-[10px] font-black ${getContrastTextClass(homeBarColor)} leading-none`}>
+                                {Math.round(homeModelWinPct)}%
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Odds / EV Bottom Row */}
-                <div className="relative z-10 flex justify-between items-end mt-auto px-1">
-                    <div className="flex gap-3 items-center">
-                        <div className="flex flex-col">
-                            <span className="text-[7px] text-neutral-600 font-bold uppercase tracking-tighter">Model / Vegas</span>
-                            <div className="flex gap-1.5 items-baseline">
-                                <span className="text-xs font-bold text-blue-400">{formatOdds(awayModelOdds)}</span>
-                                <span className="text-[9px] font-mono text-neutral-500">{formatOdds(awayVegasOdds)}</span>
-                            </div>
+                {/* Odds / EV Bottom Row - Spaced out */}
+                <div className="relative z-10 flex justify-between items-end pb-1.5 px-2">
+                    <div className="flex flex-col gap-1 w-[45%]">
+                        <div className="flex gap-3 text-[7px] font-black tracking-widest uppercase">
+                            <span className="text-blue-400">Model</span>
+                            <span className="text-neutral-600">Vegas</span>
                         </div>
-                        {awayWager && (
-                            <div className={`inline-flex items-center gap-1 px-1 py-0.5 rounded border text-[8px] font-bold ${getPillColors(awayWager, awayVegasOdds)}`}>
-                                <span>+{Math.round(awayEv || 0)}%</span>
-                                <span>{awayWager}</span>
+                        <div className="flex justify-between items-center w-full">
+                            <div className="flex gap-2 items-baseline">
+                                <span className="text-[14px] font-black text-blue-400">{formatOdds(awayModelOdds)}</span>
+                                <span className="text-[11px] font-mono text-neutral-500">{formatOdds(awayVegasOdds)}</span>
                             </div>
-                        )}
+                            {awayWager && (
+                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-[11px] font-black ${getPillColors(awayWager, awayVegasOdds)} shadow-sm`}>
+                                    <span>+{Math.round(awayEv || 0)}%</span>
+                                    <span>{awayWager}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="flex flex-col items-center">
-                        <VsOppStatsDisplay statsStr={prediction.homeGoalieVsOpp} oppTriCode={awayTeam.triCode} align="right" />
-                    </div>
-
-                    <div className="flex gap-3 items-center">
-                        {homeWager && (
-                            <div className={`inline-flex items-center gap-1 px-1 py-0.5 rounded border text-[8px] font-bold ${getPillColors(homeWager, homeVegasOdds)}`}>
-                                <span>+{Math.round(homeEv || 0)}%</span>
-                                <span>{homeWager}</span>
-                            </div>
-                        )}
-                        <div className="flex flex-col items-end">
-                            <span className="text-[7px] text-neutral-600 font-bold uppercase tracking-tighter">Model / Vegas</span>
-                            <div className="flex gap-1.5 items-baseline">
-                                <span className="text-xs font-bold text-blue-400">{formatOdds(homeModelOdds)}</span>
-                                <span className="text-[9px] font-mono text-neutral-500">{formatOdds(homeVegasOdds)}</span>
+                    <div className="flex flex-col gap-1 items-end w-[45%]">
+                        <div className="flex gap-3 text-[7px] font-black tracking-widest uppercase">
+                            <span className="text-blue-400">Model</span>
+                            <span className="text-neutral-600">Vegas</span>
+                        </div>
+                        <div className="flex justify-between items-center w-full">
+                            {homeWager && (
+                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-[11px] font-black ${getPillColors(homeWager, homeVegasOdds)} shadow-sm`}>
+                                    <span>+{Math.round(homeEv || 0)}%</span>
+                                    <span>{homeWager}</span>
+                                </div>
+                            )}
+                            <div className="flex gap-2 items-baseline">
+                                <span className="text-[14px] font-black text-blue-400">{formatOdds(homeModelOdds)}</span>
+                                <span className="text-[11px] font-mono text-neutral-500">{formatOdds(homeVegasOdds)}</span>
                             </div>
                         </div>
                     </div>
