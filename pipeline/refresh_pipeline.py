@@ -164,6 +164,25 @@ def refresh_pipeline():
     import generate_history
     generate_history.generate_history()
     
+    # 8. Final Sync of History and others
+    print("Final Sync...")
+    import shutil
+    try:
+        # History (already generated into ../data/ by generate_history.py)
+        src_history = '../data/prediction_history.json'
+        if os.path.exists(src_history):
+            shutil.copy(src_history, '../public/data/prediction_history.json')
+            print("Synced prediction_history.json to public/data/")
+        
+        # Last Updated
+        if os.path.exists('last_updated.json'):
+            shutil.copy('last_updated.json', '../data/last_updated.json')
+            shutil.copy('last_updated.json', '../public/data/last_updated.json')
+            print("Synced last_updated.json")
+            
+    except Exception as e:
+        print(f"Warning: Final sync failed: {e}")
+    
     print("--- Pipeline Refresh Complete ---")
 
 if __name__ == "__main__":

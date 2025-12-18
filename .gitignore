@@ -38,4 +38,10 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+# python
+**/__pycache__/
+*.py[cod]
+*$py.class
+pipeline/*.csv
+!pipeline/nhl_season_2025_2026_gamestats.csv
+!pipeline/nhl_season_2025_2026_shots.csv

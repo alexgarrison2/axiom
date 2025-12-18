@@ -60,7 +60,7 @@ def get_href_stats(date_str, tricode):
 # Constants
 BASE_URL = "https://api-web.nhle.com/v1"
 SEASON_START_DATE = "2025-10-04" 
-OUTPUT_FILENAME = "../data/gamestats.csv"
+OUTPUT_FILENAME = "nhl_season_2025_2026_gamestats.csv"
 
 
 # Create unverified context for SSL to avoid cert errors
@@ -1431,7 +1431,7 @@ def main():
         print("No new game data found.")
         
     # Export Shot Data to CSV
-    SHOTS_FILENAME = "../data/shots.csv"
+    SHOTS_FILENAME = "nhl_season_2025_2026_shots.csv"
     if all_shots:
         print(f"Writing {len(all_shots)} shots to {SHOTS_FILENAME}...")
         new_shots_df = pd.DataFrame(all_shots)
