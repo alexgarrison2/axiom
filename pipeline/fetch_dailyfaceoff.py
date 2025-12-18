@@ -150,10 +150,10 @@ def fetch_player_news():
                 # print(f"Skipping older news: {news_date}")
                 continue
                 
-            # 2. Category Check (Exclude Goalie Start)
+            # 2. Category Check (Exclude Goalie Start - REMOVED, now allowing)
             category = item.get('newsCategoryName', 'Unknown')
-            if 'goalie' in category.lower() and 'start' in category.lower():
-                continue
+            # if 'goalie' in category.lower() and 'start' in category.lower():
+            #     continue
                 
             # 3. Helpers
             player_name = item.get('playerName', 'Unknown')
@@ -194,7 +194,8 @@ def fetch_player_news():
                 'player': player_name,
                 'news': news_text,
                 'category': category,
-                'date': news_date
+                'date': news_date,
+                'timestamp': item.get('createdAt')
             })
             
         print(f"Extracted news for {len(team_news)} teams.")

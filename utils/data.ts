@@ -28,6 +28,7 @@ export interface PlayerNewsItem {
   news: string;
   category: string;
   date: string;
+  timestamp?: string;
 }
 
 export interface LineupPlayer {

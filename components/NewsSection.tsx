@@ -24,9 +24,33 @@ const NewsSection: React.FC<NewsSectionProps> = ({ predictions }) => {
                 p.away_news.forEach(n => news.push({ ...n, team: p.awayTeam }));
             }
         });
-        // Sort by date descending (assuming YYYY-MM-DD)
-        return news.sort((a, b) => b.date.localeCompare(a.date));
+        // Sort by timestamp if available, else date
+        return news.sort((a, b) => {
+            if (a.timestamp && b.timestamp) {
+                return b.timestamp.localeCompare(a.timestamp);
+            }
+            return b.date.localeCompare(a.date);
+        });
     }, [predictions]);
+
+    const formatNewsDate = (item: NewsWithTeam) => {
+        if (!item.timestamp) return item.date;
+
+        try {
+            const date = new Date(item.timestamp);
+            // Format for Central Time: DEC 18, 10:39 AM
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'America/Chicago'
+            }).toUpperCase();
+        } catch (e) {
+            return item.date;
+        }
+    };
 
     if (allNews.length === 0) {
         return (
@@ -79,14 +103,14 @@ const NewsSection: React.FC<NewsSectionProps> = ({ predictions }) => {
                                 <span className="text-xs font-mono font-bold text-neutral-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">{item.team.triCode}</span>
                                 {item.category && (
                                     <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${item.category.toLowerCase().includes('injury')
-                                            ? 'text-red-400 bg-red-400/10 border-red-400/20 shadow-[0_0_10px_rgba(248,113,113,0.1)]'
-                                            : 'text-blue-400 bg-blue-400/10 border-blue-400/20'
+                                        ? 'text-red-400 bg-red-400/10 border-red-400/20 shadow-[0_0_10px_rgba(248,113,113,0.1)]'
+                                        : 'text-blue-400 bg-blue-400/10 border-blue-400/20'
                                         }`}>
                                         {item.category}
                                     </span>
                                 )}
                             </div>
-                            <span className="ml-auto text-[10px] md:text-xs font-mono text-neutral-600 font-bold tracking-widest uppercase">{item.date}</span>
+                            <span className="ml-auto text-[10px] md:text-xs font-mono text-neutral-600 font-bold tracking-widest uppercase">{formatNewsDate(item)}</span>
                         </div>
 
                         <p className="text-sm md:text-base text-neutral-400 leading-relaxed md:leading-relaxed">
