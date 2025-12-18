@@ -13,20 +13,17 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
     const batchIndex = parseInt(params.batch || '0', 10);
 
     // Fetch Data
-    const allPredictions = await getPredictions();
+    const rawPredictions = await getPredictions();
     const lastRefresh = await getLastRefresh();
 
-    // Filter by Date if provided, else use the most common date or today's date from the first game
-    // The user said "current date only". 
-    // Usually predictions are filtered by the pipeline, but let's ensure we group by date if multiple exist.
-    // For now, take ALL predictions as they are usually for the upcoming slate.
+    // Filter to only include games for the first date available (TODAY only)
+    const displayDate = rawPredictions[0]?.date || new Date().toISOString().split('T')[0];
+    const allPredictions = rawPredictions.filter(p => p.date === displayDate);
 
     // pagination: 15 per page for 3x5 layout
     const pageSize = 15;
     const startIndex = batchIndex * pageSize;
     const selectedPredictions = allPredictions.slice(startIndex, startIndex + pageSize);
-
-    const displayDate = selectedPredictions[0]?.date || new Date().toISOString().split('T')[0];
 
     // Card dimensions and spacing
     const cardWidth = 377;

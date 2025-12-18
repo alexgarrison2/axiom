@@ -648,20 +648,23 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     </div>
                 </div>
 
-                {/* Odds / EV Bottom Row - Spaced out */}
+                {/* Odds / EV Bottom Row - Grid Aligned for perfect vertical stacking */}
                 <div className="relative z-10 flex justify-between items-end pb-1.5 px-2">
-                    <div className="flex flex-col gap-1 w-[45%]">
-                        <div className="flex gap-3 text-[7px] font-black tracking-widest uppercase">
+                    {/* Away Side (Left) */}
+                    <div className="flex flex-col gap-1 w-[48%]">
+                        {/* Headers Grid */}
+                        <div className="grid grid-cols-[42px_42px] gap-2 text-[7px] font-black tracking-widest uppercase">
                             <span className="text-blue-400">Model</span>
                             <span className="text-neutral-600">Vegas</span>
                         </div>
-                        <div className="flex justify-between items-center w-full">
-                            <div className="flex gap-2 items-baseline">
+                        {/* Values + Pill Row */}
+                        <div className="flex items-center gap-3">
+                            <div className="grid grid-cols-[42px_42px] gap-2 items-baseline text-left">
                                 <span className="text-[14px] font-black text-blue-400">{formatOdds(awayModelOdds)}</span>
                                 <span className="text-[11px] font-mono text-neutral-500">{formatOdds(awayVegasOdds)}</span>
                             </div>
                             {awayWager && (
-                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-[11px] font-black ${getPillColors(awayWager, awayVegasOdds)} shadow-sm`}>
+                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-black ${getPillColors(awayWager, awayVegasOdds)} shadow-sm whitespace-nowrap`}>
                                     <span>+{Math.round(awayEv || 0)}%</span>
                                     <span>{awayWager}</span>
                                 </div>
@@ -669,22 +672,25 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-1 items-end w-[45%]">
-                        <div className="flex gap-3 text-[7px] font-black tracking-widest uppercase">
+                    {/* Home Side (Right) */}
+                    <div className="flex flex-col gap-1 items-end w-[48%]">
+                        {/* Headers Grid - Right Aligned */}
+                        <div className="grid grid-cols-[42px_42px] gap-2 text-[7px] font-black tracking-widest uppercase text-right">
                             <span className="text-blue-400">Model</span>
                             <span className="text-neutral-600">Vegas</span>
                         </div>
-                        <div className="flex justify-between items-center w-full">
+                        {/* Values + Pill Row - Right Aligned content */}
+                        <div className="flex flex-row-reverse items-center gap-3 w-full">
+                            <div className="grid grid-cols-[42px_42px] gap-2 items-baseline text-right">
+                                <span className="text-[14px] font-black text-blue-400">{formatOdds(homeModelOdds)}</span>
+                                <span className="text-[11px] font-mono text-neutral-500">{formatOdds(homeVegasOdds)}</span>
+                            </div>
                             {homeWager && (
-                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-[11px] font-black ${getPillColors(homeWager, homeVegasOdds)} shadow-sm`}>
+                                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-black ${getPillColors(homeWager, homeVegasOdds)} shadow-sm whitespace-nowrap`}>
                                     <span>+{Math.round(homeEv || 0)}%</span>
                                     <span>{homeWager}</span>
                                 </div>
                             )}
-                            <div className="flex gap-2 items-baseline">
-                                <span className="text-[14px] font-black text-blue-400">{formatOdds(homeModelOdds)}</span>
-                                <span className="text-[11px] font-mono text-neutral-500">{formatOdds(homeVegasOdds)}</span>
-                            </div>
                         </div>
                     </div>
                 </div>
