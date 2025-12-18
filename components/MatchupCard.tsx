@@ -674,8 +674,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
 
                     {/* Home Side (Right) */}
                     <div className="flex flex-col gap-1 items-end w-[48%]">
-                        {/* Headers Grid - Fixed widths, Right Aligned */}
-                        <div className="grid grid-cols-[45px_45px] gap-2 text-[7px] font-black uppercase text-right">
+                        {/* Headers Grid - Fixed widths */}
+                        <div className="grid grid-cols-[45px_45px] gap-2 text-[7px] font-black uppercase">
                             <span className="text-blue-400">Model</span>
                             <span className="text-neutral-600">Vegas</span>
                         </div>
