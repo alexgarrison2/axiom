@@ -20,15 +20,27 @@ async function captureSocialPost() {
     try {
         const page = await browser.newPage();
 
-        // Set viewport to the exact dimensions of the social graphic
-        await page.setViewport({
-            width: 1179,
-            height: 1350,
-            deviceScaleFactor: 2, // High DPI
-        });
-
         console.log('⏳ Navigating to social page...');
         await page.goto(url, { waitUntil: 'networkidle0' });
+
+        // Scrape dimensions from the container
+        const dimensions = await page.evaluate(() => {
+            const container = document.getElementById('social-capture-container');
+            if (!container) return { width: 1179, height: 1350 };
+            return {
+                width: parseInt(container.getAttribute('data-width') || '1179'),
+                height: parseInt(container.getAttribute('data-height') || '1350')
+            };
+        });
+
+        console.log(`📏 Detected dimensions: ${dimensions.width}x${dimensions.height}`);
+
+        // Set viewport to the exact dimensions of the social graphic
+        await page.setViewport({
+            width: dimensions.width,
+            height: dimensions.height,
+            deviceScaleFactor: 2, // High DPI
+        });
 
         // Wait a small amount of time for any client-side animations to settle if needed
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -40,8 +52,8 @@ async function captureSocialPost() {
             clip: {
                 x: 0,
                 y: 0,
-                width: 1179,
-                height: 1350
+                width: dimensions.width,
+                height: dimensions.height
             }
         });
 

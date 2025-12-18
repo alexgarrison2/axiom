@@ -20,18 +20,29 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
     const displayDate = rawPredictions[0]?.date || new Date().toISOString().split('T')[0];
     const allPredictions = rawPredictions.filter(p => p.date === displayDate);
 
-    // pagination: 15 per page for 3x5 layout
-    const pageSize = 15;
-    const startIndex = batchIndex * pageSize;
-    const selectedPredictions = allPredictions.slice(startIndex, startIndex + pageSize);
+    // Dynamic Grid Logic
+    const gameCount = allPredictions.length;
+    const columns = gameCount <= 10 ? 2 : 3;
 
     // Card dimensions and spacing
     const cardWidth = 377;
     const cardHeight = 162;
     const paddingH = 12;
     const paddingV = 20;
-    const startX = 12;
+
+    // Layout dimensions
+    const totalWidth = columns === 2 ? 790 : 1179;
+    const rows = Math.ceil(gameCount / columns);
+    const gridHeight = rows * (cardHeight + paddingV);
     const startY = 200;
+    const totalHeight = startY + gridHeight + 100; // 100px for footer padding
+
+    const startX = columns === 2 ? (790 - (2 * cardWidth + paddingH)) / 2 : 12;
+
+    // pagination: up to 15 per page (or more if needed, but social usually wants one post)
+    const pageSize = columns * 5; // 10 or 15
+    const startIndex = batchIndex * pageSize;
+    const selectedPredictions = allPredictions.slice(startIndex, startIndex + pageSize);
 
     // If no games, render empty or specific message
     if (selectedPredictions.length === 0) {
@@ -39,7 +50,13 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
     }
 
     return (
-        <div className="w-[1179px] h-[1350px] bg-[#020617] text-white overflow-hidden relative font-sans flex flex-col">
+        <div
+            id="social-capture-container"
+            data-width={totalWidth}
+            data-height={totalHeight}
+            className="bg-[#020617] text-white overflow-hidden relative font-sans flex flex-col"
+            style={{ width: `${totalWidth}px`, height: `${totalHeight}px` }}
+        >
 
             {/* Header / Logo Section (Absolute to match example) */}
             <div className="absolute top-0 left-0 w-full flex flex-col items-center pt-4 pointer-events-none z-20">
@@ -59,8 +76,8 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
             {/* Game Cards Grid (Absolute Positioning) */}
             <div className="flex-1 w-full relative">
                 {selectedPredictions.map((pred, index) => {
-                    const row = Math.floor(index / 3);
-                    const col = index % 3;
+                    const row = Math.floor(index / columns);
+                    const col = index % columns;
                     const x = startX + col * (cardWidth + paddingH);
                     const y = startY + row * (cardHeight + paddingV);
 
