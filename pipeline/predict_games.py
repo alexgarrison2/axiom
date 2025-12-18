@@ -869,6 +869,22 @@ def predict():
         h_goalie_display = h_goalie_name
         a_goalie_display = a_goalie_name
         
+        # New: Cross-reference with Player News for Goalie confirmation
+        # If DFO news says "Goalie Start", we force it to Confirmed even if schedule isn't updated yet
+        for news_item in h_news_list:
+            if news_item.get('category') == 'Goalie Start':
+                p_news_name = news_item.get('player', '')
+                if h_goalie_name and (h_goalie_name in p_news_name or p_news_name in h_goalie_name):
+                    h_status = "Confirmed"
+                    break
+        
+        for news_item in a_news_list:
+            if news_item.get('category') == 'Goalie Start':
+                p_news_name = news_item.get('player', '')
+                if a_goalie_name and (a_goalie_name in p_news_name or p_news_name in a_goalie_name):
+                    a_status = "Confirmed"
+                    break
+
         if h_status and h_goalie_display and "Confirmed" not in h_goalie_display:
             h_goalie_display = f"{h_goalie_display} ({h_status})"
 
