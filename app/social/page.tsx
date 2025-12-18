@@ -29,9 +29,9 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
     const cardWidth = 377;
     const cardHeight = 162;
     const paddingH = 12;
-    const paddingV = 29;
+    const paddingV = 20;
     const startX = 12;
-    const startY = 231;
+    const startY = 200;
 
     // If no games, render empty or specific message
     if (selectedPredictions.length === 0) {
@@ -42,9 +42,9 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
         <div className="w-[1179px] h-[1350px] bg-[#020617] text-white overflow-hidden relative font-sans flex flex-col">
 
             {/* Header / Logo Section (Absolute to match example) */}
-            <div className="absolute top-0 left-0 w-full flex flex-col items-center pt-6 pointer-events-none z-20">
+            <div className="absolute top-0 left-0 w-full flex flex-col items-center pt-4 pointer-events-none z-20">
                 {/* Date Pill (Move to top, smaller) */}
-                <div className="mb-4 px-6 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 font-mono text-lg font-bold shadow-[0_0_15px_rgba(6,182,212,0.15)] backdrop-blur-md">
+                <div className="mb-2 px-6 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 font-mono text-lg font-bold shadow-[0_0_15px_rgba(6,182,212,0.15)] backdrop-blur-md">
                     {displayDate}
                 </div>
 
