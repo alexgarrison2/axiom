@@ -1,4 +1,52 @@
 {
+    "DAL": [
+        {
+            "player": "Adam Erne",
+            "news": "Erne (lower-body) will return to Dallas' lineup vs. Anaheim on Friday. ",
+            "category": "Injury",
+            "date": "2025-12-19",
+            "timestamp": "2025-12-19T20:36:35.055Z"
+        },
+        {
+            "player": "Colin Blackwell",
+            "news": "Blackwell will be a healthy scratch in Anaheim on Friday.",
+            "category": "Line Change",
+            "date": "2025-12-19",
+            "timestamp": "2025-12-19T20:36:09.809Z"
+        },
+        {
+            "player": "Casey DeSmith",
+            "news": "DeSmith will start in Anaheim on Friday.",
+            "category": "Goalie Start",
+            "date": "2025-12-19",
+            "timestamp": "2025-12-19T20:33:47.336Z"
+        }
+    ],
+    "SJS": [
+        {
+            "player": "Sam Dickinson",
+            "news": "Dickinson will draw back into San Jose's lineup vs. Seattle on Saturday. ",
+            "category": "Line Change",
+            "date": "2025-12-19",
+            "timestamp": "2025-12-19T20:29:57.361Z"
+        }
+    ],
+    "MIN": [
+        {
+            "player": "Carson Lambos",
+            "news": "Lambos has been reassigned to Iowa (AHL).",
+            "category": "Send Down",
+            "date": "2025-12-19",
+            "timestamp": "2025-12-19T20:17:40.780Z"
+        },
+        {
+            "player": "Ben Jones",
+            "news": "Jones has cleared waivers and been reassigned to Iowa (AHL). ",
+            "category": "Send Down",
+            "date": "2025-12-19",
+            "timestamp": "2025-12-19T20:17:15.075Z"
+        }
+    ],
     "ANA": [
         {
             "player": "Drew Helleson",
@@ -59,8 +107,8 @@
         },
         {
             "player": "Haydn Fleury",
-            "news": "Fleury is expected to draw back into Winnipeg's lineup in Colorado on Friday. ",
-            "category": "Line Change",
+            "news": "Fleury (concussion) is expected to draw back into Winnipeg's lineup in Colorado on Friday. ",
+            "category": "Injury",
             "date": "2025-12-19",
             "timestamp": "2025-12-19T19:06:46.615Z"
         },
@@ -86,56 +134,6 @@
             "category": "Injury",
             "date": "2025-12-19",
             "timestamp": "2025-12-19T18:44:48.052Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Tristan Jarry",
-            "news": "Jarry (lower-body) has been placed on IR. ",
-            "category": "Injury",
-            "date": "2025-12-19",
-            "timestamp": "2025-12-19T18:37:43.172Z"
-        },
-        {
-            "player": "Connor Ingram",
-            "news": "Ingram has been recalled from Bakersfield (AHL). ",
-            "category": "Call Up",
-            "date": "2025-12-19",
-            "timestamp": "2025-12-19T18:37:19.247Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Scott Wedgewood",
-            "news": "Wedgewood will start vs. Winnipeg on Friday. ",
-            "category": "Goalie Start",
-            "date": "2025-12-19",
-            "timestamp": "2025-12-19T18:27:06.564Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Vinnie Hinostroza",
-            "news": "Hinostroza (upper-body) is questionable to return vs. Edmonton on Saturday. ",
-            "category": "Injury",
-            "date": "2025-12-19",
-            "timestamp": "2025-12-19T18:25:26.625Z"
-        },
-        {
-            "player": "Jacob Middleton",
-            "news": "Middleton (upper-body) is questionable to play on Saturday vs. Edmonton. ",
-            "category": "Injury",
-            "date": "2025-12-19",
-            "timestamp": "2025-12-19T18:23:27.389Z"
-        }
-    ],
-    "BUF": [
-        {
-            "player": "Tyson Kozak",
-            "news": "Kozak (upper-body) is day-to-day and has a chance to play on Saturday vs. the Islanders. ",
-            "category": "Injury",
-            "date": "2025-12-19",
-            "timestamp": "2025-12-19T18:24:46.348Z"
         }
     ]
 }
