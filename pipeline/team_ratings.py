@@ -36,22 +36,10 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         season_xgf = team_games['xG_for'].mean()
         
         # 5v5 xGF
-        # FIX: Per-game fallback if 5v5 is missing (0.0)
-        team_games = team_games.copy() # Avoid SettingWithCopyWarning
-        if has_5v5_data:
-            # If 5v5 is 0.0 but total is not, use 80% as fallback for that specific row
-            team_games['xgf_5v5_safe'] = team_games.apply(
-                lambda r: r['xG_for_5v5'] if r['xG_for_5v5'] > 0 else r['xG_for'] * 0.8, axis=1
-            )
-            team_games['xga_5v5_safe'] = team_games.apply(
-                lambda r: r['xG_against_5v5'] if r['xG_against_5v5'] > 0 else r['xG_against'] * 0.8, axis=1
-            )
-        else:
-            team_games['xgf_5v5_safe'] = team_games['xG_for'] * 0.8
-            team_games['xga_5v5_safe'] = team_games['xG_against'] * 0.8
-
-        rolling_xgf_5v5 = team_games['xgf_5v5_safe'].rolling(window=10, min_periods=1).mean().iloc[-1]
-        season_xgf_5v5 = team_games['xgf_5v5_safe'].mean()
+        col_5v5 = 'xG_for_5v5' if has_5v5_data else 'xG_for' # Fallback
+        rolling_xgf_5v5 = team_games[col_5v5].rolling(window=10, min_periods=1).mean().iloc[-1]
+        season_xgf_5v5 = team_games[col_5v5].mean()
+        season_xgf_5v5 = team_games[col_5v5].mean()
         
         # Regress Season Average to League Mean
         # (Season Sum + (Reg_Games * League_Avg)) / (Games_Played + Reg_Games)
@@ -82,8 +70,10 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         season_xga = team_games['xG_against'].mean()
         
         # 5v5 xGA
-        rolling_xga_5v5 = team_games['xga_5v5_safe'].rolling(window=10, min_periods=1).mean().iloc[-1]
-        season_xga_5v5 = team_games['xga_5v5_safe'].mean()
+        col_ga_5v5 = 'xG_against_5v5' if has_5v5_data else 'xG_against'
+        rolling_xga_5v5 = team_games[col_ga_5v5].rolling(window=10, min_periods=1).mean().iloc[-1]
+        season_xga_5v5 = team_games[col_ga_5v5].mean()
+        season_xga_5v5 = team_games[col_ga_5v5].mean()
         
         # Regress to League Mean (League Avg xG For is approx League Avg xG Against)
         regressed_season_xga = ((season_xga * games_played) + (league_xg_for * REGRESSION_GAMES)) / (games_played + REGRESSION_GAMES)

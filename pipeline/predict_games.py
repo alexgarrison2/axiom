@@ -606,7 +606,7 @@ def predict():
              game_stats_df['game_date'] = pd.to_datetime(game_stats_df['game_date'])
              
          val = game_stats_df.get('xG_for_5v5', game_stats_df['xG_for'] * 0.8).mean()
-         league_xg_5v5 = val if pd.notna(val) and val > 2.0 else 2.5 # Safety floor/default
+         league_xg_5v5 = val if pd.notna(val) and val > 0 else 2.0
          
          # League SP Teams
          tot_pp_opps = game_stats_df['pp_opportunities'].sum()
