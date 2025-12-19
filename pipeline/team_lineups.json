@@ -781,10 +781,10 @@
         ],
         "f4": [
             {
-                "name": "Cole Koepke",
-                "number": 45,
+                "name": "Tanner Pearson",
+                "number": 70,
                 "pos": "lw",
-                "id": 29652,
+                "id": 2010,
                 "ppUnit": null
             },
             {
@@ -843,10 +843,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Luke Schenn",
-                "number": 2,
+                "name": "Haydn Fleury",
+                "number": 24,
                 "pos": "rd",
-                "id": 1442,
+                "id": 2369,
                 "ppUnit": null
             }
         ]
@@ -3829,34 +3829,11 @@
     "VGK": {
         "f1": [
             {
-                "name": "Mitch Marner",
-                "number": 16,
+                "name": "Brandon Saad",
+                "number": 20,
                 "pos": "lw",
-                "id": 2475,
-                "ppUnit": 1
-            },
-            {
-                "name": "Brett Howden",
-                "number": 21,
-                "pos": "c",
-                "id": 2660,
-                "ppUnit": 2
-            },
-            {
-                "name": "Mark Stone",
-                "number": 61,
-                "pos": "rw",
-                "id": 1779,
-                "ppUnit": 1
-            }
-        ],
-        "f2": [
-            {
-                "name": "Ivan Barbashev",
-                "number": 49,
-                "pos": "lw",
-                "id": 2737,
-                "ppUnit": 2
+                "id": 1785,
+                "ppUnit": null
             },
             {
                 "name": "Tomas Hertl",
@@ -3873,26 +3850,49 @@
                 "ppUnit": 1
             }
         ],
-        "f3": [
+        "f2": [
             {
-                "name": "Brandon Saad",
-                "number": 20,
+                "name": "Ivan Barbashev",
+                "number": 49,
                 "pos": "lw",
-                "id": 1785,
-                "ppUnit": null
+                "id": 2737,
+                "ppUnit": 2
             },
             {
-                "name": "Reilly Smith",
-                "number": 19,
+                "name": "Mitch Marner",
+                "number": 16,
                 "pos": "c",
-                "id": 1853,
-                "ppUnit": null
+                "id": 2475,
+                "ppUnit": 1
             },
             {
                 "name": "Braeden Bowman",
                 "number": 42,
                 "pos": "rw",
                 "id": 30925,
+                "ppUnit": 1
+            }
+        ],
+        "f3": [
+            {
+                "name": "Reilly Smith",
+                "number": 19,
+                "pos": "lw",
+                "id": 1853,
+                "ppUnit": null
+            },
+            {
+                "name": "Brett Howden",
+                "number": 21,
+                "pos": "c",
+                "id": 2660,
+                "ppUnit": 2
+            },
+            {
+                "name": "Mark Stone",
+                "number": 61,
+                "pos": "rw",
+                "id": 1779,
                 "ppUnit": 1
             }
         ],
@@ -3928,30 +3928,14 @@
                 "ppUnit": 2
             },
             {
-                "name": "Zach Whitecloud",
-                "number": 2,
+                "name": "Brayden McNabb",
+                "number": 3,
                 "pos": "rd",
-                "id": 4658,
+                "id": 1681,
                 "ppUnit": null
             }
         ],
         "d2": [
-            {
-                "name": "Brayden McNabb",
-                "number": 3,
-                "pos": "ld",
-                "id": 1681,
-                "ppUnit": null
-            },
-            {
-                "name": "Kaedan Korczak",
-                "number": 6,
-                "pos": "rd",
-                "id": 28524,
-                "ppUnit": null
-            }
-        ],
-        "d3": [
             {
                 "name": "Ben Hutton",
                 "number": 17,
@@ -3960,10 +3944,26 @@
                 "ppUnit": 2
             },
             {
+                "name": "Zach Whitecloud",
+                "number": 2,
+                "pos": "rd",
+                "id": 4658,
+                "ppUnit": null
+            }
+        ],
+        "d3": [
+            {
                 "name": "Jeremy Lauzon",
                 "number": 3,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 3787,
+                "ppUnit": null
+            },
+            {
+                "name": "Kaedan Korczak",
+                "number": 6,
+                "pos": "rd",
+                "id": 28524,
                 "ppUnit": null
             }
         ]
