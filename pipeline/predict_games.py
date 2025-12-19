@@ -182,7 +182,7 @@ def get_best_goalie(team_name, goalie_ratings, confirmed_goalie=None):
     return best_goalie if best_goalie else "Unknown"
 
 def prob_to_odds(prob):
-    if prob <= 0 or prob >= 1:
+    if pd.isna(prob) or prob <= 0 or prob >= 1:
         return "N/A"
     
     if prob == 0.5:
@@ -1193,8 +1193,11 @@ def predict():
             sv_pct = saves / sa if sa > 0 else 0
             pdo = (sh_pct + sv_pct) * 1000
             
+            if pd.isna(pdo): pdo = 1000
+            
             # Hits Calc
             hits = recent['hits_for'].mean()
+            if pd.isna(hits): hits = 20
             return pdo, hits
 
         # Fetch Pre-Game Trends
