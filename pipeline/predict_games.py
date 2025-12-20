@@ -28,118 +28,6 @@ def convert_to_central(utc_str):
     except Exception as e:
         return utc_str
 
-def load_existing_predictions(filepath):
-    """Loads existing CSV into a dict keyed by game_id."""
-    existing = {}
-    try:
-        with open(filepath, 'r') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if 'game_id' in row:
-                    existing[row['game_id']] = row
-    except FileNotFoundError:
-        pass
-    return existing
-
-# ... (inside predict function)
-
-    # Load Existing Predictions (for freezing live/past games)
-    existing_predictions = load_existing_predictions('../data/predictions_detailed.csv')
-    
-    
-
-    
-    csv_rows = []
-    
-    print(f"Predicting {len(schedule)} games...")
-    
-    # ... (fetching lineups logic - keep as is) ...
-
-    # OUTPUT HEADER
-    print("\n--- Predictions & EV Analysis ---")
-    print(f"{'Date':<11} {'Home':<15} {'Away':<15} {'H Win%':<8} {'A Win%':<8} {'H EV':<10} {'A EV':<10} {'Wager'}")
-    print("-" * 100)
-
-    for game in schedule:
-        home_team = game['homeTeam']
-        away_team = game['awayTeam']
-        
-        # Construct Game ID immediately to check existence
-        # Check start time against UTC now
-        game_date = game.get('gameDate')
-        if not game_date:
-            game_date = game.get('startTimeUTC', '')[:10]
-        
-        game_id = f"{game_date}-{away_team}-{home_team}"
-        
-        # Check Freeze Condition
-        is_frozen = False
-        start_time_utc = game.get('startTimeUTC') # 2025-12-06T17:30:00Z
-        if start_time_utc:
-            try:
-                # Parse to aware UTC datetime
-                st = datetime.strptime(start_time_utc, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-                now = datetime.now(timezone.utc)
-                
-                # If current time is PAST start time, AND we have existing data
-                if now > st and game_id in existing_predictions:
-                    is_frozen = True
-            except Exception as e:
-                print(f"Error parsing date for freeze check: {e}")
-
-        if is_frozen:
-            # USE CACHED DATA
-            row = existing_predictions[game_id]
-            csv_rows.append(row)
-            
-            # Print Frozen Summary
-            # We need to extract values from the row strings
-            # Row keys: home_win_pct, home_ev, wager_recommendation, etc.
-            h_wp = row.get('home_win_pct', '0') + '%'
-            a_wp = row.get('away_win_pct', '0') + '%'
-            h_ev = row.get('home_ev', '') 
-            if h_ev: h_ev += '%'
-            a_ev = row.get('away_ev', '')
-            if a_ev: a_ev += '%'
-            
-            print(f"{row['game_date']:<11} {row['home_team']:<15} {row['away_team']:<15} {h_wp:<8}   {a_wp:<8}   {h_ev:<10} {a_ev:<10} {row['wager_recommendation']} [FROZEN]")
-            continue
-            
-        # --- IF NOT FROZEN, PROCEED WITH CALCULATION ---
-
-        if home_team not in team_ratings or away_team not in team_ratings:
-            continue
-            
-        # ... (Rest of calculation logic) ...
-        
-        # ... (At end of loop, formatting the NEW row) ...
-        # csv_rows.append({ ... }) <-- We need to move the row construction into the loop or append to predictions list and process later?
-        # Actually, since I split the flow, I need to ensure the calculation logic builds the row and appends to `csv_rows`.
-        
-        # ... (I will need to refactor the loop body slightly to append to csv_rows immediately instead of intermediate predictions list) ...
-
-
-    if not utc_str:
-        return ""
-    try:
-        # Parse UTC string (2025-12-06T17:30:00Z)
-        utc_dt = datetime.strptime(utc_str, "%Y-%m-%dT%H:%M:%SZ")
-        utc_dt = utc_dt.replace(tzinfo=pytz.utc)
-        
-        # Convert to Central
-        central_tz = pytz.timezone('US/Central')
-        central_dt = utc_dt.astimezone(central_tz)
-        
-        # Format: 7:00 PM
-        # Remove leading zero from hour if possible (platform specific), but %I is standardized 01-12
-        time_str = central_dt.strftime("%I:%M %p")
-        if time_str.startswith("0"):
-            time_str = time_str[1:]
-        return time_str
-    except Exception as e:
-        print(f"Error parsing time {utc_str}: {e}")
-        return ""
-
 def load_goalie_stats_json():
     """
     Loads official goalie stats from JSON.
@@ -1373,60 +1261,41 @@ def predict():
         })        
 
     # Create DataFrame from csv_rows
+    if not csv_rows:
+        print("Warning: No predictions generated. Skipping save.")
+        return
+        
     df_pred = pd.DataFrame(csv_rows)
     
-    # Save detailed predictions
-    # Assuming execution from pipeline/ dir
-    output_path = '../public/data/predictions_detailed.csv'
-    df_pred.to_csv(output_path, index=False)
-    print(f" detailed predictions saved to {output_path}")
-    
     # Save Last Update Timestamp for Frontend (US/Central)
-    utc_now = datetime.now(pytz.utc)
+    utc_now = datetime.now(timezone.utc)
     central = pytz.timezone('US/Central')
     timestamp = utc_now.astimezone(central).strftime("%B %d, %I:%M %p")
     
-    with open('last_updated.json', 'w') as f:
-        json.dump({"last_refresh": timestamp}, f)
-        
-    # Sync if needed (handled by auto_pipeline.sh usually)
-    # Sync to app data folder (Relative path when running from pipeline/ dir)
-    try:
-        df_pred.to_csv('../data/predictions_detailed.csv', index=False)
-        
-        with open('../data/last_updated.json', 'w') as f:
-            json.dump({"last_refresh": timestamp}, f)
-            
-        print("Synced to ../data/")
-    except FileNotFoundError:
-        print("Could not sync to app folder (path not found?)")
-        # Try absolute or check if running from root?
-        # Fallback if running from root
+    # Define paths relative to the script location
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    paths = [
+        os.path.join(script_dir, '../data/predictions_detailed.csv'),
+        os.path.join(script_dir, '../public/data/predictions_detailed.csv'),
+        os.path.join(script_dir, 'data/predictions_detailed.csv') # Fallback if running from root
+    ]
+    
+    # Save CSV to all valid paths
+    for p in paths:
         try:
-            df_pred.to_csv('data/predictions_detailed.csv', index=False)
-            with open('data/last_updated.json', 'w') as f:
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            df_pred.to_csv(p, index=False)
+            print(f"Saved prediction data to {p}")
+            
+            # Also save last_updated.json in the same directory
+            lu_path = os.path.join(os.path.dirname(p), 'last_updated.json')
+            with open(lu_path, 'w') as f:
                 json.dump({"last_refresh": timestamp}, f)
-            print("Synced to data/ (Fallback)")
-        except:
-            print("Failed to sync data.")
+        except Exception as e:
+            # Silently fail for paths that don't exist in the current environment
+            pass
 
-    # --- ROBUST SYNC TO PUBLIC ---
-    # Ensure public/data is perfectly in sync with data/
-    try:
-        src = '../data/predictions_detailed.csv'
-        dst = '../public/data/predictions_detailed.csv'
-        if os.path.exists(src):
-            shutil.copy(src, dst)
-            print(f"Verified Sync: Copied {src} to {dst}")
-        else:
-            # Maybe running from root?
-            src = 'data/predictions_detailed.csv'
-            dst = 'public/data/predictions_detailed.csv'
-            if os.path.exists(src):
-                shutil.copy(src, dst)
-                print(f"Verified Sync (Root): Copied {src} to {dst}")
-    except Exception as e:
-        print(f"Final Sync Failed: {e}")
+    print(f"Done. Predictions updated at {timestamp}")
 
 if __name__ == "__main__":
     predict()

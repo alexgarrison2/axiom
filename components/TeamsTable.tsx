@@ -411,14 +411,17 @@ const TeamsTable = () => {
 
                     console.log("Parsed Predictions Rows:", parsedPreds.length);
 
-                    // Get today's date in YYYY-MM-DD (Local Time)
+                    // Get today's date in YYYY-MM-DD (US/Central Time to match backend)
                     const today = new Date();
-                    const year = today.getFullYear();
-                    const month = String(today.getMonth() + 1).padStart(2, '0');
-                    const day = String(today.getDate()).padStart(2, '0');
-                    const todayStr = `${year}-${month}-${day}`;
+                    const formatter = new Intl.DateTimeFormat('en-CA', {
+                        timeZone: 'America/Chicago',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                    const todayStr = formatter.format(today);
 
-                    console.log("Filtering for today:", todayStr);
+                    console.log("Filtering for today (America/Chicago):", todayStr);
 
                     const matchups: Matchup[] = parsedPreds
                         .filter((row: any) => row.game_date === todayStr)
