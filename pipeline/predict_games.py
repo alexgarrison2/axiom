@@ -1137,12 +1137,8 @@ def predict():
 
         # 2. Goalie Impact
         # h_xg_adj = max(0.1, h_xg - (a_gsax * GOALIE_IMPACT_FACTOR))
-        print(f"DEBUG: {home_team} vs {away_team}")
-        print(f"  a_goalie={a_goalie_name}, a_gsax={a_gsax}, factor={GOALIE_IMPACT_FACTOR}")
-        print(f"  h_goalie={h_goalie_name}, h_gsax={h_gsax}, factor={GOALIE_IMPACT_FACTOR}")
         h_goalie_impact = -(a_gsax * GOALIE_IMPACT_FACTOR)
         a_goalie_impact = -(h_gsax * GOALIE_IMPACT_FACTOR)
-        print(f"  h_impact={h_goalie_impact}, a_impact={a_goalie_impact}")
         
         if abs(h_goalie_impact) > 0.01:
             h_explained.append(f"Opp Goalie ({a_starter_clean}): {h_goalie_impact:+.2f}")
