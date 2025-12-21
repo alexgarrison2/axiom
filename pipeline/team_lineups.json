@@ -1878,29 +1878,6 @@
                 "ppUnit": 2
             },
             {
-                "name": "Max Sasson",
-                "number": null,
-                "pos": "c",
-                "id": 30007,
-                "ppUnit": null
-            },
-            {
-                "name": "Kiefer Sherwood",
-                "number": 44,
-                "pos": "rw",
-                "id": 4675,
-                "ppUnit": 2
-            }
-        ],
-        "f3": [
-            {
-                "name": "Nils Hoglander",
-                "number": 21,
-                "pos": "lw",
-                "id": 30614,
-                "ppUnit": 2
-            },
-            {
                 "name": "David Kampf",
                 "number": 64,
                 "pos": "c",
@@ -1915,6 +1892,29 @@
                 "ppUnit": 1
             }
         ],
+        "f3": [
+            {
+                "name": "Drew O'Connor",
+                "number": 18,
+                "pos": "lw",
+                "id": 32925,
+                "ppUnit": null
+            },
+            {
+                "name": "Aatu Raty",
+                "number": 54,
+                "pos": "c",
+                "id": 34668,
+                "ppUnit": null
+            },
+            {
+                "name": "Kiefer Sherwood",
+                "number": 44,
+                "pos": "rw",
+                "id": 4675,
+                "ppUnit": 2
+            }
+        ],
         "f4": [
             {
                 "name": "Liam Ohgren",
@@ -1924,10 +1924,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Drew O'Connor",
-                "number": 18,
+                "name": "Max Sasson",
+                "number": null,
                 "pos": "c",
-                "id": 32925,
+                "id": 30007,
                 "ppUnit": null
             },
             {
@@ -2274,25 +2274,25 @@
     "TBL": {
         "f1": [
             {
-                "name": "Oliver Bjorkstrand",
-                "number": 22,
-                "pos": "lw",
-                "id": 2603,
-                "ppUnit": 1
-            },
-            {
                 "name": "Brayden Point",
                 "number": 21,
-                "pos": "c",
+                "pos": "lw",
                 "id": 2456,
                 "ppUnit": 1
             },
             {
-                "name": "Gage Goncalves",
-                "number": 93,
-                "pos": "rw",
-                "id": 32521,
+                "name": "Anthony Cirelli",
+                "number": 71,
+                "pos": "c",
+                "id": 3842,
                 "ppUnit": 2
+            },
+            {
+                "name": "Nikita Kucherov",
+                "number": 86,
+                "pos": "rw",
+                "id": 2031,
+                "ppUnit": 1
             }
         ],
         "f2": [
@@ -2304,18 +2304,18 @@
                 "ppUnit": 1
             },
             {
-                "name": "Anthony Cirelli",
-                "number": 71,
-                "pos": "c",
-                "id": 3842,
-                "ppUnit": 1
-            },
-            {
                 "name": "Nick Paul",
                 "number": 20,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2357,
                 "ppUnit": 2
+            },
+            {
+                "name": "Oliver Bjorkstrand",
+                "number": 22,
+                "pos": "rw",
+                "id": 2603,
+                "ppUnit": 1
             }
         ],
         "f3": [
@@ -2343,10 +2343,10 @@
         ],
         "f4": [
             {
-                "name": "Curtis Douglas",
-                "number": 42,
+                "name": "Jack Finley",
+                "number": 62,
                 "pos": "lw",
-                "id": 27811,
+                "id": 29594,
                 "ppUnit": null
             },
             {
@@ -2354,6 +2354,13 @@
                 "number": 17,
                 "pos": "c",
                 "id": 32816,
+                "ppUnit": null
+            },
+            {
+                "name": "Gage Goncalves",
+                "number": 93,
+                "pos": "rw",
+                "id": 32521,
                 "ppUnit": 2
             }
         ],
@@ -2707,19 +2714,19 @@
                 "ppUnit": 1
             },
             {
-                "name": "William Nylander",
-                "number": 88,
+                "name": "Easton Cowan",
+                "number": 53,
                 "pos": "rw",
-                "id": 2375,
-                "ppUnit": 1
+                "id": 35106,
+                "ppUnit": 2
             }
         ],
         "f2": [
             {
-                "name": "Nicholas Robertson",
-                "number": 89,
+                "name": "Matias Maccelli",
+                "number": 63,
                 "pos": "lw",
-                "id": 29254,
+                "id": 30063,
                 "ppUnit": 2
             },
             {
@@ -2730,20 +2737,20 @@
                 "ppUnit": 1
             },
             {
-                "name": "Easton Cowan",
-                "number": 53,
+                "name": "William Nylander",
+                "number": 88,
                 "pos": "rw",
-                "id": 35106,
-                "ppUnit": 2
+                "id": 2375,
+                "ppUnit": 1
             }
         ],
         "f3": [
             {
-                "name": "Dakota Joshua",
-                "number": 81,
+                "name": "Nicholas Robertson",
+                "number": 89,
                 "pos": "lw",
-                "id": 25020,
-                "ppUnit": null
+                "id": 29254,
+                "ppUnit": 2
             },
             {
                 "name": "Nicolas Roy",
@@ -2762,11 +2769,11 @@
         ],
         "f4": [
             {
-                "name": "Matias Maccelli",
-                "number": 63,
+                "name": "Dakota Joshua",
+                "number": 81,
                 "pos": "lw",
-                "id": 30063,
-                "ppUnit": 2
+                "id": 25020,
+                "ppUnit": null
             },
             {
                 "name": "Scott Laughton",
