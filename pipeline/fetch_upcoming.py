@@ -27,6 +27,14 @@ def get_team_goalies(gamestats_file="nhl_season_2025_2026_gamestats.csv"):
         if df.empty:
             return {}
             
+        # FILTER: Only consider games with actual statistics (e.g. shots_on_goal > 0)
+        # to avoid being misled by simulated/empty future entries in gamestats.csv
+        if 'shots_on_goal' in df.columns:
+            df = df[df['shots_on_goal'] > 0]
+            
+        if df.empty:
+            return {}
+
         # Count games per goalie per team
         # Column 13 is starting_goalie, Column 3 is team
         counts = df.groupby(['starting_goalie', 'team']).size().reset_index(name='count')
