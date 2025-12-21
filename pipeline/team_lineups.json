@@ -48,29 +48,6 @@
         ],
         "f3": [
             {
-                "name": "Michael Rasmussen",
-                "number": 27,
-                "pos": "lw",
-                "id": 2784,
-                "ppUnit": null
-            },
-            {
-                "name": "J.T. Compher",
-                "number": 37,
-                "pos": "c",
-                "id": 2751,
-                "ppUnit": null
-            },
-            {
-                "name": "James van Riemsdyk",
-                "number": 21,
-                "pos": "rw",
-                "id": 1156,
-                "ppUnit": 1
-            }
-        ],
-        "f4": [
-            {
                 "name": "Elmer Soderblom",
                 "number": null,
                 "pos": "lw",
@@ -90,6 +67,29 @@
                 "pos": "rw",
                 "id": 36364,
                 "ppUnit": null
+            }
+        ],
+        "f4": [
+            {
+                "name": "Michael Rasmussen",
+                "number": 27,
+                "pos": "lw",
+                "id": 2784,
+                "ppUnit": null
+            },
+            {
+                "name": "J.T. Compher",
+                "number": 37,
+                "pos": "c",
+                "id": 2751,
+                "ppUnit": null
+            },
+            {
+                "name": "James van Riemsdyk",
+                "number": 21,
+                "pos": "rw",
+                "id": 1156,
+                "ppUnit": 1
             }
         ],
         "d1": [
@@ -313,7 +313,7 @@
                 "number": 90,
                 "pos": "lw",
                 "id": 1524,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Joel Eriksson Ek",
@@ -343,7 +343,7 @@
                 "number": 22,
                 "pos": "c",
                 "id": 36363,
-                "ppUnit": 2
+                "ppUnit": null
             },
             {
                 "name": "Vladimir Tarasenko",
@@ -836,17 +836,17 @@
         ],
         "d3": [
             {
-                "name": "Tyler Kleven",
-                "number": 43,
+                "name": "Jordan Spence",
+                "number": 21,
                 "pos": "ld",
-                "id": 30802,
+                "id": 29922,
                 "ppUnit": null
             },
             {
-                "name": "Jordan Spence",
-                "number": 21,
+                "name": "Nikolas Matinpalo",
+                "number": 33,
                 "pos": "rd",
-                "id": 29922,
+                "id": 37937,
                 "ppUnit": null
             }
         ]
@@ -1587,11 +1587,11 @@
         ],
         "f2": [
             {
-                "name": "Conor Sheary",
-                "number": null,
+                "name": "Gabriel Perreault",
+                "number": 94,
                 "pos": "lw",
-                "id": 2568,
-                "ppUnit": null
+                "id": 35165,
+                "ppUnit": 2
             },
             {
                 "name": "Vincent Trocheck",
@@ -1610,10 +1610,10 @@
         ],
         "f3": [
             {
-                "name": "Gabriel Perreault",
-                "number": 94,
+                "name": "Will Cuylle",
+                "number": 50,
                 "pos": "lw",
-                "id": 35165,
+                "id": 29725,
                 "ppUnit": 2
             },
             {
@@ -1624,11 +1624,11 @@
                 "ppUnit": 2
             },
             {
-                "name": "Will Cuylle",
-                "number": 50,
+                "name": "Conor Sheary",
+                "number": null,
                 "pos": "rw",
-                "id": 29725,
-                "ppUnit": 2
+                "id": 2568,
+                "ppUnit": null
             }
         ],
         "f4": [
@@ -2842,10 +2842,10 @@
     "PHI": {
         "f1": [
             {
-                "name": "Carl Grundstrom",
-                "number": 91,
+                "name": "Nikita Grebenkin",
+                "number": 29,
                 "pos": "lw",
-                "id": 2875,
+                "id": 38116,
                 "ppUnit": null
             },
             {
@@ -2853,7 +2853,7 @@
                 "number": 46,
                 "pos": "c",
                 "id": 30202,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Travis Konecny",
@@ -2869,14 +2869,14 @@
                 "number": null,
                 "pos": "lw",
                 "id": 35098,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Sean Couturier",
                 "number": 14,
                 "pos": "c",
                 "id": 1777,
-                "ppUnit": 1
+                "ppUnit": 2
             },
             {
                 "name": "Owen Tippett",
@@ -2892,29 +2892,29 @@
                 "number": 39,
                 "pos": "lw",
                 "id": 33997,
-                "ppUnit": 1
+                "ppUnit": null
             },
             {
                 "name": "Noah Cates",
                 "number": 27,
                 "pos": "c",
                 "id": 28087,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Bobby Brink",
                 "number": 10,
                 "pos": "rw",
                 "id": 30223,
-                "ppUnit": 2
+                "ppUnit": 1
             }
         ],
         "f4": [
             {
-                "name": "Nicolas Deslauriers",
-                "number": 44,
+                "name": "Carl Grundstrom",
+                "number": 91,
                 "pos": "lw",
-                "id": 1699,
+                "id": 2875,
                 "ppUnit": null
             },
             {
@@ -2925,10 +2925,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Nikita Grebenkin",
-                "number": 29,
+                "name": "Nicolas Deslauriers",
+                "number": 44,
                 "pos": "rw",
-                "id": 38116,
+                "id": 1699,
                 "ppUnit": null
             }
         ],
@@ -2938,14 +2938,14 @@
                 "number": 8,
                 "pos": "ld",
                 "id": 30422,
-                "ppUnit": 1
+                "ppUnit": 2
             },
             {
                 "name": "Travis Sanheim",
                 "number": 6,
                 "pos": "rd",
                 "id": 2827,
-                "ppUnit": 1
+                "ppUnit": 2
             }
         ],
         "d2": [
@@ -2961,7 +2961,7 @@
                 "number": 9,
                 "pos": "rd",
                 "id": 29756,
-                "ppUnit": 2
+                "ppUnit": 1
             }
         ],
         "d3": [
