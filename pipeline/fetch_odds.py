@@ -123,6 +123,7 @@ def fetch_odds():
                 continue
             
             matchup_id = f"{date_str}:{away_team}@{home_team}"
+            print(f"Found matchup: {matchup_id}")
             
             # Find Game Lines
             game_lines = None
@@ -172,6 +173,7 @@ def fetch_odds():
                                     if matchup_id not in odds_data:
                                         odds_data[matchup_id] = {}
                                     odds_data[matchup_id][target_team] = odds_int
+                                    print(f"  Added odds for {target_team}: {odds_int}")
                                     
                             except ValueError:
                                 pass
