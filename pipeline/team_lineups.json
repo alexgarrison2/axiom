@@ -190,11 +190,11 @@
         ],
         "f3": [
             {
-                "name": "Sonny Milano",
-                "number": 15,
+                "name": "Hendrix Lapierre",
+                "number": null,
                 "pos": "lw",
-                "id": 2610,
-                "ppUnit": 2
+                "id": 29894,
+                "ppUnit": null
             },
             {
                 "name": "Connor McMichael",
@@ -231,7 +231,7 @@
                 "number": 63,
                 "pos": "rw",
                 "id": 33184,
-                "ppUnit": null
+                "ppUnit": 2
             }
         ],
         "d1": [
@@ -268,17 +268,17 @@
         ],
         "d3": [
             {
-                "name": "Rasmus Sandin",
-                "number": 38,
+                "name": "Declan Chisholm",
+                "number": 47,
                 "pos": "ld",
-                "id": 4806,
+                "id": 28803,
                 "ppUnit": null
             },
             {
-                "name": "Declan Chisholm",
-                "number": 47,
+                "name": "Rasmus Sandin",
+                "number": 38,
                 "pos": "rd",
-                "id": 28803,
+                "id": 4806,
                 "ppUnit": null
             }
         ]
@@ -854,11 +854,11 @@
     "NJD": {
         "f1": [
             {
-                "name": "Jesper Bratt",
-                "number": 63,
+                "name": "Timo Meier",
+                "number": 28,
                 "pos": "lw",
-                "id": 2845,
-                "ppUnit": 1
+                "id": 2480,
+                "ppUnit": 2
             },
             {
                 "name": "Nico Hischier",
@@ -868,14 +868,37 @@
                 "ppUnit": 1
             },
             {
+                "name": "Jesper Bratt",
+                "number": 63,
+                "pos": "rw",
+                "id": 2845,
+                "ppUnit": 1
+            }
+        ],
+        "f2": [
+            {
+                "name": "Arseny Gritsyuk",
+                "number": 81,
+                "pos": "lw",
+                "id": 30695,
+                "ppUnit": 2
+            },
+            {
+                "name": "Jack Hughes",
+                "number": 86,
+                "pos": "c",
+                "id": 30419,
+                "ppUnit": 1
+            },
+            {
                 "name": "Dawson Mercer",
                 "number": 91,
                 "pos": "rw",
                 "id": 29327,
-                "ppUnit": 2
+                "ppUnit": null
             }
         ],
-        "f2": [
+        "f3": [
             {
                 "name": "Ondrej Palat",
                 "number": 18,
@@ -891,29 +914,6 @@
                 "ppUnit": 2
             },
             {
-                "name": "Timo Meier",
-                "number": 28,
-                "pos": "rw",
-                "id": 2480,
-                "ppUnit": 1
-            }
-        ],
-        "f3": [
-            {
-                "name": "Paul Cotter",
-                "number": 47,
-                "pos": "lw",
-                "id": 27620,
-                "ppUnit": 2
-            },
-            {
-                "name": "Juho Lammikko",
-                "number": 83,
-                "pos": "c",
-                "id": 3829,
-                "ppUnit": null
-            },
-            {
                 "name": "Stefan Noesen",
                 "number": 11,
                 "pos": "rw",
@@ -923,10 +923,10 @@
         ],
         "f4": [
             {
-                "name": "Xavier Parent",
-                "number": 67,
+                "name": "Paul Cotter",
+                "number": 47,
                 "pos": "lw",
-                "id": 36770,
+                "id": 27620,
                 "ppUnit": null
             },
             {
@@ -1582,7 +1582,7 @@
                 "number": 13,
                 "pos": "rw",
                 "id": 28771,
-                "ppUnit": 2
+                "ppUnit": 1
             }
         ],
         "f2": [
@@ -1601,11 +1601,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "J.T. Miller",
-                "number": 9,
+                "name": "Conor Sheary",
+                "number": null,
                 "pos": "rw",
-                "id": 1762,
-                "ppUnit": 1
+                "id": 2568,
+                "ppUnit": 2
             }
         ],
         "f3": [
@@ -1624,10 +1624,10 @@
                 "ppUnit": 2
             },
             {
-                "name": "Conor Sheary",
-                "number": null,
+                "name": "Taylor Raddysh",
+                "number": 14,
                 "pos": "rw",
-                "id": 2568,
+                "id": 3922,
                 "ppUnit": null
             }
         ],
