@@ -6,6 +6,15 @@ import ssl
 import fetch_dailyfaceoff
 import pandas as pd
 import pytz
+import unicodedata
+
+def normalize_name(name):
+    """Normalize names by removing accents and making lowercase."""
+    if not name:
+        return ""
+    # Normalize unicode to decomposed form and filter out non-spacing marks (accents)
+    normalized = unicodedata.normalize('NFD', name)
+    return "".join(c for c in normalized if unicodedata.category(c) != 'Mn').lower().strip()
 
 def get_team_goalies(gamestats_file="nhl_season_2025_2026_gamestats.csv"):
     """
@@ -110,9 +119,13 @@ def fetch_schedule():
                                             team_goalies = gs
                                             break
                                 
-                                if g_name and g_name not in team_goalies and team_goalies:
-                                    print(f"  [VALIDATION FAILED] {g_name} reported for {home_team_common}, but has no history there. Rejecting.")
-                                    continue
+                                if g_name and team_goalies:
+                                    norm_g = normalize_name(g_name)
+                                    norm_team_gs = {normalize_name(tg) for tg in team_goalies}
+                                    
+                                    if norm_g not in norm_team_gs:
+                                        print(f"  [VALIDATION FAILED] {g_name} reported for {home_team_common}, but has no history there. Rejecting.")
+                                        continue
 
                                 h_dfo_info = info
                                 print(f"Matched Home: {home_team_common} -> {dfo_team_name} (Status: {info.get('status')})")
@@ -134,9 +147,13 @@ def fetch_schedule():
                                             team_goalies = gs
                                             break
 
-                                if g_name and g_name not in team_goalies and team_goalies:
-                                    print(f"  [VALIDATION FAILED] {g_name} reported for {away_team_common}, but has no history there. Rejecting.")
-                                    continue
+                                if g_name and team_goalies:
+                                    norm_g = normalize_name(g_name)
+                                    norm_team_gs = {normalize_name(tg) for tg in team_goalies}
+                                    
+                                    if norm_g not in norm_team_gs:
+                                        print(f"  [VALIDATION FAILED] {g_name} reported for {away_team_common}, but has no history there. Rejecting.")
+                                        continue
 
                                 a_dfo_info = info
                                 print(f"Matched Away: {away_team_common} -> {dfo_team_name} (Status: {info.get('status')})")
