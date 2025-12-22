@@ -2418,11 +2418,34 @@
     "VGK": {
         "f1": [
             {
+                "name": "Ivan Barbashev",
+                "number": 49,
+                "pos": "lw",
+                "id": 2737,
+                "ppUnit": 2
+            },
+            {
                 "name": "Mitch Marner",
                 "number": 16,
-                "pos": "lw",
+                "pos": "c",
                 "id": 2475,
                 "ppUnit": 1
+            },
+            {
+                "name": "Mark Stone",
+                "number": 61,
+                "pos": "rw",
+                "id": 1779,
+                "ppUnit": 1
+            }
+        ],
+        "f2": [
+            {
+                "name": "Brandon Saad",
+                "number": 20,
+                "pos": "lw",
+                "id": 1785,
+                "ppUnit": 2
             },
             {
                 "name": "Tomas Hertl",
@@ -2437,29 +2460,6 @@
                 "pos": "rw",
                 "id": 30622,
                 "ppUnit": 1
-            }
-        ],
-        "f2": [
-            {
-                "name": "Brandon Saad",
-                "number": 20,
-                "pos": "lw",
-                "id": 1785,
-                "ppUnit": 2
-            },
-            {
-                "name": "Ivan Barbashev",
-                "number": 49,
-                "pos": "c",
-                "id": 2737,
-                "ppUnit": 2
-            },
-            {
-                "name": "Braeden Bowman",
-                "number": 42,
-                "pos": "rw",
-                "id": 30925,
-                "ppUnit": null
             }
         ],
         "f3": [
@@ -2478,11 +2478,11 @@
                 "ppUnit": 2
             },
             {
-                "name": "Mark Stone",
-                "number": 61,
+                "name": "Braeden Bowman",
+                "number": 42,
                 "pos": "rw",
-                "id": 1779,
-                "ppUnit": 1
+                "id": 30925,
+                "ppUnit": null
             }
         ],
         "f4": [
@@ -2510,22 +2510,6 @@
         ],
         "d1": [
             {
-                "name": "Noah Hanifin",
-                "number": 15,
-                "pos": "ld",
-                "id": 2473,
-                "ppUnit": 1
-            },
-            {
-                "name": "Zach Whitecloud",
-                "number": 2,
-                "pos": "rd",
-                "id": 4658,
-                "ppUnit": null
-            }
-        ],
-        "d2": [
-            {
                 "name": "Brayden McNabb",
                 "number": 3,
                 "pos": "ld",
@@ -2540,19 +2524,35 @@
                 "ppUnit": null
             }
         ],
-        "d3": [
+        "d2": [
+            {
+                "name": "Noah Hanifin",
+                "number": 15,
+                "pos": "ld",
+                "id": 2473,
+                "ppUnit": 1
+            },
             {
                 "name": "Ben Hutton",
                 "number": 17,
-                "pos": "ld",
+                "pos": "rd",
                 "id": 2508,
                 "ppUnit": 2
-            },
+            }
+        ],
+        "d3": [
             {
                 "name": "Jeremy Lauzon",
                 "number": 3,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 3787,
+                "ppUnit": null
+            },
+            {
+                "name": "Zach Whitecloud",
+                "number": 2,
+                "pos": "rd",
+                "id": 4658,
                 "ppUnit": null
             }
         ]
