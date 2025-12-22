@@ -52,9 +52,23 @@ def refresh_pipeline():
             
             # Aggregate for GameStats
             # We need game_id, team_id, xG
-            # Group by game_id, team_id
-            agg = df.groupby(['game_id', 'team_id'])['xG'].sum().reset_index()
-            agg.columns = ['game_id', 'team_id', 'xG_sum']
+            # Group by game_id, team_id, strength_state
+            # We want both Total xG and 5v5 xG
+            print(f"Aggregating xG from {filename}...")
+            
+            # Total xG
+            agg_total = df.groupby(['game_id', 'team_id'])['xG'].sum().reset_index()
+            agg_total.columns = ['game_id', 'team_id', 'xG_sum']
+            
+            # 5v5 xG
+            if 'strength_state' in df.columns:
+                agg_5v5 = df[df['strength_state'] == '5v5'].groupby(['game_id', 'team_id'])['xG'].sum().reset_index()
+                agg_5v5.columns = ['game_id', 'team_id', 'xG_5v5_sum']
+                agg = pd.merge(agg_total, agg_5v5, on=['game_id', 'team_id'], how='left').fillna(0)
+            else:
+                agg = agg_total
+                agg['xG_5v5_sum'] = agg['xG_sum'] * 0.8 # Fallback if strength missing
+
             all_game_xg.append(agg)
             
         except FileNotFoundError:
@@ -72,48 +86,40 @@ def refresh_pipeline():
         if all_game_xg:
             df_new_xg = pd.concat(all_game_xg)
             
-            # We have (game_id, team_id) -> xG_sum
-            # GameStats has rows for (game_id, team, opponent, home_away...)
-            # We need to map team_id to team name?
-            # Or does gamestats have team_id? Not explicitly in the inspect output earlier?
-            # Let's check columns.
-            # If gamestats uses names (e.g. "Rangers"), we need a mapper.
-            # Shots uses team_id (int).
-            
-            # We need a TeamID -> Name mapper.
-            # nhl_teams.csv has Name, ID
+            # We have (game_id, team_id) -> xG_sum, xG_5v5_sum
             teams_df = pd.read_csv("nhl_teams.csv")
-            # Map ID to Common Name to match 'team' column in gamestats logic?
-            # Step 17 view_file showed 'team' column has names like "Avalanche", "Stars".
-            # nhl_teams.csv has "Common Name" and "NHL Team ID".
-            
             id_to_name = dict(zip(teams_df['NHL Team ID'], teams_df['Common Name']))
             
-            # Add 'team' name column to df_new_xg
             df_new_xg['team'] = df_new_xg['team_id'].map(id_to_name)
             
-            # Now we can join on ['game_id', 'team']
-            # xG_for = xG of the team
-            # xG_against = xG of the opponent
-            
-            # Create a lookup: (game_id, team_name) -> xG
+            # Create lookups
             xg_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_sum']))
+            xg_5v5_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_5v5_sum']))
             
             # Apply to df_stats
             def update_xg_for(row):
                 key = (row['game_id'], row['team'])
-                return xg_lookup.get(key, row['xG_for']) # Fallback to old if not found
+                return xg_lookup.get(key, row['xG_for'])
                 
             def update_xg_against(row):
-                # Opponent xG
                 key = (row['game_id'], row['opponent'])
                 return xg_lookup.get(key, row['xG_against'])
+
+            def update_xg_5v5_for(row):
+                key = (row['game_id'], row['team'])
+                return xg_5v5_lookup.get(key, row['xG_for_5v5'])
+
+            def update_xg_5v5_against(row):
+                key = (row['game_id'], row['opponent'])
+                return xg_5v5_lookup.get(key, row['xG_against_5v5'])
                 
             df_stats['xG_for'] = df_stats.apply(update_xg_for, axis=1)
             df_stats['xG_against'] = df_stats.apply(update_xg_against, axis=1)
+            df_stats['xG_for_5v5'] = df_stats.apply(update_xg_5v5_for, axis=1)
+            df_stats['xG_against_5v5'] = df_stats.apply(update_xg_5v5_against, axis=1)
             
             df_stats.to_csv(gamestats_file, index=False)
-            print(f"Updated {gamestats_file} with aggregated xG.")
+            print(f"Updated {gamestats_file} with aggregated total and 5v5 xG.")
             
             # Sync to app data folders
             try:
