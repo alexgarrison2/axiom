@@ -5793,7 +5793,7 @@
     "predictedWinner": "Mammoth",
     "actualWinner": "Mammoth",
     "isCorrect": true,
-    "brierScore": 0.1491
+    "brierScore": 0.149
   },
   {
     "date": "2025-12-21",
@@ -5807,7 +5807,7 @@
     "predictedWinner": "Stars",
     "actualWinner": "Stars",
     "isCorrect": true,
-    "brierScore": 0.1647
+    "brierScore": 0.1648
   },
   {
     "date": "2025-12-21",
@@ -5821,7 +5821,7 @@
     "predictedWinner": "Rangers",
     "actualWinner": "Predators",
     "isCorrect": false,
-    "brierScore": 0.2726
+    "brierScore": 0.2725
   },
   {
     "date": "2025-12-21",
@@ -5835,7 +5835,7 @@
     "predictedWinner": "Canadiens",
     "actualWinner": "Penguins",
     "isCorrect": false,
-    "brierScore": 0.2604
+    "brierScore": 0.2601
   },
   {
     "date": "2025-12-21",
@@ -5849,7 +5849,7 @@
     "predictedWinner": "Avalanche",
     "actualWinner": "Avalanche",
     "isCorrect": true,
-    "brierScore": 0.163
+    "brierScore": 0.1632
   },
   {
     "date": "2025-12-21",
@@ -5863,7 +5863,7 @@
     "predictedWinner": "Devils",
     "actualWinner": "Sabres",
     "isCorrect": false,
-    "brierScore": 0.4095
+    "brierScore": 0.4096
   },
   {
     "date": "2025-12-21",
@@ -5877,7 +5877,7 @@
     "predictedWinner": "Senators",
     "actualWinner": "Senators",
     "isCorrect": true,
-    "brierScore": 0.1758
+    "brierScore": 0.1756
   },
   {
     "date": "2025-12-21",
@@ -5891,6 +5891,62 @@
     "predictedWinner": "Red Wings",
     "actualWinner": "Red Wings",
     "isCorrect": true,
-    "brierScore": 0.1683
+    "brierScore": 0.1681
+  },
+  {
+    "date": "2025-12-22",
+    "homeTeam": "Kings",
+    "awayTeam": "Blue Jackets",
+    "homeScore": 1,
+    "awayScore": 3,
+    "homeXg": 7.87,
+    "awayXg": 7.45,
+    "homeWinProb": 52.7,
+    "predictedWinner": "Kings",
+    "actualWinner": "Blue Jackets",
+    "isCorrect": false,
+    "brierScore": 0.2777
+  },
+  {
+    "date": "2025-12-22",
+    "homeTeam": "Lightning",
+    "awayTeam": "Blues",
+    "homeScore": 4,
+    "awayScore": 1,
+    "homeXg": 9.01,
+    "awayXg": 5.79,
+    "homeWinProb": 75.6,
+    "predictedWinner": "Lightning",
+    "actualWinner": "Lightning",
+    "isCorrect": true,
+    "brierScore": 0.0595
+  },
+  {
+    "date": "2025-12-22",
+    "homeTeam": "Flyers",
+    "awayTeam": "Canucks",
+    "homeScore": 5,
+    "awayScore": 2,
+    "homeXg": 6.89,
+    "awayXg": 6.46,
+    "homeWinProb": 54.2,
+    "predictedWinner": "Flyers",
+    "actualWinner": "Flyers",
+    "isCorrect": true,
+    "brierScore": 0.2098
+  },
+  {
+    "date": "2025-12-22",
+    "homeTeam": "Ducks",
+    "awayTeam": "Kraken",
+    "homeScore": 1,
+    "awayScore": 3,
+    "homeXg": 10.98,
+    "awayXg": 8.06,
+    "homeWinProb": 60.4,
+    "predictedWinner": "Ducks",
+    "actualWinner": "Kraken",
+    "isCorrect": false,
+    "brierScore": 0.3648
   }
 ]
