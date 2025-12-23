@@ -1,23 +1,51 @@
 {
-    "CAR": [
+    "MTL": [
         {
-            "player": "William Carrier",
-            "news": "Carrier (illness) will not play against the Panthers on Tuesday. ",
-            "category": "Injury",
+            "player": "Adam Engstrom",
+            "news": "Engstrom will be a healthy scratch on Tuesday. ",
+            "category": "Line Change",
             "date": "2025-12-23",
-            "timestamp": "2025-12-23T23:31:07.331Z"
+            "timestamp": "2025-12-23T23:44:06.788Z"
+        },
+        {
+            "player": "Jayden Struble",
+            "news": "Struble will draw into the Canadiens lineup on Tuesday. ",
+            "category": "Line Change",
+            "date": "2025-12-23",
+            "timestamp": "2025-12-23T23:43:38.409Z"
         }
     ],
-    "NJD": [
+    "BOS": [
         {
-            "player": "Jacob Markstrom",
-            "news": "Markstrom will start on Long Island on Tuesday. ",
-            "category": "Goalie Start",
+            "player": "Viktor Arvidsson",
+            "news": "Arvidsson (lower-body) took full part in warmups and is expected to play against the Canadiens on Tuesday. ",
+            "category": "Injury",
             "date": "2025-12-23",
-            "timestamp": "2025-12-23T23:29:51.665Z"
+            "timestamp": "2025-12-23T23:40:40.369Z"
         }
     ],
     "WSH": [
+        {
+            "player": "Sonny Milano",
+            "news": "Milano will draw into the Capitals lineup on Tuesday.",
+            "category": "Line Change",
+            "date": "2025-12-23",
+            "timestamp": "2025-12-23T23:38:31.681Z"
+        },
+        {
+            "player": "Declan Chisholm",
+            "news": "Chisholm will draw into the Capitals lineup on Tuesday. ",
+            "category": "Line Change",
+            "date": "2025-12-23",
+            "timestamp": "2025-12-23T23:38:12.802Z"
+        },
+        {
+            "player": "Rasmus Sandin",
+            "news": "Sandin (upper-body) will not play against the Rangers on Tuesday. ",
+            "category": "Injury",
+            "date": "2025-12-23",
+            "timestamp": "2025-12-23T23:33:01.537Z"
+        },
         {
             "player": "Tom Wilson",
             "news": "Wilson (undisclosed) will not play against the Rangers on Tuesday. ",
@@ -38,6 +66,33 @@
             "category": "Injury",
             "date": "2025-12-23",
             "timestamp": "2025-12-23T21:40:30.229Z"
+        }
+    ],
+    "BUF": [
+        {
+            "player": "Alex Lyon",
+            "news": "Lyon will start in Ottawa on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-23",
+            "timestamp": "2025-12-23T23:31:26.741Z"
+        }
+    ],
+    "CAR": [
+        {
+            "player": "William Carrier",
+            "news": "Carrier (illness) will not play against the Panthers on Tuesday. ",
+            "category": "Injury",
+            "date": "2025-12-23",
+            "timestamp": "2025-12-23T23:31:07.331Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Jacob Markstrom",
+            "news": "Markstrom will start on Long Island on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-23",
+            "timestamp": "2025-12-23T23:29:51.665Z"
         }
     ],
     "DET": [
@@ -98,65 +153,6 @@
             "category": "Goalie Start",
             "date": "2025-12-23",
             "timestamp": "2025-12-23T22:07:56.857Z"
-        }
-    ],
-    "TOR": [
-        {
-            "player": "Simon Benoit",
-            "news": "Benoit will be a healthy scratch on Tuesday vs. Pittsburgh. ",
-            "category": "Line Change",
-            "date": "2025-12-23",
-            "timestamp": "2025-12-23T20:42:07.776Z"
-        },
-        {
-            "player": "Joseph Woll",
-            "news": "Woll will start vs. Pittsburgh on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2025-12-23",
-            "timestamp": "2025-12-23T20:38:01.370Z"
-        }
-    ],
-    "SEA": [
-        {
-            "player": "Vince Dunn",
-            "news": "Dunn (upper-body) is out vs. Los Angeles on Tuesday. ",
-            "category": "Injury",
-            "date": "2025-12-23",
-            "timestamp": "2025-12-23T20:22:21.213Z"
-        }
-    ],
-    "VGK": [
-        {
-            "player": "William Karlsson",
-            "news": "Karlsson (lower-body) is expected to return before the Olympics. ",
-            "category": "Injury",
-            "date": "2025-12-23",
-            "timestamp": "2025-12-23T19:55:57.669Z"
-        },
-        {
-            "player": "Carter Hart",
-            "news": "Hart was the first goalie off the ice at Vegas' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2025-12-23",
-            "timestamp": "2025-12-23T19:36:53.437Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Bryce Pickford",
-            "news": "Montreal has signed Bryce Pickford to a three-year, entry-level contract. ",
-            "category": "Signing",
-            "date": "2025-12-23",
-            "timestamp": "2025-12-23T19:55:05.798Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Ben Jones",
-            "news": "Jones has been reassigned to Iowa (AHL).",
-            "category": "Send Down",
-            "date": "2025-12-23",
-            "timestamp": "2025-12-23T19:31:04.307Z"
         }
     ]
 }
