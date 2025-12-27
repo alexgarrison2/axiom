@@ -1,5 +1,62 @@
 {
+    "DAL": [
+        {
+            "player": "Jake Oettinger",
+            "news": "Oettinger is in the starter's crease at the Stars' morning skate. ",
+            "category": "Goalie Start",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T16:37:20.441Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Joel Hofer",
+            "news": "Hofer is in the starter's crease at the Blues' morning skate. ",
+            "category": "Goalie Start",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T16:36:14.717Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Jake Allen",
+            "news": "Allen will start Saturday vs. the Capitals. ",
+            "category": "Goalie Start",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T16:32:49.833Z"
+        }
+    ],
+    "OTT": [
+        {
+            "player": "Dennis Gilbert",
+            "news": "The Senators have recalled Dennis Gilbert from Belleville (AHL). \r\n",
+            "category": "Call Up",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T16:31:30.628Z"
+        },
+        {
+            "player": "Xavier Bourgault",
+            "news": "The Senators have recalled Xavier Bourgault from Belleville (AHL). \r\n",
+            "category": "Call Up",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T16:30:28.313Z"
+        },
+        {
+            "player": "Lars Eller",
+            "news": "The Senators have placed Lars Eller (foot) on IR. \r\n",
+            "category": "Injury",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T16:25:52.102Z"
+        }
+    ],
     "FLA": [
+        {
+            "player": "Mackie Samoskevich",
+            "news": "Samoskevich (lower-body) will be a game-time decision on Saturday. \r\n",
+            "category": "Injury",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T16:24:28.915Z"
+        },
         {
             "player": "Sergei Bobrovsky",
             "news": "Bobrovsky will start Saturday vs. the Lightning. ",
@@ -9,6 +66,13 @@
         }
     ],
     "TBL": [
+        {
+            "player": "Andrei Vasilevskiy",
+            "news": "Vasilevskiy was the first goalie off the ice at the Lightning's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T16:22:47.713Z"
+        },
         {
             "player": "Steven Santini",
             "news": "The Lightning have recalled Steven Santini from Syracuse (AHL). \r\n",
@@ -24,44 +88,37 @@
             "timestamp": "2025-12-27T16:07:34.701Z"
         }
     ],
-    "NYI": [
+    "WPG": [
         {
-            "player": "Anthony Duclair",
-            "news": "Duclair will be a healthy scratch on Saturday. \r\n",
+            "player": "Colin Miller",
+            "news": "Miller is expected to be a healthy scratch on Saturday. \r\n",
             "category": "Line Change",
             "date": "2025-12-27",
-            "timestamp": "2025-12-27T16:05:43.827Z"
+            "timestamp": "2025-12-27T16:21:44.853Z"
         },
         {
-            "player": "Marcus Hogberg",
-            "news": "The Islanders have recalled Marcus Hogberg from Bridgeport (AHL). \r\n",
-            "category": "Call Up",
+            "player": "Luke Schenn",
+            "news": "Schenn is expected to be back in the Jets' lineup on Saturday.\r\n",
+            "category": "Line Change",
             "date": "2025-12-27",
-            "timestamp": "2025-12-27T15:22:11.319Z"
+            "timestamp": "2025-12-27T16:20:47.609Z"
         },
         {
-            "player": "Ilya Sorokin",
-            "news": "The Islanders have placed Ilya Sorokin (lower-body) on IR. \r\n",
-            "category": "Injury",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T15:18:22.514Z"
-        },
-        {
-            "player": "Bo Horvat",
-            "news": "Horvat (lower-body) will return to the Islanders lineup on Saturday.\r\n",
-            "category": "Injury",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T15:16:12.385Z"
-        },
-        {
-            "player": "David Rittich",
-            "news": "Rittich will start Saturday vs. the Rangers. ",
+            "player": "Connor Hellebuyck",
+            "news": "Hellebuyck is in the starter's crease at the Jets' morning skate. ",
             "category": "Goalie Start",
             "date": "2025-12-27",
-            "timestamp": "2025-12-27T15:07:48.525Z"
+            "timestamp": "2025-12-27T15:28:15.238Z"
         }
     ],
     "NYR": [
+        {
+            "player": "Igor Shesterkin",
+            "news": "Shesterkin will start Saturday against the Islanders. ",
+            "category": "Goalie Start",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T16:17:18.328Z"
+        },
         {
             "player": "Igor Shesterkin",
             "news": "Shesterkin was the first goalie off the ice at the Rangers' morning skate. ",
@@ -70,13 +127,13 @@
             "timestamp": "2025-12-27T16:01:00.293Z"
         }
     ],
-    "NJD": [
+    "NYI": [
         {
-            "player": "Jacob Markstrom",
-            "news": "Markstrom is in the starter's crease at the Devils' morning skate. ",
-            "category": "Goalie Start",
+            "player": "Anthony Duclair",
+            "news": "Duclair will be a healthy scratch on Saturday. \r\n",
+            "category": "Line Change",
             "date": "2025-12-27",
-            "timestamp": "2025-12-27T15:42:10.161Z"
+            "timestamp": "2025-12-27T16:05:43.827Z"
         }
     ],
     "TOR": [
@@ -104,24 +161,6 @@
             "category": "Goalie Start",
             "date": "2025-12-27",
             "timestamp": "2025-12-27T15:28:55.430Z"
-        }
-    ],
-    "WPG": [
-        {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebuyck is in the starter's crease at the Jets' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T15:28:15.238Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "David Tomasek",
-            "news": "The Oilers will be placing David Tomasek on waivers on Sunday for the purpose of contract termination. \r\n",
-            "category": "Waiver Move",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T12:54:08.771Z"
         }
     ]
 }
