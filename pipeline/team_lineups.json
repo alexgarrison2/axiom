@@ -378,6 +378,22 @@
         ],
         "d1": [
             {
+                "name": "Mattias Samuelsson",
+                "number": 23,
+                "pos": "ld",
+                "id": 28792,
+                "ppUnit": null
+            },
+            {
+                "name": "Bowen Byram",
+                "number": 4,
+                "pos": "rd",
+                "id": 28523,
+                "ppUnit": 1
+            }
+        ],
+        "d2": [
+            {
                 "name": "Owen Power",
                 "number": 25,
                 "pos": "ld",
@@ -392,35 +408,19 @@
                 "ppUnit": null
             }
         ],
-        "d2": [
-            {
-                "name": "Bowen Byram",
-                "number": 4,
-                "pos": "ld",
-                "id": 28523,
-                "ppUnit": 1
-            },
-            {
-                "name": "Mattias Samuelsson",
-                "number": 23,
-                "pos": "rd",
-                "id": 28792,
-                "ppUnit": null
-            }
-        ],
         "d3": [
-            {
-                "name": "Jacob Bryson",
-                "number": 78,
-                "pos": "ld",
-                "id": 27240,
-                "ppUnit": null
-            },
             {
                 "name": "Zach Metsa",
                 "number": 73,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 28387,
+                "ppUnit": null
+            },
+            {
+                "name": "Jacob Bryson",
+                "number": 78,
+                "pos": "rd",
+                "id": 27240,
                 "ppUnit": null
             }
         ]
@@ -923,10 +923,10 @@
         ],
         "f4": [
             {
-                "name": "Noah Gregor",
-                "number": 18,
+                "name": "Jesper Boqvist",
+                "number": 70,
                 "pos": "lw",
-                "id": 4705,
+                "id": 28107,
                 "ppUnit": null
             },
             {
@@ -937,10 +937,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Jesper Boqvist",
-                "number": 70,
+                "name": "Jack Studnicka",
+                "number": null,
                 "pos": "rw",
-                "id": 28107,
+                "id": 4606,
                 "ppUnit": null
             }
         ],
@@ -1111,10 +1111,10 @@
                 "ppUnit": 2
             },
             {
-                "name": "Steven Santini",
-                "number": null,
+                "name": "Maxwell Crozier",
+                "number": 24,
                 "pos": "rd",
-                "id": 2624,
+                "id": 28863,
                 "ppUnit": null
             }
         ],
@@ -1127,10 +1127,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Maxwell Crozier",
-                "number": 24,
+                "name": "Steven Santini",
+                "number": null,
                 "pos": "rd",
-                "id": 28863,
+                "id": 2624,
                 "ppUnit": null
             }
         ]
@@ -1514,22 +1514,6 @@
         ],
         "d1": [
             {
-                "name": "K'Andre Miller",
-                "number": 79,
-                "pos": "ld",
-                "id": 4812,
-                "ppUnit": null
-            },
-            {
-                "name": "Sean Walker",
-                "number": 26,
-                "pos": "rd",
-                "id": 4829,
-                "ppUnit": 2
-            }
-        ],
-        "d2": [
-            {
                 "name": "Shayne Gostisbehere",
                 "number": 4,
                 "pos": "ld",
@@ -1544,13 +1528,29 @@
                 "ppUnit": null
             }
         ],
-        "d3": [
+        "d2": [
             {
                 "name": "Alexander Nikishin",
                 "number": 21,
                 "pos": "ld",
                 "id": 32897,
                 "ppUnit": 2
+            },
+            {
+                "name": "Sean Walker",
+                "number": 26,
+                "pos": "rd",
+                "id": 4829,
+                "ppUnit": 2
+            }
+        ],
+        "d3": [
+            {
+                "name": "Mike Reilly",
+                "number": 6,
+                "pos": "ld",
+                "id": 2469,
+                "ppUnit": null
             },
             {
                 "name": "Joel Nystrom",
