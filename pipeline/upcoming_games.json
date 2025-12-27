@@ -59,7 +59,7 @@
         "awayTeam": "Capitals",
         "homeTeamAbbrev": "NJD",
         "awayTeamAbbrev": "WSH",
-        "homeGoalieConfirmed": "Jacob Markstrom",
+        "homeGoalieConfirmed": "Jake Allen",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Logan Thompson",
         "awayGoalieStatus": "Unconfirmed"
@@ -72,7 +72,7 @@
         "awayTeam": "Red Wings",
         "homeTeamAbbrev": "CAR",
         "awayTeamAbbrev": "DET",
-        "homeGoalieConfirmed": "Pyotr Kochetkov",
+        "homeGoalieConfirmed": "Brandon Bussi",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "John Gibson",
         "awayGoalieStatus": "Unconfirmed"
@@ -87,7 +87,7 @@
         "awayTeamAbbrev": "MIN",
         "homeGoalieConfirmed": "Connor Hellebuyck",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Filip Gustavsson",
+        "awayGoalieConfirmed": "Jesper Wallstedt",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -98,7 +98,7 @@
         "awayTeam": "Predators",
         "homeTeamAbbrev": "STL",
         "awayTeamAbbrev": "NSH",
-        "homeGoalieConfirmed": "Jordan Binnington",
+        "homeGoalieConfirmed": "Joel Hofer",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Juuse Saros",
         "awayGoalieStatus": "Unconfirmed"
@@ -111,7 +111,7 @@
         "awayTeam": "Blackhawks",
         "homeTeamAbbrev": "DAL",
         "awayTeamAbbrev": "CHI",
-        "homeGoalieConfirmed": "Casey DeSmith",
+        "homeGoalieConfirmed": "Jake Oettinger",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Spencer Knight",
         "awayGoalieStatus": "Unconfirmed"
@@ -166,6 +166,71 @@
         "homeGoalieConfirmed": "Carter Hart",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Mackenzie Blackwood",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020602,
+        "gameDate": "2025-12-28",
+        "startTimeUTC": "2025-12-28T22:00:00Z",
+        "homeTeam": "Lightning",
+        "awayTeam": "Canadiens",
+        "homeTeamAbbrev": "TBL",
+        "awayTeamAbbrev": "MTL",
+        "homeGoalieConfirmed": "Andrei Vasilevskiy",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jacob Fowler",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020603,
+        "gameDate": "2025-12-28",
+        "startTimeUTC": "2025-12-28T22:00:00Z",
+        "homeTeam": "Blue Jackets",
+        "awayTeam": "Islanders",
+        "homeTeamAbbrev": "CBJ",
+        "awayTeamAbbrev": "NYI",
+        "homeGoalieConfirmed": "Jet Greaves",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "David Rittich",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020601,
+        "gameDate": "2025-12-28",
+        "startTimeUTC": "2025-12-29T00:00:00Z",
+        "homeTeam": "Red Wings",
+        "awayTeam": "Maple Leafs",
+        "homeTeamAbbrev": "DET",
+        "awayTeamAbbrev": "TOR",
+        "homeGoalieConfirmed": "John Gibson",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Joseph Woll",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020604,
+        "gameDate": "2025-12-28",
+        "startTimeUTC": "2025-12-29T00:00:00Z",
+        "homeTeam": "Blackhawks",
+        "awayTeam": "Penguins",
+        "homeTeamAbbrev": "CHI",
+        "awayTeamAbbrev": "PIT",
+        "homeGoalieConfirmed": "Spencer Knight",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": null,
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020605,
+        "gameDate": "2025-12-28",
+        "startTimeUTC": "2025-12-29T01:00:00Z",
+        "homeTeam": "Kraken",
+        "awayTeam": "Flyers",
+        "homeTeamAbbrev": "SEA",
+        "awayTeamAbbrev": "PHI",
+        "homeGoalieConfirmed": "Joey Daccord",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Samuel Ersson",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
