@@ -1,6 +1,13 @@
 {
     "BOS": [
         {
+            "player": "Tanner Jeannot",
+            "news": "Jeannot (undisclosed) will not play on Saturday. \r\n",
+            "category": "Injury",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:52:42.113Z"
+        },
+        {
             "player": "Joonas Korpisalo",
             "news": "Korpisalo will start Saturday in Buffalo. ",
             "category": "Goalie Start",
@@ -8,7 +15,101 @@
             "timestamp": "2025-12-27T17:50:11.485Z"
         }
     ],
+    "STL": [
+        {
+            "player": "Joel Hofer",
+            "news": "Hofer will start Saturday vs. the Predators. ",
+            "category": "Goalie Start",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:45:04.386Z"
+        },
+        {
+            "player": "Jimmy Snuggerud",
+            "news": "Snuggerud (wrist) will be back in the Blues lineup on Saturday. \r\n",
+            "category": "Injury",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T17:31:42.493Z"
+        },
+        {
+            "player": "Jordan Kyrou",
+            "news": "Kyrou (lower-body) will be back in the Blues lineup on Saturday. \r\n",
+            "category": "Injury",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T17:30:10.066Z"
+        }
+    ],
+    "BUF": [
+        {
+            "player": "Ukko-Pekka Luukkonen",
+            "news": "Luukkonen will start Saturday vs. the Bruins. ",
+            "category": "Goalie Start",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:42:34.178Z"
+        }
+    ],
+    "EDM": [
+        {
+            "player": "Connor Ingram",
+            "news": "Ingram will start on Saturday in Calgary. ",
+            "category": "Goalie Start",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:41:35.440Z"
+        }
+    ],
+    "ANA": [
+        {
+            "player": "Jansen Harkins",
+            "news": "Harkins is expected to be a healthy scratch on Saturday. \r\n",
+            "category": "Line Change",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:38:52.149Z"
+        },
+        {
+            "player": "Leo Carlsson",
+            "news": "Carlsson (lower-body) is expected to be back in the Ducks' lineup on Saturday. \r\n",
+            "category": "Injury",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:38:01.471Z"
+        },
+        {
+            "player": "Lukas Dostal",
+            "news": "Dostal will start Saturday in Los Angeles. ",
+            "category": "Goalie Start",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:27:37.803Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "John Beecher",
+            "news": "Beecher will come out of the Flames' lineup on Saturday. \r\n",
+            "category": "Line Change",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:35:56.969Z"
+        },
+        {
+            "player": "Justin Kirkland",
+            "news": "Kirkland will draw into the Flames lineup on Saturday. \r\n",
+            "category": "Line Change",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:34:35.526Z"
+        }
+    ],
     "DAL": [
+        {
+            "player": "Kyle Capobianco",
+            "news": "Capobianco will be back in the Stars lineup on Saturday.\r\n",
+            "category": "Line Change",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:33:10.108Z"
+        },
+        {
+            "player": "Ilya Lyubushkin",
+            "news": "Lyubushkin (illness) will not play Saturday vs. the Blackhawks.\r\n",
+            "category": "Injury",
+            "date": "2025-12-27",
+            "timestamp": "2025-12-27T18:32:14.109Z"
+        },
         {
             "player": "Adam Erne",
             "news": "Erne will be a healthy scratch on Saturday. \r\n",
@@ -22,13 +123,15 @@
             "category": "Line Change",
             "date": "2025-12-27",
             "timestamp": "2025-12-27T17:46:54.643Z"
-        },
+        }
+    ],
+    "VAN": [
         {
-            "player": "Jake Oettinger",
-            "news": "Oettinger is in the starter's crease at the Stars' morning skate. ",
+            "player": "Thatcher Demko",
+            "news": "Demko is in the starter's crease at the Canucks' morning skate. ",
             "category": "Goalie Start",
             "date": "2025-12-27",
-            "timestamp": "2025-12-27T16:37:20.441Z"
+            "timestamp": "2025-12-27T18:28:19.940Z"
         }
     ],
     "NSH": [
@@ -47,13 +150,6 @@
             "category": "Line Change",
             "date": "2025-12-27",
             "timestamp": "2025-12-27T17:40:07.104Z"
-        },
-        {
-            "player": "Linus Ullmark",
-            "news": "Ullmark will start Saturday in Toronto. ",
-            "category": "Goalie Start",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T17:13:50.803Z"
         }
     ],
     "MIN": [
@@ -63,106 +159,6 @@
             "category": "Goalie Start",
             "date": "2025-12-27",
             "timestamp": "2025-12-27T17:36:55.236Z"
-        }
-    ],
-    "STL": [
-        {
-            "player": "Jimmy Snuggerud",
-            "news": "Snuggerud (wrist) will be back in the Blues lineup on Saturday. \r\n",
-            "category": "Injury",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T17:31:42.493Z"
-        },
-        {
-            "player": "Jordan Kyrou",
-            "news": "Kyrou (lower-body) will be back in the Blues lineup on Saturday. \r\n",
-            "category": "Injury",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T17:30:10.066Z"
-        },
-        {
-            "player": "Joel Hofer",
-            "news": "Hofer is in the starter's crease at the Blues' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T16:36:14.717Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Ryan McDonagh",
-            "news": "McDonagh (undisclosed) will not play on Saturday. \r\n",
-            "category": "Injury",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T17:28:27.366Z"
-        }
-    ],
-    "CBJ": [
-        {
-            "player": "Zach Werenski",
-            "news": "Werenski (lower-body) is doubtful to play on Sunday. \r\n",
-            "category": "Injury",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T17:27:07.493Z"
-        }
-    ],
-    "CGY": [
-        {
-            "player": "Dustin Wolf",
-            "news": "Wolf will start Saturday vs. the Oilers. ",
-            "category": "Goalie Start",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T17:21:37.455Z"
-        }
-    ],
-    "BUF": [
-        {
-            "player": "Rasmus Dahlin",
-            "news": "Dahlin (personal) will not play Saturday vs. the Bruins. \r\n",
-            "category": "Injury",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T16:55:52.995Z"
-        }
-    ],
-    "CAR": [
-        {
-            "player": "William Carrier",
-            "news": "Carrier (illness) is expected to be back in the Hurricanes' lineup on Saturday. \r\n",
-            "category": "Injury",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T16:54:02.962Z"
-        },
-        {
-            "player": "Jordan Martinook",
-            "news": "Martinook (lower-body) is expected to be back in the Hurricanes' lineup on Saturday. \r\n",
-            "category": "Injury",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T16:52:59.812Z"
-        },
-        {
-            "player": "K'Andre Miller",
-            "news": "Miller (undisclosed) will be a game-time decision on Saturday.\r\n",
-            "category": "Line Change",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T16:51:25.566Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Landon Slaggert",
-            "news": "The Blackhawks have recalled Landon Slaggert from Rockford (AHL). \r\n",
-            "category": "Call Up",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T16:50:19.755Z"
-        }
-    ],
-    "NJD": [
-        {
-            "player": "Jake Allen",
-            "news": "Allen will start Saturday vs. the Capitals. ",
-            "category": "Goalie Start",
-            "date": "2025-12-27",
-            "timestamp": "2025-12-27T16:32:49.833Z"
         }
     ]
 }
