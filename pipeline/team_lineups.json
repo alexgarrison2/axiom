@@ -1138,29 +1138,6 @@
     "SEA": {
         "f1": [
             {
-                "name": "Eeli Tolvanen",
-                "number": 20,
-                "pos": "lw",
-                "id": 2787,
-                "ppUnit": 1
-            },
-            {
-                "name": "Chandler Stephenson",
-                "number": 9,
-                "pos": "c",
-                "id": 2538,
-                "ppUnit": 1
-            },
-            {
-                "name": "Frederick Gaudreau",
-                "number": 89,
-                "pos": "rw",
-                "id": 2701,
-                "ppUnit": 2
-            }
-        ],
-        "f2": [
-            {
                 "name": "Kaapo Kakko",
                 "number": 84,
                 "pos": "lw",
@@ -1182,6 +1159,29 @@
                 "ppUnit": 1
             }
         ],
+        "f2": [
+            {
+                "name": "Eeli Tolvanen",
+                "number": 20,
+                "pos": "lw",
+                "id": 2787,
+                "ppUnit": 2
+            },
+            {
+                "name": "Chandler Stephenson",
+                "number": 9,
+                "pos": "c",
+                "id": 2538,
+                "ppUnit": 1
+            },
+            {
+                "name": "Frederick Gaudreau",
+                "number": 89,
+                "pos": "rw",
+                "id": 2701,
+                "ppUnit": null
+            }
+        ],
         "f3": [
             {
                 "name": "Berkly Catton",
@@ -1198,11 +1198,11 @@
                 "ppUnit": 2
             },
             {
-                "name": "Ryan Winterton",
-                "number": 26,
+                "name": "Jared McCann",
+                "number": 19,
                 "pos": "rw",
-                "id": 30837,
-                "ppUnit": null
+                "id": 2488,
+                "ppUnit": 1
             }
         ],
         "f4": [
@@ -1230,6 +1230,22 @@
         ],
         "d1": [
             {
+                "name": "Vince Dunn",
+                "number": 29,
+                "pos": "ld",
+                "id": 2837,
+                "ppUnit": 1
+            },
+            {
+                "name": "Adam Larsson",
+                "number": 6,
+                "pos": "rd",
+                "id": 1741,
+                "ppUnit": null
+            }
+        ],
+        "d2": [
+            {
                 "name": "Ryan Lindgren",
                 "number": 55,
                 "pos": "ld",
@@ -1241,38 +1257,22 @@
                 "number": 8,
                 "pos": "rd",
                 "id": 26737,
-                "ppUnit": 2
-            }
-        ],
-        "d2": [
-            {
-                "name": "Ryker Evans",
-                "number": 41,
-                "pos": "ld",
-                "id": 32988,
-                "ppUnit": 1
-            },
-            {
-                "name": "Adam Larsson",
-                "number": 6,
-                "pos": "rd",
-                "id": 1741,
                 "ppUnit": null
             }
         ],
         "d3": [
             {
-                "name": "Jamie Oleksiak",
-                "number": 24,
+                "name": "Ryker Evans",
+                "number": 41,
                 "pos": "ld",
-                "id": 1790,
-                "ppUnit": null
+                "id": 32988,
+                "ppUnit": 2
             },
             {
-                "name": "Joshua Mahura",
-                "number": 28,
+                "name": "Jamie Oleksiak",
+                "number": 24,
                 "pos": "rd",
-                "id": 3924,
+                "id": 1790,
                 "ppUnit": null
             }
         ]
