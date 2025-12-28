@@ -836,17 +836,17 @@
         ],
         "d3": [
             {
-                "name": "Nikolas Matinpalo",
-                "number": 33,
+                "name": "Dennis Gilbert",
+                "number": 8,
                 "pos": "ld",
-                "id": 37937,
+                "id": 4712,
                 "ppUnit": null
             },
             {
-                "name": "Nick Jensen",
-                "number": 3,
+                "name": "Nikolas Matinpalo",
+                "number": 33,
                 "pos": "rd",
-                "id": 2576,
+                "id": 37937,
                 "ppUnit": null
             }
         ]
@@ -1568,7 +1568,7 @@
                 "number": null,
                 "pos": "lw",
                 "id": 33612,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Dylan Larkin",
@@ -1610,29 +1610,6 @@
         ],
         "f3": [
             {
-                "name": "Marco Kasper",
-                "number": null,
-                "pos": "lw",
-                "id": 36364,
-                "ppUnit": null
-            },
-            {
-                "name": "Nate Danielson",
-                "number": 29,
-                "pos": "c",
-                "id": 31508,
-                "ppUnit": 2
-            },
-            {
-                "name": "Mason Appleton",
-                "number": 22,
-                "pos": "rw",
-                "id": 4582,
-                "ppUnit": null
-            }
-        ],
-        "f4": [
-            {
                 "name": "Michael Rasmussen",
                 "number": 27,
                 "pos": "lw",
@@ -1647,11 +1624,34 @@
                 "ppUnit": null
             },
             {
-                "name": "James van Riemsdyk",
-                "number": 21,
+                "name": "Mason Appleton",
+                "number": 22,
                 "pos": "rw",
-                "id": 1156,
-                "ppUnit": 1
+                "id": 4582,
+                "ppUnit": null
+            }
+        ],
+        "f4": [
+            {
+                "name": "Elmer Soderblom",
+                "number": null,
+                "pos": "lw",
+                "id": 30683,
+                "ppUnit": null
+            },
+            {
+                "name": "Nate Danielson",
+                "number": 29,
+                "pos": "c",
+                "id": 31508,
+                "ppUnit": 2
+            },
+            {
+                "name": "Marco Kasper",
+                "number": null,
+                "pos": "rw",
+                "id": 36364,
+                "ppUnit": 2
             }
         ],
         "d1": [
@@ -2274,29 +2274,6 @@
     "DAL": {
         "f1": [
             {
-                "name": "Jason Robertson",
-                "number": 21,
-                "pos": "lw",
-                "id": 2793,
-                "ppUnit": 1
-            },
-            {
-                "name": "Roope Hintz",
-                "number": 24,
-                "pos": "c",
-                "id": 2863,
-                "ppUnit": 1
-            },
-            {
-                "name": "Mavrik Bourque",
-                "number": 22,
-                "pos": "rw",
-                "id": 29958,
-                "ppUnit": 2
-            }
-        ],
-        "f2": [
-            {
                 "name": "Sam Steel",
                 "number": 18,
                 "pos": "lw",
@@ -2316,6 +2293,29 @@
                 "pos": "rw",
                 "id": 2477,
                 "ppUnit": 1
+            }
+        ],
+        "f2": [
+            {
+                "name": "Jason Robertson",
+                "number": 21,
+                "pos": "lw",
+                "id": 2793,
+                "ppUnit": 1
+            },
+            {
+                "name": "Roope Hintz",
+                "number": 24,
+                "pos": "c",
+                "id": 2863,
+                "ppUnit": 1
+            },
+            {
+                "name": "Mavrik Bourque",
+                "number": 22,
+                "pos": "rw",
+                "id": 29958,
+                "ppUnit": 2
             }
         ],
         "f3": [
@@ -2430,10 +2430,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Ilya Mikheyev",
-                "number": 95,
+                "name": "Landon Slaggert",
+                "number": 84,
                 "pos": "rw",
-                "id": 30651,
+                "id": 38089,
                 "ppUnit": null
             }
         ],
@@ -2476,20 +2476,20 @@
                 "ppUnit": 2
             },
             {
-                "name": "Nick Lardis",
-                "number": 76,
+                "name": "Colton Dach",
+                "number": 34,
                 "pos": "rw",
-                "id": 35088,
-                "ppUnit": 1
+                "id": 32903,
+                "ppUnit": 2
             }
         ],
         "f4": [
             {
-                "name": "Colton Dach",
-                "number": 34,
+                "name": "Nick Lardis",
+                "number": 76,
                 "pos": "lw",
-                "id": 32903,
-                "ppUnit": 2
+                "id": 35088,
+                "ppUnit": 1
             },
             {
                 "name": "Dominic Toninato",
@@ -2524,22 +2524,6 @@
         ],
         "d2": [
             {
-                "name": "Matt Grzelcyk",
-                "number": 24,
-                "pos": "ld",
-                "id": 2723,
-                "ppUnit": 2
-            },
-            {
-                "name": "Artyom Levshunov",
-                "number": 55,
-                "pos": "rd",
-                "id": 38138,
-                "ppUnit": 1
-            }
-        ],
-        "d3": [
-            {
                 "name": "Wyatt Kaiser",
                 "number": null,
                 "pos": "ld",
@@ -2552,6 +2536,22 @@
                 "pos": "rd",
                 "id": 1772,
                 "ppUnit": null
+            }
+        ],
+        "d3": [
+            {
+                "name": "Matt Grzelcyk",
+                "number": 24,
+                "pos": "ld",
+                "id": 2723,
+                "ppUnit": 2
+            },
+            {
+                "name": "Artyom Levshunov",
+                "number": 55,
+                "pos": "rd",
+                "id": 38138,
+                "ppUnit": 1
             }
         ]
     },
