@@ -170,22 +170,19 @@ def evaluate_model(model, X_test, y_test, model_name="Model"):
 def main():
     # Use the 2025-2026 data for now as a test, or the historical if available
     # We'll try historical first, fallback to 2025
-    # Load both historical and new season data
     dfs = []
     try:
-        dfs.append(load_data("nhl_historical_shots.csv"))
+        # Try finding it in pipeline folder if running from root
+        dfs.append(load_data("pipeline/nhl_historical_shots.csv"))
     except FileNotFoundError:
-        print("Historical data not found.")
+        # Try local if running from pipeline
+        try:
+             dfs.append(load_data("nhl_historical_shots.csv"))
+        except:
+             print("Historical data not found in pipeline/ or ./")
         
-    try:
-        dfs.append(load_data("nhl_historical_shots.csv"))
-    except FileNotFoundError:
-        print("Historical data not found.")
-        
-    # try:
-    #     dfs.append(load_data("nhl_season_2025_2026_shots.csv"))
-    # except FileNotFoundError:
-    #     print("2025-2026 data not found.")
+    # We do NOT want to train on the potentially corrupted 2025 data yet until it's fixed
+    # Or we can, but let's trust historical for stability
         
     if not dfs:
         print("No data found to train on.")
@@ -205,6 +202,13 @@ def main():
     # XGBoost
     xgb_model = train_xgboost(X_train, y_train)
     evaluate_model(xgb_model, X_test, y_test, "XGBoost")
+    
+    # Sanity Check probabilities
+    print("Sanity Check: Predicting on first 5 rows of test set...")
+    sample_probs = xgb_model.predict_proba(X_test.head())[:, 1]
+    print(f"Sample Probs: {sample_probs}")
+    if sample_probs.mean() > 0.5:
+        print("WARNING: High average probability detected! Model might be broken.")
     
     # Save Best Model (XGBoost usually)
     with open('xg_model_xgb.pkl', 'wb') as f:
