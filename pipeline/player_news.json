@@ -1,5 +1,94 @@
 {
+    "MIN": [
+        {
+            "player": "Filip Gustavsson",
+            "news": "Gustavsson will start in Vegas on Monday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T19:30:08.143Z"
+        }
+    ],
+    "NYI": [
+        {
+            "player": "Ethan Bear",
+            "news": "Bear has cleared waivers and been reassigned to Bridgeport (AHL). ",
+            "category": "Send Down",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T19:29:23.595Z"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "Juuso Valimaki",
+            "news": "Valimaki has cleared waivers and been sent down to Tucson (AHL). ",
+            "category": "Send Down",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T19:28:53.225Z"
+        }
+    ],
+    "BOS": [
+        {
+            "player": "Jeremy Swayman",
+            "news": "Swayman will start in Calgary on Monday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T19:28:29.551Z"
+        },
+        {
+            "player": "Jeremy Swayman",
+            "news": "Swayman was the first goalie off the ice at Boston's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T19:09:55.229Z"
+        },
+        {
+            "player": "Vladislav Kolyachonok",
+            "news": "Kolyachonok is expected to be a healthy scratch in Calgary on Monday. ",
+            "category": "Line Change",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T18:43:42.998Z"
+        },
+        {
+            "player": "Jonathan Aspirot",
+            "news": "Aspirot (upper-body) appears ready to return in Calgary on Monday after taking part in morning skate. ",
+            "category": "Injury",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T18:41:32.129Z"
+        }
+    ],
+    "PIT": [
+        {
+            "player": "Danton Heinen",
+            "news": "Heinen cleared waivers and has been reassigned to Wilkes-Barre/Scranton (AHL). ",
+            "category": "Send Down",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T19:27:45.295Z"
+        },
+        {
+            "player": "Connor Dewar",
+            "news": "Dewar (undisclosed) left practice on Monday and did not return. ",
+            "category": "Injury",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T18:25:04.350Z"
+        }
+    ],
+    "VGK": [
+        {
+            "player": "Carter Hart",
+            "news": "Hart will start vs. Minnesota on Monday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T19:25:11.158Z"
+        }
+    ],
     "ANA": [
+        {
+            "player": "Nikita Nesterenko",
+            "news": "Nesterenko will draw back into Anaheim's lineup vs. San Jose on Monday. ",
+            "category": "Line Change",
+            "date": "2025-12-29",
+            "timestamp": "2025-12-29T19:15:57.898Z"
+        },
         {
             "player": "Lukas Dostal",
             "news": "Dostal will start vs. San Jose on Monday. ",
@@ -15,20 +104,20 @@
             "timestamp": "2025-12-29T18:36:51.955Z"
         }
     ],
-    "BOS": [
+    "CAR": [
         {
-            "player": "Vladislav Kolyachonok",
-            "news": "Kolyachonok is expected to be a healthy scratch in Calgary on Monday. ",
-            "category": "Line Change",
+            "player": "Bradly Nadeau",
+            "news": "Nadeau has been reassinged to Chicago (AHL). ",
+            "category": "Send Down",
             "date": "2025-12-29",
-            "timestamp": "2025-12-29T18:43:42.998Z"
+            "timestamp": "2025-12-29T19:08:59.965Z"
         },
         {
-            "player": "Jonathan Aspirot",
-            "news": "Aspirot (upper-body) appears ready to return in Calgary on Monday after taking part in morning skate. ",
-            "category": "Injury",
+            "player": "Noah Philp",
+            "news": "Carolina has claimed Noah Philp off waivers from Edmonton. ",
+            "category": "Waiver Move",
             "date": "2025-12-29",
-            "timestamp": "2025-12-29T18:41:32.129Z"
+            "timestamp": "2025-12-29T19:08:40.744Z"
         }
     ],
     "SEA": [
@@ -47,15 +136,6 @@
             "timestamp": "2025-12-29T18:29:49.259Z"
         }
     ],
-    "PIT": [
-        {
-            "player": "Connor Dewar",
-            "news": "Dewar (undisclosed) left practice on Monday and did not return. ",
-            "category": "Injury",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T18:25:04.350Z"
-        }
-    ],
     "COL": [
         {
             "player": "Mackenzie Blackwood",
@@ -72,84 +152,6 @@
             "category": "Line Change",
             "date": "2025-12-29",
             "timestamp": "2025-12-29T18:02:34.689Z"
-        },
-        {
-            "player": "John Beecher",
-            "news": "Beecher is expected to draw back into Calgary's lineup vs. Boston on Monday. ",
-            "category": "Line Change",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T18:01:50.551Z"
-        },
-        {
-            "player": "Dustin Wolf",
-            "news": "Wolf will start vs. Boston on Monday. ",
-            "category": "Goalie Start",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T17:22:34.417Z"
-        }
-    ],
-    "UTA": [
-        {
-            "player": "Vitek Vanecek",
-            "news": "Vanecek was the first goalie off the ice at Utah's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T17:58:16.820Z"
-        },
-        {
-            "player": "Karel Vejmelka",
-            "news": "Vejmelka (upper-body) has been placed on IR. ",
-            "category": "Injury",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T17:03:25.979Z"
-        },
-        {
-            "player": "Matt Villalta",
-            "news": "Villalta has been recalled from Tucson (AHL). ",
-            "category": "Call Up",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T17:03:01.415Z"
-        }
-    ],
-    "BUF": [
-        {
-            "player": "Alex Lyon",
-            "news": "Lyon is in the starter's crease at Buffalo's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T17:35:05.822Z"
-        },
-        {
-            "player": "Rasmus Dahlin",
-            "news": "Dahlin (personal) is expected to return in St. Louis on Monday. ",
-            "category": "General",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T17:27:11.454Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Conor Sheary",
-            "news": "Sheary is expected to draw back into New York's lineup in Carolina on Monday. ",
-            "category": "Line Change",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T17:21:21.839Z"
-        },
-        {
-            "player": "Brennan Othmann",
-            "news": "Othmann is expected to be a healthy scratch in Carolina on Monday, ",
-            "category": "Line Change",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T17:20:54.150Z"
-        }
-    ],
-    "WSH": [
-        {
-            "player": "Logan Thompson",
-            "news": "Thompson will start in Florida on Monday. ",
-            "category": "Goalie Start",
-            "date": "2025-12-29",
-            "timestamp": "2025-12-29T17:09:13.169Z"
         }
     ]
 }
