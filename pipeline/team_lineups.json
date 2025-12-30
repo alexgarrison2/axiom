@@ -2,33 +2,10 @@
     "TOR": {
         "f1": [
             {
-                "name": "Bobby McMann",
-                "number": 74,
+                "name": "Matthew Knies",
+                "number": 23,
                 "pos": "lw",
-                "id": 32922,
-                "ppUnit": 2
-            },
-            {
-                "name": "Auston Matthews",
-                "number": 34,
-                "pos": "c",
-                "id": 2433,
-                "ppUnit": 1
-            },
-            {
-                "name": "Max Domi",
-                "number": 11,
-                "pos": "rw",
-                "id": 2131,
-                "ppUnit": 2
-            }
-        ],
-        "f2": [
-            {
-                "name": "Matias Maccelli",
-                "number": 63,
-                "pos": "lw",
-                "id": 30063,
+                "id": 34619,
                 "ppUnit": 1
             },
             {
@@ -39,42 +16,19 @@
                 "ppUnit": 1
             },
             {
-                "name": "Matthew Knies",
-                "number": 23,
+                "name": "Max Domi",
+                "number": 11,
                 "pos": "rw",
-                "id": 34619,
+                "id": 2131,
                 "ppUnit": 1
             }
         ],
-        "f3": [
-            {
-                "name": "Steven Lorentz",
-                "number": 18,
-                "pos": "lw",
-                "id": 3916,
-                "ppUnit": null
-            },
-            {
-                "name": "Scott Laughton",
-                "number": 24,
-                "pos": "c",
-                "id": 2018,
-                "ppUnit": null
-            },
+        "f2": [
             {
                 "name": "Easton Cowan",
                 "number": 53,
-                "pos": "rw",
-                "id": 35106,
-                "ppUnit": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Nicholas Robertson",
-                "number": 89,
                 "pos": "lw",
-                "id": 29254,
+                "id": 35106,
                 "ppUnit": 2
             },
             {
@@ -85,6 +39,52 @@
                 "ppUnit": 2
             },
             {
+                "name": "Nicholas Robertson",
+                "number": 89,
+                "pos": "rw",
+                "id": 29254,
+                "ppUnit": 2
+            }
+        ],
+        "f3": [
+            {
+                "name": "Matias Maccelli",
+                "number": 63,
+                "pos": "lw",
+                "id": 30063,
+                "ppUnit": 1
+            },
+            {
+                "name": "Scott Laughton",
+                "number": 24,
+                "pos": "c",
+                "id": 2018,
+                "ppUnit": null
+            },
+            {
+                "name": "Bobby McMann",
+                "number": 74,
+                "pos": "rw",
+                "id": 32922,
+                "ppUnit": 2
+            }
+        ],
+        "f4": [
+            {
+                "name": "Steven Lorentz",
+                "number": 18,
+                "pos": "lw",
+                "id": 3916,
+                "ppUnit": null
+            },
+            {
+                "name": "Jacob Quillan",
+                "number": null,
+                "pos": "c",
+                "id": 32458,
+                "ppUnit": null
+            },
+            {
                 "name": "Calle Jarnkrok",
                 "number": 19,
                 "pos": "rw",
@@ -93,22 +93,6 @@
             }
         ],
         "d1": [
-            {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
-                "pos": "ld",
-                "id": 1172,
-                "ppUnit": 2
-            },
-            {
-                "name": "Troy Stecher",
-                "number": 28,
-                "pos": "rd",
-                "id": 2702,
-                "ppUnit": null
-            }
-        ],
-        "d2": [
             {
                 "name": "Morgan Rielly",
                 "number": 44,
@@ -124,7 +108,7 @@
                 "ppUnit": null
             }
         ],
-        "d3": [
+        "d2": [
             {
                 "name": "Jake McCabe",
                 "number": 22,
@@ -133,10 +117,26 @@
                 "ppUnit": null
             },
             {
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
+                "pos": "rd",
+                "id": 1172,
+                "ppUnit": 2
+            }
+        ],
+        "d3": [
+            {
                 "name": "Simon Benoit",
                 "number": 2,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 26550,
+                "ppUnit": null
+            },
+            {
+                "name": "Troy Stecher",
+                "number": 28,
+                "pos": "rd",
+                "id": 2702,
                 "ppUnit": null
             }
         ]
