@@ -92,26 +92,44 @@ def refresh_pipeline():
             
             df_new_xg['team'] = df_new_xg['team_id'].map(id_to_name)
             
+            # Ensure types match
+            df_new_xg['game_id'] = df_new_xg['game_id'].astype(int)
+            df_stats['game_id'] = df_stats['game_id'].astype(int)
+            
             # Create lookups
             xg_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_sum']))
             xg_5v5_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_5v5_sum']))
             
+            print(f"DEBUG: Lookup size: {len(xg_lookup)}")
+            sample_key = (2025020001, 'Panthers')
+            if sample_key in xg_lookup:
+                 print(f"DEBUG: Found sample key {sample_key}: {xg_lookup[sample_key]}")
+            else:
+                 print(f"DEBUG: MISSING sample key {sample_key}. Keys sample: {list(xg_lookup.keys())[:5]}")
+
             # Apply to df_stats
             def update_xg_for(row):
                 key = (row['game_id'], row['team'])
-                return xg_lookup.get(key, row['xG_for'])
-                
+                val = xg_lookup.get(key, -1.0) # Use -1 to detect failure
+                if val == -1.0:
+                    # Only print once per game/team to avoid spam
+                    if row['game_id'] == 2025020001:
+                        print(f"DEBUG WARN: Could not find update for {key}. Keeping {row['xG_for']}")
+                    return row['xG_for']
+                return val
+            
+            # Reset other updators to likely use the new value logic or just same pattern
             def update_xg_against(row):
-                key = (row['game_id'], row['opponent'])
-                return xg_lookup.get(key, row['xG_against'])
+                 key = (row['game_id'], row['opponent'])
+                 return xg_lookup.get(key, row['xG_against'])
 
             def update_xg_5v5_for(row):
-                key = (row['game_id'], row['team'])
-                return xg_5v5_lookup.get(key, row['xG_for_5v5'])
+                 key = (row['game_id'], row['team'])
+                 return xg_5v5_lookup.get(key, row['xG_for_5v5'])
 
             def update_xg_5v5_against(row):
-                key = (row['game_id'], row['opponent'])
-                return xg_5v5_lookup.get(key, row['xG_against_5v5'])
+                 key = (row['game_id'], row['opponent'])
+                 return xg_5v5_lookup.get(key, row['xG_against_5v5'])
                 
             df_stats['xG_for'] = df_stats.apply(update_xg_for, axis=1)
             df_stats['xG_against'] = df_stats.apply(update_xg_against, axis=1)

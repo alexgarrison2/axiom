@@ -500,9 +500,12 @@ def predict():
          tot_pp_opps = game_stats_df['pp_opportunities'].sum()
          tot_pp_goals = game_stats_df['pp_goals'].sum()
          avg_pp_pct = tot_pp_goals / tot_pp_opps if tot_pp_opps > 0 else 0.20
+         avg_pp_pct = tot_pp_goals / tot_pp_opps if tot_pp_opps > 0 else 0.20
     else:
          league_xg_5v5 = 2.0
          avg_pp_pct = 0.20
+    
+    print(f"DEBUG LEAGUE MEAN: {league_xg_5v5}")
     
     # Build Starter Lookup: (DateStr, TeamCommonName) -> StarterName
     starter_lookup = {}
@@ -900,6 +903,8 @@ def predict():
         h_xg = h_xg_base + h_pp_xg - h_rest_pen
         a_xg = a_xg_base + a_pp_xg - a_rest_pen
         
+        print(f"DEBUG 900: {home_team} Base={h_xg_base:.2f} PP={h_pp_xg:.2f} Rest={h_rest_pen:.2f} StarPen={h_star_penalty:.2f} -> h_xg={h_xg:.2f}")
+        
         # Debugging Output
         # print(f"  {home_team} xG Breakdown: Base={h_xg_base:.2f}, PP={h_pp_xg:.2f}, Rest=-{h_rest_pen}, Home={HOME_ICE_VAL}")
 
@@ -1038,6 +1043,10 @@ def predict():
             h_explained.append(f"vs Opp History: {h_hist_adj:+.2f}")
         if abs(a_hist_adj) > 0.001:
             a_explained.append(f"vs Opp History: {a_hist_adj:+.2f}")
+            
+        print(f"DEBUG 1040: {home_team} xG before adj: {h_xg:.2f}")
+        print(f"DEBUG 1040: {home_team} Goalie Impact: {h_goalie_impact:.2f}")
+        print(f"DEBUG 1040: {home_team} Hist Adj: {h_hist_adj:.2f}")
 
         # 4. GAS / Fatigue (Pre-calculated in breakdown, but let's add summary if impactful)
         # Recalculating effectively used penalties.
@@ -1098,6 +1107,8 @@ def predict():
         
         h_pre_pdo = h_xg_adj
         a_pre_pdo = a_xg_adj
+        
+        print(f"DEBUG 1100: {home_team} xG adj (before PDO): {h_xg_adj:.2f}")
         
         if pdo_diff > 40: # e.g. 1020 vs 980
             print(f"  [PDO MOMENTUM] {home_team} (PDO {h_pdo:.0f}) vs {away_team} (PDO {a_pdo:.0f}) -> +5% Boost")
@@ -1193,6 +1204,7 @@ def predict():
         home_g_stat = goalie_stats_map.get(home_goalie_clean_name, "")
         away_g_stat = goalie_stats_map.get(away_goalie_clean_name, "")
 
+        print(f"DEBUG FINAL: {home_team} vs {away_team} -> h_xg_adj={h_xg_adj:.2f} a_xg_adj={a_xg_adj:.2f}")
         csv_rows.append({
             'game_date': game_date,
             'game_id': game_id,
