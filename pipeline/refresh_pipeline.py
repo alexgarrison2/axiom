@@ -100,21 +100,11 @@ def refresh_pipeline():
             xg_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_sum']))
             xg_5v5_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_5v5_sum']))
             
-            print(f"DEBUG: Lookup size: {len(xg_lookup)}")
-            sample_key = (2025020001, 'Panthers')
-            if sample_key in xg_lookup:
-                 print(f"DEBUG: Found sample key {sample_key}: {xg_lookup[sample_key]}")
-            else:
-                 print(f"DEBUG: MISSING sample key {sample_key}. Keys sample: {list(xg_lookup.keys())[:5]}")
-
             # Apply to df_stats
             def update_xg_for(row):
                 key = (row['game_id'], row['team'])
                 val = xg_lookup.get(key, -1.0) # Use -1 to detect failure
                 if val == -1.0:
-                    # Only print once per game/team to avoid spam
-                    if row['game_id'] == 2025020001:
-                        print(f"DEBUG WARN: Could not find update for {key}. Keeping {row['xG_for']}")
                     return row['xG_for']
                 return val
             
