@@ -654,8 +654,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     <div className="flex flex-col gap-1 w-[48%]">
                         {/* Headers Grid - Fixed widths */}
                         <div className="grid grid-cols-[45px_45px] gap-2 text-[7px] font-black uppercase">
-                            <span className="text-blue-400">Model</span>
-                            <span className="text-neutral-600">Vegas</span>
+                            <span className="text-blue-400">xOdds</span>
+                            <span className="text-neutral-600">Odds</span>
                         </div>
                         {/* Values + Pill Row */}
                         <div className="flex items-center gap-2">
@@ -676,8 +676,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     <div className="flex flex-col gap-1 items-end w-[48%]">
                         {/* Headers Grid - Fixed widths */}
                         <div className="grid grid-cols-[45px_45px] gap-2 text-[7px] font-black uppercase">
-                            <span className="text-blue-400">Model</span>
-                            <span className="text-neutral-600">Vegas</span>
+                            <span className="text-blue-400">xOdds</span>
+                            <span className="text-neutral-600">Odds</span>
                         </div>
                         {/* Values + Pill Row - Right Aligned with Row Reverse */}
                         <div className="flex flex-row-reverse items-center gap-2 w-full">
@@ -766,7 +766,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                         {/* Win Probability Bar */}
                         <div className="w-full flex justify-between text-[10px] font-bold text-neutral-500 tracking-widest mb-2 px-1">
                             <span>{Math.round(awayModelWinPct)}%</span>
-                            <span>MODEL WIN %</span>
+                            <span>xOdds WIN %</span>
                             <span>{Math.round(homeModelWinPct)}%</span>
                         </div>
                         <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden flex relative shadow-inner">
@@ -797,18 +797,18 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                         <div className="flex flex-row justify-between w-full mt-6 px-2 gap-4">
                             {/* Away Odds */}
                             <div className="flex flex-col items-center flex-1">
-                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-2">MODEL</span>
+                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-2">xOdds</span>
                                 <span className="text-base font-bold text-white mb-1">{formatOdds(awayModelOdds)}</span>
-                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-1 mt-1">VEGAS</span>
+                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-1 mt-1">Odds</span>
                                 <span className="text-xs font-mono text-neutral-400">{formatOdds(awayVegasOdds)}</span>
                             </div>
                             {/* Divider */}
                             <div className="w-px bg-neutral-800 h-12 self-center"></div>
                             {/* Home Odds */}
                             <div className="flex flex-col items-center flex-1">
-                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-2">MODEL</span>
+                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-2">xOdds</span>
                                 <span className="text-base font-bold text-white mb-1">{formatOdds(homeModelOdds)}</span>
-                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-1 mt-1">VEGAS</span>
+                                <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-1 mt-1">Odds</span>
                                 <span className="text-xs font-mono text-neutral-400">{formatOdds(homeVegasOdds)}</span>
                             </div>
                         </div>
@@ -1095,11 +1095,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                             {/* Away Details */}
                             <div className="flex flex-col gap-2 p-2 rounded bg-white/5">
                                 <div className="flex justify-between text-[10px]">
-                                    <span className="text-neutral-500">Model</span>
+                                    <span className="text-neutral-500">xOdds</span>
                                     <span className="font-bold">{formatOdds(awayModelOdds)}</span>
                                 </div>
                                 <div className="flex justify-between text-[10px]">
-                                    <span className="text-neutral-500">Vegas</span>
+                                    <span className="text-neutral-500">Odds</span>
                                     <span className="font-mono">{formatOdds(awayVegasOdds)}</span>
                                 </div>
                                 <div className="h-px bg-white/10 my-1"></div>
@@ -1117,11 +1117,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                             {/* Home Details */}
                             <div className="flex flex-col gap-2 p-2 rounded bg-white/5">
                                 <div className="flex justify-between text-[10px]">
-                                    <span className="text-neutral-500">Model</span>
+                                    <span className="text-neutral-500">xOdds</span>
                                     <span className="font-bold">{formatOdds(homeModelOdds)}</span>
                                 </div>
                                 <div className="flex justify-between text-[10px]">
-                                    <span className="text-neutral-500">Vegas</span>
+                                    <span className="text-neutral-500">Odds</span>
                                     <span className="font-mono">{formatOdds(homeVegasOdds)}</span>
                                 </div>
                                 <div className="h-px bg-white/10 my-1"></div>
