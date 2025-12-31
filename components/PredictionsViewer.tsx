@@ -46,15 +46,34 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
         return dates.sort();
     }, [predictions]);
 
+
     // State for selected date
     // Default to the first date (Today)
     const [selectedTab, setSelectedTab] = useState<string>(uniqueDates[0] || 'History');
+    const [historyFilter, setHistoryFilter] = useState<'All' | '50-55' | '55-65' | '65-75' | '75+'>('All');
 
     // Filter predictions for the selected date
     const filteredPredictions = useMemo(() => {
         if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News') return [];
         return predictions.filter(p => p.date === selectedTab);
     }, [predictions, selectedTab]);
+
+    // Filter history based on model confidence
+    const filteredHistory = useMemo(() => {
+        if (historyFilter === 'All') return history;
+        return history.filter(h => {
+            // Determine the model's win probability for the predicted winner
+            // predictedWinner matches homeTeam.commonName usually
+            const isHome = h.predictedWinner === h.homeTeam.commonName || h.predictedWinner === h.homeTeam.name;
+            const modelConf = isHome ? h.homeWinProb : (100 - h.homeWinProb);
+
+            if (historyFilter === '50-55') return modelConf >= 50 && modelConf < 55;
+            if (historyFilter === '55-65') return modelConf >= 55 && modelConf < 65;
+            if (historyFilter === '65-75') return modelConf >= 65 && modelConf < 75;
+            if (historyFilter === '75+') return modelConf >= 75;
+            return true;
+        });
+    }, [history, historyFilter]);
 
     if (uniqueDates.length === 0 && history.length === 0) {
         return <div className="text-center text-gray-500 mt-12 font-mono uppercase tracking-widest animate-pulse">No data available.</div>;
@@ -156,20 +175,38 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                     transition={{ duration: 0.3 }}
                     className="w-full"
                 >
+                    {/* History Filters */}
+                    <div className="flex flex-wrap justify-center gap-2 mb-6">
+                        {(['All', '50-55', '55-65', '65-75', '75+'] as const).map((filter) => (
+                            <button
+                                key={filter}
+                                onClick={() => setHistoryFilter(filter)}
+                                className={`px-3 py-1 text-[10px] font-bold rounded-full border transition-all ${historyFilter === filter
+                                        ? 'bg-neon-green/10 text-neon-green border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                                        : 'bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white'
+                                    }`}
+                            >
+                                {filter === 'All' ? 'ALL GAMES' : `${filter}%`}
+                            </button>
+                        ))}
+                    </div>
+
                     {/* Aggregate Stats Header */}
                     <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-8">
                         {(() => {
-                            const totalGames = history.length;
-                            const correctPicks = history.filter(h => h.isCorrect).length;
+                            // Use filteredHistory for stats
+                            const statsHistory = filteredHistory;
+                            const totalGames = statsHistory.length;
+                            const correctPicks = statsHistory.filter(h => h.isCorrect).length;
                             const accuracy = totalGames > 0 ? ((correctPicks / totalGames) * 100).toFixed(1) : '0.0';
 
                             // Average Brier Score
                             const avgBrier = totalGames > 0
-                                ? (history.reduce((acc, curr) => acc + curr.brierScore, 0) / totalGames).toFixed(4)
+                                ? (statsHistory.reduce((acc, curr) => acc + curr.brierScore, 0) / totalGames).toFixed(4)
                                 : '0.0000';
 
                             // Log Loss Calculation
-                            const logLossSum = history.reduce((acc, curr) => {
+                            const logLossSum = statsHistory.reduce((acc, curr) => {
                                 const p = Math.max(0.0001, Math.min(0.9999, curr.homeWinProb / 100)); // Convert % to Prob & Clip
                                 const y = curr.actualWinner === curr.homeTeam.commonName ? 1 : 0;
                                 return acc + (y * Math.log(p) + (1 - y) * Math.log(1 - p));
@@ -228,7 +265,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                         })()}
                     </div>
 
-                    <HistoryTable entries={history} />
+                    <HistoryTable entries={filteredHistory} />
                 </motion.div>
             ) : selectedTab === 'Teams' ? (
                 <motion.div
