@@ -1,28 +1,65 @@
 {
-    "NYR": [
+    "TOR": [
         {
-            "player": "Jonathan Quick",
-            "news": "Quick will start in Washington on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2025-12-31",
-            "timestamp": "2025-12-31T17:00:03.616Z"
-        },
-        {
-            "player": "Adam Fox",
-            "news": "Fox (upper-body) has been activated from LTIR and is expected to play on Wednesday vs. Washington. ",
+            "player": "Dakota Joshua",
+            "news": "Joshua (kidney) is expected to miss a significant amount of time. ",
             "category": "Injury",
             "date": "2025-12-31",
-            "timestamp": "2025-12-31T15:03:08.592Z"
+            "timestamp": "2025-12-31T17:36:31.441Z"
         },
         {
-            "player": "Scott Morrow",
-            "news": "Morrow has been reassigned to Hartford (AHL). ",
-            "category": "Send Down",
+            "player": "Chris Tanev",
+            "news": "Tanev (groin) is expected to miss an extended period of time. ",
+            "category": "Injury",
             "date": "2025-12-31",
-            "timestamp": "2025-12-31T15:02:28.325Z"
+            "timestamp": "2025-12-31T17:11:04.943Z"
+        }
+    ],
+    "COL": [
+        {
+            "player": "Mackenzie Blackwood",
+            "news": "Blackwood will start vs. St. Louis on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:34:17.838Z"
         }
     ],
     "DAL": [
+        {
+            "player": "Colin Blackwell",
+            "news": " Blackwell will draw back into Dallas' lineup vs. Buffalo on Wednesday. ",
+            "category": "Line Change",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:33:31.554Z"
+        },
+        {
+            "player": "Adam Erne",
+            "news": "Erne will be a healthy scratch vs. Buffalo on Wednesday. ",
+            "category": "Line Change",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:33:06.170Z"
+        },
+        {
+            "player": "Kyle Capobianco",
+            "news": "Capobianco will be a healthy scratch vs. Buffalo on Wednesday. ",
+            "category": "Line Change",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:32:46.650Z"
+        },
+        {
+            "player": "Ilya Lyubushkin",
+            "news": "Lyubushkin (illness) will draw back into Dallas' lineup vs. Buffalo on Wednesday. ",
+            "category": "Injury",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:32:22.486Z"
+        },
+        {
+            "player": "Casey DeSmith",
+            "news": "DeSmith will start vs. Buffalo on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:25:48.295Z"
+        },
         {
             "player": "Casey DeSmith",
             "news": "DeSmith is in the starter's crease at Dallas' morning skate. ",
@@ -31,39 +68,48 @@
             "timestamp": "2025-12-31T16:34:47.354Z"
         }
     ],
-    "CBJ": [
+    "TBL": [
         {
-            "player": "Jet Greaves",
-            "news": "Greaves will start vs. New Jersey on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2025-12-31",
-            "timestamp": "2025-12-31T15:51:54.781Z"
-        },
-        {
-            "player": "Dysin Mayo",
-            "news": "Mayo is expected to draw into Columbus' lineup on Wednesday vs. New Jersey.",
-            "category": "Line Change",
-            "date": "2025-12-31",
-            "timestamp": "2025-12-31T15:16:24.151Z"
-        },
-        {
-            "player": "Brendan Smith",
-            "news": "Smith (lower-body) is expected to miss Wednesday's game vs. New Jersey and be out for a while. ",
+            "player": "Erik Cernak",
+            "news": "Cernak (hand) has been activated from IR and is expected to return vs. Anaheim on Wednesday. ",
             "category": "Injury",
             "date": "2025-12-31",
-            "timestamp": "2025-12-31T15:15:59.148Z"
+            "timestamp": "2025-12-31T17:31:33.627Z"
         }
     ],
-    "WPG": [
+    "EDM": [
         {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebuyck is in the starter's crease at Winnipeg's morning skate on Wednesday. ",
+            "player": "Connor Ingram",
+            "news": "Ingram is in the starter's crease at Edmonton's morning skate. ",
             "category": "Goalie Start",
             "date": "2025-12-31",
-            "timestamp": "2025-12-31T15:33:59.110Z"
+            "timestamp": "2025-12-31T17:28:14.809Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "Dustin Wolf",
+            "news": "Wolf will start vs. Philadelphia on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:24:54.139Z"
         }
     ],
     "WSH": [
+        {
+            "player": "Trevor van Riemsdyk",
+            "news": "van Riemsdyk will be a healthy scratch vs. New York on Wednesday. ",
+            "category": "Line Change",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:09:27.164Z"
+        },
+        {
+            "player": "Dylan McIlrath",
+            "news": "McIlrath will draw back into Washington's lineup on Wednesday vs. New York. ",
+            "category": "Line Change",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:08:45.963Z"
+        },
         {
             "player": "Dylan McIlrath",
             "news": "McIlrath will draw back into Washington's lineup vs. the Rangers on Wednesday. ",
@@ -79,13 +125,38 @@
             "timestamp": "2025-12-31T15:21:06.475Z"
         }
     ],
-    "DET": [
+    "NYR": [
         {
-            "player": "John Gibson",
-            "news": "Gibson is in the starter's crease at Detroit's morning skate. ",
+            "player": "Adam Fox",
+            "news": "Fox (lower-body) will return in Washington on Wednesday. ",
+            "category": "Injury",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T17:01:58.563Z"
+        },
+        {
+            "player": "Jonathan Quick",
+            "news": "Quick will start in Washington on Wednesday. ",
             "category": "Goalie Start",
             "date": "2025-12-31",
-            "timestamp": "2025-12-31T14:39:34.418Z"
+            "timestamp": "2025-12-31T17:00:03.616Z"
+        }
+    ],
+    "CBJ": [
+        {
+            "player": "Jet Greaves",
+            "news": "Greaves will start vs. New Jersey on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T15:51:54.781Z"
+        }
+    ],
+    "WPG": [
+        {
+            "player": "Connor Hellebuyck",
+            "news": "Hellebuyck is in the starter's crease at Winnipeg's morning skate on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2025-12-31",
+            "timestamp": "2025-12-31T15:33:59.110Z"
         }
     ]
 }
