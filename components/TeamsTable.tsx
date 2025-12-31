@@ -361,10 +361,11 @@ const TeamsTable = () => {
     useEffect(() => {
         const initLoad = async () => {
             try {
+                const t = new Date().getTime();
                 const [statsRes, teamsRes, predsRes] = await Promise.all([
-                    fetch('/data/gamestats.csv'),
-                    fetch('/data/nhl_teams.csv'),
-                    fetch('/data/predictions_detailed.csv')
+                    fetch(`/data/gamestats.csv?t=${t}`),
+                    fetch(`/data/nhl_teams.csv?t=${t}`),
+                    fetch(`/data/predictions_detailed.csv?t=${t}`)
                 ]);
 
                 const statsText = await statsRes.text();
