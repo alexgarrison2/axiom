@@ -16,12 +16,27 @@ interface NewsWithTeam extends PlayerNewsItem {
 const NewsSection: React.FC<NewsSectionProps> = ({ predictions }) => {
     const allNews = useMemo(() => {
         const news: NewsWithTeam[] = [];
+        const seen = new Set<string>();
+
         predictions.forEach(p => {
             if (p.home_news) {
-                p.home_news.forEach(n => news.push({ ...n, team: p.homeTeam }));
+                p.home_news.forEach(n => {
+                    // Create a unique signature for the news item
+                    const signature = `${n.player}-${n.date}-${n.news}-${n.category}`;
+                    if (!seen.has(signature)) {
+                        seen.add(signature);
+                        news.push({ ...n, team: p.homeTeam });
+                    }
+                });
             }
             if (p.away_news) {
-                p.away_news.forEach(n => news.push({ ...n, team: p.awayTeam }));
+                p.away_news.forEach(n => {
+                    const signature = `${n.player}-${n.date}-${n.news}-${n.category}`;
+                    if (!seen.has(signature)) {
+                        seen.add(signature);
+                        news.push({ ...n, team: p.awayTeam });
+                    }
+                });
             }
         });
         // Sort by timestamp if available, else date
