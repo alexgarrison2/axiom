@@ -1448,7 +1448,7 @@ def main():
                 existing_shots_df = pd.read_csv(SHOTS_FILENAME)
                 combined_shots_df = pd.concat([existing_shots_df, new_shots_df])
                 # Deduplicate: Shot ID is best, but if missing, use strict row drift
-                combined_shots_df.drop_duplicates(keep='last', inplace=True) 
+                combined_shots_df.drop_duplicates(subset=['game_id', 'event_id'], keep='last', inplace=True) 
                 combined_shots_df.to_csv(SHOTS_FILENAME, index=False)
             except Exception as e:
                 print(f"Error merging with existing shots: {e}")
