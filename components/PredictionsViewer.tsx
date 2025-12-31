@@ -50,7 +50,8 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
     // State for selected date
     // Default to the first date (Today)
     const [selectedTab, setSelectedTab] = useState<string>(uniqueDates[0] || 'History');
-    const [historyFilter, setHistoryFilter] = useState<'All' | '50-55' | '55-65' | '65-75' | '75+'>('All');
+    // Multi-select state: Default to ['All']
+    const [historyFilters, setHistoryFilters] = useState<string[]>(['All']);
 
     // Filter predictions for the selected date
     const filteredPredictions = useMemo(() => {
@@ -60,20 +61,22 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
 
     // Filter history based on model confidence
     const filteredHistory = useMemo(() => {
-        if (historyFilter === 'All') return history;
+        if (historyFilters.includes('All') || historyFilters.length === 0) return history;
+
         return history.filter(h => {
             // Determine the model's win probability for the predicted winner
-            // predictedWinner matches homeTeam.commonName usually
             const isHome = h.predictedWinner === h.homeTeam.commonName || h.predictedWinner === h.homeTeam.name;
             const modelConf = isHome ? h.homeWinProb : (100 - h.homeWinProb);
 
-            if (historyFilter === '50-55') return modelConf >= 50 && modelConf < 55;
-            if (historyFilter === '55-65') return modelConf >= 55 && modelConf < 65;
-            if (historyFilter === '65-75') return modelConf >= 65 && modelConf < 75;
-            if (historyFilter === '75+') return modelConf >= 75;
-            return true;
+            // Check against enabled filters
+            if (historyFilters.includes('50-55') && (modelConf >= 50 && modelConf < 55)) return true;
+            if (historyFilters.includes('55-65') && (modelConf >= 55 && modelConf < 65)) return true;
+            if (historyFilters.includes('65-75') && (modelConf >= 65 && modelConf < 75)) return true;
+            if (historyFilters.includes('75+') && (modelConf >= 75)) return true;
+
+            return false;
         });
-    }, [history, historyFilter]);
+    }, [history, historyFilters]);
 
     if (uniqueDates.length === 0 && history.length === 0) {
         return <div className="text-center text-gray-500 mt-12 font-mono uppercase tracking-widest animate-pulse">No data available.</div>;
@@ -177,18 +180,35 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                 >
                     {/* History Filters */}
                     <div className="flex flex-wrap justify-center gap-2 mb-6">
-                        {(['All', '50-55', '55-65', '65-75', '75+'] as const).map((filter) => (
-                            <button
-                                key={filter}
-                                onClick={() => setHistoryFilter(filter)}
-                                className={`px-3 py-1 text-[10px] font-bold rounded-full border transition-all ${historyFilter === filter
-                                        ? 'bg-neon-green/10 text-neon-green border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
-                                        : 'bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white'
-                                    }`}
-                            >
-                                {filter === 'All' ? 'ALL GAMES' : `${filter}%`}
-                            </button>
-                        ))}
+                        {(['All', '50-55', '55-65', '65-75', '75+'] as const).map((filter) => {
+                            const isActive = historyFilters.includes(filter);
+                            return (
+                                <button
+                                    key={filter}
+                                    onClick={() => {
+                                        if (filter === 'All') {
+                                            setHistoryFilters(['All']);
+                                        } else {
+                                            let newFilters = historyFilters.filter(f => f !== 'All'); // Remove All if specific selected
+                                            if (newFilters.includes(filter)) {
+                                                newFilters = newFilters.filter(f => f !== filter);
+                                            } else {
+                                                newFilters.push(filter);
+                                            }
+                                            // If nothing selected, revert to All
+                                            if (newFilters.length === 0) newFilters = ['All'];
+                                            setHistoryFilters(newFilters);
+                                        }
+                                    }}
+                                    className={`px-3 py-1 text-[10px] font-bold rounded-full border transition-all ${isActive
+                                            ? 'bg-neon-green/10 text-neon-green border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                                            : 'bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white'
+                                        }`}
+                                >
+                                    {filter === 'All' ? 'ALL GAMES' : `${filter}%`}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Aggregate Stats Header */}
