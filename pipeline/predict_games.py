@@ -754,6 +754,10 @@ def predict():
         h_goalie_name = get_best_goalie(home_team, goalie_ratings, confirmed_goalie=h_conf)
         a_goalie_name = get_best_goalie(away_team, goalie_ratings, confirmed_goalie=a_conf)
         
+        if home_team == "Stars":
+             print(f"DEBUG: Stars Game. Confirmed: {h_conf}, Status: {h_status}, Selected: {h_goalie_name}")
+
+        
         # Prepare display names (with status)
         h_goalie_display = h_goalie_name
         a_goalie_display = a_goalie_name
