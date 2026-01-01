@@ -1272,7 +1272,7 @@ def predict():
     # Save Last Update Timestamp for Frontend (US/Central)
     utc_now = datetime.now(timezone.utc)
     central = pytz.timezone('US/Central')
-    timestamp = utc_now.astimezone(central).strftime("%B %d, %I:%M %p")
+    timestamp = utc_now.astimezone(central).strftime("%B %d, %Y, %I:%M %p")
     
     # Define paths relative to the script location
     script_dir = os.path.dirname(os.path.abspath(__file__))
