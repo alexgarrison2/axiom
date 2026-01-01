@@ -71,18 +71,18 @@
         ],
         "f4": [
             {
-                "name": "Stephen Halliday",
-                "number": 83,
-                "pos": "lw",
-                "id": 30030,
-                "ppUnit": null
-            },
-            {
                 "name": "Ridly Greig",
                 "number": 71,
-                "pos": "c",
+                "pos": "lw",
                 "id": 30383,
                 "ppUnit": 2
+            },
+            {
+                "name": "Stephen Halliday",
+                "number": 83,
+                "pos": "c",
+                "id": 30030,
+                "ppUnit": null
             },
             {
                 "name": "Nick Cousins",
@@ -144,11 +144,11 @@
     "WSH": {
         "f1": [
             {
-                "name": "Alex Ovechkin",
-                "number": 8,
+                "name": "Aliaksei Protas",
+                "number": 21,
                 "pos": "lw",
-                "id": 1534,
-                "ppUnit": 2
+                "id": 30448,
+                "ppUnit": null
             },
             {
                 "name": "Dylan Strome",
@@ -158,11 +158,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "Aliaksei Protas",
-                "number": 21,
+                "name": "Alex Ovechkin",
+                "number": 8,
                 "pos": "rw",
-                "id": 30448,
-                "ppUnit": null
+                "id": 1534,
+                "ppUnit": 2
             }
         ],
         "f2": [
@@ -1729,29 +1729,6 @@
         ],
         "f2": [
             {
-                "name": "Teuvo Teravainen",
-                "number": 86,
-                "pos": "lw",
-                "id": 2128,
-                "ppUnit": 1
-            },
-            {
-                "name": "Oliver Moore",
-                "number": 11,
-                "pos": "c",
-                "id": 33143,
-                "ppUnit": null
-            },
-            {
-                "name": "Nick Lardis",
-                "number": 76,
-                "pos": "rw",
-                "id": 35088,
-                "ppUnit": 2
-            }
-        ],
-        "f3": [
-            {
                 "name": "Ryan Donato",
                 "number": 8,
                 "pos": "lw",
@@ -1773,6 +1750,29 @@
                 "ppUnit": null
             }
         ],
+        "f3": [
+            {
+                "name": "Teuvo Teravainen",
+                "number": 86,
+                "pos": "lw",
+                "id": 2128,
+                "ppUnit": 1
+            },
+            {
+                "name": "Oliver Moore",
+                "number": 11,
+                "pos": "c",
+                "id": 33143,
+                "ppUnit": 2
+            },
+            {
+                "name": "Nick Lardis",
+                "number": 76,
+                "pos": "rw",
+                "id": 35088,
+                "ppUnit": 2
+            }
+        ],
         "f4": [
             {
                 "name": "Nick Foligno",
@@ -1786,7 +1786,7 @@
                 "number": 34,
                 "pos": "c",
                 "id": 32903,
-                "ppUnit": 2
+                "ppUnit": null
             },
             {
                 "name": "Landon Slaggert",
