@@ -577,10 +577,10 @@
                 "ppUnit": 1
             },
             {
-                "name": "John Tavares",
-                "number": 91,
+                "name": "Auston Matthews",
+                "number": 34,
                 "pos": "c",
-                "id": 1016,
+                "id": 2433,
                 "ppUnit": 1
             },
             {
@@ -588,16 +588,39 @@
                 "number": 11,
                 "pos": "rw",
                 "id": 2131,
-                "ppUnit": 1
+                "ppUnit": 2
             }
         ],
         "f2": [
+            {
+                "name": "Matias Maccelli",
+                "number": 63,
+                "pos": "lw",
+                "id": 30063,
+                "ppUnit": 1
+            },
+            {
+                "name": "John Tavares",
+                "number": 91,
+                "pos": "c",
+                "id": 1016,
+                "ppUnit": 1
+            },
+            {
+                "name": "Bobby McMann",
+                "number": 74,
+                "pos": "rw",
+                "id": 32922,
+                "ppUnit": 2
+            }
+        ],
+        "f3": [
             {
                 "name": "Easton Cowan",
                 "number": 53,
                 "pos": "lw",
                 "id": 35106,
-                "ppUnit": 2
+                "ppUnit": null
             },
             {
                 "name": "Nicolas Roy",
@@ -614,29 +637,6 @@
                 "ppUnit": 2
             }
         ],
-        "f3": [
-            {
-                "name": "Matias Maccelli",
-                "number": 63,
-                "pos": "lw",
-                "id": 30063,
-                "ppUnit": 1
-            },
-            {
-                "name": "Scott Laughton",
-                "number": 24,
-                "pos": "c",
-                "id": 2018,
-                "ppUnit": null
-            },
-            {
-                "name": "Bobby McMann",
-                "number": 74,
-                "pos": "rw",
-                "id": 32922,
-                "ppUnit": 2
-            }
-        ],
         "f4": [
             {
                 "name": "Steven Lorentz",
@@ -646,10 +646,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Jacob Quillan",
-                "number": null,
+                "name": "Scott Laughton",
+                "number": 24,
                 "pos": "c",
-                "id": 32458,
+                "id": 2018,
                 "ppUnit": null
             },
             {
@@ -900,11 +900,11 @@
         ],
         "f3": [
             {
-                "name": "Rutger McGroarty",
-                "number": 2,
+                "name": "Yegor Chinakhov",
+                "number": 59,
                 "pos": "lw",
-                "id": 33262,
-                "ppUnit": null
+                "id": 30655,
+                "ppUnit": 2
             },
             {
                 "name": "Ben Kindel",
@@ -914,11 +914,11 @@
                 "ppUnit": 2
             },
             {
-                "name": "Ville Koivunen",
-                "number": 41,
+                "name": "Rutger McGroarty",
+                "number": 2,
                 "pos": "rw",
-                "id": 34677,
-                "ppUnit": 2
+                "id": 33262,
+                "ppUnit": null
             }
         ],
         "f4": [
@@ -1138,10 +1138,10 @@
     "CAR": {
         "f1": [
             {
-                "name": "Andrei Svechnikov",
-                "number": 37,
+                "name": "Nikolaj Ehlers",
+                "number": 27,
                 "pos": "lw",
-                "id": 4787,
+                "id": 2370,
                 "ppUnit": 1
             },
             {
@@ -1152,27 +1152,27 @@
                 "ppUnit": 1
             },
             {
-                "name": "Eric Robinson",
-                "number": 50,
+                "name": "Andrei Svechnikov",
+                "number": 37,
                 "pos": "rw",
-                "id": 4650,
-                "ppUnit": null
+                "id": 4787,
+                "ppUnit": 1
             }
         ],
         "f2": [
             {
-                "name": "Nikolaj Ehlers",
-                "number": 27,
+                "name": "Eric Robinson",
+                "number": 50,
                 "pos": "lw",
-                "id": 2370,
-                "ppUnit": 2
+                "id": 4650,
+                "ppUnit": null
             },
             {
-                "name": "Jesperi Kotkaniemi",
-                "number": 82,
+                "name": "Logan Stankoven",
+                "number": 22,
                 "pos": "c",
-                "id": 4788,
-                "ppUnit": null
+                "id": 34617,
+                "ppUnit": 2
             },
             {
                 "name": "Jackson Blake",
@@ -1195,7 +1195,7 @@
                 "number": 11,
                 "pos": "c",
                 "id": 1246,
-                "ppUnit": 1
+                "ppUnit": null
             },
             {
                 "name": "Jordan Martinook",
@@ -1221,30 +1221,14 @@
                 "ppUnit": null
             },
             {
-                "name": "Logan Stankoven",
-                "number": 22,
+                "name": "Jesperi Kotkaniemi",
+                "number": 82,
                 "pos": "rw",
-                "id": 34617,
+                "id": 4788,
                 "ppUnit": 2
             }
         ],
         "d1": [
-            {
-                "name": "K'Andre Miller",
-                "number": 79,
-                "pos": "ld",
-                "id": 4812,
-                "ppUnit": 2
-            },
-            {
-                "name": "Jalen Chatfield",
-                "number": 5,
-                "pos": "rd",
-                "id": 3900,
-                "ppUnit": null
-            }
-        ],
-        "d2": [
             {
                 "name": "Alexander Nikishin",
                 "number": 21,
@@ -1258,6 +1242,22 @@
                 "pos": "rd",
                 "id": 4829,
                 "ppUnit": 2
+            }
+        ],
+        "d2": [
+            {
+                "name": "K'Andre Miller",
+                "number": 79,
+                "pos": "ld",
+                "id": 4812,
+                "ppUnit": 2
+            },
+            {
+                "name": "Jalen Chatfield",
+                "number": 5,
+                "pos": "rd",
+                "id": 3900,
+                "ppUnit": null
             }
         ],
         "d3": [
