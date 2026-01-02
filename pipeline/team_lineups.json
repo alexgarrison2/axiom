@@ -923,24 +923,24 @@
         ],
         "f4": [
             {
-                "name": "Ross Johnston",
-                "number": 44,
-                "pos": "lw",
-                "id": 3759,
-                "ppUnit": null
-            },
-            {
                 "name": "Jansen Harkins",
                 "number": 24,
-                "pos": "c",
+                "pos": "lw",
                 "id": 3913,
                 "ppUnit": null
             },
             {
                 "name": "Ryan Poehling",
                 "number": 25,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2792,
+                "ppUnit": null
+            },
+            {
+                "name": "Ross Johnston",
+                "number": 44,
+                "pos": "rw",
+                "id": 3759,
                 "ppUnit": null
             }
         ],
@@ -962,33 +962,33 @@
         ],
         "d2": [
             {
+                "name": "Ian Moore",
+                "number": null,
+                "pos": "ld",
+                "id": 31897,
+                "ppUnit": null
+            },
+            {
+                "name": "Radko Gudas",
+                "number": 7,
+                "pos": "rd",
+                "id": 1366,
+                "ppUnit": null
+            }
+        ],
+        "d3": [
+            {
                 "name": "Olen Zellweger",
                 "number": 51,
                 "pos": "ld",
                 "id": 34623,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Drew Helleson",
                 "number": 14,
                 "pos": "rd",
                 "id": 30429,
-                "ppUnit": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Pavel Mintyukov",
-                "number": 34,
-                "pos": "ld",
-                "id": 34372,
-                "ppUnit": 2
-            },
-            {
-                "name": "Ian Moore",
-                "number": null,
-                "pos": "rd",
-                "id": 31897,
                 "ppUnit": null
             }
         ]
@@ -1743,10 +1743,10 @@
                 "ppUnit": 2
             },
             {
-                "name": "Miles Wood",
-                "number": 28,
+                "name": "Danton Heinen",
+                "number": 43,
                 "pos": "rw",
-                "id": 2623,
+                "id": 2691,
                 "ppUnit": null
             }
         ],
@@ -1798,6 +1798,22 @@
         ],
         "d1": [
             {
+                "name": "Zach Werenski",
+                "number": 8,
+                "pos": "ld",
+                "id": 2479,
+                "ppUnit": 1
+            },
+            {
+                "name": "Denton Mateychuk",
+                "number": 5,
+                "pos": "rd",
+                "id": 31514,
+                "ppUnit": 2
+            }
+        ],
+        "d2": [
+            {
                 "name": "Ivan Provorov",
                 "number": 9,
                 "pos": "ld",
@@ -1805,27 +1821,11 @@
                 "ppUnit": 2
             },
             {
-                "name": "Dante Fabbro",
-                "number": 15,
-                "pos": "rd",
-                "id": 2651,
-                "ppUnit": null
-            }
-        ],
-        "d2": [
-            {
-                "name": "Denton Mateychuk",
-                "number": 5,
-                "pos": "ld",
-                "id": 31514,
-                "ppUnit": 1
-            },
-            {
                 "name": "Damon Severson",
                 "number": 78,
                 "pos": "rd",
                 "id": 2038,
-                "ppUnit": 2
+                "ppUnit": null
             }
         ],
         "d3": [
@@ -1837,10 +1837,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Dysin Mayo",
-                "number": null,
+                "name": "Dante Fabbro",
+                "number": 15,
                 "pos": "rd",
-                "id": 3872,
+                "id": 2651,
                 "ppUnit": null
             }
         ]
