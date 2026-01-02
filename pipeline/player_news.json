@@ -1,12 +1,83 @@
 {
-    "CAR": [
+    "ANA": [
         {
-            "player": "Alexander Nikishin",
-            "news": "Nikishin is expected to be a healthy scratch vs. Colorado on Saturday. ",
+            "player": "Lukas Dostal",
+            "news": "Dostal will start vs. Minnesota on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-02",
+            "timestamp": "2026-01-02T18:47:38.984Z"
+        },
+        {
+            "player": "Drew Helleson",
+            "news": "Helleson is expected to be a healthy scratch vs. Minnesota on Friday. ",
             "category": "Line Change",
             "date": "2026-01-02",
-            "timestamp": "2026-01-02T17:52:10.432Z"
+            "timestamp": "2026-01-02T18:15:08.479Z"
         },
+        {
+            "player": "Radko Gudas",
+            "news": "Gudas (illness) will return to Anaheim's lineup vs. Minnesota on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-02",
+            "timestamp": "2026-01-02T18:14:43.967Z"
+        }
+    ],
+    "EDM": [
+        {
+            "player": "Vasily Podkolzin",
+            "news": "Podkolzin (illness) missed practice on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-02",
+            "timestamp": "2026-01-02T18:43:25.207Z"
+        },
+        {
+            "player": "Isaac Howard",
+            "news": "Howard has been recalled from Bakersfield (AHL).",
+            "category": "Call Up",
+            "date": "2026-01-02",
+            "timestamp": "2026-01-02T15:44:17.027Z"
+        },
+        {
+            "player": "Quinn Hutson",
+            "news": "Hutson has been recalled from Bakersfield (AHL).",
+            "category": "Call Up",
+            "date": "2026-01-02",
+            "timestamp": "2026-01-02T15:42:56.784Z"
+        }
+    ],
+    "VAN": [
+        {
+            "player": "Thatcher Demko",
+            "news": "Demko is in the starter's crease at Vancouver's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-02",
+            "timestamp": "2026-01-02T18:40:18.528Z"
+        },
+        {
+            "player": "Arshdeep Bains",
+            "news": "Bains has been recalled from Abbotsford (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-02",
+            "timestamp": "2026-01-02T17:16:11.639Z"
+        },
+        {
+            "player": "Marco Rossi",
+            "news": "Rossi has been placed on IR with a lower-body injury. ",
+            "category": "Injury",
+            "date": "2026-01-02",
+            "timestamp": "2026-01-02T17:14:03.414Z"
+        }
+    ],
+    "TBL": [
+        {
+            "player": "Charle-Edouard D'Astous",
+            "news": "Tampa Bay has signed Charle-Edouard D'Astous to a one-year, $875,000 AAV contract extension.",
+            "category": "Signing",
+            "date": "2026-01-02",
+            "timestamp": "2026-01-02T18:03:07.524Z"
+        }
+    ],
+    "CAR": [
         {
             "player": "Shayne Gostisbehere",
             "news": "Gostisbehere (lower-body) returned to practice on Friday. ",
@@ -36,38 +107,6 @@
             "category": "Send Down",
             "date": "2026-01-02",
             "timestamp": "2026-01-02T15:54:08.959Z"
-        }
-    ],
-    "VAN": [
-        {
-            "player": "Arshdeep Bains",
-            "news": "Bains has been recalled from Abbotsford (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-02",
-            "timestamp": "2026-01-02T17:16:11.639Z"
-        },
-        {
-            "player": "Marco Rossi",
-            "news": "Rossi has been placed on IR with a lower-body injury. ",
-            "category": "Injury",
-            "date": "2026-01-02",
-            "timestamp": "2026-01-02T17:14:03.414Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Isaac Howard",
-            "news": "Howard has been recalled from Bakersfield (AHL).",
-            "category": "Call Up",
-            "date": "2026-01-02",
-            "timestamp": "2026-01-02T15:44:17.027Z"
-        },
-        {
-            "player": "Quinn Hutson",
-            "news": "Hutson has been recalled from Bakersfield (AHL).",
-            "category": "Call Up",
-            "date": "2026-01-02",
-            "timestamp": "2026-01-02T15:42:56.784Z"
         }
     ],
     "WPG": [
