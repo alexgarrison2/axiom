@@ -1,57 +1,5 @@
 [
     {
-        "id": 2025020640,
-        "gameDate": "2026-01-02",
-        "startTimeUTC": "2026-01-02T20:00:00Z",
-        "homeTeam": "Blues",
-        "awayTeam": "Golden Knights",
-        "homeTeamAbbrev": "STL",
-        "awayTeamAbbrev": "VGK",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020641,
-        "gameDate": "2026-01-02",
-        "startTimeUTC": "2026-01-03T01:00:00Z",
-        "homeTeam": "Panthers",
-        "awayTeam": "Rangers",
-        "homeTeamAbbrev": "FLA",
-        "awayTeamAbbrev": "NYR",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020642,
-        "gameDate": "2026-01-02",
-        "startTimeUTC": "2026-01-03T03:30:00Z",
-        "homeTeam": "Canucks",
-        "awayTeam": "Kraken",
-        "homeTeamAbbrev": "VAN",
-        "awayTeamAbbrev": "SEA",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020643,
-        "gameDate": "2026-01-02",
-        "startTimeUTC": "2026-01-03T03:30:00Z",
-        "homeTeam": "Ducks",
-        "awayTeam": "Wild",
-        "homeTeamAbbrev": "ANA",
-        "awayTeamAbbrev": "MIN",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025020644,
         "gameDate": "2026-01-03",
         "startTimeUTC": "2026-01-03T17:00:00Z",
@@ -72,7 +20,7 @@
         "awayTeam": "Mammoth",
         "homeTeamAbbrev": "NJD",
         "awayTeamAbbrev": "UTA",
-        "homeGoalieConfirmed": "Jake Allen",
+        "homeGoalieConfirmed": "Jacob Markstrom",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Karel Vejmelka",
         "awayGoalieStatus": "Unconfirmed"
@@ -113,7 +61,7 @@
         "awayTeamAbbrev": "MTL",
         "homeGoalieConfirmed": "Joel Hofer",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Jakub Dobes",
+        "awayGoalieConfirmed": "Jacob Fowler",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -178,7 +126,7 @@
         "awayTeamAbbrev": "COL",
         "homeGoalieConfirmed": "Frederik Andersen",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Mackenzie Blackwood",
+        "awayGoalieConfirmed": "Scott Wedgewood",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -204,7 +152,7 @@
         "awayTeamAbbrev": "MIN",
         "homeGoalieConfirmed": "Darcy Kuemper",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Filip Gustavsson",
+        "awayGoalieConfirmed": "Jesper Wallstedt",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -215,9 +163,74 @@
         "awayTeam": "Bruins",
         "homeTeamAbbrev": "VAN",
         "awayTeamAbbrev": "BOS",
-        "homeGoalieConfirmed": "Thatcher Demko",
+        "homeGoalieConfirmed": "Kevin Lankinen",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Jeremy Swayman",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020657,
+        "gameDate": "2026-01-04",
+        "startTimeUTC": "2026-01-04T19:00:00Z",
+        "homeTeam": "Stars",
+        "awayTeam": "Canadiens",
+        "homeTeamAbbrev": "DAL",
+        "awayTeamAbbrev": "MTL",
+        "homeGoalieConfirmed": "Jake Oettinger",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jacob Fowler",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020658,
+        "gameDate": "2026-01-04",
+        "startTimeUTC": "2026-01-04T20:00:00Z",
+        "homeTeam": "Blue Jackets",
+        "awayTeam": "Penguins",
+        "homeTeamAbbrev": "CBJ",
+        "awayTeamAbbrev": "PIT",
+        "homeGoalieConfirmed": "Jet Greaves",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": null,
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020659,
+        "gameDate": "2026-01-04",
+        "startTimeUTC": "2026-01-04T22:00:00Z",
+        "homeTeam": "Panthers",
+        "awayTeam": "Avalanche",
+        "homeTeamAbbrev": "FLA",
+        "awayTeamAbbrev": "COL",
+        "homeGoalieConfirmed": "Sergei Bobrovsky",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Scott Wedgewood",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020660,
+        "gameDate": "2026-01-04",
+        "startTimeUTC": "2026-01-05T00:00:00Z",
+        "homeTeam": "Devils",
+        "awayTeam": "Hurricanes",
+        "homeTeamAbbrev": "NJD",
+        "awayTeamAbbrev": "CAR",
+        "homeGoalieConfirmed": "Jacob Markstrom",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Frederik Andersen",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020661,
+        "gameDate": "2026-01-04",
+        "startTimeUTC": "2026-01-05T00:00:00Z",
+        "homeTeam": "Blackhawks",
+        "awayTeam": "Golden Knights",
+        "homeTeamAbbrev": "CHI",
+        "awayTeamAbbrev": "VGK",
+        "homeGoalieConfirmed": "Spencer Knight",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Carter Hart",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]

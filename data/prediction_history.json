@@ -6858,5 +6858,61 @@
     "actualWinner": "Penguins",
     "isCorrect": true,
     "brierScore": 0.2144
+  },
+  {
+    "date": "2026-01-02",
+    "homeTeam": "Ducks",
+    "awayTeam": "Wild",
+    "homeScore": 2,
+    "awayScore": 5,
+    "homeXg": 9.08,
+    "awayXg": 8.72,
+    "homeWinProb": 49.0,
+    "predictedWinner": "Wild",
+    "actualWinner": "Wild",
+    "isCorrect": true,
+    "brierScore": 0.2401
+  },
+  {
+    "date": "2026-01-02",
+    "homeTeam": "Blues",
+    "awayTeam": "Golden Knights",
+    "homeScore": 4,
+    "awayScore": 3,
+    "homeXg": 8.39,
+    "awayXg": 8.01,
+    "homeWinProb": 51.3,
+    "predictedWinner": "Blues",
+    "actualWinner": "Blues",
+    "isCorrect": true,
+    "brierScore": 0.2376
+  },
+  {
+    "date": "2026-01-02",
+    "homeTeam": "Panthers",
+    "awayTeam": "Rangers",
+    "homeScore": 1,
+    "awayScore": 5,
+    "homeXg": 6.43,
+    "awayXg": 6.37,
+    "homeWinProb": 50.4,
+    "predictedWinner": "Panthers",
+    "actualWinner": "Rangers",
+    "isCorrect": false,
+    "brierScore": 0.2538
+  },
+  {
+    "date": "2026-01-02",
+    "homeTeam": "Canucks",
+    "awayTeam": "Kraken",
+    "homeScore": 3,
+    "awayScore": 3,
+    "homeXg": 8.38,
+    "awayXg": 6.94,
+    "homeWinProb": 61.8,
+    "predictedWinner": "Canucks",
+    "actualWinner": "Kraken",
+    "isCorrect": false,
+    "brierScore": 0.3817
   }
 ]
