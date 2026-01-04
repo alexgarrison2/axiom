@@ -762,7 +762,7 @@
                 "number": 20,
                 "pos": "lw",
                 "id": 27086,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Jack Drury",
@@ -799,7 +799,7 @@
                 "number": null,
                 "pos": "rw",
                 "id": 38433,
-                "ppUnit": 2
+                "ppUnit": null
             }
         ],
         "d1": [
@@ -1088,22 +1088,6 @@
         ],
         "d1": [
             {
-                "name": "Shayne Gostisbehere",
-                "number": 4,
-                "pos": "ld",
-                "id": 2398,
-                "ppUnit": 1
-            },
-            {
-                "name": "Jalen Chatfield",
-                "number": 5,
-                "pos": "rd",
-                "id": 3900,
-                "ppUnit": null
-            }
-        ],
-        "d2": [
-            {
                 "name": "K'Andre Miller",
                 "number": 79,
                 "pos": "ld",
@@ -1116,6 +1100,22 @@
                 "pos": "rd",
                 "id": 4829,
                 "ppUnit": 2
+            }
+        ],
+        "d2": [
+            {
+                "name": "Shayne Gostisbehere",
+                "number": 4,
+                "pos": "ld",
+                "id": 2398,
+                "ppUnit": 1
+            },
+            {
+                "name": "Jalen Chatfield",
+                "number": 5,
+                "pos": "rd",
+                "id": 3900,
+                "ppUnit": null
             }
         ],
         "d3": [
@@ -1294,34 +1294,34 @@
                 "ppUnit": 1
             },
             {
+                "name": "Mitch Marner",
+                "number": 16,
+                "pos": "rw",
+                "id": 2475,
+                "ppUnit": 1
+            }
+        ],
+        "f2": [
+            {
+                "name": "Pavel Dorofeyev",
+                "number": 16,
+                "pos": "lw",
+                "id": 30622,
+                "ppUnit": 1
+            },
+            {
+                "name": "Tomas Hertl",
+                "number": 48,
+                "pos": "c",
+                "id": 2125,
+                "ppUnit": 1
+            },
+            {
                 "name": "Braeden Bowman",
                 "number": 42,
                 "pos": "rw",
                 "id": 30925,
                 "ppUnit": 2
-            }
-        ],
-        "f2": [
-            {
-                "name": "Brett Howden",
-                "number": 21,
-                "pos": "lw",
-                "id": 2660,
-                "ppUnit": null
-            },
-            {
-                "name": "Mitch Marner",
-                "number": 16,
-                "pos": "c",
-                "id": 2475,
-                "ppUnit": 1
-            },
-            {
-                "name": "Mark Stone",
-                "number": 61,
-                "pos": "rw",
-                "id": 1779,
-                "ppUnit": 1
             }
         ],
         "f3": [
@@ -1333,17 +1333,17 @@
                 "ppUnit": null
             },
             {
-                "name": "Tomas Hertl",
-                "number": 48,
+                "name": "Brett Howden",
+                "number": 21,
                 "pos": "c",
-                "id": 2125,
-                "ppUnit": 1
+                "id": 2660,
+                "ppUnit": 2
             },
             {
-                "name": "Pavel Dorofeyev",
-                "number": 16,
+                "name": "Mark Stone",
+                "number": 61,
                 "pos": "rw",
-                "id": 30622,
+                "id": 1779,
                 "ppUnit": 1
             }
         ],
@@ -1360,7 +1360,7 @@
                 "number": 10,
                 "pos": "c",
                 "id": 2030,
-                "ppUnit": 2
+                "ppUnit": null
             },
             {
                 "name": "Keegan Kolesar",
@@ -1415,7 +1415,7 @@
                 "number": 17,
                 "pos": "rd",
                 "id": 2508,
-                "ppUnit": null
+                "ppUnit": 2
             }
         ]
     },
