@@ -1,4 +1,72 @@
 {
+    "DET": [
+        {
+            "player": "Nate Danielson",
+            "news": "Danielson is expected to be a healthy scratch in Ottawa on Monday. ",
+            "category": "Line Change",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T17:12:38.980Z"
+        },
+        {
+            "player": "John Leonard",
+            "news": "Leonard will draw back into Detroit's lineup in Ottawa on Monday. ",
+            "category": "Line Change",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T17:12:12.422Z"
+        },
+        {
+            "player": "John Gibson",
+            "news": "Gibson will start in Ottawa on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T17:10:51.692Z"
+        }
+    ],
+    "ANA": [
+        {
+            "player": "Petr Mrazek",
+            "news": "Mrazek will start in Washington on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T17:06:41.903Z"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "Karel Vejmelka",
+            "news": "Vejmelka was the first goalie off the ice at Utah's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T17:05:00.280Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "William Stromgren",
+            "news": "Stromgren has been recalled from the Calgary Wranglers (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T17:04:18.364Z"
+        }
+    ],
+    "FLA": [
+        {
+            "player": "Seth Jones",
+            "news": "Jones is considered week-to-week with an upper-body injury.",
+            "category": "Injury",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T16:58:48.421Z"
+        }
+    ],
+    "OTT": [
+        {
+            "player": "Leevi Merilainen",
+            "news": "Merilainen is expected to start vs. Detroit on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T16:55:26.866Z"
+        }
+    ],
     "DAL": [
         {
             "player": "Casey DeSmith",
@@ -16,24 +84,10 @@
         },
         {
             "player": "Remi Poirier",
-            "news": "Poirer has been loaned back to the Texas Stars (AHL). ",
+            "news": "Poirier has been loaned back to the Texas Stars (AHL). ",
             "category": "Send Down",
             "date": "2026-01-05",
             "timestamp": "2026-01-05T16:33:24.351Z"
-        },
-        {
-            "player": "Jamie Benn",
-            "news": "Benn left Sunday's game with an upper-body injury and did not return. He'll be re-evaluated on Monday. \r\n\r\n",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T05:15:19.646Z"
-        },
-        {
-            "player": "Jamie Benn",
-            "news": "Benn (upper body) left Sunday's game and did not return. ",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T04:37:11.735Z"
         }
     ],
     "STL": [
@@ -66,13 +120,6 @@
             "category": "Injury",
             "date": "2026-01-05",
             "timestamp": "2026-01-05T16:05:14.579Z"
-        },
-        {
-            "player": "Charlie Lindgren",
-            "news": "Lindgren will start vs. Anaheim on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T15:49:18.006Z"
         }
     ],
     "TOR": [
@@ -82,20 +129,6 @@
             "category": "Injury",
             "date": "2026-01-05",
             "timestamp": "2026-01-05T16:15:09.368Z"
-        },
-        {
-            "player": "Marshall Rifai",
-            "news": "Rifai has been recalled from the Toronto Marlies (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T15:39:23.702Z"
-        },
-        {
-            "player": "William Nylander",
-            "news": "Nylander (undisclosed) has been placed on IR retroactive to December 27th. ",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T15:38:40.143Z"
         }
     ],
     "NYR": [
@@ -105,13 +138,6 @@
             "category": "Injury",
             "date": "2026-01-05",
             "timestamp": "2026-01-05T15:56:00.585Z"
-        },
-        {
-            "player": "Igor Shesterkin",
-            "news": "Shesterkin will start vs. Utah on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T15:50:01.445Z"
         }
     ],
     "NYI": [
@@ -130,31 +156,6 @@
             "category": "Send Down",
             "date": "2026-01-05",
             "timestamp": "2026-01-05T15:54:34.156Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Devon Toews",
-            "news": "Toews (upper-body) is going to \"miss some time.\"\r\n",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T05:23:26.308Z"
-        },
-        {
-            "player": "Gabriel Landeskog",
-            "news": "Landeskog (upper-body) is going to \"miss some time.\" \r\n",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T05:23:13.550Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Kasperi Kapanen",
-            "news": "Kapanen was a full participant in Sunday's practice and is targeting a return to the lineup on Tuesday. ",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T05:20:04.724Z"
         }
     ]
 }
