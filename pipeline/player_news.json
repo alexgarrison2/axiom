@@ -1,5 +1,58 @@
 {
+    "DAL": [
+        {
+            "player": "Casey DeSmith",
+            "news": "DeSmith (personal) has been reactivated and will join the team in Carolina on Tuesday. ",
+            "category": "General",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T16:34:21.555Z"
+        },
+        {
+            "player": "Nathan Bastian",
+            "news": "Bastian has been recalled from his loan from Texas (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T16:33:44.097Z"
+        },
+        {
+            "player": "Remi Poirier",
+            "news": "Poirer has been loaned back to the Texas Stars (AHL). ",
+            "category": "Send Down",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T16:33:24.351Z"
+        },
+        {
+            "player": "Jamie Benn",
+            "news": "Benn left Sunday's game with an upper-body injury and did not return. He'll be re-evaluated on Monday. \r\n\r\n",
+            "category": "Injury",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T05:15:19.646Z"
+        },
+        {
+            "player": "Jamie Benn",
+            "news": "Benn (upper body) left Sunday's game and did not return. ",
+            "category": "Injury",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T04:37:11.735Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Alexey Toropchenko",
+            "news": "St. Louis has signed Alexey Toropchenko to a two-year contract extension worth $2.5 million AAV ($5M total) ",
+            "category": "Signing",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T16:32:59.093Z"
+        }
+    ],
     "WSH": [
+        {
+            "player": "Dylan McIlrath",
+            "news": "McIlrath will draw back into Washington's lineup vs. Anaheim on Monday. ",
+            "category": "Line Change",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T16:16:04.829Z"
+        },
         {
             "player": "Aliaksei Protas",
             "news": "Protas (undisclosed) will be a game-time decision vs. Anaheim on Monday. ",
@@ -20,6 +73,29 @@
             "category": "Goalie Start",
             "date": "2026-01-05",
             "timestamp": "2026-01-05T15:49:18.006Z"
+        }
+    ],
+    "TOR": [
+        {
+            "player": "Jake McCabe",
+            "news": "McCabe (undisclosed) is not practicing on Monday after leaving Saturday's game early. ",
+            "category": "Injury",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T16:15:09.368Z"
+        },
+        {
+            "player": "Marshall Rifai",
+            "news": "Rifai has been recalled from the Toronto Marlies (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T15:39:23.702Z"
+        },
+        {
+            "player": "William Nylander",
+            "news": "Nylander (undisclosed) has been placed on IR retroactive to December 27th. ",
+            "category": "Injury",
+            "date": "2026-01-05",
+            "timestamp": "2026-01-05T15:38:40.143Z"
         }
     ],
     "NYR": [
@@ -56,22 +132,6 @@
             "timestamp": "2026-01-05T15:54:34.156Z"
         }
     ],
-    "TOR": [
-        {
-            "player": "Marshall Rifai",
-            "news": "Rifai has been recalled from the Toronto Marlies (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T15:39:23.702Z"
-        },
-        {
-            "player": "William Nylander",
-            "news": "Nylander (undisclosed) has been placed on IR retroactive to December 27th. ",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T15:38:40.143Z"
-        }
-    ],
     "COL": [
         {
             "player": "Devon Toews",
@@ -86,13 +146,6 @@
             "category": "Injury",
             "date": "2026-01-05",
             "timestamp": "2026-01-05T05:23:13.550Z"
-        },
-        {
-            "player": "Gabriel Landeskog",
-            "news": "Landeskog (upper body) left Saturday's game and did not return. ",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T04:36:21.248Z"
         }
     ],
     "EDM": [
@@ -102,22 +155,6 @@
             "category": "Injury",
             "date": "2026-01-05",
             "timestamp": "2026-01-05T05:20:04.724Z"
-        }
-    ],
-    "DAL": [
-        {
-            "player": "Jamie Benn",
-            "news": "Benn left Sunday's game with an upper-body injury and did not return. He'll be re-evaluated on Monday. \r\n\r\n",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T05:15:19.646Z"
-        },
-        {
-            "player": "Jamie Benn",
-            "news": "Benn (upper body) left Sunday's game and did not return. ",
-            "category": "Injury",
-            "date": "2026-01-05",
-            "timestamp": "2026-01-05T04:37:11.735Z"
         }
     ]
 }
