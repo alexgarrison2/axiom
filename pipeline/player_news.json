@@ -1,5 +1,85 @@
 {
+    "WPG": [
+        {
+            "player": "Haydn Fleury",
+            "news": "Fleury has a broken nose, a bruised back and is being tested further for a concussion after leaving Wednesday's game early. ",
+            "category": "Injury",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:48:50.266Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Simon Nemec",
+            "news": "Nemec (undisclosed) is a possibility to return vs. Pittsburgh on Thursday. ",
+            "category": "Injury",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:34:20.122Z"
+        }
+    ],
+    "CAR": [
+        {
+            "player": "Noah Philp",
+            "news": "Philp missed practice on Wednesday and is being further evaluated for a concussion. ",
+            "category": "Injury",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:31:06.428Z"
+        },
+        {
+            "player": "Jaccob Slavin",
+            "news": "Slavin (upper-body) is a possibility to return vs. Anaheim on Thursday. ",
+            "category": "Injury",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:27:16.333Z"
+        }
+    ],
+    "LAK": [
+        {
+            "player": "Corey Perry",
+            "news": "Perry has been designated non-roster playing status. ",
+            "category": "General",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:28:58.208Z"
+        },
+        {
+            "player": "Andre Lee",
+            "news": "Lee has been recalled from Ontario (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:28:31.472Z"
+        },
+        {
+            "player": "Taylor Ward",
+            "news": "Ward has been recalled from Ontario (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:22:51.710Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "Justin Kirkland",
+            "news": "Kirkland (undisclosed) is expected to be out vs. Montreal on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:25:36.427Z"
+        },
+        {
+            "player": "Hunter Brzustewicz",
+            "news": "Brzustewicz is expected to draw back into Calgary's lineup in Montreal on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:23:27.130Z"
+        }
+    ],
     "UTA": [
+        {
+            "player": "Kevin Stenlund",
+            "news": "Stenlund (undisclosed) will be a game-time decision vs. Ottawa on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:24:41.630Z"
+        },
         {
             "player": "Karel Vejmelka",
             "news": "Vejmelka was the first goalie off the ice at Utah\u2019s morning skate.",
@@ -10,18 +90,39 @@
     ],
     "DAL": [
         {
+            "player": "Kyle Capobianco",
+            "news": "Capobianco will draw back into Dallas' lineup in Washington on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:21:58.851Z"
+        },
+        {
+            "player": "Alex Petrovic",
+            "news": "Petrovic will be a healthy scratch vs. Washington on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:21:29.120Z"
+        },
+        {
+            "player": "Nathan Bastian",
+            "news": "Bastian will draw back into Dallas' lineup in Washington on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:20:54.827Z"
+        },
+        {
+            "player": "Adam Erne",
+            "news": "Erne will be a healthy scratch in Washington on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-01-07",
+            "timestamp": "2026-01-07T18:20:12.104Z"
+        },
+        {
             "player": "Casey DeSmith",
             "news": "DeSmith will start in Washington on Wednesday.",
             "category": "Goalie Start",
             "date": "2026-01-07",
             "timestamp": "2026-01-07T18:02:04.302Z"
-        },
-        {
-            "player": "Justin Hryckowian",
-            "news": "Dallas has signed Justin Hryckowian to a two-year, $950,000 AAV contract extension ($1.9M total). ",
-            "category": "Signing",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T16:50:32.523Z"
         }
     ],
     "CBJ": [
@@ -38,13 +139,6 @@
             "category": "Injury",
             "date": "2026-01-07",
             "timestamp": "2026-01-07T18:00:09.279Z"
-        },
-        {
-            "player": "Mason Marchment",
-            "news": "Marchment (lower-body) is expected to be placed on IR. ",
-            "category": "Injury",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T15:54:08.943Z"
         }
     ],
     "BUF": [
@@ -63,102 +157,6 @@
             "category": "Injury",
             "date": "2026-01-07",
             "timestamp": "2026-01-07T17:34:07.743Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Spencer Knight",
-            "news": "Knight will start vs. St. Louis on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T17:21:00.149Z"
-        },
-        {
-            "player": "Spencer Knight",
-            "news": "Knight is in the starter's crease at Chicago's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T16:56:19.729Z"
-        }
-    ],
-    "CGY": [
-        {
-            "player": "William Stromgren",
-            "news": "Stromgren will make his NHL debut in Montreal on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T17:04:10.415Z"
-        },
-        {
-            "player": "Dustin Wolf",
-            "news": "Wolf is in the starter's crease at Calgary's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T16:48:36.500Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Alexis Lafreni\u00e8re",
-            "news": "Lafreniere (illness) missed practice on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T16:17:59.454Z"
-        }
-    ],
-    "WSH": [
-        {
-            "player": "Trevor van Riemsdyk",
-            "news": "van Riemsdyk will be a healthy scratch vs. Dallas on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T16:07:16.323Z"
-        },
-        {
-            "player": "Brett Leason",
-            "news": "Leason will make his season debut vs. Dallas on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T16:04:09.782Z"
-        },
-        {
-            "player": "Logan Thompson",
-            "news": "Thompson will start vs. Dallas on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T15:39:22.384Z"
-        },
-        {
-            "player": "Brett Leason",
-            "news": "Leason has been recalled from Hershey (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T15:16:38.751Z"
-        },
-        {
-            "player": "Aliaksei Protas",
-            "news": "Protas (undisclosed) has been placed on IR retroactive to January 1st. ",
-            "category": "Injury",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T15:16:02.172Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Adam Henrique",
-            "news": "Henrique (undisclosed) left Tuesday's game vs. Nashville and is expected to be out \"for a little while\". ",
-            "category": "Injury",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T15:46:47.139Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Jacob Fowler",
-            "news": "Fowler will start vs. Calgary on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-07",
-            "timestamp": "2026-01-07T15:44:12.628Z"
         }
     ]
 }
