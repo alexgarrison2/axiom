@@ -1884,7 +1884,7 @@
                 "number": null,
                 "pos": "c",
                 "id": 30007,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Brock Boeser",
@@ -1900,7 +1900,7 @@
                 "number": 18,
                 "pos": "lw",
                 "id": 32925,
-                "ppUnit": 2
+                "ppUnit": null
             },
             {
                 "name": "David Kampf",
@@ -2191,7 +2191,7 @@
                 "number": 71,
                 "pos": "c",
                 "id": 4810,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Jack Quinn",
@@ -2226,18 +2226,18 @@
         ],
         "d1": [
             {
-                "name": "Mattias Samuelsson",
-                "number": 23,
-                "pos": "ld",
-                "id": 28792,
-                "ppUnit": null
-            },
-            {
                 "name": "Rasmus Dahlin",
                 "number": 26,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 4786,
                 "ppUnit": 1
+            },
+            {
+                "name": "Owen Power",
+                "number": 25,
+                "pos": "rd",
+                "id": 30051,
+                "ppUnit": 2
             }
         ],
         "d2": [
@@ -2246,14 +2246,14 @@
                 "number": 4,
                 "pos": "ld",
                 "id": 28523,
-                "ppUnit": 2
+                "ppUnit": null
             },
             {
-                "name": "Owen Power",
-                "number": 25,
+                "name": "Mattias Samuelsson",
+                "number": 23,
                 "pos": "rd",
-                "id": 30051,
-                "ppUnit": 2
+                "id": 28792,
+                "ppUnit": null
             }
         ],
         "d3": [
@@ -3723,10 +3723,10 @@
         ],
         "f2": [
             {
-                "name": "Victor Olofsson",
-                "number": 95,
+                "name": "Gavin Brindley",
+                "number": 54,
                 "pos": "lw",
-                "id": 4718,
+                "id": 33176,
                 "ppUnit": 2
             },
             {
@@ -3760,10 +3760,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Gavin Brindley",
-                "number": 54,
+                "name": "Victor Olofsson",
+                "number": 95,
                 "pos": "rw",
-                "id": 33176,
+                "id": 4718,
                 "ppUnit": 2
             }
         ],
