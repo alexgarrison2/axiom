@@ -2,11 +2,11 @@
     "WSH": {
         "f1": [
             {
-                "name": "Anthony Beauvillier",
-                "number": 72,
+                "name": "Alex Ovechkin",
+                "number": 8,
                 "pos": "lw",
-                "id": 2487,
-                "ppUnit": null
+                "id": 1534,
+                "ppUnit": 2
             },
             {
                 "name": "Dylan Strome",
@@ -16,11 +16,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "Alex Ovechkin",
-                "number": 8,
+                "name": "Anthony Beauvillier",
+                "number": 72,
                 "pos": "rw",
-                "id": 1534,
-                "ppUnit": 2
+                "id": 2487,
+                "ppUnit": null
             }
         ],
         "f2": [
@@ -83,6 +83,13 @@
                 "pos": "c",
                 "id": 29894,
                 "ppUnit": null
+            },
+            {
+                "name": "Brett Leason",
+                "number": 20,
+                "pos": "rw",
+                "id": 25340,
+                "ppUnit": null
             }
         ],
         "d1": [
@@ -130,15 +137,6 @@
                 "number": 52,
                 "pos": "rd",
                 "id": 1590,
-                "ppUnit": null
-            }
-        ],
-        "d4": [
-            {
-                "name": "Trevor van Riemsdyk",
-                "number": 57,
-                "pos": "ld",
-                "id": 2383,
                 "ppUnit": null
             }
         ]
@@ -1708,11 +1706,11 @@
     "DET": {
         "f1": [
             {
-                "name": "Marco Kasper",
+                "name": "Emmitt Finnie",
                 "number": null,
                 "pos": "lw",
-                "id": 36364,
-                "ppUnit": null
+                "id": 33612,
+                "ppUnit": 2
             },
             {
                 "name": "Dylan Larkin",
@@ -1722,11 +1720,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "Emmitt Finnie",
+                "name": "Marco Kasper",
                 "number": null,
                 "pos": "rw",
-                "id": 33612,
-                "ppUnit": 2
+                "id": 36364,
+                "ppUnit": null
             }
         ],
         "f2": [
@@ -2583,6 +2581,29 @@
         ],
         "f2": [
             {
+                "name": "Ben Kindel",
+                "number": 81,
+                "pos": "lw",
+                "id": 37573,
+                "ppUnit": 2
+            },
+            {
+                "name": "Evgeni Malkin",
+                "number": 71,
+                "pos": "c",
+                "id": 1236,
+                "ppUnit": null
+            },
+            {
+                "name": "Yegor Chinakhov",
+                "number": 59,
+                "pos": "rw",
+                "id": 30655,
+                "ppUnit": 2
+            }
+        ],
+        "f3": [
+            {
                 "name": "Anthony Mantha",
                 "number": 39,
                 "pos": "lw",
@@ -2602,29 +2623,6 @@
                 "pos": "rw",
                 "id": 28622,
                 "ppUnit": 2
-            }
-        ],
-        "f3": [
-            {
-                "name": "Yegor Chinakhov",
-                "number": 59,
-                "pos": "lw",
-                "id": 30655,
-                "ppUnit": 2
-            },
-            {
-                "name": "Ben Kindel",
-                "number": 81,
-                "pos": "c",
-                "id": 37573,
-                "ppUnit": 2
-            },
-            {
-                "name": "Ville Koivunen",
-                "number": 41,
-                "pos": "rw",
-                "id": 34677,
-                "ppUnit": null
             }
         ],
         "f4": [
