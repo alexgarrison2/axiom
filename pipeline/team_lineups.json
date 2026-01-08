@@ -2,11 +2,11 @@
     "BOS": {
         "f1": [
             {
-                "name": "Morgan Geekie",
-                "number": 39,
+                "name": "Marat Khusnutdinov",
+                "number": 92,
                 "pos": "lw",
-                "id": 28001,
-                "ppUnit": 1
+                "id": 31738,
+                "ppUnit": null
             },
             {
                 "name": "Elias Lindholm",
@@ -24,29 +24,6 @@
             }
         ],
         "f2": [
-            {
-                "name": "Marat Khusnutdinov",
-                "number": 92,
-                "pos": "lw",
-                "id": 31738,
-                "ppUnit": null
-            },
-            {
-                "name": "Fraser Minten",
-                "number": 93,
-                "pos": "c",
-                "id": 31575,
-                "ppUnit": 2
-            },
-            {
-                "name": "Alexander Steeves",
-                "number": 21,
-                "pos": "rw",
-                "id": 26446,
-                "ppUnit": 2
-            }
-        ],
-        "f3": [
             {
                 "name": "Casey Mittelstadt",
                 "number": 11,
@@ -67,6 +44,29 @@
                 "pos": "rw",
                 "id": 2453,
                 "ppUnit": 2
+            }
+        ],
+        "f3": [
+            {
+                "name": "Alexander Steeves",
+                "number": 21,
+                "pos": "lw",
+                "id": 26446,
+                "ppUnit": 2
+            },
+            {
+                "name": "Fraser Minten",
+                "number": 93,
+                "pos": "c",
+                "id": 31575,
+                "ppUnit": 2
+            },
+            {
+                "name": "Morgan Geekie",
+                "number": 39,
+                "pos": "rw",
+                "id": 28001,
+                "ppUnit": 1
             }
         ],
         "f4": [
@@ -1184,11 +1184,11 @@
         ],
         "f3": [
             {
-                "name": "Nikita Grebenkin",
-                "number": 29,
+                "name": "Matvei Michkov",
+                "number": 39,
                 "pos": "lw",
-                "id": 38116,
-                "ppUnit": null
+                "id": 33997,
+                "ppUnit": 2
             },
             {
                 "name": "Noah Cates",
@@ -1198,19 +1198,19 @@
                 "ppUnit": 2
             },
             {
-                "name": "Bobby Brink",
-                "number": 10,
+                "name": "Carl Grundstrom",
+                "number": 91,
                 "pos": "rw",
-                "id": 30223,
-                "ppUnit": 2
+                "id": 2875,
+                "ppUnit": null
             }
         ],
         "f4": [
             {
-                "name": "Carl Grundstrom",
-                "number": 91,
+                "name": "Nikita Grebenkin",
+                "number": 29,
                 "pos": "lw",
-                "id": 2875,
+                "id": 38116,
                 "ppUnit": null
             },
             {
@@ -1246,22 +1246,6 @@
         ],
         "d2": [
             {
-                "name": "Emil Andrae",
-                "number": null,
-                "pos": "ld",
-                "id": 33033,
-                "ppUnit": null
-            },
-            {
-                "name": "Jamie Drysdale",
-                "number": 9,
-                "pos": "rd",
-                "id": 29756,
-                "ppUnit": 2
-            }
-        ],
-        "d3": [
-            {
                 "name": "Nick Seeler",
                 "number": 24,
                 "pos": "ld",
@@ -1274,6 +1258,22 @@
                 "pos": "rd",
                 "id": 2140,
                 "ppUnit": 2
+            }
+        ],
+        "d3": [
+            {
+                "name": "Emil Andrae",
+                "number": null,
+                "pos": "ld",
+                "id": 33033,
+                "ppUnit": null
+            },
+            {
+                "name": "Noah Juulsen",
+                "number": 47,
+                "pos": "rd",
+                "id": 2500,
+                "ppUnit": null
             }
         ]
     },
