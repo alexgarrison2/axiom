@@ -2182,11 +2182,34 @@
         ],
         "f3": [
             {
+                "name": "Anthony Duclair",
+                "number": 11,
+                "pos": "lw",
+                "id": 2380,
+                "ppUnit": 2
+            },
+            {
+                "name": "Casey Cizikas",
+                "number": 53,
+                "pos": "c",
+                "id": 1807,
+                "ppUnit": null
+            },
+            {
                 "name": "Maxim Shabanov",
                 "number": 49,
-                "pos": "lw",
+                "pos": "rw",
                 "id": 38466,
                 "ppUnit": 2
+            }
+        ],
+        "f4": [
+            {
+                "name": "Kyle MacLean",
+                "number": 32,
+                "pos": "lw",
+                "id": 27755,
+                "ppUnit": null
             },
             {
                 "name": "Calum Ritchie",
@@ -2201,29 +2224,6 @@
                 "pos": "rw",
                 "id": 37866,
                 "ppUnit": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Kyle MacLean",
-                "number": 32,
-                "pos": "lw",
-                "id": 27755,
-                "ppUnit": null
-            },
-            {
-                "name": "Casey Cizikas",
-                "number": 53,
-                "pos": "c",
-                "id": 1807,
-                "ppUnit": null
-            },
-            {
-                "name": "Anthony Duclair",
-                "number": 11,
-                "pos": "rw",
-                "id": 2380,
-                "ppUnit": 2
             }
         ],
         "d1": [
@@ -2585,11 +2585,11 @@
         ],
         "f2": [
             {
-                "name": "Gavin Brindley",
-                "number": 54,
+                "name": "Valeri Nichushkin",
+                "number": 13,
                 "pos": "lw",
-                "id": 33176,
-                "ppUnit": 2
+                "id": 2142,
+                "ppUnit": 1
             },
             {
                 "name": "Brock Nelson",
@@ -2599,11 +2599,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "Valeri Nichushkin",
-                "number": 13,
+                "name": "Gavin Brindley",
+                "number": 54,
                 "pos": "rw",
-                "id": 2142,
-                "ppUnit": 1
+                "id": 33176,
+                "ppUnit": 2
             }
         ],
         "f3": [
@@ -2654,10 +2654,10 @@
         ],
         "d1": [
             {
-                "name": "Samuel Girard",
-                "number": 49,
+                "name": "Sam Malinski",
+                "number": 70,
                 "pos": "ld",
-                "id": 2773,
+                "id": 37993,
                 "ppUnit": null
             },
             {
@@ -2693,10 +2693,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Sam Malinski",
-                "number": 70,
+                "name": "Samuel Girard",
+                "number": 49,
                 "pos": "rd",
-                "id": 37993,
+                "id": 2773,
                 "ppUnit": null
             }
         ]
