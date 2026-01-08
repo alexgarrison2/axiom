@@ -1,30 +1,19 @@
 {
-    "NYR": [
+    "CBJ": [
         {
-            "player": "J.T. Miller",
-            "news": "Miller (upper-body) has been activated off IR and is expected to return vs. Buffalo on Thursday. ",
-            "category": "Injury",
+            "player": "Jake Christiansen",
+            "news": "Christiansen will be a healthy scratch in Vegas on Thursday. ",
+            "category": "Line Change",
             "date": "2026-01-08",
-            "timestamp": "2026-01-08T20:13:14.593Z"
-        }
-    ],
-    "VGK": [
-        {
-            "player": "Carter Hart",
-            "news": "Hart will start vs. Columbus on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-08",
-            "timestamp": "2026-01-08T20:07:51.492Z"
+            "timestamp": "2026-01-08T20:36:47.033Z"
         },
         {
-            "player": "Carter Hart",
-            "news": "Hart was the first goalie off the ice at the Golden Knights' morning skate. ",
-            "category": "Goalie Start",
+            "player": "Danton Heinen",
+            "news": "Heinen will be a healthy scratch vs. Vegas on Thursday. ",
+            "category": "Line Change",
             "date": "2026-01-08",
-            "timestamp": "2026-01-08T19:57:22.846Z"
-        }
-    ],
-    "CBJ": [
+            "timestamp": "2026-01-08T20:35:55.836Z"
+        },
         {
             "player": "Luca Marrelli",
             "news": "Marrelli has been taken off the Injured/Non-Roster list and assigned him to Cleveland (AHL). ",
@@ -61,6 +50,70 @@
             "timestamp": "2026-01-08T19:11:45.104Z"
         }
     ],
+    "CHI": [
+        {
+            "player": "Ryan Ellis",
+            "news": "Chicago has acquired Ryan Ellis, Jake Furlong, and a 2028 4th round pick from San Jose for Laurent Brossoit, Nolan Allan and a 2028 7th round pick.",
+            "category": "Trade",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T20:24:00.751Z"
+        },
+        {
+            "player": "Jake Furlong",
+            "news": "Chicago has acquired Jake Furlong, Ryan Ellis and a 2028 4th round pick from San Jose for Laurent Brossoit, Nolan Allan and a 2028 7th round pick. ",
+            "category": "Trade",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T20:23:31.425Z"
+        },
+        {
+            "player": "Ethan Del Mastro",
+            "news": "Del Mastro has been reassigned to Rockford (AHL). ",
+            "category": "Send Down",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T18:46:27.850Z"
+        }
+    ],
+    "SJS": [
+        {
+            "player": "Nolan Allan",
+            "news": "San Jose has acquired Nolan Allan, Laurent Brossoit, and a 2028 7th round pick from Chicago for Ryan Ellis, Jake Furlong and a 2028 4th-rounder.",
+            "category": "Trade",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T20:22:39.507Z"
+        },
+        {
+            "player": "Laurent Brossoit",
+            "news": "San Jose has acquired Laurent Brossoit, Nolan Allan and a 2028 7th round pick from Chicago for Ryan Ellis, Jake Furlong and a 2028 4th-rounder.\r\n",
+            "category": "Trade",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T20:22:16.680Z"
+        }
+    ],
+    "NYR": [
+        {
+            "player": "J.T. Miller",
+            "news": "Miller (upper-body) has been activated off IR and is expected to return vs. Buffalo on Thursday. ",
+            "category": "Injury",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T20:13:14.593Z"
+        }
+    ],
+    "VGK": [
+        {
+            "player": "Carter Hart",
+            "news": "Hart will start vs. Columbus on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T20:07:51.492Z"
+        },
+        {
+            "player": "Carter Hart",
+            "news": "Hart was the first goalie off the ice at the Golden Knights' morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T19:57:22.846Z"
+        }
+    ],
     "CGY": [
         {
             "player": "Zayne Parekh",
@@ -95,15 +148,6 @@
             "timestamp": "2026-01-08T19:08:26.095Z"
         }
     ],
-    "CHI": [
-        {
-            "player": "Ethan Del Mastro",
-            "news": "Del Mastro has been reassigned to Rockford (AHL). ",
-            "category": "Send Down",
-            "date": "2026-01-08",
-            "timestamp": "2026-01-08T18:46:27.850Z"
-        }
-    ],
     "VAN": [
         {
             "player": "Kevin Lankinen",
@@ -111,52 +155,6 @@
             "category": "Goalie Start",
             "date": "2026-01-08",
             "timestamp": "2026-01-08T18:41:38.233Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Devon Toews",
-            "news": "Toews (upper-body) remains week-to-week but is expected back before the Olympics. ",
-            "category": "Injury",
-            "date": "2026-01-08",
-            "timestamp": "2026-01-08T18:39:44.310Z"
-        },
-        {
-            "player": "Gabriel Landeskog",
-            "news": "Landeskog (upper-body) is week-to-week with his return expected close to the Olympic break. ",
-            "category": "Injury",
-            "date": "2026-01-08",
-            "timestamp": "2026-01-08T18:39:04.490Z"
-        },
-        {
-            "player": "Mackenzie Blackwood",
-            "news": "Blackwood (lower-body) returned to the ice on Thursday but is still considered week-to-week. ",
-            "category": "Injury",
-            "date": "2026-01-08",
-            "timestamp": "2026-01-08T18:36:10.713Z"
-        },
-        {
-            "player": "Scott Wedgewood",
-            "news": "Wedgewood will start vs. Ottawa on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-08",
-            "timestamp": "2026-01-08T18:30:39.516Z"
-        }
-    ],
-    "LAK": [
-        {
-            "player": "Cole Guttman",
-            "news": "Guttman has been recalled from Ontario (AHL) on an emergency basis. ",
-            "category": "Call Up",
-            "date": "2026-01-08",
-            "timestamp": "2026-01-08T18:34:59.959Z"
-        },
-        {
-            "player": "Trevor Moore",
-            "news": "Moore (upper-body) has been placed on IR. ",
-            "category": "Line Change",
-            "date": "2026-01-08",
-            "timestamp": "2026-01-08T18:33:38.282Z"
         }
     ]
 }
