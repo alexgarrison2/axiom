@@ -1,14 +1,60 @@
 {
-    "PHI": [
+    "COL": [
         {
-            "player": "Dan Vladar",
-            "news": "Vladar is in the starter's crease at Philadelphia's morning skate. ",
+            "player": "Ivan Ivan",
+            "news": "Ivan has been recalled from the Colorado Eagles (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T16:17:54.007Z"
+        }
+    ],
+    "PIT": [
+        {
+            "player": "Evgeni Malkin",
+            "news": "Malkin (upper-body) is a game-time decision vs. New Jersey. ",
+            "category": "Injury",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T16:16:24.585Z"
+        },
+        {
+            "player": "Stuart Skinner",
+            "news": "Skinner will start vs. New Jersey on Thursday. ",
             "category": "Goalie Start",
             "date": "2026-01-08",
-            "timestamp": "2026-01-08T15:44:37.490Z"
+            "timestamp": "2026-01-08T16:11:31.180Z"
+        },
+        {
+            "player": "Ville Koivunen",
+            "news": "Koivunen has been re-assigned to Wilkes-Barre/Scranton (AHL). ",
+            "category": "Send Down",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T15:29:22.974Z"
+        }
+    ],
+    "DET": [
+        {
+            "player": "John Gibson",
+            "news": "Gibson will start vs. Vancouver on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T16:14:21.479Z"
         }
     ],
     "NYR": [
+        {
+            "player": "Alexis Lafreni\u00e8re",
+            "news": "Lafreniere (illness) is expected to play vs. Buffalo on Thursday. ",
+            "category": "Injury",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T16:00:57.894Z"
+        },
+        {
+            "player": "Scott Morrow",
+            "news": "Morrow is expected to draw back into New York's lineup vs. Buffalo. ",
+            "category": "Line Change",
+            "date": "2026-01-08",
+            "timestamp": "2026-01-08T15:59:18.206Z"
+        },
         {
             "player": "J.T. Miller",
             "news": "Miller (upper-body) is likely to return to New York's lineup vs. Buffalo on Thursday. ",
@@ -17,13 +63,13 @@
             "timestamp": "2026-01-08T15:30:08.215Z"
         }
     ],
-    "PIT": [
+    "PHI": [
         {
-            "player": "Ville Koivunen",
-            "news": "Koivunen has been re-assigned to Wilkes-Barre/Scranton (AHL). ",
-            "category": "Send Down",
+            "player": "Dan Vladar",
+            "news": "Vladar is in the starter's crease at Philadelphia's morning skate. ",
+            "category": "Goalie Start",
             "date": "2026-01-08",
-            "timestamp": "2026-01-08T15:29:22.974Z"
+            "timestamp": "2026-01-08T15:44:37.490Z"
         }
     ],
     "MTL": [
@@ -49,15 +95,6 @@
             "category": "Injury",
             "date": "2026-01-08",
             "timestamp": "2026-01-08T02:05:20.943Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Jesper Wallstedt",
-            "news": "Wallstedt will start vs. Seattle on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-08",
-            "timestamp": "2026-01-07T20:48:13.530Z"
         }
     ]
 }
