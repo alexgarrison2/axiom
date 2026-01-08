@@ -1,70 +1,5 @@
 [
     {
-        "id": 2025020677,
-        "gameDate": "2026-01-07",
-        "startTimeUTC": "2026-01-08T00:00:00Z",
-        "homeTeam": "Capitals",
-        "awayTeam": "Stars",
-        "homeTeamAbbrev": "WSH",
-        "awayTeamAbbrev": "DAL",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020678,
-        "gameDate": "2026-01-07",
-        "startTimeUTC": "2026-01-08T00:30:00Z",
-        "homeTeam": "Canadiens",
-        "awayTeam": "Flames",
-        "homeTeamAbbrev": "MTL",
-        "awayTeamAbbrev": "CGY",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020679,
-        "gameDate": "2026-01-07",
-        "startTimeUTC": "2026-01-08T02:30:00Z",
-        "homeTeam": "Blackhawks",
-        "awayTeam": "Blues",
-        "homeTeamAbbrev": "CHI",
-        "awayTeamAbbrev": "STL",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020680,
-        "gameDate": "2026-01-07",
-        "startTimeUTC": "2026-01-08T02:30:00Z",
-        "homeTeam": "Mammoth",
-        "awayTeam": "Senators",
-        "homeTeamAbbrev": "UTA",
-        "awayTeamAbbrev": "OTT",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020681,
-        "gameDate": "2026-01-07",
-        "startTimeUTC": "2026-01-08T03:30:00Z",
-        "homeTeam": "Kings",
-        "awayTeam": "Sharks",
-        "homeTeamAbbrev": "LAK",
-        "awayTeamAbbrev": "SJS",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025020682,
         "gameDate": "2026-01-08",
         "startTimeUTC": "2026-01-09T00:00:00Z",
@@ -219,5 +154,44 @@
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Jesper Wallstedt",
         "awayGoalieStatus": "Confirmed"
+    },
+    {
+        "id": 2025020694,
+        "gameDate": "2026-01-09",
+        "startTimeUTC": "2026-01-10T01:00:00Z",
+        "homeTeam": "Blackhawks",
+        "awayTeam": "Capitals",
+        "homeTeamAbbrev": "CHI",
+        "awayTeamAbbrev": "WSH",
+        "homeGoalieConfirmed": "Spencer Knight",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Logan Thompson",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020695,
+        "gameDate": "2026-01-09",
+        "startTimeUTC": "2026-01-10T01:00:00Z",
+        "homeTeam": "Jets",
+        "awayTeam": "Kings",
+        "homeTeamAbbrev": "WPG",
+        "awayTeamAbbrev": "LAK",
+        "homeGoalieConfirmed": "Connor Hellebuyck",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Darcy Kuemper",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020696,
+        "gameDate": "2026-01-09",
+        "startTimeUTC": "2026-01-10T02:00:00Z",
+        "homeTeam": "Mammoth",
+        "awayTeam": "Blues",
+        "homeTeamAbbrev": "UTA",
+        "awayTeamAbbrev": "STL",
+        "homeGoalieConfirmed": "Karel Vejmelka",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jordan Binnington",
+        "awayGoalieStatus": "Unconfirmed"
     }
 ]
