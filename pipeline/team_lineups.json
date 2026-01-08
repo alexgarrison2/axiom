@@ -1848,34 +1848,11 @@
     "ANA": {
         "f1": [
             {
-                "name": "Chris Kreider",
-                "number": 20,
-                "pos": "lw",
-                "id": 1926,
-                "ppUnit": 2
-            },
-            {
-                "name": "Leo Carlsson",
-                "number": 91,
-                "pos": "c",
-                "id": 37943,
-                "ppUnit": 1
-            },
-            {
                 "name": "Mikael Granlund",
                 "number": 64,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 1934,
                 "ppUnit": 1
-            }
-        ],
-        "f2": [
-            {
-                "name": "Cutter Gauthier",
-                "number": 61,
-                "pos": "lw",
-                "id": 33248,
-                "ppUnit": 2
             },
             {
                 "name": "Mason McTavish",
@@ -1892,26 +1869,49 @@
                 "ppUnit": 1
             }
         ],
-        "f3": [
-            {
-                "name": "Jansen Harkins",
-                "number": 24,
-                "pos": "lw",
-                "id": 3913,
-                "ppUnit": null
-            },
-            {
-                "name": "Tim Washe",
-                "number": null,
-                "pos": "c",
-                "id": 32021,
-                "ppUnit": 2
-            },
+        "f2": [
             {
                 "name": "Alex Killorn",
                 "number": 17,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 1877,
+                "ppUnit": 2
+            },
+            {
+                "name": "Leo Carlsson",
+                "number": 91,
+                "pos": "c",
+                "id": 37943,
+                "ppUnit": 1
+            },
+            {
+                "name": "Ryan Strome",
+                "number": 16,
+                "pos": "rw",
+                "id": 1825,
+                "ppUnit": null
+            }
+        ],
+        "f3": [
+            {
+                "name": "Chris Kreider",
+                "number": 20,
+                "pos": "lw",
+                "id": 1926,
+                "ppUnit": 2
+            },
+            {
+                "name": "Ryan Poehling",
+                "number": 25,
+                "pos": "c",
+                "id": 2792,
+                "ppUnit": null
+            },
+            {
+                "name": "Cutter Gauthier",
+                "number": 61,
+                "pos": "rw",
+                "id": 33248,
                 "ppUnit": 2
             }
         ],
@@ -1924,10 +1924,17 @@
                 "ppUnit": null
             },
             {
-                "name": "Ryan Poehling",
-                "number": 25,
+                "name": "Tim Washe",
+                "number": null,
                 "pos": "c",
-                "id": 2792,
+                "id": 32021,
+                "ppUnit": 2
+            },
+            {
+                "name": "Jansen Harkins",
+                "number": 24,
+                "pos": "rw",
+                "id": 3913,
                 "ppUnit": null
             }
         ],
@@ -1949,22 +1956,6 @@
         ],
         "d2": [
             {
-                "name": "Pavel Mintyukov",
-                "number": 34,
-                "pos": "ld",
-                "id": 34372,
-                "ppUnit": 1
-            },
-            {
-                "name": "Ian Moore",
-                "number": null,
-                "pos": "rd",
-                "id": 31897,
-                "ppUnit": null
-            }
-        ],
-        "d3": [
-            {
                 "name": "Jackson Lacombe",
                 "number": 2,
                 "pos": "ld",
@@ -1979,11 +1970,18 @@
                 "ppUnit": null
             }
         ],
-        "d4": [
+        "d3": [
+            {
+                "name": "Pavel Mintyukov",
+                "number": 34,
+                "pos": "ld",
+                "id": 34372,
+                "ppUnit": 1
+            },
             {
                 "name": "Drew Helleson",
                 "number": 14,
-                "pos": "ld",
+                "pos": "rd",
                 "id": 30429,
                 "ppUnit": null
             }
@@ -2883,11 +2881,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "Alexander Holtz",
-                "number": 26,
+                "name": "Reilly Smith",
+                "number": 19,
                 "pos": "rw",
-                "id": 33025,
-                "ppUnit": 2
+                "id": 1853,
+                "ppUnit": null
             }
         ],
         "f3": [
@@ -2926,7 +2924,7 @@
                 "number": 10,
                 "pos": "c",
                 "id": 2030,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Braeden Bowman",
