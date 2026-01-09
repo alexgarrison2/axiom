@@ -1,21 +1,19 @@
 {
-    "VGK": [
+    "WSH": [
         {
-            "player": "Carl Lindbom",
-            "news": "Lindbom has been recalled from Henderson (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-09",
-            "timestamp": "2026-01-09T19:31:20.689Z"
-        },
-        {
-            "player": "Adin Hill",
-            "news": "Hill (lower-body) returned to practice on Friday. ",
+            "player": "Jakob Chychrun",
+            "news": "Chychrun (undisclosed) left practice early on Thursday but is expected to play on Friday. ",
             "category": "Injury",
             "date": "2026-01-09",
-            "timestamp": "2026-01-09T18:14:19.076Z"
-        }
-    ],
-    "WSH": [
+            "timestamp": "2026-01-09T19:58:44.027Z"
+        },
+        {
+            "player": "Justin Sourdif",
+            "news": "Sourdif (undisclosed) left practice early on Thursday but is expected to play on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-09",
+            "timestamp": "2026-01-09T19:58:12.833Z"
+        },
         {
             "player": "Dylan McIlrath",
             "news": "McIlrath will be a healthy scratch in Chicago on Friday. ",
@@ -45,41 +43,75 @@
             "timestamp": "2026-01-09T18:06:04.226Z"
         }
     ],
+    "SJS": [
+        {
+            "player": "Will Smith",
+            "news": "Smith (undisclosed) skated in a non-contact jersey at practice on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-09",
+            "timestamp": "2026-01-09T19:48:23.869Z"
+        },
+        {
+            "player": "Patrick Giles",
+            "news": "Giles has been reassigned to the San Jose Barracuda (AHL). ",
+            "category": "Send Down",
+            "date": "2026-01-09",
+            "timestamp": "2026-01-09T17:36:18.696Z"
+        }
+    ],
     "CHI": [
+        {
+            "player": "Arvid Soderblom",
+            "news": "Soderblom (illness) is questionable vs. Washington on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-09",
+            "timestamp": "2026-01-09T19:39:08.830Z"
+        },
+        {
+            "player": "Drew Commesso",
+            "news": "Commesso has been recalled from Rockford (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-09",
+            "timestamp": "2026-01-09T19:36:55.943Z"
+        },
+        {
+            "player": "Kevin Korchinski",
+            "news": "Korchinski has been recalled from Rockford (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-09",
+            "timestamp": "2026-01-09T19:36:29.518Z"
+        },
         {
             "player": "Spencer Knight",
             "news": "Knight will start vs. Washington on Friday. ",
             "category": "Goalie Start",
             "date": "2026-01-09",
             "timestamp": "2026-01-09T17:58:24.249Z"
-        },
+        }
+    ],
+    "STL": [
         {
-            "player": "Ilya Mikheyev",
-            "news": "Mikheyev missed morning skate due to illness and is a game-time decision vs. Washington on Friday. ",
-            "category": "Injury",
-            "date": "2026-01-09",
-            "timestamp": "2026-01-09T17:23:00.835Z"
-        },
-        {
-            "player": "Nick Foligno",
-            "news": "Foligno missed morning skate due to illness and will be a game-time decision vs. Washington on Friday. ",
-            "category": "Injury",
-            "date": "2026-01-09",
-            "timestamp": "2026-01-09T17:21:46.728Z"
-        },
-        {
-            "player": "Connor Bedard",
-            "news": "Bedard (shoulder) will return vs. Washington on Friday. ",
-            "category": "Injury",
-            "date": "2026-01-09",
-            "timestamp": "2026-01-09T16:56:22.783Z"
-        },
-        {
-            "player": "Spencer Knight",
-            "news": "Knight is warming up in the starter's crease at Chicago's morning skate. ",
+            "player": "Joel Hofer",
+            "news": "Hofer will start vs. Utah on Friday. ",
             "category": "Goalie Start",
             "date": "2026-01-09",
-            "timestamp": "2026-01-09T16:23:35.106Z"
+            "timestamp": "2026-01-09T19:35:50.157Z"
+        }
+    ],
+    "VGK": [
+        {
+            "player": "Carl Lindbom",
+            "news": "Lindbom has been recalled from Henderson (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-09",
+            "timestamp": "2026-01-09T19:31:20.689Z"
+        },
+        {
+            "player": "Adin Hill",
+            "news": "Hill (lower-body) returned to practice on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-09",
+            "timestamp": "2026-01-09T18:14:19.076Z"
         }
     ],
     "UTA": [
@@ -107,15 +139,6 @@
             "timestamp": "2026-01-09T17:38:46.215Z"
         }
     ],
-    "SJS": [
-        {
-            "player": "Patrick Giles",
-            "news": "Giles has been reassigned to the San Jose Barracuda (AHL). ",
-            "category": "Send Down",
-            "date": "2026-01-09",
-            "timestamp": "2026-01-09T17:36:18.696Z"
-        }
-    ],
     "NYR": [
         {
             "player": "Noah Laba",
@@ -123,33 +146,6 @@
             "category": "Injury",
             "date": "2026-01-09",
             "timestamp": "2026-01-09T17:27:52.010Z"
-        }
-    ],
-    "TOR": [
-        {
-            "player": "Jacob Quillan",
-            "news": "Quillan has been assigned to the Toronto Marlies (AHL). ",
-            "category": "Send Down",
-            "date": "2026-01-09",
-            "timestamp": "2026-01-09T16:31:27.614Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Ivan Ivan",
-            "news": "Ivan has been reassigned to the Colorado Eagles (AHL).",
-            "category": "Send Down",
-            "date": "2026-01-09",
-            "timestamp": "2026-01-09T16:04:54.185Z"
-        }
-    ],
-    "CAR": [
-        {
-            "player": "Joel Nystrom",
-            "news": "Nystrom has been reassigned to Chicago (AHL). ",
-            "category": "Send Down",
-            "date": "2026-01-09",
-            "timestamp": "2026-01-09T16:03:38.733Z"
         }
     ]
 }
