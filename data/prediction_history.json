@@ -7614,5 +7614,47 @@
     "actualWinner": "Penguins",
     "isCorrect": true,
     "brierScore": 0.1399
+  },
+  {
+    "date": "2026-01-09",
+    "homeTeam": "Mammoth",
+    "awayTeam": "Blues",
+    "homeScore": 4,
+    "awayScore": 2,
+    "homeXg": 7.98,
+    "awayXg": 4.94,
+    "homeWinProb": 78.4,
+    "predictedWinner": "Mammoth",
+    "actualWinner": "Mammoth",
+    "isCorrect": true,
+    "brierScore": 0.0467
+  },
+  {
+    "date": "2026-01-09",
+    "homeTeam": "Blackhawks",
+    "awayTeam": "Capitals",
+    "homeScore": 1,
+    "awayScore": 5,
+    "homeXg": 7.07,
+    "awayXg": 15.61,
+    "homeWinProb": 3.1,
+    "predictedWinner": "Capitals",
+    "actualWinner": "Capitals",
+    "isCorrect": true,
+    "brierScore": 0.001
+  },
+  {
+    "date": "2026-01-09",
+    "homeTeam": "Jets",
+    "awayTeam": "Kings",
+    "homeScore": 5,
+    "awayScore": 1,
+    "homeXg": 5.77,
+    "awayXg": 8.75,
+    "homeWinProb": 21.7,
+    "predictedWinner": "Kings",
+    "actualWinner": "Jets",
+    "isCorrect": false,
+    "brierScore": 0.6132
   }
 ]
