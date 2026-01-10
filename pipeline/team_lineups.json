@@ -300,11 +300,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "Bryan Rust",
-                "number": 17,
+                "name": "Kevin Hayes",
+                "number": 13,
                 "pos": "rw",
-                "id": 2407,
-                "ppUnit": 1
+                "id": 2386,
+                "ppUnit": null
             }
         ],
         "f2": [
@@ -336,14 +336,14 @@
                 "number": 39,
                 "pos": "lw",
                 "id": 2151,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Tommy Novak",
                 "number": 18,
                 "pos": "c",
                 "id": 26595,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Justin Brazeau",
@@ -3282,11 +3282,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "Emil Heineman",
-                "number": 51,
+                "name": "Anthony Duclair",
+                "number": 11,
                 "pos": "rw",
-                "id": 33094,
-                "ppUnit": 1
+                "id": 2380,
+                "ppUnit": 2
             }
         ],
         "f2": [
@@ -3296,6 +3296,29 @@
                 "pos": "lw",
                 "id": 2136,
                 "ppUnit": 1
+            },
+            {
+                "name": "Calum Ritchie",
+                "number": 64,
+                "pos": "c",
+                "id": 35084,
+                "ppUnit": 1
+            },
+            {
+                "name": "Emil Heineman",
+                "number": 51,
+                "pos": "rw",
+                "id": 33094,
+                "ppUnit": 1
+            }
+        ],
+        "f3": [
+            {
+                "name": "Maxim Shabanov",
+                "number": 49,
+                "pos": "lw",
+                "id": 38466,
+                "ppUnit": 2
             },
             {
                 "name": "Jean-Gabriel Pageau",
@@ -3312,13 +3335,13 @@
                 "ppUnit": 2
             }
         ],
-        "f3": [
+        "f4": [
             {
-                "name": "Anthony Duclair",
-                "number": 11,
+                "name": "Maxim Tsyplakov",
+                "number": null,
                 "pos": "lw",
-                "id": 2380,
-                "ppUnit": 2
+                "id": 38122,
+                "ppUnit": null
             },
             {
                 "name": "Casey Cizikas",
@@ -3326,29 +3349,6 @@
                 "pos": "c",
                 "id": 1807,
                 "ppUnit": null
-            },
-            {
-                "name": "Maxim Shabanov",
-                "number": 49,
-                "pos": "rw",
-                "id": 38466,
-                "ppUnit": 2
-            }
-        ],
-        "f4": [
-            {
-                "name": "Kyle MacLean",
-                "number": 32,
-                "pos": "lw",
-                "id": 27755,
-                "ppUnit": null
-            },
-            {
-                "name": "Calum Ritchie",
-                "number": 64,
-                "pos": "c",
-                "id": 35084,
-                "ppUnit": 1
             },
             {
                 "name": "Marc Gatcomb",
@@ -3392,10 +3392,10 @@
         ],
         "d3": [
             {
-                "name": "Cole McWard",
-                "number": null,
+                "name": "Adam Boqvist",
+                "number": 34,
                 "pos": "ld",
-                "id": 30512,
+                "id": 4795,
                 "ppUnit": null
             },
             {
@@ -4159,27 +4159,27 @@
                 "ppUnit": 2
             },
             {
-                "name": "Arseny Gritsyuk",
-                "number": 81,
+                "name": "Evgenii Dadonov",
+                "number": 33,
                 "pos": "rw",
-                "id": 30695,
+                "id": 580,
                 "ppUnit": 2
             }
         ],
         "f3": [
             {
-                "name": "Paul Cotter",
-                "number": 47,
+                "name": "Arseny Gritsyuk",
+                "number": 81,
                 "pos": "lw",
-                "id": 27620,
-                "ppUnit": null
+                "id": 30695,
+                "ppUnit": 2
             },
             {
                 "name": "Cody Glass",
                 "number": 12,
                 "pos": "c",
                 "id": 2785,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Connor Brown",
@@ -4205,30 +4205,14 @@
                 "ppUnit": null
             },
             {
-                "name": "Stefan Noesen",
-                "number": 11,
+                "name": "Paul Cotter",
+                "number": 47,
                 "pos": "rw",
-                "id": 1842,
-                "ppUnit": 2
+                "id": 27620,
+                "ppUnit": null
             }
         ],
         "d1": [
-            {
-                "name": "Jonas Siegenthaler",
-                "number": 71,
-                "pos": "ld",
-                "id": 3782,
-                "ppUnit": null
-            },
-            {
-                "name": "Dougie Hamilton",
-                "number": 7,
-                "pos": "rd",
-                "id": 1821,
-                "ppUnit": 2
-            }
-        ],
-        "d2": [
             {
                 "name": "Luke Hughes",
                 "number": 43,
@@ -4241,6 +4225,22 @@
                 "number": 22,
                 "pos": "rd",
                 "id": 2541,
+                "ppUnit": null
+            }
+        ],
+        "d2": [
+            {
+                "name": "Jonas Siegenthaler",
+                "number": 71,
+                "pos": "ld",
+                "id": 3782,
+                "ppUnit": null
+            },
+            {
+                "name": "Johnathan Kovacevic",
+                "number": 8,
+                "pos": "rd",
+                "id": 28131,
                 "ppUnit": null
             }
         ],
