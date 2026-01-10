@@ -1,4 +1,111 @@
 {
+    "MIN": [
+        {
+            "player": "Zach Bogosian",
+            "news": "The Wild have placed Zach Bogosian (upper-body) on IR. \r\n",
+            "category": "Injury",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T17:05:09.086Z"
+        },
+        {
+            "player": "Ben Jones",
+            "news": "The Wild have recalled Ben Jones from Iowa (AHL). \r\n",
+            "category": "Call Up",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T17:03:49.848Z"
+        }
+    ],
+    "OTT": [
+        {
+            "player": "Leevi Merilainen",
+            "news": "Merilainen is expected to start Saturday vs. the Panthers. ",
+            "category": "Goalie Start",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T16:59:41.691Z"
+        },
+        {
+            "player": "Nick Jensen",
+            "news": "Jensen is expected to draw back into the Senators' lineup on Saturday. \r\n",
+            "category": "Line Change",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T15:54:20.824Z"
+        },
+        {
+            "player": "Nikolas Matinpalo",
+            "news": "Matinpalo is expected to be a healthy scratch on Saturday\r\n",
+            "category": "Line Change",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T15:53:12.702Z"
+        }
+    ],
+    "VAN": [
+        {
+            "player": "Thatcher Demko",
+            "news": "Demko was the first goalie off the ice at the Canucks' morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T16:56:23.275Z"
+        }
+    ],
+    "BOS": [
+        {
+            "player": "Jeremy Swayman",
+            "news": "Swayman will start Saturday vs. the Rangers. ",
+            "category": "Goalie Start",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T16:54:53.188Z"
+        }
+    ],
+    "NYR": [
+        {
+            "player": "Justin Dowling",
+            "news": "The Rangers have assigned Justin Dowling to Hartford (AHL). \r\n",
+            "category": "Send Down",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T16:50:26.372Z"
+        }
+    ],
+    "CHI": [
+        {
+            "player": "Stanislav Berezhnoy",
+            "news": "The Blackhawks have recalled Stanislav Berezhnoy from Rockford (AHL). \r\n",
+            "category": "Call Up",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T16:49:20.759Z"
+        }
+    ],
+    "CAR": [
+        {
+            "player": "Jaccob Slavin",
+            "news": "Slavin (upper-body) is expected to return to the Hurricanes' lineup on Saturday. \r\n",
+            "category": "Injury",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T16:47:27.406Z"
+        }
+    ],
+    "PHI": [
+        {
+            "player": "Travis Konecny",
+            "news": "Konecny (upper-body) will not play Saturday vs. the Lightning. \r\n",
+            "category": "Injury",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T16:46:05.976Z"
+        },
+        {
+            "player": "Samuel Ersson",
+            "news": "Ersson will start Saturday vs. the Lightning. ",
+            "category": "Goalie Start",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T16:37:11.802Z"
+        },
+        {
+            "player": "Samuel Ersson",
+            "news": "Ersson was the first goalie off the ice at the Flyers' morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-10",
+            "timestamp": "2026-01-10T16:02:46.818Z"
+        }
+    ],
     "TOR": [
         {
             "player": "Anthony Stolarz",
@@ -20,29 +127,6 @@
             "category": "Injury",
             "date": "2026-01-10",
             "timestamp": "2026-01-10T16:39:48.040Z"
-        },
-        {
-            "player": "Joseph Woll",
-            "news": "Woll is in the starter's crease at the Maple Leafs' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-10",
-            "timestamp": "2026-01-10T15:23:00.296Z"
-        }
-    ],
-    "PHI": [
-        {
-            "player": "Samuel Ersson",
-            "news": "Ersson will start Saturday vs. the Lightning. ",
-            "category": "Goalie Start",
-            "date": "2026-01-10",
-            "timestamp": "2026-01-10T16:37:11.802Z"
-        },
-        {
-            "player": "Samuel Ersson",
-            "news": "Ersson was the first goalie off the ice at the Flyers' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-10",
-            "timestamp": "2026-01-10T16:02:46.818Z"
         }
     ],
     "NSH": [
@@ -75,47 +159,6 @@
             "category": "Goalie Start",
             "date": "2026-01-10",
             "timestamp": "2026-01-10T16:00:31.791Z"
-        },
-        {
-            "player": "Jacob Fowler",
-            "news": "Fowler was the first goalie off the ice at the Canadiens' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-10",
-            "timestamp": "2026-01-10T15:46:31.466Z"
-        }
-    ],
-    "OTT": [
-        {
-            "player": "Nick Jensen",
-            "news": "Jensen is expected to draw back into the Senators' lineup on Saturday. \r\n",
-            "category": "Line Change",
-            "date": "2026-01-10",
-            "timestamp": "2026-01-10T15:54:20.824Z"
-        },
-        {
-            "player": "Nikolas Matinpalo",
-            "news": "Matinpalo is expected to be a healthy scratch on Saturday\r\n",
-            "category": "Line Change",
-            "date": "2026-01-10",
-            "timestamp": "2026-01-10T15:53:12.702Z"
-        }
-    ],
-    "BUF": [
-        {
-            "player": "Ukko-Pekka Luukkonen",
-            "news": "Luukkonen is in the starter's crease at the Sabres' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-10",
-            "timestamp": "2026-01-10T15:34:04.790Z"
-        }
-    ],
-    "CAR": [
-        {
-            "player": "Brandon Bussi",
-            "news": "Bussi is in the starter's crease at the Hurricanes' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-10",
-            "timestamp": "2026-01-10T15:33:04.319Z"
         }
     ]
 }
