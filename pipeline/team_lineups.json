@@ -286,10 +286,10 @@
     "DET": {
         "f1": [
             {
-                "name": "Emmitt Finnie",
+                "name": "Marco Kasper",
                 "number": null,
                 "pos": "lw",
-                "id": 33612,
+                "id": 36364,
                 "ppUnit": 2
             },
             {
@@ -300,10 +300,10 @@
                 "ppUnit": 1
             },
             {
-                "name": "Marco Kasper",
+                "name": "Emmitt Finnie",
                 "number": null,
                 "pos": "rw",
-                "id": 36364,
+                "id": 33612,
                 "ppUnit": 2
             }
         ],
@@ -497,10 +497,10 @@
         ],
         "f4": [
             {
-                "name": "William Carrier",
-                "number": 28,
+                "name": "Jesperi Kotkaniemi",
+                "number": 82,
                 "pos": "lw",
-                "id": 2704,
+                "id": 4788,
                 "ppUnit": null
             },
             {
@@ -520,6 +520,22 @@
         ],
         "d1": [
             {
+                "name": "Josiah Slavin",
+                "number": null,
+                "pos": "ld",
+                "id": 29657,
+                "ppUnit": null
+            },
+            {
+                "name": "Jalen Chatfield",
+                "number": 5,
+                "pos": "rd",
+                "id": 3900,
+                "ppUnit": null
+            }
+        ],
+        "d2": [
+            {
                 "name": "K'Andre Miller",
                 "number": 79,
                 "pos": "ld",
@@ -531,22 +547,6 @@
                 "number": 26,
                 "pos": "rd",
                 "id": 4829,
-                "ppUnit": null
-            }
-        ],
-        "d2": [
-            {
-                "name": "Jaccob Slavin",
-                "number": 74,
-                "pos": "ld",
-                "id": 2516,
-                "ppUnit": null
-            },
-            {
-                "name": "Jalen Chatfield",
-                "number": 5,
-                "pos": "rd",
-                "id": 3900,
                 "ppUnit": null
             }
         ],
@@ -1706,18 +1706,18 @@
     "CHI": {
         "f1": [
             {
-                "name": "Connor Bedard",
-                "number": 98,
-                "pos": "lw",
-                "id": 33531,
-                "ppUnit": 1
-            },
-            {
                 "name": "Ryan Greene",
                 "number": 20,
-                "pos": "c",
+                "pos": "lw",
                 "id": 31310,
                 "ppUnit": 2
+            },
+            {
+                "name": "Connor Bedard",
+                "number": 98,
+                "pos": "c",
+                "id": 33531,
+                "ppUnit": 1
             },
             {
                 "name": "Andre Burakovsky",
@@ -1805,10 +1805,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Connor Murphy",
-                "number": 5,
+                "name": "Louis Crevier",
+                "number": 46,
                 "pos": "rd",
-                "id": 1772,
+                "id": 29897,
                 "ppUnit": null
             }
         ],
@@ -1830,18 +1830,18 @@
         ],
         "d3": [
             {
-                "name": "Kevin Korchinski",
-                "number": 14,
-                "pos": "ld",
-                "id": 31513,
-                "ppUnit": null
-            },
-            {
                 "name": "Matt Grzelcyk",
                 "number": 24,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 2723,
                 "ppUnit": 2
+            },
+            {
+                "name": "Connor Murphy",
+                "number": 5,
+                "pos": "rd",
+                "id": 1772,
+                "ppUnit": null
             }
         ]
     },
