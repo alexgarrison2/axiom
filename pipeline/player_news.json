@@ -1,6 +1,20 @@
 {
     "COL": [
         {
+            "player": "T.J. Tynan",
+            "news": "Tynan is expected to be a healthy scratch on Monday vs. Toronto.",
+            "category": "Line Change",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T18:45:32.450Z"
+        },
+        {
+            "player": "Ivan Ivan",
+            "news": "Ivan is expected to draw back into Colorado's lineup vs. Toronto on Monday. ",
+            "category": "Line Change",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T18:45:05.241Z"
+        },
+        {
             "player": "Trent Miner",
             "news": "Miner will start vs. Toronto on Monday. ",
             "category": "Goalie Start",
@@ -13,6 +27,68 @@
             "category": "Goalie Start",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T17:41:53.230Z"
+        }
+    ],
+    "TOR": [
+        {
+            "player": "Joseph Woll",
+            "news": "Woll will start in Colorado on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T18:39:27.271Z"
+        },
+        {
+            "player": "Anthony Stolarz",
+            "news": "Stolarz (upper-body) returned to Toronto's practice for the first time since his injury on Monday. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T18:35:18.288Z"
+        },
+        {
+            "player": "Joseph Woll",
+            "news": "Woll is in the starter's crease at Toronto's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T18:28:14.752Z"
+        },
+        {
+            "player": "Dakota Mermis",
+            "news": "Mermis has been assigned to the Toronto Marlies (AHL) on an LTIR conditioning loan. ",
+            "category": "Send Down",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:31:58.599Z"
+        }
+    ],
+    "VGK": [
+        {
+            "player": "William Karlsson",
+            "news": "Karlsson (lower-body) will not be available before the playoffs and has a chance to not play again this season. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T18:34:24.072Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Mathieu Joseph",
+            "news": "Joseph missed practice on Monday and is day-to-day with an elbow infection. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T18:16:03.458Z"
+        },
+        {
+            "player": "Robert Thomas",
+            "news": "Thomas (lower-body) is questionable for Tuesday's game vs. Carolina. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T18:15:31.048Z"
+        },
+        {
+            "player": "Philip Broberg",
+            "news": "Broberg (concussion) missed practice on Monday and is considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T18:14:49.569Z"
         }
     ],
     "EDM": [
@@ -52,13 +128,6 @@
             "category": "Injury",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T17:32:46.427Z"
-        },
-        {
-            "player": "Frederik Andersen",
-            "news": "Andersen is in the starter's crease at Carolina's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T16:53:42.433Z"
         }
     ],
     "VAN": [
@@ -75,36 +144,6 @@
             "category": "Injury",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T17:35:02.059Z"
-        },
-        {
-            "player": "Marco Rossi",
-            "news": "Rossi (lower-body) is 2-3 weeks away from returning to Vancouver's lineup. ",
-            "category": "Injury",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:21:42.507Z"
-        },
-        {
-            "player": "Kiefer Sherwood",
-            "news": "Sherwood (undisclosed) is out vs. Montreal on Monday and is considered day-to-day. ",
-            "category": "Injury",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:08:50.090Z"
-        },
-        {
-            "player": "Nikita Tolopilo",
-            "news": "Tolopilo was the first goalie off the ice at Vancouver's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:01:22.591Z"
-        }
-    ],
-    "TOR": [
-        {
-            "player": "Dakota Mermis",
-            "news": "Mermis has been assigned to the Toronto Marlies (AHL) on an LTIR conditioning loan. ",
-            "category": "Send Down",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:31:58.599Z"
         }
     ],
     "BUF": [
@@ -114,49 +153,6 @@
             "category": "Goalie Start",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T17:31:29.610Z"
-        }
-    ],
-    "FLA": [
-        {
-            "player": "Sergei Bobrovsky",
-            "news": "Bobrovsky will start in Buffalo on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:28:36.718Z"
-        }
-    ],
-    "SEA": [
-        {
-            "player": "Jordan Eberle",
-            "news": "Eberle (upper-body) will return to Seattle's linuep in New York on Monday. ",
-            "category": "Injury",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:17:05.230Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Jesper Wallstedt",
-            "news": "Wallstedt will start vs. New Jersey on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:14:37.155Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Jonas Johansson",
-            "news": "Johansson will start in Philadelphia on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T16:47:12.029Z"
-        },
-        {
-            "player": "Jonas Johansson",
-            "news": "Johansson is in the starter's crease at Tampa Bay's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T16:45:10.006Z"
         }
     ]
 }
