@@ -1,8 +1,47 @@
 {
+    "SJS": [
+        {
+            "player": "Will Smith",
+            "news": "Smith (undisclosed) has had his injury designation upgraded to day-to-day.",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T20:40:54.960Z"
+        }
+    ],
+    "NYI": [
+        {
+            "player": "Kyle MacLean",
+            "news": "MacLean will draw back into the Islanders' lineup in Winnipeg on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T20:15:46.064Z"
+        },
+        {
+            "player": "Maxim Tsyplakov",
+            "news": "Tsyplakov will be a healthy scratch in Winnipeg on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T20:15:14.713Z"
+        }
+    ],
     "DAL": [
         {
+            "player": "Colin Blackwell",
+            "news": "Blackwell is expected to be a healthy scratch vs. Los Angeles on Monday. ",
+            "category": "Line Change",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T20:06:44.212Z"
+        },
+        {
+            "player": "Nathan Bastian",
+            "news": "Bastian is expected to draw back into Dalls' lineup vs. Los Angeles on Monday. ",
+            "category": "Line Change",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T20:05:17.769Z"
+        },
+        {
             "player": "Jamie Benn",
-            "news": "Benn (upper-body) participate in morning skate on Monday and is a possibility to return vs. Los Angeles. ",
+            "news": "Benn (upper-body) will return vs. Los Angeles. ",
             "category": "Injury",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T20:01:15.062Z"
@@ -86,13 +125,6 @@
             "category": "Line Change",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T18:45:05.241Z"
-        },
-        {
-            "player": "Trent Miner",
-            "news": "Miner will start vs. Toronto on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T18:13:09.418Z"
         }
     ],
     "TOR": [
@@ -109,13 +141,6 @@
             "category": "Injury",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T18:35:18.288Z"
-        },
-        {
-            "player": "Joseph Woll",
-            "news": "Woll is in the starter's crease at Toronto's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T18:28:14.752Z"
         }
     ],
     "VGK": [
@@ -125,38 +150,6 @@
             "category": "Injury",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T18:34:24.072Z"
-        }
-    ],
-    "STL": [
-        {
-            "player": "Mathieu Joseph",
-            "news": "Joseph missed practice on Monday and is day-to-day with an elbow infection. ",
-            "category": "Injury",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T18:16:03.458Z"
-        },
-        {
-            "player": "Robert Thomas",
-            "news": "Thomas (lower-body) is questionable for Tuesday's game vs. Carolina. ",
-            "category": "Injury",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T18:15:31.048Z"
-        },
-        {
-            "player": "Philip Broberg",
-            "news": "Broberg (concussion) missed practice on Monday and is considered day-to-day. ",
-            "category": "Injury",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T18:14:49.569Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Isaac Howard",
-            "news": "Howard will be a healthy scratch in Chicago on Monday. ",
-            "category": "Line Change",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:58:08.018Z"
         }
     ]
 }
