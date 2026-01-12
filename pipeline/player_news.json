@@ -1,4 +1,84 @@
 {
+    "DET": [
+        {
+            "player": "John Gibson",
+            "news": "Gibson was the first goalie off the ice at Detroit's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T16:12:27.835Z"
+        }
+    ],
+    "COL": [
+        {
+            "player": "Ivan Ivan",
+            "news": "Ivan has been recalled from the Colorado Eagles (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T16:05:40.734Z"
+        }
+    ],
+    "MTL": [
+        {
+            "player": "Jakub Dobes",
+            "news": "Dobes wlll start vs. Vancouver on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T15:58:49.170Z"
+        },
+        {
+            "player": "Jakub Dobes",
+            "news": "Dobes is in the starter's crease at Montreal's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T15:29:51.241Z"
+        }
+    ],
+    "NYR": [
+        {
+            "player": "Jonathan Quick",
+            "news": "Quick was the first goalie off the ice at New York's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T15:56:14.720Z"
+        },
+        {
+            "player": "Brennan Othmann",
+            "news": "Othmann is expected to draw back into New York's lineup vs. Seattle on Monday. ",
+            "category": "Line Change",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T15:51:23.614Z"
+        },
+        {
+            "player": "Matt Rempe",
+            "news": "Rempe is expected to be a healthy scratch vs. Seattle on Monday. ",
+            "category": "Line Change",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T15:50:05.670Z"
+        }
+    ],
+    "PHI": [
+        {
+            "player": "Carl Grundstrom",
+            "news": "Grundstrom (illness) will be a game-time decision vs. Tampa Bay on Monday. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T15:48:43.343Z"
+        },
+        {
+            "player": "Travis Konecny",
+            "news": "Konecny (lower-body) will be a game-time decision on Monday vs. Tampa Bay. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T15:46:58.314Z"
+        },
+        {
+            "player": "Dan Vladar",
+            "news": "Vladar will start vs. Tampa Bay on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T15:45:31.685Z"
+        }
+    ],
     "OTT": [
         {
             "player": "James Reimer",
@@ -11,19 +91,10 @@
     "BUF": [
         {
             "player": "Colten Ellis",
-            "news": "Ellis is in the starter's net at Florida's morning skate. ",
+            "news": "Ellis is in the starter's net at Buffalo's morning skate. ",
             "category": "Goalie Start",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T15:30:32.937Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Jakub Dobes",
-            "news": "Dobes is in the starter's crease at Montreal's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T15:29:51.241Z"
         }
     ],
     "PIT": [
