@@ -1,6 +1,13 @@
 {
     "DAL": [
         {
+            "player": "Jamie Benn",
+            "news": "Benn (upper-body) participate in morning skate on Monday and is a possibility to return vs. Los Angeles. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T20:01:15.062Z"
+        },
+        {
             "player": "Jake Oettinger",
             "news": "Oettinger was the first goalie off the ice at Dallas' morning skate. ",
             "category": "Goalie Start",
@@ -20,6 +27,31 @@
             "category": "Line Change",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T19:20:12.334Z"
+        }
+    ],
+    "ANA": [
+        {
+            "player": "Leo Carlsson",
+            "news": "Carlsson (undisclosed) left practice on Monday and did not return. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T19:48:15.070Z"
+        }
+    ],
+    "WPG": [
+        {
+            "player": "Colin Miller",
+            "news": "Miller (lower-body) has been placed on IR retroactive to January 11th. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T19:43:56.553Z"
+        },
+        {
+            "player": "Isaak Phillips",
+            "news": "Phillips has been recalled from Manitoba (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T19:43:10.136Z"
         }
     ],
     "PIT": [
@@ -61,13 +93,6 @@
             "category": "Goalie Start",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T18:13:09.418Z"
-        },
-        {
-            "player": "Trent Miner",
-            "news": "Miner is in the starter's crease at Colorado's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:41:53.230Z"
         }
     ],
     "TOR": [
@@ -132,29 +157,6 @@
             "category": "Line Change",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T17:58:08.018Z"
-        },
-        {
-            "player": "Andrew Mangiapane",
-            "news": "Mangiapane will draw back into Edmonton's lineup in Chicago on Monday. ",
-            "category": "Line Change",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:57:48.248Z"
-        },
-        {
-            "player": "Connor Ingram",
-            "news": "Ingram will start in Chicago on Monday ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:57:21.290Z"
-        }
-    ],
-    "CAR": [
-        {
-            "player": "Frederik Andersen",
-            "news": "Andersen will start in Detroit on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T17:55:51.789Z"
         }
     ]
 }
