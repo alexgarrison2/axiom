@@ -1,5 +1,35 @@
 {
+    "COL": [
+        {
+            "player": "Trent Miner",
+            "news": "Miner is in the starter's crease at Colorado's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:41:53.230Z"
+        }
+    ],
     "VAN": [
+        {
+            "player": "Nikita Tolopilo",
+            "news": "Tolopilo will start in Montreal on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:40:00.732Z"
+        },
+        {
+            "player": "Conor Garland",
+            "news": " Garland (undisclosed) is expected to return in Montreal on Monday",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:35:02.059Z"
+        },
+        {
+            "player": "Marco Rossi",
+            "news": "Rossi (lower-body) is 2-3 weeks away from returning to Vancouver's lineup. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:21:42.507Z"
+        },
         {
             "player": "Kiefer Sherwood",
             "news": "Sherwood (undisclosed) is out vs. Montreal on Monday and is considered day-to-day. ",
@@ -17,11 +47,77 @@
     ],
     "CAR": [
         {
+            "player": "William Carrier",
+            "news": "Carrier (undisclosed) will not be available in Detroit on Monday. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:32:46.427Z"
+        },
+        {
             "player": "Frederik Andersen",
             "news": "Andersen is in the starter's crease at Carolina's morning skate. ",
             "category": "Goalie Start",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T16:53:42.433Z"
+        }
+    ],
+    "TOR": [
+        {
+            "player": "Dakota Mermis",
+            "news": "Mermis has been assigned to the Toronto Marlies (AHL) on an LTIR conditioning loan. ",
+            "category": "Send Down",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:31:58.599Z"
+        }
+    ],
+    "BUF": [
+        {
+            "player": "Colten Ellis",
+            "news": "Ellis will start vs. Florida on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:31:29.610Z"
+        }
+    ],
+    "FLA": [
+        {
+            "player": "Sergei Bobrovsky",
+            "news": "Bobrovsky will start in Buffalo on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:28:36.718Z"
+        }
+    ],
+    "SEA": [
+        {
+            "player": "Jordan Eberle",
+            "news": "Eberle (upper-body) will return to Seattle's linuep in New York on Monday. ",
+            "category": "Injury",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:17:05.230Z"
+        },
+        {
+            "player": "Tye Kartye",
+            "news": "Kartye is expected to be a healthy scratch in New York on Monday. ",
+            "category": "Line Change",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T16:33:25.665Z"
+        },
+        {
+            "player": "Philipp Grubauer",
+            "news": "Grubauer was the first goalie off the ice at Seattle's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T16:28:35.993Z"
+        }
+    ],
+    "MIN": [
+        {
+            "player": "Jesper Wallstedt",
+            "news": "Wallstedt will start vs. New Jersey on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-12",
+            "timestamp": "2026-01-12T17:14:37.155Z"
         }
     ],
     "TBL": [
@@ -40,29 +136,6 @@
             "timestamp": "2026-01-12T16:45:10.006Z"
         }
     ],
-    "SEA": [
-        {
-            "player": "Tye Kartye",
-            "news": "Kartye is expected to be a healthy scratch in New York on Monday. ",
-            "category": "Line Change",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T16:33:25.665Z"
-        },
-        {
-            "player": "Jordan Eberle",
-            "news": "Eberle (upper-body) participated in morning skate on Tuesday and is expected to return in New York. ",
-            "category": "Injury",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T16:31:14.535Z"
-        },
-        {
-            "player": "Philipp Grubauer",
-            "news": "Grubauer was the first goalie off the ice at Seattle's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T16:28:35.993Z"
-        }
-    ],
     "CHI": [
         {
             "player": "Spencer Knight",
@@ -79,13 +152,6 @@
             "category": "Injury",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T16:24:29.459Z"
-        },
-        {
-            "player": "Jakub Dobes",
-            "news": "Dobes wlll start vs. Vancouver on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T15:58:49.170Z"
         }
     ],
     "NYR": [
@@ -95,68 +161,6 @@
             "category": "Goalie Start",
             "date": "2026-01-12",
             "timestamp": "2026-01-12T16:14:46.418Z"
-        },
-        {
-            "player": "Jonathan Quick",
-            "news": "Quick was the first goalie off the ice at New York's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T15:56:14.720Z"
-        },
-        {
-            "player": "Brennan Othmann",
-            "news": "Othmann is expected to draw back into New York's lineup vs. Seattle on Monday. ",
-            "category": "Line Change",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T15:51:23.614Z"
-        },
-        {
-            "player": "Matt Rempe",
-            "news": "Rempe is expected to be a healthy scratch vs. Seattle on Monday. ",
-            "category": "Line Change",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T15:50:05.670Z"
-        }
-    ],
-    "DET": [
-        {
-            "player": "John Gibson",
-            "news": "Gibson was the first goalie off the ice at Detroit's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T16:12:27.835Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Ivan Ivan",
-            "news": "Ivan has been recalled from the Colorado Eagles (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T16:05:40.734Z"
-        }
-    ],
-    "PHI": [
-        {
-            "player": "Carl Grundstrom",
-            "news": "Grundstrom (illness) will be a game-time decision vs. Tampa Bay on Monday. ",
-            "category": "Injury",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T15:48:43.343Z"
-        },
-        {
-            "player": "Travis Konecny",
-            "news": "Konecny (lower-body) will be a game-time decision on Monday vs. Tampa Bay. ",
-            "category": "Injury",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T15:46:58.314Z"
-        },
-        {
-            "player": "Dan Vladar",
-            "news": "Vladar will start vs. Tampa Bay on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-12",
-            "timestamp": "2026-01-12T15:45:31.685Z"
         }
     ]
 }
