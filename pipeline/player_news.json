@@ -1,5 +1,35 @@
 {
+    "OTT": [
+        {
+            "player": "James Reimer",
+            "news": "Reimer will not dress vs. Vancouver on Tuesday but has a chance to make his debut on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:20:37.821Z"
+        },
+        {
+            "player": "Leevi Merilainen",
+            "news": "Merilainen will start vs. Vancouver on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:14:38.118Z"
+        }
+    ],
     "WSH": [
+        {
+            "player": "Sonny Milano",
+            "news": "Milano will draw back into Washington's lineup vs. Montreal on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:16:07.066Z"
+        },
+        {
+            "player": "Justin Sourdif",
+            "news": "Sourdif (upper-body) is out vs. Montreal and is considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:04:26.561Z"
+        },
         {
             "player": "Jakob Chychrun",
             "news": " Chychrun (illness) will be a game-time decision vs. MTL on Tuesday.",
@@ -15,23 +45,14 @@
             "timestamp": "2026-01-13T15:43:53.442Z"
         }
     ],
-    "COL": [
-        {
-            "player": "Zakhar Bardakov",
-            "news": "Bardakov has been reassigned to the Colorado Eagles (AHL). ",
-            "category": "Send Down",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:43:11.734Z"
-        },
-        {
-            "player": "Ivan Ivan",
-            "news": "Ivan has been reassigned to the Colorado Eagles (AHL). ",
-            "category": "Send Down",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:42:41.162Z"
-        }
-    ],
     "PIT": [
+        {
+            "player": "Arturs Silovs",
+            "news": "Silovs was the first goalie off the ice at Pittsburgh's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T15:59:22.834Z"
+        },
         {
             "player": "Bryan Rust",
             "news": "Rust (illness) returned to morning skate on Tuesday and is expected to play vs. Tampa Bay. ",
@@ -62,16 +83,32 @@
         },
         {
             "player": "Erik Karlsson",
-            "news": "Karlsson has been placed on IR with a lower-body injury",
+            "news": "Karlsson has been placed on IR with a lower-body injury and is expected to be out for multiple weeks. ",
             "category": "Injury",
             "date": "2026-01-13",
             "timestamp": "2026-01-13T15:15:03.030Z"
         }
     ],
+    "COL": [
+        {
+            "player": "Zakhar Bardakov",
+            "news": "Bardakov has been reassigned to the Colorado Eagles (AHL). ",
+            "category": "Send Down",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T15:43:11.734Z"
+        },
+        {
+            "player": "Ivan Ivan",
+            "news": "Ivan has been reassigned to the Colorado Eagles (AHL). ",
+            "category": "Send Down",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T15:42:41.162Z"
+        }
+    ],
     "BOS": [
         {
             "player": "Morgan Geekie",
-            "news": "Geekie (personal) returned to Boston\u2019s morning skate Tuesday.",
+            "news": "Geekie (personal) returned to Boston\u2019s morning skate Tuesday and will rejoin their lineup vs. Detroit. ",
             "category": "General",
             "date": "2026-01-13",
             "timestamp": "2026-01-13T15:27:45.808Z"
@@ -118,40 +155,6 @@
             "category": "Injury",
             "date": "2026-01-13",
             "timestamp": "2026-01-13T07:28:02.761Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Brayden Point",
-            "news": "Point (lower-body) will travel with Tampa to Pittsburgh but is uncertain for their game on Tuesday. ",
-            "category": "Injury",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T06:50:28.526Z"
-        },
-        {
-            "player": "Andrei Vasilevskiy",
-            "news": "Vasilevskiy will start Tuesday in Pittsburgh. ",
-            "category": "Goalie Start",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T04:29:56.239Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Teuvo Teravainen",
-            "news": "Teravainen left Monday\u2019s game vs. Edmonton with an upper-body injury and is considered day-to-day. ",
-            "category": "Injury",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T06:47:05.450Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Sam Montembeault",
-            "news": "Montembeault will start Tuesday in Washington. ",
-            "category": "Goalie Start",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T04:24:42.179Z"
         }
     ]
 }
