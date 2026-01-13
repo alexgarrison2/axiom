@@ -286,11 +286,11 @@
     "PIT": {
         "f1": [
             {
-                "name": "Anthony Mantha",
-                "number": 39,
+                "name": "Rickard Rakell",
+                "number": 67,
                 "pos": "lw",
-                "id": 2151,
-                "ppUnit": 2
+                "id": 1682,
+                "ppUnit": 1
             },
             {
                 "name": "Sidney Crosby",
@@ -300,10 +300,10 @@
                 "ppUnit": 1
             },
             {
-                "name": "Rickard Rakell",
-                "number": 67,
+                "name": "Bryan Rust",
+                "number": 17,
                 "pos": "rw",
-                "id": 1682,
+                "id": 2407,
                 "ppUnit": 1
             }
         ],
@@ -316,11 +316,11 @@
                 "ppUnit": 1
             },
             {
-                "name": "Kevin Hayes",
-                "number": 13,
+                "name": "Tommy Novak",
+                "number": 18,
                 "pos": "c",
-                "id": 2386,
-                "ppUnit": null
+                "id": 26595,
+                "ppUnit": 2
             },
             {
                 "name": "Egor Chinakhov",
@@ -332,10 +332,10 @@
         ],
         "f3": [
             {
-                "name": "Tommy Novak",
-                "number": 18,
+                "name": "Anthony Mantha",
+                "number": 39,
                 "pos": "lw",
-                "id": 26595,
+                "id": 2151,
                 "ppUnit": 2
             },
             {
@@ -343,14 +343,14 @@
                 "number": 81,
                 "pos": "c",
                 "id": 37573,
-                "ppUnit": 1
+                "ppUnit": 2
             },
             {
                 "name": "Justin Brazeau",
                 "number": 15,
                 "pos": "rw",
                 "id": 28622,
-                "ppUnit": 2
+                "ppUnit": null
             }
         ],
         "f4": [
@@ -378,37 +378,21 @@
         ],
         "d1": [
             {
-                "name": "Parker Wotherspoon",
-                "number": 29,
-                "pos": "ld",
-                "id": 3836,
-                "ppUnit": null
-            },
-            {
-                "name": "Erik Karlsson",
-                "number": 65,
-                "pos": "rd",
-                "id": 1087,
-                "ppUnit": 1
-            }
-        ],
-        "d2": [
-            {
                 "name": "Brett Kulak",
                 "number": 77,
                 "pos": "ld",
                 "id": 2466,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Kris Letang",
                 "number": 58,
                 "pos": "rd",
                 "id": 1233,
-                "ppUnit": 2
+                "ppUnit": 1
             }
         ],
-        "d3": [
+        "d2": [
             {
                 "name": "Ryan Shea",
                 "number": 5,
@@ -421,6 +405,22 @@
                 "number": 75,
                 "pos": "rd",
                 "id": 4833,
+                "ppUnit": null
+            }
+        ],
+        "d3": [
+            {
+                "name": "Parker Wotherspoon",
+                "number": 29,
+                "pos": "ld",
+                "id": 3836,
+                "ppUnit": null
+            },
+            {
+                "name": "Jack St. Ivany",
+                "number": null,
+                "pos": "rd",
+                "id": 25428,
                 "ppUnit": null
             }
         ]
@@ -2480,7 +2480,7 @@
                 "number": 89,
                 "pos": "rw",
                 "id": 29254,
-                "ppUnit": 2
+                "ppUnit": null
             }
         ],
         "f4": [
@@ -2503,7 +2503,7 @@
                 "number": 74,
                 "pos": "rw",
                 "id": 32922,
-                "ppUnit": null
+                "ppUnit": 2
             }
         ],
         "d1": [
@@ -2846,21 +2846,21 @@
                 "number": 28,
                 "pos": "lw",
                 "id": 2480,
-                "ppUnit": 1
+                "ppUnit": 2
             },
             {
                 "name": "Jack Hughes",
                 "number": 86,
                 "pos": "c",
                 "id": 30419,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Jesper Bratt",
                 "number": 63,
                 "pos": "rw",
                 "id": 2845,
-                "ppUnit": 1
+                "ppUnit": 2
             }
         ],
         "f2": [
@@ -2883,7 +2883,7 @@
                 "number": 91,
                 "pos": "rw",
                 "id": 29327,
-                "ppUnit": 1
+                "ppUnit": 2
             }
         ],
         "f3": [
@@ -2892,14 +2892,14 @@
                 "number": 81,
                 "pos": "lw",
                 "id": 30695,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Cody Glass",
                 "number": 12,
                 "pos": "c",
                 "id": 2785,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Connor Brown",
@@ -2938,7 +2938,7 @@
                 "number": 43,
                 "pos": "ld",
                 "id": 31110,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Brett Pesce",
@@ -2977,7 +2977,7 @@
                 "number": 7,
                 "pos": "rd",
                 "id": 1821,
-                "ppUnit": 1
+                "ppUnit": 2
             }
         ]
     },
@@ -3579,7 +3579,7 @@
                 "number": 37,
                 "pos": "lw",
                 "id": 3911,
-                "ppUnit": 2
+                "ppUnit": null
             },
             {
                 "name": "Quinton Byfield",
@@ -3639,7 +3639,7 @@
                 "number": 52,
                 "pos": "rw",
                 "id": 36257,
-                "ppUnit": null
+                "ppUnit": 2
             }
         ],
         "d1": [
