@@ -1,21 +1,21 @@
 {
-    "OTT": [
+    "NSH": [
         {
-            "player": "James Reimer",
-            "news": "Reimer will not dress vs. Vancouver on Tuesday but has a chance to make his debut on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T16:20:37.821Z"
-        },
-        {
-            "player": "Leevi Merilainen",
-            "news": "Merilainen will start vs. Vancouver on Tuesday. ",
+            "player": "Juuse Saros",
+            "news": "Saros is expected to start vs. Edmonton on Tuesday. ",
             "category": "Goalie Start",
             "date": "2026-01-13",
-            "timestamp": "2026-01-13T16:14:38.118Z"
+            "timestamp": "2026-01-13T16:50:37.202Z"
         }
     ],
     "WSH": [
+        {
+            "player": "Dylan McIlrath",
+            "news": "McIlrath will draw back into Washington's lineup vs. Montreal on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:43:28.003Z"
+        },
         {
             "player": "Sonny Milano",
             "news": "Milano will draw back into Washington's lineup vs. Montreal on Tuesday. ",
@@ -47,6 +47,20 @@
     ],
     "PIT": [
         {
+            "player": "Bryan Rust",
+            "news": " Rust (lower-body) will return vs. Tampa Bay on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:40:10.395Z"
+        },
+        {
+            "player": "Arturs Silovs",
+            "news": "Silovs will start vs. Tampa Bay on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:28:16.369Z"
+        },
+        {
             "player": "Arturs Silovs",
             "news": "Silovs was the first goalie off the ice at Pittsburgh's morning skate. ",
             "category": "Goalie Start",
@@ -59,34 +73,72 @@
             "category": "Injury",
             "date": "2026-01-13",
             "timestamp": "2026-01-13T15:38:52.630Z"
-        },
+        }
+    ],
+    "BOS": [
         {
-            "player": "Rafael Harvey-Pinard",
-            "news": "Harver-Pinard has been reassigned to Wilkes-Barre/Scranton (AHL). ",
-            "category": "Send Down",
+            "player": "Jeremy Swayman",
+            "news": "Swayman will start vs. Detroit on Tuesday. ",
+            "category": "Goalie Start",
             "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:16:24.873Z"
-        },
+            "timestamp": "2026-01-13T16:38:45.107Z"
+        }
+    ],
+    "STL": [
         {
-            "player": "Ryan Graves",
-            "news": "Graves has been recalled from Wilkes-Barre/Scranton (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:15:52.964Z"
-        },
-        {
-            "player": "Tristan Broz",
-            "news": "Broz has been recalled from Wilkes-Barre/Scranton (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:15:24.712Z"
-        },
-        {
-            "player": "Erik Karlsson",
-            "news": "Karlsson has been placed on IR with a lower-body injury and is expected to be out for multiple weeks. ",
+            "player": "Mathieu Joseph",
+            "news": "Joseph (elbow infection) has been placed on IR. ",
             "category": "Injury",
             "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:15:03.030Z"
+            "timestamp": "2026-01-13T16:38:05.583Z"
+        },
+        {
+            "player": "Nick Bjugstad",
+            "news": "Bjugstad (upper-body) has been activated off IR and will return vs. Carolina on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:36:31.721Z"
+        },
+        {
+            "player": "Joel Hofer",
+            "news": "Hofer is in the starter's crease at St. Louis' morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:34:41.754Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "Dustin Wolf",
+            "news": "Wolf will start in Columbus on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:28:41.580Z"
+        }
+    ],
+    "WPG": [
+        {
+            "player": "Connor Hellebuyck",
+            "news": "Hellebuyck is in the starter's crease at Winnipeg's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:26:29.406Z"
+        }
+    ],
+    "OTT": [
+        {
+            "player": "James Reimer",
+            "news": "Reimer will not dress vs. Vancouver on Tuesday but has a chance to make his debut on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:20:37.821Z"
+        },
+        {
+            "player": "Leevi Merilainen",
+            "news": "Merilainen will start vs. Vancouver on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-13",
+            "timestamp": "2026-01-13T16:14:38.118Z"
         }
     ],
     "COL": [
@@ -103,58 +155,6 @@
             "category": "Send Down",
             "date": "2026-01-13",
             "timestamp": "2026-01-13T15:42:41.162Z"
-        }
-    ],
-    "BOS": [
-        {
-            "player": "Morgan Geekie",
-            "news": "Geekie (personal) returned to Boston\u2019s morning skate Tuesday and will rejoin their lineup vs. Detroit. ",
-            "category": "General",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:27:45.808Z"
-        }
-    ],
-    "CAR": [
-        {
-            "player": "Brandon Bussi",
-            "news": "Bussi is expected to start in St. Louis on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:12:45.128Z"
-        }
-    ],
-    "SEA": [
-        {
-            "player": "Chandler Stephenson",
-            "news": "Stephenson has been added back to Seattle's active roster on Tuesday. ",
-            "category": "General",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:10:49.115Z"
-        },
-        {
-            "player": "Oscar Fisker-Molgaard",
-            "news": "Fisker-Molgaard has been reassigned to Coachella Valley (AHL). ",
-            "category": "Send Down",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:10:14.606Z"
-        }
-    ],
-    "CBJ": [
-        {
-            "player": "Jet Greaves",
-            "news": "Greaves is in the starter's crease at Columbus' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T15:07:43.207Z"
-        }
-    ],
-    "TOR": [
-        {
-            "player": "Nicholas Robertson",
-            "news": "Robertson left Toronto\u2019s game on Monday vs. Colorado with a lower-body injury and did not return.",
-            "category": "Injury",
-            "date": "2026-01-13",
-            "timestamp": "2026-01-13T07:28:02.761Z"
         }
     ]
 }
