@@ -428,6 +428,29 @@
     "TBL": {
         "f1": [
             {
+                "name": "Jake Guentzel",
+                "number": 59,
+                "pos": "lw",
+                "id": 2707,
+                "ppUnit": 1
+            },
+            {
+                "name": "Nick Paul",
+                "number": 20,
+                "pos": "c",
+                "id": 2357,
+                "ppUnit": 2
+            },
+            {
+                "name": "Nikita Kucherov",
+                "number": 86,
+                "pos": "rw",
+                "id": 2031,
+                "ppUnit": 1
+            }
+        ],
+        "f2": [
+            {
                 "name": "Brandon Hagel",
                 "number": 38,
                 "pos": "lw",
@@ -442,34 +465,11 @@
                 "ppUnit": 2
             },
             {
-                "name": "Nikita Kucherov",
-                "number": 86,
-                "pos": "rw",
-                "id": 2031,
-                "ppUnit": 1
-            }
-        ],
-        "f2": [
-            {
                 "name": "Gage Goncalves",
                 "number": 93,
-                "pos": "lw",
+                "pos": "rw",
                 "id": 32521,
                 "ppUnit": 2
-            },
-            {
-                "name": "Dominic James",
-                "number": 17,
-                "pos": "c",
-                "id": 32816,
-                "ppUnit": 2
-            },
-            {
-                "name": "Jake Guentzel",
-                "number": 59,
-                "pos": "rw",
-                "id": 2707,
-                "ppUnit": 1
             }
         ],
         "f3": [
@@ -497,11 +497,11 @@
         ],
         "f4": [
             {
-                "name": "Nick Paul",
-                "number": 20,
+                "name": "Oliver Bjorkstrand",
+                "number": 22,
                 "pos": "lw",
-                "id": 2357,
-                "ppUnit": 2
+                "id": 2603,
+                "ppUnit": 1
             },
             {
                 "name": "Jack Finley",
@@ -511,11 +511,11 @@
                 "ppUnit": null
             },
             {
-                "name": "Oliver Bjorkstrand",
-                "number": 22,
+                "name": "Dominic James",
+                "number": 17,
                 "pos": "rw",
-                "id": 2603,
-                "ppUnit": 1
+                "id": 32816,
+                "ppUnit": 2
             }
         ],
         "d1": [
@@ -772,11 +772,11 @@
                 "ppUnit": null
             },
             {
-                "name": "Brendan Gallagher",
-                "number": 11,
+                "name": "Josh Anderson",
+                "number": 17,
                 "pos": "rw",
-                "id": 1791,
-                "ppUnit": 2
+                "id": 21932,
+                "ppUnit": null
             }
         ],
         "f4": [
@@ -795,11 +795,11 @@
                 "ppUnit": null
             },
             {
-                "name": "Josh Anderson",
-                "number": 17,
+                "name": "Brendan Gallagher",
+                "number": 11,
                 "pos": "rw",
-                "id": 21932,
-                "ppUnit": null
+                "id": 1791,
+                "ppUnit": 2
             }
         ],
         "d1": [
@@ -836,10 +836,10 @@
         ],
         "d3": [
             {
-                "name": "Kaiden Guhle",
-                "number": 21,
+                "name": "Jayden Struble",
+                "number": 47,
                 "pos": "ld",
-                "id": 32947,
+                "id": 30435,
                 "ppUnit": null
             },
             {
@@ -1656,11 +1656,11 @@
         ],
         "d1": [
             {
-                "name": "Jaccob Slavin",
-                "number": 74,
+                "name": "Shayne Gostisbehere",
+                "number": 4,
                 "pos": "ld",
-                "id": 2516,
-                "ppUnit": null
+                "id": 2398,
+                "ppUnit": 1
             },
             {
                 "name": "Jalen Chatfield",
@@ -1688,18 +1688,18 @@
         ],
         "d3": [
             {
-                "name": "Shayne Gostisbehere",
-                "number": 4,
-                "pos": "ld",
-                "id": 2398,
-                "ppUnit": 1
-            },
-            {
                 "name": "Mike Reilly",
                 "number": 6,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 2469,
                 "ppUnit": 2
+            },
+            {
+                "name": "Alexander Nikishin",
+                "number": 21,
+                "pos": "rd",
+                "id": 32897,
+                "ppUnit": null
             }
         ]
     },
@@ -1830,10 +1830,10 @@
         ],
         "d3": [
             {
-                "name": "Nicolas Hague",
-                "number": 41,
+                "name": "Justin Barron",
+                "number": 20,
                 "pos": "ld",
-                "id": 2799,
+                "id": 29338,
                 "ppUnit": null
             },
             {
@@ -1917,24 +1917,24 @@
         ],
         "f4": [
             {
-                "name": "Mattias Janmark",
-                "number": 13,
+                "name": "Isaac Howard",
+                "number": 53,
                 "pos": "lw",
-                "id": 2447,
-                "ppUnit": null
-            },
-            {
-                "name": "Curtis Lazar",
-                "number": 20,
-                "pos": "c",
-                "id": 2148,
+                "id": 33270,
                 "ppUnit": null
             },
             {
                 "name": "Trent Frederic",
                 "number": 10,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2662,
+                "ppUnit": null
+            },
+            {
+                "name": "Mattias Janmark",
+                "number": 13,
+                "pos": "rw",
+                "id": 2447,
                 "ppUnit": null
             }
         ],
@@ -1963,26 +1963,26 @@
                 "ppUnit": 2
             },
             {
-                "name": "Jake Walman",
-                "number": 96,
+                "name": "Ty Emberson",
+                "number": 49,
                 "pos": "rd",
-                "id": 2859,
+                "id": 28812,
                 "ppUnit": null
             }
         ],
         "d3": [
             {
-                "name": "Spencer Stastney",
-                "number": 24,
+                "name": "Jake Walman",
+                "number": 96,
                 "pos": "ld",
-                "id": 28862,
+                "id": 2859,
                 "ppUnit": null
             },
             {
-                "name": "Ty Emberson",
-                "number": 49,
+                "name": "Spencer Stastney",
+                "number": 24,
                 "pos": "rd",
-                "id": 28812,
+                "id": 28862,
                 "ppUnit": null
             }
         ]
