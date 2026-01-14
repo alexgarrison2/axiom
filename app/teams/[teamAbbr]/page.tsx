@@ -29,9 +29,28 @@ interface GameLog {
     ga: number;
     xgf: number;
     xga: number;
+    xgf: number;
+    xga: number;
     starting_goalie: string;
     opponent_starter: string;
     points: number;
+    // Extended Stats
+    pp_goals: number;
+    pp_opps: number;
+    pp_time: string; // "2:00"
+    pp_goals_against: number;
+    pk_opps: number;
+    pk_time: string;
+    sf: number;
+    sa: number;
+    cf: number;
+    ca: number;
+    sv_pct: number;
+    en_gf: number;
+    en_att: number;
+    en_ga: number;
+    en_att_ag: number;
+    ot_loss: boolean;
 }
 
 interface PlayerBoxscoreRow {
@@ -67,7 +86,16 @@ interface TeamRating {
     xga_5v5_rating: number;
     pp_rating: number; // PP%
     pk_rating: number; // PK%
+    def_rating: number; // xGA Rating (implies defensive strength if calculated)
 }
+
+const formatTime = (seconds: string | number) => {
+    const s = parseInt(String(seconds));
+    if (isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+};
 
 export default function TeamDetailPage() {
     const params = useParams();
@@ -154,7 +182,24 @@ export default function TeamDetailPage() {
                         xga: parseFloat(row.xG_against),
                         starting_goalie: row.starting_goalie,
                         opponent_starter: row.starting_goalie_opp,
-                        points: (res === 'RW' || res === 'OTW' || res === 'SOW') ? 2 : (res === 'OTL' || res === 'SOL') ? 1 : 0
+                        points: (res === 'RW' || res === 'OTW' || res === 'SOW') ? 2 : (res === 'OTL' || res === 'SOL') ? 1 : 0,
+                        // Extended
+                        pp_goals: parseInt(row.pp_goals),
+                        pp_opps: parseInt(row.pp_opportunities),
+                        pp_time: formatTime(row.pp_time), // Helper needed
+                        pp_goals_against: parseInt(row.pp_goals_against),
+                        pk_opps: parseInt(row.pk_opportunities),
+                        pk_time: formatTime(row.pk_time),
+                        sf: parseInt(row.sog_for),
+                        sa: parseInt(row.sog_ag),
+                        cf: parseInt(row.attempts_for),
+                        ca: parseInt(row.attempts_ag),
+                        sv_pct: parseFloat(row.save_percentage),
+                        en_gf: parseInt(row.emptynet_goalsfor),
+                        en_att: parseInt(row.en_attempts_for),
+                        en_ga: parseInt(row.emptynet_goalsagainst),
+                        en_att_ag: parseInt(row.en_attempts_against),
+                        ot_loss: res === 'OTL' || res === 'SOL'
                     };
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Descending
 
@@ -284,79 +329,136 @@ export default function TeamDetailPage() {
 
                 {/* Game Log Tab */}
                 {activeTab === 'games' && (
-                    <div className="space-y-0.5">
-                        {/* Table Header */}
-                        <div className="grid grid-cols-12 gap-1 text-[10px] uppercase font-bold text-gray-500 bg-gray-900/50 p-2 rounded-t-lg border-b border-gray-800">
-                            <div className="col-span-1">Date</div>
-                            <div className="col-span-1">Time</div>
-                            <div className="col-span-2">Opponent</div>
-                            <div className="col-span-2 text-center">Result</div>
-                            <div className="col-span-1 text-center">Score</div>
-                            <div className="col-span-2 text-center">Goalies</div>
-                            <div className="col-span-2 text-right pr-2">Analytics</div>
-                            <div className="col-span-1"></div>
-                        </div>
+                    <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
+                        <table className="w-full text-xs text-left whitespace-nowrap">
+                            <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
+                                <tr>
+                                    <th className="p-3 sticky left-0 bg-gray-900 z-10 w-8"></th>
+                                    <th className="p-3 sticky left-8 bg-gray-900 z-10">Date</th>
+                                    <th className="p-3">Time</th>
+                                    <th className="p-3">Starter</th>
+                                    <th className="p-3">Vs/@</th>
+                                    <th className="p-3">Opponent</th>
+                                    <th className="p-3">Opp Starter</th>
+                                    <th className="p-3 text-center">Res</th>
+                                    <th className="p-3 text-center">GF</th>
+                                    <th className="p-3 text-center">GA</th>
+                                    <th className="p-3 text-center">GΔ</th>
+                                    <th className="p-3 text-center">PPG</th>
+                                    <th className="p-3 text-center">PP OPP</th>
+                                    <th className="p-3 text-center">PP Time</th>
+                                    <th className="p-3 text-center">PPGA</th>
+                                    <th className="p-3 text-center">PK OPP</th>
+                                    <th className="p-3 text-center">PK Time</th>
+                                    <th className="p-3 text-center">SF</th>
+                                    <th className="p-3 text-center">SA</th>
+                                    <th className="p-3 text-center">CF</th>
+                                    <th className="p-3 text-center">CA</th>
+                                    <th className="p-3 text-center">SH%</th>
+                                    <th className="p-3 text-center">SV%</th>
+                                    <th className="p-3 text-center">GSAx</th>
+                                    <th className="p-3 text-center">xGF</th>
+                                    <th className="p-3 text-center">xGA</th>
+                                    <th className="p-3 text-center">EN GF</th>
+                                    <th className="p-3 text-center">EN Att</th>
+                                    <th className="p-3 text-center">OT Loss</th>
+                                    <th className="p-3 text-center">EN GA</th>
+                                    <th className="p-3 text-center">EN Att Ag</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-800">
+                                {games.length === 0 ?
+                                    <tr><td colSpan={30} className="p-4 text-center text-gray-500">No games played.</td></tr>
+                                    : games.map((game, idx) => {
+                                        const isExpanded = expandedGameId === game.game_id;
+                                        const gd = game.gf - game.ga;
+                                        const sh_pct = game.sf > 0 ? (game.gf / game.sf * 100).toFixed(1) : "0.0";
+                                        const sv_pct = (game.sv_pct * 100).toFixed(1);
+                                        const gsax = (game.xga - game.ga).toFixed(2);
 
-                        {games.length === 0 ? <div className="p-4 text-gray-500">No games played.</div> :
-                            games.map((game, idx) => (
-                                <div key={game.game_id} className="group">
-                                    <button
-                                        onClick={() => setExpandedGameId(expandedGameId === game.game_id ? null : game.game_id)}
-                                        className={`w-full grid grid-cols-12 gap-1 p-2 items-center text-xs border-b border-gray-800/50 hover:bg-gray-800/50 transition-colors ${idx % 2 === 0 ? 'bg-transparent' : 'bg-gray-900/20'
-                                            }`}
-                                    >
-                                        <div className="col-span-1 text-gray-400 font-mono text-[11px] whitespace-nowrap overflow-hidden text-ellipsis">{game.date}</div>
-                                        <div className="col-span-1 text-gray-500 font-mono text-[10px]">-</div>
-
-                                        <div className="col-span-2 flex items-center gap-1.5 overflow-hidden">
-                                            <span className={`text-[10px] font-bold ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
-                                                {game.home_away === 'Home' ? 'vs' : '@'}
-                                            </span>
-                                            <span className="font-bold text-white truncate">{game.opponent}</span>
-                                        </div>
-
-                                        <div className="col-span-2 flex justify-center">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black w-14 text-center ${game.result.startsWith('W') ? 'bg-green-900/30 text-green-400 border border-green-500/20' :
-                                                    game.result.startsWith('OTL') ? 'bg-orange-900/30 text-orange-400 border border-orange-500/20' :
-                                                        'bg-red-900/30 text-red-400 border border-red-500/20'
-                                                }`}>
-                                                {game.result}
-                                            </span>
-                                        </div>
-
-                                        <div className="col-span-1 text-center font-mono text-gray-300">
-                                            {game.gf}-{game.ga}
-                                        </div>
-
-                                        <div className="col-span-2 flex flex-col text-[10px] text-gray-400 leading-tight items-center">
-                                            <span title={game.starting_goalie} className="truncate w-full text-center">{game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}</span>
-                                            <span className="text-gray-600 text-[9px]">vs {game.opponent_starter ? game.opponent_starter.split(' ').pop() : '-'}</span>
-                                        </div>
-
-                                        <div className="col-span-2 text-right pr-2 text-[10px] font-mono text-gray-400 flex flex-col items-end">
-                                            <div><span className="text-gray-600">xG:</span> <span className={game.xgf > game.xga ? 'text-green-400' : 'text-red-400'}>{game.xgf.toFixed(2)}</span></div>
-                                            <div><span className="text-gray-600">vs:</span> {game.xga.toFixed(2)}</div>
-                                        </div>
-
-                                        <div className="col-span-1 flex justify-end pr-2 text-gray-600">
-                                            <div className={`transition-transform duration-300 ${expandedGameId === game.game_id ? 'rotate-180 text-white' : ''}`}>
-                                                ▼
-                                            </div>
-                                        </div>
-                                    </button>
-
-                                    {/* Expanded Boxscore */}
-                                    {expandedGameId === game.game_id && (
-                                        <div className="pl-0 md:pl-0 border-b border-gray-800 bg-gray-900/30" style={{ borderLeft: `2px solid ${primaryColor}` }}>
-                                            <GameBoxscore
-                                                gameId={parseInt(game.game_id)}
-                                                teamAbbr={teamAbbr}
-                                                playerStats={playerStats.filter(p => p.game_id == game.game_id)}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                                        return (
+                                            <React.Fragment key={game.game_id}>
+                                                <tr
+                                                    onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
+                                                    className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
+                                                >
+                                                    <td className="p-3 sticky left-0 bg-gray-900/95 border-r border-gray-800 z-10 text-center text-gray-500">
+                                                        <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180 text-white' : ''}`}>▼</div>
+                                                    </td>
+                                                    <td className="p-3 sticky left-8 bg-gray-900/95 border-r border-gray-800 z-10 font-mono text-gray-300">{game.date}</td>
+                                                    <td className="p-3 text-gray-500 font-mono">-</td>
+                                                    <td className="p-3 text-gray-400 text-[11px] truncate max-w-[100px]" title={game.starting_goalie}>
+                                                        {game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}
+                                                    </td>
+                                                    <td className={`p-3 text-center font-bold ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
+                                                        {game.home_away === 'Home' ? 'vs' : '@'}
+                                                    </td>
+                                                    <td className="p-3 font-bold text-white flex items-center gap-2">
+                                                        {/* Requires mapping Opponent to Logo URL, simplistic fallback for now */}
+                                                        <div className="w-6 h-6 relative shrink-0">
+                                                            {/* We can try to use a generic path or lookup if we had the map accessible. 
+                                                        For now, showing name is safer than broken image. 
+                                                        Ideally, we'd pass a Map<TeamName, LogoURL> to the component. 
+                                                    */}
+                                                        </div>
+                                                        {game.opponent}
+                                                    </td>
+                                                    <td className="p-3 text-gray-400 text-[11px] truncate max-w-[100px]" title={game.opponent_starter}>
+                                                        {game.opponent_starter ? game.opponent_starter.split(' ').pop() : '-'}
+                                                    </td>
+                                                    <td className="p-3 text-center">
+                                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-black ${game.result_code.includes('W') ? 'bg-green-900/40 text-green-400 border border-green-500/20' :
+                                                            game.result_code.includes('OTL') ? 'bg-orange-900/40 text-orange-400 border border-orange-500/20' :
+                                                                'bg-red-900/40 text-red-400 border border-red-500/20'
+                                                            }`}>
+                                                            {game.result}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-3 text-center font-mono text-white">{game.gf}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-400">{game.ga}</td>
+                                                    <td className={`p-3 text-center font-bold font-mono ${gd > 0 ? 'text-green-400' : gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                                                        {gd > 0 ? '+' : ''}{gd}
+                                                    </td>
+                                                    <td className="p-3 text-center font-mono text-emerald-400">{game.pp_goals}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-500">{game.pp_opps}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-500">{game.pp_time}</td>
+                                                    <td className="p-3 text-center font-mono text-red-400">{game.pp_goals_against}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-500">{game.pk_opps}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-500">{game.pk_time}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-300">{game.sf}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-300">{game.sa}</td>
+                                                    <td className="p-3 text-center font-mono text-blue-300">{game.cf}</td>
+                                                    <td className="p-3 text-center font-mono text-orange-300">{game.ca}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-400">{sh_pct}%</td>
+                                                    <td className="p-3 text-center font-mono text-gray-400">{sv_pct}%</td>
+                                                    <td className={`p-3 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-300">{game.xgf.toFixed(2)}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-500">{game.en_gf}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-500">{game.en_att}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-500">{game.ot_loss ? 'Yes' : '-'}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-500">{game.en_ga}</td>
+                                                    <td className="p-3 text-center font-mono text-gray-500">{game.en_att_ag}</td>
+                                                </tr>
+                                                {isExpanded && (
+                                                    <tr>
+                                                        <td colSpan={30} className="p-0 border-b border-gray-800 bg-gray-900/50">
+                                                            <div className="p-4 border-l-4" style={{ borderColor: primaryColor }}>
+                                                                <GameBoxscore
+                                                                    gameId={parseInt(game.game_id)}
+                                                                    teamAbbr={teamAbbr}
+                                                                    // Robust filter: convert both to string to ensure matching
+                                                                    playerStats={playerStats.filter(p => String(p.game_id) === String(game.game_id))}
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                            </tbody>
+                        </table>
                     </div>
                 )}
 
