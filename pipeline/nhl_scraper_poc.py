@@ -87,6 +87,110 @@ def get_pbp(game_id):
     """Fetch play-by-play data for a specific game ID."""
     return get_url(f"{BASE_URL}/gamecenter/{game_id}/play-by-play")
 
+def get_boxscore(game_id):
+    """Fetch boxscore for a specific game ID."""
+    return get_url(f"{BASE_URL}/gamecenter/{game_id}/boxscore")
+
+def parse_boxscore(game_id, boxscore):
+    """Parse boxscore JSON into flat list of player stats."""
+    rows = []
+    if not boxscore or "playerByGameStats" not in boxscore:
+        return rows
+
+    game_date = boxscore.get("gameDate")
+    
+    # Process both teams (Home and Away)
+    for team_type in ["homeTeam", "awayTeam"]:
+        team_data = boxscore.get(team_type, {})
+        team_abbr = team_data.get("abbrev")
+        team_id = team_data.get("id")
+        
+        # Process Skaters (Forwards + Defense)
+        for category in ["forwards", "defense"]:
+            for player in boxscore.get("playerByGameStats", {}).get(team_type, {}).get(category, []):
+                # Basic info
+                p_id = player.get("playerId")
+                name = player.get("name", {}).get("default")
+                number = player.get("sweaterNumber")
+                position = player.get("position") 
+                
+                # Stats
+                goals = player.get("goals", 0)
+                assists = player.get("assists", 0)
+                points = player.get("points", 0)
+                plus_minus = player.get("plusMinus", 0)
+                toi = player.get("toi", "00:00")
+                shots = player.get("shots", 0)
+                hits = player.get("hits", 0)
+                blocked_shots = player.get("blockedShots", 0)
+                pim = player.get("pim", 0)
+                
+                row = {
+                    "game_id": game_id,
+                    "date": game_date,
+                    "team": team_abbr,
+                    "team_id": team_id,
+                    "player_id": p_id,
+                    "name": name,
+                    "number": number,
+                    "position": position,
+                    "goals": goals,
+                    "assists": assists,
+                    "points": points,
+                    "plus_minus": plus_minus,
+                    "toi": toi,
+                    "shots": shots,
+                    "hits": hits,
+                    "blocked_shots": blocked_shots,
+                    "pim": pim,
+                    "is_goalie": 0
+                }
+                rows.append(row)
+
+        # Process Goalies
+        for goalie in boxscore.get("playerByGameStats", {}).get(team_type, {}).get("goalies", []):
+             p_id = goalie.get("playerId")
+             name = goalie.get("name", {}).get("default")
+             number = goalie.get("sweaterNumber")
+             position = "G"
+             
+             # Goalie Stats
+             toi = goalie.get("toi", "00:00")
+             shots_against = goalie.get("shotsAgainst", 0)
+             saves = goalie.get("saves", 0)
+             goals_against = goalie.get("goalsAgainst", 0)
+             save_pct = goalie.get("savePctg", 0.0)
+             decision = goalie.get("decision", "ND") # W, L, OT, or undefined
+             
+             row = {
+                "game_id": game_id,
+                "date": game_date,
+                "team": team_abbr,
+                "team_id": team_id,
+                "player_id": p_id,
+                "name": name,
+                "number": number,
+                "position": position,
+                "goals": 0, # Usually 0 for goalies
+                "assists": goalie.get("assists", 0), # Goalies can get assists
+                "points": goalie.get("points", 0),
+                "plus_minus": 0,
+                "toi": toi,
+                "shots": 0, 
+                "hits": 0,
+                "blocked_shots": 0,
+                "pim": goalie.get("pim", 0),
+                "is_goalie": 1,
+                "shots_against": shots_against,
+                "saves": saves,
+                "goals_against": goals_against,
+                "save_pct": save_pct,
+                "decision": decision
+             }
+             rows.append(row)
+             
+    return rows
+
 def build_roster_map(pbp_json):
     """
     Create a mapping of playerID -> Full Name from the 'rosterSpots' in the PBP JSON.
@@ -1397,6 +1501,17 @@ def main():
                             # For backfill, it should exist.
                             pass
 
+                    # Fetch Boxscore
+                    print(f" Boxscore...", end="", flush=True)
+                    try:
+                        boxscore = get_boxscore(game_id)
+                        if boxscore:
+                            p_stats = parse_boxscore(game_id, boxscore)
+                            all_player_stats.extend(p_stats)
+                            print(f" {len(p_stats)} players.", end="")
+                    except Exception as e:
+                        print(f" Boxscore Error: {e}", end="")
+
                     all_rows.extend(game_rows)
                     all_shots.extend(shot_rows)
                     print(f" -> Added {len(game_rows)} stats rows, {len(shot_rows)} shots.")
@@ -1442,12 +1557,40 @@ def main():
     SHOTS_FILENAME = "nhl_season_2025_2026_shots.csv"
     if all_shots:
         print(f"Writing {len(all_shots)} shots to {SHOTS_FILENAME}...")
+
+
+        current_date += timedelta(days=1)
+
+    # Export Game Stats to CSV
+    if all_rows:
+        print(f"Writing {len(all_rows)} rows to {OUTPUT_FILENAME}...")
+        new_df = pd.DataFrame(all_rows)
+        if os.path.exists(OUTPUT_FILENAME):
+            try:
+                existing_df = pd.read_csv(OUTPUT_FILENAME)
+                combined_df = pd.concat([existing_df, new_df])
+                combined_df.drop_duplicates(subset=['game_id', 'team'], keep='last', inplace=True)
+                combined_df.to_csv(OUTPUT_FILENAME, index=False)
+            except Exception as e:
+                print(f"Error merging with existing gamestats: {e}. Overwriting/Appending safely.")
+                mode = 'a'
+                header = False
+                new_df.to_csv(OUTPUT_FILENAME, mode=mode, header=header, index=False)
+        else:
+            new_df.to_csv(OUTPUT_FILENAME, index=False)
+        print("Game Stats Done!")
+    else:
+        print("No new game data found.")
+
+    # Export Shot Data to CSV
+    SHOTS_FILENAME = "nhl_season_2025_2026_shots.csv"
+    if all_shots:
+        print(f"Writing {len(all_shots)} shots to {SHOTS_FILENAME}...")
         new_shots_df = pd.DataFrame(all_shots)
         if os.path.exists(SHOTS_FILENAME):
             try:
                 existing_shots_df = pd.read_csv(SHOTS_FILENAME)
                 combined_shots_df = pd.concat([existing_shots_df, new_shots_df])
-                # Deduplicate: Shot ID is best, but if missing, use strict row drift
                 combined_shots_df.drop_duplicates(subset=['game_id', 'event_id'], keep='last', inplace=True) 
                 combined_shots_df.to_csv(SHOTS_FILENAME, index=False)
             except Exception as e:
@@ -1460,6 +1603,28 @@ def main():
         print("Shot Data Done!")
     else:
         print("No new shot data found.")
+
+    # Export Player Stats to CSV
+    PLAYER_STATS_FILENAME = "nhl_season_2025_2026_player_stats.csv"
+    if all_player_stats:
+        print(f"Writing {len(all_player_stats)} player stats to {PLAYER_STATS_FILENAME}...")
+        new_stats_df = pd.DataFrame(all_player_stats)
+        if os.path.exists(PLAYER_STATS_FILENAME):
+            try:
+                existing_stats_df = pd.read_csv(PLAYER_STATS_FILENAME)
+                combined_stats_df = pd.concat([existing_stats_df, new_stats_df])
+                combined_stats_df.drop_duplicates(subset=['game_id', 'player_id'], keep='last', inplace=True)
+                combined_stats_df.to_csv(PLAYER_STATS_FILENAME, index=False)
+            except Exception as e:
+                print(f"Error merging with existing player stats: {e}")
+                mode = 'a'
+                header = False
+                new_stats_df.to_csv(PLAYER_STATS_FILENAME, mode=mode, header=header, index=False)
+        else:
+            new_stats_df.to_csv(PLAYER_STATS_FILENAME, index=False)
+        print("Player Stats Done!")
+    else:
+        print("No new player stats found.")
 
 if __name__ == "__main__":
     main()

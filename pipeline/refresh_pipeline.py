@@ -193,6 +193,13 @@ def refresh_pipeline():
             shutil.copy('last_updated.json', '../data/last_updated.json')
             shutil.copy('last_updated.json', '../public/data/last_updated.json')
             print("Synced last_updated.json")
+        
+        # Additional syncs from pipeline to public/data
+        shutil.copy("pipeline/predictions_detailed.csv", "public/data/predictions_detailed.csv")
+        shutil.copy("pipeline/upcoming_games.json", "public/data/upcoming_games.json")
+        if os.path.exists("pipeline/nhl_season_2025_2026_player_stats.csv"):
+            shutil.copy("pipeline/nhl_season_2025_2026_player_stats.csv", "public/data/nhl_season_2025_2026_player_stats.csv")
+        print("Data synced to public/data/")
             
     except Exception as e:
         print(f"Warning: Final sync failed: {e}")

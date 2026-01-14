@@ -3,12 +3,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Papa from 'papaparse';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface TeamInfo {
     name: string;
     commonName: string;
     logoUrl: string;
     color: string;
+    tricode: string;
 }
 
 interface RawGameStat {
@@ -384,7 +386,8 @@ const TeamsTable = () => {
                                     name: row['Team Name'],
                                     commonName: row['Common Name'].trim(),
                                     logoUrl: row['Team Logo URL'],
-                                    color: row['Hex Color 1']
+                                    color: row['Hex Color 1'],
+                                    tricode: row['Team Tricode']
                                 };
                             }
                         });
@@ -842,30 +845,33 @@ const TeamsTable = () => {
                                         <td className="px-4 py-3 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-20">
                                             <div className="flex items-center justify-center md:justify-start gap-3">
                                                 {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
-                                                {meta.logoUrl && (
-                                                    <div className="w-10 h-10 md:w-8 md:h-8 relative shrink-0">
-                                                        <Image
-                                                            src={meta.logoUrl}
-                                                            alt={team.team}
-                                                            fill
-                                                            className="object-contain"
-                                                        />
-                                                    </div>
-                                                )}
-                                                <span
-                                                    className={`truncate max-w-[120px] hidden md:block ${(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterStatus
-                                                        ? (team.starterStatus?.toUpperCase()?.includes('UNCONFIRMED') ? 'text-gray-500 font-bold'
-                                                            : team.starterStatus?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green font-bold'
-                                                                : team.starterStatus?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400 font-bold'
-                                                                    : 'text-gray-500 font-bold')
-                                                        : ''
-                                                        }`}
-                                                    title={meta.commonName || team.team}
-                                                >
-                                                    {(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterName
-                                                        ? formatStarterName(team.starterName)
-                                                        : (meta.commonName || team.team)}
-                                                </span>
+
+                                                <Link href={`/teams/${meta.tricode || ''}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                                                    {meta.logoUrl && (
+                                                        <div className="w-10 h-10 md:w-8 md:h-8 relative shrink-0">
+                                                            <Image
+                                                                src={meta.logoUrl}
+                                                                alt={team.team}
+                                                                fill
+                                                                className="object-contain"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <span
+                                                        className={`truncate max-w-[120px] hidden md:block ${(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterStatus
+                                                            ? (team.starterStatus?.toUpperCase()?.includes('UNCONFIRMED') ? 'text-gray-500 font-bold'
+                                                                : team.starterStatus?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green font-bold'
+                                                                    : team.starterStatus?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400 font-bold'
+                                                                        : 'text-gray-500 font-bold')
+                                                            : ''
+                                                            }`}
+                                                        title={meta.commonName || team.team}
+                                                    >
+                                                        {(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterName
+                                                            ? formatStarterName(team.starterName)
+                                                            : (meta.commonName || team.team)}
+                                                    </span>
+                                                </Link>
 
                                                 {/* Matchup visual indicator for Location Mode */}
                                                 {(viewMode === 'PlayingTodayLocation' || viewMode === 'PlayingTodayLocationStarter') && (
