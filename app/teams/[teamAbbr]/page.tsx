@@ -112,400 +112,403 @@ export default function TeamDetailPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // 1. Fetch Team Info
-                const teamRes = await fetch('/data/nhl_teams.csv');
-                const teamText = await teamRes.text();
-                const teamData = Papa.parse(teamText, { header: true, skipEmptyLines: true }).data as any[];
+                const [teamLogos, setTeamLogos] = useState<Record<string, string>>({}); // CommonName -> LogoURL
 
-                // Map CSV headers which might be "Team Name", "Team Tricode" etc.
-                // Assuming standard format from my knowledge of nhl_teams.csv
-                const info = teamData.find((t: any) => t['Team Tricode'] === teamAbbr || t['Team Tricode'] === 'UTA' && teamAbbr === 'UTA'); // Handle inconsistencies if any
+                useEffect(() => {
+                    const fetchData = async () => {
+                        try {
+                            // 1. Fetch Team Info
+                            const teamRes = await fetch('/data/nhl_teams.csv');
+                            const teamText = await teamRes.text();
+                            const teamData = Papa.parse(teamText, { header: true, skipEmptyLines: true }).data as any[];
 
-                if (info) {
-                    setTeamInfo({
-                        TeamName: info['Team Name'],
-                        CommonName: info['Common Name'],
-                        TeamTricode: info['Team Tricode'],
-                        HexColor1: info['Hex Color 1'],
-                        HexColor2: info['Hex Color 2'],
-                        TeamLogoURL: info['Team Logo URL']
-                    });
-                }
+                            // Build Logo Map
+                            const logos: Record<string, string> = {};
+                            teamData.forEach((t: any) => {
+                                logos[t['Common Name']] = t['Team Logo URL'];
+                            });
+                            setTeamLogos(logos);
 
-                // 2. Fetch Gamestats for Game Log & Record
-                const gamestatsRes = await fetch('/data/gamestats.csv');
-                const gamestatsText = await gamestatsRes.text();
-                const gamestats = Papa.parse(gamestatsText, { header: true, skipEmptyLines: true }).data as any[];
+                            // Find CURRENT team info
+                            const info = teamData.find((t: any) => t['Team Tricode'] === teamAbbr || t['Team Tricode'] === 'UTA' && teamAbbr === 'UTA');
 
-                // Filter for this team
-                // gamestats has 'team' column as Common Name usually (e.g. "Ducks")
-                // We need to match Common Name.
-                if (!info) return; // Can't proceed without team info
+                            if (info) {
+                                setTeamInfo({
+                                    TeamName: info['Team Name'],
+                                    CommonName: info['Common Name'],
+                                    TeamTricode: info['Team Tricode'],
+                                    HexColor1: info['Hex Color 1'],
+                                    HexColor2: info['Hex Color 2'],
+                                    TeamLogoURL: info['Team Logo URL']
+                                });
+                            }
 
-                const teamCommon = info['Common Name'];
-                const teamGames = gamestats.filter((row: any) => row.team === teamCommon);
+                            // 2. Fetch Gamestats for Game Log & Record
+                            const gamestatsRes = await fetch('/data/gamestats.csv');
+                            const gamestatsText = await gamestatsRes.text();
+                            const gamestats = Papa.parse(gamestatsText, { header: true, skipEmptyLines: true }).data as any[];
 
-                // Process Stats
-                let w = 0, l = 0, otl = 0;
-                const processedGames = teamGames.map((row: any) => {
-                    const res = row.result;
-                    let result_display = '';
+                            // Filter for this team
+                            if (!info) return; // Can't proceed without team info
 
-                    if (res === 'RW' || res === 'OTW' || res === 'SOW') {
-                        w++;
-                        if (res === 'RW') result_display = 'W';
-                        if (res === 'OTW') result_display = 'W (OT)';
-                        if (res === 'SOW') result_display = 'W (SO)';
-                    }
-                    else if (res === 'OTL' || res === 'SOL') {
-                        otl++;
-                        if (res === 'OTL') result_display = 'OTL'; // Standard notation
-                        if (res === 'SOL') result_display = 'SOL';
-                    }
-                    else if (res === 'RL') {
-                        l++;
-                        result_display = 'L';
-                    }
+                            const teamCommon = info['Common Name'];
+                            const teamGames = gamestats.filter((row: any) => row.team === teamCommon);
 
-                    return {
-                        game_id: row.game_id,
-                        date: row.game_date,
-                        opponent: row.opponent,
-                        result: result_display,
-                        result_code: res,
-                        home_away: row.home_away,
-                        gf: parseInt(row.goals_for),
-                        ga: parseInt(row.goals_ag),
-                        xgf: parseFloat(row.xG_for),
-                        xga: parseFloat(row.xG_against),
-                        starting_goalie: row.starting_goalie,
-                        opponent_starter: row.starting_goalie_opp,
-                        points: (res === 'RW' || res === 'OTW' || res === 'SOW') ? 2 : (res === 'OTL' || res === 'SOL') ? 1 : 0,
-                        // Extended
-                        pp_goals: parseInt(row.pp_goals),
-                        pp_opps: parseInt(row.pp_opportunities),
-                        pp_time: formatTime(row.pp_time), // Helper needed
-                        pp_goals_against: parseInt(row.pp_goals_against),
-                        pk_opps: parseInt(row.pk_opportunities),
-                        pk_time: formatTime(row.pk_time),
-                        sf: parseInt(row.sog_for),
-                        sa: parseInt(row.sog_ag),
-                        cf: parseInt(row.attempts_for),
-                        ca: parseInt(row.attempts_ag),
-                        sv_pct: parseFloat(row.save_percentage),
-                        en_gf: parseInt(row.emptynet_goalsfor),
-                        en_att: parseInt(row.en_attempts_for),
-                        en_ga: parseInt(row.emptynet_goalsagainst),
-                        en_att_ag: parseInt(row.en_attempts_against),
-                        ot_loss: res === 'OTL' || res === 'SOL'
+                            // Process Stats
+                            let w = 0, l = 0, otl = 0;
+                            const processedGames = teamGames.map((row: any) => {
+                                const res = row.result;
+                                let result_display = '';
+
+                                if (res === 'RW' || res === 'OTW' || res === 'SOW') {
+                                    w++;
+                                    if (res === 'RW') result_display = 'W';
+                                    if (res === 'OTW') result_display = 'W (OT)';
+                                    if (res === 'SOW') result_display = 'W (SO)';
+                                }
+                                else if (res === 'OTL' || res === 'SOL') {
+                                    otl++;
+                                    if (res === 'OTL') result_display = 'OTL';
+                                    if (res === 'SOL') result_display = 'SOL';
+                                }
+                                else if (res === 'RL') {
+                                    l++;
+                                    result_display = 'L';
+                                }
+
+                                return {
+                                    game_id: row.game_id,
+                                    date: row.game_date,
+                                    opponent: row.opponent,
+                                    result: result_display,
+                                    result_code: res,
+                                    home_away: row.home_away,
+                                    gf: parseInt(row.goals_for),
+                                    ga: parseInt(row.goals_ag),
+                                    xgf: parseFloat(row.xG_for),
+                                    xga: parseFloat(row.xG_against),
+                                    starting_goalie: row.starting_goalie,
+                                    opponent_starter: row.starting_goalie_opp,
+                                    points: (res === 'RW' || res === 'OTW' || res === 'SOW') ? 2 : (res === 'OTL' || res === 'SOL') ? 1 : 0,
+                                    // Extended
+                                    pp_goals: parseInt(row.pp_goals),
+                                    pp_opps: parseInt(row.pp_opportunities),
+                                    pp_time: formatTime(row.pp_time),
+                                    pp_goals_against: parseInt(row.pp_goals_against),
+                                    pk_opps: parseInt(row.pk_opportunities),
+                                    pk_time: formatTime(row.pk_time),
+                                    sf: parseInt(row.sog_for),
+                                    sa: parseInt(row.sog_ag),
+                                    cf: parseInt(row.attempts_for),
+                                    ca: parseInt(row.attempts_ag),
+                                    sv_pct: parseFloat(row.save_percentage),
+                                    en_gf: parseInt(row.emptynet_goalsfor),
+                                    en_att: parseInt(row.en_attempts_for),
+                                    en_ga: parseInt(row.emptynet_goalsagainst),
+                                    en_att_ag: parseInt(row.en_attempts_against),
+                                    ot_loss: res === 'OTL' || res === 'SOL'
+                                };
+                            }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+                            setGames(processedGames);
+                            setRecord({ w, l, otl, pts: (w * 2) + otl });
+
+                            // 3. Fetch Ratings
+                            const ratingsRes = await fetch('/data/team_ratings.json');
+                            const ratingsData = await ratingsRes.json();
+                            if (ratingsData[teamCommon]) {
+                                setRating(ratingsData[teamCommon]);
+                            }
+
+                            // 4. Fetch Player Stats
+                            const playersRes = await fetch('/data/nhl_season_2025_2026_player_stats.csv');
+                            const playersText = await playersRes.text();
+                            const players = Papa.parse(playersText, { header: true, skipEmptyLines: true, dynamicTyping: true }).data as PlayerBoxscoreRow[];
+
+                            const teamPlayerStats = players.filter(p => p.team === teamAbbr);
+                            setPlayerStats(teamPlayerStats);
+
+                        } catch (error) {
+                            console.error("Error fetching team data:", error);
+                        } finally {
+                            setLoading(false);
+                        }
                     };
-                }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Descending
 
-                setGames(processedGames);
-                setRecord({ w, l, otl, pts: (w * 2) + otl });
-
-                // 3. Fetch Ratings
-                const ratingsRes = await fetch('/data/team_ratings.json');
-                const ratingsData = await ratingsRes.json();
-                if (ratingsData[teamCommon]) {
-                    setRating(ratingsData[teamCommon]);
-                }
-
-                // 4. Fetch Player Stats
-                const playersRes = await fetch('/data/nhl_season_2025_2026_player_stats.csv');
-                const playersText = await playersRes.text();
-                const players = Papa.parse(playersText, { header: true, skipEmptyLines: true, dynamicTyping: true }).data as PlayerBoxscoreRow[];
-
-                // Filter by Team ID or Team Name? CSV has 'team' (Abbrev) usually
-                // The backfill script saves 'team' as Abbrev (e.g. ANA).
-                const teamPlayerStats = players.filter(p => p.team === teamAbbr);
-                setPlayerStats(teamPlayerStats);
-
-            } catch (error) {
-                console.error("Error fetching team data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (teamAbbr) fetchData();
-    }, [teamAbbr]);
+                    if (teamAbbr) fetchData();
+                }, [teamAbbr]);
 
 
-    // -- Derived Stats --
-    const getSkaterStats = useMemo(() => {
-        const stats: Record<string, any> = {};
-        playerStats.filter(p => p.is_goalie === 0).forEach(p => {
-            if (!stats[p.player_id]) {
-                stats[p.player_id] = { ...p, gp: 0, goals: 0, assists: 0, points: 0, shots: 0, hits: 0, blk: 0, pim: 0, plus_minus: 0 };
-            }
-            const s = stats[p.player_id];
-            s.gp++;
-            s.goals += p.goals;
-            s.assists += p.assists;
-            s.points += p.points;
-            s.shots += p.shots;
-            s.hits += p.hits;
-            s.blk += p.blocked_shots;
-            s.pim += p.pim;
-            s.plus_minus += p.plus_minus;
-            // TOI parsing needed if summing, simplified for now
-        });
-        return Object.values(stats).sort((a, b) => b.points - a.points);
-    }, [playerStats]);
+                // -- Derived Stats --
+                const getSkaterStats = useMemo(() => {
+                    const stats: Record<string, any> = {};
+                    playerStats.filter(p => p.is_goalie === 0).forEach(p => {
+                        if (!stats[p.player_id]) {
+                            stats[p.player_id] = { ...p, gp: 0, goals: 0, assists: 0, points: 0, shots: 0, hits: 0, blk: 0, pim: 0, plus_minus: 0 };
+                        }
+                        const s = stats[p.player_id];
+                        s.gp++;
+                        s.goals += p.goals;
+                        s.assists += p.assists;
+                        s.points += p.points;
+                        s.shots += p.shots;
+                        s.hits += p.hits;
+                        s.blk += p.blocked_shots;
+                        s.pim += p.pim;
+                        s.plus_minus += p.plus_minus;
+                        // TOI parsing needed if summing, simplified for now
+                    });
+                    return Object.values(stats).sort((a, b) => b.points - a.points);
+                }, [playerStats]);
 
 
-    // -- Render --
-    if (loading) return <div className="min-h-screen bg-black text-white p-10">Loading...</div>;
-    if (!teamInfo) return <div className="min-h-screen bg-black text-white p-10">Team Not Found</div>;
+                // -- Render --
+                if (loading) return <div className="min-h-screen bg-black text-white p-10">Loading...</div>;
+                if (!teamInfo) return <div className="min-h-screen bg-black text-white p-10">Team Not Found</div>;
 
-    const primaryColor = teamInfo.HexColor1;
-    const secondaryColor = teamInfo.HexColor2 === '#000000' ? '#333' : teamInfo.HexColor2;
+                const primaryColor = teamInfo.HexColor1;
+                const secondaryColor = teamInfo.HexColor2 === '#000000' ? '#333' : teamInfo.HexColor2;
 
-    return (
-        <main className="min-h-screen bg-black text-white font-sans pb-20 overflow-x-hidden selection:bg-white/20">
-            {/* Ambient Background */}
-            <div
-                className="fixed top-0 left-0 w-full h-[500px] opacity-40 blur-[150px] pointer-events-none z-0"
-                style={{ background: `radial-gradient(circle at 50% 0%, ${primaryColor}, transparent)` }}
-            ></div>
+                return (
+                    <main className="min-h-screen bg-black text-white font-sans pb-20 overflow-x-hidden selection:bg-white/20">
+                        {/* Ambient Background */}
+                        <div
+                            className="fixed top-0 left-0 w-full h-[500px] opacity-40 blur-[150px] pointer-events-none z-0"
+                            style={{ background: `radial-gradient(circle at 50% 0%, ${primaryColor}, transparent)` }}
+                        ></div>
 
-            <div className="max-w-6xl mx-auto relative z-10 px-4 md:px-8">
-                <Header compact />
+                        <div className="w-full px-4 md:px-8 relative z-10">
+                            <Header compact />
 
-                <div className="mt-6 mb-4">
-                    <Link href="/teams" className="inline-flex items-center text-sm text-gray-400 hover:text-white transition-colors">
-                        ← Back to Teams
-                    </Link>
-                </div>
-
-                {/* Team Header */}
-                <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="flex items-center gap-6">
-                        <img
-                            src={teamInfo.TeamLogoURL}
-                            alt={teamInfo.CommonName}
-                            className="w-32 h-32 md:w-40 md:h-40 drop-shadow-[0_0_35px_rgba(255,255,255,0.15)]"
-                        />
-                        <div>
-                            <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic" style={{ color: 'white' }}>
-                                {teamInfo.CommonName}
-                            </h1>
-                            <div className="text-xl md:text-2xl text-gray-300 font-mono mt-1 flex gap-4 items-center">
-                                <span className="font-bold text-white">{record.w}-{record.l}-{record.otl}</span>
-                                <span className="text-gray-500">|</span>
-                                <span className="text-emerald-400 font-bold">{record.pts} PTS</span>
+                            <div className="mt-6 mb-4">
+                                <Link href="/teams" className="inline-flex items-center text-sm text-gray-400 hover:text-white transition-colors">
+                                    ← Back to Teams
+                                </Link>
                             </div>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Stat Rings */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
-                    <StatRing value={rating ? parseFloat(rating.xgf_rating.toFixed(2)) : 0} max={4.5} label="xGF/60" color={primaryColor} />
-                    <StatRing value={rating ? parseFloat(rating.xga_rating.toFixed(2)) : 0} max={4.5} label="xGA/60" color="#EF4444" />
-                    <StatRing value={rating ? parseFloat(rating.pp_rating.toFixed(1)) : 0} max={30} label="PP%" color="#F59E0B" />
-                    <StatRing value={rating ? parseFloat(rating.pk_rating.toFixed(1)) : 0} max={100} label="PK%" color="#3B82F6" />
-                    <StatRing value={rating ? parseFloat(rating.xgf_5v5_rating.toFixed(2)) : 0} max={3.5} label="5v5 xGF" color="#10B981" />
-                </div>
+                            {/* Team Header */}
+                            <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <div className="flex items-center gap-6">
+                                    <img
+                                        src={teamInfo.TeamLogoURL}
+                                        alt={teamInfo.CommonName}
+                                        className="w-32 h-32 md:w-40 md:h-40 drop-shadow-[0_0_35px_rgba(255,255,255,0.15)]"
+                                    />
+                                    <div>
+                                        <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic" style={{ color: 'white' }}>
+                                            {teamInfo.CommonName}
+                                        </h1>
+                                        <div className="text-xl md:text-2xl text-gray-300 font-mono mt-1 flex gap-4 items-center">
+                                            <span className="font-bold text-white">{record.w}-{record.l}-{record.otl}</span>
+                                            <span className="text-gray-500">|</span>
+                                            <span className="text-emerald-400 font-bold">{record.pts} PTS</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                {/* Tabs */}
-                {/* Simplified Tabs - just simple buttons for now */}
-                <div className="flex gap-4 border-b border-white/10 mb-6 sticky top-0 bg-black/80 backdrop-blur-md pt-4 pb-0 z-20">
-                    {['games', 'skaters', 'goalies'].map(tab => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab as any)}
-                            className={`pb-4 px-4 text-sm font-bold uppercase tracking-wider transition-colors ${activeTab === tab ? 'text-white border-b-2' : 'text-gray-500 hover:text-white'
-                                }`}
-                            style={{ borderColor: activeTab === tab ? primaryColor : 'transparent' }}
-                        >
-                            {tab}
-                        </button>
-                    ))}
-                </div>
+                            {/* Stat Rings */}
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
+                                <StatRing value={rating ? parseFloat(rating.xgf_rating.toFixed(2)) : 0} max={4.5} label="xGF/60" color={primaryColor} />
+                                <StatRing value={rating ? parseFloat(rating.xga_rating.toFixed(2)) : 0} max={4.5} label="xGA/60" color="#EF4444" />
+                                <StatRing value={rating ? parseFloat(rating.pp_rating.toFixed(1)) : 0} max={30} label="PP%" color="#F59E0B" />
+                                <StatRing value={rating ? parseFloat(rating.pk_rating.toFixed(1)) : 0} max={100} label="PK%" color="#3B82F6" />
+                                <StatRing value={rating ? parseFloat(rating.xgf_5v5_rating.toFixed(2)) : 0} max={3.5} label="5v5 xGF" color="#10B981" />
+                            </div>
 
-                {/* Game Log Tab */}
-                {activeTab === 'games' && (
-                    <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
-                        <table className="w-full text-xs text-left whitespace-nowrap">
-                            <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
-                                <tr>
-                                    <th className="p-3 sticky left-0 bg-gray-900 z-10 w-8"></th>
-                                    <th className="p-3 sticky left-8 bg-gray-900 z-10">Date</th>
-                                    <th className="p-3">Time</th>
-                                    <th className="p-3">Starter</th>
-                                    <th className="p-3">Vs/@</th>
-                                    <th className="p-3">Opponent</th>
-                                    <th className="p-3">Opp Starter</th>
-                                    <th className="p-3 text-center">Res</th>
-                                    <th className="p-3 text-center">GF</th>
-                                    <th className="p-3 text-center">GA</th>
-                                    <th className="p-3 text-center">GΔ</th>
-                                    <th className="p-3 text-center">PPG</th>
-                                    <th className="p-3 text-center">PP OPP</th>
-                                    <th className="p-3 text-center">PP Time</th>
-                                    <th className="p-3 text-center">PPGA</th>
-                                    <th className="p-3 text-center">PK OPP</th>
-                                    <th className="p-3 text-center">PK Time</th>
-                                    <th className="p-3 text-center">SF</th>
-                                    <th className="p-3 text-center">SA</th>
-                                    <th className="p-3 text-center">CF</th>
-                                    <th className="p-3 text-center">CA</th>
-                                    <th className="p-3 text-center">SH%</th>
-                                    <th className="p-3 text-center">SV%</th>
-                                    <th className="p-3 text-center">GSAx</th>
-                                    <th className="p-3 text-center">xGF</th>
-                                    <th className="p-3 text-center">xGA</th>
-                                    <th className="p-3 text-center">EN GF</th>
-                                    <th className="p-3 text-center">EN Att</th>
-                                    <th className="p-3 text-center">OT Loss</th>
-                                    <th className="p-3 text-center">EN GA</th>
-                                    <th className="p-3 text-center">EN Att Ag</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-800">
-                                {games.length === 0 ?
-                                    <tr><td colSpan={30} className="p-4 text-center text-gray-500">No games played.</td></tr>
-                                    : games.map((game, idx) => {
-                                        const isExpanded = expandedGameId === game.game_id;
-                                        const gd = game.gf - game.ga;
-                                        const sh_pct = game.sf > 0 ? (game.gf / game.sf * 100).toFixed(1) : "0.0";
-                                        const sv_pct = (game.sv_pct * 100).toFixed(1);
-                                        const gsax = (game.xga - game.ga).toFixed(2);
-
-                                        return (
-                                            <React.Fragment key={game.game_id}>
-                                                <tr
-                                                    onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
-                                                    className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
-                                                >
-                                                    <td className="p-3 sticky left-0 bg-gray-900/95 border-r border-gray-800 z-10 text-center text-gray-500">
-                                                        <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180 text-white' : ''}`}>▼</div>
-                                                    </td>
-                                                    <td className="p-3 sticky left-8 bg-gray-900/95 border-r border-gray-800 z-10 font-mono text-gray-300">{game.date}</td>
-                                                    <td className="p-3 text-gray-500 font-mono">-</td>
-                                                    <td className="p-3 text-gray-400 text-[11px] truncate max-w-[100px]" title={game.starting_goalie}>
-                                                        {game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}
-                                                    </td>
-                                                    <td className={`p-3 text-center font-bold ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
-                                                        {game.home_away === 'Home' ? 'vs' : '@'}
-                                                    </td>
-                                                    <td className="p-3 font-bold text-white flex items-center gap-2">
-                                                        {/* Requires mapping Opponent to Logo URL, simplistic fallback for now */}
-                                                        <div className="w-6 h-6 relative shrink-0">
-                                                            {/* We can try to use a generic path or lookup if we had the map accessible. 
-                                                        For now, showing name is safer than broken image. 
-                                                        Ideally, we'd pass a Map<TeamName, LogoURL> to the component. 
-                                                    */}
-                                                        </div>
-                                                        {game.opponent}
-                                                    </td>
-                                                    <td className="p-3 text-gray-400 text-[11px] truncate max-w-[100px]" title={game.opponent_starter}>
-                                                        {game.opponent_starter ? game.opponent_starter.split(' ').pop() : '-'}
-                                                    </td>
-                                                    <td className="p-3 text-center">
-                                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-black ${game.result_code.includes('W') ? 'bg-green-900/40 text-green-400 border border-green-500/20' :
-                                                            game.result_code.includes('OTL') ? 'bg-orange-900/40 text-orange-400 border border-orange-500/20' :
-                                                                'bg-red-900/40 text-red-400 border border-red-500/20'
-                                                            }`}>
-                                                            {game.result}
-                                                        </span>
-                                                    </td>
-                                                    <td className="p-3 text-center font-mono text-white">{game.gf}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-400">{game.ga}</td>
-                                                    <td className={`p-3 text-center font-bold font-mono ${gd > 0 ? 'text-green-400' : gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>
-                                                        {gd > 0 ? '+' : ''}{gd}
-                                                    </td>
-                                                    <td className="p-3 text-center font-mono text-emerald-400">{game.pp_goals}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-500">{game.pp_opps}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-500">{game.pp_time}</td>
-                                                    <td className="p-3 text-center font-mono text-red-400">{game.pp_goals_against}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-500">{game.pk_opps}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-500">{game.pk_time}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-300">{game.sf}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-300">{game.sa}</td>
-                                                    <td className="p-3 text-center font-mono text-blue-300">{game.cf}</td>
-                                                    <td className="p-3 text-center font-mono text-orange-300">{game.ca}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-400">{sh_pct}%</td>
-                                                    <td className="p-3 text-center font-mono text-gray-400">{sv_pct}%</td>
-                                                    <td className={`p-3 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-300">{game.xgf.toFixed(2)}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-500">{game.en_gf}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-500">{game.en_att}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-500">{game.ot_loss ? 'Yes' : '-'}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-500">{game.en_ga}</td>
-                                                    <td className="p-3 text-center font-mono text-gray-500">{game.en_att_ag}</td>
-                                                </tr>
-                                                {isExpanded && (
-                                                    <tr>
-                                                        <td colSpan={30} className="p-0 border-b border-gray-800 bg-gray-900/50">
-                                                            <div className="p-4 border-l-4" style={{ borderColor: primaryColor }}>
-                                                                <GameBoxscore
-                                                                    gameId={parseInt(game.game_id)}
-                                                                    teamAbbr={teamAbbr}
-                                                                    // Robust filter: convert both to string to ensure matching
-                                                                    playerStats={playerStats.filter(p => String(p.game_id) === String(game.game_id))}
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                )}
-                                            </React.Fragment>
-                                        );
-                                    })}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-
-                {/* Skaters Tab */}
-                {activeTab === 'skaters' && (
-                    <div className="overflow-x-auto bg-white/5 rounded-lg p-4">
-                        <table className="w-full text-sm text-left">
-                            <thead className="text-gray-500 border-b border-white/10">
-                                <tr>
-                                    <th className="p-2">Player</th>
-                                    <th className="p-2 text-center">Pos</th>
-                                    <th className="p-2 text-center">GP</th>
-                                    <th className="p-2 text-right text-white font-bold">PTS</th>
-                                    <th className="p-2 text-right">G</th>
-                                    <th className="p-2 text-right">A</th>
-                                    <th className="p-2 text-right">+/-</th>
-                                    <th className="p-2 text-right">S</th>
-                                    <th className="p-2 text-right">HIT</th>
-                                    <th className="p-2 text-right">BLK</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {getSkaterStats.map((p: any) => (
-                                    <tr key={p.player_id} className="border-b border-white/5 hover:bg-white/5">
-                                        <td className="p-2 font-medium">#{p.number} {p.name}</td>
-                                        <td className="p-2 text-center text-gray-500">{p.position}</td>
-                                        <td className="p-2 text-center text-gray-400">{p.gp}</td>
-                                        <td className="p-2 text-right font-bold text-emerald-400">{p.points}</td>
-                                        <td className="p-2 text-right text-white">{p.goals}</td>
-                                        <td className="p-2 text-right text-gray-400">{p.assists}</td>
-                                        <td className="p-2 text-right text-gray-400">{p.plus_minus}</td>
-                                        <td className="p-2 text-right text-gray-500">{p.shots}</td>
-                                        <td className="p-2 text-right text-gray-500">{p.hits}</td>
-                                        <td className="p-2 text-right text-gray-500">{p.blk}</td>
-                                    </tr>
+                            {/* Tabs */}
+                            {/* Simplified Tabs - just simple buttons for now */}
+                            <div className="flex gap-4 border-b border-white/10 mb-6 sticky top-0 bg-black/80 backdrop-blur-md pt-4 pb-0 z-20">
+                                {['games', 'skaters', 'goalies'].map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab as any)}
+                                        className={`pb-4 px-4 text-sm font-bold uppercase tracking-wider transition-colors ${activeTab === tab ? 'text-white border-b-2' : 'text-gray-500 hover:text-white'
+                                            }`}
+                                        style={{ borderColor: activeTab === tab ? primaryColor : 'transparent' }}
+                                    >
+                                        {tab}
+                                    </button>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                            </div>
 
-                {/* Goalies Tab - Placeholder for now */}
-                {activeTab === 'goalies' && (
-                    <div className="p-10 text-center text-gray-500 italic">
-                        Goalie aggregates coming soon. View Game Logs for details.
-                    </div>
-                )}
+                            {/* Game Log Tab */}
+                            {activeTab === 'games' && (
+                                <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
+                                    <table className="w-full text-xs text-left whitespace-nowrap">
+                                        <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
+                                            <tr>
+                                                <th className="p-1 sticky left-0 bg-gray-900 z-10 w-8"></th>
+                                                <th className="p-1 sticky left-8 bg-gray-900 z-10">Date</th>
+                                                <th className="p-1">Time</th>
+                                                <th className="p-1">Starter</th>
+                                                <th className="p-1 text-center">Loc</th>
+                                                <th className="p-1 text-center">Opp</th>
+                                                <th className="p-1">Opp Starter</th>
+                                                <th className="p-1 text-center">Res</th>
+                                                <th className="p-1 text-center">GF</th>
+                                                <th className="p-1 text-center">GA</th>
+                                                <th className="p-1 text-center">GΔ</th>
+                                                <th className="p-1 text-center">PPG</th>
+                                                <th className="p-1 text-center">PP OPP</th>
+                                                <th className="p-1 text-center">PP Time</th>
+                                                <th className="p-1 text-center">PPGA</th>
+                                                <th className="p-1 text-center">PK OPP</th>
+                                                <th className="p-1 text-center">PK Time</th>
+                                                <th className="p-1 text-center">SF</th>
+                                                <th className="p-1 text-center">SA</th>
+                                                <th className="p-1 text-center">CF</th>
+                                                <th className="p-1 text-center">CA</th>
+                                                <th className="p-1 text-center">SH%</th>
+                                                <th className="p-1 text-center">SV%</th>
+                                                <th className="p-1 text-center">GSAx</th>
+                                                <th className="p-1 text-center">xGF</th>
+                                                <th className="p-1 text-center">xGA</th>
+                                                <th className="p-1 text-center">EN GF</th>
+                                                <th className="p-1 text-center">EN Att</th>
+                                                <th className="p-1 text-center">OT Loss</th>
+                                                <th className="p-1 text-center">EN GA</th>
+                                                <th className="p-1 text-center">EN Att Ag</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-800">
+                                            {games.length === 0 ?
+                                                <tr><td colSpan={30} className="p-4 text-center text-gray-500">No games played.</td></tr>
+                                                : games.map((game, idx) => {
+                                                    const isExpanded = expandedGameId === game.game_id;
+                                                    const gd = game.gf - game.ga;
+                                                    const sh_pct = game.sf > 0 ? (game.gf / game.sf * 100).toFixed(1) : "0.0";
+                                                    const sv_pct = (game.sv_pct * 100).toFixed(1);
+                                                    const gsax = (game.xga - game.ga).toFixed(2);
+                                                    const logoUrl = teamLogos[game.opponent] || '';
 
-            </div>
-        </main>
-    );
-}
+                                                    return (
+                                                        <React.Fragment key={game.game_id}>
+                                                            <tr
+                                                                onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
+                                                                className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
+                                                            >
+                                                                <td className="p-1 sticky left-0 bg-gray-900/95 border-r border-gray-800 z-10 text-center text-gray-500">
+                                                                    <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180 text-white' : ''}`}>▼</div>
+                                                                </td>
+                                                                <td className="p-1 sticky left-8 bg-gray-900/95 border-r border-gray-800 z-10 font-mono text-gray-300">{game.date}</td>
+                                                                <td className="p-1 text-gray-500 font-mono">-</td>
+                                                                <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.starting_goalie}>
+                                                                    {game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}
+                                                                </td>
+                                                                <td className={`p-1 text-center font-bold text-[10px] ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
+                                                                    {game.home_away === 'Home' ? 'vs' : '@'}
+                                                                </td>
+                                                                <td className="p-1 justify-center">
+                                                                    <div className="w-6 h-6 relative mx-auto" title={game.opponent}>
+                                                                        {logoUrl ? <img src={logoUrl} alt={game.opponent} className="w-6 h-6 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.opponent_starter}>
+                                                                    {game.opponent_starter ? game.opponent_starter.split(' ').pop() : '-'}
+                                                                </td>
+                                                                <td className="p-1 text-center">
+                                                                    <span className={`px-1 py-0.5 rounded text-[10px] font-black ${game.result_code.includes('W') ? 'bg-green-900/40 text-green-400 border border-green-500/20' :
+                                                                        game.result_code.includes('OTL') ? 'bg-orange-900/40 text-orange-400 border border-orange-500/20' :
+                                                                            'bg-red-900/40 text-red-400 border border-red-500/20'
+                                                                        }`}>
+                                                                        {game.result}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="p-1 text-center font-mono text-white">{game.gf}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-400">{game.ga}</td>
+                                                                <td className={`p-1 text-center font-bold font-mono ${gd > 0 ? 'text-green-400' : gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                                                                    {gd > 0 ? '+' : ''}{gd}
+                                                                </td>
+                                                                <td className="p-1 text-center font-mono text-emerald-400">{game.pp_goals}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.pp_opps}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.pp_time}</td>
+                                                                <td className="p-1 text-center font-mono text-red-400">{game.pp_goals_against}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.pk_opps}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.pk_time}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-300">{game.sf}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-300">{game.sa}</td>
+                                                                <td className="p-1 text-center font-mono text-blue-300">{game.cf}</td>
+                                                                <td className="p-1 text-center font-mono text-orange-300">{game.ca}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-400">{sh_pct}%</td>
+                                                                <td className="p-1 text-center font-mono text-gray-400">{sv_pct}%</td>
+                                                                <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-300">{game.xgf.toFixed(2)}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_gf}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.ot_loss ? 'Yes' : '-'}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_ga}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag}</td>
+                                                            </tr>
+                                                            {isExpanded && (
+                                                                <tr>
+                                                                    <td colSpan={30} className="p-0 border-b border-gray-800 bg-gray-900/50">
+                                                                        <div className="p-4 border-l-4" style={{ borderColor: primaryColor }}>
+                                                                            <GameBoxscore
+                                                                                gameId={parseInt(game.game_id)}
+                                                                                teamAbbr={teamAbbr}
+                                                                                // Robust filter: convert both to string to ensure matching
+                                                                                playerStats={playerStats.filter(p => String(p.game_id) === String(game.game_id))}
+                                                                            />
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {/* Skaters Tab */}
+                            {activeTab === 'skaters' && (
+                                <div className="overflow-x-auto bg-white/5 rounded-lg p-4">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="text-gray-500 border-b border-white/10">
+                                            <tr>
+                                                <th className="p-2">Player</th>
+                                                <th className="p-2 text-center">Pos</th>
+                                                <th className="p-2 text-center">GP</th>
+                                                <th className="p-2 text-right text-white font-bold">PTS</th>
+                                                <th className="p-2 text-right">G</th>
+                                                <th className="p-2 text-right">A</th>
+                                                <th className="p-2 text-right">+/-</th>
+                                                <th className="p-2 text-right">S</th>
+                                                <th className="p-2 text-right">HIT</th>
+                                                <th className="p-2 text-right">BLK</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {getSkaterStats.map((p: any) => (
+                                                <tr key={p.player_id} className="border-b border-white/5 hover:bg-white/5">
+                                                    <td className="p-2 font-medium">#{p.number} {p.name}</td>
+                                                    <td className="p-2 text-center text-gray-500">{p.position}</td>
+                                                    <td className="p-2 text-center text-gray-400">{p.gp}</td>
+                                                    <td className="p-2 text-right font-bold text-emerald-400">{p.points}</td>
+                                                    <td className="p-2 text-right text-white">{p.goals}</td>
+                                                    <td className="p-2 text-right text-gray-400">{p.assists}</td>
+                                                    <td className="p-2 text-right text-gray-400">{p.plus_minus}</td>
+                                                    <td className="p-2 text-right text-gray-500">{p.shots}</td>
+                                                    <td className="p-2 text-right text-gray-500">{p.hits}</td>
+                                                    <td className="p-2 text-right text-gray-500">{p.blk}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {/* Goalies Tab - Placeholder for now */}
+                            {activeTab === 'goalies' && (
+                                <div className="p-10 text-center text-gray-500 italic">
+                                    Goalie aggregates coming soon. View Game Logs for details.
+                                </div>
+                            )}
+
+                        </div>
+                    </main>
+                );
+            }
