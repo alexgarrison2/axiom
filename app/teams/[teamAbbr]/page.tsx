@@ -69,6 +69,8 @@ interface PlayerBoxscoreRow {
     hits: number;
     blocked_shots: number;
     pim: number;
+    pp_goals?: number;
+    sh_goals?: number;
     is_goalie: number;
     saves?: number;
     shots_against?: number;

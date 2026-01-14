@@ -9,7 +9,7 @@ import pandas as pd
 
 # Constants
 BASE_URL = "https://api-web.nhle.com/v1"
-OUTPUT_FILENAME = "pipeline/nhl_season_2025_2026_player_stats.csv"
+OUTPUT_FILENAME = "public/data/nhl_season_2025_2026_player_stats.csv"
 GAME_STATS_FILE = "public/data/gamestats.csv"
 
 # Create unverified context for SSL to avoid cert errors
@@ -58,10 +58,12 @@ def parse_boxscore(game_id, boxscore):
                 points = player.get("points", 0)
                 plus_minus = player.get("plusMinus", 0)
                 toi = player.get("toi", "00:00")
-                shots = player.get("shots", 0)
+                shots = player.get("sog", 0)
                 hits = player.get("hits", 0)
                 blocked_shots = player.get("blockedShots", 0)
                 pim = player.get("pim", 0)
+                pp_goals = player.get("powerPlayGoals", 0)
+                sh_goals = player.get("shorthandedGoals", 0)
                 
                 row = {
                     "game_id": game_id,
@@ -81,6 +83,8 @@ def parse_boxscore(game_id, boxscore):
                     "hits": hits,
                     "blocked_shots": blocked_shots,
                     "pim": pim,
+                    "pp_goals": pp_goals,
+                    "sh_goals": sh_goals,
                     "is_goalie": 0
                 }
                 rows.append(row)
@@ -118,6 +122,8 @@ def parse_boxscore(game_id, boxscore):
                 "hits": 0,
                 "blocked_shots": 0,
                 "pim": goalie.get("pim", 0),
+                "pp_goals": 0,
+                "sh_goals": 0,
                 "is_goalie": 1,
                 "shots_against": shots_against,
                 "saves": saves,

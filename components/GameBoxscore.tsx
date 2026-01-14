@@ -14,6 +14,8 @@ interface PlayerStat {
     hits: number;
     blocked_shots: number;
     pim: number;
+    pp_goals?: number;
+    sh_goals?: number;
     is_goalie: number;
     saves?: number;
     shots_against?: number;
@@ -83,14 +85,16 @@ const GameBoxscore: React.FC<GameBoxscoreProps> = ({ gameId, teamAbbr, playerSta
                             <tr>
                                 <th className="py-1 px-2">Player</th>
                                 <th className="py-1 px-2 text-center">Pos</th>
-                                <th className="py-1 px-2 text-right font-bold text-white">P</th>
+                                <th className="py-1 px-2 text-right">TOI</th>
                                 <th className="py-1 px-2 text-right">G</th>
                                 <th className="py-1 px-2 text-right">A</th>
+                                <th className="py-1 px-2 text-right font-bold text-white">P</th>
                                 <th className="py-1 px-2 text-right">+/-</th>
                                 <th className="py-1 px-2 text-right">S</th>
                                 <th className="py-1 px-2 text-right">BLK</th>
                                 <th className="py-1 px-2 text-right">HIT</th>
-                                <th className="py-1 px-2 text-right">TOI</th>
+                                <th className="py-1 px-2 text-right text-gray-500">PPG</th>
+                                <th className="py-1 px-2 text-right text-gray-500">SHG</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -98,16 +102,16 @@ const GameBoxscore: React.FC<GameBoxscoreProps> = ({ gameId, teamAbbr, playerSta
                                 <tr key={p.player_id} className="border-b border-white/5 hover:bg-white/5">
                                     <td className="py-1 px-2 font-medium text-white">#{p.number} {p.name}</td>
                                     <td className="py-1 px-2 text-center text-gray-500">{p.position}</td>
-                                    <td className="py-1 px-2 text-right font-bold text-emerald-400">{p.points}</td>
-                                    <td className="py-1 px-2 text-right text-gray-300">{p.goals > 0 ? <span className="text-white font-bold">{p.goals}</span> : 0}</td>
+                                    <td className="py-1 px-2 text-right text-gray-400 font-mono">{p.toi}</td>
+                                    <td className="py-1 px-2 text-right text-gray-300">{p.goals}</td>
                                     <td className="py-1 px-2 text-right text-gray-300">{p.assists}</td>
-                                    <td className={`py-1 px-2 text-right ${p.plus_minus > 0 ? 'text-green-400' : p.plus_minus < 0 ? 'text-red-400' : 'text-gray-500'}`}>
-                                        {p.plus_minus > 0 ? '+' : ''}{p.plus_minus}
-                                    </td>
-                                    <td className="py-1 px-2 text-right text-gray-400">{p.shots}</td>
+                                    <td className="py-1 px-2 text-right font-bold text-white">{p.points}</td>
+                                    <td className={`py-1 px-2 text-right ${p.plus_minus > 0 ? 'text-green-400' : p.plus_minus < 0 ? 'text-red-400' : 'text-gray-500'}`}>{p.plus_minus > 0 ? '+' : ''}{p.plus_minus}</td>
+                                    <td className="py-1 px-2 text-right text-gray-300">{p.shots}</td>
                                     <td className="py-1 px-2 text-right text-gray-400">{p.blocked_shots}</td>
                                     <td className="py-1 px-2 text-right text-gray-400">{p.hits}</td>
-                                    <td className="py-1 px-2 text-right text-gray-400">{p.toi}</td>
+                                    <td className="py-1 px-2 text-right text-gray-500">{p.pp_goals || 0}</td>
+                                    <td className="py-1 px-2 text-right text-gray-500">{p.sh_goals || 0}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -117,5 +121,6 @@ const GameBoxscore: React.FC<GameBoxscoreProps> = ({ gameId, teamAbbr, playerSta
         </div>
     );
 };
+
 
 export default GameBoxscore;
