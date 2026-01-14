@@ -29,8 +29,6 @@ interface GameLog {
     ga: number;
     xgf: number;
     xga: number;
-    xgf: number;
-    xga: number;
     starting_goalie: string;
     opponent_starter: string;
     points: number;
