@@ -26,6 +26,31 @@ def generate_history():
     # Map for easy lookup: (date, home, away) -> record_index
     lookup = {(r['date'], r['homeTeam'], r['awayTeam']): i for i, r in enumerate(history_records)}
     
+    # 0.5 Load "Frozen" Predictions from Detailed CSV
+    detailed_preds_lookup = {}
+    detailed_csv_path = os.path.join('..', 'data', 'predictions_detailed.csv')
+    if os.path.exists(detailed_csv_path):
+        try:
+            # Use pandas for easier reading
+            df_det = pd.read_csv(detailed_csv_path)
+            # Ensure date format matches history (YYYY-MM-DD)
+            # CSV usually has YYYY-MM-DD
+            for _, row in df_det.iterrows():
+                # Key: (date_str, home, away)
+                d_str = str(row['game_date']).split(' ')[0] # Handle timestamps if any
+                k = (d_str, row['home_team'], row['away_team'])
+                
+                detailed_preds_lookup[k] = {
+                    'home_xg': float(row['home_xg']),
+                    'away_xg': float(row['away_xg']),
+                    'home_win_pct': float(row['home_win_pct'])
+                }
+            print(f"Loaded {len(detailed_preds_lookup)} frozen predictions from {detailed_csv_path}")
+        except Exception as e:
+            print(f"Warning: Could not load detailed predictions CSV: {e}")
+    else:
+        print(f"Warning: {detailed_csv_path} not found. History will be re-simulated for all games.")
+    
     # Load all game data
     df = pd.read_csv('nhl_season_2025_2026_gamestats.csv')
         
@@ -120,40 +145,61 @@ def generate_history():
             # NEW GAME - Perform Full Prediction
             if home_team not in team_ratings or away_team not in team_ratings: continue
             
-            # --- V3 LOGIC PREDICTION ---
-            h_r = team_ratings[home_team]
-            a_r = team_ratings[away_team]
-            h_5v5 = (h_r['xgf_5v5_rating'] * a_r['xga_5v5_rating']) / league_xg_5v5
-            a_5v5 = (a_r['xgf_5v5_rating'] * h_r['xga_5v5_rating']) / league_xg_5v5
+            # NEW GAME - Check if we have a "Freeze" record from predictions_detailed.csv
+            # This ensures History matches what the user actually saw on that day.
             
-            h_opps = (h_r['penalties_drawn_per_60'] + a_r['penalties_taken_per_60']) / 2
-            a_opps = (a_r['penalties_drawn_per_60'] + h_r['penalties_taken_per_60']) / 2
-            h_eff, a_eff = (h_r['pp_rating'] / 100.0) / 0.20, (a_r['pp_rating'] / 100.0) / 0.20
-            h_st_xg, a_st_xg = h_opps * ST_VAL_PP * h_eff, a_opps * ST_VAL_PP * a_eff
+            # Load detailed predictions if not already loaded (Optimization: Load once outside loop would be better but for safety here)
+            # improved: Load once at top of file, but for now let's just assume we need to check existence.
+            # Actually, let's implement the lookup check here using a global or passed-in dict.
+            # checks: detailed_preds_lookup (to be added)
             
-            def get_rest_days(team_name, curr_date):
-                t_games = history_df[history_df['team'] == team_name].sort_values('game_date')
-                return (curr_date - t_games.iloc[-1]['game_date']).days - 1 if not t_games.empty else 5
+            # --- V3 LOGIC PREDICTION (or Load Existing) ---
+            
+            # Check if we have this prediction in strict history (Live prediction snapshot)
+            frozen_pred = detailed_preds_lookup.get(key)
+            
+            if frozen_pred:
+                # Use the frozen values!
+                h_final_xg = frozen_pred['home_xg']
+                a_final_xg = frozen_pred['away_xg']
+                h_win_prob = frozen_pred['home_win_pct'] / 100.0
+                predicted_winner = home_team if h_win_prob > 0.5 else away_team
+            else:
+                # Fallback: Re-calculate (only for backfilling old games where we didn't have CSV)
+                h_r = team_ratings[home_team]
+                a_r = team_ratings[away_team]
+                h_5v5 = (h_r['xgf_5v5_rating'] * a_r['xga_5v5_rating']) / league_xg_5v5
+                a_5v5 = (a_r['xgf_5v5_rating'] * h_r['xga_5v5_rating']) / league_xg_5v5
                 
-            h_rest, a_rest = get_rest_days(home_team, current_date), get_rest_days(away_team, current_date)
-            
-            def is_3in4(team_name, curr_date):
-                t_games = history_df[history_df['team'] == team_name].sort_values('game_date')
-                return ((curr_date - t_games.iloc[-2]['game_date']).days + 1 <= 4) if len(t_games) >= 2 else False
+                h_opps = (h_r['penalties_drawn_per_60'] + a_r['penalties_taken_per_60']) / 2
+                a_opps = (a_r['penalties_drawn_per_60'] + h_r['penalties_taken_per_60']) / 2
+                h_eff, a_eff = (h_r['pp_rating'] / 100.0) / 0.20, (a_r['pp_rating'] / 100.0) / 0.20
+                h_st_xg, a_st_xg = h_opps * ST_VAL_PP * h_eff, a_opps * ST_VAL_PP * a_eff
+                
+                def get_rest_days(team_name, curr_date):
+                    t_games = history_df[history_df['team'] == team_name].sort_values('game_date')
+                    return (curr_date - t_games.iloc[-1]['game_date']).days - 1 if not t_games.empty else 5
+                    
+                h_rest, a_rest = get_rest_days(home_team, current_date), get_rest_days(away_team, current_date)
+                
+                def is_3in4(team_name, curr_date):
+                    t_games = history_df[history_df['team'] == team_name].sort_values('game_date')
+                    return ((curr_date - t_games.iloc[-2]['game_date']).days + 1 <= 4) if len(t_games) >= 2 else False
+    
+                h_rest_pen = B2B_PENALTY if h_rest <= 0 else (abs(IN3_4_PENALTY) if is_3in4(home_team, current_date) else 0.0)
+                a_rest_pen = B2B_PENALTY if a_rest <= 0 else (abs(IN3_4_PENALTY) if is_3in4(away_team, current_date) else 0.0)
+                
+                h_final_xg, a_final_xg = h_5v5 + h_st_xg + HOME_ICE_VAL - h_rest_pen, a_5v5 + a_st_xg - a_rest_pen
+                h_goalie, a_goalie = game['starting_goalie'], game['starting_goalie_opp']
+                h_gsax = goalie_ratings.get(h_goalie, {'gsax_per_game': 0})['gsax_per_game'] if h_goalie in goalie_ratings else 0
+                a_gsax = goalie_ratings.get(a_goalie, {'gsax_per_game': 0})['gsax_per_game'] if a_goalie in goalie_ratings else 0
+                
+                h_final_xg, a_final_xg = max(0.1, h_final_xg - (a_gsax * 0.5)), max(0.1, a_final_xg - (h_gsax * 0.5))
+                h_prob, a_prob, tie_prob = simulate_game(h_final_xg, a_final_xg)
+                h_win_prob = h_prob + (tie_prob * 0.5)
+                
+                predicted_winner = home_team if h_win_prob > 0.5 else away_team
 
-            h_rest_pen = B2B_PENALTY if h_rest <= 0 else (abs(IN3_4_PENALTY) if is_3in4(home_team, current_date) else 0.0)
-            a_rest_pen = B2B_PENALTY if a_rest <= 0 else (abs(IN3_4_PENALTY) if is_3in4(away_team, current_date) else 0.0)
-            
-            h_final_xg, a_final_xg = h_5v5 + h_st_xg + HOME_ICE_VAL - h_rest_pen, a_5v5 + a_st_xg - a_rest_pen
-            h_goalie, a_goalie = game['starting_goalie'], game['starting_goalie_opp']
-            h_gsax = goalie_ratings.get(h_goalie, {'gsax_per_game': 0})['gsax_per_game'] if h_goalie in goalie_ratings else 0
-            a_gsax = goalie_ratings.get(a_goalie, {'gsax_per_game': 0})['gsax_per_game'] if a_goalie in goalie_ratings else 0
-            
-            h_final_xg, a_final_xg = max(0.1, h_final_xg - (a_gsax * 0.5)), max(0.1, a_final_xg - (h_gsax * 0.5))
-            h_prob, a_prob, tie_prob = simulate_game(h_final_xg, a_final_xg)
-            h_win_prob = h_prob + (tie_prob * 0.5)
-            
-            predicted_winner = home_team if h_win_prob > 0.5 else away_team
             actual_winner = home_team if is_win else away_team
             
             history_records.append({

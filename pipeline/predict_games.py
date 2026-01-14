@@ -488,22 +488,35 @@ def predict():
          STAR_PENALTY = 0.07
 
     # Calculate League Averages for dynamic scaling
+    # Calculate League Averages for dynamic scaling
+    # V3 FIX: Use Team Ratings average, NOT Game Stats average.
+    # Game Stats raw xG might be different scale (sum vs rate), causing "0.5" predictions.
+    # We need Denominator (League Avg) to match Numerator (Team Ratings).
+    if team_ratings:
+        total_xg_rate = 0
+        count = 0
+        for t, r in team_ratings.items():
+            val = r.get('xgf_5v5_rating', 0)
+            if val > 0:
+                total_xg_rate += val
+                count += 1
+        
+        if count > 0:
+            league_xg_5v5 = total_xg_rate / count
+            print(f"League Avg 5v5 xG (from Ratings): {league_xg_5v5:.2f}")
+        else:
+            league_xg_5v5 = 2.35 # Fallback
+            print(f"League Avg 5v5 xG (Fallback): {league_xg_5v5:.2f}")
+    else:
+        league_xg_5v5 = 2.35
+    
+    # SP Teams Avg
+    avg_pp_pct = 0.20
     if not game_stats_df.empty:
-         # Convert game_date to datetime if not already
-         if not pd.api.types.is_datetime64_any_dtype(game_stats_df['game_date']):
-             game_stats_df['game_date'] = pd.to_datetime(game_stats_df['game_date'])
-             
-         val = game_stats_df.get('xG_for_5v5', game_stats_df['xG_for'] * 0.8).mean()
-         league_xg_5v5 = val if pd.notna(val) and val > 0 else 2.0
-         
-         # League SP Teams
          tot_pp_opps = game_stats_df['pp_opportunities'].sum()
          tot_pp_goals = game_stats_df['pp_goals'].sum()
-         avg_pp_pct = tot_pp_goals / tot_pp_opps if tot_pp_opps > 0 else 0.20
-         avg_pp_pct = tot_pp_goals / tot_pp_opps if tot_pp_opps > 0 else 0.20
-    else:
-         league_xg_5v5 = 2.0
-         avg_pp_pct = 0.20
+         if tot_pp_opps > 0:
+             avg_pp_pct = tot_pp_goals / tot_pp_opps
     
     # Build Starter Lookup: (DateStr, TeamCommonName) -> StarterName
     starter_lookup = {}
