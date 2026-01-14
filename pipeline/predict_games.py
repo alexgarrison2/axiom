@@ -829,6 +829,13 @@ def predict():
         h_xg_base = (h_xgf_5v5 * a_xga_5v5) / league_xg_5v5 
         a_xg_base = (a_xgf_5v5 * h_xga_5v5) / league_xg_5v5
         
+        if away_team == 'Senators':
+             print(f"--- DEBUG TRACE: Senators @ {home_team} ---")
+             print(f"SENS Ratings -> Total: {a_ratings.get('xgf_rating'):.2f}, 5v5: {a_xgf_5v5:.2f}, PP: {a_ratings.get('pp_rating'):.2f}")
+             print(f"OPP ({home_team}) Def -> Total: {h_ratings.get('xga_rating'):.2f}, 5v5: {h_xga_5v5:.2f}")
+             print(f"League 5v5 Avg: {league_xg_5v5:.2f}")
+             print(f"Base 5v5 Calculation: ({a_xgf_5v5:.2f} * {h_xga_5v5:.2f}) / {league_xg_5v5:.2f} = {a_xg_base:.2f}")
+        
         # 2. Add Home Ice (Data Driven coeff)
         h_xg_base += HOME_ICE_VAL
         
