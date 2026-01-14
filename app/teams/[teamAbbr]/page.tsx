@@ -48,7 +48,7 @@ interface GameLog {
     en_att: number;
     en_ga: number;
     en_att_ag: number;
-    ot_loss: boolean;
+    otml: string;
 }
 
 interface PlayerBoxscoreRow {
@@ -208,7 +208,7 @@ export default function TeamDetailPage() {
                         en_att: parseInt(row.en_attempts_for),
                         en_ga: parseInt(row.emptynet_goalsagainst),
                         en_att_ag: parseInt(row.en_attempts_against),
-                        ot_loss: res === 'OTL' || res === 'SOL'
+                        otml: row.otml || ((res === 'OTL' || res === 'SOL') ? 'Yes' : '-') // Fallback for old data? No, just use row.otml if available, else calc
                     };
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -483,7 +483,7 @@ export default function TeamDetailPage() {
                                                     <td className="p-1 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
                                                     <td className="p-1 text-center font-mono text-gray-500">{game.en_gf}</td>
                                                     <td className="p-1 text-center font-mono text-gray-500">{game.en_att}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.ot_loss ? 'Yes' : '-'}</td>
+                                                    <td className="p-1 text-center font-mono text-gray-500">{game.otml}</td>
                                                     <td className="p-1 text-center font-mono text-gray-500">{game.en_ga}</td>
                                                     <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag}</td>
                                                 </tr>

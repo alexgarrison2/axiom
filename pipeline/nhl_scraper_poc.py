@@ -1308,7 +1308,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             # OTML (Off The Mat Loss)
             # Team lost in OT/SO (Result Code OTL/SOL) AND was the team that forced the tie in Regulation
             "ot_loss": 1 if (result in ['OTL', 'SOL'] and ot_forcing_team == team_id) else 0,
-            "otml": "Yes" if (result in ['OTL', 'SOL'] and ot_forcing_team == team_id) else "-"
+            "otml": "Yes" if (result in ['OTL', 'SOL'] and ot_forcing_team == team_id) else "-",
             
             # Detailed TOI
             "time_5v5": stats['toi'].get('5v5', 0),
