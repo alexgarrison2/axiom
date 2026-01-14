@@ -671,85 +671,104 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
 
         # --- Game Stats Aggregation ---
         # Goals (505)
+                # Goals (505)
         if type_code == 505:
             if owner_id in teams:
                 teams[owner_id]['goals'][period_key] += 1
                 teams[owner_id]['goals']['total'] += 1
-                teams[owner_id]['sog'][period_key] += 1 # Goal is a SOG
+                teams[owner_id]['sog'][period_key] += 1 
                 teams[owner_id]['sog']['total'] += 1
-                teams[owner_id]['attempts'][period_key] += 1 # Goal is an Attempt
+                teams[owner_id]['attempts'][period_key] += 1 
                 teams[owner_id]['attempts']['total'] += 1
                 
                 # 5v5 Check
                 if current_strength == (5, 5, 1, 1):
                     teams[owner_id]['attempts_5v5'] += 1
                 
-                # PP Goal?
-                # Exclude Penalty Shots
+                # PP Goal Check using Situation Code (Reliable)
+                # Parse situationCode directly from event if available
+                situation_code = play.get('situationCode')
+                is_pp_goal = False
+                
+                if situation_code and len(situation_code) == 4:
+                    try:
+                        ag_g = int(situation_code[0]) # Away Goalie
+                        ag_s = int(situation_code[1]) # Away Skaters
+                        hg_s = int(situation_code[2]) # Home Skaters
+                        hg_g = int(situation_code[3]) # Home Goalie
+                        
+                        # Effective Skaters (Attackers + Defenders - Goalie)
+                        # Actually we just want "Skaters on Ice". The situation code gives Skaters (excluding goalie).
+                        # e.g. 1551 -> 5 skaters each.
+                        # 1450 -> Away 1G+4S, Home 0G+5S.
+                        
+                        # Empty Net "Advantage" (6v5, 5v4EN) should NOT count as PPG unless there is also a numeric advantage due to penalty?
+                        # Standard rule: PPG is when you have more skaters than opponent, AND opponent is short (<=4).
+                        # If 6v5 (EN), it's 6 vs 5. 5 is not short. -> EV.
+                        # If 5v4 (EN), it's 5 vs 4. 4 is short. -> PPG.
+                        # If 4v4 (EN -> 5v4), it's 5 vs 4. 4 is short. -> PPG?
+                        # Wait, my analysis of 2-03:36 game 2025020734:
+                        # DAL (4) vs ANA (5, EN). 4v4 base.
+                        # It was NOT a PPG in H-Ref.
+                        # So "Skater Advantage due to EN" does not create PPG.
+                        # We must compare BASE skaters.
+                        
+                        # Base Skaters = Skaters - (1 if No Goalie else 0)? 
+                        # No, Skaters count in SitCode includes the extra attacker.
+                        # So if Home has 5S and 0G, they have 5 skaters on ice. 1 is extra.
+                        # Base strength (penalty-wise) is 4.
+                        # Formula: BaseSkaters = Skaters - (1 if Goalie == 0 else 0)
+                        
+                        home_base = hg_s - (1 if hg_g == 0 else 0)
+                        away_base = ag_s - (1 if ag_g == 0 else 0)
+                        
+                        if owner_id == home_id:
+                            # Home Goal
+                            # PPG if Home > Away (Numeric) AND Away < 5 (Short)
+                            # Use BASE skaters to determine if "Power Play" condition exists
+                            if home_base > away_base and away_base < 5:
+                                is_pp_goal = True
+                        else:
+                            # Away Goal
+                            if away_base > home_base and home_base < 5:
+                                is_pp_goal = True
+                                
+                    except:
+                        pass
+                
+                # Fallback if no sit code (Old logic, but corrected)
+                # But V1 API has sit code usually.
+                
                 sec_type = details.get("secondaryType", "").lower()
                 is_penalty_shot = "penalty" in sec_type
-                
-                h_skaters, a_skaters, _, _ = current_strength
-                # FIX: Require opponent to have < 5 skaters (Exclude Empty Net) AND Not Penalty Shot
-                # We removed has_active_penalty check because it was causing undercounts (likely due to timing mismatches).
-                # We rely on skater count (< 5) to exclude 6v5 Delayed Penalty goals.
-                if not is_penalty_shot and (
-                   (owner_id == home_id and h_skaters > a_skaters and a_skaters < 5) or \
-                   (owner_id == away_id and a_skaters > h_skaters and h_skaters < 5)):
+
+                if is_pp_goal and not is_penalty_shot:
                     teams[owner_id]['pp']['goals'] += 1
                     
-                    # End Penalty on PPG (if Minor)
+                    # End Penalty Logic (Same as before)
                     # If Home scored PPG, remove oldest Away Minor
                     scoring_team = owner_id
                     penalized_team = away_id if scoring_team == home_id else home_id
                     
-                    # Find penalties for the penalized team
                     team_penalties = [p for p in active_penalties if p['team_id'] == penalized_team]
                     team_penalties.sort(key=lambda x: x['end_time'])
                     
-                    # Remove the first Minor (duration < 5)
                     for i, p in enumerate(team_penalties):
                         if p['duration'] < 5:
-                            # Remove this specific penalty from active_penalties
-                            # We need to reconstruct active_penalties without this one
-                            # Be careful not to remove multiple if duplicates exist, remove by object identity or index
-                            # Since we are iterating a filtered list, we can't just pop index i from active_penalties
-                            
-                            # Strategy: Rebuild active_penalties excluding this specific instance
-                            # We can use a flag or ID. Let's assume exact match on end_time and team_id is unique enough for this POC,
-                            # or just remove the first match.
-                            
-                            # Better: Remove from active_penalties list directly
                             active_penalties.remove(p)
-                            
-                            # Also update current_strength immediately?
-                            # If penalty ends, that team gains a skater.
-                            # But wait, the Goal event itself might be followed by a Faceoff with updated situationCode.
-                            # If we update strength here manually, we might double-count the skater return if situationCode also updates.
-                            # However, for "Virtual Expiration" logic, we rely on active_penalties.
-                            # If we remove it here, the Virtual loop won't process it later.
-                            # This is CORRECT. The penalty is done.
-                            
-                            # Do we need to update current_strength NOW?
-                            # If we don't, the interval from Goal to Next Event will be calculated as 5v4.
-                            # But the Goal IS the end of the PP.
-                            # So from Goal to Faceoff, it should be 5v5 (or whatever).
-                            # So yes, we should update current_strength.
-                            
-                            
+                            # Update current_strength for valid interval tracking
                             h_skaters, a_skaters, hg, ag = current_strength
                             if penalized_team == home_id:
                                 current_strength = (min(5, h_skaters + 1), a_skaters, hg, ag)
                             else:
                                 current_strength = (h_skaters, min(5, a_skaters + 1), hg, ag)
-                                
-                            break # Only one penalty ends per goal
+                            break 
                     
-                # Empty Net?
-                if (owner_id == home_id and current_strength[3] == 0) or \
-                   (owner_id == away_id and current_strength[2] == 0): # Opponent goalie
-                     teams[owner_id]['empty_net_goals'] += 1
-                     teams[owner_id]['en_attempts'] += 1 # Goal is an attempt
+                # Empty Net Goal
+                if (owner_id == home_id and (situation_code and situation_code[0] == '0')) or \
+                   (owner_id == away_id and (situation_code and situation_code[3] == '0')):
+                    teams[owner_id]['empty_net_goals'] += 1
+                    teams[owner_id]['en_attempts'] += 1
 
         # Shots (506)
         elif type_code == 506:
@@ -843,59 +862,44 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 # --- Opportunity Counting for Stacked/Double Penalties ---
                 
                 # Check for coincidental using pre-built map
-                # Look for opponent penalty at same time (period, current_seconds)
                 opp_id = away_id if owner_id == home_id else home_id
-                is_coincidental = False
                 
-                # Check current time in penalty_map
-                # We need period num
+                # Check current time in penalty_map (Concurrent start)
                 key = (period_num, current_seconds)
                 concurrent_penalties = penalty_map.get(key, [])
                 
-                max_opp_duration = 0
+                max_opp_end = 0
+                
+                # Check ALREADY ACTIVE penalties for opponent
+                for p in active_penalties:
+                    if p['team_id'] == opp_id:
+                        if p['end_time'] > max_opp_end:
+                            max_opp_end = p['end_time']
+
+                # Check CONCURRENT STARTING penalties for opponent
                 for p in concurrent_penalties:
                     if p['team_id'] == opp_id:
-                        # Found opponent penalty starting at same time
-                        if p['duration'] > max_opp_duration:
-                            max_opp_duration = p['duration']
+                         # Calculate absolute end time for concurrent
+                         # duration in event is minutes
+                         conc_end = current_seconds + (p['duration'] * 60)
+                         if conc_end > max_opp_end:
+                             max_opp_end = conc_end
                 
-                # 1. Double Minor (4 min) -> Always +1 extra opportunity (first one caught by logic below)
-                # BUT ONLY IF NO OPPONENT PENALTY (Clean 5v4 or 5v3)
-                # If 4 vs 2, it's 1 Opp (handled below), not 2.
-                if duration_min == 4 and max_opp_duration == 0:
-                    if owner_id == home_id:
+                # Calculate My End Time
+                my_end_time = penalty_end
+                
+                # Opportunity Logic:
+                # If my penalty extends BEYOND the coverage of opponent penalties, 
+                # I am giving them a Power Play (Net Advantage timeframe).
+                # Also, if Opponent has NO penalties (max_opp_end == 0), it is a PPO.
+                
+                if my_end_time > max_opp_end and duration_min < 10:
+                     if owner_id == home_id:
                         teams[away_id]['pp']['opportunities'] += 1
                         teams[home_id]['pk']['opportunities'] += 1
-                    elif owner_id == away_id:
+                     elif owner_id == away_id:
                         teams[home_id]['pp']['opportunities'] += 1
                         teams[away_id]['pk']['opportunities'] += 1
-                        
-                # 2. General Opportunity Logic
-                # If this penalty creates a Net Advantage (Duration > Opponent Duration)
-                # e.g. 2 vs 0 -> 2 > 0 -> Count (1)
-                # e.g. 5 vs 2 -> 5 > 2 -> Count (1)
-                # e.g. 2 vs 2 -> 2 > 2 False -> No Count.
-                # e.g. 2 vs 5 -> 2 > 5 False -> No Count.
-                
-                if duration_min > max_opp_duration and duration_min < 10:
-                    # Determine if this penalty creates/maintains an advantage (PP Opportunity)
-                    # We check the strength state BEFORE this penalty is applied.
-                    
-                    hs, as_num, hg, ag = current_strength
-                    
-                    if owner_id == home_id:
-                        # Home took penalty. Opponent is Away.
-                        # Check: Away Skaters >= Home Skaters?
-                        if as_num >= hs:
-                            teams[away_id]['pp']['opportunities'] += 1
-                            teams[home_id]['pk']['opportunities'] += 1
-                            
-                    elif owner_id == away_id:
-                        # Away took penalty. Opponent is Home.
-                        # Check: Home Skaters >= Away Skaters?
-                        if hs >= as_num:
-                            teams[home_id]['pp']['opportunities'] += 1
-                            teams[away_id]['pk']['opportunities'] += 1
 
                 # Add to Active Penalties
                 # Handle Consecutive Penalties for Same Player (Rule 27.2)
@@ -1350,10 +1354,10 @@ def main():
 
     print(f"Starting scrape from {start_date.date()} to {end_date.date()}...")
     
+    all_player_stats = []
     all_rows = []
     all_shots = []
-    all_rows = []
-    all_shots = []
+
     current_date = start_date
     team_game_counts = {} # Track games played per team ID
     team_game_dates = defaultdict(list) # Track game dates for rest calc
@@ -1553,34 +1557,7 @@ def main():
     else:
         print("No new game data found.")
         
-    # Export Shot Data to CSV
-    SHOTS_FILENAME = "nhl_season_2025_2026_shots.csv"
-    if all_shots:
-        print(f"Writing {len(all_shots)} shots to {SHOTS_FILENAME}...")
 
-
-        current_date += timedelta(days=1)
-
-    # Export Game Stats to CSV
-    if all_rows:
-        print(f"Writing {len(all_rows)} rows to {OUTPUT_FILENAME}...")
-        new_df = pd.DataFrame(all_rows)
-        if os.path.exists(OUTPUT_FILENAME):
-            try:
-                existing_df = pd.read_csv(OUTPUT_FILENAME)
-                combined_df = pd.concat([existing_df, new_df])
-                combined_df.drop_duplicates(subset=['game_id', 'team'], keep='last', inplace=True)
-                combined_df.to_csv(OUTPUT_FILENAME, index=False)
-            except Exception as e:
-                print(f"Error merging with existing gamestats: {e}. Overwriting/Appending safely.")
-                mode = 'a'
-                header = False
-                new_df.to_csv(OUTPUT_FILENAME, mode=mode, header=header, index=False)
-        else:
-            new_df.to_csv(OUTPUT_FILENAME, index=False)
-        print("Game Stats Done!")
-    else:
-        print("No new game data found.")
 
     # Export Shot Data to CSV
     SHOTS_FILENAME = "nhl_season_2025_2026_shots.csv"
