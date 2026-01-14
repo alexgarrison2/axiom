@@ -98,7 +98,7 @@ def generate_history():
                 # Also need ratings if we plan to overwrite a bad record
                 idx_check = lookup[key]
                 has_xg = history_records[idx_check].get('homeXg', 0) + history_records[idx_check].get('awayXg', 0)
-                if has_xg > 12.0:
+                if has_xg > 12.0 or has_xg < 1.0:
                     need_ratings = True
                     break
         
@@ -152,7 +152,7 @@ def generate_history():
                 
                 # SANITY CHECK: If existing history is garbage (Inflated Era), ignore it and regenerate
                 total_hist_xg = history_records[idx].get('homeXg', 0) + history_records[idx].get('awayXg', 0)
-                if total_hist_xg > 12.0 or total_hist_xg < 0.1:
+                if total_hist_xg > 12.0 or total_hist_xg < 1.0:
                     # Fall through to regeneration, but mark index for overwrite
                     print(f"DEBUG: Invalidating bad record {date_str} {home_team} vs {away_team} (Total {total_hist_xg})")
                     overwrite_idx = idx
@@ -246,15 +246,13 @@ def generate_history():
                 h_gsax = goalie_ratings.get(h_goalie, {'gsax_per_game': 0})['gsax_per_game'] if h_goalie in goalie_ratings else 0
                 a_gsax = goalie_ratings.get(a_goalie, {'gsax_per_game': 0})['gsax_per_game'] if a_goalie in goalie_ratings else 0
                 
+                # Clamp GSAx to prevent inflated stats from breaking prediction (+/- 1.0 max per game)
+                h_gsax = max(-1.0, min(1.0, h_gsax))
+                a_gsax = max(-1.0, min(1.0, a_gsax))
+                
                 h_final_xg, a_final_xg = max(0.1, h_final_xg - (a_gsax * 0.5)), max(0.1, a_final_xg - (h_gsax * 0.5))
                 h_prob, a_prob, tie_prob = simulate_game(h_final_xg, a_final_xg)
                 h_win_prob = h_prob + (tie_prob * 0.5)
-                
-                if overwrite_idx is not None:
-                    print(f"DEBUG RECALC: {home_team} vs {away_team}")
-                    print(f"  h_5v5: {h_5v5}")
-                    print(f"  h_st_xg: {h_st_xg}")
-                    print(f"  h_final: {h_final_xg}")
                 
                 predicted_winner = home_team if h_win_prob > 0.5 else away_team
 
