@@ -385,12 +385,11 @@ export default function TeamDetailPage() {
                         <table className="w-full text-xs text-left whitespace-nowrap">
                             <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
                                 <tr>
-                                    <th className="p-1 sticky left-0 bg-gray-900 z-10 w-8"></th>
-                                    <th className="p-1 sticky left-8 bg-gray-900 z-10">Date</th>
-                                    <th className="p-1">Time</th>
+                                    <th className="p-1 sticky left-0 bg-gray-900 z-20 w-8"></th>
+                                    <th className="p-1 sticky left-8 bg-gray-900 z-20 w-24 text-center">Date</th>
+                                    <th className="p-1 sticky left-32 bg-gray-900 z-20 w-10 text-center">Loc</th>
+                                    <th className="p-1 sticky left-[10.5rem] bg-gray-900 z-20 w-12 text-center">Opp</th>
                                     <th className="p-1">Starter</th>
-                                    <th className="p-1 text-center">Loc</th>
-                                    <th className="p-1 text-center">Opp</th>
                                     <th className="p-1">Opp Starter</th>
                                     <th className="p-1 text-center">Res</th>
                                     <th className="p-1 text-center">GF</th>
@@ -413,7 +412,7 @@ export default function TeamDetailPage() {
                                     <th className="p-1 text-center">xGA</th>
                                     <th className="p-1 text-center">EN GF</th>
                                     <th className="p-1 text-center">EN Att</th>
-                                    <th className="p-1 text-center">OT Loss</th>
+                                    <th className="p-1 text-center">OTML</th>
                                     <th className="p-1 text-center">EN GA</th>
                                     <th className="p-1 text-center">EN Att Ag</th>
                                 </tr>
@@ -436,21 +435,20 @@ export default function TeamDetailPage() {
                                                     onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
                                                     className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                                                 >
-                                                    <td className="p-1 sticky left-0 bg-gray-900/95 border-r border-gray-800 z-10 text-center text-gray-500">
+                                                    <td className="p-1 sticky left-0 bg-gray-900/95 border-r border-gray-800 z-20 text-center text-gray-500">
                                                         <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180 text-white' : ''}`}>▼</div>
                                                     </td>
-                                                    <td className="p-1 sticky left-8 bg-gray-900/95 border-r border-gray-800 z-10 font-mono text-gray-300">{game.date}</td>
-                                                    <td className="p-1 text-gray-500 font-mono">-</td>
-                                                    <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.starting_goalie}>
-                                                        {game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}
-                                                    </td>
-                                                    <td className={`p-1 text-center font-bold text-[10px] ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
+                                                    <td className="p-1 sticky left-8 bg-gray-900/95 border-r border-gray-800 z-20 font-mono text-gray-300 w-24 text-center">{game.date}</td>
+                                                    <td className={`p-1 sticky left-32 bg-gray-900/95 border-r border-gray-800 z-20 text-center font-bold text-[10px] w-10 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
                                                         {game.home_away === 'Home' ? 'vs' : '@'}
                                                     </td>
-                                                    <td className="p-1 justify-center">
+                                                    <td className="p-1 sticky left-[10.5rem] bg-gray-900/95 border-r border-gray-800 z-20 justify-center w-12">
                                                         <div className="w-6 h-6 relative mx-auto" title={game.opponent}>
                                                             {logoUrl ? <img src={logoUrl} alt={game.opponent} className="w-6 h-6 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
                                                         </div>
+                                                    </td>
+                                                    <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.starting_goalie}>
+                                                        {game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}
                                                     </td>
                                                     <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.opponent_starter}>
                                                         {game.opponent_starter ? game.opponent_starter.split(' ').pop() : '-'}
