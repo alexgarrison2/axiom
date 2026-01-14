@@ -360,6 +360,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
     current_strength = (5, 5, 1, 1) 
     # (Home Score, Away Score)
     current_score = (0, 0)
+    ot_forcing_team = None # Track team that forces OT (ties game in regulation)
     
     # PP State Tracking for Opportunity Counts
     home_pp_active = False
@@ -1001,6 +1002,12 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                     current_score = (current_score[0] + 1, current_score[1])
                 elif owner_id == away_id:
                     current_score = (current_score[0], current_score[1] + 1)
+                
+                # OTML Logic: Track who forced the tie in Regulation
+                if current_score[0] == current_score[1] and period_num <= 3:
+                    ot_forcing_team = owner_id
+                elif current_score[0] != current_score[1]:
+                    ot_forcing_team = None
             
             # Scored First Logic
             if not first_goal_scored:
@@ -1297,6 +1304,11 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "time_trailing": stats['time_trailing'],
             "time_tied": stats['time_tied'],
             "time_evenstrength": stats['toi'].get('5v5', 0) + stats['toi'].get('4v4', 0) + stats['toi'].get('3v3', 0), # Approx
+            
+            # OTML (Off The Mat Loss)
+            # Team lost in OT/SO (Result Code OTL/SOL) AND was the team that forced the tie in Regulation
+            "ot_loss": 1 if (result in ['OTL', 'SOL'] and ot_forcing_team == team_id) else 0,
+            "otml": "Yes" if (result in ['OTL', 'SOL'] and ot_forcing_team == team_id) else "-"
             
             # Detailed TOI
             "time_5v5": stats['toi'].get('5v5', 0),
