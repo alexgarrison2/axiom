@@ -1277,8 +1277,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             # Goalie
             "saves_for": stats['saves'],
             "saves_against": opp_stats['saves'],
-            "save_percentage": round(stats['saves'] / stats['sog']['total'], 3) if stats['sog']['total'] > 0 else 0,
-            "save_percentage_against": round(opp_stats['saves'] / opp_stats['sog']['total'], 3) if opp_stats['sog']['total'] > 0 else 0,
+            "save_percentage": round(stats['saves'] / opp_stats['sog']['total'], 3) if opp_stats['sog']['total'] > 0 else 0,
+            "save_percentage_against": round(opp_stats['saves'] / stats['sog']['total'], 3) if stats['sog']['total'] > 0 else 0,
             
             # Other
             "emptynet_goalsfor": stats['empty_net_goals'],
