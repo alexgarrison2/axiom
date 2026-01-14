@@ -1,27 +1,27 @@
 import React from 'react';
 
 interface StatRingProps {
-    value: number;
+    value: string | number;
+    progress: number; // 0-100
     label: string;
     subLabel?: string;
     color: string;
-    max?: number;
     size?: number;
     strokeWidth?: number;
 }
 
 const StatRing: React.FC<StatRingProps> = ({
     value,
+    progress,
     label,
     subLabel,
     color,
-    max = 100,
     size = 120,
     strokeWidth = 8,
 }) => {
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
-    const offset = circumference - (value / max) * circumference;
+    const offset = circumference - (progress / 100) * circumference;
 
     return (
         <div className="flex flex-col items-center justify-center">
