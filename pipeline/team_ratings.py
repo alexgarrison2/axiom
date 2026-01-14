@@ -2,7 +2,7 @@ import pandas as pd
 import json
 import numpy as np
 
-def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.csv', save_files=True):
+def calculate_ratings(df=None, gamestats_file='public/data/gamestats.csv', save_files=True):
     if df is None:
         print(f"Loading data from {gamestats_file}...")
         df = pd.read_csv(gamestats_file)
@@ -146,11 +146,14 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         w_l20 = 0.5
         w_sea = 0.1
         
-        pp_rating_val = (l10_pp_pct * w_l10) + (l20_pp_pct * w_l20) + (season_pp_pct * w_sea)
-        pk_rating_val = (l10_pk_pct * w_l10) + (l20_pk_pct * w_l20) + (season_pk_pct * w_sea)
-
-        pp_rating = pp_rating_val * 100
-        pk_rating = pk_rating_val * 100
+        # Use Season Totals for Public Display consistency
+        # User expects these to match H-Ref / Official Stats
+        pp_rating = season_pp_pct * 100
+        pk_rating = season_pk_pct * 100
+        
+        # Store weighted for potentially internal use (optional)
+        # pp_rating_weighted = (season_pp_pct * 0.1) + (l20_pp_pct * 0.5) + (l10_pp_pct * 0.4)
+        # pk_rating_weighted = (season_pk_pct * 0.1) + (l20_pk_pct * 0.5) + (l10_pk_pct * 0.4)
         
         team_ratings[team] = {
             'xgf_rating': xgf_rating,
@@ -206,11 +209,11 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         
     # Save to JSON
     if save_files:
-        with open('team_ratings.json', 'w') as f:
+        with open('public/data/team_ratings.json', 'w') as f:
             json.dump(team_ratings, f, indent=4)
         print("Saved team_ratings.json")
             
-        with open('goalie_ratings.json', 'w') as f:
+        with open('public/data/goalie_ratings.json', 'w') as f:
             json.dump(goalie_ratings, f, indent=4)
         print("Saved goalie_ratings.json")
     
