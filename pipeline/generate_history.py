@@ -103,6 +103,14 @@ def generate_history():
         if need_ratings:
             try:
                  team_ratings, goalie_ratings, league_xg, league_xg_5v5 = calculate_ratings(history_df, save_files=False)
+                 
+                 # FIX: Recalculate League Avg from Ratings to ensure scale match (Same as predict_games.py)
+                 if team_ratings:
+                     total_xg_rate = sum(r.get('xgf_5v5_rating', 0) for r in team_ratings.values())
+                     league_xg_5v5 = total_xg_rate / len(team_ratings)
+                     # Safeguard
+                     if league_xg_5v5 == 0: league_xg_5v5 = 2.5
+                     
             except Exception as e:
                  print(f"Error calling calculate_ratings for {date_str}: {e}")
                  current_date += datetime.timedelta(days=1)
@@ -158,18 +166,36 @@ def generate_history():
             # Check if we have this prediction in strict history (Live prediction snapshot)
             frozen_pred = detailed_preds_lookup.get(key)
             
+            # SANITY CHECK: If frozen prediction is from the "Inflated Era" (Total xG > 12), ignore it.
+            if frozen_pred:
+                total_frozen_xg = frozen_pred['home_xg'] + frozen_pred['away_xg']
+                if total_frozen_xg > 12.0:
+                    # Value is garbage (e.g. 7.4 + 8.0 = 15.4), force recalculation using V3 logic
+                    frozen_pred = None
+            
             if frozen_pred:
                 # Use the frozen values!
                 h_final_xg = frozen_pred['home_xg']
                 a_final_xg = frozen_pred['away_xg']
                 h_win_prob = frozen_pred['home_win_pct'] / 100.0
                 predicted_winner = home_team if h_win_prob > 0.5 else away_team
-            else:
-                # Fallback: Re-calculate (only for backfilling old games where we didn't have CSV)
+                # Fallback: Re-calculate (Backfill or Repair Bad History)
                 h_r = team_ratings[home_team]
                 a_r = team_ratings[away_team]
-                h_5v5 = (h_r['xgf_5v5_rating'] * a_r['xga_5v5_rating']) / league_xg_5v5
-                a_5v5 = (a_r['xgf_5v5_rating'] * h_r['xga_5v5_rating']) / league_xg_5v5
+                
+                # Robust Normalization: Use Strength Ratios * Fixed Constant
+                # This ensures that even if ratings are inflated (e.g. 8.0), the result is scaled to NHL norms (~2.45)
+                # Strength = Rating / LeagueAvg
+                TARGET_5V5_AVG = 2.45 
+                
+                h_strength = h_r['xgf_5v5_rating'] / league_xg_5v5
+                a_defense_strength = a_r['xga_5v5_rating'] / league_xg_5v5
+                
+                a_strength = a_r['xgf_5v5_rating'] / league_xg_5v5
+                h_defense_strength = h_r['xga_5v5_rating'] / league_xg_5v5
+                
+                h_5v5 = h_strength * a_defense_strength * TARGET_5V5_AVG
+                a_5v5 = a_strength * h_defense_strength * TARGET_5V5_AVG
                 
                 h_opps = (h_r['penalties_drawn_per_60'] + a_r['penalties_taken_per_60']) / 2
                 a_opps = (a_r['penalties_drawn_per_60'] + h_r['penalties_taken_per_60']) / 2

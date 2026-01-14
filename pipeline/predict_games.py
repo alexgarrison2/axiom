@@ -593,7 +593,7 @@ def predict():
     print(f"{'Date':<11} {'Home':<15} {'Away':<15} {'H Win%':<8} {'A Win%':<8} {'H EV':<10} {'A EV':<10} {'Wager'}")
     print("-" * 100)
 
-    for game in schedule:
+    for i, game in enumerate(schedule):
         home_team = game['homeTeam']
         away_team = game['awayTeam']
         
