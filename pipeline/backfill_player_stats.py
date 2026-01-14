@@ -10,7 +10,7 @@ import pandas as pd
 # Constants
 BASE_URL = "https://api-web.nhle.com/v1"
 OUTPUT_FILENAME = "pipeline/nhl_season_2025_2026_player_stats.csv"
-GAME_STATS_FILE = "pipeline/nhl_season_2025_2026_gamestats.csv"
+GAME_STATS_FILE = "public/data/gamestats.csv"
 
 # Create unverified context for SSL to avoid cert errors
 ssl._create_default_https_context = ssl._create_unverified_context
