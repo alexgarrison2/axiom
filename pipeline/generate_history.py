@@ -94,6 +94,13 @@ def generate_history():
             if key not in lookup:
                 need_ratings = True
                 break
+            else:
+                # Also need ratings if we plan to overwrite a bad record
+                idx_check = lookup[key]
+                has_xg = history_records[idx_check].get('homeXg', 0) + history_records[idx_check].get('awayXg', 0)
+                if has_xg > 12.0:
+                    need_ratings = True
+                    break
         
         # 1. History (Games BEFORE today)
         history_df = df[df['game_date'] < current_date]
@@ -102,10 +109,12 @@ def generate_history():
         team_ratings, goalie_ratings, league_xg, league_xg_5v5 = {}, {}, 3.0, 2.5
         if need_ratings:
             try:
+                 print(f"DEBUG: Calling ratings with history_df size: {len(history_df)}")
                  team_ratings, goalie_ratings, league_xg, league_xg_5v5 = calculate_ratings(history_df, save_files=False)
                  
                  # FIX: Recalculate League Avg from Ratings to ensure scale match (Same as predict_games.py)
                  if team_ratings:
+                     print(f"DEBUG: Ratings Keys Sample: {list(team_ratings.keys())[:5]}")
                      total_xg_rate = sum(r.get('xgf_5v5_rating', 0) for r in team_ratings.values())
                      league_xg_5v5 = total_xg_rate / len(team_ratings)
                      # Safeguard
@@ -120,6 +129,7 @@ def generate_history():
         for _, game in todays_games.iterrows():
             if game['home_away'] != 'Home': continue
             
+            overwrite_idx = None
             home_team = game['team']
             away_team = game['opponent']
             key = (date_str, home_team, away_team)
@@ -139,19 +149,29 @@ def generate_history():
             if key in lookup:
                 # UPDATE EXISTING RECORD (Keep Prediction! Update Result!)
                 idx = lookup[key]
-                if game_finished:
-                    actual_winner = home_team if is_win else away_team
-                    history_records[idx].update({
-                        'homeScore': h_score,
-                        'awayScore': a_score,
-                        'actualWinner': actual_winner,
-                        'isCorrect': (history_records[idx]['predictedWinner'] == actual_winner),
-                        'brierScore': round((history_records[idx]['homeWinProb']/100.0 - home_won) ** 2, 4)
-                    })
-                continue
+                
+                # SANITY CHECK: If existing history is garbage (Inflated Era), ignore it and regenerate
+                total_hist_xg = history_records[idx].get('homeXg', 0) + history_records[idx].get('awayXg', 0)
+                if total_hist_xg > 12.0 or total_hist_xg < 0.1:
+                    # Fall through to regeneration, but mark index for overwrite
+                    print(f"DEBUG: Invalidating bad record {date_str} {home_team} vs {away_team} (Total {total_hist_xg})")
+                    overwrite_idx = idx
+                else:
+                    if game_finished:
+                        actual_winner = home_team if is_win else away_team
+                        history_records[idx].update({
+                            'homeScore': h_score,
+                            'awayScore': a_score,
+                            'actualWinner': actual_winner,
+                            'isCorrect': (history_records[idx]['predictedWinner'] == actual_winner),
+                            'brierScore': round((history_records[idx]['homeWinProb']/100.0 - home_won) ** 2, 4)
+                        })
+                    continue
 
             # NEW GAME - Perform Full Prediction
-            if home_team not in team_ratings or away_team not in team_ratings: continue
+            if home_team not in team_ratings or away_team not in team_ratings:
+                print(f"DEBUG: Skipping regen for {home_team} vs {away_team} - Ratings Missing (Overwrite: {overwrite_idx})")
+                continue
             
             # NEW GAME - Check if we have a "Freeze" record from predictions_detailed.csv
             # This ensures History matches what the user actually saw on that day.
@@ -166,6 +186,11 @@ def generate_history():
             # Check if we have this prediction in strict history (Live prediction snapshot)
             frozen_pred = detailed_preds_lookup.get(key)
             
+            # Initialize vars to prevent UnboundLocalError
+            h_final_xg, a_final_xg = 0.0, 0.0
+            h_win_prob = 0.5
+            predicted_winner = home_team
+            
             # SANITY CHECK: If frozen prediction is from the "Inflated Era" (Total xG > 12), ignore it.
             if frozen_pred:
                 total_frozen_xg = frozen_pred['home_xg'] + frozen_pred['away_xg']
@@ -179,6 +204,7 @@ def generate_history():
                 a_final_xg = frozen_pred['away_xg']
                 h_win_prob = frozen_pred['home_win_pct'] / 100.0
                 predicted_winner = home_team if h_win_prob > 0.5 else away_team
+            else:
                 # Fallback: Re-calculate (Backfill or Repair Bad History)
                 h_r = team_ratings[home_team]
                 a_r = team_ratings[away_team]
@@ -224,18 +250,30 @@ def generate_history():
                 h_prob, a_prob, tie_prob = simulate_game(h_final_xg, a_final_xg)
                 h_win_prob = h_prob + (tie_prob * 0.5)
                 
+                if overwrite_idx is not None:
+                    print(f"DEBUG RECALC: {home_team} vs {away_team}")
+                    print(f"  h_5v5: {h_5v5}")
+                    print(f"  h_st_xg: {h_st_xg}")
+                    print(f"  h_final: {h_final_xg}")
+                
                 predicted_winner = home_team if h_win_prob > 0.5 else away_team
 
             actual_winner = home_team if is_win else away_team
             
-            history_records.append({
+            new_record = {
                 'date': date_str, 'homeTeam': home_team, 'awayTeam': away_team,
                 'homeScore': h_score if game_finished else 0, 'awayScore': a_score if game_finished else 0,
                 'homeXg': round(h_final_xg, 2), 'awayXg': round(a_final_xg, 2),
                 'homeWinProb': round(h_win_prob * 100, 1), 'predictedWinner': predicted_winner,
                 'actualWinner': actual_winner if game_finished else "", 'isCorrect': (predicted_winner == actual_winner) if game_finished else False,
                 'brierScore': round((h_win_prob - home_won) ** 2, 4) if game_finished else 0.0
-            })
+            }
+            
+            if overwrite_idx is not None:
+                history_records[overwrite_idx] = new_record
+            else:
+                history_records.append(new_record)
+                lookup[key] = len(history_records) - 1
             
         current_date += datetime.timedelta(days=1)
         
