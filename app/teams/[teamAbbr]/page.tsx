@@ -23,15 +23,14 @@ interface GameLog {
     date: string;
     opponent: string;
     result: string; // W 4-2
+    result_code: string; // W, L, OTL
     home_away: string;
     gf: number;
     ga: number;
     xgf: number;
     xga: number;
-    pp_goals: number;
-    pp_opps: number;
-    pk_goals_allowed: number;
-    pk_opps: number;
+    starting_goalie: string;
+    opponent_starter: string;
     points: number;
 }
 
@@ -62,12 +61,12 @@ interface PlayerBoxscoreRow {
 }
 
 interface TeamRating {
-    team: string;
-    rating: number; // Weighted Rating
-    xgf_season: number;
-    xgf_5v5: number;
-    off_rating: number; // xGF Rating
-    def_rating: number; // xGA Rating (implies defensive strength if calculated)
+    xgf_rating: number;
+    xga_rating: number;
+    xgf_5v5_rating: number;
+    xga_5v5_rating: number;
+    pp_rating: number; // PP%
+    pk_rating: number; // PK%
 }
 
 export default function TeamDetailPage() {
@@ -123,27 +122,38 @@ export default function TeamDetailPage() {
                 // Process Stats
                 let w = 0, l = 0, otl = 0;
                 const processedGames = teamGames.map((row: any) => {
-                    // Result parsing: "RW", "OTL", "SOL", "RL"
                     const res = row.result;
-                    if (res === 'RW' || res === 'OTW' || res === 'SOW') w++;
-                    else if (res === 'OTL' || res === 'SOL') otl++;
-                    else if (res === 'RL') l++;
+                    let result_display = '';
+
+                    if (res === 'RW' || res === 'OTW' || res === 'SOW') {
+                        w++;
+                        if (res === 'RW') result_display = 'W';
+                        if (res === 'OTW') result_display = 'W (OT)';
+                        if (res === 'SOW') result_display = 'W (SO)';
+                    }
+                    else if (res === 'OTL' || res === 'SOL') {
+                        otl++;
+                        if (res === 'OTL') result_display = 'OTL'; // Standard notation
+                        if (res === 'SOL') result_display = 'SOL';
+                    }
+                    else if (res === 'RL') {
+                        l++;
+                        result_display = 'L';
+                    }
 
                     return {
                         game_id: row.game_id,
                         date: row.game_date,
                         opponent: row.opponent,
-                        result: res,
+                        result: result_display,
+                        result_code: res,
                         home_away: row.home_away,
                         gf: parseInt(row.goals_for),
                         ga: parseInt(row.goals_ag),
                         xgf: parseFloat(row.xG_for),
                         xga: parseFloat(row.xG_against),
-                        pp_goals: parseInt(row.pp_goals),
-                        pp_opps: parseInt(row.pp_opportunities),
-                        pk_goals_allowed: parseInt(row.pp_goals_against),
-                        pk_opps: parseInt(row.pk_opportunities),
-                        // Sort key
+                        starting_goalie: row.starting_goalie,
+                        opponent_starter: row.starting_goalie_opp,
                         points: (res === 'RW' || res === 'OTW' || res === 'SOW') ? 2 : (res === 'OTL' || res === 'SOL') ? 1 : 0
                     };
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Descending
@@ -220,8 +230,14 @@ export default function TeamDetailPage() {
             <div className="max-w-6xl mx-auto relative z-10 px-4 md:px-8">
                 <Header compact />
 
+                <div className="mt-6 mb-4">
+                    <Link href="/teams" className="inline-flex items-center text-sm text-gray-400 hover:text-white transition-colors">
+                        ← Back to Teams
+                    </Link>
+                </div>
+
                 {/* Team Header */}
-                <div className="flex flex-col md:flex-row items-center md:items-end justify-between mt-8 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="flex items-center gap-6">
                         <img
                             src={teamInfo.TeamLogoURL}
@@ -242,11 +258,12 @@ export default function TeamDetailPage() {
                 </div>
 
                 {/* Stat Rings */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-                    <StatRing value={rating ? parseFloat(rating.rating.toFixed(1)) : 0} max={10} label="Rating" color={primaryColor} />
-                    <StatRing value={rating ? parseFloat(rating.xgf_season.toFixed(2)) : 0} max={4.5} label="xGF/60" color="#10B981" />
-                    <StatRing value={rating ? parseFloat(rating.xgf_5v5?.toFixed(2) || "0") : 0} max={3.5} label="5v5 xGF" color="#3B82F6" />
-                    <StatRing value={50} max={100} label="Power Rank" color="#F59E0B" />
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
+                    <StatRing value={rating ? parseFloat(rating.xgf_rating.toFixed(2)) : 0} max={4.5} label="xGF/60" color={primaryColor} />
+                    <StatRing value={rating ? parseFloat(rating.xga_rating.toFixed(2)) : 0} max={4.5} label="xGA/60" color="#EF4444" />
+                    <StatRing value={rating ? parseFloat(rating.pp_rating.toFixed(1)) : 0} max={30} label="PP%" color="#F59E0B" />
+                    <StatRing value={rating ? parseFloat(rating.pk_rating.toFixed(1)) : 0} max={100} label="PK%" color="#3B82F6" />
+                    <StatRing value={rating ? parseFloat(rating.xgf_5v5_rating.toFixed(2)) : 0} max={3.5} label="5v5 xGF" color="#10B981" />
                 </div>
 
                 {/* Tabs */}
@@ -267,35 +284,62 @@ export default function TeamDetailPage() {
 
                 {/* Game Log Tab */}
                 {activeTab === 'games' && (
-                    <div className="space-y-2">
-                        {games.length === 0 ? <p className="text-gray-500">No games played.</p> :
-                            games.map(game => (
+                    <div className="space-y-0.5">
+                        {/* Table Header */}
+                        <div className="grid grid-cols-12 gap-1 text-[10px] uppercase font-bold text-gray-500 bg-gray-900/50 p-2 rounded-t-lg border-b border-gray-800">
+                            <div className="col-span-1">Date</div>
+                            <div className="col-span-1">Time</div>
+                            <div className="col-span-2">Opponent</div>
+                            <div className="col-span-2 text-center">Result</div>
+                            <div className="col-span-1 text-center">Score</div>
+                            <div className="col-span-2 text-center">Goalies</div>
+                            <div className="col-span-2 text-right pr-2">Analytics</div>
+                            <div className="col-span-1"></div>
+                        </div>
+
+                        {games.length === 0 ? <div className="p-4 text-gray-500">No games played.</div> :
+                            games.map((game, idx) => (
                                 <div key={game.game_id} className="group">
                                     <button
                                         onClick={() => setExpandedGameId(expandedGameId === game.game_id ? null : game.game_id)}
-                                        className="w-full bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg p-4 flex items-center justify-between transition-all"
+                                        className={`w-full grid grid-cols-12 gap-1 p-2 items-center text-xs border-b border-gray-800/50 hover:bg-gray-800/50 transition-colors ${idx % 2 === 0 ? 'bg-transparent' : 'bg-gray-900/20'
+                                            }`}
                                     >
-                                        <div className="flex items-center gap-4 w-1/3">
-                                            <div className="text-xs text-gray-500 font-mono">{game.date}</div>
-                                            <div className="font-bold text-lg md:text-xl w-16">{game.home_away === 'Home' ? 'vs' : '@'} {game.opponent}</div>
+                                        <div className="col-span-1 text-gray-400 font-mono text-[11px] whitespace-nowrap overflow-hidden text-ellipsis">{game.date}</div>
+                                        <div className="col-span-1 text-gray-500 font-mono text-[10px]">-</div>
+
+                                        <div className="col-span-2 flex items-center gap-1.5 overflow-hidden">
+                                            <span className={`text-[10px] font-bold ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
+                                                {game.home_away === 'Home' ? 'vs' : '@'}
+                                            </span>
+                                            <span className="font-bold text-white truncate">{game.opponent}</span>
                                         </div>
 
-                                        <div className="flex items-center gap-6 justify-center w-1/3">
-                                            <div className={`font-black text-2xl ${game.result.includes('W') ? 'text-green-400' : 'text-red-400'
+                                        <div className="col-span-2 flex justify-center">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black w-14 text-center ${game.result.startsWith('W') ? 'bg-green-900/30 text-green-400 border border-green-500/20' :
+                                                    game.result.startsWith('OTL') ? 'bg-orange-900/30 text-orange-400 border border-orange-500/20' :
+                                                        'bg-red-900/30 text-red-400 border border-red-500/20'
                                                 }`}>
-                                                {game.result.replace('R', '').replace('OT', ' OT').replace('SO', ' SO')}
-                                            </div>
-                                            <div className="text-sm font-mono text-gray-400">
-                                                {game.gf} - {game.ga}
-                                            </div>
+                                                {game.result}
+                                            </span>
                                         </div>
 
-                                        <div className="flex items-center gap-2 justify-end w-1/3 text-xs text-gray-400">
-                                            <div className="flex flex-col items-end">
-                                                <span>xGF: <span className="text-white">{game.xgf.toFixed(2)}</span></span>
-                                                <span>xGA: <span className="text-white">{game.xga.toFixed(2)}</span></span>
-                                            </div>
-                                            <div className={`transition-transform duration-300 ${expandedGameId === game.game_id ? 'rotate-180' : ''}`}>
+                                        <div className="col-span-1 text-center font-mono text-gray-300">
+                                            {game.gf}-{game.ga}
+                                        </div>
+
+                                        <div className="col-span-2 flex flex-col text-[10px] text-gray-400 leading-tight items-center">
+                                            <span title={game.starting_goalie} className="truncate w-full text-center">{game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}</span>
+                                            <span className="text-gray-600 text-[9px]">vs {game.opponent_starter ? game.opponent_starter.split(' ').pop() : '-'}</span>
+                                        </div>
+
+                                        <div className="col-span-2 text-right pr-2 text-[10px] font-mono text-gray-400 flex flex-col items-end">
+                                            <div><span className="text-gray-600">xG:</span> <span className={game.xgf > game.xga ? 'text-green-400' : 'text-red-400'}>{game.xgf.toFixed(2)}</span></div>
+                                            <div><span className="text-gray-600">vs:</span> {game.xga.toFixed(2)}</div>
+                                        </div>
+
+                                        <div className="col-span-1 flex justify-end pr-2 text-gray-600">
+                                            <div className={`transition-transform duration-300 ${expandedGameId === game.game_id ? 'rotate-180 text-white' : ''}`}>
                                                 ▼
                                             </div>
                                         </div>
@@ -303,11 +347,11 @@ export default function TeamDetailPage() {
 
                                     {/* Expanded Boxscore */}
                                     {expandedGameId === game.game_id && (
-                                        <div className="mt-2 pl-4 border-l-2" style={{ borderColor: primaryColor }}>
+                                        <div className="pl-0 md:pl-0 border-b border-gray-800 bg-gray-900/30" style={{ borderLeft: `2px solid ${primaryColor}` }}>
                                             <GameBoxscore
                                                 gameId={parseInt(game.game_id)}
                                                 teamAbbr={teamAbbr}
-                                                playerStats={playerStats.filter(p => p.game_id == game.game_id)} // Loose equality for string/int match
+                                                playerStats={playerStats.filter(p => p.game_id == game.game_id)}
                                             />
                                         </div>
                                     )}
