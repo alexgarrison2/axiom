@@ -364,16 +364,18 @@ export default function TeamDetailPage() {
         let w = 0, l = 0, otl = 0;
 
         filteredGames.forEach(g => {
-            // Robust Result Check
-            const res = g.result ? g.result.toUpperCase().trim() : '';
-            if (['RW', 'OTW', 'SOW', 'W'].includes(res)) w++;
-            else if (res === 'RL' || res === 'L') l++;
-            else if (['OTL', 'SOL'].includes(res)) otl++;
-            else {
-                // Fallback: Check points if result string fails?
-                // But processedGames logic should have caught it.
-                // If 0-0-47 persisted, it means res matched none.
-                // Assuming 'OTL' is default fallback in previous logic was the issue.
+            // Score-Based Logic (Most Robust)
+            if (g.gf > g.ga) {
+                w++;
+            } else {
+                // Loss or OTL
+                // Check Raw OT Loss column or fallback to parsing result for "OT/SO"
+                const isOTL = g.raw?.ot_loss === '1' || g.raw?.ot_loss === 1 ||
+                    g.result?.includes('OT') || g.result?.includes('SO') ||
+                    g.raw?.result?.includes('OT') || g.raw?.result?.includes('SO');
+
+                if (isOTL) otl++;
+                else l++;
             }
         });
 
@@ -463,9 +465,10 @@ export default function TeamDetailPage() {
 
             {/* Team Navigation */}
             {/* Team Navigation - Horizontal Logo Bar */}
-            <div className="absolute top-0 left-0 right-0 z-30 bg-black/60 backdrop-blur-md border-b border-white/10 overflow-x-auto">
-                <div className="flex items-center gap-4 p-2 min-w-max mx-auto px-4">
-                    <Link href="/teams" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-wider mr-4 sticky left-0 bg-black/80 z-10 py-2 pl-2 pr-4 border-r border-white/10">
+            {/* Team Navigation - Horizontal Logo Bar */}
+            <div className="absolute top-0 left-0 right-0 z-30 bg-black/60 backdrop-blur-md border-b border-white/10">
+                <div className="flex flex-wrap justify-between gap-y-2 gap-x-1 p-2 max-w-[1800px] mx-auto px-4">
+                    <Link href="/teams" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-wider mr-4 bg-black/80 z-10 py-1 pl-2 pr-4 border-r border-white/10 h-10 my-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
