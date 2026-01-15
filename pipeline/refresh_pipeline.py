@@ -32,8 +32,13 @@ def refresh_pipeline():
     print("Fetching H-Ref Stats...")
     import fetch_href_stats
     fetch_href_stats.main()
+    
+    # 0b. Sanitize History (Backfill H-Ref data into gamestats)
+    print("Sanitizing Historical Special Teams data...")
+    import backfill_special_teams
+    backfill_special_teams.backfill_special_teams()
 
-    # 0b. Fetch Latest Game Data (and Shots)
+    # 0c. Fetch Latest Game Data (and Shots)
     print("Fetching missing game data...")
     import nhl_scraper_poc
     nhl_scraper_poc.main()
