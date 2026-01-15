@@ -364,9 +364,8 @@ export default function TeamDetailPage() {
         let w = 0, l = 0, otl = 0;
 
         filteredGames.forEach(g => {
-            // Revert to Text-Based Logic (Now that 'result' parsing is fixed)
-            // This catches SOW/OTW correctly where scores might be tied in raw data
-            const res = g.result ? g.result.toUpperCase().trim() : '';
+            // Use result_code to catch SOW/OTW which might be "W (SO)" in Result string
+            const res = g.result_code ? g.result_code.toUpperCase().trim() : '';
 
             if (['RW', 'OTW', 'SOW', 'W'].includes(res)) {
                 w++;
