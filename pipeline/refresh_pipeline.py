@@ -9,7 +9,31 @@ from predict_games import predict
 def refresh_pipeline():
     print("--- Starting Full Pipeline Refresh ---")
 
-    # 0. Fetch Latest Game Data (and Shots)
+    # -1. Prune Recent Data (Force Re-scrape for Special Teams fix)
+    # We remove games >= 2026-01-13 so they get re-processed with H-Ref data
+    print("Pruning recent gamestats to force re-scrape...")
+    gamestats_file = "nhl_season_2025_2026_gamestats.csv"
+    try:
+        df = pd.read_csv(gamestats_file)
+        # Convert date
+        if 'game_date' in df.columns:
+            df['game_date'] = pd.to_datetime(df['game_date'])
+            original_len = len(df)
+            # Prune
+            df = df[df['game_date'] < "2026-01-13"]
+            pruned_len = len(df)
+            if pruned_len < original_len:
+                df.to_csv(gamestats_file, index=False)
+                print(f"Pruned {original_len - pruned_len} rows from {gamestats_file}.")
+    except FileNotFoundError:
+        pass
+        
+    # 0a. Fetch H-Ref Stats (Special Teams Source of Truth)
+    print("Fetching H-Ref Stats...")
+    import fetch_href_stats
+    fetch_href_stats.main()
+
+    # 0b. Fetch Latest Game Data (and Shots)
     print("Fetching missing game data...")
     import nhl_scraper_poc
     nhl_scraper_poc.main()
