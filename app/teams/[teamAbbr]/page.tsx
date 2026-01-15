@@ -222,6 +222,7 @@ export default function TeamDetailPage() {
                         en_ga: parseInt(row.emptynet_goalsagainst),
                         en_att_ag: parseInt(row.en_attempts_against),
                         gsax: parseFloat(row.xG_against) - parseFloat(row.goals_ag),
+                        // Record Fix: Robust Parsing
                         otml: (['RL', 'OTL', 'SOL'].includes(row.result?.trim()) && parseInt(row.en_attempts_for) > 0) ? 'Yes' : '-',
                         game_number: 0, // Will be set after sorting
                         raw: row
@@ -359,15 +360,22 @@ export default function TeamDetailPage() {
         let w = 0, l = 0, otl = 0;
 
         filteredGames.forEach(g => {
-            const res = g.result; // Already trimmed in processedGames
-            if (['RW', 'OTW', 'SOW'].includes(res)) w++;
-            else if (g.result === 'RL') l++;
-            else otl++;
+            // Robust Result Check
+            const res = g.result ? g.result.toUpperCase().trim() : '';
+            if (['RW', 'OTW', 'SOW', 'W'].includes(res)) w++;
+            else if (res === 'RL' || res === 'L') l++;
+            else if (['OTL', 'SOL'].includes(res)) otl++;
+            else {
+                // Fallback: Check points if result string fails?
+                // But processedGames logic should have caught it.
+                // If 0-0-47 persisted, it means res matched none.
+                // Assuming 'OTL' is default fallback in previous logic was the issue.
+            }
         });
 
         const pts = (w * 2) + otl;
         const pt_pct = count > 0 ? (pts / (count * 2)).toFixed(3).replace(/^0+/, '') : '.000';
-        const record = `${w}-${l}-${otl} ${pts}pts (${pt_pct})`;
+        const record = `${w}-${l}-${otl} ${pts}pts (${pt_pct}) ${count} GP`;
 
         const sum = (key: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => filteredGames.reduce((acc, g) => acc + (getStat(g, key) as number), 0);
 
@@ -450,33 +458,44 @@ export default function TeamDetailPage() {
             ></div>
 
             {/* Team Navigation */}
-            <div className="absolute top-4 left-4 right-4 z-20 flex flex-col md:flex-row justify-between items-start md:items-center">
-                <Link href="/teams" className="text-gray-400 hover:text-white transition-colors mb-4 md:mb-0 flex items-center gap-2 text-sm font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Back to Teams
-                </Link>
+            {/* Team Navigation - Horizontal Logo Bar */}
+            <div className="absolute top-0 left-0 right-0 z-30 bg-black/60 backdrop-blur-md border-b border-white/10 overflow-x-auto">
+                <div className="flex items-center gap-4 p-2 min-w-max mx-auto px-4">
+                    <Link href="/teams" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-wider mr-4 sticky left-0 bg-black/80 z-10 py-2 pl-2 pr-4 border-r border-white/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Teams
+                    </Link>
 
+                    {allTeamsList
+                        .filter(t => t['Common Name'])
+                        // Sort Alphabetically
+                        .sort((a, b) => (a['Team Name'] || a['Common Name']).localeCompare(b['Team Name'] || b['Common Name']))
+                        .map((t: any) => {
+                            const name = t['Common Name'].trim();
+                            const tricode = t['Team Tricode'];
+                            const url = t['Team Logo URL'];
+                            const isSelected = name === teamInfo?.CommonName;
 
-                <div className="flex flex-wrap gap-2 justify-center md:justify-end bg-black/40 p-2 rounded-lg backdrop-blur-sm border border-white/5">
-                    {allTeamsList.filter(t => t['Common Name']).sort((a, b) => a['Common Name'].localeCompare(b['Common Name'])).map((t: any) => {
-                        const name = t['Common Name'].trim();
-                        const tricode = t['Team Tricode'];
-                        const url = t['Team Logo URL'];
-                        const isSelected = name === teamInfo?.CommonName;
-
-                        return (
-                            <Link
-                                key={name}
-                                href={`/teams/${tricode}`}
-                                className={`relative group ${isSelected ? '' : 'filter grayscale opacity-60 hover:grayscale-0 hover:opacity-100'} transition-all duration-300`}
-                                title={name}
-                            >
-                                <img src={url} alt={name} className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md" />
-                            </Link>
-                        );
-                    })}
+                            return (
+                                <Link
+                                    key={name}
+                                    href={`/teams/${tricode}`}
+                                    className={`relative group transition-all duration-300 flex-shrink-0 ${isSelected ? 'opacity-100 scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'opacity-30 grayscale hover:grayscale-0 hover:opacity-80'}`}
+                                    title={t['Team Name']}
+                                >
+                                    <img
+                                        src={url}
+                                        alt={name}
+                                        className="w-8 h-8 md:w-10 md:h-10 object-contain"
+                                    />
+                                    {isSelected && (
+                                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>
+                                    )}
+                                </Link>
+                            );
+                        })}
                 </div>
             </div>
 
