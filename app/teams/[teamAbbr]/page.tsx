@@ -353,8 +353,21 @@ export default function TeamDetailPage() {
     const totals = useMemo(() => {
         if (filteredGames.length === 0) return null;
 
+        const count = filteredGames.length;
+        let w = 0, l = 0, otl = 0;
+
+        filteredGames.forEach(g => {
+            const res = g.result;
+            if (['RW', 'OTW', 'SOW'].includes(res)) w++;
+            else if (g.result === 'RL') l++;
+            else otl++;
+        });
+
+        const pts = (w * 2) + otl;
+        const pt_pct = count > 0 ? (pts / (count * 2)).toFixed(3).replace(/^0+/, '') : '.000';
+        const record = `${w}-${l}-${otl} ${pts}pts (${pt_pct})`;
+
         const sum = (key: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => filteredGames.reduce((acc, g) => acc + (getStat(g, key) as number), 0);
-        const sumRaw = (key: string) => filteredGames.reduce((acc, g) => acc + (parseInt(g.raw[key] || '0')), 0);
 
         const gf = sum('gf');
         const ga = sum('ga');
@@ -365,20 +378,31 @@ export default function TeamDetailPage() {
         const xgf = sum('xgf');
         const xga = sum('xga');
 
+        // EN Stats (Sums)
+        const en_gf = filteredGames.reduce((acc, g) => acc + g.en_gf, 0);
+        const en_att = filteredGames.reduce((acc, g) => acc + g.en_att, 0);
+        const en_ga = filteredGames.reduce((acc, g) => acc + g.en_ga, 0);
+        const en_att_ag = filteredGames.reduce((acc, g) => acc + g.en_att_ag, 0);
+
         const pp_goals = filteredGames.reduce((acc, g) => acc + g.pp_goals, 0);
         const pp_opps = filteredGames.reduce((acc, g) => acc + g.pp_opps, 0);
         const pk_goals_ag = filteredGames.reduce((acc, g) => acc + g.pp_goals_against, 0);
         const pk_opps = filteredGames.reduce((acc, g) => acc + g.pk_opps, 0);
 
         return {
+            record,
             gf, ga,
             gd: gf - ga,
-            sf, sa,
-            sd: sf - sa,
-            cf, ca,
-            cd: cf - ca,
-            xgf, xga,
-            xgd: xgf - xga,
+            sf: (sf / count).toFixed(1),
+            sa: (sa / count).toFixed(1),
+            sd: ((sf - sa) / count).toFixed(1),
+            cf: (cf / count).toFixed(1),
+            ca: (ca / count).toFixed(1),
+            cd: ((cf - ca) / count).toFixed(1),
+            xgf: (xgf / count).toFixed(1),
+            xga: (xga / count).toFixed(1),
+            xgd: ((xgf - xga) / count).toFixed(1),
+            en_gf, en_att, en_ga, en_att_ag,
             pp_goals, pp_opps,
             pk_goals_ag, pk_opps,
             pp_pct: pp_opps > 0 ? (pp_goals / pp_opps * 100).toFixed(1) : '0.0',
@@ -632,6 +656,8 @@ export default function TeamDetailPage() {
                                             <th className="p-1 text-center">EN GF</th>
                                             <th className="p-1 text-center">EN Att</th>
                                             <th className="p-1 text-center">OTML</th>
+                                            <th className="p-1 text-center">EN GA</th>
+                                            <th className="p-1 text-center">EN Att Ag</th>
                                         </>
                                     )}
                                 </tr>
@@ -643,35 +669,35 @@ export default function TeamDetailPage() {
                                         <td className="p-1 sticky left-16 bg-[#1c1c1c] z-20 border-r border-gray-800 text-center">TOTALS</td>
                                         <td className="p-1 sticky left-40 bg-[#1c1c1c] z-20 border-r border-gray-800"></td>
                                         <td className="p-1 sticky left-48 bg-[#1c1c1c] z-20 border-r border-gray-800"></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td colSpan={3} className="p-1 text-center text-gray-400 text-[10px] tracking-wider uppercase">{totals.record}</td>
                                         <td className="p-1 text-center text-white">{totals.gf}</td>
                                         <td className="p-1 text-center text-white">{totals.ga}</td>
                                         <td className={`p-1 text-center ${totals.gd > 0 ? 'text-green-400' : totals.gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.gd > 0 ? '+' : ''}{totals.gd}</td>
                                         {filters.period === 'All' && (
                                             <>
-                                                <td className="p-1 text-center text-blue-300">{totals.pp_goals}/{totals.pp_opps} ({totals.pp_pct}%)</td>
-                                                <td className="p-1 text-center text-red-300">{totals.pk_goals_ag}/{totals.pk_opps} ({totals.pk_pct}%)</td>
+                                                <td className="p-1 text-center text-blue-300">{totals.pp_goals} / {totals.pp_opps} ({totals.pp_pct}%)</td>
+                                                <td className="p-1 text-center text-red-300">{totals.pk_goals_ag} / {totals.pk_opps} ({totals.pk_pct}%)</td>
                                             </>
                                         )}
                                         <td className="p-1 text-center text-gray-300">{totals.sf}</td>
                                         <td className="p-1 text-center text-gray-300">{totals.sa}</td>
-                                        <td className={`p-1 text-center ${totals.sd > 0 ? 'text-green-400' : totals.sd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.sd > 0 ? '+' : ''}{totals.sd}</td>
+                                        <td className={`p-1 text-center ${parseFloat(totals.sd) > 0 ? 'text-green-400' : parseFloat(totals.sd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.sd) > 0 ? '+' : ''}{totals.sd}</td>
                                         <td className="p-1 text-center text-blue-300">{totals.cf}</td>
                                         <td className="p-1 text-center text-orange-300">{totals.ca}</td>
-                                        <td className={`p-1 text-center ${totals.cd > 0 ? 'text-blue-400' : totals.cd < 0 ? 'text-orange-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
+                                        <td className={`p-1 text-center ${parseFloat(totals.cd) > 0 ? 'text-blue-400' : parseFloat(totals.cd) < 0 ? 'text-orange-400' : 'text-gray-500'}`}>{parseFloat(totals.cd) > 0 ? '+' : ''}{totals.cd}</td>
                                         <td className="p-1 text-center text-gray-400">{totals.sh_pct}%</td>
                                         <td className="p-1 text-center text-gray-400">{totals.sv_pct}%</td>
                                         {filters.period === 'All' && <td></td>}
                                         {filters.period === 'All' && (
                                             <>
-                                                <td className="p-1 text-center text-gray-300">{totals.xgf.toFixed(1)}</td>
-                                                <td className="p-1 text-center text-gray-300">{totals.xga.toFixed(1)}</td>
-                                                <td className={`p-1 text-center ${totals.xgd > 0 ? 'text-green-400' : totals.xgd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.xgd > 0 ? '+' : ''}{totals.xgd.toFixed(1)}</td>
+                                                <td className="p-1 text-center text-gray-300">{totals.xgf}</td>
+                                                <td className="p-1 text-center text-gray-300">{totals.xga}</td>
+                                                <td className={`p-1 text-center ${parseFloat(totals.xgd) > 0 ? 'text-green-400' : parseFloat(totals.xgd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.xgd) > 0 ? '+' : ''}{totals.xgd}</td>
+                                                <td className="p-1 text-center text-gray-500">{totals.en_gf}</td>
+                                                <td className="p-1 text-center text-gray-500">{totals.en_att}</td>
                                                 <td></td>
-                                                <td></td>
-                                                <td></td>
+                                                <td className="p-1 text-center text-gray-500">{totals.en_ga}</td>
+                                                <td className="p-1 text-center text-gray-500">{totals.en_att_ag}</td>
                                             </>
                                         )}
                                     </tr>
@@ -745,10 +771,10 @@ export default function TeamDetailPage() {
                                                     {filters.period === 'All' && (
                                                         <>
                                                             <td className="p-1 text-center font-mono text-blue-300">
-                                                                {game.pp_goals}/{game.pp_opps}
+                                                                {game.pp_goals} / {game.pp_opps}
                                                             </td>
                                                             <td className="p-1 text-center font-mono text-red-300">
-                                                                {game.pp_goals_against}/{game.pk_opps}
+                                                                {game.pp_goals_against} / {game.pk_opps}
                                                             </td>
                                                         </>
                                                     )}
@@ -775,6 +801,8 @@ export default function TeamDetailPage() {
                                                             <td className="p-1 text-center font-mono text-gray-500">{game.en_gf}</td>
                                                             <td className="p-1 text-center font-mono text-gray-500">{game.en_att}</td>
                                                             <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_ga}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag}</td>
                                                         </>
                                                     )}
                                                 </tr>
