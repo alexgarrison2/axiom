@@ -364,18 +364,18 @@ export default function TeamDetailPage() {
         let w = 0, l = 0, otl = 0;
 
         filteredGames.forEach(g => {
-            // Score-Based Logic (Most Robust)
-            if (g.gf > g.ga) {
-                w++;
-            } else {
-                // Loss or OTL
-                // Check Raw OT Loss column or fallback to parsing result for "OT/SO"
-                const isOTL = g.raw?.ot_loss === '1' || g.raw?.ot_loss === 1 ||
-                    g.result?.includes('OT') || g.result?.includes('SO') ||
-                    g.raw?.result?.includes('OT') || g.raw?.result?.includes('SO');
+            // Revert to Text-Based Logic (Now that 'result' parsing is fixed)
+            // This catches SOW/OTW correctly where scores might be tied in raw data
+            const res = g.result ? g.result.toUpperCase().trim() : '';
 
-                if (isOTL) otl++;
-                else l++;
+            if (['RW', 'OTW', 'SOW', 'W'].includes(res)) {
+                w++;
+            }
+            else if (['RL', 'L'].includes(res)) {
+                l++;
+            }
+            else if (['OTL', 'SOL'].includes(res)) {
+                otl++;
             }
         });
 
@@ -463,11 +463,9 @@ export default function TeamDetailPage() {
                 style={{ background: `radial-gradient(circle at 50% 0%, ${primaryColor}, transparent)` }}
             ></div>
 
-            {/* Team Navigation */}
-            {/* Team Navigation - Horizontal Logo Bar */}
             {/* Team Navigation - Horizontal Logo Bar */}
             <div className="absolute top-0 left-0 right-0 z-30 bg-black/60 backdrop-blur-md border-b border-white/10">
-                <div className="flex flex-wrap justify-between gap-y-2 gap-x-1 p-2 max-w-[1800px] mx-auto px-4">
+                <div className="flex flex-wrap justify-center gap-1 p-2 max-w-[1800px] mx-auto px-4">
                     <Link href="/teams" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-wider mr-4 bg-black/80 z-10 py-1 pl-2 pr-4 border-r border-white/10 h-10 my-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
