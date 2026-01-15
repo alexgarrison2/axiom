@@ -49,6 +49,8 @@ interface GameLog {
     en_ga: number;
     en_att_ag: number;
     otml: string;
+    game_number: number;
+    raw: any; // Raw CSV row for dynamic parsing
 }
 
 interface PlayerBoxscoreRow {
@@ -110,6 +112,16 @@ export default function TeamDetailPage() {
 
     const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'games' | 'skaters' | 'goalies'>('games');
+
+    // Filters
+    const [filters, setFilters] = useState({
+        goalie: 'All',
+        loc: 'All',
+        period: 'All',
+        last: 'All',
+        result: 'All'
+    });
+
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
     const [allTeamRatings, setAllTeamRatings] = useState<any>(null);
     const [allTeamsList, setAllTeamsList] = useState<any[]>([]);
@@ -208,7 +220,9 @@ export default function TeamDetailPage() {
                         en_att: parseInt(row.en_attempts_for),
                         en_ga: parseInt(row.emptynet_goalsagainst),
                         en_att_ag: parseInt(row.en_attempts_against),
-                        otml: row.otml || ((res === 'OTL' || res === 'SOL') ? 'Yes' : '-') // Fallback for old data? No, just use row.otml if available, else calc
+                        otml: row.otml || ((res === 'OTL' || res === 'SOL') ? 'Yes' : '-'),
+                        game_number: parseInt(row.team_game_number),
+                        raw: row
                     };
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -265,6 +279,66 @@ export default function TeamDetailPage() {
         });
         return Object.values(stats).sort((a, b) => b.points - a.points);
     }, [playerStats]);
+
+    // -- Filter Logic --
+    const uniqueGoalies = useMemo(() => {
+        const set = new Set(games.map(g => g.starting_goalie).filter(Boolean));
+        return Array.from(set).sort();
+    }, [games]);
+
+    const filteredGames = useMemo(() => {
+        let out = [...games];
+
+        if (filters.goalie !== 'All') {
+            out = out.filter(g => g.starting_goalie === filters.goalie);
+        }
+        if (filters.loc !== 'All') {
+            out = out.filter(g => filters.loc === 'Home' ? g.home_away === 'Home' : g.home_away === 'Away');
+        }
+        if (filters.result !== 'All') {
+            out = out.filter(g => {
+                if (filters.result === 'W') return g.result_code.includes('W');
+                if (filters.result === 'L') return g.result_code === 'RL' || g.result_code.includes('L'); // Includes OTL? usually separate, but generic L includes all losses? User asked W/L. Let's start strictly.
+                // Re-reading user request: "Result (W/L)".
+                // Usually people want simple W vs Not W (L/OTL).
+                if (filters.result === 'W') return g.result.startsWith('W');
+                if (filters.result === 'L') return g.result === 'L' || g.result === 'OTL' || g.result === 'SOL';
+                return true;
+            });
+        }
+
+        // Sorting is already Date Desc
+        if (filters.last !== 'All') {
+            const n = parseInt(filters.last);
+            out = out.slice(0, n);
+        }
+
+        return out;
+    }, [games, filters]);
+
+    // Helper to get stats based on period
+    const getStat = (game: GameLog, stat: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca') => {
+        if (filters.period === 'All') {
+            return game[stat];
+        }
+        // Map to CSV columns: goals_for_1P, sog_for_1P, attempts_for_1P
+        // Suffix: _1P, _2P, _3P, _OT
+        const suffix = filters.period === '1st' ? '_1P' :
+            filters.period === '2nd' ? '_2P' :
+                filters.period === '3rd' ? '_3P' : '_OT';
+
+        let prefix = '';
+        if (stat === 'gf') prefix = 'goals_for';
+        if (stat === 'ga') prefix = 'goals_ag';
+        if (stat === 'sf') prefix = 'sog_for';
+        if (stat === 'sa') prefix = 'sog_ag';
+        if (stat === 'cf') prefix = 'attempts_for';
+        if (stat === 'ca') prefix = 'attempts_ag';
+
+        const val = parseInt(game.raw[prefix + suffix] || '0');
+        return val;
+    };
+
 
 
     // -- Render --
@@ -379,6 +453,84 @@ export default function TeamDetailPage() {
                     ))}
                 </div>
 
+                {/* Filters */}
+                {activeTab === 'games' && (
+                    <div className="flex flex-wrap gap-4 mb-6 p-4 bg-white/5 rounded-lg border border-white/10 items-center">
+                        {/* Goalie */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] uppercase font-bold text-gray-500">Goalie</label>
+                            <select
+                                value={filters.goalie}
+                                onChange={e => setFilters({ ...filters, goalie: e.target.value })}
+                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
+                            >
+                                <option value="All">All Goalies</option>
+                                {uniqueGoalies.map(g => <option key={g} value={g}>{g}</option>)}
+                            </select>
+                        </div>
+
+                        {/* Home/Away */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] uppercase font-bold text-gray-500">Location</label>
+                            <select
+                                value={filters.loc}
+                                onChange={e => setFilters({ ...filters, loc: e.target.value })}
+                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
+                            >
+                                <option value="All">All</option>
+                                <option value="Home">Home</option>
+                                <option value="Away">Away</option>
+                            </select>
+                        </div>
+
+                        {/* Period */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] uppercase font-bold text-gray-500">Period</label>
+                            <select
+                                value={filters.period}
+                                onChange={e => setFilters({ ...filters, period: e.target.value })}
+                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
+                            >
+                                <option value="All">Full Game</option>
+                                <option value="1st">1st Period</option>
+                                <option value="2nd">2nd Period</option>
+                                <option value="3rd">3rd Period</option>
+                                <option value="OT">Overtime</option>
+                            </select>
+                        </div>
+
+                        {/* Last N */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] uppercase font-bold text-gray-500">Last</label>
+                            <select
+                                value={filters.last}
+                                onChange={e => setFilters({ ...filters, last: e.target.value })}
+                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
+                            >
+                                <option value="All">All Season</option>
+                                <option value="5">Last 5</option>
+                                <option value="10">Last 10</option>
+                                <option value="15">Last 15</option>
+                                <option value="20">Last 20</option>
+                            </select>
+                        </div>
+
+                        {/* Result */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] uppercase font-bold text-gray-500">Result</label>
+                            <select
+                                value={filters.result}
+                                onChange={e => setFilters({ ...filters, result: e.target.value })}
+                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
+                            >
+                                <option value="All">All</option>
+                                <option value="W">Wins</option>
+                                <option value="L">Losses</option>
+                            </select>
+                        </div>
+                    </div>
+                )}
+
                 {/* Game Log Tab */}
                 {activeTab === 'games' && (
                     <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
@@ -386,45 +538,72 @@ export default function TeamDetailPage() {
                             <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
                                 <tr>
                                     <th className="p-1 sticky left-0 bg-gray-900 z-20 w-8"></th>
-                                    <th className="p-1 sticky left-8 bg-gray-900 z-20 w-24 text-center">Date</th>
-                                    <th className="p-1 sticky left-32 bg-gray-900 z-20 w-10 text-center">Loc</th>
-                                    <th className="p-1 sticky left-[10.5rem] bg-gray-900 z-20 w-12 text-center">Opp</th>
+                                    <th className="p-1 sticky left-8 bg-gray-900 z-20 w-8 text-center text-gray-500">#</th>
+                                    <th className="p-1 sticky left-16 bg-gray-900 z-20 w-24 text-center">Date</th>
+                                    <th className="p-1 sticky left-40 bg-gray-900 z-20 w-8 text-center">Loc</th>
+                                    <th className="p-1 sticky left-48 bg-gray-900 z-20 w-12 text-center">Opp</th>
                                     <th className="p-1">Starter</th>
                                     <th className="p-1">Opp Starter</th>
                                     <th className="p-1 text-center">Res</th>
                                     <th className="p-1 text-center">GF</th>
                                     <th className="p-1 text-center">GA</th>
                                     <th className="p-1 text-center">GΔ</th>
-                                    <th className="p-1 text-center">PPG</th>
-                                    <th className="p-1 text-center">PP OPP</th>
-                                    <th className="p-1 text-center">PP Time</th>
-                                    <th className="p-1 text-center">PPGA</th>
-                                    <th className="p-1 text-center">PK OPP</th>
-                                    <th className="p-1 text-center">PK Time</th>
+                                    {filters.period === 'All' && (
+                                        <>
+                                            <th className="p-1 text-center">PPG</th>
+                                            <th className="p-1 text-center">PP OPP</th>
+                                            <th className="p-1 text-center">PP Time</th>
+                                            <th className="p-1 text-center">PPGA</th>
+                                            <th className="p-1 text-center">PK OPP</th>
+                                            <th className="p-1 text-center">PK Time</th>
+                                        </>
+                                    )}
                                     <th className="p-1 text-center">SF</th>
                                     <th className="p-1 text-center">SA</th>
+                                    <th className="p-1 text-center">SΔ</th>
                                     <th className="p-1 text-center">CF</th>
                                     <th className="p-1 text-center">CA</th>
+                                    <th className="p-1 text-center">CΔ</th>
                                     <th className="p-1 text-center">SH%</th>
                                     <th className="p-1 text-center">SV%</th>
-                                    <th className="p-1 text-center">GSAx</th>
-                                    <th className="p-1 text-center">xGF</th>
-                                    <th className="p-1 text-center">xGA</th>
-                                    <th className="p-1 text-center">EN GF</th>
-                                    <th className="p-1 text-center">EN Att</th>
-                                    <th className="p-1 text-center">OTML</th>
-                                    <th className="p-1 text-center">EN GA</th>
-                                    <th className="p-1 text-center">EN Att Ag</th>
+                                    {filters.period === 'All' && <th className="p-1 text-center">GSAx</th>}
+                                    {filters.period === 'All' && (
+                                        <>
+                                            <th className="p-1 text-center">xGF</th>
+                                            <th className="p-1 text-center">xGA</th>
+                                            <th className="p-1 text-center">xGΔ</th>
+                                            <th className="p-1 text-center">EN GF</th>
+                                            <th className="p-1 text-center">EN Att</th>
+                                            <th className="p-1 text-center">OTML</th>
+                                            <th className="p-1 text-center">EN GA</th>
+                                            <th className="p-1 text-center">EN Att Ag</th>
+                                        </>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800">
                                 {games.length === 0 ?
                                     <tr><td colSpan={30} className="p-4 text-center text-gray-500">No games played.</td></tr>
-                                    : games.map((game, idx) => {
+                                    : filteredGames.map((game, idx) => {
                                         const isExpanded = expandedGameId === game.game_id;
-                                        const gd = game.gf - game.ga;
-                                        const sh_pct = game.sf > 0 ? (game.gf / game.sf * 100).toFixed(1) : "0.0";
-                                        const sv_pct = (game.sv_pct * 100).toFixed(1);
+
+                                        // Dynamic Stats
+                                        const gf = getStat(game, 'gf');
+                                        const ga = getStat(game, 'ga');
+                                        const sf = getStat(game, 'sf');
+                                        const sa = getStat(game, 'sa');
+                                        const cf = getStat(game, 'cf');
+                                        const ca = getStat(game, 'ca');
+
+                                        const gd = gf - ga;
+                                        const sd = sf - sa;
+                                        const cd = cf - ca;
+                                        const xgd = game.xgf - game.xga;
+
+                                        const sh_pct = sf > 0 ? (gf / sf * 100).toFixed(1) : "0.0";
+                                        // SV% for period is tricky if using total sv_pct column. Better to calc from shots/goals
+                                        const sv_pct_val = sa > 0 ? ((sa - ga) / sa * 100).toFixed(1) : "0.0";
+
                                         const gsax = (game.xga - game.ga).toFixed(2);
                                         const opponentName = game.opponent.trim();
                                         const logoUrl = teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '';
@@ -438,13 +617,14 @@ export default function TeamDetailPage() {
                                                     <td className="p-1 sticky left-0 bg-gray-900/95 border-r border-gray-800 z-20 text-center text-gray-500">
                                                         <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180 text-white' : ''}`}>▼</div>
                                                     </td>
-                                                    <td className="p-1 sticky left-8 bg-gray-900/95 border-r border-gray-800 z-20 font-mono text-gray-300 w-24 text-center">{game.date}</td>
-                                                    <td className={`p-1 sticky left-32 bg-gray-900/95 border-r border-gray-800 z-20 text-center font-bold text-[10px] w-10 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
+                                                    <td className="p-1 sticky left-8 bg-gray-900/95 border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] w-8">{game.game_number}</td>
+                                                    <td className="p-1 sticky left-16 bg-gray-900/95 border-r border-gray-800 z-20 font-mono text-gray-300 w-24 text-center text-[11px]">{game.date}</td>
+                                                    <td className={`p-1 sticky left-40 bg-gray-900/95 border-r border-gray-800 z-20 text-center font-bold text-[10px] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
                                                         {game.home_away === 'Home' ? 'vs' : '@'}
                                                     </td>
-                                                    <td className="p-1 sticky left-[10.5rem] bg-gray-900/95 border-r border-gray-800 z-20 justify-center w-12">
-                                                        <div className="w-6 h-6 relative mx-auto" title={game.opponent}>
-                                                            {logoUrl ? <img src={logoUrl} alt={game.opponent} className="w-6 h-6 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
+                                                    <td className="p-1 sticky left-48 bg-gray-900/95 border-r border-gray-800 z-20 justify-center w-12 text-center">
+                                                        <div className="w-5 h-5 relative mx-auto" title={game.opponent}>
+                                                            {logoUrl ? <img src={logoUrl} alt={game.opponent} className="w-5 h-5 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
                                                         </div>
                                                     </td>
                                                     <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.starting_goalie}>
@@ -461,31 +641,48 @@ export default function TeamDetailPage() {
                                                             {game.result}
                                                         </span>
                                                     </td>
-                                                    <td className="p-1 text-center font-mono text-white">{game.gf}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-400">{game.ga}</td>
+                                                    <td className="p-1 text-center font-mono text-white">{gf}</td>
+                                                    <td className="p-1 text-center font-mono text-gray-400">{ga}</td>
                                                     <td className={`p-1 text-center font-bold font-mono ${gd > 0 ? 'text-green-400' : gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>
                                                         {gd > 0 ? '+' : ''}{gd}
                                                     </td>
-                                                    <td className="p-1 text-center font-mono text-emerald-400">{game.pp_goals}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.pp_opps}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.pp_time}</td>
-                                                    <td className="p-1 text-center font-mono text-red-400">{game.pp_goals_against}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.pk_opps}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.pk_time}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-300">{game.sf}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-300">{game.sa}</td>
-                                                    <td className="p-1 text-center font-mono text-blue-300">{game.cf}</td>
-                                                    <td className="p-1 text-center font-mono text-orange-300">{game.ca}</td>
+                                                    {filters.period === 'All' && (
+                                                        <>
+                                                            <td className="p-1 text-center font-mono text-emerald-400">{game.pp_goals}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.pp_opps}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.pp_time}</td>
+                                                            <td className="p-1 text-center font-mono text-red-400">{game.pp_goals_against}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.pk_opps}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.pk_time}</td>
+                                                        </>
+                                                    )}
+                                                    <td className="p-1 text-center font-mono text-gray-300">{sf}</td>
+                                                    <td className="p-1 text-center font-mono text-gray-300">{sa}</td>
+                                                    <td className={`p-1 text-center font-mono ${sd > 0 ? 'text-green-400/70' : sd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                                                        {sd > 0 ? '+' : ''}{sd}
+                                                    </td>
+                                                    <td className="p-1 text-center font-mono text-blue-300">{cf}</td>
+                                                    <td className="p-1 text-center font-mono text-orange-300">{ca}</td>
+                                                    <td className={`p-1 text-center font-mono ${cd > 0 ? 'text-blue-400' : cd < 0 ? 'text-orange-400' : 'text-gray-500'}`}>
+                                                        {cd > 0 ? '+' : ''}{cd}
+                                                    </td>
                                                     <td className="p-1 text-center font-mono text-gray-400">{sh_pct}%</td>
-                                                    <td className="p-1 text-center font-mono text-gray-400">{sv_pct}%</td>
-                                                    <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-300">{game.xgf.toFixed(2)}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.en_gf}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.en_att}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.otml}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.en_ga}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag}</td>
+                                                    <td className="p-1 text-center font-mono text-gray-400">{sv_pct_val}%</td>
+                                                    {filters.period === 'All' && <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>}
+                                                    {filters.period === 'All' && (
+                                                        <>
+                                                            <td className="p-1 text-center font-mono text-gray-300">{game.xgf.toFixed(2)}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
+                                                            <td className={`p-1 text-center font-mono ${xgd > 0 ? 'text-green-400/70' : xgd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                                                                {xgd > 0 ? '+' : ''}{xgd.toFixed(2)}
+                                                            </td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_gf}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.otml}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_ga}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag}</td>
+                                                        </>
+                                                    )}
                                                 </tr>
                                                 {isExpanded && (
                                                     <tr>
