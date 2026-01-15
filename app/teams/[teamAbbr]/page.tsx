@@ -48,6 +48,7 @@ interface GameLog {
     en_att: number;
     en_ga: number;
     en_att_ag: number;
+    gsax: number;
     otml: string;
     game_number: number;
     raw: any; // Raw CSV row for dynamic parsing
@@ -220,7 +221,8 @@ export default function TeamDetailPage() {
                         en_att: parseInt(row.en_attempts_for),
                         en_ga: parseInt(row.emptynet_goalsagainst),
                         en_att_ag: parseInt(row.en_attempts_against),
-                        otml: (['RL', 'OTL', 'SOL'].includes(res) && parseInt(row.en_attempts_for) > 0) ? 'Yes' : '-',
+                        gsax: parseFloat(row.xG_against) - parseFloat(row.goals_ag),
+                        otml: (['RL', 'OTL', 'SOL'].includes(row.result?.trim()) && parseInt(row.en_attempts_for) > 0) ? 'Yes' : '-',
                         game_number: 0, // Will be set after sorting
                         raw: row
                     };
@@ -357,7 +359,7 @@ export default function TeamDetailPage() {
         let w = 0, l = 0, otl = 0;
 
         filteredGames.forEach(g => {
-            const res = g.result;
+            const res = g.result; // Already trimmed in processedGames
             if (['RW', 'OTW', 'SOW'].includes(res)) w++;
             else if (g.result === 'RL') l++;
             else otl++;
@@ -378,6 +380,9 @@ export default function TeamDetailPage() {
         const xgf = sum('xgf');
         const xga = sum('xga');
 
+        // GSAx Total (Sum of individual game GSAx)
+        const gsax = filteredGames.reduce((acc, g) => acc + (g.gsax || 0), 0);
+
         // EN Stats (Sums)
         const en_gf = filteredGames.reduce((acc, g) => acc + g.en_gf, 0);
         const en_att = filteredGames.reduce((acc, g) => acc + g.en_att, 0);
@@ -389,26 +394,42 @@ export default function TeamDetailPage() {
         const pk_goals_ag = filteredGames.reduce((acc, g) => acc + g.pp_goals_against, 0);
         const pk_opps = filteredGames.reduce((acc, g) => acc + g.pk_opps, 0);
 
+        // SV% Calculation (Total Saves / Total SA)
+        // Need Sum Saves
+        const total_saves = filteredGames.reduce((acc, g) => acc + (getStat(g, 'sa') as number) - (getStat(g, 'ga') as number), 0); // Approx if saves not directly avail in specific period, but for Full Game it is.
+        // Actually sv_pct in table row is calculated via (sa-ga)/sa. 
+        // For period specific stats, 'saves' might not be in getStat directly? 
+        // getStat handles 'sa' and 'ga'. So Saves = SA - GA.
+        const tot_sv_pct = sa > 0 ? (total_saves / sa) : 0;
+
         return {
             record,
-            gf, ga,
-            gd: gf - ga,
+            gf: (gf / count).toFixed(1), // Average
+            ga: (ga / count).toFixed(1), // Average
+            gd: gf - ga, // Total Diff
             sf: (sf / count).toFixed(1),
             sa: (sa / count).toFixed(1),
-            sd: ((sf - sa) / count).toFixed(1),
+            sd: (sf - sa), // Total Diff
             cf: (cf / count).toFixed(1),
             ca: (ca / count).toFixed(1),
-            cd: ((cf - ca) / count).toFixed(1),
-            xgf: (xgf / count).toFixed(1),
-            xga: (xga / count).toFixed(1),
-            xgd: ((xgf - xga) / count).toFixed(1),
+            cd: (cf - ca), // Total Diff
+            xgf: (xgf / count).toFixed(2),
+            xga: (xga / count).toFixed(2),
+            xgd: ((xgf - xga) / count).toFixed(2), // Average Diff or Total Diff? User said "xGF and xGA and xG Diff should be two decimal places". Usually Diff follows the inputs. Let's assume Average Diff if inputs are Average.
+            // Wait, user said "Shot Diff Total should be the total Shot Diff". "Corsi Diff Total should be the total Corsi Diff".
+            // But for xG? "xGF and xGA and xG Diff should be two decimal places". Didn't explicitly say "Total". 
+            // Given xGF/xGA are averages, xG Diff likely Average too.
+            // Let's stick to Average for xG Diff based on "two decimal places" context usually implying rate.
+
+            gsax: gsax.toFixed(2), // Total GSAx
+
             en_gf, en_att, en_ga, en_att_ag,
             pp_goals, pp_opps,
             pk_goals_ag, pk_opps,
             pp_pct: pp_opps > 0 ? (pp_goals / pp_opps * 100).toFixed(1) : '0.0',
             pk_pct: pk_opps > 0 ? (100 - (pk_goals_ag / pk_opps * 100)).toFixed(1) : '0.0',
             sh_pct: sf > 0 ? (gf / sf * 100).toFixed(1) : '0.0',
-            sv_pct: sa > 0 ? ((sa - ga) / sa * 100).toFixed(1) : '0.0'
+            sv_pct: tot_sv_pct.toFixed(3).replace(/^0+/, '') // .901
         };
     }, [filteredGames, filters.period]);
 
@@ -681,23 +702,23 @@ export default function TeamDetailPage() {
                                         )}
                                         <td className="p-1 text-center text-gray-300">{totals.sf}</td>
                                         <td className="p-1 text-center text-gray-300">{totals.sa}</td>
-                                        <td className={`p-1 text-center ${parseFloat(totals.sd) > 0 ? 'text-green-400' : parseFloat(totals.sd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.sd) > 0 ? '+' : ''}{totals.sd}</td>
+                                        <td className={`p-1 text-center ${totals.sd > 0 ? 'text-green-400' : totals.sd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.sd > 0 ? '+' : ''}{totals.sd}</td>
                                         <td className="p-1 text-center text-blue-300">{totals.cf}</td>
                                         <td className="p-1 text-center text-orange-300">{totals.ca}</td>
-                                        <td className={`p-1 text-center ${parseFloat(totals.cd) > 0 ? 'text-blue-400' : parseFloat(totals.cd) < 0 ? 'text-orange-400' : 'text-gray-500'}`}>{parseFloat(totals.cd) > 0 ? '+' : ''}{totals.cd}</td>
+                                        <td className={`p-1 text-center ${totals.cd > 0 ? 'text-blue-400' : totals.cd < 0 ? 'text-orange-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
                                         <td className="p-1 text-center text-gray-400">{totals.sh_pct}%</td>
-                                        <td className="p-1 text-center text-gray-400">{totals.sv_pct}%</td>
-                                        {filters.period === 'All' && <td></td>}
+                                        <td className="p-1 text-center text-gray-400">{totals.sv_pct}</td>
+                                        {filters.period === 'All' && <td className={`p-1 text-center ${parseFloat(totals.gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{parseFloat(totals.gsax) > 0 ? '+' : ''}{totals.gsax}</td>}
                                         {filters.period === 'All' && (
                                             <>
                                                 <td className="p-1 text-center text-gray-300">{totals.xgf}</td>
                                                 <td className="p-1 text-center text-gray-300">{totals.xga}</td>
                                                 <td className={`p-1 text-center ${parseFloat(totals.xgd) > 0 ? 'text-green-400' : parseFloat(totals.xgd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.xgd) > 0 ? '+' : ''}{totals.xgd}</td>
-                                                <td className="p-1 text-center text-gray-500">{totals.en_gf}</td>
-                                                <td className="p-1 text-center text-gray-500">{totals.en_att}</td>
+                                                <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_gf : '-'}</td>
+                                                <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_att : '-'}</td>
                                                 <td></td>
-                                                <td className="p-1 text-center text-gray-500">{totals.en_ga}</td>
-                                                <td className="p-1 text-center text-gray-500">{totals.en_att_ag}</td>
+                                                <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_ga : '-'}</td>
+                                                <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_att_ag : '-'}</td>
                                             </>
                                         )}
                                     </tr>
@@ -726,7 +747,7 @@ export default function TeamDetailPage() {
                                         // SV% for period is tricky if using total sv_pct column. Better to calc from shots/goals
                                         const sv_pct_val = sa > 0 ? ((sa - ga) / sa * 100).toFixed(1) : "0.0";
 
-                                        const gsax = (game.xga - game.ga).toFixed(2);
+                                        const gsax = (game.xgf - game.xga - (game.gf - game.ga)).toFixed(2);
                                         const opponentName = game.opponent.trim();
                                         const logoUrl = teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '';
 
@@ -798,11 +819,11 @@ export default function TeamDetailPage() {
                                                             <td className={`p-1 text-center font-mono ${xgd > 0 ? 'text-green-400/70' : xgd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
                                                                 {xgd > 0 ? '+' : ''}{xgd.toFixed(2)}
                                                             </td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_gf}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_gf : '-'}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_att : '-'}</td>
                                                             <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_ga}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_ga : '-'}</td>
+                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_att_ag : '-'}</td>
                                                         </>
                                                     )}
                                                 </tr>
