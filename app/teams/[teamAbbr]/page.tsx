@@ -316,8 +316,12 @@ export default function TeamDetailPage() {
 
         // Sorting is already Date Desc
         if (filters.last !== 'All') {
-            const n = parseInt(filters.last);
-            out = out.slice(0, n);
+            if (filters.last === 'Season') {
+                // Do nothing, return all games
+            } else {
+                const n = parseInt(filters.last);
+                out = out.slice(0, n); // Slices top N (most recent)
+            }
         }
 
         return out;
@@ -482,16 +486,16 @@ export default function TeamDetailPage() {
                                 <Link
                                     key={name}
                                     href={`/teams/${tricode}`}
-                                    className={`relative group transition-all duration-300 flex-shrink-0 ${isSelected ? 'opacity-100 scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'opacity-30 grayscale hover:grayscale-0 hover:opacity-80'}`}
+                                    className={`relative group transition-all duration-300 flex-shrink-0 ${isSelected ? 'opacity-100 scale-110 drop-shadow-[0_0_15px_rgba(34,197,94,0.6)] z-20' : 'opacity-40 grayscale hover:grayscale-0 hover:opacity-100'}`}
                                     title={t['Team Name']}
                                 >
                                     <img
                                         src={url}
                                         alt={name}
-                                        className="w-8 h-8 md:w-10 md:h-10 object-contain"
+                                        className={`w-8 h-8 md:w-12 md:h-12 object-contain transition-transform ${isSelected ? 'scale-110' : ''}`}
                                     />
                                     {isSelected && (
-                                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>
+                                        <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full -z-10"></div>
                                     )}
                                 </Link>
                             );
@@ -499,55 +503,11 @@ export default function TeamDetailPage() {
                 </div>
             </div>
 
-            <div className="w-full px-4 md:px-8 relative z-10 pt-32 md:pt-24">
+            {/* Main Content Area */}
+            <div className="w-full px-4 md:px-8 relative z-10 pt-20">
 
-                {teamInfo && (
-                    <div className="flex flex-col items-center justify-center mb-12 animate-in fade-in zoom-in duration-500">
-                        <img src={teamLogos[teamInfo.CommonName]} alt={teamInfo.TeamName} className="w-32 h-32 md:w-48 md:h-48 object-contain drop-shadow-[0_0_35px_rgba(255,255,255,0.15)] mb-4" />
-                        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic" style={{ fontFamily: 'var(--font-geist-mono)' }}>
-                            {teamInfo.TeamName.split(' ').pop()}
-                        </h1>
-                        <div className="mt-2 flex items-center gap-4 text-xl font-mono text-gray-400">
-                            <span>{record.w}-{record.l}-{record.otl}</span>
-                            <span className={`font-bold px-3 py-0.5 rounded ${record.pts > 60 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white'}`}>
-                                {record.pts} PTS
-                            </span>
-                        </div>
-                    </div>
-                )}
+                {/* Team Info Header REMOVED as per request */}
 
-                {rating && allTeamRatings && (
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16 max-w-5xl mx-auto">
-                        {(() => {
-                            // Calculate Percentiles
-                            const allRatings = Object.values(allTeamRatings);
-                            const getPercentile = (val: number, key: string, inverted: boolean = false) => {
-                                if (!allRatings.length) return 50;
-                                // @ts-ignore
-                                const sorted = allRatings.map((r: any) => r[key]).sort((a: number, b: number) => a - b);
-                                const rank = sorted.findIndex((v: number) => v >= val);
-                                const pct = (rank / sorted.length) * 100;
-                                return inverted ? 100 - pct : pct;
-                            };
-
-                            const xgfPct = getPercentile(rating.xgf_rating, 'xgf_rating');
-                            const xgaPct = getPercentile(rating.xga_rating, 'xga_rating', true); // Low is good
-                            const ppPct = getPercentile(rating.pp_rating, 'pp_rating');
-                            const pkPct = getPercentile(rating.pk_rating, 'pk_rating');
-                            const xgf5v5Pct = getPercentile(rating.xgf_5v5_rating, 'xgf_5v5_rating');
-
-                            return (
-                                <>
-                                    <StatRing value={rating.xgf_rating.toFixed(2)} progress={xgfPct} label="xGF/60" color={teamInfo?.HexColor1} />
-                                    <StatRing value={rating.xga_rating.toFixed(2)} progress={xgaPct} label="xGA/60" color={teamInfo?.HexColor1} />
-                                    <StatRing value={`${rating.pp_rating.toFixed(1)}%`} progress={ppPct} label="PP%" color={teamInfo?.HexColor1} />
-                                    <StatRing value={`${rating.pk_rating.toFixed(1)}%`} progress={pkPct} label="PK%" color={teamInfo?.HexColor1} />
-                                    <StatRing value={rating.xgf_5v5_rating.toFixed(2)} progress={xgf5v5Pct} label="5v5 xGF" color={teamInfo?.HexColor1} />
-                                </>
-                            );
-                        })()}
-                    </div>
-                )}
 
                 {/* Tabs */}
                 {/* Simplified Tabs - just simple buttons for now */}
