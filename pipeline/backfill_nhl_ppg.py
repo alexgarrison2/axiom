@@ -11,7 +11,7 @@ GAMESTATS_PATH = "public/data/gamestats.csv"
 BACKUP_PATH = "public/data/gamestats_backup_before_nhl_fix.csv"
 
 def fetch_nhl_boxscore_data(game_id):
-    url = f"https://api-web.nhle.com/v1/gamecenter/{game_id}/boxscore"
+    url = f"https://api-web.nhle.com/v1/gamecenter/{game_id}/landing"
     headers = {'User-Agent': 'Mozilla/5.0'}
     context = ssl._create_unverified_context()
     
