@@ -55,4 +55,4 @@ def check_totals(team_abbr):
     
 
 if __name__ == "__main__":
-    check_totals("Oilers") # Match the user's screenshot example
+    check_totals("Golden Knights") # Match the user's new complaint

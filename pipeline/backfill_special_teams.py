@@ -50,12 +50,11 @@ def backfill_special_teams():
         "Oilers": "EDM", "Panthers": "FLA", "Kings": "LAK", "Wild": "MIN", "Canadiens": "MTL",
         "Devils": "NJD", "Predators": "NSH", "Islanders": "NYI", "Rangers": "NYR", "Senators": "OTT",
         "Flyers": "PHI", "Penguins": "PIT", "Kraken": "SEA", "Sharks": "SJS", "Blues": "STL",
-        "Lightning": "TBL", "Maple Leafs": "TOR", "Mammoth": "UTA", "Canucks": "VAN", "Golden Knights": "VEG", # HRef uses VEG? Yes, check fetch_href_stats.
+        "Lightning": "TBL", "Maple Leafs": "TOR", "Mammoth": "UTA", "Canucks": "VAN", "Golden Knights": "VGK",
         "Jets": "WPG", "Capitals": "WSH"
     }
-    
-    # Verify H-Ref codes. fetch_href_stats says: VGK->VEG, UTA->UTA
-    # So Golden Knights -> VEG is correct for this map if HRef uses VEG.
+    # Note: H-Ref uses VGK for Vegas primary rows, but VEG might appear in opponent col? 
+    # verified via grep: Primary rows start with VGK.
     
     # Create a lookup dictionary from H-Ref
     # Key: (date_norm, tricode) -> (pp_goals, pp_opps, opp_pp_goals, opp_pp_opps)
