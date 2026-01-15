@@ -220,11 +220,17 @@ export default function TeamDetailPage() {
                         en_att: parseInt(row.en_attempts_for),
                         en_ga: parseInt(row.emptynet_goalsagainst),
                         en_att_ag: parseInt(row.en_attempts_against),
-                        otml: row.otml || ((res === 'OTL' || res === 'SOL') ? 'Yes' : '-'),
-                        game_number: parseInt(row.team_game_number),
+                        en_ga: parseInt(row.emptynet_goalsagainst),
+                        en_att_ag: parseInt(row.en_attempts_against),
+                        otml: (['RL', 'OTL', 'SOL'].includes(res) && parseInt(row.en_attempts_for) > 0) ? 'Yes' : '-',
+                        game_number: 0, // Will be set after sorting
                         raw: row
                     };
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+                // Assign Game Numbers (Total - Index)
+                const totalGames = processedGames.length;
+                processedGames.forEach((g: any, i: number) => g.game_number = totalGames - i);
 
                 setGames(processedGames);
                 setRecord({ w, l, otl, pts: (w * 2) + otl });
@@ -341,6 +347,46 @@ export default function TeamDetailPage() {
 
 
 
+    // -- Totals Calculation --
+    const totals = useMemo(() => {
+        if (filteredGames.length === 0) return null;
+
+        const sum = (key: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => filteredGames.reduce((acc, g) => acc + (getStat(g, key) as number), 0);
+        const sumRaw = (key: string) => filteredGames.reduce((acc, g) => acc + (parseInt(g.raw[key] || '0')), 0);
+
+        const gf = sum('gf');
+        const ga = sum('ga');
+        const sf = sum('sf');
+        const sa = sum('sa');
+        const cf = sum('cf');
+        const ca = sum('ca');
+        const xgf = sum('xgf');
+        const xga = sum('xga');
+
+        const pp_goals = filteredGames.reduce((acc, g) => acc + g.pp_goals, 0);
+        const pp_opps = filteredGames.reduce((acc, g) => acc + g.pp_opps, 0);
+        const pk_goals_ag = filteredGames.reduce((acc, g) => acc + g.pp_goals_against, 0);
+        const pk_opps = filteredGames.reduce((acc, g) => acc + g.pk_opps, 0);
+
+        return {
+            gf, ga,
+            gd: gf - ga,
+            sf, sa,
+            sd: sf - sa,
+            cf, ca,
+            cd: cf - ca,
+            xgf, xga,
+            xgd: xgf - xga,
+            pp_goals, pp_opps,
+            pk_goals_ag, pk_opps,
+            pp_pct: pp_opps > 0 ? (pp_goals / pp_opps * 100).toFixed(1) : '0.0',
+            pk_pct: pk_opps > 0 ? (100 - (pk_goals_ag / pk_opps * 100)).toFixed(1) : '0.0',
+            sh_pct: sf > 0 ? (gf / sf * 100).toFixed(1) : '0.0',
+            sv_pct: sa > 0 ? ((sa - ga) / sa * 100).toFixed(1) : '0.0'
+        };
+    }, [filteredGames, filters.period]);
+
+
     // -- Render --
     if (loading) return <div className="min-h-screen bg-black text-white p-10">Loading...</div>;
     if (!teamInfo) return <div className="min-h-screen bg-black text-white p-10">Team Not Found</div>;
@@ -453,80 +499,93 @@ export default function TeamDetailPage() {
                     ))}
                 </div>
 
-                {/* Filters */}
+                {/* Filters (Button Groups) */}
                 {activeTab === 'games' && (
-                    <div className="flex flex-wrap gap-4 mb-6 p-4 bg-white/5 rounded-lg border border-white/10 items-center">
+                    <div className="flex flex-wrap gap-6 mb-6 p-4 bg-white/5 rounded-lg border border-white/10 items-center">
                         {/* Goalie */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-500">Goalie</label>
-                            <select
-                                value={filters.goalie}
-                                onChange={e => setFilters({ ...filters, goalie: e.target.value })}
-                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
-                            >
-                                <option value="All">All Goalies</option>
-                                {uniqueGoalies.map(g => <option key={g} value={g}>{g}</option>)}
-                            </select>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Goalie</label>
+                            <div className="flex flex-wrap gap-1">
+                                <button
+                                    onClick={() => setFilters({ ...filters, goalie: 'All' })}
+                                    className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.goalie === 'All' ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                >
+                                    All
+                                </button>
+                                {uniqueGoalies.map(g => (
+                                    <button
+                                        key={g}
+                                        onClick={() => setFilters({ ...filters, goalie: g })}
+                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.goalie === g ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                    >
+                                        {g.split(' ').pop()}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
-                        {/* Home/Away */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-500">Location</label>
-                            <select
-                                value={filters.loc}
-                                onChange={e => setFilters({ ...filters, loc: e.target.value })}
-                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
-                            >
-                                <option value="All">All</option>
-                                <option value="Home">Home</option>
-                                <option value="Away">Away</option>
-                            </select>
+                        {/* Location */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Location</label>
+                            <div className="flex gap-1">
+                                {['All', 'Home', 'Away'].map(opt => (
+                                    <button
+                                        key={opt}
+                                        onClick={() => setFilters({ ...filters, loc: opt })}
+                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.loc === opt ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                    >
+                                        {opt}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Period */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-500">Period</label>
-                            <select
-                                value={filters.period}
-                                onChange={e => setFilters({ ...filters, period: e.target.value })}
-                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
-                            >
-                                <option value="All">Full Game</option>
-                                <option value="1st">1st Period</option>
-                                <option value="2nd">2nd Period</option>
-                                <option value="3rd">3rd Period</option>
-                                <option value="OT">Overtime</option>
-                            </select>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Period</label>
+                            <div className="flex gap-1">
+                                {['All', '1st', '2nd', '3rd', 'OT'].map(opt => (
+                                    <button
+                                        key={opt}
+                                        onClick={() => setFilters({ ...filters, period: opt })}
+                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.period === opt ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                    >
+                                        {opt === 'All' ? 'Full Game' : opt}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Last N */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-500">Last</label>
-                            <select
-                                value={filters.last}
-                                onChange={e => setFilters({ ...filters, last: e.target.value })}
-                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
-                            >
-                                <option value="All">All Season</option>
-                                <option value="5">Last 5</option>
-                                <option value="10">Last 10</option>
-                                <option value="15">Last 15</option>
-                                <option value="20">Last 20</option>
-                            </select>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Last</label>
+                            <div className="flex gap-1">
+                                {['All', '5', '10', '15', '20'].map(opt => (
+                                    <button
+                                        key={opt}
+                                        onClick={() => setFilters({ ...filters, last: opt })}
+                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.last === opt ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                    >
+                                        {opt === 'All' ? 'Season' : opt}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Result */}
-                        <div className="flex flex-col gap-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-500">Result</label>
-                            <select
-                                value={filters.result}
-                                onChange={e => setFilters({ ...filters, result: e.target.value })}
-                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/50"
-                            >
-                                <option value="All">All</option>
-                                <option value="W">Wins</option>
-                                <option value="L">Losses</option>
-                            </select>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Result</label>
+                            <div className="flex gap-1">
+                                {['All', 'W', 'L'].map(opt => (
+                                    <button
+                                        key={opt}
+                                        onClick={() => setFilters({ ...filters, result: opt })}
+                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.result === opt ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                    >
+                                        {opt}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}
@@ -543,19 +602,15 @@ export default function TeamDetailPage() {
                                     <th className="p-1 sticky left-40 bg-gray-900 z-20 w-8 text-center">Loc</th>
                                     <th className="p-1 sticky left-48 bg-gray-900 z-20 w-12 text-center">Opp</th>
                                     <th className="p-1">Starter</th>
-                                    <th className="p-1">Opp Starter</th>
+                                    <th className="p-1">Opp Strt</th>
                                     <th className="p-1 text-center">Res</th>
                                     <th className="p-1 text-center">GF</th>
                                     <th className="p-1 text-center">GA</th>
                                     <th className="p-1 text-center">GΔ</th>
                                     {filters.period === 'All' && (
                                         <>
-                                            <th className="p-1 text-center">PPG</th>
-                                            <th className="p-1 text-center">PP OPP</th>
-                                            <th className="p-1 text-center">PP Time</th>
-                                            <th className="p-1 text-center">PPGA</th>
-                                            <th className="p-1 text-center">PK OPP</th>
-                                            <th className="p-1 text-center">PK Time</th>
+                                            <th className="p-1 text-center text-blue-300">Powerplay</th>
+                                            <th className="p-1 text-center text-red-300">Penalty Kill</th>
                                         </>
                                     )}
                                     <th className="p-1 text-center">SF</th>
@@ -575,11 +630,50 @@ export default function TeamDetailPage() {
                                             <th className="p-1 text-center">EN GF</th>
                                             <th className="p-1 text-center">EN Att</th>
                                             <th className="p-1 text-center">OTML</th>
-                                            <th className="p-1 text-center">EN GA</th>
-                                            <th className="p-1 text-center">EN Att Ag</th>
                                         </>
                                     )}
                                 </tr>
+                                {/* Totals Row */}
+                                {totals && (
+                                    <tr className="bg-white/10 font-bold border-b border-white/20 text-white">
+                                        <td className="p-1 sticky left-0 bg-[#1c1c1c] z-20 border-r border-gray-800"></td>
+                                        <td className="p-1 sticky left-8 bg-[#1c1c1c] z-20 border-r border-gray-800 text-center"></td>
+                                        <td className="p-1 sticky left-16 bg-[#1c1c1c] z-20 border-r border-gray-800 text-center">TOTALS</td>
+                                        <td className="p-1 sticky left-40 bg-[#1c1c1c] z-20 border-r border-gray-800"></td>
+                                        <td className="p-1 sticky left-48 bg-[#1c1c1c] z-20 border-r border-gray-800"></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td className="p-1 text-center text-white">{totals.gf}</td>
+                                        <td className="p-1 text-center text-white">{totals.ga}</td>
+                                        <td className={`p-1 text-center ${totals.gd > 0 ? 'text-green-400' : totals.gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.gd > 0 ? '+' : ''}{totals.gd}</td>
+                                        {filters.period === 'All' && (
+                                            <>
+                                                <td className="p-1 text-center text-blue-300">{totals.pp_goals}/{totals.pp_opps} ({totals.pp_pct}%)</td>
+                                                <td className="p-1 text-center text-red-300">{totals.pk_goals_ag}/{totals.pk_opps} ({totals.pk_pct}%)</td>
+                                            </>
+                                        )}
+                                        <td className="p-1 text-center text-gray-300">{totals.sf}</td>
+                                        <td className="p-1 text-center text-gray-300">{totals.sa}</td>
+                                        <td className={`p-1 text-center ${totals.sd > 0 ? 'text-green-400' : totals.sd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.sd > 0 ? '+' : ''}{totals.sd}</td>
+                                        <td className="p-1 text-center text-blue-300">{totals.cf}</td>
+                                        <td className="p-1 text-center text-orange-300">{totals.ca}</td>
+                                        <td className={`p-1 text-center ${totals.cd > 0 ? 'text-blue-400' : totals.cd < 0 ? 'text-orange-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
+                                        <td className="p-1 text-center text-gray-400">{totals.sh_pct}%</td>
+                                        <td className="p-1 text-center text-gray-400">{totals.sv_pct}%</td>
+                                        {filters.period === 'All' && <td></td>}
+                                        {filters.period === 'All' && (
+                                            <>
+                                                <td className="p-1 text-center text-gray-300">{totals.xgf.toFixed(1)}</td>
+                                                <td className="p-1 text-center text-gray-300">{totals.xga.toFixed(1)}</td>
+                                                <td className={`p-1 text-center ${totals.xgd > 0 ? 'text-green-400' : totals.xgd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.xgd > 0 ? '+' : ''}{totals.xgd.toFixed(1)}</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </>
+                                        )}
+                                    </tr>
+                                )}
                             </thead>
                             <tbody className="divide-y divide-gray-800">
                                 {games.length === 0 ?
@@ -642,18 +736,18 @@ export default function TeamDetailPage() {
                                                         </span>
                                                     </td>
                                                     <td className="p-1 text-center font-mono text-white">{gf}</td>
-                                                    <td className="p-1 text-center font-mono text-gray-400">{ga}</td>
+                                                    <td className="p-1 text-center font-mono text-white">{ga}</td>
                                                     <td className={`p-1 text-center font-bold font-mono ${gd > 0 ? 'text-green-400' : gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>
                                                         {gd > 0 ? '+' : ''}{gd}
                                                     </td>
                                                     {filters.period === 'All' && (
                                                         <>
-                                                            <td className="p-1 text-center font-mono text-emerald-400">{game.pp_goals}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.pp_opps}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.pp_time}</td>
-                                                            <td className="p-1 text-center font-mono text-red-400">{game.pp_goals_against}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.pk_opps}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.pk_time}</td>
+                                                            <td className="p-1 text-center font-mono text-blue-300">
+                                                                {game.pp_goals}/{game.pp_opps}
+                                                            </td>
+                                                            <td className="p-1 text-center font-mono text-red-300">
+                                                                {game.pp_goals_against}/{game.pk_opps}
+                                                            </td>
                                                         </>
                                                     )}
                                                     <td className="p-1 text-center font-mono text-gray-300">{sf}</td>
@@ -678,9 +772,7 @@ export default function TeamDetailPage() {
                                                             </td>
                                                             <td className="p-1 text-center font-mono text-gray-500">{game.en_gf}</td>
                                                             <td className="p-1 text-center font-mono text-gray-500">{game.en_att}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.otml}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_ga}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag}</td>
+                                                            <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>
                                                         </>
                                                     )}
                                                 </tr>
