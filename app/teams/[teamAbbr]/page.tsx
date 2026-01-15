@@ -220,8 +220,6 @@ export default function TeamDetailPage() {
                         en_att: parseInt(row.en_attempts_for),
                         en_ga: parseInt(row.emptynet_goalsagainst),
                         en_att_ag: parseInt(row.en_attempts_against),
-                        en_ga: parseInt(row.emptynet_goalsagainst),
-                        en_att_ag: parseInt(row.en_attempts_against),
                         otml: (['RL', 'OTL', 'SOL'].includes(res) && parseInt(row.en_attempts_for) > 0) ? 'Yes' : '-',
                         game_number: 0, // Will be set after sorting
                         raw: row
@@ -323,10 +321,14 @@ export default function TeamDetailPage() {
     }, [games, filters]);
 
     // Helper to get stats based on period
-    const getStat = (game: GameLog, stat: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca') => {
+    const getStat = (game: GameLog, stat: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => {
         if (filters.period === 'All') {
             return game[stat];
         }
+
+        // For xG, we don't have period splits, return 0
+        if (stat === 'xgf' || stat === 'xga') return 0;
+
         // Map to CSV columns: goals_for_1P, sog_for_1P, attempts_for_1P
         // Suffix: _1P, _2P, _3P, _OT
         const suffix = filters.period === '1st' ? '_1P' :
