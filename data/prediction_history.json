@@ -8188,5 +8188,61 @@
     "actualWinner": "Bruins",
     "isCorrect": true,
     "brierScore": 0.1592
+  },
+  {
+    "date": "2026-01-14",
+    "homeTeam": "Rangers",
+    "awayTeam": "Senators",
+    "homeScore": 4,
+    "awayScore": 8,
+    "homeXg": 2.82,
+    "awayXg": 3.0,
+    "homeWinProb": 47.0,
+    "predictedWinner": "Senators",
+    "actualWinner": "Senators",
+    "isCorrect": true,
+    "brierScore": 0.2207
+  },
+  {
+    "date": "2026-01-14",
+    "homeTeam": "Kings",
+    "awayTeam": "Golden Knights",
+    "homeScore": 2,
+    "awayScore": 3,
+    "homeXg": 2.86,
+    "awayXg": 2.85,
+    "homeWinProb": 50.1,
+    "predictedWinner": "Kings",
+    "actualWinner": "Golden Knights",
+    "isCorrect": false,
+    "brierScore": 0.2508
+  },
+  {
+    "date": "2026-01-14",
+    "homeTeam": "Devils",
+    "awayTeam": "Kraken",
+    "homeScore": 3,
+    "awayScore": 2,
+    "homeXg": 2.98,
+    "awayXg": 3.39,
+    "homeWinProb": 43.8,
+    "predictedWinner": "Kraken",
+    "actualWinner": "Devils",
+    "isCorrect": false,
+    "brierScore": 0.3156
+  },
+  {
+    "date": "2026-01-14",
+    "homeTeam": "Sabres",
+    "awayTeam": "Flyers",
+    "homeScore": 5,
+    "awayScore": 2,
+    "homeXg": 2.78,
+    "awayXg": 2.72,
+    "homeWinProb": 51.0,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Sabres",
+    "isCorrect": true,
+    "brierScore": 0.2398
   }
 ]
