@@ -50,11 +50,11 @@ def fetch_nhl_goalie_stats():
         for g in goalies:
             name = g.get('goalieFullName')
             # Stats
-            wins = g.get('wins', 0)
-            losses = g.get('losses', 0)
-            otl = g.get('otLosses', 0)
-            sv_pct = g.get('savePct', 0.0)
-            gaa = g.get('goalsAgainstAverage', 0.0)
+            wins = g.get('wins') or 0
+            losses = g.get('losses') or 0
+            otl = g.get('otLosses') or 0
+            sv_pct = g.get('savePct') or 0.0
+            gaa = g.get('goalsAgainstAverage') or 0.0
             
             # Format: (W-L-O) | .SV% | GAA
             sv_str = f"{sv_pct:.3f}".lstrip('0') if sv_pct < 1 else "1.000"

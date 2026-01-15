@@ -1,8 +1,15 @@
 import pandas as pd
 import json
+import os
+import argparse
 import numpy as np
 
-def calculate_ratings(df=None, gamestats_file='public/data/gamestats.csv', save_files=True):
+# Determine paths
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR) # Parent of pipeline
+PUBLIC_DATA_DIR = os.path.join(PROJECT_ROOT, 'public', 'data')
+
+def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.csv', save_files=True):
     if df is None:
         print(f"Loading data from {gamestats_file}...")
         df = pd.read_csv(gamestats_file)
@@ -209,13 +216,16 @@ def calculate_ratings(df=None, gamestats_file='public/data/gamestats.csv', save_
         
     # Save to JSON
     if save_files:
-        with open('public/data/team_ratings.json', 'w') as f:
+        team_ratings_path = os.path.join(PUBLIC_DATA_DIR, 'team_ratings.json')
+        goalie_ratings_path = os.path.join(PUBLIC_DATA_DIR, 'goalie_ratings.json')
+        
+        with open(team_ratings_path, 'w') as f:
             json.dump(team_ratings, f, indent=4)
-        print("Saved team_ratings.json")
+        print(f"Saved team_ratings.json to {team_ratings_path}")
             
-        with open('public/data/goalie_ratings.json', 'w') as f:
+        with open(goalie_ratings_path, 'w') as f:
             json.dump(goalie_ratings, f, indent=4)
-        print("Saved goalie_ratings.json")
+        print(f"Saved goalie_ratings.json to {goalie_ratings_path}")
     
     return team_ratings, goalie_ratings, league_xg_for, league_xg_5v5
 
