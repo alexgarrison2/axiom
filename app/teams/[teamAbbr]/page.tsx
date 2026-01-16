@@ -482,12 +482,22 @@ export default function TeamDetailPage() {
                             const url = t['Team Logo URL'];
                             const isSelected = name === teamInfo?.CommonName;
 
+                            // Color Logic: use Scale/Secondary if Primary is too dark, else Primary
+                            // Simplified: Just use primary for now, or Secondary if provided and primary is black
+                            const c1 = t['Hex Color 1'] || '#FFFFFF';
+                            const c2 = t['Hex Color 2'] || t['Hex Color 1'] || '#FFFFFF';
+
+                            // Heuristic: If C1 is Black (#000000 or similar), try C2
+                            const isBlack = c1.replace('#', '').toLowerCase() === '000000' || c1.toLowerCase() === 'black';
+                            const glowColor = isBlack ? c2 : c1;
+
                             return (
                                 <Link
                                     key={name}
                                     href={`/teams/${tricode}`}
-                                    className={`relative group transition-all duration-300 flex-shrink-0 ${isSelected ? 'opacity-100 scale-110 drop-shadow-[0_0_15px_rgba(34,197,94,0.6)] z-20' : 'opacity-40 grayscale hover:grayscale-0 hover:opacity-100'}`}
+                                    className={`relative group transition-all duration-300 flex-shrink-0 ${isSelected ? 'opacity-100 scale-110 z-20' : 'opacity-40 grayscale hover:grayscale-0 hover:opacity-100'}`}
                                     title={t['Team Name']}
+                                    style={isSelected ? { filter: `drop-shadow(0 0 10px ${glowColor})` } : {}}
                                 >
                                     <img
                                         src={url}
@@ -495,7 +505,10 @@ export default function TeamDetailPage() {
                                         className={`w-8 h-8 md:w-12 md:h-12 object-contain transition-transform ${isSelected ? 'scale-110' : ''}`}
                                     />
                                     {isSelected && (
-                                        <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full -z-10"></div>
+                                        <div
+                                            className="absolute inset-0 blur-xl rounded-full -z-10 opacity-40"
+                                            style={{ backgroundColor: glowColor }}
+                                        ></div>
                                     )}
                                 </Link>
                             );
