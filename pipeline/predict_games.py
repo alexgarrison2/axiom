@@ -456,9 +456,22 @@ def predict():
     
     # Load Odds
     try:
-        odds_data = load_json('odds.json')
-    except:
-        print("Warning: odds.json not found. No EV calculation.")
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        odds_path = os.path.join(script_dir, 'odds.json')
+        # Check if exists there, if not try CWD?
+        # Actually fetch_odds writes to CWD if run from root. 
+        # But let's standardize on pipeline/odds.json if possible, or check both.
+        if os.path.exists(odds_path):
+            with open(odds_path, 'r') as f:
+                odds_data = json.load(f)
+        elif os.path.exists('odds.json'):
+             with open('odds.json', 'r') as f:
+                odds_data = json.load(f)
+        else:
+             print("Warning: odds.json not found.")
+             odds_data = {}
+    except Exception as e:
+        print(f"Error loading odds: {e}")
         odds_data = {}
         
     # Load Special Teams Rankings
