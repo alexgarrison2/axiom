@@ -233,6 +233,13 @@ def refresh_pipeline():
         shutil.copy("pipeline/upcoming_games.json", "public/data/upcoming_games.json")
         if os.path.exists("pipeline/nhl_season_2025_2026_player_stats.csv"):
             shutil.copy("pipeline/nhl_season_2025_2026_player_stats.csv", "public/data/nhl_season_2025_2026_player_stats.csv")
+        
+        # Sync Odds
+        if os.path.exists('odds.json'):
+            shutil.copy('odds.json', '../public/data/odds.json')
+            shutil.copy('odds.json', '../data/odds.json')
+            print("Synced odds.json to public/data/ and data/")
+            
         print("Data synced to public/data/")
             
     except Exception as e:

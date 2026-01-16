@@ -75,6 +75,10 @@ jobs:
             git add data/predictions_detailed.csv
             git add data/prediction_history.json
             git add data/gamestats.csv
+            git add data/odds.json
+            git add public/data/odds.json
+            git add public/data/gamestats.csv
+            git add public/data/predictions_detailed.csv
             git add pipeline/upcoming_games.json
             git add pipeline/dailyfaceoff_goalies.json
             git add pipeline/player_news.json
