@@ -860,7 +860,7 @@ export default function TeamDetailPage() {
                                                     </td>
                                                     <td className="p-1 text-center">
                                                         <span className={`px-1 py-0.5 rounded text-[10px] font-black ${game.result_code.includes('W') ? 'bg-green-900/40 text-green-400 border border-green-500/20' :
-                                                            game.result_code.includes('OTL') ? 'bg-orange-900/40 text-orange-400 border border-orange-500/20' :
+                                                            game.result_code.includes('OTL') || game.result_code.includes('SOL') ? 'bg-orange-900/40 text-orange-400 border border-orange-500/20' :
                                                                 'bg-red-900/40 text-red-400 border border-red-500/20'
                                                             }`}>
                                                             {game.result}

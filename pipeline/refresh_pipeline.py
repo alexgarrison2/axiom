@@ -223,10 +223,16 @@ def refresh_pipeline():
             print("Synced prediction_history.json to public/data/")
         
         # Last Updated
-        if os.path.exists('last_updated.json'):
+        # Last Updated - Source from public/data (where predict_games.py wrote it)
+        src_last_updated = '../public/data/last_updated.json'
+        if os.path.exists(src_last_updated):
+            shutil.copy(src_last_updated, '../data/last_updated.json')
+            print(f"Synced {src_last_updated} to ../data/")
+        elif os.path.exists('last_updated.json'):
+             # Fallback if public/data one missing but local one exists
             shutil.copy('last_updated.json', '../data/last_updated.json')
             shutil.copy('last_updated.json', '../public/data/last_updated.json')
-            print("Synced last_updated.json")
+            print("Synced local last_updated.json to data dirs")
         
         # Additional syncs from pipeline to public/data
         shutil.copy("pipeline/predictions_detailed.csv", "public/data/predictions_detailed.csv")
