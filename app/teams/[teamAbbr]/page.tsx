@@ -664,11 +664,11 @@ export default function TeamDetailPage() {
                                 {/* Totals Row */}
                                 {totals && (
                                     <tr className="bg-white/10 font-bold border-b border-white/20 text-white">
-                                        <td className="p-1 sticky left-0 bg-[#1c1c1c] z-20 border-r border-gray-800"></td>
-                                        <td className="p-1 sticky left-8 bg-[#1c1c1c] z-20 border-r border-gray-800 text-center"></td>
-                                        <td className="p-1 sticky left-16 bg-[#1c1c1c] z-20 border-r border-gray-800 text-center">TOTALS</td>
-                                        <td className="p-1 sticky left-40 bg-[#1c1c1c] z-20 border-r border-gray-800"></td>
-                                        <td className="p-1 sticky left-48 bg-[#1c1c1c] z-20 border-r border-gray-800"></td>
+                                        <td className="p-1 sticky left-0 bg-[#1c1c1c] z-20 border-r border-gray-800 w-8"></td>
+                                        <td className="p-1 sticky left-8 bg-[#1c1c1c] z-20 border-r border-gray-800 text-center w-8"></td>
+                                        <td className="p-1 sticky left-16 bg-[#1c1c1c] z-20 border-r border-gray-800 text-center w-24">TOTALS</td>
+                                        <td className="p-1 sticky left-40 bg-[#1c1c1c] z-20 border-r border-gray-800 w-8"></td>
+                                        <td className="p-1 sticky left-48 bg-[#1c1c1c] z-20 border-r border-gray-800 w-12"></td>
                                         <td colSpan={3} className="p-1 text-center text-gray-400 text-[10px] tracking-wider uppercase">{totals.record}</td>
                                         <td className="p-1 text-center text-white">{totals.gf}</td>
                                         <td className="p-1 text-center text-white">{totals.ga}</td>
@@ -736,15 +736,15 @@ export default function TeamDetailPage() {
                                                     onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
                                                     className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                                                 >
-                                                    <td className="p-1 sticky left-0 bg-gray-900/95 border-r border-gray-800 z-20 text-center text-gray-500">
+                                                    <td className="p-1 sticky left-0 bg-gray-900 border-r border-gray-800 z-20 text-center text-gray-500 w-8">
                                                         <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180 text-white' : ''}`}>▼</div>
                                                     </td>
-                                                    <td className="p-1 sticky left-8 bg-gray-900/95 border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] w-8">{game.game_number}</td>
-                                                    <td className="p-1 sticky left-16 bg-gray-900/95 border-r border-gray-800 z-20 font-mono text-gray-300 w-24 text-center text-[11px]">{game.date}</td>
-                                                    <td className={`p-1 sticky left-40 bg-gray-900/95 border-r border-gray-800 z-20 text-center font-bold text-[10px] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
+                                                    <td className="p-1 sticky left-8 bg-gray-900 border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] w-8">{game.game_number}</td>
+                                                    <td className="p-1 sticky left-16 bg-gray-900 border-r border-gray-800 z-20 font-mono text-gray-300 w-24 text-center text-[11px]">{game.date}</td>
+                                                    <td className={`p-1 sticky left-40 bg-gray-900 border-r border-gray-800 z-20 text-center font-bold text-[10px] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
                                                         {game.home_away === 'Home' ? 'vs' : '@'}
                                                     </td>
-                                                    <td className="p-1 sticky left-48 bg-gray-900/95 border-r border-gray-800 z-20 justify-center w-12 text-center">
+                                                    <td className="p-1 sticky left-48 bg-gray-900 border-r border-gray-800 z-20 justify-center w-12 text-center">
                                                         <div className="w-5 h-5 relative mx-auto" title={game.opponent}>
                                                             {logoUrl ? <img src={logoUrl} alt={game.opponent} className="w-5 h-5 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
                                                         </div>
