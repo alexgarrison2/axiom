@@ -445,7 +445,14 @@ def predict():
     team_ratings = load_json('team_ratings.json')
     goalie_ratings = load_json('goalie_ratings.json')
     goalie_percentiles = get_goalie_percentiles(goalie_ratings)
-    schedule = load_json('upcoming_games.json')
+    # Load Upcoming Games
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        schedule_path = os.path.join(script_dir, 'upcoming_games.json')
+        schedule = load_json(schedule_path)
+    except Exception as e:
+        print(f"Error loading schedule from {schedule_path}: {e}")
+        schedule = []
     
     # Load Odds
     try:
