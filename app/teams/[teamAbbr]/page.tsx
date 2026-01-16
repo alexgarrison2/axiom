@@ -621,9 +621,9 @@ export default function TeamDetailPage() {
                         </div>
 
                         {/* Location Filter */}
-                        <div className="bg-black/40 border border-white/10 rounded-xl p-4 flex flex-col gap-2">
-                            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Location</span>
-                            <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Location</label>
+                            <div className="flex gap-1">
                                 {['All', 'Home', 'Away'].map(loc => {
                                     const isTodayLoc = todaysGame && (
                                         (loc === 'Home' && todaysGame.homeTeamAbbrev === teamAbbr) ||
