@@ -110,6 +110,7 @@ export default function TeamDetailPage() {
     const [playerStats, setPlayerStats] = useState<PlayerBoxscoreRow[]>([]);
     const [rating, setRating] = useState<TeamRating | null>(null);
     const [record, setRecord] = useState({ w: 0, l: 0, otl: 0, pts: 0 });
+    const [todaysGame, setTodaysGame] = useState<any>(null);
 
     const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'games' | 'skaters' | 'goalies'>('games');
@@ -143,6 +144,28 @@ export default function TeamDetailPage() {
                     }
                 });
                 setTeamLogos(logos);
+
+                // Fetch Upcoming Games for Today's Filter Logic
+                try {
+                    const upcomingRes = await fetch('/data/upcoming_games.json');
+                    const upcomingData = await upcomingRes.json();
+
+                    // Find today's game for this team
+                    // We assume the file contains recent/current games. 
+                    // To be safe, we look for a game matching today's date (or just the first one if listing "upcoming")
+                    // But explicitly "Today" logic is safer.
+                    const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+                    // Or use regex for robust matching if needed. "2026-01-16"
+
+                    // Simple find
+                    const todayGame = upcomingData.find((g: any) =>
+                        (g.homeTeamAbbrev === teamAbbr || g.awayTeamAbbrev === teamAbbr) &&
+                        g.gameDate === todayStr
+                    );
+                    setTodaysGame(todayGame || null);
+                } catch (e) {
+                    console.error("Failed to fetch upcoming games", e);
+                }
 
                 // Find CURRENT team info
                 const info = teamData.find((t: any) => t['Team Tricode'] === teamAbbr || t['Team Tricode'] === 'UTA' && teamAbbr === 'UTA');
@@ -562,34 +585,70 @@ export default function TeamDetailPage() {
                                 >
                                     All
                                 </button>
-                                {uniqueGoalies.map(g => (
-                                    <button
-                                        key={g}
-                                        onClick={() => setFilters({ ...filters, goalie: g })}
-                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.goalie === g ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
-                                    >
-                                        {g.split(' ').pop()}
-                                    </button>
-                                ))}
+                                {uniqueGoalies.map(g => {
+                                    // Highlighting Logic
+                                    let highlightClass = '';
+                                    if (todaysGame) {
+                                        // Check if this goalie is Home or Away confirmed
+                                        const isHome = todaysGame.homeTeamAbbrev === teamAbbr;
+                                        const confirmedName = isHome ? todaysGame.homeGoalieConfirmed : todaysGame.awayGoalieConfirmed;
+                                        const status = isHome ? todaysGame.homeGoalieStatus : todaysGame.awayGoalieStatus;
+
+                                        // Loose match Last Name
+                                        if (confirmedName && confirmedName.includes(g)) {
+                                            if (status === 'Confirmed') highlightClass = 'text-green-500 font-bold';
+                                            else if (status === 'Likely') highlightClass = 'text-yellow-500 font-bold';
+                                        }
+                                    }
+
+                                    return (
+                                        <button
+                                            key={g}
+                                            onClick={() => setFilters({ ...filters, goalie: g })}
+                                            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.goalie === g
+                                                ? 'bg-white text-black'
+                                                : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                                                } ${filters.goalie !== g ? highlightClass : ''}`} // Apply color if NOT selected (selected is Black) or both? User said "font color". White/Black is background.
+                                        // If selected, it's Black text on White bg. Green text on White bg might be hard.
+                                        // Let's apply highlight only when NOT selected, or override?
+                                        // If selected, keep Black. If not selected, use Green/Yellow instead of Gray.
+                                        >
+                                            {g.toUpperCase()}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
-                        {/* Location */}
-                        <div className="flex flex-col gap-2">
-                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Location</label>
-                            <div className="flex gap-1">
-                                {['All', 'Home', 'Away'].map(opt => (
-                                    <button
-                                        key={opt}
-                                        onClick={() => setFilters({ ...filters, loc: opt })}
-                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.loc === opt ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
-                                    >
-                                        {opt}
-                                    </button>
-                                ))}
+                        {/* Location Filter */}
+                        <div className="bg-black/40 border border-white/10 rounded-xl p-4 flex flex-col gap-2">
+                            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Location</span>
+                            <div className="flex flex-wrap gap-2">
+                                {['All', 'Home', 'Away'].map(loc => {
+                                    const isTodayLoc = todaysGame && (
+                                        (loc === 'Home' && todaysGame.homeTeamAbbrev === teamAbbr) ||
+                                        (loc === 'Away' && todaysGame.awayTeamAbbrev === teamAbbr)
+                                    );
+
+                                    // Custom Blue for Location
+                                    const locColor = '#83C7FF';
+
+                                    return (
+                                        <button
+                                            key={loc}
+                                            onClick={() => setFilters({ ...filters, loc: loc as any })}
+                                            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.loc === loc
+                                                ? 'bg-white text-black'
+                                                : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                                                }`}
+                                            style={isTodayLoc && filters.loc !== loc ? { color: locColor } : {}}
+                                        >
+                                            {loc.toUpperCase()}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
-
                         {/* Period */}
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Period</label>
