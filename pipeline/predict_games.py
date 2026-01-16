@@ -112,7 +112,9 @@ def calculate_ev(prob, american_odds):
 def load_tricodes():
     tricodes = {}
     try:
-        df = pd.read_csv('nhl_teams.csv')
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        data_path = os.path.join(script_dir, '../data/nhl_teams.csv')
+        df = pd.read_csv(data_path)
         # Map Common Name to Tricode
         for _, row in df.iterrows():
             tricodes[row['Common Name']] = row['Team Tricode']
@@ -123,7 +125,9 @@ def load_tricodes():
 def load_full_names():
     names = {}
     try:
-        df = pd.read_csv('nhl_teams.csv')
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        data_path = os.path.join(script_dir, '../data/nhl_teams.csv')
+        df = pd.read_csv(data_path)
         # Map Tricode to Full Name
         for _, row in df.iterrows():
             if pd.notna(row['Team Tricode']):
@@ -135,7 +139,9 @@ def load_full_names():
 def load_common_names():
     names = {}
     try:
-        df = pd.read_csv('nhl_teams.csv')
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        data_path = os.path.join(script_dir, '../data/nhl_teams.csv')
+        df = pd.read_csv(data_path)
         # Map Tricode to Common Name
         for _, row in df.iterrows():
             if pd.notna(row['Team Tricode']):
