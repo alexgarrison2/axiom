@@ -1,41 +1,164 @@
 {
-    "PHI": [
+    "LAK": [
         {
-            "player": "Dan Vladar",
-            "news": "Vladar (undisclosed) is being re-evaluated after leaving Wednesday's game. ",
+            "player": "Joel Armia",
+            "news": "Armia (upper-body) will return vs. Anaheim on Friday. ",
             "category": "Injury",
-            "date": "2026-01-15",
-            "timestamp": "2026-01-15T15:08:18.985Z"
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T19:33:30.258Z"
         },
         {
-            "player": "Rasmus Ristolainen",
-            "news": "Ristolainen (upper-body) will not play in Buffalo on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-01-15",
-            "timestamp": "2026-01-15T00:10:28.433Z"
+            "player": "Darcy Kuemper",
+            "news": "Kuemper will start vs. Anaheim on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T18:56:29.127Z"
         }
     ],
-    "BUF": [
+    "ANA": [
         {
-            "player": "Josh Norris",
-            "news": "Norris (upper-body) will not return to Wednesday's game against the Flyers. ",
+            "player": "Cutter Gauthier",
+            "news": "Gauthier (illness) will draw back into Anaheim's lineup vs. Los Angeles on Friday. ",
             "category": "Injury",
-            "date": "2026-01-15",
-            "timestamp": "2026-01-15T02:35:51.536Z"
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T19:31:55.058Z"
         },
         {
-            "player": "Tyson Kozak",
-            "news": "Kozak (upper-body) will return to the Sabres lineup on Wednesday. ",
+            "player": "Troy Terry",
+            "news": "Terry (upper-body) will return in Los Angeles on Friday. ",
             "category": "Injury",
-            "date": "2026-01-15",
-            "timestamp": "2026-01-15T00:05:18.098Z"
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T19:31:21.135Z"
         },
         {
-            "player": "Jordan Greenway",
-            "news": "Greenway is a healthy scratch for Wednesday's game against the Flyers. ",
-            "category": "Line Change",
-            "date": "2026-01-15",
-            "timestamp": "2026-01-15T00:03:54.993Z"
+            "player": "Chris Kreider",
+            "news": "Kreider (illness) will be a game-time decision in Los Angeles on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T19:30:56.854Z"
+        },
+        {
+            "player": "Jeffrey Viel",
+            "news": "Anaheim has acquired Jeffrey Viel from Boston for a 2026 4th round pick. ",
+            "category": "Trade",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T17:22:14.963Z"
+        }
+    ],
+    "SJS": [
+        {
+            "player": "Will Smith",
+            "news": "Smith (upper-body) will return in Detroit on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T19:07:52.451Z"
+        }
+    ],
+    "NSH": [
+        {
+            "player": "Andreas Englund",
+            "news": "Englund has been recalled from Milwaukee (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T18:32:47.728Z"
+        }
+    ],
+    "COL": [
+        {
+            "player": "Mackenzie Blackwood",
+            "news": "Blackwood will start vs. Nashville on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T18:23:51.394Z"
+        },
+        {
+            "player": "Ross Colton",
+            "news": "Colton (upper-body) will play on Friday vs. Nashville after missing practice on Thursday. ",
+            "category": "Injury",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T18:16:29.398Z"
+        },
+        {
+            "player": "Mackenzie Blackwood",
+            "news": "Blackwood is expected to start vs. Nashville on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T17:29:48.793Z"
+        }
+    ],
+    "BOS": [
+        {
+            "player": "Billy Sweezey",
+            "news": "Sweezey has been recalled from Providence (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T17:37:55.838Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Joel Hofer",
+            "news": "Hofer will start vs. Tampa Bay on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T17:35:42.078Z"
+        }
+    ],
+    "TBL": [
+        {
+            "player": "Jonas Johansson",
+            "news": "Johansson (maintenance) missed practice on Thursday and is questionable for Friday in St. Louis. ",
+            "category": "Injury",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T17:34:23.141Z"
+        },
+        {
+            "player": "Brandon Halverson",
+            "news": "Halverson has been recalled from Syracuse (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T17:02:05.281Z"
+        }
+    ],
+    "WSH": [
+        {
+            "player": "Jakob Chychrun",
+            "news": "Chychrun missed practice on Friday due to personal reasons. ",
+            "category": "General",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T17:33:38.432Z"
+        },
+        {
+            "player": "Tom Wilson",
+            "news": "Wilson (lower-body) was a full participant in Friday's practice and is a possibility to return vs. Florida on Saturday. ",
+            "category": "Injury",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T16:27:33.453Z"
+        }
+    ],
+    "FLA": [
+        {
+            "player": "Cole Schwindt",
+            "news": "Schwindt (broken arm) will draw back into Florida's lineup in Carolina on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T17:19:33.070Z"
+        },
+        {
+            "player": "Sergei Bobrovsky",
+            "news": "Bobrovsky will start in Carolina on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T17:18:45.061Z"
+        }
+    ],
+    "OTT": [
+        {
+            "player": "Linus Ullmark",
+            "news": "Ullmark (personal) returned to practice with the Senators on Friday. ",
+            "category": "General",
+            "date": "2026-01-16",
+            "timestamp": "2026-01-16T16:24:09.428Z"
         }
     ]
 }
