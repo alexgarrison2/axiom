@@ -832,7 +832,7 @@ export default function TeamDetailPage() {
                                         // SV% for period is tricky if using total sv_pct column. Better to calc from shots/goals
                                         const sv_pct_val = sa > 0 ? ((sa - ga) / sa).toFixed(3).replace(/^0+/, '') : ".000";
 
-                                        const gsax = (game.xgf - game.xga - (game.gf - game.ga)).toFixed(2);
+                                        const gsax = (game.xga - game.ga).toFixed(2);
                                         const opponentName = game.opponent.trim();
                                         const logoUrl = teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '';
 
