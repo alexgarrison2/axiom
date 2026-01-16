@@ -805,7 +805,7 @@ export default function TeamDetailPage() {
 
                                         const sh_pct = sf > 0 ? (gf / sf * 100).toFixed(1) : "0.0";
                                         // SV% for period is tricky if using total sv_pct column. Better to calc from shots/goals
-                                        const sv_pct_val = sa > 0 ? ((sa - ga) / sa * 100).toFixed(1) : "0.0";
+                                        const sv_pct_val = sa > 0 ? ((sa - ga) / sa).toFixed(3).replace(/^0+/, '') : ".000";
 
                                         const gsax = (game.xgf - game.xga - (game.gf - game.ga)).toFixed(2);
                                         const opponentName = game.opponent.trim();
@@ -867,7 +867,7 @@ export default function TeamDetailPage() {
                                                         {cd > 0 ? '+' : ''}{cd}
                                                     </td>
                                                     <td className="p-1 text-center font-mono text-gray-400">{sh_pct}%</td>
-                                                    <td className="p-1 text-center font-mono text-gray-400">{sv_pct_val}%</td>
+                                                    <td className="p-1 text-center font-mono text-gray-400">{sv_pct_val}</td>
                                                     {filters.period === 'All' && <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>}
                                                     {filters.period === 'All' && (
                                                         <>
