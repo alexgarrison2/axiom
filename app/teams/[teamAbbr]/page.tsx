@@ -470,6 +470,31 @@ export default function TeamDetailPage() {
     }, [filteredGames, filters.period]);
 
 
+    // Helper for Color Gradient (Red -> Grey -> Blue)
+    const getGradientColor = (value: number, min: number, mid: number, max: number) => {
+        // Clamp value
+        const val = Math.max(min, Math.min(max, value));
+
+        let r, g, b;
+
+        if (val < mid) {
+            // Red (248, 113, 113) to Grey (156, 163, 175)
+            // Normalized position 0 to 1
+            const ratio = (val - min) / (mid - min);
+            r = Math.round(248 + (156 - 248) * ratio); // Start Red
+            g = Math.round(113 + (163 - 113) * ratio);
+            b = Math.round(113 + (175 - 113) * ratio);
+        } else {
+            // Grey (156, 163, 175) to Blue (96, 165, 250)
+            const ratio = (val - mid) / (max - mid);
+            r = Math.round(156 + (96 - 156) * ratio);
+            g = Math.round(163 + (165 - 163) * ratio);
+            b = Math.round(175 + (250 - 175) * ratio); // End Blue
+        }
+
+        return `rgb(${r}, ${g}, ${b})`;
+    };
+
     // -- Render --
     if (loading) return <div className="min-h-screen bg-black text-white p-10">Loading...</div>;
     if (!teamInfo) return <div className="min-h-screen bg-black text-white p-10">Team Not Found</div>;
@@ -763,11 +788,11 @@ export default function TeamDetailPage() {
                                         <td className="p-1 text-center text-gray-300">{totals.sf}</td>
                                         <td className="p-1 text-center text-gray-300">{totals.sa}</td>
                                         <td className={`p-1 text-center ${totals.sd > 0 ? 'text-green-400' : totals.sd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.sd > 0 ? '+' : ''}{totals.sd}</td>
-                                        <td className="p-1 text-center text-blue-300">{totals.cf}</td>
-                                        <td className="p-1 text-center text-orange-300">{totals.ca}</td>
-                                        <td className={`p-1 text-center ${totals.cd > 0 ? 'text-blue-400' : totals.cd < 0 ? 'text-orange-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
-                                        <td className="p-1 text-center text-gray-400">{totals.sh_pct}%</td>
-                                        <td className="p-1 text-center text-gray-400">{totals.sv_pct}</td>
+                                        <td className="p-1 text-center text-gray-300">{totals.cf}</td>
+                                        <td className="p-1 text-center text-gray-300">{totals.ca}</td>
+                                        <td className={`p-1 text-center ${totals.cd > 0 ? 'text-green-400' : totals.cd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
+                                        <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sh_pct), 0, 10, 20) }}>{totals.sh_pct}%</td>
+                                        <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sv_pct), 0.800, 0.900, 1.000) }}>{totals.sv_pct}</td>
                                         {filters.period === 'All' && <td className={`p-1 text-center ${parseFloat(totals.gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{parseFloat(totals.gsax) > 0 ? '+' : ''}{totals.gsax}</td>}
                                         {filters.period === 'All' && (
                                             <>
@@ -861,13 +886,13 @@ export default function TeamDetailPage() {
                                                     <td className={`p-1 text-center font-mono ${sd > 0 ? 'text-green-400/70' : sd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
                                                         {sd > 0 ? '+' : ''}{sd}
                                                     </td>
-                                                    <td className="p-1 text-center font-mono text-blue-300">{cf}</td>
-                                                    <td className="p-1 text-center font-mono text-orange-300">{ca}</td>
-                                                    <td className={`p-1 text-center font-mono ${cd > 0 ? 'text-blue-400' : cd < 0 ? 'text-orange-400' : 'text-gray-500'}`}>
+                                                    <td className="p-1 text-center font-mono text-gray-300">{cf}</td>
+                                                    <td className="p-1 text-center font-mono text-gray-300">{ca}</td>
+                                                    <td className={`p-1 text-center font-mono ${cd > 0 ? 'text-green-400/70' : cd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
                                                         {cd > 0 ? '+' : ''}{cd}
                                                     </td>
-                                                    <td className="p-1 text-center font-mono text-gray-400">{sh_pct}%</td>
-                                                    <td className="p-1 text-center font-mono text-gray-400">{sv_pct_val}</td>
+                                                    <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sh_pct), 0, 10, 20) }}>{sh_pct}%</td>
+                                                    <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sv_pct_val), 0.800, 0.900, 1.000) }}>{sv_pct_val}</td>
                                                     {filters.period === 'All' && <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>}
                                                     {filters.period === 'All' && (
                                                         <>
