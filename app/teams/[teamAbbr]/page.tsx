@@ -244,7 +244,7 @@ export default function TeamDetailPage() {
                         en_att: parseInt(row.en_attempts_for),
                         en_ga: parseInt(row.emptynet_goalsagainst),
                         en_att_ag: parseInt(row.en_attempts_against),
-                        gsax: parseFloat(row.xG_against) - parseFloat(row.goals_ag),
+                        gsax: parseFloat(row.xG_against) - (parseFloat(row.goals_ag) - parseFloat(row.emptynet_goalsagainst || '0')),
                         // Record Fix: Robust Parsing
                         otml: (['RL', 'OTL', 'SOL'].includes(row.result?.trim()) && parseInt(row.en_attempts_for) > 0) ? 'Yes' : '-',
                         game_number: 0, // Will be set after sorting
@@ -451,7 +451,7 @@ export default function TeamDetailPage() {
             cd: (cf - ca), // Total Diff
             xgf: (xgf / count).toFixed(2),
             xga: (xga / count).toFixed(2),
-            xgd: ((xgf - xga) / count).toFixed(2), // Average Diff or Total Diff? User said "xGF and xGA and xG Diff should be two decimal places". Usually Diff follows the inputs. Let's assume Average Diff if inputs are Average.
+            xgd: (xgf - xga).toFixed(2), // Total Diff
             // Wait, user said "Shot Diff Total should be the total Shot Diff". "Corsi Diff Total should be the total Corsi Diff".
             // But for xG? "xGF and xGA and xG Diff should be two decimal places". Didn't explicitly say "Total". 
             // Given xGF/xGA are averages, xG Diff likely Average too.
@@ -832,7 +832,7 @@ export default function TeamDetailPage() {
                                         // SV% for period is tricky if using total sv_pct column. Better to calc from shots/goals
                                         const sv_pct_val = sa > 0 ? ((sa - ga) / sa).toFixed(3).replace(/^0+/, '') : ".000";
 
-                                        const gsax = (game.xga - game.ga).toFixed(2);
+                                        const gsax = (game.xga - (game.ga - game.en_ga)).toFixed(2);
                                         const opponentName = game.opponent.trim();
                                         const logoUrl = teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '';
 
