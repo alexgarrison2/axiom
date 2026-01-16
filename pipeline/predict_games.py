@@ -682,39 +682,60 @@ def predict():
         # We check if these players are in the "Injury" or "Out" news
         
         key_players = {
-            "Avalanche": ["Nathan MacKinnon", "Cale Makar", "Mikko Rantanen"],
-            "Oilers": ["Connor McDavid", "Leon Draisaitl", "Evan Bouchard"],
-            "Lightning": ["Nikita Kucherov", "Victor Hedman", "Andrei Vasilevskiy"],
-            "Maple Leafs": ["Auston Matthews", "Mitch Marner", "William Nylander"],
-            "Panthers": ["Aleksander Barkov", "Matthew Tkachuk", "Sam Reinhart"],
-            "Bruins": ["David Pastrnak", "Brad Marchand", "Charlie McAvoy"],
-            "Rangers": ["Artemi Panarin", "Adam Fox", "Igor Shesterkin"],
-            "Canucks": ["Quinn Hughes", "Elias Pettersson", "J.T. Miller"],
-            "Stars": ["Jason Robertson", "Roope Hintz", "Miro Heiskanen"],
-            "Golden Knights": ["Jack Eichel", "Mark Stone", "Shea Theodore"],
-            "Devils": ["Jack Hughes", "Nico Hischier", "Dougie Hamilton"],
-            "Hurricanes": ["Sebastian Aho", "Andrei Svechnikov"],
-            "Jets": ["Connor Hellebuyck", "Kyle Connor", "Mark Scheifele"],
-            "Wild": ["Kirill Kaprizov", "Matt Boldy"], 
-            "Sabres": ["Tage Thompson", "Rasmus Dahlin"],
-            "Senators": ["Tim Stützle", "Brady Tkachuk"],
-            "Penguins": ["Sidney Crosby", "Evgeni Malkin", "Erik Karlsson"],
-            "Capitals": ["Alex Ovechkin", "John Carlson"],
-            "Red Wings": ["Dylan Larkin", "Lucas Raymond"], 
-            "Predators": ["Roman Josi", "Filip Forsberg", "Juuse Saros"],
-            "Kings": ["Anze Kopitar", "Adrian Kempe", "Drew Doughty"],
-            "Blues": ["Robert Thomas", "Jordan Kyrou"],
-            "Flyers": ["Travis Konecny", "Matvei Michkov"],
-            "Islanders": ["Mathew Barzal", "Bo Horvat", "Ilya Sorokin"],
-            "Flames": ["Nazem Kadri", "Rasmus Andersson"],
-            "Kraken": ["Jared McCann", "Vince Dunn"],
-            "Utah": ["Clayton Keller", "Mikhail Sergachev"],
-            "Blue Jackets": ["Zach Werenski", "Johnny Gaudreau"], # RIP Johnny, need to update
-            "Ducks": ["Mason McTavish", "Trevor Zegras"],
-            "Sharks": ["Macklin Celebrini", "Will Smith"],
-            "Canadiens": ["Nick Suzuki", "Cole Caufield"],
-            "Blackhawks": ["Connor Bedard", "Seth Jones"]
+            "Avalanche": ["N. MacKinnon", "M. Necas", "C. Makar"],
+            "Blackhawks": ["C. Bedard", "T. Bertuzzi", "A. Burakovsky"],
+            "Blue Jackets": ["Z. Werenski", "K. Marchenko", "C. Coyle"],
+            "Blues": ["R. Thomas", "P. Buchnevich", "J. Faulk"],
+            "Bruins": ["D. Pastrnak", "M. Geekie", "P. Zacha"],
+            "Canadiens": ["N. Suzuki", "L. Hutson", "C. Caufield"],
+            "Canucks": ["E. Pettersson", "F. Hronek", "K. Sherwood"],
+            "Capitals": ["T. Wilson", "A. Ovechkin", "D. Strome"],
+            "Devils": ["N. Hischier", "J. Bratt", "J. Hughes"],
+            "Ducks": ["L. Carlsson", "T. Terry", "C. Gauthier"],
+            "Flames": ["N. Kadri", "M. Backlund", "R. Andersson"],
+            "Flyers": ["T. Zegras", "T. Konecny", "C. Dvorak"],
+            "Golden Knights": ["J. Eichel", "M. Marner", "M. Stone"],
+            "Hurricanes": ["S. Aho", "A. Svechnikov", "N. Ehlers"],
+            "Islanders": ["M. Barzal", "B. Horvat", "M. Schaefer"],
+            "Jets": ["M. Scheifele", "K. Connor", "G. Vilardi"],
+            "Kings": ["A. Kempe", "K. Fiala", "Q. Byfield"],
+            "Kraken": ["J. Eberle", "M. Beniers", "V. Dunn"],
+            "Lightning": ["N. Kucherov", "J. Guentzel", "B. Hagel"],
+            "Mammoth": ["C. Keller", "N. Schmaltz", "D. Guenther"],
+            "Maple Leafs": ["W. Nylander", "J. Tavares", "M. Knies"],
+            "Oilers": ["C. McDavid", "L. Draisaitl", "E. Bouchard"],
+            "Panthers": ["B. Marchand", "S. Reinhart", "S. Bennett"],
+            "Penguins": ["S. Crosby", "B. Rust", "E. Malkin"],
+            "Predators": ["R. O'Reilly", "F. Forsberg", "S. Stamkos"],
+            "Rangers": ["A. Panarin", "M. Zibanejad", "A. Fox"],
+            "Red Wings": ["A. DeBrincat", "L. Raymond", "D. Larkin"],
+            "Sabres": ["T. Thompson", "A. Tuch", "J. Doan"],
+            "Senators": ["T. Stützle", "D. Batherson", "J. Sanderson"],
+            "Sharks": ["M. Celebrini", "A. Wennberg", "T. Toffoli"],
+            "Stars": ["M. Rantanen", "J. Robertson", "W. Johnston"],
+            "Wild": ["K. Kaprizov", "M. Boldy", "M. Johansson"]
         }
+        
+        # Helper for loose matching names (J. Hughes vs Jack Hughes)
+        def is_key_player(player_name, team_keys):
+            # 1. Direct match
+            # 2. Last name match check (Risk: Sebastian Aho vs ... wait, CAR has Aho. NYI Aho is defensive. Risk is low within team context)
+            # 3. "J. Hughes" in "Jack Hughes" -> True? No.
+            # "Jack Hughes".contains("J. Hughes")? No.
+            # Convert both to "Last Name" checks?
+            if not player_name or not team_keys: return False
+            
+            p_lower = player_name.lower()
+            for k in team_keys:
+                k_lower = k.lower()
+                # Check Last Name
+                # k is "C. Bedard" -> last is "bedard"
+                # p is "Connor Bedard" -> last is "bedard"
+                k_last = k_lower.split()[-1]
+                
+                if k_last in p_lower:
+                    return True
+            return False
         
         # Check Home Stars
         h_star_penalty = 0.0
@@ -722,7 +743,7 @@ def predict():
         for news_item in h_news_list:
             p_name = news_item.get('player', '')
             # If key player AND status indicates absence
-            if any(kp in p_name for kp in key_players.get(home_team, [])):
+            if is_key_player(p_name, key_players.get(home_team, [])):
                  # Simple check for "Out", "Injured", "IR" in category or news
                  cat = news_item.get('category', '').lower()
                  desc = news_item.get('news', '').lower()
@@ -737,7 +758,7 @@ def predict():
         a_news_list = player_news.get(away_tri, [])
         for news_item in a_news_list:
             p_name = news_item.get('player', '')
-            if any(kp in p_name for kp in key_players.get(away_team, [])):
+            if is_key_player(p_name, key_players.get(away_team, [])):
                  cat = news_item.get('category', '').lower()
                  desc = news_item.get('news', '').lower()
                  if "injury" in cat or "healthy scratch" in cat or "illness" in cat or "out" in desc:
