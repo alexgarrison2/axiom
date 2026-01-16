@@ -482,6 +482,13 @@ export default function TeamDetailPage() {
                             const url = t['Team Logo URL'];
                             const isSelected = name === teamInfo?.CommonName;
 
+                            // Color Overrides
+                            const colorOverrides: Record<string, string> = {
+                                'EDM': '#FF4C00', // Orange
+                                'LAK': '#C0C0C0', // Silver
+                                'UTA': '#69B3E7', // Light Blue
+                            };
+
                             // Color Logic: use Scale/Secondary if Primary is too dark, else Primary
                             // Simplified: Just use primary for now, or Secondary if provided and primary is black
                             const c1 = t['Hex Color 1'] || '#FFFFFF';
@@ -489,7 +496,11 @@ export default function TeamDetailPage() {
 
                             // Heuristic: If C1 is Black (#000000 or similar), try C2
                             const isBlack = c1.replace('#', '').toLowerCase() === '000000' || c1.toLowerCase() === 'black';
-                            const glowColor = isBlack ? c2 : c1;
+                            let glowColor = isBlack ? c2 : c1;
+
+                            if (colorOverrides[tricode]) {
+                                glowColor = colorOverrides[tricode];
+                            }
 
                             return (
                                 <Link
@@ -635,11 +646,10 @@ export default function TeamDetailPage() {
                         <table className="w-full text-xs text-left whitespace-nowrap border-collapse">
                             <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
                                 <tr>
-                                    <th className="p-1 sticky left-0 bg-gray-900 z-30 min-w-[2rem] w-8"></th>
-                                    <th className="p-1 sticky left-8 bg-gray-900 z-30 min-w-[2rem] w-8 text-center text-gray-500">#</th>
-                                    <th className="p-1 sticky left-16 bg-gray-900 z-30 min-w-[6rem] w-24 text-center border-r border-gray-700">Date</th>
-                                    <th className="p-1 sticky left-40 bg-gray-900 z-30 min-w-[2rem] w-8 text-center border-r border-gray-700">Loc</th>
-                                    <th className="p-1 sticky left-48 bg-gray-900 z-30 min-w-[3rem] w-12 text-center border-r border-gray-700">Opp</th>
+                                    <th className="p-1 sticky left-0 bg-gray-900 z-30 min-w-[2rem] w-8 text-center text-gray-500">#</th>
+                                    <th className="p-1 sticky left-8 bg-gray-900 z-30 min-w-[6rem] w-24 text-center border-r border-gray-700">Date</th>
+                                    <th className="p-1 sticky left-32 bg-gray-900 z-30 min-w-[2rem] w-8 text-center border-r border-gray-700">Loc</th>
+                                    <th className="p-1 sticky left-40 bg-gray-900 z-30 min-w-[3rem] w-12 text-center border-r border-gray-700">Opp</th>
                                     <th className="p-1">Starter</th>
                                     <th className="p-1">Opp Strt</th>
                                     <th className="p-1 text-center">Res</th>
@@ -677,11 +687,10 @@ export default function TeamDetailPage() {
                                 {/* Totals Row */}
                                 {totals && (
                                     <tr className="bg-white/10 font-bold border-b border-white/20 text-white">
-                                        <td className="p-1 sticky left-0 bg-[#1c1c1c] z-30 border-r border-gray-800 min-w-[2rem] w-8"></td>
-                                        <td className="p-1 sticky left-8 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
-                                        <td className="p-1 sticky left-16 bg-[#1c1c1c] z-30 border-r border-gray-700 text-center min-w-[6rem] w-24">TOTALS</td>
-                                        <td className="p-1 sticky left-40 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
-                                        <td className="p-1 sticky left-48 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[3rem] w-12"></td>
+                                        <td className="p-1 sticky left-0 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
+                                        <td className="p-1 sticky left-8 bg-[#1c1c1c] z-30 border-r border-gray-700 text-center min-w-[6rem] w-24">TOTALS</td>
+                                        <td className="p-1 sticky left-32 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
+                                        <td className="p-1 sticky left-40 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[3rem] w-12"></td>
                                         <td colSpan={3} className="p-1 text-center text-gray-400 text-[10px] tracking-wider uppercase">{totals.record}</td>
                                         <td className="p-1 text-center text-white">{totals.gf}</td>
                                         <td className="p-1 text-center text-white">{totals.ga}</td>
@@ -749,15 +758,12 @@ export default function TeamDetailPage() {
                                                     onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
                                                     className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                                                 >
-                                                    <td className="p-1 sticky left-0 bg-gray-900 border-r border-gray-800 z-20 text-center text-gray-500 min-w-[2rem] w-8">
-                                                        <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180 text-white' : ''}`}>▼</div>
-                                                    </td>
-                                                    <td className="p-1 sticky left-8 bg-gray-900 border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] min-w-[2rem] w-8">{game.game_number}</td>
-                                                    <td className="p-1 sticky left-16 bg-gray-900 border-r border-gray-700 z-20 font-mono text-gray-300 min-w-[6rem] w-24 text-center text-[11px]">{game.date}</td>
-                                                    <td className={`p-1 sticky left-40 bg-gray-900 border-r border-gray-700 z-20 text-center font-bold text-[10px] min-w-[2rem] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
+                                                    <td className="p-1 sticky left-0 bg-gray-900 border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] min-w-[2rem] w-8">{game.game_number}</td>
+                                                    <td className="p-1 sticky left-8 bg-gray-900 border-r border-gray-700 z-20 font-mono text-gray-300 min-w-[6rem] w-24 text-center text-[11px]">{game.date}</td>
+                                                    <td className={`p-1 sticky left-32 bg-gray-900 border-r border-gray-700 z-20 text-center font-bold text-[10px] min-w-[2rem] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
                                                         {game.home_away === 'Home' ? 'vs' : '@'}
                                                     </td>
-                                                    <td className="p-1 sticky left-48 bg-gray-900 border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center">
+                                                    <td className="p-1 sticky left-40 bg-gray-900 border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center">
                                                         <div className="w-5 h-5 relative mx-auto" title={game.opponent}>
                                                             {logoUrl ? <img src={logoUrl} alt={game.opponent} className="w-5 h-5 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
                                                         </div>
