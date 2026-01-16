@@ -619,7 +619,7 @@ export default function TeamDetailPage() {
                 {/* Game Log Tab */}
                 {activeTab === 'games' && (
                     <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
-                        <table className="w-full text-xs text-left whitespace-nowrap">
+                        <table className="w-full text-xs text-left whitespace-nowrap border-collapse">
                             <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
                                 <tr>
                                     <th className="p-1 sticky left-0 bg-gray-900 z-20 w-8"></th>
