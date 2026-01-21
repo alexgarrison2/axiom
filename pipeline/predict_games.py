@@ -538,11 +538,17 @@ def predict():
     
     # SP Teams Avg
     avg_pp_pct = 0.20
+    avg_pk_pct = 0.80
     if not game_stats_df.empty:
          tot_pp_opps = game_stats_df['pp_opportunities'].sum()
          tot_pp_goals = game_stats_df['pp_goals'].sum()
          if tot_pp_opps > 0:
              avg_pp_pct = tot_pp_goals / tot_pp_opps
+        
+         tot_pk_opps = game_stats_df['pk_opportunities'].sum()
+         tot_pp_ga = game_stats_df['pp_goals_against'].sum()
+         if tot_pk_opps > 0:
+             avg_pk_pct = 1 - (tot_pp_ga / tot_pk_opps)
     
     # Build Starter Lookup: (DateStr, TeamCommonName) -> StarterName
     starter_lookup = {}
@@ -899,8 +905,19 @@ def predict():
         h_pp_eff = (h_ratings.get('pp_rating', 20.0) / 100.0) / avg_pp_pct
         a_pp_eff = (a_ratings.get('pp_rating', 20.0) / 100.0) / avg_pp_pct
         
-        h_pp_xg = h_proj_opps * ST_VAL_PP * h_pp_eff
-        a_pp_xg = a_proj_opps * ST_VAL_PP * a_pp_eff
+        # Opponent PK Strength Factor
+        # Higher PK rating = Stronger PK = Lower Factor
+        # Factor = Avg_PK / Team_PK
+        # e.g. Avg=0.80, Team=0.90 -> 0.88 (Lowers xG)
+        h_pk_impact = avg_pk_pct / (h_ratings.get('pk_rating', 80.0) / 100.0) if h_ratings.get('pk_rating') else 1.0
+        a_pk_impact = avg_pk_pct / (a_ratings.get('pk_rating', 80.0) / 100.0) if a_ratings.get('pk_rating') else 1.0
+
+        # Home PP vs Away PK
+        h_pp_xg = h_proj_opps * ST_VAL_PP * h_pp_eff * a_pk_impact
+        # Away PP vs Home PK
+        a_pp_xg = a_proj_opps * ST_VAL_PP * a_pp_eff * h_pk_impact
+        
+
         
         # 4. Rest Penalty (Data Driven B2B)
         # Determine if teams are on B2B
