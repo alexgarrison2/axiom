@@ -1012,16 +1012,23 @@ export default function TeamDetailPage() {
                                     </tbody>
                                 </table>
                             </div>
-                        )}
+                    </TabsContent>
 
-                        {/* Goalies Tab - Placeholder for now */}
-                        {activeTab === 'goalies' && (
-                            <div className="p-10 text-center text-gray-500 italic">
-                                Goalie aggregates coming soon. View Game Logs for details.
-                            </div>
-                        )}
+                    <TabsContent value="charts" className="m-0 focus-visible:outline-none">
+                        <div className="w-full">
+                            <TeamChart games={displayedGames} primaryColor={primaryColor} />
+                        </div>
+                    </TabsContent>
 
-                    </div>
-                </main>
-                );
+                    <TabsContent value="skaters" className="m-0 focus-visible:outline-none">
+                        <div className="p-8 text-center text-muted-foreground font-mono">Skater stats coming soon...</div>
+                    </TabsContent>
+
+                    <TabsContent value="goalies" className="m-0 focus-visible:outline-none">
+                        <div className="p-8 text-center text-muted-foreground font-mono">Goalie stats coming soon...</div>
+                    </TabsContent>
+                </Tabs>
+            </div>
+        </div>
+    );
 }
