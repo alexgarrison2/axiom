@@ -183,7 +183,10 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
     // Calculate domain for Y axis to make chart look dynamic
     const domainY = useMemo(() => {
         if (!chartData.length) return [0, 'auto'];
-        const values = chartData.map(d => d.value);
+        // Exclude first 6 games for scaling to avoid early volatility outliers
+        const scalingData = chartData.length > 6 ? chartData.slice(6) : chartData;
+        const values = scalingData.map(d => d.value);
+
         const min = Math.min(...values);
         const max = Math.max(...values);
 
@@ -352,7 +355,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                             tick={{ fill: '#666', fontSize: 10 }}
                             tickLine={false}
                             axisLine={false}
-                            domain={['auto', 'auto']} // Start at 0 if percentage? Let AreaChart handle based on data.
+                            domain={domainY as any}
                         // We can format ticks based on metric type
                         />
                         <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }} />
@@ -364,6 +367,18 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                             fillOpacity={1}
                             fill="url(#colorMetric)"
                             activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }}
+                            label={(props: any) => {
+                                const { x, y, index, value } = props;
+                                const isLast = index === chartData.length - 1;
+                                if (!isLast) return null;
+
+                                const fmt = activeMetric.format(value);
+                                return (
+                                    <text x={x} y={y - 12} fill="#fff" fontSize={12} fontWeight="bold" textAnchor="middle">
+                                        {fmt}{activeMetric.suffix}
+                                    </text>
+                                );
+                            }}
                         />
                     </AreaChart>
                 </ResponsiveContainer>
