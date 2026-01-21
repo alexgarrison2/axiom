@@ -64,8 +64,8 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         return starterNews ? 'Confirmed' : currentStatus;
                     };
 
-                    if (p.homeTeamAbbrev) newHomeStatus = checkOverride(p.homeTeamAbbrev, p.homeGoalieStatus || 'Unconfirmed', p.homeGoalieConfirmed || '');
-                    if (p.awayTeamAbbrev) newAwayStatus = checkOverride(p.awayTeamAbbrev, p.awayGoalieStatus || 'Unconfirmed', p.awayGoalieConfirmed || '');
+                    if (p.homeTeam?.triCode) newHomeStatus = checkOverride(p.homeTeam.triCode, p.homeGoalieStatus || 'Unconfirmed', p.homeGoalieConfirmed || '');
+                    if (p.awayTeam?.triCode) newAwayStatus = checkOverride(p.awayTeam.triCode, p.awayGoalieStatus || 'Unconfirmed', p.awayGoalieConfirmed || '');
 
                     if (newHomeStatus !== p.homeGoalieStatus || newAwayStatus !== p.awayGoalieStatus) {
                         return {
