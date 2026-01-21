@@ -1346,6 +1346,12 @@ def predict():
             'home_goalie_stats': home_g_stat, # (W-L-O) | SV% | GAA
             'away_goalie_stats': away_g_stat,
             
+            # Goalie Status
+            'home_goalie_status': h_status if h_status else 'Unconfirmed',
+            'home_goalie_confirmed': h_conf if h_conf else '',
+            'away_goalie_status': a_status if a_status else 'Unconfirmed',
+            'away_goalie_confirmed': a_conf if a_conf else '',
+
             # Goalie vs Opp History
             'home_starter_vs_opp': json.dumps(h_vs_opp_stats) if h_vs_opp_stats else "",
             'away_starter_vs_opp': json.dumps(a_vs_opp_stats) if a_vs_opp_stats else ""

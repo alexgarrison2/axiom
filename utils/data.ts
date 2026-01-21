@@ -97,6 +97,11 @@ export interface GamePrediction {
 
   home_xg_explained?: string[]; // JSON Array from Python
   away_xg_explained?: string[]; // JSON Array from Python
+
+  homeGoalieStatus?: string;
+  homeGoalieConfirmed?: string;
+  awayGoalieStatus?: string;
+  awayGoalieConfirmed?: string;
 }
 
 export interface HistoryEntry {
@@ -162,6 +167,11 @@ interface RawPrediction {
   away_starter_vs_opp?: string;
   home_xg_explained?: string;
   away_xg_explained?: string;
+
+  home_goalie_status?: string;
+  home_goalie_confirmed?: string;
+  away_goalie_status?: string;
+  away_goalie_confirmed?: string;
 }
 
 interface RawTeam {
@@ -317,6 +327,11 @@ export async function getPredictions(): Promise<GamePrediction[]> {
 
       home_xg_explained: parseExplanation(row.home_xg_explained),
       away_xg_explained: parseExplanation(row.away_xg_explained),
+
+      homeGoalieStatus: row.home_goalie_status,
+      homeGoalieConfirmed: row.home_goalie_confirmed,
+      awayGoalieStatus: row.away_goalie_status,
+      awayGoalieConfirmed: row.away_goalie_confirmed,
     };
   }).filter((p): p is GamePrediction => p !== null);
 
