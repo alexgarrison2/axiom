@@ -62,6 +62,11 @@ jobs:
             echo "Running Lite Update..."
             python fetch_upcoming.py
             python predict_games.py
+            
+            # Fetch latest odds and sync (Fix for missing odds.json in Lite Update)
+            python fetch_odds.py
+            cp odds.json ../data/odds.json || echo "No odds.json to copy to data/"
+            cp odds.json ../public/data/odds.json || echo "No odds.json to copy to public/"
           fi
 
       - name: Commit and Push Changes
@@ -71,21 +76,21 @@ jobs:
           
           # Check if there are changes to the CSVs
           if [ -n "$(git status --porcelain)" ]; then
-            git add requirements.txt
-            git add data/predictions_detailed.csv
-            git add data/prediction_history.json
-            git add data/gamestats.csv
-            git add data/odds.json
-            git add public/data/odds.json
-            git add public/data/gamestats.csv
-            git add public/data/predictions_detailed.csv
-            git add pipeline/upcoming_games.json
-            git add pipeline/dailyfaceoff_goalies.json
-            git add pipeline/player_news.json
-            git add pipeline/team_lineups.json
-            git add pipeline/nhl_season_2025_2026_gamestats.csv
-            git add pipeline/nhl_season_2025_2026_shots.csv
-            git add data/last_updated.json
+            git add requirements.txt || true
+            [ -f data/predictions_detailed.csv ] && git add data/predictions_detailed.csv
+            [ -f data/prediction_history.json ] && git add data/prediction_history.json
+            [ -f data/gamestats.csv ] && git add data/gamestats.csv
+            [ -f data/odds.json ] && git add data/odds.json
+            [ -f public/data/odds.json ] && git add public/data/odds.json
+            [ -f public/data/gamestats.csv ] && git add public/data/gamestats.csv
+            [ -f public/data/predictions_detailed.csv ] && git add public/data/predictions_detailed.csv
+            [ -f pipeline/upcoming_games.json ] && git add pipeline/upcoming_games.json
+            [ -f pipeline/dailyfaceoff_goalies.json ] && git add pipeline/dailyfaceoff_goalies.json
+            [ -f pipeline/player_news.json ] && git add pipeline/player_news.json
+            [ -f pipeline/team_lineups.json ] && git add pipeline/team_lineups.json
+            [ -f pipeline/nhl_season_2025_2026_gamestats.csv ] && git add pipeline/nhl_season_2025_2026_gamestats.csv
+            [ -f pipeline/nhl_season_2025_2026_shots.csv ] && git add pipeline/nhl_season_2025_2026_shots.csv
+            [ -f data/last_updated.json ] && git add data/last_updated.json
             
             # Commit if changes exist
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"
