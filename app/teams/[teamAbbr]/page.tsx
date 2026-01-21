@@ -238,10 +238,15 @@ export default function TeamDetailPage() {
                 const gamestats = Papa.parse(gamestatsText, { header: true, skipEmptyLines: true }).data as any[];
 
                 // Filter for this team
-                if (!info) return; // Can't proceed without team info
+                if (!info) {
+                    console.error("Team info not found for abbr:", teamAbbr);
+                    return;
+                }
 
                 const teamCommon = info['Common Name'];
+                console.log("Filtering games for:", teamCommon, "gamestats total:", gamestats.length);
                 const teamGames = gamestats.filter((row: any) => row.team === teamCommon);
+                console.log("Found games:", teamGames.length);
 
                 // Process Stats
                 let w = 0, l = 0, otl = 0;
