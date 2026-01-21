@@ -578,14 +578,14 @@ export default function TeamDetailPage() {
             </div>
 
             {/* Main Content Area */}
-            <div className="w-full px-4 md:px-8 relative z-10 pt-20">
+            <div className="w-full px-4 md:px-8 relative z-10 pt-32 md:pt-40">
 
                 {/* Team Info Header REMOVED as per request */}
 
 
                 {/* Tabs */}
                 {/* Simplified Tabs - just simple buttons for now */}
-                <div className="flex gap-4 border-b border-white/10 mb-6 sticky top-0 bg-black/80 backdrop-blur-md pt-4 pb-0 z-20">
+                <div className="flex gap-4 border-b border-white/10 mb-6 sticky top-0 bg-black/95 backdrop-blur-xl pt-4 pb-0 z-40">
                     {['games', 'charts', 'skaters', 'goalies'].map(tab => (
                         <button
                             key={tab}
