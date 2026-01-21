@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import StatRing from '@/components/StatRing';
 import GameBoxscore from '@/components/GameBoxscore';
+import TeamChart from '@/components/TeamChart';
 import Link from 'next/link';
 
 // --- Interfaces ---
@@ -113,7 +114,7 @@ export default function TeamDetailPage() {
     const [todaysGame, setTodaysGame] = useState<any>(null);
 
     const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'games' | 'skaters' | 'goalies'>('games');
+    const [activeTab, setActiveTab] = useState<'games' | 'charts' | 'skaters' | 'goalies'>('games');
 
     // Filters
     const [filters, setFilters] = useState({
@@ -327,28 +328,29 @@ export default function TeamDetailPage() {
         }
         if (filters.result !== 'All') {
             out = out.filter(g => {
-                if (filters.result === 'W') return g.result_code.includes('W');
-                if (filters.result === 'L') return g.result_code === 'RL' || g.result_code.includes('L'); // Includes OTL? usually separate, but generic L includes all losses? User asked W/L. Let's start strictly.
-                // Re-reading user request: "Result (W/L)".
-                // Usually people want simple W vs Not W (L/OTL).
                 if (filters.result === 'W') return g.result.startsWith('W');
                 if (filters.result === 'L') return g.result === 'L' || g.result === 'OTL' || g.result === 'SOL';
                 return true;
             });
         }
+        return out;
+    }, [games, filters.goalie, filters.loc, filters.result]);
 
-        // Sorting is already Date Desc
+    // Slice for Display (Table)
+    const displayedGames = useMemo(() => {
+        // Sorting is already Date Desc from main 'games' state
+        let out = [...filteredGames];
+
         if (filters.last !== 'All') {
             if (filters.last === 'Season') {
-                // Do nothing, return all games
+                // Do nothing
             } else {
                 const n = parseInt(filters.last);
                 out = out.slice(0, n); // Slices top N (most recent)
             }
         }
-
         return out;
-    }, [games, filters]);
+    }, [filteredGames, filters.last]);
 
     // Helper to get stats based on period
     const getStat = (game: GameLog, stat: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => {
@@ -381,12 +383,12 @@ export default function TeamDetailPage() {
 
     // -- Totals Calculation --
     const totals = useMemo(() => {
-        if (filteredGames.length === 0) return null;
+        if (displayedGames.length === 0) return null;
 
-        const count = filteredGames.length;
+        const count = displayedGames.length;
         let w = 0, l = 0, otl = 0;
 
-        filteredGames.forEach(g => {
+        displayedGames.forEach(g => {
             // Use result_code to catch SOW/OTW which might be "W (SO)" in Result string
             const res = g.result_code ? g.result_code.toUpperCase().trim() : '';
 
@@ -405,7 +407,7 @@ export default function TeamDetailPage() {
         const pt_pct = count > 0 ? (pts / (count * 2)).toFixed(3).replace(/^0+/, '') : '.000';
         const record = `${w}-${l}-${otl} ${pts}pts (${pt_pct}) ${count} GP`;
 
-        const sum = (key: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => filteredGames.reduce((acc, g) => acc + (getStat(g, key) as number), 0);
+        const sum = (key: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => displayedGames.reduce((acc, g) => acc + (getStat(g, key) as number), 0);
 
         const gf = sum('gf');
         const ga = sum('ga');
@@ -417,22 +419,22 @@ export default function TeamDetailPage() {
         const xga = sum('xga');
 
         // GSAx Total (Sum of individual game GSAx)
-        const gsax = filteredGames.reduce((acc, g) => acc + (g.gsax || 0), 0);
+        const gsax = displayedGames.reduce((acc, g) => acc + (g.gsax || 0), 0);
 
         // EN Stats (Sums)
-        const en_gf = filteredGames.reduce((acc, g) => acc + g.en_gf, 0);
-        const en_att = filteredGames.reduce((acc, g) => acc + g.en_att, 0);
-        const en_ga = filteredGames.reduce((acc, g) => acc + g.en_ga, 0);
-        const en_att_ag = filteredGames.reduce((acc, g) => acc + g.en_att_ag, 0);
+        const en_gf = displayedGames.reduce((acc, g) => acc + g.en_gf, 0);
+        const en_att = displayedGames.reduce((acc, g) => acc + g.en_att, 0);
+        const en_ga = displayedGames.reduce((acc, g) => acc + g.en_ga, 0);
+        const en_att_ag = displayedGames.reduce((acc, g) => acc + g.en_att_ag, 0);
 
-        const pp_goals = filteredGames.reduce((acc, g) => acc + g.pp_goals, 0);
-        const pp_opps = filteredGames.reduce((acc, g) => acc + g.pp_opps, 0);
-        const pk_goals_ag = filteredGames.reduce((acc, g) => acc + g.pp_goals_against, 0);
-        const pk_opps = filteredGames.reduce((acc, g) => acc + g.pk_opps, 0);
+        const pp_goals = displayedGames.reduce((acc, g) => acc + g.pp_goals, 0);
+        const pp_opps = displayedGames.reduce((acc, g) => acc + g.pp_opps, 0);
+        const pk_goals_ag = displayedGames.reduce((acc, g) => acc + g.pp_goals_against, 0);
+        const pk_opps = displayedGames.reduce((acc, g) => acc + g.pk_opps, 0);
 
         // SV% Calculation (Total Saves / Total SA)
         // Need Sum Saves
-        const total_saves = filteredGames.reduce((acc, g) => acc + (getStat(g, 'sa') as number) - (getStat(g, 'ga') as number), 0); // Approx if saves not directly avail in specific period, but for Full Game it is.
+        const total_saves = displayedGames.reduce((acc, g) => acc + (getStat(g, 'sa') as number) - (getStat(g, 'ga') as number), 0); // Approx if saves not directly avail in specific period, but for Full Game it is.
         // Actually sv_pct in table row is calculated via (sa-ga)/sa. 
         // For period specific stats, 'saves' might not be in getStat directly? 
         // getStat handles 'sa' and 'ga'. So Saves = SA - GA.
@@ -467,7 +469,7 @@ export default function TeamDetailPage() {
             sh_pct: sf > 0 ? (gf / sf * 100).toFixed(1) : '0.0',
             sv_pct: tot_sv_pct.toFixed(3).replace(/^0+/, '') // .901
         };
-    }, [filteredGames, filters.period]);
+    }, [displayedGames, filters.period]);
 
 
     // Helper for Color Gradient (Red -> Grey -> Blue)
@@ -584,7 +586,7 @@ export default function TeamDetailPage() {
                 {/* Tabs */}
                 {/* Simplified Tabs - just simple buttons for now */}
                 <div className="flex gap-4 border-b border-white/10 mb-6 sticky top-0 bg-black/80 backdrop-blur-md pt-4 pb-0 z-20">
-                    {['games', 'skaters', 'goalies'].map(tab => (
+                    {['games', 'charts', 'skaters', 'goalies'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
@@ -598,7 +600,7 @@ export default function TeamDetailPage() {
                 </div>
 
                 {/* Filters (Button Groups) */}
-                {activeTab === 'games' && (
+                {(activeTab === 'games' || activeTab === 'charts') && (
                     <div className="flex flex-wrap gap-6 mb-6 p-4 bg-white/5 rounded-lg border border-white/10 items-center">
                         {/* Goalie */}
                         <div className="flex flex-col gap-2">
@@ -812,7 +814,7 @@ export default function TeamDetailPage() {
                             <tbody className="divide-y divide-gray-800">
                                 {games.length === 0 ?
                                     <tr><td colSpan={30} className="p-4 text-center text-gray-500">No games played.</td></tr>
-                                    : filteredGames.map((game, idx) => {
+                                    : displayedGames.map((game, idx) => {
                                         const isExpanded = expandedGameId === game.game_id;
 
                                         // Dynamic Stats
@@ -929,6 +931,33 @@ export default function TeamDetailPage() {
                             </tbody>
                         </table>
                     </div>
+                )}
+
+                {/* Charts Tab */}
+                {activeTab === 'charts' && (
+                    <TeamChart
+                        games={filteredGames}
+                        primaryColor={primaryColor}
+                    // If we want to respect the "Last N" filter for the chart's VIEWPORT, we might need logic in Chart.
+                    // Or we can slice filteredGames if user wants to only CHART the last N games.
+                    // "The data point on the 20th game...". Implies context.
+                    // But if I say "Last 5" filter, the user probably wants to see the chart for those 5 games.
+                    // If I pass sliced games, rolling avg of 5 for the 1st game will be 0/weird.
+                    // Let's pass 'filteredGames' (full) to Chart, but maybe pass a 'displayLimit' prop?
+                    // TeamChart doesn't have displayLimit prop yet.
+                    // For now, let's just pass `filteredGames` (the full list satisfying criteria).
+                    // If the user selects "Last 5" in filters, the `displayedGames` table shows 5.
+                    // Does the `filteredGames` provided to Chart act filtered by Last N? No, `filteredGames` is NOT sliced.
+                    // So Chart shows ALL matching Loc/Goalie/Result.
+                    // If Filter Last is applied, maybe we SHOULD slice.
+                    // But then rolling sucks.
+                    // Let's assume Chart ignores "Last N" filter for now, OR I'll update TeamChart to handle it.
+                    // Actually, I'll pass `displayedGames` to Chart if `filters.last !== 'All'`? No.
+                    // Let's just stick to `filteredGames` (Full History) for Chart for best data accuracy. 
+                    // The user can zoom (Recharts supports brush/zoom, but I didn't add it).
+                    // If I really want to support "Last N" on chart, I should pass the limit to Chart and let it slice AFTER rolling calc.
+                    // I'll stick to `filteredGames` for now.
+                    />
                 )}
 
                 {/* Skaters Tab */}
