@@ -610,343 +610,340 @@ export default function TeamDetailPage() {
                     <TabsContent value="games" className="m-0 focus-visible:outline-none">
 
                         {/* Filters (Button Groups) */}
-                        {(activeTab === 'games' || activeTab === 'charts') && (
-                            <div className="flex flex-wrap gap-6 mb-6 p-4 bg-white/5 rounded-lg border border-white/10 items-center">
-                                {/* Goalie */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Goalie</label>
-                                    <div className="flex flex-wrap gap-1">
-                                        <button
-                                            onClick={() => setFilters({ ...filters, goalie: 'All' })}
-                                            className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.goalie === 'All' ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
-                                        >
-                                            All
-                                        </button>
-                                        {uniqueGoalies.map(g => {
-                                            // Highlighting Logic
-                                            let highlightClass = '';
-                                            if (todaysGame) {
-                                                // Check if this goalie is Home or Away confirmed
-                                                const isHome = todaysGame.homeTeamAbbrev === teamAbbr;
-                                                const confirmedName = isHome ? todaysGame.homeGoalieConfirmed : todaysGame.awayGoalieConfirmed;
-                                                const status = isHome ? todaysGame.homeGoalieStatus : todaysGame.awayGoalieStatus;
+                        <div className="flex flex-wrap gap-6 mb-6 p-4 bg-white/5 rounded-lg border border-white/10 items-center">
+                            {/* Goalie */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Goalie</label>
+                                <div className="flex flex-wrap gap-1">
+                                    <button
+                                        onClick={() => setFilters({ ...filters, goalie: 'All' })}
+                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.goalie === 'All' ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                    >
+                                        All
+                                    </button>
+                                    {uniqueGoalies.map(g => {
+                                        // Highlighting Logic
+                                        let highlightClass = '';
+                                        if (todaysGame) {
+                                            // Check if this goalie is Home or Away confirmed
+                                            const isHome = todaysGame.homeTeamAbbrev === teamAbbr;
+                                            const confirmedName = isHome ? todaysGame.homeGoalieConfirmed : todaysGame.awayGoalieConfirmed;
+                                            const status = isHome ? todaysGame.homeGoalieStatus : todaysGame.awayGoalieStatus;
 
-                                                // Loose match Last Name
-                                                if (confirmedName && confirmedName.includes(g)) {
-                                                    if (status === 'Confirmed') highlightClass = 'text-green-500 font-bold';
-                                                    else if (status === 'Likely') highlightClass = 'text-yellow-500 font-bold';
-                                                }
+                                            // Loose match Last Name
+                                            if (confirmedName && confirmedName.includes(g)) {
+                                                if (status === 'Confirmed') highlightClass = 'text-green-500 font-bold';
+                                                else if (status === 'Likely') highlightClass = 'text-yellow-500 font-bold';
                                             }
+                                        }
 
-                                            return (
-                                                <button
-                                                    key={g}
-                                                    onClick={() => setFilters({ ...filters, goalie: g })}
-                                                    className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.goalie === g
-                                                        ? 'bg-white text-black'
-                                                        : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                                                        } ${filters.goalie !== g ? highlightClass : ''}`} // Apply color if NOT selected (selected is Black) or both? User said "font color". White/Black is background.
-                                                // If selected, it's Black text on White bg. Green text on White bg might be hard.
-                                                // Let's apply highlight only when NOT selected, or override?
-                                                // If selected, keep Black. If not selected, use Green/Yellow instead of Gray.
-                                                >
-                                                    {g.toUpperCase()}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Location Filter */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Location</label>
-                                    <div className="flex gap-1">
-                                        {['All', 'Home', 'Away'].map(loc => {
-                                            const isTodayLoc = todaysGame && (
-                                                (loc === 'Home' && todaysGame.homeTeamAbbrev === teamAbbr) ||
-                                                (loc === 'Away' && todaysGame.awayTeamAbbrev === teamAbbr)
-                                            );
-
-                                            // Custom Blue for Location
-                                            const locColor = '#83C7FF';
-
-                                            return (
-                                                <button
-                                                    key={loc}
-                                                    onClick={() => setFilters({ ...filters, loc: loc as any })}
-                                                    className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.loc === loc
-                                                        ? 'bg-white text-black'
-                                                        : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                                                        }`}
-                                                    style={isTodayLoc && filters.loc !== loc ? { color: locColor } : {}}
-                                                >
-                                                    {loc.toUpperCase()}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                                {/* Period Filter */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Period</label>
-                                    <div className="flex bg-muted/20 rounded-lg p-0.5 w-fit">
-                                        {['All', '1st', '2nd', '3rd', 'OT'].map(opt => (
-                                            <Button
-                                                key={opt}
-                                                variant={filters.period === opt ? 'secondary' : 'ghost'}
-                                                size="sm"
-                                                onClick={() => setFilters({ ...filters, period: opt as any })}
-                                                className="h-7 text-xs font-bold px-3"
+                                        return (
+                                            <button
+                                                key={g}
+                                                onClick={() => setFilters({ ...filters, goalie: g })}
+                                                className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.goalie === g
+                                                    ? 'bg-white text-black'
+                                                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                                                    } ${filters.goalie !== g ? highlightClass : ''}`} // Apply color if NOT selected (selected is Black) or both? User said "font color". White/Black is background.
+                                            // If selected, it's Black text on White bg. Green text on White bg might be hard.
+                                            // Let's apply highlight only when NOT selected, or override?
+                                            // If selected, keep Black. If not selected, use Green/Yellow instead of Gray.
                                             >
-                                                {opt === 'All' ? 'FULL GAME' : opt.toUpperCase()}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Last N Filter */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Last</label>
-                                    <div className="flex bg-muted/20 rounded-lg p-0.5 w-fit">
-                                        {['All', '5', '10', '15', '20'].map(opt => (
-                                            <Button
-                                                key={opt}
-                                                variant={filters.last === opt ? 'secondary' : 'ghost'}
-                                                size="sm"
-                                                onClick={() => setFilters({ ...filters, last: opt as any })}
-                                                className="h-7 text-xs font-bold px-3"
-                                            >
-                                                {opt === 'All' ? 'SEASON' : opt}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Result Filter */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Result</label>
-                                    <div className="flex bg-muted/20 rounded-lg p-0.5 w-fit">
-                                        {['All', 'W', 'L'].map(opt => (
-                                            <Button
-                                                key={opt}
-                                                variant={filters.result === opt ? 'secondary' : 'ghost'}
-                                                size="sm"
-                                                onClick={() => setFilters({ ...filters, result: opt as any })}
-                                                className="h-7 text-xs font-bold px-3"
-                                            >
-                                                {opt.toUpperCase()}
-                                            </Button>
-                                        ))}
-                                    </div>
+                                                {g.toUpperCase()}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
-                        )}
+
+                            {/* Location Filter */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Location</label>
+                                <div className="flex gap-1">
+                                    {['All', 'Home', 'Away'].map(loc => {
+                                        const isTodayLoc = todaysGame && (
+                                            (loc === 'Home' && todaysGame.homeTeamAbbrev === teamAbbr) ||
+                                            (loc === 'Away' && todaysGame.awayTeamAbbrev === teamAbbr)
+                                        );
+
+                                        // Custom Blue for Location
+                                        const locColor = '#83C7FF';
+
+                                        return (
+                                            <button
+                                                key={loc}
+                                                onClick={() => setFilters({ ...filters, loc: loc as any })}
+                                                className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.loc === loc
+                                                    ? 'bg-white text-black'
+                                                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                                                    }`}
+                                                style={isTodayLoc && filters.loc !== loc ? { color: locColor } : {}}
+                                            >
+                                                {loc.toUpperCase()}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            {/* Period Filter */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Period</label>
+                                <div className="flex bg-muted/20 rounded-lg p-0.5 w-fit">
+                                    {['All', '1st', '2nd', '3rd', 'OT'].map(opt => (
+                                        <Button
+                                            key={opt}
+                                            variant={filters.period === opt ? 'secondary' : 'ghost'}
+                                            size="sm"
+                                            onClick={() => setFilters({ ...filters, period: opt as any })}
+                                            className="h-7 text-xs font-bold px-3"
+                                        >
+                                            {opt === 'All' ? 'FULL GAME' : opt.toUpperCase()}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Last N Filter */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Last</label>
+                                <div className="flex bg-muted/20 rounded-lg p-0.5 w-fit">
+                                    {['All', '5', '10', '15', '20'].map(opt => (
+                                        <Button
+                                            key={opt}
+                                            variant={filters.last === opt ? 'secondary' : 'ghost'}
+                                            size="sm"
+                                            onClick={() => setFilters({ ...filters, last: opt as any })}
+                                            className="h-7 text-xs font-bold px-3"
+                                        >
+                                            {opt === 'All' ? 'SEASON' : opt}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Result Filter */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Result</label>
+                                <div className="flex bg-muted/20 rounded-lg p-0.5 w-fit">
+                                    {['All', 'W', 'L'].map(opt => (
+                                        <Button
+                                            key={opt}
+                                            variant={filters.result === opt ? 'secondary' : 'ghost'}
+                                            size="sm"
+                                            onClick={() => setFilters({ ...filters, result: opt as any })}
+                                            className="h-7 text-xs font-bold px-3"
+                                        >
+                                            {opt.toUpperCase()}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Game Log Tab */}
-                        {activeTab === 'games' && (
-                            <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
-                                <table className="w-full text-xs text-left whitespace-nowrap border-collapse">
-                                    <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
-                                        <tr>
-                                            <th className="p-1 sticky left-0 bg-gray-900 z-30 min-w-[2rem] w-8 text-center text-gray-500">#</th>
-                                            <th className="p-1 sticky left-8 bg-gray-900 z-30 min-w-[6rem] w-24 text-center border-r border-gray-700">Date</th>
-                                            <th className="p-1 sticky left-32 bg-gray-900 z-30 min-w-[2rem] w-8 text-center border-r border-gray-700">Loc</th>
-                                            <th className="p-1 sticky left-40 bg-gray-900 z-30 min-w-[3rem] w-12 text-center border-r border-gray-700">Opp</th>
-                                            <th className="p-1">Starter</th>
-                                            <th className="p-1">Opp Strt</th>
-                                            <th className="p-1 text-center">Res</th>
-                                            <th className="p-1 text-center">GF</th>
-                                            <th className="p-1 text-center">GA</th>
-                                            <th className="p-1 text-center">GΔ</th>
+                        <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
+                            <table className="w-full text-xs text-left whitespace-nowrap border-collapse">
+                                <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
+                                    <tr>
+                                        <th className="p-1 sticky left-0 bg-gray-900 z-30 min-w-[2rem] w-8 text-center text-gray-500">#</th>
+                                        <th className="p-1 sticky left-8 bg-gray-900 z-30 min-w-[6rem] w-24 text-center border-r border-gray-700">Date</th>
+                                        <th className="p-1 sticky left-32 bg-gray-900 z-30 min-w-[2rem] w-8 text-center border-r border-gray-700">Loc</th>
+                                        <th className="p-1 sticky left-40 bg-gray-900 z-30 min-w-[3rem] w-12 text-center border-r border-gray-700">Opp</th>
+                                        <th className="p-1">Starter</th>
+                                        <th className="p-1">Opp Strt</th>
+                                        <th className="p-1 text-center">Res</th>
+                                        <th className="p-1 text-center">GF</th>
+                                        <th className="p-1 text-center">GA</th>
+                                        <th className="p-1 text-center">GΔ</th>
+                                        {filters.period === 'All' && (
+                                            <>
+                                                <th className="p-1 text-center text-blue-300">Powerplay</th>
+                                                <th className="p-1 text-center text-red-300">Penalty Kill</th>
+                                            </>
+                                        )}
+                                        <th className="p-1 text-center">SF</th>
+                                        <th className="p-1 text-center">SA</th>
+                                        <th className="p-1 text-center">SΔ</th>
+                                        <th className="p-1 text-center">CF</th>
+                                        <th className="p-1 text-center">CA</th>
+                                        <th className="p-1 text-center">CΔ</th>
+                                        <th className="p-1 text-center">SH%</th>
+                                        <th className="p-1 text-center">SV%</th>
+                                        {filters.period === 'All' && <th className="p-1 text-center">GSAx</th>}
+                                        {filters.period === 'All' && (
+                                            <>
+                                                <th className="p-1 text-center">xGF</th>
+                                                <th className="p-1 text-center">xGA</th>
+                                                <th className="p-1 text-center">xGΔ</th>
+                                                <th className="p-1 text-center">EN GF</th>
+                                                <th className="p-1 text-center">EN Att</th>
+                                                <th className="p-1 text-center">OTML</th>
+                                                <th className="p-1 text-center">EN GA</th>
+                                                <th className="p-1 text-center">EN Att Ag</th>
+                                            </>
+                                        )}
+                                    </tr>
+                                    {/* Totals Row */}
+                                    {totals && (
+                                        <tr className="bg-white/10 font-bold border-b border-white/20 text-white">
+                                            <td className="p-1 sticky left-0 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
+                                            <td className="p-1 sticky left-8 bg-[#1c1c1c] z-30 border-r border-gray-700 text-center min-w-[6rem] w-24">TOTALS</td>
+                                            <td className="p-1 sticky left-32 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
+                                            <td className="p-1 sticky left-40 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[3rem] w-12"></td>
+                                            <td colSpan={3} className="p-1 text-center text-gray-400 text-[10px] tracking-wider uppercase">{totals.record}</td>
+                                            <td className="p-1 text-center text-white">{totals.gf}</td>
+                                            <td className="p-1 text-center text-white">{totals.ga}</td>
+                                            <td className={`p-1 text-center ${totals.gd > 0 ? 'text-green-400' : totals.gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.gd > 0 ? '+' : ''}{totals.gd}</td>
                                             {filters.period === 'All' && (
                                                 <>
-                                                    <th className="p-1 text-center text-blue-300">Powerplay</th>
-                                                    <th className="p-1 text-center text-red-300">Penalty Kill</th>
+                                                    <td className="p-1 text-center text-blue-300">{totals.pp_goals} / {totals.pp_opps} ({totals.pp_pct}%)</td>
+                                                    <td className="p-1 text-center text-red-300">{totals.pk_goals_ag} / {totals.pk_opps} ({totals.pk_pct}%)</td>
                                                 </>
                                             )}
-                                            <th className="p-1 text-center">SF</th>
-                                            <th className="p-1 text-center">SA</th>
-                                            <th className="p-1 text-center">SΔ</th>
-                                            <th className="p-1 text-center">CF</th>
-                                            <th className="p-1 text-center">CA</th>
-                                            <th className="p-1 text-center">CΔ</th>
-                                            <th className="p-1 text-center">SH%</th>
-                                            <th className="p-1 text-center">SV%</th>
-                                            {filters.period === 'All' && <th className="p-1 text-center">GSAx</th>}
+                                            <td className="p-1 text-center text-gray-300">{totals.sf}</td>
+                                            <td className="p-1 text-center text-gray-300">{totals.sa}</td>
+                                            <td className={`p-1 text-center ${totals.sd > 0 ? 'text-green-400' : totals.sd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.sd > 0 ? '+' : ''}{totals.sd}</td>
+                                            <td className="p-1 text-center text-gray-300">{totals.cf}</td>
+                                            <td className="p-1 text-center text-gray-300">{totals.ca}</td>
+                                            <td className={`p-1 text-center ${totals.cd > 0 ? 'text-green-400' : totals.cd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
+                                            <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sh_pct), 0, 10, 20) }}>{totals.sh_pct}%</td>
+                                            <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sv_pct), 0.800, 0.885, 0.945) }}>{totals.sv_pct}</td>
+                                            {filters.period === 'All' && <td className={`p-1 text-center ${parseFloat(totals.gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{parseFloat(totals.gsax) > 0 ? '+' : ''}{totals.gsax}</td>}
                                             {filters.period === 'All' && (
                                                 <>
-                                                    <th className="p-1 text-center">xGF</th>
-                                                    <th className="p-1 text-center">xGA</th>
-                                                    <th className="p-1 text-center">xGΔ</th>
-                                                    <th className="p-1 text-center">EN GF</th>
-                                                    <th className="p-1 text-center">EN Att</th>
-                                                    <th className="p-1 text-center">OTML</th>
-                                                    <th className="p-1 text-center">EN GA</th>
-                                                    <th className="p-1 text-center">EN Att Ag</th>
+                                                    <td className="p-1 text-center text-gray-300">{totals.xgf}</td>
+                                                    <td className="p-1 text-center text-gray-300">{totals.xga}</td>
+                                                    <td className={`p-1 text-center ${parseFloat(totals.xgd) > 0 ? 'text-green-400' : parseFloat(totals.xgd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.xgd) > 0 ? '+' : ''}{totals.xgd}</td>
+                                                    <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_gf : '-'}</td>
+                                                    <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_att : '-'}</td>
+                                                    <td></td>
+                                                    <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_ga : '-'}</td>
+                                                    <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_att_ag : '-'}</td>
                                                 </>
                                             )}
                                         </tr>
-                                        {/* Totals Row */}
-                                        {totals && (
-                                            <tr className="bg-white/10 font-bold border-b border-white/20 text-white">
-                                                <td className="p-1 sticky left-0 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
-                                                <td className="p-1 sticky left-8 bg-[#1c1c1c] z-30 border-r border-gray-700 text-center min-w-[6rem] w-24">TOTALS</td>
-                                                <td className="p-1 sticky left-32 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
-                                                <td className="p-1 sticky left-40 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[3rem] w-12"></td>
-                                                <td colSpan={3} className="p-1 text-center text-gray-400 text-[10px] tracking-wider uppercase">{totals.record}</td>
-                                                <td className="p-1 text-center text-white">{totals.gf}</td>
-                                                <td className="p-1 text-center text-white">{totals.ga}</td>
-                                                <td className={`p-1 text-center ${totals.gd > 0 ? 'text-green-400' : totals.gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.gd > 0 ? '+' : ''}{totals.gd}</td>
-                                                {filters.period === 'All' && (
-                                                    <>
-                                                        <td className="p-1 text-center text-blue-300">{totals.pp_goals} / {totals.pp_opps} ({totals.pp_pct}%)</td>
-                                                        <td className="p-1 text-center text-red-300">{totals.pk_goals_ag} / {totals.pk_opps} ({totals.pk_pct}%)</td>
-                                                    </>
-                                                )}
-                                                <td className="p-1 text-center text-gray-300">{totals.sf}</td>
-                                                <td className="p-1 text-center text-gray-300">{totals.sa}</td>
-                                                <td className={`p-1 text-center ${totals.sd > 0 ? 'text-green-400' : totals.sd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.sd > 0 ? '+' : ''}{totals.sd}</td>
-                                                <td className="p-1 text-center text-gray-300">{totals.cf}</td>
-                                                <td className="p-1 text-center text-gray-300">{totals.ca}</td>
-                                                <td className={`p-1 text-center ${totals.cd > 0 ? 'text-green-400' : totals.cd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
-                                                <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sh_pct), 0, 10, 20) }}>{totals.sh_pct}%</td>
-                                                <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sv_pct), 0.800, 0.885, 0.945) }}>{totals.sv_pct}</td>
-                                                {filters.period === 'All' && <td className={`p-1 text-center ${parseFloat(totals.gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{parseFloat(totals.gsax) > 0 ? '+' : ''}{totals.gsax}</td>}
-                                                {filters.period === 'All' && (
-                                                    <>
-                                                        <td className="p-1 text-center text-gray-300">{totals.xgf}</td>
-                                                        <td className="p-1 text-center text-gray-300">{totals.xga}</td>
-                                                        <td className={`p-1 text-center ${parseFloat(totals.xgd) > 0 ? 'text-green-400' : parseFloat(totals.xgd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.xgd) > 0 ? '+' : ''}{totals.xgd}</td>
-                                                        <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_gf : '-'}</td>
-                                                        <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_att : '-'}</td>
-                                                        <td></td>
-                                                        <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_ga : '-'}</td>
-                                                        <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_att_ag : '-'}</td>
-                                                    </>
-                                                )}
-                                            </tr>
-                                        )}
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-800">
-                                        {games.length === 0 ?
-                                            <tr><td colSpan={30} className="p-4 text-center text-gray-500">No games played.</td></tr>
-                                            : displayedGames.map((game, idx) => {
-                                                const isExpanded = expandedGameId === game.game_id;
+                                    )}
+                                </thead>
+                                <tbody className="divide-y divide-gray-800">
+                                    {games.length === 0 ?
+                                        <tr><td colSpan={30} className="p-4 text-center text-gray-500">No games played.</td></tr>
+                                        : displayedGames.map((game, idx) => {
+                                            const isExpanded = expandedGameId === game.game_id;
 
-                                                // Dynamic Stats
-                                                const gf = getStat(game, 'gf');
-                                                const ga = getStat(game, 'ga');
-                                                const sf = getStat(game, 'sf');
-                                                const sa = getStat(game, 'sa');
-                                                const cf = getStat(game, 'cf');
-                                                const ca = getStat(game, 'ca');
+                                            // Dynamic Stats
+                                            const gf = getStat(game, 'gf');
+                                            const ga = getStat(game, 'ga');
+                                            const sf = getStat(game, 'sf');
+                                            const sa = getStat(game, 'sa');
+                                            const cf = getStat(game, 'cf');
+                                            const ca = getStat(game, 'ca');
 
-                                                const gd = gf - ga;
-                                                const sd = sf - sa;
-                                                const cd = cf - ca;
-                                                const xgd = game.xgf - game.xga;
+                                            const gd = gf - ga;
+                                            const sd = sf - sa;
+                                            const cd = cf - ca;
+                                            const xgd = game.xgf - game.xga;
 
-                                                const sh_pct = sf > 0 ? (gf / sf * 100).toFixed(1) : "0.0";
-                                                // SV% for period is tricky if using total sv_pct column. Better to calc from shots/goals
-                                                const sv_pct_val = sa > 0 ? ((sa - ga) / sa).toFixed(3).replace(/^0+/, '') : ".000";
+                                            const sh_pct = sf > 0 ? (gf / sf * 100).toFixed(1) : "0.0";
+                                            // SV% for period is tricky if using total sv_pct column. Better to calc from shots/goals
+                                            const sv_pct_val = sa > 0 ? ((sa - ga) / sa).toFixed(3).replace(/^0+/, '') : ".000";
 
-                                                const gsax = (game.xga - (game.ga - game.en_ga)).toFixed(2);
-                                                const opponentName = game.opponent.trim();
-                                                const logoUrl = teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '';
+                                            const gsax = (game.xga - (game.ga - game.en_ga)).toFixed(2);
+                                            const opponentName = game.opponent.trim();
+                                            const logoUrl = teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '';
 
-                                                return (
-                                                    <React.Fragment key={game.game_id}>
-                                                        <tr
-                                                            onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
-                                                            className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
-                                                        >
-                                                            <td className="p-1 sticky left-0 bg-gray-900 border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] min-w-[2rem] w-8">{game.game_number}</td>
-                                                            <td className="p-1 sticky left-8 bg-gray-900 border-r border-gray-700 z-20 font-mono text-gray-300 min-w-[6rem] w-24 text-center text-[11px]">{game.date}</td>
-                                                            <td className={`p-1 sticky left-32 bg-gray-900 border-r border-gray-700 z-20 text-center font-bold text-[10px] min-w-[2rem] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
-                                                                {game.home_away === 'Home' ? 'vs' : '@'}
-                                                            </td>
-                                                            <td className="p-1 sticky left-40 bg-gray-900 border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center">
-                                                                <div className="w-5 h-5 relative mx-auto" title={game.opponent}>
-                                                                    {logoUrl ? <img src={logoUrl} alt={game.opponent} className="w-5 h-5 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
+                                            return (
+                                                <React.Fragment key={game.game_id}>
+                                                    <tr
+                                                        onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
+                                                        className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
+                                                    >
+                                                        <td className="p-1 sticky left-0 bg-gray-900 border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] min-w-[2rem] w-8">{game.game_number}</td>
+                                                        <td className="p-1 sticky left-8 bg-gray-900 border-r border-gray-700 z-20 font-mono text-gray-300 min-w-[6rem] w-24 text-center text-[11px]">{game.date}</td>
+                                                        <td className={`p-1 sticky left-32 bg-gray-900 border-r border-gray-700 z-20 text-center font-bold text-[10px] min-w-[2rem] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
+                                                            {game.home_away === 'Home' ? 'vs' : '@'}
+                                                        </td>
+                                                        <td className="p-1 sticky left-40 bg-gray-900 border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center">
+                                                            <div className="w-5 h-5 relative mx-auto" title={game.opponent}>
+                                                                {logoUrl ? <img src={logoUrl} alt={game.opponent} className="w-5 h-5 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.starting_goalie}>
+                                                            {game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}
+                                                        </td>
+                                                        <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.opponent_starter}>
+                                                            {game.opponent_starter ? game.opponent_starter.split(' ').pop() : '-'}
+                                                        </td>
+                                                        <td className="p-1 text-center">
+                                                            <span className={`px-1 py-0.5 rounded text-[10px] font-black ${game.result_code.includes('W') ? 'bg-green-900/40 text-green-400 border border-green-500/20' :
+                                                                game.result_code.includes('OTL') || game.result_code.includes('SOL') ? 'bg-orange-900/40 text-orange-400 border border-orange-500/20' :
+                                                                    'bg-red-900/40 text-red-400 border border-red-500/20'
+                                                                }`}>
+                                                                {game.result}
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-1 text-center font-mono text-white">{gf}</td>
+                                                        <td className="p-1 text-center font-mono text-white">{ga}</td>
+                                                        <td className={`p-1 text-center font-bold font-mono ${gd > 0 ? 'text-green-400' : gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                                                            {gd > 0 ? '+' : ''}{gd}
+                                                        </td>
+                                                        {filters.period === 'All' && (
+                                                            <>
+                                                                <td className="p-1 text-center font-mono text-blue-300">
+                                                                    {game.pp_goals} / {game.pp_opps}
+                                                                </td>
+                                                                <td className="p-1 text-center font-mono text-red-300">
+                                                                    {game.pp_goals_against} / {game.pk_opps}
+                                                                </td>
+                                                            </>
+                                                        )}
+                                                        <td className="p-1 text-center font-mono text-gray-300">{sf}</td>
+                                                        <td className="p-1 text-center font-mono text-gray-300">{sa}</td>
+                                                        <td className={`p-1 text-center font-mono ${sd > 0 ? 'text-green-400/70' : sd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                                                            {sd > 0 ? '+' : ''}{sd}
+                                                        </td>
+                                                        <td className="p-1 text-center font-mono text-gray-300">{cf}</td>
+                                                        <td className="p-1 text-center font-mono text-gray-300">{ca}</td>
+                                                        <td className={`p-1 text-center font-mono ${cd > 0 ? 'text-green-400/70' : cd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                                                            {cd > 0 ? '+' : ''}{cd}
+                                                        </td>
+                                                        <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sh_pct), 0, 10, 20) }}>{sh_pct}%</td>
+                                                        <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sv_pct_val), 0.800, 0.885, 0.945) }}>{sv_pct_val}</td>
+                                                        {filters.period === 'All' && <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>}
+                                                        {filters.period === 'All' && (
+                                                            <>
+                                                                <td className="p-1 text-center font-mono text-gray-300">{game.xgf.toFixed(2)}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
+                                                                <td className={`p-1 text-center font-mono ${xgd > 0 ? 'text-green-400/70' : xgd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                                                                    {xgd > 0 ? '+' : ''}{xgd.toFixed(2)}
+                                                                </td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_gf : '-'}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_att : '-'}</td>
+                                                                <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_ga : '-'}</td>
+                                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_att_ag : '-'}</td>
+                                                            </>
+                                                        )}
+                                                    </tr>
+                                                    {isExpanded && (
+                                                        <tr>
+                                                            <td colSpan={30} className="p-0 border-b border-gray-800 bg-gray-900/50">
+                                                                <div className="p-4 border-l-4" style={{ borderColor: primaryColor }}>
+                                                                    <GameBoxscore
+                                                                        gameId={parseInt(game.game_id)}
+                                                                        teamAbbr={teamAbbr}
+                                                                        // Robust filter: convert both to string to ensure matching
+                                                                        playerStats={playerStats.filter(p => String(p.game_id) === String(game.game_id))}
+                                                                    />
                                                                 </div>
                                                             </td>
-                                                            <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.starting_goalie}>
-                                                                {game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}
-                                                            </td>
-                                                            <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.opponent_starter}>
-                                                                {game.opponent_starter ? game.opponent_starter.split(' ').pop() : '-'}
-                                                            </td>
-                                                            <td className="p-1 text-center">
-                                                                <span className={`px-1 py-0.5 rounded text-[10px] font-black ${game.result_code.includes('W') ? 'bg-green-900/40 text-green-400 border border-green-500/20' :
-                                                                    game.result_code.includes('OTL') || game.result_code.includes('SOL') ? 'bg-orange-900/40 text-orange-400 border border-orange-500/20' :
-                                                                        'bg-red-900/40 text-red-400 border border-red-500/20'
-                                                                    }`}>
-                                                                    {game.result}
-                                                                </span>
-                                                            </td>
-                                                            <td className="p-1 text-center font-mono text-white">{gf}</td>
-                                                            <td className="p-1 text-center font-mono text-white">{ga}</td>
-                                                            <td className={`p-1 text-center font-bold font-mono ${gd > 0 ? 'text-green-400' : gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>
-                                                                {gd > 0 ? '+' : ''}{gd}
-                                                            </td>
-                                                            {filters.period === 'All' && (
-                                                                <>
-                                                                    <td className="p-1 text-center font-mono text-blue-300">
-                                                                        {game.pp_goals} / {game.pp_opps}
-                                                                    </td>
-                                                                    <td className="p-1 text-center font-mono text-red-300">
-                                                                        {game.pp_goals_against} / {game.pk_opps}
-                                                                    </td>
-                                                                </>
-                                                            )}
-                                                            <td className="p-1 text-center font-mono text-gray-300">{sf}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-300">{sa}</td>
-                                                            <td className={`p-1 text-center font-mono ${sd > 0 ? 'text-green-400/70' : sd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
-                                                                {sd > 0 ? '+' : ''}{sd}
-                                                            </td>
-                                                            <td className="p-1 text-center font-mono text-gray-300">{cf}</td>
-                                                            <td className="p-1 text-center font-mono text-gray-300">{ca}</td>
-                                                            <td className={`p-1 text-center font-mono ${cd > 0 ? 'text-green-400/70' : cd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
-                                                                {cd > 0 ? '+' : ''}{cd}
-                                                            </td>
-                                                            <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sh_pct), 0, 10, 20) }}>{sh_pct}%</td>
-                                                            <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sv_pct_val), 0.800, 0.885, 0.945) }}>{sv_pct_val}</td>
-                                                            {filters.period === 'All' && <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>}
-                                                            {filters.period === 'All' && (
-                                                                <>
-                                                                    <td className="p-1 text-center font-mono text-gray-300">{game.xgf.toFixed(2)}</td>
-                                                                    <td className="p-1 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
-                                                                    <td className={`p-1 text-center font-mono ${xgd > 0 ? 'text-green-400/70' : xgd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
-                                                                        {xgd > 0 ? '+' : ''}{xgd.toFixed(2)}
-                                                                    </td>
-                                                                    <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_gf : '-'}</td>
-                                                                    <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_att : '-'}</td>
-                                                                    <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>
-                                                                    <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_ga : '-'}</td>
-                                                                    <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_att_ag : '-'}</td>
-                                                                </>
-                                                            )}
                                                         </tr>
-                                                        {isExpanded && (
-                                                            <tr>
-                                                                <td colSpan={30} className="p-0 border-b border-gray-800 bg-gray-900/50">
-                                                                    <div className="p-4 border-l-4" style={{ borderColor: primaryColor }}>
-                                                                        <GameBoxscore
-                                                                            gameId={parseInt(game.game_id)}
-                                                                            teamAbbr={teamAbbr}
-                                                                            // Robust filter: convert both to string to ensure matching
-                                                                            playerStats={playerStats.filter(p => String(p.game_id) === String(game.game_id))}
-                                                                        />
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        )}
-                                                    </React.Fragment>
-                                                );
-                                            })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                    )}
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                </tbody>
+                            </table>
+                        </div>
                         )}
 
                         {/* Charts Tab */}
