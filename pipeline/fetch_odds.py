@@ -107,7 +107,22 @@ def fetch_odds():
             start_time_ms = event.get('startTime', 0)
             if start_time_ms:
                 # Convert milliseconds to datetime (Universal format, usually UTC)
-                date_str = datetime.fromtimestamp(start_time_ms / 1000.0).strftime('%Y-%m-%d')
+                # Use US/Central to avoid UTC date shifts (e.g. 7pm game becoming next day)
+                try:
+                    import pytz
+                    from datetime import timezone
+                    
+                    dt_utc = datetime.fromtimestamp(start_time_ms / 1000.0, tz=timezone.utc)
+                    central = pytz.timezone('US/Central')
+                    dt_central = dt_utc.astimezone(central)
+                    date_str = dt_central.strftime('%Y-%m-%d')
+                except ImportError:
+                    # Fallback if pytz not available (though it should be)
+                    # Simple offset: UTC-6
+                    from datetime import timezone, timedelta
+                    dt_utc = datetime.fromtimestamp(start_time_ms / 1000.0, tz=timezone.utc)
+                    dt_central = dt_utc - timedelta(hours=6)
+                    date_str = dt_central.strftime('%Y-%m-%d')
             else:
                 date_str = datetime.now().strftime('%Y-%m-%d') # Fallback
             
