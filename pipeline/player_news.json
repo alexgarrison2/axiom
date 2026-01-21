@@ -1,6 +1,20 @@
 {
     "PHI": [
         {
+            "player": "Carl Grundstrom",
+            "news": "Grundstrom is expected to be a healthy scratch in Utah on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-01-21",
+            "timestamp": "2026-01-21T18:45:25.794Z"
+        },
+        {
+            "player": "Nikita Grebenkin",
+            "news": "Grebenkin is expected to draw back into Philadelphia's lineup in Utah on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-01-21",
+            "timestamp": "2026-01-21T18:44:36.756Z"
+        },
+        {
             "player": "Samuel Ersson",
             "news": "Ersson will start in Utah on Wednesday. ",
             "category": "Goalie Start",
@@ -13,6 +27,56 @@
             "category": "Injury",
             "date": "2026-01-21",
             "timestamp": "2026-01-21T16:27:22.939Z"
+        }
+    ],
+    "PIT": [
+        {
+            "player": "Stuart Skinner",
+            "news": "Skinner is expected to start in Calgary on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-21",
+            "timestamp": "2026-01-21T18:42:23.173Z"
+        }
+    ],
+    "VAN": [
+        {
+            "player": "Teddy Blueger",
+            "news": "Blueger (undisclosed) is expected to return to Vancouver's lineup vs. Washington on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-01-21",
+            "timestamp": "2026-01-21T18:40:41.682Z"
+        }
+    ],
+    "CBJ": [
+        {
+            "player": "Elvis Merzlikins",
+            "news": "Merzlikins (illness) missed practice on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-01-21",
+            "timestamp": "2026-01-21T18:39:21.386Z"
+        },
+        {
+            "player": "Isac Lundestrom",
+            "news": "Lundestrom (lower-body) is expected to return to Columbus' lineup vs. Dallas on Thursday. ",
+            "category": "Injury",
+            "date": "2026-01-21",
+            "timestamp": "2026-01-21T18:35:01.001Z"
+        },
+        {
+            "player": "Mason Marchment",
+            "news": "Marchment (upper-body) is expected to return vs. Dallas on Thursday. ",
+            "category": "Injury",
+            "date": "2026-01-21",
+            "timestamp": "2026-01-21T17:32:25.764Z"
+        }
+    ],
+    "SEA": [
+        {
+            "player": "Philipp Grubauer",
+            "news": "Grubauer is in the starter's crease at Seattle's morning skate on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-21",
+            "timestamp": "2026-01-21T18:36:02.607Z"
         }
     ],
     "BOS": [
@@ -47,15 +111,6 @@
             "timestamp": "2026-01-21T17:29:00.446Z"
         }
     ],
-    "CBJ": [
-        {
-            "player": "Mason Marchment",
-            "news": "Marchment (upper-body) is a full participant in Columbus' practice on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-01-21",
-            "timestamp": "2026-01-21T17:32:25.764Z"
-        }
-    ],
     "COL": [
         {
             "player": "Scott Wedgewood",
@@ -70,20 +125,6 @@
             "category": "Call Up",
             "date": "2026-01-21",
             "timestamp": "2026-01-21T16:09:10.110Z"
-        },
-        {
-            "player": "Taylor Makar",
-            "news": "Makar has been recalled from the Colorado Eagles (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-21",
-            "timestamp": "2026-01-21T16:08:39.601Z"
-        },
-        {
-            "player": "Gabriel Landeskog",
-            "news": "Landeskog is progressing, but still \"a ways out.\"",
-            "category": "Injury",
-            "date": "2026-01-21",
-            "timestamp": "2026-01-21T15:34:56.203Z"
         }
     ],
     "CAR": [
@@ -102,20 +143,6 @@
             "category": "Goalie Start",
             "date": "2026-01-21",
             "timestamp": "2026-01-21T17:10:39.257Z"
-        },
-        {
-            "player": "Justin Kirkland",
-            "news": "Kirkland is expected to be a healthy scratch on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-01-21",
-            "timestamp": "2026-01-21T16:00:18.740Z"
-        },
-        {
-            "player": "Martin Pospisil",
-            "news": "Pospisil (concussion) is expected to return to the lineup on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-01-21",
-            "timestamp": "2026-01-21T15:55:54.325Z"
         }
     ],
     "FLA": [
@@ -125,13 +152,6 @@
             "category": "Injury",
             "date": "2026-01-21",
             "timestamp": "2026-01-21T16:42:31.744Z"
-        },
-        {
-            "player": "Niko Mikkola",
-            "news": "Mikkola (undisclosed) left Monday's game and did not return. ",
-            "category": "Injury",
-            "date": "2026-01-21",
-            "timestamp": "2026-01-21T16:02:18.579Z"
         }
     ],
     "TOR": [
@@ -141,22 +161,6 @@
             "category": "Injury",
             "date": "2026-01-21",
             "timestamp": "2026-01-21T16:28:17.265Z"
-        },
-        {
-            "player": "Joseph Woll",
-            "news": "Woll will start vs. Detroit on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-21",
-            "timestamp": "2026-01-21T16:03:44.352Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Anthony Cirelli",
-            "news": "Cirelli (undisclosed) left Tuesday's game and did not return. ",
-            "category": "Injury",
-            "date": "2026-01-21",
-            "timestamp": "2026-01-21T15:36:46.370Z"
         }
     ]
 }
