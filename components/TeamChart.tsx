@@ -241,11 +241,16 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
         return [Math.max(0, min - padding), max + padding];
     }, [chartData, metric, metric2]);
 
-    // Smart Label Density
+    // Smart Label Density (Primary) - ~25%
     const labelInterval = useMemo(() => {
         if (chartData.length <= 10) return 1;
-        // Target ~20-25% density
         return Math.floor(chartData.length / (chartData.length * 0.25));
+    }, [chartData.length]);
+
+    // Smart Label Density (Secondary) - ~10%
+    const labelInterval2 = useMemo(() => {
+        if (chartData.length <= 10) return 1;
+        return Math.floor(chartData.length / (chartData.length * 0.10));
     }, [chartData.length]);
 
 
@@ -458,7 +463,8 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                                     return (
                                         <g>
                                             <rect x={x - 20} y={y - 28} width="40" height="20" rx="4" fill={primaryColor} />
-                                            <text x={x} y={y - 14} fill="#000" fontSize={10} fontWeight="bold" textAnchor="middle">
+                                            {/* Changed text fill to #fff for better contrast on dark pill */}
+                                            <text x={x} y={y - 14} fill="#fff" fontSize={10} fontWeight="bold" textAnchor="middle">
                                                 {fmt}{activeMetric.suffix}
                                             </text>
                                         </g>
@@ -476,6 +482,23 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                                     strokeDasharray="5 5"
                                     fill="none"
                                     activeDot={{ r: 4, strokeWidth: 0, fill: '#a1a1aa' }}
+                                    label={(props: any) => {
+                                        const { x, y, index, value } = props;
+                                        const isLast = index === chartData.length - 1;
+                                        // Show secondary label at restricted logic (10% density)
+                                        const showLabel = isLast || (index % labelInterval2 === 0);
+                                        if (!showLabel || value === null) return null;
+
+                                        const fmt = secondaryMetric ? secondaryMetric.format(value) : value;
+                                        return (
+                                            <g>
+                                                <rect x={x - 20} y={y - 28} width="40" height="20" rx="4" fill="#52525b" />
+                                                <text x={x} y={y - 14} fill="#fff" fontSize={10} fontWeight="bold" textAnchor="middle">
+                                                    {fmt}{secondaryMetric?.suffix}
+                                                </text>
+                                            </g>
+                                        );
+                                    }}
                                 />
                             )}
 
