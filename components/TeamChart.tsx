@@ -106,10 +106,6 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
         const dataPoints = [];
 
         // Running Totals for Cumulative
-        // Note: For differentials (GD, SD, CD), we need underlying raw diffs.
-        // GD = GF - GA. Cumulative: Sum(GF) - Sum(GA).
-        // SD = SF - SA.
-        // CD = CF - CA.
         let total = {
             gp: 0, pts: 0,
             gf: 0, ga: 0,
@@ -220,11 +216,15 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
     // Calculate Domain
     const domainY = useMemo(() => {
         if (!chartData.length) return [0, 'auto'];
-        const scalingData = chartData.length > 6 ? chartData.slice(6) : chartData;
+        // Exclude first 8 games for scaling to avoid early volatility outliers
+        const scalingData = chartData.length > 8 ? chartData.slice(8) : chartData;
 
         const vals1 = scalingData.map(d => d.value);
         const vals2 = metric2 !== 'none' ? scalingData.map(d => d.value2 as number) : [];
         const allVals = [...vals1, ...vals2];
+
+        // Handle case where allVals might be empty or invalid (though length check guards this mostly)
+        if (allVals.length === 0) return [0, 'auto'];
 
         const min = Math.min(...allVals);
         const max = Math.max(...allVals);
@@ -241,9 +241,10 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
         return [Math.max(0, min - padding), max + padding];
     }, [chartData, metric, metric2]);
 
-    // Smart Label Density (Primary) - ~25%
+    // Smart Label Density
     const labelInterval = useMemo(() => {
         if (chartData.length <= 10) return 1;
+        // Target ~20-25% density
         return Math.floor(chartData.length / (chartData.length * 0.25));
     }, [chartData.length]);
 
@@ -441,6 +442,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                                 axisLine={false}
                                 domain={domainY as any}
                                 dx={-10}
+                                allowDataOverflow={true} // Force clipping of outliers
                             />
                             <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '4 4' }} />
 
