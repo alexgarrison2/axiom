@@ -61,12 +61,13 @@ jobs:
           else
             echo "Running Lite Update..."
             python fetch_upcoming.py
-            python predict_games.py
             
             # Fetch latest odds and sync (Fix for missing odds.json in Lite Update)
             python fetch_odds.py
             cp odds.json ../data/odds.json || echo "No odds.json to copy to data/"
             cp odds.json ../public/data/odds.json || echo "No odds.json to copy to public/"
+
+            python predict_games.py
           fi
 
       - name: Commit and Push Changes
