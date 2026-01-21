@@ -39,7 +39,52 @@ const itemVariants: Variants = {
     }
 };
 
-const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, history, maxTotalGoals }) => {
+const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, maxTotalGoals }) => {
+    const [predictions, setPredictions] = useState<GamePrediction[]>(initialPredictions);
+
+    // Sync Predictions with live News
+    React.useEffect(() => {
+        const fetchNews = async () => {
+            try {
+                const res = await fetch('/data/player_news.json');
+                const newsData = await res.json();
+
+                const updated = initialPredictions.map(p => {
+                    let newHomeStatus = p.homeGoalieStatus;
+                    let newAwayStatus = p.awayGoalieStatus;
+
+                    const checkOverride = (teamAbbr: string, currentStatus: string, expectedStarter: string) => {
+                        if (currentStatus !== 'Unconfirmed' || !expectedStarter) return currentStatus;
+
+                        const teamNews = newsData[teamAbbr] || [];
+                        const starterNews = teamNews.find((n: any) =>
+                            n.category === 'Goalie Start' &&
+                            (n.player.includes(expectedStarter) || expectedStarter.includes(n.player))
+                        );
+                        return starterNews ? 'Confirmed' : currentStatus;
+                    };
+
+                    if (p.homeTeamAbbrev) newHomeStatus = checkOverride(p.homeTeamAbbrev, p.homeGoalieStatus || 'Unconfirmed', p.homeGoalieConfirmed || '');
+                    if (p.awayTeamAbbrev) newAwayStatus = checkOverride(p.awayTeamAbbrev, p.awayGoalieStatus || 'Unconfirmed', p.awayGoalieConfirmed || '');
+
+                    if (newHomeStatus !== p.homeGoalieStatus || newAwayStatus !== p.awayGoalieStatus) {
+                        return {
+                            ...p,
+                            homeGoalieStatus: newHomeStatus,
+                            awayGoalieStatus: newAwayStatus
+                        };
+                    }
+                    return p;
+                });
+
+                setPredictions(updated);
+            } catch (e) {
+                console.error("Failed to sync news overrides:", e);
+            }
+        };
+        fetchNews();
+    }, [initialPredictions]);
+
     // Extract unique dates and sort them
     const uniqueDates = useMemo(() => {
         const dates = Array.from(new Set(predictions.map(p => p.date)));
@@ -201,8 +246,8 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions, hist
                                         }
                                     }}
                                     className={`px-3 py-1 text-[10px] font-bold rounded-full border transition-all ${isActive
-                                            ? 'bg-neon-green/10 text-neon-green border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
-                                            : 'bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white'
+                                        ? 'bg-neon-green/10 text-neon-green border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                                        : 'bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white'
                                         }`}
                                 >
                                     {filter === 'All' ? 'ALL GAMES' : `${filter}%`}

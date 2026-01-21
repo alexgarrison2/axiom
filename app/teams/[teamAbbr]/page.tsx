@@ -164,6 +164,7 @@ export default function TeamDetailPage() {
                 setTeamLogos(logos);
 
                 // Fetch Upcoming Games for Today's Filter Logic
+                let todayGame: any = null;
                 try {
                     const upcomingRes = await fetch('/data/upcoming_games.json');
                     const upcomingData = await upcomingRes.json();
@@ -176,7 +177,7 @@ export default function TeamDetailPage() {
                     // Or use regex for robust matching if needed. "2026-01-16"
 
                     // Simple find
-                    const todayGame = upcomingData.find((g: any) =>
+                    todayGame = upcomingData.find((g: any) =>
                         (g.homeTeamAbbrev === teamAbbr || g.awayTeamAbbrev === teamAbbr) &&
                         g.gameDate === todayStr
                     );
@@ -198,6 +199,38 @@ export default function TeamDetailPage() {
                         TeamLogoURL: info['Team Logo URL']
                     });
                 }
+
+                // 3. Fetch Player News for Overrides
+                const newsRes = await fetch('/data/player_news.json');
+                const newsData = await newsRes.json();
+
+                // Check for Goalie Overrides in Today's Game
+                // Logic: If status is Unconfirmed, but News says "Goalie Start", force Confirmed.
+                if (todayGame && newsData && todayGame.homeTeamAbbrev && todayGame.awayTeamAbbrev) {
+                    const checkOverride = (teamAbbr: string, currentStatus: string, expectedStarter: string) => {
+                        if (currentStatus !== 'Unconfirmed') return currentStatus;
+
+                        const teamNews = newsData[teamAbbr] || [];
+                        const starterNews = teamNews.find((n: any) =>
+                            n.category === 'Goalie Start' &&
+                            (n.player.includes(expectedStarter) || expectedStarter.includes(n.player))
+                        );
+
+                        return starterNews ? 'Confirmed' : currentStatus;
+                    };
+
+                    const newHomeStatus = checkOverride(todayGame.homeTeamAbbrev, todayGame.homeGoalieStatus, todayGame.homeGoalieConfirmed);
+                    const newAwayStatus = checkOverride(todayGame.awayTeamAbbrev, todayGame.awayGoalieStatus, todayGame.awayGoalieConfirmed);
+
+                    if (newHomeStatus !== todayGame.homeGoalieStatus || newAwayStatus !== todayGame.awayGoalieStatus) {
+                        setTodaysGame({
+                            ...todayGame,
+                            homeGoalieStatus: newHomeStatus,
+                            awayGoalieStatus: newAwayStatus
+                        });
+                    }
+                }
+
 
                 // 2. Fetch Gamestats for Game Log & Record
                 const gamestatsRes = await fetch('/data/gamestats.csv');

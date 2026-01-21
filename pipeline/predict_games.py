@@ -578,6 +578,13 @@ def predict():
     # Load Existing Predictions (for freezing live/past games)
     existing_predictions = load_existing_predictions('../data/predictions_detailed.csv')
     
+    # --- NEW: Fetch Fresh DFO Data ---
+    print("Fetching fresh Daily Faceoff Goalie data...")
+    try:
+        fetch_dailyfaceoff.fetch_dailyfaceoff_goalies()
+    except Exception as e:
+        print(f"Warning: Failed to fetch DFO goalies: {e}")
+
     # Load Goalie Stats
     print("Loading official goalie stats...")
     goalie_stats_map = load_goalie_stats_json()
