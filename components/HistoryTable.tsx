@@ -188,13 +188,13 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries }) => {
                                                             <td className="p-2 md:p-4 text-center">
                                                                 <div className="hidden md:flex flex-col items-center">
                                                                     <span className="text-sm font-bold text-blue-400 whitespace-nowrap">
-                                                                        {entry.awayXg.toFixed(1)} - {entry.homeXg.toFixed(1)}
+                                                                        {entry.awayXg.toFixed(2)} - {entry.homeXg.toFixed(2)}
                                                                     </span>
                                                                 </div>
                                                                 <div className="flex flex-col items-center md:hidden gap-0.5">
-                                                                    <span className="text-blue-400 font-bold text-[10px] h-5 flex items-center">{entry.awayXg.toFixed(1)}</span>
+                                                                    <span className="text-blue-400 font-bold text-[10px] h-5 flex items-center">{entry.awayXg.toFixed(2)}</span>
                                                                     <span className="invisible text-[8px] leading-none h-[10px] flex items-center">-</span>
-                                                                    <span className="text-blue-400 font-bold text-[10px] h-5 flex items-center">{entry.homeXg.toFixed(1)}</span>
+                                                                    <span className="text-blue-400 font-bold text-[10px] h-5 flex items-center">{entry.homeXg.toFixed(2)}</span>
                                                                 </div>
                                                             </td>
 
