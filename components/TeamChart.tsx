@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     LineChart,
     Line,
@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 interface GameLog {
     game_id: string;
@@ -70,12 +71,36 @@ const METRICS = [
 ];
 
 const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
-    const [metric, setMetric] = useState(METRICS[0].value);
-    const [metric2, setMetric2] = useState<string>('none');
-    const [mode, setMode] = useState<'cumulative' | 'rolling'>('cumulative');
-    const [windowSize, setWindowSize] = useState([10]);
-    const [location, setLocation] = useState<'All' | 'Home' | 'Away'>('All');
-    const [goalie, setGoalie] = useState<string>('All');
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const [metric, setMetric] = useState(searchParams.get('metric') || METRICS[0].value);
+    const [metric2, setMetric2] = useState<string>(searchParams.get('metric2') || 'none');
+    const [mode, setMode] = useState<'cumulative' | 'rolling'>((searchParams.get('mode') as any) || 'cumulative');
+    const [windowSize, setWindowSize] = useState([parseInt(searchParams.get('window') || '10')]);
+    const [location, setLocation] = useState<'All' | 'Home' | 'Away'>((searchParams.get('loc') as any) || 'All');
+    const [goalie, setGoalie] = useState<string>(searchParams.get('goalie') || 'All');
+
+    // Sync State to URL
+    useEffect(() => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        if (metric !== METRICS[0].value) params.set('metric', metric); else params.delete('metric');
+        if (metric2 !== 'none') params.set('metric2', metric2); else params.delete('metric2');
+        if (mode !== 'cumulative') params.set('mode', mode); else params.delete('mode');
+        if (windowSize[0] !== 10) params.set('window', windowSize[0].toString()); else params.delete('window');
+        if (location !== 'All') params.set('loc', location); else params.delete('loc');
+        if (goalie !== 'All') params.set('goalie', goalie); else params.delete('goalie');
+
+        const newSearch = params.toString();
+        // Only replace if changed materially (ignoring order or defaults logic if mismatched)
+        // But searchParams is immutable from hook, so we compare strings
+        if (newSearch !== searchParams.toString()) {
+            // Use replace to avoid history stack spam
+            router.replace(`${pathname}?${newSearch}`, { scroll: false });
+        }
+    }, [metric, metric2, mode, windowSize, location, goalie, pathname, router, searchParams]);
 
     // Derive Unique Goalies for Filter (extracted from clean last names)
     const uniqueGoalies = useMemo(() => {

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 
 import Papa from 'papaparse';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 import StatRing from '@/components/StatRing';
 import GameBoxscore from '@/components/GameBoxscore';
@@ -108,6 +108,9 @@ const formatTime = (seconds: string | number) => {
 
 export default function TeamDetailPage() {
     const params = useParams();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
     const teamAbbr = (params.teamAbbr as string).toUpperCase();
 
     const [loading, setLoading] = useState(true);
@@ -119,7 +122,16 @@ export default function TeamDetailPage() {
     const [todaysGame, setTodaysGame] = useState<any>(null);
 
     const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'games' | 'charts' | 'skaters' | 'goalies'>('games');
+
+    // Initialize activeTab from URL or default to 'games'
+    const activeTab = searchParams.get('tab') as 'games' | 'charts' | 'skaters' | 'goalies' || 'games';
+
+    // Handler to update URL when tab changes
+    const handleTabChange = (val: string) => {
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.set('tab', val);
+        router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+    };
 
     // Filters
     const [filters, setFilters] = useState({
@@ -557,10 +569,13 @@ export default function TeamDetailPage() {
                                 glowColor = colorOverrides[tricode];
                             }
 
+                            // Construct href to include current params
+                            const teamLink = `/teams/${tricode}?${searchParams.toString()}`;
+
                             return (
                                 <Link
                                     key={name}
-                                    href={`/teams/${tricode}`}
+                                    href={teamLink}
                                     className={`relative group transition-all duration-300 flex-shrink-0 ${isSelected ? 'opacity-100 scale-110 z-20' : 'opacity-40 grayscale hover:grayscale-0 hover:opacity-100'}`}
                                     title={t['Team Name']}
                                     style={isSelected ? { filter: `drop-shadow(0 0 10px ${glowColor})` } : {}}
@@ -585,7 +600,7 @@ export default function TeamDetailPage() {
             {/* Main Content Area */}
             <div className="w-full px-4 md:px-8 relative z-10 pt-32 md:pt-40">
 
-                <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} className="w-full">
+                <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as any)} className="w-full">
                     {/* Tabs */}
                     <div className="sticky top-0 bg-black/95 backdrop-blur-xl pt-4 pb-2 z-40 border-b border-border/10 mb-6">
                         <TabsList className="bg-muted/20">
