@@ -13,6 +13,10 @@ import {
     Area,
     ReferenceLine
 } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface GameLog {
     game_id: string;
@@ -65,7 +69,7 @@ const METRICS = [
 const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
     const [metric, setMetric] = useState(METRICS[0].value);
     const [mode, setMode] = useState<'cumulative' | 'rolling'>('cumulative');
-    const [windowSize, setWindowSize] = useState(10); // Default rolling window
+    const [windowSize, setWindowSize] = useState([10]); // Default rolling window (array for Slider)
 
     // Prepare Data
     const chartData = useMemo(() => {
@@ -130,7 +134,8 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                 // Rolling Window
                 // Need previous N games (inclusive of current)
                 // Slice [max(0, i - window + 1), i + 1]
-                const startIdx = Math.max(0, i - windowSize + 1);
+                const wSize = windowSize[0];
+                const startIdx = Math.max(0, i - wSize + 1);
                 // Only show point if we have enough data? Or show partial?
                 // User said: "If they chose 5 game rolling, it would show the team's PP% rolling over the last five games."
                 // Usually partial is okay at start, or just noise.
@@ -270,120 +275,119 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
 
 
     return (
-        <div className="w-full flex flex-col gap-6 animate-in fade-in duration-500">
-            {/* Controls Bar */}
-            <div className="flex flex-wrap items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10 shadow-lg backdrop-blur-sm">
+        <Card className="w-full bg-card/50 border-border backdrop-blur-sm animate-in fade-in duration-500">
+            <CardHeader className="pb-2">
+                <CardTitle>Team Performance</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+                {/* Controls Bar */}
+                <div className="flex flex-wrap items-center gap-4">
 
-                {/* Metric Selector */}
-                <div className="flex flex-col gap-1 min-w-[200px]">
-                    <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Metric</label>
-                    <select
-                        value={metric}
-                        onChange={(e) => setMetric(e.target.value)}
-                        className="bg-black border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none"
-                    >
-                        {METRICS.map(m => (
-                            <option key={m.value} value={m.value}>{m.label}</option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="w-px h-8 bg-white/10 mx-2 hidden md:block"></div>
-
-                {/* Mode Toggle */}
-                <div className="flex flex-col gap-1">
-                    <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Mode</label>
-                    <div className="flex bg-black rounded-lg p-1 border border-gray-700">
-                        <button
-                            onClick={() => setMode('cumulative')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${mode === 'cumulative' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'}`}
-                        >
-                            Cumulative
-                        </button>
-                        <button
-                            onClick={() => setMode('rolling')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${mode === 'rolling' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'}`}
-                        >
-                            Rolling
-                        </button>
+                    {/* Metric Selector */}
+                    <div className="flex flex-col gap-1 min-w-[200px]">
+                        <label className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Metric</label>
+                        <Select value={metric} onValueChange={setMetric}>
+                            <SelectTrigger className="w-full bg-background border-input text-foreground">
+                                <SelectValue placeholder="Select Metric" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {METRICS.map(m => (
+                                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
-                </div>
 
-                {/* Rolling Slider */}
-                {mode === 'rolling' && (
-                    <div className="flex flex-col gap-1 flex-1 min-w-[150px] animate-in slide-in-from-left-4 fade-in duration-300">
-                        <div className="flex justify-between items-end">
-                            <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Window Size</label>
-                            <span className="text-xs font-mono text-blue-400 font-bold">{windowSize} Games</span>
+                    <div className="w-px h-8 bg-border mx-2 hidden md:block"></div>
+
+                    {/* Mode Toggle */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Mode</label>
+                        <Tabs value={mode} onValueChange={(val) => setMode(val as any)} className="w-[200px]">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="cumulative">Cumulative</TabsTrigger>
+                                <TabsTrigger value="rolling">Rolling</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                    </div>
+
+                    {/* Rolling Slider */}
+                    {mode === 'rolling' && (
+                        <div className="flex flex-col gap-3 flex-1 min-w-[150px] animate-in slide-in-from-left-4 fade-in duration-300">
+                            <div className="flex justify-between items-end">
+                                <label className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Window Size</label>
+                                <span className="text-xs font-mono text-primary font-bold">{windowSize[0]} Games</span>
+                            </div>
+                            <Slider
+                                defaultValue={[10]}
+                                max={25}
+                                min={3}
+                                step={1}
+                                value={windowSize}
+                                onValueChange={setWindowSize}
+                                className="w-full"
+                            />
                         </div>
-                        <input
-                            type="range"
-                            min="3"
-                            max="25"
-                            value={windowSize}
-                            onChange={(e) => setWindowSize(parseInt(e.target.value))}
-                            className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                        />
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
 
-            {/* Chart Area */}
-            <div className="w-full h-[400px] md:h-[500px] bg-black/40 border border-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm relative">
-                {/* Grid Background Effect */}
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] rounded-xl pointer-events-none"></div>
+                {/* Chart Area */}
+                <div className="w-full h-[400px] md:h-[500px] bg-background/20 border border-border rounded-xl p-4 md:p-6 relative">
+                    {/* Grid Background Effect */}
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] rounded-xl pointer-events-none"></div>
 
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                            <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={primaryColor} stopOpacity={0.6} />
-                                <stop offset="95%" stopColor={primaryColor} stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                        <XAxis
-                            dataKey="gameNumber"
-                            stroke="#666"
-                            tick={{ fill: '#666', fontSize: 10 }}
-                            tickLine={false}
-                            axisLine={false}
-                            interval="preserveStartEnd"
-                        />
-                        <YAxis
-                            stroke="#666"
-                            tick={{ fill: '#666', fontSize: 10 }}
-                            tickLine={false}
-                            axisLine={false}
-                            domain={domainY as any}
-                        // We can format ticks based on metric type
-                        />
-                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }} />
-                        <Area
-                            type="monotone"
-                            dataKey="value"
-                            stroke={primaryColor}
-                            strokeWidth={2}
-                            fillOpacity={1}
-                            fill="url(#colorMetric)"
-                            activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }}
-                            label={(props: any) => {
-                                const { x, y, index, value } = props;
-                                const isLast = index === chartData.length - 1;
-                                if (!isLast) return null;
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={primaryColor} stopOpacity={0.6} />
+                                    <stop offset="95%" stopColor={primaryColor} stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                            <XAxis
+                                dataKey="gameNumber"
+                                stroke="#666"
+                                tick={{ fill: '#666', fontSize: 10 }}
+                                tickLine={false}
+                                axisLine={false}
+                                interval="preserveStartEnd"
+                            />
+                            <YAxis
+                                stroke="#666"
+                                tick={{ fill: '#666', fontSize: 10 }}
+                                tickLine={false}
+                                axisLine={false}
+                                domain={domainY as any}
+                            // We can format ticks based on metric type
+                            />
+                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }} />
+                            <Area
+                                type="monotone"
+                                dataKey="value"
+                                stroke={primaryColor}
+                                strokeWidth={2}
+                                fillOpacity={1}
+                                fill="url(#colorMetric)"
+                                activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }}
+                                label={(props: any) => {
+                                    const { x, y, index, value } = props;
+                                    const isLast = index === chartData.length - 1;
+                                    if (!isLast) return null;
 
-                                const fmt = activeMetric.format(value);
-                                return (
-                                    <text x={x} y={y - 12} fill="#fff" fontSize={12} fontWeight="bold" textAnchor="middle">
-                                        {fmt}{activeMetric.suffix}
-                                    </text>
-                                );
-                            }}
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </div>
-        </div>
+                                    const fmt = activeMetric.format(value);
+                                    return (
+                                        <text x={x} y={y - 12} fill="#fff" fontSize={12} fontWeight="bold" textAnchor="middle">
+                                            {fmt}{activeMetric.suffix}
+                                        </text>
+                                    );
+                                }}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+            </CardContent>
+        </Card>
     );
 };
 
