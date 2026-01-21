@@ -944,71 +944,9 @@ export default function TeamDetailPage() {
                                 </tbody>
                             </table>
                         </div>
-                        )}
 
-                        {/* Charts Tab */}
-                        {activeTab === 'charts' && (
-                            <TeamChart
-                                games={filteredGames}
-                                primaryColor={primaryColor}
-                            // If we want to respect the "Last N" filter for the chart's VIEWPORT, we might need logic in Chart.
-                            // Or we can slice filteredGames if user wants to only CHART the last N games.
-                            // "The data point on the 20th game...". Implies context.
-                            // But if I say "Last 5" filter, the user probably wants to see the chart for those 5 games.
-                            // If I pass sliced games, rolling avg of 5 for the 1st game will be 0/weird.
-                            // Let's pass 'filteredGames' (full) to Chart, but maybe pass a 'displayLimit' prop?
-                            // TeamChart doesn't have displayLimit prop yet.
-                            // For now, let's just pass `filteredGames` (the full list satisfying criteria).
-                            // If the user selects "Last 5" in filters, the `displayedGames` table shows 5.
-                            // Does the `filteredGames` provided to Chart act filtered by Last N? No, `filteredGames` is NOT sliced.
-                            // So Chart shows ALL matching Loc/Goalie/Result.
-                            // If Filter Last is applied, maybe we SHOULD slice.
-                            // But then rolling sucks.
-                            // Let's assume Chart ignores "Last N" filter for now, OR I'll update TeamChart to handle it.
-                            // Actually, I'll pass `displayedGames` to Chart if `filters.last !== 'All'`? No.
-                            // Let's just stick to `filteredGames` (Full History) for Chart for best data accuracy. 
-                            // The user can zoom (Recharts supports brush/zoom, but I didn't add it).
-                            // If I really want to support "Last N" on chart, I should pass the limit to Chart and let it slice AFTER rolling calc.
-                            // I'll stick to `filteredGames` for now.
-                            />
-                        )}
 
-                        {/* Skaters Tab */}
-                        {activeTab === 'skaters' && (
-                            <div className="overflow-x-auto bg-white/5 rounded-lg p-4">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="text-gray-500 border-b border-white/10">
-                                        <tr>
-                                            <th className="p-2">Player</th>
-                                            <th className="p-2 text-center">Pos</th>
-                                            <th className="p-2 text-center">GP</th>
-                                            <th className="p-2 text-right text-white font-bold">PTS</th>
-                                            <th className="p-2 text-right">G</th>
-                                            <th className="p-2 text-right">A</th>
-                                            <th className="p-2 text-right">+/-</th>
-                                            <th className="p-2 text-right">S</th>
-                                            <th className="p-2 text-right">HIT</th>
-                                            <th className="p-2 text-right">BLK</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {getSkaterStats.map((p: any) => (
-                                            <tr key={p.player_id} className="border-b border-white/5 hover:bg-white/5">
-                                                <td className="p-2 font-medium">#{p.number} {p.name}</td>
-                                                <td className="p-2 text-center text-gray-500">{p.position}</td>
-                                                <td className="p-2 text-center text-gray-400">{p.gp}</td>
-                                                <td className="p-2 text-right font-bold text-emerald-400">{p.points}</td>
-                                                <td className="p-2 text-right text-white">{p.goals}</td>
-                                                <td className="p-2 text-right text-gray-400">{p.assists}</td>
-                                                <td className="p-2 text-right text-gray-400">{p.plus_minus}</td>
-                                                <td className="p-2 text-right text-gray-500">{p.shots}</td>
-                                                <td className="p-2 text-right text-gray-500">{p.hits}</td>
-                                                <td className="p-2 text-right text-gray-500">{p.blk}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+
                     </TabsContent>
 
                     <TabsContent value="charts" className="m-0 focus-visible:outline-none">
