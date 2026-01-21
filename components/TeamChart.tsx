@@ -275,48 +275,48 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
 
 
     return (
-        <Card className="w-full bg-card/50 border-border backdrop-blur-sm animate-in fade-in duration-500">
-            <CardHeader className="pb-2">
-                <CardTitle>Team Performance</CardTitle>
+        <Card className="w-full bg-black/40 border-white/10 backdrop-blur-md shadow-2xl animate-in fade-in duration-500">
+            <CardHeader className="pb-4 border-b border-white/5">
+                <CardTitle className="text-white tracking-wider uppercase text-sm font-bold">Team Performance Analysis</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-6">
+            <CardContent className="flex flex-col gap-6 pt-6">
                 {/* Controls Bar */}
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap items-end gap-6">
 
                     {/* Metric Selector */}
-                    <div className="flex flex-col gap-1 min-w-[200px]">
-                        <label className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Metric</label>
+                    <div className="flex flex-col gap-2 min-w-[240px]">
+                        <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest pl-1">Metric</label>
                         <Select value={metric} onValueChange={setMetric}>
-                            <SelectTrigger className="w-full bg-background border-input text-foreground">
+                            <SelectTrigger className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors h-10 font-bold text-sm">
                                 <SelectValue placeholder="Select Metric" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-black/95 border-white/10 text-white backdrop-blur-xl">
                                 {METRICS.map(m => (
-                                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                                    <SelectItem key={m.value} value={m.value} className="focus:bg-white/10 focus:text-white cursor-pointer">{m.label}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
 
-                    <div className="w-px h-8 bg-border mx-2 hidden md:block"></div>
+                    <div className="w-px h-10 bg-white/10 mx-2 hidden md:block"></div>
 
                     {/* Mode Toggle */}
-                    <div className="flex flex-col gap-1">
-                        <label className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Mode</label>
-                        <Tabs value={mode} onValueChange={(val) => setMode(val as any)} className="w-[200px]">
-                            <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="cumulative">Cumulative</TabsTrigger>
-                                <TabsTrigger value="rolling">Rolling</TabsTrigger>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest pl-1">View Mode</label>
+                        <Tabs value={mode} onValueChange={(val) => setMode(val as any)} className="w-[220px]">
+                            <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/5 h-10 p-1">
+                                <TabsTrigger value="cumulative" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-gray-400 text-xs font-bold uppercase">Cumulative</TabsTrigger>
+                                <TabsTrigger value="rolling" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-gray-400 text-xs font-bold uppercase">Rolling</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>
 
                     {/* Rolling Slider */}
                     {mode === 'rolling' && (
-                        <div className="flex flex-col gap-3 flex-1 min-w-[150px] animate-in slide-in-from-left-4 fade-in duration-300">
+                        <div className="flex flex-col gap-3 flex-1 min-w-[200px] animate-in slide-in-from-left-4 fade-in duration-300 pb-1">
                             <div className="flex justify-between items-end">
-                                <label className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Window Size</label>
-                                <span className="text-xs font-mono text-primary font-bold">{windowSize[0]} Games</span>
+                                <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest">Window</label>
+                                <span className="text-xs font-mono text-neon-blue font-bold px-2 py-0.5 bg-blue-500/20 rounded border border-blue-500/30 text-blue-300">{windowSize[0]} Games</span>
                             </div>
                             <Slider
                                 defaultValue={[10]}
@@ -325,51 +325,52 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                                 step={1}
                                 value={windowSize}
                                 onValueChange={setWindowSize}
-                                className="w-full"
+                                className="w-full [&>.relative>.absolute]:bg-blue-500" // Custom handle color override if needed
                             />
                         </div>
                     )}
                 </div>
 
                 {/* Chart Area */}
-                <div className="w-full h-[400px] md:h-[500px] bg-background/20 border border-border rounded-xl p-4 md:p-6 relative">
+                <div className="w-full h-[400px] md:h-[500px] bg-black/20 border border-white/5 rounded-xl p-4 md:p-6 relative shadow-inner overflow-hidden">
                     {/* Grid Background Effect */}
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] rounded-xl pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
 
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <AreaChart data={chartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={primaryColor} stopOpacity={0.6} />
+                                    <stop offset="5%" stopColor={primaryColor} stopOpacity={0.4} />
                                     <stop offset="95%" stopColor={primaryColor} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                             <XAxis
                                 dataKey="gameNumber"
-                                stroke="#666"
-                                tick={{ fill: '#666', fontSize: 10 }}
+                                stroke="#444"
+                                tick={{ fill: '#666', fontSize: 10, fontWeight: 'bold' }}
                                 tickLine={false}
                                 axisLine={false}
                                 interval="preserveStartEnd"
+                                dy={10}
                             />
                             <YAxis
-                                stroke="#666"
-                                tick={{ fill: '#666', fontSize: 10 }}
+                                stroke="#444"
+                                tick={{ fill: '#666', fontSize: 10, fontWeight: 'bold' }}
                                 tickLine={false}
                                 axisLine={false}
                                 domain={domainY as any}
-                            // We can format ticks based on metric type
+                                dx={-10}
                             />
-                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }} />
+                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '4 4' }} />
                             <Area
                                 type="monotone"
                                 dataKey="value"
                                 stroke={primaryColor}
-                                strokeWidth={2}
+                                strokeWidth={3}
                                 fillOpacity={1}
                                 fill="url(#colorMetric)"
-                                activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }}
+                                activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', className: 'animate-pulse' }}
                                 label={(props: any) => {
                                     const { x, y, index, value } = props;
                                     const isLast = index === chartData.length - 1;
@@ -377,9 +378,12 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
 
                                     const fmt = activeMetric.format(value);
                                     return (
-                                        <text x={x} y={y - 12} fill="#fff" fontSize={12} fontWeight="bold" textAnchor="middle">
-                                            {fmt}{activeMetric.suffix}
-                                        </text>
+                                        <g>
+                                            <rect x={x - 20} y={y - 28} width="40" height="20" rx="4" fill={primaryColor} />
+                                            <text x={x} y={y - 14} fill="#000" fontSize={10} fontWeight="bold" textAnchor="middle">
+                                                {fmt}{activeMetric.suffix}
+                                            </text>
+                                        </g>
                                     );
                                 }}
                             />
