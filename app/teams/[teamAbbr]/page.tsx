@@ -1,21 +1,11 @@
+"use client";
+
+import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-
-// ... existing imports
-
-// Inside TeamDetailPage... (Replace Return Block structure)
-
-// NOTE: Since I am replacing the *Structure*, I need to ensure I wrap everything correctly.
-// The existing code has "Tabs Button Row" separate from "Content Render Logic".
-// Shadcn Tabs usually wraps both: 
-// <Tabs value={activeTab} onValueChange={setActiveTab}> 
-//    <TabsList>...</TabsList>
-//    <TabsContent value="games">...</TabsContent>
-// </Tabs>
-
-// I'll need to refactor significantly to wrap the content blocks.
-// Start by importing.
+import { Card } from "@/components/ui/card"
 
 import Papa from 'papaparse';
 import { useParams } from 'next/navigation';
@@ -23,7 +13,6 @@ import Header from '@/components/Header';
 import StatRing from '@/components/StatRing';
 import GameBoxscore from '@/components/GameBoxscore';
 import TeamChart from '@/components/TeamChart';
-import Link from 'next/link';
 
 // --- Interfaces ---
 interface TeamInfo {
@@ -964,6 +953,6 @@ export default function TeamDetailPage() {
                     </TabsContent>
                 </Tabs>
             </div>
-        </div>
+        </main>
     );
 }
