@@ -668,11 +668,11 @@ export default function TeamDetailPage() {
                         <div className="flex flex-wrap gap-6 mb-6 p-4 bg-white/5 rounded-lg border border-white/10 items-center">
                             {/* Goalie */}
                             <div className="flex flex-col gap-2">
-                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Goalie</label>
+                                <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Goalie</label>
                                 <div className="flex flex-wrap gap-1">
                                     <button
                                         onClick={() => setFilters({ ...filters, goalie: 'All' })}
-                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.goalie === 'All' ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.goalie === 'All' ? 'bg-white text-black' : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'}`}
                                     >
                                         All
                                     </button>
@@ -698,7 +698,7 @@ export default function TeamDetailPage() {
                                                 onClick={() => setFilters({ ...filters, goalie: g })}
                                                 className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.goalie === g
                                                     ? 'bg-white text-black'
-                                                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                                                    : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
                                                     } ${filters.goalie !== g ? highlightClass : ''}`} // Apply color if NOT selected (selected is Black) or both? User said "font color". White/Black is background.
                                             // If selected, it's Black text on White bg. Green text on White bg might be hard.
                                             // Let's apply highlight only when NOT selected, or override?
@@ -713,7 +713,7 @@ export default function TeamDetailPage() {
 
                             {/* Location Filter */}
                             <div className="flex flex-col gap-2">
-                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Location</label>
+                                <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Location</label>
                                 <div className="flex gap-1">
                                     {['All', 'Home', 'Away'].map(loc => {
                                         const isTodayLoc = todaysGame && (
@@ -730,7 +730,7 @@ export default function TeamDetailPage() {
                                                 onClick={() => setFilters({ ...filters, loc: loc as any })}
                                                 className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.loc === loc
                                                     ? 'bg-white text-black'
-                                                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                                                    : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
                                                     }`}
                                                 style={isTodayLoc && filters.loc !== loc ? { color: locColor } : {}}
                                             >
