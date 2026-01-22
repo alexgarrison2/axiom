@@ -204,8 +204,15 @@ export default function TeamDetailPage() {
                 }
 
                 // 3. Fetch Player News for Overrides
-                const newsRes = await fetch('/data/player_news.json');
-                const newsData = await newsRes.json();
+                let newsData: any = {};
+                try {
+                    const newsRes = await fetch('/data/player_news.json');
+                    if (newsRes.ok) {
+                        newsData = await newsRes.json();
+                    }
+                } catch (e) {
+                    console.warn("Could not load player news:", e);
+                }
 
                 // Check for Goalie Overrides in Today's Game
                 // Logic: If status is Unconfirmed, but News says "Goalie Start", force Confirmed.
