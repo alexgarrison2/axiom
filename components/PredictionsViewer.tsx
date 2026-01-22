@@ -19,23 +19,36 @@ const containerVariants: Variants = {
     show: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.1
+            staggerChildren: 0.15, // Increased stagger for better wave effect
+            delayChildren: 0.2
         }
     }
 };
 
 const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    hidden: {
+        opacity: 0,
+        y: 100, // Slide up from further down
+        scale: 0.9,
+        filter: 'blur(10px)' // Add blur on entry
+    },
     show: {
         opacity: 1,
         y: 0,
         scale: 1,
-        transition: { type: 'spring', stiffness: 50, damping: 15 }
+        filter: 'blur(0px)',
+        transition: {
+            type: 'spring',
+            stiffness: 70,
+            damping: 18,
+            mass: 1.2
+        }
     },
     exit: {
         opacity: 0,
         scale: 0.9,
-        transition: { duration: 0.2 }
+        filter: 'blur(10px)',
+        transition: { duration: 0.3 }
     }
 };
 
@@ -93,7 +106,8 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 
 
     // State for selected date
-    // Default to the first date (Today)
+    // Default to 'Today' if available, else first date
+    // Or simpler: default to first date in list which is usually "today" or "tomorrow"
     const [selectedTab, setSelectedTab] = useState<string>(uniqueDates[0] || 'History');
     // Multi-select state: Default to ['All']
     const [historyFilters, setHistoryFilters] = useState<string[]>(['All']);
@@ -130,7 +144,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     return (
         <div className="w-full">
             {/* Controls Container */}
-            <div className="flex flex-col items-center mb-12 gap-8">
+            <div className="flex flex-col items-center mb-12 gap-8 relative z-20">
 
                 {/* Controls Row */}
                 <div className="flex items-center justify-center w-full relative z-20 max-w-full">
@@ -380,4 +394,3 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 };
 
 export default PredictionsViewer;
-

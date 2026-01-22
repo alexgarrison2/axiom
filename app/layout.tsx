@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fira_Code, Fira_Sans } from "next/font/google";
 import "./globals.css";
+import SmoothScrolling from "@/components/SmoothScrolling";
 
 
 
@@ -24,15 +25,15 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${firaSans.variable} ${firaCode.variable} antialiased`}
       >
-
-        {children}
+        <SmoothScrolling>
+          {children}
+        </SmoothScrolling>
       </body>
     </html>
   );

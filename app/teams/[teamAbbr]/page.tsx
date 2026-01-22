@@ -9,6 +9,7 @@ import TeamHeader from '@/components/team/TeamHeader';
 import FilterControls from '@/components/team/FilterControls';
 import GamesLogTable from '@/components/team/GamesLogTable';
 import { TeamInfo } from '@/types';
+import { motion } from 'framer-motion';
 
 export default function TeamDetailPage() {
     const params = useParams();
@@ -40,28 +41,12 @@ export default function TeamDetailPage() {
     });
 
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
-
-    // NOTE: Ideally `allTeamsList` and `teamLogos` should come from a global context or fetched once,
-    // but for now we can fetch them here or derive from data if we change the API to return them.
-    // The current API 'route.ts' reads 'team.csv'. 
-    // `TeamSelector` needs `allTeamsList`.
-    // `GamesLogTable` needs `teamLogos`.
-    // Let's quickly fetch them separately or hardcode common ones? No, fetch is better.
-    // Actually, `useTeamData` could return them if we modified it?
-    // Optimization: Let's fetch `nhl_teams.csv` lightly or creating a separate `useTeams` hook?
-    // For now, let's keep the client-side fetch ONLY for the small `nhl_teams.csv` to build the selector/logos,
-    // which is tiny compared to `player_stats.csv`.
-    // OR we can just ignore `allTeamsList` for `TeamSelector` for a moment? No, the user wants functionality preserved.
-    // Let's implement a small effect to fetch teams.csv just for the metadata.
-
     const [allTeamsList, setAllTeamsList] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchTeams = async () => {
-            // We can use the existing /data/nhl_teams.csv as it is small (<10KB)
             try {
                 const Papa = (await import('papaparse')).default;
-                // Dynamic import to avoid bundle bloat if possible, though papaparse is small.
                 const res = await fetch('/data/nhl_teams.csv');
                 const text = await res.text();
                 const parsed = Papa.parse(text, { header: true, skipEmptyLines: true }).data as any[];
@@ -133,7 +118,12 @@ export default function TeamDetailPage() {
             <TeamHeader teamInfo={teamInfo} allTeamsList={allTeamsList} />
 
             {/* Main Content Area */}
-            <div className="w-full px-4 md:px-8 relative z-10 pt-4">
+            <motion.div
+                className="w-full px-4 md:px-8 relative z-10 pt-4"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+            >
 
                 <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as any)} className="w-full">
                     {/* Tabs */}
@@ -147,38 +137,63 @@ export default function TeamDetailPage() {
                     </div>
 
                     <TabsContent value="games" className="m-0 focus-visible:outline-none">
-                        <FilterControls
-                            filters={filters}
-                            setFilters={setFilters}
-                            uniqueGoalies={uniqueGoalies}
-                        />
-                        <GamesLogTable
-                            games={displayedGames}
-                            filters={filters}
-                            expandedGameId={expandedGameId}
-                            setExpandedGameId={setExpandedGameId}
-                            teamAbbr={teamAbbr}
-                            playerStats={playerStats}
-                            teamLogos={teamLogos}
-                            primaryColor={primaryColor}
-                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.4 }}
+                        >
+                            <FilterControls
+                                filters={filters}
+                                setFilters={setFilters}
+                                uniqueGoalies={uniqueGoalies}
+                            />
+                            <GamesLogTable
+                                games={displayedGames}
+                                filters={filters}
+                                expandedGameId={expandedGameId}
+                                setExpandedGameId={setExpandedGameId}
+                                teamAbbr={teamAbbr}
+                                playerStats={playerStats}
+                                teamLogos={teamLogos}
+                                primaryColor={primaryColor}
+                            />
+                        </motion.div>
                     </TabsContent>
 
                     <TabsContent value="charts" className="m-0 focus-visible:outline-none">
-                        <div className="w-full">
+                        <motion.div
+                            className="w-full"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
                             <TeamChart games={displayedGames} primaryColor={primaryColor} />
-                        </div>
+                        </motion.div>
                     </TabsContent>
 
                     <TabsContent value="skaters" className="m-0 focus-visible:outline-none">
-                        <div className="p-8 text-center text-muted-foreground font-mono">Skater stats coming soon...</div>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                            className="p-8 text-center text-muted-foreground font-mono"
+                        >
+                            Skater stats coming soon...
+                        </motion.div>
                     </TabsContent>
 
                     <TabsContent value="goalies" className="m-0 focus-visible:outline-none">
-                        <div className="p-8 text-center text-muted-foreground font-mono">Goalie stats coming soon...</div>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                            className="p-8 text-center text-muted-foreground font-mono"
+                        >
+                            Goalie stats coming soon...
+                        </motion.div>
                     </TabsContent>
                 </Tabs>
-            </div>
+            </motion.div>
         </main>
     );
 }
