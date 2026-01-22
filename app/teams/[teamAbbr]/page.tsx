@@ -125,7 +125,7 @@ export default function TeamDetailPage() {
         goalie: 'All',
         loc: 'All',
         period: 'All',
-        last: 'All',
+        last: 'Season',
         result: 'All'
     });
 
@@ -357,8 +357,17 @@ export default function TeamDetailPage() {
         return out;
     }, [games, filters.goalie, filters.loc, filters.result]);
 
-    // Slice for Display (Table)
-    const displayGames = filteredGames; // No pagination yet
+    // Slice for Display (Table) based on 'Last' filter
+    const displayGames = useMemo(() => {
+        let out = filteredGames;
+        if (filters.last !== 'All' && filters.last !== 'Season') {
+            const n = parseInt(filters.last);
+            if (!isNaN(n)) {
+                out = out.slice(0, n);
+            }
+        }
+        return out;
+    }, [filteredGames, filters.last]);
 
     if (loading) {
         return (
@@ -377,7 +386,6 @@ export default function TeamDetailPage() {
 
     const { TeamName, CommonName, HexColor1, TeamLogoURL, HexColor2 } = teamInfo;
     const primaryColor = HexColor1;
-    // const secondaryColor = HexColor2; // Unused
 
     return (
         <div className="min-h-screen bg-[#09090b] text-white font-sans selection:bg-white/20">
@@ -508,6 +516,44 @@ export default function TeamDetailPage() {
                                 </div>
                             </div>
 
+                            {/* Period Filter */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Period</label>
+                                <div className="flex gap-1">
+                                    {['All', '1st', '2nd', '3rd', 'OT'].map(p => (
+                                        <button
+                                            key={p}
+                                            onClick={() => setFilters({ ...filters, period: p })}
+                                            className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.period === p
+                                                ? 'bg-white text-black'
+                                                : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
+                                                }`}
+                                        >
+                                            {p === 'All' ? 'Full Game' : p}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Last 'N' Filter */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Last</label>
+                                <div className="flex gap-1">
+                                    {['Season', '5', '10', '15', '20'].map(n => (
+                                        <button
+                                            key={n}
+                                            onClick={() => setFilters({ ...filters, last: n })}
+                                            className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.last === n
+                                                ? 'bg-white text-black'
+                                                : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
+                                                }`}
+                                        >
+                                            {n}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Result Filter */}
                             <div className="flex flex-col gap-2">
                                 <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Result</label>
@@ -540,23 +586,55 @@ export default function TeamDetailPage() {
                                     <div className="text-center">Score</div>
                                     <div className="text-center">xG</div>
                                     <div className="text-center">Goalie</div>
-                                    <div className="text-center">PP / PK</div>
+                                    {filters.period === 'All' && (
+                                        <>
+                                            <div className="text-center">PP / PK</div>
+                                        </>
+                                    )}
                                     <div className="text-center">SOG</div>
                                     <div className="text-center">Diff</div>
+                                    {filters.period === 'All' && (
+                                        <div className="text-center">Corsi</div>
+                                    )}
                                     <div className="w-8"></div>
                                 </div>
 
                                 {/* Rows */}
                                 {displayGames.map((game) => {
                                     const isWin = game.result.includes('W');
-                                    const isOT = game.result.includes('OT') || game.result.includes('SO');
-                                    const xgDiff = game.xgf - game.xga;
-                                    const xgColor = xgDiff > 0.5 ? 'text-green-400' : xgDiff < -0.5 ? 'text-red-400' : 'text-gray-400';
-                                    const sd = game.sf - game.sa; // Shot diff
-                                    const sf = game.sf;
-                                    const sa = game.sa;
 
                                     const isExpanded = expandedGameId === game.game_id;
+
+                                    // Dynamic Stats based on Period Filter
+                                    let gf = game.gf;
+                                    let ga = game.ga;
+                                    let sf = game.sf;
+                                    let sa = game.sa;
+                                    let cf = game.cf;
+                                    let ca = game.ca;
+
+                                    if (filters.period !== 'All' && game.raw) {
+                                        const p = filters.period === '1st' ? '1P' : filters.period === '2nd' ? '2P' : filters.period === '3rd' ? '3P' : 'OT';
+
+                                        // Robust parsing from raw which strings
+                                        const parseRaw = (key: string) => parseInt(game.raw[key] || '0');
+
+                                        gf = parseRaw(`goals_for_${p}`);
+                                        ga = parseRaw(`goals_ag_${p}`);
+                                        sf = parseRaw(`sog_for_${p}`);
+                                        sa = parseRaw(`sog_ag_${p}`);
+                                        cf = parseRaw(`attempts_for_${p}`);
+                                        ca = parseRaw(`attempts_ag_${p}`);
+                                    }
+
+                                    const sd = sf - sa;
+                                    const cd = cf - ca;
+                                    const xgDiff = game.xgf - game.xga;
+                                    const xgColor = xgDiff > 0.5 ? 'text-green-400' : xgDiff < -0.5 ? 'text-red-400' : 'text-gray-400';
+
+                                    // Save Pct
+                                    const sv_pct_val = sa > 0 ? ((sa - ga) / sa).toFixed(3) : '.000';
+
 
                                     return (
                                         <div key={game.game_id} className="group flex flex-col bg-white/5 border border-white/5 rounded-lg overflow-hidden transition-all hover:bg-white/10 hover:border-white/10">
@@ -583,38 +661,51 @@ export default function TeamDetailPage() {
                                                     <span className={`text-sm font-bold font-mono ${isWin ? 'text-green-400' : game.result_code.includes('OT') ? 'text-yellow-500' : 'text-red-500'}`}>
                                                         {game.result}
                                                     </span>
-                                                    <span className="text-[10px] font-mono text-gray-400">{game.gf} - {game.ga}</span>
+                                                    <span className="text-[10px] font-mono text-gray-400">{gf} - {ga}</span>
                                                 </div>
 
-                                                {/* xG */}
+                                                {/* xG (Only full game usually, but if we had period xG we could show it. csv has xG_for/against, maybe period too? Checking header... xG_for_5v5... no period xG. So hide xG if period filter? Or show full game xG always?) 
+                                                    Let's hide xG details if filtering by period, as it's misleading. OR just show faint.
+                                                    Actually, I'll hide it if period !== All
+                                                */}
                                                 <div className="flex flex-col items-center">
-                                                    <span className={`text-xs font-mono font-bold ${xgColor}`}>
-                                                        {game.xgf.toFixed(2)} - {game.xga.toFixed(2)}
-                                                    </span>
-                                                    <span className="text-[10px] text-gray-600 font-mono">
-                                                        {(game.xgf / (game.xgf + game.xga) * 100).toFixed(0)}%
-                                                    </span>
+                                                    {filters.period === 'All' ? (
+                                                        <>
+                                                            <span className={`text-xs font-mono font-bold ${xgColor}`}>
+                                                                {game.xgf.toFixed(2)} - {game.xga.toFixed(2)}
+                                                            </span>
+                                                            <span className="text-[10px] text-gray-600 font-mono">
+                                                                {(game.xgf / (game.xgf + game.xga) * 100).toFixed(0)}%
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-[10px] text-gray-600">-</span>
+                                                    )}
                                                 </div>
 
                                                 {/* Goalie */}
                                                 <div className="flex flex-col items-center">
                                                     <span className="text-xs font-bold text-gray-300">{game.starting_goalie}</span>
-                                                    <span className={`text-[10px] font-mono ${game.gsax > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                        {game.gsax > 0 ? '+' : ''}{game.gsax.toFixed(2)} GSAx
-                                                    </span>
+                                                    {filters.period === 'All' && (
+                                                        <span className={`text-[10px] font-mono ${game.gsax > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                            {game.gsax > 0 ? '+' : ''}{game.gsax.toFixed(2)} GSAx
+                                                        </span>
+                                                    )}
                                                 </div>
 
-                                                {/* Special Teams */}
-                                                <div className="flex flex-col items-center">
-                                                    <div className="flex items-center gap-1 text-[10px] font-mono">
-                                                        <span className="text-gray-500">PP</span>
-                                                        <span className={game.pp_goals > 0 ? 'text-green-400 font-bold' : 'text-gray-400'}>{game.pp_goals}/{game.pp_opps}</span>
+                                                {/* Special Teams (Full Game Only) */}
+                                                {filters.period === 'All' && (
+                                                    <div className="flex flex-col items-center">
+                                                        <div className="flex items-center gap-1 text-[10px] font-mono">
+                                                            <span className="text-gray-500">PP</span>
+                                                            <span className={game.pp_goals > 0 ? 'text-green-400 font-bold' : 'text-gray-400'}>{game.pp_goals}/{game.pp_opps}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 text-[10px] font-mono">
+                                                            <span className="text-gray-500">PK</span>
+                                                            <span className={game.pp_goals_against === 0 ? 'text-green-400 font-bold' : 'text-red-400'}>{game.pk_opps - game.pp_goals_against}/{game.pk_opps}</span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center gap-1 text-[10px] font-mono">
-                                                        <span className="text-gray-500">PK</span>
-                                                        <span className={game.pp_goals_against === 0 ? 'text-green-400 font-bold' : 'text-red-400'}>{game.pk_opps - game.pp_goals_against}/{game.pk_opps}</span>
-                                                    </div>
-                                                </div>
+                                                )}
 
                                                 {/* SOG */}
                                                 <div className="flex flex-col items-center">
@@ -624,11 +715,21 @@ export default function TeamDetailPage() {
                                                     </span>
                                                 </div>
 
-                                                {/* Diff (Empty for now/Shot Diff used in SOG) */}
+                                                {/* Diff / Corsi if Period? */}
                                                 <div className="flex flex-col items-center">
-                                                    {game.en_gf > 0 && <span className="text-[10px] text-green-500 font-bold">EN GOAL</span>}
-                                                    {game.en_ga > 0 && <span className="text-[10px] text-red-500 font-bold">EN AGAINST</span>}
-                                                    {game.otml === 'Yes' && <span className="text-[10px] text-yellow-500 font-bold">OT LOSS (EN)</span>}
+                                                    {filters.period === 'All' ? (
+                                                        <>
+                                                            {game.en_gf > 0 && <span className="text-[10px] text-green-500 font-bold">EN GOAL</span>}
+                                                            {game.en_ga > 0 && <span className="text-[10px] text-red-500 font-bold">EN AGAINST</span>}
+                                                            {game.otml === 'Yes' && <span className="text-[10px] text-yellow-500 font-bold">OT LOSS (EN)</span>}
+                                                            {!game.en_gf && !game.en_ga && game.otml !== 'Yes' && <span className="text-[10px] text-gray-600">-</span>}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span className="text-xs font-mono text-gray-500">{cf} - {ca}</span>
+                                                            <span className={`text-[10px] font-mono ${cd > 0 ? 'text-blue-400' : 'text-orange-400'}`}>{cd > 0 ? '+' : ''}{cd}</span>
+                                                        </>
+                                                    )}
                                                 </div>
 
                                                 {/* Expand Arrow */}
