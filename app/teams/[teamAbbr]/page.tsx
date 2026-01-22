@@ -146,8 +146,7 @@ export default function TeamDetailPage() {
     const [allTeamRatings, setAllTeamRatings] = useState<any>(null);
     const [allTeamsList, setAllTeamsList] = useState<any[]>([]);
 
-    // DEBUG STATE
-    const [debugInfo, setDebugInfo] = useState<any>(null);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -256,14 +255,7 @@ export default function TeamDetailPage() {
                 const teamCommon = info['Common Name'];
                 console.log("Filtering games for:", teamCommon, "gamestats total:", gamestats.length);
 
-                // DEBUG CAPTURE
-                setDebugInfo({
-                    rawCount: gamestats?.length || 0,
-                    firstRowKeys: gamestats && gamestats.length > 0 ? Object.keys(gamestats[0]) : [],
-                    firstRowTeam: gamestats && gamestats.length > 0 ? gamestats[0].team : 'N/A',
-                    targetTeamCommon: teamCommon,
-                    sampleMatch: gamestats.find((row: any) => row.team === teamCommon) ? 'Found Match' : 'No Match Found'
-                });
+
 
                 const teamGames = gamestats.filter((row: any) => row.team === teamCommon);
                 console.log("Found games:", teamGames.length);
@@ -658,18 +650,6 @@ export default function TeamDetailPage() {
             {/* Main Content Area */}
             <div className="w-full px-4 md:px-8 relative z-10 pt-32 md:pt-40">
 
-                {/* DEBUG BLOCK */}
-                <div className="bg-red-900/80 p-4 rounded mb-4 text-xs font-mono text-white border border-red-500 overflow-auto">
-                    <h3 className="font-bold border-b border-red-400 mb-2">DEBUG INFO</h3>
-                    <p>Team Abbr Used: {teamAbbr}</p>
-                    <p>Info Common Name: "{teamInfo?.CommonName}"</p>
-                    <p>Total Raw Gamestats: {debugInfo?.rawCount}</p>
-                    <p>Target Common Name: "{debugInfo?.targetTeamCommon}"</p>
-                    <p>First Row Team: "{debugInfo?.firstRowTeam}"</p>
-                    <p>First Row Keys: {JSON.stringify(debugInfo?.firstRowKeys)}</p>
-                    <p>Filter Match Status: {debugInfo?.sampleMatch}</p>
-                    <p>Loaded Games in State: {games.length}</p>
-                </div>
 
                 <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as any)} className="w-full">
                     {/* Tabs */}
