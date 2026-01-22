@@ -178,7 +178,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 
     // Filter predictions for the selected date
     const filteredPredictions = useMemo(() => {
-        if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News') return [];
+        if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News' || selectedTab === 'Playoffs') return [];
         return predictions.filter(p => p.date === selectedTab);
     }, [predictions, selectedTab]);
 
@@ -266,6 +266,24 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 />
                             )}
                             <span className="relative z-10">NEWS</span>
+                        </button>
+
+                        {/* Playoffs Button (New) */}
+                        <button
+                            onClick={() => setSelectedTab('Playoffs')}
+                            className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Playoffs'
+                                ? 'text-rose-400 border-rose-400 shadow-[0_0_20_rgba(244,63,94,0.3)] text-glow-rose'
+                                : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
+                                }`}
+                        >
+                            {selectedTab === 'Playoffs' && (
+                                <motion.div
+                                    layoutId="activeTab"
+                                    className="absolute inset-0 bg-rose-400/10 rounded-full"
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                />
+                            )}
+                            <span className="relative z-10">PLAYOFFS</span>
                         </button>
 
                         {/* Date Buttons */}
@@ -429,6 +447,45 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                     className="w-full"
                 >
                     <NewsSection predictions={predictions} />
+                </motion.div>
+            ) : selectedTab === 'Playoffs' ? (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full text-center"
+                >
+                    <div className="glass-panel p-8 rounded-2xl border border-white/10 max-w-4xl mx-auto">
+                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-orange-400 mb-4">Playoff Probability Dashboard</h2>
+                        <p className="text-neutral-400 mb-8">Monte Carlo simulations (5,000 runs) are processing live in your browser.</p>
+
+                        {/* Placeholder for the full dashboard - reusing TeamsTable for now or a simple list */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                            <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                                <h3 className="text-lg font-bold text-white mb-2 border-b border-white/10 pb-2">Eastern Conference</h3>
+                                {/* Simple list of top teams from current standings as a placeholder */}
+                                {currentStandings.filter(t => t.conference === 'East').sort((a, b) => b.points - a.points).slice(0, 8).map((t, i) => (
+                                    <div key={t.tricode} className="flex justify-between py-1 text-sm">
+                                        <span className="text-neutral-300">{i + 1}. {t.tricode}</span>
+                                        <span className="font-mono text-emerald-400">{t.points} pts</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                                <h3 className="text-lg font-bold text-white mb-2 border-b border-white/10 pb-2">Western Conference</h3>
+                                {currentStandings.filter(t => t.conference === 'West').sort((a, b) => b.points - a.points).slice(0, 8).map((t, i) => (
+                                    <div key={t.tricode} className="flex justify-between py-1 text-sm">
+                                        <span className="text-neutral-300">{i + 1}. {t.tricode}</span>
+                                        <span className="font-mono text-emerald-400">{t.points} pts</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="mt-6 text-xs text-neutral-500 font-mono">
+                            Full simulation results integration coming soon.
+                        </div>
+                    </div>
                 </motion.div>
             ) : (
                 /* Grid Layout - Staggered Fade In */
