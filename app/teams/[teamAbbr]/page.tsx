@@ -4,8 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
 
 import Papa from 'papaparse';
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
@@ -13,6 +11,7 @@ import Header from '@/components/Header';
 import StatRing from '@/components/StatRing';
 import GameBoxscore from '@/components/GameBoxscore';
 import TeamChart from '@/components/TeamChart';
+import TeamSelector from '@/components/TeamSelector';
 
 // --- Interfaces ---
 interface TeamInfo {
@@ -579,76 +578,24 @@ export default function TeamDetailPage() {
                 style={{ background: `radial-gradient(circle at 50% 0%, ${primaryColor}, transparent)` }}
             ></div>
 
-            {/* Team Navigation - Horizontal Logo Bar */}
-            <div className="absolute top-0 left-0 right-0 z-30 bg-black/60 backdrop-blur-md border-b border-white/10">
-                <div className="flex flex-wrap justify-center gap-1 p-2 max-w-[1800px] mx-auto px-4">
-                    <Link href="/teams" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-wider mr-4 bg-black/80 z-10 py-1 pl-2 pr-4 border-r border-white/10 h-10 my-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Teams
-                    </Link>
-
-                    {allTeamsList
-                        .filter(t => t['Common Name'])
-                        // Sort Alphabetically
-                        .sort((a, b) => (a['Team Name'] || a['Common Name']).localeCompare(b['Team Name'] || b['Common Name']))
-                        .map((t: any) => {
-                            const name = t['Common Name'].trim();
-                            const tricode = t['Team Tricode'];
-                            const url = t['Team Logo URL'];
-                            const isSelected = name === teamInfo?.CommonName;
-
-                            // Color Overrides
-                            const colorOverrides: Record<string, string> = {
-                                'EDM': '#FF4C00', // Orange
-                                'LAK': '#C0C0C0', // Silver
-                                'UTA': '#69B3E7', // Light Blue
-                            };
-
-                            // Color Logic: use Scale/Secondary if Primary is too dark, else Primary
-                            // Simplified: Just use primary for now, or Secondary if provided and primary is black
-                            const c1 = t['Hex Color 1'] || '#FFFFFF';
-                            const c2 = t['Hex Color 2'] || t['Hex Color 1'] || '#FFFFFF';
-
-                            // Heuristic: If C1 is Black (#000000 or similar), try C2
-                            const isBlack = c1.replace('#', '').toLowerCase() === '000000' || c1.toLowerCase() === 'black';
-                            let glowColor = isBlack ? c2 : c1;
-
-                            if (colorOverrides[tricode]) {
-                                glowColor = colorOverrides[tricode];
-                            }
-
-                            // Construct href to include current params
-                            const teamLink = `/teams/${tricode}?${searchParams.toString()}`;
-
-                            return (
-                                <Link
-                                    key={name}
-                                    href={teamLink}
-                                    className={`relative group transition-all duration-300 flex-shrink-0 ${isSelected ? 'opacity-100 scale-110 z-20' : 'opacity-40 grayscale hover:grayscale-0 hover:opacity-100'}`}
-                                    title={t['Team Name']}
-                                    style={isSelected ? { filter: `drop-shadow(0 0 10px ${glowColor})` } : {}}
-                                >
-                                    <img
-                                        src={url}
-                                        alt={name}
-                                        className={`w-8 h-8 md:w-12 md:h-12 object-contain transition-transform ${isSelected ? 'scale-110' : ''}`}
-                                    />
-                                    {isSelected && (
-                                        <div
-                                            className="absolute inset-0 blur-xl rounded-full -z-10 opacity-40"
-                                            style={{ backgroundColor: glowColor }}
-                                        ></div>
-                                    )}
-                                </Link>
-                            );
-                        })}
+            {/* Navbar / Breadcrumbs Area (New Team Selector Integrated) */}
+            <div className="fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center">
+                <div className="max-w-[1800px] mx-auto px-4 md:px-8 w-full flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                        <Link href="/" className="group flex items-center gap-2 text-gray-500 hover:text-white transition-colors">
+                            <span className="text-xs font-bold uppercase tracking-wider block">Home</span>
+                        </Link>
+                        <div className="h-6 w-px bg-white/10"></div>
+                        <TeamSelector teams={allTeamsList} currentTeam={teamInfo} />
+                    </div>
                 </div>
             </div>
 
+            {/* Padding for fixed navbar */}
+            <div className="pt-20"></div>
+
             {/* Main Content Area */}
-            <div className="w-full px-4 md:px-8 relative z-10 pt-32 md:pt-40">
+            <div className="w-full px-4 md:px-8 relative z-10 pt-4">
 
 
                 <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as any)} className="w-full">
@@ -664,132 +611,91 @@ export default function TeamDetailPage() {
 
                     <TabsContent value="games" className="m-0 focus-visible:outline-none">
 
-                        {/* Filters (Button Groups) */}
-                        <div className="flex flex-wrap gap-6 mb-6 p-4 bg-white/5 rounded-lg border border-white/10 items-center">
-                            {/* Goalie */}
-                            <div className="flex flex-col gap-2">
-                                <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Goalie</label>
+                        {/* Filters Container */}
+                        <div className="flex flex-wrap gap-x-8 gap-y-4 mb-4 p-4 bg-white/5 rounded-lg border border-white/10 items-center">
+
+                            {/* Goalie Filter */}
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Goalie</label>
                                 <div className="flex flex-wrap gap-1">
                                     <button
                                         onClick={() => setFilters({ ...filters, goalie: 'All' })}
-                                        className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold transition-all ${filters.goalie === 'All' ? 'bg-white text-black' : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'}`}
+                                        className={`px-3 py-1 rounded-sm text-[10px] uppercase font-bold transition-all ${filters.goalie === 'All' ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
                                     >
                                         All
                                     </button>
-                                    {uniqueGoalies.map(g => {
-                                        // Highlighting Logic
-                                        let highlightClass = '';
-                                        if (todaysGame) {
-                                            // Check if this goalie is Home or Away confirmed
-                                            const isHome = todaysGame.homeTeamAbbrev === teamAbbr;
-                                            const confirmedName = isHome ? todaysGame.homeGoalieConfirmed : todaysGame.awayGoalieConfirmed;
-                                            const status = isHome ? todaysGame.homeGoalieStatus : todaysGame.awayGoalieStatus;
-
-                                            // Loose match Last Name
-                                            if (confirmedName && confirmedName.includes(g)) {
-                                                if (status === 'Confirmed') highlightClass = 'text-green-500 font-bold';
-                                                else if (status === 'Likely') highlightClass = 'text-yellow-500 font-bold';
-                                            }
-                                        }
-
-                                        return (
-                                            <button
-                                                key={g}
-                                                onClick={() => setFilters({ ...filters, goalie: g })}
-                                                className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.goalie === g
-                                                    ? 'bg-white text-black'
-                                                    : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
-                                                    } ${filters.goalie !== g ? highlightClass : ''}`} // Apply color if NOT selected (selected is Black) or both? User said "font color". White/Black is background.
-                                            // If selected, it's Black text on White bg. Green text on White bg might be hard.
-                                            // Let's apply highlight only when NOT selected, or override?
-                                            // If selected, keep Black. If not selected, use Green/Yellow instead of Gray.
-                                            >
-                                                {g.toUpperCase()}
-                                            </button>
-                                        );
-                                    })}
+                                    {uniqueGoalies.map(g => (
+                                        <button
+                                            key={g}
+                                            onClick={() => setFilters({ ...filters, goalie: g })}
+                                            className={`px-3 py-1 rounded-sm text-[10px] uppercase font-bold transition-all ${filters.goalie === g ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                        >
+                                            {g.toUpperCase()}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
                             {/* Location Filter */}
-                            <div className="flex flex-col gap-2">
-                                <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Location</label>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Location</label>
                                 <div className="flex gap-1">
-                                    {['All', 'Home', 'Away'].map(loc => {
-                                        const isTodayLoc = todaysGame && (
-                                            (loc === 'Home' && todaysGame.homeTeamAbbrev === teamAbbr) ||
-                                            (loc === 'Away' && todaysGame.awayTeamAbbrev === teamAbbr)
-                                        );
-
-                                        // Custom Blue for Location
-                                        const locColor = '#83C7FF';
-
-                                        return (
-                                            <button
-                                                key={loc}
-                                                onClick={() => setFilters({ ...filters, loc: loc as any })}
-                                                className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filters.loc === loc
-                                                    ? 'bg-white text-black'
-                                                    : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
-                                                    }`}
-                                                style={isTodayLoc && filters.loc !== loc ? { color: locColor } : {}}
-                                            >
-                                                {loc.toUpperCase()}
-                                            </button>
-                                        );
-                                    })}
+                                    {['All', 'Home', 'Away'].map(loc => (
+                                        <button
+                                            key={loc}
+                                            onClick={() => setFilters({ ...filters, loc })}
+                                            className={`px-3 py-1 rounded-sm text-[10px] uppercase font-bold transition-all ${filters.loc === loc ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+                                        >
+                                            {loc}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
+
                             {/* Period Filter */}
-                            <div className="flex flex-col gap-2">
-                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Period</label>
-                                <div className="flex bg-muted/20 rounded-lg p-0.5 w-fit">
-                                    {['All', '1st', '2nd', '3rd', 'OT'].map(opt => (
-                                        <Button
-                                            key={opt}
-                                            variant={filters.period === opt ? 'secondary' : 'ghost'}
-                                            size="sm"
-                                            onClick={() => setFilters({ ...filters, period: opt as any })}
-                                            className="h-7 text-xs font-bold px-3"
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Period</label>
+                                <div className="flex gap-1">
+                                    {['All', '1st', '2nd', '3rd', 'OT'].map(p => (
+                                        <button
+                                            key={p}
+                                            onClick={() => setFilters({ ...filters, period: p })} // Note: Logic for period display is in Render
+                                            className={`px-3 py-1 rounded-sm text-[10px] uppercase font-bold transition-all ${filters.period === p ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
                                         >
-                                            {opt === 'All' ? 'FULL GAME' : opt.toUpperCase()}
-                                        </Button>
+                                            {p === 'All' ? 'Full Game' : p}
+                                        </button>
                                     ))}
                                 </div>
                             </div>
 
                             {/* Last N Filter */}
-                            <div className="flex flex-col gap-2">
-                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Last</label>
-                                <div className="flex bg-muted/20 rounded-lg p-0.5 w-fit">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Last</label>
+                                <div className="flex gap-1">
                                     {['All', '5', '10', '15', '20'].map(opt => (
-                                        <Button
+                                        <button
                                             key={opt}
-                                            variant={filters.last === opt ? 'secondary' : 'ghost'}
-                                            size="sm"
-                                            onClick={() => setFilters({ ...filters, last: opt as any })}
-                                            className="h-7 text-xs font-bold px-3"
+                                            onClick={() => setFilters({ ...filters, last: opt })}
+                                            className={`px-3 py-1 rounded-sm text-[10px] uppercase font-bold transition-all ${filters.last === opt ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
                                         >
-                                            {opt === 'All' ? 'SEASON' : opt}
-                                        </Button>
+                                            {opt === 'All' ? 'Season' : opt}
+                                        </button>
                                     ))}
                                 </div>
                             </div>
 
                             {/* Result Filter */}
-                            <div className="flex flex-col gap-2">
-                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Result</label>
-                                <div className="flex bg-muted/20 rounded-lg p-0.5 w-fit">
-                                    {['All', 'W', 'L'].map(opt => (
-                                        <Button
-                                            key={opt}
-                                            variant={filters.result === opt ? 'secondary' : 'ghost'}
-                                            size="sm"
-                                            onClick={() => setFilters({ ...filters, result: opt as any })}
-                                            className="h-7 text-xs font-bold px-3"
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Result</label>
+                                <div className="flex gap-1">
+                                    {['All', 'W', 'L'].map(res => (
+                                        <button
+                                            key={res}
+                                            onClick={() => setFilters({ ...filters, result: res })}
+                                            className={`px-3 py-1 rounded-sm text-[10px] uppercase font-bold transition-all ${filters.result === res ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
                                         >
-                                            {opt.toUpperCase()}
-                                        </Button>
+                                            {res}
+                                        </button>
                                     ))}
                                 </div>
                             </div>
