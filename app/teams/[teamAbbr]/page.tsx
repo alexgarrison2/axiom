@@ -638,6 +638,15 @@ export default function TeamDetailPage() {
             {/* Main Content Area */}
             <div className="w-full px-4 md:px-8 relative z-10 pt-32 md:pt-40">
 
+                {/* DEBUG BLOCK */}
+                <div className="bg-red-900/80 p-4 rounded mb-4 text-xs font-mono text-white border border-red-500">
+                    <h3 className="font-bold border-b border-red-400 mb-2">DEBUG INFO</h3>
+                    <p>Team Abbr Used: {teamAbbr}</p>
+                    <p>Info Common Name: {teamInfo?.CommonName}</p>
+                    <p>Gamestats Loaded: {games.length} (filtered), Total Loaded Ref (check console)</p>
+                    <p>Sample Game Team: {games.length > 0 ? games[0].raw?.team : 'N/A'}</p>
+                </div>
+
                 <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as any)} className="w-full">
                     {/* Tabs */}
                     <div className="sticky top-0 bg-black/95 backdrop-blur-xl pt-4 pb-2 z-40 border-b border-border/10 mb-6">
