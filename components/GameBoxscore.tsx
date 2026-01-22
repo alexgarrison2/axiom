@@ -24,7 +24,7 @@ interface PlayerStat {
 }
 
 interface GameBoxscoreProps {
-    gameId: number;
+    gameId: string | number;
     teamAbbr: string; // The team we are viewing
     playerStats: PlayerStat[]; // Filtered for this game and this team (or both teams?)
 }
