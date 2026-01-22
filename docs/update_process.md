@@ -53,24 +53,24 @@ graph TD
 
 ## Detailed Steps
 
-1.  **Data Accumulation**
-    *   **Prune Recent Data**: Removes recent data to force a fresh scrape of the latest games (ensuring updates/corrections are captured).
-    *   **Fetch External Stats**: Pulls data from Hockey Reference and NHL API to ensure "source of truth" accuracy for special teams and boxscores.
-    *   **Scrape**: Scrapes the latest game data and shot locations.
+1. **Data Accumulation**
+    * **Prune Recent Data**: Removes recent data to force a fresh scrape of the latest games (ensuring updates/corrections are captured).
+    * **Fetch External Stats**: Pulls data from Hockey Reference and NHL API to ensure "source of truth" accuracy for special teams and boxscores.
+    * **Scrape**: Scrapes the latest game data and shot locations.
 
-2.  **Modeling & Scoring**
-    *   **Load Model**: Loads the trained XGBoost model.
-    *   **Re-Score**: Runs every single shot (historical and new) through the model to calculate Expected Goals (xG).
-    *   **Update GameStats**: Updates the main `gamestats.csv` with these fresh xG values.
+2. **Modeling & Scoring**
+    * **Load Model**: Loads the trained XGBoost model.
+    * **Re-Score**: Runs every single shot (historical and new) through the model to calculate Expected Goals (xG).
+    * **Update GameStats**: Updates the main `gamestats.csv` with these fresh xG values.
 
-3.  **Analysis**
-    *   **Ratings**: Recalculates team power ratings and goalie performance metrics based on the updated game stats.
-    *   **Fetch Future**: Web scrapes DailyFaceoff for starting goalies, Bovada for latest betting odds, and the NHL API for the upcoming schedule.
+3. **Analysis**
+    * **Ratings**: Recalculates team power ratings and goalie performance metrics based on the updated game stats.
+    * **Fetch Future**: Web scrapes DailyFaceoff for starting goalies, Bovada for latest betting odds, and the NHL API for the upcoming schedule.
 
-4.  **Prediction**
-    *   **Run Predictions**: Uses the ratings, schedule, and goalie info to predict the outcome and fair odds for upcoming games.
-    *   **Generate History**: Archives these predictions into the history file so we can track performance over time.
+4. **Prediction**
+    * **Run Predictions**: Uses the ratings, schedule, and goalie info to predict the outcome and fair odds for upcoming games.
+    * **Generate History**: Archives these predictions into the history file so we can track performance over time.
 
-5.  **Deployment Sync**
-    *   **Sync**: Copies all the generated CSVs and JSONs (predictions, odds, stats) into `public/data/` where the Next.js frontend can read them.
-    *   **Result**: The site automatically reflects the changes on the next page load (or revalidation).
+5. **Deployment Sync**
+    * **Sync**: Copies all the generated CSVs and JSONs (predictions, odds, stats) into `public/data/` where the Next.js frontend can read them.
+    * **Result**: The site automatically reflects the changes on the next page load (or revalidation).
