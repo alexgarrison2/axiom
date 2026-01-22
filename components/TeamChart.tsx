@@ -2,16 +2,13 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
     AreaChart,
-    Area,
-    ReferenceLine
+    Area
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -408,8 +405,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
     }, [chartData.length]);
 
 
-    // Custom Tooltip
-    const CustomTooltip = ({ active, payload }: any) => {
+    const CustomTooltip = ({ active, payload, activeMetric, secondaryMetric, primaryColor }: any) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
             const g = data.game;
@@ -417,7 +413,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
             const fmt2 = secondaryMetric ? secondaryMetric.format(data.value2) : null;
 
             return (
-                <div className="bg-black/90 border border-white/20 p-3 rounded-lg shadow-xl backdrop-blur-md min-w-[200px] font-sans">
+                <div className="bg-black/90 border border-white/20 p-3 rounded-lg shadow-xl backdrop-blur-md min-w-[200px] font-mono">
                     <div className="text-[10px] text-gray-400 font-mono mb-1">{g.date} • Game {g.game_number}</div>
 
                     {/* Metric 1 */}
@@ -461,96 +457,75 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
             <CardHeader className="pb-4 border-b border-white/5">
                 <CardTitle className="text-white tracking-wider uppercase text-sm font-bold">Team Performance Analysis</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-6 pt-6">
-                {/* Controls Bar */}
-                <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+            <CardContent className="flex flex-col gap-6 pt-6 relative">
+                {/* Floating Controls Bar */}
+                <div className="absolute top-4 right-4 z-20 flex flex-wrap items-end gap-x-4 gap-y-2 bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-xl max-w-[90%] justify-end transition-all duration-300 hover:bg-black/90">
 
                     {/* Metric 1 */}
-                    <div className="flex flex-col gap-2 min-w-[200px]">
-                        <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest pl-1">Primary Metric</label>
+                    <div className="flex flex-col gap-1 min-w-[140px]">
+                        <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1">Metric</label>
                         <Select value={metric} onValueChange={setMetric}>
-                            <SelectTrigger className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors h-9 font-bold text-sm font-sans">
-                                <SelectValue placeholder="Select Metric" />
+                            <SelectTrigger className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors h-7 text-[10px] font-bold font-mono">
+                                <SelectValue placeholder="Metric" />
                             </SelectTrigger>
-                            <SelectContent className="bg-black/95 border-white/10 text-white backdrop-blur-xl font-sans max-h-[300px]">
+                            <SelectContent className="bg-black/95 border-white/10 text-white backdrop-blur-xl font-mono max-h-[300px]">
                                 {METRICS.map(m => (
-                                    <SelectItem key={m.value} value={m.value} className="focus:bg-white/10 focus:text-white cursor-pointer font-sans text-xs">{m.label}</SelectItem>
+                                    <SelectItem key={m.value} value={m.value} className="focus:bg-white/10 focus:text-white cursor-pointer text-[10px]">{m.label}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
 
                     {/* Metric 2 */}
-                    <div className="flex flex-col gap-2 min-w-[200px] border-l border-white/5 pl-6">
-                        <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest pl-1">Secondary (Optional)</label>
+                    <div className="flex flex-col gap-1 min-w-[140px]">
+                        <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1">Compare</label>
                         <Select value={metric2} onValueChange={setMetric2}>
-                            <SelectTrigger className="w-full bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 transition-colors h-9 font-bold text-sm font-sans">
+                            <SelectTrigger className="w-full bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 transition-colors h-7 text-[10px] font-bold font-mono">
                                 <SelectValue placeholder="Compare..." />
                             </SelectTrigger>
-                            <SelectContent className="bg-black/95 border-white/10 text-white backdrop-blur-xl font-sans max-h-[300px]">
-                                <SelectItem value="none" className="text-gray-500 italic text-xs">None</SelectItem>
+                            <SelectContent className="bg-black/95 border-white/10 text-white backdrop-blur-xl font-mono max-h-[300px]">
+                                <SelectItem value="none" className="text-gray-500 italic text-[10px]">None</SelectItem>
                                 {METRICS.map(m => (
-                                    <SelectItem key={m.value} value={m.value} className="focus:bg-white/10 focus:text-white cursor-pointer font-sans text-xs">{m.label}</SelectItem>
+                                    <SelectItem key={m.value} value={m.value} className="focus:bg-white/10 focus:text-white cursor-pointer text-[10px]">{m.label}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
 
-                    <div className="w-px h-10 bg-white/10 mx-2 hidden md:block"></div>
-
-                    {/* Filters Row */}
-                    <div className="flex gap-4">
+                    {/* Filters Row Compact */}
+                    <div className="flex gap-2">
                         {/* Location */}
-                        <div className="flex flex-col gap-2 w-[100px]">
-                            <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest pl-1">Loc</label>
+                        <div className="flex flex-col gap-1 w-[80px]">
+                            <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1">Loc</label>
                             <Select value={location} onValueChange={(v: any) => setLocation(v)}>
-                                <SelectTrigger className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors h-9 font-bold text-xs font-sans">
+                                <SelectTrigger className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors h-7 text-[10px] font-bold font-mono">
                                     <SelectValue placeholder="Loc" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-black/95 border-white/10 text-white backdrop-blur-xl font-sans">
-                                    <SelectItem value="All" className="focus:bg-white/10 cursor-pointer text-xs">All</SelectItem>
-                                    <SelectItem value="Home" className="focus:bg-white/10 cursor-pointer text-xs">Home</SelectItem>
-                                    <SelectItem value="Away" className="focus:bg-white/10 cursor-pointer text-xs">Away</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Goalie */}
-                        <div className="flex flex-col gap-2 w-[140px]">
-                            <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest pl-1">Goalie</label>
-                            <Select value={goalie} onValueChange={setGoalie}>
-                                <SelectTrigger className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors h-9 font-bold text-xs font-sans">
-                                    <SelectValue placeholder="All" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-black/95 border-white/10 text-white backdrop-blur-xl font-sans">
-                                    <SelectItem value="All" className="focus:bg-white/10 cursor-pointer text-xs">All Goalies</SelectItem>
-                                    {uniqueGoalies.map(g => (
-                                        <SelectItem key={g} value={g} className="focus:bg-white/10 cursor-pointer text-xs">{g}</SelectItem>
-                                    ))}
+                                <SelectContent className="bg-black/95 border-white/10 text-white backdrop-blur-xl font-mono">
+                                    <SelectItem value="All" className="focus:bg-white/10 cursor-pointer text-[10px]">All</SelectItem>
+                                    <SelectItem value="Home" className="focus:bg-white/10 cursor-pointer text-[10px]">Home</SelectItem>
+                                    <SelectItem value="Away" className="focus:bg-white/10 cursor-pointer text-[10px]">Away</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
 
-                    <div className="w-px h-10 bg-white/10 mx-2 hidden md:block"></div>
-
-                    {/* Mode Toggle */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest pl-1">View Mode</label>
-                        <Tabs value={mode} onValueChange={(val) => setMode(val as any)} className="w-[180px]">
-                            <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/5 h-9 p-1">
-                                <TabsTrigger value="cumulative" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-gray-400 text-[10px] font-bold uppercase font-sans">Cumulative</TabsTrigger>
-                                <TabsTrigger value="rolling" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-gray-400 text-[10px] font-bold uppercase font-sans">Rolling</TabsTrigger>
+                    {/* Mode Toggle Compact */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1">Mode</label>
+                        <Tabs value={mode} onValueChange={(val) => setMode(val as any)} className="w-[140px]">
+                            <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/5 h-7 p-0.5">
+                                <TabsTrigger value="cumulative" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-gray-500 text-[9px] font-bold uppercase font-mono">Total</TabsTrigger>
+                                <TabsTrigger value="rolling" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-gray-500 text-[9px] font-bold uppercase font-mono">Roll</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>
 
-                    {/* Rolling Slider */}
+                    {/* Rolling Slider Compact */}
                     {mode === 'rolling' && (
-                        <div className="flex flex-col gap-3 flex-1 min-w-[150px] animate-in slide-in-from-left-4 fade-in duration-300 pb-1">
+                        <div className="flex flex-col gap-1 w-[100px] animate-in slide-in-from-right-4 fade-in duration-300">
                             <div className="flex justify-between items-end">
-                                <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest">Window</label>
-                                <span className="text-xs font-mono text-neon-blue font-bold px-2 py-0.5 bg-blue-500/20 rounded border border-blue-500/30 text-blue-300">{windowSize[0]} Games</span>
+                                <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest">Win: {windowSize[0]}</label>
                             </div>
                             <Slider
                                 defaultValue={[10]}
@@ -559,7 +534,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                                 step={1}
                                 value={windowSize}
                                 onValueChange={setWindowSize}
-                                className="w-full [&>.relative>.absolute]:bg-blue-500"
+                                className="w-full [&>.relative>.absolute]:bg-blue-500 h-4"
                             />
                         </div>
                     )}
@@ -597,7 +572,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                                 dx={-10}
                                 allowDataOverflow={true} // Force clipping of outliers
                             />
-                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                            <Tooltip content={<CustomTooltip activeMetric={activeMetric} secondaryMetric={secondaryMetric} primaryColor={primaryColor} />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '4 4' }} />
 
                             {/* Primary Metric */}
                             <Area
@@ -608,6 +583,8 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                                 fillOpacity={1}
                                 fill="url(#colorMetric)"
                                 activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', className: 'animate-pulse' }}
+                                animationDuration={2000}
+                                animationEasing="ease-in-out"
                                 label={(props: any) => {
                                     const { x, y, index, value } = props;
                                     const isLast = index === chartData.length - 1;

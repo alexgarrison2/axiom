@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fira_Code, Fira_Sans, Caveat, Neonderthaw } from "next/font/google";
+import { Fira_Code, Fira_Sans } from "next/font/google";
 import "./globals.css";
 
 
@@ -13,17 +13,6 @@ const firaSans = Fira_Sans({
 const firaCode = Fira_Code({
   variable: "--font-fira-code",
   subsets: ["latin"],
-});
-
-const caveat = Caveat({
-  variable: "--font-caveat",
-  subsets: ["latin"],
-});
-
-const neonderthaw = Neonderthaw({
-  variable: "--font-neonderthaw",
-  subsets: ["latin"],
-  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -40,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${firaSans.variable} ${firaCode.variable} ${caveat.variable} ${neonderthaw.variable} antialiased`}
+        className={`${firaSans.variable} ${firaCode.variable} antialiased`}
       >
 
         {children}

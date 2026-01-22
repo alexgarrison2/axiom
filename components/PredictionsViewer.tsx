@@ -367,6 +367,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 key={prediction.id}
                                 variants={itemVariants}
                                 layout
+                                whileHover={{ scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 10 } }}
                             >
                                 <MatchupCard prediction={prediction} maxTotalGoals={maxTotalGoals} />
                             </motion.div>
