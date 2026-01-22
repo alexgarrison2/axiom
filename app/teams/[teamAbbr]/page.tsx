@@ -603,12 +603,12 @@ export default function TeamDetailPage() {
             </div>
 
             {/* Main Content Area */}
-            <div className="w-full px-4 md:px-8 relative z-10 pt-32 md:pt-40">
+            <div className="w-full px-4 md:px-8 relative z-10 pt-24 md:pt-28">
 
 
                 <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as any)} className="w-full">
                     {/* Tabs */}
-                    <div className="sticky top-0 bg-black/95 backdrop-blur-xl pt-4 pb-2 z-40 border-b border-border/10 mb-6">
+                    <div className="sticky top-20 bg-black/95 backdrop-blur-xl pt-4 pb-2 z-40 border-b border-border/10 mb-2">
                         <TabsList className="bg-muted/20">
                             <TabsTrigger value="games">Games</TabsTrigger>
                             <TabsTrigger value="charts">Charts</TabsTrigger>

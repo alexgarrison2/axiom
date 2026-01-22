@@ -95,10 +95,11 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
                     {currentTeam ? (
                         <>
                             <div className="relative">
-                                <img
+                                <motion.img
+                                    layoutId={`team-logo-${currentTeam.TeamTricode}`}
                                     src={currentTeam.TeamLogoURL}
                                     alt={currentTeam.CommonName}
-                                    className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300"
+                                    className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300 relative z-10"
                                 />
                                 <div
                                     className="absolute inset-0 blur-lg opacity-40 rounded-full"
@@ -181,7 +182,8 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
                                                                 onClick={() => setIsOpen(false)}
                                                                 className={`flex items-center gap-3 p-2 rounded-lg transition-all group/item ${isSelected ? 'bg-white/10' : 'hover:bg-white/5'}`}
                                                             >
-                                                                <img
+                                                                <motion.img
+                                                                    layoutId={`team-logo-${t['Team Tricode']}`}
                                                                     src={t['Team Logo URL']}
                                                                     alt={t['Common Name']}
                                                                     className="w-6 h-6 object-contain opacity-70 group-hover/item:opacity-100 transition-opacity"
