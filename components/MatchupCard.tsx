@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { PlayoffLeverageBadge } from './PlayoffLeverageBadge';
 import AnimatedNumber from './AnimatedNumber';
 import LogoDisplay from './LogoDisplay';
 import RecentGamesList from './RecentGamesList';
@@ -19,9 +20,10 @@ interface MatchupCardProps {
     maxTotalGoals: number;
     isSocial?: boolean;
     isUltraCompact?: boolean;
+    playoffLeverage?: number | null; // New Prop
 }
 
-const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, isSocial = false, isUltraCompact = false }) => {
+const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, isSocial = false, isUltraCompact = false, playoffLeverage = null }) => {
     const {
         homeTeam,
         awayTeam,
@@ -758,7 +760,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     <div className="flex flex-col items-center justify-center w-[30%] px-6 border-l border-r border-white/5 mx-4">
                         <div className="flex flex-col items-center mb-6">
                             <span className="text-xs font-mono text-neutral-400 tracking-[0.2em] mb-3">{formatTime(startTime || '')}</span>
-                            <div className="px-5 py-2 rounded-full border border-neutral-700 bg-neutral-800/50 backdrop-blur-md min-w-[56px] text-center">
+                            <PlayoffLeverageBadge leverage={playoffLeverage} />
+                            <div className="px-5 py-2 mt-2 rounded-full border border-neutral-700 bg-neutral-800/50 backdrop-blur-md min-w-[56px] text-center">
                                 <span className="text-sm font-bold text-neutral-200 tracking-wider">TOTAL: {totalGoals.toFixed(1)}</span>
                             </div>
                         </div>

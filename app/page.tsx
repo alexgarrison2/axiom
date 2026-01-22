@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { getPredictions, getLastRefresh, getHistory } from '@/utils/data';
+import { fetchRemainingSeason, fetchCurrentStandings } from '@/utils/schedule';
 import PredictionsViewer from '@/components/PredictionsViewer';
 import Header from '@/components/Header';
 
@@ -12,6 +13,12 @@ export default async function Home() {
     const predictions = await getPredictions();
     const history = await getHistory();
     const lastRefresh = await getLastRefresh();
+
+    // Fetch Simulation Data (Parallel)
+    const [fullSchedule, currentStandings] = await Promise.all([
+        fetchRemainingSeason(),
+        fetchCurrentStandings()
+    ]);
 
     // Calculate max total goals for proportional sizing
     const maxTotalGoals = Math.max(...predictions.map(p => p.totalGoals), 6.5); // Default min 6.5
@@ -31,6 +38,8 @@ export default async function Home() {
                     predictions={predictions}
                     history={history}
                     maxTotalGoals={maxTotalGoals}
+                    fullSchedule={fullSchedule}
+                    currentStandings={currentStandings}
                 />
             </div>
         </main>

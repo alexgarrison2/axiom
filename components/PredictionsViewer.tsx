@@ -1,8 +1,8 @@
-'use client';
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { GamePrediction, HistoryEntry } from '@/utils/data';
+import { SimGame } from '@/utils/schedule';
+import { TeamStandings, SimResult } from '@/utils/simulation-engine';
 import MatchupCard from './MatchupCard';
 import HistoryTable from './HistoryTable';
 import TeamsTable from './TeamsTable';
@@ -12,6 +12,8 @@ interface PredictionsViewerProps {
     predictions: GamePrediction[];
     history: HistoryEntry[];
     maxTotalGoals: number;
+    fullSchedule: SimGame[];
+    currentStandings: TeamStandings[];
 }
 
 const containerVariants: Variants = {
@@ -52,8 +54,68 @@ const itemVariants: Variants = {
     }
 };
 
-const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, maxTotalGoals }) => {
+const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, maxTotalGoals, fullSchedule, currentStandings }) => {
     const [predictions, setPredictions] = useState<GamePrediction[]>(initialPredictions);
+    const [leverageMap, setLeverageMap] = useState<Record<string, number>>({});
+    const workerRef = useRef<Worker | null>(null);
+
+    // Run Simulation on Mount
+    useEffect(() => {
+        if (!fullSchedule || fullSchedule.length === 0 || !currentStandings || currentStandings.length === 0) return;
+
+        // Initialize Worker
+        if (!workerRef.current) {
+            workerRef.current = new Worker(new URL('../workers/simulation.worker.ts', import.meta.url));
+        }
+
+        const worker = workerRef.current;
+
+        // Listen for results
+        worker.onmessage = (e) => {
+            if (e.data.type === 'SIMULATION_COMPLETE') {
+                const results: Record<string, SimResult> = e.data.results;
+                // Here we would use the results to display Playoff Odds globally if we had a dashboard.
+                // For GAME LEVERAGE, we actually need to ask the worker to calculate specfic game impact.
+                // For MVP, simplistic leverage calculation:
+                // We'll calculate "Bubble Importance" directly here based on results?
+                // No, true leverage requires re-running sims.
+                // 10,000 sims takes 1s. Re-running for every game (10 games) = 10s. Too slow?
+                // Alternative: Use the "Bubble Proximity" proxy.
+                // If a team is 40-80% to make playoffs, their games are high leverage.
+
+                const ratings: Record<string, number> = {};
+
+                predictions.forEach(p => {
+                    const homeOdds = results[p.homeTeam.triCode]?.madePlayoffs / results[p.homeTeam.triCode]?.totalSims;
+                    const awayOdds = results[p.awayTeam.triCode]?.madePlayoffs / results[p.awayTeam.triCode]?.totalSims;
+
+                    // Simple "Importance" Metric: proximity to 0.5 (Bubble)
+                    // 0.5 -> 1.0 importance. 0.0 or 1.0 -> 0 importance.
+                    const homeImp = 1 - Math.abs((homeOdds || 0) * 2 - 1);
+                    const awayImp = 1 - Math.abs((awayOdds || 0) * 2 - 1);
+
+                    // Game leverage is average of both teams' importance? Or max?
+                    // If DET (Bubble) plays CBJ (Out), it's high leverage for DET.
+                    ratings[p.id] = (homeImp + awayImp) / 2; // Simple approx for V1
+                });
+
+                setLeverageMap(ratings);
+            }
+        };
+
+        // Fire off the base simulation
+        worker.postMessage({
+            type: 'RUN_SIMULATION',
+            schedule: fullSchedule,
+            standings: currentStandings,
+            iterations: 5000 // Run 5k to keep it fast
+        });
+
+        return () => {
+            worker.terminate();
+            workerRef.current = null;
+        };
+    }, [fullSchedule, currentStandings, predictions]);
 
     // Sync Predictions with live News
     React.useEffect(() => {
@@ -383,7 +445,11 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 layout
                                 whileHover={{ scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 10 } }}
                             >
-                                <MatchupCard prediction={prediction} maxTotalGoals={maxTotalGoals} />
+                                <MatchupCard
+                                    prediction={prediction}
+                                    maxTotalGoals={maxTotalGoals}
+                                    playoffLeverage={leverageMap[prediction.id] !== undefined ? leverageMap[prediction.id] : null}
+                                />
                             </motion.div>
                         ))}
                     </AnimatePresence>
