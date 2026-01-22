@@ -4,15 +4,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
 
 import Papa from 'papaparse';
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
-import Header from '@/components/Header';
-import StatRing from '@/components/StatRing';
 import GameBoxscore from '@/components/GameBoxscore';
 import TeamChart from '@/components/TeamChart';
+import TeamSelector from '@/components/TeamSelector';
 
 // --- Interfaces ---
 interface TeamInfo {
@@ -117,8 +114,6 @@ export default function TeamDetailPage() {
     const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
     const [games, setGames] = useState<GameLog[]>([]);
     const [playerStats, setPlayerStats] = useState<PlayerBoxscoreRow[]>([]);
-    const [rating, setRating] = useState<TeamRating | null>(null);
-    const [record, setRecord] = useState({ w: 0, l: 0, otl: 0, pts: 0 });
     const [todaysGame, setTodaysGame] = useState<any>(null);
 
     const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
@@ -143,7 +138,6 @@ export default function TeamDetailPage() {
     });
 
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
-    const [allTeamRatings, setAllTeamRatings] = useState<any>(null);
     const [allTeamsList, setAllTeamsList] = useState<any[]>([]);
 
 
@@ -261,24 +255,24 @@ export default function TeamDetailPage() {
                 console.log("Found games:", teamGames.length);
 
                 // Process Stats
-                let w = 0, l = 0, otl = 0;
+                // let w = 0, l = 0, otl = 0; // Unused
                 const processedGames = teamGames.map((row: any) => {
                     const res = row.result;
                     let result_display = '';
 
                     if (res === 'RW' || res === 'OTW' || res === 'SOW') {
-                        w++;
+                        // w++;
                         if (res === 'RW') result_display = 'W';
                         if (res === 'OTW') result_display = 'W (OT)';
                         if (res === 'SOW') result_display = 'W (SO)';
                     }
                     else if (res === 'OTL' || res === 'SOL') {
-                        otl++;
+                        // otl++;
                         if (res === 'OTL') result_display = 'OTL';
                         if (res === 'SOL') result_display = 'SOL';
                     }
                     else if (res === 'RL') {
-                        l++;
+                        // l++;
                         result_display = 'L';
                     }
 
@@ -325,17 +319,17 @@ export default function TeamDetailPage() {
                 processedGames.forEach((g: any, i: number) => g.game_number = totalGames - i);
 
                 setGames(processedGames);
-                setRecord({ w, l, otl, pts: (w * 2) + otl });
+                // setRecord({ w, l, otl, pts: (w * 2) + otl }); // Unused
 
                 // 3. Fetch Ratings
                 const ratingsRes = await fetch('/data/team_ratings.json');
                 const ratingsData = await ratingsRes.json();
-                setAllTeamRatings(ratingsData);
+                // setAllTeamRatings(ratingsData); // Unused
                 setAllTeamsList(teamData);
 
-                if (ratingsData[teamCommon]) {
-                    setRating(ratingsData[teamCommon]);
-                }
+                // if (ratingsData[teamCommon]) {
+                //    setRating(ratingsData[teamCommon]); // Unused
+                // }
 
                 // 4. Fetch Player Stats
                 const playersRes = await fetch('/data/nhl_season_2025_2026_player_stats.csv');
@@ -579,71 +573,32 @@ export default function TeamDetailPage() {
                 style={{ background: `radial-gradient(circle at 50% 0%, ${primaryColor}, transparent)` }}
             ></div>
 
-            {/* Team Navigation - Horizontal Logo Bar */}
-            <div className="absolute top-0 left-0 right-0 z-30 bg-black/60 backdrop-blur-md border-b border-white/10">
-                <div className="flex flex-wrap justify-center gap-1 p-2 max-w-[1800px] mx-auto px-4">
-                    <Link href="/teams" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-wider mr-4 bg-black/80 z-10 py-1 pl-2 pr-4 border-r border-white/10 h-10 my-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Teams
-                    </Link>
+            {/* Navbar / Breadcrumbs Area */}
+            <div className="fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5 h-20">
+                <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-full flex items-center justify-between">
 
-                    {allTeamsList
-                        .filter(t => t['Common Name'])
-                        // Sort Alphabetically
-                        .sort((a, b) => (a['Team Name'] || a['Common Name']).localeCompare(b['Team Name'] || b['Common Name']))
-                        .map((t: any) => {
-                            const name = t['Common Name'].trim();
-                            const tricode = t['Team Tricode'];
-                            const url = t['Team Logo URL'];
-                            const isSelected = name === teamInfo?.CommonName;
+                    {/* Left: Breadcrumbs & Selector */}
+                    <div className="flex items-center gap-6">
+                        {/* Home Link */}
+                        <Link href="/" className="group flex items-center gap-2 text-gray-500 hover:text-white transition-colors">
+                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                            </div>
+                            <span className="text-xs font-bold uppercase tracking-wider hidden md:block">Home</span>
+                        </Link>
 
-                            // Color Overrides
-                            const colorOverrides: Record<string, string> = {
-                                'EDM': '#FF4C00', // Orange
-                                'LAK': '#C0C0C0', // Silver
-                                'UTA': '#69B3E7', // Light Blue
-                            };
+                        <div className="h-8 w-px bg-white/10"></div>
 
-                            // Color Logic: use Scale/Secondary if Primary is too dark, else Primary
-                            // Simplified: Just use primary for now, or Secondary if provided and primary is black
-                            const c1 = t['Hex Color 1'] || '#FFFFFF';
-                            const c2 = t['Hex Color 2'] || t['Hex Color 1'] || '#FFFFFF';
+                        {/* Team Selector */}
+                        <TeamSelector teams={allTeamsList} currentTeam={teamInfo} />
+                    </div>
 
-                            // Heuristic: If C1 is Black (#000000 or similar), try C2
-                            const isBlack = c1.replace('#', '').toLowerCase() === '000000' || c1.toLowerCase() === 'black';
-                            let glowColor = isBlack ? c2 : c1;
-
-                            if (colorOverrides[tricode]) {
-                                glowColor = colorOverrides[tricode];
-                            }
-
-                            // Construct href to include current params
-                            const teamLink = `/teams/${tricode}?${searchParams.toString()}`;
-
-                            return (
-                                <Link
-                                    key={name}
-                                    href={teamLink}
-                                    className={`relative group transition-all duration-300 flex-shrink-0 ${isSelected ? 'opacity-100 scale-110 z-20' : 'opacity-40 grayscale hover:grayscale-0 hover:opacity-100'}`}
-                                    title={t['Team Name']}
-                                    style={isSelected ? { filter: `drop-shadow(0 0 10px ${glowColor})` } : {}}
-                                >
-                                    <img
-                                        src={url}
-                                        alt={name}
-                                        className={`w-8 h-8 md:w-12 md:h-12 object-contain transition-transform ${isSelected ? 'scale-110' : ''}`}
-                                    />
-                                    {isSelected && (
-                                        <div
-                                            className="absolute inset-0 blur-xl rounded-full -z-10 opacity-40"
-                                            style={{ backgroundColor: glowColor }}
-                                        ></div>
-                                    )}
-                                </Link>
-                            );
-                        })}
+                    {/* Right: Actions/Date (Placeholder or keep empty for now) */}
+                    <div className="flex items-center gap-4">
+                        <Link href="/teams" className="text-xs font-bold text-gray-500 hover:text-white uppercase tracking-wider transition-colors">
+                            View All Teams
+                        </Link>
+                    </div>
                 </div>
             </div>
 
