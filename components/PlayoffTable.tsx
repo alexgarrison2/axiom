@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { TeamStandings, SimResult } from '@/utils/simulation-engine';
 import LogoDisplay from './LogoDisplay';
-import PlayoffTooltip from './PlayoffTooltip';
+import PlayoffDetailModal from './PlayoffDetailModal';
+import { Info } from 'lucide-react';
 
 interface PlayoffTableProps {
     currentStandings: TeamStandings[];
@@ -10,6 +11,7 @@ interface PlayoffTableProps {
 }
 
 const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResults }) => {
+    const [selectedTeamTricode, setSelectedTeamTricode] = useState<string | null>(null);
 
     const processedTeams = useMemo(() => {
         if (!currentStandings || currentStandings.length === 0 || !simResults) return { east: null, west: null };
@@ -72,115 +74,167 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
         };
     }, [currentStandings, simResults]);
 
+    // Helper to find team data for modal
+    const selectedTeamData = useMemo(() => {
+        if (!selectedTeamTricode || !processedTeams.east) return null;
+        // Search in all lists
+        // Efficient enough for <40 items
+        const all = [
+            ...(processedTeams.east.div1.teams), ...(processedTeams.east.div2.teams), ...(processedTeams.east.wildcards.teams),
+            ...(processedTeams.west.div1.teams), ...(processedTeams.west.div2.teams), ...(processedTeams.west.wildcards.teams)
+        ];
+        return all.find(t => t.tricode === selectedTeamTricode);
+    }, [selectedTeamTricode, processedTeams]);
+
     return (
-        <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-8 pb-12">
-            <TableSection title="Western Conference" groups={processedTeams.west} simResults={simResults} />
-            <TableSection title="Eastern Conference" groups={processedTeams.east} simResults={simResults} />
+        <div className="w-full relative">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pb-12">
+                <TableSection
+                    title="Western Conference"
+                    groups={processedTeams.west}
+                    onSelectTeam={setSelectedTeamTricode}
+                />
+                <TableSection
+                    title="Eastern Conference"
+                    groups={processedTeams.east}
+                    onSelectTeam={setSelectedTeamTricode}
+                />
+            </div>
+
+            {/* Render Modal if selected */}
+            {selectedTeamTricode && selectedTeamData && simResults && (
+                <PlayoffDetailModal
+                    team={selectedTeamData}
+                    simResult={simResults[selectedTeamTricode]}
+                    onClose={() => setSelectedTeamTricode(null)}
+                />
+            )}
         </div>
     );
 };
 
-const TableSection = ({ title, groups, simResults }: { title: string, groups: any, simResults: Record<string, SimResult> }) => {
+const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: any, onSelectTeam: (t: string) => void }) => {
     if (!groups) return null;
     return (
-        <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm h-full">
-            <h3 className="text-center py-4 text-sm font-bold uppercase tracking-widest text-[#5382BD] border-b border-white/5 bg-white/[0.02]">
+        <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm h-full flex flex-col">
+            <h3 className="text-center py-4 text-sm font-bold uppercase tracking-widest text-[#5382BD] border-b border-white/5 bg-white/[0.02] shrink-0">
                 {title}
             </h3>
 
-            {/* Division 1 */}
-            <GroupSection group={groups.div1} simResults={simResults} />
-            <div className="h-px bg-white/5 mx-4" />
+            {/* Unified Header Row */}
+            <div className="flex text-neutral-500 font-mono text-[9px] uppercase tracking-wider border-b border-white/5 bg-white/[0.01]">
+                <div className="w-16 px-3 py-2"></div> {/* Logo */}
+                <div className="w-24 px-2 py-2 text-left">Team</div>
+                <div className="w-16 px-2 py-2 text-center">PTS</div>
+                <div className="w-16 px-2 py-2 text-center">Pace</div>
+                <div className="w-16 px-2 py-2 text-center">Proj</div>
+                <div className="w-16 px-2 py-2 text-center">PO%</div>
+                <div className="w-16 px-2 py-2 text-center">Cup%</div>
+                <div className="w-10 px-2 py-2"></div> {/* Details Action */}
+            </div>
 
-            {/* Division 2 */}
-            <GroupSection group={groups.div2} simResults={simResults} />
-            <div className="h-px bg-white/5 mx-4" />
+            <div className="flex-1 overflow-auto">
+                {/* Division 1 */}
+                <GroupSection group={groups.div1} onSelectTeam={onSelectTeam} />
+                <div className="h-px bg-white/5 mx-4" />
 
-            {/* Wildcard */}
-            <GroupSection group={groups.wildcards} isWildcard simResults={simResults} />
+                {/* Division 2 */}
+                <GroupSection group={groups.div2} onSelectTeam={onSelectTeam} />
+                <div className="h-px bg-white/5 mx-4" />
+
+                {/* Wildcard */}
+                <GroupSection group={groups.wildcards} isWildcard onSelectTeam={onSelectTeam} />
+            </div>
         </div>
     );
 };
 
-const GroupSection = ({ group, isWildcard, simResults }: { group: { name: string, teams: any[] }, isWildcard?: boolean, simResults: Record<string, SimResult> }) => (
+const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: { name: string, teams: any[] }, isWildcard?: boolean, onSelectTeam: (t: string) => void }) => (
     <div className="py-2">
-        {/* Header Row for Section */}
+        {/* Section Title */}
         <div className="px-4 py-2 flex items-center justify-between">
             <h4 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 opacity-60">
                 {group.name}
             </h4>
         </div>
 
-        <table className="w-full text-xs">
-            {isWildcard && (
-                <thead>
-                    <tr className="text-neutral-600 font-mono text-[9px] uppercase tracking-wider border-b border-white/5">
-                        <th className="px-3 py-1 text-left w-12 opacity-0">.</th>
-                        <th className="px-3 py-1 text-left"></th>
-                        <th className="px-3 py-1 text-center">Pts</th>
-                        <th className="px-3 py-1 text-center">Pace</th>
-                        <th className="px-3 py-1 text-center">Proj</th>
-                        <th className="px-3 py-1 text-center">PO%</th>
-                        <th className="px-3 py-1 text-center">Cup%</th>
-                    </tr>
-                </thead>
-            )}
+        {/* Table using Flex Rows for strict alignment matching the Header */}
+        <div className="w-full text-xs">
+            {group.teams.map((team: any, idx: number) => {
+                const oddsColor = team.playoffOdds >= 90 ? 'text-neon-green font-bold text-glow-green' :
+                    team.playoffOdds >= 50 ? 'text-white font-bold' :
+                        team.playoffOdds >= 10 ? 'text-neutral-300' : 'text-neutral-500';
 
-            <tbody className="divide-y divide-white/5">
-                {group.teams.map((team: any, idx: number) => {
-                    const oddsColor = team.playoffOdds >= 90 ? 'text-neon-green font-bold text-glow-green' :
-                        team.playoffOdds >= 50 ? 'text-white font-bold' :
-                            team.playoffOdds >= 10 ? 'text-neutral-300' : 'text-neutral-500';
+                const bgOdds = team.playoffOdds >= 90 ? 'bg-neon-green/10' :
+                    team.playoffOdds <= 5 ? 'bg-red-500/10' : '';
 
-                    const bgOdds = team.playoffOdds >= 90 ? 'bg-neon-green/10' :
-                        team.playoffOdds <= 5 ? 'bg-red-500/10' : '';
+                return (
+                    <div key={team.tricode} className="relative group hover:bg-white/[0.04] transition-colors flex items-center border-b border-white/[0.02]">
+                        {/* Line separating WC2 and the rest */}
+                        {isWildcard && idx === 1 && (
+                            <div className="absolute bottom-0 left-0 right-0 border-b border-neutral-700/50 z-10 w-full pointer-events-none" />
+                        )}
 
-                    return (
-                        <PlayoffTooltip key={team.tricode} team={team} simResult={simResults[team.tricode]}>
-                            <tr className="group hover:bg-white/[0.02] transition-colors relative cursor-default">
-                                {/* Line separating WC2 and the rest */}
-                                {isWildcard && idx === 1 && (
-                                    <td colSpan={7} className="absolute bottom-0 left-0 right-0 border-b border-neutral-700/50 z-10 w-full pointer-events-none"></td>
-                                )}
+                        {/* Logo */}
+                        <div className="w-16 px-3 py-1.5 flex justify-center">
+                            <div className="w-9 h-9 relative opacity-90 group-hover:opacity-100 transition-opacity">
+                                <LogoDisplay
+                                    triCode={team.tricode}
+                                    src=""
+                                    alt={`${team.tricode} Logo`}
+                                    className="w-full h-full"
+                                    variant="standard"
+                                />
+                            </div>
+                        </div>
 
-                                <td className="px-3 py-1.5 text-center w-12">
-                                    <div className="w-9 h-9 relative mx-auto opacity-90 group-hover:opacity-100 transition-opacity">
-                                        <LogoDisplay
-                                            triCode={team.tricode}
-                                            src=""
-                                            alt={`${team.tricode} Logo`}
-                                            className="w-full h-full"
-                                            variant="standard"
-                                        />
-                                    </div>
-                                </td>
-                                <td className="px-3 py-1.5 font-bold text-white tracking-wide">
-                                    {team.tricode}
-                                    {isWildcard && idx < 2 && <span className="ml-1.5 text-xs text-neutral-500 font-normal">WC{idx + 1}</span>}
-                                </td>
-                                <td className="px-3 py-1.5 text-center font-mono text-neutral-300 font-bold">
-                                    {team.points}
-                                </td>
-                                <td className="px-3 py-1.5 text-center font-mono text-neutral-400 font-bold opacity-70">
-                                    {team.pace}
-                                </td>
-                                <td className="px-3 py-1.5 text-center font-mono text-white text-base font-bold">
-                                    {team.proj}
-                                </td>
-                                <td className={`px-3 py-1.5 text-center relative`}>
-                                    <div className={`inline-block px-1.5 py-0.5 rounded ${bgOdds}`}>
-                                        <span className={`${oddsColor}`}>{team.playoffOdds.toFixed(0)}%</span>
-                                    </div>
-                                </td>
-                                <td className="px-3 py-1.5 text-center font-mono text-neutral-400">
-                                    {team.cupOdds > 0.1 ? `${team.cupOdds.toFixed(1)}%` : '-'}
-                                </td>
-                            </tr>
-                        </PlayoffTooltip>
-                    );
-                })}
-            </tbody>
-        </table>
+                        {/* Team Name */}
+                        <div className="w-24 px-2 py-1.5 font-bold text-white tracking-wide text-left flex items-center">
+                            {team.tricode}
+                            {/* REMOVED WC Labels as requested */}
+                        </div>
+
+                        {/* Current Points */}
+                        <div className="w-16 px-2 py-1.5 text-center font-mono text-neutral-300 font-bold">
+                            {team.points}
+                        </div>
+
+                        {/* Pace */}
+                        <div className="w-16 px-2 py-1.5 text-center font-mono text-neutral-400 font-bold opacity-70">
+                            {team.pace}
+                        </div>
+
+                        {/* Projected */}
+                        <div className="w-16 px-2 py-1.5 text-center font-mono text-white text-base font-bold">
+                            {team.proj}
+                        </div>
+
+                        {/* PO% */}
+                        <div className="w-16 px-2 py-1.5 text-center flex justify-center">
+                            <div className={`inline-block px-1.5 py-0.5 rounded ${bgOdds}`}>
+                                <span className={`${oddsColor}`}>{team.playoffOdds.toFixed(0)}%</span>
+                            </div>
+                        </div>
+
+                        {/* Cup% */}
+                        <div className="w-16 px-2 py-1.5 text-center font-mono text-neutral-400">
+                            {team.cupOdds > 0.1 ? `${team.cupOdds.toFixed(1)}%` : '-'}
+                        </div>
+
+                        {/* Details Action */}
+                        <div className="w-10 px-2 py-1.5 flex justify-center">
+                            <button
+                                onClick={() => onSelectTeam(team.tricode)}
+                                className="text-neutral-500 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+                                aria-label="View Details"
+                            >
+                                <Info className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
     </div>
 );
 

@@ -2,13 +2,13 @@ import React, { useMemo } from 'react';
 import { SimResult, TeamStandings } from '@/utils/simulation-engine';
 import LogoDisplay from './LogoDisplay';
 
-interface PlayoffTooltipProps {
+interface PlayoffDetailModalProps {
     team: TeamStandings & { proj: number, playoffOdds: number, cupOdds: number };
     simResult: SimResult;
-    children: React.ReactNode;
+    onClose: () => void;
 }
 
-const PlayoffTooltip: React.FC<PlayoffTooltipProps> = ({ team, simResult, children }) => {
+const PlayoffDetailModal: React.FC<PlayoffDetailModalProps> = ({ team, simResult, onClose }) => {
     // 1. Process Point Distribution for Histogram
     const histogramData = useMemo(() => {
         if (!simResult?.pointDist) return { data: [], maxFreq: 0 };
@@ -60,14 +60,28 @@ const PlayoffTooltip: React.FC<PlayoffTooltipProps> = ({ team, simResult, childr
 
 
     const { data: histData, maxFreq } = histogramData;
-    if (!histData || histData.length === 0) return <>{children}</>;
+    if (!histData || histData.length === 0) return null;
 
     return (
-        <div className="relative group/tooltip">
-            {children}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                onClick={onClose}
+            />
 
-            {/* Tooltip Content */}
-            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-[600px] bg-[#F5F5F0] text-black rounded-lg shadow-2xl opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity z-50 p-6 font-sans">
+            {/* Modal Content */}
+            <div className="relative w-full max-w-2xl bg-[#F5F5F0] text-black rounded-lg shadow-2xl p-6 font-sans transform transition-all scale-100">
+
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-700 transition-colors"
+                >
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
                 {/* Header Section */}
                 <div className="flex items-center justify-between pb-4 border-b border-neutral-300 mb-4">
                     <div className="flex items-center gap-4">
@@ -210,4 +224,4 @@ const HistogramVertical = ({ buckets }: { buckets: { label: number, pct: number 
     )
 };
 
-export default PlayoffTooltip;
+export default PlayoffDetailModal;
