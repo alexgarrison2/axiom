@@ -11,10 +11,10 @@ interface PlayoffTooltipProps {
 const PlayoffTooltip: React.FC<PlayoffTooltipProps> = ({ team, simResult, children }) => {
     // 1. Process Point Distribution for Histogram
     const histogramData = useMemo(() => {
-        if (!simResult?.pointDist) return [];
+        if (!simResult?.pointDist) return { data: [], maxFreq: 0 };
 
         const points = Array.from(simResult.pointDist.keys()).sort((a, b) => a - b);
-        if (points.length === 0) return [];
+        if (points.length === 0) return { data: [], maxFreq: 0 };
 
         const minP = points[0];
         const maxP = points[points.length - 1];
