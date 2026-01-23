@@ -149,10 +149,12 @@ type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayS
 type SortKey = keyof TeamStat;
 
 interface Matchup {
-    gameId: string;
-    homeTeam: string;
-    awayTeam: string;
-    gameDate: string;
+    home: string;
+    away: string;
+    homeStarter?: string;
+    homeStarterStatus?: string;
+    awayStarter?: string;
+    awayStarterStatus?: string;
 }
 
 const getGradientColor = (value: number, min: number, max: number, inverse: boolean = false) => {
@@ -374,6 +376,7 @@ const TeamsTable = () => {
     const [viewMode, setViewMode] = useState<ViewMode>('All');
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
     const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
+    const [filterStrength, setFilterStrength] = useState<'All' | '5v5' | 'EV' | 'PP' | 'SH'>('All');
 
     // Sorting
     const [sortKey, setSortKey] = useState<SortKey>('pt_pct');
@@ -575,7 +578,7 @@ const TeamsTable = () => {
         allTeamsList.forEach(teamName => {
             const games = getGames(teamName, filterHomeAway); // Use current filters but for ALL teams
             if (games.length > 0) {
-                leagueBaseline.push(calculateTeamStats(teamName, games));
+                leagueBaseline.push(calculateTeamStats(teamName, games, filterStrength));
             }
         });
         setLeagueStats(leagueBaseline);
@@ -608,14 +611,14 @@ const TeamsTable = () => {
                 const homeGames = getGames(home, homeLoc, starterHome);
 
                 // Calculate stats and attach starter name if applicable
-                const awayStats = calculateTeamStats(away, awayGames);
+                const awayStats = calculateTeamStats(away, awayGames, filterStrength);
                 if (starterAway) {
                     awayStats.starterName = starterAway;
                     awayStats.starterStatus = awayStarterStatus;
                 }
                 processedTeams.push(awayStats);
 
-                const homeStats = calculateTeamStats(home, homeGames);
+                const homeStats = calculateTeamStats(home, homeGames, filterStrength);
                 if (starterHome) {
                     homeStats.starterName = starterHome;
                     homeStats.starterStatus = homeStarterStatus;
@@ -626,7 +629,7 @@ const TeamsTable = () => {
 
         setStats(processedTeams);
 
-    }, [rawData, viewMode, filterHomeAway, filterLastN, todayMatchups]);
+    }, [rawData, viewMode, filterHomeAway, filterLastN, filterStrength, todayMatchups]);
 
 
     const handleSort = (key: SortKey) => {
