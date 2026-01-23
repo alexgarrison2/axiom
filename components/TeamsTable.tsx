@@ -141,8 +141,61 @@ interface TeamStat {
 
     gsax: number;
     otml: number;
+    starterName?: string;
     starterStatus?: string;
 }
+
+type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter';
+type SortKey = keyof TeamStat;
+
+interface Matchup {
+    gameId: string;
+    homeTeam: string;
+    awayTeam: string;
+    gameDate: string;
+}
+
+const getGradientColor = (value: number, min: number, max: number, inverse: boolean = false) => {
+    let normalized = (value - min) / (max - min);
+    if (normalized < 0) normalized = 0;
+    if (normalized > 1) normalized = 1;
+
+    if (inverse) normalized = 1 - normalized;
+
+    // Simple Red-Yellow-Green gradient
+    // 0 = Red (255, 0, 0)
+    // 0.5 = Yellow (255, 255, 0)
+    // 1 = Green (0, 255, 0)
+
+    let r, g, b;
+    if (normalized < 0.5) {
+        // Red to Yellow
+        r = 255;
+        g = Math.round(255 * (normalized * 2));
+        b = 0;
+    } else {
+        // Yellow to Green
+        r = Math.round(255 * (1 - (normalized - 0.5) * 2));
+        g = 255;
+        b = 0;
+    }
+
+    // Dim the colors for dark mode readability
+    r = Math.round(r * 0.8);
+    g = Math.round(g * 0.8);
+    b = Math.round(b * 0.8);
+
+    return `rgb(${r}, ${g}, ${b})`;
+};
+
+const cleanName = (name: string) => name.replace('.', '').replace(' ', ''); // basic clean
+const getStarterStatus = (status: string) => status; // pass through
+const formatStarterName = (name: string) => {
+    const parts = name.split(' ');
+    // initial. lastname
+    if (parts.length > 1) return `${parts[0].charAt(0)}. ${parts[parts.length - 1]}`;
+    return name;
+};
 
 const formatTime = (seconds: number) => {
     if (isNaN(seconds)) return '0:00';
