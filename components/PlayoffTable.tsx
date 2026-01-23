@@ -87,6 +87,8 @@ const TableSection = ({ title, teams }: { title: string, teams: any[] }) => (
                                 <div className="w-8 h-8 relative mx-auto opacity-90 group-hover:opacity-100 transition-opacity">
                                     <LogoDisplay
                                         triCode={team.tricode}
+                                        src=""
+                                        alt={`${team.tricode} Logo`}
                                         className="w-full h-full"
                                         variant="standard"
                                     />
