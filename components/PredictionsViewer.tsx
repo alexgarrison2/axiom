@@ -9,6 +9,7 @@ import MatchupCard from './MatchupCard';
 import HistoryTable from './HistoryTable';
 import TeamsTable from './TeamsTable';
 import NewsSection from './NewsSection';
+import PlayoffTable from './PlayoffTable';
 
 interface PredictionsViewerProps {
     predictions: GamePrediction[];
@@ -59,6 +60,7 @@ const itemVariants: Variants = {
 const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, maxTotalGoals, fullSchedule, currentStandings }) => {
     const [predictions, setPredictions] = useState<GamePrediction[]>(initialPredictions);
     const [leverageMap, setLeverageMap] = useState<Record<string, number>>({});
+    const [simResults, setSimResults] = useState<Record<string, SimResult>>({});
     const workerRef = useRef<Worker | null>(null);
 
     // Run Simulation on Mount
@@ -102,6 +104,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                 });
 
                 setLeverageMap(ratings);
+                setSimResults(results); // Store full results for table
             }
         };
 
@@ -454,37 +457,20 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3 }}
-                    className="w-full text-center"
+                    className="w-full"
                 >
-                    <div className="glass-panel p-8 rounded-2xl border border-white/10 max-w-4xl mx-auto">
-                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-orange-400 mb-4">Playoff Probability Dashboard</h2>
-                        <p className="text-neutral-400 mb-8">Monte Carlo simulations (5,000 runs) are processing live in your browser.</p>
-
-                        {/* Placeholder for the full dashboard - reusing TeamsTable for now or a simple list */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                            <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                <h3 className="text-lg font-bold text-white mb-2 border-b border-white/10 pb-2">Eastern Conference</h3>
-                                {/* Simple list of top teams from current standings as a placeholder */}
-                                {currentStandings.filter(t => t.conference === 'East').sort((a, b) => b.points - a.points).slice(0, 8).map((t, i) => (
-                                    <div key={t.tricode} className="flex justify-between py-1 text-sm">
-                                        <span className="text-neutral-300">{i + 1}. {t.tricode}</span>
-                                        <span className="font-mono text-emerald-400">{t.points} pts</span>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                <h3 className="text-lg font-bold text-white mb-2 border-b border-white/10 pb-2">Western Conference</h3>
-                                {currentStandings.filter(t => t.conference === 'West').sort((a, b) => b.points - a.points).slice(0, 8).map((t, i) => (
-                                    <div key={t.tricode} className="flex justify-between py-1 text-sm">
-                                        <span className="text-neutral-300">{i + 1}. {t.tricode}</span>
-                                        <span className="font-mono text-emerald-400">{t.points} pts</span>
-                                    </div>
-                                ))}
-                            </div>
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center mb-8">
+                            <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-orange-400 mb-2">Playoff Probability Dashboard</h2>
+                            <p className="text-neutral-400 text-sm">Monte Carlo simulations (5,000 runs). Projected points are averaged outcomes.</p>
                         </div>
-                        <div className="mt-6 text-xs text-neutral-500 font-mono">
-                            Full simulation results integration coming soon.
-                        </div>
+                        {Object.keys(simResults).length > 0 ? (
+                            <PlayoffTable currentStandings={currentStandings} simResults={simResults} />
+                        ) : (
+                            <div className="flex justify-center items-center py-24">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+                            </div>
+                        )}
                     </div>
                 </motion.div>
             ) : (

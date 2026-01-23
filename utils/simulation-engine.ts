@@ -19,6 +19,7 @@ export interface SimResult {
     wonDivision: number;
     wonCup: number; // Placeholder for future
     totalSims: number;
+    totalPoints: number; // Sum of points across all sims
 }
 
 export class SeasonSimulator {
@@ -118,12 +119,17 @@ export class SeasonSimulator {
 
         // Init results
         this.baseStandings.forEach((_, key) => {
-            results.set(key, { madePlayoffs: 0, wonDivision: 0, wonCup: 0, totalSims: iterations });
+            results.set(key, { madePlayoffs: 0, wonDivision: 0, wonCup: 0, totalSims: iterations, totalPoints: 0 });
         });
 
         for (let i = 0; i < iterations; i++) {
             const finalStandings = this.simulateSeason();
             const playoffTeams = this.determinePlayoffTeams(finalStandings);
+
+            finalStandings.forEach((team, tricode) => {
+                const res = results.get(tricode)!;
+                res.totalPoints += team.points;
+            });
 
             playoffTeams.forEach(tricode => {
                 results.get(tricode)!.madePlayoffs++;
