@@ -447,7 +447,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         gsaxPct,
         goalieStats,
         vsOppStats,
+
         opponentTriCode,
+        odds,
 
         isSocial,
         avgSpeed,
