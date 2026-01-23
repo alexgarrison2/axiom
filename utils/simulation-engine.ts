@@ -45,7 +45,7 @@ export class SeasonSimulator {
         // Win prob ~= 0.5 + (diff * 0.02)
 
         const diff = homeRating - awayRating;
-        let prob = 0.5 + (diff * 0.015);
+        let prob = 0.5 + (diff * 0.006); // Dampened from 0.015 used previously
 
         // Clamp
         if (prob > 0.85) prob = 0.85;
@@ -180,20 +180,20 @@ export class SeasonSimulator {
         const seeded = qualifiers.sort((a, b) => (standings.get(b)?.points || 0) - (standings.get(a)?.points || 0));
 
         // Round 1 (16 teams -> 8)
-        let round1Winners: string[] = [];
+        const round1Winners: string[] = [];
         for (let i = 0; i < 8; i++) {
             // 1 vs 16, 2 vs 15...
             round1Winners.push(simSeries(seeded[i], seeded[15 - i]));
         }
 
         // Round 2 (8 teams -> 4)
-        let round2Winners: string[] = [];
+        const round2Winners: string[] = [];
         for (let i = 0; i < 4; i++) {
             round2Winners.push(simSeries(round1Winners[i], round1Winners[7 - i]));
         }
 
         // Round 3 (4 teams -> 2)
-        let round3Winners: string[] = [];
+        const round3Winners: string[] = [];
         for (let i = 0; i < 2; i++) {
             round3Winners.push(simSeries(round2Winners[i], round2Winners[3 - i]));
         }
