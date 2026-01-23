@@ -49,10 +49,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         away_gas,
         home_gas_breakdown,
         away_gas_breakdown,
-        home_gas,
-        away_gas,
-        home_gas_breakdown,
-        away_gas_breakdown,
+
         home_avg_speed,
         away_avg_speed,
         home_rr_rate,
