@@ -1,18 +1,50 @@
 {
     "TOR": [
         {
+            "player": "Anthony Stolarz",
+            "news": "Stolarz will start vs. Vegas on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-23",
+            "timestamp": "2026-01-23T16:13:28.837Z"
+        },
+        {
+            "player": "Oliver Ekman-Larsson",
+            "news": "Ekman-Larsson (lower-body) will play vs. Vegas after leaving last game with an injury. ",
+            "category": "Injury",
+            "date": "2026-01-23",
+            "timestamp": "2026-01-23T16:00:54.645Z"
+        },
+        {
             "player": "Henry Thrun",
             "news": "Thrun has been recalled from the Toronto Marlies (AHL). ",
             "category": "Call Up",
             "date": "2026-01-23",
             "timestamp": "2026-01-23T15:33:47.905Z"
-        },
+        }
+    ],
+    "NYI": [
         {
-            "player": "Brandon Carlo",
-            "news": "Carlo (undisclosed) is considered day-to-day after tweaking something on Wednesday vs. Detroit.",
+            "player": "Bo Horvat",
+            "news": "Horvat (lower-body) was a full participant in practice on Friday. ",
             "category": "Injury",
             "date": "2026-01-23",
-            "timestamp": "2026-01-23T15:10:28.936Z"
+            "timestamp": "2026-01-23T16:09:05.788Z"
+        }
+    ],
+    "WPG": [
+        {
+            "player": "Danny Zhilkin",
+            "news": "The Jets have assigned Danny Zhilkin to Manitoba (AHL). \r\n",
+            "category": "Send Down",
+            "date": "2026-01-23",
+            "timestamp": "2026-01-23T15:49:58.194Z"
+        },
+        {
+            "player": "Isaak Phillips",
+            "news": "The Jets have assigned Isaak Phillips to Manitoba (AHL). \r\n",
+            "category": "Send Down",
+            "date": "2026-01-23",
+            "timestamp": "2026-01-23T15:48:51.321Z"
         }
     ],
     "MIN": [
@@ -98,38 +130,6 @@
             "category": "Injury",
             "date": "2026-01-23",
             "timestamp": "2026-01-23T02:41:00.216Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Ryan Graves",
-            "news": "The Penguins placed Graves (lower-body) on injured reserve on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-23",
-            "timestamp": "2026-01-23T01:49:53.651Z"
-        },
-        {
-            "player": "Erik Karlsson",
-            "news": "Karlsson (lower-body) will return to the Penguins lineup on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-23",
-            "timestamp": "2026-01-23T01:48:21.790Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Alec Regula",
-            "news": "Regula is a healthy scratch for Thursday's game against the Penguins. ",
-            "category": "Line Change",
-            "date": "2026-01-23",
-            "timestamp": "2026-01-23T01:45:20.185Z"
-        },
-        {
-            "player": "Leon Draisaitl",
-            "news": "Draisaitl (personal) will return to the Oilers lineup on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-01-23",
-            "timestamp": "2026-01-23T01:35:44.199Z"
         }
     ]
 }
