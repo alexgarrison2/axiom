@@ -114,7 +114,9 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         const pk_opps = games.reduce((acc, g) => acc + g.pk_opps, 0);
 
         const total_saves = games.reduce((acc, g) => acc + (getStat(g, 'sa') as number) - (getStat(g, 'ga') as number), 0);
-        const tot_sv_pct = sa > 0 ? (total_saves / sa) : 0;
+        // Correct SV% by subtracting Empty Net Goals from Shots Against (only for Full Game totals where we have EN data)
+        const adjusted_sa = sa - (filters.period === 'All' ? en_ga : 0);
+        const tot_sv_pct = adjusted_sa > 0 ? (total_saves / adjusted_sa) : 0;
 
         return {
             record,
@@ -176,13 +178,13 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                 <th className="p-1 text-center">xGF</th>
                                 <th className="p-1 text-center">xGA</th>
                                 <th className="p-1 text-center">xGΔ</th>
-                                <th className="p-1 text-center">EN GF</th>
-                                <th className="p-1 text-center">EN Att</th>
-                                <th className="p-1 text-center">OTML</th>
-                                <th className="p-1 text-center">EN GA</th>
-                                <th className="p-1 text-center">EN Att Ag</th>
                             </>
                         )}
+                        <th className="p-1 text-center">EN GF</th>
+                        <th className="p-1 text-center">EN Att</th>
+                        <th className="p-1 text-center">OTML</th>
+                        <th className="p-1 text-center">EN GA</th>
+                        <th className="p-1 text-center">EN Att Ag</th>
                     </tr>
                     {totals && (
                         <tr className="bg-white/10 font-bold border-b border-white/20 text-white">
@@ -214,13 +216,13 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                     <td className="p-1 text-center text-gray-300">{totals.xgf}</td>
                                     <td className="p-1 text-center text-gray-300">{totals.xga}</td>
                                     <td className={`p-1 text-center ${parseFloat(totals.xgd) > 0 ? 'text-green-400' : parseFloat(totals.xgd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.xgd) > 0 ? '+' : ''}{totals.xgd}</td>
-                                    <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_gf : '-'}</td>
-                                    <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_att : '-'}</td>
-                                    <td></td>
-                                    <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_ga : '-'}</td>
-                                    <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_att_ag : '-'}</td>
                                 </>
                             )}
+                            <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_gf : '-'}</td>
+                            <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_att : '-'}</td>
+                            <td></td>
+                            <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_ga : '-'}</td>
+                            <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_att_ag : '-'}</td>
                         </tr>
                     )}
                 </thead>
@@ -251,7 +253,10 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             const xgd = game.xgf - game.xga;
 
                             const sh_pct = _sf > 0 ? (_gf / _sf * 100).toFixed(1) : "0.0";
-                            const sv_pct_val = _sa > 0 ? ((_sa - _ga) / _sa).toFixed(3).replace(/^0+/, '') : ".000";
+                            // For SV%, exclude Empty Net Goals from the denominator (Shots Against).
+                            // Only apply correction if we are looking at Full Game, because we don't have period-specific EN stats.
+                            const adjusted_sa = _sa > 0 ? _sa - (filters.period === 'All' ? game.en_ga : 0) : 0;
+                            const sv_pct_val = adjusted_sa > 0 ? ((_sa - _ga) / adjusted_sa).toFixed(3).replace(/^0+/, '') : ".000";
 
                             const gsax = (game.xga - (game.ga - game.en_ga)).toFixed(2);
                             const opponentName = game.opponent.trim();
@@ -322,13 +327,13 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                                 <td className={`p-1 text-center font-mono ${xgd > 0 ? 'text-green-400/70' : xgd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
                                                     {xgd > 0 ? '+' : ''}{xgd.toFixed(2)}
                                                 </td>
-                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_gf : '-'}</td>
-                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_att : '-'}</td>
-                                                <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>
-                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_ga : '-'}</td>
-                                                <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_att_ag : '-'}</td>
                                             </>
                                         )}
+                                        <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_gf : '-'}</td>
+                                        <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_att : '-'}</td>
+                                        <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>
+                                        <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_ga : '-'}</td>
+                                        <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_att_ag : '-'}</td>
                                     </tr>
                                     {isExpanded && (
                                         <tr>
