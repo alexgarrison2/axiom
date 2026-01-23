@@ -1729,6 +1729,29 @@
         ],
         "f2": [
             {
+                "name": "Vasily Podkolzin",
+                "number": 92,
+                "pos": "lw",
+                "id": 30606,
+                "ppUnit": null
+            },
+            {
+                "name": "Leon Draisaitl",
+                "number": 29,
+                "pos": "c",
+                "id": 2365,
+                "ppUnit": 1
+            },
+            {
+                "name": "Jack Roslovic",
+                "number": 28,
+                "pos": "rw",
+                "id": 2499,
+                "ppUnit": 2
+            }
+        ],
+        "f3": [
+            {
                 "name": "Isaac Howard",
                 "number": 53,
                 "pos": "lw",
@@ -1736,11 +1759,11 @@
                 "ppUnit": 2
             },
             {
-                "name": "Jack Roslovic",
-                "number": 28,
+                "name": "Trent Frederic",
+                "number": 10,
                 "pos": "c",
-                "id": 2499,
-                "ppUnit": 2
+                "id": 2662,
+                "ppUnit": null
             },
             {
                 "name": "Matthew Savoie",
@@ -1750,12 +1773,12 @@
                 "ppUnit": 2
             }
         ],
-        "f3": [
+        "f4": [
             {
-                "name": "Mattias Janmark",
-                "number": 13,
+                "name": "Andrew Mangiapane",
+                "number": 88,
                 "pos": "lw",
-                "id": 2447,
+                "id": 4622,
                 "ppUnit": null
             },
             {
@@ -1766,26 +1789,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Andrew Mangiapane",
-                "number": 88,
+                "name": "Mattias Janmark",
+                "number": 13,
                 "pos": "rw",
-                "id": 4622,
-                "ppUnit": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Vasily Podkolzin",
-                "number": 92,
-                "pos": "lw",
-                "id": 30606,
-                "ppUnit": null
-            },
-            {
-                "name": "Trent Frederic",
-                "number": 10,
-                "pos": "c",
-                "id": 2662,
+                "id": 2447,
                 "ppUnit": null
             }
         ],
@@ -1811,7 +1818,7 @@
                 "number": 25,
                 "pos": "ld",
                 "id": 2139,
-                "ppUnit": 2
+                "ppUnit": null
             },
             {
                 "name": "Ty Emberson",
@@ -1827,22 +1834,13 @@
                 "number": 96,
                 "pos": "ld",
                 "id": 2859,
-                "ppUnit": 1
+                "ppUnit": 2
             },
             {
                 "name": "Spencer Stastney",
                 "number": 24,
                 "pos": "rd",
                 "id": 28862,
-                "ppUnit": null
-            }
-        ],
-        "d4": [
-            {
-                "name": "Alec Regula",
-                "number": null,
-                "pos": "rd",
-                "id": 28804,
                 "ppUnit": null
             }
         ]
@@ -1949,35 +1947,19 @@
                 "ppUnit": null
             },
             {
-                "name": "Brett Kulak",
-                "number": 77,
+                "name": "Erik Karlsson",
+                "number": 65,
                 "pos": "rd",
-                "id": 2466,
-                "ppUnit": 2
+                "id": 1087,
+                "ppUnit": 1
             }
         ],
         "d2": [
             {
-                "name": "Ryan Shea",
-                "number": 5,
+                "name": "Brett Kulak",
+                "number": 77,
                 "pos": "ld",
-                "id": 26606,
-                "ppUnit": 1
-            },
-            {
-                "name": "Jack St. Ivany",
-                "number": null,
-                "pos": "rd",
-                "id": 25428,
-                "ppUnit": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Ryan Graves",
-                "number": 27,
-                "pos": "ld",
-                "id": 3689,
+                "id": 2466,
                 "ppUnit": null
             },
             {
@@ -1985,6 +1967,22 @@
                 "number": 75,
                 "pos": "rd",
                 "id": 4833,
+                "ppUnit": null
+            }
+        ],
+        "d3": [
+            {
+                "name": "Ryan Shea",
+                "number": 5,
+                "pos": "ld",
+                "id": 26606,
+                "ppUnit": 2
+            },
+            {
+                "name": "Jack St. Ivany",
+                "number": null,
+                "pos": "rd",
+                "id": 25428,
                 "ppUnit": null
             }
         ]
@@ -2052,19 +2050,19 @@
                 "ppUnit": 2
             },
             {
-                "name": "Yakov Trenin",
-                "number": 13,
+                "name": "Vinnie Hinostroza",
+                "number": 18,
                 "pos": "rw",
-                "id": 3775,
-                "ppUnit": null
+                "id": 2539,
+                "ppUnit": 2
             }
         ],
         "f4": [
             {
-                "name": "Tyler Pitlick",
-                "number": 19,
+                "name": "Yakov Trenin",
+                "number": 13,
                 "pos": "lw",
-                "id": 1649,
+                "id": 3775,
                 "ppUnit": null
             },
             {
@@ -2075,11 +2073,11 @@
                 "ppUnit": null
             },
             {
-                "name": "Vinnie Hinostroza",
-                "number": 18,
+                "name": "Tyler Pitlick",
+                "number": 19,
                 "pos": "rw",
-                "id": 2539,
-                "ppUnit": 2
+                "id": 1649,
+                "ppUnit": null
             }
         ],
         "d1": [
@@ -2123,10 +2121,10 @@
                 "ppUnit": null
             },
             {
-                "name": "David Spacek",
+                "name": "David Jiricek",
                 "number": null,
                 "pos": "rd",
-                "id": 38624,
+                "id": 34374,
                 "ppUnit": null
             }
         ]
@@ -2226,10 +2224,10 @@
         ],
         "d1": [
             {
-                "name": "Simon Edvinsson",
-                "number": 77,
+                "name": "Ben Chiarot",
+                "number": 8,
                 "pos": "ld",
-                "id": 34667,
+                "id": 1587,
                 "ppUnit": null
             },
             {
@@ -2242,18 +2240,18 @@
         ],
         "d2": [
             {
-                "name": "Ben Chiarot",
-                "number": 8,
-                "pos": "ld",
-                "id": 1587,
-                "ppUnit": null
-            },
-            {
                 "name": "Axel Sandin-Pellikka",
                 "number": null,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 38121,
                 "ppUnit": 2
+            },
+            {
+                "name": "Travis Hamonic",
+                "number": 23,
+                "pos": "rd",
+                "id": 987,
+                "ppUnit": null
             }
         ],
         "d3": [
