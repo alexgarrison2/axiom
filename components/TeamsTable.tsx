@@ -781,7 +781,7 @@ const TeamsTable = () => {
                 </div>
             </div>
 
-            <div className="overflow-auto bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative max-h-[85vh]">
+            <div className="overflow-x-auto bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         {/* Desktop Group Headers */}
