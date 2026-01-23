@@ -299,10 +299,11 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "name": home_team.get("commonName", {}).get("default", "Home"),
             "abbrev": home_team.get("abbrev", "HOM"),
             "opponent": away_team.get("commonName", {}).get("default", "Away"),
-            "team_game_number": 0, # Placeholder
-            "goals": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
-            "sog": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
-            "attempts": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
+            "team_game_number": 0,
+            "goals": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0, "5v5": 0, "ev": 0, "pp": 0, "sh": 0},
+            "sog": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0, "5v5": 0, "ev": 0, "pp": 0, "sh": 0},
+            "attempts": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0, "5v5": 0, "ev": 0, "pp": 0, "sh": 0},
+            "xg": {"total": 0.0, "5v5": 0.0, "ev": 0.0, "pp": 0.0, "sh": 0.0},
             "hits": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
             "pp": {"goals": 0, "opportunities": 0, "time": 0},
             "pk": {'opportunities': 0, 'time': 0},
@@ -318,17 +319,18 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "rest": home_rest,
             "scored_first": 0,
             "max_lead": 0,
-            "en_attempts": 0, # New: Empty Net Attempts
-            "attempts_5v5": 0 # New: 5v5 Attempts
+            "en_attempts": 0,
+            "attempts_5v5": 0 # Legacy field
         },
         away_id: {
             "name": away_team.get("commonName", {}).get("default", "Away"),
             "abbrev": away_team.get("abbrev", "AWY"),
             "opponent": home_team.get("commonName", {}).get("default", "Home"),
-            "team_game_number": 0, # Placeholder
-            "goals": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
-            "sog": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
-            "attempts": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
+            "team_game_number": 0,
+            "goals": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0, "5v5": 0, "ev": 0, "pp": 0, "sh": 0},
+            "sog": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0, "5v5": 0, "ev": 0, "pp": 0, "sh": 0},
+            "attempts": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0, "5v5": 0, "ev": 0, "pp": 0, "sh": 0},
+            "xg": {"total": 0.0, "5v5": 0.0, "ev": 0.0, "pp": 0.0, "sh": 0.0},
             "hits": {"1": 0, "2": 0, "3": 0, "4": 0, "total": 0},
             "pp": {"goals": 0, "opportunities": 0, "time": 0},
             "pk": {'opportunities': 0, 'time': 0},
@@ -344,8 +346,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "rest": away_rest,
             "scored_first": 0,
             "max_lead": 0,
-            "en_attempts": 0, # New
-            "attempts_5v5": 0 # New: 5v5 Attempts
+            "en_attempts": 0,
+            "attempts_5v5": 0
         }
     }
     
@@ -360,19 +362,13 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
     current_strength = (5, 5, 1, 1) 
     # (Home Score, Away Score)
     current_score = (0, 0)
-    ot_forcing_team = None # Track team that forces OT (ties game in regulation)
+    ot_forcing_team = None
     
-    # PP State Tracking for Opportunity Counts
     home_pp_active = False
     away_pp_active = False
-    
-    # Active Penalties List: [{'end_time': int, 'team_id': int}]
     active_penalties = []
-    
-    # Shot Data Collection
     shot_rows = []
     
-    # Advanced xG Context Tracking
     last_event = {
         'time': -100.0,
         'type': 'None',
@@ -385,21 +381,55 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
     first_goal_scored = False
     
     # Pre-process Penalties for Coincidental Checks
-    # Map: time_seconds -> list of {team_id, duration, end_time}
     penalty_map = defaultdict(list)
     for p in plays:
         if p.get("typeCode") == 509:
             details = p.get("details", {})
             p_time = time_to_seconds(p.get("timeInPeriod", "00:00"))
-            # Adjust for period
             p_period = p.get("periodDescriptor", {}).get("number", 1)
-            # We only care about coincidental in same period, same time.
-            # Let's use a unique key: (period, time_seconds)
             key = (p_period, p_time)
             penalty_map[key].append({
                 'team_id': details.get("eventOwnerTeamId"),
                 'duration': details.get("duration", 2)
             })
+
+    def get_strength_type(hs, as_num, hg, ag, owner_team_id):
+        """
+        Returns '5v5', 'ev', 'pp', 'sh' for the OWNER team.
+        """
+        # Exclude Goalies for numeric calc check, but strictly 5v5 required for 5v5.
+        
+        # 5v5 Strict
+        if hs == 5 and as_num == 5 and hg == 1 and ag == 1:
+            return '5v5', 'ev' # It is BOTH 5v5 and EV
+            
+        # Strength Difference
+        # Owner Skaters vs Opp Skaters
+        my_skaters = hs if owner_team_id == home_id else as_num
+        opp_skaters = as_num if owner_team_id == home_id else hs
+        
+        # EV Check (Equal Skaters, Goalies present)
+        # Note: 4v4, 3v3 are EV.
+        # Empty Net situations (6v5) are usually NOT EV in loose sense, but strictly yes numeric advantage.
+        # Standard AdvancedStats:
+        # 5v5: 5s, 5s, 1g, 1g.
+        # EV: 5v5, 4v4, 3v3. (Goalies present).
+        # PP: My Skaters > Opp Skaters.
+        # SH: My Skaters < Opp Skaters.
+        # Other: Empty Net, etc.
+        
+        is_empty_net = (hg == 0 or ag == 0)
+        
+        if not is_empty_net and my_skaters == opp_skaters:
+            return None, 'ev' # Not 5v5 (unless handled above), but is EV
+        
+        if my_skaters > opp_skaters:
+            return None, 'pp'
+            
+        if my_skaters < opp_skaters:
+            return None, 'sh'
+            
+        return None, None # Fallback (e.g. Empty Net 6v5 -> PP? Or just Other?)
 
     for i, play in enumerate(sorted_plays):
         event_id = play.get("eventId")
@@ -407,25 +437,31 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
         details = play.get("details", {})
         period_desc = play.get("periodDescriptor", {})
         period_num = period_desc.get("number", 1)
-        period_type = period_desc.get("periodType", "REG") # REG, OT, SO
+        period_type = period_desc.get("periodType", "REG")
         
-        # Skip Shootout Events
         if period_type == 'SO':
             continue
         
-        # Time Calculation
         time_in_period = play.get("timeInPeriod", "00:00")
         current_seconds = time_to_seconds(time_in_period)
         
-        # Handle Period Changes (Reset timer and penalties)
         if period_num != prev_period:
             prev_time_seconds = 0
             prev_period = period_num
-            active_penalties = [] # Penalties carry over in real life, but for TOI buckets per period, we reset or need complex carry-over. 
-            # Simplification: The situationCode at start of period handles the state. 
-            # We just need to clear the *expiration events* list because the time base reset to 0.
-            # Ideally we'd re-calculate end times relative to new period, but API situationCode is the source of truth for state.
-            # So clearing is safer to avoid negative durations.
+            active_penalties = []
+            
+        # ... (Virtual Expiration Logic - Same as before) ...
+        # (Shortening for diff context, assuming existing logic remains or needs slight re-paste if I cut it off)
+        # Wait, I am replacing a big block. I need to keep the Virtual Expiration logic or re-write it.
+        # The surrounding context of my replacement was lines 298-349.
+        # I need to be careful not to delete the Expiration Logic loop that follows.
+        # The replacement block ends at line 645, which is inside `shot_row` construction in my viewed file?
+        # NO. The viewed file `nhl_scraper_poc.py` had `aggregate_game_stats` starting at line 282.
+        # My target replacement lines 298-349 cover the `teams` dict initialization.
+        # My replacement content covers `teams` dict replacement.
+        # BUT I also added `get_strength_type` helper and some variable inits.
+        # I should just replace the `teams` initialization block first.
+
             
         # --- Process Virtual Expirations (Events between prev_time and current_time) ---
         # Find penalties that expire in this interval
@@ -1086,13 +1122,50 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             # Add to DataFrame for summing
             df_shots['xG'] = probs
             
-            # Sum by team
-            xg_home = df_shots[df_shots['team_id'] == home_id]['xG'].sum()
-            xg_away = df_shots[df_shots['team_id'] == away_id]['xG'].sum()
+            # Helper to map strength string from my logic to row features
+            # The shot_rows already have 'strength_state' which is '5v5', '5v4', 'EmptyNet'.
+            # We need to map these to EV/PP/SH.
             
-            # 5v5 xG
-            xg_home_5v5 = df_shots[(df_shots['team_id'] == home_id) & (df_shots['strength_state'] == '5v5')]['xG'].sum()
-            xg_away_5v5 = df_shots[(df_shots['team_id'] == away_id) & (df_shots['strength_state'] == '5v5')]['xG'].sum()
+            def map_strength(row):
+                s = row['strength_state']
+                code = row['strength_state'] # e.g. "5v5" or "5v4" or "EmptyNet"
+                ev, pp, sh = 0, 0, 0
+                
+                # Parse
+                if code == 'EmptyNet':
+                    # Empty Net is technically a form of unequal strength but often bucketed separately or as Other.
+                    # For filtering, usually excluded from strictly 5v5.
+                    pass
+                else:
+                    try:
+                        p = code.split('v')
+                        my_s = int(p[0])
+                        op_s = int(p[1])
+                        
+                        if my_s == op_s: ev = 1
+                        if my_s > op_s: pp = 1
+                        if my_s < op_s: sh = 1
+                    except:
+                        pass
+                
+                return pd.Series([ev, pp, sh])
+
+            df_shots[['is_ev', 'is_pp', 'is_sh']] = df_shots.apply(map_strength, axis=1)
+
+            # Sum by team & strength
+            for tid in [home_id, away_id]:
+                t_mask = df_shots['team_id'] == tid
+                teams[tid]['xg']['total'] = df_shots[t_mask]['xG'].sum()
+                teams[tid]['xg']['5v5'] = df_shots[t_mask & (df_shots['strength_state'] == '5v5')]['xG'].sum()
+                teams[tid]['xg']['ev'] = df_shots[t_mask & (df_shots['is_ev'] == 1)]['xG'].sum()
+                teams[tid]['xg']['pp'] = df_shots[t_mask & (df_shots['is_pp'] == 1)]['xG'].sum()
+                teams[tid]['xg']['sh'] = df_shots[t_mask & (df_shots['is_sh'] == 1)]['xG'].sum()
+
+            
+            xg_home = teams[home_id]['xg']['total']
+            xg_away = teams[away_id]['xg']['total']
+            xg_home_5v5 = teams[home_id]['xg']['5v5']
+            xg_away_5v5 = teams[away_id]['xg']['5v5']
             
             # Update shot_rows with xG values (optional, for export)
             for i, row in enumerate(shot_rows):
@@ -1324,6 +1397,47 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "time_4v6": stats['toi'].get('4v6', 0),
             "time_4v4": stats['toi'].get('4v4', 0),
             "time_3v3": stats['toi'].get('3v3', 0),
+            
+            # --- STRENGTH SPLITS ---
+            # Goals
+            "goals_5v5": stats['goals']['5v5'],
+            "goals_ev": stats['goals']['ev'],
+            "goals_pp": stats['goals']['pp'],
+            "goals_sh": stats['goals']['sh'],
+            "goals_ag_5v5": opp_stats['goals']['5v5'],
+            "goals_ag_ev": opp_stats['goals']['ev'],
+            "goals_ag_pp": opp_stats['goals']['pp'],
+            "goals_ag_sh": opp_stats['goals']['sh'],
+            
+            # SOG
+            "sog_5v5": stats['sog']['5v5'],
+            "sog_ev": stats['sog']['ev'],
+            "sog_pp": stats['sog']['pp'],
+            "sog_sh": stats['sog']['sh'],
+            "sog_ag_5v5": opp_stats['sog']['5v5'],
+            "sog_ag_ev": opp_stats['sog']['ev'],
+            "sog_ag_pp": opp_stats['sog']['pp'],
+            "sog_ag_sh": opp_stats['sog']['sh'],
+            
+            # Attempts
+            "attempts_5v5": stats['attempts']['5v5'], # Overwrite old logic if needed, but this is cleaner
+            "attempts_ev": stats['attempts']['ev'],
+            "attempts_pp": stats['attempts']['pp'],
+            "attempts_sh": stats['attempts']['sh'],
+            "attempts_ag_5v5": opp_stats['attempts']['5v5'],
+            "attempts_ag_ev": opp_stats['attempts']['ev'],
+            "attempts_ag_pp": opp_stats['attempts']['pp'],
+            "attempts_ag_sh": opp_stats['attempts']['sh'],
+            
+            # xG Splits
+            "xg_for_5v5": round(stats['xg']['5v5'], 2),
+            "xg_for_ev": round(stats['xg']['ev'], 2),
+            "xg_for_pp": round(stats['xg']['pp'], 2),
+            "xg_for_sh": round(stats['xg']['sh'], 2),
+            "xg_ag_5v5": round(opp_stats['xg']['5v5'], 2),
+            "xg_ag_ev": round(opp_stats['xg']['ev'], 2),
+            "xg_ag_pp": round(opp_stats['xg']['pp'], 2),
+            "xg_ag_sh": round(opp_stats['xg']['sh'], 2),
         }
         rows.append(row)
         

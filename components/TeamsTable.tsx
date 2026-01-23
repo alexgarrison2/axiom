@@ -16,33 +16,78 @@ interface TeamInfo {
 interface RawGameStat {
     game_id: string;
     game_date: string;
-    team: string; // Common name e.g. "Panthers"
+    team: string;
     opponent: string;
     home_away: 'Home' | 'Away';
-    result: string; // "RW", "RL", "OTW", "OTL", "SOW", "SOL"
+    result: string;
 
-    // Stats
+    // Stats - Totals
     goals_for: string;
     goals_ag: string;
     sog_for: string;
     sog_ag: string;
-    attempts_for: string; // CF
-    attempts_ag: string;  // CA
-    attempts_for_5v5: string; // CF 5v5
-    attempts_ag_5v5: string; // CA 5v5
+    attempts_for: string;
+    attempts_ag: string;
+
+    // 5v5 Splits
+    goals_5v5?: string;
+    goals_ag_5v5?: string;
+    sog_5v5?: string;
+    sog_ag_5v5?: string;
+    attempts_5v5?: string;
+    attempts_ag_5v5?: string;
+    xg_for_5v5?: string;
+    xg_ag_5v5?: string; // Note: Script outputs xg_ag not xG_against for splits? Check script.
+    // Script: "xg_ag_5v5"
+    // Script: "xg_for_5v5"
+
+    // EV Splits
+    goals_ev?: string;
+    goals_ag_ev?: string;
+    sog_ev?: string;
+    sog_ag_ev?: string;
+    attempts_ev?: string;
+    attempts_ag_ev?: string;
+    xg_for_ev?: string;
+    xg_ag_ev?: string;
+
+    // PP Splits
+    goals_pp?: string;
+    goals_ag_pp?: string;
+    sog_pp?: string;
+    sog_ag_pp?: string;
+    attempts_pp?: string;
+    attempts_ag_pp?: string;
+    xg_for_pp?: string;
+    xg_ag_pp?: string;
+
+    // SH Splits
+    goals_sh?: string;
+    goals_ag_sh?: string;
+    sog_sh?: string;
+    sog_ag_sh?: string;
+    attempts_sh?: string;
+    attempts_ag_sh?: string;
+    xg_for_sh?: string;
+    xg_ag_sh?: string;
 
     pp_opportunities: string;
     pp_goals: string;
-    pk_opportunities: string; // Times shorthanded
-    pp_goals_against: string; // PP goals against (PK goals allowed)
+    pk_opportunities: string;
+    pp_goals_against: string;
 
-    pp_time: string; // seconds
-    pk_time: string; // seconds
+    pp_time: string;
+    pk_time: string;
 
     xG_for: string;
     xG_against: string;
-    xG_for_5v5: string;
-    xG_against_5v5: string;
+
+    // Legacy mapping check: Script outputs "xg_for_5v5". The interface had "xG_for_5v5". 
+    // I need to align them. Script writes keys in lowercase usually or mapped.
+    // Script: "xG_for_5v5" was OLD logic.
+    // My NEW script update writes: "xg_for_5v5", "xg_ag_5v5".
+    // I should support both or strictly the new one.
+    // Raw CSV headers will be consistent with script.
 
     starting_goalie: string;
     starting_goalie_opp: string;
@@ -69,18 +114,18 @@ interface TeamStat {
     pp_goals: number;
     pp_opps: number;
     pp_pct: number;
-    pp_time_per_game: string; // Formatted mm:ss
+    pp_time_per_game: string;
 
     pk_goals_allowed: number;
     pk_opps: number;
     pk_pct: number;
-    pk_time_per_game: string; // Formatted mm:ss
+    pk_time_per_game: string;
 
     sf_per_game: number;
     sa_per_game: number;
 
-    cf_per_game: number; // Attempts For
-    ca_per_game: number; // Attempts Against
+    cf_per_game: number;
+    ca_per_game: number;
 
     sh_pct: number;
     sv_pct: number;
@@ -94,93 +139,19 @@ interface TeamStat {
     xga_per_game: number;
     xgf_pct: number;
 
-    gsax: number; // Goals Saved Above Expected (xGA - GA)
-    otml: number; // Off the Mat Losses
+    gsax: number;
+    otml: number;
     starterName?: string;
     starterStatus?: string;
 }
 
-interface Matchup {
-    home: string;
-    away: string;
-    homeStarter?: string;
-    homeStarterStatus?: string;
-    awayStarter?: string;
-    awayStarterStatus?: string;
-}
-
-type SortKey = keyof TeamStat;
-type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter';
-
-const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
-
-const cleanName = (name: string) => {
-    if (!name) return '';
-    return name.replace(/\s*\(.*?\)\s*/g, '').trim();
-};
-
-const getStarterStatus = (name: string) => {
-    if (!name) return 'UNCONFIRMED';
-    const match = name.match(/\((.*?)\)$/);
-    return match ? match[1] : 'UNCONFIRMED';
-};
-
-const getGradientColor = (value: number, min: number, max: number, inverse: boolean = false) => {
-    if (value === null || value === undefined || isNaN(value)) return 'inherit';
-
-    if (max === min) return '#DADADA';
-
-    let ratio = (value - min) / (max - min);
-    if (ratio < 0) ratio = 0;
-    if (ratio > 1) ratio = 1;
-
-    if (inverse) ratio = 1 - ratio;
-
-    // Pink (#FF44A5) -> Grey (#DADADA) -> Blue (#0083E7)
-    const pink = { r: 255, g: 68, b: 165 };
-    const grey = { r: 218, g: 218, b: 218 };
-    const blue = { r: 0, g: 131, b: 231 };
-
-    let r, g, b;
-
-    if (ratio < 0.5) {
-        // 0 to 0.5 -> Pink to Grey
-        const subRatio = ratio * 2;
-        r = Math.round(pink.r + (grey.r - pink.r) * subRatio);
-        g = Math.round(pink.g + (grey.g - pink.g) * subRatio);
-        b = Math.round(pink.b + (grey.b - pink.b) * subRatio);
-    } else {
-        // 0.5 to 1.0 -> Grey to Blue
-        const subRatio = (ratio - 0.5) * 2;
-        r = Math.round(grey.r + (blue.r - grey.r) * subRatio);
-        g = Math.round(grey.g + (blue.g - grey.g) * subRatio);
-        b = Math.round(grey.b + (blue.b - grey.b) * subRatio);
-    }
-
-    return `rgb(${r}, ${g}, ${b})`;
-};
-
-const formatStarterName = (name?: string) => {
-    if (!name) return '';
-    const parts = name.trim().split(' ');
-    if (parts.length < 2) return name;
-    // Handle names like "Casey DeSmith" -> "C. DeSmith"
-    return `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
-};
-
-const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamStat => {
+const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], strength: 'All' | '5v5' | 'EV' | 'PP' | 'SH'): TeamStat => {
     if (teamGames.length === 0) {
-        // Return zeroed stats
         return {
             team: teamName, gp: 0, wins: 0, losses: 0, otl: 0, points: 0, pt_pct: 0,
             gf_per_game: 0, ga_per_game: 0, goal_diff: 0, pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_time_per_game: '0:00',
             pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_time_per_game: '0:00',
             sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
-
             engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0
         };
     }
@@ -197,14 +168,44 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
     let xgf = 0, xga = 0;
     let otml = 0;
 
+    // Helper to fetch correct column based on strength
+    const getVal = (g: any, base: string) => {
+        let key = base;
+
+        // Base Mappings usually: 'goals_for', 'goals_ag'
+        // Splits: 'goals_5v5', 'goals_ag_5v5'
+
+        if (strength !== 'All') {
+            const suffix = `_${strength.toLowerCase()}`; // _5v5, _ev, _pp, _sh
+
+            // Handle specific field naming conventions from script
+            if (base === 'goals_for') key = `goals${suffix}`;
+            if (base === 'goals_ag') key = `goals_ag${suffix}`;
+            if (base === 'sog_for') key = `sog${suffix}`;
+            if (base === 'sog_ag') key = `sog_ag${suffix}`;
+            if (base === 'attempts_for' || base === 'attempts_for_5v5') key = `attempts${suffix}`;
+            if (base === 'attempts_ag' || base === 'attempts_ag_5v5') key = `attempts_ag${suffix}`;
+            if (base === 'xG_for') key = `xg_for${suffix}`;
+            if (base === 'xG_against') key = `xg_ag${suffix}`;
+        }
+
+        return parseFloat(g[key] || '0');
+    };
+
     teamGames.forEach(g => {
         gp++;
+        // Record is always based on Game Result, unaffected by filter
         if (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') wins++;
         else if (g.result === 'RL') losses++;
         else otl++;
 
-        gf += parseFloat(g.goals_for || '0');
-        ga += parseFloat(g.goals_ag || '0');
+        gf += getVal(g, 'goals_for');
+        ga += getVal(g, 'goals_ag');
+
+        // PP/PK Stats are special. Usually we only want them in 'All' or if specifically filtered to PP/SH?
+        // If filter is 5v5, PP/PK stats should probably be 0 or hidden?
+        // Existing behavior: Just show total. 
+        // For now, let's keep totals unless logic dictates otherwise.
 
         pp_goals += parseFloat(g.pp_goals || '0');
         pp_opps += parseFloat(g.pp_opportunities || '0');
@@ -214,22 +215,24 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         pk_opps += parseFloat(g.pk_opportunities || '0');
         pk_time += parseFloat(g.pk_time || '0');
 
-        sf += parseFloat(g.sog_for || '0');
-        sa += parseFloat(g.sog_ag || '0');
+        sf += getVal(g, 'sog_for');
+        sa += getVal(g, 'sog_ag');
 
-        cf += parseFloat(g.attempts_for_5v5 || '0');
-        ca += parseFloat(g.attempts_ag_5v5 || '0');
+        cf += getVal(g, 'attempts_for');
+        ca += getVal(g, 'attempts_ag');
 
-        saves += parseFloat(g.saves_for || '0');
+        // Saves should derived from SA - GA for consistency with filter
+        // saves += parseFloat(g.saves_for || '0'); 
+        // We calculate saves later: sa - ga (filtered)
 
         engf += parseFloat(g.emptynet_goalsfor || '0');
         enga += parseFloat(g.emptynet_goalsagainst || '0');
         en_attempts += parseFloat(g.en_attempts_for || '0');
 
-        xgf += parseFloat(g.xG_for || '0');
-        xga += parseFloat(g.xG_against || '0');
+        xgf += getVal(g, 'xG_for');
+        xga += getVal(g, 'xG_against');
 
-        // OtmL Logic: EN Att > 0 AND EN GF < 1 AND Result is Loss (RL, OTL, SOL)
+        // OtmL Logic
         const g_en_attempts = parseFloat(g.en_attempts_for || '0');
         const g_en_goals = parseFloat(g.emptynet_goalsfor || '0');
         if (g_en_attempts > 0 && g_en_goals < 1 && (g.result === 'RL' || g.result === 'OTL' || g.result === 'SOL')) {
@@ -238,6 +241,24 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
     });
 
     const points = wins * 2 + otl;
+
+    // Recalculate Saves based on filtered SA and GA
+    // Note: If filter is All, we subtract ENGA if we want save % on shots? 
+    // Standard Sv% excludes EN.
+    // However, for 5v5, EN is usually not possible (unless 5v5 EN? rare/impossible without penalty).
+    // So for splits, sa - ga is fine.
+    // For All, we should subtract ENGA from GA? No, EN GA is a goal.
+    // Sv% = Saves / Shots. Saves = Shots - Goals.
+    // But EN Goals are goals on 0 saves.
+    // So Real Saves = (SA) - (GA - ENGA).
+
+    let adjusted_ga = ga;
+    if (strength === 'All') {
+        adjusted_ga = ga - enga;
+    }
+    // If filter is 5v5, enga is likely 0, so logic holds.
+
+    const calculated_saves = sa - adjusted_ga;
 
     return {
         team: teamName,
@@ -269,10 +290,9 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         ca_per_game: ca / gp,
 
         sh_pct: sf > 0 ? (gf / sf) * 100 : 0,
-        sv_pct: (sa - enga) > 0 ? (saves / (sa - enga)) * 100 : 0,
+        sv_pct: sa > 0 ? (calculated_saves / sa) * 100 : 0,
 
         engf,
-
         enga,
         en_attempts,
         ens_pct: en_attempts > 0 ? (engf / en_attempts) * 100 : 0,
@@ -281,7 +301,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         xga_per_game: xga / gp,
         xgf_pct: (xgf + xga) > 0 ? (xgf / (xgf + xga)) * 100 : 0,
         otml,
-        gsax: xga - (ga - enga) // Cumulative GSAx (Excluding EN Goals)
+        gsax: xga - adjusted_ga // Use filtered xGA and adjusted GA
     };
 };
 
@@ -738,7 +758,7 @@ const TeamsTable = () => {
                 </div>
 
                 {/* Bottom Row: Filters (Only manual filters) */}
-                <div className="flex flex-row gap-4 items-center">
+                <div className="flex flex-row gap-4 items-center flex-wrap">
                     {/* Location Filter: Only show if NOT in PlayingTodayLocation/Starter(Location) mode (since those enforce location) */}
                     {viewMode !== 'PlayingTodayLocation' && viewMode !== 'PlayingTodayLocationStarter' && (
                         <div className="flex flex-col gap-2">
@@ -757,6 +777,15 @@ const TeamsTable = () => {
                             options={['All', 5, 10, 20]}
                             current={filterLastN}
                             onChange={setFilterLastN}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Strength</label>
+                        <ButtonGroup
+                            options={['All', '5v5', 'EV', 'PP', 'SH']}
+                            current={filterStrength}
+                            onChange={setFilterStrength}
                         />
                     </div>
                 </div>

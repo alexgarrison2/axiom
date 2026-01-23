@@ -37,7 +37,8 @@ export default function TeamDetailPage() {
         loc: 'All',
         period: 'All',
         last: 'All',
-        result: 'All'
+        result: 'All',
+        strength: 'All'
     });
 
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
