@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
 import { TeamStandings, SimResult } from '@/utils/simulation-engine';
 import LogoDisplay from './LogoDisplay';
+import PlayoffTooltip from './PlayoffTooltip';
 
 interface PlayoffTableProps {
     currentStandings: TeamStandings[];
     simResults: Record<string, SimResult>;
-    teams?: Record<string, any>; // Optional for logos if not in standings (but usually we have tricode)
+    teams?: Record<string, any>;
 }
 
 const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResults }) => {
@@ -15,7 +16,7 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
 
         // 1. Map Data
         const mapped = currentStandings.map(team => {
-            const sim = simResults[team.tricode] || { madePlayoffs: 0, totalSims: 1, totalPoints: 0, wonCup: 0 };
+            const sim = simResults[team.tricode] || { madePlayoffs: 0, totalSims: 1, totalPoints: 0, wonCup: 0, pointDist: new Map(), divRankDist: new Map(), roundExitDist: {} };
             const pace = team.gamesPlayed > 0 ? Math.round((team.points / team.gamesPlayed) * 82) : 0;
             const proj = Math.round(sim.totalPoints / sim.totalSims);
             const playoffOdds = (sim.madePlayoffs / sim.totalSims) * 100;
@@ -28,24 +29,17 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
         const getConferenceStructure = (confName: string, div1: string, div2: string) => {
             const confTeams = mapped.filter(t => t.conference.includes(confName));
 
-            // Sort by Projected Points for initial seeding logic if needed, 
-            // but primarily we filter by division first.
-
             // Buckets
             const d1Teams: typeof mapped = [];
             const d2Teams: typeof mapped = [];
 
             // Assign to divisions
             confTeams.forEach(t => {
-                // Check division name or map standard logic
-                // API usually returns 'Atlantic', 'Metropolitan', 'Central', 'Pacific'
-                // Our standings interface says `division` is a code like 'ATL'
                 const d = t.division;
                 if (d === div1) d1Teams.push(t);
                 else if (d === div2) d2Teams.push(t);
                 else {
-                    // Fallback based on known mapping if division codes mismatch
-                    // (Optional safety net)
+                    // Fallback 
                     if (['ATL', 'BOS', 'BUF', 'DET', 'FLA', 'MTL', 'OTT', 'TBL', 'TOR'].includes(t.tricode) && div1 === 'ATL') d1Teams.push(t);
                     else if (div1 === 'CEN' && ['ARI', 'UTA', 'CHI', 'COL', 'DAL', 'MIN', 'NSH', 'STL', 'WPG'].includes(t.tricode)) d1Teams.push(t);
                     else d2Teams.push(t);
@@ -80,13 +74,13 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
 
     return (
         <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-8 pb-12">
-            <TableSection title="Western Conference" groups={processedTeams.west} />
-            <TableSection title="Eastern Conference" groups={processedTeams.east} />
+            <TableSection title="Western Conference" groups={processedTeams.west} simResults={simResults} />
+            <TableSection title="Eastern Conference" groups={processedTeams.east} simResults={simResults} />
         </div>
     );
 };
 
-const TableSection = ({ title, groups }: { title: string, groups: any }) => {
+const TableSection = ({ title, groups, simResults }: { title: string, groups: any, simResults: Record<string, SimResult> }) => {
     if (!groups) return null;
     return (
         <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm h-full">
@@ -95,42 +89,35 @@ const TableSection = ({ title, groups }: { title: string, groups: any }) => {
             </h3>
 
             {/* Division 1 */}
-            <GroupSection group={groups.div1} />
+            <GroupSection group={groups.div1} simResults={simResults} />
             <div className="h-px bg-white/5 mx-4" />
 
             {/* Division 2 */}
-            <GroupSection group={groups.div2} />
+            <GroupSection group={groups.div2} simResults={simResults} />
             <div className="h-px bg-white/5 mx-4" />
 
             {/* Wildcard */}
-            <GroupSection group={groups.wildcards} isWildcard />
+            <GroupSection group={groups.wildcards} isWildcard simResults={simResults} />
         </div>
     );
 };
 
-const GroupSection = ({ group, isWildcard }: { group: { name: string, teams: any[] }, isWildcard?: boolean }) => (
+const GroupSection = ({ group, isWildcard, simResults }: { group: { name: string, teams: any[] }, isWildcard?: boolean, simResults: Record<string, SimResult> }) => (
     <div className="py-2">
-        <h4 className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-neutral-500 opacity-60">
-            {group.name}
-        </h4>
+        {/* Header Row for Section */}
+        <div className="px-4 py-2 flex items-center justify-between">
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 opacity-60">
+                {group.name}
+            </h4>
+        </div>
+
         <table className="w-full text-xs">
-            {!isWildcard && (
-                <thead className="sr-only">
-                    <tr>
-                        <th className="w-12"></th>
-                        <th>Team</th>
-                        <th>Pace</th>
-                        <th>Proj</th>
-                        <th>Playoff</th>
-                        <th>Cup</th>
-                    </tr>
-                </thead>
-            )}
             {isWildcard && (
                 <thead>
                     <tr className="text-neutral-600 font-mono text-[9px] uppercase tracking-wider border-b border-white/5">
                         <th className="px-3 py-1 text-left w-12 opacity-0">.</th>
                         <th className="px-3 py-1 text-left"></th>
+                        <th className="px-3 py-1 text-center">Pts</th>
                         <th className="px-3 py-1 text-center">Pace</th>
                         <th className="px-3 py-1 text-center">Proj</th>
                         <th className="px-3 py-1 text-center">PO%</th>
@@ -140,8 +127,7 @@ const GroupSection = ({ group, isWildcard }: { group: { name: string, teams: any
             )}
 
             <tbody className="divide-y divide-white/5">
-                {group.teams.map((team, idx) => {
-                    // Color coding for Odds
+                {group.teams.map((team: any, idx: number) => {
                     const oddsColor = team.playoffOdds >= 90 ? 'text-neon-green font-bold text-glow-green' :
                         team.playoffOdds >= 50 ? 'text-white font-bold' :
                             team.playoffOdds >= 10 ? 'text-neutral-300' : 'text-neutral-500';
@@ -150,42 +136,47 @@ const GroupSection = ({ group, isWildcard }: { group: { name: string, teams: any
                         team.playoffOdds <= 5 ? 'bg-red-500/10' : '';
 
                     return (
-                        <tr key={team.tricode} className="group hover:bg-white/[0.02] transition-colors relative">
-                            {/* Line separating WC2 and the rest */}
-                            {isWildcard && idx === 1 && (
-                                <td colSpan={6} className="absolute bottom-0 left-0 right-0 border-b border-neutral-700/50 z-10 w-full pointer-events-none"></td>
-                            )}
+                        <PlayoffTooltip key={team.tricode} team={team} simResult={simResults[team.tricode]}>
+                            <tr className="group hover:bg-white/[0.02] transition-colors relative cursor-default">
+                                {/* Line separating WC2 and the rest */}
+                                {isWildcard && idx === 1 && (
+                                    <td colSpan={7} className="absolute bottom-0 left-0 right-0 border-b border-neutral-700/50 z-10 w-full pointer-events-none"></td>
+                                )}
 
-                            <td className="px-3 py-1.5 text-center w-12">
-                                <div className="w-9 h-9 relative mx-auto opacity-90 group-hover:opacity-100 transition-opacity">
-                                    <LogoDisplay
-                                        triCode={team.tricode}
-                                        src=""
-                                        alt={`${team.tricode} Logo`}
-                                        className="w-full h-full"
-                                        variant="standard"
-                                    />
-                                </div>
-                            </td>
-                            <td className="px-3 py-1.5 font-bold text-white tracking-wide">
-                                {team.tricode}
-                                {isWildcard && idx < 2 && <span className="ml-1.5 text-xs text-neutral-500 font-normal">WC{idx + 1}</span>}
-                            </td>
-                            <td className="px-3 py-1.5 text-center font-mono text-neutral-400 font-bold opacity-70">
-                                {team.pace}
-                            </td>
-                            <td className="px-3 py-1.5 text-center font-mono text-white text-base font-bold">
-                                {team.proj}
-                            </td>
-                            <td className={`px-3 py-1.5 text-center relative`}>
-                                <div className={`inline-block px-1.5 py-0.5 rounded ${bgOdds}`}>
-                                    <span className={`${oddsColor}`}>{team.playoffOdds.toFixed(0)}%</span>
-                                </div>
-                            </td>
-                            <td className="px-3 py-1.5 text-center font-mono text-neutral-400">
-                                {team.cupOdds > 0.1 ? `${team.cupOdds.toFixed(1)}%` : '-'}
-                            </td>
-                        </tr>
+                                <td className="px-3 py-1.5 text-center w-12">
+                                    <div className="w-9 h-9 relative mx-auto opacity-90 group-hover:opacity-100 transition-opacity">
+                                        <LogoDisplay
+                                            triCode={team.tricode}
+                                            src=""
+                                            alt={`${team.tricode} Logo`}
+                                            className="w-full h-full"
+                                            variant="standard"
+                                        />
+                                    </div>
+                                </td>
+                                <td className="px-3 py-1.5 font-bold text-white tracking-wide">
+                                    {team.tricode}
+                                    {isWildcard && idx < 2 && <span className="ml-1.5 text-xs text-neutral-500 font-normal">WC{idx + 1}</span>}
+                                </td>
+                                <td className="px-3 py-1.5 text-center font-mono text-neutral-300 font-bold">
+                                    {team.points}
+                                </td>
+                                <td className="px-3 py-1.5 text-center font-mono text-neutral-400 font-bold opacity-70">
+                                    {team.pace}
+                                </td>
+                                <td className="px-3 py-1.5 text-center font-mono text-white text-base font-bold">
+                                    {team.proj}
+                                </td>
+                                <td className={`px-3 py-1.5 text-center relative`}>
+                                    <div className={`inline-block px-1.5 py-0.5 rounded ${bgOdds}`}>
+                                        <span className={`${oddsColor}`}>{team.playoffOdds.toFixed(0)}%</span>
+                                    </div>
+                                </td>
+                                <td className="px-3 py-1.5 text-center font-mono text-neutral-400">
+                                    {team.cupOdds > 0.1 ? `${team.cupOdds.toFixed(1)}%` : '-'}
+                                </td>
+                            </tr>
+                        </PlayoffTooltip>
                     );
                 })}
             </tbody>

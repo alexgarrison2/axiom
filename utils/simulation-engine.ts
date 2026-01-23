@@ -17,9 +17,14 @@ export interface TeamStandings {
 export interface SimResult {
     madePlayoffs: number; // Count
     wonDivision: number;
-    wonCup: number; // Placeholder for future
+    wonCup: number;
     totalSims: number;
     totalPoints: number; // Sum of points across all sims
+
+    // New Detailed Distributions
+    pointDist: Map<number, number>; // Points -> Count
+    divRankDist: Map<number, number>; // Rank (1-8) -> Count
+    roundExitDist: Record<string, number>; // 'R1', 'R2', 'CF', 'F', 'CUP', 'MISS' -> Count
 }
 
 export class SeasonSimulator {
@@ -119,47 +124,91 @@ export class SeasonSimulator {
 
         // Init results
         this.baseStandings.forEach((_, key) => {
-            results.set(key, { madePlayoffs: 0, wonDivision: 0, wonCup: 0, totalSims: iterations, totalPoints: 0 });
+            results.set(key, {
+                madePlayoffs: 0,
+                wonDivision: 0,
+                wonCup: 0,
+                totalSims: iterations,
+                totalPoints: 0,
+                pointDist: new Map(),
+                divRankDist: new Map(),
+                roundExitDist: { 'MISS': 0, 'R1': 0, 'R2': 0, 'CF': 0, 'F': 0, 'CUP': 0 }
+            });
         });
 
         for (let i = 0; i < iterations; i++) {
             const finalStandings = this.simulateSeason();
             const playoffTeams = this.determinePlayoffTeams(finalStandings);
 
+            // 1. Track Points & Division Rank
+            // Calculate Rank within Division
+            const divSims: Record<string, TeamStandings[]> = { ATL: [], MET: [], CEN: [], PAC: [] };
+            finalStandings.forEach(t => {
+                const div = this.getDivision(t.tricode);
+                if (divSims[div]) divSims[div].push(t);
+            });
+            // Sort divisions
+            Object.values(divSims).forEach(list => list.sort((a, b) => b.points - a.points));
+
+            // Update Distributions
             finalStandings.forEach((team, tricode) => {
                 const res = results.get(tricode)!;
                 res.totalPoints += team.points;
+
+                // Point Distribution
+                const currCount = res.pointDist.get(team.points) || 0;
+                res.pointDist.set(team.points, currCount + 1);
+
+                // Division Rank Distribution
+                const div = this.getDivision(tricode);
+                const rank = divSims[div].findIndex(t => t.tricode === tricode) + 1;
+                const rCount = res.divRankDist.get(rank) || 0;
+                res.divRankDist.set(rank, rCount + 1);
             });
 
+            // 2. Track Playoffs Made
             playoffTeams.forEach(tricode => {
                 results.get(tricode)!.madePlayoffs++;
             });
 
-            // Simulate Playoff Bracket
-            const winnerCode = this.simulatePlayoffs(playoffTeams, finalStandings);
-            if (winnerCode) {
-                results.get(winnerCode)!.wonCup++;
-            }
+            // Track MISS for those who didn't format
+            const playoffSet = new Set(playoffTeams);
+            this.baseStandings.forEach((_, tricode) => {
+                if (!playoffSet.has(tricode)) {
+                    results.get(tricode)!.roundExitDist['MISS']++;
+                }
+            });
+
+            // 3. Simulate Playoff Bracket & Exit rounds
+            // We need simulatePlayoffs to return WHO exited when
+            const exitResults = this.simulatePlayoffsFull(playoffTeams, finalStandings);
+
+            // exitResults is Map<tricode, exitRound> e.g. 'R1', 'CUP'
+            exitResults.forEach((exitRound, tricode) => {
+                const res = results.get(tricode)!;
+                if (exitRound === 'CUP') res.wonCup++;
+                // Increment exit dist
+                if (!res.roundExitDist[exitRound]) res.roundExitDist[exitRound] = 0;
+                res.roundExitDist[exitRound]++;
+            });
         }
 
         return results;
     }
 
-    private simulatePlayoffs(qualifiers: string[], standings: Map<string, TeamStandings>): string | null {
-        if (qualifiers.length !== 16) return null; // Should be 16 teams
+    private simulatePlayoffsFull(qualifiers: string[], standings: Map<string, TeamStandings>): Map<string, string> {
+        const outcomes = new Map<string, string>(); // Team -> Exit Round
 
-        // Recursive helper for a series
-        // Returns winner tricode
+        if (qualifiers.length !== 16) return outcomes;
+
+        // Helper
         const simSeries = (teamA: string, teamB: string): string => {
             const a = standings.get(teamA);
             const b = standings.get(teamB);
-            if (!a || !b) return teamA; // Fallback
+            if (!a || !b) return teamA;
 
-            // Prob of A winning single game
-            const pWin = this.getHomeWinProb(a, b); // Simplified: Using rating diff
-            // Actually, in playoffs, home ice matters but let's just abstract it to rating diff
+            const pWin = this.getHomeWinProb(a, b);
 
-            // Sim Best of 7
             let aWins = 0;
             let bWins = 0;
             while (aWins < 4 && bWins < 4) {
@@ -169,37 +218,60 @@ export class SeasonSimulator {
             return aWins === 4 ? teamA : teamB;
         };
 
-        // 1. Bracket Setup (Simplified: 1v8, 2v7 etc per conference? Or just random pairs from pool?)
-        // Real NHL is complex (Div winners vs Wildcards). 
-        // For this MVP: Assume 'qualifiers' are sorted roughly by strength/seed implicitly or explicitly.
-        // Actually determinePlayoffTeams returns loose list.
-        // Let's just shuffle or take them as they come for MVP speed?
-        // Better: Sort by points to seed them 1-16 (or 1-8 West, 1-8 East).
-
-        // Let's seed by Points to make it somewhat realistic
         const seeded = qualifiers.sort((a, b) => (standings.get(b)?.points || 0) - (standings.get(a)?.points || 0));
 
-        // Round 1 (16 teams -> 8)
-        const round1Winners: string[] = [];
+        // R1
+        const r1Winners: string[] = [];
+        const r1Losers: string[] = [];
+
         for (let i = 0; i < 8; i++) {
-            // 1 vs 16, 2 vs 15...
-            round1Winners.push(simSeries(seeded[i], seeded[15 - i]));
+            const w = simSeries(seeded[i], seeded[15 - i]);
+            const l = w === seeded[i] ? seeded[15 - i] : seeded[i];
+            r1Winners.push(w);
+            r1Losers.push(l);
         }
+        r1Losers.forEach(t => outcomes.set(t, 'R1'));
 
-        // Round 2 (8 teams -> 4)
-        const round2Winners: string[] = [];
+        // R2
+        const r2Winners: string[] = [];
+        const r2Losers: string[] = [];
         for (let i = 0; i < 4; i++) {
-            round2Winners.push(simSeries(round1Winners[i], round1Winners[7 - i]));
+            const w = simSeries(r1Winners[i], r1Winners[7 - i]);
+            const l = w === r1Winners[i] ? r1Winners[7 - i] : r1Winners[i];
+            r2Winners.push(w);
+            r2Losers.push(l);
         }
+        r2Losers.forEach(t => outcomes.set(t, 'R2'));
 
-        // Round 3 (4 teams -> 2)
-        const round3Winners: string[] = [];
+        // CF (R3)
+        const r3Winners: string[] = [];
+        const r3Losers: string[] = [];
         for (let i = 0; i < 2; i++) {
-            round3Winners.push(simSeries(round2Winners[i], round2Winners[3 - i]));
+            const w = simSeries(r2Winners[i], r2Winners[3 - i]);
+            const l = w === r2Winners[i] ? r2Winners[3 - i] : r2Winners[i];
+            r3Winners.push(w);
+            r3Losers.push(l);
         }
+        r3Losers.forEach(t => outcomes.set(t, 'CF'));
 
-        // Finals (2 teams -> 1)
-        return simSeries(round3Winners[0], round3Winners[1]);
+        // Finals
+        const cupWinner = simSeries(r3Winners[0], r3Winners[1]);
+        const cupLoser = cupWinner === r3Winners[0] ? r3Winners[1] : r3Winners[0];
+
+        outcomes.set(cupLoser, 'F');
+        outcomes.set(cupWinner, 'CUP');
+
+        return outcomes;
+    }
+
+    // Kept for compatibility if called elsewhere, but we strictly use Full now internally for MC
+    private simulatePlayoffs(qualifiers: string[], standings: Map<string, TeamStandings>): string | null {
+        const res = this.simulatePlayoffsFull(qualifiers, standings);
+        // Find who has 'CUP'
+        for (const [team, exit] of res.entries()) {
+            if (exit === 'CUP') return team;
+        }
+        return null;
     }
 
     private determinePlayoffTeams(standings: Map<string, TeamStandings>): string[] {
