@@ -547,32 +547,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     {l7 && <Badge color="gray">{l7} (L7)</Badge>}
 
                     {/* Edge Badges */}
-                    {!isSocial && (
-                        <>
-                            {avgSpeed && avgSpeed > 0 && <EdgeBadge label="Speed" value={avgSpeed} color={avgSpeed > 9.0 ? 'green' : 'blue'} suffix=" mph" />}
-                            {rrRate && rrRate > 0.5 && <EdgeBadge label="RR" value={rrRate * 100} color="green" suffix="%" />}
-                        </>
-                    )}
 
-                    {/* Edge Badges */}
-                    {!isSocial && (
-                        <>
-                            {/* Only show significant stats (e.g. speed > 9.0) */}
-                            {isHome ? (
-                                <>
-                                    {prediction.home_avg_speed && prediction.home_avg_speed > 0 && <EdgeBadge label="Speed" value={prediction.home_avg_speed} color={prediction.home_avg_speed > 9.0 ? 'green' : 'blue'} suffix=" mph" />}
-                                    {prediction.home_rr_rate && prediction.home_rr_rate > 0.5 && <EdgeBadge label="RR" value={prediction.home_rr_rate * 100} color="green" suffix="%" />}
-                                </>
-                            ) : (
-                                <>
-                                    {prediction.away_avg_speed && prediction.away_avg_speed > 0 && <EdgeBadge label="Speed" value={prediction.away_avg_speed} color={prediction.away_avg_speed > 9.0 ? 'green' : 'blue'} suffix=" mph" />}
-                                    {prediction.away_rr_rate && prediction.away_rr_rate > 0.5 && <EdgeBadge label="RR" value={prediction.away_rr_rate * 100} color="green" suffix="%" />}
-                                </>
-                            )}
-                        </>
-                    )}
-
-                    {!isSocial && <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'left' : 'right'} />}
                 </div>
 
                 {/* Wager Callout (Pushed to bottom) */}
