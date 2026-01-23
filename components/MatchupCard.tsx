@@ -547,6 +547,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     {l7 && <Badge color="gray">{l7} (L7)</Badge>}
 
                     {/* Edge Badges */}
+                    {!isSocial && <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'left' : 'right'} />}
 
                 </div>
 
