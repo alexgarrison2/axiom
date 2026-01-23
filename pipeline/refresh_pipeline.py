@@ -16,15 +16,15 @@ def refresh_pipeline():
     try:
         df = pd.read_csv(gamestats_file)
         # Convert date
-        if 'game_date' in df.columns:
-            df['game_date'] = pd.to_datetime(df['game_date'])
-            original_len = len(df)
-            # Prune
-            df = df[df['game_date'] < "2026-01-13"]
-            pruned_len = len(df)
-            if pruned_len < original_len:
-                df.to_csv(gamestats_file, index=False)
-                print(f"Pruned {original_len - pruned_len} rows from {gamestats_file}.")
+    #     if 'game_date' in df.columns:
+    #         df['game_date'] = pd.to_datetime(df['game_date'])
+    #         original_len = len(df)
+    #         # Prune
+    #         df = df[df['game_date'] < "2026-01-13"]
+    #         pruned_len = len(df)
+    #         if pruned_len < original_len:
+    #             df.to_csv(gamestats_file, index=False)
+    #             print(f"Pruned {original_len - pruned_len} rows from {gamestats_file}.")
     except FileNotFoundError:
         pass
         
