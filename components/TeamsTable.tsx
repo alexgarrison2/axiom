@@ -269,7 +269,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         ca_per_game: ca / gp,
 
         sh_pct: sf > 0 ? (gf / sf) * 100 : 0,
-        sv_pct: sa > 0 ? (saves / sa) * 100 : 0,
+        sv_pct: (sa - enga) > 0 ? (saves / (sa - enga)) * 100 : 0,
 
         engf,
 
@@ -281,7 +281,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         xga_per_game: xga / gp,
         xgf_pct: (xgf + xga) > 0 ? (xgf / (xgf + xga)) * 100 : 0,
         otml,
-        gsax: xga - ga // Cumulative GSAx
+        gsax: xga - (ga - enga) // Cumulative GSAx (Excluding EN Goals)
     };
 };
 
