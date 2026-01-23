@@ -134,9 +134,72 @@ export class SeasonSimulator {
             playoffTeams.forEach(tricode => {
                 results.get(tricode)!.madePlayoffs++;
             });
+
+            // Simulate Playoff Bracket
+            const winnerCode = this.simulatePlayoffs(playoffTeams, finalStandings);
+            if (winnerCode) {
+                results.get(winnerCode)!.wonCup++;
+            }
         }
 
         return results;
+    }
+
+    private simulatePlayoffs(qualifiers: string[], standings: Map<string, TeamStandings>): string | null {
+        if (qualifiers.length !== 16) return null; // Should be 16 teams
+
+        // Recursive helper for a series
+        // Returns winner tricode
+        const simSeries = (teamA: string, teamB: string): string => {
+            const a = standings.get(teamA);
+            const b = standings.get(teamB);
+            if (!a || !b) return teamA; // Fallback
+
+            // Prob of A winning single game
+            const pWin = this.getHomeWinProb(a, b); // Simplified: Using rating diff
+            // Actually, in playoffs, home ice matters but let's just abstract it to rating diff
+
+            // Sim Best of 7
+            let aWins = 0;
+            let bWins = 0;
+            while (aWins < 4 && bWins < 4) {
+                if (Math.random() < pWin) aWins++;
+                else bWins++;
+            }
+            return aWins === 4 ? teamA : teamB;
+        };
+
+        // 1. Bracket Setup (Simplified: 1v8, 2v7 etc per conference? Or just random pairs from pool?)
+        // Real NHL is complex (Div winners vs Wildcards). 
+        // For this MVP: Assume 'qualifiers' are sorted roughly by strength/seed implicitly or explicitly.
+        // Actually determinePlayoffTeams returns loose list.
+        // Let's just shuffle or take them as they come for MVP speed?
+        // Better: Sort by points to seed them 1-16 (or 1-8 West, 1-8 East).
+
+        // Let's seed by Points to make it somewhat realistic
+        const seeded = qualifiers.sort((a, b) => (standings.get(b)?.points || 0) - (standings.get(a)?.points || 0));
+
+        // Round 1 (16 teams -> 8)
+        let round1Winners: string[] = [];
+        for (let i = 0; i < 8; i++) {
+            // 1 vs 16, 2 vs 15...
+            round1Winners.push(simSeries(seeded[i], seeded[15 - i]));
+        }
+
+        // Round 2 (8 teams -> 4)
+        let round2Winners: string[] = [];
+        for (let i = 0; i < 4; i++) {
+            round2Winners.push(simSeries(round1Winners[i], round1Winners[7 - i]));
+        }
+
+        // Round 3 (4 teams -> 2)
+        let round3Winners: string[] = [];
+        for (let i = 0; i < 2; i++) {
+            round3Winners.push(simSeries(round2Winners[i], round2Winners[3 - i]));
+        }
+
+        // Finals (2 teams -> 1)
+        return simSeries(round3Winners[0], round3Winners[1]);
     }
 
     private determinePlayoffTeams(standings: Map<string, TeamStandings>): string[] {

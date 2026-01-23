@@ -63,12 +63,12 @@ const TableSection = ({ title, teams }: { title: string, teams: any[] }) => (
         <table className="w-full text-xs">
             <thead>
                 <tr className="border-b border-white/5 text-neutral-500 font-mono">
-                    <th className="p-3 text-left w-12"></th> {/* Logo */}
-                    <th className="p-3 text-left">Team</th>
-                    <th className="p-3 text-center">Points<br /><span className="text-[9px] opacity-60">(Pace)</span></th>
-                    <th className="p-3 text-center">Points<br /><span className="text-[9px] opacity-60">(Proj.)</span></th>
-                    <th className="p-3 text-center">Playoff<br />Odds</th>
-                    <th className="p-3 text-center">Stanley<br />Cup Odds</th>
+                    <th className="px-3 py-2 text-left w-12"></th> {/* Logo */}
+                    <th className="px-3 py-2 text-left">Team</th>
+                    <th className="px-3 py-2 text-center">Points<br /><span className="text-[9px] opacity-60">(Pace)</span></th>
+                    <th className="px-3 py-2 text-center">Points<br /><span className="text-[9px] opacity-60">(Proj.)</span></th>
+                    <th className="px-3 py-2 text-center">Playoff<br />Odds</th>
+                    <th className="px-3 py-2 text-center">Stanley<br />Cup Odds</th>
                 </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -83,8 +83,8 @@ const TableSection = ({ title, teams }: { title: string, teams: any[] }) => (
 
                     return (
                         <tr key={team.tricode} className="group hover:bg-white/[0.02] transition-colors">
-                            <td className="p-3 text-center">
-                                <div className="w-8 h-8 relative mx-auto opacity-90 group-hover:opacity-100 transition-opacity">
+                            <td className="px-3 py-1.5 text-center">
+                                <div className="w-6 h-6 relative mx-auto opacity-90 group-hover:opacity-100 transition-opacity">
                                     <LogoDisplay
                                         triCode={team.tricode}
                                         src=""
@@ -94,21 +94,21 @@ const TableSection = ({ title, teams }: { title: string, teams: any[] }) => (
                                     />
                                 </div>
                             </td>
-                            <td className="p-3 font-bold text-white tracking-wide">
+                            <td className="px-3 py-1.5 font-bold text-white tracking-wide">
                                 {team.tricode}
                             </td>
-                            <td className="p-3 text-center font-mono text-neutral-400 font-bold">
+                            <td className="px-3 py-1.5 text-center font-mono text-neutral-400 font-bold">
                                 {team.pace}
                             </td>
-                            <td className="p-3 text-center font-mono text-white text-lg font-bold">
+                            <td className="px-3 py-1.5 text-center font-mono text-white text-lg font-bold">
                                 {team.proj}
                             </td>
-                            <td className={`p-3 text-center relative`}>
-                                <div className={`inline-block px-2 py-1 rounded ${bgOdds}`}>
+                            <td className={`px-3 py-1.5 text-center relative`}>
+                                <div className={`inline-block px-1.5 py-0.5 rounded ${bgOdds}`}>
                                     <span className={`${oddsColor}`}>{team.playoffOdds.toFixed(0)}%</span>
                                 </div>
                             </td>
-                            <td className="p-3 text-center font-mono text-neutral-400">
+                            <td className="px-3 py-1.5 text-center font-mono text-neutral-400">
                                 {team.cupOdds > 0.1 ? `${team.cupOdds.toFixed(1)}%` : '<0.1%'}
                             </td>
                         </tr>
