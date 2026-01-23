@@ -148,7 +148,36 @@ def load_common_names():
                 names[row['Team Tricode']] = row['Common Name']
     except Exception as e:
         print(f"Error loading common names: {e}")
+    except Exception as e:
+        print(f"Error loading common names: {e}")
     return names
+
+def load_team_ids():
+    ids = {}
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        data_path = os.path.join(script_dir, '../data/nhl_teams.csv')
+        df = pd.read_csv(data_path)
+        # Map Common Name to ID
+        for _, row in df.iterrows():
+            ids[row['Common Name']] = int(row['NHL Team ID'])
+    except Exception as e:
+        print(f"Error loading team IDs: {e}")
+    return ids
+
+def load_edge_profiles():
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.join(script_dir, '../public/data/team_edge_profiles.json')
+        # Check alternates
+        if not os.path.exists(path):
+            path = 'public/data/team_edge_profiles.json'
+            
+        with open(path, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading edge profiles: {e}")
+        return {}
 
 def get_goalie_percentiles(goalie_ratings):
     """Calculates percentile rank (0-100) for each goalie based on GSAx/Game."""
@@ -482,7 +511,13 @@ def predict():
     full_names = load_full_names()
     common_names = load_common_names()
     l7_cache = {}
+    l7_cache = {}
     l7_details_cache = {}
+    
+    # Load Edge Data
+    team_ids_map = load_team_ids()
+    edge_profiles = load_edge_profiles()
+    print(f"Loaded {len(edge_profiles)} Team Edge Profiles.")
 
     # Load game stats for GasCalculator and Starter Lookup
     print("Loading game stats for GasCalculator and Starter Lookup...")
@@ -1352,9 +1387,16 @@ def predict():
             'away_goalie_status': a_status if a_status else 'Unconfirmed',
             'away_goalie_confirmed': a_conf if a_conf else '',
 
+
             # Goalie vs Opp History
             'home_starter_vs_opp': json.dumps(h_vs_opp_stats) if h_vs_opp_stats else "",
-            'away_starter_vs_opp': json.dumps(a_vs_opp_stats) if a_vs_opp_stats else ""
+            'away_starter_vs_opp': json.dumps(a_vs_opp_stats) if a_vs_opp_stats else "",
+            
+            # --- EDGE FACTORS ---
+            'home_avg_speed': edge_profiles.get(str(team_ids_map.get(home_team)), {}).get('avg_speed', ''),
+            'away_avg_speed': edge_profiles.get(str(team_ids_map.get(away_team)), {}).get('avg_speed', ''),
+            'home_rr_rate': edge_profiles.get(str(team_ids_map.get(home_team)), {}).get('rr_rate', ''),
+            'away_rr_rate': edge_profiles.get(str(team_ids_map.get(away_team)), {}).get('rr_rate', '')
         })        
 
     # Create DataFrame from csv_rows

@@ -49,6 +49,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         away_gas,
         home_gas_breakdown,
         away_gas_breakdown,
+        home_gas,
+        away_gas,
+        home_gas_breakdown,
+        away_gas_breakdown,
+        home_avg_speed,
+        away_avg_speed,
+        home_rr_rate,
+        away_rr_rate,
         home_recent_games,
         away_recent_games
     } = prediction;
@@ -123,6 +131,22 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                         </div>
                     </div>
                 )}
+            </div>
+        );
+
+    };
+
+    const EdgeBadge = ({ label, value, color = 'blue', suffix = '' }: { label: string, value?: number, color?: 'blue' | 'green' | 'red', suffix?: string }) => {
+        if (value === undefined) return null;
+
+        let colorClass = 'text-blue-400 bg-blue-400/10 border-blue-400/30';
+        if (color === 'green') colorClass = 'text-neon-green bg-neon-green/10 border-neon-green/30';
+        if (color === 'red') colorClass = 'text-red-500 bg-red-500/10 border-red-500/30';
+
+        return (
+            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-wider ${colorClass}`}>
+                <span className="opacity-70">{label}</span>
+                <span>{value.toFixed(1)}{suffix}</span>
             </div>
         );
     };
@@ -427,8 +451,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         goalieStats,
         vsOppStats,
         opponentTriCode,
-        odds,
-        isSocial
+
+        isSocial,
+        avgSpeed,
+        rrRate
     }: {
         team: any,
         isHome: boolean,
@@ -447,7 +473,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         vsOppStats?: string,
         opponentTriCode?: string,
         odds?: string | number | null,
-        isSocial?: boolean
+        isSocial?: boolean,
+        avgSpeed?: number,
+        rrRate?: number
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
@@ -518,6 +546,33 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     {pkRank && pkRank <= 5 && <Badge color="blue" size={isSocial ? "xs" : "sm"}>#{pkRank} PK</Badge>}
                     {pkRank && pkRank >= 28 && <Badge color="red" size={isSocial ? "xs" : "sm"}>#{pkRank} PK</Badge>}
                     {l7 && <Badge color="gray">{l7} (L7)</Badge>}
+
+                    {/* Edge Badges */}
+                    {!isSocial && (
+                        <>
+                            {avgSpeed && avgSpeed > 0 && <EdgeBadge label="Speed" value={avgSpeed} color={avgSpeed > 9.0 ? 'green' : 'blue'} suffix=" mph" />}
+                            {rrRate && rrRate > 0.5 && <EdgeBadge label="RR" value={rrRate * 100} color="green" suffix="%" />}
+                        </>
+                    )}
+
+                    {/* Edge Badges */}
+                    {!isSocial && (
+                        <>
+                            {/* Only show significant stats (e.g. speed > 9.0) */}
+                            {isHome ? (
+                                <>
+                                    {prediction.home_avg_speed && prediction.home_avg_speed > 0 && <EdgeBadge label="Speed" value={prediction.home_avg_speed} color={prediction.home_avg_speed > 9.0 ? 'green' : 'blue'} suffix=" mph" />}
+                                    {prediction.home_rr_rate && prediction.home_rr_rate > 0.5 && <EdgeBadge label="RR" value={prediction.home_rr_rate * 100} color="green" suffix="%" />}
+                                </>
+                            ) : (
+                                <>
+                                    {prediction.away_avg_speed && prediction.away_avg_speed > 0 && <EdgeBadge label="Speed" value={prediction.away_avg_speed} color={prediction.away_avg_speed > 9.0 ? 'green' : 'blue'} suffix=" mph" />}
+                                    {prediction.away_rr_rate && prediction.away_rr_rate > 0.5 && <EdgeBadge label="RR" value={prediction.away_rr_rate * 100} color="green" suffix="%" />}
+                                </>
+                            )}
+                        </>
+                    )}
+
                     {!isSocial && <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'left' : 'right'} />}
                 </div>
 
@@ -749,6 +804,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                             opponentTriCode={homeTeam.triCode}
                             odds={awayVegasOdds}
                             isSocial={isSocial}
+                            avgSpeed={away_avg_speed}
+                            rrRate={away_rr_rate}
                         />
                         <NewsIndicator
                             hasNews={prediction.away_news?.some(n => n.category !== 'Goalie Start') ?? false}
@@ -838,6 +895,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                             opponentTriCode={awayTeam.triCode}
                             odds={homeVegasOdds}
                             isSocial={isSocial}
+                            avgSpeed={home_avg_speed}
+                            rrRate={home_rr_rate}
                         />
                         <NewsIndicator
                             hasNews={prediction.home_news?.some(n => n.category !== 'Goalie Start') ?? false}

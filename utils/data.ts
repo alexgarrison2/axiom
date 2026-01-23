@@ -102,6 +102,11 @@ export interface GamePrediction {
   homeGoalieConfirmed?: string;
   awayGoalieStatus?: string;
   awayGoalieConfirmed?: string;
+
+  home_avg_speed?: number;
+  away_avg_speed?: number;
+  home_rr_rate?: number;
+  away_rr_rate?: number;
 }
 
 export interface HistoryEntry {
@@ -172,6 +177,11 @@ interface RawPrediction {
   home_goalie_confirmed?: string;
   away_goalie_status?: string;
   away_goalie_confirmed?: string;
+
+  home_avg_speed?: string;
+  away_avg_speed?: string;
+  home_rr_rate?: string;
+  away_rr_rate?: string;
 }
 
 interface RawTeam {
@@ -332,6 +342,11 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       homeGoalieConfirmed: row.home_goalie_confirmed,
       awayGoalieStatus: row.away_goalie_status,
       awayGoalieConfirmed: row.away_goalie_confirmed,
+
+      home_avg_speed: row.home_avg_speed ? parseFloat(row.home_avg_speed) : undefined,
+      away_avg_speed: row.away_avg_speed ? parseFloat(row.away_avg_speed) : undefined,
+      home_rr_rate: row.home_rr_rate ? parseFloat(row.home_rr_rate) : undefined,
+      away_rr_rate: row.away_rr_rate ? parseFloat(row.away_rr_rate) : undefined,
     };
   }).filter((p): p is GamePrediction => p !== null);
 
