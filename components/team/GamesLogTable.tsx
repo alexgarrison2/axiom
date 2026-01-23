@@ -10,7 +10,6 @@ interface GamesLogTableProps {
         period: string;
         last: string;
         result: string;
-        strength?: string; // Optional to prevent breaking if not passed immediately (though we sort of control it)
     };
     expandedGameId: string | null;
     setExpandedGameId: (id: string | null) => void;
@@ -31,8 +30,18 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
     primaryColor
 }) => {
 
-    // Helper for Period/Strength Stats
+    // Helper for Period Stats
     const getStat = (game: GameLog, stat: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => {
+        if (filters.period === 'All') {
+            return game[stat];
+        }
+
+        if (stat === 'xgf' || stat === 'xga') return 0;
+
+        const suffix = filters.period === '1st' ? '_1P' :
+            filters.period === '2nd' ? '_2P' :
+                filters.period === '3rd' ? '_3P' : '_OT';
+
         let prefix = '';
         if (stat === 'gf') prefix = 'goals_for';
         if (stat === 'ga') prefix = 'goals_ag';
@@ -40,69 +49,9 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         if (stat === 'sa') prefix = 'sog_ag';
         if (stat === 'cf') prefix = 'attempts_for';
         if (stat === 'ca') prefix = 'attempts_ag';
-        if (stat === 'xgf') prefix = 'xG_for';
-        if (stat === 'xga') prefix = 'xG_against';
 
-        // Handle Period First (If Period is selected, it takes precedence OR we don't support Period + Strength together?)
-        // If Period is 'All', check Strength
-        // If Period is 1st/2nd/3rd, we likely don't have Strength split per period (our script doesn't produce it).
-        // Current script produces: totals, 5v5 totals, period totals.
-        // It does NOT produce 5v5 per period.
-        // So if Period != All, we ignore Strength filter or warn?
-        // Let's assume if Period != All, we use Period. 
-        // If Period == All, we use Strength.
-
-        if (filters.period !== 'All') {
-            // Period Stats
-            if (stat === 'xgf' || stat === 'xga') return 0; // No period xG yet
-
-            const suffix = filters.period === '1st' ? '_1P' :
-                filters.period === '2nd' ? '_2P' :
-                    filters.period === '3rd' ? '_3P' : '_OT';
-
-            return parseInt(game.raw?.[prefix + suffix] || '0');
-        } else if (filters.strength && filters.strength !== 'All') {
-            // Strength Stats (Full Game)
-            const s = filters.strength.toLowerCase(); // 5v5, ev, pp, sh
-            let key = prefix;
-
-            // Map prefix to split keys
-            // goals_for -> goals_5v5
-            // goals_ag -> goals_ag_5v5
-            // sog_for -> sog_5v5
-            // sog_ag -> sog_ag_5v5
-            // attempts_for -> attempts_5v5
-            // attempts_ag -> attempts_ag_5v5
-            // xG_for -> xg_for_5v5
-            // xG_against -> xg_ag_5v5
-
-            if (stat === 'gf') key = `goals_${s}`;
-            if (stat === 'ga') key = `goals_ag_${s}`;
-            if (stat === 'sf') key = `sog_${s}`;
-            if (stat === 'sa') key = `sog_ag_${s}`;
-            if (stat === 'cf') key = `attempts_${s}`;
-            if (stat === 'ca') key = `attempts_ag_${s}`;
-            if (stat === 'xgf') key = `xg_for_${s}`;
-            if (stat === 'xga') key = `xg_ag_${s}`;
-
-            return parseFloat(game.raw?.[key] || '0');
-        }
-
-        // Default: Full Game All Strengths
-        // For xG, values are floats in game object, but integers for others?
-        // GameLog interface has typed props (gf, ga...). 
-        // We can just return game[stat] if period and strength are All.
-
-        if (stat === 'gf') return game.gf;
-        if (stat === 'ga') return game.ga;
-        if (stat === 'sf') return game.sf;
-        if (stat === 'sa') return game.sa;
-        if (stat === 'cf') return game.cf;
-        if (stat === 'ca') return game.ca;
-        if (stat === 'xgf') return game.xgf;
-        if (stat === 'xga') return game.xga;
-
-        return 0;
+        const val = parseInt(game.raw?.[prefix + suffix] || '0');
+        return val;
     };
 
     // Gradient Helper
@@ -165,15 +114,8 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         const pk_opps = games.reduce((acc, g) => acc + g.pk_opps, 0);
 
         const total_saves = games.reduce((acc, g) => acc + (getStat(g, 'sa') as number) - (getStat(g, 'ga') as number), 0);
-        // Correct SV%
-        // If Strength Filter != All, use filtered SA and GA (EN usually 0).
-        // If Strength == All (and Period == All ?), subtract EN.
-
-        let adjusted_sa = sa;
-        if (filters.period === 'All' && (!filters.strength || filters.strength === 'All')) {
-            adjusted_sa = sa - en_ga;
-        }
-
+        // Correct SV% by subtracting Empty Net Goals from Shots Against (only for Full Game totals where we have EN data)
+        const adjusted_sa = sa - (filters.period === 'All' ? en_ga : 0);
         const tot_sv_pct = adjusted_sa > 0 ? (total_saves / adjusted_sa) : 0;
 
         return {
@@ -199,7 +141,7 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
             sh_pct: sf > 0 ? (gf / sf * 100).toFixed(1) : '0.0',
             sv_pct: tot_sv_pct.toFixed(3).replace(/^0+/, '')
         };
-    }, [games, filters.period, filters.strength]);
+    }, [games, filters.period]);
 
     return (
         <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
@@ -308,24 +250,12 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             const gd = _gf - _ga;
                             const sd = _sf - _sa;
                             const cd = _cf - _ca;
-
-                            // xG Logic (Use filtered)
-                            const _xgf = getStat(game, 'xgf');
-                            const _xga = getStat(game, 'xga');
-                            const _xgf_val = typeof _xgf === 'number' ? _xgf : 0;
-                            const _xga_val = typeof _xga === 'number' ? _xga : 0;
-                            const xgd = _xgf_val - _xga_val;
+                            const xgd = game.xgf - game.xga;
 
                             const sh_pct = _sf > 0 ? (_gf / _sf * 100).toFixed(1) : "0.0";
-
-                            // Sv% correction
-                            let adjusted_sa = _sa;
-                            // Only subtract EN GA if looking at ALL situations (and All Periods)
-                            // If filtered to 5v5/EV/PP/SH, use raw SA (since EN GA shouldn't exist or is handled)
-                            if (filters.period === 'All' && (!filters.strength || filters.strength === 'All')) {
-                                adjusted_sa = _sa > 0 ? _sa - game.en_ga : 0;
-                            }
-
+                            // For SV%, exclude Empty Net Goals from the denominator (Shots Against).
+                            // Only apply correction if we are looking at Full Game, because we don't have period-specific EN stats.
+                            const adjusted_sa = _sa > 0 ? _sa - (filters.period === 'All' ? game.en_ga : 0) : 0;
                             const sv_pct_val = adjusted_sa > 0 ? ((_sa - _ga) / adjusted_sa).toFixed(3).replace(/^0+/, '') : ".000";
 
                             const gsax = (game.xga - (game.ga - game.en_ga)).toFixed(2);
@@ -392,8 +322,8 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                         {filters.period === 'All' && <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>}
                                         {filters.period === 'All' && (
                                             <>
-                                                <td className="p-1 text-center font-mono text-gray-300">{_xgf_val.toFixed(2)}</td>
-                                                <td className="p-1 text-center font-mono text-gray-300">{_xga_val.toFixed(2)}</td>
+                                                <td className="p-1 text-center font-mono text-gray-300">{game.xgf.toFixed(2)}</td>
+                                                <td className="p-1 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
                                                 <td className={`p-1 text-center font-mono ${xgd > 0 ? 'text-green-400/70' : xgd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
                                                     {xgd > 0 ? '+' : ''}{xgd.toFixed(2)}
                                                 </td>

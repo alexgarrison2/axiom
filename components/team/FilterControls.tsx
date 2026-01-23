@@ -7,7 +7,6 @@ interface FilterControlsProps {
         period: string;
         last: string;
         result: string;
-        strength: string;
     };
     setFilters: React.Dispatch<React.SetStateAction<{
         goalie: string;
@@ -15,7 +14,6 @@ interface FilterControlsProps {
         period: string;
         last: string;
         result: string;
-        strength: string;
     }>>;
     uniqueGoalies: string[];
 }
@@ -72,22 +70,6 @@ const FilterControls: React.FC<FilterControlsProps> = ({ filters, setFilters, un
                             className={`px-3 py-1 rounded-sm text-[10px] uppercase font-bold transition-all ${filters.period === p ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
                         >
                             {p === 'All' ? 'Full Game' : p}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Strength Filter */}
-            <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Strength</label>
-                <div className="flex gap-1">
-                    {['All', '5v5', 'EV', 'PP', 'SH'].map(s => (
-                        <button
-                            key={s}
-                            onClick={() => setFilters({ ...filters, strength: s })}
-                            className={`px-3 py-1 rounded-sm text-[10px] uppercase font-bold transition-all ${filters.strength === s ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}
-                        >
-                            {s}
                         </button>
                     ))}
                 </div>
