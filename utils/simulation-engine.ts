@@ -269,11 +269,10 @@ export class SeasonSimulator {
         return results;
     }
 
-    // Updated Playoff Sim to use calculateMatchupProb
+    // Updated Playoff Sim with proper NHL Divisional Bracket logic
     private simulatePlayoffsFull(qualifiers: string[], standings: Map<string, TeamStandings>): { outcomes: Map<string, string>, matchups: Map<string, string> } {
         const outcomes = new Map<string, string>();
         const matchups = new Map<string, string>();
-
         if (qualifiers.length !== 16) return { outcomes, matchups };
 
         const simSeries = (teamA: string, teamB: string): string => {
@@ -282,8 +281,18 @@ export class SeasonSimulator {
             if (!a || !b) return teamA;
 
             const pWin = this.calculateMatchupProb(a, b);
-            // Note: Hockeystats uses "re-seed home ice advantage".
-            // We assume Higher Seed (points) gets Home Ice? YES, seeded array is sorted by points.
+
+            // Record Matchup
+            if (!matchups.has(teamA)) matchups.set(teamA, teamB); // We track one-way (or both?)
+            // The main loop calling this usually tracks frequencies. 
+            // We want to record that A played B in this sim match.
+            // Note: This helper is called for R1, R2, R3...
+            // User requested "First Round Matchup Matrix".
+            // So we only really care about R1. 
+            // But let's let caller handle tracking? 
+            // Caller: "const { outcomes, matchups } = ...".
+            // Our previous code added to `matchups` map inside the loops.
+            // Let's do that explicitly in the loop blocks below, NOT here, to differentiate R1.
 
             let aWins = 0; let bWins = 0;
             while (aWins < 4 && bWins < 4) {
@@ -292,46 +301,140 @@ export class SeasonSimulator {
             return aWins === 4 ? teamA : teamB;
         };
 
-        // Same seeding / bracket logic ...
-        const seeded = qualifiers.sort((a, b) => (standings.get(b)?.points || 0) - (standings.get(a)?.points || 0));
+        const eastTeams = qualifiers.filter(t => standings.get(t)?.conference === 'East');
+        const westTeams = qualifiers.filter(t => standings.get(t)?.conference === 'West');
 
-        const r1Winners: string[] = [];
-        const r1Losers: string[] = [];
-        for (let i = 0; i < 8; i++) {
-            const higher = seeded[i]; const lower = seeded[15 - i];
+        // Helper to solve conference bracket
+        const solveConference = (teams: string[], div1Code: string, div2Code: string): string => {
+            // 1. Group by Division
+            const div1 = teams.filter(t => this.getDivision(t) === div1Code);
+            const div2 = teams.filter(t => this.getDivision(t) === div2Code);
 
-            // Record Matchup
-            matchups.set(higher, lower);
-            matchups.set(lower, higher);
+            // 2. Sort by Points
+            const sortFn = (a: string, b: string) => (standings.get(b)?.points || 0) - (standings.get(a)?.points || 0);
+            div1.sort(sortFn);
+            div2.sort(sortFn);
 
-            const w = simSeries(higher, lower);
-            r1Winners.push(w);
-            r1Losers.push(w === higher ? lower : higher);
-        }
-        r1Losers.forEach(t => outcomes.set(t, 'R1'));
+            // 3. Identify Top 3 and Wild Cards
+            // Current `qualifiers` list ALREADY implies who made it, but doesn't distinguish WC vs Div3 explicitly.
+            // Standard Rule: Top 3 in each div are guaranteed. Rest are WC.
+            // IF a division provided 5 teams (Top 3 + 2 WC) and other provided 3 (Top 3), 
+            // then the 4th and 5th of Div A are WCs.
 
-        // R2
-        const r2Winners: string[] = [];
-        const r2Losers: string[] = [];
-        for (let i = 0; i < 4; i++) {
-            const w = simSeries(r1Winners[i], r1Winners[7 - i]);
-            r2Winners.push(w);
-            r2Losers.push(w === r1Winners[i] ? r1Winners[7 - i] : r1Winners[i]);
-        }
-        r2Losers.forEach(t => outcomes.set(t, 'R2'));
+            // Correct Logic:
+            // Take Top 3 from each Division list as "Divisional Seeds 1, 2, 3".
+            // Take remaining 2 teams from pool as "Wild Cards 1, 2".
 
-        const r3Winners: string[] = [];
-        const r3Losers: string[] = [];
-        for (let i = 0; i < 2; i++) {
-            const w = simSeries(r2Winners[i], r2Winners[3 - i]);
-            r3Winners.push(w);
-            r3Losers.push(w === r2Winners[i] ? r2Winners[3 - i] : r2Winners[i]);
-        }
-        r3Losers.forEach(t => outcomes.set(t, 'CF'));
+            // Wait, what if a division only sends 2 teams? (Impossible in current NHL format unless rules change or standings are weird).
+            // But our simulator might produce edge cases? 
+            // `determinePlayoffTeams` enforces: "Top 3 each div + 2 WC". 
+            // So `div1` likely has 3, 4, or 5 teams. `div2` has 3, 4, or 5. total 8.
+            // Actually `div1` contains ALL teams from that division that qualified. 
 
-        const cupWinner = simSeries(r3Winners[0], r3Winners[1]);
-        outcomes.set(cupWinner === r3Winners[0] ? r3Winners[1] : r3Winners[0], 'F');
-        outcomes.set(cupWinner, 'CUP');
+            // We need to re-verify which are Top 3 and which are Wild Cards based on POINTS.
+            // Actually, we must respect the "Top 3 Guaranteed" rule.
+            // So the top 3 items in `div1` are D1#1, D1#2, D1#3.
+            // Any extras are WC candidates.
+
+            const d1Guaranteed = div1.slice(0, 3);
+            const d2Guaranteed = div2.slice(0, 3);
+
+            const wcCandidates = [...div1.slice(3), ...div2.slice(3)];
+            wcCandidates.sort(sortFn); // Sort WCs by points
+
+            const wc1 = wcCandidates[0];
+            const wc2 = wcCandidates[1];
+
+            // 4. Determine Matchups
+            const d1Winner = d1Guaranteed[0];
+            const d2Winner = d2Guaranteed[0];
+
+            const d1Pts = standings.get(d1Winner)?.points || 0;
+            const d2Pts = standings.get(d2Winner)?.points || 0;
+
+            // "The division winner with the most points plays the wild card with the fewest points."
+            // "The division winner with the second-most plays the wild card with the second-fewest." (better WC)
+
+            // WC2 (worse) plays Best Leader.
+            // WC1 (better) plays Other Leader.
+
+            let matchA_High: string, matchA_Low: string; // Bracket A (Best Leader)
+            let matchB_High: string, matchB_Low: string; // Bracket B (Other Leader)
+            let bracketA_Is_Div1 = false;
+
+            if (d1Pts >= d2Pts) {
+                // Div1 Leader is Conference Leader
+                matchA_High = d1Winner; matchA_Low = wc2;
+                matchB_High = d2Winner; matchB_Low = wc1;
+                bracketA_Is_Div1 = true;
+            } else {
+                // Div2 Leader is Conference Leader
+                matchA_High = d2Winner; matchA_Low = wc2;
+                matchB_High = d1Winner; matchB_Low = wc1;
+                bracketA_Is_Div1 = false;
+            }
+
+            // 2 vs 3 Matchups
+            const matchC_High = d1Guaranteed[1]; const matchC_Low = d1Guaranteed[2]; // Div1 2v3
+            const matchD_High = d2Guaranteed[1]; const matchD_Low = d2Guaranteed[2]; // Div2 2v3
+
+            // Register R1 Matchups
+            [
+                [matchA_High, matchA_Low],
+                [matchB_High, matchB_Low],
+                [matchC_High, matchC_Low],
+                [matchD_High, matchD_Low]
+            ].forEach(([h, l]) => {
+                matchups.set(h, l);
+                matchups.set(l, h);
+                outcomes.set(h === simSeries(h, l) ? l : h, 'R1'); // Loser exits R1
+            });
+
+            // winners
+            const wA = simSeries(matchA_High, matchA_Low);
+            const wB = simSeries(matchB_High, matchB_Low);
+            const wC = simSeries(matchC_High, matchC_Low); // Div1 2v3 winner
+            const wD = simSeries(matchD_High, matchD_Low); // Div2 2v3 winner
+
+            // Round 2 (Divisional Finals)
+            // If Bracket A was Div1, then Winner(A) plays Winner(C) [Div1 bracket]
+            // Winner(B) plays Winner(D) [Div2 bracket]
+
+            let r2Match1_A: string, r2Match1_B: string;
+            let r2Match2_A: string, r2Match2_B: string;
+
+            if (bracketA_Is_Div1) {
+                // Bracket A is Div 1. wA (D1#1/WC2) plays wC (D1 2v3).
+                r2Match1_A = wA; r2Match1_B = wC;
+                r2Match2_A = wB; r2Match2_B = wD;
+            } else {
+                // Bracket A is Div 2. wA (D2#1/WC2) plays wD (D2 2v3).
+                r2Match1_A = wA; r2Match1_B = wD;
+                r2Match2_A = wB; r2Match2_B = wC;
+            }
+
+            // R2 Sims
+            // (Note: We rely on simSeries internal check to fail if teams missing, but here they exist)
+            const wR2_1 = simSeries(r2Match1_A, r2Match1_B);
+            const wR2_2 = simSeries(r2Match2_A, r2Match2_B);
+
+            // Log R2 Exits
+            outcomes.set(wR2_1 === r2Match1_A ? r2Match1_B : r2Match1_A, 'R2');
+            outcomes.set(wR2_2 === r2Match2_A ? r2Match2_B : r2Match2_A, 'R2');
+
+            // Round 3 (Conference Final)
+            const confChamp = simSeries(wR2_1, wR2_2);
+            outcomes.set(confChamp === wR2_1 ? wR2_2 : wR2_1, 'CF');
+
+            return confChamp;
+        };
+
+        const eastChamp = solveConference(eastTeams, 'ATL', 'MET');
+        const westChamp = solveConference(westTeams, 'CEN', 'PAC');
+
+        const cupChamp = simSeries(eastChamp, westChamp);
+        outcomes.set(cupChamp === eastChamp ? westChamp : eastChamp, 'F');
+        outcomes.set(cupChamp, 'CUP'); // Only winner gets 'CUP'
 
         return { outcomes, matchups };
     }
