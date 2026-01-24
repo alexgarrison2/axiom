@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { SimResult, TeamStandings } from '@/utils/simulation-engine';
 import LogoDisplay from './LogoDisplay';
+import { getTeamColor } from '@/utils/team-colors';
 
 interface PlayoffDetailModalProps {
     team: TeamStandings & { proj: number, playoffOdds: number, cupOdds: number };
@@ -60,6 +61,8 @@ const PlayoffDetailModal: React.FC<PlayoffDetailModalProps> = ({ team, simResult
 
 
     const { data: histData, maxFreq } = histogramData;
+    const teamColor = getTeamColor(team.tricode);
+
     if (!histData || histData.length === 0) return null;
 
     return (
@@ -97,7 +100,6 @@ const PlayoffDetailModal: React.FC<PlayoffDetailModalProps> = ({ team, simResult
                         <div>
                             <div className="text-4xl font-extrabold text-neutral-800 tracking-tighter">{team.proj.toFixed(1)}</div>
                             <div className="text-xs font-bold uppercase text-neutral-500 tracking-wider">Points</div>
-                            {/* Rank placeholder if we had it easily accessible: <div className="text-[10px] text-neutral-400">6th</div> */}
                         </div>
                         <div>
                             <div className="text-4xl font-extrabold text-neutral-800 tracking-tighter">{team.playoffOdds.toFixed(0)}%</div>
@@ -112,26 +114,10 @@ const PlayoffDetailModal: React.FC<PlayoffDetailModalProps> = ({ team, simResult
 
                 <div className="grid grid-cols-5 gap-8">
                     {/* Histogram Column (Left) - Span 2 */}
-                    <div className="col-span-2 flex flex-col justify-end h-64 border-l border-b border-neutral-300 relative pl-1">
-                        {histData.map((d) => {
-                            // Only label some y-axis points? Or x-axis?
-                            // Mimic the chart: horizontal bars or vertical? 
-                            // Wait, user image shows HORIZONTAL bars for points distribution on the LEFT.
-                            // Wait, let me re-examine user image visual memory.
-                            // Image 2: "103.3 Points", Histogram on left is Vertical list of points bins (120, 115, 110...) with horizontal green bars.
-                            return null;
-                        })}
-                        {/* 
-                           Correction: The image shows a Vertical List of Point ranges (y-axis labels) with Horizontal Bars expanding right.
-                           Let's re-render this loop properly below.
-                        */}
-                        <div className="flex flex-col w-full h-full justify-between text-[10px] font-bold text-neutral-600">
-                            {/* We will bucketize if too many points, or just show list if dense enough. 
-                                Let's bucket by 5 or just list every 2-3? 
-                                82 games -> ~40-120 points range. ~80 buckets is too tall.
-                                We should bucket into bins of 5: e.g. 120-124, 115-119.
-                            */}
-                            <HistogramVertical buckets={createBuckets(histData)} />
+                    <div className="col-span-2 flex flex-col justify-end h-64 border-l border-b border-neutral-300 relative pl-1 overflow-y-auto pr-2 custom-scrollbar">
+                        {/* Added overflow-y-auto and padding-right for scrollbar space */}
+                        <div className="flex flex-col w-full h-full justify-start gap-px pt-2">
+                            <HistogramVertical buckets={createBuckets(histData)} color={teamColor} />
                         </div>
                     </div>
 
@@ -199,17 +185,21 @@ const createBuckets = (data: { point: number, count: number, pct: number }[]) =>
     return keys.sort((a, b) => b - a).map(k => ({ label: k, pct: buckets[k] }));
 };
 
-const HistogramVertical = ({ buckets }: { buckets: { label: number, pct: number }[] }) => {
+const HistogramVertical = ({ buckets, color }: { buckets: { label: number, pct: number }[], color: string }) => {
     return (
-        <div className="w-full flex flex-col gap-1">
+        <div className="w-full flex flex-col gap-1 pb-4">
             {buckets.map(b => (
-                <div key={b.label} className="flex items-center h-5 gap-2">
+                <div key={b.label} className="flex items-center h-5 gap-2 shrink-0">
+                    {/* Added shrink-0 to prevent squishing in flex container */}
                     <span className="w-6 text-right text-[10px] text-neutral-500 font-mono leading-none">{b.label}</span>
                     <div className="flex-1 h-full bg-neutral-200 rounded-sm overflow-hidden relative">
-                        {/* Green Bar */}
+                        {/* Dynamic Bar Color */}
                         <div
-                            className="bg-[#008851] h-full absolute left-0 top-0"
-                            style={{ width: `${Math.min(b.pct * 3, 100)}%` }} // *3 scaling provided pct is low, or just use raw if pct is high. Adjust scale. 
+                            className="h-full absolute left-0 top-0 transition-all duration-500"
+                            style={{
+                                width: `${Math.min(b.pct * 3, 100)}%`,
+                                backgroundColor: color
+                            }}
                         />
                         {/* Text inside bar? */}
                         {b.pct > 2 && (
