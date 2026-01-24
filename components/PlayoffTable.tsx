@@ -161,31 +161,31 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: { name: stri
         {/* Table using Flex Rows for strict alignment matching the Header */}
         <div className="w-full text-xs">
             {group.teams.map((team: any, idx: number) => {
-                // Granular 7-Step Color Scale (Red -> Blue)
+                // Granular 7-Step Color Scale (Red -> Blue) per User Guide
                 let oddsColor = 'text-white';
                 let bgOdds = 'bg-neutral-800';
 
                 if (team.playoffOdds >= 90) {
                     oddsColor = 'text-white';
                     bgOdds = 'bg-blue-700'; // Dark Blue
-                } else if (team.playoffOdds >= 75) {
+                } else if (team.playoffOdds >= 80) {
                     oddsColor = 'text-white';
                     bgOdds = 'bg-blue-500'; // Medium Blue
-                } else if (team.playoffOdds >= 60) {
+                } else if (team.playoffOdds >= 65) {
                     oddsColor = 'text-neutral-900';
                     bgOdds = 'bg-sky-300'; // Light Blue
-                } else if (team.playoffOdds >= 40) {
+                } else if (team.playoffOdds >= 50) {
                     oddsColor = 'text-neutral-900';
                     bgOdds = 'bg-neutral-300'; // Grey
-                } else if (team.playoffOdds >= 25) {
+                } else if (team.playoffOdds >= 40) {
                     oddsColor = 'text-neutral-900';
                     bgOdds = 'bg-red-200'; // Pinkish
-                } else if (team.playoffOdds >= 10) {
+                } else if (team.playoffOdds >= 30) {
                     oddsColor = 'text-white';
                     bgOdds = 'bg-red-500'; // Orange-Red
                 } else {
                     oddsColor = 'text-white';
-                    bgOdds = 'bg-red-900'; // Dark Red
+                    bgOdds = 'bg-red-900'; // Dark Red (<30%)
                 }
 
                 return (
