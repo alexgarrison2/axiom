@@ -387,23 +387,23 @@ export class SeasonSimulator {
             const matchC_High = d1Guaranteed[1]; const matchC_Low = d1Guaranteed[2]; // Div1 2v3
             const matchD_High = d2Guaranteed[1]; const matchD_Low = d2Guaranteed[2]; // Div2 2v3
 
-            // Register R1 Matchups
-            [
-                [matchA_High, matchA_Low],
-                [matchB_High, matchB_Low],
-                [matchC_High, matchC_Low],
-                [matchD_High, matchD_Low]
-            ].forEach(([h, l]) => {
-                matchups.set(h, l);
-                matchups.set(l, h);
-                outcomes.set(h === simSeries(h, l) ? l : h, 'R1'); // Loser exits R1
-            });
-
-            // winners
+            // Register and Run R1 Matchups
             const wA = simSeries(matchA_High, matchA_Low);
             const wB = simSeries(matchB_High, matchB_Low);
-            const wC = simSeries(matchC_High, matchC_Low); // Div1 2v3 winner
-            const wD = simSeries(matchD_High, matchD_Low); // Div2 2v3 winner
+            const wC = simSeries(matchC_High, matchC_Low);
+            const wD = simSeries(matchD_High, matchD_Low);
+
+            // Record Outcomes
+            const recordR1 = (h: string, l: string, w: string) => {
+                matchups.set(h, l);
+                matchups.set(l, h);
+                outcomes.set(w === h ? l : h, 'R1');
+            };
+
+            recordR1(matchA_High, matchA_Low, wA);
+            recordR1(matchB_High, matchB_Low, wB);
+            recordR1(matchC_High, matchC_Low, wC);
+            recordR1(matchD_High, matchD_Low, wD);
 
             // Round 2 (Divisional Finals)
             // If Bracket A was Div1, then Winner(A) plays Winner(C) [Div1 bracket]
