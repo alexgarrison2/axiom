@@ -42,6 +42,7 @@ export interface SimResult {
     pointDist: Map<number, number>;
     divRankDist: Map<number, number>;
     roundExitDist: Record<string, number>;
+    r1Matchups: Record<string, number>; // Opponent Tricode -> Count
 }
 
 export class SeasonSimulator {
@@ -218,7 +219,8 @@ export class SeasonSimulator {
         this.baseStandings.forEach((_, key) => {
             results.set(key, {
                 madePlayoffs: 0, wonDivision: 0, wonCup: 0, totalSims: iterations, totalPoints: 0,
-                pointDist: new Map(), divRankDist: new Map(), roundExitDist: { 'MISS': 0, 'R1': 0, 'R2': 0, 'CF': 0, 'F': 0, 'CUP': 0 }
+                pointDist: new Map(), divRankDist: new Map(), roundExitDist: { 'MISS': 0, 'R1': 0, 'R2': 0, 'CF': 0, 'F': 0, 'CUP': 0 },
+                r1Matchups: {}
             });
         });
 
@@ -237,48 +239,51 @@ export class SeasonSimulator {
             finalStandings.forEach((team, tricode) => {
                 const res = results.get(tricode)!;
                 res.totalPoints += team.points;
-                // res.pointDist.set(team.points, (res.pointDist.get(team.points)||0)+1);
+                res.pointDist.set(team.points, (res.pointDist.get(team.points) || 0) + 1);
                 // Division Rank
                 const div = this.getDivision(tricode);
                 const rank = divSims[div].findIndex(t => t.tricode === tricode) + 1;
-                // res.divRankDist.set(rank, (res.divRankDist.get(rank)||0)+1);
-                // (Commented out expensive map ops if not needed for V1 display, but strictly requested in task? Kept simplified for code block length)
+                res.divRankDist.set(rank, (res.divRankDist.get(rank) || 0) + 1);
             });
 
             playoffTeams.forEach(t => results.get(t)!.madePlayoffs++);
 
-            // Simulate Playoffs
-            const exitResults = this.simulatePlayoffsFull(playoffTeams, finalStandings);
-            exitResults.forEach((exit, t) => {
+            // Simulate Playoffs and track matchups
+            // We need to capture the matchups from simulatePlayoffsFull
+            const { outcomes, matchups } = this.simulatePlayoffsFull(playoffTeams, finalStandings);
+
+            outcomes.forEach((exit, t) => {
                 if (exit === 'CUP') results.get(t)!.wonCup++;
+                // Increment exit dist
+                if (!results.get(t)!.roundExitDist[exit]) results.get(t)!.roundExitDist[exit] = 0;
+                results.get(t)!.roundExitDist[exit]++;
+            });
+
+            // Track Matchups
+            matchups.forEach((opp, team) => {
+                const r = results.get(team)!;
+                if (!r.r1Matchups[opp]) r.r1Matchups[opp] = 0;
+                r.r1Matchups[opp]++;
             });
         }
         return results;
     }
 
     // Updated Playoff Sim to use calculateMatchupProb
-    private simulatePlayoffsFull(qualifiers: string[], standings: Map<string, TeamStandings>): Map<string, string> {
+    private simulatePlayoffsFull(qualifiers: string[], standings: Map<string, TeamStandings>): { outcomes: Map<string, string>, matchups: Map<string, string> } {
         const outcomes = new Map<string, string>();
-        if (qualifiers.length !== 16) return outcomes;
+        const matchups = new Map<string, string>();
+
+        if (qualifiers.length !== 16) return { outcomes, matchups };
 
         const simSeries = (teamA: string, teamB: string): string => {
             const a = standings.get(teamA);
             const b = standings.get(teamB);
             if (!a || !b) return teamA;
 
-            // Use Poisson Prob for Series
-            // Series Prob = P(Win)^4 ... simplified? 
-            // Better: Simulate game by game? 
-            // For Millions of sims, series prob is better.
-            // But let's stick to consistent game-by-game for accuracy.
-
             const pWin = this.calculateMatchupProb(a, b);
             // Note: Hockeystats uses "re-seed home ice advantage".
-            // We assume Higher Seed (points) gets Home Ice?
-            // "getHomeWinProb" assumes A is Home? 
-            // calculateMatchupProb(a, b) treats 'a' as home.
-            // We need to ensure we call it with the Home team first.
-            // Logic below passes seeded[i] as A. seeded is sorted by points. So A is higher seed. Correct.
+            // We assume Higher Seed (points) gets Home Ice? YES, seeded array is sorted by points.
 
             let aWins = 0; let bWins = 0;
             while (aWins < 4 && bWins < 4) {
@@ -290,33 +295,25 @@ export class SeasonSimulator {
         // Same seeding / bracket logic ...
         const seeded = qualifiers.sort((a, b) => (standings.get(b)?.points || 0) - (standings.get(a)?.points || 0));
 
-        // ... (Re-implement bracket loops shortened for brevity if possible, or copy paste) ...
-        // PROPER IMPLEMENTATION NEEDED
-
         const r1Winners: string[] = [];
         const r1Losers: string[] = [];
         for (let i = 0; i < 8; i++) {
             const higher = seeded[i]; const lower = seeded[15 - i];
+
+            // Record Matchup
+            matchups.set(higher, lower);
+            matchups.set(lower, higher);
+
             const w = simSeries(higher, lower);
             r1Winners.push(w);
             r1Losers.push(w === higher ? lower : higher);
         }
         r1Losers.forEach(t => outcomes.set(t, 'R1'));
 
-        // R2 (Central logic: Division winners play wildcards? Bracket is fixed in NHL usually?)
-        // Simplified: 1 vs 8, 2 vs 7 ... winners play. 
-        // NHL is bracketed: A1/WC vs A2/A3. 
-        // Current logic in previous file was "Seed 1 vs Seed 8". That's NBA style?
-        // NHL is Divisional. 
-        // For this task, we will stick to the previous file's Bracket Logic (1v8 simplified) to minimize scope creep unless critical.
-        // Hockeystats says "Playoff Probabilities...".
-        // Let's keep the existing "1 vs 8" logic for now as rewriting the bracket is a separate task.
-
+        // R2
         const r2Winners: string[] = [];
         const r2Losers: string[] = [];
         for (let i = 0; i < 4; i++) {
-            // Re-seed? NHL re-seeds? No. Fixed bracket.
-            // But previous code re-arrayed `r1Winners`.
             const w = simSeries(r1Winners[i], r1Winners[7 - i]);
             r2Winners.push(w);
             r2Losers.push(w === r1Winners[i] ? r1Winners[7 - i] : r1Winners[i]);
@@ -336,7 +333,7 @@ export class SeasonSimulator {
         outcomes.set(cupWinner === r3Winners[0] ? r3Winners[1] : r3Winners[0], 'F');
         outcomes.set(cupWinner, 'CUP');
 
-        return outcomes;
+        return { outcomes, matchups };
     }
 
     // ... Playoff Seeding / Divisions logic ...

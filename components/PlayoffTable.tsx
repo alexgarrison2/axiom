@@ -3,6 +3,7 @@ import { TeamStandings, SimResult } from '@/utils/simulation-engine';
 import LogoDisplay from './LogoDisplay';
 import PlayoffDetailModal from './PlayoffDetailModal';
 import { Info } from 'lucide-react';
+import MatchupMatrix from './MatchupMatrix';
 
 interface PlayoffTableProps {
     currentStandings: TeamStandings[];
@@ -98,6 +99,20 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
                     title="Eastern Conference"
                     groups={processedTeams.east}
                     onSelectTeam={setSelectedTeamTricode}
+                />
+            </div>
+
+            {/* Matchup Matrices */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pb-12">
+                <MatchupMatrix
+                    currentStandings={currentStandings}
+                    simResults={simResults}
+                    conference="West"
+                />
+                <MatchupMatrix
+                    currentStandings={currentStandings}
+                    simResults={simResults}
+                    conference="East"
                 />
             </div>
 
