@@ -508,11 +508,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                                 }`}>
                                 {formatGoalieName(starterName)}
                             </span>
-                            {gsaxTotal !== undefined && gsaxPct !== undefined && (
-                                <span className="text-[9px] font-mono font-bold tracking-tight px-1 py-0.5 rounded bg-black/40 shadow-sm border border-white/5" style={{ color: getGsaxColorValue(gsaxPct) }}>
-                                    {formatGsax(gsaxTotal)}
-                                </span>
-                            )}
                         </div>
                         {goalieStats && (
                             <div className="mt-0.5 text-[9px] text-neutral-500 font-mono tracking-wide">
