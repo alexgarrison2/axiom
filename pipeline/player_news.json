@@ -1,4 +1,98 @@
 {
+    "DET": [
+        {
+            "player": "Simon Edvinsson",
+            "news": "Edvinsson (lower-body) will remain out vs. Winnipeg on Saturday and will head back to Detroit to be further evaluated. ",
+            "category": "Injury",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T18:21:04.622Z"
+        }
+    ],
+    "FLA": [
+        {
+            "player": "Sergei Bobrovsky",
+            "news": "Bobrovsky will start in Minnesota on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T18:18:20.398Z"
+        }
+    ],
+    "NSH": [
+        {
+            "player": "Nicolas Hague",
+            "news": "Hague is week-to-week with a lower-body injury. ",
+            "category": "Injury",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T18:17:50.134Z"
+        },
+        {
+            "player": "Michael McCarron",
+            "news": "McCarron will draw back into Nashville's lineup vs. Utah on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T18:17:00.555Z"
+        },
+        {
+            "player": "Fedor Svechkov",
+            "news": "Svechkov will be a healthy scratch vs. Utah on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T18:16:35.508Z"
+        },
+        {
+            "player": "Juuse Saros",
+            "news": "Saros will start vs. Utah on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T18:11:32.906Z"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "Lawson Crouse",
+            "news": "Crouse (illness) is out vs. Nashville on Saturday. ",
+            "category": "Injury",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T18:13:44.436Z"
+        },
+        {
+            "player": "Karel Vejmelka",
+            "news": "Vejmelka will start vs. Nashville on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T18:11:55.132Z"
+        }
+    ],
+    "MIN": [
+        {
+            "player": "Tyler Pitlick",
+            "news": "Pitlick will be a healthy scratch vs. Florida on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T17:58:00.609Z"
+        },
+        {
+            "player": "Matt Boldy",
+            "news": " Boldy (undisclosed) is expected to return vs. Florida on Saturday",
+            "category": "Injury",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T17:56:31.197Z"
+        },
+        {
+            "player": "Matt Boldy",
+            "news": "Boldy (undisclosed) will be a game-time decision vs. Florida on Saturday. ",
+            "category": "Injury",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T17:40:36.428Z"
+        },
+        {
+            "player": "Filip Gustavsson",
+            "news": "Gustavsson will start vs. Florida on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-24",
+            "timestamp": "2026-01-24T17:39:11.534Z"
+        }
+    ],
     "BUF": [
         {
             "player": "Zach Benson",
@@ -29,22 +123,6 @@
             "timestamp": "2026-01-24T17:30:56.066Z"
         }
     ],
-    "MIN": [
-        {
-            "player": "Matt Boldy",
-            "news": "Boldy (undisclosed) will be a game-time decision vs. Florida on Saturday. ",
-            "category": "Injury",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T17:40:36.428Z"
-        },
-        {
-            "player": "Filip Gustavsson",
-            "news": "Gustavsson will start vs. Florida on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T17:39:11.534Z"
-        }
-    ],
     "VAN": [
         {
             "player": "Nikita Tolopilo",
@@ -68,84 +146,6 @@
             "category": "Signing",
             "date": "2026-01-24",
             "timestamp": "2026-01-24T17:03:40.886Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Isak Posch",
-            "news": "Posch has been recalled from the Colorado Eagles (AHL). ",
-            "category": "Call Up",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T17:02:39.525Z"
-        },
-        {
-            "player": "Scott Wedgewood",
-            "news": "Wedgewood has been placed on non roster and is expected to re-join the team on their current road trip. ",
-            "category": "General",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T17:02:15.852Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Jayden Struble",
-            "news": "Struble will be a healthy scratch in Boston on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T17:00:11.223Z"
-        },
-        {
-            "player": "Arber Xhekaj",
-            "news": "Xhekaj will draw back into Montreal's lineup vs. Boston on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T16:59:46.745Z"
-        },
-        {
-            "player": "Joe Veleno",
-            "news": "Veleno will be a healthy scratch in Boston on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T16:59:11.399Z"
-        },
-        {
-            "player": "Alexandre Texier",
-            "news": "Texier (lower-body) will return in Boston on Saturday.",
-            "category": "Injury",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T16:58:44.737Z"
-        },
-        {
-            "player": "Sam Montembeault",
-            "news": "Montembeault will start in Boston on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T16:56:19.861Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Jakob Pelletier",
-            "news": "Pelletier has been recalled from Syracuse (AHL) on Saturday. ",
-            "category": "Call Up",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T16:48:27.090Z"
-        }
-    ],
-    "NYI": [
-        {
-            "player": "Bo Horvat",
-            "news": "Horvat (lower-body) will return vs. Buffalo on Saturday. ",
-            "category": "Injury",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T16:47:43.583Z"
-        },
-        {
-            "player": "David Rittich",
-            "news": "Rittich will start vs. Buffalo on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-24",
-            "timestamp": "2026-01-24T16:43:28.054Z"
         }
     ]
 }
