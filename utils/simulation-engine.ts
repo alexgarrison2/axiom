@@ -249,7 +249,6 @@ export class SeasonSimulator {
             playoffTeams.forEach(t => results.get(t)!.madePlayoffs++);
 
             // Simulate Playoffs and track matchups
-            // We need to capture the matchups from simulatePlayoffsFull
             const { outcomes, matchups } = this.simulatePlayoffsFull(playoffTeams, finalStandings);
 
             outcomes.forEach((exit, t) => {
@@ -257,6 +256,16 @@ export class SeasonSimulator {
                 // Increment exit dist
                 if (!results.get(t)!.roundExitDist[exit]) results.get(t)!.roundExitDist[exit] = 0;
                 results.get(t)!.roundExitDist[exit]++;
+            });
+
+            // Track Missed Playoffs
+            this.baseStandings.forEach((_, t) => {
+                if (!outcomes.has(t)) {
+                    // If not in outcomes, they missed (or outcomes logic failed, but assuming 16 qualifiers)
+                    // Better check: if not in playoffTeams
+                    const res = results.get(t)!;
+                    res.roundExitDist['MISS']++;
+                }
             });
 
             // Track Matchups
