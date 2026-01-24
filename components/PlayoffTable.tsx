@@ -161,25 +161,31 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: { name: stri
         {/* Table using Flex Rows for strict alignment matching the Header */}
         <div className="w-full text-xs">
             {group.teams.map((team: any, idx: number) => {
-                // Granular Color Scale for Playoff Odds
-                let oddsColor = 'text-neutral-500';
-                let bgOdds = '';
+                // Granular 7-Step Color Scale (Red -> Blue)
+                let oddsColor = 'text-white';
+                let bgOdds = 'bg-neutral-800';
 
                 if (team.playoffOdds >= 90) {
-                    oddsColor = 'text-neon-green font-bold text-glow-green';
-                    bgOdds = 'bg-neon-green/10';
+                    oddsColor = 'text-white';
+                    bgOdds = 'bg-blue-700'; // Dark Blue
                 } else if (team.playoffOdds >= 75) {
-                    oddsColor = 'text-cyan-400 font-bold';
-                    bgOdds = 'bg-cyan-400/10';
-                } else if (team.playoffOdds >= 50) {
-                    oddsColor = 'text-white font-bold';
-                    bgOdds = 'bg-white/10';
+                    oddsColor = 'text-white';
+                    bgOdds = 'bg-blue-500'; // Medium Blue
+                } else if (team.playoffOdds >= 60) {
+                    oddsColor = 'text-neutral-900';
+                    bgOdds = 'bg-sky-300'; // Light Blue
+                } else if (team.playoffOdds >= 40) {
+                    oddsColor = 'text-neutral-900';
+                    bgOdds = 'bg-neutral-300'; // Grey
                 } else if (team.playoffOdds >= 25) {
-                    oddsColor = 'text-amber-400 font-bold';
-                    bgOdds = 'bg-amber-400/10';
+                    oddsColor = 'text-neutral-900';
+                    bgOdds = 'bg-red-200'; // Pinkish
+                } else if (team.playoffOdds >= 10) {
+                    oddsColor = 'text-white';
+                    bgOdds = 'bg-red-500'; // Orange-Red
                 } else {
-                    oddsColor = 'text-red-400/80';
-                    bgOdds = 'bg-red-400/5';
+                    oddsColor = 'text-white';
+                    bgOdds = 'bg-red-900'; // Dark Red
                 }
 
                 return (
