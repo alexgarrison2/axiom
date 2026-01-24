@@ -50,7 +50,7 @@ export class SeasonSimulator {
         // Win prob ~= 0.5 + (diff * 0.02)
 
         const diff = homeRating - awayRating;
-        let prob = 0.5 + (diff * 0.006); // Dampened from 0.015 used previously
+        let prob = 0.5 + (diff * 0.003); // Dampened even further from 0.006 to 0.003 for realism
 
         // Clamp
         if (prob > 0.85) prob = 0.85;

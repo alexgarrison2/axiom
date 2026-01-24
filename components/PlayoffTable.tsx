@@ -161,12 +161,26 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: { name: stri
         {/* Table using Flex Rows for strict alignment matching the Header */}
         <div className="w-full text-xs">
             {group.teams.map((team: any, idx: number) => {
-                const oddsColor = team.playoffOdds >= 90 ? 'text-neon-green font-bold text-glow-green' :
-                    team.playoffOdds >= 50 ? 'text-white font-bold' :
-                        team.playoffOdds >= 10 ? 'text-neutral-300' : 'text-neutral-500';
+                // Granular Color Scale for Playoff Odds
+                let oddsColor = 'text-neutral-500';
+                let bgOdds = '';
 
-                const bgOdds = team.playoffOdds >= 90 ? 'bg-neon-green/10' :
-                    team.playoffOdds <= 5 ? 'bg-red-500/10' : '';
+                if (team.playoffOdds >= 90) {
+                    oddsColor = 'text-neon-green font-bold text-glow-green';
+                    bgOdds = 'bg-neon-green/10';
+                } else if (team.playoffOdds >= 75) {
+                    oddsColor = 'text-cyan-400 font-bold';
+                    bgOdds = 'bg-cyan-400/10';
+                } else if (team.playoffOdds >= 50) {
+                    oddsColor = 'text-white font-bold';
+                    bgOdds = 'bg-white/10';
+                } else if (team.playoffOdds >= 25) {
+                    oddsColor = 'text-amber-400 font-bold';
+                    bgOdds = 'bg-amber-400/10';
+                } else {
+                    oddsColor = 'text-red-400/80';
+                    bgOdds = 'bg-red-400/5';
+                }
 
                 return (
                     <div key={team.tricode} className="relative group hover:bg-white/[0.04] transition-colors flex items-center border-b border-white/[0.02]">
