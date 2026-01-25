@@ -1,5 +1,42 @@
 {
+    "VAN": [
+        {
+            "player": "Max Sasson",
+            "news": "Sasson will draw back into the Canucks lineup on Sunday. \r\n",
+            "category": "Line Change",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:57:07.539Z"
+        },
+        {
+            "player": "David Kampf",
+            "news": "Kampf will be a healthy scratch on Sunday. \r\n",
+            "category": "Line Change",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:56:56.675Z"
+        },
+        {
+            "player": "Kevin Lankinen",
+            "news": "Lankinen will start Sunday vs. the Penguins. ",
+            "category": "Goalie Start",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:46:18.839Z"
+        }
+    ],
     "VGK": [
+        {
+            "player": "Alexander Holtz",
+            "news": "Holtz will be a healthy scratch on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:56:29.034Z"
+        },
+        {
+            "player": "Cole Reinhardt",
+            "news": "Reinhardt re-enters the Golden Knights' lineup on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:56:08.070Z"
+        },
         {
             "player": "Adin Hill",
             "news": "Hill will start Sunday in Ottawa. ",
@@ -8,16 +45,53 @@
             "timestamp": "2026-01-25T21:34:39.280Z"
         }
     ],
-    "FLA": [
+    "COL": [
         {
-            "player": "Daniil Tarasov",
-            "news": "Tarasov will start Sunday in Chicago. ",
-            "category": "Goalie Start",
+            "player": "Scott Wedgewood",
+            "news": "Wedgewood (personal) has been added to the Avalanche's active roster. \r\n",
+            "category": "Injury",
             "date": "2026-01-25",
-            "timestamp": "2026-01-25T21:29:53.133Z"
+            "timestamp": "2026-01-25T21:54:59.577Z"
+        },
+        {
+            "player": "Jack Ahcan",
+            "news": "The Avalanche have reassigned Jack Ahcan to Colorado (AHL). \r\n",
+            "category": "Send Down",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:54:04.657Z"
+        },
+        {
+            "player": "Isak Posch",
+            "news": "The Avalanche have reassigned Isak Posch to Colorado (AHL). \r\n",
+            "category": "Send Down",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:53:35.153Z"
+        }
+    ],
+    "MIN": [
+        {
+            "player": "David Spacek",
+            "news": "The Wild have reassigned David Spacek to Iowa (AHL). \r\n",
+            "category": "Send Down",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:53:21.229Z"
         }
     ],
     "OTT": [
+        {
+            "player": "Nikolas Matinpalo",
+            "news": "Matinpalo will be a healthy scratch on Sunday. \r\n",
+            "category": "Line Change",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:53:05.934Z"
+        },
+        {
+            "player": "Nick Jensen",
+            "news": "Jensen will draw into the Senators lineup on Sunday. \r\n",
+            "category": "Line Change",
+            "date": "2026-01-25",
+            "timestamp": "2026-01-25T21:52:52.358Z"
+        },
         {
             "player": "Linus Ullmark",
             "news": "Ullmark (personal) has been added to the Senators active roster and will serve as the backup on Sunday. ",
@@ -31,13 +105,15 @@
             "category": "Goalie Start",
             "date": "2026-01-25",
             "timestamp": "2026-01-25T20:28:34.093Z"
-        },
+        }
+    ],
+    "FLA": [
         {
-            "player": "Hunter Shepard",
-            "news": "The Senators have assigned Hunter Shepard to Belleville (AHL). \r\n",
-            "category": "Send Down",
+            "player": "Daniil Tarasov",
+            "news": "Tarasov will start Sunday in Chicago. ",
+            "category": "Goalie Start",
             "date": "2026-01-25",
-            "timestamp": "2026-01-25T17:46:42.823Z"
+            "timestamp": "2026-01-25T21:29:53.133Z"
         }
     ],
     "PIT": [
@@ -72,79 +148,6 @@
             "category": "Goalie Start",
             "date": "2026-01-25",
             "timestamp": "2026-01-25T19:30:50.676Z"
-        }
-    ],
-    "NJD": [
-        {
-            "player": "Jacob Markstrom",
-            "news": "Markstrom will start Sunday in Seattle. ",
-            "category": "Goalie Start",
-            "date": "2026-01-25",
-            "timestamp": "2026-01-25T18:05:07.632Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Mackenzie Blackwood",
-            "news": "Blackwood will start Sunday afternoon in Toronto. ",
-            "category": "Goalie Start",
-            "date": "2026-01-25",
-            "timestamp": "2026-01-25T18:01:53.937Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Spencer Knight",
-            "news": "Knight will start Sunday vs. the Panthers. ",
-            "category": "Goalie Start",
-            "date": "2026-01-25",
-            "timestamp": "2026-01-25T17:32:42.430Z"
-        }
-    ],
-    "CGY": [
-        {
-            "player": "Brayden Pachal",
-            "news": "Pachal will be a healthy scratch on Sunday. \r\n",
-            "category": "Line Change",
-            "date": "2026-01-25",
-            "timestamp": "2026-01-25T17:08:46.729Z"
-        },
-        {
-            "player": "Hunter Brzustewicz",
-            "news": "Brzustewicz will be back in the Flames lineup on Sunday. \r\n",
-            "category": "Line Change",
-            "date": "2026-01-25",
-            "timestamp": "2026-01-25T17:05:16.327Z"
-        },
-        {
-            "player": "Ryan Lomberg",
-            "news": "Lomberg will be a healthy scratch on Sunday. \r\n",
-            "category": "Line Change",
-            "date": "2026-01-25",
-            "timestamp": "2026-01-25T16:51:05.789Z"
-        },
-        {
-            "player": "Justin Kirkland",
-            "news": "Kirkland will draw into the Flames lineup on Sunday. \r\n",
-            "category": "Line Change",
-            "date": "2026-01-25",
-            "timestamp": "2026-01-25T16:49:38.126Z"
-        }
-    ],
-    "TOR": [
-        {
-            "player": "Calle Jarnkrok",
-            "news": "Jarnkrok will be a healthy scratch on Sunday. \r\n",
-            "category": "Line Change",
-            "date": "2026-01-25",
-            "timestamp": "2026-01-25T16:31:19.030Z"
-        },
-        {
-            "player": "Jacob Quillan",
-            "news": "Quillan will draw into the Maple Leafs lineup on Sunday. \r\n\r\n",
-            "category": "Line Change",
-            "date": "2026-01-25",
-            "timestamp": "2026-01-25T16:30:09.786Z"
         }
     ]
 }
