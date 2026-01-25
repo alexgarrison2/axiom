@@ -85,10 +85,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Calle Jarnkrok",
-                "number": 19,
+                "name": "Jacob Quillan",
+                "number": null,
                 "pos": "rw",
-                "id": 1939,
+                "id": 32458,
                 "ppUnit": null
             }
         ],
@@ -155,7 +155,7 @@
                 "number": 29,
                 "pos": "c",
                 "id": 2130,
-                "ppUnit": 2
+                "ppUnit": 1
             },
             {
                 "name": "Martin Necas",
@@ -190,10 +190,10 @@
         ],
         "f3": [
             {
-                "name": "Taylor Makar",
-                "number": 16,
+                "name": "Joel Kiviranta",
+                "number": 94,
                 "pos": "lw",
-                "id": 38433,
+                "id": 31187,
                 "ppUnit": null
             },
             {
@@ -201,7 +201,7 @@
                 "number": 18,
                 "pos": "c",
                 "id": 27584,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
                 "name": "Gavin Brindley",
@@ -213,10 +213,10 @@
         ],
         "f4": [
             {
-                "name": "Zakhar Bardakov",
-                "number": 93,
+                "name": "Taylor Makar",
+                "number": 16,
                 "pos": "lw",
-                "id": 34705,
+                "id": 38433,
                 "ppUnit": null
             },
             {
@@ -227,10 +227,10 @@
                 "ppUnit": null
             },
             {
-                "name": "Joel Kiviranta",
-                "number": 94,
+                "name": "Zakhar Bardakov",
+                "number": 93,
                 "pos": "rw",
-                "id": 31187,
+                "id": 34705,
                 "ppUnit": null
             }
         ],
@@ -1422,29 +1422,6 @@
     "CGY": {
         "f1": [
             {
-                "name": "Jonathan Huberdeau",
-                "number": 10,
-                "pos": "lw",
-                "id": 1798,
-                "ppUnit": 1
-            },
-            {
-                "name": "Nazem Kadri",
-                "number": 91,
-                "pos": "c",
-                "id": 1425,
-                "ppUnit": 1
-            },
-            {
-                "name": "Matt Coronato",
-                "number": 27,
-                "pos": "rw",
-                "id": 32801,
-                "ppUnit": 1
-            }
-        ],
-        "f2": [
-            {
                 "name": "Yegor Sharangovich",
                 "number": 17,
                 "pos": "lw",
@@ -1456,46 +1433,46 @@
                 "number": 11,
                 "pos": "c",
                 "id": 193,
-                "ppUnit": null
+                "ppUnit": 2
             },
             {
-                "name": "Joel Farabee",
-                "number": 86,
+                "name": "Matt Coronato",
+                "number": 27,
                 "pos": "rw",
-                "id": 4799,
+                "id": 32801,
                 "ppUnit": 1
             }
         ],
-        "f3": [
-            {
-                "name": "Martin Pospisil",
-                "number": 76,
-                "pos": "lw",
-                "id": 28414,
-                "ppUnit": null
-            },
+        "f2": [
             {
                 "name": "Connor Zary",
                 "number": 47,
-                "pos": "c",
+                "pos": "lw",
                 "id": 29510,
                 "ppUnit": 2
             },
             {
-                "name": "Matvei Gridin",
-                "number": 92,
+                "name": "Nazem Kadri",
+                "number": 91,
+                "pos": "c",
+                "id": 1425,
+                "ppUnit": 1
+            },
+            {
+                "name": "Martin Pospisil",
+                "number": 76,
                 "pos": "rw",
-                "id": 36778,
-                "ppUnit": 2
+                "id": 28414,
+                "ppUnit": null
             }
         ],
-        "f4": [
+        "f3": [
             {
-                "name": "Ryan Lomberg",
-                "number": 70,
+                "name": "Jonathan Huberdeau",
+                "number": 10,
                 "pos": "lw",
-                "id": 3905,
-                "ppUnit": null
+                "id": 1798,
+                "ppUnit": 1
             },
             {
                 "name": "Morgan Frost",
@@ -1503,6 +1480,29 @@
                 "pos": "c",
                 "id": 2814,
                 "ppUnit": 2
+            },
+            {
+                "name": "Matvei Gridin",
+                "number": 92,
+                "pos": "rw",
+                "id": 36778,
+                "ppUnit": 1
+            }
+        ],
+        "f4": [
+            {
+                "name": "Joel Farabee",
+                "number": 86,
+                "pos": "lw",
+                "id": 4799,
+                "ppUnit": null
+            },
+            {
+                "name": "Justin Kirkland",
+                "number": 58,
+                "pos": "c",
+                "id": 3839,
+                "ppUnit": null
             },
             {
                 "name": "Adam Klapka",
@@ -1541,7 +1541,7 @@
                 "number": 2,
                 "pos": "rd",
                 "id": 4658,
-                "ppUnit": 2
+                "ppUnit": null
             }
         ],
         "d3": [
@@ -1553,11 +1553,11 @@
                 "ppUnit": null
             },
             {
-                "name": "Brayden Pachal",
-                "number": 94,
+                "name": "Hunter Brzustewicz",
+                "number": 48,
                 "pos": "rd",
-                "id": 25331,
-                "ppUnit": null
+                "id": 33252,
+                "ppUnit": 2
             }
         ]
     },
