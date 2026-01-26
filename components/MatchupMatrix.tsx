@@ -20,7 +20,7 @@ const MatchupMatrix: React.FC<MatchupMatrixProps> = ({ currentStandings, simResu
                 playoffOdds: ((simResults[t.tricode]?.madePlayoffs || 0) / (simResults[t.tricode]?.totalSims || 1)) * 100
             }))
             .sort((a, b) => b.playoffOdds - a.playoffOdds)
-            .slice(0, 8); // Top 8 most likely for clean matrix
+            .filter(t => t.playoffOdds >= 1); // Show all teams with at least 1% chance
     }, [currentStandings, simResults, conference]);
 
     // 2. Build Matrix Data
