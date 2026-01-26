@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+// import Image from 'next/image';
 import { getPredictions, getLastRefresh, getHistory } from '@/utils/data';
 import { fetchRemainingSeason, fetchCurrentStandings } from '@/utils/schedule';
 import PredictionsViewer from '@/components/PredictionsViewer';
@@ -20,9 +20,6 @@ export default async function Home() {
         fetchCurrentStandings()
     ]);
 
-    // Calculate max total goals for proportional sizing
-    const maxTotalGoals = Math.max(...predictions.map(p => p.totalGoals), 6.5); // Default min 6.5
-
     return (
         <main className="min-h-screen bg-black text-white p-4 font-sans relative overflow-x-hidden selection:bg-emerald-500/30">
 
@@ -37,7 +34,6 @@ export default async function Home() {
                 <PredictionsViewer
                     predictions={predictions}
                     history={history}
-                    maxTotalGoals={maxTotalGoals}
                     fullSchedule={fullSchedule}
                     currentStandings={currentStandings}
                 />

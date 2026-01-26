@@ -14,7 +14,6 @@ import PlayoffTable from './PlayoffTable';
 interface PredictionsViewerProps {
     predictions: GamePrediction[];
     history: HistoryEntry[];
-    maxTotalGoals: number;
     fullSchedule: SimGame[];
     currentStandings: TeamStandings[];
 }
@@ -57,9 +56,8 @@ const itemVariants: Variants = {
     }
 };
 
-const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, maxTotalGoals, fullSchedule, currentStandings }) => {
+const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, fullSchedule, currentStandings }) => {
     const [predictions, setPredictions] = useState<GamePrediction[]>(initialPredictions);
-    const [leverageMap, setLeverageMap] = useState<Record<string, number>>({});
     const [simResults, setSimResults] = useState<Record<string, SimResult>>({});
     const workerRef = useRef<Worker | null>(null);
 
@@ -87,23 +85,6 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                 // Alternative: Use the "Bubble Proximity" proxy.
                 // If a team is 40-80% to make playoffs, their games are high leverage.
 
-                const ratings: Record<string, number> = {};
-
-                predictions.forEach(p => {
-                    const homeOdds = results[p.homeTeam.triCode]?.madePlayoffs / results[p.homeTeam.triCode]?.totalSims;
-                    const awayOdds = results[p.awayTeam.triCode]?.madePlayoffs / results[p.awayTeam.triCode]?.totalSims;
-
-                    // Simple "Importance" Metric: proximity to 0.5 (Bubble)
-                    // 0.5 -> 1.0 importance. 0.0 or 1.0 -> 0 importance.
-                    const homeImp = 1 - Math.abs((homeOdds || 0) * 2 - 1);
-                    const awayImp = 1 - Math.abs((awayOdds || 0) * 2 - 1);
-
-                    // Game leverage is average of both teams' importance? Or max?
-                    // If DET (Bubble) plays CBJ (Out), it's high leverage for DET.
-                    ratings[p.id] = (homeImp + awayImp) / 2; // Simple approx for V1
-                });
-
-                setLeverageMap(ratings);
                 setSimResults(results); // Store full results for table
             }
         };
@@ -492,8 +473,6 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             >
                                 <MatchupCard
                                     prediction={prediction}
-                                    maxTotalGoals={maxTotalGoals}
-                                    playoffLeverage={leverageMap[prediction.id] !== undefined ? leverageMap[prediction.id] : null}
                                 />
                             </motion.div>
                         ))}

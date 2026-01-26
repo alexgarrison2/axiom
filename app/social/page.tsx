@@ -94,7 +94,6 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
                         >
                             <MatchupCard
                                 prediction={pred}
-                                maxTotalGoals={9}
                                 isUltraCompact={true}
                             />
                         </div>

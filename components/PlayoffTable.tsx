@@ -101,9 +101,8 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
 
     // Helper to find team data for modal
     const selectedTeamData = useMemo(() => {
-        if (!selectedTeamTricode || !processedTeams.east) return null;
-        // Search in all lists
-        // Efficient enough for <40 items
+        if (!selectedTeamTricode || !processedTeams.east || !processedTeams.west) return null;
+
         const all = [
             ...(processedTeams.east.div1.teams), ...(processedTeams.east.div2.teams), ...(processedTeams.east.wildcards.teams),
             ...(processedTeams.west.div1.teams), ...(processedTeams.west.div2.teams), ...(processedTeams.west.wildcards.teams)

@@ -132,6 +132,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
     const [mode, setMode] = useState<'cumulative' | 'rolling'>((searchParams.get('mode') as 'cumulative' | 'rolling') || 'cumulative');
     const [windowSize, setWindowSize] = useState([parseInt(searchParams.get('window') || '10')]);
     const [locFilter, setLocFilter] = useState<'All' | 'Home' | 'Away'>((searchParams.get('loc') as 'All' | 'Home' | 'Away') || 'All');
+    const [goalieFilter, setGoalieFilter] = useState<string>(searchParams.get('goalie') || 'All');
 
 
     // Sync State to URL
@@ -143,7 +144,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
         if (mode !== 'cumulative') params.set('mode', mode); else params.delete('mode');
         if (windowSize[0] !== 10) params.set('window', windowSize[0].toString()); else params.delete('window');
         if (locFilter !== 'All') params.set('loc', locFilter); else params.delete('loc');
-        if (goalie !== 'All') params.set('goalie', goalie); else params.delete('goalie');
+        if (goalieFilter !== 'All') params.set('goalie', goalieFilter); else params.delete('goalie');
 
         const newSearch = params.toString();
         // Only replace if changed materially (ignoring order or defaults logic if mismatched)
