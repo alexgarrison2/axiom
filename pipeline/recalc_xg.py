@@ -147,5 +147,11 @@ def recalculate():
         df_stats.to_csv(PUBLIC_PATH, index=False)
         print(f"Synced to {PUBLIC_PATH}")
 
+    # Also update data/gamestats.csv if valid (Server-side fallback)
+    DATA_PATH = "data/gamestats.csv"
+    if os.path.exists("data"):
+        df_stats.to_csv(DATA_PATH, index=False)
+        print(f"Synced to {DATA_PATH}")
+
 if __name__ == "__main__":
     recalculate()
