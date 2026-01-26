@@ -21,7 +21,7 @@ export async function GET(
     const teamAbbrUpper = teamAbbr.toUpperCase();
 
     try {
-        const dataDir = path.join(process.cwd(), 'public/data'); // Assuming public/data based on usage
+        // const dataDir = path.join(process.cwd(), 'public/data'); // Assuming public/data based on usage
         // Note: In Next.js, 'public' files are served statically. 
         // For server-side fs access, we might need to exact path or check 'data' folder at root if that's where python writes.
         // User's file listing showed 'data' dir at root AND 'public' dir.
@@ -52,8 +52,10 @@ export async function GET(
 
         // 1. Fetch Team Info
         const teamText = readCsv('nhl_teams.csv');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const teamData = Papa.parse(teamText, { header: true, skipEmptyLines: true }).data as any[];
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const info = teamData.find((t: any) => t['Team Tricode'] === teamAbbrUpper || (t['Team Tricode'] === 'UTA' && teamAbbrUpper === 'UTA'));
 
         if (!info) {
@@ -71,13 +73,16 @@ export async function GET(
 
         // 2. Fetch Gamestats
         const gamestatsText = readCsv('gamestats.csv');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const gamestats = Papa.parse(gamestatsText, { header: true, skipEmptyLines: true }).data as any[];
 
         const teamCommon = teamInfo.CommonName;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const teamGames = gamestats.filter((row: any) => row.team === teamCommon);
 
         // Process Games
         let w = 0, l = 0, otl = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const processedGames: GameLog[] = teamGames.map((row: any) => {
             const res = row.result;
             let result_display = '';
@@ -147,7 +152,7 @@ export async function GET(
             if (ratingsData[teamCommon]) {
                 rating = ratingsData[teamCommon];
             }
-        } catch (e) { console.warn("Ratings not found"); }
+        } catch { console.warn("Ratings not found"); }
 
         // 4. Fetch Player Stats (The Big One)
         // Only read and parse if necessary? No, we need it for the table.
@@ -157,10 +162,12 @@ export async function GET(
         const teamPlayerStats = players.filter(p => p.team === teamAbbrUpper);
 
         // 5. Fetch Upcoming (Today's Game)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let todaysGame: any = null;
         try {
             const upcomingData = readJson('upcoming_games.json');
             const todayStr = new Date().toLocaleDateString('en-CA');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             todaysGame = upcomingData.find((g: any) =>
                 (g.homeTeamAbbrev === teamAbbrUpper || g.awayTeamAbbrev === teamAbbrUpper) &&
                 g.gameDate === todayStr
@@ -176,10 +183,10 @@ export async function GET(
                     if (newsData) {
                         // ... (Override logic could go here)
                     }
-                } catch (e) { }
+                } catch { }
             }
-        } catch (e) {
-            console.warn("Upcoming games fetch failed", e);
+        } catch {
+            console.warn("Upcoming games fetch failed");
         }
 
         const response: TeamStatsResponse = {

@@ -2,11 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GamePrediction } from '@/utils/data';
-import Image from 'next/image';
-import Link from 'next/link';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { PlayoffLeverageBadge } from './PlayoffLeverageBadge';
 import AnimatedNumber from './AnimatedNumber';
 import LogoDisplay from './LogoDisplay';
 import RecentGamesList from './RecentGamesList';
@@ -17,13 +14,11 @@ gsap.registerPlugin(useGSAP);
 
 interface MatchupCardProps {
     prediction: GamePrediction;
-    maxTotalGoals: number;
     isSocial?: boolean;
     isUltraCompact?: boolean;
-    playoffLeverage?: number | null; // New Prop
 }
 
-const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, isSocial = false, isUltraCompact = false, playoffLeverage = null }) => {
+const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false, isUltraCompact = false }) => {
     const {
         homeTeam,
         awayTeam,
@@ -33,8 +28,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         awayXg,
         homeModelWinPct,
         awayModelWinPct,
-        homeVegasWinPct,
-        awayVegasWinPct,
         homeEv,
         awayEv,
         totalGoals,
@@ -133,20 +126,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
 
     };
 
-    const EdgeBadge = ({ label, value, color = 'blue', suffix = '' }: { label: string, value?: number, color?: 'blue' | 'green' | 'red', suffix?: string }) => {
-        if (value === undefined) return null;
 
-        let colorClass = 'text-blue-400 bg-blue-400/10 border-blue-400/30';
-        if (color === 'green') colorClass = 'text-neon-green bg-neon-green/10 border-neon-green/30';
-        if (color === 'red') colorClass = 'text-red-500 bg-red-500/10 border-red-500/30';
-
-        return (
-            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-wider ${colorClass}`}>
-                <span className="opacity-70">{label}</span>
-                <span>{value.toFixed(1)}{suffix}</span>
-            </div>
-        );
-    };
 
     // --- xG Explanation Helper ---
     const ExplanationPopover = ({
@@ -236,7 +216,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         );
     };
 
-    const getBarColor = (team: any) => {
+    const getBarColor = (team: { triCode: string; color1: string; color2?: string }) => {
         // Teams with very dark/black primary colors that blend into the background
         const darkTeams = ['PIT', 'LAK', 'UTA', 'SEA', 'TBL', 'BOS', 'ANA'];
         if (darkTeams.includes(team.triCode)) {
@@ -255,7 +235,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
     const formatEv = (n: number) => `+${Math.round(n)}%`;
     const formatOdds = (odds: string | number | null) => {
         if (!odds || odds === 'N/A') return null;
-        let str = odds.toString();
+        const str = odds.toString();
         if (str.startsWith('+') || str.startsWith('-')) return str;
         return `+${str}`;
     };
@@ -378,7 +358,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
                     <span>{vsOpp.gaa.toFixed(2)}</span>
                 </div>
             );
-        } catch (e) { return null; }
+        } catch { return null; }
     };
 
     const Legend = ({ className = "" }: { className?: string }) => (
@@ -443,8 +423,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         wager,
         gas,
         gasBreakdown,
-        gsaxTotal,
-        gsaxPct,
         goalieStats,
         vsOppStats,
 
@@ -452,10 +430,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         odds,
 
         isSocial,
-        avgSpeed,
-        rrRate
     }: {
-        team: any,
+        team: { name: string; triCode: string; logoUrl: string; color1: string; color2?: string };
         isHome: boolean,
         starter: string,
         xg: number,
@@ -485,8 +461,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, maxTotalGoals, is
         const isHighEv = (ev || 0) > 0.05;
 
         // Parse vsOppStats if available
-        let vsOpp = null;
-        if (vsOppStats) { try { vsOpp = JSON.parse(vsOppStats); } catch (e) { } }
 
         return (
             <div className={`flex flex-col items-center ${isSocial ? 'py-0.5' : 'py-4'} relative z-10 w-full h-full ${alignClass}`}>

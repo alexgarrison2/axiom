@@ -8,7 +8,7 @@ import { useTeamData } from '@/hooks/useTeamData';
 import TeamHeader from '@/components/team/TeamHeader';
 import FilterControls from '@/components/team/FilterControls';
 import GamesLogTable from '@/components/team/GamesLogTable';
-import { TeamInfo } from '@/types';
+// import { TeamInfo } from '@/types';
 import { motion } from 'framer-motion';
 
 export default function TeamDetailPage() {
@@ -41,7 +41,7 @@ export default function TeamDetailPage() {
     });
 
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
-    const [allTeamsList, setAllTeamsList] = useState<any[]>([]);
+    const [allTeamsList, setAllTeamsList] = useState<Record<string, string>[]>([]);
 
     useEffect(() => {
         const fetchTeams = async () => {
@@ -49,11 +49,11 @@ export default function TeamDetailPage() {
                 const Papa = (await import('papaparse')).default;
                 const res = await fetch('/data/nhl_teams.csv');
                 const text = await res.text();
-                const parsed = Papa.parse(text, { header: true, skipEmptyLines: true }).data as any[];
+                const parsed = Papa.parse(text, { header: true, skipEmptyLines: true }).data as Record<string, string>[];
                 setAllTeamsList(parsed);
 
                 const logos: Record<string, string> = {};
-                parsed.forEach((t: any) => {
+                parsed.forEach((t) => {
                     if (t['Common Name']) {
                         logos[t['Common Name'].trim()] = t['Team Logo URL'];
                     }
@@ -125,7 +125,7 @@ export default function TeamDetailPage() {
                 transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
             >
 
-                <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val as any)} className="w-full">
+                <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val)} className="w-full">
                     {/* Tabs */}
                     <div className="sticky top-0 bg-black/95 backdrop-blur-xl pt-4 pb-2 z-40 border-b border-border/10 mb-6">
                         <TabsList className="bg-muted/20">

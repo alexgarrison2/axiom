@@ -40,7 +40,7 @@ export interface GameLog {
     gsax: number;
     otml: string;
     game_number: number;
-    raw: any; // Keeping raw for backward compatibility if needed, though strictly typed is better
+    raw: Record<string, unknown>; // Keeping raw for backward compatibility if needed, though strictly typed is better
 }
 
 export interface PlayerBoxscoreRow {
@@ -88,5 +88,5 @@ export interface TeamStatsResponse {
     playerStats: PlayerBoxscoreRow[];
     rating: TeamRating | null;
     record: { w: number; l: number; otl: number; pts: number };
-    todaysGame: any; // Keep permissive for now
+    todaysGame: unknown; // Keep permissive for now
 }

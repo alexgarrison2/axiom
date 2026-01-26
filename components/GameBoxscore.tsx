@@ -29,7 +29,7 @@ interface GameBoxscoreProps {
     playerStats: PlayerStat[]; // Filtered for this game and this team (or both teams?)
 }
 
-const GameBoxscore: React.FC<GameBoxscoreProps> = ({ gameId, teamAbbr, playerStats }) => {
+const GameBoxscore: React.FC<GameBoxscoreProps> = ({ playerStats }) => {
     // Separate Skaters and Goalies
     // Sort by Points (desc), then Goals, then Time On Ice
     const skaters = playerStats.filter(p => p.is_goalie === 0).sort((a, b) => b.points - a.points || b.goals - a.goals);

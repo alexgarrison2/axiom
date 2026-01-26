@@ -1,5 +1,17 @@
 import { SimGame } from './schedule';
 
+interface BreakdownStats {
+    base5v5: number;
+    homeIce?: number;
+    ppXg: number;
+    goalieImpact: number;
+}
+
+interface XgBreakdown {
+    home: BreakdownStats;
+    away: BreakdownStats;
+}
+
 // Helper for Poisson distribution
 const factorial = (n: number): number => {
     if (n === 0 || n === 1) return 1;
@@ -490,7 +502,7 @@ export class SeasonSimulator {
         return qualifiedTeams;
     }
 
-    public debugGame(homeTri: string, awayTri: string): { homeTeam: string, awayTeam: string, homeXgFinal: number, awayXgFinal: number, breakdown: any } | string {
+    public debugGame(homeTri: string, awayTri: string): { homeTeam: string, awayTeam: string, homeXgFinal: number, awayXgFinal: number, breakdown: XgBreakdown } | string {
         const home = this.baseStandings.get(homeTri);
         const away = this.baseStandings.get(awayTri);
         if (!home || !away) return "Teams not found";

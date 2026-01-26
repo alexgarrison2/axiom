@@ -50,7 +50,6 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
             // 2. Identify Parts
             // The "Pony" is paths 1 & 2 (Cyan/Teal). The Text is the white paths (subsequent paths).
             const paths = Array.from(svg.querySelectorAll('path'));
-            const ponyPaths = paths.slice(0, 2);
             const textPaths = paths.slice(2);
 
             // 3. Set Initial State
@@ -115,7 +114,7 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
                         repeat: -1,
                         ease: "linear",
                         modifiers: {
-                            attr: (val: any) => {
+                            attr: (val: string | number) => {
                                 // Reset mechanism not needed if we sweep correctly, or just use repeat
                                 // Actually, standard gradient loop:
                                 return val;
@@ -124,7 +123,7 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
                     });
 
                     // Better loop strategy for linear gradient:
-                    gsap.fromTo(gradient,
+                    gsap.fromTo(gradient as SVGElement,
                         { attr: { x1: "-100%", x2: "0%" } },
                         {
                             attr: { x1: "100%", x2: "200%" },

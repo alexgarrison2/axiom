@@ -53,7 +53,7 @@ const Legend: React.FC = () => {
                             <div className="flex items-center justify-center h-14 w-full relative">
                                 {/* Pointer Lines */}
                                 <div className="absolute -left-4 top-1/2 -translate-y-1/2 -translate-x-full text-[10px] text-gray-400 font-mono text-right w-24">
-                                    Our Model's<br />Win Probability
+                                    Our Model&apos;s<br />Win Probability
                                     <div className="h-[1px] w-8 bg-gray-600 absolute top-1/2 -right-2 translate-x-full"></div>
                                 </div>
 
@@ -105,6 +105,10 @@ const Legend: React.FC = () => {
                                         <div className="flex items-baseline gap-2 flex-row-reverse">
                                             <span className="text-[10px] font-mono text-gray-300">Vegas %</span>
                                             <span className="text-[10px] font-mono text-gray-500 font-bold">-110</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-4 text-[10px] text-gray-500 italic border-t border-white/5 pt-2">
+                                            <span>*</span>
+                                            <span>Goalie status is automated. &quot;Confirmed&quot; = Official Team Source. &quot;Likely&quot; = Beat Writer/Morning Skate.</span>
                                         </div>
                                     </div>
                                 </div>

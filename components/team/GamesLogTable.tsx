@@ -50,7 +50,7 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         if (stat === 'cf') prefix = 'attempts_for';
         if (stat === 'ca') prefix = 'attempts_ag';
 
-        const val = parseInt(game.raw?.[prefix + suffix] || '0');
+        const val = parseInt((game.raw?.[prefix + suffix] as string) || '0');
         return val;
     };
 

@@ -8,13 +8,37 @@ import MatchupMatrix from './MatchupMatrix';
 interface PlayoffTableProps {
     currentStandings: TeamStandings[];
     simResults: Record<string, SimResult>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     teams?: Record<string, any>;
+}
+
+interface ProcessedTeam extends TeamStandings {
+    pace: number;
+    proj: number;
+    playoffOdds: number;
+    cupOdds: number;
+}
+
+interface PlayoffGroup {
+    name: string;
+    teams: ProcessedTeam[];
+}
+
+interface ConferenceGroups {
+    div1: PlayoffGroup;
+    div2: PlayoffGroup;
+    wildcards: PlayoffGroup;
+}
+
+interface Conferences {
+    east: ConferenceGroups | null;
+    west: ConferenceGroups | null;
 }
 
 const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResults }) => {
     const [selectedTeamTricode, setSelectedTeamTricode] = useState<string | null>(null);
 
-    const processedTeams = useMemo(() => {
+    const processedTeams: Conferences = useMemo(() => {
         if (!currentStandings || currentStandings.length === 0 || !simResults) return { east: null, west: null };
 
         // 1. Map Data
@@ -33,8 +57,8 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
             const confTeams = mapped.filter(t => t.conference.includes(confName));
 
             // Buckets
-            const d1Teams: typeof mapped = [];
-            const d2Teams: typeof mapped = [];
+            const d1Teams: ProcessedTeam[] = [];
+            const d2Teams: ProcessedTeam[] = [];
 
             // Assign to divisions
             confTeams.forEach(t => {
@@ -103,18 +127,20 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
             </div>
 
             {/* Matchup Matrices */}
-            <div className="grid grid-cols-1 gap-8 pb-12">
-                <MatchupMatrix
-                    currentStandings={currentStandings}
-                    simResults={simResults}
-                    conference="West"
-                />
-                <MatchupMatrix
-                    currentStandings={currentStandings}
-                    simResults={simResults}
-                    conference="East"
-                />
-            </div>
+            {processedTeams.west && processedTeams.east && (
+                <div className="grid grid-cols-1 gap-8 pb-12">
+                    <MatchupMatrix
+                        currentStandings={currentStandings}
+                        simResults={simResults}
+                        conference="West"
+                    />
+                    <MatchupMatrix
+                        currentStandings={currentStandings}
+                        simResults={simResults}
+                        conference="East"
+                    />
+                </div>
+            )}
 
             {/* Render Modal if selected */}
             {selectedTeamTricode && selectedTeamData && simResults && (
@@ -128,7 +154,7 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
     );
 };
 
-const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: any, onSelectTeam: (t: string) => void }) => {
+const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: ConferenceGroups | null, onSelectTeam: (t: string) => void }) => {
     if (!groups) return null;
     return (
         <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm h-full flex flex-col">
@@ -164,7 +190,7 @@ const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: 
     );
 };
 
-const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: { name: string, teams: any[] }, isWildcard?: boolean, onSelectTeam: (t: string) => void }) => (
+const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup, isWildcard?: boolean, onSelectTeam: (t: string) => void }) => (
     <div className="py-2">
         {/* Section Title */}
         <div className="px-4 py-2 flex items-center justify-between">
@@ -175,7 +201,7 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: { name: stri
 
         {/* Table using Flex Rows for strict alignment matching the Header */}
         <div className="w-full text-xs">
-            {group.teams.map((team: any, idx: number) => {
+            {group.teams.map((team, idx) => {
                 // Granular 7-Step Color Scale (Red -> Blue) per User Guide
                 let oddsColor = 'text-white';
                 let bgOdds = 'bg-neutral-800';

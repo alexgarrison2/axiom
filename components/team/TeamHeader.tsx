@@ -10,6 +10,7 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 interface TeamHeaderProps {
     teamInfo: TeamInfo;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     allTeamsList: any[];
 }
 

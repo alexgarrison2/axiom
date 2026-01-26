@@ -3,12 +3,14 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Search, X, Home } from 'lucide-react';
+import { ChevronDown, Search, X } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import { TeamInfo } from '@/types';
+
 interface TeamSelectorProps {
-    teams: any[];
+    teams: TeamInfo[];
     currentTeam?: {
         CommonName: string;
         TeamTricode: string;
@@ -38,10 +40,10 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
     const enrichedTeams = useMemo(() => {
         if (!teams) return [];
         return teams
-            .filter(t => t['Common Name'])
+            .filter(t => t.CommonName)
             .map(t => ({
                 ...t,
-                division: TEAM_TO_DIVISION[t['Team Tricode']] || 'Unknown'
+                division: TEAM_TO_DIVISION[t.TeamTricode] || 'Unknown'
             }));
     }, [teams]);
 
@@ -49,14 +51,14 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
         if (!search) return enrichedTeams;
         const q = search.toLowerCase();
         return enrichedTeams.filter(t =>
-            t['Common Name'].toLowerCase().includes(q) ||
-            t['Team Name'].toLowerCase().includes(q) ||
-            t['Team Tricode'].toLowerCase().includes(q)
+            t.CommonName.toLowerCase().includes(q) ||
+            t.TeamName.toLowerCase().includes(q) ||
+            t.TeamTricode.toLowerCase().includes(q)
         );
     }, [enrichedTeams, search]);
 
     const groupedTeams = useMemo(() => {
-        const groups: Record<string, any[]> = {};
+        const groups: Record<string, TeamInfo[]> = {};
         filteredTeams.forEach(t => {
             const div = t.division;
             if (!groups[div]) groups[div] = [];
@@ -66,8 +68,8 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
     }, [filteredTeams]);
 
     // Color Overrides (Shared logic from page, ideally in a util)
-    const getColor = (t: any) => {
-        const tricode = t['Team Tricode'];
+    const getColor = (t: TeamInfo) => {
+        const tricode = t.TeamTricode;
         const overrides: Record<string, string> = {
             'EDM': '#FF4C00',
             'LAK': '#C0C0C0',
@@ -75,10 +77,10 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
         };
         if (overrides[tricode]) return overrides[tricode];
 
-        const c1 = t['Hex Color 1'] || '#FFF';
+        const c1 = t.HexColor1 || '#FFF';
         // If black, use secondary
         if (c1.toLowerCase().includes('#000000') || c1.toLowerCase() === 'black') {
-            return t['Hex Color 2'] || '#FFF';
+            return t.HexColor2 || '#FFF';
         }
         return c1;
     };
@@ -170,29 +172,29 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
                                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest border-l-2 border-white/10 pl-3">{division}</h3>
                                             <div className="flex flex-col gap-1">
                                                 {teamsInDiv
-                                                    .sort((a, b) => a['Common Name'].localeCompare(b['Common Name']))
+                                                    .sort((a, b) => a.CommonName.localeCompare(b.CommonName))
                                                     .map(t => {
-                                                        const isSelected = currentTeam?.TeamTricode === t['Team Tricode'];
+                                                        const isSelected = currentTeam?.TeamTricode === t.TeamTricode;
                                                         const glow = getColor(t);
 
                                                         return (
                                                             <Link
-                                                                href={`/teams/${t['Team Tricode']}`}
-                                                                key={t['Team Tricode']}
+                                                                href={`/teams/${t.TeamTricode}`}
+                                                                key={t.TeamTricode}
                                                                 onClick={() => setIsOpen(false)}
                                                                 className={`flex items-center gap-3 p-2 rounded-lg transition-all group/item ${isSelected ? 'bg-white/10' : 'hover:bg-white/5'}`}
                                                             >
                                                                 <motion.img
-                                                                    layoutId={`team-logo-${t['Team Tricode']}`}
-                                                                    src={t['Team Logo URL']}
-                                                                    alt={t['Common Name']}
+                                                                    layoutId={`team-logo-${t.TeamTricode}`}
+                                                                    src={t.TeamLogoURL}
+                                                                    alt={t.CommonName}
                                                                     className="w-6 h-6 object-contain opacity-70 group-hover/item:opacity-100 transition-opacity"
                                                                 />
                                                                 <span
                                                                     className={`text-sm font-bold font-mono transition-colors ${isSelected ? 'text-white' : 'text-gray-400 group-hover/item:text-white'}`}
                                                                     style={isSelected ? { color: glow, textShadow: `0 0 10px ${glow}40` } : {}}
                                                                 >
-                                                                    {t['Common Name']}
+                                                                    {t.CommonName}
                                                                 </span>
                                                             </Link>
                                                         )
@@ -210,11 +212,11 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
                                     <div className="flex flex-wrap gap-2">
                                         {groupedTeams['Unknown'].map(t => (
                                             <Link
-                                                href={`/teams/${t['Team Tricode']}`}
-                                                key={t['Team Tricode']}
+                                                href={`/teams/${t.TeamTricode}`}
+                                                key={t.TeamTricode}
                                                 className="text-xs text-gray-400 hover:text-white"
                                             >
-                                                {t['Common Name']}
+                                                {t.CommonName}
                                             </Link>
                                         ))}
                                     </div>

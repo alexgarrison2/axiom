@@ -352,13 +352,7 @@ const TeamsTable = () => {
         { k: 'enga', l: 'EN GA', inv: true }
     ], []);
 
-    // Filter columns for mobile
-    const displayedColumns = useMemo(() => {
-        // This is a simple client-side check. In a real SSR app, you might use a hook.
-        // But for this project, simple window check or CSS is fine.
-        // We will complement this with CSS hidden classes if needed.
-        return COLUMNS;
-    }, [COLUMNS]);
+
 
     useEffect(() => {
         const initLoad = async () => {
@@ -379,7 +373,9 @@ const TeamsTable = () => {
                     header: true,
                     skipEmptyLines: true,
                     transformHeader: (h) => h.trim(),
-                    complete: (results: any) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    complete: (results: Papa.ParseResult<any>) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         results.data.forEach((row: any) => {
                             if (row['Common Name']) {
                                 teamsMeta[row['Common Name'].trim()] = {
@@ -411,7 +407,7 @@ const TeamsTable = () => {
                         header: true,
                         skipEmptyLines: true,
                         transformHeader: (h) => h.trim()
-                    }).data as any[];
+                    }).data as Record<string, string>[];
 
                     console.log("Parsed Predictions Rows:", parsedPreds.length);
 
@@ -428,8 +424,8 @@ const TeamsTable = () => {
                     console.log("Filtering for today (America/Chicago):", todayStr);
 
                     const matchups: Matchup[] = parsedPreds
-                        .filter((row: any) => row.game_date === todayStr)
-                        .map((row: any) => ({
+                        .filter((row: Record<string, string>) => row.game_date === todayStr)
+                        .map((row: Record<string, string>) => ({
                             home: row.home_team?.trim(),
                             away: row.away_team?.trim(),
                             homeStarter: cleanName(row.home_starter),
@@ -704,7 +700,7 @@ const TeamsTable = () => {
         );
     };
 
-    const ButtonGroup = ({ options, current, onChange, labels }: { options: (string | number)[], current: string | number, onChange: (val: any) => void, labels?: string[] }) => (
+    const ButtonGroup = ({ options, current, onChange, labels }: { options: (string | number)[], current: string | number, onChange: (val: string | number) => void, labels?: string[] }) => (
         <div className="flex bg-gray-800 rounded-lg p-1 gap-1">
             {options.map((opt, idx) => (
                 <button
@@ -733,7 +729,7 @@ const TeamsTable = () => {
                         options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter', 'PlayingTodayLocationStarter']}
                         labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter', 'Playing Today w/ Loc & Starter']}
                         current={viewMode}
-                        onChange={setViewMode}
+                        onChange={(v) => setViewMode(v as ViewMode)}
                     />
                 </div>
 
@@ -746,7 +742,7 @@ const TeamsTable = () => {
                             <ButtonGroup
                                 options={['All', 'Home', 'Away']}
                                 current={filterHomeAway}
-                                onChange={setFilterHomeAway}
+                                onChange={(v) => setFilterHomeAway(v as 'All' | 'Home' | 'Away')}
                             />
                         </div>
                     )}
@@ -756,7 +752,7 @@ const TeamsTable = () => {
                         <ButtonGroup
                             options={['All', 5, 10, 20]}
                             current={filterLastN}
-                            onChange={setFilterLastN}
+                            onChange={(v) => setFilterLastN(v as number | 'All')}
                         />
                     </div>
                 </div>

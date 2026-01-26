@@ -57,28 +57,82 @@ const METRICS = [
     { label: 'xGoals For / GP', value: 'xgf', suffix: '', format: (v: number) => v.toFixed(2) },
     { label: 'xGoals Against / GP', value: 'xga', suffix: '', format: (v: number) => v.toFixed(2) },
     { label: 'Power Play %', value: 'pp', suffix: '%', format: (v: number) => v.toFixed(1) },
-    { label: 'Penalty Kill %', value: 'pk', suffix: '%', format: (v: number) => v.toFixed(1) },
-    { label: 'Save %', value: 'sv', suffix: '%', format: (v: number) => v.toFixed(1) },
-    { label: 'Shooting %', value: 'sh', suffix: '%', format: (v: number) => v.toFixed(1) },
-    { label: 'Shots For / GP', value: 'sf', suffix: '', format: (v: number) => v.toFixed(1) },
-    { label: 'Shots Against / GP', value: 'sa', suffix: '', format: (v: number) => v.toFixed(1) },
-    { label: 'Shot Diff', value: 'sd', suffix: '', format: (v: number) => (v > 0 ? '+' : '') + v.toFixed(1) },
-    { label: 'Corsi For / GP', value: 'cf', suffix: '', format: (v: number) => v.toFixed(1) },
-    { label: 'Corsi Diff', value: 'cd', suffix: '', format: (v: number) => (v > 0 ? '+' : '') + v.toFixed(1) },
     { label: 'GSAx / GP', value: 'gsax', suffix: '', format: (v: number) => v.toFixed(2) }
 ];
 
-const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor }) => {
+interface MetricType {
+    label: string;
+    value: string;
+    suffix: string;
+    format: (v: number) => string;
+}
+
+interface CustomTooltipProps {
+    active?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload?: any[];
+    activeMetric: MetricType;
+    secondaryMetric?: MetricType;
+    primaryColor: string;
+}
+
+const CustomTooltip = ({ active, payload, activeMetric, secondaryMetric, primaryColor }: CustomTooltipProps) => {
+    if (active && payload && payload.length) {
+        const data = payload[0].payload;
+        const g = data.game;
+        const fmt1 = activeMetric.format(data.value);
+        const fmt2 = secondaryMetric ? secondaryMetric.format(data.value2) : null;
+
+        return (
+            <div className="bg-black/90 border border-white/20 p-3 rounded-lg shadow-xl backdrop-blur-md min-w-[200px] font-mono">
+                <div className="text-[10px] text-gray-400 font-mono mb-1">{g.date} • Game {g.game_number}</div>
+
+                {/* Metric 1 */}
+                <div className="text-sm font-bold text-white mb-1 flex justify-between items-center">
+                    <span style={{ color: primaryColor }}>● {activeMetric.label}</span>
+                    <span className="text-white ml-4">{fmt1}{activeMetric.suffix}</span>
+                </div>
+
+                {/* Metric 2 */}
+                {secondaryMetric && (
+                    <div className="text-sm font-bold text-gray-400 mb-2 pb-2 border-b border-white/10 flex justify-between items-center">
+                        <span>○ {secondaryMetric.label}</span>
+                        <span className="text-gray-300 ml-4">{fmt2}{secondaryMetric.suffix}</span>
+                    </div>
+                )}
+                {!secondaryMetric && <div className="h-px bg-white/10 my-2"></div>}
+
+                {/* Details */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-300">
+                    <div className="col-span-2 font-bold text-white mb-1">
+                        {g.home_away === 'Home' ? 'vs' : '@'} {g.opponent} ({g.result})
+                    </div>
+                    <div className="text-gray-500">Score:</div>
+                    <div className="text-right text-white font-mono">{g.score}</div>
+
+                    <div className="text-gray-500">Goalie:</div>
+                    <div className="text-right text-white truncate">{g.starting_goalie.split(' ').pop()}</div>
+
+                    <div className="text-gray-500">GF / GA:</div>
+                    <div className="text-right text-white font-mono">{g.gf}-{g.ga}</div>
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
+
+const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
 
     const [metric, setMetric] = useState(searchParams.get('metric') || METRICS[0].value);
     const [metric2, setMetric2] = useState<string>(searchParams.get('metric2') || 'none');
-    const [mode, setMode] = useState<'cumulative' | 'rolling'>((searchParams.get('mode') as any) || 'cumulative');
+    const [mode, setMode] = useState<'cumulative' | 'rolling'>((searchParams.get('mode') as 'cumulative' | 'rolling') || 'cumulative');
     const [windowSize, setWindowSize] = useState([parseInt(searchParams.get('window') || '10')]);
-    const [location, setLocation] = useState<'All' | 'Home' | 'Away'>((searchParams.get('loc') as any) || 'All');
-    const [goalie, setGoalie] = useState<string>(searchParams.get('goalie') || 'All');
+    const [locFilter, setLocFilter] = useState<'All' | 'Home' | 'Away'>((searchParams.get('loc') as 'All' | 'Home' | 'Away') || 'All');
+
 
     // Sync State to URL
     useEffect(() => {
@@ -88,7 +142,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
         if (metric2 !== 'none') params.set('metric2', metric2); else params.delete('metric2');
         if (mode !== 'cumulative') params.set('mode', mode); else params.delete('mode');
         if (windowSize[0] !== 10) params.set('window', windowSize[0].toString()); else params.delete('window');
-        if (location !== 'All') params.set('loc', location); else params.delete('loc');
+        if (locFilter !== 'All') params.set('loc', locFilter); else params.delete('loc');
         if (goalie !== 'All') params.set('goalie', goalie); else params.delete('goalie');
 
         const newSearch = params.toString();
@@ -98,28 +152,17 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
             // Use replace to avoid history stack spam
             router.replace(`${pathname}?${newSearch}`, { scroll: false });
         }
-    }, [metric, metric2, mode, windowSize, location, goalie, pathname, router, searchParams]);
+    }, [metric, metric2, mode, windowSize, locFilter, pathname, router, searchParams]);
 
     // Derive Unique Goalies for Filter (extracted from clean last names)
-    const uniqueGoalies = useMemo(() => {
-        const goalies = new Set<string>();
-        games.forEach(g => {
-            const name = g.starting_goalie.split(' ').pop() || g.starting_goalie;
-            goalies.add(name);
-        });
-        return Array.from(goalies).sort();
-    }, [games]);
+
 
     // Prepare Data
     const chartData = useMemo(() => {
         // 1. Filter Games First
-        let filtered = games.filter(g => {
-            if (location === 'Home' && g.home_away !== 'Home') return false;
-            if (location === 'Away' && g.home_away !== 'Away') return false;
-            if (goalie !== 'All') {
-                const gName = g.starting_goalie.split(' ').pop() || g.starting_goalie;
-                if (gName !== goalie) return false;
-            }
+        const filtered = games.filter(g => {
+            if (locFilter === 'Home' && g.home_away !== 'Home') return false;
+            if (locFilter === 'Away' && g.home_away !== 'Away') return false;
             return true;
         });
 
@@ -129,7 +172,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
         const dataPoints = [];
 
         // Running Totals for Cumulative
-        let total = {
+        const total = {
             gp: 0, pts: 0,
             gf: 0, ga: 0,
             xgf: 0, xga: 0,
@@ -231,133 +274,11 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
             }
         }
         return dataPoints;
-    }, [games, metric, metric2, mode, windowSize, location, goalie]);
 
-    // League Average Line Calculation
-    const leagueAverageData = useMemo(() => {
-        if (!leagueGames) return [];
-        // We want a line that represents "Average Team Performance" at Game N.
-        // Group all league games by game_number
-        const gamesByNumber: Record<number, GameLog[]> = {};
-        leagueGames.forEach(g => {
-            if (!gamesByNumber[g.game_number]) gamesByNumber[g.game_number] = [];
-            gamesByNumber[g.game_number].push(g);
-        });
 
-        const maxGames = Math.max(...chartData.map(d => d.gameNumber), 0);
-        const avgPoints = [];
+    }, [games, metric, metric2, mode, windowSize, locFilter]);
 
-        // We calculate the aggregated stat for "The League" as if it were one giant team
-        // Logic: For Cumulative Mode at Game X -> Sum(All Teams Stats 1..X) / (NumTeams * X)?
-        // Simpler: Just calculate the average value of the METRIC for all teams at that point.
-        // Better yet: Create a "League Team" that sums everything, then calcVal.
 
-        let total = {
-            gp: 0, pts: 0, gf: 0, ga: 0, xgf: 0, xga: 0,
-            ppg: 0, ppo: 0, pkg: 0, pko: 0,
-            sf: 0, sa: 0, cf: 0, ca: 0, gsax: 0
-        };
-
-        // If Rolling, we need history of league totals?
-        // For efficiency/simplicity on standard "League Avg" request:
-        // We will calculate a single "Rolling League Total" or "Cumulative League Total" 
-        // effectively averaging all teams' performance.
-
-        // Sort all league games by game_number to iterate
-        const allLeagueSorted = [...leagueGames].sort((a, b) => a.game_number - b.game_number);
-
-        // Map GameNumber -> Array of Games (across 32 teams)
-        // Actually, just iterate 1 to MaxGames.
-        // For game i, we include all games where game_number == i.
-
-        for (let i = 1; i <= maxGames; i++) {
-            const gamesAtThisNumber = gamesByNumber[i] || [];
-
-            // Cumulative Update
-            gamesAtThisNumber.forEach(g => {
-                total.gp++;
-                total.pts += g.points;
-                total.gf += g.gf;
-                total.ga += g.ga;
-                total.xgf += g.xgf;
-                total.xga += g.xga;
-                total.ppg += g.pp_goals;
-                total.ppo += g.pp_opps;
-                total.pkg += g.pp_goals_against;
-                total.pko += g.pk_opps;
-                total.sf += g.sf;
-                total.sa += g.sa;
-                total.cf += g.cf;
-                total.ca += g.ca;
-                total.gsax += g.gsax;
-            });
-
-            // For Rolling, this is harder because we need "Last N games for EACH team".
-            // Approximation: "Last N * 32 games of the league"? No, that smoothes too much.
-            // Acceptable approximation: League Average is usually stable. 
-            // We'll use Cumulative League Average for context even in Rolling mode? 
-            // Or calculate the stat on the "League Total" for the window.
-
-            // Let's implement Cumulative League Avg for now as the baseline.
-            // If mode is rolling, we might want the Season Average (Flat) or Current Trend.
-            // "Show basically the same line but for league combined" implies matching mode.
-
-            // Implementing correct Rolling League Avg is heavy: need to validly subtract old games.
-            // Optimization: Just show Cumulative League Trend which is smoother and "Average".
-            // User asked for "dotted line... visually not too distracting".
-
-            // Let's try to honor the mode if possible.
-            // Rolling: We need to subtract games from (i - window) corresponding to the same teams? 
-            // Too complex. 
-            // We will output CUMULATIVE constant average line for simplicity? 
-            // No, user wants comparison.
-
-            // Let's stick to calculating the metric on the TOTAL accumulated stats up to game i.
-            // This is "League Cumulative Average".
-
-            const calcVal = (m: string, t: typeof total) => {
-                let val = 0;
-                const gp = t.gp;
-                if (gp === 0) return 0;
-
-                if (m === 'pts_pct') val = t.pts / (gp * 2);
-                if (m === 'gf') val = t.gf / gp;
-                if (m === 'ga') val = t.ga / gp;
-                if (m === 'gd') val = (t.gf - t.ga) / (gp / 32); // Avg per team? No, rate is per game.
-                // Wait, diff metrics (GD, SD, CD) are cumulative sum?
-                // In chartData code: `if (m === 'gd') val = t.gf - t.ga;` -> This is TOTAL GD.
-                // For a single team, Total GD grows.
-                // For League, Total GD is always 0 (GF=GA). 
-                // So for Diff metrics, League Avg is 0. 
-
-                // Rate metrics (GF/GP):
-                if (m === 'gf') val = t.gf / gp; // Global GF/GP (approx 3.0)
-                if (m === 'ga') val = t.ga / gp;
-
-                if (m === 'gd') val = (t.gf - t.ga) / (gp / 32); // This will be 0.
-
-                if (m === 'xgf') val = t.xgf / gp;
-                if (m === 'xga') val = t.xga / gp;
-                if (m === 'pp') val = t.ppo > 0 ? (t.ppg / t.ppo) * 100 : 0;
-                if (m === 'pk') val = t.pko > 0 ? (100 - (t.pkg / t.pko * 100)) : 100;
-                if (m === 'sv') val = t.sa > 0 ? (1 - (t.ga / t.sa)) * 100 : 0;
-                if (m === 'sh') val = t.sf > 0 ? (t.gf / t.sf) * 100 : 0; // Fixed *100
-                if (m === 'sf') val = t.sf / gp;
-                if (m === 'sa') val = t.sa / gp;
-
-                if (m === 'cf') val = t.cf / gp;
-                if (m === 'gsax') val = t.gsax / gp;
-
-                return val;
-            };
-
-            avgPoints.push({
-                gameNumber: i,
-                value: calcVal(metric, total)
-            });
-        }
-        return avgPoints;
-    }, [leagueGames, chartData.length, metric]); // Recalc when metric/data changes
 
 
     const activeMetric = METRICS.find(m => m.value === metric) || METRICS[0];
@@ -405,51 +326,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
     }, [chartData.length]);
 
 
-    const CustomTooltip = ({ active, payload, activeMetric, secondaryMetric, primaryColor }: any) => {
-        if (active && payload && payload.length) {
-            const data = payload[0].payload;
-            const g = data.game;
-            const fmt1 = activeMetric.format(data.value);
-            const fmt2 = secondaryMetric ? secondaryMetric.format(data.value2) : null;
 
-            return (
-                <div className="bg-black/90 border border-white/20 p-3 rounded-lg shadow-xl backdrop-blur-md min-w-[200px] font-mono">
-                    <div className="text-[10px] text-gray-400 font-mono mb-1">{g.date} • Game {g.game_number}</div>
-
-                    {/* Metric 1 */}
-                    <div className="text-sm font-bold text-white mb-1 flex justify-between items-center">
-                        <span style={{ color: primaryColor }}>● {activeMetric.label}</span>
-                        <span className="text-white ml-4">{fmt1}{activeMetric.suffix}</span>
-                    </div>
-
-                    {/* Metric 2 */}
-                    {secondaryMetric && (
-                        <div className="text-sm font-bold text-gray-400 mb-2 pb-2 border-b border-white/10 flex justify-between items-center">
-                            <span>○ {secondaryMetric.label}</span>
-                            <span className="text-gray-300 ml-4">{fmt2}{secondaryMetric.suffix}</span>
-                        </div>
-                    )}
-                    {!secondaryMetric && <div className="h-px bg-white/10 my-2"></div>}
-
-                    {/* Details */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-300">
-                        <div className="col-span-2 font-bold text-white mb-1">
-                            {g.home_away === 'Home' ? 'vs' : '@'} {g.opponent} ({g.result})
-                        </div>
-                        <div className="text-gray-500">Score:</div>
-                        <div className="text-right text-white font-mono">{g.score}</div>
-
-                        <div className="text-gray-500">Goalie:</div>
-                        <div className="text-right text-white truncate">{g.starting_goalie.split(' ').pop()}</div>
-
-                        <div className="text-gray-500">GF / GA:</div>
-                        <div className="text-right text-white font-mono">{g.gf}-{g.ga}</div>
-                    </div>
-                </div>
-            );
-        }
-        return null;
-    };
 
 
     return (
@@ -497,7 +374,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                         {/* Location */}
                         <div className="flex flex-col gap-1 w-[80px]">
                             <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1">Loc</label>
-                            <Select value={location} onValueChange={(v: any) => setLocation(v)}>
+                            <Select value={locFilter} onValueChange={(v: 'All' | 'Home' | 'Away') => setLocFilter(v)}>
                                 <SelectTrigger className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors h-7 text-[10px] font-bold font-mono">
                                     <SelectValue placeholder="Loc" />
                                 </SelectTrigger>
@@ -513,7 +390,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                     {/* Mode Toggle Compact */}
                     <div className="flex flex-col gap-1">
                         <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1">Mode</label>
-                        <Tabs value={mode} onValueChange={(val) => setMode(val as any)} className="w-[140px]">
+                        <Tabs value={mode} onValueChange={(val) => setMode(val as 'cumulative' | 'rolling')} className="w-[140px]">
                             <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/5 h-7 p-0.5">
                                 <TabsTrigger value="cumulative" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-gray-500 text-[9px] font-bold uppercase font-mono">Total</TabsTrigger>
                                 <TabsTrigger value="rolling" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-gray-500 text-[9px] font-bold uppercase font-mono">Roll</TabsTrigger>
@@ -568,7 +445,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                                 tick={{ fill: '#666', fontSize: 10, fontWeight: 'bold' }}
                                 tickLine={false}
                                 axisLine={false}
-                                domain={domainY as any}
+                                domain={domainY as [number, number]}
                                 dx={-10}
                                 allowDataOverflow={true} // Force clipping of outliers
                             />
@@ -585,8 +462,9 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                                 activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', className: 'animate-pulse' }}
                                 animationDuration={2000}
                                 animationEasing="ease-in-out"
-                                label={(props: any) => {
-                                    const { x, y, index, value } = props;
+                                label={(props) => {
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    const { x, y, index, value } = props as any;
                                     const isLast = index === chartData.length - 1;
                                     const showLabel = isLast || (index % labelInterval === 0);
                                     if (!showLabel) return null;
@@ -614,8 +492,9 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                                     strokeDasharray="5 5"
                                     fill="none"
                                     activeDot={{ r: 4, strokeWidth: 0, fill: '#a1a1aa' }}
-                                    label={(props: any) => {
-                                        const { x, y, index, value } = props;
+                                    label={(props) => {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        const { x, y, index, value } = props as any;
                                         const isLast = index === chartData.length - 1;
                                         // Show secondary label at restricted logic (10% density)
                                         const showLabel = isLast || (index % labelInterval2 === 0);
@@ -634,17 +513,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                                 />
                             )}
 
-                            {/* League Average Line */}
-                            <Area
-                                type="monotone"
-                                dataKey="leagueValue"
-                                stroke="#ffffff"
-                                strokeWidth={2}
-                                strokeOpacity={0.4}
-                                strokeDasharray="4 4"
-                                fill="none"
-                                activeDot={false}
-                            />
+
 
                         </AreaChart>
                     </ResponsiveContainer>

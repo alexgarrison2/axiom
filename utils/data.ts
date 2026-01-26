@@ -269,7 +269,7 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       if (!jsonStr) return [];
       try {
         return JSON.parse(jsonStr) as string[];
-      } catch (e) {
+      } catch {
         return [];
       }
     };
@@ -373,9 +373,24 @@ export async function getHistory(): Promise<HistoryEntry[]> {
     });
   });
 
+  interface RawHistoryEntry {
+    date: string;
+    homeTeam: string;
+    awayTeam: string;
+    homeScore: number;
+    awayScore: number;
+    homeXg: number;
+    awayXg: number;
+    homeWinProb: number;
+    predictedWinner: string;
+    actualWinner: string;
+    isCorrect: boolean;
+    brierScore: number;
+  }
+
   // Sort Descending by Date
   // rawHistory is list of objects.
-  const history: HistoryEntry[] = rawHistory.map((row: any) => {
+  const history: HistoryEntry[] = rawHistory.map((row: RawHistoryEntry) => {
     const homeTeam = teamsMap.get(row.homeTeam);
     const awayTeam = teamsMap.get(row.awayTeam);
 
@@ -395,7 +410,7 @@ export async function getHistory(): Promise<HistoryEntry[]> {
       isCorrect: row.isCorrect,
       brierScore: row.brierScore
     };
-  }).filter((h: any) => h !== null);
+  }).filter((h: HistoryEntry | null): h is HistoryEntry => h !== null);
 
   return history.reverse(); // Newest first (assuming generation was chronological)
 }
