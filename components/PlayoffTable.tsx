@@ -103,7 +103,7 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
             </div>
 
             {/* Matchup Matrices */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pb-12">
+            <div className="grid grid-cols-1 gap-8 pb-12">
                 <MatchupMatrix
                     currentStandings={currentStandings}
                     simResults={simResults}
