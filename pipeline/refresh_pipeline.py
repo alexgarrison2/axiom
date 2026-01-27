@@ -11,6 +11,12 @@ import os
 # Load environment variables (for local runs)
 load_dotenv()
 
+# Force the working directory to be the directory of this script (pipeline/)
+# This ensures that all relative paths (like ../public/data) work correctly
+# regardless of where the command is executed from.
+if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 def refresh_pipeline():
     print("--- Starting Full Pipeline Refresh ---")
 
