@@ -6,7 +6,7 @@ import psycopg2
 
 # Supabase Connection Details
 # These should be set in the environment variables for security
-DB_HOST = os.environ.get("DB_HOST", "db.bmvxgdqfagpkqbagcdce.supabase.co")
+DB_HOST = os.environ.get("DB_HOST", "aws-0-us-east-1.pooler.supabase.com")
 DB_NAME = os.environ.get("DB_NAME", "postgres")
 DB_USER = os.environ.get("DB_USER", "postgres")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
