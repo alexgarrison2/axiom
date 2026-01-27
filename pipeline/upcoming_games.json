@@ -1,57 +1,5 @@
 [
     {
-        "id": 2025020825,
-        "gameDate": "2026-01-26",
-        "startTimeUTC": "2026-01-27T00:00:00Z",
-        "homeTeam": "Lightning",
-        "awayTeam": "Mammoth",
-        "homeTeamAbbrev": "TBL",
-        "awayTeamAbbrev": "UTA",
-        "homeGoalieConfirmed": "Andrei Vasilevskiy",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Karel Vejmelka",
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020826,
-        "gameDate": "2026-01-26",
-        "startTimeUTC": "2026-01-27T00:00:00Z",
-        "homeTeam": "Rangers",
-        "awayTeam": "Bruins",
-        "homeTeamAbbrev": "NYR",
-        "awayTeamAbbrev": "BOS",
-        "homeGoalieConfirmed": "Jonathan Quick",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Jeremy Swayman",
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025020827,
-        "gameDate": "2026-01-26",
-        "startTimeUTC": "2026-01-27T00:00:00Z",
-        "homeTeam": "Flyers",
-        "awayTeam": "Islanders",
-        "homeTeamAbbrev": "PHI",
-        "awayTeamAbbrev": "NYI",
-        "homeGoalieConfirmed": "Samuel Ersson",
-        "homeGoalieStatus": "Confirmed",
-        "awayGoalieConfirmed": "Ilya Sorokin",
-        "awayGoalieStatus": "Confirmed"
-    },
-    {
-        "id": 2025020829,
-        "gameDate": "2026-01-26",
-        "startTimeUTC": "2026-01-27T01:30:00Z",
-        "homeTeam": "Oilers",
-        "awayTeam": "Ducks",
-        "homeTeamAbbrev": "EDM",
-        "awayTeamAbbrev": "ANA",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Ville Husso",
-        "awayGoalieStatus": "Likely"
-    },
-    {
         "id": 2025020830,
         "gameDate": "2026-01-27",
         "startTimeUTC": "2026-01-28T00:00:00Z",
@@ -72,7 +20,7 @@
         "awayTeam": "Sabres",
         "homeTeamAbbrev": "TOR",
         "awayTeamAbbrev": "BUF",
-        "homeGoalieConfirmed": "Joseph Woll",
+        "homeGoalieConfirmed": "Anthony Stolarz",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Ukko-Pekka Luukkonen",
         "awayGoalieStatus": "Unconfirmed"
@@ -111,9 +59,9 @@
         "awayTeam": "Mammoth",
         "homeTeamAbbrev": "FLA",
         "awayTeamAbbrev": "UTA",
-        "homeGoalieConfirmed": "Daniil Tarasov",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Karel Vejmelka",
+        "homeGoalieConfirmed": "Sergei Bobrovsky",
+        "homeGoalieStatus": "Confirmed",
+        "awayGoalieConfirmed": "Vitek Vanecek",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -137,7 +85,7 @@
         "awayTeam": "Stars",
         "homeTeamAbbrev": "STL",
         "awayTeamAbbrev": "DAL",
-        "homeGoalieConfirmed": "Joel Hofer",
+        "homeGoalieConfirmed": "Jordan Binnington",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Jake Oettinger",
         "awayGoalieStatus": "Unconfirmed"
@@ -176,9 +124,48 @@
         "awayTeam": "Capitals",
         "homeTeamAbbrev": "SEA",
         "awayTeamAbbrev": "WSH",
-        "homeGoalieConfirmed": "Joey Daccord",
+        "homeGoalieConfirmed": "Philipp Grubauer",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Charlie Lindgren",
+        "awayGoalieConfirmed": "Logan Thompson",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020842,
+        "gameDate": "2026-01-28",
+        "startTimeUTC": "2026-01-29T00:00:00Z",
+        "homeTeam": "Islanders",
+        "awayTeam": "Rangers",
+        "homeTeamAbbrev": "NYI",
+        "awayTeamAbbrev": "NYR",
+        "homeGoalieConfirmed": "Ilya Sorokin",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jonathan Quick",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020840,
+        "gameDate": "2026-01-28",
+        "startTimeUTC": "2026-01-29T00:30:00Z",
+        "homeTeam": "Blue Jackets",
+        "awayTeam": "Flyers",
+        "homeTeamAbbrev": "CBJ",
+        "awayTeamAbbrev": "PHI",
+        "homeGoalieConfirmed": "Elvis Merzlikins",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Samuel Ersson",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020841,
+        "gameDate": "2026-01-28",
+        "startTimeUTC": "2026-01-29T00:30:00Z",
+        "homeTeam": "Senators",
+        "awayTeam": "Avalanche",
+        "homeTeamAbbrev": "OTT",
+        "awayTeamAbbrev": "COL",
+        "homeGoalieConfirmed": "Mads Sogaard",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Mackenzie Blackwood",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]

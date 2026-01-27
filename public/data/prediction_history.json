@@ -9448,5 +9448,61 @@
     "actualWinner": "Senators",
     "isCorrect": false,
     "brierScore": 0.3341
+  },
+  {
+    "date": "2026-01-26",
+    "homeTeam": "Oilers",
+    "awayTeam": "Ducks",
+    "homeScore": 7,
+    "awayScore": 4,
+    "homeXg": 4.11,
+    "awayXg": 2.51,
+    "homeWinProb": 73.1,
+    "predictedWinner": "Oilers",
+    "actualWinner": "Oilers",
+    "isCorrect": true,
+    "brierScore": 0.0725
+  },
+  {
+    "date": "2026-01-26",
+    "homeTeam": "Lightning",
+    "awayTeam": "Mammoth",
+    "homeScore": 2,
+    "awayScore": 0,
+    "homeXg": 3.15,
+    "awayXg": 2.41,
+    "homeWinProb": 62.1,
+    "predictedWinner": "Lightning",
+    "actualWinner": "Lightning",
+    "isCorrect": true,
+    "brierScore": 0.1433
+  },
+  {
+    "date": "2026-01-26",
+    "homeTeam": "Rangers",
+    "awayTeam": "Bruins",
+    "homeScore": 4,
+    "awayScore": 3,
+    "homeXg": 2.89,
+    "awayXg": 3.66,
+    "homeWinProb": 38.5,
+    "predictedWinner": "Bruins",
+    "actualWinner": "Rangers",
+    "isCorrect": false,
+    "brierScore": 0.3784
+  },
+  {
+    "date": "2026-01-26",
+    "homeTeam": "Flyers",
+    "awayTeam": "Islanders",
+    "homeScore": 0,
+    "awayScore": 4,
+    "homeXg": 2.95,
+    "awayXg": 2.95,
+    "homeWinProb": 50.0,
+    "predictedWinner": "Islanders",
+    "actualWinner": "Islanders",
+    "isCorrect": true,
+    "brierScore": 0.2499
   }
 ]

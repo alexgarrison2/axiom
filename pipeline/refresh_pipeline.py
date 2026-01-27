@@ -235,10 +235,13 @@ def refresh_pipeline():
             print("Synced local last_updated.json to data dirs")
         
         # Additional syncs from pipeline to public/data
-        shutil.copy("pipeline/predictions_detailed.csv", "public/data/predictions_detailed.csv")
-        shutil.copy("pipeline/upcoming_games.json", "public/data/upcoming_games.json")
-        if os.path.exists("pipeline/nhl_season_2025_2026_player_stats.csv"):
-            shutil.copy("pipeline/nhl_season_2025_2026_player_stats.csv", "public/data/nhl_season_2025_2026_player_stats.csv")
+        if os.path.exists("upcoming_games.json"):
+            shutil.copy("upcoming_games.json", "../public/data/upcoming_games.json")
+            print("Synced upcoming_games.json to public/data")
+
+        if os.path.exists("nhl_season_2025_2026_player_stats.csv"):
+            shutil.copy("nhl_season_2025_2026_player_stats.csv", "../public/data/nhl_season_2025_2026_player_stats.csv")
+            print("Synced player stats to public/data")
         
         # Sync Odds
         if os.path.exists('odds.json'):
