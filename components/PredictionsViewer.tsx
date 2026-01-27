@@ -420,7 +420,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                             {accuracy}%
                                         </div>
                                         <div className="text-emerald-400/60 text-[8px] md:text-xs mt-0.5 md:mt-1 font-mono text-center leading-tight">
-                                            {correctPicks}/{totalGames} <span className="hidden md:inline">Correct</span>
+                                            {correctPicks}-{totalGames - correctPicks} <span className="hidden md:inline">Record</span>
                                         </div>
                                     </div>
 
