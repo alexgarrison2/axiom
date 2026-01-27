@@ -8,9 +8,10 @@ import psycopg2
 # These should be set in the environment variables for security
 DB_HOST = os.environ.get("DB_HOST", "aws-0-us-east-1.pooler.supabase.com")
 DB_NAME = os.environ.get("DB_NAME", "postgres")
-DB_USER = os.environ.get("DB_USER", "postgres")
+# Pooler requires user.project_ref format
+DB_USER = os.environ.get("DB_USER", "postgres.bmvxgdqfagpkqbagcdce")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
-DB_PORT = os.environ.get("DB_PORT", "5432")
+DB_PORT = os.environ.get("DB_PORT", "6543") # Use 6543 for transaction pooler, 5432 for session
 
 CSV_PATH = "public/data/predictions_detailed.csv"
 TABLE_NAME = "prediction_snapshots"
