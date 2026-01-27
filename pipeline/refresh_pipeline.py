@@ -253,6 +253,27 @@ def refresh_pipeline():
             
     except Exception as e:
         print(f"Warning: Final sync failed: {e}")
+
+    # 9. Upload to Supabase (Snapshot)
+    print("Uploading to Supabase...")
+    import subprocess
+    import sys
+    try:
+        # We need to run from root dir because the script expects "public/data/..." paths
+        # Current file is in pipeline/, so root is one level up.
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        snap_script = os.path.join(root_dir, "scripts", "snapshot_predictions.py")
+        
+        if os.path.exists(snap_script):
+            # Pass current env vars (important for DB_PASSWORD)
+            result = subprocess.run([sys.executable, snap_script], cwd=root_dir, env=os.environ.copy())
+            if result.returncode != 0:
+                print(f"Warning: Supabase script exited with code {result.returncode}")
+        else:
+            print(f"Warning: Could not find {snap_script}")
+            
+    except Exception as e:
+        print(f"Warning: Supabase upload failed to start: {e}")
     
     print("--- Pipeline Refresh Complete ---")
 

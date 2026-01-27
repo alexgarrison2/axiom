@@ -50,6 +50,12 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Data Pipeline
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.DB_PORT }}
         run: |
           cd pipeline
           # Run full refresh in the morning (roughly between 12:00 and 14:00 UTC)
