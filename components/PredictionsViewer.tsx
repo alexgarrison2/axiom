@@ -10,6 +10,7 @@ import HistoryTable from './HistoryTable';
 import TeamsTable from './TeamsTable';
 import NewsSection from './NewsSection';
 import PlayoffTable from './PlayoffTable';
+import { Slider } from '@/components/ui/slider';
 
 interface PredictionsViewerProps {
     predictions: GamePrediction[];
@@ -160,17 +161,42 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     // Multi-select state: Default to ['All']
     const [historyFilters, setHistoryFilters] = useState<string[]>(['All']);
 
+    // History Date Range Logic
+    const uniqueHistoryDates = useMemo(() => {
+        const dates = Array.from(new Set(history.map(h => h.date))).sort();
+        return dates;
+    }, [history]);
+
+    const [dateRange, setDateRange] = useState<number[]>([0, 0]);
+
+    // Initialize range when data loads
+    useEffect(() => {
+        if (uniqueHistoryDates.length > 0) {
+            setDateRange([0, uniqueHistoryDates.length - 1]);
+        }
+    }, [uniqueHistoryDates.length]);
+
     // Filter predictions for the selected date
     const filteredPredictions = useMemo(() => {
         if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News' || selectedTab === 'Playoffs') return [];
         return predictions.filter(p => p.date === selectedTab);
     }, [predictions, selectedTab]);
 
-    // Filter history based on model confidence
+    // Filter history based on date range and model confidence
     const filteredHistory = useMemo(() => {
-        if (historyFilters.includes('All') || historyFilters.length === 0) return history;
+        let filtered = history;
 
-        return history.filter(h => {
+        // 1. Date Range Filter
+        if (uniqueHistoryDates.length > 0) {
+            const startDate = uniqueHistoryDates[dateRange[0]];
+            const endDate = uniqueHistoryDates[dateRange[1]];
+            filtered = filtered.filter(h => h.date >= startDate && h.date <= endDate);
+        }
+
+        // 2. Confidence Filters
+        if (historyFilters.includes('All') || historyFilters.length === 0) return filtered;
+
+        return filtered.filter(h => {
             // Determine the model's win probability for the predicted winner
             const isHome = h.predictedWinner === h.homeTeam.commonName || h.predictedWinner === h.homeTeam.name;
             const modelConf = isHome ? h.homeWinProb : (100 - h.homeWinProb);
@@ -183,7 +209,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 
             return false;
         });
-    }, [history, historyFilters]);
+    }, [history, historyFilters, dateRange, uniqueHistoryDates]);
 
     if (uniqueDates.length === 0 && history.length === 0) {
         return <div className="text-center text-gray-500 mt-12 font-mono uppercase tracking-widest animate-pulse">No data available.</div>;
@@ -303,37 +329,60 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                     transition={{ duration: 0.3 }}
                     className="w-full"
                 >
-                    {/* History Filters */}
-                    <div className="flex flex-wrap justify-center gap-2 mb-6">
-                        {(['All', '50-55', '55-65', '65-75', '75+'] as const).map((filter) => {
-                            const isActive = historyFilters.includes(filter);
-                            return (
-                                <button
-                                    key={filter}
-                                    onClick={() => {
-                                        if (filter === 'All') {
-                                            setHistoryFilters(['All']);
-                                        } else {
-                                            let newFilters = historyFilters.filter(f => f !== 'All'); // Remove All if specific selected
-                                            if (newFilters.includes(filter)) {
-                                                newFilters = newFilters.filter(f => f !== filter);
+                    {/* History Filters & Slider */}
+                    <div className="flex flex-col items-center gap-6 mb-8 max-w-2xl mx-auto">
+
+                        {/* Date Range Slider */}
+                        {uniqueHistoryDates.length > 1 && (
+                            <div className="w-full px-4 md:px-0">
+                                <div className="flex justify-between text-xs md:text-sm text-neutral-400 mb-2 font-mono">
+                                    <span>{uniqueHistoryDates[dateRange[0]]}</span>
+                                    <span className="text-white/50">DATE RANGE</span>
+                                    <span>{uniqueHistoryDates[dateRange[1]]}</span>
+                                </div>
+                                <Slider
+                                    defaultValue={[0, uniqueHistoryDates.length - 1]}
+                                    value={dateRange}
+                                    min={0}
+                                    max={uniqueHistoryDates.length - 1}
+                                    step={1}
+                                    onValueChange={setDateRange}
+                                    className="py-4"
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {(['All', '50-55', '55-65', '65-75', '75+'] as const).map((filter) => {
+                                const isActive = historyFilters.includes(filter);
+                                return (
+                                    <button
+                                        key={filter}
+                                        onClick={() => {
+                                            if (filter === 'All') {
+                                                setHistoryFilters(['All']);
                                             } else {
-                                                newFilters.push(filter);
+                                                let newFilters = historyFilters.filter(f => f !== 'All'); // Remove All if specific selected
+                                                if (newFilters.includes(filter)) {
+                                                    newFilters = newFilters.filter(f => f !== filter);
+                                                } else {
+                                                    newFilters.push(filter);
+                                                }
+                                                // If nothing selected, revert to All
+                                                if (newFilters.length === 0) newFilters = ['All'];
+                                                setHistoryFilters(newFilters);
                                             }
-                                            // If nothing selected, revert to All
-                                            if (newFilters.length === 0) newFilters = ['All'];
-                                            setHistoryFilters(newFilters);
-                                        }
-                                    }}
-                                    className={`px-3 py-1 text-[10px] font-bold rounded-full border transition-all ${isActive
-                                        ? 'bg-neon-green/10 text-neon-green border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
-                                        : 'bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white'
-                                        }`}
-                                >
-                                    {filter === 'All' ? 'ALL GAMES' : `${filter}%`}
-                                </button>
-                            );
-                        })}
+                                        }}
+                                        className={`px-3 py-1 text-[10px] font-bold rounded-full border transition-all ${isActive
+                                            ? 'bg-neon-green/10 text-neon-green border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                                            : 'bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                    >
+                                        {filter === 'All' ? 'ALL GAMES' : `${filter}%`}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {/* Aggregate Stats Header */}
