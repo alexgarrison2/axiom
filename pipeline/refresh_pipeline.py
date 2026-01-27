@@ -5,6 +5,11 @@ import xgboost as xgb
 from xg_model import preprocess_data
 from team_ratings import calculate_ratings
 from predict_games import predict
+from dotenv import load_dotenv
+import os
+
+# Load environment variables (for local runs)
+load_dotenv()
 
 def refresh_pipeline():
     print("--- Starting Full Pipeline Refresh ---")
