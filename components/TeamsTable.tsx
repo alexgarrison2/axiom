@@ -75,11 +75,13 @@ interface TeamStat {
     pp_pct: number;
     pp_lev: number;
     pp_time_per_game: string; // Formatted mm:ss
+    pp_time_per_goal: string; // Formatted mm:ss (Time per PP Goal)
 
     pk_goals_allowed: number;
     pk_opps: number;
     pk_pct: number;
     pk_time_per_game: string; // Formatted mm:ss
+    pk_time_per_goal_allowed: string; // Formatted mm:ss (Time per PK Goal Allowed)
 
     sf_per_game: number;
     sa_per_game: number;
@@ -184,8 +186,8 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
             team: teamName, gp: 0, wins: 0, losses: 0, otl: 0, points: 0, pt_pct: 0,
             gf_per_game: 0, ga_per_game: 0, goal_diff: 0,
             true_gf_per_game: 0, true_ga_per_game: 0, total_goals_per_game: 0,
-            pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_lev: 0, pp_time_per_game: '0:00',
-            pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_time_per_game: '0:00',
+            pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_lev: 0, pp_time_per_game: '0:00', pp_time_per_goal: '0:00',
+            pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_time_per_game: '0:00', pk_time_per_goal_allowed: '0:00',
             sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
 
             engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0
@@ -250,6 +252,12 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
     const true_gf = gf - pp_goals - engf;
     const true_ga = ga - pk_goals_allowed - enga;
 
+    // PP Time Per Goal (Lower is Better)
+    const pp_sec_per_goal = pp_goals > 0 ? (pp_time / pp_goals) : 0;
+
+    // PK Time Per Goal Allowed (Higher is Better)
+    const pk_sec_per_ga = pk_goals_allowed > 0 ? (pk_time / pk_goals_allowed) : 0;
+
     return {
         team: teamName,
         gp,
@@ -272,11 +280,13 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         pp_pct: pp_opps > 0 ? (pp_goals / pp_opps) * 100 : 0,
         pp_lev: gf > 0 ? (pp_goals / gf) * 100 : 0,
         pp_time_per_game: formatTime(pp_time / gp),
+        pp_time_per_goal: pp_goals > 0 ? formatTime(pp_sec_per_goal) : (pp_opps > 0 ? 'Inf' : '-'),
 
         pk_goals_allowed,
         pk_opps,
         pk_pct: pk_opps > 0 ? ((pk_opps - pk_goals_allowed) / pk_opps) * 100 : 0,
         pk_time_per_game: formatTime(pk_time / gp),
+        pk_time_per_goal_allowed: pk_goals_allowed > 0 ? formatTime(pk_sec_per_ga) : (pk_opps > 0 ? 'Perfect' : '-'),
 
         sf_per_game: sf / gp,
         sa_per_game: sa / gp,
