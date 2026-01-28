@@ -405,7 +405,7 @@ const TeamsTable = () => {
 
     // Groups for Desktop headers and Mobile filtering
     const STAT_GROUPS = useMemo(() => [
-        { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct'] },
+        { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct', 'rw'] },
         { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'true_goal_diff', 'total_goals_per_game'] },
         { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
         { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
@@ -425,6 +425,7 @@ const TeamsTable = () => {
         { k: 'otl', l: 'OT', desc: 'Overtime/Shootout Losses' },
         { k: 'points', l: 'PTS', desc: 'Points', calc: '2*W + OTL' },
         { k: 'pt_pct', l: 'P%', desc: 'Points Percentage', calc: 'PTS / (2 * GP)' },
+        { k: 'rw', l: 'RW', desc: 'Regulation Wins' },
         { k: 'gf_per_game', l: 'GF/G', desc: 'Goals For Per Game' },
         { k: 'ga_per_game', l: 'GA/G', inv: true, desc: 'Goals Against Per Game' },
         { k: 'goal_diff', l: 'GΔ', desc: 'Goal Differential', calc: 'GF - GA' },
@@ -785,6 +786,7 @@ const TeamsTable = () => {
 
         return {
             points: calculateRange('points'),
+            rw: calculateRange('rw'),
             pt_pct: calculateRange('pt_pct'),
             gf_per_game: calculateRange('gf_per_game'),
             ga_per_game: calculateRange('ga_per_game'),
