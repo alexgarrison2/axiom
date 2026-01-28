@@ -31,9 +31,7 @@ export default function RootLayout({
       <body
         className={`${firaSans.variable} ${firaCode.variable} antialiased`}
       >
-        <SmoothScrolling>
-          {children}
-        </SmoothScrolling>
+        {children}
       </body>
     </html>
   );
