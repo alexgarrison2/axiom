@@ -8,11 +8,11 @@ export const metadata = {
 
 export default function TeamsPage() {
     return (
-        <main className="min-h-screen w-fit min-w-full bg-black text-white p-4 font-sans relative selection:bg-emerald-500/30">
+        <main className="min-h-screen w-max min-w-full bg-black text-white p-4 font-sans relative selection:bg-emerald-500/30">
             {/* Background Ambient Glow */}
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
 
-            <div className="min-w-full w-fit mx-auto relative z-10">
+            <div className="min-w-full w-max mx-auto relative z-10">
                 <Header compact />
 
                 <TeamsTable />

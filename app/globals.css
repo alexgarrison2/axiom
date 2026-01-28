@@ -45,6 +45,8 @@
 }
 
 @layer base {
+
+  html,
   body {
     @apply text-white bg-background antialiased overflow-x-auto font-sans;
     background-image:
