@@ -48,7 +48,7 @@
 
   html,
   body {
-    @apply text-white bg-background antialiased overflow-x-auto font-sans;
+    @apply text-white bg-background antialiased overflow-x-visible font-sans;
     background-image:
       var(--bg-noise),
       radial-gradient(circle at 50% 0%, rgba(255, 184, 0, 0.08) 0%, transparent 60%),
