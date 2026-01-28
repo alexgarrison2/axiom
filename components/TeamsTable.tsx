@@ -190,6 +190,38 @@ const getGradientColor = (value: number, min: number, max: number, inverse: bool
     return `rgb(${r}, ${g}, ${b})`;
 };
 
+const getLeverageGradientColor = (value: number, min: number, max: number) => {
+    if (value === null || value === undefined || isNaN(value)) return 'inherit';
+    if (max === min) return '#FFFFFF';
+
+    let ratio = (value - min) / (max - min);
+    if (ratio < 0) ratio = 0;
+    if (ratio > 1) ratio = 1;
+
+    // Low (#15DBE9) -> Mid (#FFFFFF) -> High (#FFF990)
+    const low = { r: 21, g: 219, b: 233 };   // #15DBE9
+    const mid = { r: 255, g: 255, b: 255 };  // #FFFFFF
+    const high = { r: 255, g: 249, b: 144 }; // #FFF990
+
+    let r, g, b;
+
+    if (ratio < 0.5) {
+        // 0 to 0.5 -> Low to Mid
+        const subRatio = ratio * 2;
+        r = Math.round(low.r + (mid.r - low.r) * subRatio);
+        g = Math.round(low.g + (mid.g - low.g) * subRatio);
+        b = Math.round(low.b + (mid.b - low.b) * subRatio);
+    } else {
+        // 0.5 to 1.0 -> Mid to High
+        const subRatio = (ratio - 0.5) * 2;
+        r = Math.round(mid.r + (high.r - mid.r) * subRatio);
+        g = Math.round(mid.g + (high.g - mid.g) * subRatio);
+        b = Math.round(mid.b + (high.b - mid.b) * subRatio);
+    }
+
+    return `rgb(${r}, ${g}, ${b})`;
+};
+
 const formatStarterName = (name?: string) => {
     if (!name) return '';
     const parts = name.trim().split(' ');
@@ -766,7 +798,13 @@ const TeamsTable = () => {
             const noColorKeys = ['pp_goals', 'pp_opps', 'pk_goals_allowed', 'pk_opps'];
 
             if (r && !noColorKeys.includes(key)) {
-                color = getGradientColor(value, r.min, r.max, isInverse);
+                if (key === 'pp_lev' || key === 'pk_lev') {
+                    // Use new Leverage Gradient (Low=Cyan, High=Yellow)
+                    // Note: We ignore 'inverse' here because the user specified High/Low colors explicitly
+                    color = getLeverageGradientColor(value, r.min, r.max);
+                } else {
+                    color = getGradientColor(value, r.min, r.max, isInverse);
+                }
             }
             // Format
             if (key === 'pt_pct') {
