@@ -66,9 +66,14 @@ interface TeamStat {
     ga_per_game: number;
     goal_diff: number;
 
+    true_gf_per_game: number;
+    true_ga_per_game: number;
+    total_goals_per_game: number;
+
     pp_goals: number;
     pp_opps: number;
     pp_pct: number;
+    pp_lev: number;
     pp_time_per_game: string; // Formatted mm:ss
 
     pk_goals_allowed: number;
@@ -177,7 +182,9 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         // Return zeroed stats
         return {
             team: teamName, gp: 0, wins: 0, losses: 0, otl: 0, points: 0, pt_pct: 0,
-            gf_per_game: 0, ga_per_game: 0, goal_diff: 0, pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_time_per_game: '0:00',
+            gf_per_game: 0, ga_per_game: 0, goal_diff: 0,
+            true_gf_per_game: 0, true_ga_per_game: 0, total_goals_per_game: 0,
+            pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_lev: 0, pp_time_per_game: '0:00',
             pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_time_per_game: '0:00',
             sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
 
@@ -239,6 +246,10 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
 
     const points = wins * 2 + otl;
 
+    // Calculations for new stats
+    const true_gf = gf - pp_goals - engf;
+    const true_ga = ga - pk_goals_allowed - enga;
+
     return {
         team: teamName,
         gp,
@@ -252,9 +263,14 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         ga_per_game: ga / gp,
         goal_diff: gf - ga,
 
+        true_gf_per_game: true_gf / gp,
+        true_ga_per_game: true_ga / gp,
+        total_goals_per_game: (gf + ga) / gp,
+
         pp_goals,
         pp_opps,
         pp_pct: pp_opps > 0 ? (pp_goals / pp_opps) * 100 : 0,
+        pp_lev: gf > 0 ? (pp_goals / gf) * 100 : 0,
         pp_time_per_game: formatTime(pp_time / gp),
 
         pk_goals_allowed,
@@ -306,8 +322,8 @@ const TeamsTable = () => {
     // Groups for Desktop headers and Mobile filtering
     const STAT_GROUPS = useMemo(() => [
         { name: 'Record', columns: ['gp', 'wins', 'losses', 'otl', 'points', 'pt_pct'] },
-        { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff'] },
-        { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_time_per_game'] },
+        { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'total_goals_per_game'] },
+        { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game'] },
         { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_time_per_game'] },
         { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'sh_pct'] },
         { name: 'Saves', columns: ['sv_pct', 'gsax'] },
@@ -327,9 +343,13 @@ const TeamsTable = () => {
         { k: 'gf_per_game', l: 'GF/G' },
         { k: 'ga_per_game', l: 'GA/G', inv: true },
         { k: 'goal_diff', l: 'GΔ' },
+        { k: 'true_gf_per_game', l: 'TruGF' },
+        { k: 'true_ga_per_game', l: 'TruGA', inv: true },
+        { k: 'total_goals_per_game', l: 'TotG/G' },
         { k: 'pp_goals', l: 'PPG' },
         { k: 'pp_opps', l: 'PP Opp' },
         { k: 'pp_pct', l: 'PP%' },
+        { k: 'pp_lev', l: 'PPLev' },
         { k: 'pp_time_per_game', l: 'PP T/GP', isTime: true },
         { k: 'pk_goals_allowed', l: 'PPGA', inv: true },
         { k: 'pk_opps', l: 'PK Opp' },
