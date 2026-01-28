@@ -5,12 +5,24 @@ import Papa from 'papaparse';
 import Image from 'next/image';
 import Link from 'next/link';
 
+const DIVISION_MAPPING: Record<string, string> = {
+    'BOS': 'Atlantic', 'BUF': 'Atlantic', 'DET': 'Atlantic', 'FLA': 'Atlantic',
+    'MTL': 'Atlantic', 'OTT': 'Atlantic', 'TBL': 'Atlantic', 'TOR': 'Atlantic',
+    'CAR': 'Metro', 'CBJ': 'Metro', 'NJD': 'Metro', 'NYI': 'Metro',
+    'NYR': 'Metro', 'PHI': 'Metro', 'PIT': 'Metro', 'WSH': 'Metro',
+    'CHI': 'Central', 'COL': 'Central', 'DAL': 'Central', 'MIN': 'Central',
+    'NSH': 'Central', 'STL': 'Central', 'UTA': 'Central', 'WPG': 'Central',
+    'ANA': 'Pacific', 'CGY': 'Pacific', 'EDM': 'Pacific', 'LAK': 'Pacific',
+    'SEA': 'Pacific', 'SJS': 'Pacific', 'VAN': 'Pacific', 'VGK': 'Pacific'
+};
+
 interface TeamInfo {
     name: string;
     commonName: string;
     logoUrl: string;
     color: string;
     tricode: string;
+    division?: string;
 }
 
 interface RawGameStat {
@@ -330,6 +342,7 @@ const TeamsTable = () => {
     const [viewMode, setViewMode] = useState<ViewMode>('All');
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
     const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
+    const [selectedDivisions, setSelectedDivisions] = useState<string[]>([]);
 
     // Sorting
     const [sortKey, setSortKey] = useState<SortKey>('pt_pct');
@@ -426,7 +439,8 @@ const TeamsTable = () => {
                                     commonName: row['Common Name'].trim(),
                                     logoUrl: row['Team Logo URL'],
                                     color: row['Hex Color 1'],
-                                    tricode: row['Team Tricode']
+                                    tricode: row['Team Tricode'],
+                                    division: DIVISION_MAPPING[row['Team Tricode']]
                                 };
                             }
                         });
@@ -543,7 +557,18 @@ const TeamsTable = () => {
         if (viewMode === 'All') {
             // Standard View - matches leagueBaseline 
             // (duplicate work technically but keeps logic clean if filters for baseline diverge later)
-            processedTeams.push(...leagueBaseline);
+
+            // Apply Division Filter
+            let filteredBase = leagueBaseline;
+            if (selectedDivisions.length > 0) {
+                filteredBase = leagueBaseline.filter(s => {
+                    const teamInfo = teams[s.team];
+                    // Only include if team is in one of the selected divisions
+                    return teamInfo && teamInfo.division && selectedDivisions.includes(teamInfo.division);
+                });
+            }
+
+            processedTeams.push(...filteredBase);
         } else {
             // Playing Today Views (Force specific order: Away, Home, Away, Home...)
             todayMatchups.forEach(matchup => {
@@ -586,7 +611,7 @@ const TeamsTable = () => {
 
         setStats(processedTeams);
 
-    }, [rawData, viewMode, filterHomeAway, filterLastN, todayMatchups]);
+    }, [rawData, viewMode, filterHomeAway, filterLastN, todayMatchups, selectedDivisions, teams]);
 
 
     const handleSort = (key: SortKey) => {
@@ -811,6 +836,45 @@ const TeamsTable = () => {
         </div>
     );
 
+    const MultiSelectButtonGroup = ({ options, current, onChange }: { options: string[], current: string[], onChange: (val: string) => void }) => {
+        const isAll = current.length === 0;
+
+        return (
+            <div className="flex bg-gray-800 rounded-lg p-1 gap-1">
+                {/* All Button */}
+                <button
+                    onClick={() => {
+                        // Create a synthetic event or just pass 'All'? Logic handled in parent or here?
+                        // Let's handle "Clear All" signal by passing 'All'
+                        onChange('All');
+                    }}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${isAll
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                        }`}
+                >
+                    All
+                </button>
+
+                {options.map((opt) => {
+                    const isSelected = current.includes(opt);
+                    return (
+                        <button
+                            key={opt}
+                            onClick={() => onChange(opt)}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${isSelected
+                                ? 'bg-blue-600 text-white shadow-lg'
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                                }`}
+                        >
+                            {opt}
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    };
+
     return (
         <div className="w-full">
             {/* View Mode & Filters */}
@@ -849,6 +913,28 @@ const TeamsTable = () => {
                             onChange={(v) => setFilterLastN(v as number | 'All')}
                         />
                     </div>
+
+                    {/* Division Filter (Only in All Teams) */}
+                    {viewMode === 'All' && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Division</label>
+                            <MultiSelectButtonGroup
+                                options={['Atlantic', 'Metro', 'Central', 'Pacific']}
+                                current={selectedDivisions}
+                                onChange={(val) => {
+                                    if (val === 'All') {
+                                        setSelectedDivisions([]);
+                                    } else {
+                                        if (selectedDivisions.includes(val)) {
+                                            setSelectedDivisions(selectedDivisions.filter(d => d !== val));
+                                        } else {
+                                            setSelectedDivisions([...selectedDivisions, val]);
+                                        }
+                                    }
+                                }}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 
