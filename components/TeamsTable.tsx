@@ -126,6 +126,11 @@ const formatTime = (seconds: number) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
+const getTimeSeconds = (timeStr: string) => {
+    const [m, s] = timeStr.split(':').map(Number);
+    return m * 60 + s;
+};
+
 const cleanName = (name: string) => {
     if (!name) return '';
     return name.replace(/\s*\(.*?\)\s*/g, '').trim();
@@ -602,6 +607,25 @@ const TeamsTable = () => {
             const valA = a[sortKey];
             const valB = b[sortKey];
 
+            // Special handling for time columns
+            if (['pp_time_per_game', 'pk_time_per_game', 'pp_time_per_goal', 'pk_time_per_goal_allowed'].includes(sortKey)) {
+                const getSeconds = (v: string | number) => {
+                    if (v === 'Inf' || v === 'Perfect') return 999999;
+                    if (v === '-') return -999999; // Always force '-' to bottom in Desc sort? 
+                    // Actually, usually '-' means N/A. 
+                    // If Desc (High to Low): Inf (Best/Worst) -> High Times -> Low Times -> - (N/A)
+                    // If Asc (Low to High): - (N/A) -> Low Times -> High Times -> Inf
+                    // Let's stick with -1 or a very low number to keep it consistent.
+                    if (v === '-') return -1;
+                    if (typeof v === 'string') return getTimeSeconds(v);
+                    return 0;
+                };
+
+                const secA = getSeconds(valA as string);
+                const secB = getSeconds(valB as string);
+                return sortDesc ? secB - secA : secA - secB;
+            }
+
             if (typeof valA === 'string' && typeof valB === 'string') {
                 return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
             }
@@ -660,10 +684,7 @@ const TeamsTable = () => {
         };
     }, [stats, leagueStats]);
 
-    const getTimeSeconds = (timeStr: string) => {
-        const [m, s] = timeStr.split(':').map(Number);
-        return m * 60 + s;
-    };
+
 
     const timeRanges = useMemo(() => {
         const sourceStats = leagueStats.length > 0 ? leagueStats : stats;
