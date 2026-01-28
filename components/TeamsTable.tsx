@@ -409,8 +409,8 @@ const TeamsTable = () => {
         { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'true_goal_diff', 'total_goals_per_game'] },
         { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
         { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
-        { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'sh_pct'] },
         { name: 'Saves', columns: ['sv_pct', 'gsax'] },
+        { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'sh_pct'] },
         { name: 'xGoals', columns: ['xgf_per_game', 'xga_per_game', 'xgf_pct'] },
         { name: 'Empty Net', columns: ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga'] },
     ], []);
@@ -597,8 +597,22 @@ const TeamsTable = () => {
 
         const processedTeams: TeamStat[] = [];
 
-        // ALWAYS calculate league-wide stats for consistent ranges
+        // ALWAYS calculate league-wide stats for consistent ranges AND STANDINGS
         const allTeamsList = Array.from(new Set(rawData.map(g => g.team)));
+
+        // 1. Calculate STANDINGS Baseline (Ignoring all filters)
+        // This ensures "Rank" column is static based on full season
+        const standingsBaseline: TeamStat[] = [];
+        allTeamsList.forEach(teamName => {
+            // Get ALL games for the team (ignore location/starter/lastN)
+            const allGames = rawData.filter(g => g.team === teamName);
+            if (allGames.length > 0) {
+                standingsBaseline.push(calculateTeamStats(teamName, allGames));
+            }
+        });
+
+        // 2. Calculate League Baseline (Respecting Filters)
+        // This is used for Ranges (color gradients) - usually we want gradients to reflect the filtered view (e.g. "Who has best PP in last 10?")
         const leagueBaseline: TeamStat[] = [];
         allTeamsList.forEach(teamName => {
             const games = getGames(teamName, filterHomeAway); // Use current filters but for ALL teams
@@ -674,8 +688,8 @@ const TeamsTable = () => {
         };
 
         const divMap: Record<string, TeamStat[]> = { Atlantic: [], Metro: [], Central: [], Pacific: [] };
-        // Use leagueBaseline (all teams) for frame of reference
-        leagueBaseline.forEach(t => {
+        // Use standingsBaseline (ALL GAMES) for frame of reference
+        standingsBaseline.forEach(t => {
             const inf = teams[t.team];
             if (inf && inf.division) {
                 if (!divMap[inf.division]) divMap[inf.division] = [];
@@ -690,7 +704,7 @@ const TeamsTable = () => {
         // Playoff Spots
         Object.values(divMap).forEach(list => list.slice(0, 3).forEach(t => plySet.add(t.team)));
         ['Eastern', 'Western'].forEach(conf => {
-            const confTeams = leagueBaseline.filter(t => {
+            const confTeams = standingsBaseline.filter(t => {
                 const inf = teams[t.team];
                 return inf && inf.division && CONFERENCE_MAPPING[inf.division] === conf && !plySet.has(t.team);
             });
@@ -700,7 +714,7 @@ const TeamsTable = () => {
 
         // Map props
         const rMap: Record<string, { ranking: string, isPlayoff: boolean }> = {};
-        leagueBaseline.forEach(t => {
+        standingsBaseline.forEach(t => {
             const inf = teams[t.team];
             if (inf && inf.division) {
                 const rank = divMap[inf.division].findIndex(x => x.team === t.team) + 1;
