@@ -73,6 +73,10 @@ interface TeamStat {
     otl: number;
     points: number;
     pt_pct: number;
+    rw: number; // Regulation Wins (Tie breaker 1)
+    row: number; // Regulation + OT Wins (Tie breaker 2)
+    ranking?: string; // e.g. "A1", "WC1"
+    isPlayoff?: boolean;
 
     gf_per_game: number;
     ga_per_game: number;
@@ -132,6 +136,11 @@ interface Matchup {
 
 type SortKey = keyof TeamStat;
 type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter';
+
+const CONFERENCE_MAPPING: Record<string, string> = {
+    'Atlantic': 'Eastern', 'Metro': 'Eastern',
+    'Central': 'Western', 'Pacific': 'Western'
+};
 
 const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -241,11 +250,12 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
             pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_lev: 0, pk_time_per_game: '0:00', pk_time_per_goal_allowed: '0:00',
             sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
 
-            engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0
+            engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0, rw: 0, row: 0
         };
     }
 
     let gp = 0, wins = 0, losses = 0, otl = 0;
+    let rw = 0, row = 0;
     let gf = 0, ga = 0;
     let pp_goals = 0, pp_opps = 0, pp_time = 0;
     let pk_goals_allowed = 0, pk_opps = 0, pk_time = 0;
@@ -262,6 +272,14 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         if (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') wins++;
         else if (g.result === 'RL') losses++;
         else otl++;
+
+        if (g.result === 'RW') {
+            rw++;
+            row++;
+        }
+        if (g.result === 'OTW') {
+            row++;
+        }
 
         gf += parseFloat(g.goals_for || '0');
         ga += parseFloat(g.goals_ag || '0');
@@ -317,6 +335,8 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         otl,
         points,
         pt_pct: points / (gp * 2),
+        rw,
+        row,
 
         gf_per_game: gf / gp,
         ga_per_game: ga / gp,
@@ -385,7 +405,7 @@ const TeamsTable = () => {
 
     // Groups for Desktop headers and Mobile filtering
     const STAT_GROUPS = useMemo(() => [
-        { name: 'Record', columns: ['gp', 'wins', 'losses', 'otl', 'points', 'pt_pct'] },
+        { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct'] },
         { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'true_goal_diff', 'total_goals_per_game'] },
         { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
         { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
@@ -398,6 +418,7 @@ const TeamsTable = () => {
     const [activeCategory, setActiveCategory] = useState(STAT_GROUPS[0].name);
 
     const COLUMNS = useMemo(() => [
+        { k: 'ranking', l: 'Rank', desc: 'Projected Playoff Standing' },
         { k: 'gp', l: 'GP', desc: 'Games Played' },
         { k: 'wins', l: 'W', desc: 'Wins' },
         { k: 'losses', l: 'L', desc: 'Regulation Losses' },
@@ -641,6 +662,58 @@ const TeamsTable = () => {
             });
         }
 
+        // --- CALCULATE STANDINGS (Standard NHL Rules) ---
+        // Rules: Points -> RW -> ROW -> Wins -> Goal Diff
+        const sortForRank = (a: TeamStat, b: TeamStat) => {
+            if (b.points !== a.points) return b.points - a.points;
+            if (b.rw !== a.rw) return b.rw - a.rw;
+            if (b.row !== a.row) return b.row - a.row;
+            if (b.wins !== a.wins) return b.wins - a.wins;
+            return b.goal_diff - a.goal_diff;
+        };
+
+        const divMap: Record<string, TeamStat[]> = { Atlantic: [], Metro: [], Central: [], Pacific: [] };
+        // Use leagueBaseline (all teams) for frame of reference
+        leagueBaseline.forEach(t => {
+            const inf = teams[t.team];
+            if (inf && inf.division) {
+                if (!divMap[inf.division]) divMap[inf.division] = [];
+                divMap[inf.division].push(t);
+            }
+        });
+        Object.values(divMap).forEach(list => list.sort(sortForRank));
+
+        const plySet = new Set<string>();
+        const divisionToInitial: Record<string, string> = { Atlantic: 'A', Metro: 'M', Central: 'C', Pacific: 'P' };
+
+        // Playoff Spots
+        Object.values(divMap).forEach(list => list.slice(0, 3).forEach(t => plySet.add(t.team)));
+        ['Eastern', 'Western'].forEach(conf => {
+            const confTeams = leagueBaseline.filter(t => {
+                const inf = teams[t.team];
+                return inf && inf.division && CONFERENCE_MAPPING[inf.division] === conf && !plySet.has(t.team);
+            });
+            confTeams.sort(sortForRank);
+            confTeams.slice(0, 2).forEach(t => plySet.add(t.team));
+        });
+
+        // Map props
+        const rMap: Record<string, { ranking: string, isPlayoff: boolean }> = {};
+        leagueBaseline.forEach(t => {
+            const inf = teams[t.team];
+            if (inf && inf.division) {
+                const rank = divMap[inf.division].findIndex(x => x.team === t.team) + 1;
+                rMap[t.team] = { ranking: `${divisionToInitial[inf.division]}${rank}`, isPlayoff: plySet.has(t.team) };
+            }
+        });
+
+        processedTeams.forEach(t => {
+            if (rMap[t.team]) {
+                t.ranking = rMap[t.team].ranking;
+                t.isPlayoff = rMap[t.team].isPlayoff;
+            }
+        });
+
         setStats(processedTeams);
 
     }, [rawData, viewMode, filterHomeAway, filterLastN, todayMatchups, selectedDivisions, teams]);
@@ -832,6 +905,10 @@ const TeamsTable = () => {
                 else if (paramVal > 0) value = '+' + Math.round(paramVal).toLocaleString();
                 else value = '(' + Math.round(Math.abs(paramVal)).toLocaleString() + ')';
             }
+        } else if (key === 'ranking') {
+            // Apply Special Styling
+            color = '#FFFFFF';
+            // Font weight handled in class
         } else if (isTime) {
             // Time strings
             // Handle edge cases first!
@@ -851,7 +928,10 @@ const TeamsTable = () => {
         }
 
         return (
-            <td className={`px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`} style={{ color }}>
+            <td
+                className={`px-2 py-0.5 text-sm whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'} ${key === 'ranking' ? (team.isPlayoff ? 'font-medium' : 'font-light') : 'font-medium'}`}
+                style={{ color }}
+            >
                 {value}
             </td>
         );
