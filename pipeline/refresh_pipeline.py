@@ -285,7 +285,20 @@ def refresh_pipeline():
             
     except Exception as e:
         print(f"Warning: Supabase upload failed to start: {e}")
-    
+
+    # 10. Upload Full History to Supabase (Predictions Table)
+    print("Syncing History to Supabase 'predictions' table...")
+    try:
+        sync_script = os.path.join(root_dir, "scripts", "sync_history_to_supabase.py")
+        if os.path.exists(sync_script):
+            result = subprocess.run([sys.executable, sync_script], cwd=root_dir, env=os.environ.copy())
+            if result.returncode != 0:
+                print(f"Warning: History sync script exited with code {result.returncode}")
+        else:
+            print(f"Warning: Could not find {sync_script}")
+    except Exception as e:
+         print(f"Warning: History sync failed to start: {e}")
+
     print("--- Pipeline Refresh Complete ---")
 
 if __name__ == "__main__":
