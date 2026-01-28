@@ -353,46 +353,46 @@ const TeamsTable = () => {
     const [activeCategory, setActiveCategory] = useState(STAT_GROUPS[0].name);
 
     const COLUMNS = useMemo(() => [
-        { k: 'gp', l: 'GP' },
-        { k: 'wins', l: 'W' },
-        { k: 'losses', l: 'L' },
-        { k: 'otl', l: 'OT' },
-        { k: 'points', l: 'PTS' },
-        { k: 'pt_pct', l: 'P%' },
-        { k: 'gf_per_game', l: 'GF/G' },
-        { k: 'ga_per_game', l: 'GA/G', inv: true },
-        { k: 'goal_diff', l: 'GΔ' },
-        { k: 'true_gf_per_game', l: 'TruGF' },
-        { k: 'true_ga_per_game', l: 'TruGA', inv: true },
-        { k: 'true_goal_diff', l: 'TruGΔ' },
-        { k: 'total_goals_per_game', l: 'TotG/G' },
-        { k: 'pp_goals', l: 'PPG' },
-        { k: 'pp_opps', l: 'PP Opp' },
-        { k: 'pp_pct', l: 'PP%' },
-        { k: 'pp_lev', l: 'PPLev' },
-        { k: 'pp_time_per_game', l: 'PP T/GP', isTime: true },
-        { k: 'pp_time_per_goal', l: 'PP T/G', isTime: true, inv: true },
-        { k: 'pk_goals_allowed', l: 'PPGA', inv: true },
-        { k: 'pk_opps', l: 'PK Opp' },
-        { k: 'pk_pct', l: 'PK%' },
-        { k: 'pk_lev', l: 'PKLev', inv: true },
-        { k: 'pk_time_per_game', l: 'PK T/GP', isTime: true, inv: true },
-        { k: 'pk_time_per_goal_allowed', l: 'PK T/GA', isTime: true },
-        { k: 'sf_per_game', l: 'SF/G' },
-        { k: 'sa_per_game', l: 'SA/G', inv: true },
-        { k: 'cf_per_game', l: 'CF/G' },
-        { k: 'ca_per_game', l: 'CA/G', inv: true },
-        { k: 'sh_pct', l: 'Sh%' },
-        { k: 'sv_pct', l: 'Sv%' },
-        { k: 'gsax', l: 'GSAx' },
-        { k: 'xgf_per_game', l: 'xGF/G' },
-        { k: 'xga_per_game', l: 'xGA/G', inv: true },
-        { k: 'xgf_pct', l: 'xGF%' },
-        { k: 'engf', l: 'EN GF' },
-        { k: 'en_attempts', l: 'EN Att' },
-        { k: 'ens_pct', l: 'ENS%' },
-        { k: 'otml', l: 'OtmL', inv: true },
-        { k: 'enga', l: 'EN GA', inv: true }
+        { k: 'gp', l: 'GP', desc: 'Games Played' },
+        { k: 'wins', l: 'W', desc: 'Wins' },
+        { k: 'losses', l: 'L', desc: 'Regulation Losses' },
+        { k: 'otl', l: 'OT', desc: 'Overtime/Shootout Losses' },
+        { k: 'points', l: 'PTS', desc: 'Points', calc: '2*W + OTL' },
+        { k: 'pt_pct', l: 'P%', desc: 'Points Percentage', calc: 'PTS / (2 * GP)' },
+        { k: 'gf_per_game', l: 'GF/G', desc: 'Goals For Per Game' },
+        { k: 'ga_per_game', l: 'GA/G', inv: true, desc: 'Goals Against Per Game' },
+        { k: 'goal_diff', l: 'GΔ', desc: 'Goal Differential', calc: 'GF - GA' },
+        { k: 'true_gf_per_game', l: 'TruGF', desc: 'True Goals For Per Game', calc: '(GF - PP Goals - EN Goals) / GP' },
+        { k: 'true_ga_per_game', l: 'TruGA', inv: true, desc: 'True Goals Against Per Game', calc: '(GA - PP GA - EN GA) / GP' },
+        { k: 'true_goal_diff', l: 'TruGΔ', desc: 'True Goal Differential', calc: 'True GF - True GA' },
+        { k: 'total_goals_per_game', l: 'TotG/G', desc: 'Total Goals (For + Ag) Per Game', calc: '(GF + GA) / GP' },
+        { k: 'pp_goals', l: 'PPG', desc: 'Power Play Goals' },
+        { k: 'pp_opps', l: 'PP Opp', desc: 'Power Play Opportunities' },
+        { k: 'pp_pct', l: 'PP%', desc: 'Power Play Percentage', calc: 'PP Goals / PP Opps' },
+        { k: 'pp_lev', l: 'PPLev', inv: true, desc: 'Power Play Leverage', calc: '% of Team Goals scored on PP' },
+        { k: 'pp_time_per_game', l: 'PP T/GP', isTime: true, desc: 'PP Time Per Game' },
+        { k: 'pp_time_per_goal', l: 'PP T/G', isTime: true, inv: true, desc: 'PP Time Per Goal Scored' },
+        { k: 'pk_goals_allowed', l: 'PPGA', inv: true, desc: 'Power Play Goals Against' },
+        { k: 'pk_opps', l: 'PK Opp', desc: 'Penalty Kill Opportunities' },
+        { k: 'pk_pct', l: 'PK%', desc: 'Penalty Kill Percentage', calc: 'Kills / PK Opps' },
+        { k: 'pk_lev', l: 'PKLev', inv: true, desc: 'Penalty Kill Leverage', calc: '% of Goals Against allowed on PK' },
+        { k: 'pk_time_per_game', l: 'PK T/GP', isTime: true, inv: true, desc: 'PK Time Per Game' },
+        { k: 'pk_time_per_goal_allowed', l: 'PK T/GA', isTime: true, desc: 'PK Time Per Goal Allowed' },
+        { k: 'sf_per_game', l: 'SF/G', desc: 'Shots For Per Game' },
+        { k: 'sa_per_game', l: 'SA/G', inv: true, desc: 'Shots Against Per Game' },
+        { k: 'cf_per_game', l: 'CF/G', desc: 'Corsi For Per Game' },
+        { k: 'ca_per_game', l: 'CA/G', inv: true, desc: 'Corsi Against Per Game' },
+        { k: 'sh_pct', l: 'Sh%', desc: 'Shooting Percentage', calc: 'Goals / Shots' },
+        { k: 'sv_pct', l: 'Sv%', desc: 'Save Percentage', calc: 'Saves / (Shots Ag - EN GA)' },
+        { k: 'gsax', l: 'GSAx', desc: 'Goals Saved Above Expected' },
+        { k: 'xgf_per_game', l: 'xGF/G', desc: 'Expected Goals For Per Game' },
+        { k: 'xga_per_game', l: 'xGA/G', inv: true, desc: 'Expected Goals Against Per Game' },
+        { k: 'xgf_pct', l: 'xGF%', desc: 'Expected Goals For %', calc: 'xGF / (xGF + xGA)' },
+        { k: 'engf', l: 'EN GF', desc: 'Empty Net Goals For' },
+        { k: 'en_attempts', l: 'EN Att', desc: 'Empty Net Scenarios' },
+        { k: 'ens_pct', l: 'ENS%', desc: 'Empty Net Success %', calc: 'EN Goals / EN Attempts' },
+        { k: 'otml', l: 'OtmL', inv: true, desc: 'Empty Net Miss Loss', calc: 'Losses with EN Attempt but no EN Goal' },
+        { k: 'enga', l: 'EN GA', inv: true, desc: 'Empty Net Goals Against' }
     ], []);
 
 
@@ -892,7 +892,7 @@ const TeamsTable = () => {
 
                         <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-[33px] z-40 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
                             <th className="px-2 py-3 font-semibold sticky left-0 bg-gray-900 z-50 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
-                            {COLUMNS.map(({ k, l }) => {
+                            {COLUMNS.map(({ k, l, desc, calc }) => {
                                 // Determine if this is the last column in any group for vertical grid lines
                                 const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === k);
                                 const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
@@ -900,7 +900,7 @@ const TeamsTable = () => {
                                 return (
                                     <th
                                         key={k}
-                                        className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
+                                        className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
                                             } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
                                         onClick={() => handleSort(k as SortKey)}
                                     >
@@ -909,6 +909,14 @@ const TeamsTable = () => {
                                             {viewMode === 'All' && sortKey === k && (
                                                 <span className="text-[10px] text-blue-400">{sortDesc ? '▼' : '▲'}</span>
                                             )}
+                                        </div>
+
+                                        {/* Tooltip */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[200px] p-2 bg-black/95 border border-gray-700 text-white text-[10px] rounded shadow-xl z-[60] normal-case text-left pointer-events-none">
+                                            <div className="font-bold text-blue-400 mb-0.5 whitespace-normal">{desc}</div>
+                                            {calc && <div className="text-gray-400 font-mono text-[9px] whitespace-normal">{calc}</div>}
+                                            {/* Arrow */}
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/95"></div>
                                         </div>
                                     </th>
                                 );
