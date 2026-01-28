@@ -37,6 +37,7 @@ export interface LineupPlayer {
   number: number | null;
   pos: string;
   ppUnit?: number; // 1 or 2
+  movement?: 'up' | 'down' | 'new';
 }
 
 export interface TeamLineup {

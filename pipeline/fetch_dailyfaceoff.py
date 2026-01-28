@@ -2,6 +2,7 @@ import json
 import subprocess
 import re
 import datetime
+import os
 
 def fetch_dailyfaceoff_goalies():
     print("Fetching Daily Faceoff data (Today + Tomorrow)...")
@@ -228,6 +229,15 @@ def fetch_lineups(teams):
     """
     print("Fetching Daily Faceoff Lineups...")
     
+    # Load OLD lineups to compare
+    old_lineups = {}
+    if os.path.exists('team_lineups.json'):
+        try:
+            with open('team_lineups.json', 'r') as f:
+                old_lineups = json.load(f)
+        except:
+            pass
+
     lineups = {}
     
     # Iterate over teams. 
@@ -324,6 +334,48 @@ def fetch_lineups(teams):
             
             for gid, line_players in team_lines.items():
                 line_players.sort(key=lambda x: pos_order.get(x['pos'], 99))
+            
+            # --- CALCULATE MOVEMENT ---
+            # Compare 'team_lines' (New) vs 'old_lineups.get(triCode)' (Old)
+            old_team_lines = old_lineups.get(tri_code, {})
+            
+            # Create a map of PlayerID -> LineRank for OLD data
+            # Ranks: F1=1, F2=2, F3=3, F4=4, D1=1, D2=2, D3=3
+            old_ranks = {}
+            for gid_old, players_old in old_team_lines.items():
+                # Extract rank from gid (f1->1, d1->1)
+                rank = 99
+                if len(gid_old) > 1 and gid_old[1].isdigit():
+                    rank = int(gid_old[1])
+                
+                for p in players_old:
+                    pid = p.get('id')
+                    if pid:
+                        old_ranks[pid] = rank
+            
+            # Assign movement to NEW players
+            for gid_new, players_new in team_lines.items():
+                new_rank = 99
+                if len(gid_new) > 1 and gid_new[1].isdigit():
+                    new_rank = int(gid_new[1])
+                
+                for p in players_new:
+                    pid = p.get('id')
+                    if pid:
+                        # Default: null
+                        p['movement'] = None
+                        
+                        if pid not in old_ranks:
+                            p['movement'] = 'new'
+                        else:
+                            old_rank = old_ranks[pid]
+                            if new_rank < old_rank:
+                                # 1 < 2 -> Moved UP line
+                                p['movement'] = 'up'
+                            elif new_rank > old_rank:
+                                # 2 > 1 -> Moved DOWN line
+                                p['movement'] = 'down'
+                            # else: same line
             
             lineups[tri_code] = team_lines
             

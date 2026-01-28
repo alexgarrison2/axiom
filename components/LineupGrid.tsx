@@ -1,11 +1,12 @@
 import { TeamLineup } from '@/utils/data';
+import { ArrowUp, ArrowDown, Plus } from 'lucide-react';
 
 interface LineupGridProps {
     lineup?: TeamLineup;
     triCode: string;
 }
 
-export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
+export default function LineupGrid({ lineup }: LineupGridProps) {
     if (!lineup) return (
         <div className="flex flex-col items-center justify-center p-4 text-neutral-500 text-xs">
             No lineup data available.
@@ -46,17 +47,29 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                 const player = line[colIndex]; // 0=LW, 1=C, 2=RW (Data is sorted lw,c,rw)
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-x border-white/5' : ''}`}>
-                                        <span
-                                            className="text-[10px] leading-tight select-none"
-                                            style={{
-                                                color: player && player.ppUnit === 1 ? '#5382BD' :
-                                                    player && player.ppUnit === 2 ? '#FFFFFF' :
-                                                        '#697281',
-                                                fontWeight: player && player.ppUnit === 1 ? 700 : 500
-                                            }}
-                                        >
-                                            {player ? formatName(player.name) : '-'}
-                                        </span>
+                                        <div className="flex items-center gap-1">
+                                            {/* Icon */}
+                                            {player && player.movement === 'up' && (
+                                                <ArrowUp className="w-3 h-3 text-green-500" strokeWidth={3} />
+                                            )}
+                                            {player && player.movement === 'down' && (
+                                                <ArrowDown className="w-3 h-3 text-red-500" strokeWidth={3} />
+                                            )}
+                                            {player && player.movement === 'new' && (
+                                                <Plus className="w-3 h-3 text-orange-500" strokeWidth={3} />
+                                            )}
+                                            <span
+                                                className="text-[10px] leading-tight select-none"
+                                                style={{
+                                                    color: player && player.ppUnit === 1 ? '#5382BD' :
+                                                        player && player.ppUnit === 2 ? '#FFFFFF' :
+                                                            '#697281',
+                                                    fontWeight: player && player.ppUnit === 1 ? 700 : 500
+                                                }}
+                                            >
+                                                {player ? formatName(player.name) : '-'}
+                                            </span>
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -79,17 +92,29 @@ export default function LineupGrid({ lineup, triCode }: LineupGridProps) {
                                 const player = pair[colIndex];
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-l border-white/5' : ''}`}>
-                                        <span
-                                            className="text-[10px] leading-tight select-none"
-                                            style={{
-                                                color: player && player.ppUnit === 1 ? '#5382BD' :
-                                                    player && player.ppUnit === 2 ? '#FFFFFF' :
-                                                        '#697281',
-                                                fontWeight: player && player.ppUnit === 1 ? 700 : 500
-                                            }}
-                                        >
-                                            {player ? formatName(player.name) : '-'}
-                                        </span>
+                                        <div className="flex items-center gap-1">
+                                            {/* Icon */}
+                                            {player && player.movement === 'up' && (
+                                                <ArrowUp className="w-3 h-3 text-green-500" strokeWidth={3} />
+                                            )}
+                                            {player && player.movement === 'down' && (
+                                                <ArrowDown className="w-3 h-3 text-red-500" strokeWidth={3} />
+                                            )}
+                                            {player && player.movement === 'new' && (
+                                                <Plus className="w-3 h-3 text-orange-500" strokeWidth={3} />
+                                            )}
+                                            <span
+                                                className="text-[10px] leading-tight select-none"
+                                                style={{
+                                                    color: player && player.ppUnit === 1 ? '#5382BD' :
+                                                        player && player.ppUnit === 2 ? '#FFFFFF' :
+                                                            '#697281',
+                                                    fontWeight: player && player.ppUnit === 1 ? 700 : 500
+                                                }}
+                                            >
+                                                {player ? formatName(player.name) : '-'}
+                                            </span>
+                                        </div>
                                     </div>
                                 );
                             })}
