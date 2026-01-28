@@ -12,7 +12,7 @@ export default function TeamsPage() {
             {/* Background Ambient Glow */}
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
 
-            <div className="min-w-full w-max mx-auto relative z-10">
+            <div className="min-w-full w-fit relative z-10">
                 <Header compact />
 
                 <TeamsTable />
