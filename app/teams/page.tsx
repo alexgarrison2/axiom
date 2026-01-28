@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function TeamsPage() {
     return (
-        <main className="min-h-screen bg-black text-white p-4 font-sans relative overflow-x-hidden selection:bg-emerald-500/30">
+        <main className="min-h-screen bg-black text-white p-4 font-sans relative selection:bg-emerald-500/30">
             {/* Background Ambient Glow */}
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
 
