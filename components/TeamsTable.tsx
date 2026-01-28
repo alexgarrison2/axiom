@@ -80,6 +80,7 @@ interface TeamStat {
     pk_goals_allowed: number;
     pk_opps: number;
     pk_pct: number;
+    pk_lev: number;
     pk_time_per_game: string; // Formatted mm:ss
     pk_time_per_goal_allowed: string; // Formatted mm:ss (Time per PK Goal Allowed)
 
@@ -187,7 +188,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
             gf_per_game: 0, ga_per_game: 0, goal_diff: 0,
             true_gf_per_game: 0, true_ga_per_game: 0, total_goals_per_game: 0,
             pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_lev: 0, pp_time_per_game: '0:00', pp_time_per_goal: '0:00',
-            pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_time_per_game: '0:00', pk_time_per_goal_allowed: '0:00',
+            pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_lev: 0, pk_time_per_game: '0:00', pk_time_per_goal_allowed: '0:00',
             sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
 
             engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0
@@ -285,6 +286,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         pk_goals_allowed,
         pk_opps,
         pk_pct: pk_opps > 0 ? ((pk_opps - pk_goals_allowed) / pk_opps) * 100 : 0,
+        pk_lev: ga > 0 ? (pk_goals_allowed / ga) * 100 : 0,
         pk_time_per_game: formatTime(pk_time / gp),
         pk_time_per_goal_allowed: pk_goals_allowed > 0 ? formatTime(pk_sec_per_ga) : (pk_opps > 0 ? 'Perfect' : '-'),
 
@@ -333,8 +335,8 @@ const TeamsTable = () => {
     const STAT_GROUPS = useMemo(() => [
         { name: 'Record', columns: ['gp', 'wins', 'losses', 'otl', 'points', 'pt_pct'] },
         { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'total_goals_per_game'] },
-        { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game'] },
-        { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_time_per_game'] },
+        { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
+        { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
         { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'sh_pct'] },
         { name: 'Saves', columns: ['sv_pct', 'gsax'] },
         { name: 'xGoals', columns: ['xgf_per_game', 'xga_per_game', 'xgf_pct'] },
@@ -361,10 +363,13 @@ const TeamsTable = () => {
         { k: 'pp_pct', l: 'PP%' },
         { k: 'pp_lev', l: 'PPLev' },
         { k: 'pp_time_per_game', l: 'PP T/GP', isTime: true },
+        { k: 'pp_time_per_goal', l: 'PP T/G', isTime: true, inv: true },
         { k: 'pk_goals_allowed', l: 'PPGA', inv: true },
         { k: 'pk_opps', l: 'PK Opp' },
         { k: 'pk_pct', l: 'PK%' },
+        { k: 'pk_lev', l: 'PKLev', inv: true },
         { k: 'pk_time_per_game', l: 'PK T/GP', isTime: true, inv: true },
+        { k: 'pk_time_per_goal_allowed', l: 'PK T/GA', isTime: true },
         { k: 'sf_per_game', l: 'SF/G' },
         { k: 'sa_per_game', l: 'SA/G', inv: true },
         { k: 'cf_per_game', l: 'CF/G' },
@@ -632,7 +637,9 @@ const TeamsTable = () => {
             pk_goals_allowed: calculateRange('pk_goals_allowed'),
             pk_opps: calculateRange('pk_opps'),
             pp_pct: calculateRange('pp_pct'),
+            pp_lev: calculateRange('pp_lev'),
             pk_pct: calculateRange('pk_pct'),
+            pk_lev: calculateRange('pk_lev'),
             sf_per_game: calculateRange('sf_per_game'),
             sa_per_game: calculateRange('sa_per_game'),
             cf_per_game: calculateRange('cf_per_game'),
@@ -643,6 +650,9 @@ const TeamsTable = () => {
             xga_per_game: calculateRange('xga_per_game'),
             xgf_pct: calculateRange('xgf_pct'),
 
+            true_gf_per_game: calculateRange('true_gf_per_game'),
+            true_ga_per_game: calculateRange('true_ga_per_game'),
+            total_goals_per_game: calculateRange('total_goals_per_game'),
             gsax: calculateRange('gsax'),
             otml: calculateRange('otml'),
             en_attempts: calculateRange('en_attempts'),
@@ -657,12 +667,28 @@ const TeamsTable = () => {
 
     const timeRanges = useMemo(() => {
         const sourceStats = leagueStats.length > 0 ? leagueStats : stats;
-        if (sourceStats.length === 0) return { pp: { min: 0, max: 0 }, pk: { min: 0, max: 0 } };
+        const zeroRange = { min: 0, max: 0 };
+        if (sourceStats.length === 0) return { pp: zeroRange, pk: zeroRange, pp_goal: zeroRange, pk_goal: zeroRange };
+
         const ppTimes = sourceStats.map(s => getTimeSeconds(s.pp_time_per_game));
         const pkTimes = sourceStats.map(s => getTimeSeconds(s.pk_time_per_game));
+
+        // Filter out Inf/Perfect/- for calculations
+        const ppGoalTimes = sourceStats
+            .map(s => s.pp_time_per_goal)
+            .filter(t => t && t !== 'Inf' && t !== '-' && t !== 'Perfect')
+            .map(t => getTimeSeconds(t as string));
+
+        const pkGoalTimes = sourceStats
+            .map(s => s.pk_time_per_goal_allowed)
+            .filter(t => t && t !== 'Inf' && t !== '-' && t !== 'Perfect')
+            .map(t => getTimeSeconds(t as string));
+
         return {
             pp: { min: Math.min(...ppTimes), max: Math.max(...ppTimes) },
-            pk: { min: Math.min(...pkTimes), max: Math.max(...pkTimes) }
+            pk: { min: Math.min(...pkTimes), max: Math.max(...pkTimes) },
+            pp_goal: ppGoalTimes.length ? { min: Math.min(...ppGoalTimes), max: Math.max(...ppGoalTimes) } : zeroRange,
+            pk_goal: pkGoalTimes.length ? { min: Math.min(...pkGoalTimes), max: Math.max(...pkGoalTimes) } : zeroRange
         };
     }, [stats, leagueStats]);
 
@@ -674,7 +700,7 @@ const TeamsTable = () => {
         // Handle 0 GP (First Start) -> Show Blank
         if (team.gp === 0) {
             return (
-                <td className={`px-4 py-3 text-sm font-medium whitespace-nowrap text-center text-gray-600 ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`}>
+                <td className={`px-2 py-3 text-sm font-medium whitespace-nowrap text-center text-gray-600 ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`}>
                     —
                 </td>
             );
@@ -697,7 +723,7 @@ const TeamsTable = () => {
                 value = (value as number).toFixed(3).replace(/^0+/, ''); // .650
             } else if (key === 'sv_pct') {
                 value = ((value as number) / 100).toFixed(3).replace(/^0+/, ''); // .925
-            } else if (key === 'pp_lev') {
+            } else if (key === 'pp_lev' || key === 'pk_lev') {
                 value = (value as number).toFixed(1) + '%';
             } else if (key.toString().includes('pct')) {
                 value = value.toFixed(1) + '%';
@@ -720,13 +746,24 @@ const TeamsTable = () => {
             }
         } else if (isTime) {
             // Time strings
-            const seconds = getTimeSeconds(value as string);
-            const r = key === 'pp_time_per_game' ? timeRanges.pp : timeRanges.pk;
-            color = getGradientColor(seconds, r.min, r.max, isInverse);
+            // Handle edge cases first!
+            if (value === 'Inf' || value === 'Perfect' || value === '-') {
+                color = value === 'Perfect' ? '#0083E7' : (value === 'Inf' ? '#FF44A5' : '#DADADA');
+            } else {
+                const seconds = getTimeSeconds(value as string);
+
+                let r;
+                if (key === 'pp_time_per_game') r = timeRanges.pp;
+                else if (key === 'pk_time_per_game') r = timeRanges.pk;
+                else if (key === 'pp_time_per_goal') r = timeRanges.pp_goal;
+                else if (key === 'pk_time_per_goal_allowed') r = timeRanges.pk_goal;
+
+                if (r) color = getGradientColor(seconds, r.min, r.max, isInverse);
+            }
         }
 
         return (
-            <td className={`px-4 py-3 text-sm font-medium whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`} style={{ color }}>
+            <td className={`px-2 py-3 text-sm font-medium whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`} style={{ color }}>
                 {value}
             </td>
         );
@@ -819,7 +856,7 @@ const TeamsTable = () => {
                                 <th
                                     key={group.name}
                                     colSpan={group.columns.length}
-                                    className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-center text-blue-500/80 border-r border-gray-800/50"
+                                    className="px-2 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-center text-blue-500/80 border-r border-gray-800/50"
                                 >
                                     <span className="bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
                                         {group.name}
@@ -829,7 +866,7 @@ const TeamsTable = () => {
                         </tr>
 
                         <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-0 z-30 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
-                            <th className="px-4 py-3 font-semibold sticky left-0 bg-gray-900 z-40 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
+                            <th className="px-2 py-3 font-semibold sticky left-0 bg-gray-900 z-40 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
                             {COLUMNS.map(({ k, l }) => {
                                 // Determine if this is the last column in any group for vertical grid lines
                                 const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === k);
@@ -838,7 +875,7 @@ const TeamsTable = () => {
                                 return (
                                     <th
                                         key={k}
-                                        className={`px-4 py-3 font-semibold transition-colors text-center whitespace-nowrap ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
+                                        className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
                                             } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
                                         onClick={() => handleSort(k as SortKey)}
                                     >
@@ -870,7 +907,7 @@ const TeamsTable = () => {
                             return (
                                 <React.Fragment key={`${team.team}-${idx}`}>
                                     <tr className={rowStyle}>
-                                        <td className="px-4 py-3 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-20">
+                                        <td className="px-2 py-3 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-20">
                                             <div className="flex items-center justify-center md:justify-start gap-3">
                                                 {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
 
