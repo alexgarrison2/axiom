@@ -65,6 +65,7 @@ interface TeamStat {
     gf_per_game: number;
     ga_per_game: number;
     goal_diff: number;
+    true_goal_diff: number; // Total True Goal Diff
 
     true_gf_per_game: number;
     true_ga_per_game: number;
@@ -190,7 +191,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         // Return zeroed stats
         return {
             team: teamName, gp: 0, wins: 0, losses: 0, otl: 0, points: 0, pt_pct: 0,
-            gf_per_game: 0, ga_per_game: 0, goal_diff: 0,
+            gf_per_game: 0, ga_per_game: 0, goal_diff: 0, true_goal_diff: 0,
             true_gf_per_game: 0, true_ga_per_game: 0, total_goals_per_game: 0,
             pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_lev: 0, pp_time_per_game: '0:00', pp_time_per_goal: '0:00',
             pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_lev: 0, pk_time_per_game: '0:00', pk_time_per_goal_allowed: '0:00',
@@ -276,6 +277,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         gf_per_game: gf / gp,
         ga_per_game: ga / gp,
         goal_diff: gf - ga,
+        true_goal_diff: true_gf - true_ga,
 
         true_gf_per_game: true_gf / gp,
         true_ga_per_game: true_ga / gp,
@@ -339,7 +341,7 @@ const TeamsTable = () => {
     // Groups for Desktop headers and Mobile filtering
     const STAT_GROUPS = useMemo(() => [
         { name: 'Record', columns: ['gp', 'wins', 'losses', 'otl', 'points', 'pt_pct'] },
-        { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'total_goals_per_game'] },
+        { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'true_goal_diff', 'total_goals_per_game'] },
         { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
         { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
         { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'sh_pct'] },
@@ -362,6 +364,7 @@ const TeamsTable = () => {
         { k: 'goal_diff', l: 'GΔ' },
         { k: 'true_gf_per_game', l: 'TruGF' },
         { k: 'true_ga_per_game', l: 'TruGA', inv: true },
+        { k: 'true_goal_diff', l: 'TruGΔ' },
         { k: 'total_goals_per_game', l: 'TotG/G' },
         { k: 'pp_goals', l: 'PPG' },
         { k: 'pp_opps', l: 'PP Opp' },
@@ -676,6 +679,7 @@ const TeamsTable = () => {
 
             true_gf_per_game: calculateRange('true_gf_per_game'),
             true_ga_per_game: calculateRange('true_ga_per_game'),
+            true_goal_diff: calculateRange('true_goal_diff'),
             total_goals_per_game: calculateRange('total_goals_per_game'),
             gsax: calculateRange('gsax'),
             otml: calculateRange('otml'),
@@ -758,7 +762,7 @@ const TeamsTable = () => {
                 if (Math.abs(paramVal) < 0.01) value = 'E';
                 else if (paramVal > 0) value = '+' + paramVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 else value = '(' + Math.abs(paramVal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ')';
-            } else if (key === 'goal_diff') {
+            } else if (key === 'goal_diff' || key === 'true_goal_diff') {
                 // +#,##0;(#,##0);"E"
                 const paramVal = value as number;
                 if (Math.abs(paramVal) < 0.1) value = 'E'; // Treat 0 or near 0 as Even
@@ -871,8 +875,8 @@ const TeamsTable = () => {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         {/* Desktop Group Headers */}
-                        <tr className="hidden md:table-row bg-gray-950/50 border-b border-gray-800">
-                            <th className="sticky left-0 bg-gray-950/50 z-40 border-r border-gray-800"></th>
+                        <tr className="hidden md:table-row bg-gray-950/95 border-b border-gray-800 sticky top-0 z-50 backdrop-blur-sm shadow-sm">
+                            <th className="sticky left-0 bg-gray-950/95 z-40 border-r border-gray-800"></th>
                             {STAT_GROUPS.map(group => (
                                 <th
                                     key={group.name}
@@ -886,8 +890,8 @@ const TeamsTable = () => {
                             ))}
                         </tr>
 
-                        <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-0 z-30 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
-                            <th className="px-2 py-3 font-semibold sticky left-0 bg-gray-900 z-40 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
+                        <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-[33px] z-40 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
+                            <th className="px-2 py-3 font-semibold sticky left-0 bg-gray-900 z-50 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
                             {COLUMNS.map(({ k, l }) => {
                                 // Determine if this is the last column in any group for vertical grid lines
                                 const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === k);

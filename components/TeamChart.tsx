@@ -58,6 +58,11 @@ const METRICS = [
     { label: 'xGoals Against / GP', value: 'xga', suffix: '', format: (v: number) => v.toFixed(2) },
     { label: 'Power Play %', value: 'pp', suffix: '%', format: (v: number) => v.toFixed(1) },
     { label: 'Penalty Kill %', value: 'pk', suffix: '%', format: (v: number) => v.toFixed(1) },
+    { label: 'True GF / GP', value: 'true_gf', suffix: '', format: (v: number) => v.toFixed(2) },
+    { label: 'True GA / GP', value: 'true_ga', suffix: '', format: (v: number) => v.toFixed(2) },
+    { label: 'True Goal Diff', value: 'true_gd', suffix: '', format: (v: number) => (v > 0 ? '+' : '') + v.toFixed(1) },
+    { label: 'PP Leverage', value: 'pp_lev', suffix: '%', format: (v: number) => v.toFixed(1) },
+    { label: 'PK Leverage', value: 'pk_lev', suffix: '%', format: (v: number) => v.toFixed(1) },
     { label: 'Save %', value: 'sv', suffix: '%', format: (v: number) => v.toFixed(1) },
     { label: 'Shooting %', value: 'sh', suffix: '%', format: (v: number) => v.toFixed(1) },
     { label: 'Shots For / GP', value: 'sf', suffix: '', format: (v: number) => v.toFixed(1) },
@@ -185,10 +190,11 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
             gp: 0, pts: 0,
             gf: 0, ga: 0,
             xgf: 0, xga: 0,
-            ppg: 0, ppo: 0, pkg: 0, pko: 0,
+            pko: 0, ppg: 0, ppo: 0, pkg: 0,
             sf: 0, sa: 0,
             cf: 0, ca: 0,
-            gsax: 0
+            gsax: 0,
+            en_gf: 0, en_ga: 0
         };
 
         const calcVal = (m: string, t: typeof total) => {
@@ -213,6 +219,13 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
             if (m === 'cd') val = t.cf - t.ca; // Total Diff
             if (m === 'gsax') val = t.gsax / gp; // Per Game Rate as before
 
+            // New Metrics
+            if (m === 'true_gf') val = (t.gf - t.ppg - t.en_gf) / gp;
+            if (m === 'true_ga') val = (t.ga - t.pkg - t.en_ga) / gp;
+            if (m === 'true_gd') val = (t.gf - t.ppg - t.en_gf) - (t.ga - t.pkg - t.en_ga); // Total Amount
+            if (m === 'pp_lev') val = t.gf > 0 ? (t.ppg / t.gf) * 100 : 0;
+            if (m === 'pk_lev') val = t.ga > 0 ? (t.pkg / t.ga) * 100 : 0;
+
             return val;
         };
 
@@ -235,6 +248,8 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                 total.cf += g.cf;
                 total.ca += g.ca;
                 total.gsax += g.gsax;
+                total.en_gf += g.en_gf;
+                total.en_ga += g.en_ga;
 
                 const val1 = calcVal(metric, total);
                 const val2 = metric2 !== 'none' ? calcVal(metric2, total) : null;
@@ -269,6 +284,8 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                     cf: slice.reduce((a, x) => a + x.cf, 0),
                     ca: slice.reduce((a, x) => a + x.ca, 0),
                     gsax: slice.reduce((a, x) => a + x.gsax, 0),
+                    en_gf: slice.reduce((a, x) => a + x.en_gf, 0),
+                    en_ga: slice.reduce((a, x) => a + x.en_ga, 0),
                 };
 
                 const val1 = calcVal(metric, st);
