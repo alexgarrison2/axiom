@@ -871,7 +871,7 @@ const TeamsTable = () => {
                 </div>
             </div>
 
-            <div className="overflow-x-auto bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative">
+            <div className="overflow-auto max-h-[75vh] bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         {/* Desktop Group Headers */}
@@ -912,11 +912,11 @@ const TeamsTable = () => {
                                         </div>
 
                                         {/* Tooltip */}
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[200px] p-2 bg-black/95 border border-gray-700 text-white text-[10px] rounded shadow-xl z-[60] normal-case text-left pointer-events-none">
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[200px] p-2 bg-black/95 border border-gray-700 text-white text-[10px] rounded shadow-xl z-[60] normal-case text-left pointer-events-none">
                                             <div className="font-bold text-blue-400 mb-0.5 whitespace-normal">{desc}</div>
                                             {calc && <div className="text-gray-400 font-mono text-[9px] whitespace-normal">{calc}</div>}
                                             {/* Arrow */}
-                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/95"></div>
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-black/95"></div>
                                         </div>
                                     </th>
                                 );
