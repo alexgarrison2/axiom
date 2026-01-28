@@ -57,6 +57,14 @@ const METRICS = [
     { label: 'xGoals For / GP', value: 'xgf', suffix: '', format: (v: number) => v.toFixed(2) },
     { label: 'xGoals Against / GP', value: 'xga', suffix: '', format: (v: number) => v.toFixed(2) },
     { label: 'Power Play %', value: 'pp', suffix: '%', format: (v: number) => v.toFixed(1) },
+    { label: 'Penalty Kill %', value: 'pk', suffix: '%', format: (v: number) => v.toFixed(1) },
+    { label: 'Save %', value: 'sv', suffix: '%', format: (v: number) => v.toFixed(1) },
+    { label: 'Shooting %', value: 'sh', suffix: '%', format: (v: number) => v.toFixed(1) },
+    { label: 'Shots For / GP', value: 'sf', suffix: '', format: (v: number) => v.toFixed(1) },
+    { label: 'Shots Against / GP', value: 'sa', suffix: '', format: (v: number) => v.toFixed(1) },
+    { label: 'Shot Diff', value: 'sd', suffix: '', format: (v: number) => (v > 0 ? '+' : '') + v.toFixed(1) },
+    { label: 'Corsi For / GP', value: 'cf', suffix: '', format: (v: number) => v.toFixed(1) },
+    { label: 'Corsi Diff', value: 'cd', suffix: '', format: (v: number) => (v > 0 ? '+' : '') + v.toFixed(1) },
     { label: 'GSAx / GP', value: 'gsax', suffix: '', format: (v: number) => v.toFixed(2) }
 ];
 
