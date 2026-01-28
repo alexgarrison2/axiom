@@ -391,7 +391,7 @@ const TeamsTable = () => {
         { k: 'engf', l: 'EN GF', desc: 'Empty Net Goals For' },
         { k: 'en_attempts', l: 'EN Att', desc: 'Empty Net Scenarios' },
         { k: 'ens_pct', l: 'ENS%', desc: 'Empty Net Success %', calc: 'EN Goals / EN Attempts' },
-        { k: 'otml', l: 'OtmL', inv: true, desc: 'Empty Net Miss Loss', calc: 'Losses with EN Attempt but no EN Goal' },
+        { k: 'otml', l: 'OtmL', inv: true, desc: 'Off-The-Mat Loss', calc: 'Losses with EN Attempt but no EN Goal' },
         { k: 'enga', l: 'EN GA', inv: true, desc: 'Empty Net Goals Against' }
     ], []);
 
