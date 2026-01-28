@@ -907,7 +907,7 @@ const TeamsTable = () => {
             }
         } else if (key === 'ranking') {
             // Apply Special Styling
-            color = '#FFFFFF';
+            color = team.isPlayoff ? '#FFFFFF' : '#99A2AF';
             // Font weight handled in class
         } else if (isTime) {
             // Time strings
