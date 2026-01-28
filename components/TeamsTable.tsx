@@ -384,13 +384,13 @@ const TeamsTable = () => {
         { k: 'pp_pct', l: 'PP%', desc: 'Power Play Percentage', calc: 'PP Goals / PP Opps' },
         { k: 'pp_lev', l: 'PPLev', inv: true, desc: 'Power Play Leverage', calc: '% of Team Goals scored on PP' },
         { k: 'pp_time_per_game', l: 'PP T/GP', isTime: true, desc: 'PP Time Per Game' },
-        { k: 'pp_time_per_goal', l: 'PP T/G', isTime: true, inv: true, desc: 'PP Time Per Goal Scored' },
+        { k: 'pp_time_per_goal', l: 'PP T/G', isTime: true, inv: true, desc: 'PP Time Per PPG Scored' },
         { k: 'pk_goals_allowed', l: 'PPGA', inv: true, desc: 'Power Play Goals Against' },
         { k: 'pk_opps', l: 'PK Opp', desc: 'Penalty Kill Opportunities' },
         { k: 'pk_pct', l: 'PK%', desc: 'Penalty Kill Percentage', calc: 'Kills / PK Opps' },
         { k: 'pk_lev', l: 'PKLev', inv: true, desc: 'Penalty Kill Leverage', calc: '% of Goals Against allowed on PK' },
         { k: 'pk_time_per_game', l: 'PK T/GP', isTime: true, inv: true, desc: 'PK Time Per Game' },
-        { k: 'pk_time_per_goal_allowed', l: 'PK T/GA', isTime: true, desc: 'PK Time Per Goal Allowed' },
+        { k: 'pk_time_per_goal_allowed', l: 'PK T/GA', isTime: true, desc: 'PK Time Per PPG Allowed' },
         { k: 'sf_per_game', l: 'SF/G', desc: 'Shots For Per Game' },
         { k: 'sa_per_game', l: 'SA/G', inv: true, desc: 'Shots Against Per Game' },
         { k: 'cf_per_game', l: 'CF/G', desc: 'Corsi For Per Game' },
@@ -402,9 +402,9 @@ const TeamsTable = () => {
         { k: 'xga_per_game', l: 'xGA/G', inv: true, desc: 'Expected Goals Against Per Game' },
         { k: 'xgf_pct', l: 'xGF%', desc: 'Expected Goals For %', calc: 'xGF / (xGF + xGA)' },
         { k: 'engf', l: 'EN GF', desc: 'Empty Net Goals For' },
-        { k: 'en_attempts', l: 'EN Att', desc: 'Empty Net Scenarios' },
+        { k: 'en_attempts', l: 'EN Att', desc: 'Empty Net Attempts (missed/blocked shots, icings, goals)' },
         { k: 'ens_pct', l: 'ENS%', desc: 'Empty Net Success %', calc: 'EN Goals / EN Attempts' },
-        { k: 'otml', l: 'OtmL', inv: true, desc: 'Off-The-Mat Loss', calc: 'Losses with EN Attempt but no EN Goal' },
+        { k: 'otml', l: 'OtmL', inv: true, desc: 'Off-The-Mat Loss', calc: 'Losses with at least one EN Attempt' },
         { k: 'enga', l: 'EN GA', inv: true, desc: 'Empty Net Goals Against' }
     ], []);
 
@@ -750,7 +750,7 @@ const TeamsTable = () => {
         // Handle 0 GP (First Start) -> Show Blank
         if (team.gp === 0) {
             return (
-                <td className={`px-2 py-3 text-sm font-medium whitespace-nowrap text-center text-gray-600 ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`}>
+                <td className={`px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center text-gray-600 ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`}>
                     —
                 </td>
             );
@@ -813,7 +813,7 @@ const TeamsTable = () => {
         }
 
         return (
-            <td className={`px-2 py-3 text-sm font-medium whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`} style={{ color }}>
+            <td className={`px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`} style={{ color }}>
                 {value}
             </td>
         );
@@ -1026,7 +1026,7 @@ const TeamsTable = () => {
                             return (
                                 <React.Fragment key={`${team.team}-${idx}`}>
                                     <tr className={rowStyle}>
-                                        <td className="px-2 py-3 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-20">
+                                        <td className="px-2 py-0.5 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-20">
                                             <div className="flex items-center justify-center md:justify-start gap-3">
                                                 {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
 
