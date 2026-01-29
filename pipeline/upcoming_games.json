@@ -1,44 +1,5 @@
 [
     {
-        "id": 2025020842,
-        "gameDate": "2026-01-28",
-        "startTimeUTC": "2026-01-29T00:00:00Z",
-        "homeTeam": "Islanders",
-        "awayTeam": "Rangers",
-        "homeTeamAbbrev": "NYI",
-        "awayTeamAbbrev": "NYR",
-        "homeGoalieConfirmed": "David Rittich",
-        "homeGoalieStatus": "Confirmed",
-        "awayGoalieConfirmed": "Spencer Martin",
-        "awayGoalieStatus": "Confirmed"
-    },
-    {
-        "id": 2025020840,
-        "gameDate": "2026-01-28",
-        "startTimeUTC": "2026-01-29T00:30:00Z",
-        "homeTeam": "Blue Jackets",
-        "awayTeam": "Flyers",
-        "homeTeamAbbrev": "CBJ",
-        "awayTeamAbbrev": "PHI",
-        "homeGoalieConfirmed": "Elvis Merzlikins",
-        "homeGoalieStatus": "Confirmed",
-        "awayGoalieConfirmed": "Dan Vladar",
-        "awayGoalieStatus": "Confirmed"
-    },
-    {
-        "id": 2025020841,
-        "gameDate": "2026-01-28",
-        "startTimeUTC": "2026-01-29T00:30:00Z",
-        "homeTeam": "Senators",
-        "awayTeam": "Avalanche",
-        "homeTeamAbbrev": "OTT",
-        "awayTeamAbbrev": "COL",
-        "homeGoalieConfirmed": "James Reimer",
-        "homeGoalieStatus": "Confirmed",
-        "awayGoalieConfirmed": "Mackenzie Blackwood",
-        "awayGoalieStatus": "Confirmed"
-    },
-    {
         "id": 2025020843,
         "gameDate": "2026-01-29",
         "startTimeUTC": "2026-01-30T00:00:00Z",
@@ -47,8 +8,8 @@
         "homeTeamAbbrev": "BOS",
         "awayTeamAbbrev": "PHI",
         "homeGoalieConfirmed": "Jeremy Swayman",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Dan Vladar",
+        "homeGoalieStatus": "Confirmed",
+        "awayGoalieConfirmed": "Samuel Ersson",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -60,8 +21,8 @@
         "homeTeamAbbrev": "BUF",
         "awayTeamAbbrev": "LAK",
         "homeGoalieConfirmed": "Alex Lyon",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Anton Forsberg",
+        "homeGoalieStatus": "Likely",
+        "awayGoalieConfirmed": "Darcy Kuemper",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -74,7 +35,7 @@
         "awayTeamAbbrev": "COL",
         "homeGoalieConfirmed": "Jakub Dobes",
         "homeGoalieStatus": "Confirmed",
-        "awayGoalieConfirmed": "Mackenzie Blackwood",
+        "awayGoalieConfirmed": "Scott Wedgewood",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -99,7 +60,7 @@
         "homeTeamAbbrev": "NJD",
         "awayTeamAbbrev": "NSH",
         "homeGoalieConfirmed": "Jacob Markstrom",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieStatus": "Likely",
         "awayGoalieConfirmed": "Juuse Saros",
         "awayGoalieStatus": "Unconfirmed"
     },
@@ -111,9 +72,9 @@
         "awayTeam": "Islanders",
         "homeTeamAbbrev": "NYR",
         "awayTeamAbbrev": "NYI",
-        "homeGoalieConfirmed": "Spencer Martin",
+        "homeGoalieConfirmed": "Jonathan Quick",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "David Rittich",
+        "awayGoalieConfirmed": "Ilya Sorokin",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -125,9 +86,9 @@
         "homeTeamAbbrev": "PIT",
         "awayTeamAbbrev": "CHI",
         "homeGoalieConfirmed": "Arturs Silovs",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Spencer Knight",
-        "awayGoalieStatus": "Unconfirmed"
+        "homeGoalieStatus": "Likely",
+        "awayGoalieConfirmed": "Arvid Soderblom",
+        "awayGoalieStatus": "Likely"
     },
     {
         "id": 2025020851,
@@ -138,7 +99,7 @@
         "homeTeamAbbrev": "CAR",
         "awayTeamAbbrev": "UTA",
         "homeGoalieConfirmed": "Brandon Bussi",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieStatus": "Likely",
         "awayGoalieConfirmed": "Karel Vejmelka",
         "awayGoalieStatus": "Unconfirmed"
     },
@@ -176,9 +137,9 @@
         "awayTeam": "Flames",
         "homeTeamAbbrev": "MIN",
         "awayTeamAbbrev": "CGY",
-        "homeGoalieConfirmed": "Jesper Wallstedt",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Dustin Wolf",
+        "homeGoalieConfirmed": "Filip Gustavsson",
+        "homeGoalieStatus": "Confirmed",
+        "awayGoalieConfirmed": "Devin Cooley",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -191,7 +152,7 @@
         "awayTeamAbbrev": "SJS",
         "homeGoalieConfirmed": null,
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Yaroslav Askarov",
+        "awayGoalieConfirmed": "Alex Nedeljkovic",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -228,9 +189,22 @@
         "awayTeam": "Maple Leafs",
         "homeTeamAbbrev": "SEA",
         "awayTeamAbbrev": "TOR",
-        "homeGoalieConfirmed": "Philipp Grubauer",
+        "homeGoalieConfirmed": "Joey Daccord",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Joseph Woll",
+        "awayGoalieConfirmed": "Anthony Stolarz",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025020858,
+        "gameDate": "2026-01-30",
+        "startTimeUTC": "2026-01-31T01:30:00Z",
+        "homeTeam": "Blackhawks",
+        "awayTeam": "Blue Jackets",
+        "homeTeamAbbrev": "CHI",
+        "awayTeamAbbrev": "CBJ",
+        "homeGoalieConfirmed": "Spencer Knight",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Elvis Merzlikins",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
