@@ -1597,7 +1597,7 @@
                 "pos": "ld",
                 "id": 2716,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
@@ -3844,12 +3844,12 @@
     "VAN": {
         "f1": [
             {
-                "name": "Jake DeBrusk",
-                "number": 74,
+                "name": "Evander Kane",
+                "number": 91,
                 "pos": "lw",
-                "id": 2490,
-                "ppUnit": 1,
-                "movement": null
+                "id": 65,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Elias Pettersson",
@@ -3860,30 +3860,30 @@
                 "movement": null
             },
             {
-                "name": "Linus Karlsson",
-                "number": 94,
+                "name": "Conor Garland",
+                "number": 8,
                 "pos": "rw",
-                "id": 29135,
-                "ppUnit": 1,
-                "movement": null
+                "id": 3791,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f2": [
             {
-                "name": "Drew O'Connor",
-                "number": 18,
+                "name": "Liam Ohgren",
+                "number": 92,
                 "pos": "lw",
-                "id": 32925,
-                "ppUnit": null,
-                "movement": null
+                "id": 36367,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
-                "name": "Filip Chytil",
-                "number": 72,
+                "name": "Teddy Blueger",
+                "number": 53,
                 "pos": "c",
-                "id": 2811,
-                "ppUnit": 2,
-                "movement": null
+                "id": 3798,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Jonathan Lekkerimaki",
@@ -3896,38 +3896,12 @@
         ],
         "f3": [
             {
-                "name": "Liam Ohgren",
-                "number": 92,
+                "name": "Jake DeBrusk",
+                "number": 74,
                 "pos": "lw",
-                "id": 36367,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Teddy Blueger",
-                "number": 53,
-                "pos": "c",
-                "id": 3798,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Conor Garland",
-                "number": 8,
-                "pos": "rw",
-                "id": 3791,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Nils Hoglander",
-                "number": 21,
-                "pos": "lw",
-                "id": 30614,
-                "ppUnit": null,
-                "movement": null
+                "id": 2490,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Aatu Raty",
@@ -3935,15 +3909,41 @@
                 "pos": "c",
                 "id": 34668,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Evander Kane",
-                "number": 91,
+                "name": "Drew O'Connor",
+                "number": 18,
                 "pos": "rw",
-                "id": 65,
+                "id": 32925,
+                "ppUnit": null,
+                "movement": "down"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Filip Chytil",
+                "number": 72,
+                "pos": "lw",
+                "id": 2811,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
+            },
+            {
+                "name": "David Kampf",
+                "number": 64,
+                "pos": "c",
+                "id": 4620,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
+                "name": "Linus Karlsson",
+                "number": 94,
+                "pos": "rw",
+                "id": 29135,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -4418,12 +4418,12 @@
                 "movement": null
             },
             {
-                "name": "Colin Blackwell",
-                "number": 15,
+                "name": "Adam Erne",
+                "number": 73,
                 "pos": "rw",
-                "id": 4822,
+                "id": 2725,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -4696,10 +4696,10 @@
         ],
         "f3": [
             {
-                "name": "Easton Cowan",
-                "number": 53,
+                "name": "Nicholas Robertson",
+                "number": 89,
                 "pos": "lw",
-                "id": 35106,
+                "id": 29254,
                 "ppUnit": 2,
                 "movement": null
             },
@@ -4712,12 +4712,12 @@
                 "movement": null
             },
             {
-                "name": "Nicholas Robertson",
-                "number": 89,
+                "name": "Calle Jarnkrok",
+                "number": 19,
                 "pos": "rw",
-                "id": 29254,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1939,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f4": [
@@ -4738,12 +4738,12 @@
                 "movement": null
             },
             {
-                "name": "Calle Jarnkrok",
-                "number": 19,
+                "name": "Easton Cowan",
+                "number": 53,
                 "pos": "rw",
-                "id": 1939,
-                "ppUnit": null,
-                "movement": null
+                "id": 35106,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "d1": [

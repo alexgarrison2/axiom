@@ -1,4 +1,93 @@
 {
+    "VAN": [
+        {
+            "player": "Nils Hoglander",
+            "news": "Hoglander (upper-body) is out vs. Anaheim on Thursday and considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:35:14.322Z"
+        },
+        {
+            "player": "Nikita Tolopilo",
+            "news": "Tolopilo is in the starter's crease at Vancouver's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T18:29:04.917Z"
+        }
+    ],
+    "VGK": [
+        {
+            "player": "Adin Hill",
+            "news": "Hill will start vs. Dallas on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:33:56.639Z"
+        }
+    ],
+    "TOR": [
+        {
+            "player": "Anthony Stolarz",
+            "news": "Stolarz is in the starter's crease at Toronto's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:31:17.768Z"
+        }
+    ],
+    "DAL": [
+        {
+            "player": "Colin Blackwell",
+            "news": "Blackwell is expected to be a healthy scratch in Vegas on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:25:08.161Z"
+        },
+        {
+            "player": "Adam Erne",
+            "news": "Erne will draw back into Dallas' lineup in Vegas on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:24:42.451Z"
+        },
+        {
+            "player": "Jake Oettinger",
+            "news": "Oettinger will start in Vegas on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:17:00.989Z"
+        }
+    ],
+    "WSH": [
+        {
+            "player": "Charlie Lindgren",
+            "news": "Lindgren will start in Detroit on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:20:56.958Z"
+        },
+        {
+            "player": "Charlie Lindgren",
+            "news": "Lindgren is expected to start in Detroit on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:14:58.776Z"
+        }
+    ],
+    "CAR": [
+        {
+            "player": "Noah Philp",
+            "news": "Philp has cleared waivers and been assigned to Chicago (AHL). ",
+            "category": "Send Down",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:12:00.214Z"
+        },
+        {
+            "player": "Joel Nystrom",
+            "news": "Nystrom has been recalled from Chicago (AHL). ",
+            "category": "Call Up",
+            "date": "2026-01-29",
+            "timestamp": "2026-01-29T19:11:37.683Z"
+        }
+    ],
     "STL": [
         {
             "player": "Hugh McGing",
@@ -20,15 +109,6 @@
             "category": "Injury",
             "date": "2026-01-29",
             "timestamp": "2026-01-29T18:36:04.376Z"
-        }
-    ],
-    "VAN": [
-        {
-            "player": "Nikita Tolopilo",
-            "news": "Tolopilo is in the starter's crease at Vancouver's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T18:29:04.917Z"
         }
     ],
     "SJS": [
@@ -63,13 +143,6 @@
             "category": "Goalie Start",
             "date": "2026-01-29",
             "timestamp": "2026-01-29T18:17:58.545Z"
-        },
-        {
-            "player": "Devin Cooley",
-            "news": "Cooley is expected to start vs. Minnesota on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T17:38:47.772Z"
         }
     ],
     "LAK": [
@@ -79,13 +152,6 @@
             "category": "Goalie Start",
             "date": "2026-01-29",
             "timestamp": "2026-01-29T18:16:20.606Z"
-        },
-        {
-            "player": "Alex Turcotte",
-            "news": "Turcotte (upper-body) is out for the remainder of Los Angeles' road trip. ",
-            "category": "Injury",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T16:59:53.037Z"
         }
     ],
     "SEA": [
@@ -95,74 +161,6 @@
             "category": "Goalie Start",
             "date": "2026-01-29",
             "timestamp": "2026-01-29T18:11:40.935Z"
-        }
-    ],
-    "NYI": [
-        {
-            "player": "Ilya Sorokin",
-            "news": "Sorokin will start in New York on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T18:06:21.084Z"
-        }
-    ],
-    "WSH": [
-        {
-            "player": "Matt Roy",
-            "news": "Roy (lower-body) will be a game-time decision in Detroit on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T17:56:54.531Z"
-        },
-        {
-            "player": "Rasmus Sandin",
-            "news": "Sandin (lower-body) will be a game-time decision in Detroit on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T17:56:24.952Z"
-        },
-        {
-            "player": "Logan Thompson",
-            "news": "Thompson (upper-body) is out vs. Detroit on Thursday and considered day-to-day. ",
-            "category": "Injury",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T17:08:57.372Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Arvid Soderblom",
-            "news": "Soderblom will start in Pittsburgh on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T17:35:11.086Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Connor Ingram",
-            "news": "Ingram will start vs. San Jose on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T17:26:11.389Z"
-        }
-    ],
-    "UTA": [
-        {
-            "player": "Karel Vejmelka",
-            "news": "Vejmelka was the first goalie off the ice at Utah's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T17:06:54.376Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Brett Berard",
-            "news": "Berard is expected to draw back into New York's lineup vs. the Islanders on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-01-29",
-            "timestamp": "2026-01-29T16:58:55.794Z"
         }
     ]
 }
