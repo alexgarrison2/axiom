@@ -3104,12 +3104,12 @@
                 "movement": null
             },
             {
-                "name": "Anton Lundell",
-                "number": 15,
+                "name": "Cole Schwindt",
+                "number": 79,
                 "pos": "c",
-                "id": 33026,
-                "ppUnit": 2,
-                "movement": null
+                "id": 29210,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Brad Marchand",
@@ -3122,26 +3122,26 @@
         ],
         "f4": [
             {
-                "name": "A.J. Greer",
-                "number": 10,
-                "pos": "lw",
-                "id": 2706,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Cole Schwindt",
-                "number": 79,
-                "pos": "c",
-                "id": 29210,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Sandis Vilmanis",
                 "number": 95,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 36428,
+                "ppUnit": null,
+                "movement": null
+            },
+            {
+                "name": "Luke Kunin",
+                "number": 11,
+                "pos": "c",
+                "id": 2650,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
+                "name": "A.J. Greer",
+                "number": 10,
+                "pos": "rw",
+                "id": 2706,
                 "ppUnit": null,
                 "movement": null
             }
@@ -3196,7 +3196,7 @@
                 "number": 2,
                 "pos": "rd",
                 "id": 556,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ]
@@ -3849,7 +3849,7 @@
                 "pos": "lw",
                 "id": 65,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Elias Pettersson",
@@ -3865,7 +3865,7 @@
                 "pos": "rw",
                 "id": 3791,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -3875,7 +3875,7 @@
                 "pos": "lw",
                 "id": 36367,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Teddy Blueger",
@@ -3883,7 +3883,7 @@
                 "pos": "c",
                 "id": 3798,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jonathan Lekkerimaki",
@@ -3901,7 +3901,7 @@
                 "pos": "lw",
                 "id": 2490,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Aatu Raty",
@@ -3909,7 +3909,7 @@
                 "pos": "c",
                 "id": 34668,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Drew O'Connor",
@@ -3917,7 +3917,7 @@
                 "pos": "rw",
                 "id": 32925,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -3927,7 +3927,7 @@
                 "pos": "lw",
                 "id": 2811,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "David Kampf",
@@ -3935,7 +3935,7 @@
                 "pos": "c",
                 "id": 4620,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Linus Karlsson",
@@ -3943,7 +3943,7 @@
                 "pos": "rw",
                 "id": 29135,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -4423,7 +4423,7 @@
                 "pos": "rw",
                 "id": 2725,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -4717,7 +4717,7 @@
                 "pos": "rw",
                 "id": 1939,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -4743,7 +4743,7 @@
                 "pos": "rw",
                 "id": 35106,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
