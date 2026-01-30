@@ -1,6 +1,7 @@
 import subprocess
 import re
 import json
+import os
 from datetime import datetime
 
 def fetch_odds():
@@ -206,7 +207,10 @@ def fetch_odds():
         # For now, let's keep it as is or ignore it in the context of the new structure.
         pass
     
-    with open('odds.json', 'w') as f:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_path = os.path.join(script_dir, 'odds.json')
+    
+    with open(output_path, 'w') as f:
         json.dump(odds_data, f, indent=4)
         
     return odds_data
