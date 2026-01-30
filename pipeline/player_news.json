@@ -1,4 +1,107 @@
 {
+    "BOS": [
+        {
+            "player": "Elias Lindholm",
+            "news": "Lindholm (upper-body) will not travel to Florida and is expected to be out for the Stadium Series. ",
+            "category": "Injury",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T17:49:20.721Z"
+        },
+        {
+            "player": "Pavel Zacha",
+            "news": "Zacha (undisclosed) will not travel to Florida and is expected to be out for the Stadium Series. ",
+            "category": "Injury",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T17:48:49.403Z"
+        },
+        {
+            "player": "Pavel Zacha",
+            "news": "Zacha left Thursday\u2019s game vs. Philadelphia with an undisclosed injury and did not return.",
+            "category": "Injury",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T03:55:23.322Z"
+        }
+    ],
+    "CBJ": [
+        {
+            "player": "Elvis Merzlikins",
+            "news": "Merzlikins will start in Chicago on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T17:15:16.457Z"
+        },
+        {
+            "player": "Egor Zamula",
+            "news": "Zamula is a healthy scratch in Chicago on Friday. ",
+            "category": "Line Change",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T17:14:39.461Z"
+        },
+        {
+            "player": "Jake Christiansen",
+            "news": "Christiansen will draw back into Columbus' lineup in Chicago on Friday. ",
+            "category": "Line Change",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T17:13:54.745Z"
+        },
+        {
+            "player": "Elvis Merzlikins",
+            "news": "Merzlikins is in the starter's crease at Columbus' morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T16:33:57.484Z"
+        }
+    ],
+    "OTT": [
+        {
+            "player": "Stephen Halliday",
+            "news": "Halliday (upper-body) has a chance to return vs. New Jersey on Saturday. ",
+            "category": "Injury",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T17:04:07.915Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Cody Glass",
+            "news": "Glass (undisclosed) will travel with New Jersey on their road trip to Ottawa. ",
+            "category": "Injury",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T16:51:22.790Z"
+        },
+        {
+            "player": "Jack Hughes",
+            "news": "Hughes left Thursday\u2019s game vs. Nashville with a lower-body injury and is being evaluated to determine his status vs. Ottawa this weekend. ",
+            "category": "Injury",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T03:53:28.184Z"
+        }
+    ],
+    "CHI": [
+        {
+            "player": "Nick Foligno",
+            "news": "Foligno (undisclosed) will be a game-time decision vs. Columbus on Friday. ",
+            "category": "Injury",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T16:22:11.916Z"
+        },
+        {
+            "player": "Spencer Knight",
+            "news": "Knight will start vs. Columbus on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T15:54:32.333Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Matt Luff",
+            "news": "Luff has been recalled from Springfield (AHL) on emergency conditions. ",
+            "category": "Call Up",
+            "date": "2026-01-30",
+            "timestamp": "2026-01-30T16:09:10.618Z"
+        }
+    ],
     "UTA": [
         {
             "player": "Dmitri Simashev",
@@ -42,116 +145,6 @@
             "category": "Injury",
             "date": "2026-01-30",
             "timestamp": "2026-01-30T03:57:47.267Z"
-        },
-        {
-            "player": "Dylan McIlrath",
-            "news": "McIlrath is a healthy scratch for Thursday's game in Detroit. ",
-            "category": "Line Change",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T00:07:32.522Z"
-        },
-        {
-            "player": "Rasmus Sandin",
-            "news": "Sandin (lower-body) is on the ice for warmups and is expected to play in Detroit on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T00:06:15.540Z"
-        },
-        {
-            "player": "Matt Roy",
-            "news": "Roy (lower-body) will not play in Detroit on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T00:05:53.407Z"
-        }
-    ],
-    "BOS": [
-        {
-            "player": "Pavel Zacha",
-            "news": "Zacha left Thursday\u2019s game vs. Philadelphia with an undisclosed injury and did not return.",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T03:55:23.322Z"
-        }
-    ],
-    "NJD": [
-        {
-            "player": "Jack Hughes",
-            "news": "Hughes left Thursday\u2019s game vs. Nashville with a lower-body injury and is being evaluated to determine his status vs. Ottawa this weekend. ",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T03:53:28.184Z"
-        },
-        {
-            "player": "Jack Hughes",
-            "news": "Hughes suffered an undisclosed injury in Thursday's game against the Predators and is not expected to return.",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T02:05:53.949Z"
-        }
-    ],
-    "VAN": [
-        {
-            "player": "Pierre-Olivier Joseph",
-            "news": "Joseph will draw into the Canucks lineup on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T02:42:52.736Z"
-        },
-        {
-            "player": "Victor Mancini",
-            "news": "Mancini is a healthy scratch for Thursday's game against the Ducks. ",
-            "category": "Line Change",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T02:42:01.007Z"
-        }
-    ],
-    "PHI": [
-        {
-            "player": "Samuel Ersson",
-            "news": "Ersson suffered a lower-body injury in Thursday's game in Boston and will not return. ",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T02:30:00.161Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Mattias Ekholm",
-            "news": "Ekholm (undisclosed) took full part in warmups and is expected to play against the Sharks on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T01:36:51.017Z"
-        }
-    ],
-    "STL": [
-        {
-            "player": "Mathieu Joseph",
-            "news": "Joseph is a healthy scratch for Thursday's game against the Panthers.",
-            "category": "Line Change",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T00:44:08.225Z"
-        },
-        {
-            "player": "Oskar Sundqvist",
-            "news": "Sundqvist (ankle) took full part in warmups and is expected to play against the Panthers on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T00:39:58.073Z"
-        },
-        {
-            "player": "Jake Neighbours",
-            "news": "Neighbours (lower-body) took full part in warmups and is expected to play against the Panthers on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T00:39:45.379Z"
-        },
-        {
-            "player": "Jordan Kyrou",
-            "news": "Kyrou (upper-body) took full part in warmups and is expected to play against the Panthers on Thursday. ",
-            "category": "Injury",
-            "date": "2026-01-30",
-            "timestamp": "2026-01-30T00:39:39.310Z"
         }
     ]
 }
