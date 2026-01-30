@@ -135,7 +135,7 @@ interface Matchup {
 }
 
 type SortKey = keyof TeamStat;
-type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter';
+type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter';
 
 const CONFERENCE_MAPPING: Record<string, string> = {
     'Atlantic': 'Eastern', 'Metro': 'Eastern',
@@ -402,6 +402,7 @@ const TeamsTable = () => {
 
     const [rawData, setRawData] = useState<RawGameStat[]>([]);
     const [todayMatchups, setTodayMatchups] = useState<Matchup[]>([]);
+    const [tomorrowMatchups, setTomorrowMatchups] = useState<Matchup[]>([]);
 
     // Groups for Desktop headers and Mobile filtering
     const STAT_GROUPS = useMemo(() => [
@@ -548,6 +549,24 @@ const TeamsTable = () => {
 
                     console.log("Valid Matchups:", matchups);
                     setTodayMatchups(matchups);
+
+                    // Get tomorrow
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const tomorrowStr = formatter.format(tomorrow);
+
+                    const tomorrowMatchupsData: Matchup[] = parsedPreds
+                        .filter((row: Record<string, string>) => row.game_date === tomorrowStr)
+                        .map((row: Record<string, string>) => ({
+                            home: row.home_team?.trim(),
+                            away: row.away_team?.trim(),
+                            homeStarter: cleanName(row.home_starter),
+                            homeStarterStatus: getStarterStatus(row.home_starter),
+                            awayStarter: cleanName(row.away_starter),
+                            awayStarterStatus: getStarterStatus(row.away_starter)
+                        }))
+                        .filter(m => m.home && m.away);
+                    setTomorrowMatchups(tomorrowMatchupsData);
                 } else {
                     console.error("Could not load predictions_detailed.csv", predsRes.status, predsRes.statusText);
                 }
@@ -638,20 +657,23 @@ const TeamsTable = () => {
 
             processedTeams.push(...filteredBase);
         } else {
-            // Playing Today Views (Force specific order: Away, Home, Away, Home...)
-            todayMatchups.forEach(matchup => {
+            // Playing Today/Tomorrow Views (Force specific order: Away, Home, Away, Home...)
+            const isTomorrow = viewMode.startsWith('PlayingTomorrow');
+            const targetMatchups = isTomorrow ? tomorrowMatchups : todayMatchups;
+
+            targetMatchups.forEach(matchup => {
                 const { home, away, homeStarter, awayStarter, homeStarterStatus, awayStarterStatus } = matchup;
 
                 // Determine Location Filter based on Mode
-                // If PlayingTodayLocation OR PlayingTodayLocationStarter, FORCE Home/Away.
+                // If PlayingTodayLocation OR PlayingTodayLocationStarter (or Tomorrow equivalents), FORCE Home/Away.
                 // Otherwise (PlayingToday, PlayingTodayStarter), use the user's manual filter (filterHomeAway).
-                const isForcedLocation = viewMode === 'PlayingTodayLocation' || viewMode === 'PlayingTodayLocationStarter';
+                const isForcedLocation = viewMode.includes('Location');
 
                 const awayLoc = isForcedLocation ? 'Away' : filterHomeAway;
                 const homeLoc = isForcedLocation ? 'Home' : filterHomeAway;
 
                 // Determine Starter Filter
-                const useStarter = viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter';
+                const useStarter = viewMode.includes('Starter');
 
                 const starterHome = useStarter ? homeStarter : undefined;
                 const starterAway = useStarter ? awayStarter : undefined;
@@ -731,7 +753,7 @@ const TeamsTable = () => {
 
         setStats(processedTeams);
 
-    }, [rawData, viewMode, filterHomeAway, filterLastN, todayMatchups, selectedDivisions, teams]);
+    }, [rawData, viewMode, filterHomeAway, filterLastN, todayMatchups, tomorrowMatchups, selectedDivisions, teams]);
 
 
     const handleSort = (key: SortKey) => {
@@ -1018,8 +1040,8 @@ const TeamsTable = () => {
                 <div className="flex flex-col gap-2">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Mode</label>
                     <ButtonGroup
-                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter', 'PlayingTodayLocationStarter']}
-                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter', 'Playing Today w/ Loc & Starter']}
+                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter', 'PlayingTodayLocationStarter', 'PlayingTomorrow', 'PlayingTomorrowLocation', 'PlayingTomorrowStarter', 'PlayingTomorrowLocationStarter']}
+                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter', 'Playing Today w/ Loc & Starter', 'Playing Tomorrow', 'Playing Tomorrow w/ Location', 'Playing Tomorrow w/ Starter', 'Playing Tomorrow w/ Loc & Starter']}
                         current={viewMode}
                         onChange={(v) => setViewMode(v as ViewMode)}
                     />
@@ -1028,7 +1050,7 @@ const TeamsTable = () => {
                 {/* Bottom Row: Filters (Only manual filters) */}
                 <div className="flex flex-row gap-4 items-center">
                     {/* Location Filter: Only show if NOT in PlayingTodayLocation/Starter(Location) mode (since those enforce location) */}
-                    {viewMode !== 'PlayingTodayLocation' && viewMode !== 'PlayingTodayLocationStarter' && (
+                    {!viewMode.includes('Location') && (
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</label>
                             <ButtonGroup
@@ -1176,7 +1198,7 @@ const TeamsTable = () => {
                                                         </div>
                                                     )}
                                                     <span
-                                                        className={`truncate max-w-[120px] hidden md:block ${(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterStatus
+                                                        className={`truncate max-w-[120px] hidden md:block ${(viewMode.includes('Starter')) && team.starterStatus
                                                             ? (team.starterStatus?.toUpperCase()?.includes('UNCONFIRMED') ? 'text-gray-500 font-bold'
                                                                 : team.starterStatus?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green font-bold'
                                                                     : team.starterStatus?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400 font-bold'
@@ -1185,14 +1207,14 @@ const TeamsTable = () => {
                                                             }`}
                                                         title={meta.commonName || team.team}
                                                     >
-                                                        {(viewMode === 'PlayingTodayStarter' || viewMode === 'PlayingTodayLocationStarter') && team.starterName
+                                                        {(viewMode.includes('Starter')) && team.starterName
                                                             ? formatStarterName(team.starterName)
                                                             : (meta.commonName || team.team)}
                                                     </span>
                                                 </Link>
 
                                                 {/* Matchup visual indicator for Location Mode */}
-                                                {(viewMode === 'PlayingTodayLocation' || viewMode === 'PlayingTodayLocationStarter') && (
+                                                {(viewMode.includes('Location')) && (
                                                     <span className="text-[10px] font-bold text-gray-500 uppercase ml-2 bg-gray-800 px-1 rounded">
                                                         {idx % 2 === 0 ? 'AWAY' : 'HOME'}
                                                     </span>
