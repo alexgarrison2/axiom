@@ -210,9 +210,13 @@ def fetch_odds():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     output_path = os.path.join(script_dir, 'odds.json')
     
+    print(f"Output path: {output_path}")
+    print(f"Writing {len(odds_data)} items to {output_path}")
+    
     with open(output_path, 'w') as f:
         json.dump(odds_data, f, indent=4)
         
+    print("Write complete.")
     return odds_data
 
 if __name__ == "__main__":
