@@ -116,6 +116,9 @@ def fetch_schedule():
                                 
                             dfo_team_name = key.replace(f"_{target_date}", "")
                             if home_team_common in dfo_team_name:
+                                h_dfo_info = info
+                                print(f"Matched Home: {home_team_common} -> {dfo_team_name} (Status: {info.get('status')})")
+                                
                                 # VALIDATION: Does this goalie belong to the team?
                                 g_name = info.get('goalie')
                                 team_goalies = team_goalie_map.get(home_team_common, set())
@@ -127,16 +130,21 @@ def fetch_schedule():
                                             team_goalies = gs
                                             break
                                 
-                                if g_name and team_goalies:
-                                    norm_g = normalize_name(g_name)
-                                    norm_team_gs = {normalize_name(tg) for tg in team_goalies}
-                                    
-                                    if norm_g not in norm_team_gs:
-                                        print(f"  [VALIDATION FAILED] {g_name} reported for {home_team_common}, but has no history there. Rejecting.")
-                                        continue
+                                if g_name:
+                                    status_val = info.get('status', '').lower()
+                                    if team_goalies:
+                                        norm_g = normalize_name(g_name)
+                                        norm_team_gs = {normalize_name(tg) for tg in team_goalies}
+                                        
+                                        if norm_g not in norm_team_gs:
+                                            if status_val == "confirmed":
+                                                print(f"  [VALIDATION WARNING] {g_name} confirmed for {home_team_common}, but has no history there. Accepting due to CONFIRMED status.")
+                                            else:
+                                                print(f"  [VALIDATION FAILED] {g_name} reported for {home_team_common}, but has no history there. Rejecting unconfirmed status.")
+                                                continue
+                                    elif status_val == "confirmed":
+                                         print(f"  [VALIDATION WARNING] {g_name} confirmed for {home_team_common} (No history found). Accepting.")
 
-                                h_dfo_info = info
-                                print(f"Matched Home: {home_team_common} -> {dfo_team_name} (Status: {info.get('status')})")
                                 break
                         
                         a_dfo_info = None
@@ -146,6 +154,9 @@ def fetch_schedule():
 
                             dfo_team_name = key.replace(f"_{target_date}", "")
                             if away_team_common in dfo_team_name:
+                                a_dfo_info = info
+                                print(f"Matched Away: {away_team_common} -> {dfo_team_name} (Status: {info.get('status')})")
+
                                 # VALIDATION
                                 g_name = info.get('goalie')
                                 team_goalies = team_goalie_map.get(away_team_common, set())
@@ -155,16 +166,21 @@ def fetch_schedule():
                                             team_goalies = gs
                                             break
 
-                                if g_name and team_goalies:
-                                    norm_g = normalize_name(g_name)
-                                    norm_team_gs = {normalize_name(tg) for tg in team_goalies}
-                                    
-                                    if norm_g not in norm_team_gs:
-                                        print(f"  [VALIDATION FAILED] {g_name} reported for {away_team_common}, but has no history there. Rejecting.")
-                                        continue
+                                if g_name:
+                                    status_val = info.get('status', '').lower()
+                                    if team_goalies:
+                                        norm_g = normalize_name(g_name)
+                                        norm_team_gs = {normalize_name(tg) for tg in team_goalies}
+                                        
+                                        if norm_g not in norm_team_gs:
+                                            if status_val == "confirmed":
+                                                print(f"  [VALIDATION WARNING] {g_name} confirmed for {away_team_common}, but has no history there. Accepting due to CONFIRMED status.")
+                                            else:
+                                                print(f"  [VALIDATION FAILED] {g_name} reported for {away_team_common}, but has no history there. Rejecting unconfirmed status.")
+                                                continue
+                                    elif status_val == "confirmed":
+                                         print(f"  [VALIDATION WARNING] {g_name} confirmed for {away_team_common} (No history found). Accepting.")
 
-                                a_dfo_info = info
-                                print(f"Matched Away: {away_team_common} -> {dfo_team_name} (Status: {info.get('status')})")
                                 break
                         
                         if h_dfo_info:
