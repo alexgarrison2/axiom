@@ -1,48 +1,166 @@
 {
-    "CHI": [
+    "DAL": [
         {
-            "player": "Artyom Levshunov",
-            "news": "Levshunov is a healthy scratch for Friday's game against the Blue Jackets. ",
+            "player": "Casey DeSmith",
+            "news": "DeSmith will start in Utah on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T17:38:21.573Z"
+        }
+    ],
+    "COL": [
+        {
+            "player": "Keaton Middleton",
+            "news": "Middleton is expected to make his season debut in Detroit on Saturday. ",
             "category": "Line Change",
             "date": "2026-01-31",
-            "timestamp": "2026-01-31T01:09:02.559Z"
+            "timestamp": "2026-01-31T17:37:37.064Z"
         },
         {
-            "player": "Landon Slaggert",
-            "news": "Slaggert will draw into the Blackhawks lineup on Friday. ",
-            "category": "Line Change",
+            "player": "Mackenzie Blackwood",
+            "news": "Blackwood will start in Detroit on Saturday. ",
+            "category": "Goalie Start",
             "date": "2026-01-31",
-            "timestamp": "2026-01-31T01:07:46.445Z"
-        },
-        {
-            "player": "Sam Lafferty",
-            "news": "Lafferty will draw into the Blackhawks lineup on Friday. ",
-            "category": "Line Change",
-            "date": "2026-01-31",
-            "timestamp": "2026-01-31T01:07:17.341Z"
-        },
-        {
-            "player": "Sam Rinzel",
-            "news": "Rinzel will draw into the Blackhawks lineup on Friday. ",
-            "category": "Line Change",
-            "date": "2026-01-31",
-            "timestamp": "2026-01-31T01:06:44.220Z"
-        },
-        {
-            "player": "Colton Dach",
-            "news": "Dach is a healthy scratch for Friday's game against the Blue Jackets. ",
-            "category": "Line Change",
-            "date": "2026-01-31",
-            "timestamp": "2026-01-31T01:05:48.834Z"
+            "timestamp": "2026-01-31T17:25:51.698Z"
         }
     ],
     "DET": [
         {
-            "player": "John Gibson",
-            "news": "Gibson will start vs. Colorado on Saturday. ",
+            "player": "Erik Gustafsson",
+            "news": "Gustafsson will draw back into Detroit's lineup vs. Colorado on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T17:36:54.791Z"
+        },
+        {
+            "player": "Travis Hamonic",
+            "news": "Hamonic is expected to be a healthy scratch vs. Colorado on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T17:36:28.040Z"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "Karel Vejmelka",
+            "news": "Vejmelka is in the starter's crease at Utah's morning skate. ",
             "category": "Goalie Start",
             "date": "2026-01-31",
-            "timestamp": "2026-01-30T18:05:52.398Z"
+            "timestamp": "2026-01-31T17:34:38.418Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Matt Luff",
+            "news": "Luff has been reassigned to Springfield (AHL). ",
+            "category": "Send Down",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T17:28:34.481Z"
+        },
+        {
+            "player": "Jake Neighbours",
+            "news": "Neighbours (soreness) will be a game-time decision vs. Columbus on Saturday. ",
+            "category": "Injury",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T16:51:05.647Z"
+        },
+        {
+            "player": "Jimmy Snuggerud",
+            "news": "Snuggerud (soreness) will be a game-time decision vs. Columbus on Saturday. ",
+            "category": "Injury",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T16:50:31.774Z"
+        },
+        {
+            "player": "Pius Suter",
+            "news": "Suter (ankle) will be a game-time decision vs. Columbus on Saturday. ",
+            "category": "Injury",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T16:49:58.376Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Jack Hughes",
+            "news": "Hughes (lower-body) is out vs. Ottawa on Saturday and is considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T17:16:16.679Z"
+        },
+        {
+            "player": "Cody Glass",
+            "news": "Glass (undisclosed) will return in Ottawa on Saturday. ",
+            "category": "Injury",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T17:15:08.879Z"
+        },
+        {
+            "player": "Jake Allen",
+            "news": "Allen is in the starter's crease at New Jersey's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T16:42:38.764Z"
+        }
+    ],
+    "NYI": [
+        {
+            "player": "Casey Cizikas",
+            "news": "Cizikas (illness) will return vs. Nashville on Saturday. ",
+            "category": "Injury",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T17:11:31.737Z"
+        },
+        {
+            "player": "Ilya Sorokin",
+            "news": "Sorokin will start vs. Nashville on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T16:38:46.476Z"
+        }
+    ],
+    "MTL": [
+        {
+            "player": "Jakub Dobes",
+            "news": "Dobes will start in Buffalo on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T17:09:42.396Z"
+        }
+    ],
+    "LAK": [
+        {
+            "player": "Darcy Kuemper",
+            "news": "Kuemper will start in Philadelphia on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T17:00:32.677Z"
+        }
+    ],
+    "TBL": [
+        {
+            "player": "Victor Hedman",
+            "news": "Hedman (elbow) was a full participant in Saturday's practice and is likely to return in Sunday's Stadium Series. ",
+            "category": "Injury",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T16:54:14.409Z"
+        }
+    ],
+    "BUF": [
+        {
+            "player": "Jacob Bryson",
+            "news": "Bryson (upper-body) will remain out on Saturday and is considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T16:45:54.319Z"
+        }
+    ],
+    "NSH": [
+        {
+            "player": "Juuse Saros",
+            "news": "Saros is in the starter's crease at Nashville's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-01-31",
+            "timestamp": "2026-01-31T16:37:13.661Z"
         }
     ]
 }
