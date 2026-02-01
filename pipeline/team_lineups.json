@@ -58,7 +58,7 @@
                 "number": 27,
                 "pos": "lw",
                 "id": 2370,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -66,7 +66,7 @@
                 "number": 11,
                 "pos": "c",
                 "id": 1246,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -128,7 +128,7 @@
                 "number": 79,
                 "pos": "ld",
                 "id": 4812,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -162,38 +162,12 @@
     "LAK": {
         "f1": [
             {
-                "name": "Trevor Moore",
-                "number": 12,
-                "pos": "lw",
-                "id": 2878,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Anze Kopitar",
-                "number": 11,
-                "pos": "c",
-                "id": 758,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Joel Armia",
-                "number": 40,
-                "pos": "rw",
-                "id": 1952,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
                 "name": "Corey Perry",
                 "number": 90,
                 "pos": "lw",
                 "id": 36,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Alex Laferriere",
@@ -201,7 +175,7 @@
                 "pos": "c",
                 "id": 32954,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Adrian Kempe",
@@ -209,7 +183,33 @@
                 "pos": "rw",
                 "id": 2747,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f2": [
+            {
+                "name": "Trevor Moore",
+                "number": 12,
+                "pos": "lw",
+                "id": 2878,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Anze Kopitar",
+                "number": 11,
+                "pos": "c",
+                "id": 758,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Joel Armia",
+                "number": 40,
+                "pos": "rw",
+                "id": 1952,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "f3": [
@@ -818,12 +818,12 @@
                 "movement": null
             },
             {
-                "name": "Mark Stone",
-                "number": 61,
+                "name": "Braeden Bowman",
+                "number": 42,
                 "pos": "rw",
-                "id": 1779,
-                "ppUnit": 1,
-                "movement": null
+                "id": 30925,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -844,12 +844,12 @@
                 "movement": null
             },
             {
-                "name": "Braeden Bowman",
-                "number": 42,
+                "name": "Mark Stone",
+                "number": 61,
                 "pos": "rw",
-                "id": 30925,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1779,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f3": [
@@ -900,7 +900,7 @@
                 "number": 26,
                 "pos": "rw",
                 "id": 33025,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1602,12 +1602,12 @@
     "WSH": {
         "f1": [
             {
-                "name": "Alex Ovechkin",
-                "number": 8,
+                "name": "Aliaksei Protas",
+                "number": 21,
                 "pos": "lw",
-                "id": 1534,
-                "ppUnit": 2,
-                "movement": null
+                "id": 30448,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Dylan Strome",
@@ -1618,22 +1618,22 @@
                 "movement": null
             },
             {
-                "name": "Anthony Beauvillier",
-                "number": 72,
+                "name": "Tom Wilson",
+                "number": 43,
                 "pos": "rw",
-                "id": 2487,
-                "ppUnit": null,
-                "movement": null
+                "id": 1930,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "f2": [
             {
-                "name": "Aliaksei Protas",
-                "number": 21,
+                "name": "Alex Ovechkin",
+                "number": 8,
                 "pos": "lw",
-                "id": 30448,
-                "ppUnit": null,
-                "movement": null
+                "id": 1534,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Justin Sourdif",
@@ -1644,12 +1644,12 @@
                 "movement": null
             },
             {
-                "name": "Tom Wilson",
-                "number": 43,
+                "name": "Anthony Beauvillier",
+                "number": 72,
                 "pos": "rw",
-                "id": 1930,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2487,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "f3": [
@@ -1700,7 +1700,7 @@
                 "number": 15,
                 "pos": "rw",
                 "id": 2610,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
