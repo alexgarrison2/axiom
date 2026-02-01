@@ -966,7 +966,7 @@
                 "number": 27,
                 "pos": "lw",
                 "id": 28129,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -988,12 +988,12 @@
         ],
         "f2": [
             {
-                "name": "Oliver Okuliar",
-                "number": null,
+                "name": "Carter Verhaeghe",
+                "number": 23,
                 "pos": "lw",
-                "id": 29970,
-                "ppUnit": null,
-                "movement": null
+                "id": 2818,
+                "ppUnit": 1,
+                "movement": "new"
             },
             {
                 "name": "Sam Bennett",
@@ -1014,12 +1014,12 @@
         ],
         "f3": [
             {
-                "name": "Mackie Samoskevich",
-                "number": 11,
+                "name": "Sandis Vilmanis",
+                "number": 95,
                 "pos": "lw",
-                "id": 31226,
-                "ppUnit": 2,
-                "movement": null
+                "id": 36428,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Cole Schwindt",
@@ -1034,23 +1034,15 @@
                 "number": 10,
                 "pos": "rw",
                 "id": 2706,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
         "f4": [
             {
-                "name": "Sandis Vilmanis",
-                "number": 95,
-                "pos": "lw",
-                "id": 36428,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Jesper Boqvist",
                 "number": 70,
-                "pos": "c",
+                "pos": "lw",
                 "id": 28107,
                 "ppUnit": null,
                 "movement": null
@@ -1058,10 +1050,18 @@
             {
                 "name": "Luke Kunin",
                 "number": 11,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2650,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Mackie Samoskevich",
+                "number": 11,
+                "pos": "rw",
+                "id": 31226,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -1312,7 +1312,7 @@
                 "number": 59,
                 "pos": "lw",
                 "id": 30655,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1354,7 +1354,7 @@
                 "number": 39,
                 "pos": "rw",
                 "id": 2151,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -3062,7 +3062,7 @@
                 "number": 9,
                 "pos": "rw",
                 "id": 2888,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -3072,7 +3072,7 @@
                 "number": 91,
                 "pos": "lw",
                 "id": 29837,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -3106,7 +3106,7 @@
                 "number": 19,
                 "pos": "c",
                 "id": 328,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3140,7 +3140,7 @@
                 "number": 14,
                 "pos": "rw",
                 "id": 1611,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -3206,7 +3206,7 @@
                 "number": 62,
                 "pos": "lw",
                 "id": 2679,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -3248,7 +3248,7 @@
                 "number": 95,
                 "pos": "rw",
                 "id": 4718,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
