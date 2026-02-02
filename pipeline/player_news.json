@@ -1,11 +1,141 @@
 {
+    "MIN": [
+        {
+            "player": "Matt Kiersted",
+            "news": "Kiersted has been reassigned to Iowa (AHL). ",
+            "category": "Send Down",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T18:06:44.397Z"
+        },
+        {
+            "player": "Cal Petersen",
+            "news": "Petersen has been recalled from Iowa (AHL) and will back up vs. Pittsburgh on Monday. ",
+            "category": "Call Up",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T16:56:56.993Z"
+        }
+    ],
+    "PHI": [
+        {
+            "player": "Samuel Ersson",
+            "news": "Ersson (lower-body) missed practice on Monday and is considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T18:05:00.774Z"
+        }
+    ],
+    "COL": [
+        {
+            "player": "Mackenzie Blackwood",
+            "news": "Blackwood will start vs. Detroit on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:54:58.089Z"
+        },
+        {
+            "player": "Mackenzie Blackwood",
+            "news": "Blackwood is expected to start vs. Detroit on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:32:42.325Z"
+        }
+    ],
+    "MTL": [
+        {
+            "player": "Jakub Dobes",
+            "news": "Dobes will start in Minnesota on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:51:20.953Z"
+        }
+    ],
+    "SJS": [
+        {
+            "player": "Zack Ostapchuk",
+            "news": "Ostapchuk is expected to be a healthy scratch vs. Chicago on Monday. ",
+            "category": "Line Change",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:45:35.411Z"
+        },
+        {
+            "player": "Timothy Liljegren",
+            "news": "Liljegren will draw back into San Jose's lineup vs. Chicago on Monday. ",
+            "category": "Line Change",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:45:06.484Z"
+        },
+        {
+            "player": "John Klingberg",
+            "news": "Klingberg is expected to be a healthy scratch vs. Chicago on Monday. ",
+            "category": "Line Change",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:44:36.907Z"
+        },
+        {
+            "player": "Pavol Regenda",
+            "news": "Regenda will draw back into San Jose's lineup in Chicago on Monday. ",
+            "category": "Line Change",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:44:02.394Z"
+        }
+    ],
+    "CBJ": [
+        {
+            "player": "Dante Fabbro",
+            "news": "Fabbro (lower-body) will travel with Columbus on their upcoming road trip. ",
+            "category": "Injury",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:40:20.625Z"
+        },
+        {
+            "player": "Kirill Marchenko",
+            "news": "Marchenko (illness) did not practice on Monday and may not travel with Columbus on their upcoming road trip. ",
+            "category": "Injury",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:39:45.148Z"
+        }
+    ],
     "CGY": [
+        {
+            "player": "Zayne Parekh",
+            "news": " Parekh is expected to draw back into Calgary's lineup vs. Toronto on Monday. ",
+            "category": "Line Change",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:39:11.590Z"
+        },
         {
             "player": "Dustin Wolf",
             "news": "Wolf will start vs. Toronto on Monday. ",
             "category": "Goalie Start",
             "date": "2026-02-02",
             "timestamp": "2026-02-02T17:27:42.011Z"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "Karel Vejmelka",
+            "news": "Vejmelka is in the starter's crease at Utah's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:36:19.470Z"
+        }
+    ],
+    "WPG": [
+        {
+            "player": "Connor Hellebuyck",
+            "news": "Hellebuyck is in the starter's crease at Winnipeg's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:34:49.953Z"
+        }
+    ],
+    "NYI": [
+        {
+            "player": "Jonathan Drouin",
+            "news": "Drouin (illness) will return in Washington on Monday. ",
+            "category": "Injury",
+            "date": "2026-02-02",
+            "timestamp": "2026-02-02T17:31:30.126Z"
         }
     ],
     "DAL": [
@@ -15,13 +145,6 @@
             "category": "Goalie Start",
             "date": "2026-02-02",
             "timestamp": "2026-02-02T17:13:32.933Z"
-        },
-        {
-            "player": "Jake Oettinger",
-            "news": "Oettinger is in the starter's crease at Dallas' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:40:54.206Z"
         }
     ],
     "BUF": [
@@ -38,116 +161,6 @@
             "category": "Line Change",
             "date": "2026-02-02",
             "timestamp": "2026-02-02T17:11:49.157Z"
-        },
-        {
-            "player": "Alex Lyon",
-            "news": "Lyon is in the starter's crease at Buffalo's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:23:55.968Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Cal Petersen",
-            "news": "Petersen has been recalled from Iowa (AHL) and will back up vs. Pittsburgh on Monday. ",
-            "category": "Call Up",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:56:56.993Z"
-        },
-        {
-            "player": "Tyler Pitlick",
-            "news": "Pitlick will be a healthy scratch vs. Montreal on Monday. ",
-            "category": "Line Change",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:56:35.434Z"
-        },
-        {
-            "player": "Jesper Wallstedt",
-            "news": "Wallstedt (illness) is expected to be out vs. Montreal on Monday. ",
-            "category": "Injury",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:45:58.309Z"
-        },
-        {
-            "player": "Zach Bogosian",
-            "news": "Bogosian (lower-body) is a possibility to return vs. Montreal on Monday. ",
-            "category": "Injury",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:20:12.125Z"
-        },
-        {
-            "player": "Nico Sturm",
-            "news": "Sturm (illness) will return vs. Montreal on Monday. ",
-            "category": "Injury",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:19:42.119Z"
-        }
-    ],
-    "NYI": [
-        {
-            "player": "David Rittich",
-            "news": "Rittich will start in Washington on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:47:30.455Z"
-        }
-    ],
-    "WSH": [
-        {
-            "player": "Charlie Lindgren",
-            "news": "Lindgren (lower-body) will be out through the Olympic Break. ",
-            "category": "Injury",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:38:37.995Z"
-        },
-        {
-            "player": "Logan Thompson",
-            "news": "Thompson (upper-body) will remain out on Monday and is targeting to return on Thursday vs. Nashville. ",
-            "category": "Injury",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:37:26.597Z"
-        },
-        {
-            "player": "Clay Stevenson",
-            "news": "Stevenson will start vs. the Islanders on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:34:52.940Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Arturs Silovs",
-            "news": "Silovs will start vs. Ottawa on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:29:14.382Z"
-        }
-    ],
-    "OTT": [
-        {
-            "player": "Thomas Chabot",
-            "news": "Chabot (undisclosed) will be a game-time decision in Pittsburgh on Monday. ",
-            "category": "Injury",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:27:00.725Z"
-        },
-        {
-            "player": "Linus Ullmark",
-            "news": "Ullmark will start in Pittsburgh on Monday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:26:35.925Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Spencer Knight",
-            "news": "Knight is in the starter's crease at Chicago's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-02-02",
-            "timestamp": "2026-02-02T16:25:13.906Z"
         }
     ]
 }
