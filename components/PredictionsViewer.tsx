@@ -62,7 +62,52 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     const [simResults, setSimResults] = useState<Record<string, SimResult>>({});
     const workerRef = useRef<Worker | null>(null);
 
-    // Run Simulation on Mount
+    // Load Season Projections from Backend (JSON)
+    useEffect(() => {
+        const fetchProjections = async () => {
+            try {
+                const res = await fetch(`/data/season_projections.json?t=${new Date().getTime()}`);
+                if (!res.ok) throw new Error("No projection file");
+
+                const data = await res.json();
+                const processedResults: Record<string, SimResult> = {};
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data.forEach((row: any) => {
+                    // Reverse-engineer SimResult from percentages
+                    // We treat percentages as "counts out of 100" for simplicity
+                    // or "counts out of 1000" for decimals. 
+                    // Let's use 10,000 to keep precision (e.g. 0.1%)
+                    const totalSims = 10000;
+
+                    processedResults[row.team] = {
+                        madePlayoffs: Math.round((row.make_playoffs_pct / 100) * totalSims),
+                        wonDivision: Math.round((row.won_division_pct / 100) * totalSims),
+                        wonCup: Math.round((row.won_cup_pct / 100) * totalSims),
+                        totalSims: totalSims,
+                        totalPoints: row.avg_points * totalSims,
+
+                        // Mock Distributions (Since backend doesn't provide them yet)
+                        // This allows the table to work, but modals might be empty/generic
+                        pointDist: new Map(),
+                        divRankDist: new Map(),
+                        roundExitDist: { 'MISS': 0, 'R1': 0, 'R2': 0, 'CF': 0, 'F': 0, 'CUP': 0 },
+                        r1Matchups: {}
+                    };
+                });
+
+                setSimResults(processedResults);
+            } catch (err) {
+                console.warn("Could not load Season Projections, falling back to Worker?", err);
+                // Fallback logic could go here, or we simple leave it empty/loading
+            }
+        };
+
+        fetchProjections();
+    }, []);
+
+    // Worker Disabled in favor of Backend Projections
+    /*
     useEffect(() => {
         if (!fullSchedule || fullSchedule.length === 0 || !currentStandings || currentStandings.length === 0) return;
 
@@ -77,15 +122,6 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
         worker.onmessage = (e) => {
             if (e.data.type === 'SIMULATION_COMPLETE') {
                 const results: Record<string, SimResult> = e.data.results;
-                // Here we would use the results to display Playoff Odds globally if we had a dashboard.
-                // For GAME LEVERAGE, we actually need to ask the worker to calculate specfic game impact.
-                // For MVP, simplistic leverage calculation:
-                // We'll calculate "Bubble Importance" directly here based on results?
-                // No, true leverage requires re-running sims.
-                // 10,000 sims takes 1s. Re-running for every game (10 games) = 10s. Too slow?
-                // Alternative: Use the "Bubble Proximity" proxy.
-                // If a team is 40-80% to make playoffs, their games are high leverage.
-
                 setSimResults(results); // Store full results for table
             }
         };
@@ -102,7 +138,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
             worker.terminate();
             workerRef.current = null;
         };
-    }, [fullSchedule, currentStandings, predictions]);
+    }, [fullSchedule, currentStandings, predictions]); */
 
     // Sync Predictions with live News
     React.useEffect(() => {
