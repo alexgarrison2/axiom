@@ -78,7 +78,18 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                     // We treat percentages as "counts out of 100" for simplicity
                     // or "counts out of 1000" for decimals. 
                     // Let's use 10,000 to keep precision (e.g. 0.1%)
-                    const totalSims = 10000;
+                    const totalSims = 2000; // Matches Python script count
+
+                    // Parse Maps from JSON objects
+                    const pointDist = new Map<number, number>();
+                    if (row.point_dist) {
+                        Object.entries(row.point_dist).forEach(([pt, count]) => pointDist.set(Number(pt), Number(count)));
+                    }
+
+                    const divRankDist = new Map<number, number>();
+                    if (row.div_rank_dist) {
+                        Object.entries(row.div_rank_dist).forEach(([rank, count]) => divRankDist.set(Number(rank), Number(count)));
+                    }
 
                     processedResults[row.team] = {
                         madePlayoffs: Math.round((row.make_playoffs_pct / 100) * totalSims),
@@ -87,12 +98,10 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         totalSims: totalSims,
                         totalPoints: row.avg_points * totalSims,
 
-                        // Mock Distributions (Since backend doesn't provide them yet)
-                        // This allows the table to work, but modals might be empty/generic
-                        pointDist: new Map(),
-                        divRankDist: new Map(),
-                        roundExitDist: { 'MISS': 0, 'R1': 0, 'R2': 0, 'CF': 0, 'F': 0, 'CUP': 0 },
-                        r1Matchups: {}
+                        pointDist: pointDist,
+                        divRankDist: divRankDist,
+                        roundExitDist: row.round_exit_dist || { 'MISS': 0, 'R1': 0, 'R2': 0, 'CF': 0, 'F': 0, 'CUP': 0 },
+                        r1Matchups: row.r1_matchups || {}
                     };
                 });
 

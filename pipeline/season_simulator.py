@@ -397,6 +397,15 @@ def full_simulation_loop():
         for abbr in current_standings.keys()
     }
     
+    # Initialize rich data tracking
+    for abbr in results:
+        results[abbr].update({
+            'point_dist': {}, # { points: count }
+            'div_rank_dist': {}, # { rank: count }
+            'round_exit_dist': {'MISS': 0, 'R1': 0, 'R2': 0, 'CF': 0, 'F': 0, 'CUP': 0},
+            'r1_matchups': {} # { opponent: count }
+        })
+    
     for i in range(SIMULATIONS):
         if i % 100 == 0:
             print(f"  Sim {i}/{SIMULATIONS}...")
@@ -415,6 +424,21 @@ def full_simulation_loop():
         for d in divs:
             if divs[d]:
                 results[divs[d][0][0]]['won_division'] += 1
+                
+            # Track Division Rank
+            for rank_idx, team_tuple in enumerate(divs[d]):
+                rank = rank_idx + 1
+                t_abbr = team_tuple[0]
+                if rank not in results[t_abbr]['div_rank_dist']:
+                    results[t_abbr]['div_rank_dist'][rank] = 0
+                results[t_abbr]['div_rank_dist'][rank] += 1
+                
+        # Update Points Histogram
+        for abbr, stats in final_standings.items():
+            pts = stats['pts']
+            if pts not in results[abbr]['point_dist']:
+                results[abbr]['point_dist'][pts] = 0
+            results[abbr]['point_dist'][pts] += 1
                 
         # Playoffs
         # Re-implement bracket logic inline here for clarity
@@ -469,7 +493,29 @@ def full_simulation_loop():
         for t in all_playoff_teams:
             results[t]['made_playoffs'] += 1
             
-        # Sim Series - ROUND 1
+        # Track Missed Playoffs
+        for abbr in results:
+            if abbr not in all_playoff_teams:
+                results[abbr]['round_exit_dist']['MISS'] += 1
+            
+        # Helper to record R1 Matchup
+        def record_r1(t1, t2):
+            if t2[0] not in results[t1[0]]['r1_matchups']: results[t1[0]]['r1_matchups'][t2[0]] = 0
+            if t1[0] not in results[t2[0]]['r1_matchups']: results[t2[0]]['r1_matchups'][t1[0]] = 0
+            results[t1[0]]['r1_matchups'][t2[0]] += 1
+            results[t2[0]]['r1_matchups'][t1[0]] += 1
+            
+        # Record R1 Matchups
+        # A Semis 1
+        record_r1(match_a_semis_1[0], match_a_semis_1[1])
+        record_r1(match_a_semis_2[0], match_a_semis_2[1])
+        record_r1(match_m_semis_1[0], match_m_semis_1[1])
+        record_r1(match_m_semis_2[0], match_m_semis_2[1])
+        
+        record_r1(match_m_semis_1[0], match_m_semis_1[1])
+        record_r1(match_m_semis_2[0], match_m_semis_2[1])
+        
+        # Sim Series - ROUND 1 (EAST)
         winner_a_1 = simulate_series(match_a_semis_1[0], match_a_semis_1[1], team_ratings, team_map)
         winner_a_2 = simulate_series(match_a_semis_2[0], match_a_semis_2[1], team_ratings, team_map)
         
@@ -498,6 +544,12 @@ def full_simulation_loop():
         match_c_semis_2 = (cen_top3[1], cen_top3[2])
         match_p_semis_2 = (pac_top3[1], pac_top3[2])
         
+        # Record West R1
+        record_r1(match_c_semis_1[0], match_c_semis_1[1])
+        record_r1(match_c_semis_2[0], match_c_semis_2[1])
+        record_r1(match_p_semis_1[0], match_p_semis_1[1])
+        record_r1(match_p_semis_2[0], match_p_semis_2[1])
+        
         winner_c_1 = simulate_series(match_c_semis_1[0], match_c_semis_1[1], team_ratings, team_map)
         winner_c_2 = simulate_series(match_c_semis_2[0], match_c_semis_2[1], team_ratings, team_map)
         winner_p_1 = simulate_series(match_p_semis_1[0], match_p_semis_1[1], team_ratings, team_map)
@@ -518,6 +570,44 @@ def full_simulation_loop():
         cup_winner = simulate_series(get_team_tuple(east_champ), get_team_tuple(west_champ), team_ratings, team_map)
         
         results[cup_winner]['won_cup'] += 1
+        results[cup_winner]['round_exit_dist']['CUP'] += 1
+        
+        # Track Exits (Loser of each series gets exit logged)
+        # We need to know WHO lost key series to log them as R1, R2, CF, F exit.
+        
+        # Generic helper: Given winner, find loser from pair
+        def get_loser(pair, winner_abbr):
+            return pair[0][0] if pair[1][0] == winner_abbr else pair[1][0]
+            
+        # R1 Losers
+        results[get_loser(match_a_semis_1, winner_a_1)]['round_exit_dist']['R1'] += 1
+        results[get_loser(match_a_semis_2, winner_a_2)]['round_exit_dist']['R1'] += 1
+        results[get_loser(match_m_semis_1, winner_m_1)]['round_exit_dist']['R1'] += 1
+        results[get_loser(match_m_semis_2, winner_m_2)]['round_exit_dist']['R1'] += 1
+        
+        results[get_loser(match_c_semis_1, winner_c_1)]['round_exit_dist']['R1'] += 1
+        results[get_loser(match_c_semis_2, winner_c_2)]['round_exit_dist']['R1'] += 1
+        results[get_loser(match_p_semis_1, winner_p_1)]['round_exit_dist']['R1'] += 1
+        results[get_loser(match_p_semis_2, winner_p_2)]['round_exit_dist']['R1'] += 1
+        
+        # R2 Losers
+        # Need to reconstruct pairs from winners
+        # Atl Div Final: (winner_a_1) vs (winner_a_2) -> winner_atl_div
+        # Loser of this tuple is...
+        def get_loser_simple(t1, t2, winner):
+            return t2 if t1 == winner else t1
+            
+        results[get_loser_simple(winner_a_1, winner_a_2, winner_atl_div)]['round_exit_dist']['R2'] += 1
+        results[get_loser_simple(winner_m_1, winner_m_2, winner_met_div)]['round_exit_dist']['R2'] += 1
+        results[get_loser_simple(winner_c_1, winner_c_2, winner_cen_div)]['round_exit_dist']['R2'] += 1
+        results[get_loser_simple(winner_p_1, winner_p_2, winner_pac_div)]['round_exit_dist']['R2'] += 1
+        
+        # CF Losers
+        results[get_loser_simple(winner_atl_div, winner_met_div, east_champ)]['round_exit_dist']['CF'] += 1
+        results[get_loser_simple(winner_cen_div, winner_pac_div, west_champ)]['round_exit_dist']['CF'] += 1
+        
+        # Final Loser
+        results[get_loser_simple(east_champ, west_champ, cup_winner)]['round_exit_dist']['F'] += 1
         
     # PROCESS RESULTS
     final_output = []
@@ -529,7 +619,13 @@ def full_simulation_loop():
             'won_division_pct': round(data['won_division'] / SIMULATIONS * 100, 1),
             'won_conference_pct': round(data['won_conference'] / SIMULATIONS * 100, 1),
             'won_cup_pct': round(data['won_cup'] / SIMULATIONS * 100, 1),
-            'avg_points': round(avg_pts, 1)
+            'avg_points': round(avg_pts, 1),
+            
+            # Rich Data
+            'point_dist': data['point_dist'],
+            'div_rank_dist': data['div_rank_dist'],
+            'round_exit_dist': data['round_exit_dist'],
+            'r1_matchups': data['r1_matchups']
         })
         
     # Save
