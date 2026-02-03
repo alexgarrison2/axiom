@@ -1504,9 +1504,13 @@ def main():
     # Load xG Model
     xg_model = None
     try:
-        with open('xg_model_xgb.pkl', 'rb') as f:
+        model_path = 'xg_model_xgb.pkl'
+        if not os.path.exists(model_path) and os.path.exists(f'pipeline/{model_path}'):
+            model_path = f'pipeline/{model_path}'
+
+        with open(model_path, 'rb') as f:
             xg_model = pickle.load(f)
-        print("Loaded xG Model: xg_model_xgb.pkl")
+        print(f"Loaded xG Model: {model_path}")
     except FileNotFoundError:
         print("Warning: xG model not found. xG stats will be 0.")
 
