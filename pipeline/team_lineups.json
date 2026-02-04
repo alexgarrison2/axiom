@@ -568,20 +568,20 @@
                 "movement": null
             },
             {
-                "name": "Ryan Greene",
-                "number": 20,
-                "pos": "c",
-                "id": 31310,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Nick Foligno",
                 "number": 17,
-                "pos": "rw",
+                "pos": "c",
                 "id": 1081,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Landon Slaggert",
+                "number": 84,
+                "pos": "rw",
+                "id": 38089,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -658,12 +658,12 @@
                 "movement": null
             },
             {
-                "name": "Gustav Nyquist",
-                "number": 14,
+                "name": "Alex Iafallo",
+                "number": 9,
                 "pos": "rw",
-                "id": 1611,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2888,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -736,12 +736,12 @@
                 "movement": null
             },
             {
-                "name": "Alex Iafallo",
-                "number": 9,
+                "name": "Gustav Nyquist",
+                "number": 14,
                 "pos": "rw",
-                "id": 2888,
-                "ppUnit": null,
-                "movement": null
+                "id": 1611,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -3894,12 +3894,12 @@
         ],
         "f3": [
             {
-                "name": "Brennan Othmann",
-                "number": 78,
+                "name": "Jonny Brodzinski",
+                "number": 22,
                 "pos": "lw",
-                "id": 30831,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2757,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Noah Laba",
@@ -3920,12 +3920,12 @@
         ],
         "f4": [
             {
-                "name": "Jonny Brodzinski",
-                "number": 22,
+                "name": "Brennan Othmann",
+                "number": 78,
                 "pos": "lw",
-                "id": 2757,
-                "ppUnit": null,
-                "movement": null
+                "id": 30831,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Sam Carrick",
