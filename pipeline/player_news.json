@@ -1,5 +1,115 @@
 {
+    "VAN": [
+        {
+            "player": "Kevin Lankinen",
+            "news": "Lankinen will start in Vegas on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T20:13:56.681Z"
+        }
+    ],
+    "NYR": [
+        {
+            "player": "Liam Greentree",
+            "news": "New York has acquired Liam Greentree, and a conditional 3rd round pick from Los Angeles for Artemi Panarin. ",
+            "category": "Trade",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T20:07:33.008Z"
+        }
+    ],
+    "LAK": [
+        {
+            "player": "Artemi Panarin",
+            "news": "Los Angeles has acquired Artemi Panarin from New York for Liam Greentree and a conditional 3rd round pick. ",
+            "category": "Trade",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T20:06:47.940Z"
+        },
+        {
+            "player": "Jacob Moverare",
+            "news": "Moverare is expected to draw back into Los Angeles' lineup vs. Seattle on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T19:51:19.675Z"
+        },
+        {
+            "player": "Mikey Anderson",
+            "news": "Anderson (upper-body) is expected to be out vs. Seattle and is considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T19:50:51.386Z"
+        }
+    ],
+    "CBJ": [
+        {
+            "player": "Danton Heinen",
+            "news": "Heinen is expected to be a healthy scratch in Chicago on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T19:57:25.918Z"
+        },
+        {
+            "player": "Kirill Marchenko",
+            "news": "Marchenko (illness) is expected to return in Chicago on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T19:56:36.777Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Juho Lammikko",
+            "news": "Lammikko has been assigned to Utica (AHL). ",
+            "category": "Send Down",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T19:52:50.294Z"
+        },
+        {
+            "player": "Nick Bjugstad",
+            "news": "New Jersey has acquired Nick Bjugstad from St. Louis for Thomas Bordeleau and a 2026 4th round pick. ",
+            "category": "Trade",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T19:48:36.684Z"
+        },
+        {
+            "player": "Jack Hughes",
+            "news": "Hughes (lower-body) is expected to remain out vs. the Islanders on Thursday. ",
+            "category": "Injury",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T18:29:21.991Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Thomas Bordeleau",
+            "news": "New Jersey has acquired Thomas Bordeleau and a 2026 4th round pick from St. Louis for Nick Bjugstad. ",
+            "category": "Trade",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T19:49:14.055Z"
+        },
+        {
+            "player": "Nathan Walker",
+            "news": "Walker will draw back into St. Louis' linuep vs. Dallas on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T19:01:55.165Z"
+        },
+        {
+            "player": "Jordan Binnington",
+            "news": "Binnington will start in Dallas on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T18:59:56.307Z"
+        }
+    ],
     "VGK": [
+        {
+            "player": "Brayden McNabb",
+            "news": "McNabb (upper-body) is probable to return to the team after the Olympic break. ",
+            "category": "Injury",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T19:43:15.401Z"
+        },
         {
             "player": "Akira Schmid",
             "news": "Schmid will start vs. Vancouver on Wednesday. ",
@@ -33,29 +143,6 @@
             "category": "Send Down",
             "date": "2026-02-04",
             "timestamp": "2026-02-04T19:02:20.300Z"
-        },
-        {
-            "player": "Karel Vejmelka",
-            "news": "Vejmelka is the first goalie off the ice at Utah's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T17:53:41.129Z"
-        }
-    ],
-    "STL": [
-        {
-            "player": "Nathan Walker",
-            "news": "Walker will draw back into St. Louis' linuep vs. Dallas on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T19:01:55.165Z"
-        },
-        {
-            "player": "Jordan Binnington",
-            "news": "Binnington will start in Dallas on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:59:56.307Z"
         }
     ],
     "CGY": [
@@ -65,97 +152,6 @@
             "category": "Goalie Start",
             "date": "2026-02-04",
             "timestamp": "2026-02-04T18:58:23.448Z"
-        }
-    ],
-    "NJD": [
-        {
-            "player": "Jack Hughes",
-            "news": "Hughes (lower-body) is expected to remain out vs. the Islanders on Thursday. ",
-            "category": "Injury",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:29:21.991Z"
-        }
-    ],
-    "SJS": [
-        {
-            "player": "Sam Dickinson",
-            "news": "Dickinson is expected to be a healthy scratch in Colorado on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:28:48.677Z"
-        },
-        {
-            "player": "John Klingberg",
-            "news": "Klingberg will draw back into San Jose's lineup in Colorado on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:28:23.754Z"
-        },
-        {
-            "player": "Yaroslav Askarov",
-            "news": "Askarov will start in Colorado on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:11:10.036Z"
-        },
-        {
-            "player": "Kiefer Sherwood",
-            "news": "Sherwood (undisclosed) will make his San Jose debut in Colorado on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:07:55.083Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Spencer Knight",
-            "news": "Knight will start in Columbus on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:26:03.352Z"
-        }
-    ],
-    "ANA": [
-        {
-            "player": "Tim Washe",
-            "news": "Washe has been reassigned to San Diego (AHL). ",
-            "category": "Send Down",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:22:56.250Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Mackenzie Blackwood",
-            "news": "Blackwood will start vs. San Jose on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:17:43.618Z"
-        },
-        {
-            "player": "Mackenzie Blackwood",
-            "news": "Blackwood is expected to start vs. San Jose on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T17:29:51.071Z"
-        }
-    ],
-    "WSH": [
-        {
-            "player": "Bogdan Trineyev",
-            "news": "Trineyev has been loaned to the Hershey Bears (AHL). ",
-            "category": "Send Down",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:01:51.148Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Filip Gustavsson",
-            "news": "Gustavsson will start in Nashville on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T17:38:48.489Z"
         }
     ]
 }
