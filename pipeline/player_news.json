@@ -1,26 +1,15 @@
 {
-    "VAN": [
-        {
-            "player": "Kevin Lankinen",
-            "news": "Lankinen will start in Vegas on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T20:13:56.681Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Liam Greentree",
-            "news": "New York has acquired Liam Greentree, and a conditional 3rd round pick from Los Angeles for Artemi Panarin. ",
-            "category": "Trade",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T20:07:33.008Z"
-        }
-    ],
     "LAK": [
         {
             "player": "Artemi Panarin",
-            "news": "Los Angeles has acquired Artemi Panarin from New York for Liam Greentree and a conditional 3rd round pick. ",
+            "news": "Los Angeles has signed Artemi Panarin to a two-year contract extension worth $11 million AAV ($22M total). ",
+            "category": "Signing",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T20:31:19.364Z"
+        },
+        {
+            "player": "Artemi Panarin",
+            "news": "Los Angeles has acquired Artemi Panarin (50% salary retained) from New York for Liam Greentree and a conditional 3rd round pick. ",
             "category": "Trade",
             "date": "2026-02-04",
             "timestamp": "2026-02-04T20:06:47.940Z"
@@ -38,6 +27,42 @@
             "category": "Injury",
             "date": "2026-02-04",
             "timestamp": "2026-02-04T19:50:51.386Z"
+        }
+    ],
+    "PIT": [
+        {
+            "player": "Caleb Jones",
+            "news": "Jones has been suspended for 20 games for violating the Performance Enhancing Substances Program.",
+            "category": "Suspension",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T20:25:35.252Z"
+        }
+    ],
+    "EDM": [
+        {
+            "player": "Tristan Jarry",
+            "news": "Jarry will start in Calgary on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T20:21:02.254Z"
+        }
+    ],
+    "VAN": [
+        {
+            "player": "Kevin Lankinen",
+            "news": "Lankinen will start in Vegas on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T20:13:56.681Z"
+        }
+    ],
+    "NYR": [
+        {
+            "player": "Liam Greentree",
+            "news": "New York has acquired Liam Greentree, and a conditional 3rd round pick from Los Angeles for Artemi Panarin (50% of salary retained).  ",
+            "category": "Trade",
+            "date": "2026-02-04",
+            "timestamp": "2026-02-04T20:07:33.008Z"
         }
     ],
     "CBJ": [
@@ -70,13 +95,6 @@
             "category": "Trade",
             "date": "2026-02-04",
             "timestamp": "2026-02-04T19:48:36.684Z"
-        },
-        {
-            "player": "Jack Hughes",
-            "news": "Hughes (lower-body) is expected to remain out vs. the Islanders on Thursday. ",
-            "category": "Injury",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:29:21.991Z"
         }
     ],
     "STL": [
@@ -93,13 +111,6 @@
             "category": "Line Change",
             "date": "2026-02-04",
             "timestamp": "2026-02-04T19:01:55.165Z"
-        },
-        {
-            "player": "Jordan Binnington",
-            "news": "Binnington will start in Dallas on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:59:56.307Z"
         }
     ],
     "VGK": [
@@ -143,15 +154,6 @@
             "category": "Send Down",
             "date": "2026-02-04",
             "timestamp": "2026-02-04T19:02:20.300Z"
-        }
-    ],
-    "CGY": [
-        {
-            "player": "Devin Cooley",
-            "news": "Cooley will start vs. Edmonton on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-04",
-            "timestamp": "2026-02-04T18:58:23.448Z"
         }
     ]
 }
