@@ -405,7 +405,7 @@
                 "pos": "lw",
                 "id": 580,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Nick Bjugstad",
@@ -725,7 +725,7 @@
                 "pos": "lw",
                 "id": 2604,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Sam Carrick",
@@ -795,7 +795,7 @@
                 "pos": "rd",
                 "id": 30297,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
@@ -1541,7 +1541,7 @@
                 "pos": "rw",
                 "id": 32605,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -1822,20 +1822,20 @@
                 "movement": null
             },
             {
-                "name": "Evan Rodrigues",
-                "number": 17,
+                "name": "Jesper Boqvist",
+                "number": 70,
                 "pos": "c",
-                "id": 2620,
+                "id": 28107,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Brad Marchand",
-                "number": 63,
+                "name": "Luke Kunin",
+                "number": 11,
                 "pos": "rw",
-                "id": 124,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2650,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "f4": [
@@ -1874,12 +1874,12 @@
                 "movement": null
             },
             {
-                "name": "Aaron Ekblad",
-                "number": 5,
+                "name": "Uvis Balinskis",
+                "number": 26,
                 "pos": "rd",
-                "id": 2363,
-                "ppUnit": null,
-                "movement": null
+                "id": 37929,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "d2": [
@@ -1892,12 +1892,12 @@
                 "movement": null
             },
             {
-                "name": "Uvis Balinskis",
-                "number": 26,
+                "name": "Donovan Sebrango",
+                "number": 6,
                 "pos": "rd",
-                "id": 37929,
-                "ppUnit": 1,
-                "movement": null
+                "id": 29785,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d3": [
@@ -1916,6 +1916,16 @@
                 "id": 556,
                 "ppUnit": null,
                 "movement": null
+            }
+        ],
+        "d4": [
+            {
+                "name": "Donovan Sebrango",
+                "number": 6,
+                "pos": "ld",
+                "id": 29785,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
