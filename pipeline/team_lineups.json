@@ -162,12 +162,12 @@
     "PIT": {
         "f1": [
             {
-                "name": "Anthony Mantha",
-                "number": 39,
+                "name": "Rutger McGroarty",
+                "number": 2,
                 "pos": "lw",
-                "id": 2151,
-                "ppUnit": 1,
-                "movement": null
+                "id": 33262,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Sidney Crosby",
@@ -214,12 +214,12 @@
         ],
         "f3": [
             {
-                "name": "Rutger McGroarty",
-                "number": 2,
+                "name": "Anthony Mantha",
+                "number": 39,
                 "pos": "lw",
-                "id": 33262,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2151,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Ben Kindel",
@@ -1907,7 +1907,7 @@
                 "pos": "ld",
                 "id": 38112,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Jeff Petry",
