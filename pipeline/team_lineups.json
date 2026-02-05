@@ -1564,12 +1564,12 @@
         ],
         "d2": [
             {
-                "name": "Adam Wilsby",
-                "number": 83,
+                "name": "Nicolas Hague",
+                "number": 41,
                 "pos": "ld",
-                "id": 36308,
+                "id": 2799,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Nick Perbix",
@@ -1582,12 +1582,12 @@
         ],
         "d3": [
             {
-                "name": "Nicolas Hague",
-                "number": 41,
+                "name": "Adam Wilsby",
+                "number": 83,
                 "pos": "ld",
-                "id": 2799,
+                "id": 36308,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Nick Blankenburg",
@@ -1762,19 +1762,19 @@
     "FLA": {
         "f1": [
             {
-                "name": "Carter Verhaeghe",
-                "number": 23,
+                "name": "Eetu Luostarinen",
+                "number": 27,
                 "pos": "lw",
-                "id": 2818,
+                "id": 28129,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Anton Lundell",
                 "number": 15,
                 "pos": "c",
                 "id": 33026,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1788,12 +1788,12 @@
         ],
         "f2": [
             {
-                "name": "Eetu Luostarinen",
-                "number": 27,
+                "name": "A.J. Greer",
+                "number": 10,
                 "pos": "lw",
-                "id": 28129,
+                "id": 2706,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sam Bennett",
@@ -1814,12 +1814,12 @@
         ],
         "f3": [
             {
-                "name": "A.J. Greer",
-                "number": 10,
+                "name": "Carter Verhaeghe",
+                "number": 23,
                 "pos": "lw",
-                "id": 2706,
-                "ppUnit": null,
-                "movement": null
+                "id": 2818,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Evan Rodrigues",
@@ -1834,7 +1834,7 @@
                 "number": 63,
                 "pos": "rw",
                 "id": 124,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1860,7 +1860,7 @@
                 "number": 11,
                 "pos": "rw",
                 "id": 31226,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -1870,7 +1870,7 @@
                 "number": 42,
                 "pos": "ld",
                 "id": 2431,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1878,7 +1878,7 @@
                 "number": 5,
                 "pos": "rd",
                 "id": 2363,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
