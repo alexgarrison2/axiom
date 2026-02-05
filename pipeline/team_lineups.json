@@ -408,12 +408,12 @@
                 "movement": null
             },
             {
-                "name": "Luke Glendening",
-                "number": 14,
+                "name": "Nick Bjugstad",
+                "number": 77,
                 "pos": "c",
-                "id": 2174,
+                "id": 2107,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Maxim Tsyplakov",
@@ -516,19 +516,19 @@
                 "movement": null
             },
             {
-                "name": "Jonathan Drouin",
-                "number": 29,
+                "name": "Calum Ritchie",
+                "number": 64,
                 "pos": "c",
-                "id": 2136,
+                "id": 35084,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Simon Holmstrom",
-                "number": 10,
+                "name": "Jonathan Drouin",
+                "number": 29,
                 "pos": "rw",
-                "id": 30654,
-                "ppUnit": 1,
+                "id": 2136,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -550,12 +550,12 @@
                 "movement": null
             },
             {
-                "name": "Anthony Duclair",
-                "number": 11,
+                "name": "Simon Holmstrom",
+                "number": 10,
                 "pos": "rw",
-                "id": 2380,
-                "ppUnit": 2,
-                "movement": null
+                "id": 30654,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -1316,12 +1316,12 @@
                 "movement": null
             },
             {
-                "name": "Justin Sourdif",
-                "number": 34,
+                "name": "Pierre-Luc Dubois",
+                "number": 80,
                 "pos": "c",
-                "id": 29606,
+                "id": 2636,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Tom Wilson",
@@ -1342,12 +1342,12 @@
                 "movement": null
             },
             {
-                "name": "Nic Dowd",
-                "number": 26,
+                "name": "Justin Sourdif",
+                "number": 34,
                 "pos": "c",
-                "id": 2607,
-                "ppUnit": null,
-                "movement": null
+                "id": 29606,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Ethen Frank",
@@ -1376,12 +1376,12 @@
                 "movement": null
             },
             {
-                "name": "Sonny Milano",
-                "number": 15,
+                "name": "Nic Dowd",
+                "number": 26,
                 "pos": "rw",
-                "id": 2610,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2607,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -1938,12 +1938,12 @@
                 "movement": null
             },
             {
-                "name": "Alexander Holtz",
-                "number": 26,
+                "name": "Mark Stone",
+                "number": 61,
                 "pos": "rw",
-                "id": 33025,
-                "ppUnit": null,
-                "movement": null
+                "id": 1779,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1964,22 +1964,22 @@
                 "movement": null
             },
             {
-                "name": "Mark Stone",
-                "number": 61,
+                "name": "Reilly Smith",
+                "number": 19,
                 "pos": "rw",
-                "id": 1779,
-                "ppUnit": 1,
-                "movement": null
+                "id": 1853,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Reilly Smith",
-                "number": 19,
+                "name": "Alexander Holtz",
+                "number": 26,
                 "pos": "lw",
-                "id": 1853,
+                "id": 33025,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Tomas Hertl",
