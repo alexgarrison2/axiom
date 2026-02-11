@@ -10,7 +10,7 @@
         "homeGoalieConfirmed": "Juuse Saros",
         "homeGoalieStatus": "Confirmed",
         "awayGoalieConfirmed": "Samuel Hlavaj",
-        "awayGoalieStatus": "Unconfirmed"
+        "awayGoalieStatus": "Confirmed"
     },
     {
         "id": 2025090002,
@@ -23,6 +23,58 @@
         "homeGoalieConfirmed": "Damian  Clara",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Filip Gustavsson",
+        "awayGoalieStatus": "Likely"
+    },
+    {
+        "id": 2025090003,
+        "gameDate": "2026-02-12",
+        "startTimeUTC": "2026-02-12T11:00:00Z",
+        "homeTeam": "France",
+        "awayTeam": "Switzerland",
+        "homeTeamAbbrev": "FRA",
+        "awayTeamAbbrev": "SUI",
+        "homeGoalieConfirmed": "Julian Junca",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Leonardo Genoni",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090004,
+        "gameDate": "2026-02-12",
+        "startTimeUTC": "2026-02-12T15:30:00Z",
+        "homeTeam": "Canada",
+        "awayTeam": "Czechia",
+        "homeTeamAbbrev": "CAN",
+        "awayTeamAbbrev": "CZE",
+        "homeGoalieConfirmed": "Logan Thompson",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Lukas Dostal",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090005,
+        "gameDate": "2026-02-12",
+        "startTimeUTC": "2026-02-12T20:00:00Z",
+        "homeTeam": "USA",
+        "awayTeam": "Latvia",
+        "homeTeamAbbrev": "USA",
+        "awayTeamAbbrev": "LAT",
+        "homeGoalieConfirmed": null,
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Arturs Silovs",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090006,
+        "gameDate": "2026-02-12",
+        "startTimeUTC": "2026-02-12T20:00:00Z",
+        "homeTeam": "Denmark",
+        "awayTeam": "Germany",
+        "homeTeamAbbrev": "DEN",
+        "awayTeamAbbrev": "GER",
+        "homeGoalieConfirmed": "Frederik Andersen",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Philipp Grubauer",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
