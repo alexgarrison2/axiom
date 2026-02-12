@@ -1,31 +1,5 @@
 [
     {
-        "id": 2025090001,
-        "gameDate": "2026-02-11",
-        "startTimeUTC": "2026-02-11T15:30:00Z",
-        "homeTeam": "Finland",
-        "awayTeam": "Slovakia",
-        "homeTeamAbbrev": "FIN",
-        "awayTeamAbbrev": "SVK",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025090002,
-        "gameDate": "2026-02-11",
-        "startTimeUTC": "2026-02-11T20:00:00Z",
-        "homeTeam": "Italy",
-        "awayTeam": "Sweden",
-        "homeTeamAbbrev": "ITA",
-        "awayTeamAbbrev": "SWE",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025090003,
         "gameDate": "2026-02-12",
         "startTimeUTC": "2026-02-12T11:00:00Z",
@@ -33,10 +7,10 @@
         "awayTeam": "Switzerland",
         "homeTeamAbbrev": "FRA",
         "awayTeamAbbrev": "SUI",
-        "homeGoalieConfirmed": "Julian Junca",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieConfirmed": "Antoine Keller",
+        "homeGoalieStatus": "Confirmed",
         "awayGoalieConfirmed": "Leonardo Genoni",
-        "awayGoalieStatus": "Unconfirmed"
+        "awayGoalieStatus": "Confirmed"
     },
     {
         "id": 2025090004,
@@ -47,9 +21,9 @@
         "homeTeamAbbrev": "CAN",
         "awayTeamAbbrev": "CZE",
         "homeGoalieConfirmed": "Jordan Binnington",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieStatus": "Likely",
         "awayGoalieConfirmed": "Lukas Dostal",
-        "awayGoalieStatus": "Unconfirmed"
+        "awayGoalieStatus": "Likely"
     },
     {
         "id": 2025090005,
@@ -61,8 +35,8 @@
         "awayTeamAbbrev": "LAT",
         "homeGoalieConfirmed": null,
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Arturs Silovs",
-        "awayGoalieStatus": "Unconfirmed"
+        "awayGoalieConfirmed": "Elvis Merzlikins",
+        "awayGoalieStatus": "Confirmed"
     },
     {
         "id": 2025090006,
@@ -75,6 +49,58 @@
         "homeGoalieConfirmed": "Frederik Andersen",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Philipp Grubauer",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090007,
+        "gameDate": "2026-02-13",
+        "startTimeUTC": "2026-02-13T11:00:00Z",
+        "homeTeam": "Sweden",
+        "awayTeam": "Finland",
+        "homeTeamAbbrev": "SWE",
+        "awayTeamAbbrev": "FIN",
+        "homeGoalieConfirmed": "Filip Gustavsson",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Juuse Saros",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090008,
+        "gameDate": "2026-02-13",
+        "startTimeUTC": "2026-02-13T11:00:00Z",
+        "homeTeam": "Slovakia",
+        "awayTeam": "Italy",
+        "homeTeamAbbrev": "SVK",
+        "awayTeamAbbrev": "ITA",
+        "homeGoalieConfirmed": "Samuel Hlavaj",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Damian  Clara",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090009,
+        "gameDate": "2026-02-13",
+        "startTimeUTC": "2026-02-13T15:30:00Z",
+        "homeTeam": "Czechia",
+        "awayTeam": "France",
+        "homeTeamAbbrev": "CZE",
+        "awayTeamAbbrev": "FRA",
+        "homeGoalieConfirmed": "Lukas Dostal",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Antoine Keller",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090010,
+        "gameDate": "2026-02-13",
+        "startTimeUTC": "2026-02-13T20:00:00Z",
+        "homeTeam": "Switzerland",
+        "awayTeam": "Canada",
+        "homeTeamAbbrev": "SUI",
+        "awayTeamAbbrev": "CAN",
+        "homeGoalieConfirmed": "Leonardo Genoni",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jordan Binnington",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
