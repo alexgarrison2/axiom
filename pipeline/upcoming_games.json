@@ -1,57 +1,5 @@
 [
     {
-        "id": 2025090007,
-        "gameDate": "2026-02-13",
-        "startTimeUTC": "2026-02-13T11:00:00Z",
-        "homeTeam": "Sweden",
-        "awayTeam": "Finland",
-        "homeTeamAbbrev": "SWE",
-        "awayTeamAbbrev": "FIN",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025090008,
-        "gameDate": "2026-02-13",
-        "startTimeUTC": "2026-02-13T11:00:00Z",
-        "homeTeam": "Slovakia",
-        "awayTeam": "Italy",
-        "homeTeamAbbrev": "SVK",
-        "awayTeamAbbrev": "ITA",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025090009,
-        "gameDate": "2026-02-13",
-        "startTimeUTC": "2026-02-13T15:30:00Z",
-        "homeTeam": "Czechia",
-        "awayTeam": "France",
-        "homeTeamAbbrev": "CZE",
-        "awayTeamAbbrev": "FRA",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025090010,
-        "gameDate": "2026-02-13",
-        "startTimeUTC": "2026-02-13T20:00:00Z",
-        "homeTeam": "Switzerland",
-        "awayTeam": "Canada",
-        "homeTeamAbbrev": "SUI",
-        "awayTeamAbbrev": "CAN",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025090011,
         "gameDate": "2026-02-14",
         "startTimeUTC": "2026-02-14T11:00:00Z",
@@ -59,10 +7,10 @@
         "awayTeam": "Sweden",
         "homeTeamAbbrev": "SVK",
         "awayTeamAbbrev": "SWE",
-        "homeGoalieConfirmed": "Stanislav Skorvanek",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Filip Gustavsson",
-        "awayGoalieStatus": "Unconfirmed"
+        "homeGoalieConfirmed": "Samuel Hlavaj",
+        "homeGoalieStatus": "Confirmed",
+        "awayGoalieConfirmed": "Jacob Markstrom",
+        "awayGoalieStatus": "Confirmed"
     },
     {
         "id": 2025090012,
@@ -72,10 +20,10 @@
         "awayTeam": "Germany",
         "homeTeamAbbrev": "LAT",
         "awayTeamAbbrev": "GER",
-        "homeGoalieConfirmed": "Elvis Merzlikins",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieConfirmed": "Arturs Silovs",
+        "homeGoalieStatus": "Confirmed",
         "awayGoalieConfirmed": "Philipp Grubauer",
-        "awayGoalieStatus": "Unconfirmed"
+        "awayGoalieStatus": "Confirmed"
     },
     {
         "id": 2025090013,
@@ -85,7 +33,7 @@
         "awayTeam": "Finland",
         "homeTeamAbbrev": "ITA",
         "awayTeamAbbrev": "FIN",
-        "homeGoalieConfirmed": "Davide Fadani",
+        "homeGoalieConfirmed": "Damian  Clara",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Juuse Saros",
         "awayGoalieStatus": "Unconfirmed"
@@ -99,6 +47,58 @@
         "homeTeamAbbrev": "DEN",
         "awayTeamAbbrev": "USA",
         "homeGoalieConfirmed": "Frederik Andersen",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": null,
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090015,
+        "gameDate": "2026-02-15",
+        "startTimeUTC": "2026-02-15T11:00:00Z",
+        "homeTeam": "Czechia",
+        "awayTeam": "Switzerland",
+        "homeTeamAbbrev": "CZE",
+        "awayTeamAbbrev": "SUI",
+        "homeGoalieConfirmed": "Dan Vladar",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Akira Schmid",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090016,
+        "gameDate": "2026-02-15",
+        "startTimeUTC": "2026-02-15T15:30:00Z",
+        "homeTeam": "France",
+        "awayTeam": "Canada",
+        "homeTeamAbbrev": "FRA",
+        "awayTeamAbbrev": "CAN",
+        "homeGoalieConfirmed": "Martin Neckar",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Logan Thompson",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090017,
+        "gameDate": "2026-02-15",
+        "startTimeUTC": "2026-02-15T18:00:00Z",
+        "homeTeam": "Latvia",
+        "awayTeam": "Denmark",
+        "homeTeamAbbrev": "LAT",
+        "awayTeamAbbrev": "DEN",
+        "homeGoalieConfirmed": "Arturs Silovs",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Frederik Andersen",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090018,
+        "gameDate": "2026-02-15",
+        "startTimeUTC": "2026-02-15T20:00:00Z",
+        "homeTeam": "Germany",
+        "awayTeam": "USA",
+        "homeTeamAbbrev": "GER",
+        "awayTeamAbbrev": "USA",
+        "homeGoalieConfirmed": "Philipp Grubauer",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": null,
         "awayGoalieStatus": "Unconfirmed"
