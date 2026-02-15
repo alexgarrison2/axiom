@@ -10680,5 +10680,61 @@
     "actualWinner": "Czechia",
     "isCorrect": true,
     "brierScore": 0.1035
+  },
+  {
+    "date": "2026-02-14",
+    "homeTeam": "Denmark",
+    "awayTeam": "USA",
+    "homeScore": 3,
+    "awayScore": 6,
+    "homeXg": 0.54,
+    "awayXg": 1.77,
+    "homeWinProb": 21.6,
+    "predictedWinner": "USA",
+    "actualWinner": "USA",
+    "isCorrect": true,
+    "brierScore": 0.0468
+  },
+  {
+    "date": "2026-02-14",
+    "homeTeam": "Slovakia",
+    "awayTeam": "Sweden",
+    "homeScore": 3,
+    "awayScore": 5,
+    "homeXg": 0.79,
+    "awayXg": 1.35,
+    "homeWinProb": 36.0,
+    "predictedWinner": "Sweden",
+    "actualWinner": "Sweden",
+    "isCorrect": true,
+    "brierScore": 0.1296
+  },
+  {
+    "date": "2026-02-14",
+    "homeTeam": "Latvia",
+    "awayTeam": "Germany",
+    "homeScore": 4,
+    "awayScore": 3,
+    "homeXg": 0.35,
+    "awayXg": 1.38,
+    "homeWinProb": 23.0,
+    "predictedWinner": "Germany",
+    "actualWinner": "Latvia",
+    "isCorrect": false,
+    "brierScore": 0.5929
+  },
+  {
+    "date": "2026-02-14",
+    "homeTeam": "Italy",
+    "awayTeam": "Finland",
+    "homeScore": 0,
+    "awayScore": 11,
+    "homeXg": 1.03,
+    "awayXg": 0.74,
+    "homeWinProb": 58.1,
+    "predictedWinner": "Italy",
+    "actualWinner": "Finland",
+    "isCorrect": false,
+    "brierScore": 0.3381
   }
 ]
