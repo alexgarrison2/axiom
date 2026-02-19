@@ -105,9 +105,12 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
             gsap.set(container.current, { clipPath: 'inset(0 55% 0 0)' });
 
             const redLight = svg.querySelector('#red-light');
-            if (redLight) {
-                gsap.set(redLight, { opacity: 0 }); // Off initially
-            }
+            const goalLightBase = svg.querySelector('#goal-light-base');
+            const goalLightGlow = svg.querySelector('#goal-light-glow');
+
+            if (redLight) gsap.set(redLight, { opacity: 0 }); // Off initially
+            if (goalLightBase) gsap.set(goalLightBase, { opacity: 0.1 }); // Almost invisible initially
+            if (goalLightGlow) gsap.set(goalLightGlow, { opacity: 0.1 }); // Almost invisible initially
 
             const tl = gsap.timeline({
                 defaults: { ease: "power3.inOut" }
@@ -168,6 +171,9 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
             // Step 4: Turn on Goal Light and Rotate
             // Remove clipping box so glows spill freely
             tl.set(container.current, { clipPath: 'none', overflow: 'visible' }, "puckInNet");
+
+            if (goalLightBase) tl.to(goalLightBase, { opacity: 1, duration: 0.1 }, "puckInNet");
+            if (goalLightGlow) tl.to(goalLightGlow, { opacity: 1, duration: 0.1 }, "puckInNet");
 
             if (redLight) {
                 // Turns on exactly when puck arrives
