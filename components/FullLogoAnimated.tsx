@@ -49,21 +49,40 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
                 svg.prepend(defs);
             }
 
-            // Create puck if not exists
-            if (!svg.querySelector('#puck')) {
-                const puck = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                puck.setAttribute('id', 'puck');
-                puck.setAttribute('r', '8');
-                puck.setAttribute('fill', '#111');
-                puck.setAttribute('stroke', '#4FF5F7');
-                puck.setAttribute('stroke-width', '1');
-                // Center the puck initially far left, vertically aligned with 'G' (approx y=120)
-                puck.setAttribute('cx', '-20');
-                puck.setAttribute('cy', '125');
-                svg.appendChild(puck);
-            }
+            // Clear previous puck if exists (hot reload safety)
+            const oldPuck = svg.querySelector('#puck-group');
+            if (oldPuck) oldPuck.remove();
+            const legacyPuck = svg.querySelector('#puck');
+            if (legacyPuck) legacyPuck.remove();
 
-            const puck = svg.querySelector('#puck');
+            // Create puck group
+            const puckGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            puckGroup.setAttribute('id', 'puck-group');
+
+            // Puck body (gives it 3D thickness)
+            const body = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            // A cylinder body: left edge down, bottom curve, right edge up
+            body.setAttribute('d', 'M-8,0 l0,4 a8,3 0 0,0 16,0 l0,-4 Z');
+            body.setAttribute('fill', '#222');
+            body.setAttribute('stroke', '#4FF5F7');
+            body.setAttribute('stroke-width', '0.5');
+
+            // Puck top (ellipse)
+            const top = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+            top.setAttribute('cx', '0');
+            top.setAttribute('cy', '0');
+            top.setAttribute('rx', '8');
+            top.setAttribute('ry', '3');
+            top.setAttribute('fill', '#0a0a0a');
+            top.setAttribute('stroke', '#4FF5F7');
+            top.setAttribute('stroke-width', '1');
+
+            puckGroup.appendChild(body);
+            puckGroup.appendChild(top);
+            svg.appendChild(puckGroup);
+
+            // Set initial state
+            gsap.set(puckGroup, { opacity: 0, x: -50, y: 118, transformOrigin: '50% 50%' });
 
             // 2. Identify Parts
             // Only affect the text paths (ignore horse, ignore goal light groups)
@@ -91,12 +110,7 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
             }
 
             const tl = gsap.timeline({
-                defaults: { ease: "power3.inOut" },
-                onComplete: () => {
-                    if (container.current) {
-                        container.current.style.overflow = 'visible'; // Allow glows to spill out
-                    }
-                }
+                defaults: { ease: "power3.inOut" }
             });
 
             // 4. Animation Sequence
@@ -124,55 +138,68 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
                 );
 
             // Step 3: Shoot the Puck!
-            if (puck) {
-                tl.to(puck, {
-                    attr: { cx: 540 }, // Inside the 'G'
+            tl.addLabel("readyToShoot", "-=0.2");
+
+            tl.to(puckGroup, {
+                opacity: 1,
+                duration: 0.01
+            }, "readyToShoot");
+
+            tl.fromTo(puckGroup,
+                { x: -50, y: 118, rotation: 0, scale: 1 },
+                {
+                    x: 543,
+                    y: 118,
+                    rotation: -1080, // Tumble
                     duration: 0.6,
-                    ease: "power2.in",
-                }, "-=0.2")
-                    // Puck bouncing inside the net a little bit
-                    .to(puck, {
-                        attr: { cx: 550 },
-                        duration: 0.15,
-                        ease: "power1.out",
-                        yoyo: true,
-                        repeat: 1
-                    });
-            }
+                    ease: "power2.in"
+                },
+                "readyToShoot"
+            );
+
+            tl.addLabel("puckInNet");
+
+            // Bounce in net
+            tl.to(puckGroup, { x: 550, rotation: -1100, duration: 0.1, ease: "power1.out" }, "puckInNet")
+                .to(puckGroup, { x: 545, rotation: -1090, duration: 0.1, ease: "power1.in" })
+                // Disappear 1.5s later
+                .to(puckGroup, { opacity: 0, duration: 0.3 }, "puckInNet+=1.5");
 
             // Step 4: Turn on Goal Light and Rotate
+            // Remove clipping box so glows spill freely
+            tl.set(container.current, { clipPath: 'none', overflow: 'visible' }, "puckInNet");
+
             if (redLight) {
+                // Turns on exactly when puck arrives
                 tl.to(redLight, {
                     opacity: 1,
                     duration: 0.1,
-                }, "-=0.3"); // Turns on right as puck enters
+                }, "puckInNet");
 
                 // Apply gradient rotation animation
                 redLight.setAttribute('fill', 'url(#goalLightGradient)');
                 const gradient = svg.querySelector('#goalLightGradient');
 
                 if (gradient) {
-                    gsap.fromTo(gradient,
+                    tl.fromTo(gradient,
                         { attr: { x1: "-100%", x2: "0%" } },
                         {
                             attr: { x1: "100%", x2: "200%" },
                             duration: 1.0,
                             repeat: -1,
-                            ease: "linear",
-                            delay: tl.duration() - 0.3 // start rotating immediately
-                        }
+                            ease: "linear"
+                        }, "puckInNet"
                     );
                 }
 
                 // Add an oscillating glowing pulse
-                gsap.to(redLight, {
+                tl.to(redLight, {
                     opacity: 0.6,
                     duration: 0.15,
                     yoyo: true,
                     repeat: -1,
-                    ease: "sine.inOut",
-                    delay: tl.duration() - 0.3
-                });
+                    ease: "sine.inOut"
+                }, "puckInNet");
             }
         }
     }, { dependencies: [svgContent], scope: container });
