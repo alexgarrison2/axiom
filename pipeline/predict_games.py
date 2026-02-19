@@ -1399,13 +1399,6 @@ def predict():
             'away_rr_rate': edge_profiles.get(str(team_ids_map.get(away_team)), {}).get('rr_rate', '')
         })        
 
-    # Create DataFrame from csv_rows
-    if not csv_rows:
-        print("Warning: No predictions generated. Skipping save.")
-        return
-        
-    df_pred = pd.DataFrame(csv_rows)
-    
     # Save Last Update Timestamp for Frontend (US/Central)
     utc_now = datetime.now(timezone.utc)
     central = pytz.timezone('US/Central')
@@ -1413,23 +1406,37 @@ def predict():
     
     # Define paths relative to the script location
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    paths = [
+    pred_paths = [
         os.path.join(script_dir, '../data/predictions_detailed.csv'),
         os.path.join(script_dir, '../public/data/predictions_detailed.csv'),
         os.path.join(script_dir, 'data/predictions_detailed.csv') # Fallback if running from root
     ]
     
+    # Always save last_updated.json
+    for p in pred_paths:
+        try:
+            lu_dir = os.path.dirname(p)
+            os.makedirs(lu_dir, exist_ok=True)
+            lu_path = os.path.join(lu_dir, 'last_updated.json')
+            with open(lu_path, 'w') as f:
+                json.dump({"last_refresh": timestamp}, f)
+        except Exception as e:
+            pass
+
+    # Create DataFrame from csv_rows
+    if not csv_rows:
+        print("Warning: No predictions generated. Skipping save.")
+        print(f"Done. Refresh timestamp updated at {timestamp}")
+        return
+        
+    df_pred = pd.DataFrame(csv_rows)
+    
     # Save CSV to all valid paths
-    for p in paths:
+    for p in pred_paths:
         try:
             os.makedirs(os.path.dirname(p), exist_ok=True)
             df_pred.to_csv(p, index=False)
             print(f"Saved prediction data to {p}")
-            
-            # Also save last_updated.json in the same directory
-            lu_path = os.path.join(os.path.dirname(p), 'last_updated.json')
-            with open(lu_path, 'w') as f:
-                json.dump({"last_refresh": timestamp}, f)
         except Exception as e:
             # Silently fail for paths that don't exist in the current environment
             pass
