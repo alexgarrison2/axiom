@@ -32,38 +32,63 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
 
         const svg = container.current.querySelector('svg');
         if (svg) {
-            // 1. Setup Filters & Gradients
-            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-            defs.innerHTML = `
-                <filter id="liquidFilter">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" result="turbulence" />
-                    <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="0" xChannelSelector="R" yChannelSelector="G" />
-                </filter>
-                <linearGradient id="goalLightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#FF0000" />
-                    <stop offset="50%" stop-color="#FFCCCC" />
-                    <stop offset="100%" stop-color="#FF0000" />
-                </linearGradient>
-            `;
-            svg.prepend(defs);
+            // 1. Setup Filters & Puck
+            const defs = svg.querySelector('defs') || document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            if (!svg.querySelector('#liquidFilter')) {
+                defs.innerHTML += `
+                    <filter id="liquidFilter">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" result="turbulence" />
+                        <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="0" xChannelSelector="R" yChannelSelector="G" />
+                    </filter>
+                    <linearGradient id="goalLightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#FF0000" />
+                        <stop offset="50%" stop-color="#FFCCCC" />
+                        <stop offset="100%" stop-color="#FF0000" />
+                    </linearGradient>
+                `;
+                svg.prepend(defs);
+            }
+
+            // Create puck if not exists
+            if (!svg.querySelector('#puck')) {
+                const puck = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                puck.setAttribute('id', 'puck');
+                puck.setAttribute('r', '8');
+                puck.setAttribute('fill', '#111');
+                puck.setAttribute('stroke', '#4FF5F7');
+                puck.setAttribute('stroke-width', '1');
+                // Center the puck initially far left, vertically aligned with 'G' (approx y=120)
+                puck.setAttribute('cx', '-20');
+                puck.setAttribute('cy', '125');
+                svg.appendChild(puck);
+            }
+
+            const puck = svg.querySelector('#puck');
 
             // 2. Identify Parts
-            // The "Pony" is paths 1 & 2 (Cyan/Teal). The Text is the white paths (subsequent paths).
+            // Only affect the text paths (ignore horse, ignore goal light groups)
             const paths = Array.from(svg.querySelectorAll('path'));
-            const textPaths = paths.slice(2);
+            const textPaths = paths.filter(p => {
+                const fill = p.getAttribute('fill') || '';
+                if (fill.includes('#4FF5F7') || fill.includes('#198081') || fill.includes('#FF0000')) return false;
+                if (p.closest && (p.closest('#goal-light-base') || p.closest('#goal-light-glow'))) return false;
+                return true;
+            });
 
             // 3. Set Initial State
-            // Group text paths for animation
+            // Apply liquid filter to text only
             textPaths.forEach(p => {
-                // If it's the goal light (Red), skip the liquid filter
-                if (p.getAttribute('fill') === '#FF0000') return;
-
                 p.style.filter = 'url(#liquidFilter)';
                 p.style.opacity = '0';
             });
 
             // Initial clip - hide text part (approx right 55% of SVG)
             gsap.set(container.current, { clipPath: 'inset(0 55% 0 0)' });
+
+            const redLight = svg.querySelector('#red-light');
+            if (redLight) {
+                gsap.set(redLight, { opacity: 0 }); // Off initially
+            }
 
             const tl = gsap.timeline({
                 defaults: { ease: "power3.inOut" },
@@ -84,12 +109,12 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
             })
 
                 // Step 2: "Morph/Liquid" form the text
-                .to(textPaths.filter(p => p.getAttribute('fill') !== '#FF0000'), {
+                .to(textPaths, {
                     opacity: 1,
                     duration: 0.5,
                     stagger: 0.05,
                     ease: "power2.out"
-                }, "-=1.0") // Start appearing while expanding
+                }, "-=1.0")
 
                 // Animate turbulence (liquid forming effect)
                 .fromTo(svg.querySelectorAll('feDisplacementMap'),
@@ -98,44 +123,56 @@ export default function FullLogoAnimated({ className }: FullLogoAnimatedProps) {
                     "-=1.2"
                 );
 
-            // Animate Goal Light (Rotating Effect)
-            const goalLight = svg.querySelector('path[fill="#FF0000"]');
-            if (goalLight) {
-                // Use the gradient
-                goalLight.setAttribute('fill', 'url(#goalLightGradient)');
-
-                // Animate the gradient to simulate rotation
-                // We access the gradient element directly
-                const gradient = svg.querySelector('#goalLightGradient');
-                if (gradient) {
-                    gsap.to(gradient, {
-                        attr: { x1: "100%", x2: "200%" }, // Move window across
-                        duration: 1.0,
-                        repeat: -1,
-                        ease: "linear",
-                        modifiers: {
-                            attr: (val: string | number) => {
-                                // Reset mechanism not needed if we sweep correctly, or just use repeat
-                                // Actually, standard gradient loop:
-                                return val;
-                            }
-                        }
+            // Step 3: Shoot the Puck!
+            if (puck) {
+                tl.to(puck, {
+                    attr: { cx: 540 }, // Inside the 'G'
+                    duration: 0.6,
+                    ease: "power2.in",
+                }, "-=0.2")
+                    // Puck bouncing inside the net a little bit
+                    .to(puck, {
+                        attr: { cx: 550 },
+                        duration: 0.15,
+                        ease: "power1.out",
+                        yoyo: true,
+                        repeat: 1
                     });
+            }
 
-                    // Better loop strategy for linear gradient:
-                    gsap.fromTo(gradient as SVGElement,
+            // Step 4: Turn on Goal Light and Rotate
+            if (redLight) {
+                tl.to(redLight, {
+                    opacity: 1,
+                    duration: 0.1,
+                }, "-=0.3"); // Turns on right as puck enters
+
+                // Apply gradient rotation animation
+                redLight.setAttribute('fill', 'url(#goalLightGradient)');
+                const gradient = svg.querySelector('#goalLightGradient');
+
+                if (gradient) {
+                    gsap.fromTo(gradient,
                         { attr: { x1: "-100%", x2: "0%" } },
                         {
                             attr: { x1: "100%", x2: "200%" },
-                            duration: 1.5,
+                            duration: 1.0,
                             repeat: -1,
-                            ease: "linear"
+                            ease: "linear",
+                            delay: tl.duration() - 0.3 // start rotating immediately
                         }
                     );
                 }
 
-                // Subtle glow (filter)
-                gsap.set(goalLight, { filter: 'drop-shadow(0 0 5px #FF0000)' });
+                // Add an oscillating glowing pulse
+                gsap.to(redLight, {
+                    opacity: 0.6,
+                    duration: 0.15,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: "sine.inOut",
+                    delay: tl.duration() - 0.3
+                });
             }
         }
     }, { dependencies: [svgContent], scope: container });
