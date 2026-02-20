@@ -1532,11 +1532,12 @@ def main():
             for game in days_games:
                 game_id = game.get("id")
                 
-                # Exclude Preseason Games (01 in 5th/6th digit)
-                # Example: 202501xxxx
+                # Only process Regular Season (02) and Playoffs (03)
+                # Skips Preseason (01), All-Star (04), Olympic/IIHF (09), etc.
                 game_id_str = str(game_id)
-                if len(game_id_str) >= 6 and game_id_str[4:6] == "01":
-                    print(f"    Skipping Preseason Game {game_id}")
+                game_type = game_id_str[4:6] if len(game_id_str) >= 6 else "??"
+                if game_type not in ("02", "03"):
+                    print(f"    Skipping non-regular game {game_id} (type {game_type})")
                     continue
                 
                 # Deduplication Check
