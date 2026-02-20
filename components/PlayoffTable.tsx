@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { TeamStandings, SimResult } from '@/utils/simulation-engine';
 import LogoDisplay from './LogoDisplay';
 import PlayoffDetailModal from './PlayoffDetailModal';
@@ -228,8 +229,19 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
                     bgOdds = 'bg-red-900'; // Dark Red (<30%)
                 }
 
+                // Clinch / Elimination badges
+                const isClinched = team.playoffOdds >= 99.5;
+                const isEliminated = team.playoffOdds <= 0.5;
+
                 return (
-                    <div key={team.tricode} className="relative group hover:bg-white/[0.04] transition-colors flex items-center border-b border-white/[0.02]">
+                    <motion.div
+                        key={team.tricode}
+                        initial={{ opacity: 0, y: 8 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.5 }}
+                        transition={{ duration: 0.3, delay: idx * 0.04 }}
+                        className="relative group hover:bg-white/[0.04] transition-colors flex items-center border-b border-white/[0.02]"
+                    >
                         {/* Line separating WC2 and the rest */}
                         {isWildcard && idx === 1 && (
                             <div className="absolute bottom-0 left-0 right-0 border-b border-neutral-700/50 z-10 w-full pointer-events-none" />
@@ -237,7 +249,7 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
 
                         {/* Logo */}
                         <div className="w-16 px-3 py-1.5 flex justify-center">
-                            <div className="w-9 h-9 relative opacity-90 group-hover:opacity-100 transition-opacity">
+                            <div className="w-9 h-9 relative opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-200">
                                 <LogoDisplay
                                     triCode={team.tricode}
                                     src=""
@@ -249,9 +261,14 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
                         </div>
 
                         {/* Team Name */}
-                        <div className="w-24 px-2 py-1.5 font-bold text-white tracking-wide text-left flex items-center">
+                        <div className="w-24 px-2 py-1.5 font-bold text-white tracking-wide text-left flex items-center gap-1.5">
                             {team.tricode}
-                            {/* REMOVED WC Labels as requested */}
+                            {isClinched && (
+                                <span className="text-[8px] font-mono text-emerald-400 opacity-70" title="Clinched Playoff Spot">x</span>
+                            )}
+                            {isEliminated && (
+                                <span className="text-[8px] font-mono text-red-400 opacity-70" title="Eliminated">e</span>
+                            )}
                         </div>
 
                         {/* Current Points */}
@@ -291,7 +308,7 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
                                 <Info className="w-4 h-4" />
                             </button>
                         </div>
-                    </div>
+                    </motion.div>
                 );
             })}
         </div>

@@ -71,7 +71,6 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries }) => {
 
                             return (
                                 <React.Fragment key={date}>
-                                    {/* Summary Row */}
                                     <tr
                                         onClick={() => toggleDate(date)}
                                         className="cursor-pointer hover:bg-white/5 transition-colors bg-white/[0.02] border-b border-white/5"
@@ -90,6 +89,29 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries }) => {
                                                     <span className="text-xs md:text-sm font-bold text-white font-mono">
                                                         {displayDate}
                                                     </span>
+
+                                                    {/* Mini Matchup Logos (collapsed preview) */}
+                                                    {!isExpanded && (
+                                                        <div className="flex items-center gap-1.5 ml-2">
+                                                            {dayEntries.slice(0, 4).map((entry, idx) => (
+                                                                <div key={idx} className="flex items-center gap-0.5 opacity-60">
+                                                                    <div className="relative w-4 h-4 md:w-5 md:h-5">
+                                                                        <Image src={entry.awayTeam.logoUrl} alt={entry.awayTeam.triCode} fill className="object-contain" />
+                                                                    </div>
+                                                                    <span className="text-neutral-600 text-[7px] md:text-[8px]">@</span>
+                                                                    <div className="relative w-4 h-4 md:w-5 md:h-5">
+                                                                        <Image src={entry.homeTeam.logoUrl} alt={entry.homeTeam.triCode} fill className="object-contain" />
+                                                                    </div>
+                                                                    {idx < Math.min(dayEntries.length, 4) - 1 && (
+                                                                        <span className="text-neutral-700 text-[8px] ml-0.5 hidden md:inline">·</span>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                            {dayEntries.length > 4 && (
+                                                                <span className="text-neutral-600 text-[9px] font-mono ml-1">+{dayEntries.length - 4}</span>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Right: Stats Summary */}

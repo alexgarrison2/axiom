@@ -404,11 +404,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         );
     };
 
-    // Animation State
-    const [isMounted, setIsMounted] = useState(false);
+    // Viewport animation — trigger bar fill when card scrolls into view
+    const [isInView, setIsInView] = useState(false);
     useEffect(() => {
-        const timer = setTimeout(() => setIsMounted(true), 100);
-        return () => clearTimeout(timer);
+        const targets = [cardRef.current, desktopCardRef.current].filter(Boolean) as HTMLElement[];
+        if (targets.length === 0) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) { setIsInView(true); observer.disconnect(); } },
+            { threshold: 0.3 }
+        );
+        targets.forEach(t => observer.observe(t));
+        return () => observer.disconnect();
     }, []);
 
     const TeamColumn = ({
@@ -778,7 +784,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             <div
                                 className="h-full shadow-[0_0_15px_rgba(255,b255,255,0.2)] z-10 transition-all duration-1000 ease-out flex justify-start items-center relative overflow-hidden"
                                 style={{
-                                    width: isMounted ? `${awayModelWinPct}%` : '50%',
+                                    width: isInView ? `${awayModelWinPct}%` : '50%',
                                     background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
                                     boxShadow: `0 0 15px ${awayBarColor}66`
                                 }}
@@ -898,7 +904,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
                     {/* ABSOLUTE BACKGROUND LOGOS - Moved INSIDE mask to clip correctly */}
                     {/* Left: Away Logo (Oversized & Clipped) */}
-                    <div className="absolute left-[-2rem] top-14 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
+                    <div className="absolute left-[-2rem] top-14 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none hover:opacity-60 hover:scale-110 transition-all duration-300">
                         <LogoDisplay
                             src={awayTeam.logoUrl}
                             alt={awayTeam.name}
@@ -909,7 +915,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         />
                     </div>
                     {/* Right: Home Logo (Oversized & Clipped) */}
-                    <div className="absolute right-[-2rem] top-14 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none">
+                    <div className="absolute right-[-2rem] top-14 -translate-y-1/2 w-48 h-48 opacity-40 filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0 pointer-events-none hover:opacity-60 hover:scale-110 transition-all duration-300">
                         <LogoDisplay
                             src={homeTeam.logoUrl}
                             alt={homeTeam.name}
@@ -973,12 +979,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 <div
                                     className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)] flex items-center justify-start pl-1 z-10 transition-all duration-1000 ease-out overflow-hidden whitespace-nowrap"
                                     style={{
-                                        width: isMounted ? `${awayModelWinPct}%` : '50%',
+                                        width: isInView ? `${awayModelWinPct}%` : '50%',
                                         background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
                                         boxShadow: `0 0 10px ${awayBarColor}66`
                                     }}
                                 >
-                                    <span className={`text-[9px] font-bold drop-shadow-md whitespace-nowrap pl-1 ${getContrastTextClass(awayBarColor)}`}>{Math.round(awayModelWinPct)}%</span>
+                                    <span className={`text-[10px] font-bold drop-shadow-md whitespace-nowrap pl-1 ${getContrastTextClass(awayBarColor)}`}>{Math.round(awayModelWinPct)}%</span>
                                 </div>
 
                                 {/* Center Separator */}
@@ -992,7 +998,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                         boxShadow: `0 0 10px ${homeBarColor}66`
                                     }}
                                 >
-                                    <span className={`text-[9px] font-bold drop-shadow-md whitespace-nowrap pr-1 ${getContrastTextClass(homeBarColor)}`}>{Math.round(homeModelWinPct)}%</span>
+                                    <span className={`text-[10px] font-bold drop-shadow-md whitespace-nowrap pr-1 ${getContrastTextClass(homeBarColor)}`}>{Math.round(homeModelWinPct)}%</span>
                                 </div>
                             </div>
                         </div>

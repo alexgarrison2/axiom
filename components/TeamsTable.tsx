@@ -399,6 +399,7 @@ const TeamsTable = () => {
     // Sorting
     const [sortKey, setSortKey] = useState<SortKey>('pt_pct');
     const [sortDesc, setSortDesc] = useState(true);
+    const [flashKey, setFlashKey] = useState(0);
 
     const [rawData, setRawData] = useState<RawGameStat[]>([]);
     const [todayMatchups, setTodayMatchups] = useState<Matchup[]>([]);
@@ -765,6 +766,7 @@ const TeamsTable = () => {
         } else {
             setSortKey(key);
             setSortDesc(true); // Default to desc
+            setFlashKey(prev => prev + 1); // Trigger flash on column change
         }
     };
 
@@ -965,9 +967,12 @@ const TeamsTable = () => {
             }
         }
 
+        const isActiveSort = key === sortKey && viewMode === 'All';
+
         return (
             <td
-                className={`px-2 py-0.5 text-sm whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'} ${key === 'ranking' ? (team.isPlayoff ? 'font-medium' : 'font-light') : 'font-medium'}`}
+                key={isActiveSort ? `${key}-${flashKey}` : key}
+                className={`px-2 py-0.5 text-sm whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'} ${key === 'ranking' ? (team.isPlayoff ? 'font-medium' : 'font-light') : 'font-medium'} ${isActiveSort ? 'animate-[sortFlash_0.6s_ease-out]' : ''}`}
                 style={{ color }}
             >
                 {value}
