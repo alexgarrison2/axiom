@@ -189,9 +189,48 @@ export async function GET(
             console.warn("Upcoming games fetch failed");
         }
 
+        const leagueGames: GameLog[] = gamestats.map((row: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+            const res = row.result;
+            return {
+                game_id: row.game_id,
+                date: row.game_date,
+                opponent: row.opponent,
+                result: res,
+                result_code: res,
+                home_away: row.home_away,
+                gf: parseInt(row.goals_for) || 0,
+                ga: parseInt(row.goals_ag) || 0,
+                xgf: parseFloat(row.xG_for) || 0,
+                xga: parseFloat(row.xG_against) || 0,
+                starting_goalie: row.starting_goalie || '',
+                opponent_starter: row.starting_goalie_opp || '',
+                points: (res === 'RW' || res === 'OTW' || res === 'SOW') ? 2 : (res === 'OTL' || res === 'SOL') ? 1 : 0,
+                pp_goals: parseInt(row.pp_goals) || 0,
+                pp_opps: parseInt(row.pp_opportunities) || 0,
+                pp_time: formatTime(row.pp_time),
+                pp_goals_against: parseInt(row.pp_goals_against) || 0,
+                pk_opps: parseInt(row.pk_opportunities) || 0,
+                pk_time: formatTime(row.pk_time),
+                sf: parseInt(row.sog_for) || 0,
+                sa: parseInt(row.sog_ag) || 0,
+                cf: parseInt(row.attempts_for) || 0,
+                ca: parseInt(row.attempts_ag) || 0,
+                sv_pct: parseFloat(row.save_percentage) || 0,
+                en_gf: parseInt(row.emptynet_goalsfor) || 0,
+                en_att: 0,
+                en_ga: parseInt(row.emptynet_goalsagainst) || 0,
+                en_att_ag: 0,
+                gsax: (parseFloat(row.xG_against) || 0) - ((parseInt(row.goals_ag) || 0) - (parseInt(row.emptynet_goalsagainst) || 0)),
+                otml: '-',
+                game_number: 0,
+                raw: {}
+            };
+        });
+
         const response: TeamStatsResponse = {
             teamInfo,
             games: processedGames,
+            leagueGames,
             playerStats: teamPlayerStats,
             rating,
             record: { w, l, otl, pts: (w * 2) + otl },

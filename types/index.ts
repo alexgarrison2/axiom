@@ -85,6 +85,7 @@ export interface TeamRating {
 export interface TeamStatsResponse {
     teamInfo: TeamInfo;
     games: GameLog[];
+    leagueGames?: GameLog[];
     playerStats: PlayerBoxscoreRow[];
     rating: TeamRating | null;
     record: { w: number; l: number; otl: number; pts: number };

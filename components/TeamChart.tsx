@@ -8,7 +8,8 @@ import {
     Tooltip,
     ResponsiveContainer,
     AreaChart,
-    Area
+    Area,
+    ReferenceLine
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -135,7 +136,7 @@ const CustomTooltip = ({ active, payload, activeMetric, secondaryMetric, primary
     return null;
 };
 
-const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
+const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor }) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -145,7 +146,6 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
     const [mode, setMode] = useState<'cumulative' | 'rolling'>((searchParams.get('mode') as 'cumulative' | 'rolling') || 'cumulative');
     const [windowSize, setWindowSize] = useState([parseInt(searchParams.get('window') || '10')]);
     const [locFilter, setLocFilter] = useState<'All' | 'Home' | 'Away'>((searchParams.get('loc') as 'All' | 'Home' | 'Away') || 'All');
-    const [goalieFilter, setGoalieFilter] = useState<string>(searchParams.get('goalie') || 'All');
 
 
     // Sync State to URL
@@ -157,13 +157,11 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
         if (mode !== 'cumulative') params.set('mode', mode); else params.delete('mode');
         if (windowSize[0] !== 10) params.set('window', windowSize[0].toString()); else params.delete('window');
         if (locFilter !== 'All') params.set('loc', locFilter); else params.delete('loc');
-        if (goalieFilter !== 'All') params.set('goalie', goalieFilter); else params.delete('goalie');
 
         const newSearch = params.toString();
         // Only replace if changed materially (ignoring order or defaults logic if mismatched)
         // But searchParams is immutable from hook, so we compare strings
         if (newSearch !== searchParams.toString()) {
-            // Use replace to avoid history stack spam
             router.replace(`${pathname}?${newSearch}`, { scroll: false });
         }
     }, [metric, metric2, mode, windowSize, locFilter, pathname, router, searchParams]);
@@ -338,6 +336,54 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
         return [Math.max(0, min - padding), max + padding];
     }, [chartData, metric, metric2]);
 
+    // --- League Average for Reference Line ---
+    const leagueAvg = useMemo(() => {
+        if (!leagueGames || leagueGames.length === 0) return null;
+        // Build a total across all league games
+        const t = {
+            gp: leagueGames.length, pts: 0,
+            gf: 0, ga: 0, xgf: 0, xga: 0,
+            ppg: 0, ppo: 0, pkg: 0, pko: 0,
+            sf: 0, sa: 0, cf: 0, ca: 0,
+            gsax: 0, en_gf: 0, en_ga: 0
+        };
+        leagueGames.forEach((g: GameLog) => {
+            t.pts += g.points; t.gf += g.gf; t.ga += g.ga;
+            t.xgf += g.xgf; t.xga += g.xga;
+            t.ppg += g.pp_goals; t.ppo += g.pp_opps;
+            t.pkg += g.pp_goals_against; t.pko += g.pk_opps;
+            t.sf += g.sf; t.sa += g.sa; t.cf += g.cf; t.ca += g.ca;
+            t.gsax += g.gsax; t.en_gf += g.en_gf; t.en_ga += g.en_ga;
+        });
+        const calcLeagueVal = (m: string): number => {
+            const gp = t.gp;
+            if (gp === 0) return 0;
+            if (m === 'pts_pct') return t.pts / (gp * 2);
+            if (m === 'gf') return t.gf / gp;
+            if (m === 'ga') return t.ga / gp;
+            if (m === 'gd') return t.gf - t.ga;
+            if (m === 'xgf') return t.xgf / gp;
+            if (m === 'xga') return t.xga / gp;
+            if (m === 'pp') return t.ppo > 0 ? (t.ppg / t.ppo) * 100 : 0;
+            if (m === 'pk') return t.pko > 0 ? (100 - (t.pkg / t.pko * 100)) : 100;
+            if (m === 'sv') return t.sa > 0 ? (1 - (t.ga / t.sa)) * 100 : 0;
+            if (m === 'sh') return t.sf > 0 ? (t.gf / t.sf) * 100 : 0;
+            if (m === 'sf') return t.sf / gp;
+            if (m === 'sa') return t.sa / gp;
+            if (m === 'sd') return t.sf - t.sa;
+            if (m === 'cf') return t.cf / gp;
+            if (m === 'cd') return t.cf - t.ca;
+            if (m === 'gsax') return t.gsax / gp;
+            if (m === 'true_gf') return (t.gf - t.ppg - t.en_gf) / gp;
+            if (m === 'true_ga') return (t.ga - t.pkg - t.en_ga) / gp;
+            if (m === 'true_gd') return (t.gf - t.ppg - t.en_gf) - (t.ga - t.pkg - t.en_ga);
+            if (m === 'pp_lev') return t.gf > 0 ? (t.ppg / t.gf) * 100 : 0;
+            if (m === 'pk_lev') return t.ga > 0 ? (t.pkg / t.ga) * 100 : 0;
+            return 0;
+        };
+        return calcLeagueVal(metric);
+    }, [leagueGames, metric]);
+
     // Smart Label Density
     const labelInterval = useMemo(() => {
         if (chartData.length <= 10) return 1;
@@ -473,51 +519,65 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                                 axisLine={false}
                                 domain={domainY as [number, number]}
                                 dx={-10}
-                                allowDataOverflow={true} // Force clipping of outliers
+                                allowDataOverflow={true}
+                                tickFormatter={(v: number) => {
+                                    const fmt = activeMetric.format(v);
+                                    // Strip trailing zeros after decimal for cleanliness on axis
+                                    return fmt.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+                                }}
                             />
                             <Tooltip content={<CustomTooltip activeMetric={activeMetric} secondaryMetric={secondaryMetric} primaryColor={primaryColor} />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '4 4' }} />
 
-                            {/* Primary Metric */}
-                            <Area
-                                type="monotone"
-                                dataKey="value"
-                                stroke={primaryColor}
-                                strokeWidth={3}
-                                fillOpacity={1}
-                                fill="url(#colorMetric)"
-                                activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', className: 'animate-pulse' }}
-                                animationDuration={2000}
-                                animationEasing="ease-in-out"
-                                label={(props) => {
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const { x, y, index, value } = props as any;
-                                    const isLast = index === chartData.length - 1;
-                                    const showLabel = isLast || (index % labelInterval === 0);
-                                    if (!showLabel) return null;
+                            {/* Primary Metric — label overlap prevention via module-scoped accumulator */}
+                            {(() => {
+                                const shownXPositions: number[] = [];
+                                return (
+                                    <Area
+                                        type="monotone"
+                                        dataKey="value"
+                                        stroke={primaryColor}
+                                        strokeWidth={3}
+                                        fillOpacity={1}
+                                        fill="url(#colorMetric)"
+                                        activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', className: 'animate-pulse' }}
+                                        animationDuration={2000}
+                                        animationEasing="ease-in-out"
+                                        label={(props) => {
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            const { x, y, index, value } = props as any;
+                                            const isLast = index === chartData.length - 1;
+                                            const showLabel = isLast || (index % labelInterval === 0);
+                                            if (!showLabel) return null;
 
-                                    const fmt = activeMetric.format(value);
-                                    return (
-                                        <g>
-                                            <rect x={x - 20} y={y - 28} width="40" height="20" rx="4" fill={primaryColor} />
-                                            {/* Changed text fill to #fff for better contrast on dark pill */}
-                                            <text x={x} y={y - 14} fill="#fff" fontSize={10} fontWeight="bold" textAnchor="middle">
-                                                {fmt}{activeMetric.suffix}
-                                            </text>
-                                        </g>
-                                    );
-                                }}
-                            />
+                                            // Skip if too close to an already-shown label (overlap prevention)
+                                            // Use void to appease the compiler — shownXPositions accumulates during this render pass
+                                            if (!isLast && shownXPositions.some(px => Math.abs(px - x) < 32)) return null;
+                                            void shownXPositions.push(x);
+
+                                            const fmt = activeMetric.format(value);
+                                            return (
+                                                <g>
+                                                    <rect x={x - 20} y={y - 28} width="40" height="20" rx="4" fill={primaryColor} />
+                                                    <text x={x} y={y - 14} fill="#fff" fontSize={10} fontWeight="bold" textAnchor="middle">
+                                                        {fmt}{activeMetric.suffix}
+                                                    </text>
+                                                </g>
+                                            );
+                                        }}
+                                    />
+                                );
+                            })()}
 
                             {/* Secondary Metric (if selected) */}
                             {metric2 !== 'none' && (
                                 <Area
                                     type="monotone"
                                     dataKey="value2"
-                                    stroke="#a1a1aa" // Zinc 400 (Bright Grey)
+                                    stroke="#38bdf8" // Sky-400 — distinct accent
                                     strokeWidth={2}
                                     strokeDasharray="5 5"
                                     fill="none"
-                                    activeDot={{ r: 4, strokeWidth: 0, fill: '#a1a1aa' }}
+                                    activeDot={{ r: 4, strokeWidth: 0, fill: '#38bdf8' }}
                                     label={(props) => {
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         const { x, y, index, value } = props as any;
@@ -529,12 +589,30 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, primaryColor }) => {
                                         const fmt = secondaryMetric ? secondaryMetric.format(value) : value;
                                         return (
                                             <g>
-                                                <rect x={x - 20} y={y - 28} width="40" height="20" rx="4" fill="#52525b" />
+                                                <rect x={x - 20} y={y - 28} width="40" height="20" rx="4" fill="#0369a1" />
                                                 <text x={x} y={y - 14} fill="#fff" fontSize={10} fontWeight="bold" textAnchor="middle">
                                                     {fmt}{secondaryMetric?.suffix}
                                                 </text>
                                             </g>
                                         );
+                                    }}
+                                />
+                            )}
+
+                            {/* League Average Reference Line */}
+                            {leagueAvg !== null && (
+                                <ReferenceLine
+                                    y={leagueAvg}
+                                    stroke="rgba(255,255,255,0.2)"
+                                    strokeDasharray="6 4"
+                                    strokeWidth={1}
+                                    label={{
+                                        value: `LG AVG ${activeMetric.format(leagueAvg)}${activeMetric.suffix}`,
+                                        position: 'insideTopRight',
+                                        fill: 'rgba(255,255,255,0.35)',
+                                        fontSize: 9,
+                                        fontWeight: 'bold',
+                                        fontFamily: 'monospace'
                                     }}
                                 />
                             )}
