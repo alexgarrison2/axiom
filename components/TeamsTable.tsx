@@ -1113,12 +1113,12 @@ const TeamsTable = () => {
                 </div>
             </div>
 
-            <div className="overflow-auto max-h-[75vh] bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative">
+            <div className="overflow-auto max-h-[75vh] bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative" style={{ scrollbarGutter: 'stable' }}>
                 <table className="w-full text-left border-collapse">
                     <thead>
                         {/* Desktop Group Headers */}
                         <tr className="hidden md:table-row bg-gray-950/95 border-b border-gray-800 sticky top-0 z-50 backdrop-blur-sm shadow-sm">
-                            <th className="sticky left-0 bg-gray-950/95 z-40 border-r border-gray-800"></th>
+                            <th className="sticky left-0 bg-gray-950 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)] border-r border-gray-800"></th>
                             {STAT_GROUPS.map(group => (
                                 <th
                                     key={group.name}
@@ -1133,7 +1133,7 @@ const TeamsTable = () => {
                         </tr>
 
                         <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-[33px] z-40 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
-                            <th className="px-2 py-3 font-semibold sticky left-0 bg-gray-900 z-50 shadow-[1px_0_0_0_rgba(255,255,255,0.1)]">Team</th>
+                            <th className="px-2 py-3 font-semibold sticky left-0 bg-gray-900 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">Team</th>
                             {COLUMNS.map(({ k, l, desc, calc }) => {
                                 // Determine if this is the last column in any group for vertical grid lines
                                 const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === k);
@@ -1182,7 +1182,7 @@ const TeamsTable = () => {
                             return (
                                 <React.Fragment key={`${team.team}-${idx}`}>
                                     <tr className={rowStyle}>
-                                        <td className="px-2 py-0.5 font-medium text-white sticky left-0 bg-gray-900 border-r border-gray-800 z-20">
+                                        <td className="px-2 py-0.5 font-medium text-white sticky left-0 bg-gray-900 z-30 shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">
                                             <div className="flex items-center justify-center md:justify-start gap-3">
                                                 {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
 

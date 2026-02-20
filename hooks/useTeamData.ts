@@ -9,18 +9,27 @@ export function useTeamData(teamAbbr: string) {
     useEffect(() => {
         if (!teamAbbr) return;
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
         const fetchData = async () => {
             setLoading(true);
+            setError(null);
             try {
-                const res = await fetch(`/api/teams/${teamAbbr}/stats`);
+                const res = await fetch(`/api/teams/${teamAbbr}/stats`, { signal: controller.signal });
                 if (!res.ok) {
                     throw new Error('Failed to fetch team data');
                 }
                 const jsonData = await res.json();
                 setData(jsonData);
             } catch (err) {
-                setError((err as Error).message);
+                if ((err as Error).name === 'AbortError') {
+                    setError('Request timed out. Please try again.');
+                } else {
+                    setError((err as Error).message);
+                }
             } finally {
+                clearTimeout(timeoutId);
                 setLoading(false);
             }
         };

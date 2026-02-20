@@ -18,7 +18,7 @@ export default function TeamDetailPage() {
     const pathname = usePathname();
     const teamAbbr = (params.teamAbbr as string).toUpperCase();
 
-    const { data, loading } = useTeamData(teamAbbr);
+    const { data, loading, error } = useTeamData(teamAbbr);
 
     const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
 
@@ -100,12 +100,79 @@ export default function TeamDetailPage() {
     }, [filteredGames, filters.last]);
 
 
-    // -- Render --
+    // -- Skeleton Loader --
     if (loading) return (
-        <div className="min-h-screen bg-black text-white p-10 flex flex-col items-center justify-center animate-pulse">
-            <div className="w-12 h-12 rounded-full border-4 border-white/20 border-t-white animate-spin mb-4"></div>
-            <div className="h-4 w-32 bg-white/10 rounded"></div>
-        </div>
+        <main className="min-h-screen bg-black text-white font-sans pb-20 overflow-x-hidden">
+            {/* Shimmer keyframes */}
+            <style>{`
+                @keyframes shimmer {
+                    0% { background-position: -400px 0; }
+                    100% { background-position: 400px 0; }
+                }
+                .skeleton-shimmer {
+                    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+                    background-size: 800px 100%;
+                    animation: shimmer 1.8s ease-in-out infinite;
+                }
+            `}</style>
+
+            {/* Skeleton Header - Team Logo & Name */}
+            <div className="flex flex-col items-center justify-center pt-16 pb-8 px-4">
+                <div className="w-24 h-24 rounded-full skeleton-shimmer mb-4" />
+                <div className="h-6 w-48 rounded-lg skeleton-shimmer mb-2" />
+                <div className="h-4 w-32 rounded-lg skeleton-shimmer" />
+            </div>
+
+            {/* Skeleton Tab Bar */}
+            <div className="w-full px-4 md:px-8 pt-4">
+                <div className="flex gap-2 border-b border-white/5 pb-2 mb-6">
+                    {['Games', 'Charts', 'Skaters', 'Goalies'].map((tab) => (
+                        <div key={tab} className="h-8 w-20 rounded-md skeleton-shimmer" />
+                    ))}
+                </div>
+
+                {/* Skeleton Filter Bar */}
+                <div className="flex gap-3 mb-6">
+                    {[80, 60, 70, 50].map((w, i) => (
+                        <div key={i} className="h-8 rounded-md skeleton-shimmer" style={{ width: `${w}px` }} />
+                    ))}
+                </div>
+
+                {/* Skeleton Table Header */}
+                <div className="h-10 w-full rounded-lg skeleton-shimmer mb-2" />
+
+                {/* Skeleton Table Rows */}
+                {Array.from({ length: 10 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 py-2 border-b border-white/5">
+                        <div className="w-8 h-8 rounded-full skeleton-shimmer shrink-0" />
+                        <div className="h-4 rounded skeleton-shimmer" style={{ width: `${60 + (i % 3) * 20}%` }} />
+                    </div>
+                ))}
+            </div>
+        </main>
+    );
+
+    // -- Error State --
+    if (error) return (
+        <main className="min-h-screen bg-black text-white font-sans flex flex-col items-center justify-center gap-6">
+            <div className="p-6 rounded-full bg-red-500/10 border border-red-500/20">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+            </div>
+            <div className="text-center">
+                <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-widest">Data Unavailable</h3>
+                <p className="text-neutral-500 font-mono text-sm mb-4">{error}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-sm font-bold tracking-wider transition-all"
+                >
+                    RETRY
+                </button>
+            </div>
+        </main>
     );
 
     if (!teamInfo) return <div className="min-h-screen bg-black text-white p-10">Team Not Found</div>;
