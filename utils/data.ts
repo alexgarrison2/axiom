@@ -108,6 +108,19 @@ export interface GamePrediction {
   away_avg_speed?: number;
   home_rr_rate?: number;
   away_rr_rate?: number;
+
+  home_h2h_record?: string;
+  away_h2h_record?: string;
+  home_is_b2b?: boolean;
+  away_is_b2b?: boolean;
+  home_is_3in4?: boolean;
+  away_is_3in4?: boolean;
+  home_is_4in6?: boolean;
+  away_is_4in6?: boolean;
+  home_is_6in9?: boolean;
+  away_is_6in9?: boolean;
+  home_xg_sparkline?: number[];
+  away_xg_sparkline?: number[];
 }
 
 export interface HistoryEntry {
@@ -183,6 +196,19 @@ interface RawPrediction {
   away_avg_speed?: string;
   home_rr_rate?: string;
   away_rr_rate?: string;
+
+  home_h2h_record?: string;
+  away_h2h_record?: string;
+  home_is_b2b?: string;
+  away_is_b2b?: string;
+  home_is_3in4?: string;
+  away_is_3in4?: string;
+  home_is_4in6?: string;
+  away_is_4in6?: string;
+  home_is_6in9?: string;
+  away_is_6in9?: string;
+  home_xg_sparkline?: string;
+  away_xg_sparkline?: string;
 }
 
 interface RawTeam {
@@ -275,6 +301,16 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       }
     };
 
+    // Parse Sparkline
+    const parseSparkline = (jsonStr?: string): number[] => {
+      if (!jsonStr || jsonStr === '[]') return [];
+      try {
+        return JSON.parse(jsonStr) as number[];
+      } catch {
+        return [];
+      }
+    };
+
     if (!homeTeam || !awayTeam) {
       // console.warn(`Team not found for game ${row.game_id}: ${row.home_team} vs ${row.away_team}`);
       return null; // Skip invalid teams
@@ -348,6 +384,19 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       away_avg_speed: row.away_avg_speed ? parseFloat(row.away_avg_speed) : undefined,
       home_rr_rate: row.home_rr_rate ? parseFloat(row.home_rr_rate) : undefined,
       away_rr_rate: row.away_rr_rate ? parseFloat(row.away_rr_rate) : undefined,
+
+      home_h2h_record: row.home_h2h_record || undefined,
+      away_h2h_record: row.away_h2h_record || undefined,
+      home_is_b2b: row.home_is_b2b?.toLowerCase() === 'true',
+      away_is_b2b: row.away_is_b2b?.toLowerCase() === 'true',
+      home_is_3in4: row.home_is_3in4?.toLowerCase() === 'true',
+      away_is_3in4: row.away_is_3in4?.toLowerCase() === 'true',
+      home_is_4in6: row.home_is_4in6?.toLowerCase() === 'true',
+      away_is_4in6: row.away_is_4in6?.toLowerCase() === 'true',
+      home_is_6in9: row.home_is_6in9?.toLowerCase() === 'true',
+      away_is_6in9: row.away_is_6in9?.toLowerCase() === 'true',
+      home_xg_sparkline: parseSparkline(row.home_xg_sparkline),
+      away_xg_sparkline: parseSparkline(row.away_xg_sparkline),
     };
   }).filter((p): p is GamePrediction => p !== null);
 

@@ -304,6 +304,74 @@ def fetch_l7_record(tri_code, starter_lookup=None, common_names=None):
     record_str = f"{wins}-{losses}-{otl}"
     return record_str, detailed_games
     
+def get_h2h_record(team1, team2, curr_dt, df):
+    t_date = pd.to_datetime(curr_dt)
+    history1 = df[
+        (df['team'] == team1) & 
+        (df['opponent'] == team2) & 
+        (df['game_date'] < t_date)
+    ]
+    
+    if history1.empty:
+        return "", ""
+        
+    w1, l1, otl1 = 0, 0, 0
+    w2, l2, otl2 = 0, 0, 0
+    
+    for _, row in history1.iterrows():
+        res = str(row.get('result', ''))
+        if res in ['RW', 'OTW', 'SOW']:
+            w1 += 1
+            if res == 'RW':
+                l2 += 1
+            else:
+                otl2 += 1
+        elif res in ['RL', 'OTL', 'SOL']:
+            w2 += 1
+            if res == 'RL':
+                l1 += 1
+            else:
+                otl1 += 1
+                
+    rec1 = f"{w1}-{l1}-{otl1}" if otl1 > 0 else f"{w1}-{l1}"
+    rec2 = f"{w2}-{l2}-{otl2}" if otl2 > 0 else f"{w2}-{l2}"
+    return rec1, rec2
+
+def get_xg_sparkline(team_name, curr_dt, df):
+    t_date = pd.to_datetime(curr_dt)
+    history = df[(df['team'] == team_name) & (df['game_date'] < t_date)].sort_values('game_date')
+    recent = history.tail(15)
+    
+    sparkline = []
+    for _, row in recent.iterrows():
+        try:
+            xg_diff = float(row.get('xg_for_5v5', 0)) - float(row.get('xg_ag_5v5', 0))
+            sparkline.append(round(xg_diff, 2))
+        except:
+            sparkline.append(0.0)
+            
+    return sparkline
+
+def get_fatigue_flags(team_name, curr_dt, df):
+    t_date = pd.to_datetime(curr_dt)
+    history = df[(df['team'] == team_name) & (df['game_date'] < t_date)].sort_values('game_date')
+    if history.empty:
+        return False, False, False, False
+        
+    dates = pd.to_datetime(history['game_date']).tolist()
+    is_b2b, is_3in4, is_4in6, is_6in9 = False, False, False, False
+    
+    if len(dates) >= 1 and (t_date - dates[-1]).days <= 1:
+        is_b2b = True
+    if len(dates) >= 2 and (t_date - dates[-2]).days <= 3:
+        is_3in4 = True
+    if len(dates) >= 3 and (t_date - dates[-3]).days <= 5:
+        is_4in6 = True
+    if len(dates) >= 5 and (t_date - dates[-5]).days <= 8:
+        is_6in9 = True
+            
+    return is_b2b, is_3in4, is_4in6, is_6in9
+
 def get_wager_recommendation(ev, win_prob, vegas_odds):
     """
     Calculates wager size using Quarter Kelly Criterion.
@@ -1319,6 +1387,13 @@ def predict():
         home_g_stat = goalie_stats_map.get(home_goalie_clean_name, "")
         away_g_stat = goalie_stats_map.get(away_goalie_clean_name, "")
 
+        # Get Features
+        h_h2h, a_h2h = get_h2h_record(home_team, away_team, game_date, game_stats_df)
+        h_spark = get_xg_sparkline(home_team, game_date, game_stats_df)
+        a_spark = get_xg_sparkline(away_team, game_date, game_stats_df)
+        h_is_b2b, h_is_3in4, h_is_4in6, h_is_6in9 = get_fatigue_flags(home_team, game_date, game_stats_df)
+        a_is_b2b, a_is_3in4, a_is_4in6, a_is_6in9 = get_fatigue_flags(away_team, game_date, game_stats_df)
+
         csv_rows.append({
             'game_date': game_date,
             'game_id': game_id,
@@ -1387,7 +1462,6 @@ def predict():
             'away_goalie_status': a_status if a_status else 'Unconfirmed',
             'away_goalie_confirmed': a_conf if a_conf else '',
 
-
             # Goalie vs Opp History
             'home_starter_vs_opp': json.dumps(h_vs_opp_stats) if h_vs_opp_stats else "",
             'away_starter_vs_opp': json.dumps(a_vs_opp_stats) if a_vs_opp_stats else "",
@@ -1396,7 +1470,21 @@ def predict():
             'home_avg_speed': edge_profiles.get(str(team_ids_map.get(home_team)), {}).get('avg_speed', ''),
             'away_avg_speed': edge_profiles.get(str(team_ids_map.get(away_team)), {}).get('avg_speed', ''),
             'home_rr_rate': edge_profiles.get(str(team_ids_map.get(home_team)), {}).get('rr_rate', ''),
-            'away_rr_rate': edge_profiles.get(str(team_ids_map.get(away_team)), {}).get('rr_rate', '')
+            'away_rr_rate': edge_profiles.get(str(team_ids_map.get(away_team)), {}).get('rr_rate', ''),
+            
+            # NEW DATA POINTS
+            'home_h2h_record': h_h2h,
+            'away_h2h_record': a_h2h,
+            'home_is_b2b': h_is_b2b,
+            'away_is_b2b': a_is_b2b,
+            'home_is_3in4': h_is_3in4,
+            'away_is_3in4': a_is_3in4,
+            'home_is_4in6': h_is_4in6,
+            'away_is_4in6': a_is_4in6,
+            'home_is_6in9': h_is_6in9,
+            'away_is_6in9': a_is_6in9,
+            'home_xg_sparkline': json.dumps(h_spark),
+            'away_xg_sparkline': json.dumps(a_spark)
         })        
 
     # Save Last Update Timestamp for Frontend (US/Central)

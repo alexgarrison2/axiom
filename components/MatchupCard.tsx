@@ -361,6 +361,76 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         } catch { return null; }
     };
 
+    // --- Sparkline Component ---
+    const Sparkline = ({
+        data,
+        globalMin,
+        globalMax,
+        isHome
+    }: {
+        data?: number[];
+        globalMin: number;
+        globalMax: number;
+        isHome: boolean;
+    }) => {
+        if (!data || data.length < 2) return null;
+        const W = 120, H = 28;
+        const pad = 2;
+        const range = Math.max(Math.abs(globalMin), Math.abs(globalMax)) * 2;
+        if (range === 0) return null;
+        const toY = (v: number) => H / 2 - (v / range) * (H - pad * 2);
+        const zeroY = toY(0);
+        const pts = data.map((v, i) => {
+            const x = pad + (i / (data.length - 1)) * (W - pad * 2);
+            const y = toY(v);
+            return `${x},${y}`;
+        });
+        const lastVal = data[data.length - 1];
+        const lineColor = lastVal >= 0 ? '#10b981' : '#ef4444'; // green or red
+        const polyline = pts.join(' ');
+        // Gradient fill area under the line back to zero
+        const fillPts = [
+            `${pad},${zeroY}`,
+            ...pts,
+            `${W - pad},${zeroY}`
+        ].join(' ');
+        const fillId = `spark-fill-${isHome ? 'h' : 'a'}-${Math.random().toString(36).slice(2, 6)}`;
+
+        return (
+            <svg width={W} height={H} className="overflow-visible">
+                <defs>
+                    <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={lineColor} stopOpacity="0.2" />
+                        <stop offset="100%" stopColor={lineColor} stopOpacity="0.0" />
+                    </linearGradient>
+                </defs>
+                {/* Zero line */}
+                <line
+                    x1={pad} y1={zeroY} x2={W - pad} y2={zeroY}
+                    stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.15" strokeDasharray="3,3"
+                />
+                {/* Fill */}
+                <polygon points={fillPts} fill={`url(#${fillId})`} />
+                {/* Line */}
+                <polyline
+                    points={polyline}
+                    fill="none"
+                    stroke={lineColor}
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                />
+                {/* End dot */}
+                <circle
+                    cx={pts[pts.length - 1].split(',')[0]}
+                    cy={pts[pts.length - 1].split(',')[1]}
+                    r="2"
+                    fill={lineColor}
+                />
+            </svg>
+        );
+    };
+
     const Legend = ({ className = "" }: { className?: string }) => (
         <div className={`flex flex-wrap items-center justify-center gap-4 text-[9px] font-mono text-neutral-500 ${className}`}>
             <span className="uppercase tracking-widest opacity-50 hidden sm:inline">Legend:</span>
@@ -431,32 +501,46 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         gasBreakdown,
         goalieStats,
         vsOppStats,
-
         opponentTriCode,
         odds,
-
         isSocial,
+        sparkline,
+        sparkGlobalMin,
+        sparkGlobalMax,
+        h2hRecord,
+        isB2b,
+        is3in4,
+        is4in6,
+        is6in9,
     }: {
         team: { name: string; triCode: string; logoUrl: string; color1: string; color2?: string };
-        isHome: boolean,
-        starter: string,
-        xg: number,
-        ppRank?: number,
-        pkRank?: number,
-        l7?: string,
-        ev: number | null,
-        wager: string | null,
-        gas?: number,
-        gasBreakdown?: string[],
-        gsaxTotal?: number,
-        gsaxPct?: number,
-        goalieStats?: string,
-        vsOppStats?: string,
-        opponentTriCode?: string,
-        odds?: string | number | null,
-        isSocial?: boolean,
-        avgSpeed?: number,
-        rrRate?: number
+        isHome: boolean;
+        starter: string;
+        xg: number;
+        ppRank?: number;
+        pkRank?: number;
+        l7?: string;
+        ev: number | null;
+        wager: string | null;
+        gas?: number;
+        gasBreakdown?: string[];
+        gsaxTotal?: number;
+        gsaxPct?: number;
+        goalieStats?: string;
+        vsOppStats?: string;
+        opponentTriCode?: string;
+        odds?: string | number | null;
+        isSocial?: boolean;
+        avgSpeed?: number;
+        rrRate?: number;
+        sparkline?: number[];
+        sparkGlobalMin: number;
+        sparkGlobalMax: number;
+        h2hRecord?: string;
+        isB2b?: boolean;
+        is3in4?: boolean;
+        is4in6?: boolean;
+        is6in9?: boolean;
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
@@ -499,7 +583,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                 </div>
 
                 {/* Main Stats (xG) */}
-                <div className={`flex flex-col ${alignClass} ${isSocial ? 'mb-0.5' : 'mb-4'} items-center`}>
+                <div className={`flex flex-col ${alignClass} ${isSocial ? 'mb-0.5' : 'mb-2'} items-center`}>
                     <div className="flex items-baseline gap-2">
                         <span className={`${isSocial ? 'text-2xl' : 'text-4xl md:text-5xl'} font-black text-white tracking-tighter tabular-nums text-glow-blue`}>
                             <AnimatedNumber value={xg} toFixed={2} />
@@ -511,15 +595,48 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             <ExplanationPopover items={prediction.away_xg_explained} align="left" placement="top" />
                         )}
                     </div>
+                    {/* xG Sparkline */}
+                    {!isSocial && sparkline && sparkline.length >= 2 && (
+                        <div className={`mt-1 ${isHome ? 'md:self-start' : 'md:self-end'}`}>
+                            <Sparkline
+                                data={sparkline}
+                                globalMin={sparkGlobalMin}
+                                globalMax={sparkGlobalMax}
+                                isHome={isHome}
+                            />
+                            <div className="text-[8px] text-neutral-600 font-mono mt-0.5 text-center">5v5 xGD (L15)</div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Secondary Badges Row (Aligned immediately under xG) */}
-                <div className={`flex flex-wrap gap-2 justify-center md:justify-start ${isSocial ? 'mb-0.5' : 'mb-4'}`}>
+                <div className={`flex flex-wrap gap-1.5 justify-center md:justify-start ${isSocial ? 'mb-0.5' : 'mb-4'}`}>
                     {ppRank && ppRank <= 5 && <Badge color="blue" size={isSocial ? "xs" : "sm"}>#{ppRank} PP</Badge>}
                     {ppRank && ppRank >= 28 && <Badge color="red" size={isSocial ? "xs" : "sm"}>#{ppRank} PP</Badge>}
                     {pkRank && pkRank <= 5 && <Badge color="blue" size={isSocial ? "xs" : "sm"}>#{pkRank} PK</Badge>}
                     {pkRank && pkRank >= 28 && <Badge color="red" size={isSocial ? "xs" : "sm"}>#{pkRank} PK</Badge>}
                     {l7 && <Badge color="gray">{l7} (L7)</Badge>}
+
+                    {/* H2H Pill */}
+                    {!isSocial && h2hRecord && h2hRecord !== '0-0' && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-sky-400 bg-sky-400/10 border-sky-400/25">
+                            H2H {h2hRecord}
+                        </span>
+                    )}
+
+                    {/* Fatigue Pills */}
+                    {!isSocial && is6in9 && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-red-400 bg-red-400/10 border-red-400/30" title="6 games in 9 days">6in9</span>
+                    )}
+                    {!isSocial && is4in6 && !is6in9 && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-orange-400 bg-orange-400/10 border-orange-400/30" title="4 games in 6 days">4in6</span>
+                    )}
+                    {!isSocial && is3in4 && !is4in6 && !is6in9 && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-amber-400 bg-amber-400/10 border-amber-400/30" title="3 games in 4 days">3in4</span>
+                    )}
+                    {!isSocial && isB2b && !is3in4 && !is4in6 && !is6in9 && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-amber-300 bg-amber-300/10 border-amber-300/25" title="Back-to-back">B2B</span>
+                    )}
 
                     {/* Edge Badges */}
                     {!isSocial && <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'left' : 'right'} />}
@@ -538,6 +655,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     };
 
     const isHighEv = ((homeEv || 0) > 0.05) || ((awayEv || 0) > 0.05);
+
+    // --- Compute global sparkline y-axis scale ---
+    const allSparkValues = [
+        ...(prediction.home_xg_sparkline || []),
+        ...(prediction.away_xg_sparkline || [])
+    ];
+    const sparkGlobalMin = allSparkValues.length > 0 ? Math.min(...allSparkValues) : -2;
+    const sparkGlobalMax = allSparkValues.length > 0 ? Math.max(...allSparkValues) : 2;
 
     if (isUltraCompact) {
         return (
@@ -756,6 +881,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             isSocial={isSocial}
                             avgSpeed={away_avg_speed}
                             rrRate={away_rr_rate}
+                            sparkline={prediction.away_xg_sparkline}
+                            sparkGlobalMin={sparkGlobalMin}
+                            sparkGlobalMax={sparkGlobalMax}
+                            h2hRecord={prediction.away_h2h_record}
+                            isB2b={prediction.away_is_b2b}
+                            is3in4={prediction.away_is_3in4}
+                            is4in6={prediction.away_is_4in6}
+                            is6in9={prediction.away_is_6in9}
                         />
                         <NewsIndicator
                             hasNews={prediction.away_news?.some(n => n.category !== 'Goalie Start') ?? false}
@@ -847,6 +980,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             isSocial={isSocial}
                             avgSpeed={home_avg_speed}
                             rrRate={home_rr_rate}
+                            sparkline={prediction.home_xg_sparkline}
+                            sparkGlobalMin={sparkGlobalMin}
+                            sparkGlobalMax={sparkGlobalMax}
+                            h2hRecord={prediction.home_h2h_record}
+                            isB2b={prediction.home_is_b2b}
+                            is3in4={prediction.home_is_3in4}
+                            is4in6={prediction.home_is_4in6}
+                            is6in9={prediction.home_is_6in9}
                         />
                         <NewsIndicator
                             hasNews={prediction.home_news?.some(n => n.category !== 'Goalie Start') ?? false}
