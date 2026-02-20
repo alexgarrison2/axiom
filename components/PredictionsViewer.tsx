@@ -10,6 +10,7 @@ import HistoryTable from './HistoryTable';
 import TeamsTable from './TeamsTable';
 import NewsSection from './NewsSection';
 import PlayoffTable from './PlayoffTable';
+import PlayoffBracket from './PlayoffBracket';
 import { Slider } from '@/components/ui/slider';
 
 interface PredictionsViewerProps {
@@ -240,7 +241,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 
     // Filter predictions for the selected date
     const filteredPredictions = useMemo(() => {
-        if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News' || selectedTab === 'Playoffs') return [];
+        if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News' || selectedTab === 'Playoffs' || selectedTab === 'Bracket') return [];
         return predictions.filter(p => p.date === selectedTab);
     }, [predictions, selectedTab]);
 
@@ -369,6 +370,24 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                     />
                                 )}
                                 <span className="relative z-10">PLAYOFFS</span>
+                            </button>
+
+                            {/* Bracket Button */}
+                            <button
+                                onClick={() => setSelectedTab('Bracket')}
+                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Bracket'
+                                        ? 'text-sky-400 border-sky-400 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
+                                        : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
+                                    }`}
+                            >
+                                {selectedTab === 'Bracket' && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute inset-0 bg-sky-400/10 rounded-full"
+                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                    />
+                                )}
+                                <span className="relative z-10">BRACKET</span>
                             </button>
 
                             {/* Date Buttons */}
@@ -580,6 +599,29 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             ) : (
                                 <div className="flex justify-center items-center py-24">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                ) : selectedTab === 'Bracket' ? (
+                    <motion.div
+                        key="tab-bracket"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full"
+                    >
+                        <div className="max-w-7xl mx-auto">
+                            <div className="text-center mb-8">
+                                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-blue-400 mb-2">Playoff Bracket</h2>
+                                <p className="text-neutral-400 text-sm">Current seedings from live standings · Monte Carlo cup odds · Series win % from Poisson xG model</p>
+                            </div>
+                            {Object.keys(simResults).length > 0 ? (
+                                <PlayoffBracket currentStandings={currentStandings} simResults={simResults} />
+                            ) : (
+                                <div className="flex justify-center items-center py-24">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500" />
                                 </div>
                             )}
                         </div>
