@@ -1,31 +1,5 @@
 [
     {
-        "id": 2025090027,
-        "gameDate": "2026-02-20",
-        "startTimeUTC": "2026-02-20T15:30:00Z",
-        "homeTeam": "Canada",
-        "awayTeam": "Finland",
-        "homeTeamAbbrev": "CAN",
-        "awayTeamAbbrev": "FIN",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025090028,
-        "gameDate": "2026-02-20",
-        "startTimeUTC": "2026-02-20T20:00:00Z",
-        "homeTeam": "USA",
-        "awayTeam": "Slovakia",
-        "homeTeamAbbrev": "USA",
-        "awayTeamAbbrev": "SVK",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025090029,
         "gameDate": "2026-02-21",
         "startTimeUTC": "2026-02-21T19:30:00Z",
@@ -33,7 +7,20 @@
         "awayTeam": "Finland",
         "homeTeamAbbrev": "SVK",
         "awayTeamAbbrev": "FIN",
-        "homeGoalieConfirmed": null,
+        "homeGoalieConfirmed": "Samuel Hlavaj",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Juuse Saros",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025090030,
+        "gameDate": "2026-02-22",
+        "startTimeUTC": "2026-02-22T13:00:00Z",
+        "homeTeam": "Canada",
+        "awayTeam": "USA",
+        "homeTeamAbbrev": "CAN",
+        "awayTeamAbbrev": "USA",
+        "homeGoalieConfirmed": "Jordan Binnington",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": null,
         "awayGoalieStatus": "Unconfirmed"
