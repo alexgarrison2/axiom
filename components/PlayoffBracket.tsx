@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TeamStandings, SimResult } from '@/utils/simulation-engine';
+import { getTeamColor } from '@/utils/team-colors';
 import PlayoffDetailModal from './PlayoffDetailModal';
 
 // ─── Logo helper ────────────────────────────────────────────────────────────
@@ -261,6 +262,18 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ team, seriesWinPct, showSeed = true
     );
 };
 
+// ─── Team color for dark backgrounds ─────────────────────────────────────────
+
+const DARK_TEAM_OVERRIDES: Record<string, string> = {
+    PIT: '#FCB514', LAK: '#A2AAAD', SEA: '#99D9D9', EDM: '#FF4C00',
+    TBL: '#60a5fa', WPG: '#4a8fe7', TOR: '#5a8fd4', BUF: '#FCB514',
+    CBJ: '#CE1126', VAN: '#00843D', STL: '#5a8fd4', WSH: '#C8102E',
+};
+
+function getVisibleTeamColor(tricode: string): string {
+    return DARK_TEAM_OVERRIDES[tricode] || getTeamColor(tricode);
+}
+
 // ─── SeriesBox ───────────────────────────────────────────────────────────────
 
 interface SeriesBoxProps {
@@ -311,94 +324,81 @@ const SeriesBox: React.FC<SeriesBoxProps> = ({ matchup, round, onSelectTeam, win
             </div>
 
             <AnimatePresence>
-                {hovered && higher && lower && breakdown && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.12 }}
-                        className={`absolute z-50 ${tooltipClass} top-0 bg-[#0d0f14] border border-white/15 rounded-xl p-3 shadow-2xl backdrop-blur-xl w-[230px] pointer-events-none`}
-                    >
-                        {/* Header */}
-                        <div className="text-[9px] text-gray-500 uppercase tracking-widest mb-2.5 font-bold">{round} Series Breakdown</div>
-
-                        {/* Overall win% bar */}
-                        <div className="flex flex-col gap-1 mb-3 pb-3 border-b border-white/8">
-                            {/* Higher seed */}
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black text-white w-8">{higher.tricode}</span>
-                                <div className="flex-1 h-2 rounded-full bg-white/8 overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full transition-all"
-                                        style={{ width: `${breakdown.higherWinPct}%`, backgroundColor: roundOddsColor(breakdown.higherWinPct) }}
-                                    />
+                {hovered && higher && lower && breakdown && (() => {
+                    const hColor = getVisibleTeamColor(higher.tricode);
+                    const lColor = getVisibleTeamColor(lower.tricode);
+                    return (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.12 }}
+                            className={`absolute z-50 ${tooltipClass} top-0 bg-[#0d0f14] border border-white/15 rounded-xl p-4 shadow-2xl backdrop-blur-xl w-[260px] pointer-events-none`}
+                        >
+                            {/* Header: Logos + Names */}
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-1.5">
+                                    <TeamLogo tricode={higher.tricode} size={18} />
+                                    <span className="text-[11px] font-black text-white">{higher.tricode}</span>
                                 </div>
-                                <span className="text-[10px] font-black w-9 text-right" style={{ color: roundOddsColor(breakdown.higherWinPct) }}>
-                                    {breakdown.higherWinPct.toFixed(0)}%
-                                </span>
-                            </div>
-                            {/* Lower seed */}
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-gray-400 w-8">{lower.tricode}</span>
-                                <div className="flex-1 h-2 rounded-full bg-white/8 overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full transition-all"
-                                        style={{ width: `${breakdown.lowerWinPct}%`, backgroundColor: roundOddsColor(breakdown.lowerWinPct) }}
-                                    />
+                                <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">{round} Series</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-[11px] font-black text-white">{lower.tricode}</span>
+                                    <TeamLogo tricode={lower.tricode} size={18} />
                                 </div>
-                                <span className="text-[10px] font-black w-9 text-right" style={{ color: roundOddsColor(breakdown.lowerWinPct) }}>
-                                    {breakdown.lowerWinPct.toFixed(0)}%
-                                </span>
                             </div>
-                        </div>
 
-                        {/* Per-game-count bars */}
-                        <div className="flex flex-col gap-1">
-                            <div className="text-[8px] text-gray-600 uppercase tracking-widest mb-1 font-bold">Series length</div>
-                            {/* Higher seed rows */}
-                            {[4, 5, 6, 7].map(n => {
-                                const hBar = breakdown.bars.find(b => b.team === 'higher' && b.label === `in ${n}`);
-                                const lBar = breakdown.bars.find(b => b.team === 'lower' && b.label === `in ${n}`);
-                                const hPct = hBar?.pct ?? 0;
-                                const lPct = lBar?.pct ?? 0;
-                                const maxPct = Math.max(hPct, lPct, 0.1);
-                                return (
-                                    <div key={n} className="flex items-center gap-1.5">
-                                        <span className="text-[8px] text-gray-600 font-mono w-4 shrink-0">{n}G</span>
-                                        {/* higher */}
-                                        <div className="flex-1 flex flex-col gap-px">
-                                            <div className="flex items-center gap-1">
-                                                <div
-                                                    className="h-1.5 rounded-sm"
-                                                    style={{ width: `${(hPct / maxPct * 100).toFixed(0)}%`, minWidth: hPct > 0.5 ? '4px' : '0px', backgroundColor: '#60a5fa', opacity: 0.85 }}
-                                                />
-                                                <span className="text-[8px] text-blue-400 font-mono">{hPct.toFixed(1)}%</span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <div
-                                                    className="h-1.5 rounded-sm"
-                                                    style={{ width: `${(lPct / maxPct * 100).toFixed(0)}%`, minWidth: lPct > 0.5 ? '4px' : '0px', backgroundColor: '#f87171', opacity: 0.85 }}
-                                                />
-                                                <span className="text-[8px] text-red-400 font-mono">{lPct.toFixed(1)}%</span>
-                                            </div>
-                                        </div>
+                            {/* Split bar */}
+                            <div className="mb-1">
+                                <div className="flex h-8 rounded-lg overflow-hidden">
+                                    <div
+                                        className="flex items-center justify-center transition-all"
+                                        style={{ width: `${breakdown.higherWinPct}%`, backgroundColor: hColor }}
+                                    >
+                                        <span className="text-sm font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                                            {breakdown.higherWinPct.toFixed(0)}%
+                                        </span>
                                     </div>
-                                );
-                            })}
-                            {/* Legend */}
-                            <div className="flex items-center gap-3 mt-1.5 pt-1.5 border-t border-white/6">
-                                <div className="flex items-center gap-1"><div className="w-2 h-1.5 rounded-sm bg-blue-400/85" /><span className="text-[8px] text-gray-500">{higher.tricode}</span></div>
-                                <div className="flex items-center gap-1"><div className="w-2 h-1.5 rounded-sm bg-red-400/85" /><span className="text-[8px] text-gray-500">{lower.tricode}</span></div>
+                                    <div
+                                        className="flex items-center justify-center transition-all"
+                                        style={{ width: `${breakdown.lowerWinPct}%`, backgroundColor: lColor }}
+                                    >
+                                        <span className="text-sm font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                                            {breakdown.lowerWinPct.toFixed(0)}%
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        {simFreq && (
-                            <div className="mt-2 pt-2 border-t border-white/8 text-[9px] text-gray-600 font-mono">
-                                Matched in {simFreq}% of simulations · {higher.tricode} has home ice
+                            {/* Games table */}
+                            <div className="mt-3 pt-3 border-t border-white/8">
+                                {[4, 5, 6, 7].map(n => {
+                                    const hBar = breakdown.bars.find(b => b.team === 'higher' && b.label === `in ${n}`);
+                                    const lBar = breakdown.bars.find(b => b.team === 'lower' && b.label === `in ${n}`);
+                                    const hPct = hBar?.pct ?? 0;
+                                    const lPct = lBar?.pct ?? 0;
+                                    return (
+                                        <div key={n} className="flex items-center justify-between py-1">
+                                            <span className="text-[10px] font-bold font-mono w-10 text-right" style={{ color: hColor }}>
+                                                {hPct >= 1 ? hPct.toFixed(0) : hPct.toFixed(1)}%
+                                            </span>
+                                            <span className="text-[9px] text-gray-500 font-mono">{n} Games</span>
+                                            <span className="text-[10px] font-bold font-mono w-10" style={{ color: lColor }}>
+                                                {lPct >= 1 ? lPct.toFixed(0) : lPct.toFixed(1)}%
+                                            </span>
+                                        </div>
+                                    );
+                                })}
                             </div>
-                        )}
-                    </motion.div>
-                )}
+
+                            {simFreq && (
+                                <div className="mt-2 pt-2 border-t border-white/8 text-[9px] text-gray-600 font-mono text-center">
+                                    Matched in {simFreq}% of sims · {higher.tricode} has home ice
+                                </div>
+                            )}
+                        </motion.div>
+                    );
+                })()}
             </AnimatePresence>
         </div>
     );
@@ -518,6 +518,7 @@ const ConferenceColumn: React.FC<ConferenceColProps> = ({ name, seeded, simResul
 
 const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simResults }) => {
     const [selectedTeamTricode, setSelectedTeamTricode] = useState<string | null>(null);
+    const [cupFinalHovered, setCupFinalHovered] = useState(false);
 
     const totalSims = useMemo(() => {
         const first = Object.values(simResults)[0];
@@ -615,7 +616,11 @@ const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simRe
                     {/* Cup Final Center */}
                     <div className="flex flex-col items-center gap-3 px-4 shrink-0 min-w-[150px]">
                         <div className="text-[10px] uppercase tracking-widest font-black text-amber-400/80">Stanley Cup Final</div>
-                        <div className="flex flex-col gap-1 w-[140px]">
+                        <div
+                            className="relative flex flex-col gap-1 w-[140px]"
+                            onMouseEnter={() => setCupFinalHovered(true)}
+                            onMouseLeave={() => setCupFinalHovered(false)}
+                        >
                             <TeamSlot
                                 team={westSeeded[0] ?? null}
                                 seriesWinPct={cupFinalBreakdown?.higherWinPct}
@@ -629,6 +634,78 @@ const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simRe
                                 showSeed={false}
                                 onClick={() => eastSeeded[0] && setSelectedTeamTricode(eastSeeded[0].tricode)}
                             />
+
+                            <AnimatePresence>
+                                {cupFinalHovered && westSeeded[0] && eastSeeded[0] && cupFinalBreakdown && (() => {
+                                    const higher = westSeeded[0];
+                                    const lower = eastSeeded[0];
+                                    const hColor = getVisibleTeamColor(higher.tricode);
+                                    const lColor = getVisibleTeamColor(lower.tricode);
+                                    return (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ duration: 0.12 }}
+                                            className="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[#0d0f14] border border-amber-400/20 rounded-xl p-4 shadow-2xl backdrop-blur-xl w-[260px] pointer-events-none"
+                                        >
+                                            {/* Header */}
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-1.5">
+                                                    <TeamLogo tricode={higher.tricode} size={18} />
+                                                    <span className="text-[11px] font-black text-white">{higher.tricode}</span>
+                                                </div>
+                                                <span className="text-[9px] text-amber-400/70 uppercase tracking-widest font-bold">🏆 Final</span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-[11px] font-black text-white">{lower.tricode}</span>
+                                                    <TeamLogo tricode={lower.tricode} size={18} />
+                                                </div>
+                                            </div>
+
+                                            {/* Split bar */}
+                                            <div className="flex h-8 rounded-lg overflow-hidden mb-3">
+                                                <div
+                                                    className="flex items-center justify-center"
+                                                    style={{ width: `${cupFinalBreakdown.higherWinPct}%`, backgroundColor: hColor }}
+                                                >
+                                                    <span className="text-sm font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                                                        {cupFinalBreakdown.higherWinPct.toFixed(0)}%
+                                                    </span>
+                                                </div>
+                                                <div
+                                                    className="flex items-center justify-center"
+                                                    style={{ width: `${cupFinalBreakdown.lowerWinPct}%`, backgroundColor: lColor }}
+                                                >
+                                                    <span className="text-sm font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                                                        {cupFinalBreakdown.lowerWinPct.toFixed(0)}%
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Games table */}
+                                            <div className="border-t border-white/8 pt-2">
+                                                {[4, 5, 6, 7].map(n => {
+                                                    const hBar = cupFinalBreakdown.bars.find(b => b.team === 'higher' && b.label === `in ${n}`);
+                                                    const lBar = cupFinalBreakdown.bars.find(b => b.team === 'lower' && b.label === `in ${n}`);
+                                                    const hPct = hBar?.pct ?? 0;
+                                                    const lPct = lBar?.pct ?? 0;
+                                                    return (
+                                                        <div key={n} className="flex items-center justify-between py-1">
+                                                            <span className="text-[10px] font-bold font-mono w-10 text-right" style={{ color: hColor }}>
+                                                                {hPct >= 1 ? hPct.toFixed(0) : hPct.toFixed(1)}%
+                                                            </span>
+                                                            <span className="text-[9px] text-gray-500 font-mono">{n} Games</span>
+                                                            <span className="text-[10px] font-bold font-mono w-10" style={{ color: lColor }}>
+                                                                {lPct >= 1 ? lPct.toFixed(0) : lPct.toFixed(1)}%
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })()}
+                            </AnimatePresence>
                         </div>
                         <div className="w-px h-6 bg-amber-400/20" />
                         <div className="flex flex-col items-center gap-1.5">
