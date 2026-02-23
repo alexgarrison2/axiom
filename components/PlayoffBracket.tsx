@@ -647,7 +647,7 @@ const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simRe
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.95 }}
                                             transition={{ duration: 0.12 }}
-                                            className="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[#0d0f14] border border-amber-400/20 rounded-xl p-4 shadow-2xl backdrop-blur-xl w-[260px] pointer-events-none"
+                                            className="absolute z-50 top-full mt-2 left-1/2 -translate-x-1/2 bg-[#0d0f14] border border-amber-400/20 rounded-xl p-4 shadow-2xl backdrop-blur-xl w-[260px] pointer-events-none"
                                         >
                                             {/* Header */}
                                             <div className="flex items-center justify-between mb-3">
