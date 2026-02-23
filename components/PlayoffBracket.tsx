@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TeamStandings, SimResult } from '@/utils/simulation-engine';
 import PlayoffDetailModal from './PlayoffDetailModal';
 
+// ─── Logo helper ────────────────────────────────────────────────────────────
+
 const TeamLogo = ({ tricode, size = 24 }: { tricode: string; size?: number }) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -17,7 +19,7 @@ const TeamLogo = ({ tricode, size = 24 }: { tricode: string; size?: number }) =>
     />
 );
 
-// ─── Types ─────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface PlayoffBracketProps {
     currentStandings: TeamStandings[];
@@ -27,30 +29,22 @@ interface PlayoffBracketProps {
 interface SeededTeam extends TeamStandings {
     seed: number;
     role: 'div1' | 'div2' | 'wc';
-    cupOdds: number;        // % from Monte Carlo
-    playoffOdds: number;    // % from Monte Carlo
-    proj: number;           // avg projected points
+    cupOdds: number;
+    playoffOdds: number;
+    proj: number;
 }
 
 interface Matchup {
     id: string;
-    higher: SeededTeam | null;   // higher seed (home ice)
-    lower: SeededTeam | null;    // lower seed
-    winPct: number;              // % chance the higher seed wins the series
-    r1SimCount?: number;         // how many times these two met in Monte Carlo R1
+    higher: SeededTeam | null;
+    lower: SeededTeam | null;
+    /** % chance higher seed wins series (from Poisson xG model) */
+    winPct: number;
+    r1SimCount?: number;
     totalSims?: number;
 }
 
-interface ConferenceBracket {
-    name: string;
-    matchups: {
-        r1: [Matchup, Matchup, Matchup, Matchup];  // 4 first-round series
-        r2: [Matchup, Matchup];                     // 2 second-round series (bracket-fixed)
-        cf: Matchup;                                 // Conference final
-    };
-}
-
-// ─── Seeding Logic ─────────────────────────────────────────────────────────
+// ─── Division / Conf mapping ─────────────────────────────────────────────────
 
 const DIVISION_MAP: Record<string, string> = {
     BOS: 'ATL', BUF: 'ATL', DET: 'ATL', FLA: 'ATL', MTL: 'ATL', OTT: 'ATL', TBL: 'ATL', TOR: 'ATL',
@@ -58,7 +52,6 @@ const DIVISION_MAP: Record<string, string> = {
     CHI: 'CEN', COL: 'CEN', DAL: 'CEN', MIN: 'CEN', NSH: 'CEN', STL: 'CEN', UTA: 'CEN', WPG: 'CEN',
     ANA: 'PAC', CGY: 'PAC', EDM: 'PAC', LAK: 'PAC', SEA: 'PAC', SJS: 'PAC', VAN: 'PAC', VGK: 'PAC',
 };
-
 const DIV_NAMES: Record<string, string> = { ATL: 'Atlantic', MET: 'Metro', CEN: 'Central', PAC: 'Pacific' };
 
 function sortByStandings(a: TeamStandings, b: TeamStandings): number {
@@ -68,25 +61,30 @@ function sortByStandings(a: TeamStandings, b: TeamStandings): number {
     return b.wins - a.wins;
 }
 
-/** Poisson win probability — extracted from simulation-engine logic */
+// ─── Probability math ────────────────────────────────────────────────────────
+
 function factorial(n: number): number {
     if (n <= 1) return 1;
     let r = 1;
     for (let i = 2; i <= n; i++) r *= i;
     return r;
 }
+function choose(n: number, k: number): number {
+    return factorial(n) / (factorial(k) * factorial(n - k));
+}
 function poissonPmf(k: number, lambda: number): number {
     return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
 }
+
 function calcGameWinProb(home: TeamStandings, away: TeamStandings, leagueAvg = 2.35): number {
     const HOME_ICE = 0.16;
-    const h_5v5 = (home.xgf_5v5 * away.xga_5v5) / leagueAvg;
-    const a_5v5 = (away.xgf_5v5 * home.xga_5v5) / leagueAvg;
+    const h5 = (home.xgf_5v5 * away.xga_5v5) / leagueAvg;
+    const a5 = (away.xgf_5v5 * home.xga_5v5) / leagueAvg;
     const h_opps = (home.pen_drawn_60 + away.pen_taken_60) / 2;
     const a_opps = (away.pen_drawn_60 + home.pen_taken_60) / 2;
     const ST = 0.18;
-    const hXg = Math.max(0.1, h_5v5 + HOME_ICE + h_opps * ST * home.pp_eff * away.pk_eff - away.goalie_rating * 0.5);
-    const aXg = Math.max(0.1, a_5v5 + a_opps * ST * away.pp_eff * home.pk_eff - home.goalie_rating * 0.5);
+    const hXg = Math.max(0.1, h5 + HOME_ICE + h_opps * ST * home.pp_eff * away.pk_eff - away.goalie_rating * 0.5);
+    const aXg = Math.max(0.1, a5 + a_opps * ST * away.pp_eff * home.pk_eff - home.goalie_rating * 0.5);
 
     let pWin = 0, pLoss = 0, pTie = 0;
     for (let h = 0; h < 12; h++) for (let a = 0; a < 12; a++) {
@@ -97,20 +95,45 @@ function calcGameWinProb(home: TeamStandings, away: TeamStandings, leagueAvg = 2
     return (pWin / tot) + ((pTie / tot) * (hXg / (hXg + aXg)));
 }
 
-/** Best-of-7 series win probability given per-game win prob */
-function seriesWinProb(pGame: number): number {
-    // P(win series) = sum over (win in k games, k=4..7)
-    let p = 0;
+/**
+ * Returns series win probability AND breakdown of wins-in-N probabilities
+ * for both teams.
+ *
+ * Fix: losses = wins - 4 (not wins - 1). For a team to win in W games they
+ * need exactly 4 wins, and W-4 losses before the final game.
+ */
+interface SeriesBreakdown {
+    higherWinPct: number;
+    lowerWinPct: number;
+    bars: { label: string; pct: number; team: 'higher' | 'lower' }[];
+}
+function calcSeriesBreakdown(pGame: number): SeriesBreakdown {
+    const results: { label: string; pct: number; team: 'higher' | 'lower' }[] = [];
+
+    let higherTotal = 0;
+    let lowerTotal = 0;
+
     for (let wins = 4; wins <= 7; wins++) {
-        const losses = wins - 1; // series doesn't end before 4 wins
-        // Negative binomial: C(wins-1, 3) * p^4 * (1-p)^losses
-        const ways = factorial(wins - 1) / (factorial(3) * factorial(losses));
-        p += ways * Math.pow(pGame, 4) * Math.pow(1 - pGame, losses);
+        const losses = wins - 4;           // 0,1,2,3 for wins=4,5,6,7
+        const ways = choose(wins - 1, 3);  // C(W-1, 3) — last game must be a win
+
+        const pHigher = ways * Math.pow(pGame, 4) * Math.pow(1 - pGame, losses);
+        const pLower = ways * Math.pow(1 - pGame, 4) * Math.pow(pGame, losses);
+
+        higherTotal += pHigher;
+        lowerTotal += pLower;
+
+        results.push({ label: `in ${wins}`, pct: pHigher * 100, team: 'higher' });
+        results.push({ label: `in ${wins}`, pct: pLower * 100, team: 'lower' });
     }
-    return p;
+
+    return { higherWinPct: higherTotal * 100, lowerWinPct: lowerTotal * 100, bars: results };
 }
 
-// ─── Conference Seeding ─────────────────────────────────────────────────────
+// ─── Per-round advance probability from Monte Carlo ──────────────────────────
+//   round_exit_dist: MISS | R1 | R2 | CF | F | CUP
+
+// ─── Seeding ─────────────────────────────────────────────────────────────────
 
 function seedConference(
     teams: TeamStandings[],
@@ -141,14 +164,9 @@ function seedConference(
         };
     };
 
-    // Seeds: div1 #1=1, div1 #2=2, div1 #3=3, div2 #1=4, div2 #2=5, div2 #3=6, WC1=7, WC2=8
     return [
-        enrich(top3d1[0], 1, 'div1'),
-        enrich(top3d1[1], 2, 'div1'),
-        enrich(top3d1[2], 3, 'div1'),
-        enrich(top3d2[0], 4, 'div2'),
-        enrich(top3d2[1], 5, 'div2'),
-        enrich(top3d2[2], 6, 'div2'),
+        enrich(top3d1[0], 1, 'div1'), enrich(top3d1[1], 2, 'div1'), enrich(top3d1[2], 3, 'div1'),
+        enrich(top3d2[0], 4, 'div2'), enrich(top3d2[1], 5, 'div2'), enrich(top3d2[2], 6, 'div2'),
         ...(wc1 ? [enrich(wc1, 7, 'wc')] : []),
         ...(wc2 ? [enrich(wc2, 8, 'wc')] : []),
     ];
@@ -159,112 +177,117 @@ function buildMatchup(
     lower: SeededTeam | null,
     simResults: Record<string, SimResult>,
     totalSims: number,
-    idPrefix: string
+    id: string
 ): Matchup {
-    if (!higher || !lower) {
-        return { id: idPrefix, higher, lower, winPct: 0 };
-    }
+    if (!higher || !lower) return { id, higher, lower, winPct: 50 };
     const pGame = calcGameWinProb(higher, lower);
-    const sp = seriesWinProb(pGame);
-
-    // Check Monte Carlo R1 matchup count
-    const r1Sims = simResults[higher.tricode]?.r1Matchups?.[lower.tricode] || 0;
-
-    return {
-        id: idPrefix,
-        higher,
-        lower,
-        winPct: sp * 100,
-        r1SimCount: r1Sims,
-        totalSims,
-    };
+    const { higherWinPct } = calcSeriesBreakdown(pGame);
+    const r1SimCount = simResults[higher.tricode]?.r1Matchups?.[lower.tricode] || 0;
+    return { id, higher, lower, winPct: higherWinPct, r1SimCount, totalSims };
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ─── Color helpers ───────────────────────────────────────────────────────────
 
-const CUP_COLORS: Record<number, string> = {
-    0: '#6b7280', // gray — bubble/miss
-};
 function cupColorFor(pct: number): string {
-    if (pct >= 15) return '#f59e0b'; // gold
-    if (pct >= 8) return '#34d399';  // green
-    if (pct >= 3) return '#60a5fa';  // blue
-    return '#9ca3af';                // gray
+    if (pct >= 15) return '#f59e0b';
+    if (pct >= 8) return '#34d399';
+    if (pct >= 3) return '#60a5fa';
+    return '#9ca3af';
 }
+function roundOddsColor(pct: number): string {
+    if (pct >= 68) return '#f59e0b';
+    if (pct >= 55) return '#34d399';
+    if (pct >= 45) return '#60a5fa';
+    return '#9ca3af';
+}
+
+// ─── TeamSlot ────────────────────────────────────────────────────────────────
 
 interface TeamSlotProps {
     team: SeededTeam | null;
-    isWinner?: boolean;
+    /** % this team wins THIS specific series (the counterpart slot gets 100 - this) */
+    seriesWinPct?: number;
     showSeed?: boolean;
+    isWinner?: boolean;
     onClick?: () => void;
 }
-const TeamSlot: React.FC<TeamSlotProps> = ({ team, isWinner, showSeed = true, onClick }) => {
+
+const TeamSlot: React.FC<TeamSlotProps> = ({ team, seriesWinPct, showSeed = true, isWinner, onClick }) => {
     if (!team) {
         return (
-            <div className="flex items-center gap-2 px-3 py-2 h-[48px] bg-white/3 rounded-lg border border-white/5">
-                <div className="w-6 h-6 rounded bg-white/5 shrink-0" />
+            <div className="flex items-center gap-2 px-3 py-2 h-[46px] bg-white/3 rounded-lg border border-white/5">
+                <div className="w-5 h-5 rounded bg-white/5 shrink-0" />
                 <span className="text-xs text-gray-600 font-mono uppercase tracking-wider">TBD</span>
             </div>
         );
     }
 
-    const color = cupColorFor(team.cupOdds);
+    const displayPct = seriesWinPct ?? 50;
+    const color = roundOddsColor(displayPct);
 
     return (
         <motion.div
             whileHover={{ scale: 1.02, x: 2 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             onClick={onClick}
-            className={`flex items-center gap-2 px-2.5 py-1.5 h-[48px] rounded-lg border cursor-pointer transition-all duration-200 relative overflow-hidden ${isWinner
+            className={`flex items-center gap-2 px-2.5 py-1.5 h-[46px] rounded-lg border cursor-pointer transition-all duration-200 relative overflow-hidden ${isWinner
                 ? 'border-white/25 bg-white/8 shadow-lg'
                 : 'border-white/8 bg-white/4 hover:border-white/20 hover:bg-white/6'
                 }`}
         >
-            {/* Cup odds glow bar on left */}
-            <div
-                className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-lg opacity-80"
-                style={{ backgroundColor: color }}
-            />
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-lg" style={{ backgroundColor: color }} />
 
-            {/* Seed badge */}
             {showSeed && (
                 <span className="text-[9px] font-black text-gray-500 font-mono w-3 text-center shrink-0 ml-1">
                     {team.seed}
                 </span>
             )}
 
-            {/* Logo */}
-            <div className="w-6 h-6 shrink-0">
-                <TeamLogo tricode={team.tricode} size={24} />
+            <div className="w-5 h-5 shrink-0">
+                <TeamLogo tricode={team.tricode} size={20} />
             </div>
 
-            {/* Name */}
             <span className={`text-xs font-bold tracking-wide truncate flex-1 ${isWinner ? 'text-white' : 'text-gray-300'}`}>
                 {team.tricode}
             </span>
 
-            {/* Cup odds pill */}
             <span
                 className="text-[9px] font-black font-mono px-1.5 py-0.5 rounded-full shrink-0"
                 style={{ color, backgroundColor: `${color}20` }}
             >
-                {team.cupOdds >= 1 ? team.cupOdds.toFixed(1) : team.cupOdds.toFixed(2)}%
+                {displayPct >= 10 ? displayPct.toFixed(0) : displayPct.toFixed(1)}%
             </span>
         </motion.div>
     );
 };
 
+// ─── SeriesBox ───────────────────────────────────────────────────────────────
+
 interface SeriesBoxProps {
     matchup: Matchup;
-    round: string;
-    onSelectTeam: (tricode: string) => void;
+    round: 'R1' | 'R2' | 'CF' | 'F';
+    onSelectTeam: (t: string) => void;
     winner?: SeededTeam | null;
+    tooltipSide?: 'right' | 'left';
 }
-const SeriesBox: React.FC<SeriesBoxProps> = ({ matchup, round, onSelectTeam, winner }) => {
-    const [hovered, setHovered] = useState(false);
-    const { higher, lower, winPct, r1SimCount, totalSims } = matchup;
 
-    const simFreq = r1SimCount && totalSims ? ((r1SimCount / totalSims) * 100).toFixed(0) : null;
+const SeriesBox: React.FC<SeriesBoxProps> = ({ matchup, round, onSelectTeam, winner, tooltipSide = 'right' }) => {
+    const [hovered, setHovered] = useState(false);
+    const { higher, lower, r1SimCount, totalSims } = matchup;
+
+    const breakdown = useMemo(() => {
+        if (!higher || !lower) return null;
+        const pGame = calcGameWinProb(higher, lower);
+        return calcSeriesBreakdown(pGame);
+    }, [higher, lower]);
+
+    const simFreq = r1SimCount && totalSims && round === 'R1'
+        ? ((r1SimCount / totalSims) * 100).toFixed(0)
+        : null;
+
+    const tooltipClass = tooltipSide === 'right'
+        ? 'left-full ml-2'
+        : 'right-full mr-2';
 
     return (
         <div
@@ -275,51 +298,105 @@ const SeriesBox: React.FC<SeriesBoxProps> = ({ matchup, round, onSelectTeam, win
             <div className="flex flex-col gap-0.5">
                 <TeamSlot
                     team={higher}
+                    seriesWinPct={breakdown?.higherWinPct}
                     isWinner={winner?.tricode === higher?.tricode}
                     onClick={() => higher && onSelectTeam(higher.tricode)}
                 />
                 <TeamSlot
                     team={lower}
+                    seriesWinPct={breakdown?.lowerWinPct}
                     isWinner={winner?.tricode === lower?.tricode}
                     onClick={() => lower && onSelectTeam(lower.tricode)}
                 />
             </div>
 
-            {/* Hover tooltip */}
             <AnimatePresence>
-                {hovered && higher && lower && (
+                {hovered && higher && lower && breakdown && (
                     <motion.div
-                        initial={{ opacity: 0, y: -4, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute z-50 left-full ml-2 top-0 bg-black/95 border border-white/15 rounded-xl p-3 shadow-2xl backdrop-blur-xl min-w-[200px] pointer-events-none"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.12 }}
+                        className={`absolute z-50 ${tooltipClass} top-0 bg-[#0d0f14] border border-white/15 rounded-xl p-3 shadow-2xl backdrop-blur-xl w-[230px] pointer-events-none`}
                     >
-                        <div className="text-[9px] text-gray-500 uppercase tracking-widest mb-2 font-bold">{round} Series</div>
-                        <div className="flex flex-col gap-1.5">
-                            <div className="flex justify-between items-center">
-                                <span className="text-xs text-white font-bold">{higher.tricode}</span>
-                                <div className="flex items-center gap-1">
-                                    <div className="h-1.5 rounded-full bg-white/30" style={{ width: `${Math.round(winPct)}px`, maxWidth: '80px', minWidth: '8px' }} />
-                                    <span className="text-xs font-black text-white">{winPct.toFixed(0)}%</span>
+                        {/* Header */}
+                        <div className="text-[9px] text-gray-500 uppercase tracking-widest mb-2.5 font-bold">{round} Series Breakdown</div>
+
+                        {/* Overall win% bar */}
+                        <div className="flex flex-col gap-1 mb-3 pb-3 border-b border-white/8">
+                            {/* Higher seed */}
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black text-white w-8">{higher.tricode}</span>
+                                <div className="flex-1 h-2 rounded-full bg-white/8 overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full transition-all"
+                                        style={{ width: `${breakdown.higherWinPct}%`, backgroundColor: roundOddsColor(breakdown.higherWinPct) }}
+                                    />
                                 </div>
+                                <span className="text-[10px] font-black w-9 text-right" style={{ color: roundOddsColor(breakdown.higherWinPct) }}>
+                                    {breakdown.higherWinPct.toFixed(0)}%
+                                </span>
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-xs text-gray-400 font-bold">{lower.tricode}</span>
-                                <div className="flex items-center gap-1">
-                                    <div className="h-1.5 rounded-full bg-white/15" style={{ width: `${Math.round(100 - winPct)}px`, maxWidth: '80px', minWidth: '8px' }} />
-                                    <span className="text-xs font-black text-gray-400">{(100 - winPct).toFixed(0)}%</span>
+                            {/* Lower seed */}
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-gray-400 w-8">{lower.tricode}</span>
+                                <div className="flex-1 h-2 rounded-full bg-white/8 overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full transition-all"
+                                        style={{ width: `${breakdown.lowerWinPct}%`, backgroundColor: roundOddsColor(breakdown.lowerWinPct) }}
+                                    />
                                 </div>
+                                <span className="text-[10px] font-black w-9 text-right" style={{ color: roundOddsColor(breakdown.lowerWinPct) }}>
+                                    {breakdown.lowerWinPct.toFixed(0)}%
+                                </span>
                             </div>
                         </div>
+
+                        {/* Per-game-count bars */}
+                        <div className="flex flex-col gap-1">
+                            <div className="text-[8px] text-gray-600 uppercase tracking-widest mb-1 font-bold">Series length</div>
+                            {/* Higher seed rows */}
+                            {[4, 5, 6, 7].map(n => {
+                                const hBar = breakdown.bars.find(b => b.team === 'higher' && b.label === `in ${n}`);
+                                const lBar = breakdown.bars.find(b => b.team === 'lower' && b.label === `in ${n}`);
+                                const hPct = hBar?.pct ?? 0;
+                                const lPct = lBar?.pct ?? 0;
+                                const maxPct = Math.max(hPct, lPct, 0.1);
+                                return (
+                                    <div key={n} className="flex items-center gap-1.5">
+                                        <span className="text-[8px] text-gray-600 font-mono w-4 shrink-0">{n}G</span>
+                                        {/* higher */}
+                                        <div className="flex-1 flex flex-col gap-px">
+                                            <div className="flex items-center gap-1">
+                                                <div
+                                                    className="h-1.5 rounded-sm"
+                                                    style={{ width: `${(hPct / maxPct * 100).toFixed(0)}%`, minWidth: hPct > 0.5 ? '4px' : '0px', backgroundColor: '#60a5fa', opacity: 0.85 }}
+                                                />
+                                                <span className="text-[8px] text-blue-400 font-mono">{hPct.toFixed(1)}%</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <div
+                                                    className="h-1.5 rounded-sm"
+                                                    style={{ width: `${(lPct / maxPct * 100).toFixed(0)}%`, minWidth: lPct > 0.5 ? '4px' : '0px', backgroundColor: '#f87171', opacity: 0.85 }}
+                                                />
+                                                <span className="text-[8px] text-red-400 font-mono">{lPct.toFixed(1)}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            {/* Legend */}
+                            <div className="flex items-center gap-3 mt-1.5 pt-1.5 border-t border-white/6">
+                                <div className="flex items-center gap-1"><div className="w-2 h-1.5 rounded-sm bg-blue-400/85" /><span className="text-[8px] text-gray-500">{higher.tricode}</span></div>
+                                <div className="flex items-center gap-1"><div className="w-2 h-1.5 rounded-sm bg-red-400/85" /><span className="text-[8px] text-gray-500">{lower.tricode}</span></div>
+                            </div>
+                        </div>
+
                         {simFreq && (
-                            <div className="mt-2 pt-2 border-t border-white/8 text-[9px] text-gray-500 font-mono">
-                                Matched in {simFreq}% of simulations
+                            <div className="mt-2 pt-2 border-t border-white/8 text-[9px] text-gray-600 font-mono">
+                                Matched in {simFreq}% of simulations · {higher.tricode} has home ice
                             </div>
                         )}
-                        <div className="mt-1 text-[9px] text-gray-600 font-mono">
-                            Series: best of 7 · {higher.tricode} has home ice
-                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -334,132 +411,104 @@ interface ConferenceColProps {
     seeded: SeededTeam[];
     simResults: Record<string, SimResult>;
     totalSims: number;
-    flip?: boolean;  // East side flips layout (right-to-left)
+    /** 'ltr' = West (R1 → R2 → CF toward center), 'rtl' = East (CF ← R2 ← R1) */
+    dir?: 'ltr' | 'rtl';
     onSelectTeam: (t: string) => void;
 }
 
-interface BracketState {
-    r1Winners: (SeededTeam | null)[];
-    r2Winners: (SeededTeam | null)[];
-    cfWinner: SeededTeam | null;
-}
+const BracketConnector: React.FC = () => (
+    <div className="flex flex-col items-center self-stretch justify-around opacity-20 py-4 w-4 shrink-0">
+        <div className="flex flex-col items-center">
+            <div className="w-px bg-white/40" style={{ height: '50px' }} />
+            <div className="w-3 h-px bg-white/40" />
+            <div className="w-px bg-white/40" style={{ height: '50px' }} />
+        </div>
+        <div className="flex flex-col items-center">
+            <div className="w-px bg-white/40" style={{ height: '50px' }} />
+            <div className="w-3 h-px bg-white/40" />
+            <div className="w-px bg-white/40" style={{ height: '50px' }} />
+        </div>
+    </div>
+);
 
-const ConferenceColumn: React.FC<ConferenceColProps> = ({ name, seeded, simResults, totalSims, flip, onSelectTeam }) => {
-    const [state, setState] = useState<BracketState>({ r1Winners: [null, null, null, null], r2Winners: [null, null], cfWinner: null });
-
-    // Build seedings
-    // Div1: seeds 1, 2, 3  (first 3)
-    // Div2: seeds 4, 5, 6  (next 3)
-    // WC1: 7, WC2: 8
+const ConferenceColumn: React.FC<ConferenceColProps> = ({ name, seeded, simResults, totalSims, dir = 'ltr', onSelectTeam }) => {
     const [s1, s2, s3, s4, s5, s6, s7, s8] = seeded;
 
-    // Determine which div winner is conference leader
-    const [bestDiv, otherDiv] =
-        (s1?.points || 0) >= (s4?.points || 0) ? ['div1', 'div2'] : ['div2', 'div1'];
-
-    // R1 matchups: (best div winner vs WC2), (other div winner vs WC1), (div1 #2 vs #3), (div2 #2 vs #3)
-    const matchupA = buildMatchup(s1, s8, simResults, totalSims, `${name}-A`); // best div #1 vs WC2
-    const matchupC = buildMatchup(s2, s3, simResults, totalSims, `${name}-C`); // div1 #2 vs #3
-    const matchupB = buildMatchup(s4, s7, simResults, totalSims, `${name}-B`); // other div #1 vs WC1
-    const matchupD = buildMatchup(s5, s6, simResults, totalSims, `${name}-D`); // div2 #2 vs #3
-
-    // R2: winner(A) vs winner(C); winner(B) vs winner(D)
-    const r2MatchupAC = buildMatchup(
-        state.r1Winners[0] || s1,
-        state.r1Winners[2] || s2,
-        simResults, totalSims, `${name}-R2-AC`
-    );
-    const r2MatchupBD = buildMatchup(
-        state.r1Winners[1] || s4,
-        state.r1Winners[3] || s5,
-        simResults, totalSims, `${name}-R2-BD`
-    );
-
-    // CF
-    const cfMatchup = buildMatchup(
-        state.r2Winners[0] || state.r1Winners[0] || s1,
-        state.r2Winners[1] || state.r1Winners[1] || s4,
-        simResults, totalSims, `${name}-CF`
-    );
-
-    const divColor1 = bestDiv === 'div1' ? '#f59e0b' : '#60a5fa';
-    const divColor2 = bestDiv === 'div1' ? '#60a5fa' : '#f59e0b';
-
-    // Resolve actual division names from the seeded team tricodes
     const div1Name = s1 ? (DIV_NAMES[DIVISION_MAP[s1.tricode]] || 'Div 1') : 'Div 1';
     const div2Name = s4 ? (DIV_NAMES[DIVISION_MAP[s4.tricode]] || 'Div 2') : 'Div 2';
 
-    const col = (
-        <div className="flex gap-3 items-center">
-            {/* Round 1 */}
-            <div className="flex flex-col gap-3 w-[160px] min-w-[160px]">
-                <div>
-                    <div className="text-[8px] uppercase tracking-widest font-black mb-1.5 px-1" style={{ color: divColor1 }}>
-                        {div1Name} bracket
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                        <SeriesBox matchup={matchupA} round="R1" onSelectTeam={onSelectTeam} winner={state.r1Winners[0]} />
-                        <SeriesBox matchup={matchupC} round="R1" onSelectTeam={onSelectTeam} winner={state.r1Winners[2]} />
-                    </div>
-                </div>
-                <div>
-                    <div className="text-[8px] uppercase tracking-widest font-black mb-1.5 px-1" style={{ color: divColor2 }}>
-                        {div2Name} bracket
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                        <SeriesBox matchup={matchupB} round="R1" onSelectTeam={onSelectTeam} winner={state.r1Winners[1]} />
-                        <SeriesBox matchup={matchupD} round="R1" onSelectTeam={onSelectTeam} winner={state.r1Winners[3]} />
-                    </div>
-                </div>
-            </div>
+    // R1 matchups per NHL bracket rules
+    const mA = buildMatchup(s1, s8, simResults, totalSims, `${name}-A`); // best div #1 vs WC2
+    const mC = buildMatchup(s2, s3, simResults, totalSims, `${name}-C`); // div1 #2 vs #3
+    const mB = buildMatchup(s4, s7, simResults, totalSims, `${name}-B`); // other div #1 vs WC1
+    const mD = buildMatchup(s5, s6, simResults, totalSims, `${name}-D`); // div2 #2 vs #3
 
-            {/* Connector line R1→R2 */}
-            <div className="flex flex-col gap-4 items-center self-stretch justify-around opacity-20 py-6">
-                <div className="flex flex-col gap-0 items-center">
-                    <div className="w-px flex-1 bg-white/40" style={{ height: '60px' }} />
-                    <div className="w-3 h-px bg-white/40" />
-                    <div className="w-px flex-1 bg-white/40" style={{ height: '60px' }} />
+    // R2 placeholders (show current top seeds as projections)
+    const mR2_1 = buildMatchup(s1, s2, simResults, totalSims, `${name}-R2-1`);
+    const mR2_2 = buildMatchup(s4, s5, simResults, totalSims, `${name}-R2-2`);
+
+    // CF placeholder
+    const mCF = buildMatchup(s1, s4, simResults, totalSims, `${name}-CF`);
+
+    const tooltipSide = dir === 'ltr' ? 'right' : 'left';
+
+    const confColor = name === 'Western' ? '#f59e0b' : '#60a5fa';
+    const div1Color = '#f59e0b';
+    const div2Color = '#60a5fa';
+
+    const R1Col = (
+        <div className="flex flex-col gap-3 w-[155px] min-w-[155px]">
+            <div>
+                <div className="text-[8px] uppercase tracking-widest font-black mb-1.5 px-1" style={{ color: div1Color }}>
+                    {div1Name} bracket
                 </div>
-                <div className="flex flex-col gap-0 items-center">
-                    <div className="w-px flex-1 bg-white/40" style={{ height: '60px' }} />
-                    <div className="w-3 h-px bg-white/40" />
-                    <div className="w-px flex-1 bg-white/40" style={{ height: '60px' }} />
+                <div className="flex flex-col gap-1">
+                    <SeriesBox matchup={mA} round="R1" onSelectTeam={onSelectTeam} tooltipSide={tooltipSide} />
+                    <SeriesBox matchup={mC} round="R1" onSelectTeam={onSelectTeam} tooltipSide={tooltipSide} />
                 </div>
             </div>
-
-            {/* Round 2 */}
-            <div className="flex flex-col gap-8 w-[160px] min-w-[160px] justify-around self-stretch py-12">
-                <SeriesBox matchup={r2MatchupAC} round="R2" onSelectTeam={onSelectTeam} winner={state.r2Winners[0]} />
-                <SeriesBox matchup={r2MatchupBD} round="R2" onSelectTeam={onSelectTeam} winner={state.r2Winners[1]} />
-            </div>
-
-            {/* Connector R2→CF */}
-            <div className="flex flex-col gap-4 items-center self-stretch justify-center opacity-20">
-                <div className="w-3 h-px bg-white/40" />
-            </div>
-
-            {/* Conference Final */}
-            <div className="flex flex-col justify-center self-stretch w-[160px] min-w-[160px]">
-                <div className="text-[8px] uppercase tracking-widest font-black text-rose-400/70 mb-1.5 px-1">Conf. Final</div>
-                <SeriesBox matchup={cfMatchup} round="CF" onSelectTeam={onSelectTeam} winner={state.cfWinner} />
+            <div>
+                <div className="text-[8px] uppercase tracking-widest font-black mb-1.5 px-1" style={{ color: div2Color }}>
+                    {div2Name} bracket
+                </div>
+                <div className="flex flex-col gap-1">
+                    <SeriesBox matchup={mB} round="R1" onSelectTeam={onSelectTeam} tooltipSide={tooltipSide} />
+                    <SeriesBox matchup={mD} round="R1" onSelectTeam={onSelectTeam} tooltipSide={tooltipSide} />
+                </div>
             </div>
         </div>
     );
 
+    const R2Col = (
+        <div className="flex flex-col gap-8 w-[155px] min-w-[155px] justify-around self-stretch py-12">
+            <SeriesBox matchup={mR2_1} round="R2" onSelectTeam={onSelectTeam} tooltipSide={tooltipSide} />
+            <SeriesBox matchup={mR2_2} round="R2" onSelectTeam={onSelectTeam} tooltipSide={tooltipSide} />
+        </div>
+    );
+
+    const CFCol = (
+        <div className="flex flex-col justify-center self-stretch w-[155px] min-w-[155px]">
+            <div className="text-[8px] uppercase tracking-widest font-black text-rose-400/70 mb-1.5 px-1">Conf. Final</div>
+            <SeriesBox matchup={mCF} round="CF" onSelectTeam={onSelectTeam} tooltipSide={tooltipSide} />
+        </div>
+    );
+
+    // Order: West = R1 → conn → R2 → conn → CF (flows right toward center)
+    //        East = CF → conn → R2 → conn → R1 (flows left toward center) — then reversed with flex-row-reverse
+    const cols = dir === 'ltr'
+        ? <>{R1Col}<BracketConnector />{R2Col}<BracketConnector />{CFCol}</>
+        : <>{CFCol}<BracketConnector />{R2Col}<BracketConnector />{R1Col}</>;
+
     return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
             <div
                 className="text-center text-sm font-black uppercase tracking-[0.2em] py-2 px-4 rounded-xl border"
-                style={{
-                    color: name === 'Western' ? '#f59e0b' : '#60a5fa',
-                    borderColor: name === 'Western' ? '#f59e0b30' : '#60a5fa30',
-                    background: name === 'Western' ? '#f59e0b08' : '#60a5fa08',
-                }}
+                style={{ color: confColor, borderColor: `${confColor}30`, background: `${confColor}08` }}
             >
                 {name} Conference
             </div>
-            <div className={flip ? 'flex flex-row-reverse' : 'flex flex-row'}>
-                {col}
+            <div className="flex items-center">
+                {cols}
             </div>
         </div>
     );
@@ -475,32 +524,35 @@ const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simRe
         return first?.totalSims || 2000;
     }, [simResults]);
 
-    // Build conference seedings from CURRENT standings
     const { westSeeded, eastSeeded } = useMemo(() => {
         if (!currentStandings || currentStandings.length === 0) return { westSeeded: [], eastSeeded: [] };
-
-        const east = currentStandings.filter(t => t.conference?.includes('East') || ['ATL', 'MET'].includes(DIVISION_MAP[t.tricode] || ''));
-        const west = currentStandings.filter(t => t.conference?.includes('West') || ['CEN', 'PAC'].includes(DIVISION_MAP[t.tricode] || ''));
-
+        const east = currentStandings.filter(t => ['ATL', 'MET'].includes(DIVISION_MAP[t.tricode] || ''));
+        const west = currentStandings.filter(t => ['CEN', 'PAC'].includes(DIVISION_MAP[t.tricode] || ''));
         return {
             westSeeded: seedConference(west, 'CEN', 'PAC', simResults, totalSims),
             eastSeeded: seedConference(east, 'ATL', 'MET', simResults, totalSims),
         };
     }, [currentStandings, simResults, totalSims]);
 
-    // Derive current #1 cup favorites from sim results
-    const topContenders = useMemo(() => {
-        return [...westSeeded, ...eastSeeded]
+    const topContenders = useMemo(() => (
+        [...westSeeded, ...eastSeeded]
             .filter(t => t.cupOdds > 0)
             .sort((a, b) => b.cupOdds - a.cupOdds)
-            .slice(0, 5);
-    }, [westSeeded, eastSeeded]);
+            .slice(0, 6)
+    ), [westSeeded, eastSeeded]);
 
-    // Find selected team data for modal
     const selectedTeamData = useMemo(() => {
         if (!selectedTeamTricode) return null;
         return [...westSeeded, ...eastSeeded].find(t => t.tricode === selectedTeamTricode) || null;
     }, [selectedTeamTricode, westSeeded, eastSeeded]);
+
+    const cupFinalBreakdown = useMemo(() => {
+        const west = westSeeded[0];
+        const east = eastSeeded[0];
+        if (!west || !east) return null;
+        const pGame = calcGameWinProb(west, east);
+        return calcSeriesBreakdown(pGame);
+    }, [westSeeded, eastSeeded]);
 
     if (currentStandings.length === 0 || Object.keys(simResults).length === 0) {
         return (
@@ -513,32 +565,28 @@ const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simRe
     return (
         <div className="w-full">
             {/* Legend */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-                <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold mr-2">Cup odds →</div>
-                {[['≥15%', '#f59e0b', 'Top contender'], ['≥8%', '#34d399', 'Strong chance'], ['≥3%', '#60a5fa', 'Live shot'], ['<3%', '#9ca3af', 'Long shot']].map(([label, color, desc]) => (
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-5">
+                <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Round advance odds →</span>
+                {([['≥75%', '#f59e0b', 'Favorite'], ['≥55%', '#34d399', 'Strong'], ['≥35%', '#60a5fa', 'Live'], ['<35%', '#9ca3af', 'Underdog']] as const).map(([label, color, desc]) => (
                     <div key={label} className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color as string }} />
-                        <span className="text-[9px] font-bold font-mono" style={{ color: color as string }}>{label}</span>
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                        <span className="text-[9px] font-bold font-mono" style={{ color }}>{label}</span>
                         <span className="text-[9px] text-gray-600">{desc}</span>
                     </div>
                 ))}
             </div>
 
-            {/* Top Cup Favorites Bar */}
+            {/* Top Cup Favorites */}
             {topContenders.length > 0 && (
-                <div className="flex items-center justify-center gap-3 mb-8 flex-wrap">
-                    <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold">Top Cup Favorites:</span>
-                    {topContenders.map((t, i) => (
+                <div className="flex items-center justify-center gap-2 mb-7 flex-wrap">
+                    <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mr-1">Cup favorites:</span>
+                    {topContenders.map(t => (
                         <motion.button
                             key={t.tricode}
                             whileHover={{ scale: 1.05 }}
                             onClick={() => setSelectedTeamTricode(t.tricode)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold"
-                            style={{
-                                borderColor: `${cupColorFor(t.cupOdds)}40`,
-                                color: cupColorFor(t.cupOdds),
-                                backgroundColor: `${cupColorFor(t.cupOdds)}10`,
-                            }}
+                            style={{ borderColor: `${cupColorFor(t.cupOdds)}40`, color: cupColorFor(t.cupOdds), backgroundColor: `${cupColorFor(t.cupOdds)}10` }}
                         >
                             <TeamLogo tricode={t.tricode} size={16} />
                             <span>{t.tricode}</span>
@@ -550,64 +598,65 @@ const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simRe
 
             {/* Bracket */}
             <div className="overflow-x-auto pb-8">
-                <div className="flex gap-4 items-center justify-center min-w-[800px] px-4">
-                    {/* West bracket */}
+                <div className="flex gap-2 items-center justify-center min-w-[900px] px-4">
+
+                    {/* West (L→R) */}
                     {westSeeded.length >= 6 && (
                         <ConferenceColumn
                             name="Western"
                             seeded={westSeeded}
                             simResults={simResults}
                             totalSims={totalSims}
+                            dir="ltr"
                             onSelectTeam={setSelectedTeamTricode}
                         />
                     )}
 
                     {/* Cup Final Center */}
-                    <div className="flex flex-col items-center gap-4 px-4 shrink-0">
-                        <div className="text-[10px] uppercase tracking-widest font-black text-amber-400/70">Stanley Cup Final</div>
-                        <div className="flex flex-col gap-0.5 w-[140px]">
+                    <div className="flex flex-col items-center gap-3 px-4 shrink-0 min-w-[150px]">
+                        <div className="text-[10px] uppercase tracking-widest font-black text-amber-400/80">Stanley Cup Final</div>
+                        <div className="flex flex-col gap-1 w-[140px]">
                             <TeamSlot
                                 team={westSeeded[0] ?? null}
+                                seriesWinPct={cupFinalBreakdown?.higherWinPct}
                                 showSeed={false}
                                 onClick={() => westSeeded[0] && setSelectedTeamTricode(westSeeded[0].tricode)}
                             />
-                            <div className="text-center text-[8px] text-gray-600 py-1 font-mono">vs</div>
+                            <div className="text-center text-[8px] text-gray-600 py-0.5 font-mono">vs</div>
                             <TeamSlot
                                 team={eastSeeded[0] ?? null}
+                                seriesWinPct={cupFinalBreakdown?.lowerWinPct}
                                 showSeed={false}
                                 onClick={() => eastSeeded[0] && setSelectedTeamTricode(eastSeeded[0].tricode)}
                             />
                         </div>
-                        <div className="w-px h-8 bg-amber-400/20" />
-                        {/* Champion placeholder */}
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="w-12 h-12 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
-                                <span className="text-amber-400 text-lg">🏆</span>
+                        <div className="w-px h-6 bg-amber-400/20" />
+                        <div className="flex flex-col items-center gap-1.5">
+                            <div className="w-10 h-10 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
+                                <span className="text-amber-400 text-base">🏆</span>
                             </div>
                             <span className="text-[9px] text-amber-400/60 uppercase tracking-widest font-bold">Champion</span>
                         </div>
                     </div>
 
-                    {/* East bracket (flipped) */}
+                    {/* East (R→L, mirrored) */}
                     {eastSeeded.length >= 6 && (
                         <ConferenceColumn
                             name="Eastern"
                             seeded={eastSeeded}
                             simResults={simResults}
                             totalSims={totalSims}
-                            flip
+                            dir="rtl"
                             onSelectTeam={setSelectedTeamTricode}
                         />
                     )}
                 </div>
             </div>
 
-            {/* Footnote */}
-            <p className="text-center text-[10px] text-gray-600 font-mono mt-4">
-                Seedings based on current standings · Series odds from Poisson xG model · Cup % from Monte Carlo · Hover matchups for details
+            <p className="text-center text-[10px] text-gray-600 font-mono mt-2">
+                % shown = probability team advances from that round · Hover any matchup for full series breakdown · Click team for detail modal
             </p>
 
-            {/* Detail Modal */}
             {selectedTeamTricode && selectedTeamData && simResults[selectedTeamTricode] && (
                 <PlayoffDetailModal
                     team={selectedTeamData}
