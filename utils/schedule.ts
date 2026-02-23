@@ -162,7 +162,7 @@ export async function fetchCurrentStandings(): Promise<TeamStandings[]> {
         // Parallel Fetch API and Local Data
         const [standingsRes, teamRatingsFile] = await Promise.all([
             fetch('https://api-web.nhle.com/v1/standings/now', { next: { revalidate: 3600 } }),
-            fs.promises.readFile(path.join(process.cwd(), 'data/team_ratings.json'), 'utf-8').catch(() => null)
+            fs.promises.readFile(path.join(process.cwd(), 'public/data/team_ratings.json'), 'utf-8').catch(() => null)
             // Goalie ratings not strictly needed at Team Level unless we aggregate.
             // Simplified: Use Team Ratings which should already capture some essence? 
             // The simulation engine uses goalie_rating (GSAx). 
