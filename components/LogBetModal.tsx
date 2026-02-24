@@ -78,6 +78,9 @@ const LogBetModal: React.FC<LogBetModalProps> = ({ isOpen, onClose, prediction }
         }
 
         try {
+            if (!supabase) {
+                throw new Error("Supabase client not configured. Restart dev server to pick up .env.local changes.");
+            }
             const hTeam = prediction.homeTeam as unknown as TeamInfo;
             const aTeam = prediction.awayTeam as unknown as TeamInfo;
             const { error } = await supabase.from('bet_logs').insert([{
