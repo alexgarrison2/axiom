@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Fira_Code, Fira_Sans } from "next/font/google";
 import "./globals.css";
-import SmoothScrolling from "@/components/SmoothScrolling";
+import { AdminProvider } from "@/components/AdminProvider";
 
 
 
@@ -31,7 +31,9 @@ export default function RootLayout({
       <body
         className={`${firaSans.variable} ${firaCode.variable} antialiased`}
       >
-        {children}
+        <AdminProvider>
+          {children}
+        </AdminProvider>
       </body>
     </html>
   );
