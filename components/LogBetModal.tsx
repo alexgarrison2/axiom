@@ -126,8 +126,25 @@ const LogBetModal: React.FC<LogBetModalProps> = ({ isOpen, onClose, prediction }
             }, 1000);
         } catch (err: unknown) {
             console.error("Error logging bet:", err);
-            const msg = err instanceof Error ? err.message : String(err);
-            setErrorMsg(msg || "An error occurred while saving.");
+
+            let msg = "An error occurred while saving.";
+            if (err instanceof Error) {
+                msg = err.message;
+            } else if (typeof err === 'object' && err !== null) {
+                const errObj = err as Record<string, unknown>;
+                if ('message' in errObj) {
+                    msg = String(errObj.message);
+                    if ('details' in errObj && errObj.details) {
+                        msg += ` - ${errObj.details}`;
+                    }
+                } else {
+                    msg = JSON.stringify(err);
+                }
+            } else {
+                msg = String(err);
+            }
+
+            setErrorMsg(msg);
         } finally {
             setIsSubmitting(false);
         }
