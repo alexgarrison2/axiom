@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { GamePrediction } from '@/utils/data';
 import { supabase } from '@/utils/supabaseClient';
 import { X, Loader2 } from 'lucide-react';
@@ -26,8 +27,13 @@ const LogBetModal: React.FC<LogBetModalProps> = ({ isOpen, onClose, prediction }
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
 
-    if (!isOpen) return null;
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!isOpen || !mounted) return null;
 
     const betTypes = ['Moneyline', 'Puck Line', '3-Way', 'Team Total'];
     const hTeam = prediction.homeTeam as unknown as TeamInfo;
@@ -119,9 +125,11 @@ const LogBetModal: React.FC<LogBetModalProps> = ({ isOpen, onClose, prediction }
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-zinc-900 border border-white/10 rounded-xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
+    return createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+        >
+            <div className="bg-zinc-900 border border-white/10 rounded-xl w-full max-w-md shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]">
 
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b border-white/10 shrink-0">
@@ -313,7 +321,8 @@ const LogBetModal: React.FC<LogBetModalProps> = ({ isOpen, onClose, prediction }
                 </div>
 
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
