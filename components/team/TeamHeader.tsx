@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import TeamSelector from '@/components/TeamSelector';
 import { TeamInfo } from '@/types';
 import gsap from 'gsap';
@@ -18,6 +18,16 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teamInfo, allTeamsList }) => {
     const primaryColor = teamInfo.HexColor1;
     const bgRef = useRef<HTMLDivElement>(null);
     const navRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
+
+    const handleBack = () => {
+        // Go back in browser history if possible, otherwise fall back to home
+        if (window.history.length > 1) {
+            router.back();
+        } else {
+            router.push('/');
+        }
+    };
 
     useGSAP(() => {
         if (!bgRef.current) return;
@@ -66,10 +76,10 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teamInfo, allTeamsList }) => {
             >
                 <div className="max-w-[1800px] mx-auto px-4 md:px-8 w-full flex items-center justify-between">
                     <div className="flex items-center gap-6">
-                        <Link href="/" className="group flex items-center gap-2 text-gray-500 hover:text-white transition-colors">
+                        <button onClick={handleBack} className="group flex items-center gap-2 text-gray-500 hover:text-white transition-colors">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><path d="m15 18-6-6 6-6" /></svg>
-                            <span className="text-xs font-bold uppercase tracking-wider block">Home</span>
-                        </Link>
+                            <span className="text-xs font-bold uppercase tracking-wider block">Back</span>
+                        </button>
                         <div className="h-4 w-px bg-white/10"></div>
                         <TeamSelector teams={allTeamsList} currentTeam={teamInfo} />
                     </div>
