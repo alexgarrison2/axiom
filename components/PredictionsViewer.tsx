@@ -300,22 +300,53 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             ref={tabBarRef}
                             onScroll={handleTabScroll}
                             className="flex items-center gap-2 md:gap-3 bg-black/40 p-1.5 md:p-2.5 rounded-2xl md:rounded-3xl backdrop-blur-md border border-white/5 w-full max-w-full overflow-x-auto snap-x scrollbar-hide px-2 md:px-4">
-                            {/* History Button */}
+                            {/* Date Buttons — TODAY / TOMORROW first */}
+                            {uniqueDates.map((date, idx) => {
+                                const [y, m, d] = date.split('-').map(Number);
+                                const dateObj = new Date(y, m - 1, d);
+                                const monthShort = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                                const dayStr = String(d).padStart(2, '0');
+                                const prefix = idx === 0 ? 'TODAY' : idx === 1 ? 'TOMORROW' : null;
+                                const label = prefix
+                                    ? `${prefix} · ${monthShort}-${dayStr}`
+                                    : `${monthShort}-${dayStr}`;
+                                return (
+                                    <button
+                                        key={date}
+                                        onClick={() => setSelectedTab(date)}
+                                        className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start whitespace-nowrap ${selectedTab === date
+                                            ? 'text-neon-blue border-neon-blue shadow-[0_0_20px_rgba(0,243,255,0.3)] text-glow-blue'
+                                            : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
+                                            }`}
+                                    >
+                                        {selectedTab === date && (
+                                            <motion.div
+                                                layoutId="activeTab"
+                                                className="absolute inset-0 bg-neon-blue/10 rounded-full"
+                                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                            />
+                                        )}
+                                        <span className="relative z-10">{label}</span>
+                                    </button>
+                                );
+                            })}
+
+                            {/* News Button */}
                             <button
-                                onClick={() => setSelectedTab('History')}
-                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'History'
-                                    ? 'text-neon-green border-neon-green shadow-[0_0_20px_rgba(10,255,0,0.3)] text-glow-green'
+                                onClick={() => setSelectedTab('News')}
+                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'News'
+                                    ? 'text-amber-400 border-amber-400 shadow-[0_0_20_rgba(251,191,36,0.3)] text-glow-amber'
                                     : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
                             >
-                                {selectedTab === 'History' && (
+                                {selectedTab === 'News' && (
                                     <motion.div
                                         layoutId="activeTab"
-                                        className="absolute inset-0 bg-neon-green/10 rounded-full"
+                                        className="absolute inset-0 bg-amber-400/10 rounded-full"
                                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                     />
                                 )}
-                                <span className="relative z-10">HISTORY</span>
+                                <span className="relative z-10">NEWS</span>
                             </button>
 
                             {/* Teams Button */}
@@ -336,25 +367,25 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 <span className="relative z-10">TEAMS</span>
                             </button>
 
-                            {/* News Button */}
+                            {/* History Button */}
                             <button
-                                onClick={() => setSelectedTab('News')}
-                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'News'
-                                    ? 'text-amber-400 border-amber-400 shadow-[0_0_20_rgba(251,191,36,0.3)] text-glow-amber'
+                                onClick={() => setSelectedTab('History')}
+                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'History'
+                                    ? 'text-neon-green border-neon-green shadow-[0_0_20px_rgba(10,255,0,0.3)] text-glow-green'
                                     : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
                             >
-                                {selectedTab === 'News' && (
+                                {selectedTab === 'History' && (
                                     <motion.div
                                         layoutId="activeTab"
-                                        className="absolute inset-0 bg-amber-400/10 rounded-full"
+                                        className="absolute inset-0 bg-neon-green/10 rounded-full"
                                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                     />
                                 )}
-                                <span className="relative z-10">NEWS</span>
+                                <span className="relative z-10">HISTORY</span>
                             </button>
 
-                            {/* Playoffs Button (New) */}
+                            {/* Playoffs Button */}
                             <button
                                 onClick={() => setSelectedTab('Playoffs')}
                                 className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Playoffs'
@@ -389,27 +420,6 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 )}
                                 <span className="relative z-10">BRACKET</span>
                             </button>
-
-                            {/* Date Buttons */}
-                            {uniqueDates.map(date => (
-                                <button
-                                    key={date}
-                                    onClick={() => setSelectedTab(date)}
-                                    className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start whitespace-nowrap ${selectedTab === date
-                                        ? 'text-neon-blue border-neon-blue shadow-[0_0_20px_rgba(0,243,255,0.3)] text-glow-blue'
-                                        : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
-                                        }`}
-                                >
-                                    {selectedTab === date && (
-                                        <motion.div
-                                            layoutId="activeTab"
-                                            className="absolute inset-0 bg-neon-blue/10 rounded-full"
-                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                        />
-                                    )}
-                                    <span className="relative z-10">{date}</span>
-                                </button>
-                            ))}
                         </div>
                     </div>
                 </div>
