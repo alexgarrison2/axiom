@@ -306,10 +306,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 const dateObj = new Date(y, m - 1, d);
                                 const monthShort = dateObj.toLocaleDateString('en-US', { month: 'short' });
                                 const dayStr = String(d).padStart(2, '0');
-                                const prefix = idx === 0 ? 'TODAY' : idx === 1 ? 'TOMORROW' : null;
-                                const label = prefix
-                                    ? `${prefix} · ${monthShort}-${dayStr}`
-                                    : `${monthShort}-${dayStr}`;
+                                const label = `${monthShort}-${dayStr}`;
                                 return (
                                     <button
                                         key={date}
