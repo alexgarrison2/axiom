@@ -90,7 +90,17 @@ def refresh_pipeline():
             
             # Update data
             df['xG'] = probs
-            
+
+            # Validation guard: catch silently wrong predictions (e.g. from sklearn version mismatch)
+            mean_xg = df['xG'].mean()
+            print(f"  Mean xG per shot: {mean_xg:.4f} (expected ~0.07)")
+            if mean_xg > 0.15:
+                raise ValueError(
+                    f"ABORT: Mean xG per shot is {mean_xg:.4f} (expected ~0.07). "
+                    f"Model may be producing invalid predictions due to library version mismatch. "
+                    f"Check that scikit-learn and xgboost versions match the model pickle."
+                )
+
             # Save back to CSV
             df.to_csv(filename, index=False)
             print(f"Updated {filename} with new xG values.")
