@@ -419,6 +419,41 @@ const TeamsTable = () => {
 
     const [activeCategory, setActiveCategory] = useState(STAT_GROUPS[0].name);
 
+    // Load filters from sessionStorage on mount
+    useEffect(() => {
+        try {
+            if (typeof window !== 'undefined') {
+                const stored = sessionStorage.getItem('teamsTableFilters');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (parsed.viewMode) setViewMode(parsed.viewMode);
+                    if (parsed.filterHomeAway) setFilterHomeAway(parsed.filterHomeAway);
+                    if (parsed.filterLastN) setFilterLastN(parsed.filterLastN);
+                    if (parsed.selectedDivisions) setSelectedDivisions(parsed.selectedDivisions);
+                    if (parsed.sortKey) setSortKey(parsed.sortKey);
+                    if (parsed.sortDesc !== undefined) setSortDesc(parsed.sortDesc);
+                    if (parsed.activeCategory) setActiveCategory(parsed.activeCategory);
+                }
+            }
+        } catch (e) {
+            console.error('Failed to parse stored filters', e);
+        }
+    }, []);
+
+    // Save filters to sessionStorage when they change
+    useEffect(() => {
+        try {
+            if (typeof window !== 'undefined') {
+                const filters = {
+                    viewMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory
+                };
+                sessionStorage.setItem('teamsTableFilters', JSON.stringify(filters));
+            }
+        } catch (e) {
+            console.error('Failed to save filters', e);
+        }
+    }, [viewMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory]);
+
     const COLUMNS = useMemo(() => [
         { k: 'ranking', l: 'Rank', desc: 'Projected Playoff Standing' },
         { k: 'gp', l: 'GP', desc: 'Games Played' },
