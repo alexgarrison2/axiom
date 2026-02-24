@@ -91,9 +91,15 @@ const LogBetModal: React.FC<LogBetModalProps> = ({ isOpen, onClose, prediction }
             }
             const hTeam = prediction.homeTeam as unknown as TeamInfo;
             const aTeam = prediction.awayTeam as unknown as TeamInfo;
+
+            // prediction.date is in format 'YYYY-MM-DD', but user wants 'MM-DD-YYYY' internally
+            // The JSON from Python has '2026-02-25', so let's format it.
+            const [year, month, day] = prediction.date.split('-');
+            const formattedDate = `${month}-${day}-${year}`;
+
             const { error } = await supabase.from('bet_logs').insert([{
-                game_id: `${hTeam.triCode}vs${aTeam.triCode}_${prediction.startTime}`, // Use a composite or specific logic if you have actual game IDs
-                game_date: prediction.startTime, // Assuming startTime string serves as date
+                game_id: `${hTeam.triCode}vs${aTeam.triCode}_${prediction.date.replace(/-/g, '')}`, // e.g. NJDvsBUF_20260225
+                game_date: formattedDate, // e.g. 02-25-2026
                 home_team: hTeam.name,
                 away_team: aTeam.name,
                 team_selected: selectedTeamName,
