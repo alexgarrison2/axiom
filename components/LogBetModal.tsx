@@ -266,8 +266,8 @@ const LogBetModal: React.FC<LogBetModalProps> = ({ isOpen, onClose, prediction }
                             <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Wager (Units)</label>
                             <input
                                 type="number"
-                                step="0.1"
-                                min="0.1"
+                                step="any"
+                                min="0.01"
                                 value={wagerUnits}
                                 onChange={(e) => setWagerUnits(e.target.value)}
                                 className="w-full bg-black/40 border border-white/10 rounded-lg py-2 px-3 text-white text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 placeholder-zinc-600"
