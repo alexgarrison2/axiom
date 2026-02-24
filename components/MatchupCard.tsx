@@ -639,7 +639,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     )}
 
                     {/* Edge Badges */}
-                    {!isSocial && <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'left' : 'right'} />}
+                    {!isSocial && <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'right' : 'left'} />}
 
                 </div>
 
@@ -833,7 +833,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     return (
         <>
             <div
-                className={`hidden md:flex relative flex-col w-full max-w-4xl mx-auto rounded-3xl ${isSocial ? 'mb-0' : 'mb-6'} transition-all duration-300 border backdrop-blur-xl group ${!isSocial && 'hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] cursor-pointer'} ${getGlowColor(homeWager, awayWager)} ${isDesktopExpanded ? 'bg-white/[0.02]' : 'bg-transparent'}`}
+                className={`hidden md:flex relative z-10 hover:z-50 flex-col w-full max-w-4xl mx-auto rounded-3xl ${isSocial ? 'mb-0' : 'mb-6'} transition-all duration-300 border backdrop-blur-xl group ${!isSocial && 'hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] cursor-pointer'} ${getGlowColor(homeWager, awayWager)} ${isDesktopExpanded ? 'bg-white/[0.02]' : 'bg-transparent'}`}
                 onClick={!isSocial ? toggleDesktopExpand : undefined}
                 ref={desktopCardRef}
             >
@@ -1035,7 +1035,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
             {/* MOBILE VIEW (md:hidden) - Condensed + Expand */}
             {/* ========================================= */}
             <div
-                className={`flex md:hidden relative flex-col w-full mx-auto mb-1 text-white transition-all duration-300 rounded-[2.5rem] ${getGlowColor(homeWager, awayWager)}`}
+                className={`flex md:hidden relative flex-col z-10 hover:z-50 w-full mx-auto mb-1 text-white transition-all duration-300 rounded-[2.5rem] ${getGlowColor(homeWager, awayWager)}`}
                 onClick={toggleExpand}
                 ref={cardRef}
             >
