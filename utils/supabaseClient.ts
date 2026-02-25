@@ -7,8 +7,11 @@ const supabaseKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim().rep
 
 const isValidUrl = supabaseUrl.startsWith('http://') || supabaseUrl.startsWith('https://');
 
-export const supabase = (isValidUrl && supabaseKey)
+// Only initialize Supabase if we are running locally to prevent production crashes while the feature is unfinished
+const isLocalhost = typeof window !== 'undefined' ? window.location.hostname === 'localhost' : false;
+
+export const supabase = (isLocalhost && isValidUrl && supabaseKey)
     ? createClient(supabaseUrl, supabaseKey)
     : null;
 
-console.log('Supabase init with URL:', isValidUrl ? 'Set and Valid' : 'Missing or Invalid');
+console.log('Supabase init with URL:', supabase ? 'Set and Valid (Local)' : 'Disabled (Prod/Invalid)');
