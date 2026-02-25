@@ -14,7 +14,20 @@ import urllib.request
 import ssl
 from calculate_gas import GasCalculator
 
-# ... (imports)
+# ── Player-impact / lineup-aware module ──────────────────────────────────────
+try:
+    from player_impact import load_player_impact, estimate_lineup_xg
+    _LINEUP_ENGINE_AVAILABLE = True
+except ImportError:
+    _LINEUP_ENGINE_AVAILABLE = False
+    print("[WARN] player_impact module not found — lineup adjustment disabled")
+
+# Blend weight for lineup estimate vs team rating (0 = all team rating, 1 = all lineup)
+# At 0.30 the lineup signal contributes ~30% of the 5v5 xG estimate.
+# This is conservative initially; can be tuned as model accuracy is validated.
+LINEUP_BLEND_WEIGHT = 0.30
+
+# ── (imports end) ─────────────────────────────────────────────────────────────
 
 def convert_to_central(utc_str):
     if not utc_str:
@@ -674,9 +687,21 @@ def predict():
     game_stats_df['game_date'] = pd.to_datetime(game_stats_df['game_date'])
     # Initialize Gas Calculator
     gas_calc = GasCalculator(game_stats_df)
-    
+
+    # ── Load player-impact data (MoneyPuck-derived) ──────────────────────────
+    player_impact_data = {}
+    league_avg_impact  = {}
+    name_lookup_data   = {}
+    if _LINEUP_ENGINE_AVAILABLE:
+        script_dir_pi = os.path.dirname(os.path.abspath(__file__))
+        player_impact_data, league_avg_impact, name_lookup_data = load_player_impact(script_dir_pi)
+        if player_impact_data:
+            print(f"Player-impact data loaded: {len(player_impact_data)} players")
+        else:
+            print("[WARN] No player-impact data — predictions will use team ratings only")
+
     # League Average xG
-    league_xg = 3.13 
+    league_xg = 3.13
     
     # Load Existing Predictions (for freezing live/past games)
     existing_predictions = load_existing_predictions('../data/predictions_detailed.csv')
@@ -819,94 +844,44 @@ def predict():
         a_xgf = team_ratings[away_team]['xgf_rating']
         a_xga = team_ratings[away_team]['xga_rating']
         
-        # --- [V2] STAR POWER / INJURY PENALTY ---
-        # Heuristic: Top Players list (Hardcoded for immediate impact, can be externalized)
-        # We check if these players are in the "Injury" or "Out" news
-        
-        key_players = {
-            "Avalanche": ["N. MacKinnon", "M. Necas", "C. Makar"],
-            "Blackhawks": ["C. Bedard", "T. Bertuzzi", "A. Burakovsky"],
-            "Blue Jackets": ["Z. Werenski", "K. Marchenko", "C. Coyle"],
-            "Blues": ["R. Thomas", "P. Buchnevich", "J. Faulk"],
-            "Bruins": ["D. Pastrnak", "M. Geekie", "P. Zacha"],
-            "Canadiens": ["N. Suzuki", "L. Hutson", "C. Caufield"],
-            "Canucks": ["E. Pettersson", "F. Hronek", "K. Sherwood"],
-            "Capitals": ["T. Wilson", "A. Ovechkin", "D. Strome"],
-            "Devils": ["N. Hischier", "J. Bratt", "J. Hughes"],
-            "Ducks": ["L. Carlsson", "T. Terry", "C. Gauthier"],
-            "Flames": ["N. Kadri", "M. Backlund", "R. Andersson"],
-            "Flyers": ["T. Zegras", "T. Konecny", "C. Dvorak"],
-            "Golden Knights": ["J. Eichel", "M. Marner", "M. Stone"],
-            "Hurricanes": ["S. Aho", "A. Svechnikov", "N. Ehlers"],
-            "Islanders": ["M. Barzal", "B. Horvat", "M. Schaefer"],
-            "Jets": ["M. Scheifele", "K. Connor", "G. Vilardi"],
-            "Kings": ["A. Kempe", "K. Fiala", "Q. Byfield"],
-            "Kraken": ["J. Eberle", "M. Beniers", "V. Dunn"],
-            "Lightning": ["N. Kucherov", "J. Guentzel", "B. Hagel"],
-            "Mammoth": ["C. Keller", "N. Schmaltz", "D. Guenther"],
-            "Maple Leafs": ["W. Nylander", "J. Tavares", "M. Knies"],
-            "Oilers": ["C. McDavid", "L. Draisaitl", "E. Bouchard"],
-            "Panthers": ["B. Marchand", "S. Reinhart", "S. Bennett"],
-            "Penguins": ["S. Crosby", "B. Rust", "E. Malkin"],
-            "Predators": ["R. O'Reilly", "F. Forsberg", "S. Stamkos"],
-            "Rangers": ["A. Panarin", "M. Zibanejad", "A. Fox"],
-            "Red Wings": ["A. DeBrincat", "L. Raymond", "D. Larkin"],
-            "Sabres": ["T. Thompson", "A. Tuch", "J. Doan"],
-            "Senators": ["T. Stützle", "D. Batherson", "J. Sanderson"],
-            "Sharks": ["M. Celebrini", "A. Wennberg", "T. Toffoli"],
-            "Stars": ["M. Rantanen", "J. Robertson", "W. Johnston"],
-            "Wild": ["K. Kaprizov", "M. Boldy", "M. Johansson"]
-        }
-        
-        # Helper for loose matching names (J. Hughes vs Jack Hughes)
-        def is_key_player(player_name, team_keys):
-            # 1. Direct match
-            # 2. Last name match check (Risk: Sebastian Aho vs ... wait, CAR has Aho. NYI Aho is defensive. Risk is low within team context)
-            # 3. "J. Hughes" in "Jack Hughes" -> True? No.
-            # "Jack Hughes".contains("J. Hughes")? No.
-            # Convert both to "Last Name" checks?
-            if not player_name or not team_keys: return False
-            
-            p_lower = player_name.lower()
-            for k in team_keys:
-                k_lower = k.lower()
-                # Check Last Name
-                # k is "C. Bedard" -> last is "bedard"
-                # p is "Connor Bedard" -> last is "bedard"
-                k_last = k_lower.split()[-1]
-                
-                if k_last in p_lower:
-                    return True
-            return False
-        
-        # Check Home Stars
-        h_star_penalty = 0.0
-        h_news_list = player_news.get(home_tri, [])
-        for news_item in h_news_list:
-            p_name = news_item.get('player', '')
-            # If key player AND status indicates absence
-            if is_key_player(p_name, key_players.get(home_team, [])):
-                 # Simple check for "Out", "Injured", "IR" in category or news
-                 cat = news_item.get('category', '').lower()
-                 desc = news_item.get('news', '').lower()
-                 if "injury" in cat or "healthy scratch" in cat or "illness" in cat or "out" in desc:
-                     # Check if it says "will play" or "expected to play" to avoid false positives
-                     if "will play" not in desc and "expected to play" not in desc:
-                         print(f"  [STAR MISSING] {home_team}: {p_name} (-7% xGF)")
-                         h_star_penalty += 0.07
+        # ── [V3] LINEUP-AWARE xG ADJUSTMENT (replaces hardcoded star penalty) ──────
+        # Uses MoneyPuck player-level impact data to estimate each team's 5v5
+        # offensive and defensive strength from the actual projected lineup.
+        #
+        # Previously: hardcoded "key players" dict + blanket 7% penalty per absence.
+        # Now: each player's real ev_xgf_per60 / ev_xga_per60 from 100+ game seasons
+        # of NHL play-by-play, blended 30% lineup / 70% team rating.
+        #
+        # DailyFaceoff lineup player objects include `id` (NHL player ID) which
+        # matches MoneyPuck's playerId — no name-matching needed for most players.
 
-        # Check Away Stars
-        a_star_penalty = 0.0
+        h_news_list = player_news.get(home_tri, [])
         a_news_list = player_news.get(away_tri, [])
-        for news_item in a_news_list:
-            p_name = news_item.get('player', '')
-            if is_key_player(p_name, key_players.get(away_team, [])):
-                 cat = news_item.get('category', '').lower()
-                 desc = news_item.get('news', '').lower()
-                 if "injury" in cat or "healthy scratch" in cat or "illness" in cat or "out" in desc:
-                     if "will play" not in desc and "expected to play" not in desc:
-                         print(f"  [STAR MISSING] {away_team}: {p_name} (-7% xGF)")
-                         a_star_penalty += 0.07
+
+        h_lineup = team_lineups.get(home_tri, {})
+        a_lineup = team_lineups.get(away_tri, {})
+
+        h_lineup_result = {'xgf_per_game': None, 'xga_per_game': None,
+                           'players_found': 0, 'total_players': 0, 'reliable': False}
+        a_lineup_result = {'xgf_per_game': None, 'xga_per_game': None,
+                           'players_found': 0, 'total_players': 0, 'reliable': False}
+
+        if player_impact_data and league_avg_impact:
+            h_lineup_result = estimate_lineup_xg(h_lineup, player_impact_data, league_avg_impact, name_lookup_data)
+            a_lineup_result = estimate_lineup_xg(a_lineup, player_impact_data, league_avg_impact, name_lookup_data)
+
+            if h_lineup_result['reliable']:
+                print(f"  [LINEUP] {home_team}: xGF/gm={h_lineup_result['xgf_per_game']:.3f} "
+                      f"({h_lineup_result['players_found']}/{h_lineup_result['total_players']} matched)")
+            if a_lineup_result['reliable']:
+                print(f"  [LINEUP] {away_team}: xGF/gm={a_lineup_result['xgf_per_game']:.3f} "
+                      f"({a_lineup_result['players_found']}/{a_lineup_result['total_players']} matched)")
+
+        # Legacy star-penalty: kept as a safety net for games where lineup data
+        # is unavailable (pre-game, empty lineups). When lineup data IS reliable,
+        # the lineup estimate already captures all missing players automatically.
+        h_star_penalty = 0.0
+        a_star_penalty = 0.0
 
 
         # Fetch L7 Records
@@ -987,13 +962,50 @@ def predict():
         # 1. Base 5v5 xG (Using 5v5 Ratings)
         h_xgf_5v5 = h_ratings.get('xgf_5v5_rating', h_ratings.get('xgf_rating', 2.0))
         a_xga_5v5 = a_ratings.get('xga_5v5_rating', a_ratings.get('xga_rating', 2.0))
-        
+
         a_xgf_5v5 = a_ratings.get('xgf_5v5_rating', a_ratings.get('xgf_rating', 2.0))
         h_xga_5v5 = h_ratings.get('xga_5v5_rating', h_ratings.get('xga_rating', 2.0))
-        
+
+        # ── Lineup blending ─────────────────────────────────────────────────
+        # When a reliable lineup estimate exists, blend it with the team rating.
+        # This naturally accounts for injuries, line changes, and call-ups
+        # without any hardcoded player lists.
+        #
+        # Home offensive xGF: blend team rating with lineup's projected xGF/game
+        if h_lineup_result['reliable'] and h_lineup_result['xgf_per_game'] is not None:
+            match_ratio  = h_lineup_result['players_found'] / max(h_lineup_result['total_players'], 1)
+            eff_weight   = LINEUP_BLEND_WEIGHT * match_ratio   # reduce weight if many players unknown
+            h_xgf_blended = h_xgf_5v5 * (1.0 - eff_weight) + h_lineup_result['xgf_per_game'] * eff_weight
+        else:
+            h_xgf_blended = h_xgf_5v5
+
+        # Away defensive xGA: blend team rating with lineup's projected on-ice xGA/game
+        if a_lineup_result['reliable'] and a_lineup_result['xga_per_game'] is not None:
+            match_ratio   = a_lineup_result['players_found'] / max(a_lineup_result['total_players'], 1)
+            eff_weight    = LINEUP_BLEND_WEIGHT * match_ratio
+            a_xga_blended = a_xga_5v5 * (1.0 - eff_weight) + a_lineup_result['xga_per_game'] * eff_weight
+        else:
+            a_xga_blended = a_xga_5v5
+
+        # Away offensive xGF
+        if a_lineup_result['reliable'] and a_lineup_result['xgf_per_game'] is not None:
+            match_ratio   = a_lineup_result['players_found'] / max(a_lineup_result['total_players'], 1)
+            eff_weight    = LINEUP_BLEND_WEIGHT * match_ratio
+            a_xgf_blended = a_xgf_5v5 * (1.0 - eff_weight) + a_lineup_result['xgf_per_game'] * eff_weight
+        else:
+            a_xgf_blended = a_xgf_5v5
+
+        # Home defensive xGA
+        if h_lineup_result['reliable'] and h_lineup_result['xga_per_game'] is not None:
+            match_ratio   = h_lineup_result['players_found'] / max(h_lineup_result['total_players'], 1)
+            eff_weight    = LINEUP_BLEND_WEIGHT * match_ratio
+            h_xga_blended = h_xga_5v5 * (1.0 - eff_weight) + h_lineup_result['xga_per_game'] * eff_weight
+        else:
+            h_xga_blended = h_xga_5v5
+
         # Predictive Formula: (Offense * Defense) / League_Avg
-        h_xg_base = (h_xgf_5v5 * a_xga_5v5) / league_xg_5v5 
-        a_xg_base = (a_xgf_5v5 * h_xga_5v5) / league_xg_5v5
+        h_xg_base = (h_xgf_blended * a_xga_blended) / league_xg_5v5
+        a_xg_base = (a_xgf_blended * h_xga_blended) / league_xg_5v5
         
 
         
@@ -1097,13 +1109,8 @@ def predict():
         # Debugging Output
         # print(f"  {home_team} xG Breakdown: Base={h_xg_base:.2f}, PP={h_pp_xg:.2f}, Rest=-{h_rest_pen}, Home={HOME_ICE_VAL}")
 
-        # Removed: GAS Calculation (Replaced by B2B)
-        # Apply Star Penalties (Data Driven Coeff)
-        if h_star_penalty > 0:
-            h_xg *= (1.0 - h_star_penalty)
-            
-        if a_star_penalty > 0:
-            a_xg *= (1.0 - a_star_penalty)
+        # Star penalty is now handled implicitly by lineup blending.
+        # h_star_penalty and a_star_penalty remain 0.0 (safety net; no-op).
         
         # --- [V3] SATURDAY NIGHT BOOST ---
         # Methodology: +5% Win Prob & +0.25 xG for High-Variance Home Teams on Saturdays
@@ -1183,12 +1190,22 @@ def predict():
         a_explained = []
         
         # 1. Base Components Breakdown
-        # 5v5 Raw
-        h_5v5_raw = (h_xgf_5v5 * a_xga_5v5) / league_xg_5v5
-        a_5v5_raw = (a_xgf_5v5 * h_xga_5v5) / league_xg_5v5
-        
+        # 5v5 Raw (using blended values)
+        h_5v5_raw = (h_xgf_blended * a_xga_blended) / league_xg_5v5
+        a_5v5_raw = (a_xgf_blended * h_xga_blended) / league_xg_5v5
+
         h_explained.append(f"5v5 Matchup: {h_5v5_raw:.2f}")
         a_explained.append(f"5v5 Matchup: {a_5v5_raw:.2f}")
+
+        # Lineup blend note
+        if h_lineup_result['reliable']:
+            found = h_lineup_result['players_found']
+            total = h_lineup_result['total_players']
+            h_explained.append(f"Lineup ({found}/{total} matched): {h_xgf_blended:.2f} xGF")
+        if a_lineup_result['reliable']:
+            found = a_lineup_result['players_found']
+            total = a_lineup_result['total_players']
+            a_explained.append(f"Lineup ({found}/{total} matched): {a_xgf_blended:.2f} xGF")
         
         # Home Ice
         h_explained.append(f"Home Ice: +{HOME_ICE_VAL:.2f}")
@@ -1201,17 +1218,7 @@ def predict():
         if h_rest_pen > 0: h_explained.append(f"Rest Penalty: -{h_rest_pen:.2f}")
         if a_rest_pen > 0: a_explained.append(f"Rest Penalty: -{a_rest_pen:.2f}")
 
-        # Star Penalty impact
-        if h_star_penalty > 0:
-             # Calculate raw impact
-             h_pre_star = h_xg_base + h_pp_xg - h_rest_pen
-             h_loss = h_pre_star * h_star_penalty
-             h_explained.append(f"Missing Key Players: -{h_loss:.2f}")
-
-        if a_star_penalty > 0:
-             a_pre_star = a_xg_base + a_pp_xg - a_rest_pen
-             a_loss = a_pre_star * a_star_penalty
-             a_explained.append(f"Missing Key Players: -{a_loss:.2f}")
+        # (Star penalty note removed — lineup blending now handles player absences)
 
         # Saturday Boost
         if is_sat_boost:

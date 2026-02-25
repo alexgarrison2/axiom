@@ -98,6 +98,12 @@ jobs:
             [ -f pipeline/nhl_season_2025_2026_gamestats.csv ] && git add pipeline/nhl_season_2025_2026_gamestats.csv
             [ -f pipeline/nhl_season_2025_2026_shots.csv ] && git add pipeline/nhl_season_2025_2026_shots.csv
             [ -f data/last_updated.json ] && git add data/last_updated.json
+            # Player-impact outputs (committed so lite runs can load them)
+            [ -f pipeline/player_impact.json ] && git add pipeline/player_impact.json
+            [ -f pipeline/league_avg_impact.json ] && git add pipeline/league_avg_impact.json
+            [ -f pipeline/player_name_lookup.json ] && git add pipeline/player_name_lookup.json
+            [ -f public/data/player_impact.json ] && git add public/data/player_impact.json
+            [ -f public/data/league_avg_impact.json ] && git add public/data/league_avg_impact.json
             
             # Commit if changes exist
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"

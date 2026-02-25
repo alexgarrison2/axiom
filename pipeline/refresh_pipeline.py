@@ -210,7 +210,25 @@ def refresh_pipeline():
     # 4. Regenerate Ratings
     print("Regenerating Team & Goalie Ratings...")
     calculate_ratings(gamestats_file=gamestats_file)
-    
+
+    # 4b. Fetch MoneyPuck player-level data & compute impact scores
+    # This runs after team ratings so the pipeline has fresh season context.
+    # MoneyPuck updates nightly; we fetch once per full pipeline run (~12-14 UTC).
+    print("Fetching MoneyPuck player-level data...")
+    try:
+        import fetch_moneypuck
+        fetch_moneypuck.fetch_moneypuck()
+    except Exception as e:
+        print(f"[WARN] MoneyPuck fetch failed (predictions will use team ratings only): {e}")
+
+    print("Computing player impact scores...")
+    try:
+        import player_impact
+        pi, la = player_impact.calculate_player_impact()
+        print(f"  Player impact profiles built: {len(pi)} players")
+    except Exception as e:
+        print(f"[WARN] Player impact calculation failed: {e}")
+
     # 5. Fetch Latest Schedule, Goalies, and Odds
     print("Fetching latest Schedule & Goalies...")
     import fetch_upcoming
