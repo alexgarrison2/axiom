@@ -763,7 +763,9 @@ def predict():
     for i, game in enumerate(schedule):
         home_team = game['homeTeam']
         away_team = game['awayTeam']
-        
+        home_tri  = game.get('homeTeamAbbrev')
+        away_tri  = game.get('awayTeamAbbrev')
+
         # Use the explicit gameDate we saved, or fallback to parsing if missing
         game_date = game.get('gameDate')
         if not game_date:
