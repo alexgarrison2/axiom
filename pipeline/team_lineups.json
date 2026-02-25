@@ -1383,7 +1383,7 @@
                 "pos": "rw",
                 "id": 2377,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -2264,44 +2264,18 @@
                 "number": 45,
                 "pos": "rw",
                 "id": 36637,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
         "f2": [
-            {
-                "name": "Mikael Granlund",
-                "number": 64,
-                "pos": "lw",
-                "id": 1934,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
-                "name": "Mason McTavish",
-                "number": 23,
-                "pos": "c",
-                "id": 30834,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Cutter Gauthier",
-                "number": 61,
-                "pos": "rw",
-                "id": 33248,
-                "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f3": [
             {
                 "name": "Chris Kreider",
                 "number": 20,
                 "pos": "lw",
                 "id": 1926,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Ryan Poehling",
@@ -2309,7 +2283,7 @@
                 "pos": "c",
                 "id": 2792,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Troy Terry",
@@ -2317,17 +2291,43 @@
                 "pos": "rw",
                 "id": 4645,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
-        "f4": [
+        "f3": [
             {
                 "name": "Jeffrey Viel",
                 "number": 28,
                 "pos": "lw",
                 "id": 24312,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
+            },
+            {
+                "name": "Mason McTavish",
+                "number": 23,
+                "pos": "c",
+                "id": 30834,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Cutter Gauthier",
+                "number": 61,
+                "pos": "rw",
+                "id": 33248,
+                "ppUnit": 1,
+                "movement": "down"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Ross Johnston",
+                "number": 44,
+                "pos": "lw",
+                "id": 3759,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Tim Washe",
@@ -2338,12 +2338,12 @@
                 "movement": null
             },
             {
-                "name": "Ryan Strome",
-                "number": 16,
+                "name": "Jansen Harkins",
+                "number": 24,
                 "pos": "rw",
-                "id": 1825,
+                "id": 3913,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -2370,7 +2370,7 @@
                 "number": 51,
                 "pos": "ld",
                 "id": 34623,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -4515,7 +4515,7 @@
                 "pos": "lw",
                 "id": 33143,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Frank Nazar",
@@ -4567,7 +4567,7 @@
                 "pos": "lw",
                 "id": 2128,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Nick Foligno",
@@ -4583,7 +4583,7 @@
                 "pos": "rw",
                 "id": 38089,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -4619,7 +4619,7 @@
                 "pos": "rd",
                 "id": 34789,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -4629,7 +4629,7 @@
                 "pos": "ld",
                 "id": 2723,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Artyom Levshunov",
@@ -4637,7 +4637,7 @@
                 "pos": "rd",
                 "id": 38138,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
