@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { GamePrediction, HistoryEntry } from '@/utils/data';
 import { SimGame } from '@/utils/schedule';
@@ -311,7 +312,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             {/* Text Logo for non-main pages */}
                             {!isMainPage && (
                                 <div className="flex-shrink-0 flex items-center pr-3 md:pr-4 border-r border-white/10 mr-1 md:mr-2 snap-start">
-                                    <span className="font-mono text-neon-blue text-glow-blue tracking-widest font-bold whitespace-nowrap text-sm md:text-base" style={{ textShadow: '0 0 10px rgba(0,243,255,0.8)' }}>pony xG</span>
+                                    <Image src="/ponyxG_condensed.png" alt="pony xG" width={80} height={24} className="h-4 md:h-5 w-auto object-contain drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]" />
                                 </div>
                             )}
 
