@@ -1457,6 +1457,12 @@ def predict():
             # Add Lineups (Serialize as JSON string)
             'home_lineup': json.dumps(team_lineups.get(game.get('homeTeamAbbrev'), {})),
             'away_lineup': json.dumps(team_lineups.get(game.get('awayTeamAbbrev'), {})),
+
+            # Lineup quality scores — dimensionless ratio vs league average.
+            # 1.0 = exactly league average; 1.05 = 5% above; 0.95 = 5% below.
+            # Only meaningful when lineup data is reliable (>= MIN_LINEUP_MATCHES).
+            'home_lineup_score': round(h_xgf_quality, 4) if h_lineup_result.get('reliable') else '',
+            'away_lineup_score': round(a_xgf_quality, 4) if a_lineup_result.get('reliable') else '',
             
             # Serialize lists to JSON string for CSV
             'home_l7_games': json.dumps(h_l7_games),
