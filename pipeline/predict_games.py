@@ -870,13 +870,6 @@ def predict():
             h_lineup_result = estimate_lineup_xg(h_lineup, player_impact_data, league_avg_impact, name_lookup_data)
             a_lineup_result = estimate_lineup_xg(a_lineup, player_impact_data, league_avg_impact, name_lookup_data)
 
-            if h_lineup_result['reliable']:
-                print(f"  [LINEUP] {home_team}: xGF/gm={h_lineup_result['xgf_per_game']:.3f} "
-                      f"({h_lineup_result['players_found']}/{h_lineup_result['total_players']} matched)")
-            if a_lineup_result['reliable']:
-                print(f"  [LINEUP] {away_team}: xGF/gm={a_lineup_result['xgf_per_game']:.3f} "
-                      f"({a_lineup_result['players_found']}/{a_lineup_result['total_players']} matched)")
-
         # Legacy star-penalty: kept as a safety net for games where lineup data
         # is unavailable (pre-game, empty lineups). When lineup data IS reliable,
         # the lineup estimate already captures all missing players automatically.
@@ -966,42 +959,57 @@ def predict():
         a_xgf_5v5 = a_ratings.get('xgf_5v5_rating', a_ratings.get('xgf_rating', 2.0))
         h_xga_5v5 = h_ratings.get('xga_5v5_rating', h_ratings.get('xga_rating', 2.0))
 
-        # ── Lineup blending ─────────────────────────────────────────────────
-        # When a reliable lineup estimate exists, blend it with the team rating.
-        # This naturally accounts for injuries, line changes, and call-ups
-        # without any hardcoded player lists.
+        # ── Lineup blending (ratio-based) ───────────────────────────────────
+        # We use a RATIO approach rather than a direct additive blend.
         #
-        # Home offensive xGF: blend team rating with lineup's projected xGF/game
-        if h_lineup_result['reliable'] and h_lineup_result['xgf_per_game'] is not None:
-            match_ratio  = h_lineup_result['players_found'] / max(h_lineup_result['total_players'], 1)
-            eff_weight   = LINEUP_BLEND_WEIGHT * match_ratio   # reduce weight if many players unknown
-            h_xgf_blended = h_xgf_5v5 * (1.0 - eff_weight) + h_lineup_result['xgf_per_game'] * eff_weight
-        else:
-            h_xgf_blended = h_xgf_5v5
+        # Why: ev_xgf_per60 (MoneyPuck) and xgf_5v5_rating (Pythagorean model)
+        # are on different absolute scales and cannot be directly averaged.
+        # Instead we compute:
+        #
+        #   quality_ratio = lineup_xgf_estimate / league_avg_lineup_xgf
+        #
+        # A ratio > 1.0 means the lineup is above-average; < 1.0 means depleted.
+        # We apply that fractional deviation as a multiplier on the team rating:
+        #
+        #   adjusted = team_rating * ((1 - w) + w * quality_ratio)
+        #
+        # At 30% weight with a league-avg lineup (ratio = 1.0): no change.
+        # At 30% weight with a 10% above-avg lineup (ratio = 1.10):
+        #   adjusted = team_rating * (0.70 + 0.30 * 1.10) = team_rating * 1.03
+        #
+        # This is scale-invariant and degrades gracefully when lineup data is
+        # unavailable (ratio → 1.0 when no reliable match).
 
-        # Away defensive xGA: blend team rating with lineup's projected on-ice xGA/game
-        if a_lineup_result['reliable'] and a_lineup_result['xga_per_game'] is not None:
-            match_ratio   = a_lineup_result['players_found'] / max(a_lineup_result['total_players'], 1)
-            eff_weight    = LINEUP_BLEND_WEIGHT * match_ratio
-            a_xga_blended = a_xga_5v5 * (1.0 - eff_weight) + a_lineup_result['xga_per_game'] * eff_weight
-        else:
-            a_xga_blended = a_xga_5v5
+        league_lineup_xgf = league_avg_impact.get('league_lineup_xgf', 1.191)
+        league_lineup_xga = league_avg_impact.get('league_lineup_xga', 1.236)
 
-        # Away offensive xGF
-        if a_lineup_result['reliable'] and a_lineup_result['xgf_per_game'] is not None:
-            match_ratio   = a_lineup_result['players_found'] / max(a_lineup_result['total_players'], 1)
-            eff_weight    = LINEUP_BLEND_WEIGHT * match_ratio
-            a_xgf_blended = a_xgf_5v5 * (1.0 - eff_weight) + a_lineup_result['xgf_per_game'] * eff_weight
-        else:
-            a_xgf_blended = a_xgf_5v5
+        def _lineup_quality(lineup_result, key, league_baseline):
+            """Return quality ratio for a team's lineup vs league average."""
+            if (lineup_result.get('reliable') and
+                    lineup_result.get(key) is not None and
+                    league_baseline > 0):
+                match_ratio = (lineup_result['players_found'] /
+                               max(lineup_result['total_players'], 1))
+                raw_ratio   = lineup_result[key] / league_baseline
+                # Shrink ratio toward 1.0 proportionally to unknown-player fraction
+                # so that a 10/18-matched lineup has less impact than a 18/18 match.
+                return 1.0 + (raw_ratio - 1.0) * match_ratio * LINEUP_BLEND_WEIGHT
+            return 1.0   # no adjustment when lineup data unavailable
 
-        # Home defensive xGA
-        if h_lineup_result['reliable'] and h_lineup_result['xga_per_game'] is not None:
-            match_ratio   = h_lineup_result['players_found'] / max(h_lineup_result['total_players'], 1)
-            eff_weight    = LINEUP_BLEND_WEIGHT * match_ratio
-            h_xga_blended = h_xga_5v5 * (1.0 - eff_weight) + h_lineup_result['xga_per_game'] * eff_weight
-        else:
-            h_xga_blended = h_xga_5v5
+        h_xgf_quality = _lineup_quality(h_lineup_result, 'xgf_per_game', league_lineup_xgf)
+        h_xga_quality = _lineup_quality(h_lineup_result, 'xga_per_game', league_lineup_xga)
+        a_xgf_quality = _lineup_quality(a_lineup_result, 'xgf_per_game', league_lineup_xgf)
+        a_xga_quality = _lineup_quality(a_lineup_result, 'xga_per_game', league_lineup_xga)
+
+        h_xgf_blended = h_xgf_5v5 * h_xgf_quality
+        h_xga_blended = h_xga_5v5 * h_xga_quality
+        a_xgf_blended = a_xgf_5v5 * a_xgf_quality
+        a_xga_blended = a_xga_5v5 * a_xga_quality
+
+        if h_lineup_result.get('reliable'):
+            print(f"  [LINEUP RATIO] {home_team}: xGF qual={h_xgf_quality:.3f}  xGA qual={h_xga_quality:.3f}")
+        if a_lineup_result.get('reliable'):
+            print(f"  [LINEUP RATIO] {away_team}: xGF qual={a_xgf_quality:.3f}  xGA qual={a_xga_quality:.3f}")
 
         # Predictive Formula: (Offense * Defense) / League_Avg
         h_xg_base = (h_xgf_blended * a_xga_blended) / league_xg_5v5
@@ -1197,15 +1205,19 @@ def predict():
         h_explained.append(f"5v5 Matchup: {h_5v5_raw:.2f}")
         a_explained.append(f"5v5 Matchup: {a_5v5_raw:.2f}")
 
-        # Lineup blend note
+        # Lineup quality note — show ratio and direction so it's readable
         if h_lineup_result['reliable']:
             found = h_lineup_result['players_found']
             total = h_lineup_result['total_players']
-            h_explained.append(f"Lineup ({found}/{total} matched): {h_xgf_blended:.2f} xGF")
+            pct   = (h_xgf_quality - 1.0) * 100
+            sign  = '+' if pct >= 0 else ''
+            h_explained.append(f"Lineup ({found}/{total}): {sign}{pct:.1f}% quality")
         if a_lineup_result['reliable']:
             found = a_lineup_result['players_found']
             total = a_lineup_result['total_players']
-            a_explained.append(f"Lineup ({found}/{total} matched): {a_xgf_blended:.2f} xGF")
+            pct   = (a_xgf_quality - 1.0) * 100
+            sign  = '+' if pct >= 0 else ''
+            a_explained.append(f"Lineup ({found}/{total}): {sign}{pct:.1f}% quality")
         
         # Home Ice
         h_explained.append(f"Home Ice: +{HOME_ICE_VAL:.2f}")

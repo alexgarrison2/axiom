@@ -286,6 +286,32 @@ def calculate_player_impact(
         'all_ev_xga_per60': _avg(list(player_impact.values()), 'ev_xga_per60'),
     }
 
+    # ── League-average lineup baseline (for ratio-based blending) ──────────────
+    # This is what estimate_lineup_xg returns for a team of perfectly average
+    # players — used in predict_games.py to compute a dimensionless quality ratio.
+    # Formula: sum over lines of (avg_position_rate × line_toi_hours × 1_line_unit)
+    fwd_rate = league_avgs['fwd_ev_xgf_per60']
+    def_rate = league_avgs['def_ev_xgf_per60']
+    fwd_xga  = league_avgs['fwd_ev_xga_per60']
+    def_xga  = league_avgs['def_ev_xga_per60']
+
+    _line_toi = {'f1': 5.2, 'f2': 4.5, 'f3': 3.8, 'f4': 3.0,
+                 'd1': 5.5, 'd2': 4.5, 'd3': 3.5}
+
+    league_lineup_xgf = sum(
+        (fwd_rate if k.startswith('f') else def_rate) * (v / 60.0)
+        for k, v in _line_toi.items()
+    )
+    league_lineup_xga = sum(
+        (fwd_xga if k.startswith('f') else def_xga) * (v / 60.0)
+        for k, v in _line_toi.items()
+    )
+
+    league_avgs['league_lineup_xgf'] = round(league_lineup_xgf, 4)
+    league_avgs['league_lineup_xga'] = round(league_lineup_xga, 4)
+
+    print(f"  League avg lineup  xGF/game={league_lineup_xgf:.3f}  xGA/game={league_lineup_xga:.3f}  (used for ratio-blend normalisation)")
+
     print(f"  League avg fwd  xGF/60={league_avgs['fwd_ev_xgf_per60']:.3f}  xGA/60={league_avgs['fwd_ev_xga_per60']:.3f}  relative={league_avgs['fwd_relative_xgf_pct']:.3f}%")
     print(f"  League avg def  xGF/60={league_avgs['def_ev_xgf_per60']:.3f}  xGA/60={league_avgs['def_ev_xga_per60']:.3f}  relative={league_avgs['def_relative_xgf_pct']:.3f}%")
 
@@ -471,6 +497,23 @@ def estimate_lineup_xg(
     """
     Estimate a team's expected 5v5 xGF/game and xGA/game from the projected lineup.
 
+    KEY DESIGN NOTE — per-line average, not per-player sum:
+    ev_xgf_per60 is an ON-ICE rate: it measures the *team's* xGF output while
+    that specific player is on the ice.  When three forwards share a line they
+    all play the same minutes and thus all measure the same underlying events.
+    Summing three players' rates would triple-count those events.  Instead we:
+      1. Collect each player's rate for a given line.
+      2. Average those rates across the line (all on ice simultaneously).
+      3. Multiply the averaged rate by the line's TOI once.
+
+    This gives the team's xGF during that line's shift, with no overcounting.
+    D pairs are handled identically (2-player average × pair TOI).
+
+    The raw per-game estimate is then fed into predict_games.py as a *ratio*
+    relative to the league-average lineup (league_lineup_xgf from league_avgs),
+    so the absolute scale of ev_xgf_per60 doesn't need to match the Pythagorean
+    xgf_5v5_rating scale used by the prediction formula.
+
     Args:
         lineup:        DailyFaceoff lineup  {line_id: [{id, name, pos, ...}]}
         player_impact: {str(playerId): impact_dict}
@@ -479,8 +522,8 @@ def estimate_lineup_xg(
 
     Returns:
         {
-          'xgf_per_game':  float,   # team's expected 5v5 xGoals For per game
-          'xga_per_game':  float,   # team's expected 5v5 xGoals Against per game
+          'xgf_per_game':  float,   # team's estimated 5v5 xGF per game (raw, per-line avg)
+          'xga_per_game':  float,   # team's estimated 5v5 xGA per game (raw, per-line avg)
           'players_found': int,     # how many players were matched
           'total_players': int,     # total players in lineup
           'reliable':      bool,    # True if enough players matched
@@ -503,6 +546,10 @@ def estimate_lineup_xg(
         toi_hours     = line_toi_min / 60.0
         is_fwd_line   = line_id.startswith('f')
 
+        # Collect rates for all players in this line/pair
+        line_xgf_rates = []
+        line_xga_rates = []
+
         for player in players:
             if not isinstance(player, dict):
                 continue
@@ -514,20 +561,23 @@ def estimate_lineup_xg(
             data = lookup_player(pid, pname, player_impact, name_lookup)
 
             if data and data.get('ev_toi_per_game', 0) >= MIN_EV_TOI_PER_GAME:
-                xgf_p60 = data['ev_xgf_per60']
-                xga_p60 = data['ev_xga_per60']
-                found  += 1
+                line_xgf_rates.append(data['ev_xgf_per60'])
+                line_xga_rates.append(data['ev_xga_per60'])
+                found += 1
             else:
                 # Replacement level: use league average for position group
                 if is_fwd_line:
-                    xgf_p60 = league_avgs.get('fwd_ev_xgf_per60', 2.8)
-                    xga_p60 = league_avgs.get('fwd_ev_xga_per60', 2.8)
+                    line_xgf_rates.append(league_avgs.get('fwd_ev_xgf_per60', 2.4))
+                    line_xga_rates.append(league_avgs.get('fwd_ev_xga_per60', 2.4))
                 else:
-                    xgf_p60 = league_avgs.get('def_ev_xgf_per60', 2.5)
-                    xga_p60 = league_avgs.get('def_ev_xga_per60', 2.5)
+                    line_xgf_rates.append(league_avgs.get('def_ev_xgf_per60', 2.4))
+                    line_xga_rates.append(league_avgs.get('def_ev_xga_per60', 2.4))
 
-            total_xgf += xgf_p60 * toi_hours
-            total_xga += xga_p60 * toi_hours
+        # Average across the line (all players are on ice simultaneously),
+        # then multiply by line TOI once — no per-player overcounting.
+        if line_xgf_rates:
+            total_xgf += (sum(line_xgf_rates) / len(line_xgf_rates)) * toi_hours
+            total_xga += (sum(line_xga_rates) / len(line_xga_rates)) * toi_hours
 
     reliable = found >= MIN_LINEUP_MATCHES and total > 0
 
