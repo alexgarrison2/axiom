@@ -2,6 +2,8 @@ import subprocess
 import re
 import json
 import os
+import urllib.request
+import ssl
 from datetime import datetime
 
 def fetch_odds():
@@ -197,8 +199,81 @@ def fetch_odds():
             parsed_count += 1
 
     print(f"Parsed {parsed_count} games from Bovada.")
-    
     print(f"Found odds for {len(odds_data)} teams.")
+
+    if len(odds_data) == 0:
+        print("Bovada returned 0 odds. Attempting fallback to ESPN API...")
+        try:
+            espn_url = "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard"
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            req = urllib.request.Request(espn_url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, context=ctx) as response:
+                espn_data = json.loads(response.read().decode())
+                
+            for event in espn_data.get('events', []):
+                try:
+                    start_time_iso = event.get('date', '') 
+                    if not start_time_iso: continue
+                    
+                    dt_str = start_time_iso.replace('Z', '')
+                    if len(dt_str.split(':')) == 2:
+                        dt_str += ':00'
+                    
+                    try:
+                        import pytz
+                        from datetime import timezone
+                        dt_utc = datetime.fromisoformat(dt_str + '+00:00')
+                        central = pytz.timezone('US/Central')
+                        dt_central = dt_utc.astimezone(central)
+                        date_str = dt_central.strftime('%Y-%m-%d')
+                    except Exception:
+                        from datetime import timezone, timedelta
+                        dt_utc = datetime.fromisoformat(dt_str + '+00:00')
+                        dt_central = dt_utc - timedelta(hours=6)
+                        date_str = dt_central.strftime('%Y-%m-%d')
+                    
+                    competitions = event.get('competitions', [])
+                    if not competitions: continue
+                    comp = competitions[0]
+                    
+                    competitors = comp.get('competitors', [])
+                    if len(competitors) < 2: continue
+                        
+                    home_raw = competitors[0].get('team', {}).get('name', '') if competitors[0].get('homeAway') == 'home' else competitors[1].get('team', {}).get('name', '')
+                    away_raw = competitors[0].get('team', {}).get('name', '') if competitors[0].get('homeAway') == 'away' else competitors[1].get('team', {}).get('name', '')
+                    
+                    home_team = TEAM_MAPPING.get(home_raw, home_raw)
+                    away_team = TEAM_MAPPING.get(away_raw, away_raw)
+                    if "Hockey Club" in home_team: home_team = "Mammoth"
+                    if "Hockey Club" in away_team: away_team = "Mammoth"
+
+                    matchup_id = f"{date_str}:{away_team}@{home_team}"
+                    
+                    odds_list = comp.get('odds', [])
+                    if odds_list:
+                        ml = odds_list[0].get('moneyline', {})
+                        h_odds_str = ml.get('home', {}).get('close', {}).get('odds', ml.get('home', {}).get('open', {}).get('odds'))
+                        a_odds_str = ml.get('away', {}).get('close', {}).get('odds', ml.get('away', {}).get('open', {}).get('odds'))
+                        
+                        if h_odds_str and a_odds_str:
+                            h_odds = 100 if h_odds_str == 'EVEN' else int(h_odds_str)
+                            a_odds = 100 if a_odds_str == 'EVEN' else int(a_odds_str)
+                            
+                            if matchup_id not in odds_data:
+                                odds_data[matchup_id] = {}
+                            odds_data[matchup_id][home_team] = h_odds
+                            odds_data[matchup_id][away_team] = a_odds
+                            print(f"  [ESPN] Added odds for {home_team}: {h_odds}, {away_team}: {a_odds}")
+                            
+                except Exception as e:
+                    print(f"Error parsing ESPN event: {e}")
+                    
+        except Exception as e:
+            print(f"Error fetching ESPN data: {e}")
+            
+        print(f"Found odds for {len(odds_data)} matchups after ESPN fallback.")
     
     # Merge Manual Odds (Override)
     for team, odds in MANUAL_ODDS.items():
