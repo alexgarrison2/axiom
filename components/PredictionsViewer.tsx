@@ -11,6 +11,7 @@ import TeamsTable from './TeamsTable';
 import NewsSection from './NewsSection';
 import PlayoffTable from './PlayoffTable';
 import PlayoffBracket from './PlayoffBracket';
+import Header from './Header';
 import { Slider } from '@/components/ui/slider';
 
 interface PredictionsViewerProps {
@@ -18,6 +19,7 @@ interface PredictionsViewerProps {
     history: HistoryEntry[];
     fullSchedule: SimGame[];
     currentStandings: TeamStandings[];
+    lastRefresh?: string;
 }
 
 const containerVariants: Variants = {
@@ -58,7 +60,7 @@ const itemVariants: Variants = {
     }
 };
 
-const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, fullSchedule, currentStandings }) => {
+const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, fullSchedule, currentStandings, lastRefresh }) => {
     const [predictions, setPredictions] = useState<GamePrediction[]>(initialPredictions);
     const [simResults, setSimResults] = useState<Record<string, SimResult>>({});
     const workerRef = useRef<Worker | null>(null);
@@ -278,10 +280,15 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
         return <div className="text-center text-gray-500 mt-12 font-mono uppercase tracking-widest animate-pulse">No data available.</div>;
     }
 
+    const isMainPage = !['News', 'Teams', 'History', 'Playoffs', 'Bracket'].includes(selectedTab);
+
     return (
         <div className="w-full">
+            {/* Header Section (Only on Main Prediction Pages) */}
+            {isMainPage && <Header lastRefresh={lastRefresh} />}
+
             {/* Controls Container */}
-            <div className="flex flex-col items-center mb-12 gap-8 relative z-20">
+            <div className={`flex flex-col items-center gap-8 relative z-20 ${isMainPage ? 'mb-12' : 'mb-6 mt-6 md:mt-8'}`}>
 
                 {/* Controls Row */}
                 <div className="flex items-center justify-center w-full relative z-20 max-w-full">
@@ -300,6 +307,14 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             ref={tabBarRef}
                             onScroll={handleTabScroll}
                             className="flex items-center gap-2 md:gap-3 bg-black/40 p-1.5 md:p-2.5 rounded-2xl md:rounded-3xl backdrop-blur-md border border-white/5 w-full max-w-full overflow-x-auto snap-x scrollbar-hide px-2 md:px-4">
+
+                            {/* Text Logo for non-main pages */}
+                            {!isMainPage && (
+                                <div className="flex-shrink-0 flex items-center pr-3 md:pr-4 border-r border-white/10 mr-1 md:mr-2 snap-start">
+                                    <span className="font-mono text-neon-blue text-glow-blue tracking-widest font-bold whitespace-nowrap text-sm md:text-base" style={{ textShadow: '0 0 10px rgba(0,243,255,0.8)' }}>pony xG</span>
+                                </div>
+                            )}
+
                             {/* Date Buttons — TODAY / TOMORROW first */}
                             {uniqueDates.map((date, idx) => {
                                 const [y, m, d] = date.split('-').map(Number);
@@ -404,8 +419,8 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             <button
                                 onClick={() => setSelectedTab('Bracket')}
                                 className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Bracket'
-                                        ? 'text-sky-400 border-sky-400 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
-                                        : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
+                                    ? 'text-sky-400 border-sky-400 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
+                                    : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
                             >
                                 {selectedTab === 'Bracket' && (
@@ -434,7 +449,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         className="w-full"
                     >
                         {/* History Filters & Slider */}
-                        <div className="flex flex-col items-center gap-6 mb-8 max-w-2xl mx-auto">
+                        <div className="flex flex-col items-center gap-4 mb-4 max-w-2xl mx-auto">
 
                             {/* Date Range Slider */}
                             {uniqueHistoryDates.length > 1 && (
@@ -597,9 +612,9 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         className="w-full"
                     >
                         <div className="max-w-7xl mx-auto">
-                            <div className="text-center mb-8">
-                                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-orange-400 mb-2">Playoff Probability Dashboard</h2>
-                                <p className="text-neutral-400 text-sm">Monte Carlo simulations (5,000 runs). Projected points are averaged outcomes.</p>
+                            <div className="text-center mb-4">
+                                <h2 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-orange-400 mb-1">Playoff Probability Dashboard</h2>
+                                <p className="text-neutral-400 text-xs md:text-sm">Monte Carlo simulations (5,000 runs). Projected points are averaged outcomes.</p>
                             </div>
                             {Object.keys(simResults).length > 0 ? (
                                 <PlayoffTable currentStandings={currentStandings} simResults={simResults} />
@@ -620,9 +635,9 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         className="w-full"
                     >
                         <div className="max-w-7xl mx-auto">
-                            <div className="text-center mb-8">
-                                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-blue-400 mb-2">Playoff Bracket</h2>
-                                <p className="text-neutral-400 text-sm">Current seedings from live standings · Monte Carlo cup odds · Series win % from Poisson xG model</p>
+                            <div className="text-center mb-4">
+                                <h2 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-blue-400 mb-1">Playoff Bracket</h2>
+                                <p className="text-neutral-400 text-xs md:text-sm">Current seedings from live standings · Monte Carlo cup odds · Series win % from Poisson xG model</p>
                             </div>
                             {Object.keys(simResults).length > 0 ? (
                                 <PlayoffBracket currentStandings={currentStandings} simResults={simResults} />

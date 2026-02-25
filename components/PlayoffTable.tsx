@@ -113,7 +113,7 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
 
     return (
         <div className="w-full relative">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pb-12">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pb-6">
                 <TableSection
                     title="Western Conference"
                     groups={processedTeams.west}
@@ -128,7 +128,7 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
 
             {/* Matchup Matrices */}
             {processedTeams.west && processedTeams.east && (
-                <div className="grid grid-cols-1 gap-8 pb-12">
+                <div className="grid grid-cols-1 gap-4 pb-6">
                     <MatchupMatrix
                         currentStandings={currentStandings}
                         simResults={simResults}

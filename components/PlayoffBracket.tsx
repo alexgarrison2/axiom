@@ -480,7 +480,7 @@ const ConferenceColumn: React.FC<ConferenceColProps> = ({ name, seeded, simResul
     );
 
     const R2Col = (
-        <div className="flex flex-col gap-8 w-[155px] min-w-[155px] justify-around self-stretch py-12">
+        <div className="flex flex-col gap-4 w-[155px] min-w-[155px] justify-around self-stretch py-4">
             <SeriesBox matchup={mR2_1} round="R2" onSelectTeam={onSelectTeam} tooltipSide={tooltipSide} />
             <SeriesBox matchup={mR2_2} round="R2" onSelectTeam={onSelectTeam} tooltipSide={tooltipSide} />
         </div>
@@ -566,7 +566,7 @@ const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simRe
     return (
         <div className="w-full">
             {/* Legend */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-5">
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
                 <span className="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Round advance odds →</span>
                 {([['≥75%', '#f59e0b', 'Favorite'], ['≥55%', '#34d399', 'Strong'], ['≥35%', '#60a5fa', 'Live'], ['<35%', '#9ca3af', 'Underdog']] as const).map(([label, color, desc]) => (
                     <div key={label} className="flex items-center gap-1.5">
@@ -579,7 +579,7 @@ const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simRe
 
             {/* Top Cup Favorites */}
             {topContenders.length > 0 && (
-                <div className="flex items-center justify-center gap-2 mb-7 flex-wrap">
+                <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
                     <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mr-1">Cup favorites:</span>
                     {topContenders.map(t => (
                         <motion.button
@@ -598,7 +598,7 @@ const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simRe
             )}
 
             {/* Bracket */}
-            <div className="overflow-x-auto pb-8">
+            <div className="overflow-x-auto pb-2">
                 <div className="flex gap-2 items-center justify-center min-w-[900px] px-4">
 
                     {/* West (L→R) */}

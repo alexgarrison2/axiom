@@ -1,9 +1,7 @@
 import React from 'react';
-// import Image from 'next/image';
 import { getPredictions, getLastRefresh, getHistory } from '@/utils/data';
 import { fetchRemainingSeason, fetchCurrentStandings } from '@/utils/schedule';
 import PredictionsViewer from '@/components/PredictionsViewer';
-import Header from '@/components/Header';
 
 // Force dynamic revalidation to ensure data is fresh on every request
 export const revalidate = 0;
@@ -27,15 +25,13 @@ export default async function Home() {
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
 
             <div className="max-w-[1800px] mx-auto relative z-10">
-                {/* Header Section */}
-                <Header lastRefresh={lastRefresh} />
-
                 {/* Interactive Predictions Viewer */}
                 <PredictionsViewer
                     predictions={predictions}
                     history={history}
                     fullSchedule={fullSchedule}
                     currentStandings={currentStandings}
+                    lastRefresh={lastRefresh}
                 />
             </div>
         </main>
