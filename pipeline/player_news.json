@@ -1,4 +1,135 @@
 {
+    "MIN": [
+        {
+            "player": "Quinn Hughes",
+            "news": "Hughes (Olympics) will return to Minnesota's lineup and play vs. Colorado on Thursday. ",
+            "category": "General",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:50:13.700Z"
+        }
+    ],
+    "WSH": [
+        {
+            "player": "Connor McMichael",
+            "news": "McMichael (upper-body) has been activated from IR. ",
+            "category": "Injury",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:39:57.194Z"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "Karel Vejmelka",
+            "news": "Vejmelka is in the starter's crease at Utah's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:34:49.952Z"
+        },
+        {
+            "player": "Maveric Lamoureux",
+            "news": "Lamoureux has been reassigned to Tucson (AHL). ",
+            "category": "Send Down",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:01:54.890Z"
+        },
+        {
+            "player": "Dmitri Simashev",
+            "news": "Simashev has been reassigned to Tucson (AHL). ",
+            "category": "Send Down",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:01:29.371Z"
+        }
+    ],
+    "DAL": [
+        {
+            "player": "Arttu Hyry",
+            "news": "Hyry will draw back into Dallas' lineup vs. Seattle on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:21:54.058Z"
+        },
+        {
+            "player": "Roope Hintz",
+            "news": "Hintz (illness) is out vs. Seattle on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:21:17.811Z"
+        },
+        {
+            "player": "Radek Faksa",
+            "news": "Faksa (upper-body) is out vs. Seattle but expected to return on Saturday. ",
+            "category": "Injury",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:20:51.606Z"
+        },
+        {
+            "player": "Thomas Harley",
+            "news": "Harley (Olympics) will return vs. Seattle on Wednesday. ",
+            "category": "General",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:20:25.951Z"
+        },
+        {
+            "player": "Lian Bichsel",
+            "news": "Bichsel (lower-body) is expected to return vs. Seattle on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:08:26.735Z"
+        }
+    ],
+    "TOR": [
+        {
+            "player": "Anthony Stolarz",
+            "news": "Stolarz will start in Tampa Bay on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:16:49.956Z"
+        },
+        {
+            "player": "Easton Cowan",
+            "news": "Cowan is expected to be a healthy scratch vs. Tampa Bay on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:14:24.785Z"
+        },
+        {
+            "player": "Dakota Joshua",
+            "news": "Joshua (lacerated kidney) is expected to remain out vs. Tampa Bay on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:14:02.107Z"
+        },
+        {
+            "player": "John Tavares",
+            "news": "Tavares (illness) will play vs. Tampa Bay on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:13:24.811Z"
+        },
+        {
+            "player": "Auston Matthews",
+            "news": "Matthews (olympics) will return and play vs. Tampa Bay on Wednesday. ",
+            "category": "General",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:13:01.371Z"
+        }
+    ],
+    "FLA": [
+        {
+            "player": "Tomas Nosek",
+            "news": "Nosek (knee) practiced in a regular practice jersey on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T17:00:26.741Z"
+        },
+        {
+            "player": "Dmitry Kulikov",
+            "news": "Kulikov (upper-body) practiced in a regular practice jersey on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-02-25",
+            "timestamp": "2026-02-25T16:59:50.118Z"
+        }
+    ],
     "NJD": [
         {
             "player": "Jake Allen",
@@ -6,20 +137,6 @@
             "category": "Goalie Start",
             "date": "2026-02-25",
             "timestamp": "2026-02-25T16:43:48.687Z"
-        },
-        {
-            "player": "Jake Allen",
-            "news": "Allen was the first goalie off the ice at New Jersey's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T15:56:50.269Z"
-        },
-        {
-            "player": "Jack Hughes",
-            "news": "Hughes (Olympics) is expected to play vs. Buffalo on Wednesday. ",
-            "category": "General",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T15:17:47.453Z"
         }
     ],
     "BUF": [
@@ -38,129 +155,6 @@
             "category": "Goalie Start",
             "date": "2026-02-25",
             "timestamp": "2026-02-25T16:34:11.103Z"
-        }
-    ],
-    "TOR": [
-        {
-            "player": "Anthony Stolarz",
-            "news": "Stolarz is in the starter's crease at Toronto's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T16:32:36.149Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Zack Bolduc",
-            "news": "Bolduc is expected to be a healthy scratch vs. the Islanders on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T16:29:11.377Z"
-        },
-        {
-            "player": "Alex Newhook",
-            "news": "Newhook (fractured ankle) will return to Montreal's lineup on Thursday vs. the Islanders. ",
-            "category": "Injury",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T16:28:32.812Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Emil Lilleberg",
-            "news": "Lilleberg (undisclosed) has been activated off IR and will return vs. Toronto on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T16:07:35.668Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Mika Zibanejad",
-            "news": "Zibanejad (illness) missed practice on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T16:06:03.890Z"
-        }
-    ],
-    "WSH": [
-        {
-            "player": "Tom Wilson",
-            "news": "Wilson (illness) is a game-time decision vs. Philadelphia on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T16:03:37.378Z"
-        },
-        {
-            "player": "Logan Thompson",
-            "news": "Thompson will start vs. Philadelphia on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T16:01:20.617Z"
-        },
-        {
-            "player": "Logan Thompson",
-            "news": "Thompson was the first goalie off the ice at Washington's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T15:37:49.022Z"
-        }
-    ],
-    "STL": [
-        {
-            "player": "Robert Thomas",
-            "news": "Thomas (personal) has taken a leave of absence and is expected to return to the team on Friday. ",
-            "category": "General",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T16:02:13.552Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Egor Chinakhov",
-            "news": "Chinakhov (personal) missed practice on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T15:58:09.420Z"
-        }
-    ],
-    "VGK": [
-        {
-            "player": "Brandon Saad",
-            "news": "Saad (undisclosed) has been activated from IR. ",
-            "category": "Injury",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T15:32:12.729Z"
-        },
-        {
-            "player": "Colton Sissons",
-            "news": "Sissons (undisclosed) has been activated from IR and is expected to return vs. Los Angeles on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T15:31:36.873Z"
-        },
-        {
-            "player": "Brayden McNabb",
-            "news": "McNabb (upper-body) has been removed from IR and is expected to return in Los Angeles on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T15:29:28.358Z"
-        }
-    ],
-    "DAL": [
-        {
-            "player": "Remi Poirier",
-            "news": "Poirier has been loaned back to Texas (AHL). ",
-            "category": "Send Down",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T15:16:34.183Z"
-        },
-        {
-            "player": "Arttu Hyry",
-            "news": "Hyry has been recalled from Texas (AHL). ",
-            "category": "Call Up",
-            "date": "2026-02-25",
-            "timestamp": "2026-02-25T15:16:01.926Z"
         }
     ]
 }
