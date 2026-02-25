@@ -110,6 +110,14 @@ jobs:
             
             # Push changes
             git push
+
+            # Trigger Vercel rebuild to serve updated data
+            if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+              echo "Triggering Vercel rebuild..."
+              curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+            else
+              echo "No Vercel deploy hook found in secrets."
+            fi
           else
             echo "No changes detected."
           fi
