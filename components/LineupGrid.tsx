@@ -42,14 +42,14 @@ function LineupScoreGauge({ score }: { score: number }) {
                 />
             )}
 
-            {/* Score label — floats on the expanding side */}
+            {/* Score label — white when over fill, muted grey when near empty */}
             <div
                 className="absolute inset-0 flex items-center z-20 text-[9px] font-bold tabular-nums"
                 style={{
                     justifyContent: positive ? 'flex-end' : 'flex-start',
                     paddingLeft:    positive ? 0 : '6px',
                     paddingRight:   positive ? '6px' : 0,
-                    color: isNeutral ? '#6b7280' : fillColor,
+                    color: isNeutral ? '#6b7280' : fillPct > 8 ? '#ffffff' : fillColor,
                 }}
             >
                 {isNeutral ? 'AVG' : label}

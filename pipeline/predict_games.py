@@ -25,7 +25,7 @@ except ImportError:
 # Blend weight for lineup estimate vs team rating (0 = all team rating, 1 = all lineup)
 # At 0.30 the lineup signal contributes ~30% of the 5v5 xG estimate.
 # This is conservative initially; can be tuned as model accuracy is validated.
-LINEUP_BLEND_WEIGHT = 0.30
+LINEUP_BLEND_WEIGHT = 0.50
 
 # ── (imports end) ─────────────────────────────────────────────────────────────
 
@@ -863,9 +863,9 @@ def predict():
         h_lineup = team_lineups.get(home_tri, {})
         a_lineup = team_lineups.get(away_tri, {})
 
-        h_lineup_result = {'xgf_per_game': None, 'xga_per_game': None,
+        h_lineup_result = {'xgf_rate': None, 'xga_rate': None,
                            'players_found': 0, 'total_players': 0, 'reliable': False}
-        a_lineup_result = {'xgf_per_game': None, 'xga_per_game': None,
+        a_lineup_result = {'xgf_rate': None, 'xga_rate': None,
                            'players_found': 0, 'total_players': 0, 'reliable': False}
 
         if player_impact_data and league_avg_impact:
@@ -982,26 +982,32 @@ def predict():
         # This is scale-invariant and degrades gracefully when lineup data is
         # unavailable (ratio → 1.0 when no reliable match).
 
-        league_lineup_xgf = league_avg_impact.get('league_lineup_xgf', 1.191)
-        league_lineup_xga = league_avg_impact.get('league_lineup_xga', 1.236)
+        league_xgf_rate = league_avg_impact.get('league_xgf_rate', 2.38)
+        league_xga_rate = league_avg_impact.get('league_xga_rate', 2.43)
 
         def _lineup_quality(lineup_result, key, league_baseline):
-            """Return quality ratio for a team's lineup vs league average."""
+            """Return quality ratio for a team's lineup vs league average.
+
+            lineup_result[key] is a TOI-weighted avg ev_xgf_per60 or ev_xga_per60
+            across all 18 players in the projected lineup.  league_baseline is the
+            same metric for a perfectly average 18-player NHL roster.
+
+            match_ratio shrinks the adjustment toward 0 when many players were
+            unmatched — a 10/18-matched lineup carries less confidence than 18/18.
+            """
             if (lineup_result.get('reliable') and
                     lineup_result.get(key) is not None and
                     league_baseline > 0):
                 match_ratio = (lineup_result['players_found'] /
                                max(lineup_result['total_players'], 1))
                 raw_ratio   = lineup_result[key] / league_baseline
-                # Shrink ratio toward 1.0 proportionally to unknown-player fraction
-                # so that a 10/18-matched lineup has less impact than a 18/18 match.
                 return 1.0 + (raw_ratio - 1.0) * match_ratio * LINEUP_BLEND_WEIGHT
             return 1.0   # no adjustment when lineup data unavailable
 
-        h_xgf_quality = _lineup_quality(h_lineup_result, 'xgf_per_game', league_lineup_xgf)
-        h_xga_quality = _lineup_quality(h_lineup_result, 'xga_per_game', league_lineup_xga)
-        a_xgf_quality = _lineup_quality(a_lineup_result, 'xgf_per_game', league_lineup_xgf)
-        a_xga_quality = _lineup_quality(a_lineup_result, 'xga_per_game', league_lineup_xga)
+        h_xgf_quality = _lineup_quality(h_lineup_result, 'xgf_rate', league_xgf_rate)
+        h_xga_quality = _lineup_quality(h_lineup_result, 'xga_rate', league_xga_rate)
+        a_xgf_quality = _lineup_quality(a_lineup_result, 'xgf_rate', league_xgf_rate)
+        a_xga_quality = _lineup_quality(a_lineup_result, 'xga_rate', league_xga_rate)
 
         h_xgf_blended = h_xgf_5v5 * h_xgf_quality
         h_xga_blended = h_xga_5v5 * h_xga_quality
