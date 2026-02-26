@@ -9,8 +9,9 @@ import pandas as pd
 
 # Constants
 BASE_URL = "https://api-web.nhle.com/v1"
-OUTPUT_FILENAME = "public/data/nhl_season_2025_2026_player_stats.csv"
-GAME_STATS_FILE = "public/data/gamestats.csv"
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # axiom root
+OUTPUT_FILENAME = os.path.join(_ROOT, "public", "data", "nhl_season_2025_2026_player_stats.csv")
+GAME_STATS_FILE = os.path.join(_ROOT, "public", "data", "gamestats.csv")
 
 # Create unverified context for SSL to avoid cert errors
 ssl._create_default_https_context = ssl._create_unverified_context

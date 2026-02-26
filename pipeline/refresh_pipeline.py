@@ -58,7 +58,17 @@ def refresh_pipeline():
     print("Fetching missing game data...")
     import nhl_scraper_poc
     nhl_scraper_poc.main()
-    
+
+    # 0d. Backfill per-player boxscore stats (goals/assists/TOI per game)
+    # Used by SkaterGrid availability strip and standard stat rows.
+    # Incremental: skips game_ids already present in the CSV.
+    print("Backfilling player boxscore stats...")
+    try:
+        import backfill_player_stats
+        backfill_player_stats.main()
+    except Exception as e:
+        print(f"[WARN] Player stats backfill failed: {e}")
+
     # 1. Load the new Model
     print("Loading XGBoost model...")
     with open('xg_model_xgb.pkl', 'rb') as f:
@@ -278,9 +288,8 @@ def refresh_pipeline():
             shutil.copy("upcoming_games.json", "../public/data/upcoming_games.json")
             print("Synced upcoming_games.json to public/data")
 
-        if os.path.exists("nhl_season_2025_2026_player_stats.csv"):
-            shutil.copy("nhl_season_2025_2026_player_stats.csv", "../public/data/nhl_season_2025_2026_player_stats.csv")
-            print("Synced player stats to public/data")
+        # Note: nhl_season_2025_2026_player_stats.csv is written directly to
+        # public/data/ by backfill_player_stats.py (step 0d above). No copy needed.
         
         # Sync Odds
         if os.path.exists('odds.json'):
