@@ -201,7 +201,7 @@
                 "pos": "rw",
                 "id": 29119,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -2592,19 +2592,19 @@
     "STL": {
         "f1": [
             {
-                "name": "Dylan Holloway",
-                "number": 81,
+                "name": "Brayden Schenn",
+                "number": 10,
                 "pos": "lw",
-                "id": 32948,
+                "id": 773,
                 "ppUnit": 2,
                 "movement": "up"
             },
             {
-                "name": "Brayden Schenn",
-                "number": 10,
+                "name": "Dalibor Dvorsky",
+                "number": 54,
                 "pos": "c",
-                "id": 773,
-                "ppUnit": 2,
+                "id": 35010,
+                "ppUnit": 1,
                 "movement": "up"
             },
             {
@@ -2644,19 +2644,19 @@
         ],
         "f3": [
             {
-                "name": "Pius Suter",
-                "number": 24,
+                "name": "Dylan Holloway",
+                "number": 81,
                 "pos": "lw",
-                "id": 32940,
+                "id": 32948,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Dalibor Dvorsky",
-                "number": 54,
+                "name": "Pius Suter",
+                "number": 24,
                 "pos": "c",
-                "id": 35010,
-                "ppUnit": 1,
+                "id": 32940,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2758,25 +2758,9 @@
                 "movement": null
             },
             {
-                "name": "Dylan Holloway",
-                "number": 81,
-                "pos": "ir2",
-                "id": 32948,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Brayden Schenn",
-                "number": 10,
-                "pos": "ir3",
-                "id": 773,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Oskar Sundqvist",
                 "number": 70,
-                "pos": "ir4",
+                "pos": "ir2",
                 "id": 2356,
                 "ppUnit": null,
                 "movement": null
@@ -2877,7 +2861,7 @@
                 "pos": "c",
                 "id": 30084,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jacob Melanson",
@@ -3118,6 +3102,24 @@
                 "id": 28161,
                 "ppUnit": null,
                 "movement": null
+            }
+        ],
+        "ir": [
+            {
+                "name": "Juuse Saros",
+                "number": 74,
+                "pos": "ir1",
+                "id": 2557,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
+                "name": "Erik Haula",
+                "number": 56,
+                "pos": "ir2",
+                "id": 2135,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
