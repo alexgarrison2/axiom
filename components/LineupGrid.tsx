@@ -76,14 +76,27 @@ function skaterTooltipSegs(isLg: boolean, pct: number, triCode?: string): Seg[] 
     ];
 }
 
+function ordinalSuffix(n: number): string {
+    const abs = Math.abs(n);
+    const mod100 = abs % 100;
+    if (mod100 >= 11 && mod100 <= 13) return 'th';
+    switch (abs % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+    }
+}
+
 function goalieTooltipSegs(gsax: number, pct: number, name: string): Seg[] {
     const sign  = gsax >= 0 ? '+' : '';
     const color = goalieColor(gsax);
+    const rank  = Math.round(pct);
     return [
         { text: `${name} — ` },
         { text: `${sign}${gsax.toFixed(2)} GSAx/gm`, color },
         { text: ' · ' },
-        { text: `${Math.round(pct)}th %ile`, color },
+        { text: `${rank}${ordinalSuffix(rank)} %ile`, color },
         { text: ' among NHL starters' },
     ];
 }
