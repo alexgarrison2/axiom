@@ -212,9 +212,11 @@ def calculate_player_impact(
             if pk_toi >= MIN_ST_TOI_SECONDS:
                 pk_xga_per60 = per60(_safe_float(r_pk.get('OnIce_A_xGoals')), pk_toi)
 
-        # ── All-situations: game score & penalty diff ──
+        # ── All-situations: game score, penalty diff, shot totals ──
         game_score         = 0.0
         penalty_diff_per60 = 0.0
+        total_sog          = 0
+        total_shot_attempts = 0
         if pid in idx_all:
             r_all    = idx_all[pid]
             all_toi  = _safe_float(r_all.get('icetime'), ev_toi)
@@ -222,6 +224,8 @@ def calculate_player_impact(
             drawn  = _safe_float(r_all.get('penaltiesDrawn'))
             taken  = _safe_float(r_all.get('penalties'))
             penalty_diff_per60 = per60(drawn - taken, all_toi) if all_toi > 0 else 0.0
+            total_sog           = int(_safe_float(r_all.get('I_F_shotsOnGoal', 0)))
+            total_shot_attempts = int(_safe_float(r_all.get('I_F_shotAttempts', 0)))
 
         # ── Store profile ──
         player_impact[pid] = {
@@ -256,8 +260,12 @@ def calculate_player_impact(
             'pk_xga_per60': round(pk_xga_per60, 4),
 
             # Context
-            'penalty_diff_per60': round(penalty_diff_per60, 4),
-            'game_score':         round(game_score, 3),
+            'penalty_diff_per60':  round(penalty_diff_per60, 4),
+            'game_score':          round(game_score, 3),
+
+            # Season shot totals (all situations, from MoneyPuck)
+            'total_sog':           total_sog,
+            'total_shot_attempts': total_shot_attempts,
         }
 
     print(f"  Built profiles for {len(player_impact)} players (after min-TOI filter)")

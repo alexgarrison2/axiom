@@ -120,7 +120,7 @@ def parse_boxscore(game_id, boxscore):
                 points = player.get("points", 0)
                 plus_minus = player.get("plusMinus", 0)
                 toi = player.get("toi", "00:00")
-                shots = player.get("shots", 0)
+                shots = player.get("sog", 0)
                 hits = player.get("hits", 0)
                 blocked_shots = player.get("blockedShots", 0)
                 pim = player.get("pim", 0)

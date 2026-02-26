@@ -27,6 +27,8 @@ interface PIPlayer {
     pk_xga_per60: number;
     penalty_diff_per60: number;
     game_score: number;
+    total_sog: number;
+    total_shot_attempts: number;
 }
 
 type PIDict = Record<string, PIPlayer>;
@@ -493,14 +495,17 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
             const g      = bs?.g  ?? 0;
             const a      = bs?.a  ?? 0;
             const pts    = bs?.pts ?? 0;
-            const shots  = bs?.shots ?? 0;
+            const shots  = bs?.shots ?? 0; // kept for sh_pct; note: CSV shots column is unreliable
             // Total TOI seconds (for sort-by-TOI); fallback to player_impact sum
             const total_toi_sec = bs
                 ? bs.toi_sec
                 : (pi.ev_toi_per_game + pi.pp_toi_per_game + pi.pk_toi_per_game) * pi.games_played;
 
-            const sh_pct    = shots > 0 ? (g / shots) * 100 : 0;
-            const sog_pg    = gp > 0 ? shots / gp : 0;
+            // Use MoneyPuck season totals for SOG (player_stats CSV shots field is always 0)
+            const sog_season = pi.total_sog ?? 0;
+            const sog_pg     = pi.games_played > 0 ? sog_season / pi.games_played : 0;
+
+            const sh_pct    = sog_season > 0 ? (g / sog_season) * 100 : 0;
             const toi_pg_str = gp > 0
                 ? fmtToi(total_toi_sec / gp)
                 : fmtToi(pi.ev_toi_per_game + pi.pp_toi_per_game + pi.pk_toi_per_game);
