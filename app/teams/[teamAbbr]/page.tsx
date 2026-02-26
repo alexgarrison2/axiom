@@ -8,6 +8,7 @@ import { useTeamData } from '@/hooks/useTeamData';
 import TeamHeader from '@/components/team/TeamHeader';
 import FilterControls from '@/components/team/FilterControls';
 import GamesLogTable from '@/components/team/GamesLogTable';
+import SkaterGrid from '@/components/team/SkaterGrid';
 // import { TeamInfo } from '@/types';
 import { motion } from 'framer-motion';
 
@@ -240,12 +241,15 @@ export default function TeamDetailPage() {
 
                     <TabsContent value="skaters" className="m-0 focus-visible:outline-none">
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5 }}
-                            className="p-8 text-center text-muted-foreground font-mono"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4 }}
                         >
-                            Skater stats coming soon...
+                            <SkaterGrid
+                                playerStats={playerStats.filter(p => !p.is_goalie)}
+                                games={games}
+                                teamAbbr={teamAbbr}
+                            />
                         </motion.div>
                     </TabsContent>
 
