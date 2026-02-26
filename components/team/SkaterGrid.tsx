@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { PlayerBoxscoreRow, GameLog } from '@/types';
 
 /* ═══════════════════════════════════════════════════════
@@ -30,6 +31,18 @@ interface PIPlayer {
 
 type PIDict = Record<string, PIPlayer>;
 type PoolDict = Record<string, number[]>;
+
+// Metadata for one team game (passed to availability strip)
+interface TeamGameSlot {
+    gid: string;
+    date: string;       // "2025-10-14"
+    gameNum: number;    // 1 = season opener
+    homeAway: string;   // "Home" | "Away"
+    opponent: string;   // common name e.g. "Jets"
+    result: string;     // "W", "W (OT)", "OTL", "L"
+    gf: number;
+    ga: number;
+}
 
 interface AggPlayer {
     id: string;
@@ -114,47 +127,101 @@ function StatCell({ val, label, pct }: { val: string; label: string; pct: number
    • white  = player played
    • orange = team played, player did not
    • dark   = future game
+   Hover each bar for date / game# / opponent tooltip
 ═══════════════════════════════════════════════════════ */
 
-function AvailStrip({ teamIds, playedIds }: { teamIds: string[]; playedIds: Set<string> }) {
-    type Item = { gid: string | null; played: boolean | null };
+function fmtShortDate(s: string): string {
+    // "2025-10-14" → "Oct 14"
+    const d = new Date(s + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
-    const all: Item[] = [
-        ...teamIds.map(gid => ({ gid, played: playedIds.has(gid) })),
-        ...Array.from({ length: Math.max(0, 82 - teamIds.length) }, () => ({ gid: null, played: null })),
+interface TooltipState {
+    slot: TeamGameSlot;
+    played: boolean;
+    x: number;
+    y: number;
+}
+
+function AvailTooltip({ tt }: { tt: TooltipState }) {
+    if (typeof document === 'undefined') return null;
+    const W = 190;
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
+    const left = Math.max(8, Math.min(tt.x - W / 2, vw - W - 8));
+    const top  = tt.y > 70 ? tt.y - 58 : tt.y + 14;
+    const loc  = tt.slot.homeAway === 'Home' ? 'vs' : '@';
+    const resultColor = tt.slot.result.startsWith('W') ? '#4ade80'
+                      : tt.slot.result === 'OTL' || tt.slot.result === 'SOL' ? '#fb923c'
+                      : '#f87171';
+
+    return createPortal(
+        <div
+            style={{ position: 'fixed', left, top, width: W, zIndex: 9999, pointerEvents: 'none' }}
+            className="bg-zinc-950 border border-white/15 rounded-lg px-2.5 py-2 shadow-xl text-[11px] leading-snug"
+        >
+            <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-zinc-400 font-mono font-medium">Game {tt.slot.gameNum}</span>
+                <span className="text-zinc-500">{fmtShortDate(tt.slot.date)}</span>
+            </div>
+            <div className="text-white font-semibold mb-1">
+                <span className="text-zinc-500 mr-1">{loc}</span>
+                {tt.slot.opponent}
+            </div>
+            <div className="flex items-center gap-1.5">
+                <span style={{ color: tt.played ? '#4ade80' : '#fb923c' }}>
+                    {tt.played ? '✓ Played' : '✗ Missed'}
+                </span>
+                {tt.slot.result && (
+                    <>
+                        <span className="text-zinc-600">·</span>
+                        <span style={{ color: resultColor }}>{tt.slot.result}</span>
+                        <span className="text-zinc-400">{tt.slot.gf}–{tt.slot.ga}</span>
+                    </>
+                )}
+            </div>
+        </div>,
+        document.body
+    );
+}
+
+function AvailStrip({ teamGames, playedIds }: { teamGames: TeamGameSlot[]; playedIds: Set<string> }) {
+    const [tt, setTt] = useState<TooltipState | null>(null);
+
+    // 82 total slots: played games + future placeholders
+    const slots: (TeamGameSlot | null)[] = [
+        ...teamGames,
+        ...Array.from({ length: Math.max(0, 82 - teamGames.length) }, () => null),
     ];
 
-    // Split into 2 rows of ~41 for better visibility
-    const half = Math.ceil(all.length / 2);
-    const rows = [all.slice(0, half), all.slice(half)];
+    const half = Math.ceil(slots.length / 2);
+    const rows = [slots.slice(0, half), slots.slice(half)];
 
-    const barColor = (item: Item) => {
-        if (item.played === null) return { bg: '#27272a', opacity: 0.5 };  // future
-        if (item.played) return { bg: '#d4d4d8', opacity: 0.88 };          // played
-        return { bg: '#fb923c', opacity: 0.7 };                             // missed
+    const barStyle = (slot: TeamGameSlot | null, played: boolean) => {
+        if (!slot)   return { bg: '#27272a', op: 0.5 };
+        if (played)  return { bg: '#d4d4d8', op: 0.88 };
+        return             { bg: '#fb923c', op: 0.70 };
     };
 
     return (
         <div className="flex flex-col gap-[2px] w-full">
             {rows.map((row, ri) => (
                 <div key={ri} style={{ display: 'flex', width: '100%', gap: 1 }}>
-                    {row.map((item, i) => {
-                        const { bg, opacity } = barColor(item);
+                    {row.map((slot, ci) => {
+                        const played = slot ? playedIds.has(slot.gid) : false;
+                        const { bg, op } = barStyle(slot, played);
                         return (
                             <div
-                                key={i}
-                                style={{
-                                    flex: 1,
-                                    height: 5,
-                                    borderRadius: 1,
-                                    backgroundColor: bg,
-                                    opacity,
-                                }}
+                                key={ci}
+                                style={{ flex: 1, height: 5, borderRadius: 1, backgroundColor: bg, opacity: op }}
+                                onMouseEnter={e => slot && setTt({ slot, played, x: e.clientX, y: e.clientY })}
+                                onMouseMove={e  => slot && setTt(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)}
+                                onMouseLeave={() => setTt(null)}
                             />
                         );
                     })}
                 </div>
             ))}
+            {tt && <AvailTooltip tt={tt} />}
         </div>
     );
 }
@@ -165,11 +232,11 @@ function AvailStrip({ teamIds, playedIds }: { teamIds: string[]; playedIds: Set<
 
 interface SkaterCardProps {
     player: AggPlayer;
-    teamGameIds: string[];
+    teamGames: TeamGameSlot[];
     pool: PoolDict;
 }
 
-function SkaterCard({ player, teamGameIds, pool }: SkaterCardProps) {
+function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
     const { pi } = player;
 
     // Percentile helper for this player's position group
@@ -224,7 +291,7 @@ function SkaterCard({ player, teamGameIds, pool }: SkaterCardProps) {
         },
         {
             val: relStr,
-            label: 'xGF%Δ',
+            label: 'Rel%',
             pct: pr(pi.relative_xgf_pct, 'relative_xgf_pct'),
         },
         {
@@ -313,7 +380,7 @@ function SkaterCard({ player, teamGameIds, pool }: SkaterCardProps) {
             </div>
 
             {/* ── Availability strip ── */}
-            <AvailStrip teamIds={teamGameIds} playedIds={player.played_ids} />
+            <AvailStrip teamGames={teamGames} playedIds={player.played_ids} />
         </div>
     );
 }
@@ -341,12 +408,21 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
             .catch(console.error);
     }, []);
 
-    // Chronologically ordered team game IDs (for the availability strip)
-    const teamGameIds = useMemo(
+    // Chronologically ordered game slots (for the availability strip + tooltip)
+    const teamGames = useMemo<TeamGameSlot[]>(
         () =>
             [...games]
                 .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                .map(g => g.game_id),
+                .map(g => ({
+                    gid:      g.game_id,
+                    date:     g.date,
+                    gameNum:  g.game_number,
+                    homeAway: g.home_away,
+                    opponent: g.opponent,
+                    result:   g.result,
+                    gf:       g.gf,
+                    ga:       g.ga,
+                })),
         [games]
     );
 
@@ -562,7 +638,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                     <SkaterCard
                         key={p.id}
                         player={p}
-                        teamGameIds={teamGameIds}
+                        teamGames={teamGames}
                         pool={p.pi.is_forward ? pools.fwd : pools.def}
                     />
                 ))}
