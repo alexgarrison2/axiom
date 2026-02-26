@@ -101,23 +101,37 @@ function pctColor(p: number): string {
 }
 
 /* ═══════════════════════════════════════════════════════
-   StatCell
+   Position accent colours
+═══════════════════════════════════════════════════════ */
+
+function posAccent(pos: string): { text: string; bg: string } {
+    switch (pos.toUpperCase()) {
+        case 'C':  return { text: '#38bdf8', bg: 'rgba(56,189,248,0.13)'  }; // sky
+        case 'LW': return { text: '#34d399', bg: 'rgba(52,211,153,0.13)'  }; // emerald
+        case 'RW': return { text: '#fb923c', bg: 'rgba(251,146,60,0.13)'  }; // orange
+        case 'D':  return { text: '#a78bfa', bg: 'rgba(167,139,250,0.13)' }; // violet
+        default:   return { text: '#94a3b8', bg: 'rgba(148,163,184,0.13)' };
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
+   StatCell — clean top-border indicator style
 ═══════════════════════════════════════════════════════ */
 
 function StatCell({ val, label, pct }: { val: string; label: string; pct: number }) {
     const c = pctColor(pct);
     return (
         <div
-            className="flex flex-col items-center justify-center rounded-md px-1 py-[5px] gap-[3px] text-center"
-            style={{ background: `${c}20`, border: `1px solid ${c}40` }}
+            className="flex flex-col items-center justify-center rounded-md px-1 py-[6px] gap-[3px] text-center"
+            style={{ background: `${c}0d`, borderTop: `2px solid ${c}55` }}
         >
             <span
-                className="text-[10.5px] font-bold tabular-nums leading-none"
+                className="text-[11px] font-bold tabular-nums leading-none"
                 style={{ color: c }}
             >
                 {val}
             </span>
-            <span className="text-[7px] font-medium text-zinc-500 uppercase tracking-wide leading-none whitespace-nowrap">
+            <span className="text-[6.5px] font-medium text-zinc-500 uppercase tracking-wide leading-none whitespace-nowrap">
                 {label}
             </span>
         </div>
@@ -214,7 +228,7 @@ function AvailStrip({ teamGames, playedToi }: { teamGames: TeamGameSlot[]; playe
                         return (
                             <div
                                 key={ci}
-                                style={{ flex: 1, height: 5, borderRadius: 1, backgroundColor: bg, opacity: op }}
+                                style={{ flex: 1, height: 6, borderRadius: 2, backgroundColor: bg, opacity: op }}
                                 onMouseEnter={e => slot && setTt({ slot, played, x: e.clientX, y: e.clientY })}
                                 onMouseMove={e  => slot && setTt(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)}
                                 onMouseLeave={() => setTt(null)}
@@ -241,148 +255,157 @@ interface SkaterCardProps {
 function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
     const { pi } = player;
 
-    // Percentile helper for this player's position group
+    // Percentile helper
     const pr = (val: number, key: string, hi = true) =>
         pctile(val, pool[key] ?? [], hi);
 
-    // Impact badge
-    const gsPct = pr(player.gs_pg, 'gs_pg');
-    const impC = pctColor(gsPct);
+    // Impact
+    const gsPct  = pr(player.gs_pg, 'gs_pg');
+    const impC   = pctColor(gsPct);
     const gsSign = player.gs_pg >= 0 ? '+' : '';
+    const pRank  = Math.round(gsPct);
 
-    // relative_xgf_pct — convert to percentage points for display
+    // Relative xGF
     const relVal = pi.relative_xgf_pct * 100;
     const relStr = (relVal >= 0 ? '+' : '') + relVal.toFixed(1);
 
-    // Stat grid definition
+    // Position accent
+    const posC = posAccent(pi.position);
+
+    // Headshot — season-specific transparent-bg PNG from NHL CDN
+    const headshot = `https://assets.nhle.com/mugs/nhl/20252026/${pi.team}/${player.id}.png`;
+
+    // Advanced stat grid
     const stats: Array<{ val: string; label: string; pct: number }> = [
-        {
-            val: pi.ev_xgf_per60.toFixed(2),
-            label: 'xGF/60',
-            pct: pr(pi.ev_xgf_per60, 'ev_xgf_per60'),
-        },
-        {
-            val: pi.ev_xga_per60.toFixed(2),
-            label: 'xGA/60',
-            pct: pr(pi.ev_xga_per60, 'ev_xga_per60', false), // lower is better
-        },
-        {
-            val: (pi.onice_xgf_pct * 100).toFixed(1) + '%',
-            label: 'xG%',
-            pct: pr(pi.onice_xgf_pct, 'onice_xgf_pct'),
-        },
-        {
-            val: pi.ind_xg_per60.toFixed(2),
-            label: 'iXG/60',
-            pct: pr(pi.ind_xg_per60, 'ind_xg_per60'),
-        },
-        {
-            val: pi.pp_xgf_per60.toFixed(2),
-            label: 'PP xGF',
-            pct: pr(pi.pp_xgf_per60, 'pp_xgf_per60'),
-        },
-        {
-            val: (pi.penalty_diff_per60 >= 0 ? '+' : '') + pi.penalty_diff_per60.toFixed(2),
-            label: 'Pen±',
-            pct: pr(pi.penalty_diff_per60, 'penalty_diff_per60'),
-        },
-        {
-            val: pi.ev_net_per60.toFixed(2),
-            label: 'Net/60',
-            pct: pr(pi.ev_net_per60, 'ev_net_per60'),
-        },
-        {
-            val: relStr,
-            label: 'Rel%',
-            pct: pr(pi.relative_xgf_pct, 'relative_xgf_pct'),
-        },
-        {
-            val: pi.pk_xga_per60.toFixed(2),
-            label: 'PK xGA',
-            pct: pr(pi.pk_xga_per60, 'pk_xga_per60', false), // lower is better
-        },
+        { val: pi.ev_xgf_per60.toFixed(2),                                            label: 'xGF/60', pct: pr(pi.ev_xgf_per60,       'ev_xgf_per60')        },
+        { val: pi.ev_xga_per60.toFixed(2),                                            label: 'xGA/60', pct: pr(pi.ev_xga_per60,       'ev_xga_per60', false)  },
+        { val: (pi.onice_xgf_pct * 100).toFixed(1) + '%',                            label: 'xG%',    pct: pr(pi.onice_xgf_pct,      'onice_xgf_pct')       },
+        { val: pi.ind_xg_per60.toFixed(2),                                            label: 'iXG/60', pct: pr(pi.ind_xg_per60,       'ind_xg_per60')        },
+        { val: pi.pp_xgf_per60.toFixed(2),                                            label: 'PP xGF', pct: pr(pi.pp_xgf_per60,       'pp_xgf_per60')        },
+        { val: (pi.penalty_diff_per60 >= 0 ? '+' : '') + pi.penalty_diff_per60.toFixed(2), label: 'Pen±', pct: pr(pi.penalty_diff_per60, 'penalty_diff_per60')  },
+        { val: pi.ev_net_per60.toFixed(2),                                            label: 'Net/60', pct: pr(pi.ev_net_per60,        'ev_net_per60')        },
+        { val: relStr,                                                                 label: 'Rel%',   pct: pr(pi.relative_xgf_pct,   'relative_xgf_pct')    },
+        { val: pi.pk_xga_per60.toFixed(2),                                            label: 'PK xGA', pct: pr(pi.pk_xga_per60,       'pk_xga_per60', false)  },
     ];
 
     return (
-        <div className="bg-zinc-900/70 border border-white/[0.07] rounded-xl p-3 flex flex-col gap-2.5 hover:border-white/[0.14] hover:bg-zinc-900 transition-all duration-150">
+        <div
+            className="flex flex-col rounded-xl overflow-hidden border border-white/[0.07] hover:border-white/[0.13] transition-all duration-150 group"
+            style={{ background: '#111113', borderLeftColor: `${impC}70`, borderLeftWidth: 3 }}
+        >
+            {/* ══════════════════════════════════════════════
+                HEADER — headshot + identity + GS/G
+            ══════════════════════════════════════════════ */}
+            <div className="relative h-[92px] overflow-hidden shrink-0" style={{ background: '#0d0d0f' }}>
 
-            {/* ── Header: name + impact badge ── */}
-            <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="shrink-0 text-[8px] font-bold px-1.5 py-[3px] rounded bg-white/[0.08] text-zinc-400 uppercase tracking-wide">
+                {/* Headshot: transparent-bg PNG, anchored bottom-right */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={headshot}
+                    alt=""
+                    aria-hidden
+                    loading="lazy"
+                    className="absolute bottom-0 right-0 h-[108%] w-auto select-none pointer-events-none"
+                    style={{ objectFit: 'contain', objectPosition: 'right bottom', opacity: 0.92 }}
+                    onError={e => { (e.target as HTMLImageElement).style.opacity = '0'; }}
+                />
+
+                {/* Left-to-transparent gradient — keeps text legible over headshot */}
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ background: 'linear-gradient(90deg, #0d0d0f 38%, #0d0d0fcc 60%, transparent 82%)' }}
+                />
+
+                {/* Coloured top-edge line */}
+                <div
+                    className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
+                    style={{ background: `linear-gradient(90deg, ${impC}, transparent 70%)` }}
+                />
+
+                {/* Content */}
+                <div className="absolute inset-0 p-3 flex flex-col justify-between z-10">
+
+                    {/* ── Row 1: position badge + name ── */}
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                            className="shrink-0 text-[7.5px] font-black px-[7px] py-[3.5px] rounded-md uppercase tracking-wider leading-none"
+                            style={{ color: posC.text, background: posC.bg }}
+                        >
                             {pi.position}
                         </span>
-                        <span className="text-[13px] font-bold text-white leading-tight truncate">
+                        <span className="text-[13.5px] font-black text-white leading-tight truncate tracking-tight">
                             {pi.name}
                         </span>
                     </div>
-                    {player.jerseyNum > 0 && (
-                        <span className="text-[9px] text-zinc-600">#{player.jerseyNum}</span>
-                    )}
-                </div>
 
-                {/* GS/G impact badge */}
-                <div
-                    className="shrink-0 flex flex-col items-center rounded-lg px-2.5 py-1.5"
-                    style={{ background: `${impC}22`, border: `1px solid ${impC}44` }}
-                >
-                    <span
-                        className="text-[14px] font-black tabular-nums leading-none"
-                        style={{ color: impC }}
-                    >
-                        {gsSign}{player.gs_pg.toFixed(2)}
-                    </span>
-                    <span className="text-[6.5px] text-zinc-500 uppercase tracking-widest mt-[2px]">GS/G</span>
-                </div>
-            </div>
+                    {/* ── Row 2: jersey # (left) + GS/G (right) ── */}
+                    <div className="flex items-end justify-between gap-2">
+                        <span className="text-[10px] font-mono text-zinc-600 pb-[1px]">
+                            {player.jerseyNum > 0 ? `#${player.jerseyNum}` : ''}
+                        </span>
 
-            {/* ── Standard stats row (raw numbers, no color) ── */}
-            <div className="grid grid-cols-6 gap-0.5 text-center">
-                {(
-                    [
-                        [player.gp,               'GP'],
-                        [player.g,                'G'],
-                        [player.a,                'A'],
-                        [player.pts,              'Pts'],
-                        [player.sog_pg.toFixed(1),'SOG'],
-                        [player.toi_pg_str,       'TOI'],
-                    ] as [string | number, string][]
-                ).map(([v, l]) => (
-                    <div key={l} className="flex flex-col items-center gap-[2px]">
-                        <span className="text-[12px] font-bold text-white tabular-nums leading-none">{v}</span>
-                        <span className="text-[7px] text-zinc-500 uppercase tracking-wider leading-none">{l}</span>
+                        {/* GS/G — the headline number */}
+                        <div className="flex flex-col items-end leading-none">
+                            <span className="text-[7px] text-zinc-500 uppercase tracking-widest mb-[2px]">
+                                p{pRank} · GS/G
+                            </span>
+                            <span
+                                className="text-[30px] font-black tabular-nums leading-none"
+                                style={{ color: impC, textShadow: `0 0 24px ${impC}55` }}
+                            >
+                                {gsSign}{player.gs_pg.toFixed(2)}
+                            </span>
+                        </div>
                     </div>
-                ))}
+                </div>
             </div>
 
-            {/* ── Advanced stat grid (3 × 3, percentile-colored) ── */}
-            <div className="grid grid-cols-3 gap-[5px]">
-                {stats.map(s => (
-                    <StatCell key={s.label} val={s.val} label={s.label} pct={s.pct} />
-                ))}
-            </div>
+            {/* ══════════════════════════════════════════════
+                BODY
+            ══════════════════════════════════════════════ */}
+            <div className="p-3 flex flex-col gap-2.5">
 
-            {/* ── TOI breakdown ── */}
-            <div className="flex items-center justify-between text-[8.5px] text-zinc-500 px-0.5">
-                <span>
-                    EV&nbsp;
-                    <span className="text-zinc-300 font-mono font-medium">{fmtToi(pi.ev_toi_per_game)}</span>
-                </span>
-                <span className="text-zinc-700">·</span>
-                <span>
-                    PP&nbsp;
-                    <span className="text-zinc-300 font-mono font-medium">{fmtToi(pi.pp_toi_per_game)}</span>
-                </span>
-                <span className="text-zinc-700">·</span>
-                <span>
-                    PK&nbsp;
-                    <span className="text-zinc-300 font-mono font-medium">{fmtToi(pi.pk_toi_per_game)}</span>
-                </span>
-            </div>
+                {/* ── Standard counting stats ── */}
+                <div className="grid grid-cols-6 gap-0.5 text-center">
+                    {(
+                        [
+                            [player.gp,                'GP'],
+                            [player.g,                 'G'],
+                            [player.a,                 'A'],
+                            [player.pts,               'Pts'],
+                            [player.sog_pg.toFixed(1), 'SOG'],
+                            [player.toi_pg_str,        'TOI'],
+                        ] as [string | number, string][]
+                    ).map(([v, l]) => (
+                        <div key={l} className="flex flex-col items-center gap-[2px]">
+                            <span className="text-[13px] font-bold text-white tabular-nums leading-none">{v}</span>
+                            <span className="text-[6.5px] text-zinc-500 uppercase tracking-wider leading-none">{l}</span>
+                        </div>
+                    ))}
+                </div>
 
-            {/* ── Availability strip ── */}
-            <AvailStrip teamGames={teamGames} playedToi={player.played_toi} />
+                {/* ── Divider ── */}
+                <div className="h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.05) 70%, transparent)' }} />
+
+                {/* ── Advanced stat grid (3 × 3, percentile-coloured) ── */}
+                <div className="grid grid-cols-3 gap-[4px]">
+                    {stats.map(s => (
+                        <StatCell key={s.label} val={s.val} label={s.label} pct={s.pct} />
+                    ))}
+                </div>
+
+                {/* ── TOI breakdown ── */}
+                <div className="flex items-center justify-between text-[8px] text-zinc-600 px-0.5">
+                    <span>EV&thinsp;<span className="text-zinc-300 font-mono font-semibold">{fmtToi(pi.ev_toi_per_game)}</span></span>
+                    <span className="text-zinc-800">·</span>
+                    <span>PP&thinsp;<span className="text-zinc-300 font-mono font-semibold">{fmtToi(pi.pp_toi_per_game)}</span></span>
+                    <span className="text-zinc-800">·</span>
+                    <span>PK&thinsp;<span className="text-zinc-300 font-mono font-semibold">{fmtToi(pi.pk_toi_per_game)}</span></span>
+                </div>
+
+                {/* ── Availability strip ── */}
+                <AvailStrip teamGames={teamGames} playedToi={player.played_toi} />
+            </div>
         </div>
     );
 }
@@ -632,8 +655,8 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                 ].map(({ bg, op, label }) => (
                     <div key={label} className="flex items-center gap-1.5">
                         <div
-                            className="rounded-[1px]"
-                            style={{ width: 14, height: 5, backgroundColor: bg, opacity: op }}
+                            className="rounded-sm"
+                            style={{ width: 14, height: 6, backgroundColor: bg, opacity: op }}
                         />
                         <span>{label}</span>
                     </div>
