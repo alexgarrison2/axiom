@@ -315,6 +315,34 @@ def calculate_player_impact(
     print(f"  League avg fwd  xGF/60={league_avgs['fwd_ev_xgf_per60']:.3f}  xGA/60={league_avgs['fwd_ev_xga_per60']:.3f}  toi={fwd_avg_toi/60:.1f}min")
     print(f"  League avg def  xGF/60={league_avgs['def_ev_xgf_per60']:.3f}  xGA/60={league_avgs['def_ev_xga_per60']:.3f}  toi={def_avg_toi/60:.1f}min")
 
+    # ── Per-team lineup baselines ─────────────────────────────────────────────
+    # For each team, compute the TOI-weighted average xGF/xGA rate across ALL
+    # qualifying players in the MoneyPuck dataset.
+    #
+    # This represents the team's "historical average lineup quality" — i.e., what
+    # estimate_lineup_xg() returns when everyone plays at their seasonal average.
+    # Used in the frontend to answer: "is tonight's lineup stronger or weaker
+    # than this team usually fields?" (vs. Tm label).
+    _team_accum: dict = {}
+    for data in player_impact.values():
+        team = data['team']
+        toi  = data['ev_toi_per_game']
+        if team not in _team_accum:
+            _team_accum[team] = {'xgf_sum': 0.0, 'xga_sum': 0.0, 'toi_sum': 0.0}
+        _team_accum[team]['xgf_sum'] += data['ev_xgf_per60'] * toi
+        _team_accum[team]['xga_sum'] += data['ev_xga_per60'] * toi
+        _team_accum[team]['toi_sum'] += toi
+
+    team_lineup_baselines: dict = {}
+    for team, sums in _team_accum.items():
+        if sums['toi_sum'] > 0:
+            team_lineup_baselines[team] = {
+                'xgf_rate': round(sums['xgf_sum'] / sums['toi_sum'], 4),
+                'xga_rate': round(sums['xga_sum'] / sums['toi_sum'], 4),
+            }
+
+    print(f"  Per-team baselines built for {len(team_lineup_baselines)} teams")
+
     # ── Name lookup for DailyFaceoff matching ──
     # DFO stores full player names. We build:
     #   by_full_name: {normalized_full_name → playerId}
@@ -358,12 +386,19 @@ def calculate_player_impact(
     _save({'by_full_name': name_to_pid, 'by_last_name': last_name_idx}, local_lookup)
     print(f"  ✓ {lookup_file} ({len(name_to_pid)} name entries)")
 
+    # team_lineup_baselines.json
+    baselines_file = 'team_lineup_baselines.json'
+    local_baselines = os.path.join(script_dir, baselines_file)
+    _save(team_lineup_baselines, local_baselines)
+    print(f"  ✓ {baselines_file} ({len(team_lineup_baselines)} teams)")
+
     # Sync to public/data for optional frontend consumption
     try:
         if os.path.exists(public_data):
             import shutil
-            shutil.copy(local_impact, os.path.join(public_data, output_file))
-            shutil.copy(local_avg,    os.path.join(public_data, league_avg_file))
+            shutil.copy(local_impact,    os.path.join(public_data, output_file))
+            shutil.copy(local_avg,       os.path.join(public_data, league_avg_file))
+            shutil.copy(local_baselines, os.path.join(public_data, baselines_file))
             print(f"  ✓ Synced to public/data/")
     except Exception as e:
         print(f"  [WARN] public/data sync failed: {e}")
@@ -412,6 +447,29 @@ def load_player_impact(script_dir: str = None) -> tuple:
         name_lookup = {}
 
     return player_impact, league_avgs, name_lookup
+
+
+def load_team_baselines(script_dir: str = None) -> dict:
+    """
+    Load pre-computed per-team lineup baselines from team_lineup_baselines.json.
+
+    Returns:
+        {tri_code: {'xgf_rate': float, 'xga_rate': float}}
+        Empty dict on failure — caller should degrade gracefully (no vs-team label).
+    """
+    if script_dir is None:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    path = os.path.join(script_dir, 'team_lineup_baselines.json')
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print("  [WARN] team_lineup_baselines.json not found — vs-team label disabled.")
+        return {}
+    except Exception as e:
+        print(f"  [WARN] Could not load team_lineup_baselines.json: {e}")
+        return {}
 
 
 def lookup_player(player_id, player_name: str,

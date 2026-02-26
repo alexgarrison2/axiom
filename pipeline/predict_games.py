@@ -16,7 +16,7 @@ from calculate_gas import GasCalculator
 
 # ── Player-impact / lineup-aware module ──────────────────────────────────────
 try:
-    from player_impact import load_player_impact, estimate_lineup_xg
+    from player_impact import load_player_impact, load_team_baselines, estimate_lineup_xg
     _LINEUP_ENGINE_AVAILABLE = True
 except ImportError:
     _LINEUP_ENGINE_AVAILABLE = False
@@ -692,13 +692,17 @@ def predict():
     player_impact_data = {}
     league_avg_impact  = {}
     name_lookup_data   = {}
+    team_baselines_data = {}
     if _LINEUP_ENGINE_AVAILABLE:
         script_dir_pi = os.path.dirname(os.path.abspath(__file__))
         player_impact_data, league_avg_impact, name_lookup_data = load_player_impact(script_dir_pi)
+        team_baselines_data = load_team_baselines(script_dir_pi)
         if player_impact_data:
             print(f"Player-impact data loaded: {len(player_impact_data)} players")
         else:
             print("[WARN] No player-impact data — predictions will use team ratings only")
+        if team_baselines_data:
+            print(f"Team baselines loaded: {len(team_baselines_data)} teams")
 
     # League Average xG
     league_xg = 3.13
@@ -1008,6 +1012,23 @@ def predict():
         h_xga_quality = _lineup_quality(h_lineup_result, 'xga_rate', league_xga_rate)
         a_xgf_quality = _lineup_quality(a_lineup_result, 'xgf_rate', league_xgf_rate)
         a_xga_quality = _lineup_quality(a_lineup_result, 'xga_rate', league_xga_rate)
+
+        # ── vs-team ratio (display only, not used in prediction math) ────────
+        # Compare tonight's lineup rate to this team's historical TOI-weighted
+        # average across all qualified roster players.  Shows whether tonight's
+        # projected lines are stronger or weaker than their typical deployment.
+        def _vs_team_ratio(lineup_result, key, team_tri):
+            """Raw lineup_rate / team_baseline_rate — no blend weight."""
+            if not (lineup_result.get('reliable') and
+                    lineup_result.get(key) is not None):
+                return None
+            baseline = team_baselines_data.get(team_tri, {}).get(key)
+            if not baseline or baseline <= 0:
+                return None
+            return round(lineup_result[key] / baseline, 4)
+
+        h_lineup_vs_team = _vs_team_ratio(h_lineup_result, 'xgf_rate', home_tri)
+        a_lineup_vs_team = _vs_team_ratio(a_lineup_result, 'xgf_rate', away_tri)
 
         h_xgf_blended = h_xgf_5v5 * h_xgf_quality
         h_xga_blended = h_xga_5v5 * h_xga_quality
@@ -1471,6 +1492,11 @@ def predict():
             # Only meaningful when lineup data is reliable (>= MIN_LINEUP_MATCHES).
             'home_lineup_score': round(h_xgf_quality, 4) if h_lineup_result.get('reliable') else '',
             'away_lineup_score': round(a_xgf_quality, 4) if a_lineup_result.get('reliable') else '',
+
+            # Lineup quality vs this team's own historical average (display only).
+            # 1.0 = same as team's typical lineup; 1.05 = tonight +5% stronger than usual.
+            'home_lineup_vs_team': round(h_lineup_vs_team, 4) if h_lineup_vs_team is not None else '',
+            'away_lineup_vs_team': round(a_lineup_vs_team, 4) if a_lineup_vs_team is not None else '',
             
             # Serialize lists to JSON string for CSV
             'home_l7_games': json.dumps(h_l7_games),

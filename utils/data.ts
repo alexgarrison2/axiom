@@ -90,8 +90,10 @@ export interface GamePrediction {
 
   home_lineup?: TeamLineup;
   away_lineup?: TeamLineup;
-  home_lineup_score?: number;  // quality ratio vs league avg (1.0 = avg, 1.05 = +5%)
+  home_lineup_score?: number;    // quality ratio vs league avg (1.0 = avg, 1.05 = +5%)
   away_lineup_score?: number;
+  home_lineup_vs_team?: number;  // quality ratio vs this team's own historical avg
+  away_lineup_vs_team?: number;
 
   home_goalie_stats?: string;
   away_goalie_stats?: string;
@@ -184,6 +186,8 @@ interface RawPrediction {
   away_lineup?: string;
   home_lineup_score?: string;
   away_lineup_score?: string;
+  home_lineup_vs_team?: string;
+  away_lineup_vs_team?: string;
   home_goalie_stats?: string;
   away_goalie_stats?: string;
   home_starter_vs_opp?: string;
@@ -371,6 +375,8 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       away_lineup: parseLineup(row.away_lineup),
       home_lineup_score: row.home_lineup_score ? parseFloat(row.home_lineup_score) : undefined,
       away_lineup_score: row.away_lineup_score ? parseFloat(row.away_lineup_score) : undefined,
+      home_lineup_vs_team: row.home_lineup_vs_team ? parseFloat(row.home_lineup_vs_team) : undefined,
+      away_lineup_vs_team: row.away_lineup_vs_team ? parseFloat(row.away_lineup_vs_team) : undefined,
 
       home_goalie_stats: row.home_goalie_stats || undefined,
       away_goalie_stats: row.away_goalie_stats || undefined,
