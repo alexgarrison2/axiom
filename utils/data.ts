@@ -80,6 +80,8 @@ export interface GamePrediction {
   away_gas?: number;
   home_gas_breakdown?: string[];
   away_gas_breakdown?: string[];
+  home_gsax?: number;        // GSAx per game for projected home starter
+  away_gsax?: number;
   home_gsax_total?: number;
   home_gsax_pct?: number;
   away_gsax_total?: number;
@@ -176,6 +178,8 @@ interface RawPrediction {
   away_gas?: string;
   home_gas_breakdown?: string;
   away_gas_breakdown?: string;
+  home_gsax?: string;
+  away_gsax?: string;
   home_gsax_total?: string;
   home_gsax_pct?: string;
   away_gsax_total?: string;
@@ -364,6 +368,8 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       away_gas: row.away_gas ? parseInt(row.away_gas) : undefined,
       home_gas_breakdown: row.home_gas_breakdown ? row.home_gas_breakdown.split('|') : [],
       away_gas_breakdown: row.away_gas_breakdown ? row.away_gas_breakdown.split('|') : [],
+      home_gsax: row.home_gsax ? parseFloat(row.home_gsax) : undefined,
+      away_gsax: row.away_gsax ? parseFloat(row.away_gsax) : undefined,
       home_gsax_total: row.home_gsax_total ? parseFloat(row.home_gsax_total) : undefined,
       home_gsax_pct: row.home_gsax_pct ? parseFloat(row.home_gsax_pct) : undefined,
       away_gsax_total: row.away_gsax_total ? parseFloat(row.away_gsax_total) : undefined,

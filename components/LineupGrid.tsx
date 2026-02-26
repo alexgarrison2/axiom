@@ -8,37 +8,42 @@ import { ArrowUp, ArrowDown, Plus } from 'lucide-react';
 interface LineupGridProps {
     lineup?: TeamLineup;
     triCode: string;
-    lineupScore?: number;    // quality ratio vs league avg (1.0 = avg)
-    lineupVsTeam?: number;   // quality ratio vs this team's own historical avg
+    lineupScore?: number;     // quality ratio vs league avg (1.0 = avg)
+    lineupVsTeam?: number;    // quality ratio vs this team's own historical avg
+    goalieStarter?: string;   // projected starter full name
+    gsaxPerGame?: number;     // GSAx per game (positive = above avg)
+    gsaxPct?: number;         // percentile rank among NHL starters (0–100)
 }
 
-// ── Fixed-position portal tooltip ─────────────────────────────────────────────
-// Renders into document.body so it is never clipped by any parent's
-// overflow:hidden or overflow:scroll container.
-// Positions above the cursor by default; flips below if cursor is near the top.
-// Clamps horizontally so it never bleeds off screen edges.
-const TOOLTIP_W = 264;
+// ── Tooltip segment type ───────────────────────────────────────────────────────
+// Allows individual words/values to be colored independently.
+type Seg = { text: string; color?: string };
 
-function FixedTooltip({ x, y, text }: { x: number; y: number; text: string }) {
+// ── Fixed-position portal tooltip (immune to overflow:hidden clipping) ────────
+const TOOLTIP_W = 280;
+
+function FixedTooltip({ x, y, segments }: { x: number; y: number; segments: Seg[] }) {
     if (typeof document === 'undefined') return null;
 
     const vw   = typeof window !== 'undefined' ? window.innerWidth : 1280;
     const left = Math.max(8, Math.min(x - TOOLTIP_W / 2, vw - TOOLTIP_W - 8));
-    const top  = y > 56 ? y - 46 : y + 22;   // above cursor; flip below if near top edge
+    const top  = y > 56 ? y - 46 : y + 22;
 
     return createPortal(
         <div
             style={{ position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 9999, pointerEvents: 'none' }}
-            className="bg-zinc-950 border border-white/15 rounded-lg px-3 py-2 shadow-xl backdrop-blur-md text-[11px] text-zinc-200 leading-snug"
+            className="bg-zinc-950 border border-white/15 rounded-lg px-3 py-2 shadow-xl backdrop-blur-md text-[11px] leading-snug"
         >
-            {text}
+            {segments.map((seg, i) => (
+                <span key={i} style={{ color: seg.color ?? '#d4d4d8' }}>{seg.text}</span>
+            ))}
         </div>,
         document.body
     );
 }
 
-// ── Color scale ───────────────────────────────────────────────────────────────
-function scoreColor(pct: number): string {
+// ── Color helpers ─────────────────────────────────────────────────────────────
+function skaterColor(pct: number): string {
     if (pct <= -5)  return '#ef4444';
     if (pct <= -2)  return '#f97316';
     if (pct <   2)  return '#6b7280';
@@ -46,33 +51,51 @@ function scoreColor(pct: number): string {
     return '#16a34a';
 }
 
-// ── Tooltip text builder ──────────────────────────────────────────────────────
-function buildTooltipText(isLg: boolean, pct: number, triCode?: string): string {
-    const abs = Math.abs(pct).toFixed(1);
-    const dir = pct >= 0 ? 'stronger' : 'weaker';
-    const sign = pct >= 0 ? `+${abs}%` : `${abs}%`;
-    if (isLg) {
-        return `Implies this lineup is ${sign} ${dir} than league avg`;
-    }
-    return `Implies this lineup is ${sign} ${dir} than ${triCode ?? 'team'}'s season avg`;
+function goalieColor(gsax: number): string {
+    if (gsax >= 0.2)  return '#16a34a';
+    if (gsax >= 0.05) return '#22c55e';
+    if (gsax > -0.05) return '#6b7280';
+    if (gsax > -0.15) return '#f97316';
+    return '#ef4444';
 }
 
-// ── Individual chip with hover tooltip ───────────────────────────────────────
-function LineupScoreChip({
-    label, ratio, isLg, triCode,
+// ── Tooltip segment builders ──────────────────────────────────────────────────
+function skaterTooltipSegs(isLg: boolean, pct: number, triCode?: string): Seg[] {
+    const abs   = Math.abs(pct).toFixed(1);
+    const pos   = pct >= 0;
+    const color = skaterColor(pct);
+    const valText = pos ? `+${abs}%` : `${abs}%`;
+    const dirText = pos ? 'stronger' : 'weaker';
+    const suffix  = isLg ? ' than league avg' : ` than ${triCode ?? 'team'}'s season avg`;
+    return [
+        { text: 'Implies this lineup is ' },
+        { text: valText,  color },
+        { text: ' '  },
+        { text: dirText, color },
+        { text: suffix },
+    ];
+}
+
+function goalieTooltipSegs(gsax: number, pct: number, name: string): Seg[] {
+    const sign  = gsax >= 0 ? '+' : '';
+    const color = goalieColor(gsax);
+    return [
+        { text: `${name} — ` },
+        { text: `${sign}${gsax.toFixed(2)} GSAx/gm`, color },
+        { text: ' · ' },
+        { text: `${Math.round(pct)}th %ile`, color },
+        { text: ' among NHL starters' },
+    ];
+}
+
+// ── Generic chip with hover tooltip ──────────────────────────────────────────
+function Chip({
+    children, tooltipSegs,
 }: {
-    label: string;
-    ratio: number;
-    isLg: boolean;
-    triCode?: string;
+    children: React.ReactNode;
+    tooltipSegs: Seg[];
 }) {
     const [mouse, setMouse] = useState<{ x: number; y: number } | null>(null);
-
-    const pct   = (ratio - 1.0) * 100;
-    const sign  = pct >= 0 ? '+' : '';
-    const color = scoreColor(pct);
-    const text  = buildTooltipText(isLg, pct, triCode);
-
     return (
         <>
             <div
@@ -81,37 +104,84 @@ function LineupScoreChip({
                 onMouseMove={(e)  => setMouse({ x: e.clientX, y: e.clientY })}
                 onMouseLeave={()  => setMouse(null)}
             >
-                <span className="text-[9px] text-neutral-500 font-medium">{label}</span>
-                <span className="text-[9px] font-bold tabular-nums" style={{ color }}>
-                    {sign}{pct.toFixed(1)}%
-                </span>
+                {children}
             </div>
-            {mouse && <FixedTooltip x={mouse.x} y={mouse.y} text={text} />}
+            {mouse && <FixedTooltip x={mouse.x} y={mouse.y} segments={tooltipSegs} />}
         </>
     );
 }
 
-// ── Row of chips shown in the lineup header ───────────────────────────────────
-function LineupScoreLabels({ lineupScore, lineupVsTeam, triCode }: {
+// ── vs. League / vs. Team chips ───────────────────────────────────────────────
+function LineupScoreChip({ label, ratio, isLg, triCode }: {
+    label: string; ratio: number; isLg: boolean; triCode?: string;
+}) {
+    const pct   = (ratio - 1.0) * 100;
+    const sign  = pct >= 0 ? '+' : '';
+    const color = skaterColor(pct);
+    return (
+        <Chip tooltipSegs={skaterTooltipSegs(isLg, pct, triCode)}>
+            <span className="text-[9px] text-neutral-500 font-medium">{label}</span>
+            <span className="text-[9px] font-bold tabular-nums" style={{ color }}>
+                {sign}{pct.toFixed(1)}%
+            </span>
+        </Chip>
+    );
+}
+
+// ── Goalie chip ───────────────────────────────────────────────────────────────
+// Strip status suffix like "(Confirmed)", "(Unconfirmed)" that comes from the CSV
+function cleanGoalieName(raw: string): string {
+    return raw.replace(/\s*\(.*?\)\s*$/, '').trim();
+}
+
+function GoalieChip({ name, gsax, pct }: { name: string; gsax: number; pct: number }) {
+    const cleanName = cleanGoalieName(name);
+    const lastName  = cleanName.split(' ').pop() ?? cleanName;
+    const sign      = gsax >= 0 ? '+' : '';
+    const color     = goalieColor(gsax);
+    return (
+        <Chip tooltipSegs={goalieTooltipSegs(gsax, pct, cleanName)}>
+            <span className="text-[9px] text-neutral-500 font-medium">G:</span>
+            <span className="text-[9px] text-neutral-300 font-medium">{lastName}</span>
+            <span className="text-[9px] font-bold tabular-nums" style={{ color }}>
+                ({sign}{gsax.toFixed(2)})
+            </span>
+        </Chip>
+    );
+}
+
+// ── Header chip row ───────────────────────────────────────────────────────────
+function LineupHeader({ lineupScore, lineupVsTeam, triCode, goalieStarter, gsaxPerGame, gsaxPct }: {
     lineupScore?: number;
     lineupVsTeam?: number;
     triCode?: string;
+    goalieStarter?: string;
+    gsaxPerGame?: number;
+    gsaxPct?: number;
 }) {
-    if (lineupScore === undefined && lineupVsTeam === undefined) return null;
+    const hasSkaterScores = lineupScore !== undefined || lineupVsTeam !== undefined;
+    const hasGoalie = goalieStarter !== undefined && gsaxPerGame !== undefined && gsaxPct !== undefined;
+    if (!hasSkaterScores && !hasGoalie) return null;
+
     return (
         <div className="flex items-center gap-1.5 flex-wrap">
-            {lineupScore  !== undefined && (
+            {lineupScore !== undefined && (
                 <LineupScoreChip label="vs. Lg:" ratio={lineupScore}  isLg={true}  triCode={triCode} />
             )}
             {lineupVsTeam !== undefined && (
                 <LineupScoreChip label="vs. Tm:" ratio={lineupVsTeam} isLg={false} triCode={triCode} />
             )}
+            {hasGoalie && (
+                <GoalieChip name={goalieStarter!} gsax={gsaxPerGame!} pct={gsaxPct!} />
+            )}
         </div>
     );
 }
 
-// ── Main grid component ───────────────────────────────────────────────────────
-export default function LineupGrid({ lineup, triCode, lineupScore, lineupVsTeam }: LineupGridProps) {
+// ── Main grid ─────────────────────────────────────────────────────────────────
+export default function LineupGrid({
+    lineup, triCode, lineupScore, lineupVsTeam, goalieStarter, gsaxPerGame, gsaxPct,
+}: LineupGridProps) {
     if (!lineup) return (
         <div className="flex flex-col items-center justify-center p-4 text-neutral-500 text-xs">
             No lineup data available.
@@ -119,7 +189,6 @@ export default function LineupGrid({ lineup, triCode, lineupScore, lineupVsTeam 
     );
 
     const getPlayers = (keys: string[]) => keys.map(k => lineup[k] || []);
-
     const forwards = getPlayers(['f1', 'f2', 'f3', 'f4']);
     const defense  = getPlayers(['d1', 'd2', 'd3']);
 
@@ -130,11 +199,17 @@ export default function LineupGrid({ lineup, triCode, lineupScore, lineupVsTeam 
                 <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest shrink-0">
                     Starting Lineup
                 </span>
-                <LineupScoreLabels lineupScore={lineupScore} lineupVsTeam={lineupVsTeam} triCode={triCode} />
+                <LineupHeader
+                    lineupScore={lineupScore}
+                    lineupVsTeam={lineupVsTeam}
+                    triCode={triCode}
+                    goalieStarter={goalieStarter}
+                    gsaxPerGame={gsaxPerGame}
+                    gsaxPct={gsaxPct}
+                />
             </div>
 
             <div className="flex flex-col gap-4">
-
                 {/* Forwards Table */}
                 <div className="border border-white/10 rounded-lg overflow-hidden">
                     <div className="grid grid-cols-3 bg-white/5 border-b border-white/10">
@@ -203,7 +278,6 @@ export default function LineupGrid({ lineup, triCode, lineupScore, lineupVsTeam 
                         </div>
                     ))}
                 </div>
-
             </div>
         </div>
     );

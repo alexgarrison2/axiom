@@ -1507,6 +1507,8 @@ def predict():
             
             'home_gas_breakdown': home_gas_breakdown,
             'away_gas_breakdown': away_gas_breakdown,
+            'home_gsax': round(h_gsax, 3) if h_goalie_name else '',
+            'away_gsax': round(a_gsax, 3) if a_goalie_name else '',
             'home_gsax_total': h_gsax_total,
             'home_gsax_pct': h_gsax_pct,
             'away_gsax_total': a_gsax_total,
