@@ -154,7 +154,6 @@ function GoalieChip({ name, gsax, pct }: { name: string; gsax: number; pct: numb
     const color     = goalieColor(gsax);
     return (
         <Chip tooltipSegs={goalieTooltipSegs(gsax, pct, cleanName)}>
-            <span className="text-[9px] text-neutral-500 font-medium">G:</span>
             <span className="text-[9px] text-neutral-300 font-medium">{lastName}</span>
             <span className="text-[9px] font-bold tabular-nums" style={{ color }}>
                 ({sign}{gsax.toFixed(2)})
