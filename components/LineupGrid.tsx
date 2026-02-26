@@ -257,6 +257,40 @@ export default function LineupGrid({
                     ))}
                 </div>
 
+                {/* Out / IR Section */}
+                {(() => {
+                    const irPlayers = (lineup['ir'] || []).slice(0, 6);
+                    if (!irPlayers.length) return null;
+                    // Split into two columns: [0,2,4] left, [1,3,5] right
+                    const left  = irPlayers.filter((_: unknown, i: number) => i % 2 === 0);
+                    const right = irPlayers.filter((_: unknown, i: number) => i % 2 === 1);
+                    const rows  = Math.max(left.length, right.length);
+                    return (
+                        <div className="border border-white/10 rounded-lg overflow-hidden">
+                            <div className="grid grid-cols-2 bg-white/5 border-b border-white/10">
+                                <div className="py-1 col-span-2 text-center text-[9px] font-bold text-neutral-500 uppercase">Out / IR</div>
+                            </div>
+                            {Array.from({ length: rows }).map((_, row) => {
+                                const lp = left[row];
+                                const rp = right[row];
+                                return (
+                                    <div key={row} className={`grid grid-cols-2 ${row !== rows - 1 ? 'border-b border-white/5' : ''}`}>
+                                        {[lp, rp].map((player, col) => (
+                                            <div key={col} className={`py-1.5 px-2 flex items-center justify-center ${col === 1 ? 'border-l border-white/5' : ''}`}>
+                                                {player ? (
+                                                    <span className="text-[10px] leading-tight select-none text-red-500 font-medium">
+                                                        {formatName(player.name)}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    );
+                })()}
+
                 {/* Defense Table */}
                 <div className="border border-white/10 rounded-lg overflow-hidden w-2/3">
                     <div className="grid grid-cols-2 bg-white/5 border-b border-white/10">

@@ -16,7 +16,7 @@ from calculate_gas import GasCalculator
 
 # ── Player-impact / lineup-aware module ──────────────────────────────────────
 try:
-    from player_impact import load_player_impact, load_team_baselines, estimate_lineup_xg
+    from player_impact import load_player_impact, load_team_baselines, estimate_lineup_xg, lookup_player
     _LINEUP_ENGINE_AVAILABLE = True
 except ImportError:
     _LINEUP_ENGINE_AVAILABLE = False
@@ -749,6 +749,23 @@ def predict():
     except Exception as e:
         print(f"Error fetching lineups: {e}")
         team_lineups = {}
+
+    # ── Enrich IR players with impact scores (done once, before the game loop) ─
+    # Must happen here so frozen-game lineup updates (which run early in the loop)
+    # also get the enriched data.  Modifies team_lineups dicts in place.
+    if player_impact_data:
+        for tri, lineup_dict in team_lineups.items():
+            ir_players = lineup_dict.get('ir', [])
+            if not ir_players:
+                continue
+            for p in ir_players:
+                data = lookup_player(
+                    p.get('id'), p.get('name', ''),
+                    player_impact_data, name_lookup_data
+                )
+                p['impact'] = round(data['ev_xgf_per60'], 4) if data else None
+            ir_players.sort(key=lambda x: x.get('impact') or 0, reverse=True)
+        print(f"  IR enrichment done for {sum(1 for l in team_lineups.values() if l.get('ir'))} teams with IR players")
 
     # Fetch Player News
     try:

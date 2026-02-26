@@ -306,8 +306,8 @@ def fetch_lineups(teams):
                 # Actually groupIdentifier 'f1', 'f2'... 'd1', 'd2'... are what we want.
                 gid = p.get('groupIdentifier', '').lower()
                 
-                # Filter: Only F and D lines (f1-f4, d1-d3)
-                if not (gid.startswith('f') or gid.startswith('d')):
+                # Filter: F lines (f1-f4), D lines (d1-d3), and IR/injured list
+                if not (gid.startswith('f') or gid.startswith('d') or gid == 'ir'):
                     continue
                 
                 # Add to line
