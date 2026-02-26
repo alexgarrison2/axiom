@@ -62,7 +62,7 @@ interface AggPlayer {
     sog_pg: number;
     toi_pg_str: string;
     gs_pg: number;
-    played_ids: Set<string>;
+    played_toi: Map<string, number>; // game_id → toi seconds (>0 means played)
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -186,7 +186,7 @@ function AvailTooltip({ tt }: { tt: TooltipState }) {
     );
 }
 
-function AvailStrip({ teamGames, playedIds }: { teamGames: TeamGameSlot[]; playedIds: Set<string> }) {
+function AvailStrip({ teamGames, playedToi }: { teamGames: TeamGameSlot[]; playedToi: Map<string, number> }) {
     const [tt, setTt] = useState<TooltipState | null>(null);
 
     // 82 total slots: played games + future placeholders
@@ -209,7 +209,7 @@ function AvailStrip({ teamGames, playedIds }: { teamGames: TeamGameSlot[]; playe
             {rows.map((row, ri) => (
                 <div key={ri} style={{ display: 'flex', width: '100%', gap: 1 }}>
                     {row.map((slot, ci) => {
-                        const played = slot ? playedIds.has(slot.gid) : false;
+                        const played = slot ? (playedToi.get(slot.gid) ?? 0) > 0 : false;
                         const { bg, op } = barStyle(slot, played);
                         return (
                             <div
@@ -382,7 +382,7 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
             </div>
 
             {/* ── Availability strip ── */}
-            <AvailStrip teamGames={teamGames} playedIds={player.played_ids} />
+            <AvailStrip teamGames={teamGames} playedToi={player.played_toi} />
         </div>
     );
 }
@@ -433,23 +433,26 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
         const m = new Map<string, {
             g: number; a: number; pts: number; shots: number;
             toi_sec: number; gp: number; jerseyNum: number;
-            played_ids: Set<string>;
+            played_toi: Map<string, number>; // game_id → toi seconds
         }>();
         for (const row of playerStats) {
             if (Number(row.is_goalie)) continue;
             const id = String(row.player_id);
             if (!m.has(id)) {
-                m.set(id, { g: 0, a: 0, pts: 0, shots: 0, toi_sec: 0, gp: 0, jerseyNum: 0, played_ids: new Set() });
+                m.set(id, { g: 0, a: 0, pts: 0, shots: 0, toi_sec: 0, gp: 0, jerseyNum: 0, played_toi: new Map() });
             }
             const acc = m.get(id)!;
-            acc.g      += Number(row.goals)   || 0;
-            acc.a      += Number(row.assists)  || 0;
-            acc.pts    += Number(row.points)   || 0;
-            acc.shots  += Number(row.shots)    || 0;
-            acc.toi_sec += parseToi(row.toi);
+            const toiSec = parseToi(row.toi);
+            acc.g       += Number(row.goals)  || 0;
+            acc.a       += Number(row.assists) || 0;
+            acc.pts     += Number(row.points)  || 0;
+            acc.shots   += Number(row.shots)   || 0;
+            acc.toi_sec += toiSec;
             acc.gp++;
             acc.jerseyNum = Number(row.number) || acc.jerseyNum;
-            acc.played_ids.add(String(row.game_id));
+            // Only count as "played" if TOI > 0
+            const gid = String(row.game_id);
+            acc.played_toi.set(gid, (acc.played_toi.get(gid) ?? 0) + toiSec);
         }
         return m;
     }, [playerStats]);
@@ -517,7 +520,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                 g, a, pts, shots, gp,
                 total_toi_sec, sh_pct, sog_pg,
                 toi_pg_str, gs_pg,
-                played_ids: bs?.played_ids ?? new Set(),
+                played_toi: bs?.played_toi ?? new Map(),
             });
         }
         return result;
