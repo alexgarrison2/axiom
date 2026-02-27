@@ -100,15 +100,21 @@ function pctile(val: number, pool: number[], hiGood = true): number {
 }
 
 function pctColor(p: number): string {
-    if (p >= 90) return '#38bdf8'; // sky-400
-    if (p >= 80) return '#3b82f6'; // blue-500
-    if (p >= 70) return '#14b8a6'; // teal-500
-    if (p >= 55) return '#22c55e'; // green-500
-    if (p >= 45) return '#71717a'; // zinc-500
-    if (p >= 30) return '#f59e0b'; // amber-500
-    if (p >= 20) return '#f97316'; // orange-500
-    if (p >= 10) return '#ef4444'; // red-500
-    return '#991b1b';               // red-800
+    // Red (#590000) → Grey (#D2D2D2) → Blue (#1084FE)
+    const t = Math.max(0, Math.min(100, p)) / 100;
+    let r, g, b;
+    if (t <= 0.5) {
+        const s = t * 2;
+        r = Math.round(89  + (210 - 89)  * s);
+        g = Math.round(0   + (210 - 0)   * s);
+        b = Math.round(0   + (210 - 0)   * s);
+    } else {
+        const s = (t - 0.5) * 2;
+        r = Math.round(210 + (16  - 210) * s);
+        g = Math.round(210 + (132 - 210) * s);
+        b = Math.round(210 + (254 - 210) * s);
+    }
+    return `rgb(${r},${g},${b})`;
 }
 
 /* ═══════════════════════════════════════════════════════

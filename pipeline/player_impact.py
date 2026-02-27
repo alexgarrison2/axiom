@@ -63,9 +63,18 @@ RELATIVE_SHRINKAGE_ANCHOR = 18000   # seconds
 # ── Name normalisation ────────────────────────────────────────────────────────
 
 _ACCENT_MAP = str.maketrans(
-    "éèêëáàâíïóöôúüûýšžčňř",
-    "eeeeaaaiiooouuuyszcnr"
+    "äéèêëáàâíïóöôúüûýšžčňř",
+    "aeeeaaaiiooouuuyszcnr"
 )
+
+# Known MoneyPuck name encoding issues — applied to raw CSV names before storage.
+# Key: name as MoneyPuck delivers it (often drops diacritics incorrectly)
+# Value: corrected display name (should match how DailyFaceoff lists the player)
+_NAME_CORRECTIONS: dict[str, str] = {
+    'Oskar Bck':  'Oskar Back',   # MoneyPuck drops ä → leaves "Bck"
+    'Oskar Bäck': 'Oskar Back',   # in case source ever restores the umlaut
+}
+
 
 def normalize_name(name: str) -> str:
     """Lowercase, strip accents, collapse whitespace."""
@@ -163,7 +172,7 @@ def calculate_player_impact(
         pos_raw = str(row.get('position', 'F')).upper()
         is_forward = pos_raw in ('L', 'R', 'C', 'F', 'LW', 'RW')
 
-        name  = str(row.get('name', ''))
+        name  = _NAME_CORRECTIONS.get(str(row.get('name', '')), str(row.get('name', '')))
         team  = str(row.get('team', row.get('team_abbrev', '')))
 
         # ── On-ice / off-ice xGF% ──
