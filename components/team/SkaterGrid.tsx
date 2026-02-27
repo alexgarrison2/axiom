@@ -434,7 +434,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                             {player.bio.shoots && (
                                 /* eslint-disable-next-line @next/next/no-img-element */
                                 <img
-                                    src={`/images/stick-${player.bio.shoots.toLowerCase()}.png`}
+                                    src={`/stick-${player.bio.shoots.toLowerCase()}.png`}
                                     alt={player.bio.shoots === 'L' ? 'Shoots Left' : 'Shoots Right'}
                                     width={12}
                                     height={12}
