@@ -756,11 +756,23 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         };
     }, [piData, teamAbbr]);
 
-    // Build player lookup by name for lineup mode (lineup uses internal IDs, not NHL IDs)
-    const playerByName = useMemo(
-        () => new Map(allPlayers.map(p => [p.pi.name, p])),
-        [allPlayers]
-    );
+    // Build player lookup maps for lineup mode.
+    // Two-pass matching: normalized full name first, then last name fallback.
+    // Normalization strips diacritics + lowercases to bridge gaps like
+    // "Bäck"→"Back" and "Alexander"→"Alex" (dailyfaceoff name shortening).
+    const playerNameMaps = useMemo(() => {
+        const norm = (s: string) =>
+            s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        const byFull = new Map<string, AggPlayer>();
+        const byLast = new Map<string, AggPlayer>();
+        for (const p of allPlayers) {
+            const full = norm(p.pi.name);
+            byFull.set(full, p);
+            const last = full.split(' ').at(-1) ?? full;
+            if (!byLast.has(last)) byLast.set(last, p); // first player wins on last-name collision
+        }
+        return { byFull, byLast, norm };
+    }, [allPlayers]);
 
     /* ── Render ─────────────────────────────────────── */
 
@@ -872,17 +884,25 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
 
             {/* ── LINEUP VIEW ── */}
             {effectiveSortBy === 'lineup' && lineup ? (() => {
-                // Collect all player IDs explicitly listed in any line/pair
-                const lineupNameSet = new Set(
+                const { byFull, byLast, norm } = playerNameMaps;
+
+                // Two-pass fuzzy lookup: normalized full name → last name fallback
+                const findPlayer = (lpName: string): AggPlayer | undefined => {
+                    const n = norm(lpName);
+                    return byFull.get(n) ?? byLast.get(n.split(' ').at(-1) ?? n);
+                };
+
+                // Track matched player IDs (by piData id) for Others exclusion
+                const matchedIds = new Set(
                     ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3'].flatMap(k =>
-                        (lineup[k] || []).map(lp => lp.name)
+                        (lineup[k] || []).map(lp => findPlayer(lp.name)?.id).filter(Boolean)
                     )
                 );
 
                 // Section label + cards row
                 const LineSection = ({ label, lineKey }: { label: string; lineKey: string }) => {
                     const linePlayers = (lineup![lineKey] || [])
-                        .map(lp => playerByName.get(lp.name))
+                        .map(lp => findPlayer(lp.name))
                         .filter(Boolean) as AggPlayer[];
                     if (linePlayers.length === 0) return null;
                     return (
@@ -908,7 +928,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                     );
                 };
 
-                const others = allPlayers.filter(p => !lineupNameSet.has(p.pi.name));
+                const others = allPlayers.filter(p => !matchedIds.has(p.id));
 
                 return (
                     <div className="flex flex-col gap-6">
