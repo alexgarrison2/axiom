@@ -34,6 +34,14 @@ interface PIPlayer {
 type PIDict = Record<string, PIPlayer>;
 type PoolDict = Record<string, number[]>;
 
+interface PlayerBio {
+    age: number | null;
+    height: string | null;  // e.g. "6'1\""
+    weight: number | null;  // pounds
+    shoots: string | null;  // "L" | "R"
+}
+type BioDict = Record<string, PlayerBio>;
+
 // Metadata for one team game (passed to availability strip)
 interface TeamGameSlot {
     gid: string;
@@ -64,6 +72,7 @@ interface AggPlayer {
     gs_pg: number;
     ixg_share_pct: number;   // player's EV iXG as % of team total EV iXG
     played_toi: Map<string, number>; // game_id → toi seconds (>0 means played)
+    bio: PlayerBio | null;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -364,7 +373,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
             ══════════════════════════════════════════════ */}
             <div
                 className="relative flex flex-row items-stretch overflow-hidden shrink-0"
-                style={{ background: '#0d0d0f', minHeight: 92 }}
+                style={{ background: '#0d0d0f', minHeight: 108 }}
             >
                 {/* Coloured top-edge line */}
                 <div
@@ -413,6 +422,39 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                             {player.jerseyNum > 0 ? `#${player.jerseyNum}` : ''}
                         </span>
                     </div>
+
+                    {/* Bio — age · handedness icon · height · weight */}
+                    {player.bio && (
+                        <div className="flex items-center gap-[7px]" style={{ color: '#929292' }}>
+                            {player.bio.age !== null && (
+                                <span className="text-[11px] font-medium leading-none tabular-nums">
+                                    {player.bio.age}yo
+                                </span>
+                            )}
+                            {player.bio.shoots && (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img
+                                    src={`/images/stick-${player.bio.shoots.toLowerCase()}.png`}
+                                    alt={player.bio.shoots === 'L' ? 'Shoots Left' : 'Shoots Right'}
+                                    width={12}
+                                    height={12}
+                                    className="shrink-0 select-none"
+                                    style={{ opacity: 0.75 }}
+                                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                            )}
+                            {player.bio.height && (
+                                <span className="text-[11px] font-medium leading-none">
+                                    {player.bio.height}
+                                </span>
+                            )}
+                            {player.bio.weight !== null && (
+                                <span className="text-[11px] font-medium leading-none tabular-nums">
+                                    {player.bio.weight}lb
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* ── RIGHT: Impact box ── */}
@@ -530,6 +572,7 @@ interface SkaterGridProps {
 
 export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridProps) {
     const [piData, setPiData] = useState<PIDict | null>(null);
+    const [bioData, setBioData] = useState<BioDict | null>(null);
     const [posFilter, setPosFilter] = useState<'all' | 'f' | 'd'>('all');
     const [sortBy, setSortBy] = useState<'impact' | 'pts' | 'toi'>('impact');
 
@@ -538,6 +581,14 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
         fetch('/data/player_impact.json')
             .then(r => r.json())
             .then(setPiData)
+            .catch(console.error);
+    }, []);
+
+    // Load player bio data (age, height, weight, shoots)
+    useEffect(() => {
+        fetch('/data/player_bio.json')
+            .then(r => r.json())
+            .then(setBioData)
             .catch(console.error);
     }, []);
 
@@ -620,6 +671,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
     // Enrich: join player_impact with boxscore aggregates
     const allPlayers = useMemo<AggPlayer[]>(() => {
         if (!piData) return [];
+        // bioData may still be loading — fall back to null gracefully
 
         // First pass: compute team total EV iXG for the iXG% metric
         const teamTotalIxg = Object.entries(piData)
@@ -667,10 +719,11 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                 total_toi_sec, sh_pct, sog_pg,
                 toi_pg_str, gs_pg, ixg_share_pct,
                 played_toi: bs?.played_toi ?? new Map(),
+                bio: bioData?.[id] ?? null,
             });
         }
         return result;
-    }, [piData, boxMap, teamAbbr]);
+    }, [piData, boxMap, teamAbbr, bioData]);
 
     // Apply filter + sort (cheap op — separate from heavy enrichment)
     const players = useMemo(() => {

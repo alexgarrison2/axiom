@@ -69,6 +69,15 @@ def refresh_pipeline():
     except Exception as e:
         print(f"[WARN] Player stats backfill failed: {e}")
 
+    # 0e. Refresh player bio data (age, height, weight, shoots) from NHL roster API
+    # Runs once per day to keep ages current; very fast (~32 requests, one per team).
+    print("Refreshing player bio data...")
+    try:
+        import fetch_player_bio
+        fetch_player_bio.main()
+    except Exception as e:
+        print(f"[WARN] Player bio fetch failed: {e}")
+
     # 1. Load the new Model
     print("Loading XGBoost model...")
     with open('xg_model_xgb.pkl', 'rb') as f:
