@@ -461,6 +461,37 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         </div>
     );
 
+    // --- Team page navigation buttons (Gamelog + Skaters) ---
+    const TeamNavButtons = ({ triCode, justify = 'start' }: { triCode: string; justify?: 'start' | 'end' }) => {
+        if (isSocial) return null;
+        const base = "flex items-center gap-[5px] px-2 py-0.5 rounded border border-white/10 bg-white/5 hover:bg-white/[0.09] text-[9px] font-bold text-neutral-400 hover:text-white transition-colors";
+        return (
+            <div className={`flex items-center gap-1.5 ${justify === 'end' ? 'justify-end' : 'justify-start'}`}>
+                <a
+                    href={`/teams/${triCode}?tab=games`}
+                    onClick={e => e.stopPropagation()}
+                    className={base}
+                >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+                        <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                    </svg>
+                    Gamelog
+                </a>
+                <a
+                    href={`/teams/${triCode}?tab=skaters`}
+                    onClick={e => e.stopPropagation()}
+                    className={base}
+                >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Skaters
+                </a>
+            </div>
+        );
+    };
+
     const NewsIndicator = ({ hasNews, className = "absolute bottom-2 right-2" }: { hasNews: boolean, className?: string }) => {
         if (!hasNews) return null;
         if (isSocial) return null; // Hide in social mode
@@ -1016,6 +1047,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     <div className="p-6 flex flex-row bg-black/20">
                         {/* Away Team Recent Games */}
                         <div className="flex-1 pr-6 flex flex-col gap-6">
+                            <TeamNavButtons triCode={awayTeam.triCode} />
                             <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} currentStarter={awayStarter} />
                             <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} lineupScore={prediction.away_lineup_score} lineupVsTeam={prediction.away_lineup_vs_team} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} />
                             <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
@@ -1026,6 +1058,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
                         {/* Home Team Recent Games */}
                         <div className="flex-1 pl-6 flex flex-col gap-6">
+                            <TeamNavButtons triCode={homeTeam.triCode} justify="end" />
                             <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} currentStarter={homeStarter} />
                             <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} lineupScore={prediction.home_lineup_score} lineupVsTeam={prediction.home_lineup_vs_team} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} />
                             <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
@@ -1319,6 +1352,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         {/* Recent Games Lists (Side-by-Side on Mobile) */}
                         <div className="flex flex-row gap-2 mt-4 relative">
                             <div className="flex-1 min-w-0">
+                                <TeamNavButtons triCode={awayTeam.triCode} />
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} currentStarter={awayStarter} />
@@ -1329,6 +1363,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             {/* Vertical Divider */}
                             <div className="w-px bg-white/10 self-stretch mx-1"></div>
                             <div className="flex-1 min-w-0">
+                                <TeamNavButtons triCode={homeTeam.triCode} justify="end" />
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} currentStarter={homeStarter} />
