@@ -62,6 +62,7 @@ interface AggPlayer {
     sog_pg: number;
     toi_pg_str: string;
     gs_pg: number;
+    ixg_share_pct: number;   // player's EV iXG as % of team total EV iXG
     played_toi: Map<string, number>; // game_id → toi seconds (>0 means played)
 }
 
@@ -118,21 +119,32 @@ function posAccent(pos: string): { text: string; bg: string } {
    StatCell — clean top-border indicator style
 ═══════════════════════════════════════════════════════ */
 
-function StatCell({ val, label, pct }: { val: string; label: string; pct: number }) {
-    const c = pctColor(pct);
+function StatCell({ val, label, pct, blank, color }: {
+    val?: string; label?: string; pct?: number; blank?: boolean; color?: string;
+}) {
+    if (blank) {
+        return (
+            <div
+                className="rounded-md"
+                style={{
+                    background: 'rgba(255,255,255,0.02)',
+                    borderTop: '2px solid rgba(255,255,255,0.04)',
+                    minHeight: 32,
+                }}
+            />
+        );
+    }
+    const c = color ?? pctColor(pct ?? 50);
     return (
         <div
-            className="flex flex-col items-center justify-center rounded-md px-1 py-[6px] gap-[3px] text-center"
+            className="flex items-center justify-between rounded-md px-2 py-[5px] gap-1"
             style={{ background: `${c}0d`, borderTop: `2px solid ${c}55` }}
         >
-            <span
-                className="text-[11px] font-bold tabular-nums leading-none"
-                style={{ color: c }}
-            >
-                {val}
-            </span>
-            <span className="text-[6.5px] font-medium text-zinc-500 uppercase tracking-wide leading-none whitespace-nowrap">
+            <span className="text-[8px] font-semibold text-zinc-500 uppercase tracking-wide leading-none shrink-0 whitespace-nowrap">
                 {label}
+            </span>
+            <span className="text-[14px] font-bold tabular-nums leading-none" style={{ color: c }}>
+                {val}
             </span>
         </div>
     );
@@ -259,6 +271,16 @@ function ordinalSuffix(n: number): string {
 }
 
 /* ═══════════════════════════════════════════════════════
+   iXG% colour helper (player share of team EV iXG)
+   Thresholds loosely: top quarterbacks ~15%+, role players ~2-5%
+═══════════════════════════════════════════════════ */
+
+function ixgShareColor(pct: number): string {
+    // pct = percentile rank within the team
+    return pctColor(pct);
+}
+
+/* ═══════════════════════════════════════════════════════
    SkaterCard
 ═══════════════════════════════════════════════════════ */
 
@@ -291,18 +313,28 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
     // Headshot — season-specific transparent-bg PNG from NHL CDN
     const headshot = `https://assets.nhle.com/mugs/nhl/20252026/${pi.team}/${player.id}.png`;
 
-    // Advanced stat grid
-    const stats: Array<{ val: string; label: string; pct: number }> = [
-        { val: pi.ev_xgf_per60.toFixed(2), label: 'xGF/60', pct: pr(pi.ev_xgf_per60, 'ev_xgf_per60') },
-        { val: pi.ev_xga_per60.toFixed(2), label: 'xGA/60', pct: pr(pi.ev_xga_per60, 'ev_xga_per60', false) },
-        { val: (pi.onice_xgf_pct * 100).toFixed(1) + '%', label: 'xG%', pct: pr(pi.onice_xgf_pct, 'onice_xgf_pct') },
-        { val: pi.ind_xg_per60.toFixed(2), label: 'iXG/60', pct: pr(pi.ind_xg_per60, 'ind_xg_per60') },
-        { val: pi.pp_xgf_per60.toFixed(2), label: 'PP xGF', pct: pr(pi.pp_xgf_per60, 'pp_xgf_per60') },
-        { val: (pi.penalty_diff_per60 >= 0 ? '+' : '') + pi.penalty_diff_per60.toFixed(2), label: 'Pen±', pct: pr(pi.penalty_diff_per60, 'penalty_diff_per60') },
-        { val: pi.ev_net_per60.toFixed(2), label: 'Net/60', pct: pr(pi.ev_net_per60, 'ev_net_per60') },
-        { val: relStr, label: 'Rel%', pct: pr(pi.relative_xgf_pct, 'relative_xgf_pct') },
-        { val: pi.pk_xga_per60.toFixed(2), label: 'PK xGA', pct: pr(pi.pk_xga_per60, 'pk_xga_per60', false) },
-    ];
+    // Advanced stat grid — new column order
+    // Col 1: xGF/60 | xGA/60 | xG%
+    // Col 2: PP xGF% (if qualified) | PK xGA% (if qualified) | Pen±
+    // Col 3: iXG/60 | Rel% | iXG%
+    const ppQualified = pi.pp_toi_per_game >= 60; // >= 1 min avg PP TOI
+    const pkQualified = pi.pk_toi_per_game >= 60; // >= 1 min avg PK TOI
+
+    const ppPct = ppQualified ? Math.round(pr(pi.pp_xgf_per60, 'pp_xgf_per60_qual')) : 0;
+    const pkPct = pkQualified ? Math.round(pr(pi.pk_xga_per60, 'pk_xga_per60_qual', false)) : 0;
+
+    // iXG%: this player's share of their team's total EV individual xG
+    // Percentile rank among all team skaters (higher = bigger contributor)
+    const ixgShareTeamArr = [player.ixg_share_pct]; // placeholder — color by value threshold
+    const ixgShareC = ixgShareColor(
+        player.ixg_share_pct >= 14 ? 95 :
+            player.ixg_share_pct >= 11 ? 85 :
+                player.ixg_share_pct >= 8 ? 75 :
+                    player.ixg_share_pct >= 5 ? 60 :
+                        player.ixg_share_pct >= 3 ? 48 :
+                            player.ixg_share_pct >= 1.5 ? 32 : 18
+    );
+    void ixgShareTeamArr; // suppress unused warning
 
     return (
         <div
@@ -412,10 +444,28 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
                 <div className="h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.05) 70%, transparent)' }} />
 
                 {/* ── Advanced stat grid (3 × 3, percentile-coloured) ── */}
+                {/* Col 1: xGF/60 | xGA/60 | xG%  ·  Col 2: PP% | PK% | Pen±  ·  Col 3: iXG/60 | Rel% | iXG% */}
                 <div className="grid grid-cols-3 gap-[4px]">
-                    {stats.map(s => (
-                        <StatCell key={s.label} val={s.val} label={s.label} pct={s.pct} />
-                    ))}
+                    {/* Row 1 */}
+                    <StatCell val={pi.ev_xgf_per60.toFixed(2)} label="xGF/60" pct={pr(pi.ev_xgf_per60, 'ev_xgf_per60')} />
+                    {ppQualified
+                        ? <StatCell val={`${ppPct}${ordinalSuffix(ppPct)}%`} label="PP xGF" pct={ppPct} />
+                        : <StatCell blank />
+                    }
+                    <StatCell val={pi.ind_xg_per60.toFixed(2)} label="iXG/60" pct={pr(pi.ind_xg_per60, 'ind_xg_per60')} />
+
+                    {/* Row 2 */}
+                    <StatCell val={pi.ev_xga_per60.toFixed(2)} label="xGA/60" pct={pr(pi.ev_xga_per60, 'ev_xga_per60', false)} />
+                    {pkQualified
+                        ? <StatCell val={`${pkPct}${ordinalSuffix(pkPct)}%`} label="PK xGA" pct={pkPct} />
+                        : <StatCell blank />
+                    }
+                    <StatCell val={relStr} label="Rel%" pct={pr(pi.relative_xgf_pct, 'relative_xgf_pct')} />
+
+                    {/* Row 3 */}
+                    <StatCell val={(pi.onice_xgf_pct * 100).toFixed(1) + '%'} label="xG%" pct={pr(pi.onice_xgf_pct, 'onice_xgf_pct')} />
+                    <StatCell val={(pi.penalty_diff_per60 >= 0 ? '+' : '') + pi.penalty_diff_per60.toFixed(2)} label="Pen±" pct={pr(pi.penalty_diff_per60, 'penalty_diff_per60')} />
+                    <StatCell val={player.ixg_share_pct.toFixed(1) + '%'} label="iXG%" color={ixgShareC} />
                 </div>
 
                 {/* ── TOI breakdown ── */}
@@ -525,6 +575,9 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
             relative_xgf_pct: nums(arr, 'relative_xgf_pct'),
             ev_toi_per_game: nums(arr, 'ev_toi_per_game'),
             gs_pg: arr.map(p => p.games_played > 0 ? p.game_score / p.games_played : 0),
+            // PP/PK percentiles among qualified players only (>= 60s avg TOI)
+            pp_xgf_per60_qual: arr.filter(p => p.pp_toi_per_game >= 60).map(p => p.pp_xgf_per60),
+            pk_xga_per60_qual: arr.filter(p => p.pk_toi_per_game >= 60).map(p => p.pk_xga_per60),
         });
 
         return { fwd: build(fwds), def: build(defs) };
@@ -533,6 +586,14 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
     // Enrich: join player_impact with boxscore aggregates
     const allPlayers = useMemo<AggPlayer[]>(() => {
         if (!piData) return [];
+
+        // First pass: compute team total EV iXG for the iXG% metric
+        const teamTotalIxg = Object.entries(piData)
+            .filter(([, pi]) => pi.team === teamAbbr && pi.position !== 'G' && pi.games_played >= 5)
+            .reduce((sum, [, pi]) => {
+                const playerIxg = pi.ind_xg_per60 * (pi.ev_toi_per_game / 3600) * pi.games_played;
+                return sum + playerIxg;
+            }, 0);
 
         const result: AggPlayer[] = [];
         for (const [id, pi] of Object.entries(piData)) {
@@ -561,12 +622,16 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                 : fmtToi(pi.ev_toi_per_game + pi.pp_toi_per_game + pi.pk_toi_per_game);
             const gs_pg = pi.games_played > 0 ? pi.game_score / pi.games_played : 0;
 
+            // iXG%: this player's share of team total EV individual expected goals
+            const playerIxg = pi.ind_xg_per60 * (pi.ev_toi_per_game / 3600) * pi.games_played;
+            const ixg_share_pct = teamTotalIxg > 0 ? (playerIxg / teamTotalIxg) * 100 : 0;
+
             result.push({
                 id, pi,
                 jerseyNum: bs?.jerseyNum ?? 0,
                 g, a, pts, shots, gp,
                 total_toi_sec, sh_pct, sog_pg,
-                toi_pg_str, gs_pg,
+                toi_pg_str, gs_pg, ixg_share_pct,
                 played_toi: bs?.played_toi ?? new Map(),
             });
         }
