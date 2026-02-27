@@ -756,6 +756,12 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         };
     }, [piData, teamAbbr]);
 
+    // Build player lookup by name for lineup mode (lineup uses internal IDs, not NHL IDs)
+    const playerByName = useMemo(
+        () => new Map(allPlayers.map(p => [p.pi.name, p])),
+        [allPlayers]
+    );
+
     /* ── Render ─────────────────────────────────────── */
 
     if (!piData || !pools) {
@@ -779,12 +785,6 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         ['80-90', '#3b82f6'],
         ['>90', '#38bdf8'],
     ];
-
-    // Build player lookup by ID for lineup mode
-    const playerById = useMemo(
-        () => new Map(allPlayers.map(p => [p.id, p])),
-        [allPlayers]
-    );
 
     // Effective sort mode: fall back to 'impact' if lineup requested but data missing
     const effectiveSortBy = sortBy === 'lineup' && !lineup ? 'impact' : sortBy;
@@ -873,16 +873,16 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             {/* ── LINEUP VIEW ── */}
             {effectiveSortBy === 'lineup' && lineup ? (() => {
                 // Collect all player IDs explicitly listed in any line/pair
-                const lineupIdSet = new Set(
+                const lineupNameSet = new Set(
                     ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3'].flatMap(k =>
-                        (lineup[k] || []).map(lp => String(lp.id))
+                        (lineup[k] || []).map(lp => lp.name)
                     )
                 );
 
                 // Section label + cards row
                 const LineSection = ({ label, lineKey }: { label: string; lineKey: string }) => {
                     const linePlayers = (lineup![lineKey] || [])
-                        .map(lp => playerById.get(String(lp.id)))
+                        .map(lp => playerByName.get(lp.name))
                         .filter(Boolean) as AggPlayer[];
                     if (linePlayers.length === 0) return null;
                     return (
@@ -908,7 +908,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                     );
                 };
 
-                const others = allPlayers.filter(p => !lineupIdSet.has(p.id));
+                const others = allPlayers.filter(p => !lineupNameSet.has(p.pi.name));
 
                 return (
                     <div className="flex flex-col gap-6">
