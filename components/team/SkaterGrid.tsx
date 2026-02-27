@@ -777,18 +777,6 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         );
     }
 
-    const LEGEND: [string, string][] = [
-        ['≤10', '#991b1b'],
-        ['10-20', '#ef4444'],
-        ['20-30', '#f97316'],
-        ['30-45', '#f59e0b'],
-        ['45-55', '#71717a'],
-        ['55-70', '#22c55e'],
-        ['70-80', '#14b8a6'],
-        ['80-90', '#3b82f6'],
-        ['>90', '#38bdf8'],
-    ];
-
     // Effective sort mode: fall back to 'impact' if lineup requested but data missing
     const effectiveSortBy = sortBy === 'lineup' && !lineup ? 'impact' : sortBy;
 
@@ -837,22 +825,6 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                     ))}
                 </div>
 
-                {/* Percentile legend */}
-                <div className="flex items-center gap-[3px] ml-auto flex-wrap">
-                    {LEGEND.map(([label, color]) => (
-                        <div
-                            key={label}
-                            className="text-[7.5px] font-bold px-1.5 py-[3px] rounded leading-none"
-                            style={{
-                                backgroundColor: `${color}30`,
-                                color,
-                                border: `1px solid ${color}50`,
-                            }}
-                        >
-                            {label}
-                        </div>
-                    ))}
-                </div>
             </div>
 
             {/* Availability strip legend (shown once, above grid) */}
