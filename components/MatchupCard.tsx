@@ -10,7 +10,7 @@ import RecentGamesList from './RecentGamesList';
 import PlayerNewsList from './PlayerNewsList';
 import LineupGrid from './LineupGrid';
 import { useAdmin } from './AdminProvider';
-import LogBetModal from './LogBetModal';
+
 
 gsap.registerPlugin(useGSAP);
 
@@ -58,7 +58,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     const [isExpanded, setIsExpanded] = useState(false);
     const [isDesktopExpanded, setIsDesktopExpanded] = useState(false); // New state for desktop
     const { isAdmin } = useAdmin();
-    const [isLogBetOpen, setIsLogBetOpen] = useState(false);
+
 
     const toggleExpand = () => {
         setIsExpanded(!isExpanded);
@@ -934,17 +934,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     {/* CENTER INFO */}
                     <div className="flex flex-col items-center justify-center w-[30%] px-6 border-l border-r border-white/5 mx-4">
                         <div className="flex flex-col items-center mb-6">
-                            {isAdmin && !isSocial && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setIsLogBetOpen(true);
-                                    }}
-                                    className="mb-2 px-3 py-1 bg-blue-600/80 hover:bg-blue-500 active:bg-blue-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-full transition-colors border border-blue-400/30"
-                                >
-                                    Log Bet
-                                </button>
-                            )}
                             <span className="text-xs font-mono text-neutral-400 tracking-[0.2em] mb-3">{formatTime(startTime || '')}</span>
 
                             <div className="px-5 py-2 mt-2 rounded-full border border-neutral-700 bg-neutral-800/50 backdrop-blur-md min-w-[56px] text-center">
@@ -1161,17 +1150,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
                         {/* CENTER (Time + Bar) */}
                         <div className="flex flex-col items-center justify-center flex-1 gap-1">
-                            {isAdmin && !isSocial && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setIsLogBetOpen(true);
-                                    }}
-                                    className="mb-0.5 px-2 py-0.5 bg-blue-600/80 active:bg-blue-700 text-white text-[8px] font-bold uppercase tracking-wider rounded-full transition-colors border border-blue-400/30"
-                                >
-                                    Log Bet
-                                </button>
-                            )}
                             <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap mb-0.5">{formatTime(startTime || '')}</span>
                             {/* Bar - Taller (h-5) & Animated */}
                             <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden flex relative shadow-inner border border-white/5">
@@ -1389,11 +1367,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                 )}
             </div>
 
-            <LogBetModal
-                isOpen={isLogBetOpen}
-                onClose={() => setIsLogBetOpen(false)}
-                prediction={prediction}
-            />
         </>
     );
 };
