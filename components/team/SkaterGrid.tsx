@@ -276,21 +276,39 @@ function ordinalSuffix(n: number): string {
 ═══════════════════════════════════════════════════ */
 
 function ixgShareColor(pct: number): string {
-    // pct = percentile rank within the team
     return pctColor(pct);
+}
+
+/* TOI ratio colour  (grey → yellow → bright blue):
+   ratio = player_toi / team_total_toi (0.0 to ~0.45)
+   e.g. 36% for a top-line 15-min EV player on a ~42-min team
+   ~20% = average player, 35%+ = elite usage              */
+function toiRatioColor(ratio: number): string {
+    if (ratio >= 0.35) return '#38bdf8'; // sky-400  (elite usage, top line)
+    if (ratio >= 0.25) return '#60a5fa'; // blue-400 (2nd-line calibre)
+    if (ratio >= 0.15) return '#fbbf24'; // amber-400 (avg / 3rd line)
+    if (ratio >= 0.08) return '#d97706'; // amber-600 (limited role)
+    return '#52525b';                    // zinc-600  (rarely plays)
 }
 
 /* ═══════════════════════════════════════════════════════
    SkaterCard
 ═══════════════════════════════════════════════════════ */
 
+interface TeamToiAvgs {
+    ev: number; // seconds
+    pp: number; // seconds (among PP-qualified players only)
+    pk: number; // seconds (among PK-qualified players only)
+}
+
 interface SkaterCardProps {
     player: AggPlayer;
     teamGames: TeamGameSlot[];
     pool: PoolDict;
+    teamToiAvgs: TeamToiAvgs;
 }
 
-function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
+function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
     const { pi } = player;
 
     // Percentile helper
@@ -449,7 +467,7 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
                     {/* Row 1 */}
                     <StatCell val={pi.ev_xgf_per60.toFixed(2)} label="xGF/60" pct={pr(pi.ev_xgf_per60, 'ev_xgf_per60')} />
                     {ppQualified
-                        ? <StatCell val={`${ppPct}${ordinalSuffix(ppPct)}%`} label="PP xGF" pct={ppPct} />
+                        ? <StatCell val={`${ppPct}%`} label="PP xGF" pct={ppPct} />
                         : <StatCell blank />
                     }
                     <StatCell val={pi.ind_xg_per60.toFixed(2)} label="iXG/60" pct={pr(pi.ind_xg_per60, 'ind_xg_per60')} />
@@ -457,7 +475,7 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
                     {/* Row 2 */}
                     <StatCell val={pi.ev_xga_per60.toFixed(2)} label="xGA/60" pct={pr(pi.ev_xga_per60, 'ev_xga_per60', false)} />
                     {pkQualified
-                        ? <StatCell val={`${pkPct}${ordinalSuffix(pkPct)}%`} label="PK xGA" pct={pkPct} />
+                        ? <StatCell val={`${pkPct}%`} label="PK xGA" pct={pkPct} />
                         : <StatCell blank />
                     }
                     <StatCell val={relStr} label="Rel%" pct={pr(pi.relative_xgf_pct, 'relative_xgf_pct')} />
@@ -469,12 +487,28 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
                 </div>
 
                 {/* ── TOI breakdown ── */}
-                <div className="flex items-center justify-between text-[8px] text-zinc-600 px-0.5">
-                    <span>EV&thinsp;<span className="text-zinc-300 font-mono font-semibold">{fmtToi(pi.ev_toi_per_game)}</span></span>
-                    <span className="text-zinc-800">·</span>
-                    <span>PP&thinsp;<span className="text-zinc-300 font-mono font-semibold">{fmtToi(pi.pp_toi_per_game)}</span></span>
-                    <span className="text-zinc-800">·</span>
-                    <span>PK&thinsp;<span className="text-zinc-300 font-mono font-semibold">{fmtToi(pi.pk_toi_per_game)}</span></span>
+                <div className="flex items-center justify-between px-0.5 gap-1">
+                    {[
+                        { label: 'EV', toi: pi.ev_toi_per_game, avg: teamToiAvgs.ev },
+                        { label: 'PP', toi: pi.pp_toi_per_game, avg: teamToiAvgs.pp },
+                        { label: 'PK', toi: pi.pk_toi_per_game, avg: teamToiAvgs.pk },
+                    ].map(({ label, toi, avg }) => {
+                        const ratio = avg > 0 ? toi / avg : 0;
+                        const pillC = toiRatioColor(ratio);
+                        const pct = Math.round(ratio * 100);
+                        return (
+                            <div key={label} className="flex items-center gap-1">
+                                <span className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wide leading-none">{label}</span>
+                                <span className="text-[12px] font-mono font-bold text-zinc-200 leading-none tabular-nums">{fmtToi(toi)}</span>
+                                <span
+                                    className="text-[8px] font-bold leading-none px-1 py-[2px] rounded-full tabular-nums shrink-0"
+                                    style={{ color: pillC, background: `${pillC}22`, border: `1px solid ${pillC}44` }}
+                                >
+                                    {pct}%
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* ── Availability strip ── */}
@@ -652,6 +686,26 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
         });
     }, [allPlayers, posFilter, sortBy]);
 
+    // Team TOI totals per game — denominator for the player's TOI share pills.
+    // Formula: sum(player_toi × gp) / (teamGP × skaters_on_ice)
+    //   EV & PP: 5 skaters on ice  →  divide by 5
+    //   PK:      4 skaters on ice  →  divide by 4
+    // Result is the team's total per-game 5v5/PP/PK minutes (~42 min EV).
+    const teamToiAvgs = useMemo<TeamToiAvgs>(() => {
+        if (!piData) return { ev: 0, pp: 0, pk: 0 };
+        const team = Object.values(piData).filter(
+            p => p.team === teamAbbr && p.position !== 'G' && p.games_played >= 5
+        );
+        const teamGP = Math.max(...team.map(p => p.games_played), 1);
+        const wsum = (k: keyof PIPlayer) =>
+            team.reduce((s, p) => s + Number(p[k]) * p.games_played, 0);
+        return {
+            ev: wsum('ev_toi_per_game') / (teamGP * 5),
+            pp: wsum('pp_toi_per_game') / (teamGP * 5),
+            pk: wsum('pk_toi_per_game') / (teamGP * 4),
+        };
+    }, [piData, teamAbbr]);
+
     /* ── Render ─────────────────────────────────────── */
 
     if (!piData || !pools) {
@@ -758,6 +812,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                         player={p}
                         teamGames={teamGames}
                         pool={p.pi.is_forward ? pools.fwd : pools.def}
+                        teamToiAvgs={teamToiAvgs}
                     />
                 ))}
             </div>
