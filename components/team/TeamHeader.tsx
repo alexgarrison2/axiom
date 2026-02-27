@@ -21,8 +21,7 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teamInfo, allTeamsList }) => {
     const router = useRouter();
 
     const handleBack = () => {
-        // Back button on a team detail page always returns to the teams list
-        router.push('/teams');
+        router.back();
     };
 
     useGSAP(() => {

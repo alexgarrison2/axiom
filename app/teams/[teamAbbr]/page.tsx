@@ -42,7 +42,7 @@ export default function TeamDetailPage() {
     });
 
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
-    const [allTeamsList, setAllTeamsList] = useState<Record<string, string>[]>([]);
+    const [allTeamsList, setAllTeamsList] = useState<{ TeamName: string; CommonName: string; TeamTricode: string; HexColor1: string; HexColor2: string; TeamLogoURL: string }[]>([]);
 
     useEffect(() => {
         const fetchTeams = async () => {
@@ -51,13 +51,21 @@ export default function TeamDetailPage() {
                 const res = await fetch('/data/nhl_teams.csv');
                 const text = await res.text();
                 const parsed = Papa.parse(text, { header: true, skipEmptyLines: true }).data as Record<string, string>[];
-                setAllTeamsList(parsed);
+
+                // Map spaced CSV keys → PascalCase keys expected by TeamSelector
+                const mapped = parsed.map(t => ({
+                    TeamName: t['Team Name'] || '',
+                    CommonName: t['Common Name'] || '',
+                    TeamTricode: t['Team Tricode'] || '',
+                    HexColor1: t['Hex Color 1'] || '',
+                    HexColor2: t['Hex Color 2'] || '',
+                    TeamLogoURL: t['Team Logo URL'] || '',
+                }));
+                setAllTeamsList(mapped);
 
                 const logos: Record<string, string> = {};
-                parsed.forEach((t) => {
-                    if (t['Common Name']) {
-                        logos[t['Common Name'].trim()] = t['Team Logo URL'];
-                    }
+                mapped.forEach((t) => {
+                    if (t.CommonName) logos[t.CommonName.trim()] = t.TeamLogoURL;
                 });
                 setTeamLogos(logos);
             } catch (e) { console.error(e); }
