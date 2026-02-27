@@ -249,6 +249,7 @@ export default function TeamDetailPage() {
                                 playerStats={playerStats.filter(p => !p.is_goalie)}
                                 games={games}
                                 teamAbbr={teamAbbr}
+                                lineup={data?.lineup}
                             />
                         </motion.div>
                     </TabsContent>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
-import { TeamInfo, GameLog, PlayerBoxscoreRow, TeamRating, TeamStatsResponse } from '@/types';
+import { TeamInfo, GameLog, PlayerBoxscoreRow, TeamRating, TeamStatsResponse, TeamLineup } from '@/types';
 
 // Helper to format time strings
 const formatTime = (seconds: string | number) => {
@@ -227,6 +227,25 @@ export async function GET(
             };
         });
 
+        // 6. Extract current lineup from predictions_detailed.csv
+        let lineup: TeamLineup | undefined;
+        try {
+            const predsText = readCsv('predictions_detailed.csv');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const preds = Papa.parse(predsText, { header: true, skipEmptyLines: true }).data as any[];
+            // Find most recent prediction row featuring this team (by common name)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const pred = preds.find((row: any) =>
+                row.home_team === teamCommon || row.away_team === teamCommon
+            );
+            if (pred) {
+                const lineupStr = pred.home_team === teamCommon ? pred.home_lineup : pred.away_lineup;
+                if (lineupStr && lineupStr !== '{}' && lineupStr.trim()) {
+                    lineup = JSON.parse(lineupStr) as TeamLineup;
+                }
+            }
+        } catch { console.warn("Lineup fetch failed for", teamAbbrUpper); }
+
         const response: TeamStatsResponse = {
             teamInfo,
             games: processedGames,
@@ -234,7 +253,8 @@ export async function GET(
             playerStats: teamPlayerStats,
             rating,
             record: { w, l, otl, pts: (w * 2) + otl },
-            todaysGame
+            todaysGame,
+            lineup,
         };
 
         return NextResponse.json(response);

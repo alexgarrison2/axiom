@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { PlayerBoxscoreRow, GameLog } from '@/types';
+import { PlayerBoxscoreRow, GameLog, TeamLineup } from '@/types';
 
 /* ═══════════════════════════════════════════════════════
    Types
@@ -562,13 +562,14 @@ interface SkaterGridProps {
     playerStats: PlayerBoxscoreRow[];
     games: GameLog[];
     teamAbbr: string;
+    lineup?: TeamLineup;
 }
 
-export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridProps) {
+export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: SkaterGridProps) {
     const [piData, setPiData] = useState<PIDict | null>(null);
     const [bioData, setBioData] = useState<BioDict | null>(null);
     const [posFilter, setPosFilter] = useState<'all' | 'f' | 'd'>('all');
-    const [sortBy, setSortBy] = useState<'impact' | 'pts' | 'toi'>('impact');
+    const [sortBy, setSortBy] = useState<'impact' | 'pts' | 'toi' | 'lineup'>('lineup');
 
     // Load league-wide player impact data
     useEffect(() => {
@@ -720,8 +721,10 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
     }, [piData, boxMap, teamAbbr, bioData]);
 
     // Apply filter + sort (cheap op — separate from heavy enrichment)
+    // In 'lineup' mode the flat grid is not shown, but we still compute for the fallback.
     const players = useMemo(() => {
         const filtered = allPlayers.filter(p => {
+            if (sortBy === 'lineup') return true; // no pos filter in lineup mode
             if (posFilter === 'f') return p.pi.is_forward;
             if (posFilter === 'd') return !p.pi.is_forward;
             return true;
@@ -729,7 +732,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
         return filtered.sort((a, b) => {
             if (sortBy === 'pts') return b.pts - a.pts;
             if (sortBy === 'toi') return b.total_toi_sec - a.total_toi_sec;
-            return b.gs_pg - a.gs_pg; // 'impact' default
+            return b.gs_pg - a.gs_pg; // 'impact' default (and 'lineup' fallback)
         });
     }, [allPlayers, posFilter, sortBy]);
 
@@ -777,34 +780,50 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
         ['>90', '#38bdf8'],
     ];
 
+    // Build player lookup by ID for lineup mode
+    const playerById = useMemo(
+        () => new Map(allPlayers.map(p => [p.id, p])),
+        [allPlayers]
+    );
+
+    // Effective sort mode: fall back to 'impact' if lineup requested but data missing
+    const effectiveSortBy = sortBy === 'lineup' && !lineup ? 'impact' : sortBy;
+
     return (
         <div className="flex flex-col gap-4">
 
             {/* ── Controls + Legend ── */}
             <div className="flex flex-wrap items-center gap-2">
 
-                {/* Position filter */}
-                <div className="flex items-center bg-zinc-900/80 border border-white/[0.08] rounded-lg p-0.5">
-                    {(['all', 'f', 'd'] as const).map(pos => (
-                        <button
-                            key={pos}
-                            onClick={() => setPosFilter(pos)}
-                            className={`px-3 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${posFilter === pos
-                                ? 'bg-white/15 text-white'
-                                : 'text-zinc-500 hover:text-zinc-300'
-                                }`}
-                        >
-                            {pos === 'all' ? 'All' : pos === 'f' ? 'Fwd' : 'Def'}
-                        </button>
-                    ))}
-                </div>
+                {/* Position filter — hidden in lineup mode */}
+                {effectiveSortBy !== 'lineup' && (
+                    <div className="flex items-center bg-zinc-900/80 border border-white/[0.08] rounded-lg p-0.5">
+                        {(['all', 'f', 'd'] as const).map(pos => (
+                            <button
+                                key={pos}
+                                onClick={() => setPosFilter(pos)}
+                                className={`px-3 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${posFilter === pos
+                                    ? 'bg-white/15 text-white'
+                                    : 'text-zinc-500 hover:text-zinc-300'
+                                    }`}
+                            >
+                                {pos === 'all' ? 'All' : pos === 'f' ? 'Fwd' : 'Def'}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Sort order */}
                 <div className="flex items-center bg-zinc-900/80 border border-white/[0.08] rounded-lg p-0.5">
-                    {([['impact', 'Impact'], ['pts', 'Points'], ['toi', 'TOI']] as const).map(([val, label]) => (
+                    {([
+                        ['impact', 'Impact'],
+                        ['pts', 'Points'],
+                        ['toi', 'TOI'],
+                        ...(lineup ? [['lineup', 'Lineup']] : []),
+                    ] as [string, string][]).map(([val, label]) => (
                         <button
                             key={val}
-                            onClick={() => setSortBy(val)}
+                            onClick={() => setSortBy(val as typeof sortBy)}
                             className={`px-3 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${sortBy === val
                                 ? 'bg-white/15 text-white'
                                 : 'text-zinc-500 hover:text-zinc-300'
@@ -851,23 +870,100 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                 ))}
             </div>
 
-            {/* ── Player card grid ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {players.map(p => (
-                    <SkaterCard
-                        key={p.id}
-                        player={p}
-                        teamGames={teamGames}
-                        pool={p.pi.is_forward ? pools.fwd : pools.def}
-                        teamToiAvgs={teamToiAvgs}
-                    />
-                ))}
-            </div>
+            {/* ── LINEUP VIEW ── */}
+            {effectiveSortBy === 'lineup' && lineup ? (() => {
+                // Collect all player IDs explicitly listed in any line/pair
+                const lineupIdSet = new Set(
+                    ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3'].flatMap(k =>
+                        (lineup[k] || []).map(lp => String(lp.id))
+                    )
+                );
 
-            {players.length === 0 && (
-                <div className="text-center text-zinc-500 font-mono text-sm py-16">
-                    No qualifying skaters found.
-                </div>
+                // Section label + cards row
+                const LineSection = ({ label, lineKey }: { label: string; lineKey: string }) => {
+                    const linePlayers = (lineup![lineKey] || [])
+                        .map(lp => playerById.get(String(lp.id)))
+                        .filter(Boolean) as AggPlayer[];
+                    if (linePlayers.length === 0) return null;
+                    return (
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 shrink-0">
+                                    {label}
+                                </span>
+                                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                                {linePlayers.map(p => (
+                                    <SkaterCard
+                                        key={p.id}
+                                        player={p}
+                                        teamGames={teamGames}
+                                        pool={p.pi.is_forward ? pools.fwd : pools.def}
+                                        teamToiAvgs={teamToiAvgs}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    );
+                };
+
+                const others = allPlayers.filter(p => !lineupIdSet.has(p.id));
+
+                return (
+                    <div className="flex flex-col gap-6">
+                        {/* Forward lines */}
+                        {['f1', 'f2', 'f3', 'f4'].map((key, i) => (
+                            <LineSection key={key} label={`F${i + 1}`} lineKey={key} />
+                        ))}
+                        {/* Defence pairs */}
+                        {['d1', 'd2', 'd3'].map((key, i) => (
+                            <LineSection key={key} label={`D${i + 1}`} lineKey={key} />
+                        ))}
+                        {/* Others: qualified players not in any lineup group */}
+                        {others.length > 0 && (
+                            <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 shrink-0">
+                                        Others
+                                    </span>
+                                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                                    {others.map(p => (
+                                        <SkaterCard
+                                            key={p.id}
+                                            player={p}
+                                            teamGames={teamGames}
+                                            pool={p.pi.is_forward ? pools.fwd : pools.def}
+                                            teamToiAvgs={teamToiAvgs}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })() : (
+                /* ── FLAT GRID (Impact / Points / TOI sort) ── */
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                        {players.map(p => (
+                            <SkaterCard
+                                key={p.id}
+                                player={p}
+                                teamGames={teamGames}
+                                pool={p.pi.is_forward ? pools.fwd : pools.def}
+                                teamToiAvgs={teamToiAvgs}
+                            />
+                        ))}
+                    </div>
+                    {players.length === 0 && (
+                        <div className="text-center text-zinc-500 font-mono text-sm py-16">
+                            No qualifying skaters found.
+                        </div>
+                    )}
+                </>
             )}
 
         </div>

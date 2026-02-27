@@ -81,6 +81,17 @@ export interface TeamRating {
     def_rating: number; // xGA Rating
 }
 
+// Lineup interfaces (mirrored from utils/data.ts for use in client components)
+export interface LineupPlayer {
+    id: number;
+    name: string;
+    number: number | null;
+    pos: string; // 'lw' | 'c' | 'rw' | 'ld' | 'rd'
+    ppUnit?: number;
+    movement?: 'up' | 'down' | 'new';
+}
+export type TeamLineup = Record<string, LineupPlayer[]>; // f1, f2, f3, f4, d1, d2, d3, ir
+
 // API Response Interface
 export interface TeamStatsResponse {
     teamInfo: TeamInfo;
@@ -90,4 +101,5 @@ export interface TeamStatsResponse {
     rating: TeamRating | null;
     record: { w: number; l: number; otl: number; pts: number };
     todaysGame: unknown; // Keep permissive for now
+    lineup?: TeamLineup;  // Current projected lineup from latest prediction
 }
