@@ -73,6 +73,7 @@ interface AggPlayer {
     gs_pg: number;
     ixg_share_pct: number;   // player's EV iXG as % of team total EV iXG
     played_toi: Map<string, number>; // game_id → toi seconds (>0 means played)
+    other_team_dates: Map<string, string>; // date → tricode (games played for another team)
     bio: PlayerBio | null;
 }
 
@@ -169,6 +170,7 @@ function fmtShortDate(s: string): string {
 interface TooltipState {
     slot: TeamGameSlot;
     played: boolean;
+    otherTeam: string | null; // tricode if played for another team that day
     x: number;
     y: number;
 }
@@ -198,8 +200,8 @@ function AvailTooltip({ tt }: { tt: TooltipState }) {
                 {tt.slot.opponent}
             </div>
             <div className="flex items-center gap-1.5">
-                <span style={{ color: tt.played ? '#4ade80' : '#fb923c' }}>
-                    {tt.played ? '✓ Played' : '✗ Missed'}
+                <span style={{ color: tt.played ? '#4ade80' : tt.otherTeam ? '#a78bfa' : '#fb923c' }}>
+                    {tt.played ? '✓ Played' : tt.otherTeam ? `⇄ ${tt.otherTeam}` : '✗ Missed'}
                 </span>
                 {tt.slot.result && (
                     <>
@@ -214,7 +216,11 @@ function AvailTooltip({ tt }: { tt: TooltipState }) {
     );
 }
 
-function AvailStrip({ teamGames, playedToi }: { teamGames: TeamGameSlot[]; playedToi: Map<string, number> }) {
+function AvailStrip({ teamGames, playedToi, otherTeamDates }: {
+    teamGames: TeamGameSlot[];
+    playedToi: Map<string, number>;
+    otherTeamDates: Map<string, string>; // date → tricode
+}) {
     const [tt, setTt] = useState<TooltipState | null>(null);
 
     // 82 total slots: played games + future placeholders
@@ -226,9 +232,10 @@ function AvailStrip({ teamGames, playedToi }: { teamGames: TeamGameSlot[]; playe
     const half = Math.ceil(slots.length / 2);
     const rows = [slots.slice(0, half), slots.slice(half)];
 
-    const barStyle = (slot: TeamGameSlot | null, played: boolean) => {
+    const barStyle = (slot: TeamGameSlot | null, played: boolean, otherTeam: string | null) => {
         if (!slot) return { bg: '#27272a', op: 0.5 };
         if (played) return { bg: '#d4d4d8', op: 0.88 };
+        if (otherTeam) return { bg: '#a78bfa', op: 0.75 }; // purple = active, just on another team
         return { bg: '#fb923c', op: 0.70 };
     };
 
@@ -238,12 +245,13 @@ function AvailStrip({ teamGames, playedToi }: { teamGames: TeamGameSlot[]; playe
                 <div key={ri} style={{ display: 'flex', width: '100%', gap: 1 }}>
                     {row.map((slot, ci) => {
                         const played = slot ? (playedToi.get(slot.gid) ?? 0) > 0 : false;
-                        const { bg, op } = barStyle(slot, played);
+                        const otherTeam = (!played && slot) ? (otherTeamDates.get(slot.date) ?? null) : null;
+                        const { bg, op } = barStyle(slot, played, otherTeam);
                         return (
                             <div
                                 key={ci}
                                 style={{ flex: 1, height: 6, borderRadius: 2, backgroundColor: bg, opacity: op }}
-                                onMouseEnter={e => slot && setTt({ slot, played, x: e.clientX, y: e.clientY })}
+                                onMouseEnter={e => slot && setTt({ slot, played, otherTeam, x: e.clientX, y: e.clientY })}
                                 onMouseMove={e => slot && setTt(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)}
                                 onMouseLeave={() => setTt(null)}
                             />
@@ -539,7 +547,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                 </div>
 
                 {/* ── Availability strip ── */}
-                <AvailStrip teamGames={teamGames} playedToi={player.played_toi} />
+                <AvailStrip teamGames={teamGames} playedToi={player.played_toi} otherTeamDates={player.other_team_dates} />
             </div>
         </div>
     );
@@ -607,20 +615,28 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             if (Number(row.is_goalie)) continue;
             const id = String(row.player_id);
             if (!m.has(id)) {
-                m.set(id, { g: 0, a: 0, pts: 0, shots: 0, toi_sec: 0, gp: 0, jerseyNum: 0, played_toi: new Map() });
+                m.set(id, { g: 0, a: 0, pts: 0, shots: 0, toi_sec: 0, gp: 0, jerseyNum: 0, played_toi: new Map(), other_team_dates: new Map() });
             }
             const acc = m.get(id)!;
             const toiSec = parseToi(row.toi);
-            acc.g += Number(row.goals) || 0;
-            acc.a += Number(row.assists) || 0;
-            acc.pts += Number(row.points) || 0;
-            acc.shots += Number(row.shots) || 0;
-            acc.toi_sec += toiSec;
-            acc.gp++;
-            acc.jerseyNum = Number(row.number) || acc.jerseyNum;
-            // Only count as "played" if TOI > 0
-            const gid = String(row.game_id);
-            acc.played_toi.set(gid, (acc.played_toi.get(gid) ?? 0) + toiSec);
+            const rowTeam = String(row.team ?? '').toUpperCase();
+
+            if (rowTeam === teamAbbr.toUpperCase()) {
+                // This team's game — count toward totals
+                acc.g += Number(row.goals) || 0;
+                acc.a += Number(row.assists) || 0;
+                acc.pts += Number(row.points) || 0;
+                acc.shots += Number(row.shots) || 0;
+                acc.toi_sec += toiSec;
+                acc.gp++;
+                acc.jerseyNum = Number(row.number) || acc.jerseyNum;
+                // Only count as "played" if TOI > 0
+                const gid = String(row.game_id);
+                acc.played_toi.set(gid, (acc.played_toi.get(gid) ?? 0) + toiSec);
+            } else if (toiSec > 0) {
+                // Different team — record date so availability strip can show it
+                acc.other_team_dates.set(String(row.date), rowTeam);
+            }
         }
         return m;
     }, [playerStats]);
@@ -705,6 +721,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                 total_toi_sec, sh_pct, sog_pg,
                 toi_pg_str, gs_pg, ixg_share_pct,
                 played_toi: bs?.played_toi ?? new Map(),
+                other_team_dates: bs?.other_team_dates ?? new Map(),
                 bio: bioData?.[id] ?? null,
             });
         }
@@ -833,6 +850,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                 {[
                     { bg: '#d4d4d8', op: 0.88, label: 'Played' },
                     { bg: '#fb923c', op: 0.7, label: 'Missed' },
+                    { bg: '#a78bfa', op: 0.75, label: 'Other team' },
                     { bg: '#27272a', op: 0.5, label: 'Future game' },
                 ].map(({ bg, op, label }) => (
                     <div key={label} className="flex items-center gap-1.5">

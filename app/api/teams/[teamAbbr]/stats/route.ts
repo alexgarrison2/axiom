@@ -159,7 +159,12 @@ export async function GET(
         // But we FILTER it immediately.
         const playersText = readCsv('nhl_season_2025_2026_player_stats.csv');
         const players = Papa.parse(playersText, { header: true, skipEmptyLines: true, dynamicTyping: true }).data as PlayerBoxscoreRow[];
-        const teamPlayerStats = players.filter(p => p.team === teamAbbrUpper);
+        // Include ALL rows for players currently on this team (not just rows while on this team)
+        // so traded players' pre-trade games are visible in the availability strip
+        const currentTeamPlayerIds = new Set(
+            players.filter(p => p.team === teamAbbrUpper).map(p => String(p.player_id))
+        );
+        const teamPlayerStats = players.filter(p => currentTeamPlayerIds.has(String(p.player_id)));
 
         // 5. Fetch Upcoming (Today's Game)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
