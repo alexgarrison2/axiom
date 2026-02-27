@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Search, X } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,9 @@ Object.entries(DIVISIONS).forEach(([div, teams]) => {
 export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const searchParams = useSearchParams();
+    const currentTab = searchParams.get('tab') || 'games';
+    const teamHref = (tricode: string) => `/teams/${tricode}?tab=${currentTab}`;
 
     // Enrich teams with Division
     const enrichedTeams = useMemo(() => {
@@ -179,7 +183,7 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
 
                                                         return (
                                                             <Link
-                                                                href={`/teams/${t.TeamTricode}`}
+                                                                href={teamHref(t.TeamTricode)}
                                                                 key={t.TeamTricode}
                                                                 onClick={() => setIsOpen(false)}
                                                                 className={`flex items-center gap-3 p-2 rounded-lg transition-all group/item ${isSelected ? 'bg-white/10' : 'hover:bg-white/5'}`}
@@ -212,7 +216,7 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
                                     <div className="flex flex-wrap gap-2">
                                         {groupedTeams['Unknown'].map(t => (
                                             <Link
-                                                href={`/teams/${t.TeamTricode}`}
+                                                href={teamHref(t.TeamTricode)}
                                                 key={t.TeamTricode}
                                                 className="text-xs text-gray-400 hover:text-white"
                                             >
