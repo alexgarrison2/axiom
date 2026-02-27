@@ -154,49 +154,69 @@ def main():
     
     all_rows = []
     processed_files = set()
-    
+    existing_columns = None  # Track column order of existing CSV to prevent schema drift
+
     # Check if some already exist (resume capability)
     if os.path.exists(OUTPUT_FILENAME):
         try:
-            df_existing = pd.read_csv(OUTPUT_FILENAME)
-            processed_files = set(df_existing['game_id'].unique())
+            df_existing = pd.read_csv(OUTPUT_FILENAME, nrows=0)  # header only
+            existing_columns = list(df_existing.columns)
+            df_existing_full = pd.read_csv(OUTPUT_FILENAME)
+            processed_files = set(df_existing_full['game_id'].unique())
             print(f"  Already have stats for {len(processed_files)} games. Skipping them.")
-        except:
-            pass
+            print(f"  Existing schema: {len(existing_columns)} columns.")
+        except Exception as e:
+            print(f"  Warning: could not read existing file: {e}")
+
+    def save_batch(rows, is_first_write):
+        """Save a batch of rows, ensuring column alignment with existing CSV."""
+        if not rows:
+            return
+        df_new = pd.DataFrame(rows)
+        if is_first_write:
+            # Fresh file — write with header
+            df_new.to_csv(OUTPUT_FILENAME, mode='w', header=True, index=False)
+        else:
+            # Append — reindex to match the existing column order exactly
+            if existing_columns:
+                # Add any missing columns (e.g. saves/shots_against for skater rows) as NaN
+                for col in existing_columns:
+                    if col not in df_new.columns:
+                        df_new[col] = None
+                # Select only columns present in existing file, in the right order
+                df_new = df_new[existing_columns]
+            df_new.to_csv(OUTPUT_FILENAME, mode='a', header=False, index=False)
 
     count = 0
     for game_id in game_ids:
         if game_id in processed_files:
             continue
-            
+
         print(f"Fetching Boxscore for {game_id} ({count+1}/{len(game_ids) - len(processed_files)})...", end="", flush=True)
         boxscore = get_boxscore(game_id)
-        
+
         if boxscore:
             rows = parse_boxscore(game_id, boxscore)
             all_rows.extend(rows)
             print(f" Found {len(rows)} player records.")
         else:
             print(" Failed.")
-            
+
         count += 1
         # Rate limit
         time.sleep(0.3)
-        
+
         # Batch Save every 50 games
         if count % 50 == 0:
-             # Append to file
-             df_new = pd.DataFrame(all_rows)
-             header = not os.path.exists(OUTPUT_FILENAME)
-             df_new.to_csv(OUTPUT_FILENAME, mode='a', header=header, index=False)
-             print(f"  --> Saved batch of {len(all_rows)} rows.")
-             all_rows = [] # Clear buffer
+            is_first_write = not os.path.exists(OUTPUT_FILENAME)
+            save_batch(all_rows, is_first_write)
+            print(f"  --> Saved batch of {len(all_rows)} rows.")
+            all_rows = []  # Clear buffer
 
     # Final Save
     if all_rows:
-        df_new = pd.DataFrame(all_rows)
-        header = not os.path.exists(OUTPUT_FILENAME)
-        df_new.to_csv(OUTPUT_FILENAME, mode='a', header=header, index=False)
+        is_first_write = not os.path.exists(OUTPUT_FILENAME)
+        save_batch(all_rows, is_first_write)
         print(f"  --> Saved final batch of {len(all_rows)} rows.")
 
     print("Backfill Complete.")
