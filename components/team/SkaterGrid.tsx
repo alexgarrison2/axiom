@@ -131,28 +131,14 @@ function posAccent(pos: string): { text: string; bg: string } {
 function StatCell({ val, label, pct, blank, color }: {
     val?: string; label?: string; pct?: number; blank?: boolean; color?: string;
 }) {
-    if (blank) {
-        return (
-            <div
-                className="rounded-md"
-                style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    borderTop: '2px solid rgba(255,255,255,0.04)',
-                    minHeight: 32,
-                }}
-            />
-        );
-    }
+    if (blank) return <div className="px-2 py-[5px]" />;
     const c = color ?? pctColor(pct ?? 50);
     return (
-        <div
-            className="flex items-center rounded-md px-2 py-[5px] gap-1.5"
-            style={{ background: `${c}0d`, borderTop: `2px solid ${c}55` }}
-        >
-            <span className="text-[9.5px] font-semibold text-zinc-500 uppercase tracking-wide leading-none shrink-0 whitespace-nowrap">
+        <div className="flex items-center justify-between px-2 py-[5px]">
+            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest leading-none shrink-0 whitespace-nowrap">
                 {label}
             </span>
-            <span className="text-[14px] font-bold tabular-nums leading-none" style={{ color: c }}>
+            <span className="text-[13px] font-bold tabular-nums leading-none" style={{ color: c }}>
                 {val}
             </span>
         </div>
@@ -366,7 +352,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
     return (
         <div
             className="flex flex-col rounded-xl overflow-hidden border border-white/[0.07] hover:border-white/[0.13] transition-all duration-150 group"
-            style={{ background: '#111113', borderLeftColor: `${impC}70`, borderLeftWidth: 3 }}
+            style={{ background: '#111113' }}
         >
             {/* ══════════════════════════════════════════════
                 SECTION 1 — headshot + identity + Impact
@@ -497,51 +483,49 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                 {/* ── Divider ── */}
                 <div className="h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.05) 70%, transparent)' }} />
 
-                {/* ── Advanced stat grid (3 × 3, percentile-coloured) ── */}
-                {/* Col 1: xGF/60 | xGA/60 | xG%  ·  Col 2: PP% | PK% | Pen±  ·  Col 3: iXG/60 | Rel% | iXG% */}
-                <div className="grid grid-cols-3 gap-[4px]">
-                    {/* Row 1 */}
-                    <StatCell val={pi.ev_xgf_per60.toFixed(2)} label="xGF/60" pct={pr(pi.ev_xgf_per60, 'ev_xgf_per60')} />
-                    {ppQualified
-                        ? <StatCell val={`${ppPct}%`} label="PP xGF" pct={ppPct} />
-                        : <StatCell blank />
-                    }
-                    <StatCell val={pi.ind_xg_per60.toFixed(2)} label="iXG/60" pct={pr(pi.ind_xg_per60, 'ind_xg_per60')} />
-
-                    {/* Row 2 */}
-                    <StatCell val={pi.ev_xga_per60.toFixed(2)} label="xGA/60" pct={pr(pi.ev_xga_per60, 'ev_xga_per60', false)} />
-                    {pkQualified
-                        ? <StatCell val={`${pkPct}%`} label="PK xGA" pct={pkPct} />
-                        : <StatCell blank />
-                    }
-                    <StatCell val={relStr} label="Rel%" pct={pr(pi.relative_xgf_pct, 'relative_xgf_pct')} />
-
-                    {/* Row 3 */}
-                    <StatCell val={(pi.onice_xgf_pct * 100).toFixed(1) + '%'} label="xG%" pct={pr(pi.onice_xgf_pct, 'onice_xgf_pct')} />
-                    <StatCell val={(pi.penalty_diff_per60 >= 0 ? '+' : '') + pi.penalty_diff_per60.toFixed(2)} label="Pen±" pct={pr(pi.penalty_diff_per60, 'penalty_diff_per60')} />
-                    <StatCell val={player.ixg_share_pct.toFixed(1) + '%'} label="iXG%" color={ixgShareC} />
+                {/* ── Advanced stat grid (3 rows × 3 cols) ── */}
+                <div className="flex flex-col" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    {[
+                        [
+                            { val: pi.ev_xgf_per60.toFixed(2), label: 'xGF/60', pct: pr(pi.ev_xgf_per60, 'ev_xgf_per60') },
+                            ppQualified ? { val: `${ppPct}%`, label: 'PP xGF', pct: ppPct } : null,
+                            { val: pi.ind_xg_per60.toFixed(2), label: 'iXG/60', pct: pr(pi.ind_xg_per60, 'ind_xg_per60') },
+                        ],
+                        [
+                            { val: pi.ev_xga_per60.toFixed(2), label: 'xGA/60', pct: pr(pi.ev_xga_per60, 'ev_xga_per60', false) },
+                            pkQualified ? { val: `${pkPct}%`, label: 'PK xGA', pct: pkPct } : null,
+                            { val: relStr, label: 'Rel%', pct: pr(pi.relative_xgf_pct, 'relative_xgf_pct') },
+                        ],
+                        [
+                            { val: (pi.onice_xgf_pct * 100).toFixed(1) + '%', label: 'xG%', pct: pr(pi.onice_xgf_pct, 'onice_xgf_pct') },
+                            { val: (pi.penalty_diff_per60 >= 0 ? '+' : '') + pi.penalty_diff_per60.toFixed(2), label: 'Pen±', pct: pr(pi.penalty_diff_per60, 'penalty_diff_per60') },
+                            { val: player.ixg_share_pct.toFixed(1) + '%', label: 'iXG%', color: ixgShareC },
+                        ],
+                    ].map((row, ri) => (
+                        <div key={ri} className="grid grid-cols-3" style={ri > 0 ? { borderTop: '1px solid rgba(255,255,255,0.05)' } : undefined}>
+                            {row.map((cell, ci) => (
+                                <div key={ci} style={ci > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.05)' } : undefined}>
+                                    {cell ? <StatCell val={cell.val} label={cell.label} pct={cell.pct} color={(cell as { color?: string }).color} /> : <StatCell blank />}
+                                </div>
+                            ))}
+                        </div>
+                    ))}
                 </div>
 
                 {/* ── TOI breakdown ── */}
-                <div className="flex items-center justify-between px-0.5 gap-1">
+                <div className="flex items-center justify-between px-1">
                     {[
                         { label: 'EV', toi: pi.ev_toi_per_game, avg: teamToiAvgs.ev },
                         { label: 'PP', toi: pi.pp_toi_per_game, avg: teamToiAvgs.pp },
                         { label: 'PK', toi: pi.pk_toi_per_game, avg: teamToiAvgs.pk },
                     ].map(({ label, toi, avg }) => {
                         const ratio = avg > 0 ? toi / avg : 0;
-                        const pillC = toiRatioColor(ratio);
                         const pct = Math.round(ratio * 100);
                         return (
-                            <div key={label} className="flex items-center gap-1">
-                                <span className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wide leading-none">{label}</span>
+                            <div key={label} className="flex items-baseline gap-1">
+                                <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest leading-none">{label}</span>
                                 <span className="text-[12px] font-mono font-bold text-zinc-200 leading-none tabular-nums">{fmtToi(toi)}</span>
-                                <span
-                                    className="text-[8px] font-bold leading-none px-1 py-[2px] rounded-full tabular-nums shrink-0"
-                                    style={{ color: pillC, background: `${pillC}22`, border: `1px solid ${pillC}44` }}
-                                >
-                                    {pct}%
-                                </span>
+                                <span className="text-[9px] text-zinc-500 tabular-nums leading-none">{pct}%</span>
                             </div>
                         );
                     })}
