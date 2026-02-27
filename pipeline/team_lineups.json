@@ -1150,38 +1150,12 @@
     "ANA": {
         "f1": [
             {
-                "name": "Alex Killorn",
-                "number": 17,
-                "pos": "lw",
-                "id": 1877,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Mason McTavish",
-                "number": 23,
-                "pos": "c",
-                "id": 30834,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Beckett Sennecke",
-                "number": 45,
-                "pos": "rw",
-                "id": 36637,
-                "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
                 "name": "Chris Kreider",
                 "number": 20,
                 "pos": "lw",
                 "id": 1926,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Leo Carlsson",
@@ -1189,7 +1163,7 @@
                 "pos": "c",
                 "id": 37943,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Cutter Gauthier",
@@ -1197,7 +1171,33 @@
                 "pos": "rw",
                 "id": 33248,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f2": [
+            {
+                "name": "Alex Killorn",
+                "number": 17,
+                "pos": "lw",
+                "id": 1877,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Mason McTavish",
+                "number": 23,
+                "pos": "c",
+                "id": 30834,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Beckett Sennecke",
+                "number": 45,
+                "pos": "rw",
+                "id": 36637,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f3": [
@@ -1244,12 +1244,12 @@
                 "movement": null
             },
             {
-                "name": "Jansen Harkins",
-                "number": 24,
+                "name": "Frank Vatrano",
+                "number": 77,
                 "pos": "rw",
-                "id": 3913,
+                "id": 2545,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d1": [
@@ -1298,12 +1298,12 @@
                 "movement": null
             },
             {
-                "name": "Ian Moore",
-                "number": null,
+                "name": "Drew Helleson",
+                "number": 14,
                 "pos": "rd",
-                "id": 31897,
+                "id": 30429,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -1330,6 +1330,14 @@
                 "id": 1934,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Troy Terry",
+                "number": 19,
+                "pos": "ir4",
+                "id": 4645,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
