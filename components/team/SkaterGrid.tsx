@@ -343,7 +343,7 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
 
                 {/* ── MIDDLE: Identity block — overlaps headshot by 23px ── */}
                 <div
-                    className="flex flex-col justify-end gap-[5px] min-w-0 flex-1 z-10 pb-3 pr-2"
+                    className="flex flex-col justify-center gap-[5px] min-w-0 flex-1 z-10 pt-4 pb-2 pr-2"
                     style={{ marginLeft: -23 }}
                 >
                     {/* Name */}
@@ -387,7 +387,7 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
             {/* ══════════════════════════════════════════════
                 BODY
             ══════════════════════════════════════════════ */}
-            <div className="p-3 flex flex-col gap-2.5">
+            <div className="px-3 pt-1.5 pb-3 flex flex-col gap-2">
 
                 {/* ── Standard counting stats ── */}
                 <div className="grid grid-cols-6 gap-0.5 text-center">
@@ -402,8 +402,8 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
                         ] as [string | number, string][]
                     ).map(([v, l]) => (
                         <div key={l} className="flex flex-col items-center gap-[2px]">
-                            <span className="text-[13px] font-bold text-white tabular-nums leading-none">{v}</span>
-                            <span className="text-[6.5px] text-zinc-500 uppercase tracking-wider leading-none">{l}</span>
+                            <span className="text-[16px] font-bold text-white tabular-nums leading-none">{v}</span>
+                            <span className="text-[7.5px] text-zinc-500 uppercase tracking-wider leading-none">{l}</span>
                         </div>
                     ))}
                 </div>
