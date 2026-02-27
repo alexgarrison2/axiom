@@ -141,12 +141,12 @@ function StatCell({ val, label, pct, blank, color }: {
     if (blank) return <div className="px-2 py-[5px]" />;
     const c = color ?? pctColor(pct ?? 50);
     return (
-        <div className="flex items-center justify-between px-2 py-[5px]">
-            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest leading-none shrink-0 whitespace-nowrap">
-                {label}
-            </span>
+        <div className="flex items-baseline justify-end gap-1 px-2 py-[5px]">
             <span className="text-[13px] font-bold tabular-nums leading-none" style={{ color: c }}>
                 {val}
+            </span>
+            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none shrink-0 whitespace-nowrap">
+                {label}
             </span>
         </div>
     );
