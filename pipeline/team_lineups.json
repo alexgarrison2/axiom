@@ -2100,7 +2100,7 @@
                 "number": 92,
                 "pos": "lw",
                 "id": 31738,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -2222,7 +2222,7 @@
                 "number": 27,
                 "pos": "ld",
                 "id": 1947,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2990,7 +2990,7 @@
                 "number": 27,
                 "pos": "lw",
                 "id": 2855,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3016,7 +3016,7 @@
                 "number": 10,
                 "pos": "lw",
                 "id": 31266,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3032,7 +3032,7 @@
                 "number": 91,
                 "pos": "rw",
                 "id": 34612,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -3076,7 +3076,7 @@
                 "number": 38,
                 "pos": "c",
                 "id": 1902,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -3836,12 +3836,12 @@
                 "movement": null
             },
             {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
+                "name": "Troy Stecher",
+                "number": 28,
                 "pos": "rd",
-                "id": 1172,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2702,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "d3": [
@@ -3854,12 +3854,12 @@
                 "movement": null
             },
             {
-                "name": "Troy Stecher",
-                "number": 28,
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
                 "pos": "rd",
-                "id": 2702,
-                "ppUnit": null,
-                "movement": null
+                "id": 1172,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "ir": [
@@ -4706,7 +4706,7 @@
                 "number": 77,
                 "pos": "ld",
                 "id": 34667,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -4720,12 +4720,12 @@
         ],
         "d2": [
             {
-                "name": "Ben Chiarot",
-                "number": 8,
+                "name": "Albert Johansson",
+                "number": 20,
                 "pos": "ld",
-                "id": 1587,
-                "ppUnit": null,
-                "movement": null
+                "id": 30661,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Axel Sandin-Pellikka",
@@ -4738,12 +4738,12 @@
         ],
         "d3": [
             {
-                "name": "Albert Johansson",
-                "number": 20,
+                "name": "Ben Chiarot",
+                "number": 8,
                 "pos": "ld",
-                "id": 30661,
+                "id": 1587,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Jacob Bernard-Docker",
