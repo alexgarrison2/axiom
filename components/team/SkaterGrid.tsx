@@ -243,6 +243,22 @@ function AvailStrip({ teamGames, playedToi }: { teamGames: TeamGameSlot[]; playe
 }
 
 /* ═══════════════════════════════════════════════════════
+   Ordinal suffix helper (1st, 2nd, 3rd, 4th…)
+═══════════════════════════════════════════════════════ */
+
+function ordinalSuffix(n: number): string {
+    const abs = Math.abs(Math.round(n));
+    const mod100 = abs % 100;
+    if (mod100 >= 11 && mod100 <= 13) return 'th';
+    switch (abs % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
    SkaterCard
 ═══════════════════════════════════════════════════════ */
 
@@ -307,14 +323,14 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
                 />
 
                 {/* ── LEFT: Headshot column ── */}
-                <div className="relative shrink-0" style={{ width: 78 }}>
+                <div className="relative shrink-0 z-0" style={{ width: 90 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={headshot}
                         alt=""
                         aria-hidden
                         loading="lazy"
-                        className="absolute bottom-0 left-0 h-[115%] w-auto select-none pointer-events-none"
+                        className="absolute bottom-0 left-0 h-[135%] w-auto select-none pointer-events-none"
                         style={{ objectFit: 'contain', objectPosition: 'left bottom', opacity: 0.95 }}
                         onError={e => { (e.target as HTMLImageElement).style.opacity = '0'; }}
                     />
@@ -327,7 +343,7 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
 
                 {/* ── MIDDLE: Identity block — overlaps headshot by 23px ── */}
                 <div
-                    className="flex flex-col justify-center gap-[5px] min-w-0 flex-1 z-10 py-2 pr-2"
+                    className="flex flex-col justify-end gap-[5px] min-w-0 flex-1 z-10 pb-3 pr-2"
                     style={{ marginLeft: -23 }}
                 >
                     {/* Name */}
@@ -350,8 +366,8 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
                 </div>
 
                 {/* ── RIGHT: Impact box ── */}
-                <div className="flex flex-col items-end justify-center gap-[3px] pr-2.5 pl-1 shrink-0 z-10">
-                    <span className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest leading-none">
+                <div className="flex flex-col items-end justify-start gap-[4px] pr-2.5 pl-1 shrink-0 z-10 pt-2 pb-1">
+                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest leading-none">
                         Impact
                     </span>
                     <div
@@ -362,8 +378,8 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
                             {gsSign}{player.gs_pg.toFixed(2)}
                         </span>
                     </div>
-                    <span className="text-[7px] font-bold leading-none tabular-nums" style={{ color: impC }}>
-                        {pRank}th%
+                    <span className="text-[10px] font-bold leading-none tabular-nums" style={{ color: impC }}>
+                        {pRank}{ordinalSuffix(pRank)}%
                     </span>
                 </div>
             </div>
