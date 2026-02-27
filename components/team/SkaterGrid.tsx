@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { PlayerBoxscoreRow, GameLog, TeamLineup } from '@/types';
+import { TEAM_COLORS } from '@/utils/team-colors';
 
 /* ═══════════════════════════════════════════════════════
    Types
@@ -364,7 +365,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                 {/* Coloured top-edge line */}
                 <div
                     className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-20"
-                    style={{ background: `linear-gradient(90deg, ${impC}, transparent 70%)` }}
+                    style={{ background: `linear-gradient(90deg, ${TEAM_COLORS[pi.team] ?? impC}, transparent 70%)` }}
                 />
 
                 {/* ── LEFT: Headshot column ── */}
