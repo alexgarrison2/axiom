@@ -100,12 +100,12 @@ function pctile(val: number, pool: number[], hiGood = true): number {
 }
 
 function pctColor(p: number): string {
-    // Red (#590000) → Grey (#D2D2D2) → Blue (#1084FE)
+    // Red (#BD0000) → Grey (#D2D2D2) → Blue (#1084FE)
     const t = Math.max(0, Math.min(100, p)) / 100;
     let r, g, b;
     if (t <= 0.5) {
         const s = t * 2;
-        r = Math.round(89  + (210 - 89)  * s);
+        r = Math.round(189 + (210 - 189) * s);
         g = Math.round(0   + (210 - 0)   * s);
         b = Math.round(0   + (210 - 0)   * s);
     } else {
