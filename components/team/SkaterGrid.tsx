@@ -373,7 +373,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
             ══════════════════════════════════════════════ */}
             <div
                 className="relative flex flex-row items-stretch overflow-hidden shrink-0"
-                style={{ background: '#0d0d0f', minHeight: 108 }}
+                style={{ background: '#0d0d0f', minHeight: 92 }}
             >
                 {/* Coloured top-edge line */}
                 <div
@@ -410,8 +410,8 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                         {pi.name}
                     </span>
 
-                    {/* Position badge + Jersey # */}
-                    <div className="flex items-center gap-2">
+                    {/* Position badge + Jersey # + Bio (same row) */}
+                    <div className="flex items-center gap-2 flex-wrap">
                         <span
                             className="shrink-0 text-[8px] font-black px-[7px] py-[3px] rounded-md uppercase tracking-wider leading-none"
                             style={{ color: posC.text, background: posC.bg }}
@@ -421,40 +421,34 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                         <span className="text-[11px] font-mono text-zinc-400 leading-none">
                             {player.jerseyNum > 0 ? `#${player.jerseyNum}` : ''}
                         </span>
+                        {player.bio?.age !== null && player.bio?.age !== undefined && (
+                            <span className="text-[11px] font-medium leading-none tabular-nums" style={{ color: '#929292' }}>
+                                {player.bio.age}yo
+                            </span>
+                        )}
+                        {player.bio?.shoots && (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                                src={`/stick-${player.bio.shoots.toLowerCase()}.png`}
+                                alt={player.bio.shoots === 'L' ? 'Shoots Left' : 'Shoots Right'}
+                                width={12}
+                                height={12}
+                                className="shrink-0 select-none"
+                                style={{ opacity: 0.75 }}
+                                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                        )}
+                        {player.bio?.height && (
+                            <span className="text-[11px] font-medium leading-none" style={{ color: '#929292' }}>
+                                {player.bio.height}
+                            </span>
+                        )}
+                        {player.bio?.weight !== null && player.bio?.weight !== undefined && (
+                            <span className="text-[11px] font-medium leading-none tabular-nums" style={{ color: '#929292' }}>
+                                {player.bio.weight}lb
+                            </span>
+                        )}
                     </div>
-
-                    {/* Bio — age · handedness icon · height · weight */}
-                    {player.bio && (
-                        <div className="flex items-center gap-[7px]" style={{ color: '#929292' }}>
-                            {player.bio.age !== null && (
-                                <span className="text-[11px] font-medium leading-none tabular-nums">
-                                    {player.bio.age}yo
-                                </span>
-                            )}
-                            {player.bio.shoots && (
-                                /* eslint-disable-next-line @next/next/no-img-element */
-                                <img
-                                    src={`/stick-${player.bio.shoots.toLowerCase()}.png`}
-                                    alt={player.bio.shoots === 'L' ? 'Shoots Left' : 'Shoots Right'}
-                                    width={12}
-                                    height={12}
-                                    className="shrink-0 select-none"
-                                    style={{ opacity: 0.75 }}
-                                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                />
-                            )}
-                            {player.bio.height && (
-                                <span className="text-[11px] font-medium leading-none">
-                                    {player.bio.height}
-                                </span>
-                            )}
-                            {player.bio.weight !== null && (
-                                <span className="text-[11px] font-medium leading-none tabular-nums">
-                                    {player.bio.weight}lb
-                                </span>
-                            )}
-                        </div>
-                    )}
                 </div>
 
                 {/* ── RIGHT: Impact box ── */}
