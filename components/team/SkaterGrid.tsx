@@ -106,11 +106,11 @@ function pctColor(p: number): string {
 
 function posAccent(pos: string): { text: string; bg: string } {
     switch (pos.toUpperCase()) {
-        case 'C':  return { text: '#38bdf8', bg: 'rgba(56,189,248,0.13)'  }; // sky
-        case 'LW': return { text: '#34d399', bg: 'rgba(52,211,153,0.13)'  }; // emerald
-        case 'RW': return { text: '#fb923c', bg: 'rgba(251,146,60,0.13)'  }; // orange
-        case 'D':  return { text: '#a78bfa', bg: 'rgba(167,139,250,0.13)' }; // violet
-        default:   return { text: '#94a3b8', bg: 'rgba(148,163,184,0.13)' };
+        case 'C': return { text: '#38bdf8', bg: 'rgba(56,189,248,0.13)' }; // sky
+        case 'LW': return { text: '#34d399', bg: 'rgba(52,211,153,0.13)' }; // emerald
+        case 'RW': return { text: '#fb923c', bg: 'rgba(251,146,60,0.13)' }; // orange
+        case 'D': return { text: '#a78bfa', bg: 'rgba(167,139,250,0.13)' }; // violet
+        default: return { text: '#94a3b8', bg: 'rgba(148,163,184,0.13)' };
     }
 }
 
@@ -164,11 +164,11 @@ function AvailTooltip({ tt }: { tt: TooltipState }) {
     const W = 190;
     const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
     const left = Math.max(8, Math.min(tt.x - W / 2, vw - W - 8));
-    const top  = tt.y > 70 ? tt.y - 58 : tt.y + 14;
-    const loc  = tt.slot.homeAway === 'Home' ? 'vs' : '@';
+    const top = tt.y > 70 ? tt.y - 58 : tt.y + 14;
+    const loc = tt.slot.homeAway === 'Home' ? 'vs' : '@';
     const resultColor = tt.slot.result.startsWith('W') ? '#4ade80'
-                      : tt.slot.result === 'OTL' || tt.slot.result === 'SOL' ? '#fb923c'
-                      : '#f87171';
+        : tt.slot.result === 'OTL' || tt.slot.result === 'SOL' ? '#fb923c'
+            : '#f87171';
 
     return createPortal(
         <div
@@ -213,9 +213,9 @@ function AvailStrip({ teamGames, playedToi }: { teamGames: TeamGameSlot[]; playe
     const rows = [slots.slice(0, half), slots.slice(half)];
 
     const barStyle = (slot: TeamGameSlot | null, played: boolean) => {
-        if (!slot)   return { bg: '#27272a', op: 0.5 };
-        if (played)  return { bg: '#d4d4d8', op: 0.88 };
-        return             { bg: '#fb923c', op: 0.70 };
+        if (!slot) return { bg: '#27272a', op: 0.5 };
+        if (played) return { bg: '#d4d4d8', op: 0.88 };
+        return { bg: '#fb923c', op: 0.70 };
     };
 
     return (
@@ -230,7 +230,7 @@ function AvailStrip({ teamGames, playedToi }: { teamGames: TeamGameSlot[]; playe
                                 key={ci}
                                 style={{ flex: 1, height: 6, borderRadius: 2, backgroundColor: bg, opacity: op }}
                                 onMouseEnter={e => slot && setTt({ slot, played, x: e.clientX, y: e.clientY })}
-                                onMouseMove={e  => slot && setTt(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)}
+                                onMouseMove={e => slot && setTt(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)}
                                 onMouseLeave={() => setTt(null)}
                             />
                         );
@@ -260,10 +260,10 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
         pctile(val, pool[key] ?? [], hi);
 
     // Impact
-    const gsPct  = pr(player.gs_pg, 'gs_pg');
-    const impC   = pctColor(gsPct);
+    const gsPct = pr(player.gs_pg, 'gs_pg');
+    const impC = pctColor(gsPct);
     const gsSign = player.gs_pg >= 0 ? '+' : '';
-    const pRank  = Math.round(gsPct);
+    const pRank = Math.round(gsPct);
 
     // Relative xGF
     const relVal = pi.relative_xgf_pct * 100;
@@ -277,15 +277,15 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
 
     // Advanced stat grid
     const stats: Array<{ val: string; label: string; pct: number }> = [
-        { val: pi.ev_xgf_per60.toFixed(2),                                            label: 'xGF/60', pct: pr(pi.ev_xgf_per60,       'ev_xgf_per60')        },
-        { val: pi.ev_xga_per60.toFixed(2),                                            label: 'xGA/60', pct: pr(pi.ev_xga_per60,       'ev_xga_per60', false)  },
-        { val: (pi.onice_xgf_pct * 100).toFixed(1) + '%',                            label: 'xG%',    pct: pr(pi.onice_xgf_pct,      'onice_xgf_pct')       },
-        { val: pi.ind_xg_per60.toFixed(2),                                            label: 'iXG/60', pct: pr(pi.ind_xg_per60,       'ind_xg_per60')        },
-        { val: pi.pp_xgf_per60.toFixed(2),                                            label: 'PP xGF', pct: pr(pi.pp_xgf_per60,       'pp_xgf_per60')        },
-        { val: (pi.penalty_diff_per60 >= 0 ? '+' : '') + pi.penalty_diff_per60.toFixed(2), label: 'Pen±', pct: pr(pi.penalty_diff_per60, 'penalty_diff_per60')  },
-        { val: pi.ev_net_per60.toFixed(2),                                            label: 'Net/60', pct: pr(pi.ev_net_per60,        'ev_net_per60')        },
-        { val: relStr,                                                                 label: 'Rel%',   pct: pr(pi.relative_xgf_pct,   'relative_xgf_pct')    },
-        { val: pi.pk_xga_per60.toFixed(2),                                            label: 'PK xGA', pct: pr(pi.pk_xga_per60,       'pk_xga_per60', false)  },
+        { val: pi.ev_xgf_per60.toFixed(2), label: 'xGF/60', pct: pr(pi.ev_xgf_per60, 'ev_xgf_per60') },
+        { val: pi.ev_xga_per60.toFixed(2), label: 'xGA/60', pct: pr(pi.ev_xga_per60, 'ev_xga_per60', false) },
+        { val: (pi.onice_xgf_pct * 100).toFixed(1) + '%', label: 'xG%', pct: pr(pi.onice_xgf_pct, 'onice_xgf_pct') },
+        { val: pi.ind_xg_per60.toFixed(2), label: 'iXG/60', pct: pr(pi.ind_xg_per60, 'ind_xg_per60') },
+        { val: pi.pp_xgf_per60.toFixed(2), label: 'PP xGF', pct: pr(pi.pp_xgf_per60, 'pp_xgf_per60') },
+        { val: (pi.penalty_diff_per60 >= 0 ? '+' : '') + pi.penalty_diff_per60.toFixed(2), label: 'Pen±', pct: pr(pi.penalty_diff_per60, 'penalty_diff_per60') },
+        { val: pi.ev_net_per60.toFixed(2), label: 'Net/60', pct: pr(pi.ev_net_per60, 'ev_net_per60') },
+        { val: relStr, label: 'Rel%', pct: pr(pi.relative_xgf_pct, 'relative_xgf_pct') },
+        { val: pi.pk_xga_per60.toFixed(2), label: 'PK xGA', pct: pr(pi.pk_xga_per60, 'pk_xga_per60', false) },
     ];
 
     return (
@@ -294,69 +294,77 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
             style={{ background: '#111113', borderLeftColor: `${impC}70`, borderLeftWidth: 3 }}
         >
             {/* ══════════════════════════════════════════════
-                HEADER — headshot + identity + GS/G
+                SECTION 1 — headshot + identity + Impact
             ══════════════════════════════════════════════ */}
-            <div className="relative h-[92px] overflow-hidden shrink-0" style={{ background: '#0d0d0f' }}>
-
-                {/* Headshot: transparent-bg PNG, anchored bottom-right */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    src={headshot}
-                    alt=""
-                    aria-hidden
-                    loading="lazy"
-                    className="absolute bottom-0 right-0 h-[108%] w-auto select-none pointer-events-none"
-                    style={{ objectFit: 'contain', objectPosition: 'right bottom', opacity: 0.92 }}
-                    onError={e => { (e.target as HTMLImageElement).style.opacity = '0'; }}
-                />
-
-                {/* Left-to-transparent gradient — keeps text legible over headshot */}
-                <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{ background: 'linear-gradient(90deg, #0d0d0f 38%, #0d0d0fcc 60%, transparent 82%)' }}
-                />
-
+            <div
+                className="relative flex flex-row items-stretch overflow-hidden shrink-0"
+                style={{ background: '#0d0d0f', minHeight: 92 }}
+            >
                 {/* Coloured top-edge line */}
                 <div
-                    className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
+                    className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-20"
                     style={{ background: `linear-gradient(90deg, ${impC}, transparent 70%)` }}
                 />
 
-                {/* Content */}
-                <div className="absolute inset-0 p-3 flex flex-col justify-between z-10">
+                {/* ── LEFT: Headshot column ── */}
+                <div className="relative shrink-0" style={{ width: 78 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={headshot}
+                        alt=""
+                        aria-hidden
+                        loading="lazy"
+                        className="absolute bottom-0 left-0 h-[115%] w-auto select-none pointer-events-none"
+                        style={{ objectFit: 'contain', objectPosition: 'left bottom', opacity: 0.95 }}
+                        onError={e => { (e.target as HTMLImageElement).style.opacity = '0'; }}
+                    />
+                    {/* Bottom fade */}
+                    <div
+                        className="absolute inset-x-0 bottom-0 h-6 pointer-events-none"
+                        style={{ background: 'linear-gradient(to top, #0d0d0f 0%, transparent 100%)' }}
+                    />
+                </div>
 
-                    {/* ── Row 1: position badge + name ── */}
-                    <div className="flex items-center gap-1.5 min-w-0">
+                {/* ── MIDDLE: Identity block — overlaps headshot by 23px ── */}
+                <div
+                    className="flex flex-col justify-center gap-[5px] min-w-0 flex-1 z-10 py-2 pr-2"
+                    style={{ marginLeft: -23 }}
+                >
+                    {/* Name */}
+                    <span className="text-[20px] font-black text-white leading-none tracking-tight truncate drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+                        {pi.name}
+                    </span>
+
+                    {/* Position badge + Jersey # */}
+                    <div className="flex items-center gap-2">
                         <span
-                            className="shrink-0 text-[7.5px] font-black px-[7px] py-[3.5px] rounded-md uppercase tracking-wider leading-none"
+                            className="shrink-0 text-[8px] font-black px-[7px] py-[3px] rounded-md uppercase tracking-wider leading-none"
                             style={{ color: posC.text, background: posC.bg }}
                         >
                             {pi.position}
                         </span>
-                        <span className="text-[13.5px] font-black text-white leading-tight truncate tracking-tight">
-                            {pi.name}
-                        </span>
-                    </div>
-
-                    {/* ── Row 2: jersey # (left) + GS/G (right) ── */}
-                    <div className="flex items-end justify-between gap-2">
-                        <span className="text-[10px] font-mono text-zinc-600 pb-[1px]">
+                        <span className="text-[11px] font-mono text-zinc-400 leading-none">
                             {player.jerseyNum > 0 ? `#${player.jerseyNum}` : ''}
                         </span>
-
-                        {/* GS/G — the headline number */}
-                        <div className="flex flex-col items-end leading-none">
-                            <span className="text-[7px] text-zinc-500 uppercase tracking-widest mb-[2px]">
-                                p{pRank} · GS/G
-                            </span>
-                            <span
-                                className="text-[30px] font-black tabular-nums leading-none"
-                                style={{ color: impC, textShadow: `0 0 24px ${impC}55` }}
-                            >
-                                {gsSign}{player.gs_pg.toFixed(2)}
-                            </span>
-                        </div>
                     </div>
+                </div>
+
+                {/* ── RIGHT: Impact box ── */}
+                <div className="flex flex-col items-end justify-center gap-[3px] pr-2.5 pl-1 shrink-0 z-10">
+                    <span className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest leading-none">
+                        Impact
+                    </span>
+                    <div
+                        className="flex items-center justify-center rounded-md px-2 py-1"
+                        style={{ background: impC, minWidth: 52 }}
+                    >
+                        <span className="text-[19px] font-black tabular-nums leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+                            {gsSign}{player.gs_pg.toFixed(2)}
+                        </span>
+                    </div>
+                    <span className="text-[7px] font-bold leading-none tabular-nums" style={{ color: impC }}>
+                        {pRank}th%
+                    </span>
                 </div>
             </div>
 
@@ -369,12 +377,12 @@ function SkaterCard({ player, teamGames, pool }: SkaterCardProps) {
                 <div className="grid grid-cols-6 gap-0.5 text-center">
                     {(
                         [
-                            [player.gp,                'GP'],
-                            [player.g,                 'G'],
-                            [player.a,                 'A'],
-                            [player.pts,               'Pts'],
+                            [player.gp, 'GP'],
+                            [player.g, 'G'],
+                            [player.a, 'A'],
+                            [player.pts, 'Pts'],
                             [player.sog_pg.toFixed(1), 'SOG'],
-                            [player.toi_pg_str,        'TOI'],
+                            [player.toi_pg_str, 'TOI'],
                         ] as [string | number, string][]
                     ).map(([v, l]) => (
                         <div key={l} className="flex flex-col items-center gap-[2px]">
@@ -439,14 +447,14 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
             [...games]
                 .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                 .map(g => ({
-                    gid:      g.game_id,
-                    date:     g.date,
-                    gameNum:  g.game_number,
+                    gid: g.game_id,
+                    date: g.date,
+                    gameNum: g.game_number,
                     homeAway: g.home_away,
                     opponent: g.opponent,
-                    result:   g.result,
-                    gf:       g.gf,
-                    ga:       g.ga,
+                    result: g.result,
+                    gf: g.gf,
+                    ga: g.ga,
                 })),
         [games]
     );
@@ -466,10 +474,10 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
             }
             const acc = m.get(id)!;
             const toiSec = parseToi(row.toi);
-            acc.g       += Number(row.goals)  || 0;
-            acc.a       += Number(row.assists) || 0;
-            acc.pts     += Number(row.points)  || 0;
-            acc.shots   += Number(row.shots)   || 0;
+            acc.g += Number(row.goals) || 0;
+            acc.a += Number(row.assists) || 0;
+            acc.pts += Number(row.points) || 0;
+            acc.shots += Number(row.shots) || 0;
             acc.toi_sec += toiSec;
             acc.gp++;
             acc.jerseyNum = Number(row.number) || acc.jerseyNum;
@@ -490,16 +498,16 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
         const nums = (arr: PIPlayer[], k: keyof PIPlayer) => arr.map(p => Number(p[k]));
 
         const build = (arr: PIPlayer[]): PoolDict => ({
-            ev_xgf_per60:       nums(arr, 'ev_xgf_per60'),
-            ev_xga_per60:       nums(arr, 'ev_xga_per60'),
-            onice_xgf_pct:      nums(arr, 'onice_xgf_pct'),
-            ind_xg_per60:       nums(arr, 'ind_xg_per60'),
-            pp_xgf_per60:       nums(arr, 'pp_xgf_per60'),
-            pk_xga_per60:       nums(arr, 'pk_xga_per60'),
+            ev_xgf_per60: nums(arr, 'ev_xgf_per60'),
+            ev_xga_per60: nums(arr, 'ev_xga_per60'),
+            onice_xgf_pct: nums(arr, 'onice_xgf_pct'),
+            ind_xg_per60: nums(arr, 'ind_xg_per60'),
+            pp_xgf_per60: nums(arr, 'pp_xgf_per60'),
+            pk_xga_per60: nums(arr, 'pk_xga_per60'),
             penalty_diff_per60: nums(arr, 'penalty_diff_per60'),
-            ev_net_per60:       nums(arr, 'ev_net_per60'),
-            relative_xgf_pct:   nums(arr, 'relative_xgf_pct'),
-            ev_toi_per_game:    nums(arr, 'ev_toi_per_game'),
+            ev_net_per60: nums(arr, 'ev_net_per60'),
+            relative_xgf_pct: nums(arr, 'relative_xgf_pct'),
+            ev_toi_per_game: nums(arr, 'ev_toi_per_game'),
             gs_pg: arr.map(p => p.games_played > 0 ? p.game_score / p.games_played : 0),
         });
 
@@ -517,11 +525,11 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
             if (pi.games_played < 5) continue;
 
             const bs = boxMap.get(id);
-            const gp     = bs?.gp ?? pi.games_played;
-            const g      = bs?.g  ?? 0;
-            const a      = bs?.a  ?? 0;
-            const pts    = bs?.pts ?? 0;
-            const shots  = bs?.shots ?? 0; // kept for sh_pct; note: CSV shots column is unreliable
+            const gp = bs?.gp ?? pi.games_played;
+            const g = bs?.g ?? 0;
+            const a = bs?.a ?? 0;
+            const pts = bs?.pts ?? 0;
+            const shots = bs?.shots ?? 0; // kept for sh_pct; note: CSV shots column is unreliable
             // Total TOI seconds (for sort-by-TOI); fallback to player_impact sum
             const total_toi_sec = bs
                 ? bs.toi_sec
@@ -529,9 +537,9 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
 
             // Use MoneyPuck season totals for SOG (player_stats CSV shots field is always 0)
             const sog_season = pi.total_sog ?? 0;
-            const sog_pg     = pi.games_played > 0 ? sog_season / pi.games_played : 0;
+            const sog_pg = pi.games_played > 0 ? sog_season / pi.games_played : 0;
 
-            const sh_pct    = sog_season > 0 ? (g / sog_season) * 100 : 0;
+            const sh_pct = sog_season > 0 ? (g / sog_season) * 100 : 0;
             const toi_pg_str = gp > 0
                 ? fmtToi(total_toi_sec / gp)
                 : fmtToi(pi.ev_toi_per_game + pi.pp_toi_per_game + pi.pk_toi_per_game);
@@ -576,7 +584,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
     }
 
     const LEGEND: [string, string][] = [
-        ['≤10',   '#991b1b'],
+        ['≤10', '#991b1b'],
         ['10-20', '#ef4444'],
         ['20-30', '#f97316'],
         ['30-45', '#f59e0b'],
@@ -584,7 +592,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
         ['55-70', '#22c55e'],
         ['70-80', '#14b8a6'],
         ['80-90', '#3b82f6'],
-        ['>90',   '#38bdf8'],
+        ['>90', '#38bdf8'],
     ];
 
     return (
@@ -599,11 +607,10 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                         <button
                             key={pos}
                             onClick={() => setPosFilter(pos)}
-                            className={`px-3 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${
-                                posFilter === pos
-                                    ? 'bg-white/15 text-white'
-                                    : 'text-zinc-500 hover:text-zinc-300'
-                            }`}
+                            className={`px-3 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${posFilter === pos
+                                ? 'bg-white/15 text-white'
+                                : 'text-zinc-500 hover:text-zinc-300'
+                                }`}
                         >
                             {pos === 'all' ? 'All' : pos === 'f' ? 'Fwd' : 'Def'}
                         </button>
@@ -616,11 +623,10 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                         <button
                             key={val}
                             onClick={() => setSortBy(val)}
-                            className={`px-3 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${
-                                sortBy === val
-                                    ? 'bg-white/15 text-white'
-                                    : 'text-zinc-500 hover:text-zinc-300'
-                            }`}
+                            className={`px-3 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${sortBy === val
+                                ? 'bg-white/15 text-white'
+                                : 'text-zinc-500 hover:text-zinc-300'
+                                }`}
                         >
                             {label}
                         </button>
@@ -650,8 +656,8 @@ export default function SkaterGrid({ playerStats, games, teamAbbr }: SkaterGridP
                 <span className="uppercase tracking-wider text-zinc-600 font-medium">Availability:</span>
                 {[
                     { bg: '#d4d4d8', op: 0.88, label: 'Played' },
-                    { bg: '#fb923c', op: 0.7,  label: 'Missed' },
-                    { bg: '#27272a', op: 0.5,  label: 'Future game' },
+                    { bg: '#fb923c', op: 0.7, label: 'Missed' },
+                    { bg: '#27272a', op: 0.5, label: 'Future game' },
                 ].map(({ bg, op, label }) => (
                     <div key={label} className="flex items-center gap-1.5">
                         <div
