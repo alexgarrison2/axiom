@@ -610,6 +610,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             g: number; a: number; pts: number; shots: number;
             toi_sec: number; gp: number; jerseyNum: number;
             played_toi: Map<string, number>; // game_id → toi seconds
+            other_team_dates: Map<string, string>; // date → tricode
         }>();
         for (const row of playerStats) {
             if (Number(row.is_goalie)) continue;
