@@ -355,7 +355,8 @@ def get_xg_sparkline(team_name, curr_dt, df):
     history = df[(df['team'] == team_name) & (df['game_date'] < t_date)].sort_values('game_date')
     recent = history.tail(15)
 
-    sparkline = []
+    # Collect raw per-game xGD first
+    raw = []
     for _, row in recent.iterrows():
         try:
             xg_for = float(row.get('xg_for_5v5', float('nan')))
@@ -363,9 +364,20 @@ def get_xg_sparkline(team_name, curr_dt, df):
             # Skip games where 5v5 xG data is missing — don't write NaN to JSON
             if math.isnan(xg_for) or math.isnan(xg_ag):
                 continue
-            sparkline.append(round(xg_for - xg_ag, 2))
+            raw.append(xg_for - xg_ag)
         except:
             pass
+
+    if len(raw) < 2:
+        return []
+
+    # Apply 3-game rolling average so blowout games don't spike the line
+    WINDOW = 3
+    sparkline = []
+    for i in range(len(raw)):
+        start = max(0, i - WINDOW + 1)
+        avg = sum(raw[start:i + 1]) / (i - start + 1)
+        sparkline.append(round(avg, 2))
 
     return sparkline
 
