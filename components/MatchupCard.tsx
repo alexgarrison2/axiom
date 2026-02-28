@@ -392,29 +392,41 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         const lastVal = data[data.length - 1];
         const lineColor = lastVal >= 0 ? '#10b981' : '#ef4444'; // green or red
         const polyline = pts.join(' ');
-        // Gradient fill area under the line back to zero
+        // Shared fill polygon (clipped separately for above/below zero)
         const fillPts = [
             `${pad},${zeroY}`,
             ...pts,
             `${W - pad},${zeroY}`
         ].join(' ');
-        const fillId = `spark-fill-${isHome ? 'h' : 'a'}-${Math.random().toString(36).slice(2, 6)}`;
+        const uid = `${isHome ? 'h' : 'a'}-${Math.random().toString(36).slice(2, 6)}`;
 
         return (
             <svg width={W} height={H} className="overflow-visible">
                 <defs>
-                    <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={lineColor} stopOpacity="0.2" />
-                        <stop offset="100%" stopColor={lineColor} stopOpacity="0.0" />
-                    </linearGradient>
+                    {/* Clip above zero → green fill */}
+                    <clipPath id={`clip-pos-${uid}`}>
+                        <rect x={pad} y={0} width={W - pad * 2} height={zeroY} />
+                    </clipPath>
+                    {/* Clip below zero → red fill */}
+                    <clipPath id={`clip-neg-${uid}`}>
+                        <rect x={pad} y={zeroY} width={W - pad * 2} height={H - zeroY + pad} />
+                    </clipPath>
                 </defs>
-                {/* Zero line */}
+                {/* Green fill — area above zero */}
+                <polygon points={fillPts} fill="rgba(16,185,129,0.18)" clipPath={`url(#clip-pos-${uid})`} />
+                {/* Red fill — area below zero */}
+                <polygon points={fillPts} fill="rgba(239,68,68,0.18)" clipPath={`url(#clip-neg-${uid})`} />
+                {/* Zero line — clearly marks xGD = 0 */}
                 <line
                     x1={pad} y1={zeroY} x2={W - pad} y2={zeroY}
-                    stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.15" strokeDasharray="3,3"
+                    stroke="#ffffff" strokeWidth="0.75" strokeOpacity="0.4" strokeDasharray="2,3"
                 />
-                {/* Fill */}
-                <polygon points={fillPts} fill={`url(#${fillId})`} />
+                {/* "0" label at the left edge of the zero line */}
+                <text
+                    x={pad} y={zeroY - 2}
+                    fill="#ffffff" fillOpacity="0.35"
+                    fontSize="4.5" fontFamily="monospace" textAnchor="start"
+                >0</text>
                 {/* Line */}
                 <polyline
                     points={polyline}
