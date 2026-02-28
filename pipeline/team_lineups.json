@@ -434,12 +434,12 @@
         ],
         "f3": [
             {
-                "name": "Denver Barkey",
-                "number": null,
+                "name": "Nikita Grebenkin",
+                "number": 29,
                 "pos": "lw",
-                "id": 35098,
+                "id": 38116,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sean Couturier",
@@ -460,12 +460,12 @@
         ],
         "f4": [
             {
-                "name": "Nikita Grebenkin",
-                "number": 29,
+                "name": "Nicolas Deslauriers",
+                "number": 44,
                 "pos": "lw",
-                "id": 38116,
+                "id": 1699,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Carl Grundstrom",
@@ -790,11 +790,11 @@
         ],
         "f3": [
             {
-                "name": "Philipp Kurashev",
-                "number": 96,
+                "name": "Collin Graf",
+                "number": 51,
                 "pos": "lw",
-                "id": 28817,
-                "ppUnit": 2,
+                "id": 38105,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -806,11 +806,11 @@
                 "movement": null
             },
             {
-                "name": "Collin Graf",
-                "number": 51,
+                "name": "Philipp Kurashev",
+                "number": 96,
                 "pos": "rw",
-                "id": 38105,
-                "ppUnit": null,
+                "id": 28817,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -837,35 +837,35 @@
                 "pos": "rw",
                 "id": 36378,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
-            {
-                "name": "Mario Ferraro",
-                "number": 38,
-                "pos": "ld",
-                "id": 27666,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Timothy Liljegren",
-                "number": 37,
-                "pos": "rd",
-                "id": 2805,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d2": [
             {
                 "name": "Dmitry Orlov",
                 "number": 9,
                 "pos": "ld",
                 "id": 1572,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
+            },
+            {
+                "name": "John Klingberg",
+                "number": 3,
+                "pos": "rd",
+                "id": 1678,
+                "ppUnit": 1,
+                "movement": "new"
+            }
+        ],
+        "d2": [
+            {
+                "name": "Mario Ferraro",
+                "number": 38,
+                "pos": "ld",
+                "id": 27666,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Shakir Mukhamadullin",
@@ -873,7 +873,7 @@
                 "pos": "rd",
                 "id": 33038,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -976,12 +976,12 @@
                 "movement": null
             },
             {
-                "name": "Trent Frederic",
-                "number": 10,
+                "name": "Kasperi Kapanen",
+                "number": 42,
                 "pos": "rw",
-                "id": 2662,
+                "id": 2385,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -1000,6 +1000,14 @@
                 "id": 2148,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Trent Frederic",
+                "number": 10,
+                "pos": "rw",
+                "id": 2662,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -2345,7 +2353,7 @@
                 "pos": "c",
                 "id": 31746,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Claude Giroux",
@@ -2423,7 +2431,7 @@
                 "pos": "c",
                 "id": 840,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Fabian Zetterlund",
@@ -5170,12 +5178,12 @@
                 "movement": null
             },
             {
-                "name": "Vladislav Namestnikov",
-                "number": 7,
+                "name": "Walker Duehr",
+                "number": 55,
                 "pos": "rw",
-                "id": 1865,
-                "ppUnit": 2,
-                "movement": "up"
+                "id": 26313,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "f4": [
@@ -5731,7 +5739,7 @@
                 "pos": "lw",
                 "id": 24312,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Mason McTavish",
@@ -5773,7 +5781,7 @@
                 "pos": "rw",
                 "id": 1877,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -5895,7 +5903,7 @@
                 "pos": "ir5",
                 "id": 1825,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     }
