@@ -64,7 +64,7 @@ RELATIVE_SHRINKAGE_ANCHOR = 18000   # seconds
 
 _ACCENT_MAP = str.maketrans(
     "äéèêëáàâíïóöôúüûýšžčňř",
-    "aeeeaaaiiooouuuyszcnr"
+    "aeeeeaaaiiooouuuyszcnr"
 )
 
 # Known MoneyPuck name encoding issues — applied to raw CSV names before storage.
