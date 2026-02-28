@@ -380,13 +380,20 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         if (!data || data.length < 2) return null;
         const W = 120, H = 28;
         const pad = 2;
-        const range = Math.max(Math.abs(globalMin), Math.abs(globalMax)) * 2;
+        // Cap scale at ±5 so outlier games (|xGD| > 5, ~11% of games) don't
+        // compress normal ±1-3 values into an unreadable line near zero.
+        // p90 of xGD across all teams is ≈ ±2.75, so ±5 keeps 95% in view.
+        const rawHalf = Math.max(Math.abs(globalMin), Math.abs(globalMax));
+        const halfRange = Math.min(rawHalf, 5);
+        const range = halfRange * 2;
         if (range === 0) return null;
         const toY = (v: number) => H / 2 - (v / range) * (H - pad * 2);
         const zeroY = toY(0);
+        // Clamp y so outlier points pin to the chart edge rather than overflowing
+        const clampY = (y: number) => Math.max(0, Math.min(H, y));
         const pts = data.map((v, i) => {
             const x = pad + (i / (data.length - 1)) * (W - pad * 2);
-            const y = toY(v);
+            const y = clampY(toY(v));
             return `${x},${y}`;
         });
         const lastVal = data[data.length - 1];
