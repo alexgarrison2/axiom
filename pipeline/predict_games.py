@@ -354,15 +354,19 @@ def get_xg_sparkline(team_name, curr_dt, df):
     t_date = pd.to_datetime(curr_dt)
     history = df[(df['team'] == team_name) & (df['game_date'] < t_date)].sort_values('game_date')
     recent = history.tail(15)
-    
+
     sparkline = []
     for _, row in recent.iterrows():
         try:
-            xg_diff = float(row.get('xg_for_5v5', 0)) - float(row.get('xg_ag_5v5', 0))
-            sparkline.append(round(xg_diff, 2))
+            xg_for = float(row.get('xg_for_5v5', float('nan')))
+            xg_ag = float(row.get('xg_ag_5v5', float('nan')))
+            # Skip games where 5v5 xG data is missing — don't write NaN to JSON
+            if math.isnan(xg_for) or math.isnan(xg_ag):
+                continue
+            sparkline.append(round(xg_for - xg_ag, 2))
         except:
-            sparkline.append(0.0)
-            
+            pass
+
     return sparkline
 
 def get_fatigue_flags(team_name, curr_dt, df):

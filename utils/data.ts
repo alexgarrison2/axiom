@@ -314,10 +314,14 @@ export async function getPredictions(): Promise<GamePrediction[]> {
     };
 
     // Parse Sparkline
+    // Python's json.dumps writes literal 'NaN' for float NaN, which is invalid JSON.
+    // Replace 'NaN' with 'null' before parsing, then filter out nulls/non-finite values.
     const parseSparkline = (jsonStr?: string): number[] => {
       if (!jsonStr || jsonStr === '[]') return [];
       try {
-        return JSON.parse(jsonStr) as number[];
+        const fixed = jsonStr.replace(/\bNaN\b/g, 'null');
+        const arr = JSON.parse(fixed) as (number | null)[];
+        return arr.filter((v): v is number => v !== null && isFinite(v));
       } catch {
         return [];
       }
