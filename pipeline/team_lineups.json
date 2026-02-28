@@ -54,12 +54,12 @@
         ],
         "f3": [
             {
-                "name": "Conor Sheary",
-                "number": null,
+                "name": "Tye Kartye",
+                "number": 12,
                 "pos": "lw",
-                "id": 2568,
+                "id": 29846,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Noah Laba",
@@ -80,12 +80,12 @@
         ],
         "f4": [
             {
-                "name": "Tye Kartye",
-                "number": 12,
+                "name": "Conor Sheary",
+                "number": null,
                 "pos": "lw",
-                "id": 29846,
+                "id": 2568,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Sam Carrick",
@@ -150,12 +150,12 @@
                 "movement": null
             },
             {
-                "name": "Vincent Iorio",
-                "number": 22,
+                "name": "Scott Morrow",
+                "number": 60,
                 "pos": "rd",
-                "id": 30297,
+                "id": 34620,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -2261,7 +2261,7 @@
                 "pos": "lw",
                 "id": 25020,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Scott Laughton",
@@ -2434,19 +2434,19 @@
         ],
         "f4": [
             {
-                "name": "Stephen Halliday",
-                "number": 83,
+                "name": "Kurtis MacDermid",
+                "number": 23,
                 "pos": "lw",
-                "id": 30030,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2009,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
-                "name": "Lars Eller",
-                "number": 89,
+                "name": "Stephen Halliday",
+                "number": 83,
                 "pos": "c",
-                "id": 840,
-                "ppUnit": null,
+                "id": 30030,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2520,6 +2520,14 @@
                 "id": 1338,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Tim St\u00fctzle",
+                "number": 18,
+                "pos": "ir2",
+                "id": 31746,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ]
     },
@@ -2609,7 +2617,7 @@
                 "pos": "lw",
                 "id": 31240,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Jake Evans",
@@ -2671,7 +2679,7 @@
                 "pos": "ld",
                 "id": 30435,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Alexandre Carrier",
@@ -4138,12 +4146,12 @@
                 "movement": "up"
             },
             {
-                "name": "Alex Petrovic",
-                "number": null,
+                "name": "Ilya Lyubushkin",
+                "number": 46,
                 "pos": "rd",
-                "id": 1655,
+                "id": 4760,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -5199,7 +5207,7 @@
                 "pos": "rw",
                 "id": 1865,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -5329,7 +5337,7 @@
                 "pos": "ir6",
                 "id": 1865,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -5375,7 +5383,7 @@
                 "pos": "c",
                 "id": 2494,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Matt Boldy",
@@ -5507,7 +5515,7 @@
                 "pos": "ir2",
                 "id": 2494,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
