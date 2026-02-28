@@ -439,7 +439,7 @@
                 "pos": "lw",
                 "id": 38116,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sean Couturier",
@@ -465,7 +465,7 @@
                 "pos": "lw",
                 "id": 1699,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Carl Grundstrom",
@@ -560,12 +560,12 @@
     "BOS": {
         "f1": [
             {
-                "name": "Marat Khusnutdinov",
-                "number": 92,
+                "name": "Morgan Geekie",
+                "number": 39,
                 "pos": "lw",
-                "id": 31738,
-                "ppUnit": null,
-                "movement": null
+                "id": 28001,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Elias Lindholm",
@@ -628,12 +628,12 @@
                 "movement": null
             },
             {
-                "name": "Morgan Geekie",
-                "number": 39,
+                "name": "Marat Khusnutdinov",
+                "number": 92,
                 "pos": "rw",
-                "id": 28001,
-                "ppUnit": 1,
-                "movement": null
+                "id": 31738,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -847,7 +847,7 @@
                 "pos": "ld",
                 "id": 1572,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "John Klingberg",
@@ -855,7 +855,7 @@
                 "pos": "rd",
                 "id": 1678,
                 "ppUnit": 1,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d2": [
@@ -865,7 +865,7 @@
                 "pos": "ld",
                 "id": 27666,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Shakir Mukhamadullin",
@@ -976,12 +976,12 @@
                 "movement": null
             },
             {
-                "name": "Kasperi Kapanen",
-                "number": 42,
+                "name": "Trent Frederic",
+                "number": 10,
                 "pos": "rw",
-                "id": 2385,
+                "id": 2662,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": "up"
             }
         ],
         "f4": [
@@ -1002,10 +1002,10 @@
                 "movement": null
             },
             {
-                "name": "Trent Frederic",
-                "number": 10,
+                "name": "Kasperi Kapanen",
+                "number": 42,
                 "pos": "rw",
-                "id": 2662,
+                "id": 2385,
                 "ppUnit": null,
                 "movement": "down"
             }
@@ -1190,12 +1190,12 @@
                 "movement": null
             },
             {
-                "name": "Colton Parayko",
-                "number": 55,
+                "name": "Justin Faulk",
+                "number": 72,
                 "pos": "rd",
-                "id": 2531,
-                "ppUnit": null,
-                "movement": null
+                "id": 1651,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "d2": [
@@ -1208,12 +1208,12 @@
                 "movement": null
             },
             {
-                "name": "Justin Faulk",
-                "number": 72,
+                "name": "Matthew Kessel",
+                "number": null,
                 "pos": "rd",
-                "id": 1651,
-                "ppUnit": 1,
-                "movement": null
+                "id": 30737,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d3": [
@@ -1250,6 +1250,14 @@
                 "id": 2356,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Colton Parayko",
+                "number": 55,
+                "pos": "ir3",
+                "id": 2531,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -5183,7 +5191,7 @@
                 "pos": "rw",
                 "id": 26313,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
