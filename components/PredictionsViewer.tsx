@@ -635,11 +635,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         transition={{ duration: 0.3 }}
                         className="w-full"
                     >
-                        <div className="max-w-7xl mx-auto">
-                            <div className="text-center mb-4">
-                                <h2 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-blue-400 mb-1">Playoff Bracket</h2>
-                                <p className="text-neutral-400 text-xs md:text-sm">Current seedings from live standings · Monte Carlo cup odds · Series win % from Poisson xG model</p>
-                            </div>
+                        <div className="w-full">
                             {Object.keys(simResults).length > 0 ? (
                                 <PlayoffBracket currentStandings={currentStandings} simResults={simResults} />
                             ) : (
