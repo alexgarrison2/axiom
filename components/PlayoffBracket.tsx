@@ -5,127 +5,56 @@ import { TeamStandings, SimResult } from '@/utils/simulation-engine';
 import { getTeamColor } from '@/utils/team-colors';
 import PlayoffDetailModal from './PlayoffDetailModal';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Vivid color overrides for dark-background legibility
-// ─────────────────────────────────────────────────────────────────────────────
-
+// ─── Color overrides for dark-bg legibility ──────────────────────────────────
 const VIVID: Record<string, string> = {
-  EDM: '#FF4C00', WPG: '#4f8de8', TOR: '#4f8de8', TBL: '#3278d4',
-  VAN: '#00843D', LAK: '#A8AEB5', SEA: '#7de0de', STL: '#4f8de8',
-  BUF: '#FCB514', PIT: '#FCB514', CBJ: '#CE1126', WSH: '#C8102E',
-  NJD: '#CE1126', DET: '#CE1126', MIN: '#3a8f5a', COL: '#8C3A56',
+  EDM:'#FF4C00', WPG:'#5b8ee8', TOR:'#5b8ee8', TBL:'#3278d4',
+  VAN:'#00943D', LAK:'#A8AEB5', SEA:'#7de0de', STL:'#5b8ee8',
+  BUF:'#FCB514', PIT:'#FCB514', CBJ:'#CE1126', WSH:'#C8102E',
+  NJD:'#CE1126', DET:'#CE1126', MIN:'#3a8f5a', COL:'#9B4060',
+  NYR:'#0083C6', PHI:'#F74902', CAR:'#CE1126', FLA:'#C8102E',
+  OTT:'#e21219', BOS:'#FCB514', CGY:'#D2001C', VGK:'#B4975A',
+  ANA:'#F47A38', SJS:'#007889', NSH:'#FFB81C', CHI:'#CF0A2C',
+  DAL:'#006847', MTL:'#AF1E2D', WPG2:'#5b8ee8',
 };
 function tc(code: string) { return VIVID[code] ?? getTeamColor(code); }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WaffleGrid — tight SVG grid of colored squares
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface WafSeg { color: string; count: number }
-
-const WaffleGrid: React.FC<{
-  segs: WafSeg[];
-  cols: number; rows: number;
-  cs?: number; gap?: number; rx?: number;
-  empty?: string;
-}> = ({ segs, cols, rows, cs = 6, gap = 1, rx = 1.5, empty = '#111420' }) => {
-  const total = cols * rows;
-  const step  = cs + gap;
-  const cells: string[] = [];
-  for (const s of segs) for (let i = 0; i < s.count && cells.length < total; i++) cells.push(s.color);
-  while (cells.length < total) cells.push(empty);
-  return (
-    <svg width={cols * step - gap} height={rows * step - gap} style={{ display: 'block' }}>
-      {cells.map((c, i) => (
-        <rect key={i} x={(i % cols) * step} y={Math.floor(i / cols) * step}
-          width={cs} height={cs} fill={c} rx={rx} />
-      ))}
-    </svg>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Probability math
-// ─────────────────────────────────────────────────────────────────────────────
-
-function fac(n: number): number { let r = 1; for (let i = 2; i <= n; i++) r *= i; return r; }
-function choose(n: number, k: number) { return fac(n) / (fac(k) * fac(n - k)); }
-function poisson(k: number, l: number) { return (l ** k * Math.exp(-l)) / fac(k); }
-
-function winProb(home: TeamStandings, away: TeamStandings) {
-  const AVG = 2.35, HI = 0.16, ST = 0.18;
-  const h5  = (home.xgf_5v5 * away.xga_5v5) / AVG;
-  const a5  = (away.xgf_5v5 * home.xga_5v5) / AVG;
-  const hO  = (home.pen_drawn_60 + away.pen_taken_60) / 2;
-  const aO  = (away.pen_drawn_60 + home.pen_taken_60) / 2;
-  const hX  = Math.max(0.1, h5 + HI + hO * ST * home.pp_eff * away.pk_eff - away.goalie_rating * 0.5);
-  const aX  = Math.max(0.1, a5 + aO * ST * away.pp_eff * home.pk_eff - home.goalie_rating * 0.5);
-  let w = 0, l = 0, t = 0;
-  for (let h = 0; h < 12; h++) for (let a = 0; a < 12; a++) {
-    const p = poisson(h, hX) * poisson(a, aX);
-    if (h > a) w += p; else if (a > h) l += p; else t += p;
-  }
-  const tot = w + l + t;
-  return (w / tot) + (t / tot) * (hX / (hX + aX));
-}
-
-interface SeriesBreak { hw: number; lw: number; bars: { g: number; h: number; l: number }[] }
-function seriesBreak(p: number): SeriesBreak {
-  let hw = 0, lw = 0;
-  const bars = [4, 5, 6, 7].map(g => {
-    const ways = choose(g - 1, 3);
-    const ph = ways * p ** 4 * (1 - p) ** (g - 4);
-    const pl = ways * (1 - p) ** 4 * p ** (g - 4);
-    hw += ph; lw += pl;
-    return { g, h: ph * 100, l: pl * 100 };
-  });
-  return { hw: hw * 100, lw: lw * 100, bars };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Division / Conference maps & seeding
-// ─────────────────────────────────────────────────────────────────────────────
-
+// ─── Division / conference maps ───────────────────────────────────────────────
 const DIV: Record<string, string> = {
-  BOS:'ATL', BUF:'ATL', DET:'ATL', FLA:'ATL', MTL:'ATL', OTT:'ATL', TBL:'ATL', TOR:'ATL',
-  CAR:'MET', CBJ:'MET', NJD:'MET', NYI:'MET', NYR:'MET', PHI:'MET', PIT:'MET', WSH:'MET',
-  CHI:'CEN', COL:'CEN', DAL:'CEN', MIN:'CEN', NSH:'CEN', STL:'CEN', UTA:'CEN', WPG:'CEN',
-  ANA:'PAC', CGY:'PAC', EDM:'PAC', LAK:'PAC', SEA:'PAC', SJS:'PAC', VAN:'PAC', VGK:'PAC',
+  BOS:'ATL',BUF:'ATL',DET:'ATL',FLA:'ATL',MTL:'ATL',OTT:'ATL',TBL:'ATL',TOR:'ATL',
+  CAR:'MET',CBJ:'MET',NJD:'MET',NYI:'MET',NYR:'MET',PHI:'MET',PIT:'MET',WSH:'MET',
+  CHI:'CEN',COL:'CEN',DAL:'CEN',MIN:'CEN',NSH:'CEN',STL:'CEN',UTA:'CEN',WPG:'CEN',
+  ANA:'PAC',CGY:'PAC',EDM:'PAC',LAK:'PAC',SEA:'PAC',SJS:'PAC',VAN:'PAC',VGK:'PAC',
 };
-const DNAME: Record<string, string> = { ATL:'Atlantic', MET:'Metro', CEN:'Central', PAC:'Pacific' };
+const DNAME: Record<string,string> = {
+  ATL:'Atlantic', MET:'Metropolitan', CEN:'Central', PAC:'Pacific',
+};
 
+// ─── Extended team type ───────────────────────────────────────────────────────
 interface ST extends TeamStandings {
-  seed: number;
-  role: 'div1'|'div2'|'wc';
-  cups: number;
-  // Fields required by PlayoffDetailModal
-  proj: number;
-  playoffOdds: number;
-  cupOdds: number;
+  seed: number; role: 'div1'|'div2'|'wc';
+  cups: number; proj: number; playoffOdds: number; cupOdds: number;
 }
 
+// ─── Standings sort ───────────────────────────────────────────────────────────
 function sortT(a: TeamStandings, b: TeamStandings) {
   if (b.points !== a.points) return b.points - a.points;
-  if (b.rw !== a.rw) return b.rw - a.rw;
-  if (b.row !== a.row) return b.row - a.row;
+  if (b.rw     !== a.rw)     return b.rw     - a.rw;
+  if (b.row    !== a.row)    return b.row    - a.row;
   return b.wins - a.wins;
 }
 
-function seedConf(teams: TeamStandings[], d1: string, d2: string, sim: Record<string, SimResult>): ST[] {
+function seedConf(
+  teams: TeamStandings[], d1: string, d2: string,
+  sim: Record<string, SimResult>,
+): ST[] {
   const t1  = teams.filter(t => DIV[t.tricode] === d1).sort(sortT);
   const t2  = teams.filter(t => DIV[t.tricode] === d2).sort(sortT);
   const wcs = [...t1.slice(3), ...t2.slice(3)].sort(sortT);
   const en  = (t: TeamStandings, seed: number, role: ST['role']): ST => {
-    const s = sim[t.tricode];
-    const total = s?.totalSims || 1;
+    const s = sim[t.tricode]; const total = s?.totalSims || 1;
     const cupPct = s ? (s.wonCup / total) * 100 : 0;
-    return {
-      ...t, seed, role,
-      cups:        cupPct,
-      proj:        s ? s.totalPoints / total : 0,
-      playoffOdds: s ? (s.madePlayoffs / total) * 100 : 0,
-      cupOdds:     cupPct,
-    };
+    return { ...t, seed, role, cups: cupPct, proj: s ? s.totalPoints/total : 0,
+      playoffOdds: s ? (s.madePlayoffs/total)*100 : 0, cupOdds: cupPct };
   };
   return [
     en(t1[0],1,'div1'), en(t1[1],2,'div1'), en(t1[2],3,'div1'),
@@ -135,455 +64,482 @@ function seedConf(teams: TeamStandings[], d1: string, d2: string, sim: Record<st
   ];
 }
 
-// Largest-remainder allocation: distribute `total` cells across `weights`
-function allocate(weights: number[], total: number): number[] {
-  const sum = weights.reduce((a, b) => a + b, 0) || 1;
-  const exact   = weights.map(w => (w / sum) * total);
-  const floors  = exact.map(Math.floor);
-  const remain  = total - floors.reduce((a, b) => a + b, 0);
-  exact.map((v, i) => ({ i, r: v - floors[i] }))
-    .sort((a, b) => b.r - a.r)
-    .slice(0, remain)
-    .forEach(({ i }) => floors[i]++);
-  return floors;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Logo
-// ─────────────────────────────────────────────────────────────────────────────
-
-const Logo = ({ code, size = 22 }: { code: string; size?: number }) => (
+// ─── Logo ─────────────────────────────────────────────────────────────────────
+const Logo = ({ code, size = 24 }: { code: string; size?: number }) => (
   // eslint-disable-next-line @next/next/no-img-element
   <img src={`/logos/${code}.svg`} alt={code} width={size} height={size}
     className="object-contain flex-shrink-0"
-    onError={e => { (e.target as HTMLImageElement).style.opacity='0'; }} />
+    onError={e => { (e.target as HTMLImageElement).style.opacity = '0'; }} />
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MatchupWaffle — single first-round series
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── WaffleGrid ───────────────────────────────────────────────────────────────
+interface WafSeg { color: string; count: number }
+const WaffleGrid: React.FC<{
+  segs: WafSeg[]; cols: number; rows: number;
+  cs?: number; gap?: number; rx?: number; empty?: string;
+}> = ({ segs, cols, rows, cs=9, gap=1.5, rx=1.5, empty='#0c0e1c' }) => {
+  const total = cols * rows;
+  const step  = cs + gap;
+  const cells: string[] = [];
+  for (const s of segs) for (let i = 0; i < s.count && cells.length < total; i++) cells.push(s.color);
+  while (cells.length < total) cells.push(empty);
+  return (
+    <svg width={cols*step - gap} height={rows*step - gap} style={{ display:'block' }}>
+      {cells.map((c, i) => (
+        <rect key={i} x={(i%cols)*step} y={Math.floor(i/cols)*step}
+          width={cs} height={cs} fill={c} rx={rx} />
+      ))}
+    </svg>
+  );
+};
 
-const MatchupWaffle: React.FC<{
-  hi: ST; lo: ST; flip?: boolean;
-  cols?: number; rows?: number; cs?: number;
-  onClickTeam: (t: string) => void;
-}> = ({ hi, lo, flip, cols = 8, rows = 6, cs = 5, onClickTeam }) => {
+// ─── Series probability math ──────────────────────────────────────────────────
+function fac(n: number): number { let r=1; for(let i=2;i<=n;i++) r*=i; return r; }
+function choose(n: number, k: number) { return fac(n)/(fac(k)*fac(n-k)); }
+function poisson(k: number, l: number) { return (l**k*Math.exp(-l))/fac(k); }
+
+function winProb(home: TeamStandings, away: TeamStandings): number {
+  const AVG=2.35, HI=0.16, ST=0.18;
+  const h5=(home.xgf_5v5*away.xga_5v5)/AVG;
+  const a5=(away.xgf_5v5*home.xga_5v5)/AVG;
+  const hO=(home.pen_drawn_60+away.pen_taken_60)/2;
+  const aO=(away.pen_drawn_60+home.pen_taken_60)/2;
+  const hX=Math.max(0.1,h5+HI+hO*ST*home.pp_eff*away.pk_eff-away.goalie_rating*0.5);
+  const aX=Math.max(0.1,a5+aO*ST*away.pp_eff*home.pk_eff-home.goalie_rating*0.5);
+  let w=0,l=0,t=0;
+  for(let h=0;h<12;h++) for(let a=0;a<12;a++) {
+    const p=poisson(h,hX)*poisson(a,aX);
+    if(h>a) w+=p; else if(a>h) l+=p; else t+=p;
+  }
+  const tot=w+l+t;
+  return (w/tot)+(t/tot)*(hX/(hX+aX));
+}
+
+interface SeriesBreak { hw: number; lw: number; bars:{g:number;h:number;l:number}[] }
+function seriesBreak(p: number): SeriesBreak {
+  let hw=0, lw=0;
+  const bars=[4,5,6,7].map(g=>{
+    const ways=choose(g-1,3);
+    const ph=ways*p**4*(1-p)**(g-4);
+    const pl=ways*(1-p)**4*p**(g-4);
+    hw+=ph; lw+=pl;
+    return {g, h:ph*100, l:pl*100};
+  });
+  return {hw:hw*100, lw:lw*100, bars};
+}
+
+// ─── Chalk advance helper ─────────────────────────────────────────────────────
+function chalk(a: ST, b: ST): ST {
+  return seriesBreak(winProb(a, b)).hw >= 50 ? a : b;
+}
+function matchup(a: ST, b: ST): {hi:ST; lo:ST} {
+  return a.cups >= b.cups ? {hi:a, lo:b} : {hi:b, lo:a};
+}
+
+// ─── Bracket connector SVGs ───────────────────────────────────────────────────
+// Draws elbow lines connecting round slots.
+// 4→2: four input positions converge pairwise to two outputs
+// 2→1: two inputs converge to one
+// 1→1: straight horizontal stub into center
+
+const BH = 700; // total bracket height in px
+
+const Conn: React.FC<{
+  inputs: number; dir: 'ltr'|'rtl'; width?: number;
+}> = ({ inputs, dir, width=22 }) => {
+  const w = width;
+  const color = 'rgba(255,255,255,0.09)';
+  const x0 = dir==='ltr' ? 0 : w;   // panel edge
+  const x1 = dir==='ltr' ? w : 0;   // bracket edge
+  const xm = w / 2;
+
+  // input Y positions (evenly spaced within BH)
+  const inYs  = Array.from({length:inputs},  (_,i) => BH*(2*i+1)/(2*inputs));
+  // output Y positions (half as many, same spacing)
+  const outYs = inputs===1
+    ? [BH/2]
+    : Array.from({length:inputs/2}, (_,i) => BH*(2*i+1)/inputs);
+
+  const paths = inYs.map((y, i) => {
+    const oy = outYs[Math.floor(i/(inputs/Math.max(inputs/2,1)))];
+    // For 4→2: inputs 0,1 → output 0; inputs 2,3 → output 1
+    const outIdx = inputs===4 ? (i<2?0:1) : 0;
+    const oy2 = outYs[outIdx];
+    return `M${x0},${y} H${xm} V${oy2} H${x1}`;
+  });
+
+  return (
+    <svg width={w} height={BH} style={{flexShrink:0,display:'block',alignSelf:'stretch'}}>
+      {paths.map((d,i) => (
+        <path key={i} d={d} stroke={color} strokeWidth="1.5"
+          fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      ))}
+    </svg>
+  );
+};
+
+// ─── Matchup card ─────────────────────────────────────────────────────────────
+// Renders one playoff series: top team, waffle, bottom team, odds.
+// flip=true mirrors the card for the East side (labels on right).
+
+interface CardProps {
+  hi: ST; lo: ST;
+  isFinal?: boolean;   // SCF gets larger waffle
+  flip?: boolean;
+  onClickTeam: (t:string) => void;
+}
+
+const MatchupCard: React.FC<CardProps> = ({ hi, lo, isFinal=false, flip=false, onClickTeam }) => {
   const [hov, setHov] = useState(false);
   const brk = useMemo(() => seriesBreak(winProb(hi, lo)), [hi, lo]);
-  const hC  = tc(hi.tricode), lC = tc(lo.tricode);
-  const tot = cols * rows;
-  const hN  = Math.round((brk.hw / 100) * tot);
+  const hC  = tc(hi.tricode);
+  const lC  = tc(lo.tricode);
 
-  const seedBadge = (t: ST) => (
-    <span className="text-[7px] font-black font-mono px-1 py-0.5 rounded"
-      style={{ background: `${tc(t.tricode)}20`, color: tc(t.tricode) }}>
-      {t.role === 'wc' ? 'WC' : t.seed}
+  const cols = isFinal ? 10 : 10;
+  const rows = isFinal ? 8  : 4;
+  const cs   = isFinal ? 10 : 9;
+  const gap  = 1.5;
+  const tot  = cols * rows;
+  const hN   = Math.round((brk.hw / 100) * tot);
+
+  // Waffle always fills hi-color first from left; flip just mirrors the label side
+  const segs: WafSeg[] = [{color:hC, count:hN}, {color:lC, count:tot-hN}];
+
+  const logoSz = isFinal ? 30 : 26;
+  const w      = isFinal ? 160 : 148;
+
+  const SeedBadge = ({t}: {t:ST}) => (
+    <span className="text-[8px] font-black rounded px-1 py-px leading-none"
+      style={{background:`${tc(t.tricode)}22`, color:tc(t.tricode)}}>
+      {t.role==='wc' ? `WC${t.seed-6}` : t.seed}
     </span>
   );
 
-  const teamRow = (t: ST, pct: number, right?: boolean) => (
-    <button onClick={() => onClickTeam(t.tricode)}
-      className={`flex items-center gap-1 hover:opacity-75 transition-opacity ${right ? 'flex-row-reverse' : ''}`}>
-      {seedBadge(t)}
-      <Logo code={t.tricode} size={16} />
-      <span className="text-[10px] font-black font-mono leading-none" style={{ color: tc(t.tricode) }}>
-        {Math.round(pct)}%
-      </span>
+  const TeamRow = ({t, pct, color, reverse}: {t:ST; pct:number; color:string; reverse?:boolean}) => (
+    <button
+      onClick={() => onClickTeam(t.tricode)}
+      className={`flex items-center gap-2 w-full px-3 py-2 hover:bg-white/4 transition-colors ${reverse ? 'flex-row-reverse' : ''}`}>
+      <Logo code={t.tricode} size={logoSz} />
+      <div className={`flex-1 ${reverse ? 'text-right' : ''}`}>
+        <div className="text-[11px] font-black text-white leading-none tracking-wide">{t.tricode}</div>
+        <div className="mt-0.5"><SeedBadge t={t} /></div>
+      </div>
+      <div className="text-[11px] font-black tabular-nums" style={{color}}>{pct.toFixed(0)}%</div>
     </button>
   );
 
   return (
-    <div className="relative" onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
-      <div className="rounded-lg overflow-hidden cursor-pointer ring-1 ring-white/6 hover:ring-white/14 transition-all">
-        <WaffleGrid segs={[{ color: hC, count: hN }, { color: lC, count: tot - hN }]}
-          cols={cols} rows={rows} cs={cs} />
+    <div style={{width:w}} className="relative"
+      onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
+      <div className="rounded-2xl overflow-hidden ring-1 ring-white/8 bg-[#0b0d1a] hover:ring-white/16 transition-all">
+
+        {/* Top team */}
+        <TeamRow t={flip?lo:hi} pct={flip?brk.lw:brk.hw} color={flip?lC:hC} reverse={flip} />
+
+        {/* Waffle */}
+        <div className="px-3 pb-1">
+          <div className="rounded-xl overflow-hidden">
+            <WaffleGrid segs={segs} cols={cols} rows={rows} cs={cs} gap={gap} />
+          </div>
+        </div>
+
+        {/* Bottom team */}
+        <TeamRow t={flip?hi:lo} pct={flip?brk.hw:brk.lw} color={flip?hC:lC} reverse={flip} />
+
       </div>
 
-      {/* Team labels below waffle */}
-      <div className={`flex items-center justify-between mt-1.5 ${flip ? 'flex-row-reverse' : ''}`}>
-        {teamRow(hi, brk.hw)}
-        {teamRow(lo, brk.lw, true)}
-      </div>
-
-      {/* Tooltip */}
+      {/* Hover tooltip */}
       {hov && (
-        <div className="absolute z-50 bottom-full mb-1.5 left-1/2 -translate-x-1/2 bg-[#090b11]/96 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl pointer-events-none w-[210px]">
+        <div className={`absolute z-50 bottom-full mb-2 ${flip?'right-0':'left-0'} bg-[#070916]/96 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl pointer-events-none`}
+          style={{width:200}}>
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1"><Logo code={hi.tricode} size={14} /><span className="text-[10px] font-black text-white">{hi.tricode}</span></div>
-            <span className="text-[7px] text-white/25 uppercase tracking-wider">Series odds</span>
-            <div className="flex items-center gap-1"><span className="text-[10px] font-black text-white">{lo.tricode}</span><Logo code={lo.tricode} size={14} /></div>
+            <div className="flex items-center gap-1.5">
+              <Logo code={hi.tricode} size={14}/>
+              <span className="text-[9px] font-black text-white">{hi.tricode}</span>
+            </div>
+            <span className="text-[7px] text-white/20 uppercase tracking-wider">Series</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-black text-white">{lo.tricode}</span>
+              <Logo code={lo.tricode} size={14}/>
+            </div>
           </div>
-          <div className="flex h-6 rounded-md overflow-hidden mb-2">
-            <div className="flex items-center justify-center text-[8px] font-black text-white"
-              style={{ width:`${brk.hw}%`, backgroundColor: hC }}>{brk.hw.toFixed(0)}%</div>
-            <div className="flex items-center justify-center text-[8px] font-black text-white"
-              style={{ width:`${brk.lw}%`, backgroundColor: lC }}>{brk.lw.toFixed(0)}%</div>
+          {/* Win bar */}
+          <div className="flex h-5 rounded-lg overflow-hidden mb-2">
+            <div className="flex items-center justify-center text-[8px] font-black text-white/90"
+              style={{width:`${brk.hw}%`, backgroundColor:hC}}>{brk.hw.toFixed(0)}%</div>
+            <div className="flex items-center justify-center text-[8px] font-black text-white/90"
+              style={{width:`${brk.lw}%`, backgroundColor:lC}}>{brk.lw.toFixed(0)}%</div>
           </div>
-          {brk.bars.map(b => (
-            <div key={b.g} className="flex items-center justify-between py-0.5">
-              <span className="text-[8px] font-bold font-mono" style={{ color: hC }}>{b.h.toFixed(0)}%</span>
-              <span className="text-[7px] text-white/20 font-mono">in {b.g}</span>
-              <span className="text-[8px] font-bold font-mono" style={{ color: lC }}>{b.l.toFixed(0)}%</span>
+          {/* Game breakdown */}
+          {brk.bars.map(b=>(
+            <div key={b.g} className="flex items-center gap-1 py-px">
+              <span className="text-[8px] font-bold font-mono w-8 text-right" style={{color:hC}}>{b.h.toFixed(0)}%</span>
+              <span className="text-[7px] text-white/20 font-mono flex-1 text-center">in {b.g}</span>
+              <span className="text-[8px] font-bold font-mono w-8" style={{color:lC}}>{b.l.toFixed(0)}%</span>
             </div>
           ))}
-          <div className="mt-1.5 pt-1.5 border-t border-white/6 text-[7px] text-white/20 font-mono text-center">
-            {hi.tricode} has home ice · click for full odds
-          </div>
         </div>
       )}
     </div>
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CupWaffle — N-team cup odds panel (division / conference / all)
-// ─────────────────────────────────────────────────────────────────────────────
-
-const CupWaffle: React.FC<{
-  teams: ST[];
-  cols: number; rows: number; cs?: number;
-  label?: string;
-  showLegend?: boolean;
-  onClickTeam?: (t: string) => void;
-}> = ({ teams, cols, rows, cs = 6, label, showLegend, onClickTeam }) => {
-  const total  = cols * rows;
-  const allocs = allocate(teams.map(t => t.cups), total);
-  const segs   = teams.map((t, i) => ({ color: tc(t.tricode), count: allocs[i] }));
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      {label && (
-        <div className="text-[7px] uppercase tracking-[0.3em] font-black text-white/25 text-center">
-          {label}
-        </div>
-      )}
-      <div className="rounded-lg overflow-hidden ring-1 ring-white/6">
-        <WaffleGrid segs={segs} cols={cols} rows={rows} cs={cs} />
+// ─── Round column: fixed BH height, N equal-height slots ─────────────────────
+const RoundCol: React.FC<{
+  slots: number;
+  children: React.ReactNode[];
+  width: number;
+}> = ({ slots, children, width }) => (
+  <div style={{ height:BH, width, flexShrink:0, display:'flex', flexDirection:'column' }}>
+    {Array.from({length:slots}, (_,i) => (
+      <div key={i} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        {children[i] ?? null}
       </div>
-      {showLegend && (
-        <div className="flex flex-wrap gap-x-2 gap-y-0.5 justify-center">
-          {teams.filter(t => t.cups > 0.5).sort((a,b) => b.cups - a.cups).map(t => (
-            <button key={t.tricode} onClick={() => onClickTeam?.(t.tricode)}
-              className="flex items-center gap-0.5 hover:opacity-75 transition-opacity">
-              <div className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{ backgroundColor: tc(t.tricode) }} />
-              <span className="text-[7px] font-mono text-white/35">{t.tricode}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Bracket connector line (CSS border)
-// ─────────────────────────────────────────────────────────────────────────────
-
-const Conn = ({ dir }: { dir: 'ltr' | 'rtl' }) => (
-  <div className="self-stretch flex items-center" style={{ width: 14, flexShrink: 0 }}>
-    <div style={{
-      width: 1, height: '100%',
-      backgroundColor: 'rgba(255,255,255,0.08)',
-      marginLeft: dir === 'ltr' ? 'auto' : 0,
-      marginRight: dir === 'rtl' ? 'auto' : 0,
-    }} />
+    ))}
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SectionLabel
-// ─────────────────────────────────────────────────────────────────────────────
-
-const SLabel = ({ text, accent }: { text: string; accent?: string }) => (
-  <div className="text-[8px] uppercase tracking-[0.25em] font-black text-center mb-1"
-    style={{ color: accent ?? 'rgba(255,255,255,0.2)' }}>
+// ─── Round header labels ───────────────────────────────────────────────────────
+const RoundLabel = ({text, accent}: {text:string; accent?:string}) => (
+  <div className="text-[7px] uppercase tracking-[0.28em] font-black text-center"
+    style={{color: accent ?? 'rgba(255,255,255,0.18)'}}>
     {text}
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Main component
-// ─────────────────────────────────────────────────────────────────────────────
-
+// ─── Main component ───────────────────────────────────────────────────────────
 interface PlayoffBracketProps {
   currentStandings: TeamStandings[];
   simResults: Record<string, SimResult>;
 }
 
-const PlayoffBracket: React.FC<PlayoffBracketProps> = ({ currentStandings, simResults }) => {
-  const [selTricode, setSelTricode] = useState<string | null>(null);
+export default function PlayoffBracket({ currentStandings, simResults }: PlayoffBracketProps) {
+  const [selTricode, setSelTricode] = useState<string|null>(null);
 
   const { west, east } = useMemo(() => {
-    if (!currentStandings.length) return { west: [] as ST[], east: [] as ST[] };
-    const e = currentStandings.filter(t => ['ATL','MET'].includes(DIV[t.tricode] ?? ''));
-    const w = currentStandings.filter(t => ['CEN','PAC'].includes(DIV[t.tricode] ?? ''));
+    if (!currentStandings.length) return { west:[] as ST[], east:[] as ST[] };
+    const e = currentStandings.filter(t => ['ATL','MET'].includes(DIV[t.tricode]??''));
+    const w = currentStandings.filter(t => ['CEN','PAC'].includes(DIV[t.tricode]??''));
     return {
-      west: seedConf(w, 'CEN', 'PAC', simResults),
-      east: seedConf(e, 'ATL', 'MET', simResults),
+      west: seedConf(w,'CEN','PAC',simResults),
+      east: seedConf(e,'ATL','MET',simResults),
     };
   }, [currentStandings, simResults]);
 
   const selData = useMemo(
-    () => [...west, ...east].find(t => t.tricode === selTricode) ?? null,
+    () => [...west,...east].find(t=>t.tricode===selTricode)??null,
     [west, east, selTricode],
   );
 
   if (!currentStandings.length || !Object.keys(simResults).length) {
     return (
       <div className="flex justify-center items-center py-32">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-rose-500" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-rose-500"/>
       </div>
     );
   }
 
+  // ── West seeding ────────────────────────────────────────────────────────────
   const [w1,w2,w3,w4,w5,w6,w7,w8] = west;
+  // ── East seeding ────────────────────────────────────────────────────────────
   const [e1,e2,e3,e4,e5,e6,e7,e8] = east;
 
-  // Division team groups
-  const cenTeams = west.filter(t => DIV[t.tricode] === 'CEN');
-  const pacTeams = west.filter(t => DIV[t.tricode] === 'PAC');
-  const atlTeams = east.filter(t => DIV[t.tricode] === 'ATL');
-  const metTeams = east.filter(t => DIV[t.tricode] === 'MET');
+  if (!w1||!w2||!w3||!w4||!w5||!w6||!w7||!w8||
+      !e1||!e2||!e3||!e4||!e5||!e6||!e7||!e8) {
+    return <div className="text-center text-white/30 py-20 text-sm">Awaiting playoff field…</div>;
+  }
 
-  // Cup final breakdown
-  const cupBrk = useMemo(() =>
-    w1 && e1 ? seriesBreak(winProb(w1, e1)) : null,
-    [w1, e1],
-  );
+  // ── Chalk projections ───────────────────────────────────────────────────────
+  // West R1 winners
+  const wW1 = chalk(w1,w8); const wW2 = chalk(w2,w3);
+  const wW3 = chalk(w4,w7); const wW4 = chalk(w5,w6);
+  // West R2 matchups (div finals)
+  const wR2a = matchup(wW1, wW2);  // div 1 winner pair
+  const wR2b = matchup(wW3, wW4);  // div 2 winner pair
+  const wR2aW = chalk(wR2a.hi, wR2a.lo);
+  const wR2bW = chalk(wR2b.hi, wR2b.lo);
+  // West Conf Final
+  const wCF = matchup(wR2aW, wR2bW);
 
-  // All 16 teams ordered by cup odds
-  const all16 = useMemo(() =>
-    [...west, ...east].sort((a, b) => b.cups - a.cups),
-    [west, east],
-  );
+  // East R1 winners
+  const eW1 = chalk(e1,e8); const eW2 = chalk(e2,e3);
+  const eW3 = chalk(e4,e7); const eW4 = chalk(e5,e6);
+  // East R2 matchups
+  const eR2a = matchup(eW1, eW2);
+  const eR2b = matchup(eW3, eW4);
+  const eR2aW = chalk(eR2a.hi, eR2a.lo);
+  const eR2bW = chalk(eR2b.hi, eR2b.lo);
+  // East Conf Final
+  const eCF = matchup(eR2aW, eR2bW);
 
-  // R1 waffle params
-  const R1_COLS = 8; const R1_ROWS = 7; const R1_CS = 5;
-  // Div waffle params
-  const D_COLS  = 9; const D_ROWS  = 6; const D_CS  = 5;
-  // Conf waffle params
-  const C_COLS  = 9; const C_ROWS  = 7; const C_CS  = 6;
-  // Center waffle params
-  const CTR_COLS = 10; const CTR_ROWS = 10; const CTR_CS = 7;
+  // Stanley Cup Final
+  const wRep = chalk(wCF.hi, wCF.lo);
+  const eRep = chalk(eCF.hi, eCF.lo);
+  const scf  = matchup(wRep, eRep);
+
+  // Division names for labels
+  const wD1 = DNAME[DIV[w1.tricode]??''] ?? 'Central';
+  const wD2 = DNAME[DIV[w4.tricode]??''] ?? 'Pacific';
+  const eD1 = DNAME[DIV[e1.tricode]??''] ?? 'Atlantic';
+  const eD2 = DNAME[DIV[e4.tricode]??''] ?? 'Metropolitan';
+
+  const W = '#f59e0b';   // West accent
+  const E = '#38bdf8';   // East accent
+
+  // Column widths
+  const R1W  = 152;
+  const R2W  = 152;
+  const CFW  = 152;
+  const SCFW = 164;
+  const CW   = 22;  // connector width
 
   return (
     <div className="w-full select-none">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="text-center mb-6">
-        <p className="text-[8px] uppercase tracking-[0.55em] text-white/20 font-black mb-1">
+        <p className="text-[7px] uppercase tracking-[0.6em] text-white/20 font-black mb-1.5">
           Projected 2025–26
         </p>
-        <h2 className="text-[26px] font-black text-white tracking-tight leading-none">
+        <h2 className="text-[28px] font-black text-white tracking-tight leading-none">
           Stanley Cup Bracket
         </h2>
-        <p className="text-[8px] text-white/20 mt-1.5 font-mono">
-          Waffle squares = probability · Hover any matchup for series breakdown · Click team for full playoff odds
+        <p className="text-[8px] text-white/18 mt-1.5 font-mono">
+          Chalk bracket · Waffle squares = series win probability · Hover for breakdown · Click team for full odds
         </p>
       </div>
 
+      {/* ── Round labels row ────────────────────────────────────────────── */}
+      <div className="flex justify-center items-center mb-3 gap-0" style={{minWidth:1100}}>
+        {/* West side */}
+        <div style={{width:R1W}}><RoundLabel text="First Round" accent={`${W}88`}/></div>
+        <div style={{width:CW}}/>
+        <div style={{width:R2W}}><RoundLabel text="Div. Final"/></div>
+        <div style={{width:CW}}/>
+        <div style={{width:CFW}}><RoundLabel text="Conf. Final"/></div>
+        <div style={{width:CW}}/>
+        {/* Center */}
+        <div style={{width:SCFW}}><RoundLabel text="Stanley Cup Final" accent="rgba(251,191,36,0.7)"/></div>
+        <div style={{width:CW}}/>
+        {/* East side */}
+        <div style={{width:CFW}}><RoundLabel text="Conf. Final"/></div>
+        <div style={{width:CW}}/>
+        <div style={{width:R2W}}><RoundLabel text="Div. Final"/></div>
+        <div style={{width:CW}}/>
+        <div style={{width:R1W}}><RoundLabel text="First Round" accent={`${E}88`}/></div>
+      </div>
+
       {/* ── Bracket ────────────────────────────────────────────────────── */}
-      <div className="overflow-x-auto pb-4">
-        <div className="flex items-stretch gap-0 justify-center mx-auto" style={{ minWidth: 980 }}>
+      <div className="overflow-x-auto pb-6">
+        <div className="flex items-stretch justify-center mx-auto" style={{minWidth:1100}}>
 
-          {/* ══ WEST R1 ══ */}
-          <div className="flex flex-col gap-6 justify-around" style={{ width: 108 }}>
-            {/* Central */}
-            <div>
-              <SLabel text={DNAME[DIV[w1?.tricode ?? ''] ?? ''] ?? 'Central'} accent="#f59e0b" />
-              <div className="flex flex-col gap-2.5">
-                {w1 && w8 && <MatchupWaffle hi={w1} lo={w8} cols={R1_COLS} rows={R1_ROWS} cs={R1_CS} onClickTeam={setSelTricode} />}
-                {w2 && w3 && <MatchupWaffle hi={w2} lo={w3} cols={R1_COLS} rows={R1_ROWS} cs={R1_CS} onClickTeam={setSelTricode} />}
-              </div>
-            </div>
-            {/* Pacific */}
-            <div>
-              <SLabel text={DNAME[DIV[w4?.tricode ?? ''] ?? ''] ?? 'Pacific'} accent="#38bdf8" />
-              <div className="flex flex-col gap-2.5">
-                {w4 && w7 && <MatchupWaffle hi={w4} lo={w7} cols={R1_COLS} rows={R1_ROWS} cs={R1_CS} onClickTeam={setSelTricode} />}
-                {w5 && w6 && <MatchupWaffle hi={w5} lo={w6} cols={R1_COLS} rows={R1_ROWS} cs={R1_CS} onClickTeam={setSelTricode} />}
-              </div>
-            </div>
-          </div>
+          {/* ══ West R1 ══ */}
+          <RoundCol slots={4} width={R1W}>
+            {[
+              // Slot 0: div1 top matchup
+              <div className="flex flex-col items-center gap-1" key="w1">
+                <div className="text-[7px] uppercase tracking-[0.25em] font-black" style={{color:`${W}70`}}>{wD1}</div>
+                <MatchupCard hi={w1} lo={w8} onClickTeam={setSelTricode}/>
+              </div>,
+              // Slot 1: div1 bottom matchup
+              <MatchupCard key="w2" hi={w2} lo={w3} onClickTeam={setSelTricode}/>,
+              // Slot 2: div2 top matchup
+              <div className="flex flex-col items-center gap-1" key="w3">
+                <div className="text-[7px] uppercase tracking-[0.25em] font-black" style={{color:`${W}70`}}>{wD2}</div>
+                <MatchupCard hi={w4} lo={w7} onClickTeam={setSelTricode}/>
+              </div>,
+              // Slot 3: div2 bottom matchup
+              <MatchupCard key="w4" hi={w5} lo={w6} onClickTeam={setSelTricode}/>,
+            ]}
+          </RoundCol>
 
-          <Conn dir="ltr" />
+          <Conn inputs={4} dir="ltr" width={CW}/>
 
-          {/* ══ DIVISION CUP ODDS ══ */}
-          <div className="flex flex-col gap-4 justify-around" style={{ width: 82 }}>
-            <CupWaffle teams={cenTeams} cols={D_COLS} rows={D_ROWS} cs={D_CS}
-              label={DNAME[DIV[w1?.tricode ?? ''] ?? ''] ?? ''}
-              showLegend onClickTeam={setSelTricode} />
-            <CupWaffle teams={pacTeams} cols={D_COLS} rows={D_ROWS} cs={D_CS}
-              label={DNAME[DIV[w4?.tricode ?? ''] ?? ''] ?? ''}
-              showLegend onClickTeam={setSelTricode} />
-          </div>
+          {/* ══ West R2 (Div Finals) ══ */}
+          <RoundCol slots={2} width={R2W}>
+            {[
+              <MatchupCard key="wr2a" hi={wR2a.hi} lo={wR2a.lo} onClickTeam={setSelTricode}/>,
+              <MatchupCard key="wr2b" hi={wR2b.hi} lo={wR2b.lo} onClickTeam={setSelTricode}/>,
+            ]}
+          </RoundCol>
 
-          <Conn dir="ltr" />
+          <Conn inputs={2} dir="ltr" width={CW}/>
 
-          {/* ══ WEST CONFERENCE CUP ODDS ══ */}
-          <div className="flex flex-col justify-center" style={{ width: 90 }}>
-            <CupWaffle teams={west} cols={C_COLS} rows={C_ROWS} cs={C_CS}
-              label="West" showLegend onClickTeam={setSelTricode} />
-          </div>
+          {/* ══ West CF ══ */}
+          <RoundCol slots={1} width={CFW}>
+            {[<MatchupCard key="wcf" hi={wCF.hi} lo={wCF.lo} onClickTeam={setSelTricode}/>]}
+          </RoundCol>
 
-          <Conn dir="ltr" />
+          <Conn inputs={1} dir="ltr" width={CW}/>
 
-          {/* ══ CENTER ══ */}
-          <div className="flex flex-col items-center justify-center gap-4 px-2" style={{ width: 196, minWidth: 196 }}>
+          {/* ══ Stanley Cup Final ══ */}
+          <RoundCol slots={1} width={SCFW}>
+            {[<MatchupCard key="scf" hi={scf.hi} lo={scf.lo} isFinal onClickTeam={setSelTricode}/>]}
+          </RoundCol>
 
-            {/* Stanley Cup mark */}
-            <div className="flex flex-col items-center gap-0.5">
-              {/* Clean SVG cup instead of emoji */}
-              <svg width="32" height="36" viewBox="0 0 32 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-80">
-                <path d="M10 2h12v6c0 5.523-2.686 10-6 10S10 13.523 10 8V2z" fill="#c8992a"/>
-                <rect x="14" y="18" width="4" height="6" fill="#c8992a"/>
-                <rect x="8" y="24" width="16" height="3" rx="1" fill="#c8992a"/>
-                <rect x="6" y="27" width="20" height="2.5" rx="1" fill="#b8821a"/>
-                <path d="M4 8h3v4a3 3 0 01-3-3V8zM25 8h3v1a3 3 0 01-3 3V8z" fill="#c8992a" opacity="0.7"/>
-              </svg>
-              <span className="text-[8px] uppercase tracking-[0.4em] font-black text-amber-400/60">
-                Stanley Cup
-              </span>
-            </div>
+          <Conn inputs={1} dir="rtl" width={CW}/>
 
-            {/* Cup Final matchup waffle */}
-            {w1 && e1 && cupBrk && (() => {
-              const hC2 = tc(w1.tricode), lC2 = tc(e1.tricode);
-              const tot2 = CTR_COLS * CTR_ROWS;
-              const hN2 = Math.round((cupBrk.hw / 100) * tot2);
-              return (
-                <div className="flex flex-col items-center gap-2 w-full">
-                  <div className="text-[7px] uppercase tracking-[0.3em] font-black text-amber-400/40">
-                    Projected Final
-                  </div>
-                  <div className="rounded-xl overflow-hidden ring-1 ring-amber-400/15">
-                    <WaffleGrid
-                      segs={[{ color: hC2, count: hN2 }, { color: lC2, count: tot2 - hN2 }]}
-                      cols={CTR_COLS} rows={CTR_ROWS} cs={CTR_CS}
-                    />
-                  </div>
-                  {/* Teams below */}
-                  <div className="flex items-center justify-between w-full px-1">
-                    <button onClick={() => setSelTricode(w1.tricode)}
-                      className="flex flex-col items-center gap-0.5 hover:opacity-75 transition-opacity">
-                      <Logo code={w1.tricode} size={20} />
-                      <span className="text-[9px] font-black font-mono" style={{ color: hC2 }}>
-                        {Math.round(cupBrk.hw)}%
-                      </span>
-                    </button>
-                    <span className="text-white/15 text-[7px] font-mono">vs</span>
-                    <button onClick={() => setSelTricode(e1.tricode)}
-                      className="flex flex-col items-center gap-0.5 hover:opacity-75 transition-opacity">
-                      <Logo code={e1.tricode} size={20} />
-                      <span className="text-[9px] font-black font-mono" style={{ color: lC2 }}>
-                        {Math.round(cupBrk.lw)}%
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
+          {/* ══ East CF ══ */}
+          <RoundCol slots={1} width={CFW}>
+            {[<MatchupCard key="ecf" hi={eCF.hi} lo={eCF.lo} flip onClickTeam={setSelTricode}/>]}
+          </RoundCol>
 
-            {/* Divider */}
-            <div className="w-full h-px bg-white/6" />
+          <Conn inputs={2} dir="rtl" width={CW}/>
 
-            {/* All 16 teams cup odds waffle */}
-            <div className="flex flex-col items-center gap-1.5 w-full">
-              <div className="text-[7px] uppercase tracking-[0.3em] font-black text-white/20">
-                Cup Odds — All Teams
-              </div>
-              <div className="rounded-lg overflow-hidden ring-1 ring-white/6">
-                <WaffleGrid
-                  segs={allocate(all16.map(t => t.cups), 100).map((n, i) => ({
-                    color: tc(all16[i].tricode), count: n,
-                  }))}
-                  cols={10} rows={10} cs={7}
-                />
-              </div>
-              {/* Compact legend - top 8 */}
-              <div className="flex flex-wrap gap-x-2 gap-y-0.5 justify-center mt-0.5">
-                {all16.filter(t => t.cups >= 0.5).slice(0, 10).map(t => (
-                  <button key={t.tricode} onClick={() => setSelTricode(t.tricode)}
-                    className="flex items-center gap-1 hover:opacity-75 transition-opacity">
-                    <div className="w-1.5 h-1.5 rounded-sm" style={{ backgroundColor: tc(t.tricode) }} />
-                    <span className="text-[7px] font-mono text-white/30">{t.tricode}</span>
-                    <span className="text-[7px] font-black font-mono" style={{ color: tc(t.tricode) }}>
-                      {t.cups.toFixed(1)}%
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* ══ East R2 (Div Finals) ══ */}
+          <RoundCol slots={2} width={R2W}>
+            {[
+              <MatchupCard key="er2a" hi={eR2a.hi} lo={eR2a.lo} flip onClickTeam={setSelTricode}/>,
+              <MatchupCard key="er2b" hi={eR2b.hi} lo={eR2b.lo} flip onClickTeam={setSelTricode}/>,
+            ]}
+          </RoundCol>
 
-          <Conn dir="rtl" />
+          <Conn inputs={4} dir="rtl" width={CW}/>
 
-          {/* ══ EAST CONFERENCE CUP ODDS ══ */}
-          <div className="flex flex-col justify-center" style={{ width: 90 }}>
-            <CupWaffle teams={east} cols={C_COLS} rows={C_ROWS} cs={C_CS}
-              label="East" showLegend onClickTeam={setSelTricode} />
-          </div>
-
-          <Conn dir="rtl" />
-
-          {/* ══ DIVISION CUP ODDS ══ */}
-          <div className="flex flex-col gap-4 justify-around" style={{ width: 82 }}>
-            <CupWaffle teams={atlTeams} cols={D_COLS} rows={D_ROWS} cs={D_CS}
-              label={DNAME[DIV[e1?.tricode ?? ''] ?? ''] ?? ''}
-              showLegend onClickTeam={setSelTricode} />
-            <CupWaffle teams={metTeams} cols={D_COLS} rows={D_ROWS} cs={D_CS}
-              label={DNAME[DIV[e4?.tricode ?? ''] ?? ''] ?? ''}
-              showLegend onClickTeam={setSelTricode} />
-          </div>
-
-          <Conn dir="rtl" />
-
-          {/* ══ EAST R1 ══ */}
-          <div className="flex flex-col gap-6 justify-around" style={{ width: 108 }}>
-            {/* Atlantic */}
-            <div>
-              <SLabel text={DNAME[DIV[e1?.tricode ?? ''] ?? ''] ?? 'Atlantic'} accent="#38bdf8" />
-              <div className="flex flex-col gap-2.5">
-                {e1 && e8 && <MatchupWaffle hi={e1} lo={e8} flip cols={R1_COLS} rows={R1_ROWS} cs={R1_CS} onClickTeam={setSelTricode} />}
-                {e2 && e3 && <MatchupWaffle hi={e2} lo={e3} flip cols={R1_COLS} rows={R1_ROWS} cs={R1_CS} onClickTeam={setSelTricode} />}
-              </div>
-            </div>
-            {/* Metro */}
-            <div>
-              <SLabel text={DNAME[DIV[e4?.tricode ?? ''] ?? ''] ?? 'Metro'} accent="#f59e0b" />
-              <div className="flex flex-col gap-2.5">
-                {e4 && e7 && <MatchupWaffle hi={e4} lo={e7} flip cols={R1_COLS} rows={R1_ROWS} cs={R1_CS} onClickTeam={setSelTricode} />}
-                {e5 && e6 && <MatchupWaffle hi={e5} lo={e6} flip cols={R1_COLS} rows={R1_ROWS} cs={R1_CS} onClickTeam={setSelTricode} />}
-              </div>
-            </div>
-          </div>
+          {/* ══ East R1 ══ */}
+          <RoundCol slots={4} width={R1W}>
+            {[
+              <div className="flex flex-col items-center gap-1" key="e1">
+                <div className="text-[7px] uppercase tracking-[0.25em] font-black" style={{color:`${E}70`}}>{eD1}</div>
+                <MatchupCard hi={e1} lo={e8} flip onClickTeam={setSelTricode}/>
+              </div>,
+              <MatchupCard key="e2" hi={e2} lo={e3} flip onClickTeam={setSelTricode}/>,
+              <div className="flex flex-col items-center gap-1" key="e3">
+                <div className="text-[7px] uppercase tracking-[0.25em] font-black" style={{color:`${E}70`}}>{eD2}</div>
+                <MatchupCard hi={e4} lo={e7} flip onClickTeam={setSelTricode}/>
+              </div>,
+              <MatchupCard key="e4" hi={e5} lo={e6} flip onClickTeam={setSelTricode}/>,
+            ]}
+          </RoundCol>
 
         </div>
       </div>
 
-      {/* ── Footer labels ─────────────────────────────────────────────── */}
-      <div className="flex justify-center gap-3 mt-4">
-        {(['Western Conference','Eastern Conference'] as const).map((n, i) => (
+      {/* ── Conference badges ───────────────────────────────────────────── */}
+      <div className="flex justify-center gap-3 mt-2">
+        {[['Western Conference', W], ['Eastern Conference', E]].map(([n,c]) => (
           <div key={n} className="text-[7px] uppercase tracking-[0.35em] font-black px-3 py-1 rounded-full"
             style={{
-              color: i === 0 ? 'rgba(245,158,11,0.45)' : 'rgba(56,189,248,0.45)',
-              border: `1px solid ${i === 0 ? 'rgba(245,158,11,0.1)' : 'rgba(56,189,248,0.1)'}`,
-              background: i === 0 ? 'rgba(245,158,11,0.04)' : 'rgba(56,189,248,0.04)',
+              color: `${c}55`,
+              border: `1px solid ${c}18`,
+              background: `${c}06`,
             }}>
             {n}
           </div>
         ))}
       </div>
 
-      <p className="text-center text-[7px] text-white/12 font-mono mt-2">
-        Chalk bracket from current standings · Division → Conference → Overall panels show cup win probability share · Hover matchups for series odds
+      <p className="text-center text-[7px] text-white/10 font-mono mt-2">
+        Inner rounds show chalk-projected matchups · Cup odds used to seed projected brackets
       </p>
 
       {selTricode && selData && simResults[selTricode] && (
-        <PlayoffDetailModal team={selData} simResult={simResults[selTricode]} onClose={() => setSelTricode(null)} />
+        <PlayoffDetailModal
+          team={selData}
+          simResult={simResults[selTricode]}
+          onClose={() => setSelTricode(null)}
+        />
       )}
     </div>
   );
-};
-
-export default PlayoffBracket;
+}
