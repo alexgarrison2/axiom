@@ -1078,12 +1078,12 @@
         ],
         "d3": [
             {
-                "name": "Ville Heinola",
-                "number": 14,
+                "name": "Haydn Fleury",
+                "number": 24,
                 "pos": "ld",
-                "id": 30611,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2369,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Luke Schenn",
@@ -1814,7 +1814,7 @@
                 "number": 42,
                 "pos": "ld",
                 "id": 2431,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1822,7 +1822,7 @@
                 "number": 5,
                 "pos": "rd",
                 "id": 2363,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -1836,12 +1836,12 @@
                 "movement": null
             },
             {
-                "name": "Uvis Balinskis",
-                "number": 26,
+                "name": "Dmitry Kulikov",
+                "number": 7,
                 "pos": "rd",
-                "id": 37929,
-                "ppUnit": 1,
-                "movement": null
+                "id": 593,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "d3": [
@@ -1910,6 +1910,14 @@
                 "id": 29210,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Uvis Balinskis",
+                "number": 26,
+                "pos": "ir7",
+                "id": 37929,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -2459,6 +2467,16 @@
                 "ppUnit": 2,
                 "movement": null
             }
+        ],
+        "ir": [
+            {
+                "name": "Adam Wilsby",
+                "number": 83,
+                "pos": "ir1",
+                "id": 36308,
+                "ppUnit": null,
+                "movement": "down"
+            }
         ]
     },
     "DET": {
@@ -2599,7 +2617,7 @@
                 "pos": "rd",
                 "id": 38121,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -2617,7 +2635,7 @@
                 "pos": "rd",
                 "id": 4819,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -3888,12 +3906,12 @@
         ],
         "d3": [
             {
-                "name": "Joshua Mahura",
-                "number": 28,
+                "name": "Cale Fleury",
+                "number": 8,
                 "pos": "ld",
-                "id": 3924,
+                "id": 26737,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Ryker Evans",
