@@ -1326,20 +1326,20 @@
     "STL": {
         "f1": [
             {
-                "name": "Jake Neighbours",
-                "number": 63,
+                "name": "Pavel Buchnevich",
+                "number": 89,
                 "pos": "lw",
-                "id": 29498,
+                "id": 2673,
                 "ppUnit": 1,
                 "movement": null
             },
             {
-                "name": "Pavel Buchnevich",
-                "number": 89,
+                "name": "Robert Thomas",
+                "number": 18,
                 "pos": "c",
-                "id": 2673,
+                "id": 2810,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Jordan Kyrou",
@@ -1352,12 +1352,12 @@
         ],
         "f2": [
             {
-                "name": "Brayden Schenn",
-                "number": 10,
+                "name": "Jake Neighbours",
+                "number": 63,
                 "pos": "lw",
-                "id": 773,
+                "id": 29498,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Dalibor Dvorsky",
@@ -1394,12 +1394,12 @@
                 "movement": null
             },
             {
-                "name": "Jonatan Berggren",
-                "number": 29,
+                "name": "Brayden Schenn",
+                "number": 10,
                 "pos": "rw",
-                "id": 29107,
+                "id": 773,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -1484,10 +1484,10 @@
         ],
         "ir": [
             {
-                "name": "Robert Thomas",
-                "number": 18,
+                "name": "Colton Parayko",
+                "number": 55,
                 "pos": "ir1",
-                "id": 2810,
+                "id": 2531,
                 "ppUnit": null,
                 "movement": null
             },
@@ -1496,14 +1496,6 @@
                 "number": 70,
                 "pos": "ir2",
                 "id": 2356,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Colton Parayko",
-                "number": 55,
-                "pos": "ir3",
-                "id": 2531,
                 "ppUnit": null,
                 "movement": null
             }
@@ -1917,7 +1909,7 @@
                 "pos": "ir7",
                 "id": 37929,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2439,7 +2431,7 @@
                 "pos": "ld",
                 "id": 36308,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Nick Perbix",
@@ -2475,7 +2467,7 @@
                 "pos": "ir1",
                 "id": 36308,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -3911,7 +3903,7 @@
                 "pos": "ld",
                 "id": 26737,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Ryker Evans",
