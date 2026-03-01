@@ -67,7 +67,11 @@ jobs:
           else
             echo "Running Lite Update..."
             python fetch_upcoming.py
-            
+
+            # Backfill player boxscore stats for any new games since last run
+            # Incremental: skips game_ids already in the CSV, so fast when no new games
+            python backfill_player_stats.py
+
             # Fetch latest odds and sync (Fix for missing odds.json in Lite Update)
             python fetch_odds.py
             cp odds.json ../data/odds.json || echo "No odds.json to copy to data/"
