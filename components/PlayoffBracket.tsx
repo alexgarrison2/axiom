@@ -94,7 +94,15 @@ const DIV: Record<string, string> = {
 };
 const DNAME: Record<string, string> = { ATL:'Atlantic', MET:'Metro', CEN:'Central', PAC:'Pacific' };
 
-interface ST extends TeamStandings { seed: number; role: 'div1'|'div2'|'wc'; cups: number }
+interface ST extends TeamStandings {
+  seed: number;
+  role: 'div1'|'div2'|'wc';
+  cups: number;
+  // Fields required by PlayoffDetailModal
+  proj: number;
+  playoffOdds: number;
+  cupOdds: number;
+}
 
 function sortT(a: TeamStandings, b: TeamStandings) {
   if (b.points !== a.points) return b.points - a.points;
@@ -107,10 +115,18 @@ function seedConf(teams: TeamStandings[], d1: string, d2: string, sim: Record<st
   const t1  = teams.filter(t => DIV[t.tricode] === d1).sort(sortT);
   const t2  = teams.filter(t => DIV[t.tricode] === d2).sort(sortT);
   const wcs = [...t1.slice(3), ...t2.slice(3)].sort(sortT);
-  const en  = (t: TeamStandings, seed: number, role: ST['role']): ST => ({
-    ...t, seed, role,
-    cups: sim[t.tricode] ? (sim[t.tricode].wonCup / sim[t.tricode].totalSims) * 100 : 0,
-  });
+  const en  = (t: TeamStandings, seed: number, role: ST['role']): ST => {
+    const s = sim[t.tricode];
+    const total = s?.totalSims || 1;
+    const cupPct = s ? (s.wonCup / total) * 100 : 0;
+    return {
+      ...t, seed, role,
+      cups:        cupPct,
+      proj:        s ? s.totalPoints / total : 0,
+      playoffOdds: s ? (s.madePlayoffs / total) * 100 : 0,
+      cupOdds:     cupPct,
+    };
+  };
   return [
     en(t1[0],1,'div1'), en(t1[1],2,'div1'), en(t1[2],3,'div1'),
     en(t2[0],4,'div2'), en(t2[1],5,'div2'), en(t2[2],6,'div2'),
