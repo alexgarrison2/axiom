@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { GamePrediction } from '@/utils/data';
+import { GamePrediction, LocationSplitRecord } from '@/utils/data';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import AnimatedNumber from './AnimatedNumber';
@@ -57,6 +57,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     const desktopCardRef = useRef<HTMLDivElement>(null); // Ref for desktop card
     const [isExpanded, setIsExpanded] = useState(false);
     const [isDesktopExpanded, setIsDesktopExpanded] = useState(false); // New state for desktop
+    // Fixed-position tooltip for HOME/ROAD location pill
+    const [locationTooltip, setLocationTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
     const { isAdmin } = useAdmin();
 
 
@@ -566,6 +568,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         is3in4,
         is4in6,
         is6in9,
+        locationRecord,
+        onLocationPillHover,
+        onLocationPillLeave,
     }: {
         team: { name: string; triCode: string; logoUrl: string; color1: string; color2?: string };
         isHome: boolean;
@@ -595,6 +600,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         is3in4?: boolean;
         is4in6?: boolean;
         is6in9?: boolean;
+        locationRecord?: LocationSplitRecord;
+        onLocationPillHover?: (x: number, y: number, text: string) => void;
+        onLocationPillLeave?: () => void;
     }) => {
         const alignClass = isHome ? 'md:items-start md:text-left' : 'md:items-end md:text-right';
         const evBadge = ev && ev > 0 ? formatEv(ev) : null;
@@ -691,6 +699,34 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     {!isSocial && isB2b && !is3in4 && !is4in6 && !is6in9 && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-amber-300 bg-amber-300/10 border-amber-300/25" title="Back-to-back">B2B</span>
                     )}
+
+                    {/* HOME / ROAD location split pill */}
+                    {!isSocial && locationRecord && (() => {
+                        const label = isHome ? 'HOME' : 'ROAD';
+                        const isGood = locationRecord.ptsPct >= 0.800;
+                        const isBad  = locationRecord.ptsPct <= 0.300;
+                        if (!isGood && !isBad) return null;
+                        const tooltipText = `${locationRecord.w}-${locationRecord.l}-${locationRecord.ot} in L10 ${label} Games`;
+                        const colorClass = isGood
+                            ? 'text-blue-400 bg-blue-400/10 border-blue-400/30'
+                            : 'text-red-400 bg-red-400/10 border-red-400/30';
+                        return (
+                            <span
+                                className={`text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold cursor-help ${colorClass}`}
+                                onMouseEnter={(e) => {
+                                    if (!onLocationPillHover) return;
+                                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                    // Position below the pill; clamp left so tooltip doesn't overflow right edge
+                                    const tipW = 200;
+                                    const left = Math.min(rect.left, window.innerWidth - tipW - 8);
+                                    onLocationPillHover(left, rect.bottom + 6, tooltipText);
+                                }}
+                                onMouseLeave={() => onLocationPillLeave?.()}
+                            >
+                                {label}
+                            </span>
+                        );
+                    })()}
 
                     {/* Edge Badges */}
                     {!isSocial && <GasGauge gas={gas} breakdown={gasBreakdown} align={isHome ? 'right' : 'left'} />}
@@ -943,6 +979,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             is3in4={prediction.away_is_3in4}
                             is4in6={prediction.away_is_4in6}
                             is6in9={prediction.away_is_6in9}
+                            locationRecord={prediction.away_l10_away}
+                            onLocationPillHover={(x, y, text) => setLocationTooltip({ x, y, text })}
+                            onLocationPillLeave={() => setLocationTooltip(null)}
                         />
                         <NewsIndicator
                             hasNews={prediction.away_news?.some(n => n.category !== 'Goalie Start') ?? false}
@@ -1042,6 +1081,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             is3in4={prediction.home_is_3in4}
                             is4in6={prediction.home_is_4in6}
                             is6in9={prediction.home_is_6in9}
+                            locationRecord={prediction.home_l10_home}
+                            onLocationPillHover={(x, y, text) => setLocationTooltip({ x, y, text })}
+                            onLocationPillLeave={() => setLocationTooltip(null)}
                         />
                         <NewsIndicator
                             hasNews={prediction.home_news?.some(n => n.category !== 'Goalie Start') ?? false}
@@ -1386,6 +1428,15 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                 )}
             </div>
 
+        {/* Fixed-position HOME/ROAD tooltip — escapes card overflow/stacking */}
+        {locationTooltip && (
+            <div
+                className="fixed z-[9999] px-3 py-2 bg-gray-950 border border-gray-700/80 rounded-lg shadow-2xl pointer-events-none text-[11px] font-mono font-bold text-white whitespace-nowrap"
+                style={{ left: locationTooltip.x, top: locationTooltip.y }}
+            >
+                {locationTooltip.text}
+            </div>
+        )}
         </>
     );
 };

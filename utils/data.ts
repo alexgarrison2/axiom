@@ -44,6 +44,13 @@ export interface TeamLineup {
   [key: string]: LineupPlayer[]; // f1, f2, f3, f4, d1, d2, d3
 }
 
+export interface LocationSplitRecord {
+  w: number;
+  l: number;
+  ot: number;
+  ptsPct: number; // (W*2 + OT) / (GP*2)
+}
+
 export interface GamePrediction {
   id: string;
   date: string;
@@ -127,6 +134,10 @@ export interface GamePrediction {
   away_is_6in9?: boolean;
   home_xg_sparkline?: number[];
   away_xg_sparkline?: number[];
+
+  // L10 home/away location splits (computed from gamestats.csv)
+  home_l10_home?: LocationSplitRecord; // home team's last 10 home games
+  away_l10_away?: LocationSplitRecord; // away team's last 10 away games
 }
 
 export interface HistoryEntry {
@@ -240,6 +251,43 @@ export async function getPredictions(): Promise<GamePrediction[]> {
 
   const predictionsParsed = Papa.parse<RawPrediction>(predictionsCsv, { header: true, skipEmptyLines: true });
   const teamsParsed = Papa.parse<RawTeam>(teamsCsv, { header: true, skipEmptyLines: true });
+
+  // ---- L10 home/away location splits from gamestats.csv ----
+  interface RawGameStat { game_date: string; team: string; home_away: string; result: string; }
+  const gamestatsCsv = fs.readFileSync(path.join(dataDir, 'gamestats.csv'), 'utf8');
+  const gamestatsParsed = Papa.parse<RawGameStat>(gamestatsCsv, { header: true, skipEmptyLines: true });
+
+  const teamHomeGames = new Map<string, { date: string; result: string }[]>();
+  const teamAwayGames = new Map<string, { date: string; result: string }[]>();
+  gamestatsParsed.data.forEach(row => {
+    const team = row.team?.trim();
+    const ha = row.home_away?.trim();
+    const result = row.result?.trim();
+    const date = row.game_date?.trim();
+    if (!team || !ha || !result || !date) return;
+    const bucket = ha === 'Home' ? teamHomeGames : ha === 'Away' ? teamAwayGames : null;
+    if (!bucket) return;
+    if (!bucket.has(team)) bucket.set(team, []);
+    bucket.get(team)!.push({ date, result });
+  });
+
+  const computeL10 = (games: { date: string; result: string }[]): LocationSplitRecord => {
+    const sorted = [...games].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+    let w = 0, l = 0, ot = 0;
+    for (const g of sorted) {
+      if (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') w++;
+      else if (g.result === 'OTL' || g.result === 'SOL') ot++;
+      else l++;
+    }
+    const gp = sorted.length;
+    return { w, l, ot, ptsPct: gp > 0 ? (w * 2 + ot) / (gp * 2) : 0 };
+  };
+
+  const teamHomeL10 = new Map<string, LocationSplitRecord>();
+  const teamAwayL10 = new Map<string, LocationSplitRecord>();
+  teamHomeGames.forEach((games, team) => teamHomeL10.set(team, computeL10(games)));
+  teamAwayGames.forEach((games, team) => teamAwayL10.set(team, computeL10(games)));
+  // ---- end location splits ----
 
   const teamsMap = new Map<string, Team>();
   teamsParsed.data.forEach((row) => {
@@ -419,6 +467,9 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       away_is_6in9: row.away_is_6in9?.toLowerCase() === 'true',
       home_xg_sparkline: parseSparkline(row.home_xg_sparkline),
       away_xg_sparkline: parseSparkline(row.away_xg_sparkline),
+
+      home_l10_home: teamHomeL10.get(row.home_team),
+      away_l10_away: teamAwayL10.get(row.away_team),
     };
   }).filter((p): p is GamePrediction => p !== null);
 
