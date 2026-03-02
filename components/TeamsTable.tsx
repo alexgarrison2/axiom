@@ -562,6 +562,31 @@ const TeamsTable = () => {
                     skipEmptyLines: true,
                     transformHeader: (h) => h.trim()
                 }).data as RawGameStat[];
+
+                // Fix broken attempts_ag_5v5: the pipeline sometimes leaves it as 0
+                // even though attempts_for_5v5 is correct. Derive it from the
+                // opponent's for_5v5 in the same game (they are mirror images).
+                const gameFor5v5 = new Map<string, Map<string, string>>(); // game_id → { team → for_5v5 }
+                for (const row of parsedStats) {
+                    if (!row.game_id || !row.team) continue;
+                    if (!gameFor5v5.has(row.game_id)) gameFor5v5.set(row.game_id, new Map());
+                    gameFor5v5.get(row.game_id)!.set(row.team, row.attempts_for_5v5 || '0');
+                }
+                for (const row of parsedStats) {
+                    const agVal = parseFloat(row.attempts_ag_5v5 || '0');
+                    if (agVal === 0 && row.game_id && row.team) {
+                        // Find the opponent's for_5v5 for this game
+                        const gameTeams = gameFor5v5.get(row.game_id);
+                        if (gameTeams) {
+                            const opponentFor5v5 = [...gameTeams.entries()]
+                                .find(([t]) => t !== row.team)?.[1];
+                            if (opponentFor5v5 && parseFloat(opponentFor5v5) > 0) {
+                                row.attempts_ag_5v5 = opponentFor5v5;
+                            }
+                        }
+                    }
+                }
+
                 setRawData(parsedStats);
 
                 // Parse Predictions (Today's Games) - Only if file exists/loads
