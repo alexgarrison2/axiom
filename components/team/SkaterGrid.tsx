@@ -302,6 +302,99 @@ function toiRatioColor(ratio: number): string {
 }
 
 /* ═══════════════════════════════════════════════════════
+   StubSkaterCard — shown for lineup players with no piData yet
+═══════════════════════════════════════════════════════ */
+
+// Map DailyFaceoff position codes → MoneyPuck-style display position
+function dfoPosToPiPos(pos: string): string {
+    const p = pos.toLowerCase();
+    if (p === 'lw' || p === 'l') return 'L';
+    if (p === 'rw' || p === 'r') return 'R';
+    if (p === 'c') return 'C';
+    return 'D'; // ld, rd, d
+}
+
+function StubSkaterCard({ name, pos, jerseyNum, team }: {
+    name: string;
+    pos: string;
+    jerseyNum: number;
+    team: string;
+}) {
+    const piPos  = dfoPosToPiPos(pos);
+    const posC   = posAccent(piPos);
+    const lastName = name.split(' ').at(-1) ?? name;
+    void lastName;
+
+    return (
+        <div
+            className="flex flex-col rounded-xl overflow-hidden border border-white/[0.04] opacity-50"
+            style={{ background: '#111113' }}
+        >
+            {/* Top section */}
+            <div
+                className="relative flex flex-row items-stretch overflow-hidden shrink-0"
+                style={{ background: '#0d0d0f', minHeight: 92 }}
+            >
+                {/* Dim top-edge line */}
+                <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-20 bg-white/5" />
+
+                {/* Identity */}
+                <div className="flex flex-col justify-center gap-[5px] min-w-0 flex-1 z-10 pt-4 pb-2 px-3">
+                    <span className="text-[20px] font-black text-zinc-400 leading-none tracking-tight truncate">
+                        {name}
+                    </span>
+                    <div className="flex items-center gap-2">
+                        <span
+                            className="shrink-0 text-[8px] font-black px-[7px] py-[3px] rounded-md uppercase tracking-wider leading-none"
+                            style={{ color: posC.text, background: posC.bg, opacity: 0.6 }}
+                        >
+                            {piPos}
+                        </span>
+                        {jerseyNum > 0 && (
+                            <span className="text-[11px] font-mono text-zinc-600 leading-none">#{jerseyNum}</span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Impact box — greyed out 0.00 */}
+                <div className="flex flex-col items-end justify-start gap-[4px] pr-2.5 pl-1 shrink-0 z-10 pt-2 pb-1">
+                    <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest leading-none">Impact</span>
+                    <div
+                        className="flex items-center justify-center rounded-md px-2 py-1"
+                        style={{ background: '#27272a', minWidth: 52 }}
+                    >
+                        <span className="text-[19px] font-black tabular-nums leading-none text-zinc-600">0.00</span>
+                    </div>
+                    <span className="text-[10px] font-bold leading-none tabular-nums text-zinc-700">—</span>
+                </div>
+            </div>
+
+            {/* Body */}
+            <div className="px-3 pt-1.5 pb-3 flex flex-col gap-2">
+                {/* Counting stats — all dashes */}
+                <div className="grid grid-cols-6 gap-0.5 text-center">
+                    {(['GP','G','A','Pts','SOG','TOI'] as string[]).map(l => (
+                        <div key={l} className="flex flex-col items-center gap-[2px]">
+                            <span className="text-[16px] font-bold text-zinc-700 tabular-nums leading-none">—</span>
+                            <span className="text-[7.5px] text-zinc-700 uppercase tracking-wider leading-none">{l}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="h-px" style={{ background: 'rgba(255,255,255,0.03)' }} />
+
+                {/* "No data" notice */}
+                <div className="flex items-center justify-center py-2">
+                    <span className="text-[9px] font-medium text-zinc-700 uppercase tracking-widest">
+                        Awaiting MoneyPuck data
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════
    SkaterCard
 ═══════════════════════════════════════════════════════ */
 
@@ -883,10 +976,8 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
 
                 // Section label + cards row
                 const LineSection = ({ label, lineKey }: { label: string; lineKey: string }) => {
-                    const linePlayers = (lineup![lineKey] || [])
-                        .map(lp => findPlayer(lp.name))
-                        .filter(Boolean) as AggPlayer[];
-                    if (linePlayers.length === 0) return null;
+                    const lineupPlayers = lineup![lineKey] || [];
+                    if (lineupPlayers.length === 0) return null;
                     return (
                         <div>
                             <div className="flex items-center gap-2 mb-2">
@@ -896,15 +987,30 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                                 <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                                {linePlayers.map(p => (
-                                    <SkaterCard
-                                        key={p.id}
-                                        player={p}
-                                        teamGames={teamGames}
-                                        pool={p.pi.is_forward ? pools.fwd : pools.def}
-                                        teamToiAvgs={teamToiAvgs}
-                                    />
-                                ))}
+                                {lineupPlayers.map(lp => {
+                                    const p = findPlayer(lp.name);
+                                    if (p) {
+                                        return (
+                                            <SkaterCard
+                                                key={p.id}
+                                                player={p}
+                                                teamGames={teamGames}
+                                                pool={p.pi.is_forward ? pools.fwd : pools.def}
+                                                teamToiAvgs={teamToiAvgs}
+                                            />
+                                        );
+                                    }
+                                    // Player not yet in piData — show greyed-out stub
+                                    return (
+                                        <StubSkaterCard
+                                            key={lp.name}
+                                            name={lp.name}
+                                            pos={lp.pos}
+                                            jerseyNum={lp.number ?? 0}
+                                            team={teamAbbr}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     );

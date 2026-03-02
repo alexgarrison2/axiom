@@ -46,7 +46,7 @@ import pandas as pd
 
 # Players with less than this many 5v5 seconds on the season are excluded.
 # 1800s = 30 minutes total = ~3 min/gm over 10 games — weeds out deep recalls.
-MIN_EV_TOI_SECONDS = 1800    # 30 minutes total — minimum for a profile
+MIN_EV_TOI_SECONDS = 300     # 5 minutes total — low enough to catch recent callups
 
 # Min ice time per game to be considered "active" in lineup projection
 MIN_EV_TOI_PER_GAME = 120    # 2 minutes per game
