@@ -256,6 +256,12 @@ function ImpactBadge({ lineKey, impact }: {
     );
 }
 
+// ── Name normalizer (strips diacritics, lowercases) ──────────────────────────
+// Mirrors SkaterGrid's norm() so name-based player lookup is consistent.
+function normName(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
 // ── Main grid ─────────────────────────────────────────────────────────────────
 export default function LineupGrid({
     lineup, triCode, lineupScore, lineupVsTeam, goalieStarter, gsaxPerGame, gsaxPct,
@@ -270,12 +276,18 @@ export default function LineupGrid({
             .catch(() => {});
     }, []);
 
-    // id → gs_pg (game_score / games_played)
-    const gsMap = useMemo((): Map<number, number> => {
+    // name → gs_pg (game_score / games_played)
+    // Keyed by normalised full name AND normalised last name for two-pass fallback
+    const gsMap = useMemo((): Map<string, number> => {
         if (!piData) return new Map();
-        const m = new Map<number, number>();
-        for (const [id, p] of Object.entries(piData)) {
-            if (p.games_played > 0) m.set(Number(id), p.game_score / p.games_played);
+        const m = new Map<string, number>();
+        for (const [, p] of Object.entries(piData)) {
+            if (p.games_played <= 0) continue;
+            const gspg = p.game_score / p.games_played;
+            const full = normName(p.name);
+            m.set(full, gspg);
+            const last = full.split(' ').at(-1) ?? full;
+            if (!m.has(last)) m.set(last, gspg); // last-name fallback (don't overwrite)
         }
         return m;
     }, [piData]);
@@ -317,10 +329,16 @@ export default function LineupGrid({
     const lineImpacts = useMemo((): Record<string, { total: number; pct: number } | null> => {
         if (!lineup || !gsMap.size || !Object.keys(lineDistributions).length) return {};
         const result: Record<string, { total: number; pct: number } | null> = {};
+        const lookupGsPg = (name: string): number | undefined => {
+            const full = normName(name);
+            if (gsMap.has(full)) return gsMap.get(full);
+            const last = full.split(' ').at(-1) ?? full;
+            return gsMap.get(last);
+        };
         const compute = (key: string, required: number) => {
             const players = lineup[key] || [];
             if (players.length < required) { result[key] = null; return; }
-            const scores = players.slice(0, required).map(p => gsMap.get(p.id));
+            const scores = players.slice(0, required).map(p => lookupGsPg(p.name));
             if (scores.some(s => s === undefined)) { result[key] = null; return; }
             const total = (scores as number[]).reduce((a, b) => a + b, 0);
             const dist  = lineDistributions[key] || [];
