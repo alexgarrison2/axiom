@@ -112,6 +112,8 @@ jobs:
             [ -f public/data/nhl_season_2025_2026_player_stats.csv ] && git add public/data/nhl_season_2025_2026_player_stats.csv
             # Player bio data (age, height, weight, shoots)
             [ -f public/data/player_bio.json ] && git add public/data/player_bio.json
+            # Team lineups (for IMP distribution against real current pairings)
+            [ -f public/data/team_lineups.json ] && git add public/data/team_lineups.json
             
             # Commit if changes exist
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"

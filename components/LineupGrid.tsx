@@ -25,6 +25,11 @@ interface PIPlayer {
 }
 type PiData = Record<string, PIPlayer>;
 
+// ── Team lineups (all teams' current lineup data) ─────────────────────────────
+interface LineupPlayerSlim { name: string; }
+interface TeamLineupSlim { [key: string]: LineupPlayerSlim[]; } // f1,f2,f3,f4,d1,d2,d3
+type AllLineups = Record<string, TeamLineupSlim>; // triCode → lineup
+
 // ── Tooltip segment type ───────────────────────────────────────────────────────
 // Allows individual words/values to be colored independently.
 type Seg = { text: string; color?: string };
@@ -233,7 +238,7 @@ function ImpactBadge({ lineKey, impact }: {
         { text: `${sign}${impact.total.toFixed(2)} gs/gm`, color },
         { text: ' · ' },
         { text: `${rank}${ordinalSuffix(rank)} %ile`, color },
-        { text: ` vs. league ${lineLabel} lines` },
+        { text: ` vs. current NHL ${lineLabel} lines` },
     ];
 
     return (
@@ -267,12 +272,17 @@ export default function LineupGrid({
     lineup, triCode, lineupScore, lineupVsTeam, goalieStarter, gsaxPerGame, gsaxPct,
 }: LineupGridProps) {
     // ── Hooks (must precede any early returns per Rules of Hooks) ─────────────
-    const [piData, setPiData] = useState<PiData | null>(null);
+    const [piData,      setPiData]      = useState<PiData | null>(null);
+    const [allLineups,  setAllLineups]  = useState<AllLineups | null>(null);
 
     useEffect(() => {
         fetch('/data/player_impact.json')
             .then(r => r.json())
             .then((d: PiData) => setPiData(d))
+            .catch(() => {});
+        fetch('/data/team_lineups.json')
+            .then(r => r.json())
+            .then((d: AllLineups) => setAllLineups(d))
             .catch(() => {});
     }, []);
 
@@ -292,37 +302,59 @@ export default function LineupGrid({
         return m;
     }, [piData]);
 
-    // League-wide virtual line distributions (sorted ascending) for percentile ranking.
-    // For each team, sort forwards/defense by gs_pg desc → F1=top3, F2=next3, etc.
+    // League-wide distributions built from ACTUAL current lineup pairings/lines.
+    // Each team's real f1/f2/f3/f4/d1/d2/d3 contributes one entry per slot.
+    // Falls back to virtual (top-N by gs_pg) if team_lineups.json is unavailable.
     const lineDistributions = useMemo((): Record<string, number[]> => {
-        if (!piData) return {};
-        const teamFwds = new Map<string, number[]>();
-        const teamDefs  = new Map<string, number[]>();
-        for (const [, p] of Object.entries(piData)) {
-            if (p.games_played <= 0) continue;
-            const gspg   = p.game_score / p.games_played;
-            const bucket = p.is_forward ? teamFwds : teamDefs;
-            if (!bucket.has(p.team)) bucket.set(p.team, []);
-            bucket.get(p.team)!.push(gspg);
-        }
+        if (!gsMap.size) return {};
+
         const dist: Record<string, number[]> = { f1: [], f2: [], f3: [], f4: [], d1: [], d2: [], d3: [] };
-        for (const fwds of teamFwds.values()) {
-            const s = [...fwds].sort((a, b) => b - a);
-            for (let li = 0; li < 4; li++) {
-                const sl = s.slice(li * 3, li * 3 + 3);
-                if (sl.length === 3) dist[`f${li + 1}`].push(sl[0] + sl[1] + sl[2]);
+        const lookupGsPg = (name: string): number | undefined => {
+            const full = normName(name);
+            return gsMap.get(full) ?? gsMap.get(full.split(' ').at(-1) ?? full);
+        };
+
+        if (allLineups) {
+            // ── Real lineup distribution ────────────────────────────────────
+            for (const teamLineup of Object.values(allLineups)) {
+                for (const [key, required] of [['f1',3],['f2',3],['f3',3],['f4',3],['d1',2],['d2',2],['d3',2]] as [string,number][]) {
+                    const players = teamLineup[key] || [];
+                    if (players.length < required) continue;
+                    const scores = players.slice(0, required).map(p => lookupGsPg(p.name));
+                    if (scores.some(s => s === undefined)) continue;
+                    dist[key].push((scores as number[]).reduce((a, b) => a + b, 0));
+                }
+            }
+        } else {
+            // ── Fallback: virtual top-N distribution from piData ────────────
+            const teamFwds = new Map<string, number[]>();
+            const teamDefs  = new Map<string, number[]>();
+            for (const [, p] of Object.entries(piData ?? {})) {
+                if (p.games_played <= 0) continue;
+                const gspg   = p.game_score / p.games_played;
+                const bucket = p.is_forward ? teamFwds : teamDefs;
+                if (!bucket.has(p.team)) bucket.set(p.team, []);
+                bucket.get(p.team)!.push(gspg);
+            }
+            for (const fwds of teamFwds.values()) {
+                const s = [...fwds].sort((a, b) => b - a);
+                for (let li = 0; li < 4; li++) {
+                    const sl = s.slice(li * 3, li * 3 + 3);
+                    if (sl.length === 3) dist[`f${li + 1}`].push(sl[0] + sl[1] + sl[2]);
+                }
+            }
+            for (const defs of teamDefs.values()) {
+                const s = [...defs].sort((a, b) => b - a);
+                for (let di = 0; di < 3; di++) {
+                    const sl = s.slice(di * 2, di * 2 + 2);
+                    if (sl.length === 2) dist[`d${di + 1}`].push(sl[0] + sl[1]);
+                }
             }
         }
-        for (const defs of teamDefs.values()) {
-            const s = [...defs].sort((a, b) => b - a);
-            for (let pi = 0; pi < 3; pi++) {
-                const sl = s.slice(pi * 2, pi * 2 + 2);
-                if (sl.length === 2) dist[`d${pi + 1}`].push(sl[0] + sl[1]);
-            }
-        }
+
         for (const key of Object.keys(dist)) dist[key].sort((a, b) => a - b);
         return dist;
-    }, [piData]);
+    }, [gsMap, allLineups, piData]);
 
     // Actual lineup line totals + percentile vs league distributions.
     // Returns null for incomplete lines (missing players / no impact data).

@@ -297,6 +297,10 @@ def refresh_pipeline():
             shutil.copy("upcoming_games.json", "../public/data/upcoming_games.json")
             print("Synced upcoming_games.json to public/data")
 
+        if os.path.exists("team_lineups.json"):
+            shutil.copy("team_lineups.json", "../public/data/team_lineups.json")
+            print("Synced team_lineups.json to public/data")
+
         # Note: nhl_season_2025_2026_player_stats.csv is written directly to
         # public/data/ by backfill_player_stats.py (step 0d above). No copy needed.
         
