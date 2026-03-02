@@ -226,6 +226,8 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     const [selectedTab, setSelectedTab] = useState<string>(uniqueDates[0] || 'History');
     // Multi-select state: Default to ['All']
     const [historyFilters, setHistoryFilters] = useState<string[]>(['All']);
+    // History view mode: 'date' (default) or 'team'
+    const [historyViewMode, setHistoryViewMode] = useState<'date' | 'team'>('date');
 
     // History Date Range Logic
     const uniqueHistoryDates = useMemo(() => {
@@ -452,6 +454,23 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         {/* History Filters & Slider */}
                         <div className="flex flex-col items-center gap-4 mb-4 max-w-2xl mx-auto">
 
+                            {/* View Toggle: By Date / By Team */}
+                            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/8">
+                                {(['date', 'team'] as const).map((mode) => (
+                                    <button
+                                        key={mode}
+                                        onClick={() => setHistoryViewMode(mode)}
+                                        className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                                            historyViewMode === mode
+                                                ? 'bg-white/10 text-white shadow-sm'
+                                                : 'text-neutral-500 hover:text-neutral-300'
+                                        }`}
+                                    >
+                                        {mode === 'date' ? 'By Date' : 'By Team'}
+                                    </button>
+                                ))}
+                            </div>
+
                             {/* Date Range Slider */}
                             {uniqueHistoryDates.length > 1 && (
                                 <div className="w-full px-4 md:px-0">
@@ -579,7 +598,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             })()}
                         </div>
 
-                        <HistoryTable entries={filteredHistory} />
+                        <HistoryTable entries={filteredHistory} viewMode={historyViewMode} />
                     </motion.div>
                 ) : selectedTab === 'Teams' ? (
                     <motion.div
