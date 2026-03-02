@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { TeamLineup } from '@/utils/data';
 import { ArrowUp, ArrowDown, Plus } from 'lucide-react';
@@ -14,6 +14,16 @@ interface LineupGridProps {
     gsaxPerGame?: number;     // GSAx per game (positive = above avg)
     gsaxPct?: number;         // percentile rank among NHL starters (0–100)
 }
+
+// ── Player impact data types ───────────────────────────────────────────────────
+interface PIPlayer {
+    name: string;
+    team: string;
+    is_forward: boolean;
+    games_played: number;
+    game_score: number;
+}
+type PiData = Record<string, PIPlayer>;
 
 // ── Tooltip segment type ───────────────────────────────────────────────────────
 // Allows individual words/values to be colored independently.
@@ -57,6 +67,14 @@ function goalieColor(gsax: number): string {
     if (gsax > -0.05) return '#6b7280';
     if (gsax > -0.15) return '#f97316';
     return '#ef4444';
+}
+
+function lineImpactColor(pct: number): string {
+    if (pct >= 80) return '#3b82f6';   // blue   – elite
+    if (pct >= 60) return '#38bdf8';   // sky    – above avg
+    if (pct >= 40) return '#6b7280';   // gray   – average
+    if (pct >= 20) return '#f97316';   // orange – below avg
+    return '#ef4444';                  // red    – bottom tier
 }
 
 // ── Tooltip segment builders ──────────────────────────────────────────────────
@@ -190,10 +208,131 @@ function LineupHeader({ lineupScore, lineupVsTeam, triCode, goalieStarter, gsaxP
     );
 }
 
+// ── Line/pairing impact badge ─────────────────────────────────────────────────
+function ImpactBadge({ lineKey, impact }: {
+    lineKey: string;
+    impact: { total: number; pct: number } | null | undefined;
+}) {
+    const [mouse, setMouse] = useState<{ x: number; y: number } | null>(null);
+
+    if (!impact) {
+        return (
+            <div className="flex items-center justify-center border-l border-white/5 min-w-[3.5rem]">
+                <span className="text-[9px] text-neutral-700">—</span>
+            </div>
+        );
+    }
+
+    const color     = lineImpactColor(impact.pct);
+    const sign      = impact.total >= 0 ? '+' : '';
+    const rank      = Math.round(impact.pct);
+    const lineLabel = lineKey.toUpperCase();
+
+    const tooltipSegs: Seg[] = [
+        { text: `${lineLabel} line: ` },
+        { text: `${sign}${impact.total.toFixed(2)} gs/gm`, color },
+        { text: ' · ' },
+        { text: `${rank}${ordinalSuffix(rank)} %ile`, color },
+        { text: ` vs. league ${lineLabel} lines` },
+    ];
+
+    return (
+        <>
+            <div
+                className="flex flex-col items-center justify-center border-l border-white/5 min-w-[3.5rem] cursor-default select-none"
+                onMouseEnter={(e) => setMouse({ x: e.clientX, y: e.clientY })}
+                onMouseMove={(e)  => setMouse({ x: e.clientX, y: e.clientY })}
+                onMouseLeave={()  => setMouse(null)}
+            >
+                <span className="text-[10px] font-bold tabular-nums leading-none" style={{ color }}>
+                    {sign}{impact.total.toFixed(2)}
+                </span>
+                <span className="text-[8px] tabular-nums leading-none mt-0.5" style={{ color }}>
+                    {rank}{ordinalSuffix(rank)}%
+                </span>
+            </div>
+            {mouse && <FixedTooltip x={mouse.x} y={mouse.y} segments={tooltipSegs} />}
+        </>
+    );
+}
+
 // ── Main grid ─────────────────────────────────────────────────────────────────
 export default function LineupGrid({
     lineup, triCode, lineupScore, lineupVsTeam, goalieStarter, gsaxPerGame, gsaxPct,
 }: LineupGridProps) {
+    // ── Hooks (must precede any early returns per Rules of Hooks) ─────────────
+    const [piData, setPiData] = useState<PiData | null>(null);
+
+    useEffect(() => {
+        fetch('/data/player_impact.json')
+            .then(r => r.json())
+            .then((d: PiData) => setPiData(d))
+            .catch(() => {});
+    }, []);
+
+    // id → gs_pg (game_score / games_played)
+    const gsMap = useMemo((): Map<number, number> => {
+        if (!piData) return new Map();
+        const m = new Map<number, number>();
+        for (const [id, p] of Object.entries(piData)) {
+            if (p.games_played > 0) m.set(Number(id), p.game_score / p.games_played);
+        }
+        return m;
+    }, [piData]);
+
+    // League-wide virtual line distributions (sorted ascending) for percentile ranking.
+    // For each team, sort forwards/defense by gs_pg desc → F1=top3, F2=next3, etc.
+    const lineDistributions = useMemo((): Record<string, number[]> => {
+        if (!piData) return {};
+        const teamFwds = new Map<string, number[]>();
+        const teamDefs  = new Map<string, number[]>();
+        for (const [, p] of Object.entries(piData)) {
+            if (p.games_played <= 0) continue;
+            const gspg   = p.game_score / p.games_played;
+            const bucket = p.is_forward ? teamFwds : teamDefs;
+            if (!bucket.has(p.team)) bucket.set(p.team, []);
+            bucket.get(p.team)!.push(gspg);
+        }
+        const dist: Record<string, number[]> = { f1: [], f2: [], f3: [], f4: [], d1: [], d2: [], d3: [] };
+        for (const fwds of teamFwds.values()) {
+            const s = [...fwds].sort((a, b) => b - a);
+            for (let li = 0; li < 4; li++) {
+                const sl = s.slice(li * 3, li * 3 + 3);
+                if (sl.length === 3) dist[`f${li + 1}`].push(sl[0] + sl[1] + sl[2]);
+            }
+        }
+        for (const defs of teamDefs.values()) {
+            const s = [...defs].sort((a, b) => b - a);
+            for (let pi = 0; pi < 3; pi++) {
+                const sl = s.slice(pi * 2, pi * 2 + 2);
+                if (sl.length === 2) dist[`d${pi + 1}`].push(sl[0] + sl[1]);
+            }
+        }
+        for (const key of Object.keys(dist)) dist[key].sort((a, b) => a - b);
+        return dist;
+    }, [piData]);
+
+    // Actual lineup line totals + percentile vs league distributions.
+    // Returns null for incomplete lines (missing players / no impact data).
+    const lineImpacts = useMemo((): Record<string, { total: number; pct: number } | null> => {
+        if (!lineup || !gsMap.size || !Object.keys(lineDistributions).length) return {};
+        const result: Record<string, { total: number; pct: number } | null> = {};
+        const compute = (key: string, required: number) => {
+            const players = lineup[key] || [];
+            if (players.length < required) { result[key] = null; return; }
+            const scores = players.slice(0, required).map(p => gsMap.get(p.id));
+            if (scores.some(s => s === undefined)) { result[key] = null; return; }
+            const total = (scores as number[]).reduce((a, b) => a + b, 0);
+            const dist  = lineDistributions[key] || [];
+            if (!dist.length) { result[key] = null; return; }
+            result[key] = { total, pct: (dist.filter(v => v < total).length / dist.length) * 100 };
+        };
+        ['f1', 'f2', 'f3', 'f4'].forEach(k => compute(k, 3));
+        ['d1', 'd2', 'd3'].forEach(k => compute(k, 2));
+        return result;
+    }, [lineup, gsMap, lineDistributions]);
+
+    // ── Early return (after hooks) ────────────────────────────────────────────
     if (!lineup) return (
         <div className="flex flex-col items-center justify-center p-4 text-neutral-500 text-xs">
             No lineup data available.
@@ -203,6 +342,9 @@ export default function LineupGrid({
     const getPlayers = (keys: string[]) => keys.map(k => lineup[k] || []);
     const forwards = getPlayers(['f1', 'f2', 'f3', 'f4']);
     const defense  = getPlayers(['d1', 'd2', 'd3']);
+
+    // Show the IMP column once player data has loaded
+    const showImp = piData !== null;
 
     return (
         <div className="flex flex-col w-full text-left">
@@ -224,13 +366,14 @@ export default function LineupGrid({
             <div className="flex flex-col gap-4">
                 {/* Forwards Table */}
                 <div className="border border-white/10 rounded-lg overflow-hidden">
-                    <div className="grid grid-cols-3 bg-white/5 border-b border-white/10">
+                    <div className={`grid ${showImp ? 'grid-cols-[1fr_1fr_1fr_3.5rem]' : 'grid-cols-3'} bg-white/5 border-b border-white/10`}>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase">LW</div>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-x border-white/5">C</div>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase">RW</div>
+                        {showImp && <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-l border-white/5">IMP</div>}
                     </div>
                     {forwards.map((line, i) => (
-                        <div key={i} className={`grid grid-cols-3 ${i !== forwards.length - 1 ? 'border-b border-white/5' : ''}`}>
+                        <div key={i} className={`grid ${showImp ? 'grid-cols-[1fr_1fr_1fr_3.5rem]' : 'grid-cols-3'} ${i !== forwards.length - 1 ? 'border-b border-white/5' : ''}`}>
                             {[0, 1, 2].map(colIndex => {
                                 const player = line[colIndex];
                                 return (
@@ -253,18 +396,22 @@ export default function LineupGrid({
                                     </div>
                                 );
                             })}
+                            {showImp && (
+                                <ImpactBadge lineKey={`f${i + 1}`} impact={lineImpacts[`f${i + 1}`]} />
+                            )}
                         </div>
                     ))}
                 </div>
 
                 {/* Defense Table */}
-                <div className="border border-white/10 rounded-lg overflow-hidden w-2/3">
-                    <div className="grid grid-cols-2 bg-white/5 border-b border-white/10">
+                <div className={`border border-white/10 rounded-lg overflow-hidden ${showImp ? '' : 'w-2/3'}`}>
+                    <div className={`grid ${showImp ? 'grid-cols-[1fr_1fr_3.5rem]' : 'grid-cols-2'} bg-white/5 border-b border-white/10`}>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase">LD</div>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-l border-white/5">RD</div>
+                        {showImp && <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-l border-white/5">IMP</div>}
                     </div>
                     {defense.map((pair, i) => (
-                        <div key={i} className={`grid grid-cols-2 ${i !== defense.length - 1 ? 'border-b border-white/5' : ''}`}>
+                        <div key={i} className={`grid ${showImp ? 'grid-cols-[1fr_1fr_3.5rem]' : 'grid-cols-2'} ${i !== defense.length - 1 ? 'border-b border-white/5' : ''}`}>
                             {[0, 1].map(colIndex => {
                                 const player = pair[colIndex];
                                 return (
@@ -287,6 +434,9 @@ export default function LineupGrid({
                                     </div>
                                 );
                             })}
+                            {showImp && (
+                                <ImpactBadge lineKey={`d${i + 1}`} impact={lineImpacts[`d${i + 1}`]} />
+                            )}
                         </div>
                     ))}
                 </div>

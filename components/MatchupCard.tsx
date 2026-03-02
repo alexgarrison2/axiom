@@ -283,6 +283,25 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
     const formatTime = (time: string) => time;
 
+    // Returns a color based on game time (CT):
+    //   < 6:00 PM CT → yellow (#FFF344)
+    //   > 8:00 PM CT → purple (#B881FF)
+    //   6:00–8:00 PM CT → neutral
+    const getTimeColor = (timeStr: string): string => {
+        if (!timeStr) return '#a3a3a3';
+        const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (!match) return '#a3a3a3';
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const meridiem = match[3].toUpperCase();
+        if (meridiem === 'PM' && hours !== 12) hours += 12;
+        if (meridiem === 'AM' && hours === 12) hours = 0;
+        const totalMinutes = hours * 60 + minutes;
+        if (totalMinutes < 18 * 60) return '#FFF344';   // before 6:00 PM
+        if (totalMinutes > 20 * 60) return '#B881FF';   // after 8:00 PM
+        return '#a3a3a3';
+    };
+
     const getGlowColor = (homeWager: string | null, awayWager: string | null) => {
         if (isSocial) return 'border-white/10'; // Social: no hover glow
         if (homeWager || awayWager) {
@@ -777,7 +796,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     </div>
 
                     <div className="flex flex-col items-center">
-                        <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-widest leading-none mt-1">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest leading-none mt-1" style={{ color: getTimeColor(startTime || '') }}>
                             {formatTime(startTime || '')}
                         </span>
                     </div>
@@ -992,7 +1011,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     {/* CENTER INFO */}
                     <div className="flex flex-col items-center justify-center w-[30%] px-6 border-l border-r border-white/5 mx-4">
                         <div className="flex flex-col items-center mb-6">
-                            <span className="text-xs font-mono text-neutral-400 tracking-[0.2em] mb-3">{formatTime(startTime || '')}</span>
+                            <span className="text-xs font-mono tracking-[0.2em] mb-3" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
 
                             <div className="px-5 py-2 mt-2 rounded-full border border-neutral-700 bg-neutral-800/50 backdrop-blur-md min-w-[56px] text-center">
                                 <span className="text-sm font-bold text-neutral-200 tracking-wider">TOTAL: {totalGoals.toFixed(1)}</span>
@@ -1211,7 +1230,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
                         {/* CENTER (Time + Bar) */}
                         <div className="flex flex-col items-center justify-center flex-1 gap-1">
-                            <span className="text-[10px] font-mono text-neutral-400 tracking-wider whitespace-nowrap mb-0.5">{formatTime(startTime || '')}</span>
+                            <span className="text-[10px] font-mono tracking-wider whitespace-nowrap mb-0.5" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
                             {/* Bar - Taller (h-5) & Animated */}
                             <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden flex relative shadow-inner border border-white/5">
                                 {/* Away Bar (Left) - Animated Width */}
