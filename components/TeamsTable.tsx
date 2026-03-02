@@ -132,6 +132,20 @@ interface Matchup {
     homeStarterStatus?: string;
     awayStarter?: string;
     awayStarterStatus?: string;
+    homeVegasOdds?: number;
+    awayVegasOdds?: number;
+    homeModelOdds?: string;
+    awayModelOdds?: string;
+    homeEV?: number;
+    awayEV?: number;
+    recommendation?: string;
+}
+
+interface TeamOdds {
+    vegasOdds?: number;
+    modelOdds?: string;
+    ev?: number;
+    recommendation?: string;
 }
 
 type SortKey = keyof TeamStat;
@@ -571,16 +585,25 @@ const TeamsTable = () => {
 
                     console.log("Filtering for today (America/Chicago):", todayStr);
 
+                    const parseMatchupRow = (row: Record<string, string>): Matchup => ({
+                        home: row.home_team?.trim(),
+                        away: row.away_team?.trim(),
+                        homeStarter: cleanName(row.home_starter),
+                        homeStarterStatus: getStarterStatus(row.home_starter),
+                        awayStarter: cleanName(row.away_starter),
+                        awayStarterStatus: getStarterStatus(row.away_starter),
+                        homeVegasOdds: row.home_vegas_odds ? parseFloat(row.home_vegas_odds) : undefined,
+                        awayVegasOdds: row.away_vegas_odds ? parseFloat(row.away_vegas_odds) : undefined,
+                        homeModelOdds: row.home_model_odds?.trim() || undefined,
+                        awayModelOdds: row.away_model_odds?.trim() || undefined,
+                        homeEV: row.home_ev ? parseFloat(row.home_ev) : undefined,
+                        awayEV: row.away_ev ? parseFloat(row.away_ev) : undefined,
+                        recommendation: row.wager_recommendation?.trim().replace(/^'|'$/g, '') || undefined,
+                    });
+
                     const matchups: Matchup[] = parsedPreds
                         .filter((row: Record<string, string>) => row.game_date === todayStr)
-                        .map((row: Record<string, string>) => ({
-                            home: row.home_team?.trim(),
-                            away: row.away_team?.trim(),
-                            homeStarter: cleanName(row.home_starter),
-                            homeStarterStatus: getStarterStatus(row.home_starter),
-                            awayStarter: cleanName(row.away_starter),
-                            awayStarterStatus: getStarterStatus(row.away_starter)
-                        }))
+                        .map(parseMatchupRow)
                         .filter(m => m.home && m.away);
 
                     console.log("Valid Matchups:", matchups);
@@ -593,14 +616,7 @@ const TeamsTable = () => {
 
                     const tomorrowMatchupsData: Matchup[] = parsedPreds
                         .filter((row: Record<string, string>) => row.game_date === tomorrowStr)
-                        .map((row: Record<string, string>) => ({
-                            home: row.home_team?.trim(),
-                            away: row.away_team?.trim(),
-                            homeStarter: cleanName(row.home_starter),
-                            homeStarterStatus: getStarterStatus(row.home_starter),
-                            awayStarter: cleanName(row.away_starter),
-                            awayStarterStatus: getStarterStatus(row.away_starter)
-                        }))
+                        .map(parseMatchupRow)
                         .filter(m => m.home && m.away);
                     setTomorrowMatchups(tomorrowMatchupsData);
                 } else {
@@ -922,6 +938,32 @@ const TeamsTable = () => {
         };
     }, [stats, leagueStats]);
 
+
+    // Build per-team odds lookup from today + tomorrow matchups
+    const teamOddsLookup = useMemo(() => {
+        const lookup = new Map<string, TeamOdds>();
+        const isTomorrow = viewMode.startsWith('PlayingTomorrow');
+        const sourceMatchups = isTomorrow ? tomorrowMatchups : todayMatchups;
+        sourceMatchups.forEach(m => {
+            if (m.home) {
+                lookup.set(m.home, {
+                    vegasOdds: m.homeVegasOdds,
+                    modelOdds: m.homeModelOdds,
+                    ev: m.homeEV,
+                    recommendation: m.recommendation,
+                });
+            }
+            if (m.away) {
+                lookup.set(m.away, {
+                    vegasOdds: m.awayVegasOdds,
+                    modelOdds: m.awayModelOdds,
+                    ev: m.awayEV,
+                    recommendation: m.recommendation,
+                });
+            }
+        });
+        return lookup;
+    }, [viewMode, todayMatchups, tomorrowMatchups]);
 
     if (loading) return <div className="p-8 text-center bg-gray-900 border border-gray-800 rounded-xl text-gray-400">Loading Stats...</div>;
 
@@ -1259,6 +1301,52 @@ const TeamsTable = () => {
                                                         {idx % 2 === 0 ? 'AWAY' : 'HOME'}
                                                     </span>
                                                 )}
+
+                                                {/* Odds Badge (Playing Today / Tomorrow modes only) */}
+                                                {viewMode !== 'All' && (() => {
+                                                    const oddsData = teamOddsLookup.get(team.team);
+                                                    if (!oddsData || oddsData.vegasOdds == null) return null;
+                                                    const isPositive = oddsData.vegasOdds > 0;
+                                                    const vegasStr = isPositive ? `+${oddsData.vegasOdds}` : `${oddsData.vegasOdds}`;
+                                                    const modelStr = oddsData.modelOdds
+                                                        ? (!oddsData.modelOdds.startsWith('+') && !oddsData.modelOdds.startsWith('-') && parseFloat(oddsData.modelOdds) > 0
+                                                            ? `+${oddsData.modelOdds}`
+                                                            : oddsData.modelOdds)
+                                                        : null;
+                                                    return (
+                                                        <div className="relative group/odds ml-auto shrink-0">
+                                                            <span className={`text-[10px] font-bold cursor-help px-1 py-0.5 rounded ${isPositive ? 'text-emerald-400' : 'text-gray-400'}`}>
+                                                                {vegasStr}
+                                                            </span>
+                                                            {/* Hover Tooltip — appears below, inside scroll container */}
+                                                            <div className="absolute z-[200] top-full left-0 mt-1 hidden group-hover/odds:block w-44 p-2.5 bg-gray-950 border border-gray-700/80 rounded-xl shadow-2xl pointer-events-none">
+                                                                {/* Tooltip arrow pointing up */}
+                                                                <div className="absolute bottom-full left-3 border-4 border-transparent border-b-gray-700/80"></div>
+                                                                <div className="text-[9px] text-blue-400 font-black uppercase tracking-[0.12em] mb-2 border-b border-gray-800 pb-1.5">
+                                                                    Betting Info
+                                                                </div>
+                                                                <div className="space-y-1.5">
+                                                                    <div className="flex justify-between items-center">
+                                                                        <span className="text-[10px] text-gray-500">xOdds</span>
+                                                                        <span className="text-[10px] font-bold text-white">{modelStr ?? '—'}</span>
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center">
+                                                                        <span className="text-[10px] text-gray-500">EV%</span>
+                                                                        <span className={`text-[10px] font-bold ${(oddsData.ev ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                                            {oddsData.ev != null ? `${oddsData.ev >= 0 ? '+' : ''}${oddsData.ev.toFixed(1)}%` : '—'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center">
+                                                                        <span className="text-[10px] text-gray-500">Rec</span>
+                                                                        <span className="text-[10px] font-bold text-yellow-300 text-right max-w-[110px] leading-tight">
+                                                                            {oddsData.recommendation ?? '—'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
                                         </td>
 
