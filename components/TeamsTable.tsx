@@ -419,6 +419,9 @@ const TeamsTable = () => {
     const [todayMatchups, setTodayMatchups] = useState<Matchup[]>([]);
     const [tomorrowMatchups, setTomorrowMatchups] = useState<Matchup[]>([]);
 
+    // Fixed-position odds tooltip (escapes table overflow/stacking context)
+    const [oddsTooltip, setOddsTooltip] = useState<{ x: number; y: number; data: TeamOdds } | null>(null);
+
     // Groups for Desktop headers and Mobile filtering
     const STAT_GROUPS = useMemo(() => [
         { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct', 'rw'] },
@@ -1306,45 +1309,18 @@ const TeamsTable = () => {
                                                 {viewMode !== 'All' && (() => {
                                                     const oddsData = teamOddsLookup.get(team.team);
                                                     if (!oddsData || oddsData.vegasOdds == null) return null;
-                                                    const isPositive = oddsData.vegasOdds > 0;
-                                                    const vegasStr = isPositive ? `+${oddsData.vegasOdds}` : `${oddsData.vegasOdds}`;
-                                                    const modelStr = oddsData.modelOdds
-                                                        ? (!oddsData.modelOdds.startsWith('+') && !oddsData.modelOdds.startsWith('-') && parseFloat(oddsData.modelOdds) > 0
-                                                            ? `+${oddsData.modelOdds}`
-                                                            : oddsData.modelOdds)
-                                                        : null;
+                                                    const vegasStr = oddsData.vegasOdds > 0 ? `+${oddsData.vegasOdds}` : `${oddsData.vegasOdds}`;
                                                     return (
-                                                        <div className="relative group/odds ml-auto shrink-0">
-                                                            <span className={`text-[10px] font-bold cursor-help px-1 py-0.5 rounded ${isPositive ? 'text-emerald-400' : 'text-gray-400'}`}>
-                                                                {vegasStr}
-                                                            </span>
-                                                            {/* Hover Tooltip — appears below, inside scroll container */}
-                                                            <div className="absolute z-[200] top-full left-0 mt-1 hidden group-hover/odds:block w-44 p-2.5 bg-gray-950 border border-gray-700/80 rounded-xl shadow-2xl pointer-events-none">
-                                                                {/* Tooltip arrow pointing up */}
-                                                                <div className="absolute bottom-full left-3 border-4 border-transparent border-b-gray-700/80"></div>
-                                                                <div className="text-[9px] text-blue-400 font-black uppercase tracking-[0.12em] mb-2 border-b border-gray-800 pb-1.5">
-                                                                    Betting Info
-                                                                </div>
-                                                                <div className="space-y-1.5">
-                                                                    <div className="flex justify-between items-center">
-                                                                        <span className="text-[10px] text-gray-500">xOdds</span>
-                                                                        <span className="text-[10px] font-bold text-white">{modelStr ?? '—'}</span>
-                                                                    </div>
-                                                                    <div className="flex justify-between items-center">
-                                                                        <span className="text-[10px] text-gray-500">EV%</span>
-                                                                        <span className={`text-[10px] font-bold ${(oddsData.ev ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                                            {oddsData.ev != null ? `${oddsData.ev >= 0 ? '+' : ''}${oddsData.ev.toFixed(1)}%` : '—'}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div className="flex justify-between items-center">
-                                                                        <span className="text-[10px] text-gray-500">Rec</span>
-                                                                        <span className="text-[10px] font-bold text-yellow-300 text-right max-w-[110px] leading-tight">
-                                                                            {oddsData.recommendation ?? '—'}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <span
+                                                            className="text-[10px] font-bold cursor-help ml-auto shrink-0 px-1 py-0.5 rounded text-gray-400"
+                                                            onMouseEnter={(e) => {
+                                                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                                                setOddsTooltip({ x: rect.left, y: rect.bottom + 6, data: oddsData });
+                                                            }}
+                                                            onMouseLeave={() => setOddsTooltip(null)}
+                                                        >
+                                                            {vegasStr}
+                                                        </span>
                                                     );
                                                 })()}
                                             </div>
@@ -1374,6 +1350,41 @@ const TeamsTable = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Fixed-position odds tooltip — rendered outside overflow container to avoid clipping/z-index issues */}
+            {oddsTooltip && (() => {
+                const { x, y, data } = oddsTooltip;
+                const modelStr = data.modelOdds
+                    ? (!data.modelOdds.startsWith('+') && !data.modelOdds.startsWith('-') && parseFloat(data.modelOdds) > 0
+                        ? `+${data.modelOdds}`
+                        : data.modelOdds)
+                    : null;
+                return (
+                    <div
+                        className="fixed z-[9999] w-44 p-2.5 bg-gray-950 border border-gray-700/80 rounded-xl shadow-2xl pointer-events-none"
+                        style={{ left: x, top: y }}
+                    >
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between items-center">
+                                <span className="text-[10px] text-gray-500">xOdds</span>
+                                <span className="text-[10px] font-bold text-white">{modelStr ?? '—'}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-[10px] text-gray-500">EV%</span>
+                                <span className={`text-[10px] font-bold ${(data.ev ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {data.ev != null ? `${data.ev >= 0 ? '+' : ''}${data.ev.toFixed(1)}%` : '—'}
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-[10px] text-gray-500">Rec</span>
+                                <span className="text-[10px] font-bold text-yellow-300 text-right max-w-[110px] leading-tight">
+                                    {data.recommendation ?? '—'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 };
