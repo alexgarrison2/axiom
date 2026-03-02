@@ -216,7 +216,7 @@ function LineupHeader({ lineupScore, lineupVsTeam, triCode, goalieStarter, gsaxP
 // ── Line/pairing impact badge ─────────────────────────────────────────────────
 function ImpactBadge({ lineKey, impact }: {
     lineKey: string;
-    impact: { total: number; pct: number } | null | undefined;
+    impact: { total: number; pct: number; rank: number; outOf: number } | null | undefined;
 }) {
     const [mouse, setMouse] = useState<{ x: number; y: number } | null>(null);
 
@@ -230,15 +230,14 @@ function ImpactBadge({ lineKey, impact }: {
 
     const color     = lineImpactColor(impact.pct);
     const sign      = impact.total >= 0 ? '+' : '';
-    const rank      = Math.round(impact.pct);
     const lineLabel = lineKey.toUpperCase();
 
     const tooltipSegs: Seg[] = [
         { text: `${lineLabel} line: ` },
         { text: `${sign}${impact.total.toFixed(2)} gs/gm`, color },
         { text: ' · ' },
-        { text: `${rank}${ordinalSuffix(rank)} %ile`, color },
-        { text: ` vs. current NHL ${lineLabel} lines` },
+        { text: `${impact.rank}${ordinalSuffix(impact.rank)} of ${impact.outOf}`, color },
+        { text: ` current NHL ${lineLabel} lines` },
     ];
 
     return (
@@ -253,7 +252,7 @@ function ImpactBadge({ lineKey, impact }: {
                     {sign}{impact.total.toFixed(2)}
                 </span>
                 <span className="text-[8px] tabular-nums leading-none mt-0.5" style={{ color }}>
-                    {rank}{ordinalSuffix(rank)}%
+                    {impact.rank}{ordinalSuffix(impact.rank)}/{impact.outOf}
                 </span>
             </div>
             {mouse && <FixedTooltip x={mouse.x} y={mouse.y} segments={tooltipSegs} />}
@@ -356,11 +355,11 @@ export default function LineupGrid({
         return dist;
     }, [gsMap, allLineups, piData]);
 
-    // Actual lineup line totals + percentile vs league distributions.
+    // Actual lineup line totals + rank vs league distributions.
     // Returns null for incomplete lines (missing players / no impact data).
-    const lineImpacts = useMemo((): Record<string, { total: number; pct: number } | null> => {
+    const lineImpacts = useMemo((): Record<string, { total: number; pct: number; rank: number; outOf: number } | null> => {
         if (!lineup || !gsMap.size || !Object.keys(lineDistributions).length) return {};
-        const result: Record<string, { total: number; pct: number } | null> = {};
+        const result: Record<string, { total: number; pct: number; rank: number; outOf: number } | null> = {};
         const lookupGsPg = (name: string): number | undefined => {
             const full = normName(name);
             if (gsMap.has(full)) return gsMap.get(full);
@@ -372,10 +371,13 @@ export default function LineupGrid({
             if (players.length < required) { result[key] = null; return; }
             const scores = players.slice(0, required).map(p => lookupGsPg(p.name));
             if (scores.some(s => s === undefined)) { result[key] = null; return; }
-            const total = (scores as number[]).reduce((a, b) => a + b, 0);
-            const dist  = lineDistributions[key] || [];
+            const total  = (scores as number[]).reduce((a, b) => a + b, 0);
+            const dist   = lineDistributions[key] || [];
             if (!dist.length) { result[key] = null; return; }
-            result[key] = { total, pct: (dist.filter(v => v < total).length / dist.length) * 100 };
+            const outOf  = dist.length;
+            const rank   = dist.filter(v => v > total).length + 1; // 1 = best
+            const pct    = (dist.filter(v => v < total).length / outOf) * 100; // for color
+            result[key]  = { total, pct, rank, outOf };
         };
         ['f1', 'f2', 'f3', 'f4'].forEach(k => compute(k, 3));
         ['d1', 'd2', 'd3'].forEach(k => compute(k, 2));
