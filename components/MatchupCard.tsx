@@ -1112,7 +1112,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                 </div>
 
                 {/* --- DESKTOP EXPANDED: Recent Games --- */}
-                <div className={`overflow-hidden transition-all duration-300 ${isDesktopExpanded ? 'max-h-[800px] border-t border-white/5 opacity-100' : 'max-h-0 opacity-0'}`}>
+                <div className={`overflow-hidden transition-all duration-300 ${isDesktopExpanded ? 'max-h-[3000px] border-t border-white/5 opacity-100' : 'max-h-0 opacity-0'}`}>
                     <div className="p-6 flex flex-row bg-black/20">
                         {/* Away Team Recent Games */}
                         <div className="flex-1 pr-6 flex flex-col gap-6">
@@ -1296,7 +1296,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                 </div>
 
                 {/* --- EXPANDED DETAILS BODY --- */}
-                <div className={`relative z-20 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[1200px] opacity-100 border-t border-white/5' : 'max-h-0 opacity-0'}`}>
+                <div className={`relative z-20 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[3000px] opacity-100 border-t border-white/5' : 'max-h-0 opacity-0'}`}>
                     <div className="p-4">
                         {/* Goalies Row */}
                         <div className="flex justify-between items-start mb-4">
