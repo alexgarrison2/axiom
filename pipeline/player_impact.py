@@ -54,6 +54,11 @@ MIN_EV_TOI_PER_GAME = 120    # 2 minutes per game
 # Min PP/PK TOI to generate valid special-teams rates
 MIN_ST_TOI_SECONDS = 120     # 2 minutes total on PP or PK
 
+# Min PP/PK TOI per game to earn a special-teams xGAA component.
+# Players below this are accidentally on ice during ST, not genuine ST players.
+# 35s/game ≈ bottom of real deployment; filters out 0:05/gm "accidental" PKers.
+MIN_ST_TOI_PER_GAME = 35     # seconds per game
+
 # Bayesian shrinkage anchor for relative_xgf_pct (seconds of 5v5 TOI).
 # A player with this many seconds gets 50% regression toward league average.
 # 18,000 seconds ≈ 300 minutes ≈ typical top-6 F full season.
@@ -318,10 +323,10 @@ def calculate_player_impact(
     # pp_xgf_per60 == 0 means no PP time or sample too small (< MIN_ST_TOI_SECONDS).
     # These are the rates that real PP/PK units produce, not dragged down by
     # non-PP/PK players sitting at 0.
-    pp_fwd = [v for v in fwd_profiles if v['pp_xgf_per60'] > 0]
-    pp_def = [v for v in def_profiles if v['pp_xgf_per60'] > 0]
-    pk_fwd = [v for v in fwd_profiles if v['pk_xga_per60'] > 0]
-    pk_def = [v for v in def_profiles if v['pk_xga_per60'] > 0]
+    pp_fwd = [v for v in fwd_profiles if v['pp_xgf_per60'] > 0 and v['pp_toi_per_game'] >= MIN_ST_TOI_PER_GAME]
+    pp_def = [v for v in def_profiles if v['pp_xgf_per60'] > 0 and v['pp_toi_per_game'] >= MIN_ST_TOI_PER_GAME]
+    pk_fwd = [v for v in fwd_profiles if v['pk_xga_per60'] > 0 and v['pk_toi_per_game'] >= MIN_ST_TOI_PER_GAME]
+    pk_def = [v for v in def_profiles if v['pk_xga_per60'] > 0 and v['pk_toi_per_game'] >= MIN_ST_TOI_PER_GAME]
 
     league_avgs['fwd_pp_xgf_per60'] = _avg(pp_fwd, 'pp_xgf_per60')
     league_avgs['def_pp_xgf_per60'] = _avg(pp_def, 'pp_xgf_per60')
@@ -348,12 +353,12 @@ def calculate_player_impact(
         ev_off = (data['ev_xgf_per60'] - lg_ev_xgf) *  ev_toi_pg / 3600
         ev_def = -(data['ev_xga_per60'] - lg_ev_xga) * ev_toi_pg / 3600
 
-        if data['pp_xgf_per60'] > 0:
+        if data['pp_xgf_per60'] > 0 and data['pp_toi_per_game'] >= MIN_ST_TOI_PER_GAME:
             pp_val = (data['pp_xgf_per60'] - league_avgs[f'{pos_key}_pp_xgf_per60']) * data['pp_toi_per_game'] / 3600
         else:
             pp_val = 0.0
 
-        if data['pk_xga_per60'] > 0:
+        if data['pk_xga_per60'] > 0 and data['pk_toi_per_game'] >= MIN_ST_TOI_PER_GAME:
             pk_val = -(data['pk_xga_per60'] - league_avgs[f'{pos_key}_pk_xga_per60']) * data['pk_toi_per_game'] / 3600
         else:
             pk_val = 0.0
