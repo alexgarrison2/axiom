@@ -179,7 +179,7 @@ function ImpactBadge({ lineKey, impact }: {
 
     const tooltipSegs: Seg[] = [
         { text: `${lineLabel} line: ` },
-        { text: `${sign}${impact.total.toFixed(2)} xGAA/gm`, color },
+        { text: `${sign}${(impact.total * 10).toFixed(2)} xGAA/gm`, color },
         { text: ' · ' },
         { text: `${impact.rank}${ordinalSuffix(impact.rank)} of ${impact.outOf}`, color },
         { text: ` current NHL ${lineLabel} lines` },
@@ -194,7 +194,7 @@ function ImpactBadge({ lineKey, impact }: {
                 onMouseLeave={()  => setMouse(null)}
             >
                 <span className="text-[10px] font-bold tabular-nums leading-none" style={{ color }}>
-                    {sign}{impact.total.toFixed(2)}
+                    {sign}{(impact.total * 10).toFixed(2)}
                 </span>
                 <span className="text-[8px] tabular-nums leading-none mt-0.5" style={{ color }}>
                     {impact.rank}{ordinalSuffix(impact.rank)}/{impact.outOf}

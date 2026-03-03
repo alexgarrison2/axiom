@@ -567,7 +567,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                         style={{ background: impC, minWidth: 52 }}
                     >
                         <span className="text-[19px] font-black tabular-nums leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
-                            {gsSign}{player.gs_pg.toFixed(2)}
+                            {gsSign}{(player.gs_pg * 10).toFixed(2)}
                         </span>
                     </div>
                     <span className="text-[10px] font-bold leading-none tabular-nums" style={{ color: impC }}>
@@ -581,7 +581,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                         const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
                         const left = Math.max(8, Math.min(impMouse.x - W / 2, vw - W - 8));
                         const top = impMouse.y > 80 ? impMouse.y - 112 : impMouse.y + 14;
-                        const fmt = (v: number) => (v >= 0 ? '+' : '') + v.toFixed(3);
+                        const fmt = (v: number) => (v >= 0 ? '+' : '') + (v * 10).toFixed(2);
                         const rows: [string, number][] = [
                             ['EV Off', pi.xgaa_ev_off ?? 0],
                             ['EV Def', pi.xgaa_ev_def ?? 0],
