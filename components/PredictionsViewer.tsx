@@ -228,6 +228,8 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     const [historyFilters, setHistoryFilters] = useState<string[]>(['All']);
     // History view mode: 'date' (default) or 'team'
     const [historyViewMode, setHistoryViewMode] = useState<'date' | 'team'>('date');
+    // Secondary pick filter (only relevant in team view)
+    const [historyPickFilter, setHistoryPickFilter] = useState<'win' | 'loss' | null>(null);
 
     // History Date Range Logic
     const uniqueHistoryDates = useMemo(() => {
@@ -455,20 +457,44 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         <div className="flex flex-col items-center gap-4 mb-4 max-w-2xl mx-auto">
 
                             {/* View Toggle: By Date / By Team */}
-                            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/8">
-                                {(['date', 'team'] as const).map((mode) => (
-                                    <button
-                                        key={mode}
-                                        onClick={() => setHistoryViewMode(mode)}
-                                        className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                                            historyViewMode === mode
-                                                ? 'bg-white/10 text-white shadow-sm'
-                                                : 'text-neutral-500 hover:text-neutral-300'
-                                        }`}
-                                    >
-                                        {mode === 'date' ? 'By Date' : 'By Team'}
-                                    </button>
-                                ))}
+                            <div className="flex items-center gap-2 flex-wrap justify-center">
+                                <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/8">
+                                    {(['date', 'team'] as const).map((mode) => (
+                                        <button
+                                            key={mode}
+                                            onClick={() => {
+                                                setHistoryViewMode(mode);
+                                                if (mode === 'date') setHistoryPickFilter(null);
+                                            }}
+                                            className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                                                historyViewMode === mode
+                                                    ? 'bg-white/10 text-white shadow-sm'
+                                                    : 'text-neutral-500 hover:text-neutral-300'
+                                            }`}
+                                        >
+                                            {mode === 'date' ? 'By Date' : 'By Team'}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Secondary: Pick direction filter — team mode only */}
+                                {historyViewMode === 'team' && (
+                                    <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/8">
+                                        {([null, 'win', 'loss'] as const).map((f) => (
+                                            <button
+                                                key={String(f)}
+                                                onClick={() => setHistoryPickFilter(f)}
+                                                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                                                    historyPickFilter === f
+                                                        ? 'bg-white/10 text-white shadow-sm'
+                                                        : 'text-neutral-500 hover:text-neutral-300'
+                                                }`}
+                                            >
+                                                {f === null ? 'All Picks' : f === 'win' ? 'Picked to Win' : 'Picked to Lose'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Date Range Slider */}
@@ -598,7 +624,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             })()}
                         </div>
 
-                        <HistoryTable entries={filteredHistory} viewMode={historyViewMode} />
+                        <HistoryTable entries={filteredHistory} viewMode={historyViewMode} pickFilter={historyPickFilter} />
                     </motion.div>
                 ) : selectedTab === 'Teams' ? (
                     <motion.div

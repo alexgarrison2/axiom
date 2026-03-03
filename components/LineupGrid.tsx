@@ -8,8 +8,6 @@ import { ArrowUp, ArrowDown, Plus } from 'lucide-react';
 interface LineupGridProps {
     lineup?: TeamLineup;
     triCode: string;
-    lineupScore?: number;     // quality ratio vs league avg (1.0 = avg)
-    lineupVsTeam?: number;    // quality ratio vs this team's own historical avg
     goalieStarter?: string;   // projected starter full name
     gsaxPerGame?: number;     // GSAx per game (positive = above avg)
     gsaxPct?: number;         // percentile rank among NHL starters (0–100)
@@ -58,14 +56,6 @@ function FixedTooltip({ x, y, segments }: { x: number; y: number; segments: Seg[
 }
 
 // ── Color helpers ─────────────────────────────────────────────────────────────
-function skaterColor(pct: number): string {
-    if (pct <= -5)  return '#ef4444';
-    if (pct <= -2)  return '#f97316';
-    if (pct <   2)  return '#6b7280';
-    if (pct <   5)  return '#22c55e';
-    return '#16a34a';
-}
-
 function goalieColor(gsax: number): string {
     if (gsax >= 0.2)  return '#16a34a';
     if (gsax >= 0.05) return '#22c55e';
@@ -83,22 +73,6 @@ function lineImpactColor(pct: number): string {
 }
 
 // ── Tooltip segment builders ──────────────────────────────────────────────────
-function skaterTooltipSegs(isLg: boolean, pct: number, triCode?: string): Seg[] {
-    const abs   = Math.abs(pct).toFixed(1);
-    const pos   = pct >= 0;
-    const color = skaterColor(pct);
-    const valText = pos ? `+${abs}%` : `${abs}%`;
-    const dirText = pos ? 'stronger' : 'weaker';
-    const suffix  = isLg ? ' than league avg' : ` than ${triCode ?? 'team'}'s season avg`;
-    return [
-        { text: 'Implies this lineup is ' },
-        { text: valText,  color },
-        { text: ' '  },
-        { text: dirText, color },
-        { text: suffix },
-    ];
-}
-
 function ordinalSuffix(n: number): string {
     const abs = Math.abs(n);
     const mod100 = abs % 100;
@@ -147,23 +121,6 @@ function Chip({
     );
 }
 
-// ── vs. League / vs. Team chips ───────────────────────────────────────────────
-function LineupScoreChip({ label, ratio, isLg, triCode }: {
-    label: string; ratio: number; isLg: boolean; triCode?: string;
-}) {
-    const pct   = (ratio - 1.0) * 100;
-    const sign  = pct >= 0 ? '+' : '';
-    const color = skaterColor(pct);
-    return (
-        <Chip tooltipSegs={skaterTooltipSegs(isLg, pct, triCode)}>
-            <span className="text-[9px] text-neutral-500 font-medium">{label}</span>
-            <span className="text-[9px] font-bold tabular-nums" style={{ color }}>
-                {sign}{pct.toFixed(1)}%
-            </span>
-        </Chip>
-    );
-}
-
 // ── Goalie chip ───────────────────────────────────────────────────────────────
 // Strip status suffix like "(Confirmed)", "(Unconfirmed)" that comes from the CSV
 function cleanGoalieName(raw: string): string {
@@ -186,29 +143,15 @@ function GoalieChip({ name, gsax, pct }: { name: string; gsax: number; pct: numb
 }
 
 // ── Header chip row ───────────────────────────────────────────────────────────
-function LineupHeader({ lineupScore, lineupVsTeam, triCode, goalieStarter, gsaxPerGame, gsaxPct }: {
-    lineupScore?: number;
-    lineupVsTeam?: number;
-    triCode?: string;
+function LineupHeader({ goalieStarter, gsaxPerGame, gsaxPct }: {
     goalieStarter?: string;
     gsaxPerGame?: number;
     gsaxPct?: number;
 }) {
-    const hasSkaterScores = lineupScore !== undefined || lineupVsTeam !== undefined;
-    const hasGoalie = goalieStarter !== undefined && gsaxPerGame !== undefined && gsaxPct !== undefined;
-    if (!hasSkaterScores && !hasGoalie) return null;
-
+    if (!goalieStarter || gsaxPerGame === undefined || gsaxPct === undefined) return null;
     return (
         <div className="flex items-center gap-1.5 flex-wrap">
-            {lineupScore !== undefined && (
-                <LineupScoreChip label="vs. Lg:" ratio={lineupScore}  isLg={true}  triCode={triCode} />
-            )}
-            {lineupVsTeam !== undefined && (
-                <LineupScoreChip label="vs. Tm:" ratio={lineupVsTeam} isLg={false} triCode={triCode} />
-            )}
-            {hasGoalie && (
-                <GoalieChip name={goalieStarter!} gsax={gsaxPerGame!} pct={gsaxPct!} />
-            )}
+            <GoalieChip name={goalieStarter} gsax={gsaxPerGame} pct={gsaxPct} />
         </div>
     );
 }
@@ -268,7 +211,7 @@ function normName(s: string): string {
 
 // ── Main grid ─────────────────────────────────────────────────────────────────
 export default function LineupGrid({
-    lineup, triCode, lineupScore, lineupVsTeam, goalieStarter, gsaxPerGame, gsaxPct,
+    lineup, triCode, goalieStarter, gsaxPerGame, gsaxPct,
 }: LineupGridProps) {
     // ── Hooks (must precede any early returns per Rules of Hooks) ─────────────
     const [piData,      setPiData]      = useState<PiData | null>(null);
@@ -406,9 +349,6 @@ export default function LineupGrid({
                     Starting Lineup
                 </span>
                 <LineupHeader
-                    lineupScore={lineupScore}
-                    lineupVsTeam={lineupVsTeam}
-                    triCode={triCode}
                     goalieStarter={goalieStarter}
                     gsaxPerGame={gsaxPerGame}
                     gsaxPct={gsaxPct}

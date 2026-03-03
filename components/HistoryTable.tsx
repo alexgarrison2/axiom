@@ -8,6 +8,7 @@ import { HistoryEntry } from '../utils/data';
 interface HistoryTableProps {
     entries: HistoryEntry[];
     viewMode?: 'date' | 'team';
+    pickFilter?: 'win' | 'loss' | null;
 }
 
 // Red → Yellow → Green based on accuracy %
@@ -243,7 +244,14 @@ const ByDateView: React.FC<{ entries: HistoryEntry[] }> = ({ entries }) => {
 
 // ─── By Team View ─────────────────────────────────────────────────────────────
 
-const ByTeamView: React.FC<{ entries: HistoryEntry[] }> = ({ entries }) => {
+// Returns true if `teamTriCode` was the team we picked to win in this game
+function wasPickedToWin(entry: HistoryEntry, teamTriCode: string): boolean {
+    const pw = entry.predictedWinner;
+    const isHomePicked = pw === entry.homeTeam.commonName || pw === entry.homeTeam.name;
+    return (isHomePicked ? entry.homeTeam.triCode : entry.awayTeam.triCode) === teamTriCode;
+}
+
+const ByTeamView: React.FC<{ entries: HistoryEntry[]; pickFilter?: 'win' | 'loss' | null }> = ({ entries, pickFilter }) => {
     const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
 
     const toggle = (key: string) => {
@@ -277,13 +285,23 @@ const ByTeamView: React.FC<{ entries: HistoryEntry[] }> = ({ entries }) => {
     return (
         <>
             {grouped.map(({ triCode, logoUrl, entries: teamEntries }) => {
-                const correct = teamEntries.filter(e => e.isCorrect).length;
-                const wrong   = teamEntries.length - correct;
-                const pct     = (correct / teamEntries.length) * 100;
+                // Apply pick direction filter per-team
+                const visibleEntries = pickFilter === 'win'
+                    ? teamEntries.filter(e => wasPickedToWin(e, triCode))
+                    : pickFilter === 'loss'
+                    ? teamEntries.filter(e => !wasPickedToWin(e, triCode))
+                    : teamEntries;
+
+                // Hide team rows that have no matching games under the current filter
+                if (visibleEntries.length === 0) return null;
+
+                const correct = visibleEntries.filter(e => e.isCorrect).length;
+                const wrong   = visibleEntries.length - correct;
+                const pct     = (correct / visibleEntries.length) * 100;
                 const isExp   = expandedTeams.has(triCode);
 
                 // Last 8 results as mini dots (newest → oldest, left → right)
-                const recentResults = teamEntries.slice(0, 8);
+                const recentResults = visibleEntries.slice(0, 8);
 
                 return (
                     <React.Fragment key={triCode}>
@@ -322,9 +340,9 @@ const ByTeamView: React.FC<{ entries: HistoryEntry[] }> = ({ entries }) => {
                                                         title={e.isCorrect ? 'Correct' : 'Wrong'}
                                                     />
                                                 ))}
-                                                {teamEntries.length > 8 && (
+                                                {visibleEntries.length > 8 && (
                                                     <span className="text-neutral-600 text-[9px] font-mono ml-0.5">
-                                                        +{teamEntries.length - 8}
+                                                        +{visibleEntries.length - 8}
                                                     </span>
                                                 )}
                                             </div>
@@ -344,7 +362,7 @@ const ByTeamView: React.FC<{ entries: HistoryEntry[] }> = ({ entries }) => {
                                             </span>
                                         </div>
                                         <span className="hidden md:inline text-neutral-500 text-[10px] uppercase tracking-wider">
-                                            {teamEntries.length} Games
+                                            {visibleEntries.length} Games
                                         </span>
                                     </div>
                                 </div>
@@ -353,7 +371,7 @@ const ByTeamView: React.FC<{ entries: HistoryEntry[] }> = ({ entries }) => {
 
                         {/* Expanded game rows — show date since team is already the grouping key */}
                         <AnimatePresence>
-                            {isExp && teamEntries.map(entry => (
+                            {isExp && visibleEntries.map(entry => (
                                 <GameRow
                                     key={`${triCode}-${entry.date}-${entry.homeTeam.triCode}-${entry.awayTeam.triCode}`}
                                     entry={entry}
@@ -370,7 +388,7 @@ const ByTeamView: React.FC<{ entries: HistoryEntry[] }> = ({ entries }) => {
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
-const HistoryTable: React.FC<HistoryTableProps> = ({ entries, viewMode = 'date' }) => {
+const HistoryTable: React.FC<HistoryTableProps> = ({ entries, viewMode = 'date', pickFilter }) => {
     return (
         <div className="w-full max-w-6xl mx-auto overflow-hidden rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
             <div className="w-full">
@@ -392,7 +410,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries, viewMode = 'date' 
                     </thead>
                     <tbody className="divide-y divide-white/5">
                         {viewMode === 'team'
-                            ? <ByTeamView entries={entries} />
+                            ? <ByTeamView entries={entries} pickFilter={pickFilter} />
                             : <ByDateView entries={entries} />
                         }
                     </tbody>

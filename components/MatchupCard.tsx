@@ -1118,7 +1118,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         <div className="flex-1 pr-6 flex flex-col gap-6">
                             <TeamNavButtons triCode={awayTeam.triCode} />
                             <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} currentStarter={awayStarter} />
-                            <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} lineupScore={prediction.away_lineup_score} lineupVsTeam={prediction.away_lineup_vs_team} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} />
+                            <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} />
                             <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                         </div>
 
@@ -1129,7 +1129,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         <div className="flex-1 pl-6 flex flex-col gap-6">
                             <TeamNavButtons triCode={homeTeam.triCode} justify="end" />
                             <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} currentStarter={homeStarter} />
-                            <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} lineupScore={prediction.home_lineup_score} lineupVsTeam={prediction.home_lineup_vs_team} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} />
+                            <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} />
                             <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                         </div>
                     </div>
@@ -1414,7 +1414,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} currentStarter={awayStarter} />
-                                    <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} lineupScore={prediction.away_lineup_score} lineupVsTeam={prediction.away_lineup_vs_team} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} />
+                                    <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} />
                                     <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                                 </div>
                             </div>
@@ -1425,7 +1425,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} currentStarter={homeStarter} />
-                                    <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} lineupScore={prediction.home_lineup_score} lineupVsTeam={prediction.home_lineup_vs_team} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} />
+                                    <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} />
                                     <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                                 </div>
                             </div>
