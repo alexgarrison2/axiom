@@ -1516,7 +1516,7 @@
                 "number": 27,
                 "pos": "lw",
                 "id": 2855,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -3724,6 +3724,14 @@
                 "id": 31187,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Artturi Lehkonen",
+                "number": 62,
+                "pos": "ir3",
+                "id": 2679,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
@@ -4208,12 +4216,12 @@
         ],
         "d2": [
             {
-                "name": "Ben Chiarot",
-                "number": 8,
+                "name": "Albert Johansson",
+                "number": 20,
                 "pos": "ld",
-                "id": 1587,
-                "ppUnit": null,
-                "movement": null
+                "id": 30661,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Axel Sandin-Pellikka",
@@ -4226,12 +4234,12 @@
         ],
         "d3": [
             {
-                "name": "Albert Johansson",
-                "number": 20,
+                "name": "Ben Chiarot",
+                "number": 8,
                 "pos": "ld",
-                "id": 30661,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1587,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Jacob Bernard-Docker",
@@ -4240,6 +4248,16 @@
                 "id": 4819,
                 "ppUnit": null,
                 "movement": null
+            }
+        ],
+        "ir": [
+            {
+                "name": "John Gibson",
+                "number": 36,
+                "pos": "ir1",
+                "id": 1870,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
