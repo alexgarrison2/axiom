@@ -28,6 +28,12 @@ interface PIPlayer {
     pk_xga_per60: number;
     penalty_diff_per60: number;
     game_score: number;
+    // Custom impact metric: xG above league-average at same position, per game
+    xgaa_per_game: number;
+    xgaa_ev_off: number;
+    xgaa_ev_def: number;
+    xgaa_pp: number;
+    xgaa_pk: number;
     total_sog: number;
     total_shot_attempts: number;
 }
@@ -423,6 +429,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
     const impC = pctColor(gsPct);
     const gsSign = player.gs_pg >= 0 ? '+' : '';
     const pRank = Math.round(gsPct);
+    const [impMouse, setImpMouse] = useState<{x:number;y:number}|null>(null);
 
     // Relative xGF
     const relVal = pi.relative_xgf_pct * 100;
@@ -546,7 +553,12 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                 </div>
 
                 {/* ── RIGHT: Impact box ── */}
-                <div className="flex flex-col items-end justify-start gap-[4px] pr-2.5 pl-1 shrink-0 z-10 pt-2 pb-1">
+                <div
+                    className="flex flex-col items-end justify-start gap-[4px] pr-2.5 pl-1 shrink-0 z-10 pt-2 pb-1 cursor-default"
+                    onMouseEnter={(e) => setImpMouse({ x: e.clientX, y: e.clientY })}
+                    onMouseMove={(e)  => setImpMouse({ x: e.clientX, y: e.clientY })}
+                    onMouseLeave={()  => setImpMouse(null)}
+                >
                     <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest leading-none">
                         Impact
                     </span>
@@ -562,6 +574,43 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                         {pRank}{ordinalSuffix(pRank)}%
                     </span>
                 </div>
+                {/* xGAA breakdown tooltip */}
+                {impMouse && typeof document !== 'undefined' && createPortal(
+                    (() => {
+                        const W = 200;
+                        const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
+                        const left = Math.max(8, Math.min(impMouse.x - W / 2, vw - W - 8));
+                        const top = impMouse.y > 80 ? impMouse.y - 112 : impMouse.y + 14;
+                        const fmt = (v: number) => (v >= 0 ? '+' : '') + v.toFixed(3);
+                        const rows: [string, number][] = [
+                            ['EV Off', pi.xgaa_ev_off ?? 0],
+                            ['EV Def', pi.xgaa_ev_def ?? 0],
+                            ...(pi.xgaa_pp ? [['PP', pi.xgaa_pp] as [string, number]] : []),
+                            ...(pi.xgaa_pk ? [['PK', pi.xgaa_pk] as [string, number]] : []),
+                        ];
+                        return (
+                            <div
+                                style={{ position:'fixed', left, top, width: W, zIndex: 9999, pointerEvents:'none' }}
+                                className="bg-zinc-950 border border-white/15 rounded-lg px-3 py-2 shadow-xl text-[11px]"
+                            >
+                                <div className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">
+                                    xG Above Avg / game
+                                </div>
+                                {rows.map(([label, val]) => (
+                                    <div key={label} className="flex justify-between gap-3 leading-snug">
+                                        <span className="text-zinc-400">{label}</span>
+                                        <span className="tabular-nums font-bold" style={{ color: val >= 0 ? '#4ade80' : '#f87171' }}>{fmt(val)}</span>
+                                    </div>
+                                ))}
+                                <div className="border-t border-white/10 mt-1.5 pt-1.5 flex justify-between gap-3">
+                                    <span className="text-zinc-300 font-bold">Total</span>
+                                    <span className="tabular-nums font-black" style={{ color: impC }}>{fmt(player.gs_pg)}</span>
+                                </div>
+                            </div>
+                        );
+                    })(),
+                    document.body
+                )}
             </div>
 
             {/* ══════════════════════════════════════════════
@@ -755,7 +804,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             ev_net_per60: nums(arr, 'ev_net_per60'),
             relative_xgf_pct: nums(arr, 'relative_xgf_pct'),
             ev_toi_per_game: nums(arr, 'ev_toi_per_game'),
-            gs_pg: arr.map(p => p.games_played > 0 ? p.game_score / p.games_played : 0),
+            gs_pg: arr.map(p => p.xgaa_per_game ?? (p.games_played > 0 ? p.game_score / p.games_played : 0)),
             // PP/PK percentiles among qualified players only (>= 60s avg TOI)
             pp_xgf_per60_qual: arr.filter(p => p.pp_toi_per_game >= 60).map(p => p.pp_xgf_per60),
             pk_xga_per60_qual: arr.filter(p => p.pk_toi_per_game >= 60).map(p => p.pk_xga_per60),
@@ -802,7 +851,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             const toi_pg_str = gp > 0
                 ? fmtToi(total_toi_sec / gp)
                 : fmtToi(pi.ev_toi_per_game + pi.pp_toi_per_game + pi.pk_toi_per_game);
-            const gs_pg = pi.games_played > 0 ? pi.game_score / pi.games_played : 0;
+            const gs_pg = pi.xgaa_per_game ?? (pi.games_played > 0 ? pi.game_score / pi.games_played : 0);
 
             // iXG%: this player's share of team total EV individual expected goals
             const playerIxg = pi.ind_xg_per60 * (pi.ev_toi_per_game / 3600) * pi.games_played;

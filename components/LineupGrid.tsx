@@ -19,7 +19,9 @@ interface PIPlayer {
     team: string;
     is_forward: boolean;
     games_played: number;
-    game_score: number;
+    xgaa_per_game: number;
+    // legacy fallback (some builds may not have xgaa yet)
+    game_score?: number;
 }
 type PiData = Record<string, PIPlayer>;
 
@@ -177,7 +179,7 @@ function ImpactBadge({ lineKey, impact }: {
 
     const tooltipSegs: Seg[] = [
         { text: `${lineLabel} line: ` },
-        { text: `${sign}${impact.total.toFixed(2)} gs/gm`, color },
+        { text: `${sign}${impact.total.toFixed(2)} xGAA/gm`, color },
         { text: ' · ' },
         { text: `${impact.rank}${ordinalSuffix(impact.rank)} of ${impact.outOf}`, color },
         { text: ` current NHL ${lineLabel} lines` },
@@ -228,14 +230,15 @@ export default function LineupGrid({
             .catch(() => {});
     }, []);
 
-    // name → gs_pg (game_score / games_played)
+    // name → xgaa_per_game
     // Keyed by normalised full name AND normalised last name for two-pass fallback
     const gsMap = useMemo((): Map<string, number> => {
         if (!piData) return new Map();
         const m = new Map<string, number>();
         for (const [, p] of Object.entries(piData)) {
             if (p.games_played <= 0) continue;
-            const gspg = p.game_score / p.games_played;
+            // Prefer new xgaa_per_game; fall back to game_score/gp for safety
+            const gspg = p.xgaa_per_game ?? ((p.game_score ?? 0) / p.games_played);
             const full = normName(p.name);
             m.set(full, gspg);
             const last = full.split(' ').at(-1) ?? full;
@@ -273,7 +276,7 @@ export default function LineupGrid({
             const teamDefs  = new Map<string, number[]>();
             for (const [, p] of Object.entries(piData ?? {})) {
                 if (p.games_played <= 0) continue;
-                const gspg   = p.game_score / p.games_played;
+                const gspg   = p.xgaa_per_game ?? ((p.game_score ?? 0) / p.games_played);
                 const bucket = p.is_forward ? teamFwds : teamDefs;
                 if (!bucket.has(p.team)) bucket.set(p.team, []);
                 bucket.get(p.team)!.push(gspg);

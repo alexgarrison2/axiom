@@ -314,6 +314,61 @@ def calculate_player_impact(
         'all_ev_xga_per60': _avg(list(player_impact.values()), 'ev_xga_per60'),
     }
 
+    # Special-teams league averages — only among players with actual ST deployment.
+    # pp_xgf_per60 == 0 means no PP time or sample too small (< MIN_ST_TOI_SECONDS).
+    # These are the rates that real PP/PK units produce, not dragged down by
+    # non-PP/PK players sitting at 0.
+    pp_fwd = [v for v in fwd_profiles if v['pp_xgf_per60'] > 0]
+    pp_def = [v for v in def_profiles if v['pp_xgf_per60'] > 0]
+    pk_fwd = [v for v in fwd_profiles if v['pk_xga_per60'] > 0]
+    pk_def = [v for v in def_profiles if v['pk_xga_per60'] > 0]
+
+    league_avgs['fwd_pp_xgf_per60'] = _avg(pp_fwd, 'pp_xgf_per60')
+    league_avgs['def_pp_xgf_per60'] = _avg(pp_def, 'pp_xgf_per60')
+    league_avgs['fwd_pk_xga_per60'] = _avg(pk_fwd, 'pk_xga_per60')
+    league_avgs['def_pk_xga_per60'] = _avg(pk_def, 'pk_xga_per60')
+
+    # ── xG Above Average per game (xGAA/game) ──────────────────────────────────
+    # Custom metric: expected goals added above a league-average player at the
+    # same position group, per game, across four components:
+    #   EV off  — xGF above league avg × EV TOI/game
+    #   EV def  — xGA suppression vs league avg × EV TOI/game
+    #   PP      — PP xGF above avg PP unit × PP TOI/game  (0 if no PP time)
+    #   PK      — PK xGA suppression vs avg PK unit × PK TOI/game  (0 if no PK time)
+    # Players who don't kill penalties receive 0 for the PK component — they are
+    # neither rewarded nor penalized for not being on the ice during penalties.
+    for _pid, data in player_impact.items():
+        is_fwd  = data['is_forward']
+        pos_key = 'fwd' if is_fwd else 'def'
+
+        lg_ev_xgf = league_avgs[f'{pos_key}_ev_xgf_per60']
+        lg_ev_xga = league_avgs[f'{pos_key}_ev_xga_per60']
+        ev_toi_pg = data['ev_toi_per_game']   # seconds/game
+
+        ev_off = (data['ev_xgf_per60'] - lg_ev_xgf) *  ev_toi_pg / 3600
+        ev_def = -(data['ev_xga_per60'] - lg_ev_xga) * ev_toi_pg / 3600
+
+        if data['pp_xgf_per60'] > 0:
+            pp_val = (data['pp_xgf_per60'] - league_avgs[f'{pos_key}_pp_xgf_per60']) * data['pp_toi_per_game'] / 3600
+        else:
+            pp_val = 0.0
+
+        if data['pk_xga_per60'] > 0:
+            pk_val = -(data['pk_xga_per60'] - league_avgs[f'{pos_key}_pk_xga_per60']) * data['pk_toi_per_game'] / 3600
+        else:
+            pk_val = 0.0
+
+        xgaa = ev_off + ev_def + pp_val + pk_val
+        data['xgaa_per_game'] = round(xgaa, 4)
+        data['xgaa_ev_off']   = round(ev_off, 4)
+        data['xgaa_ev_def']   = round(ev_def, 4)
+        data['xgaa_pp']       = round(pp_val, 4)
+        data['xgaa_pk']       = round(pk_val, 4)
+
+    print(f"  ✓ xGAA/game computed  "
+          f"(lg PP fwd={league_avgs['fwd_pp_xgf_per60']:.3f}  "
+          f"PK fwd={league_avgs['fwd_pk_xga_per60']:.3f})")
+
     # ── League-average lineup baseline (for ratio-based blending) ──────────────
     # What estimate_lineup_xg returns for a perfectly average 18-player team.
     # Computed as the TOI-weighted average rate for a simulated avg roster:
