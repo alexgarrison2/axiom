@@ -217,6 +217,15 @@ def calculate_player_impact(
         ind_xg_per60    = per60(i_xg_flurry, ev_toi)
         ind_hd_xg_per60 = per60(i_hd_xg, ev_toi)
 
+        # ── Individual 5v5 production (scoring + playmaking) ──
+        # Weighted points at 5v5: goals + primary assists + 0.5 × secondary assists.
+        # Crucial for ranking playmakers like Crosby who generate fewer shots but
+        # contribute heavily through primary assists.  Per-60 to normalise for TOI.
+        ev_goals     = _safe_float(row.get('I_F_goals'))
+        ev_pri_a     = _safe_float(row.get('I_F_primaryAssists'))
+        ev_sec_a     = _safe_float(row.get('I_F_secondaryAssists'))
+        ev_prod_per60 = per60(ev_goals + ev_pri_a + 0.5 * ev_sec_a, ev_toi)
+
         # ── PP (5on4) ──
         pp_toi_per_game = 0.0
         pp_xgf_per60    = 0.0
@@ -288,6 +297,7 @@ def calculate_player_impact(
             # Individual
             'ind_xg_per60':    round(ind_xg_per60, 4),
             'ind_hd_xg_per60': round(ind_hd_xg_per60, 4),
+            'ev_prod_per60':   round(ev_prod_per60, 4),   # weighted pts/60 at 5v5
 
             # Special teams
             'pp_xgf_per60': round(pp_xgf_per60, 4),
@@ -411,14 +421,58 @@ def calculate_player_impact(
             return
         data_list = [player_impact[p] for p in pid_list]
 
-        ev_off_arr = np.array([d['relative_xgf_pct'] for d in data_list])
-        ev_def_arr = np.array([-d['ev_xga_per60']    for d in data_list])
-        pp_arr     = np.array([d['xgaa_pp']           for d in data_list])
-        pk_arr     = np.array([d['xgaa_pk']           for d in data_list])
-
         def zsc(arr: np.ndarray) -> np.ndarray:
             mu, sigma = float(np.mean(arr)), float(np.std(arr))
             return (arr - mu) / sigma if sigma > 1e-9 else np.zeros(len(arr))
+
+        # ── Bayesian shrinkage for small-sample players ───────────────────────
+        # Per-60 rates are noisy in small samples (1-5 game call-ups can post
+        # extreme numbers and dominate rankings).  Regress each metric toward
+        # its position-group mean proportional to total EV TOI sampled:
+        #   shrink_weight = toi_total / (toi_total + ANCHOR)
+        # → heavy regression for call-ups (1 game), near-zero for full-season
+        #   stars (ANCHOR = 18000s ≈ top-6 fwd full season).
+        ev_toi_total = np.array([
+            d['ev_toi_per_game'] * max(d['games_played'], 1) for d in data_list
+        ])
+        shrink = ev_toi_total / (ev_toi_total + RELATIVE_SHRINKAGE_ANCHOR)
+
+        # ── EV OFF: three-signal blend (individual shooting + playmaking + team) ─
+        # Inspired by O Rating (Luszczyszyn / The Athletic): Offensive Rating is
+        # a weighted combination of INDIVIDUAL stats (goals, assists, xG) AND
+        # team ON-ICE impact.  Three signals:
+        #
+        #  1. ind_xg_per60   — individual 5v5 xG (shooting/scoring threat)
+        #  2. ev_prod_per60  — weighted 5v5 pts/60 (goals + A1 + 0.5×A2);
+        #                      fixes playmakers like Crosby who rank low on xG
+        #                      alone because they pass instead of shoot
+        #  3. xgaa_ev_off    — team on-ice xGF above avg × TOI; captures line
+        #                      elevation, playmaking impact, and TOI volume
+        #
+        # Each signal z-scored within position group before 1/3 blend.
+        # Small-sample players shrunken toward position mean to suppress
+        # 1-5 game call-up flukes.
+        ind_xg_raw   = np.array([d['ind_xg_per60']  for d in data_list])
+        ev_prod_raw  = np.array([d['ev_prod_per60']  for d in data_list])
+        xgaa_off_raw = np.array([d['xgaa_ev_off']    for d in data_list])
+
+        mean_ind_xg  = float(np.mean(ind_xg_raw))
+        mean_ev_prod = float(np.mean(ev_prod_raw))
+
+        ind_xg_s   = mean_ind_xg  + (ind_xg_raw  - mean_ind_xg)  * shrink
+        ev_prod_s  = mean_ev_prod + (ev_prod_raw  - mean_ev_prod) * shrink
+        xgaa_off_s = xgaa_off_raw * shrink   # centred at 0, so shrink toward 0
+
+        z_ind_off  = zsc(ind_xg_s)
+        z_prod_off = zsc(ev_prod_s)
+        z_team_off = zsc(xgaa_off_s)
+        ev_off_arr = (z_ind_off + z_prod_off + z_team_off) / 3.0   # equal weight; outer zsc normalises
+
+        # ── EV DEF: xG saved above avg × TOI, also shrunken for small samples ─
+        ev_def_arr = np.array([d['xgaa_ev_def'] for d in data_list]) * shrink
+
+        pp_arr = np.array([d['xgaa_pp'] for d in data_list])
+        pk_arr = np.array([d['xgaa_pk'] for d in data_list])
 
         z_off = zsc(ev_off_arr)
         z_def = zsc(ev_def_arr)

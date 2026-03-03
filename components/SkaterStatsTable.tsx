@@ -63,8 +63,8 @@ const COLUMNS: { key: SortKey; label: string; title: string; align?: string }[] 
     { key: 'points',           label: 'PTS',     title: 'Points' },
     { key: 'sog_per_game',     label: 'SOG/G',   title: 'Shots on Goal per Game' },
     { key: 'toi_per_game_all', label: 'TOI/GP',  title: 'Time on Ice per Game (all situations)' },
-    { key: 'impact_ev_off',    label: 'EV OFF',  title: 'EV Offense z-score (relative xGF%, isolation metric)' },
-    { key: 'impact_ev_def',    label: 'EV DEF',  title: 'EV Defense z-score (xGA suppression)' },
+    { key: 'impact_ev_off',    label: 'EV OFF',  title: 'EV Offense z-score: blend of individual xG/60 (personal scoring threat) + on-ice xGF impact above avg × TOI. Inspired by O Rating methodology.' },
+    { key: 'impact_ev_def',    label: 'EV DEF',  title: 'EV Defense z-score: xGA saved above position-avg × EV TOI per game. Positive = suppresses more goals than average.' },
     { key: 'impact_pp',        label: 'PP',      title: 'Power Play impact z-score' },
     { key: 'impact_pk',        label: 'PK',      title: 'Penalty Kill impact z-score' },
     { key: 'impact_score',     label: 'IMPACT',  title: 'Composite position-weighted impact score (z-score)' },
@@ -158,7 +158,7 @@ export default function SkaterStatsTable() {
                 <p className="text-neutral-400 text-xs md:text-sm">
                     Position-weighted z-scores. Fwd: 50% EV Off · 20% EV Def · 20% PP · 10% PK.
                     Def: 25% EV Off · 40% EV Def · 15% PP · 20% PK.
-                    <span className="text-neutral-500"> EV Off uses on/off isolation (relative xGF%).</span>
+                    <span className="text-neutral-500"> EV Off = individual xG/60 + on-ice xGF impact (inspired by O Rating).</span>
                 </p>
             </div>
 
