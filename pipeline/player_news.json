@@ -1,8 +1,114 @@
 {
+    "CHI": [
+        {
+            "player": "Sam Rinzel",
+            "news": "Rinzel (illness) is expected to return in Winnipeg on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T18:24:21.478Z"
+        },
+        {
+            "player": "Spencer Knight",
+            "news": "Knight is in the starter's crease at Chicago's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:29:03.534Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Colton Parayko",
+            "news": "Parayko (back spasms) will remain out on Wednesday in Seattle but will travel with the team. ",
+            "category": "Injury",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T18:08:54.521Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "Brayden Pachal",
+            "news": "Pachal will be a healthy scratch vs. Dallas on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T18:07:34.845Z"
+        },
+        {
+            "player": "Zayne Parekh",
+            "news": "Parekh is expected to draw back into Calgary's lineup on Tuesday vs. Dallas. ",
+            "category": "Line Change",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:57:09.155Z"
+        },
+        {
+            "player": "Dustin Wolf",
+            "news": "Wolf will start vs. Dallas on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:18:26.682Z"
+        }
+    ],
+    "MIN": [
+        {
+            "player": "Filip Gustavsson",
+            "news": "Gustavsson will start vs. Tampa Bay on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T18:05:20.254Z"
+        },
+        {
+            "player": "Jonas Brodin",
+            "news": "Brodin (lower-body) is likely back vs. Tampa Bay on Tuesday but will be a game-time decision",
+            "category": "Injury",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T18:04:01.933Z"
+        },
+        {
+            "player": "Marcus Foligno",
+            "news": "Foligno is considered week-to-week with a lower-body injury. ",
+            "category": "Injury",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T18:03:18.739Z"
+        },
+        {
+            "player": "Robby Fabbri",
+            "news": "Fabbri will make his Minnesota' debut on Tuesday vs. Tampa Bay. ",
+            "category": "Line Change",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:40:50.849Z"
+        }
+    ],
     "FLA": [
         {
+            "player": "Jeff Petry",
+            "news": "Petry will be a healthy scratch in New Jersey on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:39:34.237Z"
+        },
+        {
+            "player": "Tobias Bjornfot",
+            "news": "Bjornfot (undisclosed) will draw back into Florida's lineup in New Jersey on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:39:13.224Z"
+        },
+        {
+            "player": "Uvis Balinskis",
+            "news": "Balinskis (lower-body) will draw back into Florida's lineup in New Jersey on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:38:46.656Z"
+        },
+        {
+            "player": "Donovan Sebrango",
+            "news": "Sebrango will be a healthy scratch vs. New Jersey on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:37:49.453Z"
+        },
+        {
             "player": "Tomas Nosek",
-            "news": "Nosek (knee) will draw back into Florida's lineup in New Jersey on Tuesday. ",
+            "news": "Nosek (knee) will make his season debut in New Jersey on Tuesday. ",
             "category": "Injury",
             "date": "2026-03-03",
             "timestamp": "2026-03-03T17:34:39.565Z"
@@ -13,29 +119,6 @@
             "category": "Goalie Start",
             "date": "2026-03-03",
             "timestamp": "2026-03-03T17:33:41.565Z"
-        },
-        {
-            "player": "Sergei Bobrovsky",
-            "news": "Bobrovsky was the first goalie off the ice at Florida's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:58:41.482Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Spencer Knight",
-            "news": "Knight is in the starter's crease at Chicago's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T17:29:03.534Z"
-        },
-        {
-            "player": "Ethan Del Mastro",
-            "news": "Del Mastro has been recalled from Rockford (AHL). ",
-            "category": "Call Up",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T17:04:26.144Z"
         }
     ],
     "COL": [
@@ -63,15 +146,6 @@
             "timestamp": "2026-03-03T17:25:37.170Z"
         }
     ],
-    "CGY": [
-        {
-            "player": "Dustin Wolf",
-            "news": "Wolf will start vs. Dallas on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T17:18:26.682Z"
-        }
-    ],
     "EDM": [
         {
             "player": "Connor Ingram",
@@ -79,86 +153,6 @@
             "category": "Goalie Start",
             "date": "2026-03-03",
             "timestamp": "2026-03-03T17:13:11.067Z"
-        },
-        {
-            "player": "Connor Murphy",
-            "news": "Murphy will not make his Edmonton' debut on Tuesday vs. Ottawa. ",
-            "category": "Line Change",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:22:38.669Z"
-        }
-    ],
-    "NJD": [
-        {
-            "player": "Jacob Markstrom",
-            "news": "Markstrom is expected to start vs. Florida on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T17:00:18.516Z"
-        }
-    ],
-    "UTA": [
-        {
-            "player": "Karel Vejmelka",
-            "news": "Vejmelka is the first goalie off the ice at Utah's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:51:24.398Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Blake Lizotte",
-            "news": "Lizotte (lower-body) is out vs. Boston on Tuesday and considered day-to-day. ",
-            "category": "Injury",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:49:15.292Z"
-        },
-        {
-            "player": "Stuart Skinner",
-            "news": "Skinner will start in Boston on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:47:53.995Z"
-        },
-        {
-            "player": "Stuart Skinner",
-            "news": "Skinner was the first goalie off the ice at Pittsburgh's morning skate.",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:26:25.489Z"
-        }
-    ],
-    "WPG": [
-        {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebuyck will start vs. Chicago on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:44:27.728Z"
-        },
-        {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebuyck is in the starter's crease at Winnipeg's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:28:45.079Z"
-        }
-    ],
-    "WSH": [
-        {
-            "player": "John Carlson",
-            "news": "Carlson (lower-body) will remain out vs. Utah and is still considered day-to-day. ",
-            "category": "Injury",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:21:03.127Z"
-        },
-        {
-            "player": "Declan Chisholm",
-            "news": "Chisholm will be a healthy scratch vs. Utah on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:07:22.926Z"
         }
     ]
 }
