@@ -1,14 +1,126 @@
 {
-    "WPG": [
+    "FLA": [
         {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebuyck is in the starter's crease at Winnipeg's morning skate. ",
+            "player": "Tomas Nosek",
+            "news": "Nosek (knee) will draw back into Florida's lineup in New Jersey on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:34:39.565Z"
+        },
+        {
+            "player": "Sergei Bobrovsky",
+            "news": "Bobrovsky will start in New Jersey on Tuesday. ",
             "category": "Goalie Start",
             "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:28:45.079Z"
+            "timestamp": "2026-03-03T17:33:41.565Z"
+        },
+        {
+            "player": "Sergei Bobrovsky",
+            "news": "Bobrovsky was the first goalie off the ice at Florida's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T16:58:41.482Z"
+        }
+    ],
+    "CHI": [
+        {
+            "player": "Spencer Knight",
+            "news": "Knight is in the starter's crease at Chicago's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:29:03.534Z"
+        },
+        {
+            "player": "Ethan Del Mastro",
+            "news": "Del Mastro has been recalled from Rockford (AHL). ",
+            "category": "Call Up",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:04:26.144Z"
+        }
+    ],
+    "COL": [
+        {
+            "player": "Jason Polin",
+            "news": "Polin has been recalled from the Colorado Eagles (AHL). ",
+            "category": "Call Up",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:28:27.211Z"
+        }
+    ],
+    "VGK": [
+        {
+            "player": "Mark Stone",
+            "news": "Stone (upper-body) is out vs. Buffalo on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:25:56.825Z"
+        },
+        {
+            "player": "Akira Schmid",
+            "news": "Schmid was the first goalie off the ice at Vegas' morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:25:37.170Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "Dustin Wolf",
+            "news": "Wolf will start vs. Dallas on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:18:26.682Z"
+        }
+    ],
+    "EDM": [
+        {
+            "player": "Connor Ingram",
+            "news": "Ingram will start vs. Ottawa on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:13:11.067Z"
+        },
+        {
+            "player": "Connor Murphy",
+            "news": "Murphy will not make his Edmonton' debut on Tuesday vs. Ottawa. ",
+            "category": "Line Change",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T16:22:38.669Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Jacob Markstrom",
+            "news": "Markstrom is expected to start vs. Florida on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T17:00:18.516Z"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "Karel Vejmelka",
+            "news": "Vejmelka is the first goalie off the ice at Utah's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T16:51:24.398Z"
         }
     ],
     "PIT": [
+        {
+            "player": "Blake Lizotte",
+            "news": "Lizotte (lower-body) is out vs. Boston on Tuesday and considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T16:49:15.292Z"
+        },
+        {
+            "player": "Stuart Skinner",
+            "news": "Skinner will start in Boston on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T16:47:53.995Z"
+        },
         {
             "player": "Stuart Skinner",
             "news": "Skinner was the first goalie off the ice at Pittsburgh's morning skate.",
@@ -17,13 +129,20 @@
             "timestamp": "2026-03-03T16:26:25.489Z"
         }
     ],
-    "EDM": [
+    "WPG": [
         {
-            "player": "Connor Murphy",
-            "news": "Murphy will not make his Edmonton' debut on Tuesday vs. Ottawa. ",
-            "category": "Line Change",
+            "player": "Connor Hellebuyck",
+            "news": "Hellebuyck will start vs. Chicago on Tuesday. ",
+            "category": "Goalie Start",
             "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:22:38.669Z"
+            "timestamp": "2026-03-03T16:44:27.728Z"
+        },
+        {
+            "player": "Connor Hellebuyck",
+            "news": "Hellebuyck is in the starter's crease at Winnipeg's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-03",
+            "timestamp": "2026-03-03T16:28:45.079Z"
         }
     ],
     "WSH": [
@@ -40,118 +159,6 @@
             "category": "Line Change",
             "date": "2026-03-03",
             "timestamp": "2026-03-03T16:07:22.926Z"
-        },
-        {
-            "player": "Dylan McIlrath",
-            "news": "McIlrath will draw back into Washington's lineup vs. Utah on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:06:54.421Z"
-        },
-        {
-            "player": "Logan Thompson",
-            "news": "Thompson will start vs. Utah on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:04:10.212Z"
-        },
-        {
-            "player": "Logan Thompson",
-            "news": "Thompson is expected to start vs. Utah on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T15:48:56.796Z"
-        }
-    ],
-    "BOS": [
-        {
-            "player": "Henri Jokiharju",
-            "news": "Jokiharju will be a healthy scratch vs. PIttsburgh on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:03:26.918Z"
-        },
-        {
-            "player": "Andrew Peeke",
-            "news": "Peeke will draw back into Boston's lineup vs. PIttsburgh on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:03:04.775Z"
-        },
-        {
-            "player": "Jeremy Swayman",
-            "news": "Swayman will start vs. Pittsburgh on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T16:02:34.888Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Dominic James",
-            "news": "James (leg) has been placed on IR. ",
-            "category": "Injury",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T15:59:32.056Z"
-        },
-        {
-            "player": "Conor Geekie",
-            "news": "Geekie has been recalled from Syracuse (AHL). ",
-            "category": "Call Up",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T15:58:23.643Z"
-        }
-    ],
-    "VGK": [
-        {
-            "player": "Raphael Lavoie",
-            "news": "Lavoie has been recalled from Henderson (AHL). ",
-            "category": "Call Up",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T15:50:31.908Z"
-        }
-    ],
-    "BUF": [
-        {
-            "player": "Alex Lyon",
-            "news": "Lyon is in the starter's crease at Buffalo's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T15:27:10.725Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Artturi Lehkonen",
-            "news": "Lehkonen (upper-body) will not play Tuesday in Anaheim. \r\n",
-            "category": "Injury",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T11:29:23.673Z"
-        },
-        {
-            "player": "Artturi Lehkonen",
-            "news": "Lehkonen (upper-body) left Monday's game vs. Los Angeles and will not return. ",
-            "category": "Injury",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T04:56:37.395Z"
-        }
-    ],
-    "DAL": [
-        {
-            "player": "Casey DeSmith",
-            "news": "DeSmith will start Tuesday in Calgary. ",
-            "category": "Goalie Start",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T11:25:06.709Z"
-        }
-    ],
-    "LAK": [
-        {
-            "player": "Quinton Byfield",
-            "news": "Byfield (illness) will not play against the Avalanche on Monday. ",
-            "category": "Injury",
-            "date": "2026-03-03",
-            "timestamp": "2026-03-03T03:26:12.366Z"
         }
     ]
 }
