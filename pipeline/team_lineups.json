@@ -627,7 +627,7 @@
                 "pos": "rd",
                 "id": 2478,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -645,7 +645,7 @@
                 "pos": "rd",
                 "id": 1710,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -655,7 +655,7 @@
                 "pos": "ld",
                 "id": 28855,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Dante Fabbro",
@@ -887,7 +887,7 @@
                 "pos": "rw",
                 "id": 2786,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -939,7 +939,7 @@
                 "pos": "rw",
                 "id": 38116,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -949,7 +949,7 @@
                 "pos": "lw",
                 "id": 1699,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Carl Grundstrom",
@@ -1808,7 +1808,7 @@
                 "number": 11,
                 "pos": "c",
                 "id": 758,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1822,19 +1822,19 @@
         ],
         "f2": [
             {
-                "name": "Alex Turcotte",
-                "number": 15,
+                "name": "Warren Foegele",
+                "number": 37,
                 "pos": "lw",
-                "id": 30420,
-                "ppUnit": null,
-                "movement": null
+                "id": 3911,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
-                "name": "Quinton Byfield",
-                "number": 55,
+                "name": "Alex Turcotte",
+                "number": 15,
                 "pos": "c",
-                "id": 29855,
-                "ppUnit": 1,
+                "id": 30420,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1848,12 +1848,12 @@
         ],
         "f3": [
             {
-                "name": "Warren Foegele",
-                "number": 37,
+                "name": "Jared Wright",
+                "number": null,
                 "pos": "lw",
-                "id": 3911,
-                "ppUnit": 2,
-                "movement": null
+                "id": 34797,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Kenny Connors",
@@ -1936,12 +1936,12 @@
         ],
         "d3": [
             {
-                "name": "Jacob Moverare",
-                "number": 43,
+                "name": "Angus Booth",
+                "number": null,
                 "pos": "ld",
-                "id": 4481,
+                "id": 34128,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Brian Dumoulin",
@@ -2000,6 +2000,14 @@
                 "id": 2878,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Quinton Byfield",
+                "number": 55,
+                "pos": "ir7",
+                "id": 29855,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -2797,7 +2805,7 @@
                 "pos": "c",
                 "id": 2475,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Pavel Dorofeyev",
@@ -2875,7 +2883,7 @@
                 "pos": "rd",
                 "id": 2157,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -2953,7 +2961,7 @@
                 "pos": "ir5",
                 "id": 2475,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Shea Theodore",
@@ -2961,7 +2969,7 @@
                 "pos": "ir6",
                 "id": 2157,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
