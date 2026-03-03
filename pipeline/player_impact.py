@@ -71,8 +71,19 @@ _ACCENT_MAP = str.maketrans(
 # Key: name as MoneyPuck delivers it (often drops diacritics incorrectly)
 # Value: corrected display name (should match how DailyFaceoff lists the player)
 _NAME_CORRECTIONS: dict[str, str] = {
-    'Oskar Bck':  'Oskar Back',   # MoneyPuck drops ä → leaves "Bck"
-    'Oskar Bäck': 'Oskar Back',   # in case source ever restores the umlaut
+    # MoneyPuck encoding issues: diacritics are dropped entirely (ü→"", ä→"", ö→"", ý→"", etc.)
+    # rather than transliterated (ü→u, ä→a, …). Keys = raw MoneyPuck name; values = ASCII form
+    # that our normName() will map to the same token as DailyFaceoff's version.
+    'Oskar Bck':               'Oskar Back',               # ä dropped → "Bck"
+    'Oskar Bäck':              'Oskar Back',               # if source ever restores the umlaut
+    'Tim Sttzle':              'Tim Stutzle',              # ü dropped → "Sttzle"
+    'Aatu Rty':                'Aatu Raty',                # ä dropped → "Rty"
+    'Isac Lundestrm':          'Isac Lundestrom',          # ö dropped → "Lundestrm"
+    'Juraj Slafkovsk':         'Juraj Slafkovsky',         # ý dropped → "Slafkovsk"
+    'Martin Fehrvry':          'Martin Fehervary',         # é,á,í dropped → "Fehrvry"
+    'Olli Mtt':                'Olli Maatta',              # ä dropped → "Mtt"
+    'Matj  Blmel':             'Matej Blumel',             # ě,ü dropped → "Matj  Blmel"
+    'Michael Brandsegg-Nygrd': 'Michael Brandsegg-Nygaard', # å dropped → "Nygrd"
 }
 
 
