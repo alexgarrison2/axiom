@@ -125,7 +125,8 @@ jobs:
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"
 
             # Rebase onto latest remote state, then push
-            git pull --rebase origin main
+            # --autostash handles any files the pipeline modified but didn't explicitly git add
+            git pull --rebase --autostash origin main
             git push
 
             # Trigger Vercel rebuild to serve updated data
