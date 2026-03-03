@@ -20,6 +20,7 @@ interface PIPlayer {
     is_forward: boolean;
     games_played: number;
     xgaa_per_game: number;
+    impact_score?: number;  // position-weighted composite z-score (new)
     // legacy fallback (some builds may not have xgaa yet)
     game_score?: number;
 }
@@ -72,6 +73,15 @@ function lineImpactColor(pct: number): string {
     if (pct >= 40) return '#6b7280';   // gray   – average
     if (pct >= 20) return '#f97316';   // orange – below avg
     return '#ef4444';                  // red    – bottom tier
+}
+
+function gradeColor(pct: number | null): string {
+    if (pct === null) return '#6b7280';
+    if (pct >= 80) return '#3b82f6';
+    if (pct >= 60) return '#38bdf8';
+    if (pct >= 40) return '#6b7280';
+    if (pct >= 20) return '#f97316';
+    return '#ef4444';
 }
 
 // ── Tooltip segment builders ──────────────────────────────────────────────────
@@ -140,6 +150,48 @@ function GoalieChip({ name, gsax, pct }: { name: string; gsax: number; pct: numb
             <span className="text-[9px] font-bold tabular-nums" style={{ color }}>
                 {sign}{gsax.toFixed(2)}
             </span>
+        </Chip>
+    );
+}
+
+// ── Lineup grade chip ─────────────────────────────────────────────────────────
+function LineupGradeChip({ grade, leaguePct, leagueRank, leagueTotal, teamCeiling }: {
+    grade: number;
+    leaguePct: number | null;
+    leagueRank: number | null;
+    leagueTotal: number;
+    teamCeiling: number | null;
+}) {
+    const sign  = grade >= 0 ? '+' : '';
+    const color = gradeColor(leaguePct);
+
+    const tooltipSegs: Seg[] = [
+        { text: 'Lineup grade: ' },
+        { text: `${sign}${grade.toFixed(2)} IMPACT`, color },
+        { text: ' (sum of skater impact z-scores)' },
+        ...(leagueRank !== null && leagueTotal > 1 ? [
+            { text: ' · ' },
+            { text: `${leagueRank}${ordinalSuffix(leagueRank)} of ${leagueTotal}`, color },
+            { text: ' teams tonight' },
+        ] : []),
+        ...(teamCeiling !== null ? [
+            { text: ' · Ceiling: ' },
+            { text: `${teamCeiling >= 0 ? '+' : ''}${teamCeiling.toFixed(1)}`, color: '#94a3b8' },
+            { text: ' (full roster top-18)' },
+        ] : []),
+    ];
+
+    return (
+        <Chip tooltipSegs={tooltipSegs}>
+            <span className="text-[9px] text-neutral-400 font-medium uppercase tracking-wider">Grade</span>
+            <span className="text-[10px] font-bold tabular-nums font-mono" style={{ color }}>
+                {sign}{grade.toFixed(1)}
+            </span>
+            {leagueRank !== null && leagueTotal > 1 && (
+                <span className="text-[8px] tabular-nums" style={{ color }}>
+                    #{leagueRank}/{leagueTotal}
+                </span>
+            )}
         </Chip>
     );
 }
@@ -301,6 +353,20 @@ export default function LineupGrid({
         return dist;
     }, [gsMap, allLineups, piData]);
 
+    // name → impact_score (position-weighted composite z-score, added in new pipeline)
+    const impactScoreMap = useMemo((): Map<string, number> => {
+        if (!piData) return new Map();
+        const m = new Map<string, number>();
+        for (const [, p] of Object.entries(piData)) {
+            if (p.games_played <= 0 || p.impact_score === undefined) continue;
+            const full = normName(p.name);
+            m.set(full, p.impact_score);
+            const last = full.split(' ').at(-1) ?? full;
+            if (!m.has(last)) m.set(last, p.impact_score);
+        }
+        return m;
+    }, [piData]);
+
     // Actual lineup line totals + rank vs league distributions.
     // Returns null for incomplete lines (missing players / no impact data).
     const lineImpacts = useMemo((): Record<string, { total: number; pct: number; rank: number; outOf: number } | null> => {
@@ -330,6 +396,71 @@ export default function LineupGrid({
         return result;
     }, [lineup, gsMap, lineDistributions]);
 
+    // Total lineup grade: sum of impact_score for all 18 skaters.
+    // Compared against all 32 teams' current projected lineups (tonight's context).
+    // Also computes team "ceiling" = top-12F + top-6D from full roster in piData.
+    const lineupGradeData = useMemo(() => {
+        if (!impactScoreMap.size || !lineup) return null;
+
+        const lookupScore = (name: string): number | undefined => {
+            const full = normName(name);
+            return impactScoreMap.get(full) ?? impactScoreMap.get(full.split(' ').at(-1) ?? full);
+        };
+
+        // Sum impact_score for this lineup's 18 skaters (f1-f4 + d1-d3)
+        let thisGrade = 0;
+        let found     = 0;
+        for (const lineKey of ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3']) {
+            for (const player of (lineup[lineKey] || [])) {
+                const s = lookupScore(player.name);
+                if (s !== undefined) { thisGrade += s; found++; }
+            }
+        }
+        if (found < 10) return null; // too few matches — don't show
+
+        // League distribution: compute grade for every team with a current lineup
+        const leagueGrades: number[] = [];
+        if (allLineups) {
+            for (const [, teamLineup] of Object.entries(allLineups)) {
+                let grade = 0, teamFound = 0;
+                for (const lineKey of ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3']) {
+                    for (const player of (teamLineup[lineKey] || [])) {
+                        const s = lookupScore(player.name);
+                        if (s !== undefined) { grade += s; teamFound++; }
+                    }
+                }
+                if (teamFound >= 10) leagueGrades.push(grade);
+            }
+        }
+        leagueGrades.sort((a, b) => a - b);
+
+        const leaguePct  = leagueGrades.length > 1
+            ? Math.round((leagueGrades.filter(g => g < thisGrade).length / leagueGrades.length) * 100)
+            : null;
+        const leagueRank = leagueGrades.length > 1
+            ? leagueGrades.filter(g => g > thisGrade).length + 1
+            : null;
+
+        // Team ceiling: top-12 forwards + top-6 defensemen from this team's roster
+        const teamFwdScores: number[] = [];
+        const teamDefScores: number[] = [];
+        if (piData) {
+            for (const [, p] of Object.entries(piData)) {
+                if (p.team !== triCode || p.impact_score === undefined || p.games_played <= 0) continue;
+                if (p.is_forward) teamFwdScores.push(p.impact_score);
+                else              teamDefScores.push(p.impact_score);
+            }
+        }
+        teamFwdScores.sort((a, b) => b - a);
+        teamDefScores.sort((a, b) => b - a);
+        const teamCeiling = (teamFwdScores.length >= 12 && teamDefScores.length >= 6)
+            ? teamFwdScores.slice(0, 12).reduce((a, b) => a + b, 0) +
+              teamDefScores.slice(0, 6).reduce((a, b) => a + b, 0)
+            : null;
+
+        return { grade: thisGrade, found, leaguePct, leagueRank, leagueTotal: leagueGrades.length, teamCeiling };
+    }, [lineup, triCode, piData, impactScoreMap, allLineups]);
+
     // ── Early return (after hooks) ────────────────────────────────────────────
     if (!lineup) return (
         <div className="flex flex-col items-center justify-center p-4 text-neutral-500 text-xs">
@@ -341,8 +472,22 @@ export default function LineupGrid({
     const forwards = getPlayers(['f1', 'f2', 'f3', 'f4']);
     const defense  = getPlayers(['d1', 'd2', 'd3']);
 
-    // Show the IMP column once player data has loaded
+    // Show the IMP column once player data has loaded.
+    // On mobile (<md) we hide it to keep the lineup readable.
     const showImp = piData !== null;
+
+    // Build a set of normalised names currently in the lineup so we can
+    // remove duplicates from the Out / IR section.
+    const lineupNameSet = useMemo((): Set<string> => {
+        if (!lineup) return new Set();
+        const names = new Set<string>();
+        for (const key of ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3']) {
+            for (const p of (lineup[key] || [])) {
+                if (p?.name) names.add(normName(p.name));
+            }
+        }
+        return names;
+    }, [lineup]);
 
     return (
         <div className="flex flex-col w-full text-left">
@@ -356,19 +501,28 @@ export default function LineupGrid({
                     gsaxPerGame={gsaxPerGame}
                     gsaxPct={gsaxPct}
                 />
+                {lineupGradeData && (
+                    <LineupGradeChip
+                        grade={lineupGradeData.grade}
+                        leaguePct={lineupGradeData.leaguePct}
+                        leagueRank={lineupGradeData.leagueRank}
+                        leagueTotal={lineupGradeData.leagueTotal}
+                        teamCeiling={lineupGradeData.teamCeiling}
+                    />
+                )}
             </div>
 
             <div className="flex flex-col gap-4">
-                {/* Forwards Table */}
+                {/* Forwards Table — IMP column hidden on mobile */}
                 <div className="border border-white/10 rounded-lg overflow-hidden">
-                    <div className={`grid ${showImp ? 'grid-cols-[1fr_1fr_1fr_3.5rem]' : 'grid-cols-3'} bg-white/5 border-b border-white/10`}>
+                    <div className={`grid grid-cols-3 ${showImp ? 'md:grid-cols-[1fr_1fr_1fr_3.5rem]' : ''} bg-white/5 border-b border-white/10`}>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase">LW</div>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-x border-white/5">C</div>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase">RW</div>
-                        {showImp && <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-l border-white/5">IMP</div>}
+                        {showImp && <div className="hidden md:block py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-l border-white/5">IMP</div>}
                     </div>
                     {forwards.map((line, i) => (
-                        <div key={i} className={`grid ${showImp ? 'grid-cols-[1fr_1fr_1fr_3.5rem]' : 'grid-cols-3'} ${i !== forwards.length - 1 ? 'border-b border-white/5' : ''}`}>
+                        <div key={i} className={`grid grid-cols-3 ${showImp ? 'md:grid-cols-[1fr_1fr_1fr_3.5rem]' : ''} ${i !== forwards.length - 1 ? 'border-b border-white/5' : ''}`}>
                             {[0, 1, 2].map(colIndex => {
                                 const player = line[colIndex];
                                 return (
@@ -392,21 +546,23 @@ export default function LineupGrid({
                                 );
                             })}
                             {showImp && (
-                                <ImpactBadge lineKey={`f${i + 1}`} impact={lineImpacts[`f${i + 1}`]} />
+                                <div className="hidden md:flex">
+                                    <ImpactBadge lineKey={`f${i + 1}`} impact={lineImpacts[`f${i + 1}`]} />
+                                </div>
                             )}
                         </div>
                     ))}
                 </div>
 
-                {/* Defense Table */}
+                {/* Defense Table — IMP column hidden on mobile */}
                 <div className={`border border-white/10 rounded-lg overflow-hidden ${showImp ? '' : 'w-2/3'}`}>
-                    <div className={`grid ${showImp ? 'grid-cols-[1fr_1fr_3.5rem]' : 'grid-cols-2'} bg-white/5 border-b border-white/10`}>
+                    <div className={`grid grid-cols-2 ${showImp ? 'md:grid-cols-[1fr_1fr_3.5rem]' : ''} bg-white/5 border-b border-white/10`}>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase">LD</div>
                         <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-l border-white/5">RD</div>
-                        {showImp && <div className="py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-l border-white/5">IMP</div>}
+                        {showImp && <div className="hidden md:block py-1 text-center text-[9px] font-bold text-neutral-500 uppercase border-l border-white/5">IMP</div>}
                     </div>
                     {defense.map((pair, i) => (
-                        <div key={i} className={`grid ${showImp ? 'grid-cols-[1fr_1fr_3.5rem]' : 'grid-cols-2'} ${i !== defense.length - 1 ? 'border-b border-white/5' : ''}`}>
+                        <div key={i} className={`grid grid-cols-2 ${showImp ? 'md:grid-cols-[1fr_1fr_3.5rem]' : ''} ${i !== defense.length - 1 ? 'border-b border-white/5' : ''}`}>
                             {[0, 1].map(colIndex => {
                                 const player = pair[colIndex];
                                 return (
@@ -430,15 +586,19 @@ export default function LineupGrid({
                                 );
                             })}
                             {showImp && (
-                                <ImpactBadge lineKey={`d${i + 1}`} impact={lineImpacts[`d${i + 1}`]} />
+                                <div className="hidden md:flex">
+                                    <ImpactBadge lineKey={`d${i + 1}`} impact={lineImpacts[`d${i + 1}`]} />
+                                </div>
                             )}
                         </div>
                     ))}
                 </div>
 
-                {/* Out / IR Section */}
+                {/* Out / IR Section — excludes anyone already placed in a lineup slot */}
                 {(() => {
-                    const irPlayers = (lineup['ir'] || []).slice(0, 6);
+                    const irPlayers = (lineup['ir'] || [])
+                        .filter((p: { name: string }) => !lineupNameSet.has(normName(p.name)))
+                        .slice(0, 6);
                     if (!irPlayers.length) return null;
                     // Split into two columns: [0,2,4] left, [1,3,5] right
                     const left  = irPlayers.filter((_: unknown, i: number) => i % 2 === 0);

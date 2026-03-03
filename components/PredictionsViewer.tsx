@@ -12,6 +12,7 @@ import TeamsTable from './TeamsTable';
 import NewsSection from './NewsSection';
 import PlayoffTable from './PlayoffTable';
 import PlayoffBracket from './PlayoffBracket';
+import SkaterStatsTable from './SkaterStatsTable';
 import Header from './Header';
 import { Slider } from '@/components/ui/slider';
 
@@ -248,7 +249,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 
     // Filter predictions for the selected date
     const filteredPredictions = useMemo(() => {
-        if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News' || selectedTab === 'Playoffs' || selectedTab === 'Bracket') return [];
+        if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News' || selectedTab === 'Playoffs' || selectedTab === 'Bracket' || selectedTab === 'Skaters') return [];
         return predictions.filter(p => p.date === selectedTab);
     }, [predictions, selectedTab]);
 
@@ -285,7 +286,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
         return <div className="text-center text-gray-500 mt-12 font-mono uppercase tracking-widest animate-pulse">No data available.</div>;
     }
 
-    const isMainPage = !['News', 'Teams', 'History', 'Playoffs', 'Bracket'].includes(selectedTab);
+    const isMainPage = !['News', 'Teams', 'History', 'Playoffs', 'Bracket', 'Skaters'].includes(selectedTab);
 
     return (
         <div className="w-full">
@@ -436,6 +437,24 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                     />
                                 )}
                                 <span className="relative z-10">BRACKET</span>
+                            </button>
+
+                            {/* Skaters Button */}
+                            <button
+                                onClick={() => setSelectedTab('Skaters')}
+                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Skaters'
+                                    ? 'text-cyan-400 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
+                                    : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
+                                    }`}
+                            >
+                                {selectedTab === 'Skaters' && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute inset-0 bg-cyan-400/10 rounded-full"
+                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                    />
+                                )}
+                                <span className="relative z-10">SKATERS</span>
                             </button>
                         </div>
                     </div>
@@ -689,6 +708,17 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 </div>
                             )}
                         </div>
+                    </motion.div>
+                ) : selectedTab === 'Skaters' ? (
+                    <motion.div
+                        key="tab-skaters"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full"
+                    >
+                        <SkaterStatsTable />
                     </motion.div>
                 ) : (
                     /* Grid Layout - Staggered Fade In */

@@ -237,11 +237,15 @@ def calculate_player_impact(
             if pk_toi >= MIN_ST_TOI_SECONDS:
                 pk_xga_per60 = per60(_safe_float(r_pk.get('OnIce_A_xGoals')), pk_toi)
 
-        # ── All-situations: game score, penalty diff, shot totals ──
+        # ── All-situations: game score, penalty diff, shot totals, season stats ──
         game_score         = 0.0
         penalty_diff_per60 = 0.0
         total_sog          = 0
         total_shot_attempts = 0
+        goals              = 0
+        assists            = 0
+        points             = 0
+        toi_per_game_all   = 0.0
         if pid in idx_all:
             r_all    = idx_all[pid]
             all_toi  = _safe_float(r_all.get('icetime'), ev_toi)
@@ -251,6 +255,11 @@ def calculate_player_impact(
             penalty_diff_per60 = per60(drawn - taken, all_toi) if all_toi > 0 else 0.0
             total_sog           = int(_safe_float(r_all.get('I_F_shotsOnGoal', 0)))
             total_shot_attempts = int(_safe_float(r_all.get('I_F_shotAttempts', 0)))
+            goals    = int(_safe_float(r_all.get('I_F_goals', 0)))
+            assists  = int(_safe_float(r_all.get('I_F_primaryAssists', 0))) + \
+                       int(_safe_float(r_all.get('I_F_secondaryAssists', 0)))
+            points   = goals + assists
+            toi_per_game_all = round(all_toi / gp / 60.0, 2) if gp > 0 else 0.0
 
         # ── Store profile ──
         player_impact[pid] = {
@@ -291,6 +300,12 @@ def calculate_player_impact(
             # Season shot totals (all situations, from MoneyPuck)
             'total_sog':           total_sog,
             'total_shot_attempts': total_shot_attempts,
+            # Season counting stats (all situations)
+            'goals':               goals,
+            'assists':             assists,
+            'points':              points,
+            'sog_per_game':        round(total_sog / gp, 2) if gp > 0 else 0.0,
+            'toi_per_game_all':    toi_per_game_all,
         }
 
     print(f"  Built profiles for {len(player_impact)} players (after min-TOI filter)")
@@ -373,6 +388,62 @@ def calculate_player_impact(
     print(f"  ✓ xGAA/game computed  "
           f"(lg PP fwd={league_avgs['fwd_pp_xgf_per60']:.3f}  "
           f"PK fwd={league_avgs['fwd_pk_xga_per60']:.3f})")
+
+    # ── Position-weighted composite IMPACT score ──────────────────────────────
+    # Uses z-score normalization within position groups so each pillar has equal
+    # variance contribution before weighting.  Weights reflect the fact that:
+    #   • Forwards derive most value from EV offense (isolation metric)
+    #   • Defensemen derive most value from EV defense
+    #   • PP / PK are real but secondary contributions for both positions
+    #
+    # EV OFF signal: relative_xgf_pct (Bayesian-shrunken on/off split) —
+    #   isolates individual impact from linemate quality.  MacKinnon's elite
+    #   relative xGF% will dominate here regardless of who he plays with.
+    # EV DEF signal: -ev_xga_per60 (on-ice xGA rate, sign-flipped so higher=better)
+    # PP / PK signals: xgaa_pp / xgaa_pk (already 0 for inactive ST players)
+    #
+    # Forward weights:   EV Off 50%, EV Def 20%, PP 20%, PK 10%
+    # Defenseman weights: EV Off 25%, EV Def 40%, PP 15%, PK 20%
+
+    def _compute_position_impact(pid_list: list, fwd_weights: bool) -> None:
+        """Z-score each pillar within this group, apply weights, store results."""
+        if not pid_list:
+            return
+        data_list = [player_impact[p] for p in pid_list]
+
+        ev_off_arr = np.array([d['relative_xgf_pct'] for d in data_list])
+        ev_def_arr = np.array([-d['ev_xga_per60']    for d in data_list])
+        pp_arr     = np.array([d['xgaa_pp']           for d in data_list])
+        pk_arr     = np.array([d['xgaa_pk']           for d in data_list])
+
+        def zsc(arr: np.ndarray) -> np.ndarray:
+            mu, sigma = float(np.mean(arr)), float(np.std(arr))
+            return (arr - mu) / sigma if sigma > 1e-9 else np.zeros(len(arr))
+
+        z_off = zsc(ev_off_arr)
+        z_def = zsc(ev_def_arr)
+        z_pp  = zsc(pp_arr)
+        z_pk  = zsc(pk_arr)
+
+        if fwd_weights:
+            w_off, w_def, w_pp, w_pk = 0.50, 0.20, 0.20, 0.10
+        else:
+            w_off, w_def, w_pp, w_pk = 0.25, 0.40, 0.15, 0.20
+
+        composite = w_off * z_off + w_def * z_def + w_pp * z_pp + w_pk * z_pk
+
+        for i, pid in enumerate(pid_list):
+            player_impact[pid]['impact_ev_off'] = round(float(z_off[i]), 3)
+            player_impact[pid]['impact_ev_def'] = round(float(z_def[i]), 3)
+            player_impact[pid]['impact_pp']     = round(float(z_pp[i]),  3)
+            player_impact[pid]['impact_pk']     = round(float(z_pk[i]),  3)
+            player_impact[pid]['impact_score']  = round(float(composite[i]), 3)
+
+    fwd_pids = [pid for pid, d in player_impact.items() if d['is_forward']]
+    def_pids = [pid for pid, d in player_impact.items() if not d['is_forward']]
+    _compute_position_impact(fwd_pids, fwd_weights=True)
+    _compute_position_impact(def_pids, fwd_weights=False)
+    print(f"  ✓ impact_score computed ({len(fwd_pids)} fwd, {len(def_pids)} def)")
 
     # ── League-average lineup baseline (for ratio-based blending) ──────────────
     # What estimate_lineup_xg returns for a perfectly average 18-player team.
