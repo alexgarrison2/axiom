@@ -28,12 +28,18 @@ interface PIPlayer {
     pk_xga_per60: number;
     penalty_diff_per60: number;
     game_score: number;
-    // Custom impact metric: xG above league-average at same position, per game
+    // Legacy: xG above league-average at same position, per game
     xgaa_per_game: number;
     xgaa_ev_off: number;
     xgaa_ev_def: number;
     xgaa_pp: number;
     xgaa_pk: number;
+    // New: position-weighted z-score impact system
+    impact_score: number;
+    impact_ev_off: number;
+    impact_ev_def: number;
+    impact_pp: number;
+    impact_pk: number;
     total_sog: number;
     total_shot_attempts: number;
 }
@@ -147,11 +153,11 @@ function pctColor(p: number): string {
     if (t <= 0.5) {
         const s = t * 2;
         r = Math.round(189 + (210 - 189) * s);
-        g = Math.round(0   + (210 - 0)   * s);
-        b = Math.round(0   + (210 - 0)   * s);
+        g = Math.round(0 + (210 - 0) * s);
+        b = Math.round(0 + (210 - 0) * s);
     } else {
         const s = (t - 0.5) * 2;
-        r = Math.round(210 + (16  - 210) * s);
+        r = Math.round(210 + (16 - 210) * s);
         g = Math.round(210 + (132 - 210) * s);
         b = Math.round(210 + (254 - 210) * s);
     }
@@ -360,8 +366,8 @@ function StubSkaterCard({ name, pos, jerseyNum, team }: {
     jerseyNum: number;
     team: string;
 }) {
-    const piPos  = dfoPosToPiPos(pos);
-    const posC   = posAccent(piPos);
+    const piPos = dfoPosToPiPos(pos);
+    const posC = posAccent(piPos);
     const lastName = name.split(' ').at(-1) ?? name;
     void lastName;
 
@@ -413,7 +419,7 @@ function StubSkaterCard({ name, pos, jerseyNum, team }: {
             <div className="px-3 pt-1.5 pb-3 flex flex-col gap-2">
                 {/* Counting stats — all dashes */}
                 <div className="grid grid-cols-6 gap-0.5 text-center">
-                    {(['GP','G','A','Pts','SOG','TOI'] as string[]).map(l => (
+                    {(['GP', 'G', 'A', 'Pts', 'SOG', 'TOI'] as string[]).map(l => (
                         <div key={l} className="flex flex-col items-center gap-[2px]">
                             <span className="text-[16px] font-bold text-zinc-700 tabular-nums leading-none">—</span>
                             <span className="text-[7.5px] text-zinc-700 uppercase tracking-wider leading-none">{l}</span>
@@ -460,12 +466,12 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCa
     const pr = (val: number, key: string, hi = true) =>
         pctile(val, pool[key] ?? [], hi);
 
-    // Impact
+    // Impact (using new z-score system)
     const gsPct = pr(player.gs_pg, 'gs_pg');
     const impC = pctColor(gsPct);
     const gsSign = player.gs_pg >= 0 ? '+' : '';
     const pRank = Math.round(gsPct);
-    const [impMouse, setImpMouse] = useState<{x:number;y:number}|null>(null);
+    const [impMouse, setImpMouse] = useState<{ x: number; y: number } | null>(null);
 
     // Relative xGF
     const relVal = pi.relative_xgf_pct * 100;
@@ -599,8 +605,8 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCa
                 <div
                     className="flex flex-col items-end justify-start gap-[4px] pr-2.5 pl-1 shrink-0 z-10 pt-2 pb-1 cursor-default"
                     onMouseEnter={(e) => setImpMouse({ x: e.clientX, y: e.clientY })}
-                    onMouseMove={(e)  => setImpMouse({ x: e.clientX, y: e.clientY })}
-                    onMouseLeave={()  => setImpMouse(null)}
+                    onMouseMove={(e) => setImpMouse({ x: e.clientX, y: e.clientY })}
+                    onMouseLeave={() => setImpMouse(null)}
                 >
                     <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest leading-none">
                         Impact
@@ -610,7 +616,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCa
                         style={{ background: impC, minWidth: 52 }}
                     >
                         <span className="text-[19px] font-black tabular-nums leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
-                            {gsSign}{(player.gs_pg * 10).toFixed(2)}
+                            {gsSign}{player.gs_pg.toFixed(2)}
                         </span>
                     </div>
                     <span className="text-[10px] font-bold leading-none tabular-nums" style={{ color: impC }}>
@@ -624,20 +630,20 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCa
                         const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
                         const left = Math.max(8, Math.min(impMouse.x - W / 2, vw - W - 8));
                         const top = impMouse.y > 80 ? impMouse.y - 112 : impMouse.y + 14;
-                        const fmt = (v: number) => (v >= 0 ? '+' : '') + (v * 10).toFixed(2);
+                        const fmt = (v: number) => (v >= 0 ? '+' : '') + v.toFixed(2);
                         const rows: [string, number][] = [
-                            ['EV Off', pi.xgaa_ev_off ?? 0],
-                            ['EV Def', pi.xgaa_ev_def ?? 0],
-                            ...(pi.xgaa_pp ? [['PP', pi.xgaa_pp] as [string, number]] : []),
-                            ...(pi.xgaa_pk ? [['PK', pi.xgaa_pk] as [string, number]] : []),
+                            ['EV Off', pi.impact_ev_off ?? 0],
+                            ['EV Def', pi.impact_ev_def ?? 0],
+                            ...(pi.impact_pp ? [['PP', pi.impact_pp] as [string, number]] : []),
+                            ...(pi.impact_pk ? [['PK', pi.impact_pk] as [string, number]] : []),
                         ];
                         return (
                             <div
-                                style={{ position:'fixed', left, top, width: W, zIndex: 9999, pointerEvents:'none' }}
+                                style={{ position: 'fixed', left, top, width: W, zIndex: 9999, pointerEvents: 'none' }}
                                 className="bg-zinc-950 border border-white/15 rounded-lg px-3 py-2 shadow-xl text-[11px]"
                             >
                                 <div className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">
-                                    xG Above Avg / game
+                                    Impact z-scores
                                 </div>
                                 {rows.map(([label, val]) => (
                                     <div key={label} className="flex justify-between gap-3 leading-snug">
@@ -883,7 +889,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             ev_net_per60: nums(arr, 'ev_net_per60'),
             relative_xgf_pct: nums(arr, 'relative_xgf_pct'),
             ev_toi_per_game: nums(arr, 'ev_toi_per_game'),
-            gs_pg: arr.map(p => p.xgaa_per_game ?? (p.games_played > 0 ? p.game_score / p.games_played : 0)),
+            gs_pg: arr.map(p => p.impact_score ?? p.xgaa_per_game ?? 0),
             // PP/PK percentiles among qualified players only (>= 60s avg TOI)
             pp_xgf_per60_qual: arr.filter(p => p.pp_toi_per_game >= 60).map(p => p.pp_xgf_per60),
             pk_xga_per60_qual: arr.filter(p => p.pk_toi_per_game >= 60).map(p => p.pk_xga_per60),
@@ -930,7 +936,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             const toi_pg_str = gp > 0
                 ? fmtToi(total_toi_sec / gp)
                 : fmtToi(pi.ev_toi_per_game + pi.pp_toi_per_game + pi.pk_toi_per_game);
-            const gs_pg = pi.xgaa_per_game ?? (pi.games_played > 0 ? pi.game_score / pi.games_played : 0);
+            const gs_pg = pi.impact_score ?? pi.xgaa_per_game ?? 0;
 
             // iXG%: this player's share of team total EV individual expected goals
             const playerIxg = pi.ind_xg_per60 * (pi.ev_toi_per_game / 3600) * pi.games_played;
@@ -997,11 +1003,11 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
     const playerNameMaps = useMemo(() => {
         const norm = (s: string) =>
             s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-        const byFull    = new Map<string, AggPlayer>();
-        const byLast    = new Map<string, AggPlayer>(); // fallback — first wins
+        const byFull = new Map<string, AggPlayer>();
+        const byLast = new Map<string, AggPlayer>(); // fallback — first wins
         const byLastFwd = new Map<string, AggPlayer>(); // last name → first forward
         const byLastDef = new Map<string, AggPlayer>(); // last name → first defender
-        const byId      = new Map<number, AggPlayer>(); // NHL API player ID (synthetic lineup)
+        const byId = new Map<number, AggPlayer>(); // NHL API player ID (synthetic lineup)
         for (const p of allPlayers) {
             const full = norm(p.pi.name);
             byFull.set(full, p);
