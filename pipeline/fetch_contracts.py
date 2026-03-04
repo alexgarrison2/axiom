@@ -293,16 +293,16 @@ def parse_puckpedia_team(html: str, roster_lookup: dict[str, int]) -> dict[str, 
 
                     if cell_ufa or "UFA" in cell_text:
                         status = "UFA"
-                        # Year is the start year of this column header (e.g., "2026-27" → 2027)
+                        # Column "2026-27" means free in summer 2026 (before that season)
                         ym = re.match(r"(20\d{2})-\d{2}", col_header)
                         if ym:
-                            year = int(ym.group(1)) + 1
+                            year = int(ym.group(1))
                         break
                     elif cell_rfa or "RFA" in cell_text:
                         status = "RFA"
                         ym = re.match(r"(20\d{2})-\d{2}", col_header)
                         if ym:
-                            year = int(ym.group(1)) + 1
+                            year = int(ym.group(1))
                         break
 
             # If year equals next off-season (2026), it means UFA/RFA THIS off-season → null
