@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
+import Image from 'next/image';
 import {
     XAxis,
     YAxis,
@@ -48,6 +49,8 @@ interface TeamChartProps {
     games: GameLog[];
     leagueGames?: GameLog[];
     primaryColor: string;
+    teamName?: string;
+    teamLogoUrl?: string;
 }
 
 const METRICS = [
@@ -136,7 +139,7 @@ const CustomTooltip = ({ active, payload, activeMetric, secondaryMetric, primary
     return null;
 };
 
-const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor }) => {
+const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor, teamName, teamLogoUrl }) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -404,7 +407,12 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
     return (
         <Card className="w-full bg-black/40 border-white/10 backdrop-blur-md shadow-2xl animate-in fade-in duration-500 font-sans">
             <CardHeader className="pb-4 border-b border-white/5">
-                <CardTitle className="text-white tracking-wider uppercase text-sm font-bold">Team Performance Analysis</CardTitle>
+                <CardTitle className="text-white tracking-wider uppercase text-sm font-bold flex items-center gap-2">
+                    {teamLogoUrl && (
+                        <Image src={teamLogoUrl} alt={teamName || ''} width={24} height={24} className="w-6 h-6 object-contain" />
+                    )}
+                    {teamName || 'Team Performance'}
+                </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-6 pt-6 relative">
                 {/* Controls Bar — above the chart so it doesn't overlap data labels */}
