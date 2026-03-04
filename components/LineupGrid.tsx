@@ -41,9 +41,9 @@ const TOOLTIP_W = 280;
 function FixedTooltip({ x, y, segments }: { x: number; y: number; segments: Seg[] }) {
     if (typeof document === 'undefined') return null;
 
-    const vw   = typeof window !== 'undefined' ? window.innerWidth : 1280;
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
     const left = Math.max(8, Math.min(x - TOOLTIP_W / 2, vw - TOOLTIP_W - 8));
-    const top  = y > 56 ? y - 46 : y + 22;
+    const top = y > 56 ? y - 46 : y + 22;
 
     return createPortal(
         <div
@@ -60,7 +60,7 @@ function FixedTooltip({ x, y, segments }: { x: number; y: number; segments: Seg[
 
 // ── Color helpers ─────────────────────────────────────────────────────────────
 function goalieColor(gsax: number): string {
-    if (gsax >= 0.2)  return '#16a34a';
+    if (gsax >= 0.2) return '#16a34a';
     if (gsax >= 0.05) return '#22c55e';
     if (gsax > -0.05) return '#6b7280';
     if (gsax > -0.15) return '#f97316';
@@ -98,9 +98,9 @@ function ordinalSuffix(n: number): string {
 }
 
 function goalieTooltipSegs(gsax: number, pct: number, name: string): Seg[] {
-    const sign  = gsax >= 0 ? '+' : '';
+    const sign = gsax >= 0 ? '+' : '';
     const color = goalieColor(gsax);
-    const rank  = Math.round(pct);
+    const rank = Math.round(pct);
     return [
         { text: `${name} — ` },
         { text: `${sign}${gsax.toFixed(2)} GSAx/gm`, color },
@@ -123,8 +123,8 @@ function Chip({
             <div
                 className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 cursor-default select-none"
                 onMouseEnter={(e) => setMouse({ x: e.clientX, y: e.clientY })}
-                onMouseMove={(e)  => setMouse({ x: e.clientX, y: e.clientY })}
-                onMouseLeave={()  => setMouse(null)}
+                onMouseMove={(e) => setMouse({ x: e.clientX, y: e.clientY })}
+                onMouseLeave={() => setMouse(null)}
             >
                 {children}
             </div>
@@ -141,9 +141,9 @@ function cleanGoalieName(raw: string): string {
 
 function GoalieChip({ name, gsax, pct }: { name: string; gsax: number; pct: number }) {
     const cleanName = cleanGoalieName(name);
-    const lastName  = cleanName.split(' ').pop() ?? cleanName;
-    const sign      = gsax >= 0 ? '+' : '';
-    const color     = goalieColor(gsax);
+    const lastName = cleanName.split(' ').pop() ?? cleanName;
+    const sign = gsax >= 0 ? '+' : '';
+    const color = goalieColor(gsax);
     return (
         <Chip tooltipSegs={goalieTooltipSegs(gsax, pct, cleanName)}>
             <span className="text-[9px] text-neutral-300 font-medium">{lastName}</span>
@@ -162,7 +162,7 @@ function LineupGradeChip({ grade, leaguePct, leagueRank, leagueTotal, teamCeilin
     leagueTotal: number;
     teamCeiling: number | null;
 }) {
-    const sign  = grade >= 0 ? '+' : '';
+    const sign = grade >= 0 ? '+' : '';
     const color = gradeColor(leaguePct);
 
     const tooltipSegs: Seg[] = [
@@ -225,13 +225,13 @@ function ImpactBadge({ lineKey, impact }: {
         );
     }
 
-    const color     = lineImpactColor(impact.pct);
-    const sign      = impact.total >= 0 ? '+' : '';
+    const color = lineImpactColor(impact.pct);
+    const sign = impact.total >= 0 ? '+' : '';
     const lineLabel = lineKey.toUpperCase();
 
     const tooltipSegs: Seg[] = [
         { text: `${lineLabel} line: ` },
-        { text: `${sign}${(impact.total * 10).toFixed(2)} xGAA/gm`, color },
+        { text: `${sign}${impact.total.toFixed(2)} IMPACT`, color },
         { text: ' · ' },
         { text: `${impact.rank}${ordinalSuffix(impact.rank)} of ${impact.outOf}`, color },
         { text: ` current NHL ${lineLabel} lines` },
@@ -242,11 +242,11 @@ function ImpactBadge({ lineKey, impact }: {
             <div
                 className="flex flex-col items-center justify-center border-l border-white/5 min-w-[3.5rem] cursor-default select-none"
                 onMouseEnter={(e) => setMouse({ x: e.clientX, y: e.clientY })}
-                onMouseMove={(e)  => setMouse({ x: e.clientX, y: e.clientY })}
-                onMouseLeave={()  => setMouse(null)}
+                onMouseMove={(e) => setMouse({ x: e.clientX, y: e.clientY })}
+                onMouseLeave={() => setMouse(null)}
             >
                 <span className="text-[10px] font-bold tabular-nums leading-none" style={{ color }}>
-                    {sign}{(impact.total * 10).toFixed(2)}
+                    {sign}{impact.total.toFixed(2)}
                 </span>
                 <span className="text-[8px] tabular-nums leading-none mt-0.5" style={{ color }}>
                     {impact.rank}{ordinalSuffix(impact.rank)}/{impact.outOf}
@@ -268,29 +268,29 @@ export default function LineupGrid({
     lineup, triCode, goalieStarter, gsaxPerGame, gsaxPct,
 }: LineupGridProps) {
     // ── Hooks (must precede any early returns per Rules of Hooks) ─────────────
-    const [piData,      setPiData]      = useState<PiData | null>(null);
-    const [allLineups,  setAllLineups]  = useState<AllLineups | null>(null);
+    const [piData, setPiData] = useState<PiData | null>(null);
+    const [allLineups, setAllLineups] = useState<AllLineups | null>(null);
 
     useEffect(() => {
         fetch('/data/player_impact.json')
             .then(r => r.json())
             .then((d: PiData) => setPiData(d))
-            .catch(() => {});
+            .catch(() => { });
         fetch('/data/team_lineups.json')
             .then(r => r.json())
             .then((d: AllLineups) => setAllLineups(d))
-            .catch(() => {});
+            .catch(() => { });
     }, []);
 
-    // name → xgaa_per_game
+    // name → impact_score (z-score)
     // Keyed by normalised full name AND normalised last name for two-pass fallback
     const gsMap = useMemo((): Map<string, number> => {
         if (!piData) return new Map();
         const m = new Map<string, number>();
         for (const [, p] of Object.entries(piData)) {
             if (p.games_played <= 0) continue;
-            // Prefer new xgaa_per_game; fall back to game_score/gp for safety
-            const gspg = p.xgaa_per_game ?? ((p.game_score ?? 0) / p.games_played);
+            // Use new impact_score z-score; fall back to xgaa_per_game for safety
+            const gspg = p.impact_score ?? p.xgaa_per_game ?? ((p.game_score ?? 0) / p.games_played);
             const full = normName(p.name);
             m.set(full, gspg);
             const last = full.split(' ').at(-1) ?? full;
@@ -314,7 +314,7 @@ export default function LineupGrid({
         if (allLineups) {
             // ── Real lineup distribution ────────────────────────────────────
             for (const teamLineup of Object.values(allLineups)) {
-                for (const [key, required] of [['f1',3],['f2',3],['f3',3],['f4',3],['d1',2],['d2',2],['d3',2]] as [string,number][]) {
+                for (const [key, required] of [['f1', 3], ['f2', 3], ['f3', 3], ['f4', 3], ['d1', 2], ['d2', 2], ['d3', 2]] as [string, number][]) {
                     const players = teamLineup[key] || [];
                     if (players.length < required) continue;
                     const scores = players.slice(0, required).map(p => lookupGsPg(p.name));
@@ -325,10 +325,10 @@ export default function LineupGrid({
         } else {
             // ── Fallback: virtual top-N distribution from piData ────────────
             const teamFwds = new Map<string, number[]>();
-            const teamDefs  = new Map<string, number[]>();
+            const teamDefs = new Map<string, number[]>();
             for (const [, p] of Object.entries(piData ?? {})) {
                 if (p.games_played <= 0) continue;
-                const gspg   = p.xgaa_per_game ?? ((p.game_score ?? 0) / p.games_played);
+                const gspg = p.impact_score ?? p.xgaa_per_game ?? ((p.game_score ?? 0) / p.games_played);
                 const bucket = p.is_forward ? teamFwds : teamDefs;
                 if (!bucket.has(p.team)) bucket.set(p.team, []);
                 bucket.get(p.team)!.push(gspg);
@@ -383,13 +383,13 @@ export default function LineupGrid({
             if (players.length < required) { result[key] = null; return; }
             const scores = players.slice(0, required).map(p => lookupGsPg(p.name));
             if (scores.some(s => s === undefined)) { result[key] = null; return; }
-            const total  = (scores as number[]).reduce((a, b) => a + b, 0);
-            const dist   = lineDistributions[key] || [];
+            const total = (scores as number[]).reduce((a, b) => a + b, 0);
+            const dist = lineDistributions[key] || [];
             if (!dist.length) { result[key] = null; return; }
-            const outOf  = dist.length;
-            const rank   = dist.filter(v => v > total).length + 1; // 1 = best
-            const pct    = (dist.filter(v => v < total).length / outOf) * 100; // for color
-            result[key]  = { total, pct, rank, outOf };
+            const outOf = dist.length;
+            const rank = dist.filter(v => v > total).length + 1; // 1 = best
+            const pct = (dist.filter(v => v < total).length / outOf) * 100; // for color
+            result[key] = { total, pct, rank, outOf };
         };
         ['f1', 'f2', 'f3', 'f4'].forEach(k => compute(k, 3));
         ['d1', 'd2', 'd3'].forEach(k => compute(k, 2));
@@ -409,7 +409,7 @@ export default function LineupGrid({
 
         // Sum impact_score for this lineup's 18 skaters (f1-f4 + d1-d3)
         let thisGrade = 0;
-        let found     = 0;
+        let found = 0;
         for (const lineKey of ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3']) {
             for (const player of (lineup[lineKey] || [])) {
                 const s = lookupScore(player.name);
@@ -434,7 +434,7 @@ export default function LineupGrid({
         }
         leagueGrades.sort((a, b) => a - b);
 
-        const leaguePct  = leagueGrades.length > 1
+        const leaguePct = leagueGrades.length > 1
             ? Math.round((leagueGrades.filter(g => g < thisGrade).length / leagueGrades.length) * 100)
             : null;
         const leagueRank = leagueGrades.length > 1
@@ -448,14 +448,14 @@ export default function LineupGrid({
             for (const [, p] of Object.entries(piData)) {
                 if (p.team !== triCode || p.impact_score === undefined || p.games_played <= 0) continue;
                 if (p.is_forward) teamFwdScores.push(p.impact_score);
-                else              teamDefScores.push(p.impact_score);
+                else teamDefScores.push(p.impact_score);
             }
         }
         teamFwdScores.sort((a, b) => b - a);
         teamDefScores.sort((a, b) => b - a);
         const teamCeiling = (teamFwdScores.length >= 12 && teamDefScores.length >= 6)
             ? teamFwdScores.slice(0, 12).reduce((a, b) => a + b, 0) +
-              teamDefScores.slice(0, 6).reduce((a, b) => a + b, 0)
+            teamDefScores.slice(0, 6).reduce((a, b) => a + b, 0)
             : null;
 
         return { grade: thisGrade, found, leaguePct, leagueRank, leagueTotal: leagueGrades.length, teamCeiling };
@@ -470,7 +470,7 @@ export default function LineupGrid({
 
     const getPlayers = (keys: string[]) => keys.map(k => lineup[k] || []);
     const forwards = getPlayers(['f1', 'f2', 'f3', 'f4']);
-    const defense  = getPlayers(['d1', 'd2', 'd3']);
+    const defense = getPlayers(['d1', 'd2', 'd3']);
 
     // Show the IMP column once player data has loaded.
     // On mobile (<md) we hide it to keep the lineup readable.
@@ -528,14 +528,14 @@ export default function LineupGrid({
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-x border-white/5' : ''}`}>
                                         <div className="flex items-center gap-1">
-                                            {player?.movement === 'up'   && <ArrowUp   className="w-3 h-3 text-green-500"  strokeWidth={3} />}
-                                            {player?.movement === 'down' && <ArrowDown  className="w-3 h-3 text-red-500"    strokeWidth={3} />}
-                                            {player?.movement === 'new'  && <Plus       className="w-3 h-3 text-orange-500" strokeWidth={3} />}
+                                            {player?.movement === 'up' && <ArrowUp className="w-3 h-3 text-green-500" strokeWidth={3} />}
+                                            {player?.movement === 'down' && <ArrowDown className="w-3 h-3 text-red-500" strokeWidth={3} />}
+                                            {player?.movement === 'new' && <Plus className="w-3 h-3 text-orange-500" strokeWidth={3} />}
                                             <span
                                                 className="text-[10px] leading-tight select-none"
                                                 style={{
                                                     color: player?.ppUnit === 1 ? '#5382BD' :
-                                                           player?.ppUnit === 2 ? '#FFFFFF'  : '#697281',
+                                                        player?.ppUnit === 2 ? '#FFFFFF' : '#697281',
                                                     fontWeight: player?.ppUnit === 1 ? 700 : 500,
                                                 }}
                                             >
@@ -568,14 +568,14 @@ export default function LineupGrid({
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-l border-white/5' : ''}`}>
                                         <div className="flex items-center gap-1">
-                                            {player?.movement === 'up'   && <ArrowUp   className="w-3 h-3 text-green-500"  strokeWidth={3} />}
-                                            {player?.movement === 'down' && <ArrowDown  className="w-3 h-3 text-red-500"    strokeWidth={3} />}
-                                            {player?.movement === 'new'  && <Plus       className="w-3 h-3 text-orange-500" strokeWidth={3} />}
+                                            {player?.movement === 'up' && <ArrowUp className="w-3 h-3 text-green-500" strokeWidth={3} />}
+                                            {player?.movement === 'down' && <ArrowDown className="w-3 h-3 text-red-500" strokeWidth={3} />}
+                                            {player?.movement === 'new' && <Plus className="w-3 h-3 text-orange-500" strokeWidth={3} />}
                                             <span
                                                 className="text-[10px] leading-tight select-none"
                                                 style={{
                                                     color: player?.ppUnit === 1 ? '#5382BD' :
-                                                           player?.ppUnit === 2 ? '#FFFFFF'  : '#697281',
+                                                        player?.ppUnit === 2 ? '#FFFFFF' : '#697281',
                                                     fontWeight: player?.ppUnit === 1 ? 700 : 500,
                                                 }}
                                             >
@@ -601,9 +601,9 @@ export default function LineupGrid({
                         .slice(0, 6);
                     if (!irPlayers.length) return null;
                     // Split into two columns: [0,2,4] left, [1,3,5] right
-                    const left  = irPlayers.filter((_: unknown, i: number) => i % 2 === 0);
+                    const left = irPlayers.filter((_: unknown, i: number) => i % 2 === 0);
                     const right = irPlayers.filter((_: unknown, i: number) => i % 2 === 1);
-                    const rows  = Math.max(left.length, right.length);
+                    const rows = Math.max(left.length, right.length);
                     return (
                         <div className="border border-white/10 rounded-lg overflow-hidden">
                             <div className="grid grid-cols-2 bg-white/5 border-b border-white/10">
