@@ -407,12 +407,15 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                 <CardTitle className="text-white tracking-wider uppercase text-sm font-bold">Team Performance Analysis</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-6 pt-6 relative">
-                {/* Floating Controls Bar */}
-                <div className="absolute top-4 right-4 z-20 flex flex-wrap items-end gap-x-4 gap-y-2 bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-xl max-w-[90%] justify-end transition-all duration-300 hover:bg-black/90">
+                {/* Controls Bar — above the chart so it doesn't overlap data labels */}
+                <div className="flex flex-wrap items-end gap-x-4 gap-y-2 bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-xl justify-end transition-all duration-300 hover:bg-black/90 mb-4">
 
                     {/* Metric 1 */}
                     <div className="flex flex-col gap-1 min-w-[140px]">
-                        <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1">Metric</label>
+                        <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1 flex items-center gap-1.5">
+                            Metric
+                            <svg width="24" height="6" className="inline-block"><line x1="0" y1="3" x2="24" y2="3" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" /></svg>
+                        </label>
                         <Select value={metric} onValueChange={setMetric}>
                             <SelectTrigger className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors h-7 text-[10px] font-bold font-mono">
                                 <SelectValue placeholder="Metric" />
@@ -427,7 +430,10 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
 
                     {/* Metric 2 */}
                     <div className="flex flex-col gap-1 min-w-[140px]">
-                        <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1">Compare</label>
+                        <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest pl-1 flex items-center gap-1.5">
+                            Compare
+                            <svg width="24" height="6" className="inline-block"><line x1="0" y1="3" x2="24" y2="3" stroke="#38bdf8" strokeWidth="2" strokeDasharray="4 3" strokeLinecap="round" /></svg>
+                        </label>
                         <Select value={metric2} onValueChange={setMetric2}>
                             <SelectTrigger className="w-full bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 transition-colors h-7 text-[10px] font-bold font-mono">
                                 <SelectValue placeholder="Compare..." />
@@ -474,7 +480,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                     {mode === 'rolling' && (
                         <div className="flex flex-col gap-1 w-[100px] animate-in slide-in-from-right-4 fade-in duration-300">
                             <div className="flex justify-between items-end">
-                                <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest">Win: {windowSize[0]}</label>
+                                <label className="text-[9px] uppercase text-gray-400 font-bold tracking-widest">Games: {windowSize[0]}</label>
                             </div>
                             <Slider
                                 defaultValue={[10]}
@@ -483,7 +489,7 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor 
                                 step={1}
                                 value={windowSize}
                                 onValueChange={setWindowSize}
-                                className="w-full [&>.relative>.absolute]:bg-blue-500 h-4"
+                                className="w-full [&>\.relative>.absolute]:bg-blue-500 h-4"
                             />
                         </div>
                     )}
