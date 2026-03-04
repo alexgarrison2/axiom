@@ -12,7 +12,7 @@ import {
     Area,
     ReferenceLine
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -406,17 +406,17 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor,
 
     return (
         <Card className="w-full bg-black/40 border-white/10 backdrop-blur-md shadow-2xl animate-in fade-in duration-500 font-sans">
-            <CardHeader className="pb-4 border-b border-white/5">
-                <CardTitle className="text-white tracking-wider uppercase text-sm font-bold flex items-center gap-2">
-                    {teamLogoUrl && (
-                        <Image src={teamLogoUrl} alt={teamName || ''} width={24} height={24} className="w-6 h-6 object-contain" />
-                    )}
-                    {teamName || 'Team Performance'}
-                </CardTitle>
-            </CardHeader>
             <CardContent className="flex flex-col gap-6 pt-6 relative">
-                {/* Controls Bar — above the chart so it doesn't overlap data labels */}
-                <div className="flex flex-wrap items-end gap-x-4 gap-y-2 bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-xl justify-end transition-all duration-300 hover:bg-black/90 mb-4">
+                {/* Controls Bar with team identity on left, controls on right */}
+                <div className="flex flex-wrap items-end gap-x-4 gap-y-2 bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-xl transition-all duration-300 hover:bg-black/90 mb-4">
+
+                    {/* Team Logo + Name — left side */}
+                    <div className="flex items-center gap-2.5 mr-auto">
+                        {teamLogoUrl && (
+                            <Image src={teamLogoUrl} alt={teamName || ''} width={32} height={32} className="w-8 h-8 object-contain" />
+                        )}
+                        <span className="text-white text-sm font-bold tracking-wider uppercase whitespace-nowrap">{teamName || ''}</span>
+                    </div>
 
                     {/* Metric 1 */}
                     <div className="flex flex-col gap-1 min-w-[140px]">
