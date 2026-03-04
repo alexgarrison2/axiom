@@ -1056,10 +1056,10 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             f1: fwds.slice(0, 3).map(toLp),
             f2: fwds.slice(3, 6).map(toLp),
             f3: fwds.slice(6, 9).map(toLp),
-            f4: fwds.slice(9).map(toLp),
+            f4: fwds.slice(9, 12).map(toLp),
             d1: defs.slice(0, 2).map(toLp),
             d2: defs.slice(2, 4).map(toLp),
-            d3: defs.slice(4).map(toLp),
+            d3: defs.slice(4, 6).map(toLp),
         };
     }, [allPlayers, lineup]);
 

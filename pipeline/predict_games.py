@@ -739,10 +739,14 @@ def predict():
     
     print(f"Predicting {len(schedule)} games...")
 
-    # Fetch Lineups for all teams in schedule
-    print("Fetching Lineups...")
+    # Fetch Lineups for ALL 32 teams (not just today's games)
+    # DailyFaceoff has line-combinations pages for every team regardless of game day.
+    # This ensures team detail pages always show real lineup data.
+    print("Fetching Lineups (all 32 teams)...")
     teams_to_fetch = []
     seen_teams = set()
+
+    # Start with teams in today's schedule
     for game in schedule:
         home_tri = game.get('homeTeamAbbrev')
         away_tri = game.get('awayTeamAbbrev')
@@ -751,7 +755,6 @@ def predict():
         
         if home_tri and home_tri not in seen_teams:
             seen_teams.add(home_tri)
-            # Use full name from CSV if available, else fallback to schedule name
             f_name = full_names.get(home_tri, home_name)
             teams_to_fetch.append({'triCode': home_tri, 'teamName': f_name})
             
@@ -759,6 +762,12 @@ def predict():
             seen_teams.add(away_tri)
             f_name = full_names.get(away_tri, away_name)
             teams_to_fetch.append({'triCode': away_tri, 'teamName': f_name})
+
+    # Add remaining teams not in today's schedule so every team has real lineup data
+    for tri, f_name in full_names.items():
+        if tri not in seen_teams:
+            seen_teams.add(tri)
+            teams_to_fetch.append({'triCode': tri, 'teamName': f_name})
 
     try:
         team_lineups = fetch_dailyfaceoff.fetch_lineups(teams_to_fetch)
