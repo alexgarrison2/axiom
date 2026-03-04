@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { PlayerBoxscoreRow, GameLog, TeamLineup } from '@/types';
+import { PlayerBoxscoreRow, GameLog, TeamLineup, LineupPlayer } from '@/types';
 import { TEAM_COLORS } from '@/utils/team-colors';
 
 /* ═══════════════════════════════════════════════════════
@@ -925,6 +925,34 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         return { byFull, byLast, norm };
     }, [allPlayers]);
 
+    // When no real lineup is available (e.g. DailyFaceoff hasn't posted yet),
+    // build a synthetic TOI-based grouping so the F1/F2/F3/F4/D1/D2/D3 layout
+    // is always shown instead of falling back to a flat grid.
+    const syntheticLineup = useMemo<TeamLineup | null>(() => {
+        if (lineup || allPlayers.length === 0) return null;
+        const fwds = [...allPlayers]
+            .filter(p => p.pi.is_forward)
+            .sort((a, b) => b.pi.ev_toi_per_game - a.pi.ev_toi_per_game);
+        const defs = [...allPlayers]
+            .filter(p => !p.pi.is_forward)
+            .sort((a, b) => b.pi.ev_toi_per_game - a.pi.ev_toi_per_game);
+        const toLp = (p: AggPlayer): LineupPlayer => ({
+            id: Number(p.id),
+            name: p.pi.name,
+            number: p.jerseyNum || null,
+            pos: p.pi.position.toLowerCase(),
+        });
+        return {
+            f1: fwds.slice(0, 3).map(toLp),
+            f2: fwds.slice(3, 6).map(toLp),
+            f3: fwds.slice(6, 9).map(toLp),
+            f4: fwds.slice(9).map(toLp),
+            d1: defs.slice(0, 2).map(toLp),
+            d2: defs.slice(2, 4).map(toLp),
+            d3: defs.slice(4).map(toLp),
+        };
+    }, [allPlayers, lineup]);
+
     /* ── Render ─────────────────────────────────────── */
 
     if (!piData || !pools) {
@@ -937,8 +965,9 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         );
     }
 
-    // Effective sort mode: fall back to 'impact' if lineup requested but data missing
-    const effectiveSortBy = sortBy === 'lineup' && !lineup ? 'impact' : sortBy;
+    // Effective sort mode: fall back to 'impact' only if neither real nor synthetic lineup is available
+    const activeLineupData = lineup ?? syntheticLineup;
+    const effectiveSortBy = sortBy === 'lineup' && !activeLineupData ? 'impact' : sortBy;
 
     return (
         <div className="flex flex-col gap-4">
@@ -970,7 +999,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                         ['impact', 'Impact'],
                         ['pts', 'Points'],
                         ['toi', 'TOI'],
-                        ...(lineup ? [['lineup', 'Lineup']] : []),
+                        ['lineup', 'Lineup'],
                     ] as [string, string][]).map(([val, label]) => (
                         <button
                             key={val}
@@ -1007,8 +1036,9 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             </div>
 
             {/* ── LINEUP VIEW ── */}
-            {effectiveSortBy === 'lineup' && lineup ? (() => {
+            {effectiveSortBy === 'lineup' && activeLineupData ? (() => {
                 const { byFull, byLast, norm } = playerNameMaps;
+                const isSynthetic = !lineup; // true when using TOI-estimated grouping
 
                 // Two-pass fuzzy lookup: normalized full name → last name fallback
                 const findPlayer = (lpName: string): AggPlayer | undefined => {
@@ -1019,19 +1049,22 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                 // Track matched player IDs (by piData id) for Others exclusion
                 const matchedIds = new Set(
                     ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3'].flatMap(k =>
-                        (lineup[k] || []).map(lp => findPlayer(lp.name)?.id).filter(Boolean)
+                        (activeLineupData[k] || []).map(lp => findPlayer(lp.name)?.id).filter(Boolean)
                     )
                 );
 
                 // Section label + cards row
                 const LineSection = ({ label, lineKey }: { label: string; lineKey: string }) => {
-                    const lineupPlayers = lineup![lineKey] || [];
+                    const lineupPlayers = activeLineupData[lineKey] || [];
                     if (lineupPlayers.length === 0) return null;
                     return (
                         <div>
                             <div className="flex items-center gap-2 mb-2">
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 shrink-0">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 shrink-0 flex items-center gap-1.5">
                                     {label}
+                                    {isSynthetic && (
+                                        <span className="text-[8px] font-medium text-zinc-700 normal-case tracking-normal lowercase">(est.)</span>
+                                    )}
                                 </span>
                                 <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
                             </div>
@@ -1069,6 +1102,12 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
 
                 return (
                     <div className="flex flex-col gap-6">
+                        {/* Synthetic lineup notice */}
+                        {isSynthetic && (
+                            <p className="text-[9px] text-zinc-600 -mb-2">
+                                Lines estimated by EV TOI · Real lineup data unavailable
+                            </p>
+                        )}
                         {/* Forward lines */}
                         {['f1', 'f2', 'f3', 'f4'].map((key, i) => (
                             <LineSection key={key} label={`F${i + 1}`} lineKey={key} />
