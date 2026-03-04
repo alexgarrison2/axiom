@@ -240,12 +240,13 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 
     const [dateRange, setDateRange] = useState<number[]>([0, 0]);
 
-    // Initialize range when data loads
+    // Initialize range when data loads — default start to 2026-01-18
     useEffect(() => {
         if (uniqueHistoryDates.length > 0) {
-            setDateRange([0, uniqueHistoryDates.length - 1]);
+            const defaultStart = uniqueHistoryDates.indexOf('2026-01-18');
+            setDateRange([defaultStart >= 0 ? defaultStart : 0, uniqueHistoryDates.length - 1]);
         }
-    }, [uniqueHistoryDates.length]);
+    }, [uniqueHistoryDates]);
 
     // Filter predictions for the selected date
     const filteredPredictions = useMemo(() => {
@@ -485,11 +486,10 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                                 setHistoryViewMode(mode);
                                                 if (mode === 'date') setHistoryPickFilter(null);
                                             }}
-                                            className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                                                historyViewMode === mode
+                                            className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${historyViewMode === mode
                                                     ? 'bg-white/10 text-white shadow-sm'
                                                     : 'text-neutral-500 hover:text-neutral-300'
-                                            }`}
+                                                }`}
                                         >
                                             {mode === 'date' ? 'By Date' : 'By Team'}
                                         </button>
@@ -503,11 +503,10 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                             <button
                                                 key={String(f)}
                                                 onClick={() => setHistoryPickFilter(f)}
-                                                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                                                    historyPickFilter === f
+                                                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${historyPickFilter === f
                                                         ? 'bg-white/10 text-white shadow-sm'
                                                         : 'text-neutral-500 hover:text-neutral-300'
-                                                }`}
+                                                    }`}
                                             >
                                                 {f === null ? 'All Picks' : f === 'win' ? 'Picked to Win' : 'Picked to Lose'}
                                             </button>
