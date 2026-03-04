@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import Papa from 'papaparse';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -1398,8 +1399,8 @@ const TeamsTable = () => {
 
         </div>
 
-        {/* ── Odds tooltip — fixed-position overlay, doesn't affect table layout ── */}
-        {oddsTooltip && (() => {
+        {/* ── Odds tooltip rendered via portal to body — escapes any stacking context ── */}
+        {oddsTooltip && typeof document !== 'undefined' && createPortal((() => {
             const { x, y, data } = oddsTooltip;
             const modelStr = data.modelOdds
                 ? (!data.modelOdds.startsWith('+') && !data.modelOdds.startsWith('-') && parseFloat(data.modelOdds) > 0
@@ -1412,48 +1413,63 @@ const TeamsTable = () => {
                 : null;
             // Clamp left so tooltip stays on screen
             const W = 260;
-            const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
+            const vw = window.innerWidth;
             const left = Math.max(8, Math.min(x, vw - W - 8));
             return (
                 <div
-                    className="fixed z-[9999] pointer-events-none"
-                    style={{ left, top: y, width: W }}
+                    style={{
+                        position: 'fixed',
+                        left,
+                        top: y,
+                        width: W,
+                        zIndex: 9999,
+                        pointerEvents: 'none',
+                    }}
                 >
-                    <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-[#0f1621] border border-white/[0.10] shadow-2xl">
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 16,
+                        padding: '12px 16px',
+                        borderRadius: 12,
+                        background: '#0f1621',
+                        border: '1px solid rgba(255,255,255,0.10)',
+                        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.8)',
+                    }}>
                         {/* Team logo */}
                         {data.logoUrl && (
-                            <div className="relative shrink-0" style={{ width: 36, height: 36 }}>
+                            <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
                                 <Image src={data.logoUrl} alt="" fill className="object-contain" />
                             </div>
                         )}
                         {/* Divider */}
-                        {data.logoUrl && <div className="w-px self-stretch bg-white/[0.08]" />}
+                        {data.logoUrl && <div style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.08)' }} />}
                         {/* xOdds */}
-                        <div className="flex flex-col items-center gap-0.5">
-                            <span className="text-[15px] font-black text-white tabular-nums leading-none">{modelStr ?? '—'}</span>
-                            <span className="text-[8px] font-medium text-gray-500 uppercase tracking-widest leading-none">xOdds</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                            <span style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{modelStr ?? '—'}</span>
+                            <span style={{ fontSize: 8, fontWeight: 500, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.15em', lineHeight: 1 }}>xOdds</span>
                         </div>
                         {/* EV% */}
-                        <div className="flex flex-col items-center gap-0.5">
-                            <span className="text-[15px] font-black tabular-nums leading-none" style={{ color: evColor }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                            <span style={{ fontSize: 15, fontWeight: 900, color: evColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
                                 {data.ev != null ? `${data.ev >= 0 ? '+' : ''}${data.ev.toFixed(1)}%` : '—'}
                             </span>
-                            <span className="text-[8px] font-medium text-gray-500 uppercase tracking-widest leading-none">EV%</span>
+                            <span style={{ fontSize: 8, fontWeight: 500, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.15em', lineHeight: 1 }}>EV%</span>
                         </div>
                         {/* Rec — only if this team is the recommended side */}
                         {data.isRecommended && recText && (
                             <>
-                                <div className="w-px self-stretch bg-white/[0.08]" />
-                                <div className="flex flex-col items-center gap-0.5">
-                                    <span className="text-[15px] font-black text-yellow-300 tabular-nums leading-none">{recText}</span>
-                                    <span className="text-[8px] font-medium text-gray-500 uppercase tracking-widest leading-none">Rec</span>
+                                <div style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.08)' }} />
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                    <span style={{ fontSize: 15, fontWeight: 900, color: '#fde047', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{recText}</span>
+                                    <span style={{ fontSize: 8, fontWeight: 500, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.15em', lineHeight: 1 }}>Rec</span>
                                 </div>
                             </>
                         )}
                     </div>
                 </div>
             );
-        })()}
+        })(), document.body)}
         </>
     );
 };
