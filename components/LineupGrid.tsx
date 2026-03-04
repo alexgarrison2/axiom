@@ -378,14 +378,48 @@ export default function LineupGrid({
             const last = full.split(' ').at(-1) ?? full;
             return gsMap.get(last);
         };
+
+        // Pre-compute this team's score from allLineups (same source as distribution)
+        // so we can replace it in the distribution with our lineup-prop-derived score.
+        const teamDistScores: Record<string, number | null> = {};
+        if (allLineups) {
+            const teamLineup = allLineups[triCode];
+            if (teamLineup) {
+                for (const [key, required] of [['f1', 3], ['f2', 3], ['f3', 3], ['f4', 3], ['d1', 2], ['d2', 2], ['d3', 2]] as [string, number][]) {
+                    const players = teamLineup[key] || [];
+                    if (players.length < required) { teamDistScores[key] = null; continue; }
+                    const scores = players.slice(0, required).map((p: { name: string }) => lookupGsPg(p.name));
+                    if (scores.some(s => s === undefined)) { teamDistScores[key] = null; continue; }
+                    teamDistScores[key] = (scores as number[]).reduce((a, b) => a + b, 0);
+                }
+            }
+        }
+
         const compute = (key: string, required: number) => {
             const players = lineup[key] || [];
             if (players.length < required) { result[key] = null; return; }
             const scores = players.slice(0, required).map(p => lookupGsPg(p.name));
             if (scores.some(s => s === undefined)) { result[key] = null; return; }
             const total = (scores as number[]).reduce((a, b) => a + b, 0);
-            const dist = lineDistributions[key] || [];
+            let dist = lineDistributions[key] || [];
             if (!dist.length) { result[key] = null; return; }
+
+            // Replace this team's distribution entry (from allLineups) with the
+            // score from the lineup prop so rankings are consistent.
+            const teamOldScore = teamDistScores[key];
+            if (teamOldScore !== null && teamOldScore !== undefined) {
+                // Swap the closest match to our old score with the new score
+                const idx = dist.indexOf(teamOldScore);
+                if (idx !== -1) {
+                    dist = [...dist];
+                    dist[idx] = total;
+                    dist.sort((a, b) => a - b);
+                }
+            } else {
+                // This team wasn't in the distribution — add it
+                dist = [...dist, total].sort((a, b) => a - b);
+            }
+
             const outOf = dist.length;
             const rank = dist.filter(v => v > total).length + 1; // 1 = best
             const pct = (dist.filter(v => v < total).length / outOf) * 100; // for color
@@ -394,7 +428,7 @@ export default function LineupGrid({
         ['f1', 'f2', 'f3', 'f4'].forEach(k => compute(k, 3));
         ['d1', 'd2', 'd3'].forEach(k => compute(k, 2));
         return result;
-    }, [lineup, gsMap, lineDistributions]);
+    }, [lineup, triCode, gsMap, lineDistributions, allLineups]);
 
     // Total lineup grade: sum of impact_score for all 18 skaters.
     // Compared against all 32 teams' current projected lineups (tonight's context).
