@@ -49,6 +49,13 @@ interface PlayerBio {
 }
 type BioDict = Record<string, PlayerBio>;
 
+interface ContractInfo {
+    cap_hit: number;        // annual cap hit in dollars
+    status: 'UFA' | 'RFA'; // free agency type
+    year: number | null;    // year they become UFA/RFA, null = this off-season
+}
+type ContractDict = Record<string, ContractInfo>;
+
 // Metadata for one team game (passed to availability strip)
 interface TeamGameSlot {
     gid: string;
@@ -81,11 +88,38 @@ interface AggPlayer {
     played_toi: Map<string, number>; // game_id → toi seconds (>0 means played)
     other_team_dates: Map<string, string>; // date → tricode (games played for another team)
     bio: PlayerBio | null;
+    contract: ContractInfo | null;
 }
 
 /* ═══════════════════════════════════════════════════════
    Pure helpers
 ═══════════════════════════════════════════════════════ */
+
+/**
+ * Format a dollar cap hit for compact display.
+ * $10,000,000 → "$10M"    |  $10,100,000 → "$10.1M"
+ * $10,150,000 → "$10.15M" |  $10,125,000 → "$10.125M"
+ * $975,000    → "$975K"   |  $975,652    → "$975.7K"
+ */
+function fmtCapHit(dollars: number): string {
+    if (dollars >= 1_000_000) {
+        const m = dollars / 1_000_000;
+        // Check how many decimals we need
+        const thousands = dollars % 1_000_000;
+        if (thousands === 0) return `$${Math.round(m)}M`;
+        const hundredK = thousands % 100_000;
+        if (hundredK === 0) return `$${m.toFixed(1)}M`;
+        const tenK = thousands % 10_000;
+        if (tenK === 0) return `$${m.toFixed(2)}M`;
+        return `$${m.toFixed(3)}M`;
+    }
+    if (dollars >= 1_000) {
+        const k = dollars / 1_000;
+        if (dollars % 1_000 === 0) return `$${Math.round(k)}K`;
+        return `$${k.toFixed(1)}K`;
+    }
+    return `$${dollars}`;
+}
 
 function parseToi(s: string): number {
     if (!s) return 0;
@@ -623,6 +657,33 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCa
             </div>
 
             {/* ══════════════════════════════════════════════
+                CONTRACT INFO (cap hit + UFA/RFA badge)
+            ══════════════════════════════════════════════ */}
+            {player.contract && (
+                <div className="flex items-center gap-2 px-3 pt-1.5 pb-0">
+                    <span
+                        className="inline-flex items-center rounded-md px-2 py-[3px] text-[11px] font-bold leading-none"
+                        style={{ background: 'rgba(255,255,255,0.07)', color: '#e4e4e7' }}
+                    >
+                        {fmtCapHit(player.contract.cap_hit)}
+                    </span>
+                    <span
+                        className="inline-flex items-center rounded-md px-2 py-[3px] text-[10px] font-black uppercase tracking-wider leading-none"
+                        style={{
+                            background: player.contract.status === 'UFA'
+                                ? 'rgba(239,68,68,0.25)' : 'rgba(56,189,248,0.20)',
+                            color: player.contract.status === 'UFA'
+                                ? '#f87171' : '#7dd3fc',
+                        }}
+                    >
+                        {player.contract.year
+                            ? `${player.contract.year}`
+                            : player.contract.status}
+                    </span>
+                </div>
+            )}
+
+            {/* ══════════════════════════════════════════════
                 BODY
             ══════════════════════════════════════════════ */}
             <div className="px-3 pt-1.5 pb-3 flex flex-col gap-2">
@@ -718,6 +779,7 @@ interface SkaterGridProps {
 export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: SkaterGridProps) {
     const [piData, setPiData] = useState<PIDict | null>(null);
     const [bioData, setBioData] = useState<BioDict | null>(null);
+    const [contractData, setContractData] = useState<ContractDict | null>(null);
     const [posFilter, setPosFilter] = useState<'all' | 'f' | 'd'>('all');
     const [sortBy, setSortBy] = useState<'impact' | 'pts' | 'toi' | 'lineup'>('lineup');
 
@@ -734,6 +796,14 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         fetch('/data/player_bio.json')
             .then(r => r.json())
             .then(setBioData)
+            .catch(console.error);
+    }, []);
+
+    // Load contract data (cap hit, UFA/RFA status)
+    useEffect(() => {
+        fetch('/data/contracts.json')
+            .then(r => r.json())
+            .then(setContractData)
             .catch(console.error);
     }, []);
 
@@ -875,10 +945,11 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                 played_toi: bs?.played_toi ?? new Map(),
                 other_team_dates: bs?.other_team_dates ?? new Map(),
                 bio: bioData?.[id] ?? null,
+                contract: contractData?.[id] ?? null,
             });
         }
         return result;
-    }, [piData, boxMap, teamAbbr, bioData]);
+    }, [piData, boxMap, teamAbbr, bioData, contractData]);
 
     // Apply filter + sort (cheap op — separate from heavy enrichment)
     // In 'lineup' mode the flat grid is not shown, but we still compute for the fallback.

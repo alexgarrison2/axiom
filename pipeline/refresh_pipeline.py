@@ -78,6 +78,15 @@ def refresh_pipeline():
     except Exception as e:
         print(f"[WARN] Player bio fetch failed: {e}")
 
+    # 0f. Fetch contract data (cap hit, UFA/RFA status) from PuckPedia
+    # Runs once per full refresh; scrapes all 32 teams (~16s with rate limiting).
+    print("Fetching contract data from PuckPedia...")
+    try:
+        import fetch_contracts
+        fetch_contracts.main()
+    except Exception as e:
+        print(f"[WARN] Contract data fetch failed: {e}")
+
     # 1. Load the new Model
     print("Loading XGBoost model...")
     with open('xg_model_xgb.pkl', 'rb') as f:
