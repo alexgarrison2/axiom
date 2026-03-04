@@ -411,11 +411,11 @@ const TeamChart: React.FC<TeamChartProps> = ({ games, leagueGames, primaryColor,
                 <div className="flex flex-wrap items-end gap-x-4 gap-y-2 bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-xl transition-all duration-300 hover:bg-black/90 mb-4">
 
                     {/* Team Logo + Name — left side */}
-                    <div className="flex items-center gap-2.5 mr-auto">
+                    <div className="flex items-center gap-3 mr-auto">
                         {teamLogoUrl && (
-                            <Image src={teamLogoUrl} alt={teamName || ''} width={32} height={32} className="w-8 h-8 object-contain" />
+                            <Image src={teamLogoUrl} alt={teamName || ''} width={48} height={48} className="w-12 h-12 object-contain" />
                         )}
-                        <span className="text-white text-sm font-bold tracking-wider uppercase whitespace-nowrap">{teamName || ''}</span>
+                        <span className="text-white text-base md:text-lg font-bold tracking-wider uppercase whitespace-nowrap">{teamName || ''}</span>
                     </div>
 
                     {/* Metric 1 */}
