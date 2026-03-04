@@ -419,8 +419,8 @@ const TeamsTable = () => {
     const [todayMatchups, setTodayMatchups] = useState<Matchup[]>([]);
     const [tomorrowMatchups, setTomorrowMatchups] = useState<Matchup[]>([]);
 
-    // Fixed-position odds tooltip (escapes table overflow/stacking context)
-    const [oddsTooltip, setOddsTooltip] = useState<{ x: number; y: number; data: TeamOdds } | null>(null);
+    // Inline odds expansion — tracks which team row is hovered
+    const [hoveredOddsTeam, setHoveredOddsTeam] = useState<string | null>(null);
 
     // Groups for Desktop headers and Mobile filtering
     const STAT_GROUPS = useMemo(() => [
@@ -1291,7 +1291,14 @@ const TeamsTable = () => {
 
                             return (
                                 <React.Fragment key={`${team.team}-${idx}`}>
-                                    <tr className={rowStyle}>
+                                    <tr
+                                        className={rowStyle}
+                                        onMouseEnter={() => {
+                                            const oddsData = teamOddsLookup.get(team.team);
+                                            if (oddsData?.vegasOdds != null) setHoveredOddsTeam(team.team);
+                                        }}
+                                        onMouseLeave={() => setHoveredOddsTeam(null)}
+                                    >
                                         <td className="px-2 py-0.5 font-medium text-white sticky left-0 bg-gray-900 z-30 shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">
                                             <div className="flex items-center justify-center md:justify-start gap-3">
                                                 {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
@@ -1335,32 +1342,74 @@ const TeamsTable = () => {
                                                     const oddsData = teamOddsLookup.get(team.team);
                                                     if (!oddsData || oddsData.vegasOdds == null) return null;
                                                     const vegasStr = oddsData.vegasOdds > 0 ? `+${oddsData.vegasOdds}` : `${oddsData.vegasOdds}`;
+                                                    const hasRec = !!oddsData.recommendation;
                                                     return (
-                                                        <span
-                                                            className="text-[10px] font-bold cursor-help ml-auto shrink-0 px-1 py-0.5 rounded text-gray-400"
-                                                            onMouseEnter={(e) => {
-                                                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                                                setOddsTooltip({ x: rect.left, y: rect.bottom + 6, data: oddsData });
-                                                            }}
-                                                            onMouseLeave={() => setOddsTooltip(null)}
-                                                        >
-                                                            {vegasStr}
+                                                        <span className="flex items-center gap-1 ml-auto shrink-0">
+                                                            <span className="text-[10px] font-bold px-1 py-0.5 rounded text-gray-400">
+                                                                {vegasStr}
+                                                            </span>
+                                                            {hasRec && (
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                                                            )}
                                                         </span>
                                                     );
                                                 })()}
                                             </div>
                                         </td>
 
-                                        {COLUMNS.map(col => {
-                                            const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === col.k);
-                                            const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
-
+                                        {hoveredOddsTeam === team.team && teamOddsLookup.get(team.team)?.vegasOdds != null ? (() => {
+                                            const oddsData = teamOddsLookup.get(team.team)!;
+                                            const modelStr = oddsData.modelOdds
+                                                ? (!oddsData.modelOdds.startsWith('+') && !oddsData.modelOdds.startsWith('-') && parseFloat(oddsData.modelOdds) > 0
+                                                    ? `+${oddsData.modelOdds}`
+                                                    : oddsData.modelOdds)
+                                                : null;
+                                            const evColor = (oddsData.ev ?? 0) >= 0 ? '#34d399' : '#f87171';
+                                            const recText = oddsData.recommendation
+                                                ? oddsData.recommendation.replace(/^(Home|Away)\s+/i, '')
+                                                : null;
                                             return (
-                                                <React.Fragment key={col.k}>
-                                                    {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isInActiveCategory)}
-                                                </React.Fragment>
+                                                <td colSpan={COLUMNS.length} className="px-3 py-1">
+                                                    <div className="flex items-center gap-5 px-4 py-2 rounded-xl bg-[#111827] border border-white/[0.07]">
+                                                        {/* Team logo */}
+                                                        {meta.logoUrl && (
+                                                            <div className="w-8 h-8 relative shrink-0">
+                                                                <Image src={meta.logoUrl} alt={team.team} fill className="object-contain" />
+                                                            </div>
+                                                        )}
+                                                        {/* xOdds */}
+                                                        <div className="flex flex-col items-center gap-0.5">
+                                                            <span className="text-[14px] font-black text-white tabular-nums leading-none">{modelStr ?? '—'}</span>
+                                                            <span className="text-[8px] font-medium text-gray-500 uppercase tracking-widest leading-none">xOdds</span>
+                                                        </div>
+                                                        {/* EV% */}
+                                                        <div className="flex flex-col items-center gap-0.5">
+                                                            <span className="text-[14px] font-black tabular-nums leading-none" style={{ color: evColor }}>
+                                                                {oddsData.ev != null ? `${oddsData.ev >= 0 ? '+' : ''}${oddsData.ev.toFixed(1)}%` : '—'}
+                                                            </span>
+                                                            <span className="text-[8px] font-medium text-gray-500 uppercase tracking-widest leading-none">EV%</span>
+                                                        </div>
+                                                        {/* Rec — only if a recommendation exists */}
+                                                        {recText && (
+                                                            <div className="flex flex-col items-center gap-0.5">
+                                                                <span className="text-[14px] font-black text-yellow-300 tabular-nums leading-none">{recText}</span>
+                                                                <span className="text-[8px] font-medium text-gray-500 uppercase tracking-widest leading-none">Rec</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
                                             );
-                                        })}
+                                        })() : (
+                                            COLUMNS.map(col => {
+                                                const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === col.k);
+                                                const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
+                                                return (
+                                                    <React.Fragment key={col.k}>
+                                                        {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isInActiveCategory)}
+                                                    </React.Fragment>
+                                                );
+                                            })
+                                        )}
                                     </tr>
 
                                     {/* Spacer Row for Matchups */}
@@ -1376,40 +1425,6 @@ const TeamsTable = () => {
                 </table>
             </div>
 
-            {/* Fixed-position odds tooltip — rendered outside overflow container to avoid clipping/z-index issues */}
-            {oddsTooltip && (() => {
-                const { x, y, data } = oddsTooltip;
-                const modelStr = data.modelOdds
-                    ? (!data.modelOdds.startsWith('+') && !data.modelOdds.startsWith('-') && parseFloat(data.modelOdds) > 0
-                        ? `+${data.modelOdds}`
-                        : data.modelOdds)
-                    : null;
-                return (
-                    <div
-                        className="fixed z-[9999] w-44 p-2.5 bg-gray-950 border border-gray-700/80 rounded-xl shadow-2xl pointer-events-none"
-                        style={{ left: x, top: y }}
-                    >
-                        <div className="space-y-1.5">
-                            <div className="flex justify-between items-center">
-                                <span className="text-[10px] text-gray-500">xOdds</span>
-                                <span className="text-[10px] font-bold text-white">{modelStr ?? '—'}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-[10px] text-gray-500">EV%</span>
-                                <span className={`text-[10px] font-bold ${(data.ev ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {data.ev != null ? `${data.ev >= 0 ? '+' : ''}${data.ev.toFixed(1)}%` : '—'}
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-[10px] text-gray-500">Rec</span>
-                                <span className="text-[10px] font-bold text-yellow-300 text-right max-w-[110px] leading-tight">
-                                    {data.recommendation ?? '—'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                );
-            })()}
         </div>
     );
 };
