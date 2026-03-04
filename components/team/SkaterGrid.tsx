@@ -415,9 +415,11 @@ interface SkaterCardProps {
     teamGames: TeamGameSlot[];
     pool: PoolDict;
     teamToiAvgs: TeamToiAvgs;
+    /** Short suffix shown when two teammates share the same full name, e.g. "F" or "D" */
+    disambig?: string;
 }
 
-function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
+function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCardProps) {
     const { pi } = player;
 
     // Percentile helper
@@ -506,10 +508,17 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs }: SkaterCardProps) {
                     className="flex flex-col justify-center gap-[5px] min-w-0 flex-1 z-10 pt-4 pb-2 pr-2"
                     style={{ marginLeft: -23 }}
                 >
-                    {/* Name */}
-                    <span className="text-[20px] font-black text-white leading-none tracking-tight truncate drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                        {pi.name}
-                    </span>
+                    {/* Name (+ position disambiguator for same-name teammates) */}
+                    <div className="flex items-baseline gap-1.5 min-w-0">
+                        <span className="text-[20px] font-black text-white leading-none tracking-tight truncate drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+                            {pi.name}
+                        </span>
+                        {disambig && (
+                            <span className="shrink-0 text-[10px] font-bold text-zinc-500 leading-none">
+                                ({disambig})
+                            </span>
+                        )}
+                    </div>
 
                     {/* Position badge + Jersey # + Bio (same row) */}
                     <div className="flex items-center gap-2 flex-wrap">
@@ -908,21 +917,45 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
     }, [piData, teamAbbr]);
 
     // Build player lookup maps for lineup mode.
-    // Two-pass matching: normalized full name first, then last name fallback.
+    // Matching priority: NHL player ID → full name → position-aware last-name fallback.
     // Normalization strips diacritics + lowercases to bridge gaps like
     // "Bäck"→"Back" and "Alexander"→"Alex" (dailyfaceoff name shortening).
+    // The byLastFwd / byLastDef split handles rosters like VAN where two players
+    // share the same last name and even the same first name (both "Elias Pettersson")
+    // but play different positions.
     const playerNameMaps = useMemo(() => {
         const norm = (s: string) =>
             s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-        const byFull = new Map<string, AggPlayer>();
-        const byLast = new Map<string, AggPlayer>();
+        const byFull    = new Map<string, AggPlayer>();
+        const byLast    = new Map<string, AggPlayer>(); // fallback — first wins
+        const byLastFwd = new Map<string, AggPlayer>(); // last name → first forward
+        const byLastDef = new Map<string, AggPlayer>(); // last name → first defender
+        const byId      = new Map<number, AggPlayer>(); // NHL API player ID (synthetic lineup)
         for (const p of allPlayers) {
             const full = norm(p.pi.name);
             byFull.set(full, p);
             const last = full.split(' ').at(-1) ?? full;
-            if (!byLast.has(last)) byLast.set(last, p); // first player wins on last-name collision
+            if (!byLast.has(last)) byLast.set(last, p);
+            if (p.pi.is_forward) {
+                if (!byLastFwd.has(last)) byLastFwd.set(last, p);
+            } else {
+                if (!byLastDef.has(last)) byLastDef.set(last, p);
+            }
+            const numId = Number(p.id);
+            if (!isNaN(numId)) byId.set(numId, p);
         }
-        return { byFull, byLast, norm };
+        return { byFull, byLast, byLastFwd, byLastDef, byId, norm };
+    }, [allPlayers]);
+
+    // Detect players on this team whose full name is shared by someone else.
+    // Used to show a "(F)" / "(D)" disambiguator on their card.
+    // Covers VAN (two "Elias Pettersson"), and any similar future cases.
+    const duplicateNames = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const p of allPlayers) counts.set(p.pi.name, (counts.get(p.pi.name) ?? 0) + 1);
+        return new Set(
+            Array.from(counts.entries()).filter(([, n]) => n > 1).map(([name]) => name)
+        );
     }, [allPlayers]);
 
     // When no real lineup is available (e.g. DailyFaceoff hasn't posted yet),
@@ -1037,19 +1070,40 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
 
             {/* ── LINEUP VIEW ── */}
             {effectiveSortBy === 'lineup' && activeLineupData ? (() => {
-                const { byFull, byLast, norm } = playerNameMaps;
+                const { byFull, byLast, byLastFwd, byLastDef, byId, norm } = playerNameMaps;
                 const isSynthetic = !lineup; // true when using TOI-estimated grouping
 
-                // Two-pass fuzzy lookup: normalized full name → last name fallback
-                const findPlayer = (lpName: string): AggPlayer | undefined => {
+                // Three-pass fuzzy lookup:
+                //  1. NHL player ID (works perfectly for synthetic lineups;
+                //     DailyFaceoff uses its own IDs so this is a no-op for real lineups)
+                //  2. Normalized full name
+                //  3. Position-aware last-name fallback — prefers fwd/def pool matching
+                //     the slot position, so "Elias Nils Pettersson" (D slot) correctly
+                //     resolves to the defenseman and not the center.
+                const findPlayer = (lpName: string, lpId?: number | null, lpPos?: string): AggPlayer | undefined => {
+                    // 1. ID match
+                    if (lpId) {
+                        const hit = byId.get(lpId);
+                        if (hit) return hit;
+                    }
+                    // 2. Full name match
                     const n = norm(lpName);
-                    return byFull.get(n) ?? byLast.get(n.split(' ').at(-1) ?? n);
+                    const fullHit = byFull.get(n);
+                    if (fullHit) return fullHit;
+                    // 3. Position-aware last-name fallback
+                    const last = n.split(' ').at(-1) ?? n;
+                    const pos = lpPos?.toLowerCase() ?? '';
+                    const isFwd = ['lw', 'l', 'rw', 'r', 'c'].includes(pos);
+                    const isDef = ['ld', 'rd', 'd'].includes(pos);
+                    if (isFwd) return byLastFwd.get(last) ?? byLastDef.get(last) ?? byLast.get(last);
+                    if (isDef) return byLastDef.get(last) ?? byLastFwd.get(last) ?? byLast.get(last);
+                    return byLast.get(last);
                 };
 
                 // Track matched player IDs (by piData id) for Others exclusion
                 const matchedIds = new Set(
                     ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3'].flatMap(k =>
-                        (activeLineupData[k] || []).map(lp => findPlayer(lp.name)?.id).filter(Boolean)
+                        (activeLineupData[k] || []).map(lp => findPlayer(lp.name, lp.id, lp.pos)?.id).filter(Boolean)
                     )
                 );
 
@@ -1070,7 +1124,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                                 {lineupPlayers.map(lp => {
-                                    const p = findPlayer(lp.name);
+                                    const p = findPlayer(lp.name, lp.id, lp.pos);
                                     if (p) {
                                         return (
                                             <SkaterCard
@@ -1079,6 +1133,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                                                 teamGames={teamGames}
                                                 pool={p.pi.is_forward ? pools.fwd : pools.def}
                                                 teamToiAvgs={teamToiAvgs}
+                                                disambig={duplicateNames.has(p.pi.name) ? (p.pi.is_forward ? 'F' : 'D') : undefined}
                                             />
                                         );
                                     }
@@ -1133,6 +1188,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                                             teamGames={teamGames}
                                             pool={p.pi.is_forward ? pools.fwd : pools.def}
                                             teamToiAvgs={teamToiAvgs}
+                                            disambig={duplicateNames.has(p.pi.name) ? (p.pi.is_forward ? 'F' : 'D') : undefined}
                                         />
                                     ))}
                                 </div>
@@ -1151,6 +1207,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                                 teamGames={teamGames}
                                 pool={p.pi.is_forward ? pools.fwd : pools.def}
                                 teamToiAvgs={teamToiAvgs}
+                                disambig={duplicateNames.has(p.pi.name) ? (p.pi.is_forward ? 'F' : 'D') : undefined}
                             />
                         ))}
                     </div>
