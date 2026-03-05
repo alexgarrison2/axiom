@@ -1,4 +1,134 @@
 {
+    "CHI": [
+        {
+            "player": "Andrew Mangiapane",
+            "news": "Mangiapane (trade) has potential to make his Chicago debut on Friday vs. Vancouver. ",
+            "category": "Line Change",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:43:06.449Z"
+        },
+        {
+            "player": "Wyatt Kaiser",
+            "news": "Kaiser (lower-body) is expected to return vs. Vancouver on Friday. ",
+            "category": "Injury",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:38:00.714Z"
+        }
+    ],
+    "TOR": [
+        {
+            "player": "Jacob Quillan",
+            "news": "Quillan has been recalled from the Toronto Marlies (AHL) and is expected to play vs. New York on Thursday. ",
+            "category": "Call Up",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:39:50.227Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Mathieu Joseph",
+            "news": "Joseph has been placed on waivers for the purposes of contract termination. ",
+            "category": "$125 Waivers",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:36:45.639Z"
+        }
+    ],
+    "MIN": [
+        {
+            "player": "Marcus Johansson",
+            "news": "Johansson (upper-body) did not travel with Minnesota and is expected to miss the next two games. ",
+            "category": "Injury",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:27:50.612Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "John Beecher",
+            "news": "Beecher is expected to be a healthy scratch vs. Ottawa on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:17:39.469Z"
+        },
+        {
+            "player": "Martin Pospisil",
+            "news": "Pospisil will draw back into Calgary's lineup vs. Ottawa on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:17:04.054Z"
+        },
+        {
+            "player": "Devin Cooley",
+            "news": "Cooley will start vs. Ottawa on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:14:25.843Z"
+        }
+    ],
+    "WSH": [
+        {
+            "player": "John Carlson",
+            "news": "Carlson (lower-body) practiced in a regular jersey on Thursday. ",
+            "category": "Injury",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:07:19.074Z"
+        }
+    ],
+    "DAL": [
+        {
+            "player": "Tyler Myers",
+            "news": "Myers (trade) has a chance to make his Dallas' debut vs. Colorado on Friday. ",
+            "category": "Line Change",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:04:45.185Z"
+        },
+        {
+            "player": "Roope Hintz",
+            "news": "Hintz (illness) returned to practice on Thursday and is hopeful to play vs. Colorado on Friday. ",
+            "category": "Injury",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T17:21:10.013Z"
+        }
+    ],
+    "BOS": [
+        {
+            "player": "Jonathan Aspirot",
+            "news": "Aspirot (illness) is out vs. Nashville on Thursday. ",
+            "category": "Injury",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:03:25.099Z"
+        },
+        {
+            "player": "Jordan Harris",
+            "news": "Harris will draw back into Boston's lineup in Nashville on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:02:55.366Z"
+        },
+        {
+            "player": "Joonas Korpisalo",
+            "news": "Korpisalo will start in Nashville on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T18:01:29.714Z"
+        }
+    ],
+    "DET": [
+        {
+            "player": "Andrew Copp",
+            "news": "Copp (maintenance) missed practice on Thursday. ",
+            "category": "Injury",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T17:58:21.195Z"
+        },
+        {
+            "player": "John Gibson",
+            "news": "Gibson (upper-body) returned to Detroit's practice on Thursday. ",
+            "category": "Injury",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T17:10:56.293Z"
+        }
+    ],
     "VAN": [
         {
             "player": "Cole Clayton",
@@ -24,22 +154,6 @@
             "category": "Injury",
             "date": "2026-03-05",
             "timestamp": "2026-03-05T17:24:40.860Z"
-        },
-        {
-            "player": "Vitek Vanecek",
-            "news": "Vanecek was the first goalie off the ice at Utah's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T17:00:48.535Z"
-        }
-    ],
-    "DAL": [
-        {
-            "player": "Roope Hintz",
-            "news": "Hintz (illness) returned to practice on Thursday and is hopeful to play vs. Colorado on Friday. ",
-            "category": "Injury",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T17:21:10.013Z"
         }
     ],
     "FLA": [
@@ -49,114 +163,6 @@
             "category": "Goalie Start",
             "date": "2026-03-05",
             "timestamp": "2026-03-05T17:20:23.572Z"
-        },
-        {
-            "player": "Daniil Tarasov",
-            "news": "Tarasov was the first goalie off the ice at Florida's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:55:27.313Z"
-        }
-    ],
-    "DET": [
-        {
-            "player": "John Gibson",
-            "news": "Gibson (upper-body) returned to Detroit's practice on Thursday. ",
-            "category": "Injury",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T17:10:56.293Z"
-        },
-        {
-            "player": "Dylan Larkin",
-            "news": "Larkin (upper-body) missed practice on Thursday. ",
-            "category": "Injury",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T17:02:57.054Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Nicolas Roy",
-            "news": "Colorado has acquired Nicolas Roy from Colorado for a 2027 1st round pick and a 2026 5th round pick. ",
-            "category": "Trade",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T17:05:13.760Z"
-        }
-    ],
-    "CBJ": [
-        {
-            "player": "Dante Fabbro",
-            "news": "Fabbro (undisclosed) will be a game-time decision vs. Florida on Thursday. ",
-            "category": "Injury",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:54:47.350Z"
-        },
-        {
-            "player": "Zach Werenski",
-            "news": "Werenski (illness) will be a game-time decision vs. Florida on Thursday. ",
-            "category": "Injury",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:54:23.029Z"
-        },
-        {
-            "player": "Jet Greaves",
-            "news": "Greaves will start vs. Florida on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:53:33.671Z"
-        },
-        {
-            "player": "Boone Jenner",
-            "news": "Jenner (lower-body) will return to Columbus' lineup vs. Florida on Thursday. ",
-            "category": "Injury",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:42:44.219Z"
-        }
-    ],
-    "WPG": [
-        {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebuyck will start vs. Tampa Bay on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:40:29.567Z"
-        },
-        {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebuyck is in the starter's crease at Winnipeg's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:29:09.715Z"
-        }
-    ],
-    "NSH": [
-        {
-            "player": "Ryan O'Reilly",
-            "news": "O'Reilly is day-to-day with an upper-body injury. ",
-            "category": "Injury",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:32:59.690Z"
-        },
-        {
-            "player": "Ryan Ufko",
-            "news": "Ufko has been recalled from Milwaukee (AHL). ",
-            "category": "Call Up",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:28:24.671Z"
-        },
-        {
-            "player": "Reid Schaefer",
-            "news": "Schaefer has been recalled from Milwaukee (AHL). ",
-            "category": "Call Up",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:27:58.811Z"
-        },
-        {
-            "player": "Fedor Svechkov",
-            "news": "Svechkov has been recalled from Milwaukee (AHL). ",
-            "category": "Call Up",
-            "date": "2026-03-05",
-            "timestamp": "2026-03-05T16:27:11.303Z"
         }
     ]
 }
