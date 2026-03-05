@@ -720,6 +720,41 @@ def predict():
         if team_baselines_data:
             print(f"Team baselines loaded: {len(team_baselines_data)} teams")
 
+    # ── Load player stats for absence-decay computation ──────────────────────
+    # Builds: team_game_dates  = {tri_code → sorted [date_str, ...]}
+    #         player_last_game = {str(player_id) → last_date_str}
+    EWMA_HALFLIFE = 7  # must match team_ratings.py ewm(halflife=7)
+    team_game_dates = {}
+    player_last_game = {}
+    try:
+        from player_impact import normalize_name as _norm_name
+        _ps_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                '..', 'public', 'data',
+                                'nhl_season_2025_2026_player_stats.csv')
+        if not os.path.exists(_ps_path):
+            _ps_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    'nhl_season_2025_2026_player_stats.csv')
+        if os.path.exists(_ps_path):
+            _ps_df = pd.read_csv(_ps_path)
+            # Exclude goalies (they have is_goalie=1 or position='G')
+            if 'is_goalie' in _ps_df.columns:
+                _ps_df = _ps_df[_ps_df['is_goalie'] != 1]
+            elif 'position' in _ps_df.columns:
+                _ps_df = _ps_df[_ps_df['position'] != 'G']
+            # Team game dates: every unique date a team played
+            for team_tri, grp in _ps_df.groupby('team'):
+                team_game_dates[team_tri] = sorted(grp['date'].unique())
+            # Player last game: keyed by player_id (matches MoneyPuck player IDs)
+            if 'player_id' in _ps_df.columns:
+                for pid_val, grp in _ps_df.groupby('player_id'):
+                    player_last_game[str(int(pid_val))] = grp['date'].max()
+            print(f"Absence-decay data loaded: {len(team_game_dates)} teams, "
+                  f"{len(player_last_game)} player records")
+        else:
+            print("[WARN] player_stats.csv not found — absence decay disabled")
+    except Exception as e:
+        print(f"[WARN] Could not load player stats for absence decay: {e}")
+
     # League Average xG
     league_xg = 3.13
     
@@ -1031,15 +1066,92 @@ def predict():
         league_xgf_rate = league_avg_impact.get('league_xgf_rate', 2.38)
         league_xga_rate = league_avg_impact.get('league_xga_rate', 2.43)
 
-        def _lineup_quality(lineup_result, key, league_baseline):
+        # ── Absence-decay helper ─────────────────────────────────────────────
+        # For each MoneyPuck roster player NOT in tonight's lineup, compute how
+        # many team games they've missed.  Return a decay factor per absent
+        # player: 0.5^(games_missed / EWMA_HALFLIFE).
+        #
+        # decay ≈ 1.0 → freshly absent (EWMA hasn't absorbed → full penalty)
+        # decay ≈ 0.0 → long-term absent (EWMA has absorbed → no penalty)
+
+        def _compute_absence_decay(team_tri, lineup):
+            """Return average decay factor for all absent high-impact players.
+
+            1.0 = all absences are fresh (full lineup penalty should apply)
+            < 1.0 = some/all absences are old (team rating has partially absorbed)
+            """
+            if not team_game_dates or not player_impact_data or not lineup:
+                return 1.0  # no data → assume fresh (full penalty)
+
+            my_dates = team_game_dates.get(team_tri, [])
+            if not my_dates:
+                return 1.0
+
+            # Identify lineup player names (normalized) for exclusion
+            lineup_names = set()
+            for line_id, players in lineup.items():
+                if not line_id.startswith('f') and not line_id.startswith('d'):
+                    continue
+                for p in players:
+                    if isinstance(p, dict) and p.get('name'):
+                        lineup_names.add(_norm_name(p['name']))
+
+            # Find all MoneyPuck roster players for this team who are NOT in lineup
+            absent_players = []
+            for pid, data in player_impact_data.items():
+                if data.get('team') != team_tri:
+                    continue
+                pname_norm = _norm_name(data.get('name', ''))
+                if pname_norm in lineup_names:
+                    continue  # they're playing tonight
+                # Only consider players with meaningful TOI (not injured-all-season fringe)
+                if data.get('ev_toi_per_game', 0) < 300:  # 5 min/game minimum
+                    continue
+
+                # How many team games since they last played?
+                # Use MoneyPuck player ID (pid) to look up in player_stats data
+                last_game = player_last_game.get(pid)
+                if last_game is None:
+                    continue  # can't determine — skip
+                games_missed = len([d for d in my_dates if d > last_game])
+                if games_missed == 0:
+                    continue  # played in team's last game; just not in tonight's DFO lineup yet
+
+                decay = 0.5 ** (games_missed / EWMA_HALFLIFE)
+                absent_players.append({
+                    'name': data.get('name'),
+                    'ev_toi_per_game': data.get('ev_toi_per_game', 0),
+                    'games_missed': games_missed,
+                    'decay': decay
+                })
+
+            if not absent_players:
+                return 1.0  # no known absences → full penalty weight applies
+
+            # Weighted average decay by TOI (high-TOI players dominate)
+            total_toi = sum(a['ev_toi_per_game'] for a in absent_players)
+            if total_toi == 0:
+                return 1.0
+            weighted_decay = sum(a['decay'] * a['ev_toi_per_game']
+                                 for a in absent_players) / total_toi
+
+            return weighted_decay
+
+        h_absence_decay = _compute_absence_decay(home_tri, h_lineup)
+        a_absence_decay = _compute_absence_decay(away_tri, a_lineup)
+
+        def _lineup_quality(lineup_result, key, league_baseline, absence_decay=1.0):
             """Return quality ratio for a team's lineup vs league average.
 
             lineup_result[key] is a TOI-weighted avg ev_xgf_per60 or ev_xga_per60
-            across all 18 players in the projected lineup.  league_baseline is the
-            same metric for a perfectly average 18-player NHL roster.
+            across all 18 players in tonight's projected lineup.
 
-            match_ratio shrinks the adjustment toward 0 when many players were
-            unmatched — a 10/18-matched lineup carries less confidence than 18/18.
+            absence_decay (0-1) scales the deviation by how "novel" the absences
+            are — long-term absences (decay≈0) have already been absorbed by the
+            team's EWMA rating, so we don't double-count them.
+
+            Tiered amplification: larger deviations (star absent/present) get a
+            proportionally stronger blend weight, capped at 0.80.
             """
             if (lineup_result.get('reliable') and
                     lineup_result.get(key) is not None and
@@ -1047,13 +1159,21 @@ def predict():
                 match_ratio = (lineup_result['players_found'] /
                                max(lineup_result['total_players'], 1))
                 raw_ratio   = lineup_result[key] / league_baseline
-                return 1.0 + (raw_ratio - 1.0) * match_ratio * LINEUP_BLEND_WEIGHT
+                deviation   = abs(raw_ratio - 1.0)
+
+                # Tiered amplification: bigger deviations → stronger blend weight
+                amplified_weight = min(0.80, LINEUP_BLEND_WEIGHT * (1.0 + deviation * 4.0))
+
+                # Scale the deviation by absence_decay to prevent double-counting
+                decayed_deviation = (raw_ratio - 1.0) * absence_decay
+
+                return 1.0 + decayed_deviation * match_ratio * amplified_weight
             return 1.0   # no adjustment when lineup data unavailable
 
-        h_xgf_quality = _lineup_quality(h_lineup_result, 'xgf_rate', league_xgf_rate)
-        h_xga_quality = _lineup_quality(h_lineup_result, 'xga_rate', league_xga_rate)
-        a_xgf_quality = _lineup_quality(a_lineup_result, 'xgf_rate', league_xgf_rate)
-        a_xga_quality = _lineup_quality(a_lineup_result, 'xga_rate', league_xga_rate)
+        h_xgf_quality = _lineup_quality(h_lineup_result, 'xgf_rate', league_xgf_rate, h_absence_decay)
+        h_xga_quality = _lineup_quality(h_lineup_result, 'xga_rate', league_xga_rate, h_absence_decay)
+        a_xgf_quality = _lineup_quality(a_lineup_result, 'xgf_rate', league_xgf_rate, a_absence_decay)
+        a_xga_quality = _lineup_quality(a_lineup_result, 'xga_rate', league_xga_rate, a_absence_decay)
 
         # ── vs-team ratio (display only, not used in prediction math) ────────
         # Compare tonight's lineup rate to this team's historical TOI-weighted

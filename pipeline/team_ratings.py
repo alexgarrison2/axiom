@@ -38,13 +38,13 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
     for team in teams:
         team_games = df[df['team'] == team].sort_values('game_date')
         
-        # Calculate Rolling Averages (Last 10 Games)
-        rolling_xgf = team_games['xG_for'].rolling(window=10, min_periods=1).mean().iloc[-1]
+        # Calculate EWMA (halflife=7 games: smooth exponential decay, no cliff effect)
+        rolling_xgf = team_games['xG_for'].ewm(halflife=7, min_periods=1).mean().iloc[-1]
         season_xgf = team_games['xG_for'].mean()
         
         # 5v5 xGF
         col_5v5 = 'xG_for_5v5' if has_5v5_data else 'xG_for' # Fallback
-        rolling_xgf_5v5 = team_games[col_5v5].rolling(window=10, min_periods=1).mean().iloc[-1]
+        rolling_xgf_5v5 = team_games[col_5v5].ewm(halflife=7, min_periods=1).mean().iloc[-1]
         season_xgf_5v5 = team_games[col_5v5].mean()
         season_xgf_5v5 = team_games[col_5v5].mean()
         
@@ -73,12 +73,12 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
              # print(f"DEBUG: {team} 5v5 Fallback. xgf_rating={xgf_rating:.2f} -> 5v5={xgf_5v5_rating:.2f}")
         
         # xGA Strength (Defense)
-        rolling_xga = team_games['xG_against'].rolling(window=10, min_periods=1).mean().iloc[-1]
+        rolling_xga = team_games['xG_against'].ewm(halflife=7, min_periods=1).mean().iloc[-1]
         season_xga = team_games['xG_against'].mean()
         
         # 5v5 xGA
         col_ga_5v5 = 'xG_against_5v5' if has_5v5_data else 'xG_against'
-        rolling_xga_5v5 = team_games[col_ga_5v5].rolling(window=10, min_periods=1).mean().iloc[-1]
+        rolling_xga_5v5 = team_games[col_ga_5v5].ewm(halflife=7, min_periods=1).mean().iloc[-1]
         season_xga_5v5 = team_games[col_ga_5v5].mean()
         season_xga_5v5 = team_games[col_ga_5v5].mean()
         
