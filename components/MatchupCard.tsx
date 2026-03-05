@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { GamePrediction, LocationSplitRecord } from '@/utils/data';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -1447,14 +1448,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                 )}
             </div>
 
-        {/* Fixed-position HOME/ROAD tooltip — escapes card overflow/stacking */}
-        {locationTooltip && (
+        {/* Fixed-position HOME/ROAD tooltip — portalled to document.body so it
+            escapes any CSS transform context (e.g. GSAP card animations) that
+            would otherwise break position:fixed coordinates. */}
+        {locationTooltip && typeof document !== 'undefined' && createPortal(
             <div
                 className="fixed z-[9999] px-3 py-2 bg-gray-950 border border-gray-700/80 rounded-lg shadow-2xl pointer-events-none text-[11px] font-mono font-bold text-white whitespace-nowrap"
                 style={{ left: locationTooltip.x, top: locationTooltip.y }}
             >
                 {locationTooltip.text}
-            </div>
+            </div>,
+            document.body
         )}
         </>
     );

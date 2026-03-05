@@ -1004,6 +1004,8 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         const norm = (s: string) =>
             s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
         const byFull = new Map<string, AggPlayer>();
+        // All players per normalized name — handles duplicate full names (e.g. two "Elias Pettersson")
+        const byFullAll = new Map<string, AggPlayer[]>();
         const byLast = new Map<string, AggPlayer>(); // fallback — first wins
         const byLastFwd = new Map<string, AggPlayer>(); // last name → first forward
         const byLastDef = new Map<string, AggPlayer>(); // last name → first defender
@@ -1011,6 +1013,9 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         for (const p of allPlayers) {
             const full = norm(p.pi.name);
             byFull.set(full, p);
+            const existing = byFullAll.get(full) ?? [];
+            existing.push(p);
+            byFullAll.set(full, existing);
             const last = full.split(' ').at(-1) ?? full;
             if (!byLast.has(last)) byLast.set(last, p);
             if (p.pi.is_forward) {
@@ -1021,7 +1026,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
             const numId = Number(p.id);
             if (!isNaN(numId)) byId.set(numId, p);
         }
-        return { byFull, byLast, byLastFwd, byLastDef, byId, norm };
+        return { byFull, byFullAll, byLast, byLastFwd, byLastDef, byId, norm };
     }, [allPlayers]);
 
     // Detect players on this team whose full name is shared by someone else.
@@ -1147,34 +1152,97 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
 
             {/* ── LINEUP VIEW ── */}
             {effectiveSortBy === 'lineup' && activeLineupData ? (() => {
-                const { byFull, byLast, byLastFwd, byLastDef, byId, norm } = playerNameMaps;
+                const { byFull, byFullAll, byLast, byLastFwd, byLastDef, byId, norm } = playerNameMaps;
                 const isSynthetic = !lineup; // true when using TOI-estimated grouping
 
-                // Three-pass fuzzy lookup:
+                // Four-pass fuzzy lookup:
                 //  1. NHL player ID (works perfectly for synthetic lineups;
                 //     DailyFaceoff uses its own IDs so this is a no-op for real lineups)
-                //  2. Normalized full name
+                //  2. Normalized full name — position-aware when multiple players share a
+                //     name (e.g. two "Elias Pettersson" on VAN: one C, one D)
                 //  3. Position-aware last-name fallback — prefers fwd/def pool matching
-                //     the slot position, so "Elias Nils Pettersson" (D slot) correctly
-                //     resolves to the defenseman and not the center.
+                //     the slot position.
+                //  4. Fuzzy last-name fallback (edit distance ≤ 2) — handles data where
+                //     a special character was corrupted/dropped rather than transliterated
+                //     (e.g. "Lafrenire" in impact data instead of "Lafreniere").
+                const editDist = (a: string, b: string): number => {
+                    if (a === b) return 0;
+                    if (Math.abs(a.length - b.length) > 3) return 999;
+                    const m = a.length, n = b.length;
+                    const prev = Array.from({ length: n + 1 }, (_, j) => j);
+                    const curr = new Array<number>(n + 1);
+                    for (let i = 1; i <= m; i++) {
+                        curr[0] = i;
+                        for (let j = 1; j <= n; j++) {
+                            curr[j] = a[i - 1] === b[j - 1]
+                                ? prev[j - 1]
+                                : 1 + Math.min(prev[j], curr[j - 1], prev[j - 1]);
+                        }
+                        prev.splice(0, n + 1, ...curr);
+                    }
+                    return prev[n];
+                };
+
                 const findPlayer = (lpName: string, lpId?: number | null, lpPos?: string): AggPlayer | undefined => {
                     // 1. ID match
                     if (lpId) {
                         const hit = byId.get(lpId);
                         if (hit) return hit;
                     }
-                    // 2. Full name match
                     const n = norm(lpName);
-                    const fullHit = byFull.get(n);
-                    if (fullHit) return fullHit;
-                    // 3. Position-aware last-name fallback
-                    const last = n.split(' ').at(-1) ?? n;
                     const pos = lpPos?.toLowerCase() ?? '';
                     const isFwd = ['lw', 'l', 'rw', 'r', 'c'].includes(pos);
                     const isDef = ['ld', 'rd', 'd'].includes(pos);
-                    if (isFwd) return byLastFwd.get(last) ?? byLastDef.get(last) ?? byLast.get(last);
-                    if (isDef) return byLastDef.get(last) ?? byLastFwd.get(last) ?? byLast.get(last);
-                    return byLast.get(last);
+
+                    // 2. Full name match — position-aware for duplicate names
+                    const fullCandidates = byFullAll.get(n);
+                    if (fullCandidates?.length) {
+                        if (fullCandidates.length === 1) return fullCandidates[0];
+                        // Multiple players share the same normalized name — pick by position
+                        if (isFwd) {
+                            const hit = fullCandidates.find(p => p.pi.is_forward);
+                            if (hit) return hit;
+                        }
+                        if (isDef) {
+                            const hit = fullCandidates.find(p => !p.pi.is_forward);
+                            if (hit) return hit;
+                        }
+                        return fullCandidates[0];
+                    }
+
+                    // 3. Position-aware last-name fallback
+                    const last = n.split(' ').at(-1) ?? n;
+                    if (isFwd) {
+                        const hit = byLastFwd.get(last) ?? byLastDef.get(last) ?? byLast.get(last);
+                        if (hit) return hit;
+                    } else if (isDef) {
+                        const hit = byLastDef.get(last) ?? byLastFwd.get(last) ?? byLast.get(last);
+                        if (hit) return hit;
+                    } else {
+                        const hit = byLast.get(last);
+                        if (hit) return hit;
+                    }
+
+                    // 4. Fuzzy last-name fallback — catches data corruption like
+                    //    "Lafrenire" (impact) vs "Lafreniere" (lineup) where a special
+                    //    character was dropped instead of transliterated.
+                    const nFirst = n.split(' ')[0] ?? '';
+                    let bestHit: AggPlayer | undefined;
+                    let bestDist = 3; // max edit distance threshold
+                    for (const [key, player] of byFull) {
+                        const keyParts = key.split(' ');
+                        const keyLast = keyParts.at(-1) ?? key;
+                        const d = editDist(last, keyLast);
+                        if (d > 0 && d < bestDist) {
+                            // Guard against false positives with first-name similarity check
+                            const keyFirst = keyParts[0] ?? '';
+                            if (editDist(nFirst, keyFirst) <= 1) {
+                                bestDist = d;
+                                bestHit = player;
+                            }
+                        }
+                    }
+                    return bestHit;
                 };
 
                 // Track matched player IDs (by piData id) for Others exclusion
