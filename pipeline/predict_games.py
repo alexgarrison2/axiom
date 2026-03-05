@@ -1237,6 +1237,113 @@ def predict():
         h_pp_xg = h_proj_opps * ST_VAL_PP * h_pp_eff * a_pk_impact
         # Away PP vs Home PK
         a_pp_xg = a_proj_opps * ST_VAL_PP * a_pp_eff * h_pk_impact
+
+        # ── PP/PK Lineup Quality Adjustment ──────────────────────────────────
+        # Compare tonight's PP/PK personnel vs league average using MoneyPuck
+        # per-player pp_xgf_per60 / pk_xga_per60 rates, with PP1/PP2 weighting
+        # and games-missed decay.
+
+        PP1_WEIGHT = 0.60  # PP1 gets ~60% of PP time
+        PP2_WEIGHT = 0.40
+        ST_BLEND   = 0.35  # How much lineup quality adjusts the ST prediction
+
+        league_pp_xgf = league_avg_impact.get('fwd_pp_xgf_per60', 7.07)
+        league_pk_xga = league_avg_impact.get('fwd_pk_xga_per60', 7.34)
+
+        def _st_lineup_quality(team_tri, lineup, absence_decay):
+            """Return (pp_quality, pk_quality) ratios for tonight's lineup.
+
+            pp_quality > 1.0 = above-avg PP unit → boosts PP xG
+            pk_quality > 1.0 = worse-than-avg PK → boosts opponent's PP xG
+            """
+            pp_quality = 1.0
+            pk_quality = 1.0
+
+            if not player_impact_data or not lineup:
+                return pp_quality, pk_quality
+
+            # --- PP Quality ---
+            # Collect pp_xgf_per60 for PP1 and PP2 players from tonight's lineup
+            pp1_rates, pp2_rates = [], []
+            for line_id, players in lineup.items():
+                if not (line_id.startswith('f') or line_id.startswith('d')):
+                    continue
+                for p in players:
+                    if not isinstance(p, dict):
+                        continue
+                    pp_unit = p.get('ppUnit')
+                    if not pp_unit:
+                        continue
+                    # Look up player's PP rate from MoneyPuck
+                    pid = str(p.get('id', ''))
+                    pdata = player_impact_data.get(pid)
+                    if not pdata:
+                        # Try name-based fallback
+                        pdata = lookup_player(p.get('id'), p.get('name', ''),
+                                              player_impact_data, name_lookup_data)
+                    if not pdata or pdata.get('pp_toi_per_game', 0) < 30:
+                        continue
+                    rate = pdata.get('pp_xgf_per60', league_pp_xgf)
+                    if pp_unit == 1:
+                        pp1_rates.append(rate)
+                    elif pp_unit == 2:
+                        pp2_rates.append(rate)
+
+            if pp1_rates or pp2_rates:
+                pp1_avg = sum(pp1_rates) / len(pp1_rates) if pp1_rates else league_pp_xgf
+                pp2_avg = sum(pp2_rates) / len(pp2_rates) if pp2_rates else league_pp_xgf
+                blended_pp = pp1_avg * PP1_WEIGHT + pp2_avg * PP2_WEIGHT
+                pp_raw_ratio = blended_pp / league_pp_xgf
+                # Apply absence decay + blend weight
+                deviation = (pp_raw_ratio - 1.0) * absence_decay
+                pp_quality = 1.0 + deviation * ST_BLEND
+
+            # --- PK Quality ---
+            # Use all tonight's lineup players who have PK deployment
+            pk_weighted_sum = 0.0
+            pk_toi_sum = 0.0
+            lineup_names = set()
+            for line_id, players in lineup.items():
+                if not (line_id.startswith('f') or line_id.startswith('d')):
+                    continue
+                for p in players:
+                    if not isinstance(p, dict):
+                        continue
+                    pid = str(p.get('id', ''))
+                    pdata = player_impact_data.get(pid)
+                    if not pdata:
+                        pdata = lookup_player(p.get('id'), p.get('name', ''),
+                                              player_impact_data, name_lookup_data)
+                    if not pdata:
+                        continue
+                    if p.get('name'):
+                        lineup_names.add(_norm_name(p['name']))
+                    pk_toi = pdata.get('pk_toi_per_game', 0)
+                    if pk_toi < 30:  # less than 30s/game PK = not a PK player
+                        continue
+                    pk_rate = pdata.get('pk_xga_per60', league_pk_xga)
+                    pk_weighted_sum += pk_rate * pk_toi
+                    pk_toi_sum += pk_toi
+
+            if pk_toi_sum > 0:
+                pk_avg = pk_weighted_sum / pk_toi_sum
+                pk_raw_ratio = pk_avg / league_pk_xga
+                # Apply absence decay + blend weight
+                deviation = (pk_raw_ratio - 1.0) * absence_decay
+                pk_quality = 1.0 + deviation * ST_BLEND
+
+            return pp_quality, pk_quality
+
+        h_pp_qual, h_pk_qual = _st_lineup_quality(home_tri, h_lineup, h_absence_decay)
+        a_pp_qual, a_pk_qual = _st_lineup_quality(away_tri, a_lineup, a_absence_decay)
+
+        # Apply: my PP quality boosts my PP xG; opponent's PK quality also affects it
+        h_pp_xg *= h_pp_qual   # home's PP strength from tonight's lineup
+        a_pp_xg *= a_pp_qual   # away's PP strength from tonight's lineup
+        # Opponent PK lineup quality (already have team-level PK impact above,
+        # this is the lineup-specific layer on top)
+        h_pp_xg *= a_pk_qual   # away's PK weakness/strength affects home's PP
+        a_pp_xg *= h_pk_qual   # home's PK weakness/strength affects away's PP
         
 
         
