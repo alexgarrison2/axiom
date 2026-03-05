@@ -1,158 +1,61 @@
 {
-    "NJD": [
+    "CHI": [
         {
-            "player": "Johnathan Kovacevic",
-            "news": "Kovacevic will draw back into New Jersey's lineup vs. Toronto on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T22:01:19.263Z"
-        },
-        {
-            "player": "Brett Pesce",
-            "news": "Pesce (lower-body) is out vs. Toronto on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T21:59:40.292Z"
-        },
-        {
-            "player": "Jake Allen",
-            "news": "Allen is expected to start vs. Toronto on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T21:04:18.404Z"
+            "player": "Andrew Mangiapane",
+            "news": "The Blackhawks acquired Mangiapane from the Oilers along with a conditional 2027 first-round pick in exchange for forwards Jason Dickinson and Colton Dach. ",
+            "category": "Trade",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T01:57:12.952Z"
         }
     ],
-    "CAR": [
+    "EDM": [
         {
-            "player": "Jesperi Kotkaniemi",
-            "news": "Kotkaniemi is expected to draw back into Carolina's lineup in Vancouver on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:53:41.179Z"
+            "player": "Colton Dach",
+            "news": "The Oilers have reportedly acquired Dach and forward Jason Dickinson in exchange for forward Andrew Mangiapane and a conditional 2027 first-round draft pick.",
+            "category": "Trade",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T01:53:06.539Z"
         },
         {
-            "player": "Brandon Bussi",
-            "news": "Bussi was the first goalie off the ice at Carolina's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:47:58.452Z"
-        }
-    ],
-    "TOR": [
-        {
-            "player": "Oliver Ekman-Larsson",
-            "news": "Ekman-Larsson (trade related) will be held out of Toronto's lineup in New Jersey on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:51:48.424Z"
-        },
-        {
-            "player": "Scott Laughton",
-            "news": "Laughton (trade related) will be held out of Toronto's lineup in New Jersey on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:51:14.724Z"
-        },
-        {
-            "player": "Bobby McMann",
-            "news": "McMann (trade related) will be out vs. New Jersey on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:50:40.408Z"
-        }
-    ],
-    "LAK": [
-        {
-            "player": "Quinton Byfield",
-            "news": "Byfield (illness) will remain out vs. New York on Thursday. ",
-            "category": "Injury",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:19:43.208Z"
-        },
-        {
-            "player": "Drew Doughty",
-            "news": "Doughty (lower-body) is expected to play vs. New York on Thursday. ",
-            "category": "Injury",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:19:16.397Z"
-        },
-        {
-            "player": "Trevor Moore",
-            "news": "Moore (illness) is expected to return vs. New York on Thursday. ",
-            "category": "Injury",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:18:43.911Z"
-        },
-        {
-            "player": "Trevor Moore",
-            "news": "Moore (illness) returned to Los Angeles' practice on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T19:37:02.703Z"
-        },
-        {
-            "player": "Darcy Kuemper",
-            "news": "Kuemper (illness) returned to Los Angeles' practice on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T19:03:09.269Z"
-        }
-    ],
-    "NYI": [
-        {
-            "player": "Adam Boqvist",
-            "news": "Boqvist will draw back into the Islanders' lineup vs. Anaheim on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:09:22.243Z"
-        },
-        {
-            "player": "Ryan Pulock",
-            "news": "Pulock (upper-body) is out vs. Anaheim on Wednesday. ",
-            "category": "Injury",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:08:49.870Z"
-        },
-        {
-            "player": "Anthony Duclair",
-            "news": "Duclair is expected to be a healthy scratch in Anaheim on Wednesday. ",
-            "category": "Line Change",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:08:03.493Z"
-        }
-    ],
-    "STL": [
-        {
-            "player": "Joel Hofer",
-            "news": "Hofer will start in Seattle on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T20:00:17.146Z"
-        }
-    ],
-    "VAN": [
-        {
-            "player": "Evander Kane",
-            "news": "Kane (illness) will be a game-time decision vs. Carolina on Wednesday.",
-            "category": "Injury",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T19:21:07.655Z"
-        },
-        {
-            "player": "Pierre-Olivier Joseph",
-            "news": "Joseph (upper-body) is expected to miss the next 2-3 weeks. ",
-            "category": "Injury",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T18:52:38.558Z"
+            "player": "Jason Dickinson",
+            "news": "The Oilers have reportedly acquired Dickinson and forward Colton Dach in exchange for forward Andrew Mangiapane and a conditional 2027 first-round draft pick. ",
+            "category": "Trade",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T01:48:10.870Z"
         }
     ],
     "COL": [
         {
-            "player": "Jason Polin",
-            "news": "Polin has been reassigned to the Colorado Eagles (AHL). ",
-            "category": "Send Down",
-            "date": "2026-03-04",
-            "timestamp": "2026-03-04T18:55:11.649Z"
+            "player": "Nick Blankenburg",
+            "news": "The Avalanche acquired Blankenburg from the Predators on Wednesday in exchange for a 2026 fifth-round draft pick. ",
+            "category": "Trade",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T01:40:13.027Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "Jonathan Castagna",
+            "news": "The Flames reportedly acquired Castagna from the Mammoth along with defenceman Olli Maatta and three 2026 second-round draft picks in exchange for defenceman Mackenzie Weegar.",
+            "category": "Trade",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T01:34:31.645Z"
+        },
+        {
+            "player": "Olli Maatta",
+            "news": "The Flames reportedly acquired Maatta from the Mammoth along with forward Jonathan Castagna and three 2026 second-round draft picks in exchange for defenceman Mackenzie Weegar.",
+            "category": "Trade",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T01:28:32.052Z"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "MacKenzie Weegar",
+            "news": "The Mammoth have reportedly acquired Weegar from the Flames in exchange for defenceman Olli Maatta, forward Jonathan Castagna, and three 2026 second-round draft picks. ",
+            "category": "Trade",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T01:25:05.834Z"
         }
     ]
 }
