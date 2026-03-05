@@ -86,6 +86,18 @@ def snapshot():
             writer.writeheader()
         writer.writerows(rows_to_write)
 
+    # Re-read, sort by gameid → run (ascending), and rewrite
+    with open(history_file, 'r') as f:
+        reader = csv.DictReader(f)
+        all_rows = list(reader)
+
+    all_rows.sort(key=lambda r: (r.get('gameid', ''), int(r.get('run', 0))))
+
+    with open(history_file, 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(all_rows)
+
     print(f"[snapshot] Run #{run_number}: wrote {len(rows_to_write)} games to {history_file}")
 
 
