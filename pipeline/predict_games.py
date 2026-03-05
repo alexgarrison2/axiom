@@ -1283,12 +1283,23 @@ def predict():
             pct   = (h_xgf_quality - 1.0) * 100
             sign  = '+' if pct >= 0 else ''
             h_explained.append(f"Lineup ({found}/{total}): {sign}{pct:.1f}% quality")
+        # Away team's defensive lineup quality affects HOME team's xG
+        if a_lineup_result['reliable']:
+            opp_def_pct = (a_xga_quality - 1.0) * 100
+            opp_sign    = '+' if opp_def_pct >= 0 else ''
+            h_explained.append(f"Opp Lineup (def): {opp_sign}{opp_def_pct:.1f}% quality")
+
         if a_lineup_result['reliable']:
             found = a_lineup_result['players_found']
             total = a_lineup_result['total_players']
             pct   = (a_xgf_quality - 1.0) * 100
             sign  = '+' if pct >= 0 else ''
             a_explained.append(f"Lineup ({found}/{total}): {sign}{pct:.1f}% quality")
+        # Home team's defensive lineup quality affects AWAY team's xG
+        if h_lineup_result['reliable']:
+            opp_def_pct = (h_xga_quality - 1.0) * 100
+            opp_sign    = '+' if opp_def_pct >= 0 else ''
+            a_explained.append(f"Opp Lineup (def): {opp_sign}{opp_def_pct:.1f}% quality")
         
         # Home Ice
         h_explained.append(f"Home Ice: +{HOME_ICE_VAL:.2f}")
