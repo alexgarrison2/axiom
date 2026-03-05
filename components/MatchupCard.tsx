@@ -945,6 +945,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
             <div
                 className={`hidden md:flex relative z-10 hover:z-50 flex-col w-full max-w-4xl mx-auto rounded-3xl ${isSocial ? 'mb-0' : 'mb-6'} transition-all duration-300 border backdrop-blur-xl group ${!isSocial && 'hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] cursor-pointer'} ${getGlowColor(homeWager, awayWager)} ${isDesktopExpanded ? 'bg-white/[0.02]' : 'bg-transparent'}`}
                 onClick={!isSocial ? toggleDesktopExpand : undefined}
+                onMouseLeave={() => setLocationTooltip(null)}
                 ref={desktopCardRef}
             >
                 {/* ... (Background layers) ... */}
