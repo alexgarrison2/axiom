@@ -1204,7 +1204,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     />
 
                     {/* CENTRAL CONTENT CONTAINER (Relative z-10) - Compact & Aligned */}
-                    <div className="flex flex-row items-center justify-center w-[95%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
+                    <div className="flex flex-row items-center justify-center w-[78%] gap-2 z-10 relative bg-black/40 backdrop-blur-sm rounded-2xl py-1 px-1 border border-white/5 shadow-xl">
 
                         {/* LEFT DATA (Away xG/Wager) */}
                         <div className="flex flex-col items-end justify-center w-[36%] gap-1 relative z-20">
