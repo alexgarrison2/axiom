@@ -1,10 +1,35 @@
 import React, { useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 import TeamSelector from '@/components/TeamSelector';
 import { TeamInfo } from '@/types';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Derive "Mar-06" style labels for today and tomorrow
+function getNavDates(): { label: string; tab: string }[] {
+    const fmt = (d: Date) => {
+        const mon = d.toLocaleDateString('en-US', { month: 'short' });
+        const day = String(d.getDate()).padStart(2, '0');
+        const iso = d.toISOString().split('T')[0];
+        return { label: `${mon}-${day}`, tab: iso };
+    };
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    return [fmt(today), fmt(tomorrow)];
+}
+
+const NAV_TABS = [
+    { label: 'NEWS',     tab: 'News' },
+    { label: 'TEAMS',    tab: 'Teams' },
+    { label: 'HISTORY',  tab: 'History' },
+    { label: 'PLAYOFFS', tab: 'Playoffs' },
+    { label: 'BRACKET',  tab: 'Bracket' },
+    { label: 'SKATERS',  tab: 'Skaters' },
+];
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -64,20 +89,51 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teamInfo, allTeamsList }) => {
                 style={{ background: `radial-gradient(circle at 50% 0%, ${primaryColor}, transparent)` }}
             ></div>
 
-            {/* Navbar / Breadcrumbs Area */}
+            {/* Navbar */}
             <div
                 ref={navRef}
                 className="fixed top-0 left-0 right-0 z-40 bg-black/60 backdrop-blur-md border-b border-white/5 h-16 flex items-center transition-colors duration-300"
             >
-                <div className="max-w-[1800px] mx-auto px-4 md:px-8 w-full flex items-center justify-between">
-                    <div className="flex items-center gap-6">
+                <div className="max-w-[1800px] mx-auto px-4 md:px-8 w-full flex items-center gap-4 md:gap-6">
+                    {/* Back + Team selector */}
+                    <div className="flex items-center gap-4 flex-shrink-0">
                         <button onClick={handleBack} className="group flex items-center gap-2 text-gray-500 hover:text-white transition-colors">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><path d="m15 18-6-6 6-6" /></svg>
-                            <span className="text-xs font-bold uppercase tracking-wider block">Back</span>
+                            <span className="text-xs font-bold uppercase tracking-wider hidden sm:block">Back</span>
                         </button>
                         <div className="h-4 w-px bg-white/10"></div>
                         <TeamSelector teams={allTeamsList} currentTeam={teamInfo} />
                     </div>
+
+                    {/* Divider */}
+                    <div className="h-4 w-px bg-white/10 flex-shrink-0"></div>
+
+                    {/* Logo → home */}
+                    <Link href="/" className="flex-shrink-0 hover:opacity-70 transition-opacity">
+                        <Image src="/ponyxG_condensed.png" alt="pony xG" width={80} height={24} className="h-4 md:h-5 w-auto object-contain drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]" />
+                    </Link>
+
+                    {/* Nav tabs */}
+                    <nav className="flex items-center gap-1 md:gap-2 overflow-x-auto scrollbar-hide flex-1">
+                        {getNavDates().map(({ label, tab }) => (
+                            <Link
+                                key={tab}
+                                href={`/?tab=${tab}`}
+                                className="px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap text-gray-500 hover:text-white hover:bg-white/5 transition-all flex-shrink-0"
+                            >
+                                {label}
+                            </Link>
+                        ))}
+                        {NAV_TABS.map(({ label, tab }) => (
+                            <Link
+                                key={tab}
+                                href={`/?tab=${tab}`}
+                                className="px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap text-gray-500 hover:text-white hover:bg-white/5 transition-all flex-shrink-0"
+                            >
+                                {label}
+                            </Link>
+                        ))}
+                    </nav>
                 </div>
             </div>
 

@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { GamePrediction, HistoryEntry } from '@/utils/data';
 import { SimGame } from '@/utils/schedule';
@@ -224,10 +226,19 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     }, [predictions]);
 
 
+    // Read optional ?tab= param so team-page nav links can deep-link here
+    const searchParams = useSearchParams();
+    const tabParam = searchParams?.get('tab');
+
     // State for selected date
-    // Default to 'Today' if available, else first date
-    // Or simpler: default to first date in list which is usually "today" or "tomorrow"
-    const [selectedTab, setSelectedTab] = useState<string>(uniqueDates[0] || 'History');
+    const [selectedTab, setSelectedTab] = useState<string>(() => {
+        if (tabParam) {
+            // Named tabs land directly (Teams, News, etc.)
+            const named = ['News', 'Teams', 'History', 'Playoffs', 'Bracket', 'Skaters'];
+            if (named.includes(tabParam)) return tabParam;
+        }
+        return uniqueDates[0] || 'History';
+    });
     // Multi-select state: Default to ['All']
     const [historyFilters, setHistoryFilters] = useState<string[]>(['All']);
     // History view mode: 'date' (default) or 'team'
@@ -318,10 +329,12 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             onScroll={handleTabScroll}
                             className="flex items-center gap-2 md:gap-3 bg-black/40 p-1.5 md:p-2.5 rounded-2xl md:rounded-3xl backdrop-blur-md border border-white/5 w-full max-w-full overflow-x-auto snap-x scrollbar-hide px-2 md:px-4">
 
-                            {/* Text Logo for non-main pages */}
+                            {/* Text Logo for non-main pages — always clickable to home */}
                             {!isMainPage && (
                                 <div className="flex-shrink-0 flex items-center pr-3 md:pr-4 border-r border-white/10 mr-1 md:mr-2 snap-start">
-                                    <Image src="/ponyxG_condensed.png" alt="pony xG" width={80} height={24} className="h-4 md:h-5 w-auto object-contain drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]" />
+                                    <Link href="/">
+                                        <Image src="/ponyxG_condensed.png" alt="pony xG" width={80} height={24} className="h-4 md:h-5 w-auto object-contain drop-shadow-[0_0_8px_rgba(0,243,255,0.8)] hover:opacity-70 transition-opacity" />
+                                    </Link>
                                 </div>
                             )}
 
