@@ -1208,6 +1208,16 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
                         {/* LEFT DATA (Away xG/Wager) */}
                         <div className="flex flex-col items-end justify-center w-[36%] gap-1 relative z-20">
+                            {/* Goalie name - collapsed view only */}
+                            {!isExpanded && (
+                                <span className={`text-[10px] font-bold uppercase tracking-wider leading-none truncate max-w-full ${
+                                    (awayStarter?.toUpperCase()?.includes('UNCONFIRMED') || !awayStarter) ? 'text-neutral-500' :
+                                    awayStarter?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green' :
+                                    awayStarter?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400' : 'text-neutral-500'
+                                }`}>
+                                    {cleanStarterName(awayStarter || '').split(' ').pop()}
+                                </span>
+                            )}
                             {/* Top: xG - Inline Layout */}
                             <div className="flex flex-row items-center gap-1.5 relative">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white">
@@ -1265,6 +1275,16 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
                         {/* RIGHT DATA (Home xG/Wager) */}
                         <div className="flex flex-col items-start justify-center w-[36%] gap-1 relative z-20">
+                            {/* Goalie name - collapsed view only */}
+                            {!isExpanded && (
+                                <span className={`text-[10px] font-bold uppercase tracking-wider leading-none truncate max-w-full ${
+                                    (homeStarter?.toUpperCase()?.includes('UNCONFIRMED') || !homeStarter) ? 'text-neutral-500' :
+                                    homeStarter?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green' :
+                                    homeStarter?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400' : 'text-neutral-500'
+                                }`}>
+                                    {cleanStarterName(homeStarter || '').split(' ').pop()}
+                                </span>
+                            )}
                             {/* Top: xG - Inline Layout */}
                             <div className="flex flex-row items-center gap-1.5 relative">
                                 <span className="text-3xl font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,243,255,0.6)] leading-none text-white order-last">
