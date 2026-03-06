@@ -71,6 +71,7 @@ jobs:
             echo "Running Full Refresh Pipeline..."
             python refresh_pipeline.py
             python snapshot_predictions.py
+            python season_simulator.py
           else
             echo "Running Lite Update..."
             python fetch_upcoming.py
@@ -86,6 +87,7 @@ jobs:
 
             python predict_games.py
             python snapshot_predictions.py
+            python season_simulator.py
           fi
 
       - name: Commit and Push Changes
@@ -126,6 +128,9 @@ jobs:
             [ -f public/data/team_lineups.json ] && git add public/data/team_lineups.json
             # Prediction history snapshots
             git add public/data/SiteHistory/*.csv 2>/dev/null || true
+            # Season simulation projections
+            [ -f pipeline/data/season_projections.json ] && git add pipeline/data/season_projections.json
+            [ -f public/data/season_projections.json ] && git add public/data/season_projections.json
             
             # Commit if changes exist
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"

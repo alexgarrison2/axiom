@@ -9,7 +9,7 @@ import os
 import sys
 
 # Configuration
-SIMULATIONS = 2000
+SIMULATIONS = 5000
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -632,6 +632,11 @@ def full_simulation_loop():
     out_path = os.path.join(DATA_DIR, 'season_projections.json')
     with open(out_path, 'w') as f:
         json.dump(final_output, f, indent=4)
+
+    # Also copy to public/data for the frontend
+    import shutil
+    public_path = os.path.join(SCRIPT_DIR, '..', 'public', 'data', 'season_projections.json')
+    shutil.copy2(out_path, public_path)
         
     print(f"Simulation complete. Results saved to {out_path}")
 
