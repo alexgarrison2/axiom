@@ -1575,7 +1575,7 @@
                 "pos": "c",
                 "id": 33571,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Luke Evangelista",
@@ -1601,7 +1601,7 @@
                 "pos": "c",
                 "id": 2135,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jonathan Marchessault",
@@ -1619,7 +1619,7 @@
                 "pos": "lw",
                 "id": 31229,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Tyson Jost",
@@ -1653,7 +1653,7 @@
                 "pos": "c",
                 "id": 34353,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ozzy Wiesblatt",
@@ -2027,7 +2027,7 @@
                 "pos": "rd",
                 "id": 2033,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -2037,7 +2037,7 @@
                 "pos": "ld",
                 "id": 2369,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Elias Salomonsson",
@@ -2045,7 +2045,7 @@
                 "pos": "rd",
                 "id": 36380,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -2055,7 +2055,7 @@
                 "pos": "ld",
                 "id": 30611,
                 "ppUnit": 1,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Isaak Phillips",
@@ -2063,7 +2063,7 @@
                 "pos": "rd",
                 "id": 29857,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -2113,7 +2113,7 @@
                 "pos": "ir7",
                 "id": 1442,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Logan Stanley",
@@ -2121,7 +2121,7 @@
                 "pos": "ir8",
                 "id": 2652,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2175,7 +2175,7 @@
                 "pos": "rw",
                 "id": 2603,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -2255,7 +2255,7 @@
                 "pos": "rd",
                 "id": 30124,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d3": [
@@ -2283,7 +2283,7 @@
                 "pos": "ld",
                 "id": 26500,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
@@ -3002,12 +3002,12 @@
                 "movement": null
             },
             {
-                "name": "Adam Boqvist",
-                "number": 34,
+                "name": "Ryan Pulock",
+                "number": 6,
                 "pos": "rd",
-                "id": 4795,
+                "id": 2146,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -3076,14 +3076,6 @@
                 "number": 21,
                 "pos": "ir4",
                 "id": 34,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Ryan Pulock",
-                "number": 6,
-                "pos": "ir5",
-                "id": 2146,
                 "ppUnit": null,
                 "movement": null
             }
