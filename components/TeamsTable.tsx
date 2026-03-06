@@ -175,6 +175,18 @@ const cleanName = (name: string) => {
     return name.replace(/\s*\(.*?\)\s*/g, '').trim();
 };
 
+// Normalize to "LAST, F." for fuzzy goalie matching.
+// Handles "Sam Montembeault" === "Samuel Montembeault" by comparing
+// last name + first initial only.
+const normalizeGoalieName = (name: string) => {
+    const clean = cleanName(name).trim();
+    const parts = clean.split(/\s+/);
+    if (parts.length < 2) return clean.toLowerCase();
+    const last = parts[parts.length - 1].toLowerCase();
+    const firstInit = parts[0][0]?.toLowerCase() ?? '';
+    return `${last},${firstInit}`;
+};
+
 const getStarterStatus = (name: string) => {
     if (!name) return 'UNCONFIRMED';
     const match = name.match(/\((.*?)\)$/);
@@ -681,13 +693,13 @@ const TeamsTable = () => {
             if (locationFilter === 'Away') games = games.filter(g => g.home_away === 'Away');
 
             // Apply Starter Filter (if provided)
+            // Use last-name + first-initial normalization so "Sam Montembeault"
+            // matches "Samuel Montembeault" in gamestats.
             if (targetStarter) {
-                games = games.filter(g => {
-                    // Fuzzy match or exact match? Exact match after cleaning should be fine.
-                    // But names in gamestats might be "J. Oettinger" or "Jake Oettinger".
-                    // Let's assume gamestats has full names as seen in checking (e.g. "Sergei Bobrovsky").
-                    return g.starting_goalie === targetStarter;
-                });
+                const normTarget = normalizeGoalieName(targetStarter);
+                games = games.filter(g =>
+                    g.starting_goalie && normalizeGoalieName(g.starting_goalie) === normTarget
+                );
             }
 
             // Apply Last N (Always applies unless 'All')
