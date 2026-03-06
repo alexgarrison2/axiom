@@ -620,12 +620,12 @@
                 "movement": null
             },
             {
-                "name": "Jack Drury",
-                "number": 18,
+                "name": "Nicolas Roy",
+                "number": 10,
                 "pos": "c",
-                "id": 27584,
+                "id": 3818,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Victor Olofsson",
@@ -646,12 +646,12 @@
                 "movement": null
             },
             {
-                "name": "Nicolas Roy",
-                "number": 10,
+                "name": "Jack Drury",
+                "number": 18,
                 "pos": "c",
-                "id": 3818,
+                "id": 27584,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Gavin Brindley",
@@ -1186,12 +1186,12 @@
                 "movement": null
             },
             {
-                "name": "Trent Frederic",
-                "number": 10,
+                "name": "Kasperi Kapanen",
+                "number": 42,
                 "pos": "rw",
-                "id": 2662,
+                "id": 2385,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -1212,12 +1212,12 @@
                 "movement": null
             },
             {
-                "name": "Kasperi Kapanen",
-                "number": 42,
+                "name": "Trent Frederic",
+                "number": 10,
                 "pos": "rw",
-                "id": 2385,
+                "id": 2662,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -1930,12 +1930,12 @@
                 "movement": null
             },
             {
-                "name": "Cole Reinhardt",
-                "number": 23,
+                "name": "Keegan Kolesar",
+                "number": 55,
                 "pos": "rw",
-                "id": 28385,
+                "id": 3790,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -1948,19 +1948,19 @@
                 "movement": null
             },
             {
-                "name": "Colton Sissons",
-                "number": 10,
+                "name": "Nic Dowd",
+                "number": 26,
                 "pos": "c",
-                "id": 2030,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2607,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
-                "name": "Keegan Kolesar",
-                "number": 55,
+                "name": "Colton Sissons",
+                "number": 10,
                 "pos": "rw",
-                "id": 3790,
-                "ppUnit": null,
+                "id": 2030,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1984,30 +1984,12 @@
         ],
         "d2": [
             {
-                "name": "Jeremy Lauzon",
-                "number": 3,
-                "pos": "ld",
-                "id": 3787,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Rasmus Andersson",
-                "number": 4,
-                "pos": "rd",
-                "id": 2762,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
                 "name": "Noah Hanifin",
                 "number": 15,
                 "pos": "ld",
                 "id": 2473,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Kaedan Korczak",
@@ -2015,7 +1997,25 @@
                 "pos": "rd",
                 "id": 28524,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Jeremy Lauzon",
+                "number": 3,
+                "pos": "ld",
+                "id": 3787,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Rasmus Andersson",
+                "number": 4,
+                "pos": "rd",
+                "id": 2762,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "ir": [
@@ -2150,18 +2150,18 @@
                 "movement": null
             },
             {
-                "name": "Nico Sturm",
-                "number": 78,
+                "name": "Michael McCarron",
+                "number": 47,
                 "pos": "c",
-                "id": 27037,
+                "id": 2156,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Michael McCarron",
-                "number": 47,
+                "name": "Nico Sturm",
+                "number": 78,
                 "pos": "rw",
-                "id": 2156,
+                "id": 27037,
                 "ppUnit": null,
                 "movement": null
             }
