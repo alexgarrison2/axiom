@@ -628,12 +628,12 @@
                 "movement": null
             },
             {
-                "name": "Victor Olofsson",
-                "number": 95,
+                "name": "Gavin Brindley",
+                "number": 54,
                 "pos": "rw",
-                "id": 4718,
+                "id": 33176,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -654,12 +654,12 @@
                 "movement": null
             },
             {
-                "name": "Gavin Brindley",
-                "number": 54,
+                "name": "Joel Kiviranta",
+                "number": 94,
                 "pos": "rw",
-                "id": 33176,
-                "ppUnit": 2,
-                "movement": null
+                "id": 31187,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "d1": [
@@ -668,7 +668,7 @@
                 "number": 7,
                 "pos": "ld",
                 "id": 2874,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -726,17 +726,9 @@
                 "movement": null
             },
             {
-                "name": "Joel Kiviranta",
-                "number": 94,
-                "pos": "ir2",
-                "id": 31187,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Artturi Lehkonen",
                 "number": 62,
-                "pos": "ir3",
+                "pos": "ir2",
                 "id": 2679,
                 "ppUnit": null,
                 "movement": null
@@ -873,7 +865,7 @@
                 "pos": "ld",
                 "id": 37913,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sam Rinzel",
@@ -2402,12 +2394,12 @@
     "STL": {
         "f1": [
             {
-                "name": "Brayden Schenn",
-                "number": 10,
+                "name": "Dylan Holloway",
+                "number": 81,
                 "pos": "lw",
-                "id": 773,
+                "id": 32948,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Robert Thomas",
@@ -2470,12 +2462,12 @@
                 "movement": null
             },
             {
-                "name": "Dylan Holloway",
-                "number": 81,
+                "name": "Jonathan Drouin",
+                "number": 29,
                 "pos": "rw",
-                "id": 32948,
+                "id": 2136,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -2514,12 +2506,12 @@
                 "movement": null
             },
             {
-                "name": "Justin Faulk",
-                "number": 72,
+                "name": "Colton Parayko",
+                "number": 55,
                 "pos": "rd",
-                "id": 1651,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2531,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "d2": [
@@ -2528,7 +2520,7 @@
                 "number": 17,
                 "pos": "ld",
                 "id": 16,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -2564,14 +2556,6 @@
                 "number": 55,
                 "pos": "ir1",
                 "id": 2531,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Oskar Sundqvist",
-                "number": 70,
-                "pos": "ir2",
-                "id": 2356,
                 "ppUnit": null,
                 "movement": null
             }
@@ -2831,7 +2815,7 @@
                 "pos": "c",
                 "id": 4620,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Ethen Frank",
@@ -2893,7 +2877,7 @@
                 "pos": "rd",
                 "id": 2805,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -5111,7 +5095,7 @@
                 "pos": "c",
                 "id": 2018,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Jared Wright",
@@ -5248,38 +5232,12 @@
     "CGY": {
         "f1": [
             {
-                "name": "Connor Zary",
-                "number": 47,
-                "pos": "lw",
-                "id": 29510,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Nazem Kadri",
-                "number": 91,
-                "pos": "c",
-                "id": 1425,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
-                "name": "Joel Farabee",
-                "number": 86,
-                "pos": "rw",
-                "id": 4799,
-                "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
                 "name": "Blake Coleman",
                 "number": 20,
                 "pos": "lw",
                 "id": 2728,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Mikael Backlund",
@@ -5287,7 +5245,7 @@
                 "pos": "c",
                 "id": 193,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Matt Coronato",
@@ -5295,25 +5253,25 @@
                 "pos": "rw",
                 "id": 32801,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
-        "f3": [
+        "f2": [
             {
                 "name": "Yegor Sharangovich",
                 "number": 17,
                 "pos": "lw",
                 "id": 29637,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Morgan Frost",
                 "number": 48,
                 "pos": "c",
                 "id": 2814,
-                "ppUnit": 2,
-                "movement": null
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Matvei Gridin",
@@ -5321,7 +5279,33 @@
                 "pos": "rw",
                 "id": 36778,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Connor Zary",
+                "number": 47,
+                "pos": "lw",
+                "id": 29510,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Ryan Strome",
+                "number": 16,
+                "pos": "c",
+                "id": 1825,
+                "ppUnit": 2,
+                "movement": "new"
+            },
+            {
+                "name": "Joel Farabee",
+                "number": 86,
+                "pos": "rw",
+                "id": 4799,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -5473,7 +5457,7 @@
                 "pos": "lw",
                 "id": 773,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Calum Ritchie",
