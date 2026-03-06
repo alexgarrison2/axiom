@@ -137,8 +137,8 @@ def fetch_schedule():
                                         norm_team_gs = {normalize_name(tg) for tg in team_goalies}
                                         
                                         if norm_g not in norm_team_gs:
-                                            if status_val == "confirmed":
-                                                print(f"  [VALIDATION WARNING] {g_name} confirmed for {home_team_common}, but has no history there. Accepting due to CONFIRMED status.")
+                                            if status_val in ("confirmed", "likely", "probable"):
+                                                print(f"  [VALIDATION WARNING] {g_name} ({status_val}) for {home_team_common}, but has no history there. Accepting (possible trade).")
                                             else:
                                                 print(f"  [VALIDATION FAILED] {g_name} reported for {home_team_common}, but has no history there. Rejecting unconfirmed status.")
                                                 continue
@@ -173,8 +173,8 @@ def fetch_schedule():
                                         norm_team_gs = {normalize_name(tg) for tg in team_goalies}
                                         
                                         if norm_g not in norm_team_gs:
-                                            if status_val == "confirmed":
-                                                print(f"  [VALIDATION WARNING] {g_name} confirmed for {away_team_common}, but has no history there. Accepting due to CONFIRMED status.")
+                                            if status_val in ("confirmed", "likely", "probable"):
+                                                print(f"  [VALIDATION WARNING] {g_name} ({status_val}) for {away_team_common}, but has no history there. Accepting (possible trade).")
                                             else:
                                                 print(f"  [VALIDATION FAILED] {g_name} reported for {away_team_common}, but has no history there. Rejecting unconfirmed status.")
                                                 continue
