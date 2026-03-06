@@ -512,9 +512,6 @@ def full_simulation_loop():
         record_r1(match_m_semis_1[0], match_m_semis_1[1])
         record_r1(match_m_semis_2[0], match_m_semis_2[1])
         
-        record_r1(match_m_semis_1[0], match_m_semis_1[1])
-        record_r1(match_m_semis_2[0], match_m_semis_2[1])
-        
         # Sim Series - ROUND 1 (EAST)
         winner_a_1 = simulate_series(match_a_semis_1[0], match_a_semis_1[1], team_ratings, team_map)
         winner_a_2 = simulate_series(match_a_semis_2[0], match_a_semis_2[1], team_ratings, team_map)
@@ -629,9 +626,13 @@ def full_simulation_loop():
         })
         
     # Save
+    output_wrapper = {
+        'total_simulations': SIMULATIONS,
+        'teams': final_output
+    }
     out_path = os.path.join(DATA_DIR, 'season_projections.json')
     with open(out_path, 'w') as f:
-        json.dump(final_output, f, indent=4)
+        json.dump(output_wrapper, f, indent=4)
 
     # Also copy to public/data for the frontend
     import shutil
