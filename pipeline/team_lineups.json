@@ -379,7 +379,7 @@
                 "pos": "c",
                 "id": 2863,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Wyatt Johnston",
@@ -397,7 +397,7 @@
                 "pos": "lw",
                 "id": 2663,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Matt Duchene",
@@ -423,7 +423,7 @@
                 "pos": "lw",
                 "id": 2725,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Justin Hryckowian",
@@ -465,7 +465,7 @@
                 "pos": "rw",
                 "id": 3887,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -519,7 +519,7 @@
                 "pos": "rd",
                 "id": 4760,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -829,7 +829,7 @@
                 "pos": "lw",
                 "id": 4622,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Sam Lafferty",
@@ -4386,8 +4386,16 @@
                 "number": 14,
                 "pos": "c",
                 "id": 31505,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Corey Perry",
+                "number": 90,
+                "pos": "rw",
+                "id": 36,
+                "ppUnit": 2,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -5123,14 +5131,6 @@
                 "pos": "c",
                 "id": 31794,
                 "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Corey Perry",
-                "number": 90,
-                "pos": "rw",
-                "id": 36,
-                "ppUnit": 1,
                 "movement": null
             }
         ],
