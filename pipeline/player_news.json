@@ -1,4 +1,47 @@
 {
+    "EDM": [
+        {
+            "player": "Connor Murphy",
+            "news": "Murphy will make his Oilers' debut vs. Carolina on Friday. ",
+            "category": "Line Change",
+            "date": "2026-03-06",
+            "timestamp": "2026-03-06T18:26:36.834Z"
+        },
+        {
+            "player": "Tristan Jarry",
+            "news": "Jarry will start vs. Carolina on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-06",
+            "timestamp": "2026-03-06T18:03:10.361Z"
+        }
+    ],
+    "BUF": [
+        {
+            "player": "Sam Carrick",
+            "news": "Carrick (trade) is expected to arrive in Buffalo on Friday and has a chance to make his debut on Saturday. ",
+            "category": "General",
+            "date": "2026-03-06",
+            "timestamp": "2026-03-06T18:23:42.912Z"
+        }
+    ],
+    "VAN": [
+        {
+            "player": "Evander Kane",
+            "news": "Kane (illness) will remain out vs. Chicago on Friday.",
+            "category": "Injury",
+            "date": "2026-03-06",
+            "timestamp": "2026-03-06T18:22:26.418Z"
+        }
+    ],
+    "SJS": [
+        {
+            "player": "Alex Nedeljkovic",
+            "news": "Nedeljkovic will start vs. St. Louis on Friday.",
+            "category": "Goalie Start",
+            "date": "2026-03-06",
+            "timestamp": "2026-03-06T18:19:22.595Z"
+        }
+    ],
     "ANA": [
         {
             "player": "Lukas Dostal",
@@ -29,15 +72,6 @@
             "category": "Goalie Start",
             "date": "2026-03-06",
             "timestamp": "2026-03-06T17:31:32.422Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Tristan Jarry",
-            "news": "Jarry will start vs. Carolina on Friday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-06",
-            "timestamp": "2026-03-06T18:03:10.361Z"
         }
     ],
     "WPG": [
@@ -131,38 +165,6 @@
             "category": "Line Change",
             "date": "2026-03-06",
             "timestamp": "2026-03-06T16:57:13.947Z"
-        }
-    ],
-    "PHI": [
-        {
-            "player": "Jackson Edward",
-            "news": "The Flyers have acquired Jackson Edward and Brett Harrison from the Bruins for Massimo Rizzo and Alexis Gendron.\r\n\r\n\r\n",
-            "category": "Trade",
-            "date": "2026-03-06",
-            "timestamp": "2026-03-06T16:45:12.343Z"
-        },
-        {
-            "player": "Brett Harrison",
-            "news": "The Flyers have acquired Brett Harrison and Jackson Edward from the Bruins for Massimo Rizzo and Alexis Gendron.\r\n\r\n",
-            "category": "Trade",
-            "date": "2026-03-06",
-            "timestamp": "2026-03-06T16:44:49.950Z"
-        }
-    ],
-    "BOS": [
-        {
-            "player": "Massimo Rizzo",
-            "news": "The Bruins have acquired Massimo Rizzo and Alexis Gendron from the Flyers for Brett Harrison and Jackson Edward.\r\n\r\n",
-            "category": "Trade",
-            "date": "2026-03-06",
-            "timestamp": "2026-03-06T16:44:33.532Z"
-        },
-        {
-            "player": "Alexis Gendron",
-            "news": "The Bruins have acquired Alexis Gendron and Massimo Rizzo from the Flyers for Brett Harrison and Jackson Edward.\r\n",
-            "category": "Trade",
-            "date": "2026-03-06",
-            "timestamp": "2026-03-06T16:43:20.121Z"
         }
     ]
 }
