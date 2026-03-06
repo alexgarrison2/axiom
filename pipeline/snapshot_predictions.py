@@ -14,6 +14,37 @@ import os
 import datetime
 import pytz
 
+def format_odds(val_str):
+    if not val_str:
+        return ""
+    try:
+        val = float(val_str)
+        if val > 0:
+            return f"+{int(val)}"
+        return f"{int(val)}"
+    except ValueError:
+        return val_str
+
+def format_ev(val_str):
+    if not val_str:
+        return ""
+    try:
+        val = float(val_str)
+        if val > 0:
+            return f"+{val:.2f}"
+        return f"{val:.2f}"
+    except ValueError:
+        return val_str
+
+def format_pct(val_str):
+    if not val_str:
+        return ""
+    try:
+        val = float(val_str)
+        return f"{val:.1f}%"
+    except ValueError:
+        return val_str
+
 def snapshot():
     ct = pytz.timezone('US/Central')
     now_ct = datetime.datetime.now(ct)
@@ -61,17 +92,17 @@ def snapshot():
                 
                 'away_starter': row.get('away_starter', ''),
                 'away_xG': row.get('away_xg', ''),
-                'away_win%': row.get('away_win_pct', ''),
-                'away_xGOdds': row.get('away_model_odds', ''),
-                'away_Odds': row.get('away_vegas_odds', ''),
-                'away_EV': row.get('away_ev', ''),
+                'away_win%': format_pct(row.get('away_win_pct', '')),
+                'away_xGOdds': format_odds(row.get('away_model_odds', '')),
+                'away_Odds': format_odds(row.get('away_vegas_odds', '')),
+                'away_EV': format_ev(row.get('away_ev', '')),
                 
                 'home_starter': row.get('home_starter', ''),
                 'home_xG': row.get('home_xg', ''),
-                'home_win%': row.get('home_win_pct', ''),
-                'home_xGOdds': row.get('home_model_odds', ''),
-                'home_Odds': row.get('home_vegas_odds', ''),
-                'home_EV': row.get('home_ev', ''),
+                'home_win%': format_pct(row.get('home_win_pct', '')),
+                'home_xGOdds': format_odds(row.get('home_model_odds', '')),
+                'home_Odds': format_odds(row.get('home_vegas_odds', '')),
+                'home_EV': format_ev(row.get('home_ev', '')),
             })
 
     if not rows_to_write:
@@ -92,6 +123,18 @@ def snapshot():
             all_rows = list(reader)
 
     all_rows.extend(rows_to_write)
+    
+    # Apply format to all rows (fixes runs from earlier today)
+    for row in all_rows:
+        row['away_win%'] = format_pct(row.get('away_win%', '').replace('%', ''))
+        row['home_win%'] = format_pct(row.get('home_win%', '').replace('%', ''))
+        row['away_xGOdds'] = format_odds(row.get('away_xGOdds', '').replace('+', ''))
+        row['home_xGOdds'] = format_odds(row.get('home_xGOdds', '').replace('+', ''))
+        row['away_Odds'] = format_odds(row.get('away_Odds', '').replace('+', ''))
+        row['home_Odds'] = format_odds(row.get('home_Odds', '').replace('+', ''))
+        row['away_EV'] = format_ev(row.get('away_EV', '').replace('+', ''))
+        row['home_EV'] = format_ev(row.get('home_EV', '').replace('+', ''))
+
     all_rows.sort(key=lambda r: (r.get('gameid', ''), int(r.get('run', 0))))
 
     with open(history_file, 'w', newline='') as f:
