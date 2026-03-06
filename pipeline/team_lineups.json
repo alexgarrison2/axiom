@@ -2250,11 +2250,11 @@
     "SJS": {
         "f1": [
             {
-                "name": "Will Smith",
-                "number": 2,
+                "name": "Collin Graf",
+                "number": 51,
                 "pos": "lw",
-                "id": 38126,
-                "ppUnit": 1,
+                "id": 38105,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -2266,48 +2266,22 @@
                 "movement": null
             },
             {
-                "name": "Collin Graf",
-                "number": 51,
+                "name": "Will Smith",
+                "number": 2,
                 "pos": "rw",
-                "id": 38105,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
-                "name": "William Eklund",
-                "number": 72,
-                "pos": "lw",
-                "id": 34666,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Michael Misa",
-                "number": 77,
-                "pos": "c",
-                "id": 37508,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Tyler Toffoli",
-                "number": 73,
-                "pos": "rw",
-                "id": 1656,
+                "id": 38126,
                 "ppUnit": 1,
                 "movement": null
             }
         ],
-        "f3": [
+        "f2": [
             {
                 "name": "Philipp Kurashev",
                 "number": 96,
                 "pos": "lw",
                 "id": 28817,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Alexander Wennberg",
@@ -2315,7 +2289,7 @@
                 "pos": "c",
                 "id": 2145,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Kiefer Sherwood",
@@ -2323,7 +2297,33 @@
                 "pos": "rw",
                 "id": 4675,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "William Eklund",
+                "number": 72,
+                "pos": "lw",
+                "id": 34666,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Michael Misa",
+                "number": 77,
+                "pos": "c",
+                "id": 37508,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Tyler Toffoli",
+                "number": 73,
+                "pos": "rw",
+                "id": 1656,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -5796,18 +5796,18 @@
         ],
         "d3": [
             {
-                "name": "Ryker Evans",
-                "number": 41,
+                "name": "Ryan Lindgren",
+                "number": 55,
                 "pos": "ld",
-                "id": 32988,
+                "id": 4632,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Ryan Lindgren",
-                "number": 55,
+                "name": "Ryker Evans",
+                "number": 41,
                 "pos": "rd",
-                "id": 4632,
+                "id": 32988,
                 "ppUnit": null,
                 "movement": null
             }
