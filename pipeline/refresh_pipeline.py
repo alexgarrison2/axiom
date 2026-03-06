@@ -1,6 +1,7 @@
 import pandas as pd
 import pickle
 import json
+import time
 import xgboost as xgb
 from xg_model import preprocess_data
 from team_ratings import calculate_ratings
@@ -79,13 +80,21 @@ def refresh_pipeline():
         print(f"[WARN] Player bio fetch failed: {e}")
 
     # 0f. Fetch contract data (cap hit, UFA/RFA status) from PuckPedia
-    # Runs once per full refresh; scrapes all 32 teams (~16s with rate limiting).
-    print("Fetching contract data from PuckPedia...")
-    try:
-        import fetch_contracts
-        fetch_contracts.main()
-    except Exception as e:
-        print(f"[WARN] Contract data fetch failed: {e}")
+    # Only re-fetches if contracts.json is older than 7 days — contract data
+    # rarely changes and PuckPedia blocks frequent scrapers.
+    _contracts_file = os.path.join('..', 'public', 'data', 'contracts.json')
+    _contracts_age_days = 999
+    if os.path.exists(_contracts_file):
+        _contracts_age_days = (time.time() - os.path.getmtime(_contracts_file)) / 86400
+    if _contracts_age_days >= 7:
+        print(f"Fetching contract data from PuckPedia (last updated {_contracts_age_days:.1f} days ago)...")
+        try:
+            import fetch_contracts
+            fetch_contracts.main()
+        except Exception as e:
+            print(f"[WARN] Contract data fetch failed: {e}")
+    else:
+        print(f"Skipping contract fetch — data is {_contracts_age_days:.1f} days old (threshold: 7 days).")
 
     # 1. Load the new Model
     print("Loading XGBoost model...")

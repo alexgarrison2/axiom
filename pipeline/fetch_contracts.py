@@ -346,6 +346,12 @@ def main():
 
         time.sleep(0.5)  # Be polite to PuckPedia
 
+    # Safety guard: never overwrite good data with an empty result.
+    # If scraping failed entirely, preserve whatever was previously saved.
+    if len(all_contracts) == 0:
+        print("\nWARN: 0 contracts scraped (likely blocked). Keeping existing contracts.json unchanged.")
+        return
+
     # Write output
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w") as f:
