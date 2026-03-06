@@ -94,13 +94,16 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                 const data = await res.json();
                 const processedResults: Record<string, SimResult> = {};
 
+                // Handle both old format (array) and new format (wrapper object)
+                const teamsData = Array.isArray(data) ? data : data.teams;
+                const totalSims = !Array.isArray(data) && data.total_simulations ? data.total_simulations : 2000;
+
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data.forEach((row: any) => {
+                teamsData.forEach((row: any) => {
                     // Reverse-engineer SimResult from percentages
                     // We treat percentages as "counts out of 100" for simplicity
                     // or "counts out of 1000" for decimals. 
                     // Let's use 10,000 to keep precision (e.g. 0.1%)
-                    const totalSims = 2000; // Matches Python script count
 
                     // Parse Maps from JSON objects
                     const pointDist = new Map<number, number>();
@@ -487,8 +490,8 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                                 if (mode === 'date') setHistoryPickFilter(null);
                                             }}
                                             className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${historyViewMode === mode
-                                                    ? 'bg-white/10 text-white shadow-sm'
-                                                    : 'text-neutral-500 hover:text-neutral-300'
+                                                ? 'bg-white/10 text-white shadow-sm'
+                                                : 'text-neutral-500 hover:text-neutral-300'
                                                 }`}
                                         >
                                             {mode === 'date' ? 'By Date' : 'By Team'}
@@ -504,8 +507,8 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                                 key={String(f)}
                                                 onClick={() => setHistoryPickFilter(f)}
                                                 className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${historyPickFilter === f
-                                                        ? 'bg-white/10 text-white shadow-sm'
-                                                        : 'text-neutral-500 hover:text-neutral-300'
+                                                    ? 'bg-white/10 text-white shadow-sm'
+                                                    : 'text-neutral-500 hover:text-neutral-300'
                                                     }`}
                                             >
                                                 {f === null ? 'All Picks' : f === 'win' ? 'Picked to Win' : 'Picked to Lose'}
