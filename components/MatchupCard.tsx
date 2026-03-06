@@ -551,17 +551,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     };
 
     // Viewport animation — trigger bar fill when card scrolls into view
-    const [isInView, setIsInView] = useState(false);
-    useEffect(() => {
-        const targets = [cardRef.current, desktopCardRef.current].filter(Boolean) as HTMLElement[];
-        if (targets.length === 0) return;
-        const observer = new IntersectionObserver(
-            ([entry]) => { if (entry.isIntersecting) { setIsInView(true); observer.disconnect(); } },
-            { threshold: 0.3 }
-        );
-        targets.forEach(t => observer.observe(t));
-        return () => observer.disconnect();
-    }, []);
+    // Always true — bar always reflects real data. CSS transition still animates on mount.
+    const isInView = true;
 
     const TeamColumn = ({
         team,
