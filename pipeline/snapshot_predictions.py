@@ -58,14 +58,20 @@ def snapshot():
                 'run': run_number,
                 'awayteam': row.get('away_team', ''),
                 'hometeam': row.get('home_team', ''),
+                
+                'away_starter': row.get('away_starter', ''),
                 'away_xG': row.get('away_xg', ''),
-                'home_xG': row.get('home_xg', ''),
                 'away_win%': row.get('away_win_pct', ''),
-                'home_win%': row.get('home_win_pct', ''),
                 'away_xGOdds': row.get('away_model_odds', ''),
-                'home_xGOdds': row.get('home_model_odds', ''),
                 'away_Odds': row.get('away_vegas_odds', ''),
+                'away_EV': row.get('away_ev', ''),
+                
+                'home_starter': row.get('home_starter', ''),
+                'home_xG': row.get('home_xg', ''),
+                'home_win%': row.get('home_win_pct', ''),
+                'home_xGOdds': row.get('home_model_odds', ''),
                 'home_Odds': row.get('home_vegas_odds', ''),
+                'home_EV': row.get('home_ev', ''),
             })
 
     if not rows_to_write:
@@ -73,32 +79,28 @@ def snapshot():
         return
 
     # Write/append to daily history file
-    fieldnames = ['date', 'gameid', 'timestamp', 'run',
-                  'awayteam', 'hometeam', 'away_xG', 'home_xG',
-                  'away_win%', 'home_win%', 'away_xGOdds', 'home_xGOdds',
-                  'away_Odds', 'home_Odds']
+    fieldnames = [
+        'date', 'gameid', 'timestamp', 'run', 'awayteam', 'hometeam',
+        'away_starter', 'away_xG', 'away_win%', 'away_xGOdds', 'away_Odds', 'away_EV',
+        'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV'
+    ]
 
-    file_exists = os.path.exists(history_file) and os.path.getsize(history_file) > 0
+    all_rows = []
+    if os.path.exists(history_file) and os.path.getsize(history_file) > 0:
+        with open(history_file, 'r') as f:
+            reader = csv.DictReader(f)
+            all_rows = list(reader)
 
-    with open(history_file, 'a', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        writer.writerows(rows_to_write)
-
-    # Re-read, sort by gameid → run (ascending), and rewrite
-    with open(history_file, 'r') as f:
-        reader = csv.DictReader(f)
-        all_rows = list(reader)
-
+    all_rows.extend(rows_to_write)
     all_rows.sort(key=lambda r: (r.get('gameid', ''), int(r.get('run', 0))))
 
     with open(history_file, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        # extrasaction='ignore' prevents errors if old rows had fields not in new fieldnames (unlikely here)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
         writer.writeheader()
         writer.writerows(all_rows)
 
-    print(f"[snapshot] Run #{run_number}: wrote {len(rows_to_write)} games to {history_file}")
+    print(f"[snapshot] Run #{run_number}: added {len(rows_to_write)} games to {history_file}")
 
 
 if __name__ == '__main__':
