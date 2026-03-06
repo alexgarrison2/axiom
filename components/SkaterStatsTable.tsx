@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface SkaterData {
+    id: string;       // player ID (JSON key), injected on load
     name: string;
     team: string;
     position: string;
@@ -85,7 +86,12 @@ export default function SkaterStatsTable() {
     useEffect(() => {
         fetch('/data/player_impact.json')
             .then(r => r.json())
-            .then((d: Record<string, SkaterData>) => { setData(d); setLoading(false); })
+            .then((d: Record<string, SkaterData>) => {
+                // Inject player ID so React can use a truly unique key
+                Object.entries(d).forEach(([id, p]) => { p.id = id; });
+                setData(d);
+                setLoading(false);
+            })
             .catch(() => setLoading(false));
     }, []);
 
@@ -229,7 +235,7 @@ export default function SkaterStatsTable() {
                             const imp = player.impact_score;
                             const rowBg = idx % 2 === 0 ? 'bg-white/[0.02]' : '';
                             return (
-                                <tr key={`${player.team}-${player.name}`} className={`${rowBg} border-b border-white/5 hover:bg-white/5 transition-colors`}>
+                                <tr key={player.id} className={`${rowBg} border-b border-white/5 hover:bg-white/5 transition-colors`}>
                                     {/* Rank */}
                                     <td className={`py-1.5 px-3 text-[9px] text-neutral-600 font-mono sticky left-0 z-10 ${rowBg || 'bg-[#050505]'}`}>
                                         {idx + 1}
