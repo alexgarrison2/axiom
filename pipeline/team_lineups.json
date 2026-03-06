@@ -1170,20 +1170,20 @@
         ],
         "f3": [
             {
-                "name": "Josh Samanski",
-                "number": null,
+                "name": "Vasily Podkolzin",
+                "number": 92,
                 "pos": "lw",
-                "id": 38438,
-                "ppUnit": null,
-                "movement": null
+                "id": 30606,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
-                "name": "Adam Henrique",
-                "number": 19,
+                "name": "Jason Dickinson",
+                "number": 16,
                 "pos": "c",
-                "id": 945,
+                "id": 2160,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Trent Frederic",
@@ -1196,20 +1196,20 @@
         ],
         "f4": [
             {
-                "name": "Vasily Podkolzin",
-                "number": 92,
+                "name": "Colton Dach",
+                "number": 34,
                 "pos": "lw",
-                "id": 30606,
-                "ppUnit": 2,
-                "movement": null
+                "id": 32903,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
-                "name": "Jason Dickinson",
-                "number": 16,
+                "name": "Adam Henrique",
+                "number": 19,
                 "pos": "c",
-                "id": 2160,
+                "id": 945,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Kasperi Kapanen",
@@ -1240,30 +1240,12 @@
         ],
         "d2": [
             {
-                "name": "Darnell Nurse",
-                "number": 25,
-                "pos": "ld",
-                "id": 2139,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Ty Emberson",
-                "number": 49,
-                "pos": "rd",
-                "id": 28812,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
                 "name": "Jake Walman",
                 "number": 96,
                 "pos": "ld",
                 "id": 2859,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Connor Murphy",
@@ -1271,7 +1253,25 @@
                 "pos": "rd",
                 "id": 1772,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Darnell Nurse",
+                "number": 25,
+                "pos": "ld",
+                "id": 2139,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Ty Emberson",
+                "number": 49,
+                "pos": "rd",
+                "id": 28812,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "ir": [
