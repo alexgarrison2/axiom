@@ -95,6 +95,8 @@ interface AggPlayer {
     other_team_dates: Map<string, string>; // date → tricode (games played for another team)
     bio: PlayerBio | null;
     contract: ContractInfo | null;
+    isAcquired: boolean;     // true if player was acquired mid-season (pi.team ≠ current team)
+    acquiredFrom: string;    // old team tricode (e.g. 'VGK')
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -518,10 +520,10 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCa
                 className="relative flex flex-row items-stretch overflow-hidden shrink-0"
                 style={{ background: '#0d0d0f', minHeight: 92 }}
             >
-                {/* Coloured top-edge line */}
+                {/* Coloured top-edge line — purple for acquired players, team colour otherwise */}
                 <div
                     className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-20"
-                    style={{ background: `linear-gradient(90deg, ${TEAM_COLORS[pi.team] ?? impC}, transparent 70%)` }}
+                    style={{ background: `linear-gradient(90deg, ${player.isAcquired ? '#a78bfa' : (TEAM_COLORS[pi.team] ?? impC)}, transparent 70%)` }}
                 />
 
                 {/* ── LEFT: Headshot column ── */}
@@ -661,6 +663,25 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCa
                     document.body
                 )}
             </div>
+
+            {/* ══════════════════════════════════════════════
+                ACQUIRED BADGE — shown when player was traded to this team
+                and MoneyPuck hasn't updated their team yet.
+                Purple matches the availability strip's "other team" colour.
+            ══════════════════════════════════════════════ */}
+            {player.isAcquired && (
+                <div className="flex items-center gap-2 px-3 pt-1.5 pb-0">
+                    <span
+                        className="inline-flex items-center gap-1 rounded-md px-2 py-[3px] text-[10px] font-black uppercase tracking-wider leading-none"
+                        style={{ background: 'rgba(167,139,250,0.18)', color: '#a78bfa' }}
+                    >
+                        ⇄ {player.acquiredFrom}
+                    </span>
+                    <span className="text-[9px] font-medium text-zinc-600 uppercase tracking-wider">
+                        Acquired · prior team stats
+                    </span>
+                </div>
+            )}
 
             {/* ══════════════════════════════════════════════
                 CONTRACT INFO (cap hit + UFA/RFA badge)
@@ -904,6 +925,7 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
         // bioData may still be loading — fall back to null gracefully
 
         // First pass: compute team total EV iXG for the iXG% metric
+        // Only include players whose piData says they're on this team (current roster context)
         const teamTotalIxg = Object.entries(piData)
             .filter(([, pi]) => pi.team === teamAbbr && pi.position !== 'G' && pi.games_played >= 5)
             .reduce((sum, [, pi]) => {
@@ -911,9 +933,22 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                 return sum + playerIxg;
             }, 0);
 
+        // Find players who have boxscore rows FOR this team but piData still shows old team.
+        // These are recently acquired/traded players that MoneyPuck hasn't updated yet.
+        const acquiredIds = new Set<string>();
+        for (const [id, bs] of boxMap) {
+            if (bs.gp > 0) {
+                const pi = piData[id];
+                if (pi && pi.team !== teamAbbr && pi.position !== 'G' && pi.games_played >= 5) {
+                    acquiredIds.add(id);
+                }
+            }
+        }
+
         const result: AggPlayer[] = [];
         for (const [id, pi] of Object.entries(piData)) {
-            if (pi.team !== teamAbbr) continue;
+            const isAcquired = acquiredIds.has(id);
+            if (pi.team !== teamAbbr && !isAcquired) continue;
             if (pi.position === 'G') continue;
             if (pi.games_played < 5) continue;
 
@@ -952,6 +987,8 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                 other_team_dates: bs?.other_team_dates ?? new Map(),
                 bio: bioData?.[id] ?? null,
                 contract: contractData?.[id] ?? null,
+                isAcquired,
+                acquiredFrom: isAcquired ? pi.team : '',
             });
         }
         return result;
