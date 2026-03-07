@@ -232,7 +232,6 @@ def refresh_pipeline():
                 print(f"Synced {gamestats_file} to ../data/gamestats.csv")
                 
                 # Remove the incorrectly named file if it exists (cleanup)
-                import os
                 wrong_file = f'../public/data/{gamestats_file}'
                 if os.path.exists(wrong_file):
                     os.remove(wrong_file)
