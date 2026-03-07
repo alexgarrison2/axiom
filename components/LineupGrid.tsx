@@ -263,6 +263,27 @@ function normName(s: string): string {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 }
 
+// ── Fuzzy-tolerant map lookup ─────────────────────────────────────────────────
+// Tries (1) exact full-name key, (2) exact last-name key, (3) prefix match on
+// last name (≥ 7 chars, ≤ 2 length difference) to handle 1-2 char misspellings
+// in external data sources such as MoneyPuck "Lafrenire" vs "Lafreniere".
+function lookupInMap(m: Map<string, number>, name: string): number | undefined {
+    const full = normName(name);
+    if (m.has(full)) return m.get(full);
+    const last = full.split(' ').at(-1) ?? full;
+    if (m.has(last)) return m.get(last);
+    // Fuzzy: prefix match on last-name keys only (no spaces) when ≥ 7 chars
+    if (last.length >= 7) {
+        const prefix = last.slice(0, 7);
+        for (const [key, val] of m) {
+            if (!key.includes(' ') && key.startsWith(prefix) && Math.abs(key.length - last.length) <= 2) {
+                return val;
+            }
+        }
+    }
+    return undefined;
+}
+
 // ── Main grid ─────────────────────────────────────────────────────────────────
 export default function LineupGrid({
     lineup, triCode, goalieStarter, gsaxPerGame, gsaxPct,
@@ -306,10 +327,7 @@ export default function LineupGrid({
         if (!gsMap.size) return {};
 
         const dist: Record<string, number[]> = { f1: [], f2: [], f3: [], f4: [], d1: [], d2: [], d3: [] };
-        const lookupGsPg = (name: string): number | undefined => {
-            const full = normName(name);
-            return gsMap.get(full) ?? gsMap.get(full.split(' ').at(-1) ?? full);
-        };
+        const lookupGsPg = (name: string) => lookupInMap(gsMap, name);
 
         if (allLineups) {
             // ── Real lineup distribution ────────────────────────────────────
@@ -372,12 +390,7 @@ export default function LineupGrid({
     const lineImpacts = useMemo((): Record<string, { total: number; pct: number; rank: number; outOf: number } | null> => {
         if (!lineup || !gsMap.size || !Object.keys(lineDistributions).length) return {};
         const result: Record<string, { total: number; pct: number; rank: number; outOf: number } | null> = {};
-        const lookupGsPg = (name: string): number | undefined => {
-            const full = normName(name);
-            if (gsMap.has(full)) return gsMap.get(full);
-            const last = full.split(' ').at(-1) ?? full;
-            return gsMap.get(last);
-        };
+        const lookupGsPg = (name: string) => lookupInMap(gsMap, name);
 
         // Pre-compute this team's score from allLineups (same source as distribution)
         // so we can replace it in the distribution with our lineup-prop-derived score.
@@ -436,10 +449,7 @@ export default function LineupGrid({
     const lineupGradeData = useMemo(() => {
         if (!impactScoreMap.size || !lineup) return null;
 
-        const lookupScore = (name: string): number | undefined => {
-            const full = normName(name);
-            return impactScoreMap.get(full) ?? impactScoreMap.get(full.split(' ').at(-1) ?? full);
-        };
+        const lookupScore = (name: string) => lookupInMap(impactScoreMap, name);
 
         // Sum impact_score for this lineup's 18 skaters (f1-f4 + d1-d3)
         let thisGrade = 0;
