@@ -1,4 +1,109 @@
 {
+    "NYR": [
+        {
+            "player": "Brendan Brisson",
+            "news": "Brisson has been recalled from Hartford (AHL). ",
+            "category": "Call Up",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T18:01:11.783Z"
+        }
+    ],
+    "VGK": [
+        {
+            "player": "Adin Hill",
+            "news": "Hill will start vs. Edmonton on Sunday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T18:00:30.056Z"
+        },
+        {
+            "player": "Brett Howden",
+            "news": "Howden (lower body) is expected to draw back into the lineup on Sunday. ",
+            "category": "Injury",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:56:08.993Z"
+        },
+        {
+            "player": "Reilly Smith",
+            "news": "Smith is expected to be a healthy scratch on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:55:45.034Z"
+        }
+    ],
+    "EDM": [
+        {
+            "player": "Josh Samanski",
+            "news": "Samansaki has been recalled from Bakersfield (AHL) on an emergency basis. ",
+            "category": "Call Up",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:59:27.383Z"
+        }
+    ],
+    "CBJ": [
+        {
+            "player": "Dante Fabbro",
+            "news": "Fabbro (lower body) will be a game-time decision on Monday. ",
+            "category": "Injury",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:57:53.741Z"
+        }
+    ],
+    "COL": [
+        {
+            "player": "Nazem Kadri",
+            "news": "Kadri will make his Colorado season debut on Sunday vs. Minnesota. ",
+            "category": "Line Change",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:48:18.201Z"
+        },
+        {
+            "player": "Gabriel Landeskog",
+            "news": "Landeskog (lower body) is out week-to-week. ",
+            "category": "Injury",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:36:25.962Z"
+        },
+        {
+            "player": "Scott Wedgewood",
+            "news": "Wedgewood will start vs. Minnesota on Sunday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:32:08.095Z"
+        }
+    ],
+    "MIN": [
+        {
+            "player": "Robby Fabbri",
+            "news": "Fabbri will be a healthy scratch on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:35:24.708Z"
+        },
+        {
+            "player": "Nick Foligno",
+            "news": "Foligno will make his Minnesota debut on Sunday vs. Colorado. ",
+            "category": "Line Change",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:35:04.828Z"
+        },
+        {
+            "player": "Jesper Wallstedt",
+            "news": "Wallstedt will start vs. Colorado on Sunday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:31:42.360Z"
+        }
+    ],
+    "PIT": [
+        {
+            "player": "Justin Brazeau",
+            "news": "Brazeu (upper body) is day-to-day and will not play on Sunday. ",
+            "category": "Injury",
+            "date": "2026-03-08",
+            "timestamp": "2026-03-08T17:17:50.018Z"
+        }
+    ],
     "SJS": [
         {
             "player": "Nolan Allan",
@@ -13,33 +118,19 @@
             "category": "Call Up",
             "date": "2026-03-08",
             "timestamp": "2026-03-08T17:10:09.814Z"
-        },
-        {
-            "player": "Nolan Allan",
-            "news": "The Sharks recalled Nolan Allan from San Jose (AHL). \r\n",
-            "category": "Call Up",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T01:55:46.933Z"
-        },
-        {
-            "player": "Philipp Kurashev",
-            "news": "Kurashev will be a healthy scratch on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T01:51:49.525Z"
         }
     ],
     "PHI": [
         {
             "player": "Nick Seeler",
-            "news": "Seeler (lower body) was a full participant at practice on Sunday. ",
+            "news": "Seeler (lower body) will be a game-time decision on Monday. ",
             "category": "Injury",
             "date": "2026-03-08",
             "timestamp": "2026-03-08T16:41:55.817Z"
         },
         {
             "player": "Travis Konecny",
-            "news": "Konecny (lower body) was a full participant at practice on Sunday. ",
+            "news": "Konecny (lower body) will be a game-time decision on Monday. ",
             "category": "Injury",
             "date": "2026-03-08",
             "timestamp": "2026-03-08T16:41:02.284Z"
@@ -48,7 +139,7 @@
     "DAL": [
         {
             "player": "Arttu Hyry",
-            "news": "Dallas has recalled Hyry from Texas (AHL). ",
+            "news": "Hyry has been recalled from Texas (AHL). ",
             "category": "Call Up",
             "date": "2026-03-08",
             "timestamp": "2026-03-08T14:36:15.698Z"
@@ -70,68 +161,6 @@
             "category": "Line Change",
             "date": "2026-03-08",
             "timestamp": "2026-03-08T02:57:36.761Z"
-        },
-        {
-            "player": "Joshua Mahura",
-            "news": "Mahura will draw into the Kraken lineup on Saturday. \r\n",
-            "category": "Line Change",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T02:57:08.160Z"
-        },
-        {
-            "player": "Adam Larsson",
-            "news": "Larsson (illness) will play on Saturday. \r\n",
-            "category": "Injury",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T02:56:47.126Z"
-        },
-        {
-            "player": "Ryan Lindgren",
-            "news": "Lindgren (illness) will not play on Saturday. \r\n",
-            "category": "Injury",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T02:44:06.804Z"
-        },
-        {
-            "player": "Frederick Gaudreau",
-            "news": "Gaudreau (illness) will not play on Saturday. ",
-            "category": "Injury",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T02:43:50.368Z"
-        }
-    ],
-    "CAR": [
-        {
-            "player": "Mike Reilly",
-            "news": "Reilly will draw into the Hurricanes lineup on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T02:49:35.586Z"
-        },
-        {
-            "player": "Shayne Gostisbehere",
-            "news": "Gostisbehere (lower-body) will not play on Saturday. ",
-            "category": "Injury",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T02:49:19.635Z"
-        }
-    ],
-    "FLA": [
-        {
-            "player": "Luke Kunin",
-            "news": "The Panthers recalled Luke Kunin from Charlotte (AHL). \r\n",
-            "category": "Line Change",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T01:56:33.572Z"
-        }
-    ],
-    "OTT": [
-        {
-            "player": "Warren Foegele",
-            "news": "Foegele will make his Senators debut on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-03-08",
-            "timestamp": "2026-03-08T01:54:08.850Z"
         }
     ]
 }
