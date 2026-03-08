@@ -413,7 +413,7 @@
                 "pos": "rw",
                 "id": 34677,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -439,7 +439,7 @@
                 "pos": "rw",
                 "id": 29767,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -493,7 +493,7 @@
                 "pos": "ld",
                 "id": 26606,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Kris Letang",
@@ -511,7 +511,7 @@
                 "pos": "ld",
                 "id": 2773,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ilya Solovyov",
@@ -519,7 +519,7 @@
                 "pos": "rd",
                 "id": 31769,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -641,7 +641,7 @@
                 "pos": "lw",
                 "id": 4693,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Fraser Minten",
@@ -954,12 +954,12 @@
                 "movement": null
             },
             {
-                "name": "Nikita Kucherov",
-                "number": 86,
+                "name": "Pontus Holmberg",
+                "number": 29,
                 "pos": "rw",
-                "id": 2031,
-                "ppUnit": 2,
-                "movement": null
+                "id": 29640,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -980,12 +980,12 @@
                 "movement": null
             },
             {
-                "name": "Zemgus Girgensons",
-                "number": 28,
+                "name": "Nikita Kucherov",
+                "number": 86,
                 "pos": "rw",
-                "id": 1953,
-                "ppUnit": null,
-                "movement": null
+                "id": 2031,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f3": [
@@ -1006,12 +1006,12 @@
                 "movement": null
             },
             {
-                "name": "Pontus Holmberg",
-                "number": 29,
+                "name": "Zemgus Girgensons",
+                "number": 28,
                 "pos": "rw",
-                "id": 29640,
+                "id": 1953,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -1428,12 +1428,12 @@
                 "movement": null
             },
             {
-                "name": "Sam Lafferty",
-                "number": 24,
+                "name": "Nick Lardis",
+                "number": 76,
                 "pos": "rw",
-                "id": 4656,
+                "id": 35088,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1487,16 +1487,6 @@
                 "pos": "rd",
                 "id": 38138,
                 "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "d4": [
-            {
-                "name": "Ethan Del Mastro",
-                "number": 38,
-                "pos": "ld",
-                "id": 30841,
-                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -1613,7 +1603,7 @@
                 "pos": "rw",
                 "id": 580,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
