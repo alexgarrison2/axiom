@@ -2,11 +2,11 @@
     "COL": {
         "f1": [
             {
-                "name": "Valeri Nichushkin",
-                "number": 13,
+                "name": "Martin Necas",
+                "number": 88,
                 "pos": "lw",
-                "id": 2142,
-                "ppUnit": 2,
+                "id": 2804,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -18,12 +18,12 @@
                 "movement": null
             },
             {
-                "name": "Martin Necas",
-                "number": 88,
+                "name": "Nazem Kadri",
+                "number": 91,
                 "pos": "rw",
-                "id": 2804,
+                "id": 1425,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -44,12 +44,12 @@
                 "movement": null
             },
             {
-                "name": "Nazem Kadri",
-                "number": 91,
+                "name": "Valeri Nichushkin",
+                "number": 13,
                 "pos": "rw",
-                "id": 1425,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2142,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f3": [
@@ -396,7 +396,7 @@
                 "number": 39,
                 "pos": "lw",
                 "id": 2151,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -404,7 +404,7 @@
                 "number": 18,
                 "pos": "c",
                 "id": 26595,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -422,7 +422,7 @@
                 "number": null,
                 "pos": "lw",
                 "id": 30683,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -438,7 +438,7 @@
                 "number": null,
                 "pos": "rw",
                 "id": 29767,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -640,7 +640,7 @@
                 "number": 81,
                 "pos": "lw",
                 "id": 4693,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -710,7 +710,7 @@
                 "number": 27,
                 "pos": "ld",
                 "id": 1947,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -800,7 +800,7 @@
                 "number": 86,
                 "pos": "lw",
                 "id": 36383,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -878,7 +878,7 @@
                 "number": 25,
                 "pos": "rd",
                 "id": 30051,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -954,12 +954,12 @@
                 "movement": null
             },
             {
-                "name": "Pontus Holmberg",
-                "number": 29,
+                "name": "Oliver Bjorkstrand",
+                "number": 22,
                 "pos": "rw",
-                "id": 29640,
-                "ppUnit": null,
-                "movement": null
+                "id": 2603,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -984,18 +984,18 @@
                 "number": 86,
                 "pos": "rw",
                 "id": 2031,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
         "f3": [
             {
-                "name": "Oliver Bjorkstrand",
-                "number": 22,
+                "name": "Pontus Holmberg",
+                "number": 29,
                 "pos": "lw",
-                "id": 2603,
-                "ppUnit": 1,
-                "movement": null
+                "id": 29640,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Yanni Gourde",
@@ -1870,6 +1870,14 @@
                 "id": 2522,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "John Gibson",
+                "number": 36,
+                "pos": "ir3",
+                "id": 1870,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
@@ -1915,7 +1923,7 @@
                 "pos": "c",
                 "id": 1934,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Beckett Sennecke",
@@ -2093,7 +2101,7 @@
                 "pos": "lw",
                 "id": 2136,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Pius Suter",
@@ -2101,7 +2109,7 @@
                 "pos": "c",
                 "id": 32940,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Dmitry Buchelnikov",
@@ -2109,7 +2117,7 @@
                 "pos": "rw",
                 "id": 36402,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f3": [
@@ -2119,7 +2127,7 @@
                 "pos": "lw",
                 "id": 29498,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Dalibor Dvorsky",
@@ -2135,7 +2143,7 @@
                 "pos": "rw",
                 "id": 3867,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -2179,7 +2187,7 @@
                 "pos": "rd",
                 "id": 30737,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -2197,7 +2205,7 @@
                 "pos": "rd",
                 "id": 30862,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -2215,7 +2223,7 @@
                 "pos": "rd",
                 "id": 2857,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -2512,12 +2520,12 @@
                 "movement": null
             },
             {
-                "name": "Adam Henrique",
-                "number": 19,
+                "name": "Josh Samanski",
+                "number": null,
                 "pos": "c",
-                "id": 945,
+                "id": 38438,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Trent Frederic",
