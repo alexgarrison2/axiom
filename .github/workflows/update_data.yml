@@ -87,7 +87,7 @@ jobs:
 
             python predict_games.py
             python snapshot_predictions.py
-            python season_simulator.py
+            # season_simulator.py runs in Full Refresh only — playoff odds don't need hourly precision
           fi
 
       - name: Commit and Push Changes
