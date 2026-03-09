@@ -151,8 +151,54 @@ interface TeamOdds {
     logoUrl?: string;        // carried for tooltip rendering
 }
 
+interface TeamRating {
+    xgf_rating: number;
+    xga_rating: number;
+    xgf_rolling: number;
+    xga_rolling: number;
+    xgf_5v5_rating: number;
+    xga_5v5_rating: number;
+    pp_rating: number;
+    pk_rating: number;
+    penalties_drawn_per_60: number;
+    penalties_taken_per_60: number;
+    games_played: number;
+}
+
+interface LineupPlayer {
+    id: string;
+    name: string;
+    number: string;
+    pos: string;
+    ppUnit: number;
+    movement?: string;
+}
+
+interface TeamLineup {
+    f1: LineupPlayer[];
+    f2: LineupPlayer[];
+    f3: LineupPlayer[];
+    f4: LineupPlayer[];
+    d1: LineupPlayer[];
+    d2: LineupPlayer[];
+    d3: LineupPlayer[];
+}
+
+interface PlayerImpactData {
+    name: string;
+    team: string;
+    position: string;
+    ev_net_per60: number;
+}
+
+interface GoalieRating {
+    gsax_total: number;
+    gsax_per_game: number;
+    games_played: number;
+}
+
 type SortKey = keyof TeamStat;
-type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter';
+type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter' | 'TeamRatings';
 
 const CONFERENCE_MAPPING: Record<string, string> = {
     'Atlantic': 'Eastern', 'Metro': 'Eastern',
@@ -267,6 +313,43 @@ const formatStarterName = (name?: string) => {
     // Handle names like "Casey DeSmith" -> "C. DeSmith"
     return `${parts[0][0]}. ${parts.slice(1).join(' ')}`;
 };
+
+// ── Team Ratings View Mode ─────────────────────────────────────────────────
+// Column definitions for the "Team Ratings" view (shown after the 8 Record cols)
+const RATINGS_COLS = [
+    // xG Ratings group
+    { k: 'xgf_rating',    l: 'xGF Rtg',  desc: 'xG For Rating (EWMA-blended season + recent)',        inv: false, groupEnd: false },
+    { k: 'xga_rating',    l: 'xGA Rtg',  desc: 'xG Against Rating (EWMA-blended season + recent)',     inv: true,  groupEnd: false },
+    { k: 'xgf_rolling',   l: 'xGF Roll', desc: 'xG For Rolling Average (7-game half-life)',             inv: false, groupEnd: false },
+    { k: 'xga_rolling',   l: 'xGA Roll', desc: 'xG Against Rolling Average (7-game half-life)',         inv: true,  groupEnd: false },
+    { k: 'xgf_5v5',       l: 'xGF 5v5',  desc: 'xG For Rating at 5-on-5',                              inv: false, groupEnd: false },
+    { k: 'xga_5v5',       l: 'xGA 5v5',  desc: 'xG Against Rating at 5-on-5',                          inv: true,  groupEnd: true  },
+    // Lineup Impact group
+    { k: 'lineup_rating', l: 'Lineup',   desc: 'Total Lineup Impact — all lines (ev_net/60 sum)',       inv: false, groupEnd: false },
+    { k: 'f1_impact',     l: 'F1',       desc: 'F1 Line Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
+    { k: 'f2_impact',     l: 'F2',       desc: 'F2 Line Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
+    { k: 'f3_impact',     l: 'F3',       desc: 'F3 Line Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
+    { k: 'f4_impact',     l: 'F4',       desc: 'F4 Line Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
+    { k: 'd1_impact',     l: 'D1',       desc: 'D1 Pair Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
+    { k: 'd2_impact',     l: 'D2',       desc: 'D2 Pair Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
+    { k: 'd3_impact',     l: 'D3',       desc: 'D3 Pair Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
+    { k: 'f_impact',      l: 'F Tot',    desc: 'Total Forward Impact (F1+F2+F3+F4)',                    inv: false, groupEnd: false },
+    { k: 'ftop6_impact',  l: 'FTop6',    desc: 'Top 6 Forward Impact (F1+F2)',                          inv: false, groupEnd: false },
+    { k: 'fmid6_impact',  l: 'FMid6',    desc: 'Mid 6 Forward Impact (F2+F3)',                          inv: false, groupEnd: false },
+    { k: 'fbot6_impact',  l: 'FBot6',    desc: 'Bottom 6 Forward Impact (F3+F4)',                       inv: false, groupEnd: false },
+    { k: 'd_impact',      l: 'D Tot',    desc: 'Total Defense Impact (D1+D2+D3)',                       inv: false, groupEnd: false },
+    { k: 'dtop4_impact',  l: 'DTop4',    desc: 'Top 4 Defense Impact (D1+D2)',                          inv: false, groupEnd: true  },
+    // Goalie group
+    { k: 'goalie_impact', l: 'G Impact', desc: 'Goalie Impact (GSAx/G, sum of top-2 goalies by GP)',   inv: false, groupEnd: true  },
+] as const;
+
+const RATINGS_STAT_GROUPS = [
+    { name: 'Record',         columns: ['ranking','gp','wins','losses','otl','points','pt_pct','rw'] },
+    { name: 'xG Ratings',     columns: ['xgf_rating','xga_rating','xgf_rolling','xga_rolling','xgf_5v5','xga_5v5'] },
+    { name: 'Lineup Impact',  columns: ['lineup_rating','f1_impact','f2_impact','f3_impact','f4_impact','d1_impact','d2_impact','d3_impact','f_impact','ftop6_impact','fmid6_impact','fbot6_impact','d_impact','dtop4_impact'] },
+    { name: 'Goalie',         columns: ['goalie_impact'] },
+];
+// ──────────────────────────────────────────────────────────────────────────────
 
 const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamStat => {
     if (teamGames.length === 0) {
@@ -434,6 +517,12 @@ const TeamsTable = () => {
     const [todayMatchups, setTodayMatchups] = useState<Matchup[]>([]);
     const [tomorrowMatchups, setTomorrowMatchups] = useState<Matchup[]>([]);
 
+    // Team Ratings view mode data
+    const [teamRatingsData, setTeamRatingsData] = useState<Record<string, TeamRating>>({});
+    const [teamLineups, setTeamLineups] = useState<Record<string, TeamLineup>>({});
+    const [playerImpact, setPlayerImpact] = useState<Record<string, PlayerImpactData>>({});
+    const [goalieRatings, setGoalieRatings] = useState<Record<string, GoalieRating>>({});
+
     // Fixed-position odds tooltip (floats over the table, doesn't affect layout)
     const [oddsTooltip, setOddsTooltip] = useState<{ x: number; y: number; data: TeamOdds } | null>(null);
 
@@ -531,16 +620,114 @@ const TeamsTable = () => {
         { k: 'enga', l: 'EN GA', inv: true, desc: 'Empty Net Goals Against' }
     ], []);
 
+    // Pre-compute all Team Ratings view values for every team
+    const teamRatingsComputed = useMemo(() => {
+        if (Object.keys(teams).length === 0) return {} as Record<string, {
+            ratings: TeamRating | null;
+            lineImpacts: { f1: number; f2: number; f3: number; f4: number; d1: number; d2: number; d3: number };
+            goalieImpact: number;
+        }>;
+
+        // Build goalie → game-count lookup from rawData (by team common name)
+        const goalieGamesByTeam: Record<string, Record<string, number>> = {};
+        rawData.filter(g => g.team && g.starting_goalie).forEach(g => {
+            if (!goalieGamesByTeam[g.team]) goalieGamesByTeam[g.team] = {};
+            const name = cleanName(g.starting_goalie);
+            goalieGamesByTeam[g.team][name] = (goalieGamesByTeam[g.team][name] || 0) + 1;
+        });
+
+        const sumLineImpact = (players: LineupPlayer[]) =>
+            (players ?? []).reduce((s, p) => s + (playerImpact[String(p.id)]?.ev_net_per60 ?? 0), 0);
+
+        const result: Record<string, {
+            ratings: TeamRating | null;
+            lineImpacts: { f1: number; f2: number; f3: number; f4: number; d1: number; d2: number; d3: number };
+            goalieImpact: number;
+        }> = {};
+
+        Object.entries(teams).forEach(([commonName, teamInfo]) => {
+            const ratings = teamRatingsData[commonName] ?? null;
+            const lineup = teamLineups[teamInfo.tricode];
+
+            const lineImpacts = {
+                f1: sumLineImpact(lineup?.f1 ?? []),
+                f2: sumLineImpact(lineup?.f2 ?? []),
+                f3: sumLineImpact(lineup?.f3 ?? []),
+                f4: sumLineImpact(lineup?.f4 ?? []),
+                d1: sumLineImpact(lineup?.d1 ?? []),
+                d2: sumLineImpact(lineup?.d2 ?? []),
+                d3: sumLineImpact(lineup?.d3 ?? []),
+            };
+
+            // Top-2 goalies for this team by games started
+            const goalieGames = goalieGamesByTeam[commonName] ?? {};
+            const top2 = Object.entries(goalieGames)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 2)
+                .map(([name]) => name);
+
+            const goalieImpact = top2.reduce((sum, name) => {
+                let gr: GoalieRating | undefined = goalieRatings[name];
+                if (!gr) {
+                    const norm = normalizeGoalieName(name);
+                    const found = Object.entries(goalieRatings).find(([k]) => normalizeGoalieName(k) === norm);
+                    gr = found?.[1];
+                }
+                return sum + (gr?.gsax_per_game ?? 0);
+            }, 0);
+
+            result[commonName] = { ratings, lineImpacts, goalieImpact };
+        });
+        return result;
+    }, [teams, teamRatingsData, teamLineups, playerImpact, goalieRatings, rawData]);
+
+    // Min/max ranges for gradient coloring of rating columns
+    const ratingsRanges = useMemo(() => {
+        const vals = Object.values(teamRatingsComputed);
+        if (vals.length === 0) return null;
+        const rng = (fn: (v: typeof vals[0]) => number) => {
+            const nums = vals.map(fn).filter(n => isFinite(n));
+            if (!nums.length) return { min: 0, max: 0 };
+            return { min: Math.min(...nums), max: Math.max(...nums) };
+        };
+        return {
+            xgf_rating:    rng(v => v.ratings?.xgf_rating    ?? NaN),
+            xga_rating:    rng(v => v.ratings?.xga_rating    ?? NaN),
+            xgf_rolling:   rng(v => v.ratings?.xgf_rolling   ?? NaN),
+            xga_rolling:   rng(v => v.ratings?.xga_rolling   ?? NaN),
+            xgf_5v5:       rng(v => v.ratings?.xgf_5v5_rating ?? NaN),
+            xga_5v5:       rng(v => v.ratings?.xga_5v5_rating ?? NaN),
+            lineup_rating: rng(v => { const li = v.lineImpacts; return li.f1+li.f2+li.f3+li.f4+li.d1+li.d2+li.d3; }),
+            f1_impact:     rng(v => v.lineImpacts.f1),
+            f2_impact:     rng(v => v.lineImpacts.f2),
+            f3_impact:     rng(v => v.lineImpacts.f3),
+            f4_impact:     rng(v => v.lineImpacts.f4),
+            d1_impact:     rng(v => v.lineImpacts.d1),
+            d2_impact:     rng(v => v.lineImpacts.d2),
+            d3_impact:     rng(v => v.lineImpacts.d3),
+            f_impact:      rng(v => { const li = v.lineImpacts; return li.f1+li.f2+li.f3+li.f4; }),
+            ftop6_impact:  rng(v => v.lineImpacts.f1 + v.lineImpacts.f2),
+            fmid6_impact:  rng(v => v.lineImpacts.f2 + v.lineImpacts.f3),
+            fbot6_impact:  rng(v => v.lineImpacts.f3 + v.lineImpacts.f4),
+            d_impact:      rng(v => { const li = v.lineImpacts; return li.d1+li.d2+li.d3; }),
+            dtop4_impact:  rng(v => v.lineImpacts.d1 + v.lineImpacts.d2),
+            goalie_impact: rng(v => v.goalieImpact),
+        };
+    }, [teamRatingsComputed]);
 
 
     useEffect(() => {
         const initLoad = async () => {
             try {
                 const t = new Date().getTime();
-                const [statsRes, teamsRes, predsRes] = await Promise.all([
+                const [statsRes, teamsRes, predsRes, ratingsRes, lineupsRes, impactRes, goalieRes] = await Promise.all([
                     fetch(`/data/gamestats.csv?t=${t}`),
                     fetch(`/data/nhl_teams.csv?t=${t}`),
-                    fetch(`/data/predictions_detailed.csv?t=${t}`)
+                    fetch(`/data/predictions_detailed.csv?t=${t}`),
+                    fetch(`/data/team_ratings.json?t=${t}`),
+                    fetch(`/data/team_lineups.json?t=${t}`),
+                    fetch(`/data/player_impact.json?t=${t}`),
+                    fetch(`/data/goalie_ratings.json?t=${t}`)
                 ]);
 
                 const statsText = await statsRes.text();
@@ -603,6 +790,16 @@ const TeamsTable = () => {
                 }
 
                 setRawData(parsedStats);
+
+                // Parse Team Ratings JSON files (for Team Ratings view mode)
+                try {
+                    if (ratingsRes.ok) setTeamRatingsData(await ratingsRes.json());
+                    if (lineupsRes.ok) setTeamLineups(await lineupsRes.json());
+                    if (impactRes.ok) setPlayerImpact(await impactRes.json());
+                    if (goalieRes.ok) setGoalieRatings(await goalieRes.json());
+                } catch (e) {
+                    console.error('Failed to load team rating JSON files', e);
+                }
 
                 // Parse Predictions (Today's Games) - Only if file exists/loads
                 if (predsRes.ok) {
@@ -736,13 +933,13 @@ const TeamsTable = () => {
         });
         setLeagueStats(leagueBaseline);
 
-        if (viewMode === 'All') {
-            // Standard View - matches leagueBaseline 
+        if (viewMode === 'All' || viewMode === 'TeamRatings') {
+            // Standard View - matches leagueBaseline
             // (duplicate work technically but keeps logic clean if filters for baseline diverge later)
 
-            // Apply Division Filter
+            // Apply Division Filter (only for All mode, not TeamRatings)
             let filteredBase = leagueBaseline;
-            if (selectedDivisions.length > 0) {
+            if (viewMode === 'All' && selectedDivisions.length > 0) {
                 filteredBase = leagueBaseline.filter(s => {
                     const teamInfo = teams[s.team];
                     // Only include if team is in one of the selected divisions
@@ -853,7 +1050,7 @@ const TeamsTable = () => {
 
     const handleSort = (key: SortKey) => {
         // Disable sorting in Matchup Filter modes to preserve pairing
-        if (viewMode !== 'All') return;
+        if (viewMode !== 'All' && viewMode !== 'TeamRatings') return;
 
         if (sortKey === key) {
             setSortDesc(!sortDesc);
@@ -865,8 +1062,8 @@ const TeamsTable = () => {
     };
 
     const sortedStats = useMemo(() => {
-        // If in Playing Today modes, PRESERVE ORDER created in useEffect
-        if (viewMode !== 'All') return stats;
+        // If in Playing Today/Tomorrow modes, PRESERVE ORDER created in useEffect
+        if (viewMode !== 'All' && viewMode !== 'TeamRatings') return stats;
 
         const sorted = [...stats];
         sorted.sort((a, b) => {
@@ -1095,7 +1292,7 @@ const TeamsTable = () => {
             }
         }
 
-        const isActiveSort = key === sortKey && viewMode === 'All';
+        const isActiveSort = key === sortKey && (viewMode === 'All' || viewMode === 'TeamRatings');
 
         return (
             <td
@@ -1104,6 +1301,58 @@ const TeamsTable = () => {
                 style={{ color }}
             >
                 {value}
+            </td>
+        );
+    };
+
+    // Renders a single cell in the Team Ratings view (rating/lineup/goalie columns)
+    const renderRatingCell = (teamName: string, colKey: string, isInverse: boolean, isGroupEnd: boolean, isHidden: boolean = false) => {
+        const computed = teamRatingsComputed[teamName];
+        const visClass = isHidden ? 'hidden md:table-cell' : 'table-cell';
+        const cellClass = `${visClass} px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center${isGroupEnd ? ' md:border-r md:border-gray-700/50' : ''}`;
+
+        if (!computed) {
+            return <td key={colKey} className={cellClass} style={{ color: '#4b5563' }}>—</td>;
+        }
+
+        const { ratings, lineImpacts: li, goalieImpact } = computed;
+
+        let value: number;
+        switch (colKey) {
+            case 'xgf_rating':    value = ratings?.xgf_rating     ?? NaN; break;
+            case 'xga_rating':    value = ratings?.xga_rating     ?? NaN; break;
+            case 'xgf_rolling':   value = ratings?.xgf_rolling    ?? NaN; break;
+            case 'xga_rolling':   value = ratings?.xga_rolling    ?? NaN; break;
+            case 'xgf_5v5':       value = ratings?.xgf_5v5_rating ?? NaN; break;
+            case 'xga_5v5':       value = ratings?.xga_5v5_rating ?? NaN; break;
+            case 'lineup_rating': value = li.f1+li.f2+li.f3+li.f4+li.d1+li.d2+li.d3; break;
+            case 'f1_impact':     value = li.f1;  break;
+            case 'f2_impact':     value = li.f2;  break;
+            case 'f3_impact':     value = li.f3;  break;
+            case 'f4_impact':     value = li.f4;  break;
+            case 'd1_impact':     value = li.d1;  break;
+            case 'd2_impact':     value = li.d2;  break;
+            case 'd3_impact':     value = li.d3;  break;
+            case 'f_impact':      value = li.f1+li.f2+li.f3+li.f4; break;
+            case 'ftop6_impact':  value = li.f1+li.f2; break;
+            case 'fmid6_impact':  value = li.f2+li.f3; break;
+            case 'fbot6_impact':  value = li.f3+li.f4; break;
+            case 'd_impact':      value = li.d1+li.d2+li.d3; break;
+            case 'dtop4_impact':  value = li.d1+li.d2; break;
+            case 'goalie_impact': value = goalieImpact; break;
+            default:              value = NaN;
+        }
+
+        if (!isFinite(value)) {
+            return <td key={colKey} className={cellClass} style={{ color: '#4b5563' }}>—</td>;
+        }
+
+        const rng = ratingsRanges?.[colKey as keyof typeof ratingsRanges];
+        const color = rng ? getGradientColor(value, rng.min, rng.max, isInverse) : '#DADADA';
+
+        return (
+            <td key={colKey} className={cellClass} style={{ color }}>
+                {value.toFixed(2)}
             </td>
         );
     };
@@ -1174,8 +1423,8 @@ const TeamsTable = () => {
                 <div className="flex flex-col gap-2">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Mode</label>
                     <ButtonGroup
-                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter', 'PlayingTodayLocationStarter', 'PlayingTomorrow', 'PlayingTomorrowLocation', 'PlayingTomorrowStarter', 'PlayingTomorrowLocationStarter']}
-                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter', 'Playing Today w/ Loc & Starter', 'Playing Tomorrow', 'Playing Tomorrow w/ Location', 'Playing Tomorrow w/ Starter', 'Playing Tomorrow w/ Loc & Starter']}
+                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter', 'PlayingTodayLocationStarter', 'PlayingTomorrow', 'PlayingTomorrowLocation', 'PlayingTomorrowStarter', 'PlayingTomorrowLocationStarter', 'TeamRatings']}
+                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter', 'Playing Today w/ Loc & Starter', 'Playing Tomorrow', 'Playing Tomorrow w/ Location', 'Playing Tomorrow w/ Starter', 'Playing Tomorrow w/ Loc & Starter', 'Team Ratings']}
                         current={viewMode}
                         onChange={(v) => setViewMode(v as ViewMode)}
                     />
@@ -1204,7 +1453,7 @@ const TeamsTable = () => {
                         />
                     </div>
 
-                    {/* Division Filter (Only in All Teams) */}
+                    {/* Division Filter (Only in All Teams — hidden in TeamRatings) */}
                     {viewMode === 'All' && (
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Division</label>
@@ -1232,7 +1481,7 @@ const TeamsTable = () => {
             <div className="flex flex-col gap-2 md:hidden mb-4">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Stat Category</label>
                 <div className="flex flex-wrap gap-2">
-                    {STAT_GROUPS.map(group => (
+                    {(viewMode === 'TeamRatings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
                         <button
                             key={group.name}
                             onClick={() => setActiveCategory(group.name)}
@@ -1253,7 +1502,7 @@ const TeamsTable = () => {
                         {/* Desktop Group Headers */}
                         <tr className="hidden md:table-row bg-gray-950/95 border-b border-gray-800 sticky top-0 z-50 backdrop-blur-sm shadow-sm">
                             <th className="sticky left-0 bg-gray-950 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)] border-r border-gray-800"></th>
-                            {STAT_GROUPS.map(group => (
+                            {(viewMode === 'TeamRatings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
                                 <th
                                     key={group.name}
                                     colSpan={group.columns.length}
@@ -1268,35 +1517,79 @@ const TeamsTable = () => {
 
                         <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-[33px] z-40 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
                             <th className="px-2 py-3 font-semibold sticky left-0 bg-gray-900 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">Team</th>
-                            {COLUMNS.map(({ k, l, desc, calc }) => {
-                                // Determine if this is the last column in any group for vertical grid lines
-                                const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === k);
-                                const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
 
-                                return (
-                                    <th
-                                        key={k}
-                                        className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
-                                            } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
-                                        onClick={() => handleSort(k as SortKey)}
-                                    >
-                                        <div className="flex items-center justify-center gap-1">
-                                            {l}
-                                            {viewMode === 'All' && sortKey === k && (
-                                                <span className="text-[10px] text-blue-400">{sortDesc ? '▼' : '▲'}</span>
-                                            )}
-                                        </div>
+                            {viewMode === 'TeamRatings' ? (
+                                <>
+                                    {/* First 8 Record columns (ranking → rw) */}
+                                    {COLUMNS.slice(0, 8).map(({ k, l, desc, calc }) => {
+                                        const isGroupEnd = k === 'rw'; // last Record col
+                                        const isInActiveCategory = RATINGS_STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
+                                        return (
+                                            <th
+                                                key={k}
+                                                className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative cursor-pointer hover:text-white ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                                onClick={() => handleSort(k as SortKey)}
+                                            >
+                                                <div className="flex items-center justify-center gap-1">
+                                                    {l}
+                                                    {sortKey === k && <span className="text-[10px] text-blue-400">{sortDesc ? '▼' : '▲'}</span>}
+                                                </div>
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[200px] p-2 bg-black/95 border border-gray-700 text-white text-[10px] rounded shadow-xl z-[60] normal-case text-left pointer-events-none">
+                                                    <div className="font-bold text-blue-400 mb-0.5 whitespace-normal">{desc}</div>
+                                                    {calc && <div className="text-gray-400 font-mono text-[9px] whitespace-normal">{calc}</div>}
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-black/95"></div>
+                                                </div>
+                                            </th>
+                                        );
+                                    })}
+                                    {/* Rating / Lineup / Goalie columns */}
+                                    {RATINGS_COLS.map(({ k, l, desc, groupEnd }) => {
+                                        const isInActiveCategory = RATINGS_STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
+                                        return (
+                                            <th
+                                                key={k}
+                                                className={`px-2 py-3 font-semibold text-center whitespace-nowrap group relative cursor-default opacity-80 ${groupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                            >
+                                                {l}
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[220px] p-2 bg-black/95 border border-gray-700 text-white text-[10px] rounded shadow-xl z-[60] normal-case text-left pointer-events-none">
+                                                    <div className="font-bold text-blue-400 mb-0.5 whitespace-normal">{desc}</div>
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-black/95"></div>
+                                                </div>
+                                            </th>
+                                        );
+                                    })}
+                                </>
+                            ) : (
+                                COLUMNS.map(({ k, l, desc, calc }) => {
+                                    // Determine if this is the last column in any group for vertical grid lines
+                                    const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === k);
+                                    const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
 
-                                        {/* Tooltip */}
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[200px] p-2 bg-black/95 border border-gray-700 text-white text-[10px] rounded shadow-xl z-[60] normal-case text-left pointer-events-none">
-                                            <div className="font-bold text-blue-400 mb-0.5 whitespace-normal">{desc}</div>
-                                            {calc && <div className="text-gray-400 font-mono text-[9px] whitespace-normal">{calc}</div>}
-                                            {/* Arrow */}
-                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-black/95"></div>
-                                        </div>
-                                    </th>
-                                );
-                            })}
+                                    return (
+                                        <th
+                                            key={k}
+                                            className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
+                                                } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                            onClick={() => handleSort(k as SortKey)}
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                {l}
+                                                {viewMode === 'All' && sortKey === k && (
+                                                    <span className="text-[10px] text-blue-400">{sortDesc ? '▼' : '▲'}</span>
+                                                )}
+                                            </div>
+
+                                            {/* Tooltip */}
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[200px] p-2 bg-black/95 border border-gray-700 text-white text-[10px] rounded shadow-xl z-[60] normal-case text-left pointer-events-none">
+                                                <div className="font-bold text-blue-400 mb-0.5 whitespace-normal">{desc}</div>
+                                                {calc && <div className="text-gray-400 font-mono text-[9px] whitespace-normal">{calc}</div>}
+                                                {/* Arrow */}
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-black/95"></div>
+                                            </div>
+                                        </th>
+                                    );
+                                })
+                            )}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800 text-sm">
@@ -1384,16 +1677,40 @@ const TeamsTable = () => {
                                             </div>
                                         </td>
 
-                                        {COLUMNS.map(col => {
-                                            const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === col.k);
-                                            const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
+                                        {viewMode === 'TeamRatings' ? (
+                                            <>
+                                                {/* Record columns (ranking → rw) */}
+                                                {COLUMNS.slice(0, 8).map(col => {
+                                                    const isGroupEnd = col.k === 'rw';
+                                                    const isInActiveCategory = RATINGS_STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
+                                                    return (
+                                                        <React.Fragment key={col.k}>
+                                                            {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isInActiveCategory)}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                                {/* Ratings / Lineup / Goalie columns */}
+                                                {RATINGS_COLS.map(col => {
+                                                    const isInActiveCategory = RATINGS_STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
+                                                    return (
+                                                        <React.Fragment key={col.k}>
+                                                            {renderRatingCell(team.team, col.k, col.inv, col.groupEnd, !isInActiveCategory)}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </>
+                                        ) : (
+                                            COLUMNS.map(col => {
+                                                const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === col.k);
+                                                const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
 
-                                            return (
-                                                <React.Fragment key={col.k}>
-                                                    {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isInActiveCategory)}
-                                                </React.Fragment>
-                                            );
-                                        })}
+                                                return (
+                                                    <React.Fragment key={col.k}>
+                                                        {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isInActiveCategory)}
+                                                    </React.Fragment>
+                                                );
+                                            })
+                                        )}
                                     </tr>
 
                                     {/* Spacer Row for Matchups */}
