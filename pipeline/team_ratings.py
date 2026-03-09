@@ -161,7 +161,19 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         # Store weighted for potentially internal use (optional)
         # pp_rating_weighted = (season_pp_pct * 0.1) + (l20_pp_pct * 0.5) + (l10_pp_pct * 0.4)
         # pk_rating_weighted = (season_pk_pct * 0.1) + (l20_pk_pct * 0.5) + (l10_pk_pct * 0.4)
-        
+
+        # xG-based PP/PK rates (per opportunity)
+        # More stable than goal-based PP%/PK% — same xG philosophy used throughout the model.
+        # Falls back to 0.18 (league-average baseline) if xG_pp columns not yet in gamestats.
+        _LEAGUE_AVG_ST_XG = 0.18
+        has_pp_xg_data = 'xG_pp_for' in team_games.columns and team_games['xG_pp_for'].sum() > 0
+        if has_pp_xg_data:
+            pp_xgf_per_opp = team_games['xG_pp_for'].sum() / pp_opps if pp_opps > 0 else _LEAGUE_AVG_ST_XG
+            pk_xga_per_opp = team_games['xG_pp_against'].sum() / pk_opps if pk_opps > 0 else _LEAGUE_AVG_ST_XG
+        else:
+            pp_xgf_per_opp = _LEAGUE_AVG_ST_XG
+            pk_xga_per_opp = _LEAGUE_AVG_ST_XG
+
         team_ratings[team] = {
             'xgf_rating': xgf_rating,
             'xga_rating': xga_rating,
@@ -171,6 +183,8 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
             'xga_5v5_rating': xga_5v5_rating,
             'pp_rating': pp_rating,
             'pk_rating': pk_rating,
+            'pp_xgf_per_opp': round(pp_xgf_per_opp, 4),
+            'pk_xga_per_opp': round(pk_xga_per_opp, 4),
             'penalties_drawn_per_60': penalties_drawn_per_game,
             'penalties_taken_per_60': penalties_taken_per_game,
             'games_played': games_played

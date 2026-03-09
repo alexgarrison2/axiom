@@ -157,9 +157,14 @@ def refresh_pipeline():
                 agg_5v5 = df[df['strength_state'] == '5v5'].groupby(['game_id', 'team_id'])['xG'].sum().reset_index()
                 agg_5v5.columns = ['game_id', 'team_id', 'xG_5v5_sum']
                 agg = pd.merge(agg_total, agg_5v5, on=['game_id', 'team_id'], how='left').fillna(0)
+                # 5v4 (Power Play) xG — used for xG-based PP/PK rates in team_ratings
+                agg_pp = df[df['strength_state'] == '5v4'].groupby(['game_id', 'team_id'])['xG'].sum().reset_index()
+                agg_pp.columns = ['game_id', 'team_id', 'xG_pp_sum']
+                agg = pd.merge(agg, agg_pp, on=['game_id', 'team_id'], how='left').fillna(0)
             else:
                 agg = agg_total
                 agg['xG_5v5_sum'] = agg['xG_sum'] * 0.8 # Fallback if strength missing
+                agg['xG_pp_sum'] = 0.0
 
             all_game_xg.append(agg)
             
@@ -191,6 +196,7 @@ def refresh_pipeline():
             # Create lookups
             xg_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_sum']))
             xg_5v5_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_5v5_sum']))
+            xg_pp_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_pp_sum']))
             
             # Apply to df_stats
             def update_xg_for(row):
@@ -213,10 +219,20 @@ def refresh_pipeline():
                  key = (row['game_id'], row['opponent'])
                  return xg_5v5_lookup.get(key, row['xG_against_5v5'])
                 
+            def update_xg_pp_for(row):
+                key = (row['game_id'], row['team'])
+                return xg_pp_lookup.get(key, row.get('xG_pp_for', 0))
+
+            def update_xg_pp_against(row):
+                key = (row['game_id'], row['opponent'])
+                return xg_pp_lookup.get(key, row.get('xG_pp_against', 0))
+
             df_stats['xG_for'] = df_stats.apply(update_xg_for, axis=1)
             df_stats['xG_against'] = df_stats.apply(update_xg_against, axis=1)
             df_stats['xG_for_5v5'] = df_stats.apply(update_xg_5v5_for, axis=1)
             df_stats['xG_against_5v5'] = df_stats.apply(update_xg_5v5_against, axis=1)
+            df_stats['xG_pp_for'] = df_stats.apply(update_xg_pp_for, axis=1)
+            df_stats['xG_pp_against'] = df_stats.apply(update_xg_pp_against, axis=1)
             
             df_stats.to_csv(gamestats_file, index=False)
             print(f"Updated {gamestats_file} with aggregated total and 5v5 xG.")

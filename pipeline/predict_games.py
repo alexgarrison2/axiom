@@ -1221,22 +1221,16 @@ def predict():
         h_taken = h_ratings.get('penalties_taken_per_60', 3.0)
         a_proj_opps = (a_drawn + h_taken) / 2.0
         
-        # Efficiency Factor: My Rating / League Avg
-        # team_ratings 'pp_rating' is scaled to 100 (e.g. 25.0)
-        h_pp_eff = (h_ratings.get('pp_rating', 20.0) / 100.0) / avg_pp_pct
-        a_pp_eff = (a_ratings.get('pp_rating', 20.0) / 100.0) / avg_pp_pct
-        
-        # Opponent PK Strength Factor
-        # Higher PK rating = Stronger PK = Lower Factor
-        # Factor = Avg_PK / Team_PK
-        # e.g. Avg=0.80, Team=0.90 -> 0.88 (Lowers xG)
-        h_pk_impact = avg_pk_pct / (h_ratings.get('pk_rating', 80.0) / 100.0) if h_ratings.get('pk_rating') else 1.0
-        a_pk_impact = avg_pk_pct / (a_ratings.get('pk_rating', 80.0) / 100.0) if a_ratings.get('pk_rating') else 1.0
+        # xG-based additive blend: (PP team's xGF/opp + PK team's xGA/opp) / 2
+        # Symmetric treatment of both sides, consistent with how 5v5 offense/defense are blended.
+        # Falls back to ST_VAL_PP (league avg ~0.18) if xG rates not yet in team_ratings.json.
+        h_pp_per_opp = (h_ratings.get('pp_xgf_per_opp', ST_VAL_PP) + a_ratings.get('pk_xga_per_opp', ST_VAL_PP)) / 2
+        a_pp_per_opp = (a_ratings.get('pp_xgf_per_opp', ST_VAL_PP) + h_ratings.get('pk_xga_per_opp', ST_VAL_PP)) / 2
 
         # Home PP vs Away PK
-        h_pp_xg = h_proj_opps * ST_VAL_PP * h_pp_eff * a_pk_impact
+        h_pp_xg = h_proj_opps * h_pp_per_opp
         # Away PP vs Home PK
-        a_pp_xg = a_proj_opps * ST_VAL_PP * a_pp_eff * h_pk_impact
+        a_pp_xg = a_proj_opps * a_pp_per_opp
 
         # ── PP/PK Lineup Quality Adjustment ──────────────────────────────────
         # Compare tonight's PP/PK personnel vs league average using MoneyPuck
