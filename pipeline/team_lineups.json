@@ -155,7 +155,7 @@
                 "pos": "rd",
                 "id": 1710,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "ir": [
@@ -173,7 +173,7 @@
                 "pos": "ir2",
                 "id": 1710,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -418,12 +418,12 @@
         ],
         "f3": [
             {
-                "name": "Nikita Grebenkin",
-                "number": 29,
+                "name": "Carl Grundstrom",
+                "number": 91,
                 "pos": "lw",
-                "id": 38116,
+                "id": 2875,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Trevor Zegras",
@@ -444,12 +444,12 @@
         ],
         "f4": [
             {
-                "name": "Carl Grundstrom",
-                "number": 91,
+                "name": "Nikita Grebenkin",
+                "number": 29,
                 "pos": "lw",
-                "id": 2875,
+                "id": 38116,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Sean Couturier",
@@ -506,12 +506,12 @@
         ],
         "d3": [
             {
-                "name": "Emil Andrae",
-                "number": null,
+                "name": "Nick Seeler",
+                "number": 24,
                 "pos": "ld",
-                "id": 33033,
+                "id": 4630,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Noah Juulsen",
@@ -536,22 +536,6 @@
                 "number": 18,
                 "pos": "ir2",
                 "id": 26850,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Travis Konecny",
-                "number": 11,
-                "pos": "ir3",
-                "id": 2498,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
-                "name": "Nick Seeler",
-                "number": 24,
-                "pos": "ir4",
-                "id": 4630,
                 "ppUnit": null,
                 "movement": null
             }
@@ -746,12 +730,12 @@
                 "movement": null
             },
             {
-                "name": "Dylan Strome",
-                "number": 17,
+                "name": "Justin Sourdif",
+                "number": 34,
                 "pos": "c",
-                "id": 2474,
-                "ppUnit": 1,
-                "movement": null
+                "id": 29606,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Anthony Beauvillier",
@@ -764,11 +748,11 @@
         ],
         "f2": [
             {
-                "name": "Aliaksei Protas",
-                "number": 21,
+                "name": "Connor McMichael",
+                "number": 24,
                 "pos": "lw",
-                "id": 30448,
-                "ppUnit": null,
+                "id": 29203,
+                "ppUnit": 2,
                 "movement": "up"
             },
             {
@@ -780,38 +764,38 @@
                 "movement": null
             },
             {
-                "name": "Tom Wilson",
-                "number": 43,
-                "pos": "rw",
-                "id": 1930,
-                "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Connor McMichael",
-                "number": 24,
-                "pos": "lw",
-                "id": 29203,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Justin Sourdif",
-                "number": 34,
-                "pos": "c",
-                "id": 29606,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Ryan Leonard",
                 "number": 9,
                 "pos": "rw",
                 "id": 35645,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Aliaksei Protas",
+                "number": 21,
+                "pos": "lw",
+                "id": 30448,
+                "ppUnit": null,
+                "movement": "up"
+            },
+            {
+                "name": "Dylan Strome",
+                "number": 17,
+                "pos": "c",
+                "id": 2474,
+                "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Tom Wilson",
+                "number": 43,
+                "pos": "rw",
+                "id": 1930,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -850,46 +834,46 @@
                 "movement": null
             },
             {
-                "name": "Jakob Chychrun",
-                "number": 6,
+                "name": "Matt Roy",
+                "number": 3,
                 "pos": "rd",
-                "id": 2643,
-                "ppUnit": 1,
-                "movement": null
+                "id": 4512,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "d2": [
             {
-                "name": "Matt Roy",
-                "number": 3,
+                "name": "Jakob Chychrun",
+                "number": 6,
                 "pos": "ld",
-                "id": 4512,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Martin Fehervary",
-                "number": 42,
-                "pos": "rd",
-                "id": 29099,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Declan Chisholm",
-                "number": 47,
-                "pos": "ld",
-                "id": 28803,
-                "ppUnit": null,
-                "movement": null
+                "id": 2643,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Trevor van Riemsdyk",
                 "number": 57,
                 "pos": "rd",
                 "id": 2383,
+                "ppUnit": null,
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Martin Fehervary",
+                "number": 42,
+                "pos": "ld",
+                "id": 29099,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Declan Chisholm",
+                "number": 47,
+                "pos": "rd",
+                "id": 28803,
                 "ppUnit": null,
                 "movement": null
             }
