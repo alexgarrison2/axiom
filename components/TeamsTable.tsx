@@ -189,6 +189,8 @@ interface PlayerImpactData {
     team: string;
     position: string;
     ev_net_per60: number;
+    impact_score?: number;
+    games_played?: number;
 }
 
 interface GoalieRating {
@@ -326,20 +328,20 @@ const RATINGS_COLS = [
     { k: 'xgf_5v5',       l: 'xGF 5v5',  desc: 'xG For Rating at 5-on-5',                              inv: false, groupEnd: false },
     { k: 'xga_5v5',       l: 'xGA 5v5',  desc: 'xG Against Rating at 5-on-5',                          inv: true,  groupEnd: true  },
     // Lineup Impact group
-    { k: 'lineup_rating', l: 'Lineup',   desc: 'Total Lineup Impact — all lines (ev_net/60 sum)',       inv: false, groupEnd: false },
-    { k: 'f1_impact',     l: 'F1',       desc: 'F1 Line Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
-    { k: 'f2_impact',     l: 'F2',       desc: 'F2 Line Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
-    { k: 'f3_impact',     l: 'F3',       desc: 'F3 Line Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
-    { k: 'f4_impact',     l: 'F4',       desc: 'F4 Line Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
-    { k: 'd1_impact',     l: 'D1',       desc: 'D1 Pair Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
-    { k: 'd2_impact',     l: 'D2',       desc: 'D2 Pair Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
-    { k: 'd3_impact',     l: 'D3',       desc: 'D3 Pair Impact (sum of ev_net/60)',                     inv: false, groupEnd: false },
-    { k: 'f_impact',      l: 'F Tot',    desc: 'Total Forward Impact (F1+F2+F3+F4)',                    inv: false, groupEnd: false },
-    { k: 'ftop6_impact',  l: 'FTop6',    desc: 'Top 6 Forward Impact (F1+F2)',                          inv: false, groupEnd: false },
-    { k: 'fmid6_impact',  l: 'FMid6',    desc: 'Mid 6 Forward Impact (F2+F3)',                          inv: false, groupEnd: false },
-    { k: 'fbot6_impact',  l: 'FBot6',    desc: 'Bottom 6 Forward Impact (F3+F4)',                       inv: false, groupEnd: false },
-    { k: 'd_impact',      l: 'D Tot',    desc: 'Total Defense Impact (D1+D2+D3)',                       inv: false, groupEnd: false },
-    { k: 'dtop4_impact',  l: 'DTop4',    desc: 'Top 4 Defense Impact (D1+D2)',                          inv: false, groupEnd: true  },
+    { k: 'lineup_rating', l: 'GRADE',    desc: 'Lineup Grade — sum of impact_score for all 18 skaters (TOI-weighted composite, same as team page GRADE)', inv: false, groupEnd: false },
+    { k: 'f1_impact',     l: 'F1',       desc: 'F1 Line Impact (sum of impact_score)',                  inv: false, groupEnd: false },
+    { k: 'f2_impact',     l: 'F2',       desc: 'F2 Line Impact (sum of impact_score)',                  inv: false, groupEnd: false },
+    { k: 'f3_impact',     l: 'F3',       desc: 'F3 Line Impact (sum of impact_score)',                  inv: false, groupEnd: false },
+    { k: 'f4_impact',     l: 'F4',       desc: 'F4 Line Impact (sum of impact_score)',                  inv: false, groupEnd: false },
+    { k: 'd1_impact',     l: 'D1',       desc: 'D1 Pair Impact (sum of impact_score)',                  inv: false, groupEnd: false },
+    { k: 'd2_impact',     l: 'D2',       desc: 'D2 Pair Impact (sum of impact_score)',                  inv: false, groupEnd: false },
+    { k: 'd3_impact',     l: 'D3',       desc: 'D3 Pair Impact (sum of impact_score)',                  inv: false, groupEnd: false },
+    { k: 'f_impact',      l: 'F Tot',    desc: 'Total Forward Impact (F1+F2+F3+F4 impact_score)',       inv: false, groupEnd: false },
+    { k: 'ftop6_impact',  l: 'FTop6',    desc: 'Top 6 Forward Impact (F1+F2 impact_score)',             inv: false, groupEnd: false },
+    { k: 'fmid6_impact',  l: 'FMid6',    desc: 'Mid 6 Forward Impact (F2+F3 impact_score)',             inv: false, groupEnd: false },
+    { k: 'fbot6_impact',  l: 'FBot6',    desc: 'Bottom 6 Forward Impact (F3+F4 impact_score)',          inv: false, groupEnd: false },
+    { k: 'd_impact',      l: 'D Tot',    desc: 'Total Defense Impact (D1+D2+D3 impact_score)',          inv: false, groupEnd: false },
+    { k: 'dtop4_impact',  l: 'DTop4',    desc: 'Top 4 Defense Impact (D1+D2 impact_score)',             inv: false, groupEnd: true  },
     // Goalie group
     { k: 'goalie_impact', l: 'G Impact', desc: 'Goalie Impact (GSAx/G, sum of top-2 goalies by GP)',   inv: false, groupEnd: true  },
 ] as const;
@@ -351,6 +353,46 @@ const RATINGS_STAT_GROUPS = [
     { name: 'Goalie',         columns: ['goalie_impact'] },
 ];
 // ──────────────────────────────────────────────────────────────────────────────
+
+// Type for a single precomputed team-ratings entry (used by extractRatingValue)
+type TeamRatingEntry = {
+    ratings: TeamRating | null;
+    lineImpacts: { f1: number; f2: number; f3: number; f4: number; d1: number; d2: number; d3: number };
+    goalieImpact: number;
+};
+
+// Pure helper: extracts a numeric value for the given RATINGS_COLS key from a
+// precomputed entry. Used by both renderRatingCell and sortedStats.
+const extractRatingValue = (entry: TeamRatingEntry | undefined, colKey: string): number => {
+    if (!entry) return NaN;
+    const { ratings: r, lineImpacts: li, goalieImpact } = entry;
+    switch (colKey) {
+        case 'xgf_rating':    return r?.xgf_rating     ?? NaN;
+        case 'xga_rating':    return r?.xga_rating     ?? NaN;
+        case 'xgf_rolling':   return r?.xgf_rolling    ?? NaN;
+        case 'xga_rolling':   return r?.xga_rolling    ?? NaN;
+        case 'xgf_5v5':       return r?.xgf_5v5_rating ?? NaN;
+        case 'xga_5v5':       return r?.xga_5v5_rating ?? NaN;
+        case 'lineup_rating': return li.f1+li.f2+li.f3+li.f4+li.d1+li.d2+li.d3;
+        case 'f1_impact':     return li.f1;
+        case 'f2_impact':     return li.f2;
+        case 'f3_impact':     return li.f3;
+        case 'f4_impact':     return li.f4;
+        case 'd1_impact':     return li.d1;
+        case 'd2_impact':     return li.d2;
+        case 'd3_impact':     return li.d3;
+        case 'f_impact':      return li.f1+li.f2+li.f3+li.f4;
+        case 'ftop6_impact':  return li.f1+li.f2;
+        case 'fmid6_impact':  return li.f2+li.f3;
+        case 'fbot6_impact':  return li.f3+li.f4;
+        case 'd_impact':      return li.d1+li.d2+li.d3;
+        case 'dtop4_impact':  return li.d1+li.d2;
+        case 'goalie_impact': return goalieImpact;
+        default:              return NaN;
+    }
+};
+
+const RATINGS_KEYS = new Set<string>(RATINGS_COLS.map(c => c.k));
 
 const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamStat => {
     if (teamGames.length === 0) {
@@ -511,7 +553,7 @@ const TeamsTable = () => {
     const [selectedDivisions, setSelectedDivisions] = useState<string[]>([]);
 
     // Sorting
-    const [sortKey, setSortKey] = useState<SortKey>('pt_pct');
+    const [sortKey, setSortKey] = useState<string>('pt_pct');
     const [sortDesc, setSortDesc] = useState(true);
     const [flashKey, setFlashKey] = useState(0);
 
@@ -650,7 +692,7 @@ const TeamsTable = () => {
             (players ?? []).reduce((s, p) => {
                 const byId = playerImpact[String(p.id)];
                 const entry = byId ?? impactByName.get((p.name ?? '').toLowerCase().trim());
-                return s + (entry?.ev_net_per60 ?? 0);
+                return s + (entry?.impact_score ?? 0);
             }, 0);
 
         const result: Record<string, {
@@ -1062,7 +1104,7 @@ const TeamsTable = () => {
     }, [rawData, viewMode, filterHomeAway, filterLastN, todayMatchups, tomorrowMatchups, selectedDivisions, teams]);
 
 
-    const handleSort = (key: SortKey) => {
+    const handleSort = (key: string) => {
         // Disable sorting in Matchup Filter modes to preserve pairing
         if (viewMode !== 'All') return;
 
@@ -1081,18 +1123,23 @@ const TeamsTable = () => {
 
         const sorted = [...stats];
         sorted.sort((a, b) => {
-            const valA = a[sortKey];
-            const valB = b[sortKey];
+            // Ratings columns sort (looks up value from teamRatingsComputed)
+            if (RATINGS_KEYS.has(sortKey)) {
+                const valA = extractRatingValue(teamRatingsComputed[a.team], sortKey);
+                const valB = extractRatingValue(teamRatingsComputed[b.team], sortKey);
+                if (!isFinite(valA) && !isFinite(valB)) return 0;
+                if (!isFinite(valA)) return 1;   // push NaN to bottom
+                if (!isFinite(valB)) return -1;
+                return sortDesc ? valB - valA : valA - valB;
+            }
+
+            const valA = a[sortKey as keyof TeamStat];
+            const valB = b[sortKey as keyof TeamStat];
 
             // Special handling for time columns
             if (['pp_time_per_game', 'pk_time_per_game', 'pp_time_per_goal', 'pk_time_per_goal_allowed'].includes(sortKey)) {
                 const getSeconds = (v: string | number) => {
                     if (v === 'Inf' || v === 'Perfect') return 999999;
-                    if (v === '-') return -999999; // Always force '-' to bottom in Desc sort? 
-                    // Actually, usually '-' means N/A. 
-                    // If Desc (High to Low): Inf (Best/Worst) -> High Times -> Low Times -> - (N/A)
-                    // If Asc (Low to High): - (N/A) -> Low Times -> High Times -> Inf
-                    // Let's stick with -1 or a very low number to keep it consistent.
                     if (v === '-') return -1;
                     if (typeof v === 'string') return getTimeSeconds(v);
                     return 0;
@@ -1113,7 +1160,7 @@ const TeamsTable = () => {
                 : (valA as number) - (valB as number);
         });
         return sorted;
-    }, [stats, sortKey, sortDesc, viewMode]);
+    }, [stats, sortKey, sortDesc, viewMode, teamRatingsComputed]);
 
     // Calculate min/max for gradients (ALWAYS based on leagueStats for consistency)
     const ranges = useMemo(() => {
@@ -1321,41 +1368,10 @@ const TeamsTable = () => {
 
     // Renders a single cell in the Team Ratings view (rating/lineup/goalie columns)
     const renderRatingCell = (teamName: string, colKey: string, isInverse: boolean, isGroupEnd: boolean, isHidden: boolean = false) => {
-        const computed = teamRatingsComputed[teamName];
         const visClass = isHidden ? 'hidden md:table-cell' : 'table-cell';
         const cellClass = `${visClass} px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center${isGroupEnd ? ' md:border-r md:border-gray-700/50' : ''}`;
 
-        if (!computed) {
-            return <td key={colKey} className={cellClass} style={{ color: '#4b5563' }}>—</td>;
-        }
-
-        const { ratings, lineImpacts: li, goalieImpact } = computed;
-
-        let value: number;
-        switch (colKey) {
-            case 'xgf_rating':    value = ratings?.xgf_rating     ?? NaN; break;
-            case 'xga_rating':    value = ratings?.xga_rating     ?? NaN; break;
-            case 'xgf_rolling':   value = ratings?.xgf_rolling    ?? NaN; break;
-            case 'xga_rolling':   value = ratings?.xga_rolling    ?? NaN; break;
-            case 'xgf_5v5':       value = ratings?.xgf_5v5_rating ?? NaN; break;
-            case 'xga_5v5':       value = ratings?.xga_5v5_rating ?? NaN; break;
-            case 'lineup_rating': value = li.f1+li.f2+li.f3+li.f4+li.d1+li.d2+li.d3; break;
-            case 'f1_impact':     value = li.f1;  break;
-            case 'f2_impact':     value = li.f2;  break;
-            case 'f3_impact':     value = li.f3;  break;
-            case 'f4_impact':     value = li.f4;  break;
-            case 'd1_impact':     value = li.d1;  break;
-            case 'd2_impact':     value = li.d2;  break;
-            case 'd3_impact':     value = li.d3;  break;
-            case 'f_impact':      value = li.f1+li.f2+li.f3+li.f4; break;
-            case 'ftop6_impact':  value = li.f1+li.f2; break;
-            case 'fmid6_impact':  value = li.f2+li.f3; break;
-            case 'fbot6_impact':  value = li.f3+li.f4; break;
-            case 'd_impact':      value = li.d1+li.d2+li.d3; break;
-            case 'dtop4_impact':  value = li.d1+li.d2; break;
-            case 'goalie_impact': value = goalieImpact; break;
-            default:              value = NaN;
-        }
+        const value = extractRatingValue(teamRatingsComputed[teamName], colKey);
 
         if (!isFinite(value)) {
             return <td key={colKey} className={cellClass} style={{ color: '#4b5563' }}>—</td>;
@@ -1446,8 +1462,8 @@ const TeamsTable = () => {
 
                 {/* Bottom Row: Filters (Only manual filters) */}
                 <div className="flex flex-row gap-4 items-center flex-wrap">
-                    {/* Location Filter: Only show if NOT in PlayingTodayLocation/Starter(Location) mode (since those enforce location) */}
-                    {!viewMode.includes('Location') && (
+                    {/* Location Filter: Only show if NOT in PlayingTodayLocation/Starter(Location) mode AND not in Ratings mode */}
+                    {!viewMode.includes('Location') && valuesMode !== 'Ratings' && (
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</label>
                             <ButtonGroup
@@ -1458,14 +1474,17 @@ const TeamsTable = () => {
                         </div>
                     )}
 
-                    <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent</label>
-                        <ButtonGroup
-                            options={['All', 5, 10, 20]}
-                            current={filterLastN}
-                            onChange={(v) => setFilterLastN(v as number | 'All')}
-                        />
-                    </div>
+                    {/* Recent Filter: hidden in Ratings mode (lineup data is not game-filtered) */}
+                    {valuesMode !== 'Ratings' && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent</label>
+                            <ButtonGroup
+                                options={['All', 5, 10, 20]}
+                                current={filterLastN}
+                                onChange={(v) => setFilterLastN(v as number | 'All')}
+                            />
+                        </div>
+                    )}
 
                     {/* Values Filter */}
                     <div className="flex flex-col gap-2">
@@ -1552,7 +1571,7 @@ const TeamsTable = () => {
                                             <th
                                                 key={k}
                                                 className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative cursor-pointer hover:text-white ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
-                                                onClick={() => handleSort(k as SortKey)}
+                                                onClick={() => handleSort(k)}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
                                                     {l}
@@ -1569,12 +1588,19 @@ const TeamsTable = () => {
                                     {/* Rating / Lineup / Goalie columns */}
                                     {RATINGS_COLS.map(({ k, l, desc, groupEnd }) => {
                                         const isInActiveCategory = RATINGS_STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
+                                        const canSort = viewMode === 'All';
                                         return (
                                             <th
                                                 key={k}
-                                                className={`px-2 py-3 font-semibold text-center whitespace-nowrap group relative cursor-default opacity-80 ${groupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                                className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative ${canSort ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'} ${groupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                                onClick={() => handleSort(k)}
                                             >
-                                                {l}
+                                                <div className="flex items-center justify-center gap-1">
+                                                    {l}
+                                                    {canSort && sortKey === k && (
+                                                        <span className="text-[10px] text-blue-400">{sortDesc ? '▼' : '▲'}</span>
+                                                    )}
+                                                </div>
                                                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[220px] p-2 bg-black/95 border border-gray-700 text-white text-[10px] rounded shadow-xl z-[60] normal-case text-left pointer-events-none">
                                                     <div className="font-bold text-blue-400 mb-0.5 whitespace-normal">{desc}</div>
                                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-black/95"></div>
@@ -1594,7 +1620,7 @@ const TeamsTable = () => {
                                             key={k}
                                             className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
                                                 } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
-                                            onClick={() => handleSort(k as SortKey)}
+                                            onClick={() => handleSort(k)}
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 {l}
