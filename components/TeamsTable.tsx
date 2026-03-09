@@ -198,7 +198,8 @@ interface GoalieRating {
 }
 
 type SortKey = keyof TeamStat;
-type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter' | 'TeamRatings';
+type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter';
+type ValuesMode = 'Stats' | 'Ratings';
 
 const CONFERENCE_MAPPING: Record<string, string> = {
     'Atlantic': 'Eastern', 'Metro': 'Eastern',
@@ -504,6 +505,7 @@ const TeamsTable = () => {
 
     // Filters
     const [viewMode, setViewMode] = useState<ViewMode>('All');
+    const [valuesMode, setValuesMode] = useState<ValuesMode>('Stats');
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
     const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
     const [selectedDivisions, setSelectedDivisions] = useState<string[]>([]);
@@ -548,6 +550,7 @@ const TeamsTable = () => {
                 if (stored) {
                     const parsed = JSON.parse(stored);
                     if (parsed.viewMode) setViewMode(parsed.viewMode);
+                    if (parsed.valuesMode) setValuesMode(parsed.valuesMode);
                     if (parsed.filterHomeAway) setFilterHomeAway(parsed.filterHomeAway);
                     if (parsed.filterLastN) setFilterLastN(parsed.filterLastN);
                     if (parsed.selectedDivisions) setSelectedDivisions(parsed.selectedDivisions);
@@ -566,14 +569,14 @@ const TeamsTable = () => {
         try {
             if (typeof window !== 'undefined') {
                 const filters = {
-                    viewMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory
+                    viewMode, valuesMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory
                 };
                 sessionStorage.setItem('teamsTableFilters', JSON.stringify(filters));
             }
         } catch (e) {
             console.error('Failed to save filters', e);
         }
-    }, [viewMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory]);
+    }, [viewMode, valuesMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory]);
 
     const COLUMNS = useMemo(() => [
         { k: 'ranking', l: 'Rank', desc: 'Projected Playoff Standing' },
@@ -636,8 +639,19 @@ const TeamsTable = () => {
             goalieGamesByTeam[g.team][name] = (goalieGamesByTeam[g.team][name] || 0) + 1;
         });
 
+        // player_impact.json uses 7-digit NHL API IDs; team_lineups.json uses shorter IDs.
+        // Build a name-based fallback map (lowercase full name → impact data).
+        const impactByName = new Map<string, PlayerImpactData>();
+        Object.values(playerImpact).forEach(p => {
+            if (p.name) impactByName.set(p.name.toLowerCase().trim(), p);
+        });
+
         const sumLineImpact = (players: LineupPlayer[]) =>
-            (players ?? []).reduce((s, p) => s + (playerImpact[String(p.id)]?.ev_net_per60 ?? 0), 0);
+            (players ?? []).reduce((s, p) => {
+                const byId = playerImpact[String(p.id)];
+                const entry = byId ?? impactByName.get((p.name ?? '').toLowerCase().trim());
+                return s + (entry?.ev_net_per60 ?? 0);
+            }, 0);
 
         const result: Record<string, {
             ratings: TeamRating | null;
@@ -933,13 +947,13 @@ const TeamsTable = () => {
         });
         setLeagueStats(leagueBaseline);
 
-        if (viewMode === 'All' || viewMode === 'TeamRatings') {
+        if (viewMode === 'All') {
             // Standard View - matches leagueBaseline
             // (duplicate work technically but keeps logic clean if filters for baseline diverge later)
 
-            // Apply Division Filter (only for All mode, not TeamRatings)
+            // Apply Division Filter
             let filteredBase = leagueBaseline;
-            if (viewMode === 'All' && selectedDivisions.length > 0) {
+            if (selectedDivisions.length > 0) {
                 filteredBase = leagueBaseline.filter(s => {
                     const teamInfo = teams[s.team];
                     // Only include if team is in one of the selected divisions
@@ -1050,7 +1064,7 @@ const TeamsTable = () => {
 
     const handleSort = (key: SortKey) => {
         // Disable sorting in Matchup Filter modes to preserve pairing
-        if (viewMode !== 'All' && viewMode !== 'TeamRatings') return;
+        if (viewMode !== 'All') return;
 
         if (sortKey === key) {
             setSortDesc(!sortDesc);
@@ -1063,7 +1077,7 @@ const TeamsTable = () => {
 
     const sortedStats = useMemo(() => {
         // If in Playing Today/Tomorrow modes, PRESERVE ORDER created in useEffect
-        if (viewMode !== 'All' && viewMode !== 'TeamRatings') return stats;
+        if (viewMode !== 'All') return stats;
 
         const sorted = [...stats];
         sorted.sort((a, b) => {
@@ -1292,7 +1306,7 @@ const TeamsTable = () => {
             }
         }
 
-        const isActiveSort = key === sortKey && (viewMode === 'All' || viewMode === 'TeamRatings');
+        const isActiveSort = key === sortKey && viewMode === 'All';
 
         return (
             <td
@@ -1419,19 +1433,19 @@ const TeamsTable = () => {
             {/* View Mode & Filters */}
             <div className="flex flex-col gap-4 mb-6">
 
-                {/* Top Row: View Mode */}
+                {/* Top Row: View Type */}
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Mode</label>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Type</label>
                     <ButtonGroup
-                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter', 'PlayingTodayLocationStarter', 'PlayingTomorrow', 'PlayingTomorrowLocation', 'PlayingTomorrowStarter', 'PlayingTomorrowLocationStarter', 'TeamRatings']}
-                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter', 'Playing Today w/ Loc & Starter', 'Playing Tomorrow', 'Playing Tomorrow w/ Location', 'Playing Tomorrow w/ Starter', 'Playing Tomorrow w/ Loc & Starter', 'Team Ratings']}
+                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter', 'PlayingTodayLocationStarter', 'PlayingTomorrow', 'PlayingTomorrowLocation', 'PlayingTomorrowStarter', 'PlayingTomorrowLocationStarter']}
+                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter', 'Playing Today w/ Loc & Starter', 'Playing Tomorrow', 'Playing Tomorrow w/ Location', 'Playing Tomorrow w/ Starter', 'Playing Tomorrow w/ Loc & Starter']}
                         current={viewMode}
                         onChange={(v) => setViewMode(v as ViewMode)}
                     />
                 </div>
 
                 {/* Bottom Row: Filters (Only manual filters) */}
-                <div className="flex flex-row gap-4 items-center">
+                <div className="flex flex-row gap-4 items-center flex-wrap">
                     {/* Location Filter: Only show if NOT in PlayingTodayLocation/Starter(Location) mode (since those enforce location) */}
                     {!viewMode.includes('Location') && (
                         <div className="flex flex-col gap-2">
@@ -1453,7 +1467,17 @@ const TeamsTable = () => {
                         />
                     </div>
 
-                    {/* Division Filter (Only in All Teams — hidden in TeamRatings) */}
+                    {/* Values Filter */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Values</label>
+                        <ButtonGroup
+                            options={['Stats', 'Ratings']}
+                            current={valuesMode}
+                            onChange={(v) => setValuesMode(v as ValuesMode)}
+                        />
+                    </div>
+
+                    {/* Division Filter (Only in All Teams view) */}
                     {viewMode === 'All' && (
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Division</label>
@@ -1481,7 +1505,7 @@ const TeamsTable = () => {
             <div className="flex flex-col gap-2 md:hidden mb-4">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Stat Category</label>
                 <div className="flex flex-wrap gap-2">
-                    {(viewMode === 'TeamRatings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
+                    {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
                         <button
                             key={group.name}
                             onClick={() => setActiveCategory(group.name)}
@@ -1502,7 +1526,7 @@ const TeamsTable = () => {
                         {/* Desktop Group Headers */}
                         <tr className="hidden md:table-row bg-gray-950/95 border-b border-gray-800 sticky top-0 z-50 backdrop-blur-sm shadow-sm">
                             <th className="sticky left-0 bg-gray-950 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)] border-r border-gray-800"></th>
-                            {(viewMode === 'TeamRatings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
+                            {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
                                 <th
                                     key={group.name}
                                     colSpan={group.columns.length}
@@ -1518,7 +1542,7 @@ const TeamsTable = () => {
                         <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-[33px] z-40 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
                             <th className="px-2 py-3 font-semibold sticky left-0 bg-gray-900 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">Team</th>
 
-                            {viewMode === 'TeamRatings' ? (
+                            {valuesMode === 'Ratings' ? (
                                 <>
                                     {/* First 8 Record columns (ranking → rw) */}
                                     {COLUMNS.slice(0, 8).map(({ k, l, desc, calc }) => {
@@ -1677,7 +1701,7 @@ const TeamsTable = () => {
                                             </div>
                                         </td>
 
-                                        {viewMode === 'TeamRatings' ? (
+                                        {valuesMode === 'Ratings' ? (
                                             <>
                                                 {/* Record columns (ranking → rw) */}
                                                 {COLUMNS.slice(0, 8).map(col => {
