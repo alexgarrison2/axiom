@@ -224,6 +224,10 @@ const cleanName = (name: string) => {
     return name.replace(/\s*\(.*?\)\s*/g, '').trim();
 };
 
+// Strip Unicode diacritics so "Tim Stützle" === "Tim Stutzle" (matches LineupGrid.normName)
+const normName = (s: string) =>
+    s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
 // Normalize to "LAST, F." for fuzzy goalie matching.
 // Handles "Sam Montembeault" === "Samuel Montembeault" by comparing
 // last name + first initial only.
@@ -328,7 +332,8 @@ const RATINGS_COLS = [
     { k: 'xgf_5v5',       l: 'xGF 5v5',  desc: 'xG For Rating at 5-on-5',                              inv: false, groupEnd: false },
     { k: 'xga_5v5',       l: 'xGA 5v5',  desc: 'xG Against Rating at 5-on-5',                          inv: true,  groupEnd: true  },
     // Lineup Impact group
-    { k: 'lineup_rating', l: 'GRADE',    desc: 'Lineup Grade — sum of impact_score for all 18 skaters (TOI-weighted composite, same as team page GRADE)', inv: false, groupEnd: false },
+    { k: 'lineup_rating', l: 'LINEUP',   desc: 'Total Lineup Impact — sum of impact_score for all 7 lines (F1–F4 + D1–D3)',                                inv: false, groupEnd: false },
+    { k: 'lineup_grade',  l: 'GRADE',    desc: 'Lineup Grade — sum of impact_score for each unique skater once (deduped; matches the GRADE chip on team pages)', inv: false, groupEnd: false },
     { k: 'f1_impact',     l: 'F1',       desc: 'F1 Line Impact (sum of impact_score)',                  inv: false, groupEnd: false },
     { k: 'f2_impact',     l: 'F2',       desc: 'F2 Line Impact (sum of impact_score)',                  inv: false, groupEnd: false },
     { k: 'f3_impact',     l: 'F3',       desc: 'F3 Line Impact (sum of impact_score)',                  inv: false, groupEnd: false },
@@ -349,7 +354,7 @@ const RATINGS_COLS = [
 const RATINGS_STAT_GROUPS = [
     { name: 'Record',         columns: ['ranking','gp','wins','losses','otl','points','pt_pct','rw'] },
     { name: 'xG Ratings',     columns: ['xgf_rating','xga_rating','xgf_rolling','xga_rolling','xgf_5v5','xga_5v5'] },
-    { name: 'Lineup Impact',  columns: ['lineup_rating','f1_impact','f2_impact','f3_impact','f4_impact','d1_impact','d2_impact','d3_impact','f_impact','ftop6_impact','fmid6_impact','fbot6_impact','d_impact','dtop4_impact'] },
+    { name: 'Lineup Impact',  columns: ['lineup_rating','lineup_grade','f1_impact','f2_impact','f3_impact','f4_impact','d1_impact','d2_impact','d3_impact','f_impact','ftop6_impact','fmid6_impact','fbot6_impact','d_impact','dtop4_impact'] },
     { name: 'Goalie',         columns: ['goalie_impact'] },
 ];
 // ──────────────────────────────────────────────────────────────────────────────
@@ -359,6 +364,7 @@ type TeamRatingEntry = {
     ratings: TeamRating | null;
     lineImpacts: { f1: number; f2: number; f3: number; f4: number; d1: number; d2: number; d3: number };
     goalieImpact: number;
+    lineupGrade: number; // deduplicated sum of impact_score (each unique skater counted once)
 };
 
 // Pure helper: extracts a numeric value for the given RATINGS_COLS key from a
@@ -374,6 +380,7 @@ const extractRatingValue = (entry: TeamRatingEntry | undefined, colKey: string):
         case 'xgf_5v5':       return r?.xgf_5v5_rating ?? NaN;
         case 'xga_5v5':       return r?.xga_5v5_rating ?? NaN;
         case 'lineup_rating': return li.f1+li.f2+li.f3+li.f4+li.d1+li.d2+li.d3;
+        case 'lineup_grade':  return entry.lineupGrade;
         case 'f1_impact':     return li.f1;
         case 'f2_impact':     return li.f2;
         case 'f3_impact':     return li.f3;
@@ -667,11 +674,7 @@ const TeamsTable = () => {
 
     // Pre-compute all Team Ratings view values for every team
     const teamRatingsComputed = useMemo(() => {
-        if (Object.keys(teams).length === 0) return {} as Record<string, {
-            ratings: TeamRating | null;
-            lineImpacts: { f1: number; f2: number; f3: number; f4: number; d1: number; d2: number; d3: number };
-            goalieImpact: number;
-        }>;
+        if (Object.keys(teams).length === 0) return {} as Record<string, TeamRatingEntry>;
 
         // Build goalie → game-count lookup from rawData (by team common name)
         const goalieGamesByTeam: Record<string, Record<string, number>> = {};
@@ -682,24 +685,21 @@ const TeamsTable = () => {
         });
 
         // player_impact.json uses 7-digit NHL API IDs; team_lineups.json uses shorter IDs.
-        // Build a name-based fallback map (lowercase full name → impact data).
+        // Build a name-based fallback map using normName (strips diacritics like ü→u)
+        // so "Tim Stützle" (lineups) matches "Tim Stutzle" (player_impact).
         const impactByName = new Map<string, PlayerImpactData>();
         Object.values(playerImpact).forEach(p => {
-            if (p.name) impactByName.set(p.name.toLowerCase().trim(), p);
+            if (p.name) impactByName.set(normName(p.name), p);
         });
 
         const sumLineImpact = (players: LineupPlayer[]) =>
             (players ?? []).reduce((s, p) => {
                 const byId = playerImpact[String(p.id)];
-                const entry = byId ?? impactByName.get((p.name ?? '').toLowerCase().trim());
+                const entry = byId ?? impactByName.get(normName(p.name ?? ''));
                 return s + (entry?.impact_score ?? 0);
             }, 0);
 
-        const result: Record<string, {
-            ratings: TeamRating | null;
-            lineImpacts: { f1: number; f2: number; f3: number; f4: number; d1: number; d2: number; d3: number };
-            goalieImpact: number;
-        }> = {};
+        const result: Record<string, TeamRatingEntry> = {};
 
         Object.entries(teams).forEach(([commonName, teamInfo]) => {
             const ratings = teamRatingsData[commonName] ?? null;
@@ -732,7 +732,23 @@ const TeamsTable = () => {
                 return sum + (gr?.gsax_per_game ?? 0);
             }, 0);
 
-            result[commonName] = { ratings, lineImpacts, goalieImpact };
+            // GRADE: deduplicated sum — each unique skater counted once across all lines
+            // (handles edge cases like a player listed on both D1 and D2)
+            const seenKeys = new Set<string>();
+            let lineupGrade = 0;
+            for (const lineKey of ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3'] as const) {
+                for (const p of (lineup?.[lineKey] ?? [])) {
+                    const byId = playerImpact[String(p.id)];
+                    const dedupeKey = byId ? String(p.id) : normName(p.name ?? '');
+                    const entry = byId ?? impactByName.get(normName(p.name ?? ''));
+                    if (!seenKeys.has(dedupeKey) && entry) {
+                        seenKeys.add(dedupeKey);
+                        lineupGrade += entry.impact_score ?? 0;
+                    }
+                }
+            }
+
+            result[commonName] = { ratings, lineImpacts, goalieImpact, lineupGrade };
         });
         return result;
     }, [teams, teamRatingsData, teamLineups, playerImpact, goalieRatings, rawData]);
@@ -754,6 +770,7 @@ const TeamsTable = () => {
             xgf_5v5:       rng(v => v.ratings?.xgf_5v5_rating ?? NaN),
             xga_5v5:       rng(v => v.ratings?.xga_5v5_rating ?? NaN),
             lineup_rating: rng(v => { const li = v.lineImpacts; return li.f1+li.f2+li.f3+li.f4+li.d1+li.d2+li.d3; }),
+            lineup_grade:  rng(v => v.lineupGrade),
             f1_impact:     rng(v => v.lineImpacts.f1),
             f2_impact:     rng(v => v.lineImpacts.f2),
             f3_impact:     rng(v => v.lineImpacts.f3),
