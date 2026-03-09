@@ -45,6 +45,32 @@ def format_pct(val_str):
     except ValueError:
         return val_str
 
+STATUS_ABBREV = {'Unconfirmed': 'U', 'Likely': 'L', 'Confirmed': 'C'}
+
+def format_starter(val_str):
+    """Convert 'Dustin Wolf (Unconfirmed)' to 'Wolf (U)'."""
+    import re
+    if not val_str:
+        return ''
+    match = re.match(r'(.+?)\s*\((\w+)\)\s*$', val_str.strip())
+    if match:
+        full_name, status = match.group(1), match.group(2)
+        last_name = full_name.strip().split()[-1]
+        abbrev = STATUS_ABBREV.get(status, status)
+        return f"{last_name} ({abbrev})"
+    # No status in parens — just return last name
+    return val_str.strip().split()[-1]
+
+def format_bet(wager_str):
+    """Convert 'Home 0.6 Units' or 'Away 1.0 Unit' to '$3.00', blank for No Bet."""
+    import re
+    if not wager_str or wager_str.strip() == 'No Bet':
+        return ''
+    match = re.search(r'(\d+(?:\.\d+)?)\s*Units?', wager_str, re.IGNORECASE)
+    if not match:
+        return ''
+    return f"${float(match.group(1)) * 5:.2f}"
+
 def snapshot():
     ct = pytz.timezone('US/Central')
     now_ct = datetime.datetime.now(ct)
@@ -89,20 +115,22 @@ def snapshot():
                 'run': run_number,
                 'awayteam': row.get('away_team', ''),
                 'hometeam': row.get('home_team', ''),
-                
-                'away_starter': row.get('away_starter', ''),
+
+                'away_starter': format_starter(row.get('away_starter', '')),
                 'away_xG': row.get('away_xg', ''),
                 'away_win%': format_pct(row.get('away_win_pct', '')),
                 'away_xGOdds': format_odds(row.get('away_model_odds', '')),
                 'away_Odds': format_odds(row.get('away_vegas_odds', '')),
                 'away_EV': format_ev(row.get('away_ev', '')),
-                
-                'home_starter': row.get('home_starter', ''),
+
+                'home_starter': format_starter(row.get('home_starter', '')),
                 'home_xG': row.get('home_xg', ''),
                 'home_win%': format_pct(row.get('home_win_pct', '')),
                 'home_xGOdds': format_odds(row.get('home_model_odds', '')),
                 'home_Odds': format_odds(row.get('home_vegas_odds', '')),
                 'home_EV': format_ev(row.get('home_ev', '')),
+
+                'bet': format_bet(row.get('wager_recommendation', '')),
             })
 
     if not rows_to_write:
@@ -113,8 +141,12 @@ def snapshot():
     fieldnames = [
         'date', 'gameid', 'timestamp', 'run', 'awayteam', 'hometeam',
         'away_starter', 'away_xG', 'away_win%', 'away_xGOdds', 'away_Odds', 'away_EV',
-        'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV'
+        'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV',
+        'bet',
     ]
+
+    # Build bet lookup by gameid so old rows can be backfilled
+    bet_by_gameid = {r['gameid']: r['bet'] for r in rows_to_write}
 
     all_rows = []
     if os.path.exists(history_file) and os.path.getsize(history_file) > 0:
@@ -123,7 +155,7 @@ def snapshot():
             all_rows = list(reader)
 
     all_rows.extend(rows_to_write)
-    
+
     # Apply format to all rows (fixes runs from earlier today)
     for row in all_rows:
         row['away_win%'] = format_pct(row.get('away_win%', '').replace('%', ''))
@@ -134,6 +166,12 @@ def snapshot():
         row['home_Odds'] = format_odds(row.get('home_Odds', '').replace('+', ''))
         row['away_EV'] = format_ev(row.get('away_EV', '').replace('+', ''))
         row['home_EV'] = format_ev(row.get('home_EV', '').replace('+', ''))
+        # Re-format starters (handles old rows with full name + full status)
+        row['away_starter'] = format_starter(row.get('away_starter', ''))
+        row['home_starter'] = format_starter(row.get('home_starter', ''))
+        # Backfill bet for rows written before the bet column was added
+        if not row.get('bet') and row.get('gameid') in bet_by_gameid:
+            row['bet'] = bet_by_gameid[row['gameid']]
 
     all_rows.sort(key=lambda r: (r.get('gameid', ''), int(r.get('run', 0))))
 
