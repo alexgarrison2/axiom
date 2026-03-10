@@ -599,7 +599,7 @@
                 "pos": "lw",
                 "id": 28817,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Alexander Wennberg",
@@ -641,7 +641,7 @@
                 "pos": "rw",
                 "id": 4646,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -3412,12 +3412,12 @@
         ],
         "f2": [
             {
-                "name": "Matt Boldy",
-                "number": 12,
+                "name": "Marcus Johansson",
+                "number": 90,
                 "pos": "lw",
-                "id": 30421,
-                "ppUnit": 1,
-                "movement": null
+                "id": 1524,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Joel Eriksson Ek",
@@ -3428,11 +3428,11 @@
                 "movement": null
             },
             {
-                "name": "Bobby Brink",
-                "number": 10,
+                "name": "Matt Boldy",
+                "number": 12,
                 "pos": "rw",
-                "id": 30223,
-                "ppUnit": 2,
+                "id": 30421,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -3480,12 +3480,12 @@
                 "movement": null
             },
             {
-                "name": "Nico Sturm",
-                "number": 78,
+                "name": "Bobby Brink",
+                "number": 10,
                 "pos": "rw",
-                "id": 27037,
-                "ppUnit": null,
-                "movement": null
+                "id": 30223,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -3548,14 +3548,6 @@
                 "number": 17,
                 "pos": "ir1",
                 "id": 1689,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Marcus Johansson",
-                "number": 90,
-                "pos": "ir2",
-                "id": 1524,
                 "ppUnit": null,
                 "movement": null
             }
