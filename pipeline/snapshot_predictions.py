@@ -153,9 +153,9 @@ def snapshot():
 
     # Write/append to daily history file
     fieldnames = [
-        'date', 'gameid', 'timestamp', 'run', 'awayteam', 'hometeam',
+        'date', 'gameid', 'timestamp', 'run', 'awayteam',
         'away_starter', 'away_xG', 'away_win%', 'away_xGOdds', 'away_Odds', 'away_EV', 'away_bet',
-        'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV', 'home_bet',
+        'hometeam', 'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV', 'home_bet',
     ]
 
     # Build bet lookups by gameid so old rows can be backfilled
