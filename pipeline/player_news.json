@@ -1,18 +1,78 @@
 {
     "DAL": [
         {
+            "player": "Roope Hintz",
+            "news": "Hintz (lower-body) will not require surgery and is hopeful to return for the playoffs. ",
+            "category": "Injury",
+            "date": "2026-03-10",
+            "timestamp": "2026-03-10T16:31:48.390Z"
+        },
+        {
+            "player": "Mikko Rantanen",
+            "news": "Rantanen (lower-body) skated on Monday and is hoping to return in 2-3 weeks. ",
+            "category": "Injury",
+            "date": "2026-03-10",
+            "timestamp": "2026-03-10T16:27:13.206Z"
+        },
+        {
+            "player": "Jake Oettinger",
+            "news": "Oettinger is expected to start vs. Vegas on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-10",
+            "timestamp": "2026-03-10T16:20:41.950Z"
+        },
+        {
+            "player": "Nathan Bastian",
+            "news": "Bastian will be a healthy scratch vs. Vegas on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-10",
+            "timestamp": "2026-03-10T16:20:06.675Z"
+        },
+        {
             "player": "Arttu Hyry",
             "news": "Hyry will draw back into Dallas' lineup vs. Vegas on Tuesday. ",
             "category": "Line Change",
             "date": "2026-03-10",
             "timestamp": "2026-03-10T16:19:19.870Z"
-        },
+        }
+    ],
+    "COL": [
         {
-            "player": "Jake Oettinger",
-            "news": "Oettinger is in the starter's crease at Dallas' morning skate. ",
+            "player": "Mackenzie Blackwood",
+            "news": "Blackwood is expected to start vs. Edmonton on Tuesday. ",
             "category": "Goalie Start",
             "date": "2026-03-10",
-            "timestamp": "2026-03-10T15:30:26.387Z"
+            "timestamp": "2026-03-10T16:30:10.715Z"
+        }
+    ],
+    "PIT": [
+        {
+            "player": "Stuart Skinner",
+            "news": "Skinner will start in Carolina on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-10",
+            "timestamp": "2026-03-10T16:23:30.621Z"
+        },
+        {
+            "player": "Connor Clifton",
+            "news": "Clifton will draw back into Pittsburgh's lineup in Carolina. ",
+            "category": "Line Change",
+            "date": "2026-03-10",
+            "timestamp": "2026-03-10T16:23:00.512Z"
+        },
+        {
+            "player": "Stuart Skinner",
+            "news": "Skinner was the first goalie off the ice at Pittsburgh's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-10",
+            "timestamp": "2026-03-10T15:55:05.221Z"
+        },
+        {
+            "player": "Sidney Crosby",
+            "news": "Crosby (lower-body) is on the ice for the morning skate but is not expected to return on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-10",
+            "timestamp": "2026-03-10T15:37:02.157Z"
         }
     ],
     "DET": [
@@ -40,13 +100,6 @@
             "category": "Line Change",
             "date": "2026-03-10",
             "timestamp": "2026-03-10T16:03:37.791Z"
-        },
-        {
-            "player": "Joseph Woll",
-            "news": "Woll is expected to start in Montreal on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-10",
-            "timestamp": "2026-03-10T15:34:21.730Z"
         }
     ],
     "NYR": [
@@ -63,36 +116,6 @@
             "category": "Call Up",
             "date": "2026-03-10",
             "timestamp": "2026-03-10T16:01:41.298Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Stuart Skinner",
-            "news": "Skinner was the first goalie off the ice at Pittsburgh's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-10",
-            "timestamp": "2026-03-10T15:55:05.221Z"
-        },
-        {
-            "player": "Sidney Crosby",
-            "news": "Crosby (lower-body) is on the ice for the morning skate but is not expected to return on Tuesday. ",
-            "category": "Injury",
-            "date": "2026-03-10",
-            "timestamp": "2026-03-10T15:37:02.157Z"
-        },
-        {
-            "player": "Justin Brazeau",
-            "news": "Brazeau was week-to-week with an upper-body injury. ",
-            "category": "Injury",
-            "date": "2026-03-10",
-            "timestamp": "2026-03-10T15:33:13.919Z"
-        },
-        {
-            "player": "Samuel Girard",
-            "news": "Girard is day-to-day with an upper-body injury. ",
-            "category": "Injury",
-            "date": "2026-03-10",
-            "timestamp": "2026-03-10T15:32:54.606Z"
         }
     ],
     "MIN": [
@@ -134,31 +157,6 @@
             "category": "Goalie Start",
             "date": "2026-03-10",
             "timestamp": "2026-03-10T15:38:21.831Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Darren Raddysh",
-            "news": "Raddysh (personal) is out vs. Columbus on Tuesday. ",
-            "category": "General",
-            "date": "2026-03-10",
-            "timestamp": "2026-03-10T15:25:58.903Z"
-        },
-        {
-            "player": "Gage Goncalves",
-            "news": "Goncalves (lower-body) will return to Tampa Bay's lineup vs. Columbus on Tuesday. ",
-            "category": "Injury",
-            "date": "2026-03-10",
-            "timestamp": "2026-03-10T15:25:30.825Z"
-        }
-    ],
-    "BOS": [
-        {
-            "player": "Jeremy Swayman",
-            "news": "Swayman will start vs. Los Angeles on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-10",
-            "timestamp": "2026-03-10T15:23:18.935Z"
         }
     ]
 }
