@@ -71,6 +71,18 @@ def format_bet(wager_str):
         return ''
     return f"${float(match.group(1)) * 5:.2f}"
 
+def format_away_bet(wager_str):
+    """Dollar amount if wager is on the away team, else blank."""
+    if not wager_str or 'Away' not in wager_str:
+        return ''
+    return format_bet(wager_str)
+
+def format_home_bet(wager_str):
+    """Dollar amount if wager is on the home team, else blank."""
+    if not wager_str or 'Home' not in wager_str:
+        return ''
+    return format_bet(wager_str)
+
 def snapshot():
     ct = pytz.timezone('US/Central')
     now_ct = datetime.datetime.now(ct)
@@ -95,7 +107,8 @@ def snapshot():
             reader = csv.DictReader(f)
             runs_seen = set()
             for row in reader:
-                runs_seen.add(row.get('run', ''))
+                if row.get('gameid'):  # skip blank separator rows
+                    runs_seen.add(row.get('run', ''))
             run_number = len(runs_seen) + 1
 
     # Read today's predictions
@@ -108,6 +121,7 @@ def snapshot():
             if game_date != date_str:
                 continue
 
+            wager = row.get('wager_recommendation', '')
             rows_to_write.append({
                 'date': now_ct.strftime('%-m/%-d/%y'),
                 'gameid': row.get('game_id', ''),
@@ -122,6 +136,7 @@ def snapshot():
                 'away_xGOdds': format_odds(row.get('away_model_odds', '')),
                 'away_Odds': format_odds(row.get('away_vegas_odds', '')),
                 'away_EV': format_ev(row.get('away_ev', '')),
+                'away_bet': format_away_bet(wager),
 
                 'home_starter': format_starter(row.get('home_starter', '')),
                 'home_xG': row.get('home_xg', ''),
@@ -129,8 +144,7 @@ def snapshot():
                 'home_xGOdds': format_odds(row.get('home_model_odds', '')),
                 'home_Odds': format_odds(row.get('home_vegas_odds', '')),
                 'home_EV': format_ev(row.get('home_ev', '')),
-
-                'bet': format_bet(row.get('wager_recommendation', '')),
+                'home_bet': format_home_bet(wager),
             })
 
     if not rows_to_write:
@@ -140,19 +154,21 @@ def snapshot():
     # Write/append to daily history file
     fieldnames = [
         'date', 'gameid', 'timestamp', 'run', 'awayteam', 'hometeam',
-        'away_starter', 'away_xG', 'away_win%', 'away_xGOdds', 'away_Odds', 'away_EV',
-        'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV',
-        'bet',
+        'away_starter', 'away_xG', 'away_win%', 'away_xGOdds', 'away_Odds', 'away_EV', 'away_bet',
+        'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV', 'home_bet',
     ]
 
-    # Build bet lookup by gameid so old rows can be backfilled
-    bet_by_gameid = {r['gameid']: r['bet'] for r in rows_to_write}
+    # Build bet lookups by gameid so old rows can be backfilled
+    away_bet_by_gameid = {r['gameid']: r['away_bet'] for r in rows_to_write}
+    home_bet_by_gameid = {r['gameid']: r['home_bet'] for r in rows_to_write}
 
     all_rows = []
     if os.path.exists(history_file) and os.path.getsize(history_file) > 0:
         with open(history_file, 'r') as f:
             reader = csv.DictReader(f)
-            all_rows = list(reader)
+            for row in reader:
+                if row.get('gameid'):  # skip blank separator rows
+                    all_rows.append(row)
 
     all_rows.extend(rows_to_write)
 
@@ -169,17 +185,23 @@ def snapshot():
         # Re-format starters (handles old rows with full name + full status)
         row['away_starter'] = format_starter(row.get('away_starter', ''))
         row['home_starter'] = format_starter(row.get('home_starter', ''))
-        # Backfill bet for rows written before the bet column was added
-        if not row.get('bet') and row.get('gameid') in bet_by_gameid:
-            row['bet'] = bet_by_gameid[row['gameid']]
+        # Backfill away_bet/home_bet for rows written before these columns existed
+        gameid = row.get('gameid', '')
+        if not row.get('away_bet') and not row.get('home_bet') and gameid in away_bet_by_gameid:
+            row['away_bet'] = away_bet_by_gameid[gameid]
+            row['home_bet'] = home_bet_by_gameid[gameid]
 
     all_rows.sort(key=lambda r: (r.get('gameid', ''), int(r.get('run', 0))))
 
     with open(history_file, 'w', newline='') as f:
-        # extrasaction='ignore' prevents errors if old rows had fields not in new fieldnames (unlikely here)
         writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
         writer.writeheader()
-        writer.writerows(all_rows)
+        prev_gameid = None
+        for row in all_rows:
+            if prev_gameid is not None and row.get('gameid') != prev_gameid:
+                writer.writerow({fn: '' for fn in fieldnames})  # blank separator row
+            writer.writerow(row)
+            prev_gameid = row.get('gameid')
 
     print(f"[snapshot] Run #{run_number}: added {len(rows_to_write)} games to {history_file}")
 
