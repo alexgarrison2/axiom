@@ -720,12 +720,15 @@ def predict():
         if team_baselines_data:
             print(f"Team baselines loaded: {len(team_baselines_data)} teams")
 
-    # ── Load player stats for absence-decay computation ──────────────────────
+    # ── Load player stats for absence-decay + trade-departure computation ────
     # Builds: team_game_dates  = {tri_code → sorted [date_str, ...]}
     #         player_last_game = {str(player_id) → last_date_str}
+    #         player_last_team = {str(player_id) → tri_code of last team in CSV}
     EWMA_HALFLIFE = 7  # must match team_ratings.py ewm(halflife=7)
     team_game_dates = {}
     player_last_game = {}
+    player_last_team = {}   # tri-code of the last team each player appeared for in game data
+    traded_away_from = {}   # {old_team_tri: [{name, xgaa_ev_off, ev_toi_per_game, games_since_trade, new_team}]}
     try:
         from player_impact import normalize_name as _norm_name
         _ps_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -744,16 +747,55 @@ def predict():
             # Team game dates: every unique date a team played
             for team_tri, grp in _ps_df.groupby('team'):
                 team_game_dates[team_tri] = sorted(grp['date'].unique())
-            # Player last game: keyed by player_id (matches MoneyPuck player IDs)
+            # Player last game + last team: keyed by player_id (matches MoneyPuck player IDs)
             if 'player_id' in _ps_df.columns:
                 for pid_val, grp in _ps_df.groupby('player_id'):
-                    player_last_game[str(int(pid_val))] = grp['date'].max()
+                    sorted_grp = grp.sort_values('date')
+                    player_last_game[str(int(pid_val))] = sorted_grp['date'].max()
+                    if 'team' in sorted_grp.columns:
+                        player_last_team[str(int(pid_val))] = sorted_grp.iloc[-1]['team']
             print(f"Absence-decay data loaded: {len(team_game_dates)} teams, "
                   f"{len(player_last_game)} player records")
         else:
             print("[WARN] player_stats.csv not found — absence decay disabled")
     except Exception as e:
         print(f"[WARN] Could not load player stats for absence decay: {e}")
+
+    # ── Detect traded-away players ────────────────────────────────────────────
+    # Compare each player's current team (player_impact_data, updated nightly from
+    # MoneyPuck) against the last team they actually appeared in game logs
+    # (player_last_team, from player_stats.csv).  A mismatch means a trade.
+    # We apply a decayed xG penalty to the OLD team for up to TRADE_LOOKBACK_GAMES.
+    TRADE_LOOKBACK_GAMES = 14  # ignore trades older than this many old-team games
+    if player_impact_data and player_last_team and team_game_dates:
+        for pid, pdata in player_impact_data.items():
+            current_tri  = pdata.get('team')            # where they play NOW
+            last_tri_csv = player_last_team.get(pid)    # last team in game logs
+            if not current_tri or not last_tri_csv:
+                continue
+            if current_tri == last_tri_csv:
+                continue  # no team change detected
+            if pdata.get('ev_toi_per_game', 0) < 300:  # 5 min/game minimum
+                continue  # fringe player — skip
+            last_game_date = player_last_game.get(pid)
+            if not last_game_date:
+                continue
+            old_team_dates    = team_game_dates.get(last_tri_csv, [])
+            games_since_trade = len([d for d in old_team_dates if d > last_game_date])
+            if games_since_trade == 0 or games_since_trade > TRADE_LOOKBACK_GAMES:
+                continue  # still playing for old team, or too old to matter
+            if last_tri_csv not in traded_away_from:
+                traded_away_from[last_tri_csv] = []
+            traded_away_from[last_tri_csv].append({
+                'name':             pdata.get('name', 'Unknown'),
+                'xgaa_ev_off':      pdata.get('xgaa_ev_off', 0.0),   # xG above avg / game, EV offense
+                'ev_toi_per_game':  pdata.get('ev_toi_per_game', 0),
+                'games_since_trade': games_since_trade,
+                'new_team':         current_tri,
+            })
+        if traded_away_from:
+            print(f"[TRADE] Departures detected for {len(traded_away_from)} team(s): "
+                  + ", ".join(f"{t}({len(v)})" for t, v in traded_away_from.items()))
 
     # League Average xG
     league_xg = 3.13
@@ -1140,6 +1182,43 @@ def predict():
         h_absence_decay = _compute_absence_decay(home_tri, h_lineup)
         a_absence_decay = _compute_absence_decay(away_tri, a_lineup)
 
+        # ── Trade-departure penalty ───────────────────────────────────────────
+        # Mirrors the absence-decay logic: players traded away are "permanently
+        # absent", so the old team's EWMA rating still carries their historical
+        # contributions.  Apply a decayed xG reduction until the EWMA has
+        # had enough post-trade games to absorb the loss naturally.
+        #
+        # Uses xgaa_ev_off (expected goals above average, EV offense, per game)
+        # as the penalty magnitude — only above-average players reduce xG.
+        # Decay = 0.5^(games_since_trade / EWMA_HALFLIFE), same halflife as EWMA.
+
+        def _compute_trade_penalty(team_tri):
+            """Return (xg_penalty_float, [detail_str, ...]) for traded-away players."""
+            players = traded_away_from.get(team_tri, [])
+            if not players:
+                return 0.0, []
+            total_pen = 0.0
+            details   = []
+            for p in players:
+                xgaa = p.get('xgaa_ev_off', 0.0)
+                if xgaa <= 0:
+                    continue  # below-average contributor — no penalty needed
+                decay  = 0.5 ** (p['games_since_trade'] / EWMA_HALFLIFE)
+                contrib = xgaa * decay
+                total_pen += contrib
+                details.append(
+                    f"{p['name']}→{p['new_team']} "
+                    f"(-{contrib:.3f} xG, {p['games_since_trade']}g ago)"
+                )
+            return total_pen, details
+
+        h_trade_pen, h_trade_log = _compute_trade_penalty(home_tri)
+        a_trade_pen, a_trade_log = _compute_trade_penalty(away_tri)
+        if h_trade_log:
+            print(f"  [TRADE] {home_team} departures: {'; '.join(h_trade_log)}")
+        if a_trade_log:
+            print(f"  [TRADE] {away_team} departures: {'; '.join(a_trade_log)}")
+
         def _lineup_quality(lineup_result, key, league_baseline, absence_decay=1.0):
             """Return quality ratio for a team's lineup vs league average.
 
@@ -1403,8 +1482,8 @@ def predict():
                     pass
         
         # Combine Components
-        h_xg = h_xg_base + h_pp_xg - h_rest_pen
-        a_xg = a_xg_base + a_pp_xg - a_rest_pen
+        h_xg = h_xg_base + h_pp_xg - h_rest_pen - h_trade_pen
+        a_xg = a_xg_base + a_pp_xg - a_rest_pen - a_trade_pen
         
         # Debugging Output
         # print(f"  {home_team} xG Breakdown: Base={h_xg_base:.2f}, PP={h_pp_xg:.2f}, Rest=-{h_rest_pen}, Home={HOME_ICE_VAL}")
