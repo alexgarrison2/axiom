@@ -787,11 +787,12 @@ def predict():
             if last_tri_csv not in traded_away_from:
                 traded_away_from[last_tri_csv] = []
             traded_away_from[last_tri_csv].append({
-                'name':             pdata.get('name', 'Unknown'),
-                'xgaa_ev_off':      pdata.get('xgaa_ev_off', 0.0),   # xG above avg / game, EV offense
-                'ev_toi_per_game':  pdata.get('ev_toi_per_game', 0),
+                'name':              pdata.get('name', 'Unknown'),
+                'xgaa_ev_off':       pdata.get('xgaa_ev_off', 0.0),  # xG above avg / game, EV offense
+                'xgaa_ev_def':       pdata.get('xgaa_ev_def', 0.0),  # xG above avg / game, EV defense (goals prevented)
+                'ev_toi_per_game':   pdata.get('ev_toi_per_game', 0),
                 'games_since_trade': games_since_trade,
-                'new_team':         current_tri,
+                'new_team':          current_tri,
             })
         if traded_away_from:
             print(f"[TRADE] Departures detected for {len(traded_away_from)} team(s): "
@@ -1193,27 +1194,41 @@ def predict():
         # Decay = 0.5^(games_since_trade / EWMA_HALFLIFE), same halflife as EWMA.
 
         def _compute_trade_penalty(team_tri):
-            """Return (xg_penalty_float, [detail_str, ...]) for traded-away players."""
+            """Return (off_pen, def_boost, [detail_str, ...]) for traded-away players.
+
+            off_pen   – subtract from THIS team's xG (lost offensive contributors)
+            def_boost – add to OPPONENT's xG (lost defensive contributors mean
+                        the old team's xGA rating is still artificially low)
+            """
             players = traded_away_from.get(team_tri, [])
             if not players:
-                return 0.0, []
-            total_pen = 0.0
+                return 0.0, 0.0, []
+            off_pen   = 0.0
+            def_boost = 0.0
             details   = []
             for p in players:
-                xgaa = p.get('xgaa_ev_off', 0.0)
-                if xgaa <= 0:
-                    continue  # below-average contributor — no penalty needed
-                decay  = 0.5 ** (p['games_since_trade'] / EWMA_HALFLIFE)
-                contrib = xgaa * decay
-                total_pen += contrib
-                details.append(
-                    f"{p['name']}→{p['new_team']} "
-                    f"(-{contrib:.3f} xG, {p['games_since_trade']}g ago)"
-                )
-            return total_pen, details
+                decay = 0.5 ** (p['games_since_trade'] / EWMA_HALFLIFE)
 
-        h_trade_pen, h_trade_log = _compute_trade_penalty(home_tri)
-        a_trade_pen, a_trade_log = _compute_trade_penalty(away_tri)
+                # Offensive side: team's own xG goes down
+                xgaa_off = p.get('xgaa_ev_off', 0.0)
+                contrib_off = max(0.0, xgaa_off) * decay
+                off_pen += contrib_off
+
+                # Defensive side: opponent's xG goes up
+                xgaa_def = p.get('xgaa_ev_def', 0.0)
+                contrib_def = max(0.0, xgaa_def) * decay
+                def_boost += contrib_def
+
+                if contrib_off > 0 or contrib_def > 0:
+                    details.append(
+                        f"{p['name']}→{p['new_team']} "
+                        f"(off:-{contrib_off:.3f}, def:+{contrib_def:.3f} opp xG, "
+                        f"{p['games_since_trade']}g ago)"
+                    )
+            return off_pen, def_boost, details
+
+        h_trade_off_pen, h_trade_def_boost, h_trade_log = _compute_trade_penalty(home_tri)
+        a_trade_off_pen, a_trade_def_boost, a_trade_log = _compute_trade_penalty(away_tri)
         if h_trade_log:
             print(f"  [TRADE] {home_team} departures: {'; '.join(h_trade_log)}")
         if a_trade_log:
@@ -1482,8 +1497,9 @@ def predict():
                     pass
         
         # Combine Components
-        h_xg = h_xg_base + h_pp_xg - h_rest_pen - h_trade_pen
-        a_xg = a_xg_base + a_pp_xg - a_rest_pen - a_trade_pen
+        # Trade penalties: own xG drops (lost offense) AND opponent xG rises (lost defense)
+        h_xg = h_xg_base + h_pp_xg - h_rest_pen - h_trade_off_pen + a_trade_def_boost
+        a_xg = a_xg_base + a_pp_xg - a_rest_pen - a_trade_off_pen + h_trade_def_boost
         
         # Debugging Output
         # print(f"  {home_team} xG Breakdown: Base={h_xg_base:.2f}, PP={h_pp_xg:.2f}, Rest=-{h_rest_pen}, Home={HOME_ICE_VAL}")
