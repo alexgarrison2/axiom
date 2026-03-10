@@ -8,9 +8,26 @@ from datetime import datetime
 
 def fetch_odds():
     print("Fetching odds from Bovada API...")
-    
+
     odds_data = {}
-    
+
+    # Load upcoming_games.json to get authoritative dates (Bovada timestamps are unreliable)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    upcoming_path = os.path.join(script_dir, 'upcoming_games.json')
+    upcoming_date_lookup = {}  # (away_team, home_team) -> game_date
+    try:
+        with open(upcoming_path, 'r') as f:
+            upcoming_games = json.load(f)
+        for game in upcoming_games:
+            away = game.get('awayTeam')
+            home = game.get('homeTeam')
+            date = game.get('gameDate')
+            if away and home and date:
+                upcoming_date_lookup[(away, home)] = date
+        print(f"Loaded {len(upcoming_date_lookup)} upcoming games for date correction.")
+    except Exception as e:
+        print(f"Warning: Could not load upcoming_games.json for date correction: {e}")
+
     # Bovada Team Name -> App Common Name Mapping
     TEAM_MAPPING = {
         "Anaheim Ducks": "Ducks",
@@ -83,7 +100,8 @@ def fetch_odds():
     print(f"Total aggregated items: {len(data)}")
     
     parsed_count = 0
-    
+    bovada_matched_count = 0  # track how many Bovada games matched upcoming_games.json
+
     for item in data:
         events = item.get('events', [])
         print(f"Processing league/group: {item.get('description')} with {len(events)} events.")
@@ -140,6 +158,15 @@ def fetch_odds():
                 if not home_team: print(f"    Unknown Home: '{home_raw}'")
                 continue
             
+            # Override Bovada's date with the authoritative date from upcoming_games.json
+            # Bovada timestamps are frequently stale/wrong (e.g. returning old dates)
+            correct_date = upcoming_date_lookup.get((away_team, home_team))
+            if correct_date:
+                date_str = correct_date
+                bovada_matched_count += 1
+            else:
+                print(f"  Warning: {away_team}@{home_team} not found in upcoming_games.json, using Bovada date {date_str}")
+
             matchup_id = f"{date_str}:{away_team}@{home_team}"
             print(f"Found matchup: {matchup_id}")
             
@@ -199,80 +226,80 @@ def fetch_odds():
             parsed_count += 1
 
     print(f"Parsed {parsed_count} games from Bovada.")
-    print(f"Found odds for {len(odds_data)} teams.")
+    print(f"Bovada matched {bovada_matched_count} of {len(upcoming_date_lookup)} upcoming games.")
 
-    if len(odds_data) == 0:
-        print("Bovada returned 0 odds. Attempting fallback to ESPN API...")
+    # Use ESPN/DraftKings as fallback when:
+    # - Bovada returned nothing (0 odds), OR
+    # - Bovada returned games but none matched upcoming_games.json (stale data from IP blocking)
+    needs_espn = len(odds_data) == 0 or (bovada_matched_count == 0 and len(upcoming_date_lookup) > 0)
+    if needs_espn:
+        reason = "0 odds from Bovada" if len(odds_data) == 0 else "Bovada data is stale (no upcoming games matched)"
+        print(f"ESPN fallback triggered: {reason}")
         try:
-            espn_url = "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard"
+            # Fetch for every unique date in upcoming_games.json so we catch multi-day slates
+            espn_dates = sorted(set(g.get('gameDate', '').replace('-', '') for g in upcoming_games if g.get('gameDate')))
+            if not espn_dates:
+                from datetime import date
+                espn_dates = [date.today().strftime('%Y%m%d')]
+
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
-            req = urllib.request.Request(espn_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, context=ctx) as response:
-                espn_data = json.loads(response.read().decode())
-                
-            for event in espn_data.get('events', []):
-                try:
-                    start_time_iso = event.get('date', '') 
-                    if not start_time_iso: continue
-                    
-                    dt_str = start_time_iso.replace('Z', '')
-                    if len(dt_str.split(':')) == 2:
-                        dt_str += ':00'
-                    
-                    try:
-                        import pytz
-                        from datetime import timezone
-                        dt_utc = datetime.fromisoformat(dt_str + '+00:00')
-                        central = pytz.timezone('US/Central')
-                        dt_central = dt_utc.astimezone(central)
-                        date_str = dt_central.strftime('%Y-%m-%d')
-                    except Exception:
-                        from datetime import timezone, timedelta
-                        dt_utc = datetime.fromisoformat(dt_str + '+00:00')
-                        dt_central = dt_utc - timedelta(hours=6)
-                        date_str = dt_central.strftime('%Y-%m-%d')
-                    
-                    competitions = event.get('competitions', [])
-                    if not competitions: continue
-                    comp = competitions[0]
-                    
-                    competitors = comp.get('competitors', [])
-                    if len(competitors) < 2: continue
-                        
-                    home_raw = competitors[0].get('team', {}).get('name', '') if competitors[0].get('homeAway') == 'home' else competitors[1].get('team', {}).get('name', '')
-                    away_raw = competitors[0].get('team', {}).get('name', '') if competitors[0].get('homeAway') == 'away' else competitors[1].get('team', {}).get('name', '')
-                    
-                    home_team = TEAM_MAPPING.get(home_raw, home_raw)
-                    away_team = TEAM_MAPPING.get(away_raw, away_raw)
-                    if "Hockey Club" in home_team: home_team = "Mammoth"
-                    if "Hockey Club" in away_team: away_team = "Mammoth"
 
-                    matchup_id = f"{date_str}:{away_team}@{home_team}"
-                    
-                    odds_list = comp.get('odds', [])
-                    if odds_list:
-                        ml = odds_list[0].get('moneyline', {})
-                        h_odds_str = ml.get('home', {}).get('close', {}).get('odds', ml.get('home', {}).get('open', {}).get('odds'))
-                        a_odds_str = ml.get('away', {}).get('close', {}).get('odds', ml.get('away', {}).get('open', {}).get('odds'))
-                        
-                        if h_odds_str and a_odds_str:
-                            h_odds = 100 if h_odds_str == 'EVEN' else int(h_odds_str)
-                            a_odds = 100 if a_odds_str == 'EVEN' else int(a_odds_str)
-                            
-                            if matchup_id not in odds_data:
-                                odds_data[matchup_id] = {}
-                            odds_data[matchup_id][home_team] = h_odds
-                            odds_data[matchup_id][away_team] = a_odds
-                            print(f"  [ESPN] Added odds for {home_team}: {h_odds}, {away_team}: {a_odds}")
-                            
+            for espn_date in espn_dates:
+                espn_url = f"https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates={espn_date}"
+                try:
+                    req = urllib.request.Request(espn_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req, context=ctx) as response:
+                        espn_data = json.loads(response.read().decode())
                 except Exception as e:
-                    print(f"Error parsing ESPN event: {e}")
-                    
+                    print(f"Error fetching ESPN for {espn_date}: {e}")
+                    continue
+
+                for event in espn_data.get('events', []):
+                    try:
+                        competitions = event.get('competitions', [])
+                        if not competitions: continue
+                        comp = competitions[0]
+
+                        competitors = comp.get('competitors', [])
+                        if len(competitors) < 2: continue
+
+                        home_raw = next((c.get('team', {}).get('name', '') for c in competitors if c.get('homeAway') == 'home'), '')
+                        away_raw = next((c.get('team', {}).get('name', '') for c in competitors if c.get('homeAway') == 'away'), '')
+
+                        home_team = TEAM_MAPPING.get(home_raw, home_raw)
+                        away_team = TEAM_MAPPING.get(away_raw, away_raw)
+                        if "Hockey Club" in home_team: home_team = "Mammoth"
+                        if "Hockey Club" in away_team: away_team = "Mammoth"
+
+                        # Use authoritative date from upcoming_games.json
+                        date_str = upcoming_date_lookup.get((away_team, home_team), espn_date[:4] + '-' + espn_date[4:6] + '-' + espn_date[6:])
+
+                        matchup_id = f"{date_str}:{away_team}@{home_team}"
+
+                        odds_list = comp.get('odds', [])
+                        if odds_list:
+                            ml = odds_list[0].get('moneyline', {})
+                            h_odds_str = ml.get('home', {}).get('close', {}).get('odds', ml.get('home', {}).get('open', {}).get('odds'))
+                            a_odds_str = ml.get('away', {}).get('close', {}).get('odds', ml.get('away', {}).get('open', {}).get('odds'))
+
+                            if h_odds_str and a_odds_str:
+                                h_odds = 100 if h_odds_str == 'EVEN' else int(h_odds_str)
+                                a_odds = 100 if a_odds_str == 'EVEN' else int(a_odds_str)
+
+                                if matchup_id not in odds_data:
+                                    odds_data[matchup_id] = {}
+                                odds_data[matchup_id][home_team] = h_odds
+                                odds_data[matchup_id][away_team] = a_odds
+                                print(f"  [ESPN] Added odds for {matchup_id}: {home_team} {h_odds}, {away_team} {a_odds}")
+
+                    except Exception as e:
+                        print(f"Error parsing ESPN event: {e}")
+
         except Exception as e:
-            print(f"Error fetching ESPN data: {e}")
-            
+            print(f"Error in ESPN fallback: {e}")
+
         print(f"Found odds for {len(odds_data)} matchups after ESPN fallback.")
     
     # Merge Manual Odds (Override)
@@ -282,7 +309,6 @@ def fetch_odds():
         # For now, let's keep it as is or ignore it in the context of the new structure.
         pass
     
-    script_dir = os.path.dirname(os.path.abspath(__file__))
     output_path = os.path.join(script_dir, 'odds.json')
     
     with open(output_path, 'w') as f:
