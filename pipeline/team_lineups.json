@@ -1092,12 +1092,12 @@
                 "movement": null
             },
             {
-                "name": "Oliver Bjorkstrand",
-                "number": 22,
+                "name": "Gage Goncalves",
+                "number": 93,
                 "pos": "rw",
-                "id": 2603,
-                "ppUnit": 1,
-                "movement": null
+                "id": 32521,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1128,11 +1128,11 @@
         ],
         "f3": [
             {
-                "name": "Pontus Holmberg",
-                "number": 29,
+                "name": "Zemgus Girgensons",
+                "number": 28,
                 "pos": "lw",
-                "id": 29640,
-                "ppUnit": 2,
+                "id": 1953,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -1144,21 +1144,21 @@
                 "movement": null
             },
             {
-                "name": "Zemgus Girgensons",
-                "number": 28,
+                "name": "Pontus Holmberg",
+                "number": 29,
                 "pos": "rw",
-                "id": 1953,
+                "id": 29640,
                 "ppUnit": null,
                 "movement": null
             }
         ],
         "f4": [
             {
-                "name": "Scott Sabourin",
-                "number": 46,
+                "name": "Corey Perry",
+                "number": 90,
                 "pos": "lw",
-                "id": 2171,
-                "ppUnit": null,
+                "id": 36,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1170,12 +1170,12 @@
                 "movement": null
             },
             {
-                "name": "Corey Perry",
-                "number": 90,
+                "name": "Oliver Bjorkstrand",
+                "number": 22,
                 "pos": "rw",
-                "id": 36,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2603,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -1188,48 +1188,48 @@
                 "movement": null
             },
             {
-                "name": "Darren Raddysh",
-                "number": 43,
+                "name": "Declan Carlile",
+                "number": 67,
                 "pos": "rd",
-                "id": 4756,
-                "ppUnit": 1,
-                "movement": null
+                "id": 30124,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d2": [
-            {
-                "name": "Victor Hedman",
-                "number": 77,
-                "pos": "ld",
-                "id": 1369,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Erik Cernak",
-                "number": 81,
-                "pos": "rd",
-                "id": 2749,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d3": [
             {
                 "name": "Ryan McDonagh",
                 "number": 27,
                 "pos": "ld",
                 "id": 1048,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Charle-Edouard D'Astous",
                 "number": 51,
                 "pos": "rd",
                 "id": 26500,
+                "ppUnit": 2,
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Victor Hedman",
+                "number": 77,
+                "pos": "ld",
+                "id": 1369,
+                "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Steven Santini",
+                "number": null,
+                "pos": "rd",
+                "id": 2624,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -1258,18 +1258,18 @@
                 "movement": null
             },
             {
-                "name": "Gage Goncalves",
-                "number": 93,
-                "pos": "ir4",
-                "id": 32521,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Erik Cernak",
                 "number": 81,
                 "pos": "ir5",
                 "id": 2749,
+                "ppUnit": null,
+                "movement": null
+            },
+            {
+                "name": "Darren Raddysh",
+                "number": 43,
+                "pos": "ir6",
+                "id": 4756,
                 "ppUnit": null,
                 "movement": "down"
             }
@@ -1456,27 +1456,27 @@
     "FLA": {
         "f1": [
             {
-                "name": "Evan Rodrigues",
-                "number": 17,
+                "name": "Eetu Luostarinen",
+                "number": 27,
                 "pos": "lw",
-                "id": 2620,
-                "ppUnit": 2,
-                "movement": null
+                "id": 28129,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Anton Lundell",
                 "number": 15,
                 "pos": "c",
                 "id": 33026,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
-                "name": "Sam Reinhart",
-                "number": 13,
+                "name": "Evan Rodrigues",
+                "number": 17,
                 "pos": "rw",
-                "id": 2364,
-                "ppUnit": 1,
+                "id": 2620,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1516,12 +1516,12 @@
                 "movement": null
             },
             {
-                "name": "Eetu Luostarinen",
-                "number": 27,
+                "name": "Tomas Nosek",
+                "number": 92,
                 "pos": "c",
-                "id": 28129,
+                "id": 2423,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Mackie Samoskevich",
@@ -1542,19 +1542,19 @@
                 "movement": null
             },
             {
-                "name": "Tomas Nosek",
-                "number": 92,
+                "name": "Luke Kunin",
+                "number": 11,
                 "pos": "c",
-                "id": 2423,
+                "id": 2650,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Vinnie Hinostroza",
                 "number": 18,
                 "pos": "rw",
                 "id": 2539,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1652,6 +1652,14 @@
                 "id": 124,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Cole Reinhardt",
+                "number": 23,
+                "pos": "ir6",
+                "id": 28385,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
@@ -1971,7 +1979,7 @@
                 "pos": "ld",
                 "id": 29499,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Braden Schneider",
@@ -1989,7 +1997,7 @@
                 "pos": "ld",
                 "id": 4680,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Urho Vaakanainen",
