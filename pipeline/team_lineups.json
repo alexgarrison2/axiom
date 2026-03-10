@@ -1487,7 +1487,7 @@
                 "pos": "rw",
                 "id": 2497,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -1759,7 +1759,7 @@
                 "pos": "rd",
                 "id": 27678,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -1777,7 +1777,7 @@
                 "pos": "rd",
                 "id": 29922,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -1787,7 +1787,7 @@
                 "pos": "ld",
                 "id": 37937,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Nick Jensen",
@@ -1795,7 +1795,7 @@
                 "pos": "rd",
                 "id": 2576,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
@@ -5386,12 +5386,12 @@
         ],
         "f2": [
             {
-                "name": "Jaden Schwartz",
-                "number": 17,
+                "name": "Bobby McMann",
+                "number": 74,
                 "pos": "lw",
-                "id": 1864,
+                "id": 32922,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Chandler Stephenson",
@@ -5540,6 +5540,14 @@
                 "id": 4632,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Jaden Schwartz",
+                "number": 17,
+                "pos": "ir4",
+                "id": 1864,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
