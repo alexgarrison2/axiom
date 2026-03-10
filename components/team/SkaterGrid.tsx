@@ -883,7 +883,14 @@ export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: Ska
                 const gid = String(row.game_id);
                 acc.played_toi.set(gid, (acc.played_toi.get(gid) ?? 0) + toiSec);
             } else if (toiSec > 0) {
-                // Different team — record date so availability strip can show it
+                // Different team — count toward season totals (combined stats for traded players)
+                acc.g += Number(row.goals) || 0;
+                acc.a += Number(row.assists) || 0;
+                acc.pts += Number(row.points) || 0;
+                acc.shots += Number(row.shots) || 0;
+                acc.toi_sec += toiSec;
+                acc.gp++;
+                // Record date so availability strip can show it
                 acc.other_team_dates.set(String(row.date), rowTeam);
             }
         }
