@@ -11,6 +11,7 @@ export function useTeamData(teamAbbr: string) {
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
+        let isActive = true;
 
         const fetchData = async () => {
             setLoading(true);
@@ -21,8 +22,10 @@ export function useTeamData(teamAbbr: string) {
                     throw new Error('Failed to fetch team data');
                 }
                 const jsonData = await res.json();
+                if (!isActive) return;
                 setData(jsonData);
             } catch (err) {
+                if (!isActive) return;
                 if ((err as Error).name === 'AbortError') {
                     setError('Request timed out. Please try again.');
                 } else {
@@ -30,11 +33,19 @@ export function useTeamData(teamAbbr: string) {
                 }
             } finally {
                 clearTimeout(timeoutId);
-                setLoading(false);
+                if (isActive) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchData();
+
+        return () => {
+            isActive = false;
+            clearTimeout(timeoutId);
+            controller.abort();
+        };
     }, [teamAbbr]);
 
     return { data, loading, error };

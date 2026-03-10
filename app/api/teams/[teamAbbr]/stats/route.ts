@@ -4,6 +4,8 @@ import path from 'path';
 import Papa from 'papaparse';
 import { TeamInfo, GameLog, PlayerBoxscoreRow, TeamRating, TeamStatsResponse, TeamLineup } from '@/types';
 
+const APP_TIME_ZONE = 'America/Chicago';
+
 // Helper to format time strings
 const formatTime = (seconds: string | number) => {
     const s = parseInt(String(seconds));
@@ -12,6 +14,15 @@ const formatTime = (seconds: string | number) => {
     const sec = s % 60;
     return `${m}:${sec.toString().padStart(2, '0')}`;
 };
+
+const formatDateInTimeZone = (date: Date, timeZone: string) => (
+    new Intl.DateTimeFormat('en-CA', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).format(date)
+);
 
 export async function GET(
     request: NextRequest,
@@ -171,7 +182,7 @@ export async function GET(
         let todaysGame: any = null;
         try {
             const upcomingData = readJson('upcoming_games.json');
-            const todayStr = new Date().toLocaleDateString('en-CA');
+            const todayStr = formatDateInTimeZone(new Date(), APP_TIME_ZONE);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             todaysGame = upcomingData.find((g: any) =>
                 (g.homeTeamAbbrev === teamAbbrUpper || g.awayTeamAbbrev === teamAbbrUpper) &&

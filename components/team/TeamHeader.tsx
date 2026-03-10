@@ -10,10 +10,17 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 // Derive "Mar-06" style labels for today and tomorrow
 function getNavDates(): { label: string; tab: string }[] {
+    const toLocalIsoDate = (d: Date) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const fmt = (d: Date) => {
         const mon = d.toLocaleDateString('en-US', { month: 'short' });
         const day = String(d.getDate()).padStart(2, '0');
-        const iso = d.toISOString().split('T')[0];
+        const iso = toLocalIsoDate(d);
         return { label: `${mon}-${day}`, tab: iso };
     };
     const today = new Date();
