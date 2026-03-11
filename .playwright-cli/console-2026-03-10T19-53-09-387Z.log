@@ -1,0 +1,98 @@
+[    1395ms] [WARNING] Image with src "/ponyxG_condensed.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:2287
+[  547942ms] [ERROR] ./components/PredictionsViewer.tsx:17:1
+Module not found: Can't resolve './SkaterStatsTable'
+  15 | import PlayoffTable from './PlayoffTable';
+  16 | import PlayoffBracket from './PlayoffBracket';
+> 17 | import SkaterStatsTable from './SkaterStatsTable';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  18 | import Header from './Header';
+  19 | import { Slider } from '@/components/ui/slider';
+  20 |
+
+Import trace:
+  Server Component:
+    ./components/PredictionsViewer.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3117
+[  637905ms] [ERROR] ./components/PredictionsViewer.tsx:17:1
+Module not found: Can't resolve './SkaterStatsTable'
+  15 | import PlayoffTable from './PlayoffTable';
+  16 | import PlayoffBracket from './PlayoffBracket';
+> 17 | import SkaterStatsTable from './SkaterStatsTable';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  18 | import Header from './Header';
+  19 | import { Slider } from '@/components/ui/slider';
+  20 |
+
+Import trace:
+  Server Component:
+    ./components/PredictionsViewer.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3117
+[  638306ms] [ERROR] ./components/PredictionsViewer.tsx:17:1
+Module not found: Can't resolve './SkaterStatsTable'
+  15 | import PlayoffTable from './PlayoffTable';
+  16 | import PlayoffBracket from './PlayoffBracket';
+> 17 | import SkaterStatsTable from './SkaterStatsTable';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  18 | import Header from './Header';
+  19 | import { Slider } from '@/components/ui/slider';
+  20 |
+
+Import trace:
+  Server Component:
+    ./components/PredictionsViewer.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3117
+[  638375ms] [ERROR] ./components/PredictionsViewer.tsx:17:1
+Module not found: Can't resolve './SkaterStatsTable'
+  15 | import PlayoffTable from './PlayoffTable';
+  16 | import PlayoffBracket from './PlayoffBracket';
+> 17 | import SkaterStatsTable from './SkaterStatsTable';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  18 | import Header from './Header';
+  19 | import { Slider } from '@/components/ui/slider';
+  20 |
+
+Import trace:
+  Server Component:
+    ./components/PredictionsViewer.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3117
+[  638573ms] [ERROR] ./components/PredictionsViewer.tsx:17:1
+Module not found: Can't resolve './SkaterStatsTable'
+  15 | import PlayoffTable from './PlayoffTable';
+  16 | import PlayoffBracket from './PlayoffBracket';
+> 17 | import SkaterStatsTable from './SkaterStatsTable';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  18 | import Header from './Header';
+  19 | import { Slider } from '@/components/ui/slider';
+  20 |
+
+Import trace:
+  Server Component:
+    ./components/PredictionsViewer.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3117
+[  638877ms] [ERROR] ./components/PredictionsViewer.tsx:17:1
+Module not found: Can't resolve './SkaterStatsTable'
+  15 | import PlayoffTable from './PlayoffTable';
+  16 | import PlayoffBracket from './PlayoffBracket';
+> 17 | import SkaterStatsTable from './SkaterStatsTable';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  18 | import Header from './Header';
+  19 | import { Slider } from '@/components/ui/slider';
+  20 |
+
+Import trace:
+  Server Component:
+    ./components/PredictionsViewer.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3117

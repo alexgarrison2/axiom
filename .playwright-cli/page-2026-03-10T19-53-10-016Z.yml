@@ -1,0 +1,16 @@
+- generic [active] [ref=e1]:
+  - main [ref=e3]:
+    - generic [ref=e9]:
+      - link "pony xG" [ref=e11] [cursor=pointer]:
+        - /url: /
+        - img "pony xG" [ref=e12]
+      - button "Mar-10" [ref=e13] [cursor=pointer]
+      - button "Mar-11" [ref=e14] [cursor=pointer]
+      - button "NEWS" [ref=e15] [cursor=pointer]
+      - button "TEAMS" [ref=e16] [cursor=pointer]
+      - button "HISTORY" [ref=e17] [cursor=pointer]
+      - button "PLAYOFFS" [ref=e18] [cursor=pointer]
+      - button "BRACKET" [ref=e19] [cursor=pointer]
+      - button "SKATERS" [ref=e20] [cursor=pointer]: SKATERS
+  - button "Open Next.js Dev Tools" [ref=e30] [cursor=pointer]:
+    - img [ref=e31]

@@ -117,7 +117,7 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teamInfo, allTeamsList }) => {
 
                     {/* Logo → home */}
                     <Link href="/" className="flex-shrink-0 hover:opacity-70 transition-opacity">
-                        <Image src="/ponyxG_condensed.png" alt="pony xG" width={80} height={24} className="h-4 md:h-5 w-auto object-contain drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]" />
+                        <Image src="/ponyxG_condensed.png" alt="pony xG" width={80} height={24} priority className="h-4 md:h-5 w-auto object-contain drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]" />
                     </Link>
 
                     {/* Nav tabs */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { GamePrediction, LocationSplitRecord } from '@/utils/data';
 import gsap from 'gsap';
@@ -399,6 +399,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         globalMax: number;
         isHome: boolean;
     }) => {
+        const uid = useId().replace(/:/g, '');
         if (!data || data.length < 2) return null;
         const W = 120, H = 28;
         const pad = 2;
@@ -427,24 +428,24 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
             ...pts,
             `${W - pad},${zeroY}`
         ].join(' ');
-        const uid = `${isHome ? 'h' : 'a'}-${Math.random().toString(36).slice(2, 6)}`;
+        const sparklineId = `${isHome ? 'h' : 'a'}-${uid}`;
 
         return (
             <svg width={W} height={H} className="overflow-visible">
                 <defs>
                     {/* Clip above zero → green fill */}
-                    <clipPath id={`clip-pos-${uid}`}>
+                    <clipPath id={`clip-pos-${sparklineId}`}>
                         <rect x={pad} y={0} width={W - pad * 2} height={zeroY} />
                     </clipPath>
                     {/* Clip below zero → red fill */}
-                    <clipPath id={`clip-neg-${uid}`}>
+                    <clipPath id={`clip-neg-${sparklineId}`}>
                         <rect x={pad} y={zeroY} width={W - pad * 2} height={H - zeroY + pad} />
                     </clipPath>
                 </defs>
                 {/* Green fill — area above zero */}
-                <polygon points={fillPts} fill="rgba(16,185,129,0.18)" clipPath={`url(#clip-pos-${uid})`} />
+                <polygon points={fillPts} fill="rgba(16,185,129,0.18)" clipPath={`url(#clip-pos-${sparklineId})`} />
                 {/* Red fill — area below zero */}
-                <polygon points={fillPts} fill="rgba(239,68,68,0.18)" clipPath={`url(#clip-neg-${uid})`} />
+                <polygon points={fillPts} fill="rgba(239,68,68,0.18)" clipPath={`url(#clip-neg-${sparklineId})`} />
                 {/* Zero line — clearly marks xGD = 0 */}
                 <line
                     x1={pad} y1={zeroY} x2={W - pad} y2={zeroY}
