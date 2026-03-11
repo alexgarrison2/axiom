@@ -1044,12 +1044,12 @@
     "BUF": {
         "f1": [
             {
-                "name": "Peyton Krebs",
-                "number": 19,
+                "name": "Zach Benson",
+                "number": 6,
                 "pos": "lw",
-                "id": 28684,
+                "id": 33544,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Tage Thompson",
@@ -1060,12 +1060,12 @@
                 "movement": null
             },
             {
-                "name": "Alex Tuch",
-                "number": 89,
+                "name": "Noah Ostlund",
+                "number": 86,
                 "pos": "rw",
-                "id": 2739,
+                "id": 36383,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1096,12 +1096,12 @@
         ],
         "f3": [
             {
-                "name": "Noah Ostlund",
-                "number": 86,
+                "name": "Alex Tuch",
+                "number": 89,
                 "pos": "lw",
-                "id": 36383,
+                "id": 2739,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Josh Norris",
@@ -1122,12 +1122,12 @@
         ],
         "f4": [
             {
-                "name": "Zach Benson",
-                "number": 6,
+                "name": "Peyton Krebs",
+                "number": 19,
                 "pos": "lw",
-                "id": 33544,
+                "id": 28684,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Sam Carrick",
@@ -1817,7 +1817,7 @@
                 "pos": "c",
                 "id": 2457,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Patrick Kane",
@@ -1991,7 +1991,7 @@
                 "pos": "ir4",
                 "id": 2457,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -3397,7 +3397,7 @@
                 "pos": "lw",
                 "id": 32903,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Josh Samanski",
@@ -3467,7 +3467,7 @@
                 "pos": "rd",
                 "id": 28812,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "ir": [
@@ -3493,7 +3493,7 @@
                 "pos": "ir3",
                 "id": 28812,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Colton Dach",
@@ -3501,7 +3501,7 @@
                 "pos": "ir4",
                 "id": 32903,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -5397,7 +5397,7 @@
                 "pos": "lw",
                 "id": 27086,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Brock Nelson",
@@ -5553,7 +5553,7 @@
                 "pos": "ir4",
                 "id": 27086,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
