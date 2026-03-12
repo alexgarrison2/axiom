@@ -18,7 +18,19 @@ interface ProcessedTeam extends TeamStandings {
     proj: number;
     playoffOdds: number;
     cupOdds: number;
+    magic_number?: number;  // M#: playoff teams. 0 = clinched.
+    tragic_number?: number; // E#: non-playoff teams. 0 = eliminated.
 }
+
+const SEASON_GP = 82;
+
+// Sort by current NHL standings tiebreakers (pts → RW → ROW → wins)
+const standingsSort = (a: TeamStandings, b: TeamStandings) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.rw !== a.rw) return b.rw - a.rw;
+    if (b.row !== a.row) return b.row - a.row;
+    return b.wins - a.wins;
+};
 
 interface PlayoffGroup {
     name: string;
@@ -53,9 +65,46 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
             return { ...team, pace, proj, playoffOdds, cupOdds };
         });
 
-        // 2. Helper to get conference structure
+        // 2. Compute M# / E# per conference from current standings
+        const magicTragicMap: Record<string, { magic_number?: number; tragic_number?: number }> = {};
+        (['East', 'West'] as const).forEach(conf => {
+            const confDivs = conf === 'East' ? ['ATL', 'MET'] : ['CEN', 'PAC'];
+            const allConfTeams = currentStandings
+                .filter(t => confDivs.includes(t.division))
+                .slice() // don't mutate original
+                .sort(standingsSort);
+
+            // Build playoff set: top 3 per division + top 2 wild cards
+            const confPlayoffSet = new Set<string>();
+            confDivs.forEach(div => {
+                allConfTeams.filter(t => t.division === div).slice(0, 3).forEach(t => confPlayoffSet.add(t.tricode));
+            });
+            allConfTeams.filter(t => !confPlayoffSet.has(t.tricode)).slice(0, 2).forEach(t => confPlayoffSet.add(t.tricode));
+
+            const playoffSorted    = allConfTeams.filter(t =>  confPlayoffSet.has(t.tricode));
+            const nonPlayoffSorted = allConfTeams.filter(t => !confPlayoffSet.has(t.tricode));
+            const seed8 = playoffSorted[playoffSorted.length - 1];
+            const seed9 = nonPlayoffSorted[0];
+            if (!seed8 || !seed9) return;
+
+            const maxPts8 = seed8.points + (SEASON_GP - seed8.gamesPlayed) * 2;
+            const maxPts9 = seed9.points + (SEASON_GP - seed9.gamesPlayed) * 2;
+
+            allConfTeams.forEach(t => {
+                if (confPlayoffSet.has(t.tricode)) {
+                    magicTragicMap[t.tricode] = { magic_number: Math.max(0, maxPts9 - t.points + 1) };
+                } else {
+                    magicTragicMap[t.tricode] = { tragic_number: Math.max(0, maxPts8 - t.points + 1) };
+                }
+            });
+        });
+
+        // Merge M#/E# into mapped
+        const mappedWithMT = mapped.map(t => ({ ...t, ...magicTragicMap[t.tricode] }));
+
+        // 3. Helper to get conference structure
         const getConferenceStructure = (confName: string, div1: string, div2: string) => {
-            const confTeams = mapped.filter(t => t.conference.includes(confName));
+            const confTeams = mappedWithMT.filter(t => t.conference.includes(confName));
 
             // Buckets
             const d1Teams: ProcessedTeam[] = [];
@@ -167,6 +216,7 @@ const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: 
                 <div className="w-16 px-3 py-2"></div> {/* Logo */}
                 <div className="w-24 px-2 py-2 text-left">Team</div>
                 <div className="w-16 px-2 py-2 text-center">PTS</div>
+                <div className="w-12 px-2 py-2 text-center" title="Magic / Elimination Number">M#</div>
                 <div className="w-16 px-2 py-2 text-center">Pace</div>
                 <div className="w-16 px-2 py-2 text-center">Proj</div>
                 <div className="w-16 px-2 py-2 text-center">PO%</div>
@@ -274,6 +324,21 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
                         {/* Current Points */}
                         <div className="w-16 px-2 py-1.5 text-center font-mono text-neutral-300 font-bold">
                             {team.points}
+                        </div>
+
+                        {/* M# / E# */}
+                        <div className="w-12 px-2 py-1.5 text-center font-mono text-xs">
+                            {team.magic_number !== undefined ? (
+                                team.magic_number === 0
+                                    ? <span className="text-emerald-400" title="Clinched playoff spot">✓</span>
+                                    : <span className="text-blue-400">{team.magic_number}</span>
+                            ) : team.tragic_number !== undefined ? (
+                                team.tragic_number === 0
+                                    ? <span className="text-neutral-500" title="Eliminated">✗</span>
+                                    : <span className="text-red-400">{team.tragic_number}</span>
+                            ) : (
+                                <span className="text-neutral-600">—</span>
+                            )}
                         </div>
 
                         {/* Pace */}
