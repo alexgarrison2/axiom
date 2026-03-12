@@ -31,7 +31,7 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
 }) => {
 
     // Helper for Period Stats
-    const getStat = (game: GameLog, stat: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => {
+    const getStat = (game: GameLog, stat: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga' | 'hdf' | 'hda') => {
         if (filters.period === 'All') {
             return game[stat];
         }
@@ -98,7 +98,7 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         const pt_pct = count > 0 ? (pts / (count * 2)).toFixed(3).replace(/^0+/, '') : '.000';
         const record = `${w}-${l}-${otl} ${pts}pts (${pt_pct}) ${count} GP`;
 
-        const sum = (key: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga') => games.reduce((acc, g) => acc + (getStat(g, key) as number), 0);
+        const sum = (key: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga' | 'hdf' | 'hda') => games.reduce((acc, g) => acc + (getStat(g, key) as number), 0);
 
         const gf = sum('gf');
         const ga = sum('ga');
@@ -106,6 +106,8 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         const sa = sum('sa');
         const cf = sum('cf');
         const ca = sum('ca');
+        const hdf = sum('hdf');
+        const hda = sum('hda');
         const xgf = sum('xgf');
         const xga = sum('xga');
         const gsax = games.reduce((acc, g) => acc + (g.gsax || 0), 0);
@@ -141,6 +143,9 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
             cf: (cf / count).toFixed(1),
             ca: (ca / count).toFixed(1),
             cd: (cf - ca),
+            hdf: (hdf / count).toFixed(1),
+            hda: (hda / count).toFixed(1),
+            hdd: (hdf - hda),
             xgf: (xgf / count).toFixed(2),
             xga: (xga / count).toFixed(2),
             xgd: (xgf - xga).toFixed(2),
@@ -183,7 +188,14 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                         <th className="p-1 text-center">CF</th>
                         <th className="p-1 text-center">CA</th>
                         <th className="p-1 text-center">CΔ</th>
-                        <th className="p-1 text-center">SH%</th>
+                        {filters.period === 'All' && (
+                            <>
+                                <th className="p-1 text-center">HDF</th>
+                                <th className="p-1 text-center">HDA</th>
+                                <th className="p-1 text-center">HDΔ</th>
+                            </>
+                        )}
+                        <th className="p-1 text-center border-l border-gray-700">SH%</th>
                         <th className="p-1 text-center">SV%</th>
                         {filters.period === 'All' && <th className="p-1 text-center">GSAx</th>}
                         {filters.period === 'All' && (
@@ -225,7 +237,14 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             <td className="p-1 text-center text-gray-300">{totals.cf}</td>
                             <td className="p-1 text-center text-gray-300">{totals.ca}</td>
                             <td className={`p-1 text-center ${totals.cd > 0 ? 'text-green-400' : totals.cd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
-                            <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sh_pct), 0, 10, 20) }}>{totals.sh_pct}%</td>
+                            {filters.period === 'All' && (
+                                <>
+                                    <td className="p-1 text-center text-orange-200">{totals.hdf}</td>
+                                    <td className="p-1 text-center text-orange-200">{totals.hda}</td>
+                                    <td className={`p-1 text-center ${totals.hdd > 0 ? 'text-green-400' : totals.hdd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.hdd > 0 ? '+' : ''}{totals.hdd}</td>
+                                </>
+                            )}
+                            <td className="p-1 text-center border-l border-gray-800" style={{ color: getGradientColor(parseFloat(totals.sh_pct), 0, 10, 20) }}>{totals.sh_pct}%</td>
                             <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sv_pct), 0.800, 0.885, 0.945) }}>{totals.sv_pct}</td>
                             {filters.period === 'All' && <td className={`p-1 text-center ${parseFloat(totals.gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{parseFloat(totals.gsax) > 0 ? '+' : ''}{totals.gsax}</td>}
                             {filters.period === 'All' && (
@@ -259,6 +278,8 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             const sa = getStat(game, 'sa');
                             const cf = getStat(game, 'cf');
                             const ca = getStat(game, 'ca');
+                            const hdf = getStat(game, 'hdf');
+                            const hda = getStat(game, 'hda');
 
                             // Safe parsing
                             const _gf = typeof gf === 'number' ? gf : 0;
@@ -267,10 +288,13 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             const _sa = typeof sa === 'number' ? sa : 0;
                             const _cf = typeof cf === 'number' ? cf : 0;
                             const _ca = typeof ca === 'number' ? ca : 0;
+                            const _hdf = typeof hdf === 'number' ? hdf : 0;
+                            const _hda = typeof hda === 'number' ? hda : 0;
 
                             const gd = _gf - _ga;
                             const sd = _sf - _sa;
                             const cd = _cf - _ca;
+                            const hdd = _hdf - _hda;
                             const xgd = game.xgf - game.xga;
 
                             const sh_pct = _sf > 0 ? (_gf / _sf * 100).toFixed(1) : "0.0";
@@ -338,7 +362,16 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                         <td className={`p-1 text-center font-mono ${cd > 0 ? 'text-green-400/70' : cd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
                                             {cd > 0 ? '+' : ''}{cd}
                                         </td>
-                                        <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sh_pct), 0, 10, 20) }}>{sh_pct}%</td>
+                                        {filters.period === 'All' && (
+                                            <>
+                                                <td className="p-1 text-center font-mono text-orange-200">{_hdf}</td>
+                                                <td className="p-1 text-center font-mono text-orange-200">{_hda}</td>
+                                                <td className={`p-1 text-center font-mono ${hdd > 0 ? 'text-green-400/70' : hdd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                                                    {hdd > 0 ? '+' : ''}{hdd}
+                                                </td>
+                                            </>
+                                        )}
+                                        <td className="p-1 text-center font-mono border-l border-gray-800" style={{ color: getGradientColor(parseFloat(sh_pct), 0, 10, 20) }}>{sh_pct}%</td>
                                         <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sv_pct_val), 0.800, 0.885, 0.945) }}>{sv_pct_val}</td>
                                         {filters.period === 'All' && <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>}
                                         {filters.period === 'All' && (

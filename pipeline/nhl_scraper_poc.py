@@ -12,6 +12,31 @@ import xgboost as xgb
 from datetime import datetime, timedelta
 from collections import defaultdict
 
+def assign_bin(x, y):
+    """Calculate the 5x5 folded spatial bin for a given x,y coordinate."""
+    if x is None or y is None: return "Unknown"
+    depth_val = 89 - abs(x)
+    if depth_val < 10: d = "D1"
+    elif depth_val < 20: d = "D2"
+    elif depth_val < 35: d = "D3"
+    elif depth_val < 55: d = "D4"
+    else: d = "D5"
+    
+    y_abs = abs(y)
+    if y_abs < 5: w = "W1"
+    elif y_abs < 15: w = "W2"
+    elif y_abs < 25: w = "W3"
+    elif y_abs < 35: w = "W4"
+    else: w = "W5"
+    
+    bin_name = f"{d}_{w}"
+    if bin_name == "D1_W2" or bin_name == "D2_W3":
+        if y_abs < depth_val + 5:
+            bin_name += "_In"
+        else:
+            bin_name += "_Out"
+            
+    return bin_name
 # Global H-Ref Stats Cache
 # Key: (date_str, team_tricode) -> {pp_goals, pp_opps, opp_pp_goals, opp_pp_opps}
 HREF_STATS = {}
@@ -321,7 +346,9 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "scored_first": 0,
             "max_lead": 0,
             "en_attempts": 0,
-            "attempts_5v5": 0 # Legacy field
+            "attempts_5v5": 0, # Legacy field
+            "hdf": 0,
+            "hda": 0
         },
         away_id: {
             "name": away_team.get("commonName", {}).get("default", "Away"),
@@ -349,7 +376,9 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "scored_first": 0,
             "max_lead": 0,
             "en_attempts": 0,
-            "attempts_5v5": 0
+            "attempts_5v5": 0,
+            "hdf": 0,
+            "hda": 0
         }
     }
     
@@ -706,6 +735,18 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             }
             if distance is not None: 
                 shot_rows.append(shot_row)
+                
+            # --- High Danger Tracking ---
+            s_bin = assign_bin(x, y)
+            high_danger_bins = ['D2_W3_In', 'D3_W2', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1']
+            
+            if s_bin in high_danger_bins:
+                opp_team_id = away_id if owner_id == home_id else home_id
+                if owner_id in teams:
+                    teams[owner_id]['hdf'] += 1
+                if opp_team_id in teams:
+                    teams[opp_team_id]['hda'] += 1
+
 
         # --- Update Last Event ---
         last_event['time'] = current_seconds
@@ -874,6 +915,17 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
 
                 if current_strength == (5, 5, 1, 1):
                     teams[shooter_id]['attempts_5v5'] += 1
+
+                # Blocks count as shot attempts, so track High Danger on blocks too
+                s_bin = assign_bin(x, y)
+                high_danger_bins = ['D2_W3_In', 'D3_W2', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1']
+                
+                if s_bin in high_danger_bins:
+                    opp_team_id = away_id if shooter_id == home_id else home_id
+                    if shooter_id in teams:
+                        teams[shooter_id]['hdf'] += 1
+                    if opp_team_id in teams:
+                        teams[opp_team_id]['hda'] += 1
 
                 # Empty Net Attempt (Blocked)?
                 # If Shooter is Home, check Away Goal.

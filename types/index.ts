@@ -44,6 +44,8 @@ export interface GameLog {
     time_trailing: number; // seconds
     time_tied: number; // seconds
     control_score: number; // Weighted game control score
+    hdf: number; // High Danger For
+    hda: number; // High Danger Against
     raw: Record<string, unknown>; // Keeping raw for backward compatibility if needed, though strictly typed is better
 }
 

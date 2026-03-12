@@ -152,6 +152,8 @@ export async function GET(
                 time_trailing: parseInt(row.time_trailing) || 0,
                 time_tied: parseInt(row.time_tied) || 0,
                 control_score: parseFloat(row.control_score) || 1.0,
+                hdf: parseInt(row.hdf) || 0,
+                hda: parseInt(row.hda) || 0,
                 raw: row
             };
         }).sort((a: GameLog, b: GameLog) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -247,6 +249,8 @@ export async function GET(
                 time_trailing: parseInt(row.time_trailing) || 0,
                 time_tied: parseInt(row.time_tied) || 0,
                 control_score: parseFloat(row.control_score) || 1.0,
+                hdf: parseInt(row.hdf) || 0,
+                hda: parseInt(row.hda) || 0,
                 raw: {}
             };
         });
