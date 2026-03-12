@@ -91,10 +91,19 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
             const maxPts9 = seed9.points + (SEASON_GP - seed9.gamesPlayed) * 2;
 
             allConfTeams.forEach(t => {
+                const maxPtsMe = t.points + (SEASON_GP - t.gamesPlayed) * 2;
                 if (confPlayoffSet.has(t.tricode)) {
-                    magicTragicMap[t.tricode] = { magic_number: Math.max(0, maxPts9 - t.points + 1) };
+                    // Playoff team: M# = clinch over 9th, Tragic# = fall out below 9th
+                    magicTragicMap[t.tricode] = {
+                        magic_number:  Math.max(0, maxPts9 - t.points + 1),
+                        tragic_number: Math.max(0, maxPtsMe - seed9.points + 1),
+                    };
                 } else {
-                    magicTragicMap[t.tricode] = { tragic_number: Math.max(0, maxPts8 - t.points + 1) };
+                    // Non-playoff team: M# = overtake 8th, Tragic# = can't catch 8th
+                    magicTragicMap[t.tricode] = {
+                        magic_number:  Math.max(0, maxPts8 - t.points + 1),
+                        tragic_number: Math.max(0, maxPtsMe - seed8.points + 1),
+                    };
                 }
             });
         });

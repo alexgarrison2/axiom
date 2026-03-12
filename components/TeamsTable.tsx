@@ -43,6 +43,8 @@ interface RawGameStat {
     attempts_ag: string;  // CA
     attempts_for_5v5: string; // CF 5v5
     attempts_ag_5v5: string; // CA 5v5
+    hdf: string;
+    hda: string;
 
     pp_opportunities: string;
     pp_goals: string;
@@ -112,6 +114,10 @@ interface TeamStat {
 
     cf_per_game: number; // Attempts For
     ca_per_game: number; // Attempts Against
+
+    hdf_per_game: number;
+    hda_per_game: number;
+    hdd: number;
 
     sh_pct: number;
     sv_pct: number;
@@ -425,7 +431,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
             true_gf_per_game: 0, true_ga_per_game: 0, total_goals_per_game: 0,
             pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_lev: 0, pp_time_per_game: '0:00', pp_time_per_goal: '0:00',
             pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_lev: 0, pk_time_per_game: '0:00', pk_time_per_goal_allowed: '0:00',
-            sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
+            sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, hdf_per_game: 0, hda_per_game: 0, hdd: 0, sh_pct: 0, sv_pct: 0,
 
             engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0, rw: 0, row: 0,
             time_leading_per_game: 0, time_trailing_per_game: 0, time_tied_per_game: 0, control_score: 1.0
@@ -439,6 +445,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
     let pk_goals_allowed = 0, pk_opps = 0, pk_time = 0;
     let sf = 0, sa = 0;
     let cf = 0, ca = 0;
+    let hdf = 0, hda = 0;
     let saves = 0;
     let engf = 0, enga = 0;
     let en_attempts = 0;
@@ -477,6 +484,9 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
 
         cf += parseFloat(g.attempts_for_5v5 || '0');
         ca += parseFloat(g.attempts_ag_5v5 || '0');
+
+        hdf += parseFloat(g.hdf || '0');
+        hda += parseFloat(g.hda || '0');
 
         saves += parseFloat(g.saves_for || '0');
 
@@ -551,6 +561,10 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
 
         cf_per_game: cf / gp,
         ca_per_game: ca / gp,
+
+        hdf_per_game: hdf / gp,
+        hda_per_game: hda / gp,
+        hdd: (hdf - hda) / gp,
 
         sh_pct: sf > 0 ? (gf / sf) * 100 : 0,
         sv_pct: (sa - enga) > 0 ? (saves / (sa - enga)) * 100 : 0,
@@ -629,12 +643,12 @@ const TeamsTable = () => {
 
     // Groups for Desktop headers and Mobile filtering
     const STAT_GROUPS = useMemo(() => [
-        { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct', 'rw', 'magic_number', 'tragic_number'] },
+        { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct', 'rw'] },
         { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'true_goal_diff', 'total_goals_per_game'] },
         { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
         { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
         { name: 'Saves', columns: ['sv_pct', 'gsax'] },
-        { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'sh_pct'] },
+        { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'hdf_per_game', 'hda_per_game', 'hdd', 'sh_pct'] },
         { name: 'xGoals', columns: ['xgf_per_game', 'xga_per_game', 'xgf_pct'] },
         { name: 'Game Situation', columns: ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score'] },
         { name: 'Empty Net', columns: ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga'] },
@@ -688,8 +702,6 @@ const TeamsTable = () => {
         { k: 'points', l: 'PTS', desc: 'Points', calc: '2*W + OTL' },
         { k: 'pt_pct', l: 'P%', desc: 'Points Percentage', calc: 'PTS / (2 * GP)' },
         { k: 'rw', l: 'RW', desc: 'Regulation Wins' },
-        { k: 'magic_number', l: 'M#', inv: true, desc: 'Magic Number — combined pts a playoff team needs to earn + pts the 9th-place team needs to lose to clinch a playoff spot. Shows ✓ when clinched.' },
-        { k: 'tragic_number', l: 'E#', desc: 'Elimination Number — combined pts a non-playoff team needs to earn + pts the 8th-place team needs to lose before elimination. Shows ✗ when eliminated.' },
         { k: 'gf_per_game', l: 'GF/G', desc: 'Goals For Per Game' },
         { k: 'ga_per_game', l: 'GA/G', inv: true, desc: 'Goals Against Per Game' },
         { k: 'goal_diff', l: 'GΔ', desc: 'Goal Differential', calc: 'GF - GA' },
@@ -715,6 +727,9 @@ const TeamsTable = () => {
         { k: 'sa_per_game', l: 'SA/G', inv: true, desc: 'Shots Against Per Game' },
         { k: 'cf_per_game', l: 'CF/G', desc: 'Corsi For Per Game' },
         { k: 'ca_per_game', l: 'CA/G', inv: true, desc: 'Corsi Against Per Game' },
+        { k: 'hdf_per_game', l: 'HDF/G', desc: 'High Danger For Per Game' },
+        { k: 'hda_per_game', l: 'HDA/G', inv: true, desc: 'High Danger Against Per Game' },
+        { k: 'hdd', l: 'HDΔ', desc: 'High Danger Differential', calc: 'HDF/G - HDA/G' },
         { k: 'sh_pct', l: 'Sh%', desc: 'Shooting Percentage', calc: 'Goals / Shots' },
         { k: 'xgf_per_game', l: 'xGF/G', desc: 'Expected Goals For Per Game' },
         { k: 'xga_per_game', l: 'xGA/G', inv: true, desc: 'Expected Goals Against Per Game' },
@@ -1215,14 +1230,23 @@ const TeamsTable = () => {
             const maxPts9 = seed9.points + (SEASON_GP - seed9.gp) * 2;
 
             allConfTeams.forEach(t => {
+                const maxPtsMe = t.points + (SEASON_GP - t.gp) * 2;
                 if (confPlayoffSet.has(t.team)) {
-                    // Playoff team: magic number relative to the 9th-place team
-                    const mn = maxPts9 - t.points + 1;
-                    magicTragicMap[t.team] = { magic_number: Math.max(0, mn) }; // 0 = clinched
+                    // Playoff team:
+                    //   M#      = 9th's max pts − my pts + 1  (clinch: 9th can no longer catch me)
+                    //   Tragic# = my max pts − 9th's pts + 1  (eliminated: I can no longer stay above 9th)
+                    magicTragicMap[t.team] = {
+                        magic_number:  Math.max(0, maxPts9 - t.points + 1),
+                        tragic_number: Math.max(0, maxPtsMe - seed9.points + 1),
+                    };
                 } else {
-                    // Non-playoff team: tragic number relative to the 8th-place team
-                    const tn = maxPts8 - t.points + 1;
-                    magicTragicMap[t.team] = { tragic_number: Math.max(0, tn) }; // 0 = eliminated
+                    // Non-playoff team:
+                    //   M#      = 8th's max pts − my pts + 1  (get in: 8th can no longer stay above me)
+                    //   Tragic# = my max pts − 8th's pts + 1  (eliminated: I can no longer catch 8th)
+                    magicTragicMap[t.team] = {
+                        magic_number:  Math.max(0, maxPts8 - t.points + 1),
+                        tragic_number: Math.max(0, maxPtsMe - seed8.points + 1),
+                    };
                 }
             });
         });
@@ -1329,8 +1353,6 @@ const TeamsTable = () => {
         return {
             points: calculateRange('points'),
             rw: calculateRange('rw'),
-            magic_number: calculateRange('magic_number'),
-            tragic_number: calculateRange('tragic_number'),
             pt_pct: calculateRange('pt_pct'),
             gf_per_game: calculateRange('gf_per_game'),
             ga_per_game: calculateRange('ga_per_game'),
@@ -1446,27 +1468,6 @@ const TeamsTable = () => {
             );
         }
 
-        // ── Magic Number / Tragic Number early rendering ─────────────────────
-        if (key === 'magic_number' || key === 'tragic_number') {
-            const val = team[key] as number | undefined;
-            const cellBase = `px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`;
-
-            // Blank for teams that don't have this stat (wrong side of the playoff line)
-            if (val === undefined) {
-                return <td className={`${cellBase} text-gray-600`}>—</td>;
-            }
-            // Clinched (M# = 0) or Eliminated (E# = 0)
-            if (val === 0) {
-                return key === 'magic_number'
-                    ? <td className={`${cellBase} text-green-400`}>✓</td>
-                    : <td className={`${cellBase} text-gray-500`}>✗</td>;
-            }
-            // Active number — color via gradient
-            const r = ranges[key as keyof typeof ranges];
-            const gradColor = r ? getGradientColor(val, r.min, r.max, key === 'magic_number') : '#DADADA';
-            return <td className={`${cellBase}`} style={{ color: gradColor }}>{val}</td>;
-        }
-        // ─────────────────────────────────────────────────────────────────────
 
         let value = team[key];
         let color = '#DADADA'; // Default grey
