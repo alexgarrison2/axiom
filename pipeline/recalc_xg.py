@@ -12,14 +12,14 @@ def recalculate():
     GAME_STATS_FILE = "nhl_season_2025_2026_gamestats.csv"
     MODEL_FILE = "xg_model_xgb.pkl"
     
-    # Check for files in pipeline/ or root
-    if not os.path.exists(MODEL_FILE) and os.path.exists(f"pipeline/{MODEL_FILE}"):
+    # Check for files in pipeline/ or root, prioritize pipeline
+    if os.path.exists(f"pipeline/{MODEL_FILE}"):
         MODEL_FILE = f"pipeline/{MODEL_FILE}"
         
-    if not os.path.exists(SHOTS_FILE) and os.path.exists(f"pipeline/{SHOTS_FILE}"):
+    if os.path.exists(f"pipeline/{SHOTS_FILE}"):
         SHOTS_FILE = f"pipeline/{SHOTS_FILE}"
         
-    if not os.path.exists(GAME_STATS_FILE) and os.path.exists(f"pipeline/{GAME_STATS_FILE}"):
+    if os.path.exists(f"pipeline/{GAME_STATS_FILE}"):
         GAME_STATS_FILE = f"pipeline/{GAME_STATS_FILE}"
 
     # Load Model
