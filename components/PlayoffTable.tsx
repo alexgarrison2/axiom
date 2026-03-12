@@ -216,7 +216,8 @@ const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: 
                 <div className="w-16 px-3 py-2"></div> {/* Logo */}
                 <div className="w-24 px-2 py-2 text-left">Team</div>
                 <div className="w-16 px-2 py-2 text-center">PTS</div>
-                <div className="w-12 px-2 py-2 text-center" title="Magic / Elimination Number">M#</div>
+                <div className="w-12 px-2 py-2 text-center" title="Magic Number — games until playoff spot is clinched">M#</div>
+                <div className="w-12 px-2 py-2 text-center" title="Elimination Number — games until playoff elimination">E#</div>
                 <div className="w-16 px-2 py-2 text-center">Pace</div>
                 <div className="w-16 px-2 py-2 text-center">Proj</div>
                 <div className="w-16 px-2 py-2 text-center">PO%</div>
@@ -326,13 +327,20 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
                             {team.points}
                         </div>
 
-                        {/* M# / E# */}
+                        {/* M# */}
                         <div className="w-12 px-2 py-1.5 text-center font-mono text-xs">
                             {team.magic_number !== undefined ? (
                                 team.magic_number === 0
                                     ? <span className="text-emerald-400" title="Clinched playoff spot">✓</span>
                                     : <span className="text-blue-400">{team.magic_number}</span>
-                            ) : team.tragic_number !== undefined ? (
+                            ) : (
+                                <span className="text-neutral-600">—</span>
+                            )}
+                        </div>
+
+                        {/* E# */}
+                        <div className="w-12 px-2 py-1.5 text-center font-mono text-xs">
+                            {team.tragic_number !== undefined ? (
                                 team.tragic_number === 0
                                     ? <span className="text-neutral-500" title="Eliminated">✗</span>
                                     : <span className="text-red-400">{team.tragic_number}</span>
