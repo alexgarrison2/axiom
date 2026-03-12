@@ -117,7 +117,6 @@ interface TeamStat {
 
     hdf_per_game: number;
     hda_per_game: number;
-    hdd: number;
 
     sh_pct: number;
     sv_pct: number;
@@ -431,7 +430,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
             true_gf_per_game: 0, true_ga_per_game: 0, total_goals_per_game: 0,
             pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_lev: 0, pp_time_per_game: '0:00', pp_time_per_goal: '0:00',
             pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_lev: 0, pk_time_per_game: '0:00', pk_time_per_goal_allowed: '0:00',
-            sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, hdf_per_game: 0, hda_per_game: 0, hdd: 0, sh_pct: 0, sv_pct: 0,
+            sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, hdf_per_game: 0, hda_per_game: 0, sh_pct: 0, sv_pct: 0,
 
             engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0, rw: 0, row: 0,
             time_leading_per_game: 0, time_trailing_per_game: 0, time_tied_per_game: 0, control_score: 1.0
@@ -564,7 +563,6 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
 
         hdf_per_game: hdf / gp,
         hda_per_game: hda / gp,
-        hdd: (hdf - hda) / gp,
 
         sh_pct: sf > 0 ? (gf / sf) * 100 : 0,
         sv_pct: (sa - enga) > 0 ? (saves / (sa - enga)) * 100 : 0,
@@ -648,7 +646,7 @@ const TeamsTable = () => {
         { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
         { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
         { name: 'Saves', columns: ['sv_pct', 'gsax'] },
-        { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'hdf_per_game', 'hda_per_game', 'hdd', 'sh_pct'] },
+        { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'hdf_per_game', 'hda_per_game', 'sh_pct'] },
         { name: 'xGoals', columns: ['xgf_per_game', 'xga_per_game', 'xgf_pct'] },
         { name: 'Game Situation', columns: ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score'] },
         { name: 'Empty Net', columns: ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga'] },
@@ -729,7 +727,6 @@ const TeamsTable = () => {
         { k: 'ca_per_game', l: 'CA/G', inv: true, desc: 'Corsi Against Per Game' },
         { k: 'hdf_per_game', l: 'HDF/G', desc: 'High Danger For Per Game' },
         { k: 'hda_per_game', l: 'HDA/G', inv: true, desc: 'High Danger Against Per Game' },
-        { k: 'hdd', l: 'HDΔ', desc: 'High Danger Differential', calc: 'HDF/G - HDA/G' },
         { k: 'sh_pct', l: 'Sh%', desc: 'Shooting Percentage', calc: 'Goals / Shots' },
         { k: 'xgf_per_game', l: 'xGF/G', desc: 'Expected Goals For Per Game' },
         { k: 'xga_per_game', l: 'xGA/G', inv: true, desc: 'Expected Goals Against Per Game' },
@@ -1369,6 +1366,8 @@ const TeamsTable = () => {
             sa_per_game: calculateRange('sa_per_game'),
             cf_per_game: calculateRange('cf_per_game'),
             ca_per_game: calculateRange('ca_per_game'),
+            hdf_per_game: calculateRange('hdf_per_game'),
+            hda_per_game: calculateRange('hda_per_game'),
             sh_pct: calculateRange('sh_pct'),
             sv_pct: calculateRange('sv_pct'),
             xgf_per_game: calculateRange('xgf_per_game'),
@@ -1500,7 +1499,7 @@ const TeamsTable = () => {
                 value = formatTime(value as number);
             } else if (key === 'control_score') {
                 value = (value as number).toFixed(3);
-            } else if (['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game'].includes(key)) {
+            } else if (['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'hdf_per_game', 'hda_per_game'].includes(key)) {
                 value = value.toFixed(1);
             } else if (key.toString().includes('per_game')) {
                 value = value.toFixed(2);
