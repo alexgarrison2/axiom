@@ -1,79 +1,166 @@
 {
-    "TBL": [
+    "CGY": [
         {
-            "player": "Darren Raddysh",
-            "news": "Raddysh (personal) returned to Tampa Bay's practice on Thursday and is expected to return vs. Detroit. ",
-            "category": "General",
+            "player": "Zayne Parekh",
+            "news": "Parekh is expected to be a healthy scratch in New Jersey on Thursday. ",
+            "category": "Line Change",
             "date": "2026-03-12",
-            "timestamp": "2026-03-12T14:52:02.953Z"
+            "timestamp": "2026-03-12T15:46:16.207Z"
+        },
+        {
+            "player": "Hunter Brzustewicz",
+            "news": "Brzustewicz is expected to draw back into Calgary's lineup in New Jersey on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T15:45:53.635Z"
+        },
+        {
+            "player": "Dustin Wolf",
+            "news": "Wolf is in the starter's crease at Calgary's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T15:31:51.659Z"
+        }
+    ],
+    "NSH": [
+        {
+            "player": "Massimo Rizzo",
+            "news": "Nashville has acquired Massimo Rizzo and Dalton Bancroft from Boston for Navrin Mutter. ",
+            "category": "Trade",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T15:40:58.929Z"
+        },
+        {
+            "player": "Dalton Bancroft",
+            "news": "Nashville has acquired Dalton Bancroft and Massimo Rizzo from Boston for Navrin Mutter. ",
+            "category": "Trade",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T15:40:17.232Z"
         }
     ],
     "BOS": [
         {
-            "player": "Jeremy Swayman",
-            "news": "Swayman was the first goalie off the ice at Boston's morning skate. ",
-            "category": "Goalie Start",
+            "player": "Navrin Mutter",
+            "news": "Boston has acquired Navrin Mutter from Nashville for Massimo Rizzo and Dalton Bancroft. ",
+            "category": "Trade",
             "date": "2026-03-12",
-            "timestamp": "2026-03-12T14:50:00.438Z"
+            "timestamp": "2026-03-12T15:39:36.932Z"
         }
     ],
-    "TOR": [
+    "MIN": [
         {
-            "player": "Joseph Woll",
-            "news": "Woll will start vs. Anaheim on Thursday. ",
-            "category": "Goalie Start",
+            "player": "Bobby Brink",
+            "news": "Brink (undisclosed) will be a game-time decision vs. Philadelphia on Thursday. ",
+            "category": "Injury",
             "date": "2026-03-12",
-            "timestamp": "2026-03-12T14:35:54.296Z"
+            "timestamp": "2026-03-12T15:37:05.898Z"
         },
         {
-            "player": "Joseph Woll",
-            "news": "Woll is expected to start vs. Anaheim on Thursday. ",
+            "player": "Jesper Wallstedt",
+            "news": "Wallstedt will start vs. Philadelphia on Thursday. ",
             "category": "Goalie Start",
             "date": "2026-03-12",
-            "timestamp": "2026-03-12T14:32:56.873Z"
-        },
+            "timestamp": "2026-03-12T15:34:53.961Z"
+        }
+    ],
+    "DAL": [
         {
-            "player": "Michael Pezzetta",
-            "news": "Pezzetta has been recalled from the Toronto Marlies (AHL). ",
+            "player": "Jake Oettinger",
+            "news": "Oettinger is in the starter's crease at Dallas' morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T15:31:25.637Z"
+        }
+    ],
+    "SJS": [
+        {
+            "player": "Igor Chernyshov",
+            "news": "Chernyshov has been recalled from the San Jose Barracuda (AHL). ",
             "category": "Call Up",
             "date": "2026-03-12",
-            "timestamp": "2026-03-12T14:07:31.871Z"
+            "timestamp": "2026-03-12T15:29:41.282Z"
         }
     ],
-    "CAR": [
+    "WPG": [
         {
-            "player": "Brandon Bussi",
-            "news": "Bussi was in the starter's crease at Thursday's morning skate.",
+            "player": "Connor Hellebuyck",
+            "news": "Hellebuyck is in the starter's crease at Winnipeg's morning skate. ",
             "category": "Goalie Start",
             "date": "2026-03-12",
-            "timestamp": "2026-03-12T14:34:16.982Z"
+            "timestamp": "2026-03-12T15:27:35.683Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Jacob Markstrom",
+            "news": "Markstrom will start vs. Calgary on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T15:24:22.415Z"
         }
     ],
     "BUF": [
         {
-            "player": "Ukko-Pekka Luukkonen",
-            "news": "Luukkonen is expected to start vs. Washington on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-12",
-            "timestamp": "2026-03-12T14:33:29.465Z"
-        }
-    ],
-    "NYI": [
-        {
-            "player": "Alexander Romanov",
-            "news": "Romanov (upper body) is skating and could be an option in the playoffs. ",
+            "player": "Alex Tuch",
+            "news": "Tuch (lower-body) will be a game-time decision vs. Washington on Thursday. ",
             "category": "Injury",
             "date": "2026-03-12",
-            "timestamp": "2026-03-12T14:20:09.954Z"
+            "timestamp": "2026-03-12T15:21:53.490Z"
+        }
+    ],
+    "TOR": [
+        {
+            "player": "Michael Pezzetta",
+            "news": "Pezzetta will make his Toronto debut on Thursday vs. Anaheim. ",
+            "category": "Line Change",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T15:10:50.262Z"
+        }
+    ],
+    "STL": [
+        {
+            "player": "Calle Rosen",
+            "news": "St. Louis has signed Calle Rosen to a two-year, two-way contract extension. ",
+            "category": "Signing",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T15:04:33.053Z"
         }
     ],
     "FLA": [
         {
-            "player": "Michael Benning",
-            "news": "Benning has been recalled from Charlotte (AHL) and will make his NHL debut on Thursday. ",
-            "category": "Call Up",
+            "player": "Carter Verhaeghe",
+            "news": "Verhaeghe (undisclosed) will be out vs. Columbus on Thursday. ",
+            "category": "Injury",
             "date": "2026-03-12",
-            "timestamp": "2026-03-12T14:13:52.910Z"
+            "timestamp": "2026-03-12T15:00:41.263Z"
+        },
+        {
+            "player": "Anton Lundell",
+            "news": "Lundell (undisclosed) will be out vs. Columbus on Thursday. ",
+            "category": "Injury",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T14:59:46.712Z"
+        },
+        {
+            "player": "Uvis Balinskis",
+            "news": "Balinskis will be a healthy scratch vs. Columbus on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T14:59:22.628Z"
+        },
+        {
+            "player": "Cole Reinhardt",
+            "news": "Reinhardt will draw back into Florida's lineup vs. Columbus on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T14:59:00.893Z"
+        },
+        {
+            "player": "Sam Reinhart",
+            "news": "Reinhart (undisclosed) is expected to draw back into Florida's lineup vs. Columbus on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-12",
+            "timestamp": "2026-03-12T14:57:42.204Z"
         }
     ]
 }
