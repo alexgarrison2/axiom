@@ -210,8 +210,12 @@ interface GoalieRating {
 }
 
 type SortKey = keyof TeamStat;
+type ViewBase = 'All' | 'PlayingToday' | 'PlayingTomorrow';
+type WithOption = 'Location' | 'Starter' | 'DayOfWeek';
 type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter';
 type ValuesMode = 'Stats' | 'Ratings';
+
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const CONFERENCE_MAPPING: Record<string, string> = {
     'Atlantic': 'Eastern', 'Metro': 'Eastern',
@@ -573,7 +577,8 @@ const TeamsTable = () => {
     const [teams, setTeams] = useState<Record<string, TeamInfo>>({});
 
     // Filters
-    const [viewMode, setViewMode] = useState<ViewMode>('All');
+    const [viewBase, setViewBase] = useState<ViewBase>('All');
+    const [withOptions, setWithOptions] = useState<WithOption[]>([]);
     const [valuesMode, setValuesMode] = useState<ValuesMode>('Stats');
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
     const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
@@ -593,6 +598,27 @@ const TeamsTable = () => {
     const [teamLineups, setTeamLineups] = useState<Record<string, TeamLineup>>({});
     const [playerImpact, setPlayerImpact] = useState<Record<string, PlayerImpactData>>({});
     const [goalieRatings, setGoalieRatings] = useState<Record<string, GoalieRating>>({});
+
+    // Derive the legacy ViewMode string from the two new state variables
+    // DayOfWeek is handled separately in getGames and does NOT affect ViewMode
+    const viewMode = useMemo((): ViewMode => {
+        if (viewBase === 'All') return 'All';
+        const hasLoc = withOptions.includes('Location');
+        const hasStar = withOptions.includes('Starter');
+        const suffix = hasLoc && hasStar ? 'LocationStarter' : hasLoc ? 'Location' : hasStar ? 'Starter' : '';
+        return `${viewBase}${suffix}` as ViewMode;
+    }, [viewBase, withOptions]);
+
+    // Returns the numeric day-of-week (0=Sun…6=Sat) for the target view
+    const getTargetDayOfWeek = (vb: ViewBase): number => {
+        const d = new Date();
+        if (vb === 'PlayingTomorrow') d.setDate(d.getDate() + 1);
+        return d.getDay();
+    };
+
+    const toggleWithOption = (opt: WithOption) => {
+        setWithOptions(prev => prev.includes(opt) ? prev.filter(o => o !== opt) : [...prev, opt]);
+    };
 
     // Fixed-position odds tooltip (floats over the table, doesn't affect layout)
     const [oddsTooltip, setOddsTooltip] = useState<{ x: number; y: number; data: TeamOdds } | null>(null);
@@ -619,7 +645,8 @@ const TeamsTable = () => {
                 const stored = sessionStorage.getItem('teamsTableFilters');
                 if (stored) {
                     const parsed = JSON.parse(stored);
-                    if (parsed.viewMode) setViewMode(parsed.viewMode);
+                    if (parsed.viewBase) setViewBase(parsed.viewBase);
+                    if (parsed.withOptions) setWithOptions(parsed.withOptions);
                     if (parsed.valuesMode) setValuesMode(parsed.valuesMode);
                     if (parsed.filterHomeAway) setFilterHomeAway(parsed.filterHomeAway);
                     if (parsed.filterLastN) setFilterLastN(parsed.filterLastN);
@@ -639,14 +666,14 @@ const TeamsTable = () => {
         try {
             if (typeof window !== 'undefined') {
                 const filters = {
-                    viewMode, valuesMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory
+                    viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory
                 };
                 sessionStorage.setItem('teamsTableFilters', JSON.stringify(filters));
             }
         } catch (e) {
             console.error('Failed to save filters', e);
         }
-    }, [viewMode, valuesMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory]);
+    }, [viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory]);
 
     const COLUMNS = useMemo(() => [
         { k: 'ranking', l: 'Rank', desc: 'Projected Playoff Standing' },
@@ -980,6 +1007,12 @@ const TeamsTable = () => {
                 );
             }
 
+            // Apply Day of Week Filter
+            if (withOptions.includes('DayOfWeek')) {
+                const targetDow = getTargetDayOfWeek(viewBase);
+                games = games.filter(g => new Date(g.game_date + 'T12:00:00').getDay() === targetDow);
+            }
+
             // Apply Last N (Always applies unless 'All')
             if (filterLastN !== 'All') {
                 games = games.slice(0, filterLastN);
@@ -1126,7 +1159,7 @@ const TeamsTable = () => {
 
         setStats(processedTeams);
 
-    }, [rawData, viewMode, filterHomeAway, filterLastN, todayMatchups, tomorrowMatchups, selectedDivisions, teams]);
+    }, [rawData, viewMode, viewBase, withOptions, filterHomeAway, filterLastN, todayMatchups, tomorrowMatchups, selectedDivisions, teams]);
 
 
     const handleSort = (key: string) => {
@@ -1483,15 +1516,46 @@ const TeamsTable = () => {
             {/* View Mode & Filters */}
             <div className="flex flex-col gap-4 mb-6">
 
-                {/* Top Row: View Type */}
-                <div className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Type</label>
-                    <ButtonGroup
-                        options={['All', 'PlayingToday', 'PlayingTodayLocation', 'PlayingTodayStarter', 'PlayingTodayLocationStarter', 'PlayingTomorrow', 'PlayingTomorrowLocation', 'PlayingTomorrowStarter', 'PlayingTomorrowLocationStarter']}
-                        labels={['All Teams', 'Playing Today', 'Playing Today w/ Location', 'Playing Today w/ Starter', 'Playing Today w/ Loc & Starter', 'Playing Tomorrow', 'Playing Tomorrow w/ Location', 'Playing Tomorrow w/ Starter', 'Playing Tomorrow w/ Loc & Starter']}
-                        current={viewMode}
-                        onChange={(v) => setViewMode(v as ViewMode)}
-                    />
+                {/* Top Row: View Type + With */}
+                <div className="flex flex-row gap-6 items-end flex-wrap">
+                    <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Type</label>
+                        <ButtonGroup
+                            options={['All', 'PlayingToday', 'PlayingTomorrow']}
+                            labels={['All Teams', 'Playing Today', 'Playing Tomorrow']}
+                            current={viewBase}
+                            onChange={(v) => setViewBase(v as ViewBase)}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">With</label>
+                        <div className="flex bg-gray-800 rounded-lg p-1 gap-1">
+                            {(['Location', 'Starter', 'DayOfWeek'] as WithOption[]).map(opt => {
+                                const isActive = withOptions.includes(opt);
+                                const isDisabled = (opt === 'Location' || opt === 'Starter') && viewBase === 'All';
+                                const targetDow = getTargetDayOfWeek(viewBase);
+                                const label = opt === 'DayOfWeek'
+                                    ? (isActive ? `${DAY_NAMES[targetDow]}s` : 'Day of Week')
+                                    : opt;
+                                return (
+                                    <button
+                                        key={opt}
+                                        onClick={() => !isDisabled && toggleWithOption(opt)}
+                                        className={`px-3 py-1.5 rounded text-xs font-medium transition-all whitespace-nowrap ${
+                                            isDisabled
+                                                ? 'text-gray-600 cursor-default'
+                                                : isActive
+                                                ? 'bg-blue-600 text-white shadow-sm'
+                                                : 'text-gray-400 hover:text-white cursor-pointer'
+                                        }`}
+                                        title={isDisabled ? 'Only applies to Playing Today / Tomorrow' : undefined}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Bottom Row: Filters (Only manual filters) */}
