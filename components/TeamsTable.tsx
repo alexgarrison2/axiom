@@ -134,6 +134,10 @@ interface TeamStat {
     time_trailing_per_game: number; // Avg seconds trailing per game
     time_tied_per_game: number; // Avg seconds tied per game
     control_score: number; // Weighted game control score (avg over games)
+
+    // Clinch / elimination tracking (set after standings are computed, optional)
+    magic_number?: number;  // M#: playoff teams only. 0 = clinched.
+    tragic_number?: number; // E#: non-playoff teams only. 0 = eliminated.
 }
 
 interface Matchup {
@@ -625,7 +629,7 @@ const TeamsTable = () => {
 
     // Groups for Desktop headers and Mobile filtering
     const STAT_GROUPS = useMemo(() => [
-        { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct', 'rw'] },
+        { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct', 'rw', 'magic_number', 'tragic_number'] },
         { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'true_goal_diff', 'total_goals_per_game'] },
         { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
         { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
@@ -684,6 +688,8 @@ const TeamsTable = () => {
         { k: 'points', l: 'PTS', desc: 'Points', calc: '2*W + OTL' },
         { k: 'pt_pct', l: 'P%', desc: 'Points Percentage', calc: 'PTS / (2 * GP)' },
         { k: 'rw', l: 'RW', desc: 'Regulation Wins' },
+        { k: 'magic_number', l: 'M#', inv: true, desc: 'Magic Number — combined pts a playoff team needs to earn + pts the 9th-place team needs to lose to clinch a playoff spot. Shows ✓ when clinched.' },
+        { k: 'tragic_number', l: 'E#', desc: 'Elimination Number — combined pts a non-playoff team needs to earn + pts the 8th-place team needs to lose before elimination. Shows ✗ when eliminated.' },
         { k: 'gf_per_game', l: 'GF/G', desc: 'Goals For Per Game' },
         { k: 'ga_per_game', l: 'GA/G', inv: true, desc: 'Goals Against Per Game' },
         { k: 'goal_diff', l: 'GΔ', desc: 'Goal Differential', calc: 'GF - GA' },
@@ -1140,13 +1146,70 @@ const TeamsTable = () => {
             confTeams.slice(0, 2).forEach(t => plySet.add(t.team));
         });
 
+        // ── Magic Number / Tragic Number ─────────────────────────────────────
+        // M# (playoff teams): combined pts a team needs to earn + pts the 9th-place
+        //   team needs to lose to guarantee a playoff spot.
+        //   Formula: (9th team's max possible pts) − team's current pts + 1
+        //   Where max possible pts = current pts + remaining games × 2  (remaining = 82 − GP)
+        // E# (non-playoff teams): combined pts they need to earn + pts the 8th-place
+        //   team needs to lose before elimination.
+        //   Formula: (8th team's max possible pts) − team's current pts + 1
+        // Reference boundary: the Wild Card cutoff in each conference
+        // ─────────────────────────────────────────────────────────────────────
+        const SEASON_GP = 82;
+        const magicTragicMap: Record<string, { magic_number?: number; tragic_number?: number }> = {};
+
+        (['Eastern', 'Western'] as const).forEach(conf => {
+            const confDivisions = conf === 'Eastern' ? ['Atlantic', 'Metro'] : ['Central', 'Pacific'];
+
+            // All conference teams sorted by standings (points → RW → ROW → W → GD)
+            const allConfTeams = standingsBaseline
+                .filter(t => { const inf = teams[t.team]; return inf && inf.division && CONFERENCE_MAPPING[inf.division] === conf; })
+                .sort(sortForRank);
+
+            // Re-build the playoff set for this conference only
+            const confPlayoffSet = new Set<string>();
+            confDivisions.forEach(div => divMap[div].slice(0, 3).forEach(t => confPlayoffSet.add(t.team)));
+            // Wild card pool: non-division-leaders in this conference, sorted by standings
+            const wcPool = allConfTeams.filter(t => !confPlayoffSet.has(t.team));
+            wcPool.slice(0, 2).forEach(t => confPlayoffSet.add(t.team));
+
+            // Identify the 8th (last wildcard) and 9th (first non-playoff) teams
+            const playoffSorted   = allConfTeams.filter(t =>  confPlayoffSet.has(t.team));
+            const nonPlayoffSorted = allConfTeams.filter(t => !confPlayoffSet.has(t.team));
+            const seed8 = playoffSorted[playoffSorted.length - 1]; // last WC = 8th in conf
+            const seed9 = nonPlayoffSorted[0];                     // first non-playoff = 9th
+
+            if (!seed8 || !seed9) return; // season over or < 16 teams with data
+
+            const maxPts8 = seed8.points + (SEASON_GP - seed8.gp) * 2;
+            const maxPts9 = seed9.points + (SEASON_GP - seed9.gp) * 2;
+
+            allConfTeams.forEach(t => {
+                if (confPlayoffSet.has(t.team)) {
+                    // Playoff team: magic number relative to the 9th-place team
+                    const mn = maxPts9 - t.points + 1;
+                    magicTragicMap[t.team] = { magic_number: Math.max(0, mn) }; // 0 = clinched
+                } else {
+                    // Non-playoff team: tragic number relative to the 8th-place team
+                    const tn = maxPts8 - t.points + 1;
+                    magicTragicMap[t.team] = { tragic_number: Math.max(0, tn) }; // 0 = eliminated
+                }
+            });
+        });
+        // ─────────────────────────────────────────────────────────────────────
+
         // Map props
-        const rMap: Record<string, { ranking: string, isPlayoff: boolean }> = {};
+        const rMap: Record<string, { ranking: string, isPlayoff: boolean, magic_number?: number, tragic_number?: number }> = {};
         standingsBaseline.forEach(t => {
             const inf = teams[t.team];
             if (inf && inf.division) {
                 const rank = divMap[inf.division].findIndex(x => x.team === t.team) + 1;
-                rMap[t.team] = { ranking: `${divisionToInitial[inf.division]}${rank}`, isPlayoff: plySet.has(t.team) };
+                rMap[t.team] = {
+                    ranking: `${divisionToInitial[inf.division]}${rank}`,
+                    isPlayoff: plySet.has(t.team),
+                    ...magicTragicMap[t.team],
+                };
             }
         });
 
@@ -1154,6 +1217,8 @@ const TeamsTable = () => {
             if (rMap[t.team]) {
                 t.ranking = rMap[t.team].ranking;
                 t.isPlayoff = rMap[t.team].isPlayoff;
+                t.magic_number = rMap[t.team].magic_number;
+                t.tragic_number = rMap[t.team].tragic_number;
             }
         });
 
@@ -1235,6 +1300,8 @@ const TeamsTable = () => {
         return {
             points: calculateRange('points'),
             rw: calculateRange('rw'),
+            magic_number: calculateRange('magic_number'),
+            tragic_number: calculateRange('tragic_number'),
             pt_pct: calculateRange('pt_pct'),
             gf_per_game: calculateRange('gf_per_game'),
             ga_per_game: calculateRange('ga_per_game'),
@@ -1349,6 +1416,28 @@ const TeamsTable = () => {
                 </td>
             );
         }
+
+        // ── Magic Number / Tragic Number early rendering ─────────────────────
+        if (key === 'magic_number' || key === 'tragic_number') {
+            const val = team[key] as number | undefined;
+            const cellBase = `px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`;
+
+            // Blank for teams that don't have this stat (wrong side of the playoff line)
+            if (val === undefined) {
+                return <td className={`${cellBase} text-gray-600`}>—</td>;
+            }
+            // Clinched (M# = 0) or Eliminated (E# = 0)
+            if (val === 0) {
+                return key === 'magic_number'
+                    ? <td className={`${cellBase} text-green-400`}>✓</td>
+                    : <td className={`${cellBase} text-gray-500`}>✗</td>;
+            }
+            // Active number — color via gradient
+            const r = ranges[key as keyof typeof ranges];
+            const gradColor = r ? getGradientColor(val, r.min, r.max, key === 'magic_number') : '#DADADA';
+            return <td className={`${cellBase}`} style={{ color: gradColor }}>{val}</td>;
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         let value = team[key];
         let color = '#DADADA'; // Default grey
