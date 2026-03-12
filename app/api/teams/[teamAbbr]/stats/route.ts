@@ -148,6 +148,10 @@ export async function GET(
 
                 otml: (['RL', 'OTL', 'SOL'].includes(row.result?.trim()) && parseInt(row.en_attempts_for) > 0) ? 'Yes' : '-',
                 game_number: 0,
+                time_leading: parseInt(row.time_leading) || 0,
+                time_trailing: parseInt(row.time_trailing) || 0,
+                time_tied: parseInt(row.time_tied) || 0,
+                control_score: parseFloat(row.control_score) || 1.0,
                 raw: row
             };
         }).sort((a: GameLog, b: GameLog) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -239,6 +243,10 @@ export async function GET(
                 gsax: (parseFloat(row.xG_against) || 0) - ((parseInt(row.goals_ag) || 0) - (parseInt(row.emptynet_goalsagainst) || 0)),
                 otml: '-',
                 game_number: 0,
+                time_leading: parseInt(row.time_leading) || 0,
+                time_trailing: parseInt(row.time_trailing) || 0,
+                time_tied: parseInt(row.time_tied) || 0,
+                control_score: parseFloat(row.control_score) || 1.0,
                 raw: {}
             };
         });

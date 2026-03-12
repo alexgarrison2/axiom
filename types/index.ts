@@ -40,6 +40,10 @@ export interface GameLog {
     gsax: number;
     otml: string;
     game_number: number;
+    time_leading: number; // seconds
+    time_trailing: number; // seconds
+    time_tied: number; // seconds
+    control_score: number; // Weighted game control score
     raw: Record<string, unknown>; // Keeping raw for backward compatibility if needed, though strictly typed is better
 }
 

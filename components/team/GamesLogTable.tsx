@@ -54,6 +54,13 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         return val;
     };
 
+    // Format seconds as mm:ss
+    const formatTime = (seconds: number) => {
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    };
+
     // Gradient Helper
     const getGradientColor = (value: number, min: number, mid: number, max: number) => {
         const val = Math.max(min, Math.min(max, value));
@@ -108,6 +115,11 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         const en_ga = games.reduce((acc, g) => acc + g.en_ga, 0);
         const en_att_ag = games.reduce((acc, g) => acc + g.en_att_ag, 0);
 
+        const time_leading_avg = games.reduce((acc, g) => acc + (g.time_leading || 0), 0) / count;
+        const time_trailing_avg = games.reduce((acc, g) => acc + (g.time_trailing || 0), 0) / count;
+        const time_tied_avg = games.reduce((acc, g) => acc + (g.time_tied || 0), 0) / count;
+        const control_score_avg = games.reduce((acc, g) => acc + (g.control_score || 1), 0) / count;
+
         const pp_goals = games.reduce((acc, g) => acc + g.pp_goals, 0);
         const pp_opps = games.reduce((acc, g) => acc + g.pp_opps, 0);
         const pk_goals_ag = games.reduce((acc, g) => acc + g.pp_goals_against, 0);
@@ -134,6 +146,7 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
             xgd: (xgf - xga).toFixed(2),
             gsax: gsax.toFixed(2),
             en_gf, en_att, en_ga, en_att_ag,
+            time_leading_avg, time_trailing_avg, time_tied_avg, control_score_avg,
             pp_goals, pp_opps,
             pk_goals_ag, pk_opps,
             pp_pct: pp_opps > 0 ? (pp_goals / pp_opps * 100).toFixed(1) : '0.0',
@@ -180,6 +193,10 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                 <th className="p-1 text-center">xGΔ</th>
                             </>
                         )}
+                        <th className="p-1 text-center border-l border-gray-700">T↑/G</th>
+                        <th className="p-1 text-center">T↓/G</th>
+                        <th className="p-1 text-center border-r border-gray-700">T=/G</th>
+                        <th className="p-1 text-center border-r border-gray-700">Control</th>
                         <th className="p-1 text-center">EN GF</th>
                         <th className="p-1 text-center">EN Att</th>
                         <th className="p-1 text-center">OTML</th>
@@ -218,6 +235,10 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                     <td className={`p-1 text-center ${parseFloat(totals.xgd) > 0 ? 'text-green-400' : parseFloat(totals.xgd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.xgd) > 0 ? '+' : ''}{totals.xgd}</td>
                                 </>
                             )}
+                            <td className="p-1 text-center border-l border-gray-700" style={{ color: getGradientColor(totals.time_leading_avg, 0, 1500, 3000) }}>{formatTime(totals.time_leading_avg)}</td>
+                            <td className="p-1 text-center" style={{ color: getGradientColor(3000 - totals.time_trailing_avg, 0, 1500, 3000) }}>{formatTime(totals.time_trailing_avg)}</td>
+                            <td className="p-1 text-center border-r border-gray-700" style={{ color: getGradientColor(totals.time_tied_avg, 0, 600, 2000) }}>{formatTime(totals.time_tied_avg)}</td>
+                            <td className="p-1 text-center border-r border-gray-700" style={{ color: getGradientColor(totals.control_score_avg, 0.7, 1.0, 1.3) }}>{totals.control_score_avg.toFixed(3)}</td>
                             <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_gf : '-'}</td>
                             <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_att : '-'}</td>
                             <td></td>
@@ -329,6 +350,10 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                                 </td>
                                             </>
                                         )}
+                                        <td className="p-1 text-center font-mono border-l border-gray-800" style={{ color: getGradientColor(game.time_leading || 0, 0, 1500, 3000) }}>{formatTime(game.time_leading || 0)}</td>
+                                        <td className="p-1 text-center font-mono" style={{ color: getGradientColor(3000 - (game.time_trailing || 0), 0, 1500, 3000) }}>{formatTime(game.time_trailing || 0)}</td>
+                                        <td className="p-1 text-center font-mono border-r border-gray-800" style={{ color: getGradientColor(game.time_tied || 0, 0, 600, 2000) }}>{formatTime(game.time_tied || 0)}</td>
+                                        <td className="p-1 text-center font-mono border-r border-gray-800" style={{ color: getGradientColor(game.control_score || 1, 0.7, 1.0, 1.3) }}>{(game.control_score || 1).toFixed(3)}</td>
                                         <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_gf : '-'}</td>
                                         <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_att : '-'}</td>
                                         <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>

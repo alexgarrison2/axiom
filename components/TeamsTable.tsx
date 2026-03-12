@@ -64,6 +64,11 @@ interface RawGameStat {
     emptynet_goalsagainst: string;
     en_attempts_for: string;
     en_attempts_against: string;
+
+    time_leading: string;
+    time_trailing: string;
+    time_tied: string;
+    control_score: string;
 }
 
 interface TeamStat {
@@ -124,6 +129,11 @@ interface TeamStat {
     otml: number; // Off the Mat Losses
     starterName?: string;
     starterStatus?: string;
+
+    time_leading_per_game: number; // Avg seconds leading per game
+    time_trailing_per_game: number; // Avg seconds trailing per game
+    time_tied_per_game: number; // Avg seconds tied per game
+    control_score: number; // Weighted game control score (avg over games)
 }
 
 interface Matchup {
@@ -409,7 +419,8 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
             pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_lev: 0, pk_time_per_game: '0:00', pk_time_per_goal_allowed: '0:00',
             sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, sh_pct: 0, sv_pct: 0,
 
-            engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0, rw: 0, row: 0
+            engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0, rw: 0, row: 0,
+            time_leading_per_game: 0, time_trailing_per_game: 0, time_tied_per_game: 0, control_score: 1.0
         };
     }
 
@@ -425,6 +436,8 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
     let en_attempts = 0;
     let xgf = 0, xga = 0;
     let otml = 0;
+    let time_leading = 0, time_trailing = 0, time_tied = 0;
+    let control_score_sum = 0;
 
     teamGames.forEach(g => {
         gp++;
@@ -465,6 +478,11 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
 
         xgf += parseFloat(g.xG_for || '0');
         xga += parseFloat(g.xG_against || '0');
+
+        time_leading += parseFloat(g.time_leading || '0');
+        time_trailing += parseFloat(g.time_trailing || '0');
+        time_tied += parseFloat(g.time_tied || '0');
+        control_score_sum += parseFloat(g.control_score || '1');
 
         // OtmL Logic: EN Att > 0 AND EN GF < 1 AND Result is Loss (RL, OTL, SOL)
         const g_en_attempts = parseFloat(g.en_attempts_for || '0');
@@ -539,7 +557,12 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         xga_per_game: xga / gp,
         xgf_pct: (xgf + xga) > 0 ? (xgf / (xgf + xga)) * 100 : 0,
         otml,
-        gsax: xga - (ga - enga) // Cumulative GSAx (Excluding EN Goals)
+        gsax: xga - (ga - enga), // Cumulative GSAx (Excluding EN Goals)
+
+        time_leading_per_game: time_leading / gp,
+        time_trailing_per_game: time_trailing / gp,
+        time_tied_per_game: time_tied / gp,
+        control_score: control_score_sum / gp
     };
 };
 
@@ -583,6 +606,7 @@ const TeamsTable = () => {
         { name: 'Saves', columns: ['sv_pct', 'gsax'] },
         { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'sh_pct'] },
         { name: 'xGoals', columns: ['xgf_per_game', 'xga_per_game', 'xgf_pct'] },
+        { name: 'Game Situation', columns: ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score'] },
         { name: 'Empty Net', columns: ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga'] },
     ], []);
 
@@ -662,6 +686,10 @@ const TeamsTable = () => {
         { k: 'xgf_per_game', l: 'xGF/G', desc: 'Expected Goals For Per Game' },
         { k: 'xga_per_game', l: 'xGA/G', inv: true, desc: 'Expected Goals Against Per Game' },
         { k: 'xgf_pct', l: 'xGF%', desc: 'Expected Goals For %', calc: 'xGF / (xGF + xGA)' },
+        { k: 'time_leading_per_game', l: 'T↑/G', desc: 'Avg Time Leading Per Game (mm:ss)' },
+        { k: 'time_trailing_per_game', l: 'T↓/G', inv: true, desc: 'Avg Time Trailing Per Game (mm:ss)' },
+        { k: 'time_tied_per_game', l: 'T=/G', desc: 'Avg Time Tied Per Game (mm:ss)' },
+        { k: 'control_score', l: 'Control', desc: 'Weighted Game Control Score', calc: 'Σ(weight×second) / total seconds. Weights: tied=1, lead+1=1.2, lead+2=1.5, lead+3=2.0, trail-1=0.8, trail-2=0.5, trail-3=0' },
         { k: 'engf', l: 'EN GF', desc: 'Empty Net Goals For' },
         { k: 'en_attempts', l: 'EN Att', desc: 'Empty Net Attempts (missed/blocked shots, icings, goals)' },
         { k: 'ens_pct', l: 'ENS%', desc: 'Empty Net Success %', calc: 'EN Goals / EN Attempts' },
@@ -1196,6 +1224,11 @@ const TeamsTable = () => {
             xga_per_game: calculateRange('xga_per_game'),
             xgf_pct: calculateRange('xgf_pct'),
 
+            time_leading_per_game: calculateRange('time_leading_per_game'),
+            time_trailing_per_game: calculateRange('time_trailing_per_game'),
+            time_tied_per_game: calculateRange('time_tied_per_game'),
+            control_score: calculateRange('control_score'),
+
             true_gf_per_game: calculateRange('true_gf_per_game'),
             true_ga_per_game: calculateRange('true_ga_per_game'),
             true_goal_diff: calculateRange('true_goal_diff'),
@@ -1311,6 +1344,10 @@ const TeamsTable = () => {
                 value = (value as number).toFixed(1) + '%';
             } else if (key.toString().includes('pct')) {
                 value = value.toFixed(1) + '%';
+            } else if (key === 'time_leading_per_game' || key === 'time_trailing_per_game' || key === 'time_tied_per_game') {
+                value = formatTime(value as number);
+            } else if (key === 'control_score') {
+                value = (value as number).toFixed(3);
             } else if (['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game'].includes(key)) {
                 value = value.toFixed(1);
             } else if (key.toString().includes('per_game')) {

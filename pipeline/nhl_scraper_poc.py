@@ -314,6 +314,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "time_leading": 0,
             "time_trailing": 0,
             "time_tied": 0,
+            "control_score_sum": 0.0,
             "goalies": set(),
             "starting_goalie": None,
             "rest": home_rest,
@@ -341,6 +342,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "time_leading": 0,
             "time_trailing": 0,
             "time_tied": 0,
+            "control_score_sum": 0.0,
             "goalies": set(),
             "starting_goalie": None,
             "rest": away_rest,
@@ -392,6 +394,16 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 'team_id': details.get("eventOwnerTeamId"),
                 'duration': details.get("duration", 2)
             })
+
+    def get_control_weight(score_diff):
+        """Returns the control weight per second for a team with the given score differential."""
+        if score_diff == 0:   return 1.0
+        elif score_diff == 1: return 1.2
+        elif score_diff == 2: return 1.5
+        elif score_diff >= 3: return 2.0
+        elif score_diff == -1: return 0.8
+        elif score_diff == -2: return 0.5
+        else:                 return 0.0  # trailing by 3+
 
     def get_strength_type(hs, as_num, hg, ag, owner_team_id):
         """
@@ -484,6 +496,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             else:
                 teams[home_id]['time_tied'] += segment_duration
                 teams[away_id]['time_tied'] += segment_duration
+            teams[home_id]['control_score_sum'] += get_control_weight(score_diff) * segment_duration
+            teams[away_id]['control_score_sum'] += get_control_weight(-score_diff) * segment_duration
                 
             # Strength State
             # We need to know the strength BEFORE this penalty expired.
@@ -532,6 +546,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             else:
                 teams[home_id]['time_tied'] += duration
                 teams[away_id]['time_tied'] += duration
+            teams[home_id]['control_score_sum'] += get_control_weight(score_diff) * duration
+            teams[away_id]['control_score_sum'] += get_control_weight(-score_diff) * duration
                 
             # Strength State (Current)
             hs, as_num, hg, ag = current_strength
@@ -1376,6 +1392,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "time_leading": stats['time_leading'],
             "time_trailing": stats['time_trailing'],
             "time_tied": stats['time_tied'],
+            "control_score": round(stats['control_score_sum'] / (stats['time_leading'] + stats['time_trailing'] + stats['time_tied']), 4) if (stats['time_leading'] + stats['time_trailing'] + stats['time_tied']) > 0 else 1.0,
             "time_evenstrength": stats['toi'].get('5v5', 0) + stats['toi'].get('4v4', 0) + stats['toi'].get('3v3', 0), # Approx
             
             # OTML (Off The Mat Loss)
