@@ -1,31 +1,5 @@
 [
     {
-        "id": 2025021025,
-        "gameDate": "2026-03-11",
-        "startTimeUTC": "2026-03-11T23:30:00Z",
-        "homeTeam": "Senators",
-        "awayTeam": "Canadiens",
-        "homeTeamAbbrev": "OTT",
-        "awayTeamAbbrev": "MTL",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025021026,
-        "gameDate": "2026-03-11",
-        "startTimeUTC": "2026-03-11T23:30:00Z",
-        "homeTeam": "Flyers",
-        "awayTeam": "Capitals",
-        "homeTeamAbbrev": "PHI",
-        "awayTeamAbbrev": "WSH",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025021027,
         "gameDate": "2026-03-12",
         "startTimeUTC": "2026-03-12T23:00:00Z",
@@ -35,7 +9,7 @@
         "awayTeamAbbrev": "SJS",
         "homeGoalieConfirmed": "Jeremy Swayman",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Yaroslav Askarov",
+        "awayGoalieConfirmed": "Alex Nedeljkovic",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -48,7 +22,7 @@
         "awayTeamAbbrev": "WSH",
         "homeGoalieConfirmed": "Alex Lyon",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Logan Thompson",
+        "awayGoalieConfirmed": "Charlie Lindgren",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -59,7 +33,7 @@
         "awayTeam": "Ducks",
         "homeTeamAbbrev": "TOR",
         "awayTeamAbbrev": "ANA",
-        "homeGoalieConfirmed": "Joseph Woll",
+        "homeGoalieConfirmed": "Anthony Stolarz",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Lukas Dostal",
         "awayGoalieStatus": "Unconfirmed"
@@ -87,7 +61,7 @@
         "awayTeamAbbrev": "CBJ",
         "homeGoalieConfirmed": "Sergei Bobrovsky",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Elvis Merzlikins",
+        "awayGoalieConfirmed": "Jet Greaves",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -111,7 +85,7 @@
         "awayTeam": "Blues",
         "homeTeamAbbrev": "CAR",
         "awayTeamAbbrev": "STL",
-        "homeGoalieConfirmed": "Frederik Andersen",
+        "homeGoalieConfirmed": "Brandon Bussi",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Joel Hofer",
         "awayGoalieStatus": "Unconfirmed"
@@ -126,7 +100,7 @@
         "awayTeamAbbrev": "EDM",
         "homeGoalieConfirmed": "Jake Oettinger",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Connor Ingram",
+        "awayGoalieConfirmed": "Tristan Jarry",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -189,9 +163,9 @@
         "awayTeam": "Penguins",
         "homeTeamAbbrev": "VGK",
         "awayTeamAbbrev": "PIT",
-        "homeGoalieConfirmed": "Akira Schmid",
+        "homeGoalieConfirmed": "Adin Hill",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Stuart Skinner",
+        "awayGoalieConfirmed": "Arturs Silovs",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -204,7 +178,33 @@
         "awayTeamAbbrev": "COL",
         "homeGoalieConfirmed": "Philipp Grubauer",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Mackenzie Blackwood",
+        "awayGoalieConfirmed": "Scott Wedgewood",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021041,
+        "gameDate": "2026-03-13",
+        "startTimeUTC": "2026-03-13T23:00:00Z",
+        "homeTeam": "Islanders",
+        "awayTeam": "Kings",
+        "homeTeamAbbrev": "NYI",
+        "awayTeamAbbrev": "LAK",
+        "homeGoalieConfirmed": "Ilya Sorokin",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Darcy Kuemper",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021042,
+        "gameDate": "2026-03-13",
+        "startTimeUTC": "2026-03-14T00:00:00Z",
+        "homeTeam": "Blues",
+        "awayTeam": "Oilers",
+        "homeTeamAbbrev": "STL",
+        "awayTeamAbbrev": "EDM",
+        "homeGoalieConfirmed": "Joel Hofer",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Tristan Jarry",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
