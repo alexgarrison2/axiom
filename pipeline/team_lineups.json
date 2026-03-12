@@ -59,7 +59,7 @@
                 "pos": "lw",
                 "id": 26446,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Fraser Minten",
@@ -379,7 +379,7 @@
                 "pos": "rw",
                 "id": 2739,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
@@ -527,7 +527,7 @@
                 "pos": "ir5",
                 "id": 2739,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -1089,7 +1089,7 @@
                 "pos": "rw",
                 "id": 32521,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -1115,7 +1115,7 @@
                 "pos": "rw",
                 "id": 2031,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": "up"
             }
         ],
         "f3": [
@@ -1141,7 +1141,7 @@
                 "pos": "rw",
                 "id": 2031,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -1167,7 +1167,7 @@
                 "pos": "rw",
                 "id": 36,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -2475,7 +2475,7 @@
                 "pos": "c",
                 "id": 32940,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Pavel Buchnevich",
@@ -2509,7 +2509,7 @@
                 "pos": "rw",
                 "id": 2831,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -3039,7 +3039,7 @@
                 "pos": "rw",
                 "id": 30223,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -3137,7 +3137,7 @@
                 "pos": "ir2",
                 "id": 30223,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -4304,12 +4304,12 @@
                 "movement": null
             },
             {
-                "name": "Reid Schaefer",
-                "number": 49,
+                "name": "Joakim Kemell",
+                "number": 25,
                 "pos": "rw",
-                "id": 32867,
+                "id": 35691,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -4330,12 +4330,12 @@
                 "movement": null
             },
             {
-                "name": "Joakim Kemell",
-                "number": 25,
+                "name": "Ozzy Wiesblatt",
+                "number": 89,
                 "pos": "rw",
-                "id": 35691,
+                "id": 32605,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -4422,47 +4422,21 @@
                 "movement": null
             },
             {
-                "name": "Braeden Bowman",
-                "number": 42,
+                "name": "Mark Stone",
+                "number": 61,
                 "pos": "rw",
-                "id": 30925,
+                "id": 1779,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
             {
-                "name": "Brett Howden",
-                "number": 21,
-                "pos": "lw",
-                "id": 2660,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Mitch Marner",
-                "number": 16,
-                "pos": "c",
-                "id": 2475,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
                 "name": "Pavel Dorofeyev",
                 "number": 16,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 30622,
                 "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Reilly Smith",
-                "number": 19,
-                "pos": "lw",
-                "id": 1853,
-                "ppUnit": null,
                 "movement": null
             },
             {
@@ -4471,15 +4445,41 @@
                 "pos": "c",
                 "id": 2125,
                 "ppUnit": 1,
+                "movement": "up"
+            },
+            {
+                "name": "Mitch Marner",
+                "number": 16,
+                "pos": "rw",
+                "id": 2475,
+                "ppUnit": 1,
                 "movement": null
+            }
+        ],
+        "f3": [
+            {
+                "name": "Brett Howden",
+                "number": 21,
+                "pos": "lw",
+                "id": 2660,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Colton Sissons",
                 "number": 10,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2030,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Braeden Bowman",
+                "number": 42,
+                "pos": "rw",
+                "id": 30925,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -4592,7 +4592,7 @@
                 "number": 61,
                 "pos": "ir4",
                 "id": 1779,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "movement": null
             }
         ]
