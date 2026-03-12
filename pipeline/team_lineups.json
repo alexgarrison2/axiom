@@ -1030,12 +1030,12 @@
                 "movement": null
             },
             {
-                "name": "Ian Moore",
-                "number": null,
+                "name": "Drew Helleson",
+                "number": 14,
                 "pos": "rd",
-                "id": 31897,
+                "id": 30429,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -4309,7 +4309,7 @@
                 "pos": "rw",
                 "id": 35691,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -4335,7 +4335,7 @@
                 "pos": "rw",
                 "id": 32605,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -4445,7 +4445,7 @@
                 "pos": "c",
                 "id": 2125,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Mitch Marner",
@@ -4463,7 +4463,7 @@
                 "pos": "lw",
                 "id": 2660,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Colton Sissons",
@@ -4479,7 +4479,7 @@
                 "pos": "rw",
                 "id": 30925,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -5038,14 +5038,6 @@
         ],
         "f2": [
             {
-                "name": "Ross Colton",
-                "number": 20,
-                "pos": "lw",
-                "id": 27086,
-                "ppUnit": 2,
-                "movement": "up"
-            },
-            {
                 "name": "Brock Nelson",
                 "number": 11,
                 "pos": "c",
@@ -5076,7 +5068,7 @@
                 "number": 10,
                 "pos": "c",
                 "id": 3818,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -5168,6 +5160,16 @@
                 "movement": null
             }
         ],
+        "d4": [
+            {
+                "name": "Nick Blankenburg",
+                "number": 37,
+                "pos": "rd",
+                "id": 36299,
+                "ppUnit": null,
+                "movement": "new"
+            }
+        ],
         "ir": [
             {
                 "name": "Logan O'Connor",
@@ -5198,7 +5200,7 @@
                 "number": 20,
                 "pos": "ir4",
                 "id": 27086,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ]
