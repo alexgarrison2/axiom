@@ -16,7 +16,8 @@ def assign_bin(x, y):
     """Calculate the 5x5 folded spatial bin for a given x,y coordinate."""
     if x is None or y is None: return "Unknown"
     depth_val = 89 - abs(x)
-    if depth_val < 10: d = "D1"
+    if depth_val < 0: d = "D0"
+    elif depth_val < 10: d = "D1"
     elif depth_val < 20: d = "D2"
     elif depth_val < 35: d = "D3"
     elif depth_val < 55: d = "D4"

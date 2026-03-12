@@ -55,7 +55,8 @@ def preprocess_data(df):
         # D3: High Slot / Circles (20-35ft)
         # D4: Point / Top Circles (35-55ft)
         # D5: Long Range (55ft+)
-        if depth_val < 10: d = "D1"
+        if depth_val < 0: d = "D0"
+        elif depth_val < 10: d = "D1"
         elif depth_val < 20: d = "D2"
         elif depth_val < 35: d = "D3"
         elif depth_val < 55: d = "D4"
