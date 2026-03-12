@@ -72,6 +72,10 @@ jobs:
             python refresh_pipeline.py
             python snapshot_predictions.py
             python season_simulator.py
+            # Fetch shift chart data for any new games (incremental — skips already-fetched)
+            python fetch_shifts.py
+            # Enrich PBP with on-ice player IDs (incremental)
+            python enrich_pbp.py
           else
             echo "Running Lite Update..."
             python fetch_upcoming.py
@@ -111,6 +115,8 @@ jobs:
             [ -f pipeline/team_lineups.json ] && git add pipeline/team_lineups.json
             [ -f pipeline/nhl_season_2025_2026_gamestats.csv ] && git add pipeline/nhl_season_2025_2026_gamestats.csv
             [ -f pipeline/nhl_season_2025_2026_shots.csv ] && git add pipeline/nhl_season_2025_2026_shots.csv
+            [ -f pipeline/nhl_season_2025_2026_shifts.csv ] && git add pipeline/nhl_season_2025_2026_shifts.csv
+            [ -f pipeline/nhl_season_2025_2026_pbp.csv ] && git add pipeline/nhl_season_2025_2026_pbp.csv
             [ -f data/last_updated.json ] && git add data/last_updated.json
             # Player-impact outputs (committed so lite runs can load them)
             [ -f pipeline/player_impact.json ] && git add pipeline/player_impact.json
