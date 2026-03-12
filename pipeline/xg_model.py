@@ -76,7 +76,21 @@ def preprocess_data(df):
         elif y_abs < 35: w = "W4"
         else: w = "W5"
         
-        return f"{d}_{w}"
+        bin_name = f"{d}_{w}"
+        
+        # Diagonal bin splits for Royal Road / High Danger zones
+        if bin_name == "D1_W2":
+            if y_abs < depth_val + 5:
+                bin_name += "_In"
+            else:
+                bin_name += "_Out"
+        elif bin_name == "D2_W3":
+            if y_abs < depth_val + 5:
+                bin_name += "_In"
+            else:
+                bin_name += "_Out"
+                
+        return bin_name
 
     df['spatial_bin'] = df.apply(assign_bin, axis=1)
     
