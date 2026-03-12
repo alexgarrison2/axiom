@@ -1111,13 +1111,42 @@ const TeamsTable = () => {
             });
         }
 
-        // --- CALCULATE STANDINGS (Standard NHL Rules) ---
-        // Rules: Points -> RW -> ROW -> Wins -> Goal Diff
+        // --- CALCULATE STANDINGS (Official NHL Tiebreaker Rules) ---
+        // Order: Points → RW → ROW → H2H pts (pairwise) → Conference record pts → Goal Diff
+        // Pre-compute H2H points: h2hPts[team][opponent] = total pts earned in all matchups
+        const h2hPts: Record<string, Record<string, number>> = {};
+        rawData.forEach(g => {
+            if (!h2hPts[g.team]) h2hPts[g.team] = {};
+            const pts = (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') ? 2
+                       : (g.result === 'OTL' || g.result === 'SOL') ? 1 : 0;
+            h2hPts[g.team][g.opponent] = (h2hPts[g.team][g.opponent] || 0) + pts;
+        });
+
+        // Pre-compute conference record points: confPts[team] = total pts vs same-conference opponents
+        const confPts: Record<string, number> = {};
+        rawData.forEach(g => {
+            const teamDiv = teams[g.team]?.division;
+            const oppDiv  = teams[g.opponent]?.division;
+            if (!teamDiv || !oppDiv) return;
+            if (CONFERENCE_MAPPING[teamDiv] !== CONFERENCE_MAPPING[oppDiv]) return;
+            const pts = (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') ? 2
+                       : (g.result === 'OTL' || g.result === 'SOL') ? 1 : 0;
+            confPts[g.team] = (confPts[g.team] || 0) + pts;
+        });
+
         const sortForRank = (a: TeamStat, b: TeamStat) => {
             if (b.points !== a.points) return b.points - a.points;
             if (b.rw !== a.rw) return b.rw - a.rw;
             if (b.row !== a.row) return b.row - a.row;
-            if (b.wins !== a.wins) return b.wins - a.wins;
+            // H2H points (pairwise — exact for 2-way ties, best-available for 3+ way)
+            const aH2H = h2hPts[a.team]?.[b.team] || 0;
+            const bH2H = h2hPts[b.team]?.[a.team] || 0;
+            if (aH2H !== bH2H) return bH2H - aH2H;
+            // Conference record points
+            const aConf = confPts[a.team] || 0;
+            const bConf = confPts[b.team] || 0;
+            if (aConf !== bConf) return bConf - aConf;
+            // Goal differential (last resort)
             return b.goal_diff - a.goal_diff;
         };
 
