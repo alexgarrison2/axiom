@@ -45,16 +45,6 @@ def refresh_pipeline():
     import fetch_href_stats
     fetch_href_stats.main()
     
-    # 0b. Sanitize History (Backfill H-Ref data into gamestats)
-    print("Sanitizing Historical Special Teams data...")
-    import backfill_special_teams
-    backfill_special_teams.backfill_special_teams()
-
-    # 0c. Backfill/Verify with Official NHL Boxscores (Fix "Ghost Goals")
-    print("Verifying Special Teams Goals via NHL API...")
-    import backfill_nhl_ppg
-    backfill_nhl_ppg.backfill_nhl_ppg()
-
     # 0c. Fetch Latest Game Data (and Shots)
     print("Fetching missing game data...")
     import nhl_scraper_poc
