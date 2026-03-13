@@ -421,7 +421,14 @@ const extractRatingValue = (entry: TeamRatingEntry | undefined, colKey: string):
 
 const RATINGS_KEYS = new Set<string>(RATINGS_COLS.map(c => c.k));
 
-const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamStat => {
+const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 'All' | '1st' | '2nd' | '3rd' | 'OT' = 'All'): TeamStat => {
+    const pSuffix = period === 'All' ? '' : period === '1st' ? '_1P' : period === '2nd' ? '_2P' : period === '3rd' ? '_3P' : '_OT';
+    // Access a period-specific column from a game row (falls back to '0' if missing)
+    const pGet = (g: RawGameStat, fullCol: keyof RawGameStat, periodCol: string): number => {
+        if (period === 'All') return parseFloat((g[fullCol] as string) || '0');
+        return parseFloat(((g as unknown as Record<string, string>)[periodCol]) || '0');
+    };
+
     if (teamGames.length === 0) {
         // Return zeroed stats
         return {
@@ -467,9 +474,10 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
             row++;
         }
 
-        gf += parseFloat(g.goals_for || '0');
-        ga += parseFloat(g.goals_ag || '0');
+        gf += pGet(g, 'goals_for', 'goals_for' + pSuffix);
+        ga += pGet(g, 'goals_ag', 'goals_ag' + pSuffix);
 
+        // PP/PK are full-game only (no per-period columns)
         pp_goals += parseFloat(g.pp_goals || '0');
         pp_opps += parseFloat(g.pp_opportunities || '0');
         pp_time += parseFloat(g.pp_time || '0');
@@ -478,28 +486,39 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         pk_opps += parseFloat(g.pk_opportunities || '0');
         pk_time += parseFloat(g.pk_time || '0');
 
-        sf += parseFloat(g.sog_for || '0');
-        sa += parseFloat(g.sog_ag || '0');
+        sf += pGet(g, 'sog_for', 'sog_for' + pSuffix);
+        sa += pGet(g, 'sog_ag', 'sog_ag' + pSuffix);
 
-        cf += parseFloat(g.attempts_for_5v5 || '0');
-        ca += parseFloat(g.attempts_ag_5v5 || '0');
+        // Period mode uses all-situation attempts (5v5 column not available per-period)
+        cf += period === 'All' ? parseFloat(g.attempts_for_5v5 || '0') : pGet(g, 'attempts_for', 'attempts_for' + pSuffix);
+        ca += period === 'All' ? parseFloat(g.attempts_ag_5v5 || '0') : pGet(g, 'attempts_ag', 'attempts_ag' + pSuffix);
 
-        hdf += parseFloat(g.hdf || '0');
-        hda += parseFloat(g.hda || '0');
+        hdf += pGet(g, 'hdf', 'hdf' + pSuffix);
+        hda += pGet(g, 'hda', 'hda' + pSuffix);
 
-        saves += parseFloat(g.saves_for || '0');
+        // saves_for has no per-period column — use sa - ga as approximation in period mode
+        if (period === 'All') {
+            saves += parseFloat(g.saves_for || '0');
+        } else {
+            saves += Math.max(0, pGet(g, 'sog_ag', 'sog_ag' + pSuffix) - pGet(g, 'goals_ag', 'goals_ag' + pSuffix));
+        }
 
-        engf += parseFloat(g.emptynet_goalsfor || '0');
-        enga += parseFloat(g.emptynet_goalsagainst || '0');
-        en_attempts += parseFloat(g.en_attempts_for || '0');
+        // EN stats are full-game only
+        if (period === 'All') {
+            engf += parseFloat(g.emptynet_goalsfor || '0');
+            enga += parseFloat(g.emptynet_goalsagainst || '0');
+            en_attempts += parseFloat(g.en_attempts_for || '0');
+        }
 
-        xgf += parseFloat(g.xG_for || '0');
-        xga += parseFloat(g.xG_against || '0');
+        xgf += pGet(g, 'xG_for', 'xg_for' + pSuffix);
+        xga += pGet(g, 'xG_against', 'xg_ag' + pSuffix);
 
-        time_leading += parseFloat(g.time_leading || '0');
-        time_trailing += parseFloat(g.time_trailing || '0');
-        time_tied += parseFloat(g.time_tied || '0');
-        control_score_sum += parseFloat(g.control_score || '1');
+        // Time/control: per-period columns available for newly scraped games; fall back to full-game
+        const rawG = g as unknown as Record<string, string>;
+        time_leading  += period === 'All' ? parseFloat(g.time_leading  || '0') : parseFloat(rawG['time_leading'  + pSuffix]  ?? g.time_leading  ?? '0');
+        time_trailing += period === 'All' ? parseFloat(g.time_trailing || '0') : parseFloat(rawG['time_trailing' + pSuffix]  ?? g.time_trailing ?? '0');
+        time_tied     += period === 'All' ? parseFloat(g.time_tied     || '0') : parseFloat(rawG['time_tied'     + pSuffix]  ?? g.time_tied     ?? '0');
+        control_score_sum += period === 'All' ? parseFloat(g.control_score || '1') : parseFloat(rawG['control_score' + pSuffix] ?? g.control_score ?? '1');
 
         // OtmL Logic: EN Att > 0 AND EN GF < 1 AND Result is Loss (RL, OTL, SOL)
         const g_en_attempts = parseFloat(g.en_attempts_for || '0');
@@ -512,8 +531,9 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
     const points = wins * 2 + otl;
 
     // Calculations for new stats
-    const true_gf = gf - pp_goals - engf;
-    const true_ga = ga - pk_goals_allowed - enga;
+    // In period mode, PP/EN goals aren't available per-period, so true goals = raw goals
+    const true_gf = period === 'All' ? gf - pp_goals - engf : gf;
+    const true_ga = period === 'All' ? ga - pk_goals_allowed - enga : ga;
 
     // PP Time Per Goal (Lower is Better)
     const pp_sec_per_goal = pp_goals > 0 ? (pp_time / pp_goals) : 0;
@@ -577,7 +597,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[]): TeamSta
         xga_per_game: xga / gp,
         xgf_pct: (xgf + xga) > 0 ? (xgf / (xgf + xga)) * 100 : 0,
         otml,
-        gsax: xga - (ga - enga), // Cumulative GSAx (Excluding EN Goals)
+        gsax: period === 'All' ? xga - (ga - enga) : xga - ga, // Cumulative GSAx
 
         time_leading_per_game: time_leading / gp,
         time_trailing_per_game: time_trailing / gp,
@@ -598,6 +618,7 @@ const TeamsTable = () => {
     const [valuesMode, setValuesMode] = useState<ValuesMode>('Stats');
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
     const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
+    const [filterPeriod, setFilterPeriod] = useState<'All' | '1st' | '2nd' | '3rd' | 'OT'>('All');
     const [selectedDivisions, setSelectedDivisions] = useState<string[]>([]);
 
     // Sorting
@@ -640,19 +661,33 @@ const TeamsTable = () => {
     const [oddsTooltip, setOddsTooltip] = useState<{ x: number; y: number; data: TeamOdds } | null>(null);
 
     // Groups for Desktop headers and Mobile filtering
-    const STAT_GROUPS = useMemo(() => [
-        { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct', 'rw'] },
-        { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'true_goal_diff', 'total_goals_per_game'] },
-        { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
-        { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
-        { name: 'Saves', columns: ['sv_pct', 'gsax'] },
-        { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'hdf_per_game', 'hda_per_game', 'sh_pct'] },
-        { name: 'xGoals', columns: ['xgf_per_game', 'xga_per_game', 'xgf_pct'] },
-        { name: 'Game Situation', columns: ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score'] },
-        { name: 'Empty Net', columns: ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga'] },
-    ], []);
+    // PP/PK are hidden when a period filter is active (no per-period PP/PK data)
+    const STAT_GROUPS = useMemo(() => {
+        const allGroups = [
+            { name: 'Record', columns: ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct', 'rw'] },
+            { name: 'Goals', columns: ['gf_per_game', 'ga_per_game', 'goal_diff', 'true_gf_per_game', 'true_ga_per_game', 'true_goal_diff', 'total_goals_per_game'] },
+            { name: 'PP', columns: ['pp_goals', 'pp_opps', 'pp_pct', 'pp_lev', 'pp_time_per_game', 'pp_time_per_goal'] },
+            { name: 'PK', columns: ['pk_goals_allowed', 'pk_opps', 'pk_pct', 'pk_lev', 'pk_time_per_game', 'pk_time_per_goal_allowed'] },
+            { name: 'Saves', columns: ['sv_pct', 'gsax'] },
+            { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'hdf_per_game', 'hda_per_game', 'sh_pct'] },
+            { name: 'xGoals', columns: ['xgf_per_game', 'xga_per_game', 'xgf_pct'] },
+            { name: 'Game Situation', columns: ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score'] },
+            { name: 'Empty Net', columns: ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga'] },
+        ];
+        if (filterPeriod !== 'All') {
+            return allGroups.filter(g => g.name !== 'PP' && g.name !== 'PK' && g.name !== 'Empty Net');
+        }
+        return allGroups;
+    }, [filterPeriod]);
 
     const [activeCategory, setActiveCategory] = useState(STAT_GROUPS[0].name);
+
+    // If activeCategory refers to a group that's been hidden (PP/PK when period filter active), reset to Record
+    useEffect(() => {
+        if (!STAT_GROUPS.find(g => g.name === activeCategory)) {
+            setActiveCategory(STAT_GROUPS[0].name);
+        }
+    }, [STAT_GROUPS, activeCategory]);
 
     // Load filters from sessionStorage on mount
     useEffect(() => {
@@ -666,6 +701,7 @@ const TeamsTable = () => {
                     if (parsed.valuesMode) setValuesMode(parsed.valuesMode);
                     if (parsed.filterHomeAway) setFilterHomeAway(parsed.filterHomeAway);
                     if (parsed.filterLastN) setFilterLastN(parsed.filterLastN);
+                    if (parsed.filterPeriod) setFilterPeriod(parsed.filterPeriod);
                     if (parsed.selectedDivisions) setSelectedDivisions(parsed.selectedDivisions);
                     if (parsed.sortKey) setSortKey(parsed.sortKey);
                     if (parsed.sortDesc !== undefined) setSortDesc(parsed.sortDesc);
@@ -682,14 +718,14 @@ const TeamsTable = () => {
         try {
             if (typeof window !== 'undefined') {
                 const filters = {
-                    viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory
+                    viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeCategory
                 };
                 sessionStorage.setItem('teamsTableFilters', JSON.stringify(filters));
             }
         } catch (e) {
             console.error('Failed to save filters', e);
         }
-    }, [viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, selectedDivisions, sortKey, sortDesc, activeCategory]);
+    }, [viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeCategory]);
 
     const COLUMNS = useMemo(() => [
         { k: 'ranking', l: 'Rank', desc: 'Projected Playoff Standing' },
@@ -1047,10 +1083,10 @@ const TeamsTable = () => {
         // This ensures "Rank" column is static based on full season
         const standingsBaseline: TeamStat[] = [];
         allTeamsList.forEach(teamName => {
-            // Get ALL games for the team (ignore location/starter/lastN)
+            // Get ALL games for the team (ignore location/starter/lastN/period)
             const allGames = rawData.filter(g => g.team === teamName);
             if (allGames.length > 0) {
-                standingsBaseline.push(calculateTeamStats(teamName, allGames));
+                standingsBaseline.push(calculateTeamStats(teamName, allGames)); // standings always use full-season
             }
         });
 
@@ -1060,7 +1096,7 @@ const TeamsTable = () => {
         allTeamsList.forEach(teamName => {
             const games = getGames(teamName, filterHomeAway); // Use current filters but for ALL teams
             if (games.length > 0) {
-                leagueBaseline.push(calculateTeamStats(teamName, games));
+                leagueBaseline.push(calculateTeamStats(teamName, games, filterPeriod));
             }
         });
         setLeagueStats(leagueBaseline);
@@ -1107,14 +1143,14 @@ const TeamsTable = () => {
                 const homeGames = getGames(home, homeLoc, starterHome);
 
                 // Calculate stats and attach starter name if applicable
-                const awayStats = calculateTeamStats(away, awayGames);
+                const awayStats = calculateTeamStats(away, awayGames, filterPeriod);
                 if (starterAway) {
                     awayStats.starterName = starterAway;
                     awayStats.starterStatus = awayStarterStatus;
                 }
                 processedTeams.push(awayStats);
 
-                const homeStats = calculateTeamStats(home, homeGames);
+                const homeStats = calculateTeamStats(home, homeGames, filterPeriod);
                 if (starterHome) {
                     homeStats.starterName = starterHome;
                     homeStats.starterStatus = homeStarterStatus;
@@ -1274,7 +1310,7 @@ const TeamsTable = () => {
 
         setStats(processedTeams);
 
-    }, [rawData, viewMode, viewBase, withOptions, filterHomeAway, filterLastN, todayMatchups, tomorrowMatchups, selectedDivisions, teams]);
+    }, [rawData, viewMode, viewBase, withOptions, filterHomeAway, filterLastN, filterPeriod, todayMatchups, tomorrowMatchups, selectedDivisions, teams]);
 
 
     const handleSort = (key: string) => {
@@ -1698,6 +1734,18 @@ const TeamsTable = () => {
                                 options={['All', 5, 10, 20]}
                                 current={filterLastN}
                                 onChange={(v) => setFilterLastN(v as number | 'All')}
+                            />
+                        </div>
+                    )}
+
+                    {/* Period Filter: hidden in Ratings mode */}
+                    {valuesMode !== 'Ratings' && (
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</label>
+                            <ButtonGroup
+                                options={['All', '1st', '2nd', '3rd', 'OT']}
+                                current={filterPeriod}
+                                onChange={(v) => setFilterPeriod(v as 'All' | '1st' | '2nd' | '3rd' | 'OT')}
                             />
                         </div>
                     )}
