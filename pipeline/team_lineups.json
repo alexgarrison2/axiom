@@ -1222,12 +1222,12 @@
                 "movement": null
             },
             {
-                "name": "Trevor van Riemsdyk",
-                "number": 57,
+                "name": "Timothy Liljegren",
+                "number": 37,
                 "pos": "rd",
-                "id": 2383,
+                "id": 2805,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d3": [
@@ -1240,12 +1240,12 @@
                 "movement": null
             },
             {
-                "name": "Timothy Liljegren",
-                "number": 37,
+                "name": "Trevor van Riemsdyk",
+                "number": 57,
                 "pos": "rd",
-                "id": 2805,
+                "id": 2383,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "ir": [
@@ -1267,7 +1267,7 @@
                 "pos": "lw",
                 "id": 28001,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Elias Lindholm",
@@ -1335,7 +1335,7 @@
                 "pos": "rw",
                 "id": 31738,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -2984,7 +2984,7 @@
                 "number": 22,
                 "pos": "lw",
                 "id": 2603,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3010,7 +3010,7 @@
                 "number": 90,
                 "pos": "lw",
                 "id": 36,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -5580,12 +5580,12 @@
         ],
         "f2": [
             {
-                "name": "A.J. Greer",
-                "number": 10,
+                "name": "Mackie Samoskevich",
+                "number": 11,
                 "pos": "lw",
-                "id": 2706,
-                "ppUnit": null,
-                "movement": null
+                "id": 31226,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Sam Bennett",
@@ -5606,12 +5606,12 @@
         ],
         "f3": [
             {
-                "name": "Mackie Samoskevich",
-                "number": 11,
+                "name": "A.J. Greer",
+                "number": 10,
                 "pos": "lw",
-                "id": 31226,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2706,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Tomas Nosek",
