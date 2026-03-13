@@ -140,6 +140,10 @@ interface TeamStat {
     time_tied_per_game: number; // Avg seconds tied per game
     control_score: number; // Weighted game control score (avg over games)
 
+    nlw: number; // No-Lead Wins: won with 0 seconds of time leading (never led)
+    ntw: number; // No-Trail Wins: won with 0 seconds of time trailing (never trailed)
+    ntl: number; // No-Trail Losses: lost with 0 seconds of time trailing (never trailed but lost)
+
     // Clinch / elimination tracking (set after standings are computed, optional)
     magic_number?: number;  // M#: playoff teams only. 0 = clinched.
     tragic_number?: number; // E#: non-playoff teams only. 0 = eliminated.
@@ -440,7 +444,8 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
             sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, hdf_per_game: 0, hda_per_game: 0, sh_pct: 0, sv_pct: 0,
 
             engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0, rw: 0, row: 0,
-            time_leading_per_game: 0, time_trailing_per_game: 0, time_tied_per_game: 0, control_score: 1.0
+            time_leading_per_game: 0, time_trailing_per_game: 0, time_tied_per_game: 0, control_score: 1.0,
+            nlw: 0, ntw: 0, ntl: 0,
         };
     }
 
@@ -459,6 +464,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
     let otml = 0;
     let time_leading = 0, time_trailing = 0, time_tied = 0;
     let control_score_sum = 0;
+    let nlw = 0, ntw = 0, ntl = 0;
 
     teamGames.forEach(g => {
         gp++;
@@ -514,11 +520,12 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
         xga += pGet(g, 'xG_against', 'xg_ag' + pSuffix);
 
         // Time/control: per-period columns available for newly scraped games; fall back to full-game
+        // NOTE: use || not ?? so empty strings ('') also fall back (parseFloat('') = NaN)
         const rawG = g as unknown as Record<string, string>;
-        time_leading  += period === 'All' ? parseFloat(g.time_leading  || '0') : parseFloat(rawG['time_leading'  + pSuffix]  ?? g.time_leading  ?? '0');
-        time_trailing += period === 'All' ? parseFloat(g.time_trailing || '0') : parseFloat(rawG['time_trailing' + pSuffix]  ?? g.time_trailing ?? '0');
-        time_tied     += period === 'All' ? parseFloat(g.time_tied     || '0') : parseFloat(rawG['time_tied'     + pSuffix]  ?? g.time_tied     ?? '0');
-        control_score_sum += period === 'All' ? parseFloat(g.control_score || '1') : parseFloat(rawG['control_score' + pSuffix] ?? g.control_score ?? '1');
+        time_leading  += period === 'All' ? parseFloat(g.time_leading  || '0') : parseFloat(rawG['time_leading'  + pSuffix]  || g.time_leading  || '0');
+        time_trailing += period === 'All' ? parseFloat(g.time_trailing || '0') : parseFloat(rawG['time_trailing' + pSuffix]  || g.time_trailing || '0');
+        time_tied     += period === 'All' ? parseFloat(g.time_tied     || '0') : parseFloat(rawG['time_tied'     + pSuffix]  || g.time_tied     || '0');
+        control_score_sum += period === 'All' ? parseFloat(g.control_score || '1') : parseFloat(rawG['control_score' + pSuffix] || g.control_score || '1');
 
         // OtmL Logic: EN Att > 0 AND EN GF < 1 AND Result is Loss (RL, OTL, SOL)
         const g_en_attempts = parseFloat(g.en_attempts_for || '0');
@@ -526,6 +533,15 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
         if (g_en_attempts > 0 && g_en_goals < 1 && (g.result === 'RL' || g.result === 'OTL' || g.result === 'SOL')) {
             otml++;
         }
+
+        // NLW / NTW / NTL: always full-game (score-state is cumulative over the game)
+        const isWin  = g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW';
+        const isLoss = g.result === 'RL' || g.result === 'OTL' || g.result === 'SOL';
+        const tLead  = parseFloat(g.time_leading  || '0');
+        const tTrail = parseFloat(g.time_trailing || '0');
+        if (isWin  && tLead  === 0) nlw++;
+        if (isWin  && tTrail === 0) ntw++;
+        if (isLoss && tTrail === 0) ntl++;
     });
 
     const points = wins * 2 + otl;
@@ -602,7 +618,9 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
         time_leading_per_game: time_leading / gp,
         time_trailing_per_game: time_trailing / gp,
         time_tied_per_game: time_tied / gp,
-        control_score: control_score_sum / gp
+        control_score: control_score_sum / gp,
+
+        nlw, ntw, ntl,
     };
 };
 
@@ -671,7 +689,9 @@ const TeamsTable = () => {
             { name: 'Saves', columns: ['sv_pct', 'gsax'] },
             { name: 'Shots', columns: ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_game', 'hdf_per_game', 'hda_per_game', 'sh_pct'] },
             { name: 'xGoals', columns: ['xgf_per_game', 'xga_per_game', 'xgf_pct'] },
-            { name: 'Game Situation', columns: ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score'] },
+            { name: 'Game Situation', columns: filterPeriod === 'All'
+                ? ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score', 'nlw', 'ntw', 'ntl']
+                : ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score'] },
             { name: 'Empty Net', columns: ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga'] },
         ];
         if (filterPeriod !== 'All') {
@@ -771,6 +791,9 @@ const TeamsTable = () => {
         { k: 'time_trailing_per_game', l: 'T↓/G', inv: true, desc: 'Avg Time Trailing Per Game (mm:ss)' },
         { k: 'time_tied_per_game', l: 'T=/G', desc: 'Avg Time Tied Per Game (mm:ss)' },
         { k: 'control_score', l: 'Control', desc: 'Weighted Game Control Score', calc: 'Σ(weight×second) / total seconds. Weights: tied=1, lead+1=1.2, lead+2=1.5, lead+3=2.0, trail-1=0.8, trail-2=0.5, trail-3=0' },
+        { k: 'nlw', l: 'NLW', desc: 'No-Lead Wins: wins where time leading = 0:00 (came from behind or never led)' },
+        { k: 'ntw', l: 'NTW', desc: 'No-Trail Wins: wins where time trailing = 0:00 (never trailed)' },
+        { k: 'ntl', l: 'NTL', desc: 'No-Trail Losses: losses where time trailing = 0:00 (never trailed but still lost)', inv: true },
         { k: 'engf', l: 'EN GF', desc: 'Empty Net Goals For' },
         { k: 'en_attempts', l: 'EN Att', desc: 'Empty Net Attempts (missed/blocked shots, icings, goals)' },
         { k: 'ens_pct', l: 'ENS%', desc: 'Empty Net Success %', calc: 'EN Goals / EN Attempts' },
@@ -1414,6 +1437,9 @@ const TeamsTable = () => {
             time_trailing_per_game: calculateRange('time_trailing_per_game'),
             time_tied_per_game: calculateRange('time_tied_per_game'),
             control_score: calculateRange('control_score'),
+            nlw: calculateRange('nlw'),
+            ntw: calculateRange('ntw'),
+            ntl: calculateRange('ntl'),
 
             true_gf_per_game: calculateRange('true_gf_per_game'),
             true_ga_per_game: calculateRange('true_ga_per_game'),

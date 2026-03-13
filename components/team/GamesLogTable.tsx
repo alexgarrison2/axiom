@@ -167,6 +167,20 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         const time_tied_avg      = games.reduce((acc, g) => acc + getTimeVal(g, 'time_tied'), 0)      / count;
         const control_score_avg  = games.reduce((acc, g) => acc + getCtrl(g), 0) / count;
 
+        // NLW / NTW / NTL: always full-game (score-state is cumulative)
+        const nlw = games.filter(g => {
+            const res = g.result_code?.toUpperCase() || '';
+            return ['RW', 'OTW', 'SOW', 'W'].includes(res) && (g.time_leading || 0) === 0;
+        }).length;
+        const ntw = games.filter(g => {
+            const res = g.result_code?.toUpperCase() || '';
+            return ['RW', 'OTW', 'SOW', 'W'].includes(res) && (g.time_trailing || 0) === 0;
+        }).length;
+        const ntl = games.filter(g => {
+            const res = g.result_code?.toUpperCase() || '';
+            return ['RL', 'L', 'OTL', 'SOL'].includes(res) && (g.time_trailing || 0) === 0;
+        }).length;
+
         const pp_goals = games.reduce((acc, g) => acc + g.pp_goals, 0);
         const pp_opps = games.reduce((acc, g) => acc + g.pp_opps, 0);
         const pk_goals_ag = games.reduce((acc, g) => acc + g.pp_goals_against, 0);
@@ -195,6 +209,7 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
             xga: (xga / count).toFixed(2),
             xgd: (xgf - xga).toFixed(2),
             gsax: gsax.toFixed(2),
+            nlw, ntw, ntl,
             en_gf, en_att, en_ga, en_att_ag,
             time_leading_avg, time_trailing_avg, time_tied_avg, control_score_avg,
             pp_goals, pp_opps,
@@ -251,6 +266,13 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                         <th className="p-1 text-center">OTML</th>
                         <th className="p-1 text-center">EN GA</th>
                         <th className="p-1 text-center">EN Att Ag</th>
+                        {filters.period === 'All' && (
+                            <>
+                                <th className="p-1 text-center border-l border-gray-700 text-purple-300" title="No-Lead Wins: won with 0:00 time leading">NLW</th>
+                                <th className="p-1 text-center text-teal-300" title="No-Trail Wins: won with 0:00 time trailing">NTW</th>
+                                <th className="p-1 text-center text-orange-300" title="No-Trail Losses: lost with 0:00 time trailing">NTL</th>
+                            </>
+                        )}
                     </tr>
                     {totals && (
                         <tr className="bg-white/10 font-bold border-b border-white/20 text-white">
@@ -292,6 +314,13 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             <td></td>
                             <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_ga : '-'}</td>
                             <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_att_ag : '-'}</td>
+                            {filters.period === 'All' && (
+                                <>
+                                    <td className="p-1 text-center border-l border-gray-700 text-purple-300 font-bold">{totals.nlw}</td>
+                                    <td className="p-1 text-center text-teal-300 font-bold">{totals.ntw}</td>
+                                    <td className="p-1 text-center text-orange-300 font-bold">{totals.ntl}</td>
+                                </>
+                            )}
                         </tr>
                     )}
                 </thead>
@@ -418,6 +447,27 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                         <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>
                                         <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_ga : '-'}</td>
                                         <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_att_ag : '-'}</td>
+                                        {filters.period === 'All' && (() => {
+                                            const res = game.result_code?.toUpperCase() || '';
+                                            const isWin  = ['RW', 'OTW', 'SOW', 'W'].includes(res);
+                                            const isLoss = ['RL', 'L', 'OTL', 'SOL'].includes(res);
+                                            const isNLW = isWin  && (game.time_leading  || 0) === 0;
+                                            const isNTW = isWin  && (game.time_trailing || 0) === 0;
+                                            const isNTL = isLoss && (game.time_trailing || 0) === 0;
+                                            return (
+                                                <>
+                                                    <td className="p-1 text-center border-l border-gray-700">
+                                                        {isNLW ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-purple-900/40 text-purple-300 border border-purple-500/30">NLW</span> : <span className="text-gray-700">—</span>}
+                                                    </td>
+                                                    <td className="p-1 text-center">
+                                                        {isNTW ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-teal-900/40 text-teal-300 border border-teal-500/30">NTW</span> : <span className="text-gray-700">—</span>}
+                                                    </td>
+                                                    <td className="p-1 text-center">
+                                                        {isNTL ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-orange-900/40 text-orange-300 border border-orange-500/30">NTL</span> : <span className="text-gray-700">—</span>}
+                                                    </td>
+                                                </>
+                                            );
+                                        })()}
                                     </tr>
                                     {isExpanded && (
                                         <tr>
