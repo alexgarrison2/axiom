@@ -21,6 +21,8 @@ For each player (5v5, PP, PK, all-situations) this module calculates:
                         Used in Fwd EV OFF impact score blend.
     pbp_oihda_per60     On-ice HD attempts Against per 60
                         Used in Def EV DEF impact score blend.
+    pbp_oihdf_per60     On-ice HD attempts For per 60
+                        Used in Def EV DEF impact score blend.
 
   Special teams:
     pp_xgf_per60        On-ice xGoals For per 60 on the PP (5on4)
@@ -35,7 +37,7 @@ Impact score:
     EV OFF = 4-way blend: ind_xg_per60, ev_prod_per60, xgaa_ev_off,
              pbp_ihd_per60 (if pbp_metrics.json available)
   Defenders (EV Off 25%, EV Def 40%, PP 15%, PK 20%):
-    EV DEF = 2-way blend: xgaa_ev_def, -pbp_oihda_per60
+    EV DEF = 3-way blend: xgaa_ev_def, -pbp_oihda_per60, pbp_oihdf_per60
              (if pbp_metrics.json available)
 
 Output files (written to pipeline/):
@@ -469,6 +471,7 @@ def calculate_player_impact(
         league_avgs['fwd_pbp_oihda_per60'] = _avg(fwd_with_pbp, 'pbp_oihda_per60')
     if def_with_pbp:
         league_avgs['def_pbp_oihda_per60'] = _avg(def_with_pbp, 'pbp_oihda_per60')
+        league_avgs['def_pbp_oihdf_per60'] = _avg(def_with_pbp, 'pbp_oihdf_per60')
         league_avgs['def_pbp_ihd_per60']   = _avg(def_with_pbp, 'pbp_ihd_per60')
     if fwd_with_pbp or def_with_pbp:
         print(f"  PBP coverage — fwd: {len(fwd_with_pbp)}/{len(fwd_profiles)}  "
@@ -597,30 +600,33 @@ def calculate_player_impact(
 
         # ── EV DEF: signal blend ──────────────────────────────────────────────
         # Base signal (always present, from MoneyPuck):
-        #  1. xgaa_ev_def   — xG saved above avg × TOI (higher = better defense)
+        #  1. xgaa_ev_def      — xG saved above avg × TOI (higher = better defense)
         #
-        # PBP signal (Defenders only, when pbp_metrics.json is available):
-        #  2. -pbp_oihda_per60 — on-ice HD attempts Against/60 (sign-flipped so
-        #                        fewer HD against = higher score). On a 5v5 TOI
-        #                        basis. Captures how well the defender suppresses
-        #                        dangerous zone entries and shots from the slot.
+        # PBP signals (Defenders only, when pbp_metrics.json is available):
+        #  2. -pbp_oihda_per60 — on-ice HD attempts Against/60 (sign-flipped:
+        #                        fewer HD against = better). Captures shot suppression.
+        #  3.  pbp_oihdf_per60 — on-ice HD attempts For/60 (positive: more HD
+        #                        generated from the blue line = better).
         #
-        # If PBP signal is available:  2-way equal blend → defender EV DEF
-        # If PBP signal is missing:    1-way (original xgaa_ev_def only)
+        # If PBP signals available:  3-way equal blend → defender EV DEF
+        # If PBP signals missing:    1-way (original xgaa_ev_def only)
         xgaa_def_raw = np.array([d['xgaa_ev_def'] for d in data_list])
 
-        pbp_oihda_raw = np.array([
-            d.get('pbp_oihda_per60', np.nan) for d in data_list
-        ])
-        has_pbp_def = np.isfinite(pbp_oihda_raw).any()
+        pbp_oihda_raw = np.array([d.get('pbp_oihda_per60', np.nan) for d in data_list])
+        pbp_oihdf_raw = np.array([d.get('pbp_oihdf_per60', np.nan) for d in data_list])
+        has_pbp_def = np.isfinite(pbp_oihda_raw).any() and np.isfinite(pbp_oihdf_raw).any()
         if not fwd_weights and has_pbp_def:
             mean_pbp_oihda  = float(np.nanmean(pbp_oihda_raw))
+            mean_pbp_oihdf  = float(np.nanmean(pbp_oihdf_raw))
             pbp_oihda_fill  = np.where(np.isfinite(pbp_oihda_raw), pbp_oihda_raw, mean_pbp_oihda)
+            pbp_oihdf_fill  = np.where(np.isfinite(pbp_oihdf_raw), pbp_oihdf_raw, mean_pbp_oihdf)
             pbp_oihda_s     = mean_pbp_oihda + (pbp_oihda_fill - mean_pbp_oihda) * shrink
+            pbp_oihdf_s     = mean_pbp_oihdf + (pbp_oihdf_fill - mean_pbp_oihdf) * shrink
             z_xgaa_def      = zsc(xgaa_def_raw * shrink)
             z_pbp_hda       = zsc(-pbp_oihda_s)   # negate: lower HD against = better
-            # 2-way equal blend: xgaa_ev_def, -pbp_oihda
-            ev_def_arr = (z_xgaa_def + z_pbp_hda) / 2.0
+            z_pbp_hdf       = zsc(pbp_oihdf_s)    # higher HD for = better
+            # 3-way equal blend: xgaa_ev_def, -pbp_oihda, pbp_oihdf
+            ev_def_arr = (z_xgaa_def + z_pbp_hda + z_pbp_hdf) / 3.0
         else:
             ev_def_arr = xgaa_def_raw * shrink
 

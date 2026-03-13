@@ -186,6 +186,76 @@ def run_pbp_impact(pbp_file=PBP_FILE, shots_file=SHOTS_FILE,
     # Filter to shot attempt events
     shots_5v5 = enriched[enriched["type_code"].isin(SHOT_TYPES)].copy()
 
+    # PBP records each event twice (once per team perspective). We need exactly
+    # one row per physical event and the correct is_home_team value for the
+    # shooting team. We determine this from the shots CSV team_id.
+
+    # ── Build game → home team ID lookup ────────────────────────────────────
+    # From PBP: for each game, find the home team's common name (is_home_team=True rows)
+    # From nhl_teams.csv: map common name → NHL team ID
+    teams_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nhl_teams.csv")
+    name_to_id: dict[str, int] = {}
+    try:
+        teams_df = pd.read_csv(teams_file)
+        name_to_id = dict(zip(teams_df["Common Name"], teams_df["NHL Team ID"].astype(int)))
+    except Exception as e:
+        print(f"  [WARN] Could not load nhl_teams.csv: {e}")
+
+    game_home_id: dict[int, int] = {}  # game_id → home team NHL ID
+    for gid, grp in pbp.groupby("game_id"):
+        home_rows = grp[grp["is_home_team"] == True]
+        if not home_rows.empty:
+            home_name = home_rows.iloc[0].get("team_perspective", "")
+            tid = name_to_id.get(home_name)
+            if tid:
+                game_home_id[int(gid)] = int(tid)
+
+    print(f"  Home team lookup: {len(game_home_id)} games resolved")
+
+    # ── Build shooter/team/xG lookups from shots CSV ─────────────────────────
+    shooter_lookup: dict[tuple, str]   = {}  # (game_id, event_id) → player_id str
+    shot_team_lookup: dict[tuple, int] = {}  # (game_id, event_id) → shooting team_id
+    xg_lookup: dict[tuple, float]      = {}  # (game_id, event_id) → xG
+
+    if os.path.exists(shots_file):
+        try:
+            shots_df = pd.read_csv(shots_file, usecols=["game_id", "event_id",
+                                                          "player_id", "team_id", "xG"])
+            for _, r in shots_df.iterrows():
+                key = (int(r["game_id"]), int(r["event_id"]))
+                shooter_lookup[key]   = str(int(r["player_id"]))
+                shot_team_lookup[key] = int(r["team_id"])
+                xg_lookup[key]        = float(r["xG"])
+            print(f"  Shots CSV lookup: {len(shooter_lookup):,} events")
+        except Exception as e:
+            print(f"  [WARN] Could not load shots CSV: {e}")
+
+    # ── Keep one PBP row per event with correct shooting-side flag ───────────
+    # For each (game_id, event_id), we know which team shot (shot_team_lookup).
+    # Keep the row where is_home_team matches whether the shooting team is home.
+    def shooting_is_home(game_id: int, event_id: int) -> bool | None:
+        team_id = shot_team_lookup.get((game_id, event_id))
+        home_id = game_home_id.get(game_id)
+        if team_id is None or home_id is None:
+            return None
+        return team_id == home_id
+
+    shots_5v5["_shooting_is_home"] = shots_5v5.apply(
+        lambda r: shooting_is_home(int(r["game_id"]),
+                                   int(r["event_id"]) if pd.notna(r.get("event_id")) else -1),
+        axis=1
+    )
+    # Keep rows where is_home_team matches the shooting side (correct perspective)
+    # For rows where we couldn't determine shooting side, keep is_home_team=True
+    # (arbitrary but consistent; these fallback rows are deduplicated below)
+    mask_correct = shots_5v5["_shooting_is_home"] == shots_5v5["is_home_team"]
+    mask_unknown = shots_5v5["_shooting_is_home"].isna()
+    shots_5v5 = shots_5v5[mask_correct | mask_unknown].copy()
+    # Final dedup in case of any remaining duplicates
+    before_dedup = len(shots_5v5)
+    shots_5v5 = shots_5v5.drop_duplicates(subset=["game_id", "event_id"]).copy()
+    print(f"  Kept {before_dedup:,} correctly-sided rows → {len(shots_5v5):,} unique events")
+
     # Classify HD using spatial bins
     shots_5v5["is_hd"] = shots_5v5.apply(
         lambda r: is_hd(r.get("x_coord"), r.get("y_coord")), axis=1
@@ -194,32 +264,6 @@ def run_pbp_impact(pbp_file=PBP_FILE, shots_file=SHOTS_FILE,
     hd_count    = shots_5v5["is_hd"].sum()
     total_count = len(shots_5v5)
     print(f"  5v5 shot attempts: {total_count:,} | HD (7-bin): {hd_count:,} ({100*hd_count/max(total_count,1):.1f}%)")
-
-    # ── Build shooter lookup from shots CSV ─────────────────────────────────
-    # shots CSV has player_id (NHL player ID) for each shot event.
-    # This is the clean path for individual HD attribution — no name matching needed.
-    shooter_lookup: dict[tuple, str] = {}   # (game_id, event_id) → player_id str
-    if os.path.exists(shots_file):
-        try:
-            shots_df = pd.read_csv(shots_file, usecols=["game_id", "event_id", "player_id"])
-            for _, r in shots_df.iterrows():
-                gid = int(r["game_id"])
-                eid = int(r["event_id"])
-                pid = str(int(r["player_id"]))
-                shooter_lookup[(gid, eid)] = pid
-            print(f"  Shooter lookup: {len(shooter_lookup):,} events from shots CSV")
-        except Exception as e:
-            print(f"  [WARN] Could not load shooter lookup: {e}")
-
-    # ── Build xG lookup from shots CSV ──────────────────────────────────────
-    xg_lookup: dict[tuple, float] = {}
-    if os.path.exists(shots_file):
-        try:
-            xg_df = pd.read_csv(shots_file, usecols=["game_id", "event_id", "xG"])
-            for _, r in xg_df.iterrows():
-                xg_lookup[(int(r["game_id"]), int(r["event_id"]))] = float(r["xG"])
-        except Exception as e:
-            print(f"  [WARN] Could not load xG lookup: {e}")
 
     # ── Accumulate per-player raw counts ────────────────────────────────────
     # Keyed by player_id string (numeric from REST API) or player_name (HTML fallback).
@@ -239,28 +283,28 @@ def run_pbp_impact(pbp_file=PBP_FILE, shots_file=SHOTS_FILE,
             }
         return stats[key]
 
-    # Process each 5v5 shot attempt event
+    # Process each 5v5 shot attempt event (one row per physical event,
+    # with is_home_team correctly reflecting the shooting team's side)
     for _, row in shots_5v5.iterrows():
-        is_home_event = bool(row.get("is_home_team", False))
-        hd            = bool(row.get("is_hd", False))
+        hd = bool(row.get("is_hd", False))
 
         game_id  = int(row["game_id"])
         event_id = int(row["event_id"]) if pd.notna(row.get("event_id")) else -1
         xg_val   = xg_lookup.get((game_id, event_id), 0.0)
 
-        # Shooting team is on ice FOR this event; defending team is against
-        if is_home_event:
-            shooting_cols  = HOME_ON
-            defending_cols = AWAY_ON
-        else:
-            shooting_cols  = AWAY_ON
-            defending_cols = HOME_ON
-
-        shooting_players  = on_ice_players(row, shooting_cols)
-        defending_players = on_ice_players(row, defending_cols)
-
-        # Shooter player_id from shots CSV (clean numeric ID — no name matching)
+        # Shooter player_id from shots CSV (clean numeric ID)
         shooter_pid = shooter_lookup.get((game_id, event_id))
+
+        home_players = on_ice_players(row, HOME_ON)
+        away_players = on_ice_players(row, AWAY_ON)
+
+        # is_home_team now correctly identifies the shooting team (set during dedup)
+        if bool(row.get("is_home_team", False)):
+            shooting_players  = home_players
+            defending_players = away_players
+        else:
+            shooting_players  = away_players
+            defending_players = home_players
 
         # ── Credit shooting-team on-ice players ──
         for p in shooting_players:
