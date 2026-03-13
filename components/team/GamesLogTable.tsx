@@ -133,17 +133,39 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         const hda = sum('hda');
         const xgf = sum('xgf');
         const xga = sum('xga');
-        const gsax = games.reduce((acc, g) => acc + (g.gsax || 0), 0);
+        // GSAx: compute from period-filtered xga and ga (not g.gsax which is always full-game)
+        const isAll = filters.period === 'All';
+        const pSuffix = filters.period === '1st' ? '_1P' :
+                        filters.period === '2nd' ? '_2P' :
+                        filters.period === '3rd' ? '_3P' : '_OT';
+        const gsax = games.reduce((acc, g) => {
+            const _xga = (getStat(g, 'xga') as number) || 0;
+            const _ga  = (getStat(g, 'ga')  as number) || 0;
+            const _en_ga = isAll ? (g.en_ga || 0) : 0;
+            return acc + (_xga - (_ga - _en_ga));
+        }, 0);
 
         const en_gf = games.reduce((acc, g) => acc + g.en_gf, 0);
         const en_att = games.reduce((acc, g) => acc + g.en_att, 0);
         const en_ga = games.reduce((acc, g) => acc + g.en_ga, 0);
         const en_att_ag = games.reduce((acc, g) => acc + g.en_att_ag, 0);
 
-        const time_leading_avg = games.reduce((acc, g) => acc + (g.time_leading || 0), 0) / count;
-        const time_trailing_avg = games.reduce((acc, g) => acc + (g.time_trailing || 0), 0) / count;
-        const time_tied_avg = games.reduce((acc, g) => acc + (g.time_tied || 0), 0) / count;
-        const control_score_avg = games.reduce((acc, g) => acc + (g.control_score || 1), 0) / count;
+        // Time stats: use per-period columns from raw when available, fall back to full-game
+        const getTimeVal = (g: GameLog, stat: 'time_leading' | 'time_trailing' | 'time_tied') => {
+            if (isAll) return g[stat] || 0;
+            const raw = g.raw?.[stat + pSuffix];
+            return raw !== undefined ? parseInt(raw as string) || 0 : g[stat] || 0;
+        };
+        const getCtrl = (g: GameLog) => {
+            if (isAll) return g.control_score || 1;
+            const raw = g.raw?.['control_score' + pSuffix];
+            return raw !== undefined ? parseFloat(raw as string) || 1 : g.control_score || 1;
+        };
+
+        const time_leading_avg   = games.reduce((acc, g) => acc + getTimeVal(g, 'time_leading'), 0)   / count;
+        const time_trailing_avg  = games.reduce((acc, g) => acc + getTimeVal(g, 'time_trailing'), 0)  / count;
+        const time_tied_avg      = games.reduce((acc, g) => acc + getTimeVal(g, 'time_tied'), 0)      / count;
+        const control_score_avg  = games.reduce((acc, g) => acc + getCtrl(g), 0) / count;
 
         const pp_goals = games.reduce((acc, g) => acc + g.pp_goals, 0);
         const pp_opps = games.reduce((acc, g) => acc + g.pp_opps, 0);
