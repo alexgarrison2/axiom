@@ -16,6 +16,12 @@ For each player (5v5, PP, PK, all-situations) this module calculates:
     ind_xg_per60        Individual expected goals per 60 (shooting threat)
     ind_hd_xg_per60     Individual high-danger xGoals per 60
 
+  PBP-derived (5v5, from pbp_metrics.json computed by calc_pbp_impact.py):
+    pbp_ihd_per60       Individual HD shot attempts per 60 (7-bin definition)
+                        Used in Fwd EV OFF impact score blend.
+    pbp_oihda_per60     On-ice HD attempts Against per 60
+                        Used in Def EV DEF impact score blend.
+
   Special teams:
     pp_xgf_per60        On-ice xGoals For per 60 on the PP (5on4)
     pk_xga_per60        On-ice xGoals Against per 60 on the PK (4on5)
@@ -23,6 +29,14 @@ For each player (5v5, PP, PK, all-situations) this module calculates:
   Context:
     penalty_diff_per60  (Drawn − Taken) per 60 (positive = penalty-drawer)
     game_score          MoneyPuck's all-in-one rating
+
+Impact score:
+  Forwards  (EV Off 50%, EV Def 20%, PP 20%, PK 10%):
+    EV OFF = 4-way blend: ind_xg_per60, ev_prod_per60, xgaa_ev_off,
+             pbp_ihd_per60 (if pbp_metrics.json available)
+  Defenders (EV Off 25%, EV Def 40%, PP 15%, PK 20%):
+    EV DEF = 2-way blend: xgaa_ev_def, -pbp_oihda_per60
+             (if pbp_metrics.json available)
 
 Output files (written to pipeline/):
   player_impact.json       — {playerId: impact_dict} for prediction engine
@@ -119,6 +133,28 @@ def _avg(records: list, key: str) -> float:
 
 # ── Core calculation ──────────────────────────────────────────────────────────
 
+def _load_pbp_metrics(script_dir: str) -> dict:
+    """
+    Load raw PBP counts from pbp_metrics.json (produced by calc_pbp_impact.py).
+
+    Returns: {player_key: {ihd_attempts, oihda, oihdf, oixgf, oixga, oif, oia}}
+             Empty dict if file not found.
+    """
+    path = os.path.join(script_dir, "pbp_metrics.json")
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        print(f"  Loaded pbp_metrics.json ({len(data)} player keys)")
+        return data
+    except FileNotFoundError:
+        print("  [INFO] pbp_metrics.json not found — run calc_pbp_impact.py first.")
+        print("         PBP HD metrics will not be included in impact scores.")
+        return {}
+    except Exception as e:
+        print(f"  [WARN] Could not load pbp_metrics.json: {e}")
+        return {}
+
+
 def calculate_player_impact(
     skater_file: str = "moneypuck_skaters.csv",
     output_file: str = "player_impact.json",
@@ -133,6 +169,10 @@ def calculate_player_impact(
         Keys in player_impact: str(playerId)
     """
     print("=== Calculating Player Impact Metrics ===")
+
+    # ── Load PBP metrics (calc_pbp_impact.py must have run first) ──
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    pbp_metrics = _load_pbp_metrics(script_dir)
 
     # ── Load data ──
     if not os.path.exists(skater_file):
@@ -320,6 +360,69 @@ def calculate_player_impact(
 
     print(f"  Built profiles for {len(player_impact)} players (after min-TOI filter)")
 
+    # ── Merge PBP metrics into player profiles ─────────────────────────────
+    # Rates are computed here using MoneyPuck 5v5 TOI as denominator.
+    # This is more accurate than using shift-summed all-situations TOI.
+    # We also build a name → pid index so HTML-sourced name keys can be resolved.
+    if pbp_metrics:
+        # Build name→pid lookup from current profiles for HTML-sourced fallback
+        _pbp_name_idx = {
+            d['name'].lower().strip(): pid
+            for pid, d in player_impact.items()
+            if d.get('name')
+        }
+
+        pbp_merged = 0
+        for raw_key, counts in pbp_metrics.items():
+            # Resolve player: numeric key matches MoneyPuck player_id directly
+            pid = None
+            if raw_key in player_impact:
+                pid = raw_key
+            else:
+                # Fall back to name-based lookup (HTML-sourced shifts produce names)
+                pid = _pbp_name_idx.get(raw_key.lower().strip())
+                if pid is None:
+                    # Partial name match
+                    for norm_name, ppid in _pbp_name_idx.items():
+                        if raw_key.lower() in norm_name or norm_name in raw_key.lower():
+                            pid = ppid
+                            break
+
+            if pid is None or pid not in player_impact:
+                continue
+
+            data = player_impact[pid]
+            # Use MoneyPuck 5v5 TOI (seconds) as denominator for per-60 rates
+            ev_toi_total = data['ev_toi_per_game'] * max(data['games_played'], 1)
+            if ev_toi_total < 1:
+                continue
+
+            def _per60_pbp(n, toi=ev_toi_total):
+                return round((n / toi) * 3600.0, 4) if toi >= 60 else 0.0
+
+            ihd   = counts.get('ihd_attempts', 0)
+            oihda = counts.get('oihda', 0)
+            oihdf = counts.get('oihdf', 0)
+            oixgf = counts.get('oixgf', 0.0)
+            oixga = counts.get('oixga', 0.0)
+            oif   = counts.get('oif', 0)
+            oia   = counts.get('oia', 0)
+
+            data['pbp_ihd_per60']   = _per60_pbp(ihd)
+            data['pbp_oihda_per60'] = _per60_pbp(oihda)
+            data['pbp_oihdf_per60'] = _per60_pbp(oihdf)
+            data['pbp_oixgf_per60'] = _per60_pbp(oixgf)
+            data['pbp_oixga_per60'] = _per60_pbp(oixga)
+            hd_total = oihdf + oihda
+            data['pbp_oihdcf_pct']  = round(oihdf / hd_total, 4) if hd_total > 0 else 0.0
+            cf_total = oif + oia
+            data['pbp_oicf_pct']    = round(oif / cf_total, 4) if cf_total > 0 else 0.0
+            pbp_merged += 1
+
+        print(f"  PBP metrics merged into {pbp_merged} player profiles (per-60 using MoneyPuck 5v5 TOI)")
+    else:
+        print("  PBP metrics unavailable — impact scores will use MoneyPuck signals only")
+
     # ── League-average baselines by position group ──
     fwd_profiles = [v for v in player_impact.values() if v['is_forward']]
     def_profiles = [v for v in player_impact.values() if not v['is_forward']]
@@ -357,6 +460,19 @@ def calculate_player_impact(
     league_avgs['def_pp_xgf_per60'] = _avg(pp_def, 'pp_xgf_per60')
     league_avgs['fwd_pk_xga_per60'] = _avg(pk_fwd, 'pk_xga_per60')
     league_avgs['def_pk_xga_per60'] = _avg(pk_def, 'pk_xga_per60')
+
+    # PBP HD averages — only among players with PBP data (pbp_ihd_per60 > 0)
+    fwd_with_pbp = [v for v in fwd_profiles if v.get('pbp_ihd_per60') is not None]
+    def_with_pbp = [v for v in def_profiles if v.get('pbp_oihda_per60') is not None]
+    if fwd_with_pbp:
+        league_avgs['fwd_pbp_ihd_per60']   = _avg(fwd_with_pbp, 'pbp_ihd_per60')
+        league_avgs['fwd_pbp_oihda_per60'] = _avg(fwd_with_pbp, 'pbp_oihda_per60')
+    if def_with_pbp:
+        league_avgs['def_pbp_oihda_per60'] = _avg(def_with_pbp, 'pbp_oihda_per60')
+        league_avgs['def_pbp_ihd_per60']   = _avg(def_with_pbp, 'pbp_ihd_per60')
+    if fwd_with_pbp or def_with_pbp:
+        print(f"  PBP coverage — fwd: {len(fwd_with_pbp)}/{len(fwd_profiles)}  "
+              f"def: {len(def_with_pbp)}/{len(def_profiles)}")
 
     # ── xG Above Average per game (xGAA/game) ──────────────────────────────────
     # Custom metric: expected goals added above a league-average player at the
@@ -426,32 +542,25 @@ def calculate_player_impact(
             return (arr - mu) / sigma if sigma > 1e-9 else np.zeros(len(arr))
 
         # ── Bayesian shrinkage for small-sample players ───────────────────────
-        # Per-60 rates are noisy in small samples (1-5 game call-ups can post
-        # extreme numbers and dominate rankings).  Regress each metric toward
-        # its position-group mean proportional to total EV TOI sampled:
-        #   shrink_weight = toi_total / (toi_total + ANCHOR)
-        # → heavy regression for call-ups (1 game), near-zero for full-season
-        #   stars (ANCHOR = 18000s ≈ top-6 fwd full season).
         ev_toi_total = np.array([
             d['ev_toi_per_game'] * max(d['games_played'], 1) for d in data_list
         ])
         shrink = ev_toi_total / (ev_toi_total + RELATIVE_SHRINKAGE_ANCHOR)
 
-        # ── EV OFF: three-signal blend (individual shooting + playmaking + team) ─
-        # Inspired by O Rating (Luszczyszyn / The Athletic): Offensive Rating is
-        # a weighted combination of INDIVIDUAL stats (goals, assists, xG) AND
-        # team ON-ICE impact.  Three signals:
+        # ── EV OFF: signal blend ──────────────────────────────────────────────
+        # Base signals (always present, from MoneyPuck):
+        #  1. ind_xg_per60   — individual 5v5 xG/60 (shooting/scoring threat)
+        #  2. ev_prod_per60  — weighted 5v5 pts/60 (goals + A1 + 0.5×A2)
+        #  3. xgaa_ev_off    — team on-ice xGF above avg × TOI
         #
-        #  1. ind_xg_per60   — individual 5v5 xG (shooting/scoring threat)
-        #  2. ev_prod_per60  — weighted 5v5 pts/60 (goals + A1 + 0.5×A2);
-        #                      fixes playmakers like Crosby who rank low on xG
-        #                      alone because they pass instead of shoot
-        #  3. xgaa_ev_off    — team on-ice xGF above avg × TOI; captures line
-        #                      elevation, playmaking impact, and TOI volume
+        # PBP signal (Forwards only, when pbp_metrics.json is available):
+        #  4. pbp_ihd_per60  — individual HD shot attempts/60 (7-bin definition,
+        #                      on a 5v5 TOI basis). Captures the volume of
+        #                      dangerous shot attempts from the slot/crease area,
+        #                      complementing ind_xg_per60 (expected quality of shots).
         #
-        # Each signal z-scored within position group before 1/3 blend.
-        # Small-sample players shrunken toward position mean to suppress
-        # 1-5 game call-up flukes.
+        # If PBP signal is available:  4-way equal blend → forward EV OFF
+        # If PBP signal is missing:    3-way equal blend (original behavior)
         ind_xg_raw   = np.array([d['ind_xg_per60']  for d in data_list])
         ev_prod_raw  = np.array([d['ev_prod_per60']  for d in data_list])
         xgaa_off_raw = np.array([d['xgaa_ev_off']    for d in data_list])
@@ -461,15 +570,59 @@ def calculate_player_impact(
 
         ind_xg_s   = mean_ind_xg  + (ind_xg_raw  - mean_ind_xg)  * shrink
         ev_prod_s  = mean_ev_prod + (ev_prod_raw  - mean_ev_prod) * shrink
-        xgaa_off_s = xgaa_off_raw * shrink   # centred at 0, so shrink toward 0
+        xgaa_off_s = xgaa_off_raw * shrink
 
         z_ind_off  = zsc(ind_xg_s)
         z_prod_off = zsc(ev_prod_s)
         z_team_off = zsc(xgaa_off_s)
-        ev_off_arr = (z_ind_off + z_prod_off + z_team_off) / 3.0   # equal weight; outer zsc normalises
 
-        # ── EV DEF: xG saved above avg × TOI, also shrunken for small samples ─
-        ev_def_arr = np.array([d['xgaa_ev_def'] for d in data_list]) * shrink
+        # PBP individual HD/60 signal — Forwards only
+        # Fills missing values (no PBP data) with position-group mean so those
+        # players get z ≈ 0 for this component rather than being penalized.
+        pbp_ihd_raw = np.array([
+            d.get('pbp_ihd_per60', np.nan) for d in data_list
+        ])
+        has_pbp_fwd = np.isfinite(pbp_ihd_raw).any()
+        if fwd_weights and has_pbp_fwd:
+            mean_pbp_ihd = float(np.nanmean(pbp_ihd_raw))
+            pbp_ihd_fill = np.where(np.isfinite(pbp_ihd_raw), pbp_ihd_raw, mean_pbp_ihd)
+            pbp_ihd_s    = mean_pbp_ihd + (pbp_ihd_fill - mean_pbp_ihd) * shrink
+            z_pbp_ihd    = zsc(pbp_ihd_s)
+            # 4-way equal blend: ind_xg, ev_prod, team_off, pbp_ihd
+            ev_off_arr = (z_ind_off + z_prod_off + z_team_off + z_pbp_ihd) / 4.0
+        else:
+            z_pbp_ihd  = np.zeros(len(data_list))
+            # 3-way equal blend (original)
+            ev_off_arr = (z_ind_off + z_prod_off + z_team_off) / 3.0
+
+        # ── EV DEF: signal blend ──────────────────────────────────────────────
+        # Base signal (always present, from MoneyPuck):
+        #  1. xgaa_ev_def   — xG saved above avg × TOI (higher = better defense)
+        #
+        # PBP signal (Defenders only, when pbp_metrics.json is available):
+        #  2. -pbp_oihda_per60 — on-ice HD attempts Against/60 (sign-flipped so
+        #                        fewer HD against = higher score). On a 5v5 TOI
+        #                        basis. Captures how well the defender suppresses
+        #                        dangerous zone entries and shots from the slot.
+        #
+        # If PBP signal is available:  2-way equal blend → defender EV DEF
+        # If PBP signal is missing:    1-way (original xgaa_ev_def only)
+        xgaa_def_raw = np.array([d['xgaa_ev_def'] for d in data_list])
+
+        pbp_oihda_raw = np.array([
+            d.get('pbp_oihda_per60', np.nan) for d in data_list
+        ])
+        has_pbp_def = np.isfinite(pbp_oihda_raw).any()
+        if not fwd_weights and has_pbp_def:
+            mean_pbp_oihda  = float(np.nanmean(pbp_oihda_raw))
+            pbp_oihda_fill  = np.where(np.isfinite(pbp_oihda_raw), pbp_oihda_raw, mean_pbp_oihda)
+            pbp_oihda_s     = mean_pbp_oihda + (pbp_oihda_fill - mean_pbp_oihda) * shrink
+            z_xgaa_def      = zsc(xgaa_def_raw * shrink)
+            z_pbp_hda       = zsc(-pbp_oihda_s)   # negate: lower HD against = better
+            # 2-way equal blend: xgaa_ev_def, -pbp_oihda
+            ev_def_arr = (z_xgaa_def + z_pbp_hda) / 2.0
+        else:
+            ev_def_arr = xgaa_def_raw * shrink
 
         pp_arr = np.array([d['xgaa_pp'] for d in data_list])
         pk_arr = np.array([d['xgaa_pk'] for d in data_list])
@@ -577,7 +730,6 @@ def calculate_player_impact(
             })
 
     # ── Save outputs ──
-    script_dir  = os.path.dirname(os.path.abspath(__file__))
     public_data = os.path.join(script_dir, '..', 'public', 'data')
 
     def _save(data, path):

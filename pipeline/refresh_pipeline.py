@@ -273,6 +273,16 @@ def refresh_pipeline():
     except Exception as e:
         print(f"[WARN] MoneyPuck fetch failed (predictions will use team ratings only): {e}")
 
+    # 4c. Compute PBP-derived HD metrics (must run BEFORE player_impact so that
+    #     pbp_metrics.json is available for the impact score computation).
+    #     Requires: enriched PBP (run enrich_pbp.py) + shots CSV.
+    print("Computing PBP-derived HD metrics (calc_pbp_impact)...")
+    try:
+        import calc_pbp_impact
+        calc_pbp_impact.run_pbp_impact()
+    except Exception as e:
+        print(f"[WARN] PBP HD metrics failed (impact scores will use MoneyPuck only): {e}")
+
     print("Computing player impact scores...")
     try:
         import player_impact
