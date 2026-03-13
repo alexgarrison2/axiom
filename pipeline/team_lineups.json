@@ -333,7 +333,7 @@
                 "pos": "ir2",
                 "id": 33018,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
@@ -387,7 +387,7 @@
                 "pos": "rw",
                 "id": 28684,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -423,7 +423,7 @@
                 "pos": "lw",
                 "id": 2010,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Sam Carrick",
@@ -573,7 +573,7 @@
                 "pos": "lw",
                 "id": 29894,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Pierre-Luc Dubois",
@@ -589,7 +589,7 @@
                 "pos": "rw",
                 "id": 1930,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -615,7 +615,7 @@
                 "pos": "rw",
                 "id": 35645,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -633,7 +633,7 @@
                 "pos": "c",
                 "id": 29203,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ethen Frank",
@@ -884,6 +884,14 @@
                 "id": 2914,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Auston Matthews",
+                "number": 34,
+                "pos": "ir3",
+                "id": 2433,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ]
     },
@@ -989,7 +997,7 @@
                 "pos": "rw",
                 "id": 31897,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -1097,7 +1105,7 @@
                 "pos": "rw",
                 "id": 2031,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -1123,7 +1131,7 @@
                 "pos": "rw",
                 "id": 2707,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -1133,7 +1141,7 @@
                 "pos": "lw",
                 "id": 2603,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Yanni Gourde",
@@ -1167,7 +1175,7 @@
                 "pos": "c",
                 "id": 1953,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Scott Sabourin",
@@ -1175,7 +1183,7 @@
                 "pos": "rw",
                 "id": 2171,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -1185,7 +1193,7 @@
                 "pos": "ld",
                 "id": 1369,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "J.J. Moser",
@@ -1211,7 +1219,7 @@
                 "pos": "rd",
                 "id": 4756,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -1221,7 +1229,7 @@
                 "pos": "ld",
                 "id": 26500,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Declan Carlile",
@@ -2894,12 +2902,12 @@
         ],
         "d2": [
             {
-                "name": "Jake Walman",
-                "number": 96,
+                "name": "Darnell Nurse",
+                "number": 25,
                 "pos": "ld",
-                "id": 2859,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2139,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Connor Murphy",
@@ -2912,12 +2920,12 @@
         ],
         "d3": [
             {
-                "name": "Darnell Nurse",
-                "number": 25,
+                "name": "Jake Walman",
+                "number": 96,
                 "pos": "ld",
-                "id": 2139,
-                "ppUnit": null,
-                "movement": null
+                "id": 2859,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Spencer Stastney",
@@ -2958,14 +2966,6 @@
                 "number": 34,
                 "pos": "ir4",
                 "id": 32903,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Connor Ingram",
-                "number": 39,
-                "pos": "ir5",
-                "id": 4523,
                 "ppUnit": null,
                 "movement": null
             }
@@ -3026,28 +3026,28 @@
         ],
         "f3": [
             {
-                "name": "Vladimir Tarasenko",
-                "number": 11,
+                "name": "Robby Fabbri",
+                "number": 9,
                 "pos": "lw",
-                "id": 1983,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2371,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Danila Yurov",
                 "number": 22,
                 "pos": "c",
                 "id": 36363,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Bobby Brink",
-                "number": 10,
+                "name": "Vladimir Tarasenko",
+                "number": 11,
                 "pos": "rw",
-                "id": 30223,
+                "id": 1983,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -3144,7 +3144,7 @@
                 "number": 10,
                 "pos": "ir2",
                 "id": 30223,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ]
@@ -3855,16 +3855,6 @@
                 "pos": "rd",
                 "id": 27104,
                 "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "ir": [
-            {
-                "name": "Mikhail Sergachev",
-                "number": 98,
-                "pos": "ir1",
-                "id": 2639,
-                "ppUnit": 1,
                 "movement": null
             }
         ]
