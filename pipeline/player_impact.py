@@ -37,7 +37,7 @@ Impact score:
     EV OFF = 4-way blend: ind_xg_per60, ev_prod_per60, xgaa_ev_off,
              pbp_ihd_per60 (if pbp_metrics.json available)
   Defenders (EV Off 25%, EV Def 40%, PP 15%, PK 20%):
-    EV DEF = 3-way blend: xgaa_ev_def, -pbp_oihda_per60, pbp_oihdf_per60
+    EV DEF = 2-way blend: xgaa_ev_def, -pbp_oihda_per60
              (if pbp_metrics.json available)
 
 Output files (written to pipeline/):
@@ -602,31 +602,28 @@ def calculate_player_impact(
         # Base signal (always present, from MoneyPuck):
         #  1. xgaa_ev_def      — xG saved above avg × TOI (higher = better defense)
         #
-        # PBP signals (Defenders only, when pbp_metrics.json is available):
+        # PBP signal (Defenders only, when pbp_metrics.json is available):
         #  2. -pbp_oihda_per60 — on-ice HD attempts Against/60 (sign-flipped:
         #                        fewer HD against = better). Captures shot suppression.
-        #  3.  pbp_oihdf_per60 — on-ice HD attempts For/60 (positive: more HD
-        #                        generated from the blue line = better).
         #
-        # If PBP signals available:  3-way equal blend → defender EV DEF
-        # If PBP signals missing:    1-way (original xgaa_ev_def only)
+        # oihdf (on-ice HD For) is intentionally excluded — it reflects team
+        # offensive quality, not individual defensive ability, and introduces
+        # heavy team-context bias (defenders on elite offenses score too high).
+        #
+        # If PBP signal available:  2-way equal blend → defender EV DEF
+        # If PBP signal missing:    1-way (original xgaa_ev_def only)
         xgaa_def_raw = np.array([d['xgaa_ev_def'] for d in data_list])
 
         pbp_oihda_raw = np.array([d.get('pbp_oihda_per60', np.nan) for d in data_list])
-        pbp_oihdf_raw = np.array([d.get('pbp_oihdf_per60', np.nan) for d in data_list])
-        has_pbp_def = np.isfinite(pbp_oihda_raw).any() and np.isfinite(pbp_oihdf_raw).any()
+        has_pbp_def = np.isfinite(pbp_oihda_raw).any()
         if not fwd_weights and has_pbp_def:
             mean_pbp_oihda  = float(np.nanmean(pbp_oihda_raw))
-            mean_pbp_oihdf  = float(np.nanmean(pbp_oihdf_raw))
             pbp_oihda_fill  = np.where(np.isfinite(pbp_oihda_raw), pbp_oihda_raw, mean_pbp_oihda)
-            pbp_oihdf_fill  = np.where(np.isfinite(pbp_oihdf_raw), pbp_oihdf_raw, mean_pbp_oihdf)
             pbp_oihda_s     = mean_pbp_oihda + (pbp_oihda_fill - mean_pbp_oihda) * shrink
-            pbp_oihdf_s     = mean_pbp_oihdf + (pbp_oihdf_fill - mean_pbp_oihdf) * shrink
             z_xgaa_def      = zsc(xgaa_def_raw * shrink)
             z_pbp_hda       = zsc(-pbp_oihda_s)   # negate: lower HD against = better
-            z_pbp_hdf       = zsc(pbp_oihdf_s)    # higher HD for = better
-            # 3-way equal blend: xgaa_ev_def, -pbp_oihda, pbp_oihdf
-            ev_def_arr = (z_xgaa_def + z_pbp_hda + z_pbp_hdf) / 3.0
+            # 2-way equal blend: xgaa_ev_def, -pbp_oihda
+            ev_def_arr = (z_xgaa_def + z_pbp_hda) / 2.0
         else:
             ev_def_arr = xgaa_def_raw * shrink
 
