@@ -161,6 +161,78 @@ def refresh_pipeline():
         except FileNotFoundError:
             print(f"Skipping {filename} (not found)")
             
+    # 2b. Compute per-game and per-period HD + per-period xG from shots CSV.
+    # Runs after xG scoring so per-period xG is always in sync with the model.
+    # Covers both new games (where scraper may not have had API coords yet)
+    # and all historical games.
+    print("Computing HD and per-period xG/HD from shots CSV...")
+    HIGH_DANGER_BINS = {'D2_W3_In', 'D3_W2', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1'}
+    try:
+        from nhl_scraper_poc import assign_bin
+        shots_hd_file = "nhl_season_2025_2026_shots.csv"
+        shots_hd = pd.read_csv(shots_hd_file)
+
+        teams_csv = pd.read_csv("nhl_teams.csv")
+        tid_to_name = dict(zip(teams_csv['NHL Team ID'].astype(int), teams_csv['Common Name']))
+
+        shots_hd['_bin'] = shots_hd.apply(
+            lambda r: assign_bin(r['x'] if pd.notna(r['x']) else None,
+                                 r['y'] if pd.notna(r['y']) else None), axis=1)
+        shots_hd['_hd'] = shots_hd['_bin'].isin(HIGH_DANGER_BINS).astype(int)
+        shots_hd['_period_key'] = shots_hd['period'].apply(lambda p: min(int(p), 4) if pd.notna(p) else 4)
+        shots_hd['_xG'] = pd.to_numeric(shots_hd['xG'], errors='coerce').fillna(0.0)
+        shots_hd['team_name'] = shots_hd['team_id'].astype(int).map(tid_to_name)
+
+        # --- Compute per-game HD + per-period xG/HD aggregates ---
+        hd_game = {}   # (game_id, team_name) -> {hdf, hda, hdf_1..4, hda_1..4, xg_1..4}
+        for (gid, tname), grp in shots_hd.groupby(['game_id', 'team_name']):
+            key = (int(gid), tname)
+            entry = {'hdf': 0, 'hda': 0,
+                     'hdf_1P': 0, 'hdf_2P': 0, 'hdf_3P': 0, 'hdf_OT': 0,
+                     'hda_1P': 0, 'hda_2P': 0, 'hda_3P': 0, 'hda_OT': 0,
+                     'xg_for_1P': 0.0, 'xg_for_2P': 0.0, 'xg_for_3P': 0.0, 'xg_for_OT': 0.0}
+            hd_rows = grp[grp['_hd'] == 1]
+            entry['hdf'] = int(len(hd_rows))
+            for p in [1, 2, 3, 4]:
+                suffix = {1: '1P', 2: '2P', 3: '3P', 4: 'OT'}[p]
+                p_hd = hd_rows[hd_rows['_period_key'] == p]
+                p_all = grp[grp['_period_key'] == p]
+                entry[f'hdf_{suffix}'] = int(len(p_hd))
+                entry[f'xg_for_{suffix}'] = float(p_all['_xG'].sum())
+            hd_game[key] = entry
+
+        # Fill hda from opponent's hdf for same game
+        # Build game_id -> list of team names
+        game_teams = {}
+        for (gid, tname) in hd_game:
+            game_teams.setdefault(gid, []).append(tname)
+        for (gid, tname), entry in hd_game.items():
+            opps = [t for t in game_teams.get(gid, []) if t != tname]
+            if opps:
+                opp_entry = hd_game.get((gid, opps[0]), {})
+                entry['hda'] = opp_entry.get('hdf', 0)
+                for p in ['1P', '2P', '3P', 'OT']:
+                    entry[f'hda_{p}'] = opp_entry.get(f'hdf_{p}', 0)
+
+        print(f"  Computed HD stats for {len(hd_game)} team-game pairs.")
+
+        # Also compute xg_ag per period
+        xg_ag_game = {}  # (game_id, team_name) -> {xg_ag_1P..OT}
+        for (gid, tname), opps in game_teams.items():
+            for t in opps:
+                opp_xg = hd_game.get((gid, t), {})
+                xg_ag_game[(gid, tname)] = {
+                    'xg_ag_1P': opp_xg.get('xg_for_1P', 0.0),
+                    'xg_ag_2P': opp_xg.get('xg_for_2P', 0.0),
+                    'xg_ag_3P': opp_xg.get('xg_for_3P', 0.0),
+                    'xg_ag_OT': opp_xg.get('xg_for_OT', 0.0),
+                }
+
+    except Exception as e:
+        print(f"[WARN] HD/per-period xG computation failed: {e}")
+        hd_game = {}
+        xg_ag_game = {}
+
     # 3. Update GameStats CSV
     # We load the existing gamestats, and UPDATE the xG_for / xG_against columns
     # We do NOT want to lose other stats (goals, hits, etc)
@@ -223,7 +295,33 @@ def refresh_pipeline():
             df_stats['xG_against_5v5'] = df_stats.apply(update_xg_5v5_against, axis=1)
             df_stats['xG_pp_for'] = df_stats.apply(update_xg_pp_for, axis=1)
             df_stats['xG_pp_against'] = df_stats.apply(update_xg_pp_against, axis=1)
-            
+
+            # Patch HD, per-period HD, and per-period xG from shots CSV
+            if hd_game:
+                hd_cols = ['hdf', 'hda',
+                           'hdf_1P', 'hdf_2P', 'hdf_3P', 'hdf_OT',
+                           'hda_1P', 'hda_2P', 'hda_3P', 'hda_OT',
+                           'xg_for_1P', 'xg_for_2P', 'xg_for_3P', 'xg_for_OT']
+                xg_ag_cols = ['xg_ag_1P', 'xg_ag_2P', 'xg_ag_3P', 'xg_ag_OT']
+                for col in hd_cols + xg_ag_cols:
+                    if col not in df_stats.columns:
+                        df_stats[col] = None
+
+                def patch_hd(row):
+                    key = (int(row['game_id']), row['team'])
+                    entry = hd_game.get(key)
+                    if entry:
+                        for col in hd_cols:
+                            row[col] = entry.get(col, row.get(col))
+                    xg_ag_entry = xg_ag_game.get(key)
+                    if xg_ag_entry:
+                        for col in xg_ag_cols:
+                            row[col] = xg_ag_entry.get(col, row.get(col))
+                    return row
+
+                df_stats = df_stats.apply(patch_hd, axis=1)
+                print(f"  Patched HD + per-period xG/HD into gamestats.")
+
             df_stats.to_csv(gamestats_file, index=False)
             print(f"Updated {gamestats_file} with aggregated total and 5v5 xG.")
             

@@ -349,7 +349,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "en_attempts": 0,
             "attempts_5v5": 0, # Legacy field
             "hdf": 0,
-            "hda": 0
+            "hda": 0,
+            "hd_periods": {"1": {"f": 0, "a": 0}, "2": {"f": 0, "a": 0}, "3": {"f": 0, "a": 0}, "4": {"f": 0, "a": 0}}
         },
         away_id: {
             "name": away_team.get("commonName", {}).get("default", "Away"),
@@ -379,7 +380,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "en_attempts": 0,
             "attempts_5v5": 0,
             "hdf": 0,
-            "hda": 0
+            "hda": 0,
+            "hd_periods": {"1": {"f": 0, "a": 0}, "2": {"f": 0, "a": 0}, "3": {"f": 0, "a": 0}, "4": {"f": 0, "a": 0}}
         }
     }
     
@@ -740,13 +742,15 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             # --- High Danger Tracking ---
             s_bin = assign_bin(x, y)
             high_danger_bins = ['D2_W3_In', 'D3_W2', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1']
-            
+
             if s_bin in high_danger_bins:
                 opp_team_id = away_id if owner_id == home_id else home_id
                 if owner_id in teams:
                     teams[owner_id]['hdf'] += 1
+                    teams[owner_id]['hd_periods'][period_key]['f'] += 1
                 if opp_team_id in teams:
                     teams[opp_team_id]['hda'] += 1
+                    teams[opp_team_id]['hd_periods'][period_key]['a'] += 1
 
 
         # --- Update Last Event ---
@@ -925,8 +929,10 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                     opp_team_id = away_id if shooter_id == home_id else home_id
                     if shooter_id in teams:
                         teams[shooter_id]['hdf'] += 1
+                        teams[shooter_id]['hd_periods'][period_key]['f'] += 1
                     if opp_team_id in teams:
                         teams[opp_team_id]['hda'] += 1
+                        teams[opp_team_id]['hd_periods'][period_key]['a'] += 1
 
                 # Empty Net Attempt (Blocked)?
                 # If Shooter is Home, check Away Goal.
@@ -1508,6 +1514,14 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "xg_ag_ev": round(opp_stats['xg']['ev'], 2),
             "xg_ag_pp": round(opp_stats['xg']['pp'], 2),
             "xg_ag_sh": round(opp_stats['xg']['sh'], 2),
+
+            # High Danger Totals & Per-Period
+            "hdf": stats['hdf'],
+            "hda": stats['hda'],
+            "hdf_1P": stats['hd_periods']['1']['f'], "hdf_2P": stats['hd_periods']['2']['f'],
+            "hdf_3P": stats['hd_periods']['3']['f'], "hdf_OT": stats['hd_periods']['4']['f'],
+            "hda_1P": stats['hd_periods']['1']['a'], "hda_2P": stats['hd_periods']['2']['a'],
+            "hda_3P": stats['hd_periods']['3']['a'], "hda_OT": stats['hd_periods']['4']['a'],
         }
         rows.append(row)
         
