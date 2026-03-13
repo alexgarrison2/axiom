@@ -416,12 +416,12 @@
                 "movement": null
             },
             {
-                "name": "Dalibor Dvorsky",
-                "number": 54,
+                "name": "Pius Suter",
+                "number": 24,
                 "pos": "c",
-                "id": 35010,
-                "ppUnit": 2,
-                "movement": null
+                "id": 32940,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Jordan Kyrou",
@@ -442,12 +442,12 @@
                 "movement": null
             },
             {
-                "name": "Pius Suter",
-                "number": 24,
+                "name": "Jack Finley",
+                "number": 62,
                 "pos": "c",
-                "id": 32940,
+                "id": 29594,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Pavel Buchnevich",
@@ -468,20 +468,20 @@
                 "movement": null
             },
             {
-                "name": "Jack Finley",
-                "number": 62,
+                "name": "Oskar Sundqvist",
+                "number": 70,
                 "pos": "c",
-                "id": 29594,
+                "id": 2356,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Nathan Walker",
-                "number": 26,
+                "name": "Jonatan Berggren",
+                "number": 29,
                 "pos": "rw",
-                "id": 2831,
-                "ppUnit": null,
-                "movement": null
+                "id": 29107,
+                "ppUnit": 2,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -530,24 +530,24 @@
                 "movement": null
             },
             {
-                "name": "Tyler Tucker",
-                "number": 75,
+                "name": "Justin Holl",
+                "number": 3,
                 "pos": "rd",
-                "id": 27631,
+                "id": 2857,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ]
     },
     "EDM": {
         "f1": [
             {
-                "name": "Ryan Nugent-Hopkins",
-                "number": 93,
+                "name": "Matthew Savoie",
+                "number": 22,
                 "pos": "lw",
-                "id": 1733,
-                "ppUnit": 1,
-                "movement": null
+                "id": 31504,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Connor McDavid",
@@ -594,12 +594,12 @@
         ],
         "f3": [
             {
-                "name": "Matthew Savoie",
-                "number": 22,
+                "name": "Adam Henrique",
+                "number": 19,
                 "pos": "lw",
-                "id": 31504,
+                "id": 945,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Jason Dickinson",
@@ -614,18 +614,18 @@
                 "number": 28,
                 "pos": "rw",
                 "id": 2499,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
         "f4": [
             {
-                "name": "Adam Henrique",
-                "number": 19,
+                "name": "Max Jones",
+                "number": 46,
                 "pos": "lw",
-                "id": 945,
+                "id": 2657,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Josh Samanski",
@@ -708,9 +708,17 @@
                 "movement": null
             },
             {
+                "name": "Colton Dach",
+                "number": 34,
+                "pos": "ir2",
+                "id": 32903,
+                "ppUnit": null,
+                "movement": null
+            },
+            {
                 "name": "Curtis Lazar",
                 "number": 20,
-                "pos": "ir2",
+                "pos": "ir3",
                 "id": 2148,
                 "ppUnit": null,
                 "movement": null
@@ -718,16 +726,8 @@
             {
                 "name": "Ty Emberson",
                 "number": 49,
-                "pos": "ir3",
-                "id": 28812,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Colton Dach",
-                "number": 34,
                 "pos": "ir4",
-                "id": 32903,
+                "id": 28812,
                 "ppUnit": null,
                 "movement": null
             }
