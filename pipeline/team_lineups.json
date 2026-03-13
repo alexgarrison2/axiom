@@ -889,7 +889,7 @@
                 "pos": "rd",
                 "id": 2576,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "ir": [
@@ -907,7 +907,7 @@
                 "pos": "ir2",
                 "id": 2576,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2372,6 +2372,22 @@
                 "id": 2739,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Mattias Samuelsson",
+                "number": 23,
+                "pos": "ir6",
+                "id": 28792,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Tanner Pearson",
+                "number": 70,
+                "pos": "ir7",
+                "id": 2010,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
