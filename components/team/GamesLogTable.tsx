@@ -36,11 +36,13 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
             return game[stat];
         }
 
-        if (stat === 'xgf' || stat === 'xga') return 0;
-
         const suffix = filters.period === '1st' ? '_1P' :
             filters.period === '2nd' ? '_2P' :
                 filters.period === '3rd' ? '_3P' : '_OT';
+
+        // xG: use per-period columns from raw (xg_for_1P etc.)
+        if (stat === 'xgf') return parseFloat((game.raw?.['xg_for' + suffix] as string) || '0');
+        if (stat === 'xga') return parseFloat((game.raw?.['xg_ag' + suffix] as string) || '0');
 
         let prefix = '';
         if (stat === 'gf') prefix = 'goals_for';
@@ -49,9 +51,30 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         if (stat === 'sa') prefix = 'sog_ag';
         if (stat === 'cf') prefix = 'attempts_for';
         if (stat === 'ca') prefix = 'attempts_ag';
+        if (stat === 'hdf') prefix = 'hdf';
+        if (stat === 'hda') prefix = 'hda';
 
-        const val = parseInt((game.raw?.[prefix + suffix] as string) || '0');
-        return val;
+        return parseInt((game.raw?.[prefix + suffix] as string) || '0');
+    };
+
+    // Per-period time helper: reads time_leading_1P etc. from raw, falls back to full-game value
+    const getTimeStat = (game: GameLog, stat: 'time_leading' | 'time_trailing' | 'time_tied') => {
+        if (filters.period === 'All') return game[stat] || 0;
+        const suffix = filters.period === '1st' ? '_1P' :
+            filters.period === '2nd' ? '_2P' :
+                filters.period === '3rd' ? '_3P' : '_OT';
+        const raw = game.raw?.[stat + suffix];
+        return raw !== undefined ? parseInt(raw as string) || 0 : game[stat] || 0;
+    };
+
+    // Per-period control score from raw, falls back to full-game value
+    const getControlScore = (game: GameLog) => {
+        if (filters.period === 'All') return game.control_score || 1.0;
+        const suffix = filters.period === '1st' ? '_1P' :
+            filters.period === '2nd' ? '_2P' :
+                filters.period === '3rd' ? '_3P' : '_OT';
+        const raw = game.raw?.['control_score' + suffix];
+        return raw !== undefined ? parseFloat(raw as string) || 1.0 : game.control_score || 1.0;
     };
 
     // Format seconds as mm:ss
@@ -188,23 +211,15 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                         <th className="p-1 text-center">CF</th>
                         <th className="p-1 text-center">CA</th>
                         <th className="p-1 text-center">CΔ</th>
-                        {filters.period === 'All' && (
-                            <>
-                                <th className="p-1 text-center">HDF</th>
-                                <th className="p-1 text-center">HDA</th>
-                                <th className="p-1 text-center">HDΔ</th>
-                            </>
-                        )}
+                        <th className="p-1 text-center">HDF</th>
+                        <th className="p-1 text-center">HDA</th>
+                        <th className="p-1 text-center">HDΔ</th>
                         <th className="p-1 text-center border-l border-gray-700">SH%</th>
                         <th className="p-1 text-center">SV%</th>
-                        {filters.period === 'All' && <th className="p-1 text-center">GSAx</th>}
-                        {filters.period === 'All' && (
-                            <>
-                                <th className="p-1 text-center">xGF</th>
-                                <th className="p-1 text-center">xGA</th>
-                                <th className="p-1 text-center">xGΔ</th>
-                            </>
-                        )}
+                        <th className="p-1 text-center">GSAx</th>
+                        <th className="p-1 text-center">xGF</th>
+                        <th className="p-1 text-center">xGA</th>
+                        <th className="p-1 text-center">xGΔ</th>
                         <th className="p-1 text-center border-l border-gray-700">T↑/G</th>
                         <th className="p-1 text-center">T↓/G</th>
                         <th className="p-1 text-center border-r border-gray-700">T=/G</th>
@@ -237,23 +252,15 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             <td className="p-1 text-center text-gray-300">{totals.cf}</td>
                             <td className="p-1 text-center text-gray-300">{totals.ca}</td>
                             <td className={`p-1 text-center ${totals.cd > 0 ? 'text-green-400' : totals.cd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
-                            {filters.period === 'All' && (
-                                <>
-                                    <td className="p-1 text-center text-orange-200">{totals.hdf}</td>
-                                    <td className="p-1 text-center text-orange-200">{totals.hda}</td>
-                                    <td className={`p-1 text-center ${totals.hdd > 0 ? 'text-green-400' : totals.hdd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.hdd > 0 ? '+' : ''}{totals.hdd}</td>
-                                </>
-                            )}
+                            <td className="p-1 text-center text-orange-200">{totals.hdf}</td>
+                            <td className="p-1 text-center text-orange-200">{totals.hda}</td>
+                            <td className={`p-1 text-center ${totals.hdd > 0 ? 'text-green-400' : totals.hdd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.hdd > 0 ? '+' : ''}{totals.hdd}</td>
                             <td className="p-1 text-center border-l border-gray-800" style={{ color: getGradientColor(parseFloat(totals.sh_pct), 0, 10, 20) }}>{totals.sh_pct}%</td>
                             <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sv_pct), 0.800, 0.885, 0.945) }}>{totals.sv_pct}</td>
-                            {filters.period === 'All' && <td className={`p-1 text-center ${parseFloat(totals.gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{parseFloat(totals.gsax) > 0 ? '+' : ''}{totals.gsax}</td>}
-                            {filters.period === 'All' && (
-                                <>
-                                    <td className="p-1 text-center text-gray-300">{totals.xgf}</td>
-                                    <td className="p-1 text-center text-gray-300">{totals.xga}</td>
-                                    <td className={`p-1 text-center ${parseFloat(totals.xgd) > 0 ? 'text-green-400' : parseFloat(totals.xgd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.xgd) > 0 ? '+' : ''}{totals.xgd}</td>
-                                </>
-                            )}
+                            <td className={`p-1 text-center ${parseFloat(totals.gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{parseFloat(totals.gsax) > 0 ? '+' : ''}{totals.gsax}</td>
+                            <td className="p-1 text-center text-gray-300">{totals.xgf}</td>
+                            <td className="p-1 text-center text-gray-300">{totals.xga}</td>
+                            <td className={`p-1 text-center ${parseFloat(totals.xgd) > 0 ? 'text-green-400' : parseFloat(totals.xgd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.xgd) > 0 ? '+' : ''}{totals.xgd}</td>
                             <td className="p-1 text-center border-l border-gray-700" style={{ color: getGradientColor(totals.time_leading_avg, 0, 1500, 3000) }}>{formatTime(totals.time_leading_avg)}</td>
                             <td className="p-1 text-center" style={{ color: getGradientColor(3000 - totals.time_trailing_avg, 0, 1500, 3000) }}>{formatTime(totals.time_trailing_avg)}</td>
                             <td className="p-1 text-center border-r border-gray-700" style={{ color: getGradientColor(totals.time_tied_avg, 0, 600, 2000) }}>{formatTime(totals.time_tied_avg)}</td>
@@ -295,7 +302,11 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             const sd = _sf - _sa;
                             const cd = _cf - _ca;
                             const hdd = _hdf - _hda;
-                            const xgd = game.xgf - game.xga;
+
+                            // xG: use period-specific via getStat
+                            const _xgf = (getStat(game, 'xgf') as number) || 0;
+                            const _xga = (getStat(game, 'xga') as number) || 0;
+                            const xgd = _xgf - _xga;
 
                             const sh_pct = _sf > 0 ? (_gf / _sf * 100).toFixed(1) : "0.0";
                             // For SV%, exclude Empty Net Goals from the denominator (Shots Against).
@@ -303,7 +314,8 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             const adjusted_sa = _sa > 0 ? _sa - (filters.period === 'All' ? game.en_ga : 0) : 0;
                             const sv_pct_val = adjusted_sa > 0 ? ((_sa - _ga) / adjusted_sa).toFixed(3).replace(/^0+/, '') : ".000";
 
-                            const gsax = (game.xga - (game.ga - game.en_ga)).toFixed(2);
+                            // GSAx: xGA - (GA - EN GA). In period mode, no EN correction (no per-period EN data).
+                            const gsax = (_xga - (_ga - (filters.period === 'All' ? game.en_ga : 0))).toFixed(2);
                             const opponentName = game.opponent.trim();
                             const logoUrl = teamLogos ? (teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '') : '';
 
@@ -362,31 +374,23 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                         <td className={`p-1 text-center font-mono ${cd > 0 ? 'text-green-400/70' : cd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
                                             {cd > 0 ? '+' : ''}{cd}
                                         </td>
-                                        {filters.period === 'All' && (
-                                            <>
-                                                <td className="p-1 text-center font-mono text-orange-200">{_hdf}</td>
-                                                <td className="p-1 text-center font-mono text-orange-200">{_hda}</td>
-                                                <td className={`p-1 text-center font-mono ${hdd > 0 ? 'text-green-400/70' : hdd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
-                                                    {hdd > 0 ? '+' : ''}{hdd}
-                                                </td>
-                                            </>
-                                        )}
+                                        <td className="p-1 text-center font-mono text-orange-200">{_hdf}</td>
+                                        <td className="p-1 text-center font-mono text-orange-200">{_hda}</td>
+                                        <td className={`p-1 text-center font-mono ${hdd > 0 ? 'text-green-400/70' : hdd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                                            {hdd > 0 ? '+' : ''}{hdd}
+                                        </td>
                                         <td className="p-1 text-center font-mono border-l border-gray-800" style={{ color: getGradientColor(parseFloat(sh_pct), 0, 10, 20) }}>{sh_pct}%</td>
                                         <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sv_pct_val), 0.800, 0.885, 0.945) }}>{sv_pct_val}</td>
-                                        {filters.period === 'All' && <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>}
-                                        {filters.period === 'All' && (
-                                            <>
-                                                <td className="p-1 text-center font-mono text-gray-300">{game.xgf.toFixed(2)}</td>
-                                                <td className="p-1 text-center font-mono text-gray-300">{game.xga.toFixed(2)}</td>
-                                                <td className={`p-1 text-center font-mono ${xgd > 0 ? 'text-green-400/70' : xgd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
-                                                    {xgd > 0 ? '+' : ''}{xgd.toFixed(2)}
-                                                </td>
-                                            </>
-                                        )}
-                                        <td className="p-1 text-center font-mono border-l border-gray-800" style={{ color: getGradientColor(game.time_leading || 0, 0, 1500, 3000) }}>{formatTime(game.time_leading || 0)}</td>
-                                        <td className="p-1 text-center font-mono" style={{ color: getGradientColor(3000 - (game.time_trailing || 0), 0, 1500, 3000) }}>{formatTime(game.time_trailing || 0)}</td>
-                                        <td className="p-1 text-center font-mono border-r border-gray-800" style={{ color: getGradientColor(game.time_tied || 0, 0, 600, 2000) }}>{formatTime(game.time_tied || 0)}</td>
-                                        <td className="p-1 text-center font-mono border-r border-gray-800" style={{ color: getGradientColor(game.control_score || 1, 0.7, 1.0, 1.3) }}>{(game.control_score || 1).toFixed(3)}</td>
+                                        <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>
+                                        <td className="p-1 text-center font-mono text-gray-300">{_xgf.toFixed(2)}</td>
+                                        <td className="p-1 text-center font-mono text-gray-300">{_xga.toFixed(2)}</td>
+                                        <td className={`p-1 text-center font-mono ${xgd > 0 ? 'text-green-400/70' : xgd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
+                                            {xgd > 0 ? '+' : ''}{xgd.toFixed(2)}
+                                        </td>
+                                        <td className="p-1 text-center font-mono border-l border-gray-800" style={{ color: getGradientColor(getTimeStat(game, 'time_leading'), 0, 1500, 3000) }}>{formatTime(getTimeStat(game, 'time_leading'))}</td>
+                                        <td className="p-1 text-center font-mono" style={{ color: getGradientColor(3000 - getTimeStat(game, 'time_trailing'), 0, 1500, 3000) }}>{formatTime(getTimeStat(game, 'time_trailing'))}</td>
+                                        <td className="p-1 text-center font-mono border-r border-gray-800" style={{ color: getGradientColor(getTimeStat(game, 'time_tied'), 0, 600, 2000) }}>{formatTime(getTimeStat(game, 'time_tied'))}</td>
+                                        <td className="p-1 text-center font-mono border-r border-gray-800" style={{ color: getGradientColor(getControlScore(game), 0.7, 1.0, 1.3) }}>{getControlScore(game).toFixed(3)}</td>
                                         <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_gf : '-'}</td>
                                         <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_att : '-'}</td>
                                         <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>

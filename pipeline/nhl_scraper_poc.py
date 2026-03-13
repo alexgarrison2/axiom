@@ -341,6 +341,10 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "time_trailing": 0,
             "time_tied": 0,
             "control_score_sum": 0.0,
+            "score_periods": {"1": {"leading": 0, "trailing": 0, "tied": 0, "control_sum": 0.0},
+                              "2": {"leading": 0, "trailing": 0, "tied": 0, "control_sum": 0.0},
+                              "3": {"leading": 0, "trailing": 0, "tied": 0, "control_sum": 0.0},
+                              "4": {"leading": 0, "trailing": 0, "tied": 0, "control_sum": 0.0}},
             "goalies": set(),
             "starting_goalie": None,
             "rest": home_rest,
@@ -372,6 +376,10 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "time_trailing": 0,
             "time_tied": 0,
             "control_score_sum": 0.0,
+            "score_periods": {"1": {"leading": 0, "trailing": 0, "tied": 0, "control_sum": 0.0},
+                              "2": {"leading": 0, "trailing": 0, "tied": 0, "control_sum": 0.0},
+                              "3": {"leading": 0, "trailing": 0, "tied": 0, "control_sum": 0.0},
+                              "4": {"leading": 0, "trailing": 0, "tied": 0, "control_sum": 0.0}},
             "goalies": set(),
             "starting_goalie": None,
             "rest": away_rest,
@@ -519,17 +527,26 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             # Update Metrics for this segment
             # Score State
             score_diff = current_score[0] - current_score[1]
+            p_key = str(min(period_num, 4))
             if score_diff > 0:
                 teams[home_id]['time_leading'] += segment_duration
                 teams[away_id]['time_trailing'] += segment_duration
+                teams[home_id]['score_periods'][p_key]['leading'] += segment_duration
+                teams[away_id]['score_periods'][p_key]['trailing'] += segment_duration
             elif score_diff < 0:
                 teams[home_id]['time_trailing'] += segment_duration
                 teams[away_id]['time_leading'] += segment_duration
+                teams[home_id]['score_periods'][p_key]['trailing'] += segment_duration
+                teams[away_id]['score_periods'][p_key]['leading'] += segment_duration
             else:
                 teams[home_id]['time_tied'] += segment_duration
                 teams[away_id]['time_tied'] += segment_duration
+                teams[home_id]['score_periods'][p_key]['tied'] += segment_duration
+                teams[away_id]['score_periods'][p_key]['tied'] += segment_duration
             teams[home_id]['control_score_sum'] += get_control_weight(score_diff) * segment_duration
             teams[away_id]['control_score_sum'] += get_control_weight(-score_diff) * segment_duration
+            teams[home_id]['score_periods'][p_key]['control_sum'] += get_control_weight(score_diff) * segment_duration
+            teams[away_id]['score_periods'][p_key]['control_sum'] += get_control_weight(-score_diff) * segment_duration
                 
             # Strength State
             # We need to know the strength BEFORE this penalty expired.
@@ -569,18 +586,27 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
         if duration > 0:
             # Score State
             score_diff = current_score[0] - current_score[1]
+            p_key = str(min(period_num, 4))
             if score_diff > 0:
                 teams[home_id]['time_leading'] += duration
                 teams[away_id]['time_trailing'] += duration
+                teams[home_id]['score_periods'][p_key]['leading'] += duration
+                teams[away_id]['score_periods'][p_key]['trailing'] += duration
             elif score_diff < 0:
                 teams[home_id]['time_trailing'] += duration
                 teams[away_id]['time_leading'] += duration
+                teams[home_id]['score_periods'][p_key]['trailing'] += duration
+                teams[away_id]['score_periods'][p_key]['leading'] += duration
             else:
                 teams[home_id]['time_tied'] += duration
                 teams[away_id]['time_tied'] += duration
+                teams[home_id]['score_periods'][p_key]['tied'] += duration
+                teams[away_id]['score_periods'][p_key]['tied'] += duration
             teams[home_id]['control_score_sum'] += get_control_weight(score_diff) * duration
             teams[away_id]['control_score_sum'] += get_control_weight(-score_diff) * duration
-                
+            teams[home_id]['score_periods'][p_key]['control_sum'] += get_control_weight(score_diff) * duration
+            teams[away_id]['score_periods'][p_key]['control_sum'] += get_control_weight(-score_diff) * duration
+
             # Strength State (Current)
             hs, as_num, hg, ag = current_strength
             
@@ -1447,11 +1473,28 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "hitpost_for": stats['posts'],
             "hitpost_against": opp_stats['posts'],
             
-            # Time Stats
+            # Time Stats (full game)
             "time_leading": stats['time_leading'],
             "time_trailing": stats['time_trailing'],
             "time_tied": stats['time_tied'],
+            # Time Stats (per period) — score_periods[p] = {leading, trailing, tied, control_sum}
+            "time_leading_1P": stats['score_periods']['1']['leading'],
+            "time_trailing_1P": stats['score_periods']['1']['trailing'],
+            "time_tied_1P": stats['score_periods']['1']['tied'],
+            "time_leading_2P": stats['score_periods']['2']['leading'],
+            "time_trailing_2P": stats['score_periods']['2']['trailing'],
+            "time_tied_2P": stats['score_periods']['2']['tied'],
+            "time_leading_3P": stats['score_periods']['3']['leading'],
+            "time_trailing_3P": stats['score_periods']['3']['trailing'],
+            "time_tied_3P": stats['score_periods']['3']['tied'],
+            "time_leading_OT": stats['score_periods']['4']['leading'],
+            "time_trailing_OT": stats['score_periods']['4']['trailing'],
+            "time_tied_OT": stats['score_periods']['4']['tied'],
             "control_score": round(stats['control_score_sum'] / (stats['time_leading'] + stats['time_trailing'] + stats['time_tied']), 4) if (stats['time_leading'] + stats['time_trailing'] + stats['time_tied']) > 0 else 1.0,
+            "control_score_1P": round(stats['score_periods']['1']['control_sum'] / (stats['score_periods']['1']['leading'] + stats['score_periods']['1']['trailing'] + stats['score_periods']['1']['tied']), 4) if (stats['score_periods']['1']['leading'] + stats['score_periods']['1']['trailing'] + stats['score_periods']['1']['tied']) > 0 else 1.0,
+            "control_score_2P": round(stats['score_periods']['2']['control_sum'] / (stats['score_periods']['2']['leading'] + stats['score_periods']['2']['trailing'] + stats['score_periods']['2']['tied']), 4) if (stats['score_periods']['2']['leading'] + stats['score_periods']['2']['trailing'] + stats['score_periods']['2']['tied']) > 0 else 1.0,
+            "control_score_3P": round(stats['score_periods']['3']['control_sum'] / (stats['score_periods']['3']['leading'] + stats['score_periods']['3']['trailing'] + stats['score_periods']['3']['tied']), 4) if (stats['score_periods']['3']['leading'] + stats['score_periods']['3']['trailing'] + stats['score_periods']['3']['tied']) > 0 else 1.0,
+            "control_score_OT": round(stats['score_periods']['4']['control_sum'] / (stats['score_periods']['4']['leading'] + stats['score_periods']['4']['trailing'] + stats['score_periods']['4']['tied']), 4) if (stats['score_periods']['4']['leading'] + stats['score_periods']['4']['trailing'] + stats['score_periods']['4']['tied']) > 0 else 1.0,
             "time_evenstrength": stats['toi'].get('5v5', 0) + stats['toi'].get('4v4', 0) + stats['toi'].get('3v3', 0), # Approx
             
             # OTML (Off The Mat Loss)
