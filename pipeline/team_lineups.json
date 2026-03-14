@@ -274,12 +274,12 @@
                 "movement": null
             },
             {
-                "name": "Ian Moore",
-                "number": null,
+                "name": "Frank Vatrano",
+                "number": 77,
                 "pos": "rw",
-                "id": 31897,
+                "id": 2545,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -310,12 +310,12 @@
                 "movement": null
             },
             {
-                "name": "Radko Gudas",
-                "number": 7,
+                "name": "Ian Moore",
+                "number": null,
                 "pos": "rd",
-                "id": 1366,
+                "id": 31897,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d3": [
@@ -360,6 +360,14 @@
                 "id": 4645,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Radko Gudas",
+                "number": 7,
+                "pos": "ir4",
+                "id": 1366,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -1665,7 +1673,7 @@
                 "pos": "lw",
                 "id": 30063,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "John Tavares",
@@ -1673,7 +1681,7 @@
                 "pos": "c",
                 "id": 1016,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "William Nylander",
@@ -1707,7 +1715,7 @@
                 "pos": "rw",
                 "id": 35106,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -1717,7 +1725,7 @@
                 "pos": "lw",
                 "id": 25020,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Bo Groulx",
@@ -1743,7 +1751,7 @@
                 "pos": "lw",
                 "id": 3916,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Jacob Quillan",
