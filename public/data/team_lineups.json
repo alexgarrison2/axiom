@@ -1660,18 +1660,18 @@
     "TOR": {
         "f1": [
             {
-                "name": "Easton Cowan",
-                "number": 53,
+                "name": "Matias Maccelli",
+                "number": 63,
                 "pos": "lw",
-                "id": 35106,
-                "ppUnit": 2,
-                "movement": null
+                "id": 30063,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
-                "name": "Auston Matthews",
-                "number": 34,
+                "name": "John Tavares",
+                "number": 91,
                 "pos": "c",
-                "id": 2433,
+                "id": 1016,
                 "ppUnit": 1,
                 "movement": "up"
             },
@@ -1694,37 +1694,37 @@
                 "movement": null
             },
             {
-                "name": "John Tavares",
-                "number": 91,
-                "pos": "c",
-                "id": 1016,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
                 "name": "Max Domi",
                 "number": 11,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2131,
                 "ppUnit": 2,
                 "movement": null
+            },
+            {
+                "name": "Easton Cowan",
+                "number": 53,
+                "pos": "rw",
+                "id": 35106,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f3": [
             {
-                "name": "Matias Maccelli",
-                "number": 63,
+                "name": "Dakota Joshua",
+                "number": 81,
                 "pos": "lw",
-                "id": 30063,
-                "ppUnit": 2,
-                "movement": null
+                "id": 25020,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Bo Groulx",
                 "number": null,
                 "pos": "c",
                 "id": 28732,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1738,12 +1738,12 @@
         ],
         "f4": [
             {
-                "name": "Michael Pezzetta",
-                "number": 55,
+                "name": "Steven Lorentz",
+                "number": 18,
                 "pos": "lw",
-                "id": 4665,
+                "id": 3916,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jacob Quillan",
@@ -1838,7 +1838,7 @@
                 "number": 34,
                 "pos": "ir3",
                 "id": 2433,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "movement": null
             }
         ]
