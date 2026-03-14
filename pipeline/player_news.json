@@ -1,4 +1,82 @@
 {
+    "LAK": [
+        {
+            "player": "Mathieu Joseph",
+            "news": "Joseph will make his Kings debut on Saturday in New Jersey. ",
+            "category": "Line Change",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T21:52:33.289Z"
+        }
+    ],
+    "CHI": [
+        {
+            "player": "Spencer Knight",
+            "news": "Knight will start in Vegas on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T21:52:10.934Z"
+        },
+        {
+            "player": "Spencer Knight",
+            "news": "Knight is in the starter's crease at Chicago's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T18:05:20.873Z"
+        }
+    ],
+    "NYR": [
+        {
+            "player": "Juuso Parssinen",
+            "news": "Parssinen will be a healthy scratch vs. Minnesota on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T21:42:17.287Z"
+        },
+        {
+            "player": "Jaroslav Chmelar",
+            "news": "Chmelar will draw back into New York's lineup vs. Minnesota on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T21:41:49.210Z"
+        },
+        {
+            "player": "J.T. Miller",
+            "news": "Miller (upper-body) will return vs. Minnesota on Saturday. ",
+            "category": "Injury",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T21:35:06.053Z"
+        },
+        {
+            "player": "Igor Shesterkin",
+            "news": "Shesterkin will start in Minnesota on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T19:58:04.670Z"
+        }
+    ],
+    "MIN": [
+        {
+            "player": "Robby Fabbri",
+            "news": "Fabbri will be a healthy scratch vs. New York on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T21:33:10.674Z"
+        },
+        {
+            "player": "Nico Sturm",
+            "news": "Sturm will draw back into Minnesota's lineup vs. New York on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T21:32:45.002Z"
+        },
+        {
+            "player": "Bobby Brink",
+            "news": " Brink (upper-body) will remain out vs. New York on Saturday",
+            "category": "Injury",
+            "date": "2026-03-14",
+            "timestamp": "2026-03-14T21:31:32.878Z"
+        }
+    ],
     "CAR": [
         {
             "player": "Frederik Andersen",
@@ -6,15 +84,6 @@
             "category": "Goalie Start",
             "date": "2026-03-14",
             "timestamp": "2026-03-14T21:02:01.034Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Igor Shesterkin",
-            "news": "Shesterkin will start in Minnesota on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-14",
-            "timestamp": "2026-03-14T19:58:04.670Z"
         }
     ],
     "COL": [
@@ -65,13 +134,6 @@
             "category": "Goalie Start",
             "date": "2026-03-14",
             "timestamp": "2026-03-14T18:38:53.920Z"
-        },
-        {
-            "player": "Nikita Tolopilo",
-            "news": "Tolopilo is expected to start vs. Seattle on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-14",
-            "timestamp": "2026-03-14T17:36:10.717Z"
         }
     ],
     "VGK": [
@@ -81,15 +143,6 @@
             "category": "Goalie Start",
             "date": "2026-03-14",
             "timestamp": "2026-03-14T18:37:51.398Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Spencer Knight",
-            "news": "Knight is in the starter's crease at Chicago's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-14",
-            "timestamp": "2026-03-14T18:05:20.873Z"
         }
     ],
     "BOS": [
@@ -106,56 +159,6 @@
             "category": "Goalie Start",
             "date": "2026-03-14",
             "timestamp": "2026-03-14T17:51:13.819Z"
-        }
-    ],
-    "SJS": [
-        {
-            "player": "Alex Nedeljkovic",
-            "news": "Nedeljkovic will start in Montreal on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-14",
-            "timestamp": "2026-03-14T17:39:52.721Z"
-        }
-    ],
-    "UTA": [
-        {
-            "player": "Maksymilian Szuber",
-            "news": "Szuber has been reassigned to Tucson (AHL). ",
-            "category": "Send Down",
-            "date": "2026-03-14",
-            "timestamp": "2026-03-14T17:34:33.564Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Stuart Skinner",
-            "news": "Skinner will start in Utah on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-14",
-            "timestamp": "2026-03-14T17:33:30.841Z"
-        }
-    ],
-    "FLA": [
-        {
-            "player": "Sam Bennett",
-            "news": "Bennett (undisclosed) is day-to-day and expected to be out vs. Seattle on Sunday. ",
-            "category": "Injury",
-            "date": "2026-03-14",
-            "timestamp": "2026-03-14T17:32:25.137Z"
-        },
-        {
-            "player": "Sam Bennett",
-            "news": "Bennett (undisclosed) will return to Florida's lineup in Seattle on Sunday. ",
-            "category": "Injury",
-            "date": "2026-03-14",
-            "timestamp": "2026-03-14T17:30:04.454Z"
-        },
-        {
-            "player": "Carter Verhaeghe",
-            "news": "Verhaeghe (undisclosed) will return vs. Seattle on Sunday. ",
-            "category": "Injury",
-            "date": "2026-03-14",
-            "timestamp": "2026-03-14T17:29:39.337Z"
         }
     ]
 }
