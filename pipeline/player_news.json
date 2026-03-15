@@ -1,4 +1,89 @@
 {
+    "MIN": [
+        {
+            "player": "Jeff Petry",
+            "news": "Petry is expected to draw into the lineup on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T23:04:18.064Z"
+        },
+        {
+            "player": "Zach Bogosian",
+            "news": "Bogosian is expected to be a healthy scratch on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T23:03:57.174Z"
+        }
+    ],
+    "ANA": [
+        {
+            "player": "Lukas Dostal",
+            "news": "Dostal will start vs. Montreal on Sunday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T22:59:37.118Z"
+        },
+        {
+            "player": "Drew Helleson",
+            "news": "Helleson will be a healthy scratch on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T22:59:09.199Z"
+        },
+        {
+            "player": "Mason McTavish",
+            "news": "McTavish will be a healthy scratch on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T22:56:50.273Z"
+        },
+        {
+            "player": "Troy Terry",
+            "news": "Terry (upper body) will return to the lineup on Sunday. ",
+            "category": "Injury",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T22:38:42.520Z"
+        }
+    ],
+    "MTL": [
+        {
+            "player": "Jayden Struble",
+            "news": "Struble will be a healthy scratch on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T22:43:00.988Z"
+        },
+        {
+            "player": "Zack Bolduc",
+            "news": "Bolduc will be a healthy scratch on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T22:42:42.200Z"
+        },
+        {
+            "player": "Arber Xhekaj",
+            "news": "Xhekaj will draw back into the lineup on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T22:42:18.431Z"
+        },
+        {
+            "player": "Brendan Gallagher",
+            "news": "Gallagher will draw back into the lineup on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T22:41:36.677Z"
+        }
+    ],
+    "DET": [
+        {
+            "player": "Eddie Genborg",
+            "news": "Genborg has been signed to a three-year, entry-level contract. ",
+            "category": "Signing",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T22:21:27.393Z"
+        }
+    ],
     "FLA": [
         {
             "player": "Sam Bennett",
@@ -13,13 +98,6 @@
             "category": "Goalie Start",
             "date": "2026-03-15",
             "timestamp": "2026-03-15T22:03:32.326Z"
-        },
-        {
-            "player": "Nolan Foote",
-            "news": "Foote has been recalled from Charlotte (AHL). ",
-            "category": "Call Up",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T18:05:14.610Z"
         }
     ],
     "SJS": [
@@ -43,20 +121,6 @@
             "category": "Line Change",
             "date": "2026-03-15",
             "timestamp": "2026-03-15T18:44:03.928Z"
-        },
-        {
-            "player": "Igor Chernyshov",
-            "news": "Chernyshov (concussion) will not play on Sunday. ",
-            "category": "Injury",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T18:43:45.328Z"
-        },
-        {
-            "player": "Laurent Brossoit",
-            "news": "Brossoit will make his season debut on Sunday vs. Ottawa. ",
-            "category": "Goalie Start",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T18:39:19.565Z"
         }
     ],
     "WSH": [
@@ -82,13 +146,6 @@
             "category": "Line Change",
             "date": "2026-03-15",
             "timestamp": "2026-03-15T19:34:27.652Z"
-        },
-        {
-            "player": "Artur Akhtyamov",
-            "news": "The Maple Leafs have signed Akhtyamov to a three-year contract extension worth $2.7 million ($900,000 AAV). ",
-            "category": "Signing",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T18:42:39.834Z"
         }
     ],
     "OTT": [
@@ -98,63 +155,6 @@
             "category": "Goalie Start",
             "date": "2026-03-15",
             "timestamp": "2026-03-15T18:46:24.500Z"
-        }
-    ],
-    "WPG": [
-        {
-            "player": "Eric Comrie",
-            "news": "Comrie will start vs. St. Louis on Sunday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T18:30:37.265Z"
-        },
-        {
-            "player": "Eric Comrie",
-            "news": "Comrie is expected to start vs. St. Louis on Sunday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T17:56:02.112Z"
-        }
-    ],
-    "ANA": [
-        {
-            "player": "John Carlson",
-            "news": "Carlson (lower-body) is expected to make his Ducks' debut on Sunday. ",
-            "category": "Injury",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T18:26:00.051Z"
-        }
-    ],
-    "STL": [
-        {
-            "player": "Otto Stenberg",
-            "news": "Stenberg will be a healthy scratch on Sunday. ",
-            "category": "Line Change",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T17:57:05.046Z"
-        },
-        {
-            "player": "Dalibor Dvorsky",
-            "news": "Dvorsky will draw back into the lineup on Sunday. ",
-            "category": "Line Change",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T17:56:45.837Z"
-        },
-        {
-            "player": "Jordan Binnington",
-            "news": "Binnington will start vs. Winnipeg on Sunday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T17:54:23.815Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Ryan Nugent-Hopkins",
-            "news": "Nugent-Hopkins (undisclosed) will be a game-time decision vs. Nashville on Sunday. ",
-            "category": "Injury",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T17:09:01.874Z"
         }
     ]
 }
