@@ -3941,7 +3941,7 @@
                 "pos": "lw",
                 "id": 29651,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Emmitt Finnie",
@@ -3949,7 +3949,7 @@
                 "pos": "c",
                 "id": 33612,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "James van Riemsdyk",
@@ -3975,7 +3975,7 @@
                 "pos": "c",
                 "id": 4826,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Mason Appleton",
@@ -3983,7 +3983,7 @@
                 "pos": "rw",
                 "id": 4582,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -5170,12 +5170,12 @@
         ],
         "d2": [
             {
-                "name": "Wyatt Kaiser",
-                "number": null,
+                "name": "Ethan Del Mastro",
+                "number": 38,
                 "pos": "ld",
-                "id": 37913,
+                "id": 30841,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Sam Rinzel",
@@ -5212,6 +5212,14 @@
                 "id": 33143,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Wyatt Kaiser",
+                "number": null,
+                "pos": "ir2",
+                "id": 37913,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
