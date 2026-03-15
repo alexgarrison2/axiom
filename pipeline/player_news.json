@@ -1,4 +1,41 @@
 {
+    "SJS": [
+        {
+            "player": "Philipp Kurashev",
+            "news": "Kurashev is expected to draw back into the lineup on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T20:35:15.109Z"
+        },
+        {
+            "player": "Alexander Wennberg",
+            "news": "Wennberg (upper body) is not expected to play on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T20:34:54.208Z"
+        },
+        {
+            "player": "Pavol Regenda",
+            "news": "Regenda will draw back into the lineup on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T18:44:03.928Z"
+        },
+        {
+            "player": "Igor Chernyshov",
+            "news": "Chernyshov (concussion) will not play on Sunday. ",
+            "category": "Injury",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T18:43:45.328Z"
+        },
+        {
+            "player": "Laurent Brossoit",
+            "news": "Brossoit will make his season debut on Sunday vs. Ottawa. ",
+            "category": "Goalie Start",
+            "date": "2026-03-15",
+            "timestamp": "2026-03-15T18:39:19.565Z"
+        }
+    ],
     "WSH": [
         {
             "player": "Cole Hutson",
@@ -11,7 +48,7 @@
     "TOR": [
         {
             "player": "Henry Thrun",
-            "news": "Thrun will draw back into the lineup on Sunday. ",
+            "news": "Thrun has been recalled from the Toronto Marlies (AHL).",
             "category": "Line Change",
             "date": "2026-03-15",
             "timestamp": "2026-03-15T19:34:52.815Z"
@@ -38,29 +75,6 @@
             "category": "Goalie Start",
             "date": "2026-03-15",
             "timestamp": "2026-03-15T18:46:24.500Z"
-        }
-    ],
-    "SJS": [
-        {
-            "player": "Pavol Regenda",
-            "news": "Regenda will draw back into the lineup on Sunday. ",
-            "category": "Line Change",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T18:44:03.928Z"
-        },
-        {
-            "player": "Igor Chernyshov",
-            "news": "Chernyshov (concussion) will not play on Sunday. ",
-            "category": "Injury",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T18:43:45.328Z"
-        },
-        {
-            "player": "Laurent Brossoit",
-            "news": "Brossoit will make his season debut on Sunday vs. Ottawa. ",
-            "category": "Goalie Start",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T18:39:19.565Z"
         }
     ],
     "WPG": [
@@ -95,13 +109,6 @@
             "category": "Call Up",
             "date": "2026-03-15",
             "timestamp": "2026-03-15T18:05:14.610Z"
-        },
-        {
-            "player": "Nolan Foote",
-            "news": "The Panthers have recalled Noaln Foote from Charlotte (AHL). \r\n",
-            "category": "Call Up",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T15:51:40.497Z"
         }
     ],
     "STL": [
@@ -150,15 +157,6 @@
             "category": "Goalie Start",
             "date": "2026-03-15",
             "timestamp": "2026-03-15T16:38:35.307Z"
-        }
-    ],
-    "VAN": [
-        {
-            "player": "Elias Nils Pettersson",
-            "news": "Pettersson left Saturday's game with an undisclosed injury and did not return. \r\n",
-            "category": "Injury",
-            "date": "2026-03-15",
-            "timestamp": "2026-03-15T15:06:16.749Z"
         }
     ]
 }
