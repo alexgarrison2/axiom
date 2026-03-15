@@ -534,12 +534,12 @@
     "SJS": {
         "f1": [
             {
-                "name": "Igor Chernyshov",
-                "number": 92,
+                "name": "Collin Graf",
+                "number": 51,
                 "pos": "lw",
-                "id": 38146,
-                "ppUnit": 2,
-                "movement": null
+                "id": 38105,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Macklin Celebrini",
@@ -586,12 +586,12 @@
         ],
         "f3": [
             {
-                "name": "Collin Graf",
-                "number": 51,
+                "name": "Adam Gaudette",
+                "number": 81,
                 "pos": "lw",
-                "id": 38105,
-                "ppUnit": null,
-                "movement": null
+                "id": 4646,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Alexander Wennberg",
@@ -628,12 +628,12 @@
                 "movement": null
             },
             {
-                "name": "Adam Gaudette",
-                "number": 81,
+                "name": "Ryan Reaves",
+                "number": 75,
                 "pos": "rw",
-                "id": 4646,
+                "id": 1343,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -706,6 +706,14 @@
                 "id": 33018,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Igor Chernyshov",
+                "number": 92,
+                "pos": "ir3",
+                "id": 38146,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -950,11 +958,11 @@
         ],
         "f3": [
             {
-                "name": "Alex Killorn",
-                "number": 17,
+                "name": "Jeffrey Viel",
+                "number": 28,
                 "pos": "lw",
-                "id": 1877,
-                "ppUnit": 2,
+                "id": 24312,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -966,11 +974,11 @@
                 "movement": null
             },
             {
-                "name": "Jeffrey Viel",
-                "number": 28,
+                "name": "Alex Killorn",
+                "number": 17,
                 "pos": "rw",
-                "id": 24312,
-                "ppUnit": null,
+                "id": 1877,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -3032,7 +3040,7 @@
                 "number": null,
                 "pos": "rw",
                 "id": 2568,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -3042,16 +3050,16 @@
                 "number": 14,
                 "pos": "lw",
                 "id": 3922,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Juuso Parssinen",
-                "number": 16,
+                "name": "Adam Edstrom",
+                "number": 84,
                 "pos": "c",
-                "id": 30659,
+                "id": 30691,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jaroslav Chmelar",
@@ -3086,7 +3094,7 @@
                 "number": 29,
                 "pos": "ld",
                 "id": 29499,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -3094,7 +3102,7 @@
                 "number": 4,
                 "pos": "rd",
                 "id": 29483,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
