@@ -103,7 +103,9 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
                             <div className="relative">
                                 <motion.img
                                     layoutId={`team-logo-${currentTeam.TeamTricode}`}
-                                    src={currentTeam.TeamLogoURL}
+                                    src={currentTeam.TeamTricode === 'ALL'
+                                        ? 'https://assets.nhle.com/logos/nhl/svg/NHL_dark.svg'
+                                        : currentTeam.TeamLogoURL}
                                     alt={currentTeam.CommonName}
                                     className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300 relative z-10"
                                 />
@@ -162,6 +164,28 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
                                 <Button size="icon" variant="ghost" onClick={() => setIsOpen(false)} className="hover:bg-white/10 rounded-full">
                                     <X className="w-5 h-5 text-gray-400" />
                                 </Button>
+                            </div>
+
+                            {/* All Teams Option */}
+                            <div className="border-b border-white/5 pb-4">
+                                <Link
+                                    href={teamHref('ALL')}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`flex items-center gap-3 p-2 rounded-lg transition-all group/item ${currentTeam?.TeamTricode === 'ALL' ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                                >
+                                    <motion.img
+                                        layoutId="team-logo-ALL"
+                                        src="https://assets.nhle.com/logos/nhl/svg/NHL_dark.svg"
+                                        alt="All Teams"
+                                        className="w-6 h-6 object-contain opacity-70 group-hover/item:opacity-100 transition-opacity"
+                                    />
+                                    <span
+                                        className={`text-sm font-bold font-mono transition-colors ${currentTeam?.TeamTricode === 'ALL' ? 'text-white' : 'text-gray-400 group-hover/item:text-white'}`}
+                                        style={currentTeam?.TeamTricode === 'ALL' ? { color: '#fff', textShadow: '0 0 10px rgba(255,255,255,0.4)' } : {}}
+                                    >
+                                        All Teams
+                                    </span>
+                                </Link>
                             </div>
 
                             {/* Grid by Division */}

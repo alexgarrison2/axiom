@@ -67,25 +67,122 @@ export async function GET(
         const teamData = Papa.parse(teamText, { header: true, skipEmptyLines: true }).data as any[];
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const info = teamData.find((t: any) => t['Team Tricode'] === teamAbbrUpper || (t['Team Tricode'] === 'UTA' && teamAbbrUpper === 'UTA'));
+        const info = teamAbbrUpper === 'ALL' ? null : teamData.find((t: any) => t['Team Tricode'] === teamAbbrUpper || (t['Team Tricode'] === 'UTA' && teamAbbrUpper === 'UTA'));
 
-        if (!info) {
+        if (!info && teamAbbrUpper !== 'ALL') {
             return NextResponse.json({ error: 'Team not found' }, { status: 404 });
         }
 
         const teamInfo: TeamInfo = {
-            TeamName: info['Team Name'],
-            CommonName: info['Common Name'],
-            TeamTricode: info['Team Tricode'],
-            HexColor1: info['Hex Color 1'],
-            HexColor2: info['Hex Color 2'],
-            TeamLogoURL: info['Team Logo URL']
+            TeamName: info?.['Team Name'] || '',
+            CommonName: info?.['Common Name'] || '',
+            TeamTricode: info?.['Team Tricode'] || '',
+            HexColor1: info?.['Hex Color 1'] || '',
+            HexColor2: info?.['Hex Color 2'] || '',
+            TeamLogoURL: info?.['Team Logo URL'] || ''
         };
 
         // 2. Fetch Gamestats
         const gamestatsText = readCsv('gamestats.csv');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const gamestats = Papa.parse(gamestatsText, { header: true, skipEmptyLines: true }).data as any[];
+
+        // ── ALL TEAMS mode ──────────────────────────────────────────────────────
+        if (teamAbbrUpper === 'ALL') {
+            const allTeamsInfo: TeamInfo = {
+                TeamName: 'All Teams',
+                CommonName: 'All Teams',
+                TeamTricode: 'ALL',
+                HexColor1: '#FFFFFF',
+                HexColor2: '#000099',
+                TeamLogoURL: 'https://assets.nhle.com/logos/nhl/svg/NHL_dark.svg',
+            };
+
+            // Count total games per team (for game_number assignment)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const teamGameCount: Record<string, number> = {};
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            gamestats.forEach((row: any) => {
+                const t = row.team || '';
+                teamGameCount[t] = (teamGameCount[t] || 0) + 1;
+            });
+
+            // Process all games sorted by date desc
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const teamSeenCount: Record<string, number> = {};
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const allProcessed: GameLog[] = (gamestats as any[])
+                .slice()
+                .sort((a, b) => new Date(b.game_date).getTime() - new Date(a.game_date).getTime())
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .map((row: any) => {
+                    const res = row.result;
+                    let result_display = '';
+                    if (res === 'RW') result_display = 'W';
+                    else if (res === 'OTW') result_display = 'W (OT)';
+                    else if (res === 'SOW') result_display = 'W (SO)';
+                    else if (res === 'OTL') result_display = 'OTL';
+                    else if (res === 'SOL') result_display = 'SOL';
+                    else if (res === 'RL') result_display = 'L';
+
+                    const team = row.team || '';
+                    teamSeenCount[team] = (teamSeenCount[team] || 0) + 1;
+                    const game_number = teamGameCount[team] - teamSeenCount[team] + 1;
+
+                    return {
+                        game_id: row.game_id,
+                        date: row.game_date,
+                        opponent: row.opponent,
+                        result: result_display,
+                        result_code: res,
+                        home_away: row.home_away,
+                        gf: parseInt(row.goals_for) || 0,
+                        ga: parseInt(row.goals_ag) || 0,
+                        xgf: parseFloat(row.xG_for) || 0,
+                        xga: parseFloat(row.xG_against) || 0,
+                        starting_goalie: row.starting_goalie || '',
+                        opponent_starter: row.starting_goalie_opp || '',
+                        points: (res === 'RW' || res === 'OTW' || res === 'SOW') ? 2 : (res === 'OTL' || res === 'SOL') ? 1 : 0,
+                        pp_goals: parseInt(row.pp_goals) || 0,
+                        pp_opps: parseInt(row.pp_opportunities) || 0,
+                        pp_time: formatTime(row.pp_time),
+                        pp_goals_against: parseInt(row.pp_goals_against) || 0,
+                        pk_opps: parseInt(row.pk_opportunities) || 0,
+                        pk_time: formatTime(row.pk_time),
+                        sf: parseInt(row.sog_for) || 0,
+                        sa: parseInt(row.sog_ag) || 0,
+                        cf: parseInt(row.attempts_for) || 0,
+                        ca: parseInt(row.attempts_ag) || 0,
+                        sv_pct: parseFloat(row.save_percentage) || 0,
+                        en_gf: parseInt(row.emptynet_goalsfor) || 0,
+                        en_att: parseInt(row.en_attempts_for) || 0,
+                        en_ga: parseInt(row.emptynet_goalsagainst) || 0,
+                        en_att_ag: parseInt(row.en_attempts_against) || 0,
+                        gsax: (parseFloat(row.xG_against) || 0) - ((parseInt(row.goals_ag) || 0) - (parseInt(row.emptynet_goalsagainst) || 0)),
+                        otml: (['RL', 'OTL', 'SOL'].includes(res?.trim()) && parseInt(row.en_attempts_for) > 0) ? 'Yes' : '-',
+                        game_number,
+                        time_leading: parseInt(row.time_leading) || 0,
+                        time_trailing: parseInt(row.time_trailing) || 0,
+                        time_tied: parseInt(row.time_tied) || 0,
+                        control_score: parseFloat(row.control_score) || 1.0,
+                        hdf: parseInt(row.hdf) || 0,
+                        hda: parseInt(row.hda) || 0,
+                        raw: row,
+                    } as GameLog;
+                });
+
+            return NextResponse.json({
+                teamInfo: allTeamsInfo,
+                games: allProcessed,
+                leagueGames: [],
+                playerStats: [],
+                rating: null,
+                record: { w: 0, l: 0, otl: 0, pts: 0 },
+                todaysGame: null,
+                lineup: undefined,
+            } as TeamStatsResponse);
+        }
+        // ───────────────────────────────────────────────────────────────────────
 
         const teamCommon = teamInfo.CommonName;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

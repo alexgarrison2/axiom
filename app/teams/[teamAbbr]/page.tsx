@@ -78,10 +78,13 @@ export default function TeamDetailPage() {
     const teamInfo = data?.teamInfo;
     const playerStats = data?.playerStats || [];
 
+    const isAllTeams = teamAbbr === 'ALL';
+
     const uniqueGoalies = useMemo(() => {
+        if (isAllTeams) return []; // too many goalies across all teams
         const set = new Set(games.map(g => g.starting_goalie).filter(Boolean));
         return Array.from(set).sort();
-    }, [games]);
+    }, [games, isAllTeams]);
 
     const filteredGames = useMemo(() => {
         let out = [...games];

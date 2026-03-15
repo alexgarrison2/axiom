@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { GameLog, PlayerBoxscoreRow } from '@/types';
 import GameBoxscore from '@/components/GameBoxscore';
 
@@ -29,8 +29,22 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
     teamLogos,
     primaryColor
 }) => {
+    const isAllTeams = teamAbbr === 'ALL';
 
-    // Helper for Period Stats
+    // ── Sort State ──────────────────────────────────────────────────────────
+    const [sortKey, setSortKey] = useState<string | null>(null);
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+    const handleSort = (key: string) => {
+        if (sortKey === key) {
+            setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortKey(key);
+            setSortDir('desc');
+        }
+    };
+
+    // ── Period Stat Helpers ─────────────────────────────────────────────────
     const getStat = (game: GameLog, stat: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga' | 'hdf' | 'hda') => {
         if (filters.period === 'All') {
             return game[stat];
@@ -40,7 +54,6 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
             filters.period === '2nd' ? '_2P' :
                 filters.period === '3rd' ? '_3P' : '_OT';
 
-        // xG: use per-period columns from raw (xg_for_1P etc.)
         if (stat === 'xgf') return parseFloat((game.raw?.['xg_for' + suffix] as string) || '0');
         if (stat === 'xga') return parseFloat((game.raw?.['xg_ag' + suffix] as string) || '0');
 
@@ -57,7 +70,6 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         return parseInt((game.raw?.[prefix + suffix] as string) || '0');
     };
 
-    // Per-period time helper: reads time_leading_1P etc. from raw, falls back to full-game value
     const getTimeStat = (game: GameLog, stat: 'time_leading' | 'time_trailing' | 'time_tied') => {
         if (filters.period === 'All') return game[stat] || 0;
         const suffix = filters.period === '1st' ? '_1P' :
@@ -67,7 +79,6 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         return raw !== undefined ? parseInt(raw as string) || 0 : game[stat] || 0;
     };
 
-    // Per-period control score from raw, falls back to full-game value
     const getControlScore = (game: GameLog) => {
         if (filters.period === 'All') return game.control_score || 1.0;
         const suffix = filters.period === '1st' ? '_1P' :
@@ -77,18 +88,15 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         return raw !== undefined ? parseFloat(raw as string) || 1.0 : game.control_score || 1.0;
     };
 
-    // Format seconds as mm:ss
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
         const s = Math.floor(seconds % 60);
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
-    // Gradient Helper
     const getGradientColor = (value: number, min: number, mid: number, max: number) => {
         const val = Math.max(min, Math.min(max, value));
         let r, g, b;
-
         if (val < mid) {
             const ratio = (val - min) / (mid - min);
             r = Math.round(248 + (156 - 248) * ratio);
@@ -103,7 +111,96 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         return `rgb(${r}, ${g}, ${b})`;
     };
 
-    // Totals Calculation
+    // ── Sort Value ──────────────────────────────────────────────────────────
+    const getSortValue = (game: GameLog, key: string): number | string => {
+        switch (key) {
+            case '#': return game.game_number;
+            case 'Date': return game.date;
+            case 'TM': return (game.raw?.team as string) || '';
+            case 'Loc': return game.home_away;
+            case 'Opp': return game.opponent;
+            case 'Starter': return game.starting_goalie || '';
+            case 'Opp Strt': return game.opponent_starter || '';
+            case 'Res': {
+                const rc = game.result_code?.toUpperCase() || '';
+                if (['RW', 'OTW', 'SOW', 'W'].includes(rc)) return 0;
+                if (['OTL', 'SOL'].includes(rc)) return 1;
+                return 2;
+            }
+            case 'GF': return (getStat(game, 'gf') as number) || 0;
+            case 'GA': return (getStat(game, 'ga') as number) || 0;
+            case 'GΔ': return ((getStat(game, 'gf') as number) || 0) - ((getStat(game, 'ga') as number) || 0);
+            case 'PP': return game.pp_opps > 0 ? game.pp_goals / game.pp_opps : 0;
+            case 'PK': return game.pk_opps > 0 ? 1 - (game.pp_goals_against / game.pk_opps) : 1;
+            case 'SF': return (getStat(game, 'sf') as number) || 0;
+            case 'SA': return (getStat(game, 'sa') as number) || 0;
+            case 'SΔ': return ((getStat(game, 'sf') as number) || 0) - ((getStat(game, 'sa') as number) || 0);
+            case 'CF': return (getStat(game, 'cf') as number) || 0;
+            case 'CA': return (getStat(game, 'ca') as number) || 0;
+            case 'CΔ': return ((getStat(game, 'cf') as number) || 0) - ((getStat(game, 'ca') as number) || 0);
+            case 'HDF': return (getStat(game, 'hdf') as number) || 0;
+            case 'HDA': return (getStat(game, 'hda') as number) || 0;
+            case 'HDΔ': return ((getStat(game, 'hdf') as number) || 0) - ((getStat(game, 'hda') as number) || 0);
+            case 'SH%': {
+                const sf = (getStat(game, 'sf') as number) || 0;
+                const gf = (getStat(game, 'gf') as number) || 0;
+                return sf > 0 ? gf / sf : 0;
+            }
+            case 'SV%': {
+                const sa = (getStat(game, 'sa') as number) || 0;
+                const ga = (getStat(game, 'ga') as number) || 0;
+                const adj = sa - (filters.period === 'All' ? game.en_ga : 0);
+                return adj > 0 ? (sa - ga) / adj : 0;
+            }
+            case 'GSAx': {
+                const xga = (getStat(game, 'xga') as number) || 0;
+                const ga = (getStat(game, 'ga') as number) || 0;
+                return xga - (ga - (filters.period === 'All' ? game.en_ga : 0));
+            }
+            case 'xGF': return (getStat(game, 'xgf') as number) || 0;
+            case 'xGA': return (getStat(game, 'xga') as number) || 0;
+            case 'xGΔ': return ((getStat(game, 'xgf') as number) || 0) - ((getStat(game, 'xga') as number) || 0);
+            case 'T↑': return getTimeStat(game, 'time_leading');
+            case 'T↓': return getTimeStat(game, 'time_trailing');
+            case 'T=': return getTimeStat(game, 'time_tied');
+            case 'Control': return getControlScore(game);
+            case 'EN GF': return game.en_gf;
+            case 'EN Att': return game.en_att;
+            case 'OTML': return game.otml === 'Yes' ? 1 : 0;
+            case 'EN GA': return game.en_ga;
+            case 'EN Att Ag': return game.en_att_ag;
+            case 'NLW': {
+                const rc = game.result_code?.toUpperCase() || '';
+                return (['RW', 'OTW', 'SOW', 'W'].includes(rc) && (game.time_leading || 0) === 0) ? 1 : 0;
+            }
+            case 'NTW': {
+                const rc = game.result_code?.toUpperCase() || '';
+                return (['RW', 'OTW', 'SOW', 'W'].includes(rc) && (game.time_trailing || 0) === 0) ? 1 : 0;
+            }
+            case 'NTL': {
+                const rc = game.result_code?.toUpperCase() || '';
+                return (['RL', 'L', 'OTL', 'SOL'].includes(rc) && (game.time_trailing || 0) === 0) ? 1 : 0;
+            }
+            default: return 0;
+        }
+    };
+
+    // ── Sorted Games (display order only; totals use original `games`) ───────
+    const sortedGames = useMemo(() => {
+        if (!sortKey) return games;
+        const dir = sortDir === 'asc' ? 1 : -1;
+        return [...games].sort((a, b) => {
+            const va = getSortValue(a, sortKey);
+            const vb = getSortValue(b, sortKey);
+            if (typeof va === 'string' && typeof vb === 'string') {
+                return dir * va.localeCompare(vb);
+            }
+            return dir * ((va as number) - (vb as number));
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [games, sortKey, sortDir, filters.period]);
+
+    // ── Totals ──────────────────────────────────────────────────────────────
     const totals = useMemo(() => {
         if (games.length === 0) return null;
 
@@ -123,24 +220,19 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
 
         const sum = (key: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga' | 'hdf' | 'hda') => games.reduce((acc, g) => acc + (getStat(g, key) as number), 0);
 
-        const gf = sum('gf');
-        const ga = sum('ga');
-        const sf = sum('sf');
-        const sa = sum('sa');
-        const cf = sum('cf');
-        const ca = sum('ca');
-        const hdf = sum('hdf');
-        const hda = sum('hda');
-        const xgf = sum('xgf');
-        const xga = sum('xga');
-        // GSAx: compute from period-filtered xga and ga (not g.gsax which is always full-game)
+        const gf = sum('gf'); const ga = sum('ga');
+        const sf = sum('sf'); const sa = sum('sa');
+        const cf = sum('cf'); const ca = sum('ca');
+        const hdf = sum('hdf'); const hda = sum('hda');
+        const xgf = sum('xgf'); const xga = sum('xga');
+
         const isAll = filters.period === 'All';
         const pSuffix = filters.period === '1st' ? '_1P' :
-                        filters.period === '2nd' ? '_2P' :
-                        filters.period === '3rd' ? '_3P' : '_OT';
+            filters.period === '2nd' ? '_2P' :
+                filters.period === '3rd' ? '_3P' : '_OT';
         const gsax = games.reduce((acc, g) => {
             const _xga = (getStat(g, 'xga') as number) || 0;
-            const _ga  = (getStat(g, 'ga')  as number) || 0;
+            const _ga = (getStat(g, 'ga') as number) || 0;
             const _en_ga = isAll ? (g.en_ga || 0) : 0;
             return acc + (_xga - (_ga - _en_ga));
         }, 0);
@@ -150,7 +242,6 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         const en_ga = games.reduce((acc, g) => acc + g.en_ga, 0);
         const en_att_ag = games.reduce((acc, g) => acc + g.en_att_ag, 0);
 
-        // Time stats: use per-period columns from raw when available, fall back to full-game
         const getTimeVal = (g: GameLog, stat: 'time_leading' | 'time_trailing' | 'time_tied') => {
             if (isAll) return g[stat] || 0;
             const raw = g.raw?.[stat + pSuffix];
@@ -162,12 +253,11 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
             return raw !== undefined ? parseFloat(raw as string) || 1 : g.control_score || 1;
         };
 
-        const time_leading_avg   = games.reduce((acc, g) => acc + getTimeVal(g, 'time_leading'), 0)   / count;
-        const time_trailing_avg  = games.reduce((acc, g) => acc + getTimeVal(g, 'time_trailing'), 0)  / count;
-        const time_tied_avg      = games.reduce((acc, g) => acc + getTimeVal(g, 'time_tied'), 0)      / count;
-        const control_score_avg  = games.reduce((acc, g) => acc + getCtrl(g), 0) / count;
+        const time_leading_avg = games.reduce((acc, g) => acc + getTimeVal(g, 'time_leading'), 0) / count;
+        const time_trailing_avg = games.reduce((acc, g) => acc + getTimeVal(g, 'time_trailing'), 0) / count;
+        const time_tied_avg = games.reduce((acc, g) => acc + getTimeVal(g, 'time_tied'), 0) / count;
+        const control_score_avg = games.reduce((acc, g) => acc + getCtrl(g), 0) / count;
 
-        // NLW / NTW / NTL: always full-game (score-state is cumulative)
         const nlw = games.filter(g => {
             const res = g.result_code?.toUpperCase() || '';
             return ['RW', 'OTW', 'SOW', 'W'].includes(res) && (g.time_leading || 0) === 0;
@@ -187,99 +277,115 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
         const pk_opps = games.reduce((acc, g) => acc + g.pk_opps, 0);
 
         const total_saves = games.reduce((acc, g) => acc + (getStat(g, 'sa') as number) - (getStat(g, 'ga') as number), 0);
-        // Correct SV% by subtracting Empty Net Goals from Shots Against (only for Full Game totals where we have EN data)
         const adjusted_sa = sa - (filters.period === 'All' ? en_ga : 0);
         const tot_sv_pct = adjusted_sa > 0 ? (total_saves / adjusted_sa) : 0;
 
         return {
             record,
-            gf: (gf / count).toFixed(1),
-            ga: (ga / count).toFixed(1),
-            gd: gf - ga,
-            sf: (sf / count).toFixed(1),
-            sa: (sa / count).toFixed(1),
-            sd: (sf - sa),
-            cf: (cf / count).toFixed(1),
-            ca: (ca / count).toFixed(1),
-            cd: (cf - ca),
-            hdf: (hdf / count).toFixed(1),
-            hda: (hda / count).toFixed(1),
-            hdd: (hdf - hda),
-            xgf: (xgf / count).toFixed(2),
-            xga: (xga / count).toFixed(2),
-            xgd: (xgf - xga).toFixed(2),
+            gf: (gf / count).toFixed(1), ga: (ga / count).toFixed(1), gd: gf - ga,
+            sf: (sf / count).toFixed(1), sa: (sa / count).toFixed(1), sd: (sf - sa),
+            cf: (cf / count).toFixed(1), ca: (ca / count).toFixed(1), cd: (cf - ca),
+            hdf: (hdf / count).toFixed(1), hda: (hda / count).toFixed(1), hdd: (hdf - hda),
+            xgf: (xgf / count).toFixed(2), xga: (xga / count).toFixed(2), xgd: (xgf - xga).toFixed(2),
             gsax: gsax.toFixed(2),
             nlw, ntw, ntl,
             en_gf, en_att, en_ga, en_att_ag,
             time_leading_avg, time_trailing_avg, time_tied_avg, control_score_avg,
-            pp_goals, pp_opps,
-            pk_goals_ag, pk_opps,
+            pp_goals, pp_opps, pk_goals_ag, pk_opps,
             pp_pct: pp_opps > 0 ? (pp_goals / pp_opps * 100).toFixed(1) : '0.0',
             pk_pct: pk_opps > 0 ? (100 - (pk_goals_ag / pk_opps * 100)).toFixed(1) : '0.0',
             sh_pct: sf > 0 ? (gf / sf * 100).toFixed(1) : '0.0',
             sv_pct: tot_sv_pct.toFixed(3).replace(/^0+/, '')
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [games, filters.period]);
+
+    // ── Sortable Header Helper ──────────────────────────────────────────────
+    const SortTh = ({ colKey, children, className, title }: { colKey: string; children: React.ReactNode; className?: string; title?: string }) => {
+        const isActive = sortKey === colKey;
+        return (
+            <th
+                onClick={() => handleSort(colKey)}
+                title={title}
+                className={`p-1 cursor-pointer select-none hover:text-white transition-colors group ${isActive ? 'text-white' : ''} ${className || ''}`}
+            >
+                <span className="inline-flex items-center gap-0.5 whitespace-nowrap">
+                    {children}
+                    <span className={`text-[8px] leading-none ${isActive ? 'text-white' : 'text-gray-700 group-hover:text-gray-500'}`}>
+                        {isActive ? (sortDir === 'asc' ? '▲' : '▼') : '▲▼'}
+                    </span>
+                </span>
+            </th>
+        );
+    };
+
+    // ── Sticky left positions (px) after adding TM column ──────────────────
+    // #: left-0 (0), Date: left-8 (32px), TM: left-32 (128px), Loc: left-44 (176px), Opp: left-52 (208px)
+    const stickyBg = 'bg-gray-900';
+    const stickyBgRow = 'bg-[#09090b]';
+    const stickyBgTotals = 'bg-[#1c1c1c]';
 
     return (
         <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
             <table className="w-full text-xs text-left whitespace-nowrap border-collapse">
                 <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
                     <tr>
-                        <th className="p-1 sticky left-0 bg-gray-900 z-30 min-w-[2rem] w-8 text-center text-gray-500">#</th>
-                        <th className="p-1 sticky left-8 bg-gray-900 z-30 min-w-[6rem] w-24 text-center border-r border-gray-700">Date</th>
-                        <th className="p-1 sticky left-32 bg-gray-900 z-30 min-w-[2rem] w-8 text-center border-r border-gray-700">Loc</th>
-                        <th className="p-1 sticky left-40 bg-gray-900 z-30 min-w-[3rem] w-12 text-center border-r border-gray-700">Opp</th>
-                        <th className="p-1">Starter</th>
-                        <th className="p-1">Opp Strt</th>
-                        <th className="p-1 text-center">Res</th>
-                        <th className="p-1 text-center">GF</th>
-                        <th className="p-1 text-center">GA</th>
-                        <th className="p-1 text-center">GΔ</th>
+                        <SortTh colKey="#" className={`sticky left-0 ${stickyBg} z-30 min-w-[2rem] w-8 text-center text-gray-500`}>#</SortTh>
+                        <SortTh colKey="Date" className={`sticky left-8 ${stickyBg} z-30 min-w-[6rem] w-24 text-center border-r border-gray-700`}>Date</SortTh>
+                        <SortTh colKey="TM" className={`sticky left-32 ${stickyBg} z-30 min-w-[3rem] w-12 text-center border-r border-gray-700`}>TM</SortTh>
+                        <SortTh colKey="Loc" className={`sticky left-44 ${stickyBg} z-30 min-w-[2rem] w-8 text-center border-r border-gray-700`}>Loc</SortTh>
+                        <SortTh colKey="Opp" className={`sticky left-52 ${stickyBg} z-30 min-w-[3rem] w-12 text-center border-r border-gray-700`}>Opp</SortTh>
+                        <SortTh colKey="Starter">Starter</SortTh>
+                        <SortTh colKey="Opp Strt">Opp Strt</SortTh>
+                        <SortTh colKey="Res" className="text-center">Res</SortTh>
+                        <SortTh colKey="GF" className="text-center">GF</SortTh>
+                        <SortTh colKey="GA" className="text-center">GA</SortTh>
+                        <SortTh colKey="GΔ" className="text-center">GΔ</SortTh>
                         {filters.period === 'All' && (
                             <>
-                                <th className="p-1 text-center text-blue-300">Powerplay</th>
-                                <th className="p-1 text-center text-red-300">Penalty Kill</th>
+                                <SortTh colKey="PP" className="text-center text-blue-300">Powerplay</SortTh>
+                                <SortTh colKey="PK" className="text-center text-red-300">Penalty Kill</SortTh>
                             </>
                         )}
-                        <th className="p-1 text-center">SF</th>
-                        <th className="p-1 text-center">SA</th>
-                        <th className="p-1 text-center">SΔ</th>
-                        <th className="p-1 text-center">CF</th>
-                        <th className="p-1 text-center">CA</th>
-                        <th className="p-1 text-center">CΔ</th>
-                        <th className="p-1 text-center">HDF</th>
-                        <th className="p-1 text-center">HDA</th>
-                        <th className="p-1 text-center">HDΔ</th>
-                        <th className="p-1 text-center border-l border-gray-700">SH%</th>
-                        <th className="p-1 text-center">SV%</th>
-                        <th className="p-1 text-center">GSAx</th>
-                        <th className="p-1 text-center">xGF</th>
-                        <th className="p-1 text-center">xGA</th>
-                        <th className="p-1 text-center">xGΔ</th>
-                        <th className="p-1 text-center border-l border-gray-700">T↑/G</th>
-                        <th className="p-1 text-center">T↓/G</th>
-                        <th className="p-1 text-center border-r border-gray-700">T=/G</th>
-                        <th className="p-1 text-center border-r border-gray-700">Control</th>
-                        <th className="p-1 text-center">EN GF</th>
-                        <th className="p-1 text-center">EN Att</th>
-                        <th className="p-1 text-center">OTML</th>
-                        <th className="p-1 text-center">EN GA</th>
-                        <th className="p-1 text-center">EN Att Ag</th>
+                        <SortTh colKey="SF" className="text-center">SF</SortTh>
+                        <SortTh colKey="SA" className="text-center">SA</SortTh>
+                        <SortTh colKey="SΔ" className="text-center">SΔ</SortTh>
+                        <SortTh colKey="CF" className="text-center">CF</SortTh>
+                        <SortTh colKey="CA" className="text-center">CA</SortTh>
+                        <SortTh colKey="CΔ" className="text-center">CΔ</SortTh>
+                        <SortTh colKey="HDF" className="text-center">HDF</SortTh>
+                        <SortTh colKey="HDA" className="text-center">HDA</SortTh>
+                        <SortTh colKey="HDΔ" className="text-center">HDΔ</SortTh>
+                        <SortTh colKey="SH%" className="text-center border-l border-gray-700">SH%</SortTh>
+                        <SortTh colKey="SV%" className="text-center">SV%</SortTh>
+                        <SortTh colKey="GSAx" className="text-center">GSAx</SortTh>
+                        <SortTh colKey="xGF" className="text-center">xGF</SortTh>
+                        <SortTh colKey="xGA" className="text-center">xGA</SortTh>
+                        <SortTh colKey="xGΔ" className="text-center">xGΔ</SortTh>
+                        <SortTh colKey="T↑" className="text-center border-l border-gray-700">T↑/G</SortTh>
+                        <SortTh colKey="T↓" className="text-center">T↓/G</SortTh>
+                        <SortTh colKey="T=" className="text-center border-r border-gray-700">T=/G</SortTh>
+                        <SortTh colKey="Control" className="text-center border-r border-gray-700">Control</SortTh>
+                        <SortTh colKey="EN GF" className="text-center">EN GF</SortTh>
+                        <SortTh colKey="EN Att" className="text-center">EN Att</SortTh>
+                        <SortTh colKey="OTML" className="text-center">OTML</SortTh>
+                        <SortTh colKey="EN GA" className="text-center">EN GA</SortTh>
+                        <SortTh colKey="EN Att Ag" className="text-center">EN Att Ag</SortTh>
                         {filters.period === 'All' && (
                             <>
-                                <th className="p-1 text-center border-l border-gray-700 text-purple-300" title="No-Lead Wins: won with 0:00 time leading">NLW</th>
-                                <th className="p-1 text-center text-teal-300" title="No-Trail Wins: won with 0:00 time trailing">NTW</th>
-                                <th className="p-1 text-center text-orange-300" title="No-Trail Losses: lost with 0:00 time trailing">NTL</th>
+                                <SortTh colKey="NLW" className="text-center border-l border-gray-700 text-purple-300" title="No-Lead Wins: won with 0:00 time leading">NLW</SortTh>
+                                <SortTh colKey="NTW" className="text-center text-teal-300" title="No-Trail Wins: won with 0:00 time trailing">NTW</SortTh>
+                                <SortTh colKey="NTL" className="text-center text-orange-300" title="No-Trail Losses: lost with 0:00 time trailing">NTL</SortTh>
                             </>
                         )}
                     </tr>
                     {totals && (
                         <tr className="bg-white/10 font-bold border-b border-white/20 text-white">
-                            <td className="p-1 sticky left-0 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
-                            <td className="p-1 sticky left-8 bg-[#1c1c1c] z-30 border-r border-gray-700 text-center min-w-[6rem] w-24">TOTALS</td>
-                            <td className="p-1 sticky left-32 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[2rem] w-8"></td>
-                            <td className="p-1 sticky left-40 bg-[#1c1c1c] z-30 border-r border-gray-800 text-center min-w-[3rem] w-12"></td>
+                            <td className={`p-1 sticky left-0 ${stickyBgTotals} z-30 border-r border-gray-800 text-center min-w-[2rem] w-8`}></td>
+                            <td className={`p-1 sticky left-8 ${stickyBgTotals} z-30 border-r border-gray-700 text-center min-w-[6rem] w-24`}>TOTALS</td>
+                            <td className={`p-1 sticky left-32 ${stickyBgTotals} z-30 border-r border-gray-800 text-center min-w-[3rem] w-12`}></td>
+                            <td className={`p-1 sticky left-44 ${stickyBgTotals} z-30 border-r border-gray-800 text-center min-w-[2rem] w-8`}></td>
+                            <td className={`p-1 sticky left-52 ${stickyBgTotals} z-30 border-r border-gray-800 text-center min-w-[3rem] w-12`}></td>
                             <td colSpan={3} className="p-1 text-center text-gray-400 text-[10px] tracking-wider uppercase">{totals.record}</td>
                             <td className="p-1 text-center text-white">{totals.gf}</td>
                             <td className="p-1 text-center text-white">{totals.ga}</td>
@@ -327,7 +433,7 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                 <tbody className="divide-y divide-gray-800">
                     {games.length === 0 ?
                         <tr><td colSpan={30} className="p-4 text-center text-gray-500">No games played.</td></tr>
-                        : games.map((game, idx) => {
+                        : sortedGames.map((game, idx) => {
                             const isExpanded = expandedGameId === game.game_id;
 
                             const gf = getStat(game, 'gf');
@@ -339,7 +445,6 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             const hdf = getStat(game, 'hdf');
                             const hda = getStat(game, 'hda');
 
-                            // Safe parsing
                             const _gf = typeof gf === 'number' ? gf : 0;
                             const _ga = typeof ga === 'number' ? ga : 0;
                             const _sf = typeof sf === 'number' ? sf : 0;
@@ -354,36 +459,49 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                             const cd = _cf - _ca;
                             const hdd = _hdf - _hda;
 
-                            // xG: use period-specific via getStat
                             const _xgf = (getStat(game, 'xgf') as number) || 0;
                             const _xga = (getStat(game, 'xga') as number) || 0;
                             const xgd = _xgf - _xga;
 
                             const sh_pct = _sf > 0 ? (_gf / _sf * 100).toFixed(1) : "0.0";
-                            // For SV%, exclude Empty Net Goals from the denominator (Shots Against).
-                            // Only apply correction if we are looking at Full Game, because we don't have period-specific EN stats.
                             const adjusted_sa = _sa > 0 ? _sa - (filters.period === 'All' ? game.en_ga : 0) : 0;
                             const sv_pct_val = adjusted_sa > 0 ? ((_sa - _ga) / adjusted_sa).toFixed(3).replace(/^0+/, '') : ".000";
-
-                            // GSAx: xGA - (GA - EN GA). In period mode, no EN correction (no per-period EN data).
                             const gsax = (_xga - (_ga - (filters.period === 'All' ? game.en_ga : 0))).toFixed(2);
+
                             const opponentName = game.opponent.trim();
-                            const logoUrl = teamLogos ? (teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '') : '';
+                            const oppLogoUrl = teamLogos ? (teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '') : '';
+
+                            // TM column: team logo for this game's team
+                            const teamCommonName = (game.raw?.team as string) || '';
+                            const tmLogoUrl = teamLogos ? (teamLogos[teamCommonName] || '') : '';
 
                             return (
-                                <React.Fragment key={game.game_id}>
+                                <React.Fragment key={`${game.game_id}-${teamCommonName}`}>
                                     <tr
                                         onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
                                         className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'} ${isExpanded ? 'bg-white/10' : ''}`}
                                     >
-                                        <td className="p-1 sticky left-0 bg-[#09090b] border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] min-w-[2rem] w-8">{game.game_number}</td>
-                                        <td className="p-1 sticky left-8 bg-[#09090b] border-r border-gray-700 z-20 font-mono text-gray-300 min-w-[6rem] w-24 text-center text-[11px]">{game.date}</td>
-                                        <td className={`p-1 sticky left-32 bg-[#09090b] border-r border-gray-700 z-20 text-center font-bold text-[10px] min-w-[2rem] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
+                                        {/* Sticky: # */}
+                                        <td className={`p-1 sticky left-0 ${stickyBgRow} border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] min-w-[2rem] w-8`}>{game.game_number}</td>
+                                        {/* Sticky: Date */}
+                                        <td className={`p-1 sticky left-8 ${stickyBgRow} border-r border-gray-700 z-20 font-mono text-gray-300 min-w-[6rem] w-24 text-center text-[11px]`}>{game.date}</td>
+                                        {/* Sticky: TM */}
+                                        <td className={`p-1 sticky left-32 ${stickyBgRow} border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center`}>
+                                            <div className="w-5 h-5 relative mx-auto" title={teamCommonName}>
+                                                {tmLogoUrl
+                                                    ? <img src={tmLogoUrl} alt={teamCommonName} className="w-5 h-5 object-contain" />
+                                                    : <span className="text-[9px] text-gray-500">{teamCommonName.substring(0, 3)}</span>
+                                                }
+                                            </div>
+                                        </td>
+                                        {/* Sticky: Loc */}
+                                        <td className={`p-1 sticky left-44 ${stickyBgRow} border-r border-gray-700 z-20 text-center font-bold text-[10px] min-w-[2rem] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
                                             {game.home_away === 'Home' ? 'vs' : '@'}
                                         </td>
-                                        <td className="p-1 sticky left-40 bg-[#09090b] border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center">
+                                        {/* Sticky: Opp */}
+                                        <td className={`p-1 sticky left-52 ${stickyBgRow} border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center`}>
                                             <div className="w-5 h-5 relative mx-auto" title={game.opponent}>
-                                                {logoUrl ? <img src={logoUrl} alt={game.opponent} className="w-5 h-5 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
+                                                {oppLogoUrl ? <img src={oppLogoUrl} alt={game.opponent} className="w-5 h-5 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
                                             </div>
                                         </td>
                                         <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.starting_goalie}>
@@ -449,10 +567,10 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                         <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_att_ag : '-'}</td>
                                         {filters.period === 'All' && (() => {
                                             const res = game.result_code?.toUpperCase() || '';
-                                            const isWin  = ['RW', 'OTW', 'SOW', 'W'].includes(res);
+                                            const isWin = ['RW', 'OTW', 'SOW', 'W'].includes(res);
                                             const isLoss = ['RL', 'L', 'OTL', 'SOL'].includes(res);
-                                            const isNLW = isWin  && (game.time_leading  || 0) === 0;
-                                            const isNTW = isWin  && (game.time_trailing || 0) === 0;
+                                            const isNLW = isWin && (game.time_leading || 0) === 0;
+                                            const isNTW = isWin && (game.time_trailing || 0) === 0;
                                             const isNTL = isLoss && (game.time_trailing || 0) === 0;
                                             return (
                                                 <>
@@ -469,7 +587,7 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                             );
                                         })()}
                                     </tr>
-                                    {isExpanded && (
+                                    {isExpanded && !isAllTeams && (
                                         <tr>
                                             <td colSpan={30} className="p-0 border-b border-gray-800 bg-gray-900/50">
                                                 <div className="p-4 border-l-4" style={{ borderColor: primaryColor }}>
