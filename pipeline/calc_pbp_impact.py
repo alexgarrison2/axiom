@@ -15,17 +15,17 @@ Metrics computed (5v5 only, situation_code == 1551):
     oif             On-ice total Corsi For (all shot attempts)
     oia             On-ice total Corsi Against
 
-High-danger zone definition — 7 spatial bins from our xg_model bin system:
-  D1_W1    (0.163 xG) — directly in front, central (0-10ft deep, 0-5ft wide)
-  D1_W2_In (0.118 xG) — near-net, inner angle (0-10ft deep, 5-15ft wide, closer)
-  D2_W1    (0.143 xG) — low slot center (10-20ft deep, 0-5ft wide)
-  D2_W2    (0.120 xG) — low slot inner (10-20ft deep, 5-15ft wide)
-  D2_W3_In (0.092 xG) — low slot mid-angle (10-20ft deep, 15-25ft wide, closer)
-  D3_W1    (0.128 xG) — high slot center (20-35ft deep, 0-5ft wide)
-  D3_W2    (0.108 xG) — high slot inner (20-35ft deep, 5-15ft wide)
+High-danger zone definition — 6 spatial bins from our xg_model bin system:
+  D1_W1    (0.166 xG) — directly in front, central (0-10ft deep, 0-5ft wide)
+  D1_W2_In (0.119 xG) — near-net, inner angle (0-10ft deep, 5-15ft wide, closer)
+  D2_W1    (0.142 xG) — low slot center (10-20ft deep, 0-5ft wide)
+  D2_W2    (0.119 xG) — low slot inner (10-20ft deep, 5-15ft wide)
+  D2_W3_In (0.090 xG) — low slot mid-angle (10-20ft deep, 15-25ft wide, closer)
+  D3_W1    (0.130 xG) — high slot CENTER ONLY (20-35ft deep, 0-5ft wide)
 
-Note: D3_W1/D3_W2 are included because straight-on slot shots are genuinely
-dangerous (~13% xG). Wide-angle near-net shots (D1_W2_Out, D1_W3) are excluded.
+Note: D3_W1 kept (center-lane high slot, ~13% xG). D3_W2 removed — off-center
+high slot shots (5-15ft wide) are not sufficiently dangerous to qualify as HD.
+Wide-angle near-net shots (D1_W2_Out, D1_W3) are also excluded.
 
 Output:
   pbp_metrics.json — {str(player_id): {ihd_attempts, oihdf, oihda, oixgf,
@@ -61,13 +61,13 @@ SHOT_TYPES = {505, 506, 507}
 # 7 bins from our spatial bin system representing the dangerous scoring areas.
 # See module docstring for xG values and rationale.
 HD_BINS = {
-    "D1_W1",     # directly in front, central      (0.163 xG)
-    "D1_W2_In",  # near-net, inner angle            (0.118 xG)
-    "D2_W1",     # low slot center                  (0.143 xG)
-    "D2_W2",     # low slot inner                   (0.120 xG)
-    "D2_W3_In",  # low slot mid-angle               (0.092 xG)
-    "D3_W1",     # high slot center                 (0.128 xG)
-    "D3_W2",     # high slot inner                  (0.108 xG)
+    "D1_W1",     # directly in front, central      (0.166 xG)
+    "D1_W2_In",  # near-net, inner angle            (0.119 xG)
+    "D2_W1",     # low slot center                  (0.142 xG)
+    "D2_W2",     # low slot inner                   (0.119 xG)
+    "D2_W3_In",  # low slot mid-angle               (0.090 xG)
+    "D3_W1",     # high slot CENTER lane only       (0.130 xG)
+    # D3_W2 removed — off-center high slot (5-15ft wide) not sufficiently HD
 }
 
 # On-ice player columns in enriched PBP
@@ -129,7 +129,7 @@ def assign_bin(x_coord, y_coord) -> str | None:
 
 
 def is_hd(x_coord, y_coord) -> bool:
-    """Return True if shot location falls in one of the 7 high-danger bins."""
+    """Return True if shot location falls in one of the 6 high-danger bins."""
     return assign_bin(x_coord, y_coord) in HD_BINS
 
 
@@ -263,7 +263,7 @@ def run_pbp_impact(pbp_file=PBP_FILE, shots_file=SHOTS_FILE,
 
     hd_count    = shots_5v5["is_hd"].sum()
     total_count = len(shots_5v5)
-    print(f"  5v5 shot attempts: {total_count:,} | HD (7-bin): {hd_count:,} ({100*hd_count/max(total_count,1):.1f}%)")
+    print(f"  5v5 shot attempts: {total_count:,} | HD (6-bin): {hd_count:,} ({100*hd_count/max(total_count,1):.1f}%)")
 
     # ── Accumulate per-player raw counts ────────────────────────────────────
     # Keyed by player_id string (numeric from REST API) or player_name (HTML fallback).
