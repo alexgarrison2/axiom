@@ -400,7 +400,16 @@ def refresh_pipeline():
     print("Generating Prediction History...")
     import generate_history
     generate_history.generate_history()
-    
+
+    # 7b. Run Season Simulator (Monte Carlo playoff projections)
+    # Fetches remaining schedule live from NHL API so projections are never stale.
+    print("Running Season Simulator (playoff projections)...")
+    try:
+        import season_simulator
+        season_simulator.full_simulation_loop()
+    except Exception as e:
+        print(f"[WARN] Season simulator failed: {e}")
+
     # 8. Final Sync of History and others
     print("Final Sync...")
     import shutil

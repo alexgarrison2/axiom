@@ -7,6 +7,7 @@ import urllib.request
 import ssl
 import os
 import sys
+import datetime
 
 # Configuration
 SIMULATIONS = 5000
@@ -372,11 +373,83 @@ def run_playoffs(bracket, ratings, team_map):
     # Let's implement that flow.
     return None
 
+def fetch_remaining_schedule():
+    """
+    Fetches all unplayed regular-season games (today onward) from the NHL API.
+    Walks week-by-week until the season end date, collecting only FUT/PRE games.
+    Falls back to the static remaining_schedule.json filtered to today+ if the
+    live fetch fails.
+    """
+    SEASON_END = '2026-04-18'
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+    today = datetime.date.today().isoformat()
+    all_games = []
+    current_date = today
+    loops = 0
+
+    print(f"Fetching remaining schedule from {today} to {SEASON_END}...")
+    while current_date <= SEASON_END and loops < 30:
+        url = f"https://api-web.nhle.com/v1/schedule/{current_date}"
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
+                data = json.load(resp)
+
+            for week in data.get('gameWeek', []):
+                for game in week.get('games', []):
+                    if game.get('gameType') != 2:
+                        continue  # Regular season only
+                    state = game.get('gameState', 'FUT')
+                    if state in ('OFF', 'FINAL'):
+                        continue  # Already played
+                    all_games.append({
+                        'id': game['id'],
+                        'date': week['date'],
+                        'home': game['homeTeam']['abbrev'],
+                        'away': game['awayTeam']['abbrev'],
+                        'gameState': state,
+                    })
+
+            next_date = data.get('nextStartDate')
+            if not next_date or next_date <= current_date:
+                break
+            current_date = next_date
+        except Exception as e:
+            print(f"  [WARN] Schedule fetch failed for {current_date}: {e}")
+            break
+        loops += 1
+
+    # Deduplicate by game id
+    seen = set()
+    unique = []
+    for g in all_games:
+        if g['id'] not in seen:
+            seen.add(g['id'])
+            unique.append(g)
+
+    if unique:
+        print(f"  Fetched {len(unique)} remaining games ({loops} API calls).")
+        return unique
+
+    # Fallback: filter the static file to today+
+    print("  Live fetch returned 0 games — falling back to static remaining_schedule.json filtered to today+.")
+    static_path = os.path.join(DATA_DIR, 'remaining_schedule.json')
+    if os.path.exists(static_path):
+        all_static = load_json(static_path)
+        filtered = [g for g in all_static if g.get('date', '') >= today]
+        print(f"  Static fallback: {len(filtered)} games on/after {today} (was {len(all_static)} total).")
+        return filtered
+    return []
+
+
 def full_simulation_loop():
     print(f"Starting {SIMULATIONS} simulations...")
-    
+
     # 1. Load Data
-    schedule = load_json(os.path.join(DATA_DIR, 'remaining_schedule.json'))
+    schedule = fetch_remaining_schedule()
     team_ratings = load_json(os.path.join(SCRIPT_DIR, 'team_ratings.json'))
     nhl_teams = load_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
     
