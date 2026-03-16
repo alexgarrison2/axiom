@@ -767,7 +767,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 
             # --- High Danger Tracking ---
             s_bin = assign_bin(x, y)
-            high_danger_bins = ['D2_W3_In', 'D3_W2', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1']
+            high_danger_bins = ['D2_W3_In', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1']
 
             if s_bin in high_danger_bins:
                 opp_team_id = away_id if owner_id == home_id else home_id
@@ -949,7 +949,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
 
                 # Blocks count as shot attempts, so track High Danger on blocks too
                 s_bin = assign_bin(x, y)
-                high_danger_bins = ['D2_W3_In', 'D3_W2', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1']
+                high_danger_bins = ['D2_W3_In', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1']
                 
                 if s_bin in high_danger_bins:
                     opp_team_id = away_id if shooter_id == home_id else home_id

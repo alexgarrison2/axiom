@@ -166,7 +166,7 @@ def refresh_pipeline():
     # Covers both new games (where scraper may not have had API coords yet)
     # and all historical games.
     print("Computing HD and per-period xG/HD from shots CSV...")
-    HIGH_DANGER_BINS = {'D2_W3_In', 'D3_W2', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1'}
+    HIGH_DANGER_BINS = {'D2_W3_In', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1'}  # D3_W2 removed
     try:
         from nhl_scraper_poc import assign_bin
         shots_hd_file = "nhl_season_2025_2026_shots.csv"
