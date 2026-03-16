@@ -1315,11 +1315,39 @@ def predict():
         h_taken = h_ratings.get('penalties_taken_per_60', 3.0)
         a_proj_opps = (a_drawn + h_taken) / 2.0
         
-        # xG-based additive blend: (PP team's xGF/opp + PK team's xGA/opp) / 2
-        # Symmetric treatment of both sides, consistent with how 5v5 offense/defense are blended.
-        # Falls back to ST_VAL_PP (league avg ~0.18) if xG rates not yet in team_ratings.json.
-        h_pp_per_opp = (h_ratings.get('pp_xgf_per_opp', ST_VAL_PP) + a_ratings.get('pk_xga_per_opp', ST_VAL_PP)) / 2
-        a_pp_per_opp = (a_ratings.get('pp_xgf_per_opp', ST_VAL_PP) + h_ratings.get('pk_xga_per_opp', ST_VAL_PP)) / 2
+        # xG per opp, scaled by PP/PK efficiency ratios vs league average.
+        #
+        # The raw pp_xgf_per_opp captures shot quality on the PP but under-represents
+        # true spread — the best PPs (30%) convert at ~2× the rate of worst (15%) yet
+        # xG per opp only varies ~34%.  Multiplying by a dampened PP% efficiency ratio
+        # (anchored at league average = 1.0) restores that meaningful spread while
+        # preserving the league-average center point.
+        #
+        # Dampened factor: 0.5 + 0.5 × ratio  →  ratio=1.0 gives 1.0 (no change);
+        #   ratio=1.5 (best PP) gives 1.25;  ratio=0.75 (worst PP) gives 0.875.
+        # Falls back to ST_VAL_PP (league avg ~0.18) if xG rates not in team_ratings.json.
+        h_pp_xgf_per_opp = h_ratings.get('pp_xgf_per_opp', ST_VAL_PP)
+        a_pp_xgf_per_opp = a_ratings.get('pp_xgf_per_opp', ST_VAL_PP)
+
+        # PP efficiency ratio: team's actual PP% vs league average
+        _safe_avg_pp = avg_pp_pct if avg_pp_pct > 0 else 0.20
+        h_pp_pct_ratio = h_st_ranks.get('pp_pct', _safe_avg_pp) / _safe_avg_pp
+        a_pp_pct_ratio = a_st_ranks.get('pp_pct', _safe_avg_pp) / _safe_avg_pp
+
+        # PK efficiency ratio: (1 − pk_pct) is the "goals allowed rate"; higher = worse PK
+        _safe_avg_pk_allow = (1.0 - avg_pk_pct) if avg_pk_pct < 1.0 else 0.001
+        a_pk_pct_ratio = (1.0 - a_st_ranks.get('pk_pct', avg_pk_pct)) / _safe_avg_pk_allow
+        h_pk_pct_ratio = (1.0 - h_st_ranks.get('pk_pct', avg_pk_pct)) / _safe_avg_pk_allow
+
+        # Dampened factors: anchored at 1.0 for league-average teams
+        h_pp_factor = 0.5 + 0.5 * h_pp_pct_ratio   # best PP ~1.20×, worst ~0.87×
+        a_pp_factor = 0.5 + 0.5 * a_pp_pct_ratio
+        a_pk_factor = 0.5 + 0.5 * a_pk_pct_ratio   # bad PK >1.0 boosts opponent PP xG
+        h_pk_factor = 0.5 + 0.5 * h_pk_pct_ratio
+
+        # xG per opp = base xG rate × own PP quality × opponent PK quality
+        h_pp_per_opp = h_pp_xgf_per_opp * h_pp_factor * a_pk_factor
+        a_pp_per_opp = a_pp_xgf_per_opp * a_pp_factor * h_pk_factor
 
         # Home PP vs Away PK
         h_pp_xg = h_proj_opps * h_pp_per_opp
