@@ -576,12 +576,12 @@
     "BOS": {
         "f1": [
             {
-                "name": "Morgan Geekie",
-                "number": 39,
+                "name": "Marat Khusnutdinov",
+                "number": 92,
                 "pos": "lw",
-                "id": 28001,
-                "ppUnit": 1,
-                "movement": null
+                "id": 31738,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Fraser Minten",
@@ -628,12 +628,12 @@
         ],
         "f3": [
             {
-                "name": "Marat Khusnutdinov",
-                "number": 92,
+                "name": "Alexander Steeves",
+                "number": 21,
                 "pos": "lw",
-                "id": 31738,
-                "ppUnit": 2,
-                "movement": null
+                "id": 26446,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Elias Lindholm",
@@ -644,22 +644,22 @@
                 "movement": null
             },
             {
-                "name": "Tanner Jeannot",
-                "number": 84,
+                "name": "Morgan Geekie",
+                "number": 39,
                 "pos": "rw",
-                "id": 4695,
-                "ppUnit": null,
-                "movement": null
+                "id": 28001,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f4": [
             {
-                "name": "Alexander Steeves",
-                "number": 21,
+                "name": "Tanner Jeannot",
+                "number": 84,
                 "pos": "lw",
-                "id": 26446,
+                "id": 4695,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": "down"
             },
             {
                 "name": "Sean Kuraly",
@@ -729,7 +729,7 @@
                 "pos": "rd",
                 "id": 2798,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
@@ -2633,7 +2633,7 @@
                 "pos": "lw",
                 "id": 4787,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sebastian Aho",
@@ -2815,7 +2815,7 @@
                 "pos": "ir4",
                 "id": 4787,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2934,48 +2934,48 @@
                 "movement": null
             },
             {
-                "name": "Louis Crevier",
-                "number": 46,
+                "name": "Artyom Levshunov",
+                "number": 55,
                 "pos": "rd",
-                "id": 29897,
-                "ppUnit": null,
-                "movement": null
+                "id": 38138,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "d2": [
             {
-                "name": "Ethan Del Mastro",
-                "number": 38,
+                "name": "Wyatt Kaiser",
+                "number": null,
                 "pos": "ld",
-                "id": 30841,
+                "id": 37913,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sam Rinzel",
                 "number": 6,
                 "pos": "rd",
                 "id": 34789,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
         "d3": [
             {
-                "name": "Matt Grzelcyk",
-                "number": 24,
+                "name": "Ethan Del Mastro",
+                "number": 38,
                 "pos": "ld",
-                "id": 2723,
+                "id": 30841,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Artyom Levshunov",
-                "number": 55,
+                "name": "Louis Crevier",
+                "number": 46,
                 "pos": "rd",
-                "id": 38138,
-                "ppUnit": 2,
-                "movement": null
+                "id": 29897,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "ir": [
