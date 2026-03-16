@@ -175,6 +175,7 @@ interface TeamOdds {
     recommendation?: string;
     isRecommended?: boolean; // true only for the side the rec applies to
     logoUrl?: string;        // carried for tooltip rendering
+    tricode?: string;        // carried for local SVG logo path
 }
 
 interface TeamRating {
