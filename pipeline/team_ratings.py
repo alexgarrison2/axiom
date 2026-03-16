@@ -232,14 +232,23 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
     if save_files:
         team_ratings_path = os.path.join(PUBLIC_DATA_DIR, 'team_ratings.json')
         goalie_ratings_path = os.path.join(PUBLIC_DATA_DIR, 'goalie_ratings.json')
-        
+        # Also save to pipeline dir so predict_games.py reads current data
+        pipeline_tr_path = os.path.join(SCRIPT_DIR, 'team_ratings.json')
+        pipeline_gr_path = os.path.join(SCRIPT_DIR, 'goalie_ratings.json')
+
         with open(team_ratings_path, 'w') as f:
             json.dump(team_ratings, f, indent=4)
         print(f"Saved team_ratings.json to {team_ratings_path}")
-            
+        with open(pipeline_tr_path, 'w') as f:
+            json.dump(team_ratings, f, indent=4)
+        print(f"Saved team_ratings.json to {pipeline_tr_path}")
+
         with open(goalie_ratings_path, 'w') as f:
             json.dump(goalie_ratings, f, indent=4)
         print(f"Saved goalie_ratings.json to {goalie_ratings_path}")
+        with open(pipeline_gr_path, 'w') as f:
+            json.dump(goalie_ratings, f, indent=4)
+        print(f"Saved goalie_ratings.json to {pipeline_gr_path}")
     
     return team_ratings, goalie_ratings, league_xg_for, league_xg_5v5
 
