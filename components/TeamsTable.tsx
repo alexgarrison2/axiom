@@ -1840,7 +1840,7 @@ const TeamsTable = () => {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         {/* Desktop Group Headers */}
-                        <tr className="hidden md:table-row bg-gray-950/95 border-b border-gray-800 sticky top-0 z-50 backdrop-blur-sm shadow-sm">
+                        <tr className="hidden md:table-row bg-gray-950 border-b border-gray-800 sticky top-0 z-50 shadow-[0_2px_0_0_rgb(17,24,39)]">
                             <th className="sticky left-0 bg-gray-950 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)] border-r border-gray-800"></th>
                             {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
                                 <th
@@ -1855,8 +1855,8 @@ const TeamsTable = () => {
                             ))}
                         </tr>
 
-                        <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-[33px] z-40 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
-                            <th className="px-2 py-1.5 font-semibold sticky left-0 bg-gray-900 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">Team</th>
+                        <tr className="border-b border-gray-800 bg-gray-900 sticky top-[25px] z-40 text-xs uppercase tracking-wider text-gray-400">
+                            <th className="px-2 py-1.5 font-semibold sticky left-0 bg-gray-900 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.8)]">Team</th>
 
                             {valuesMode === 'Ratings' ? (
                                 <>
