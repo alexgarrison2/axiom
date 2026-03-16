@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useId } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GamePrediction, LocationSplitRecord } from '@/utils/data';
 import gsap from 'gsap';
@@ -387,95 +387,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         } catch { return null; }
     };
 
-    // --- Sparkline Component ---
-    const Sparkline = ({
-        data,
-        globalMin,
-        globalMax,
-        isHome
-    }: {
-        data?: number[];
-        globalMin: number;
-        globalMax: number;
-        isHome: boolean;
-    }) => {
-        const uid = useId().replace(/:/g, '');
-        if (!data || data.length < 2) return null;
-        const W = 120, H = 28;
-        const pad = 2;
-        // Cap scale at ±5 so outlier games (|xGD| > 5, ~11% of games) don't
-        // compress normal ±1-3 values into an unreadable line near zero.
-        // p90 of xGD across all teams is ≈ ±2.75, so ±5 keeps 95% in view.
-        const rawHalf = Math.max(Math.abs(globalMin), Math.abs(globalMax));
-        const halfRange = Math.min(rawHalf, 5);
-        const range = halfRange * 2;
-        if (range === 0) return null;
-        const toY = (v: number) => H / 2 - (v / range) * (H - pad * 2);
-        const zeroY = toY(0);
-        // Clamp y so outlier points pin to the chart edge rather than overflowing
-        const clampY = (y: number) => Math.max(0, Math.min(H, y));
-        const pts = data.map((v, i) => {
-            const x = pad + (i / (data.length - 1)) * (W - pad * 2);
-            const y = clampY(toY(v));
-            return `${x},${y}`;
-        });
-        const lastVal = data[data.length - 1];
-        const lineColor = lastVal >= 0 ? '#10b981' : '#ef4444'; // green or red
-        const polyline = pts.join(' ');
-        // Shared fill polygon (clipped separately for above/below zero)
-        const fillPts = [
-            `${pad},${zeroY}`,
-            ...pts,
-            `${W - pad},${zeroY}`
-        ].join(' ');
-        const sparklineId = `${isHome ? 'h' : 'a'}-${uid}`;
-
-        return (
-            <svg width={W} height={H} className="overflow-visible">
-                <defs>
-                    {/* Clip above zero → green fill */}
-                    <clipPath id={`clip-pos-${sparklineId}`}>
-                        <rect x={pad} y={0} width={W - pad * 2} height={zeroY} />
-                    </clipPath>
-                    {/* Clip below zero → red fill */}
-                    <clipPath id={`clip-neg-${sparklineId}`}>
-                        <rect x={pad} y={zeroY} width={W - pad * 2} height={H - zeroY + pad} />
-                    </clipPath>
-                </defs>
-                {/* Green fill — area above zero */}
-                <polygon points={fillPts} fill="rgba(16,185,129,0.18)" clipPath={`url(#clip-pos-${sparklineId})`} />
-                {/* Red fill — area below zero */}
-                <polygon points={fillPts} fill="rgba(239,68,68,0.18)" clipPath={`url(#clip-neg-${sparklineId})`} />
-                {/* Zero line — clearly marks xGD = 0 */}
-                <line
-                    x1={pad} y1={zeroY} x2={W - pad} y2={zeroY}
-                    stroke="#ffffff" strokeWidth="0.75" strokeOpacity="0.4" strokeDasharray="2,3"
-                />
-                {/* "0" label at the left edge of the zero line */}
-                <text
-                    x={pad} y={zeroY - 2}
-                    fill="#ffffff" fillOpacity="0.35"
-                    fontSize="4.5" fontFamily="monospace" textAnchor="start"
-                >0</text>
-                {/* Line */}
-                <polyline
-                    points={polyline}
-                    fill="none"
-                    stroke={lineColor}
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                />
-                {/* End dot */}
-                <circle
-                    cx={pts[pts.length - 1].split(',')[0]}
-                    cy={pts[pts.length - 1].split(',')[1]}
-                    r="2"
-                    fill={lineColor}
-                />
-            </svg>
-        );
-    };
 
     const Legend = ({ className = "" }: { className?: string }) => (
         <div className={`flex flex-wrap items-center justify-center gap-4 text-[9px] font-mono text-neutral-500 ${className}`}>
@@ -572,9 +483,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         opponentTriCode,
         odds,
         isSocial,
-        sparkline,
-        sparkGlobalMin,
-        sparkGlobalMax,
         h2hRecord,
         isB2b,
         is3in4,
@@ -604,9 +512,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         isSocial?: boolean;
         avgSpeed?: number;
         rrRate?: number;
-        sparkline?: number[];
-        sparkGlobalMin: number;
-        sparkGlobalMax: number;
         h2hRecord?: string;
         isB2b?: boolean;
         is3in4?: boolean;
@@ -669,18 +574,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             <ExplanationPopover items={prediction.away_xg_explained} align="left" placement="top" />
                         )}
                     </div>
-                    {/* xG Sparkline */}
-                    {!isSocial && sparkline && sparkline.length >= 2 && (
-                        <div className={`mt-1 ${isHome ? 'md:self-start' : 'md:self-end'}`}>
-                            <Sparkline
-                                data={sparkline}
-                                globalMin={sparkGlobalMin}
-                                globalMax={sparkGlobalMax}
-                                isHome={isHome}
-                            />
-                            <div className="text-[8px] text-neutral-600 font-mono mt-0.5 text-center">5v5 xGD (L15)</div>
-                        </div>
-                    )}
                 </div>
 
                 {/* Secondary Badges Row (Aligned immediately under xG) */}
@@ -757,14 +650,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     };
 
     const isHighEv = ((homeEv || 0) > 0.05) || ((awayEv || 0) > 0.05);
-
-    // --- Compute global sparkline y-axis scale ---
-    const allSparkValues = [
-        ...(prediction.home_xg_sparkline || []),
-        ...(prediction.away_xg_sparkline || [])
-    ];
-    const sparkGlobalMin = allSparkValues.length > 0 ? Math.min(...allSparkValues) : -2;
-    const sparkGlobalMax = allSparkValues.length > 0 ? Math.max(...allSparkValues) : 2;
 
     if (isUltraCompact) {
         return (
@@ -984,9 +869,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             isSocial={isSocial}
                             avgSpeed={away_avg_speed}
                             rrRate={away_rr_rate}
-                            sparkline={prediction.away_xg_sparkline}
-                            sparkGlobalMin={sparkGlobalMin}
-                            sparkGlobalMax={sparkGlobalMax}
                             h2hRecord={prediction.away_h2h_record}
                             isB2b={prediction.away_is_b2b}
                             is3in4={prediction.away_is_3in4}
@@ -1086,9 +968,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             isSocial={isSocial}
                             avgSpeed={home_avg_speed}
                             rrRate={home_rr_rate}
-                            sparkline={prediction.home_xg_sparkline}
-                            sparkGlobalMin={sparkGlobalMin}
-                            sparkGlobalMax={sparkGlobalMax}
                             h2hRecord={prediction.home_h2h_record}
                             isB2b={prediction.home_is_b2b}
                             is3in4={prediction.home_is_3in4}
