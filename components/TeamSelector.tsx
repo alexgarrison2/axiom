@@ -104,8 +104,8 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
                                 <motion.img
                                     layoutId={`team-logo-${currentTeam.TeamTricode}`}
                                     src={currentTeam.TeamTricode === 'ALL'
-                                        ? 'https://assets.nhle.com/logos/nhl/svg/NHL_dark.svg'
-                                        : currentTeam.TeamLogoURL}
+                                        ? '/logos/NHL.svg'
+                                        : `/logos/${currentTeam.TeamTricode}.svg`}
                                     alt={currentTeam.CommonName}
                                     className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300 relative z-10"
                                 />
@@ -175,7 +175,7 @@ export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) 
                                 >
                                     <motion.img
                                         layoutId="team-logo-ALL"
-                                        src="https://assets.nhle.com/logos/nhl/svg/NHL_dark.svg"
+                                        src="/logos/NHL.svg"
                                         alt="All Teams"
                                         className="w-6 h-6 object-contain opacity-70 group-hover/item:opacity-100 transition-opacity"
                                     />
