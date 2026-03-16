@@ -1961,10 +1961,10 @@ const TeamsTable = () => {
                                                 {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
 
                                                 <Link href={`/teams/${meta.tricode || ''}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                                                    {meta.logoUrl && (
+                                                    {meta.tricode && (
                                                         <div className="w-10 h-10 md:w-9 md:h-9 relative shrink-0">
                                                             <Image
-                                                                src={meta.logoUrl}
+                                                                src={`/logos/${meta.tricode}.svg`}
                                                                 alt={team.team}
                                                                 fill
                                                                 className="object-contain"
@@ -2007,7 +2007,7 @@ const TeamsTable = () => {
                                                                 setOddsTooltip({
                                                                     x: rect.left,
                                                                     y: rect.bottom + 8,
-                                                                    data: { ...oddsData, logoUrl: meta.logoUrl },
+                                                                    data: { ...oddsData, logoUrl: meta.logoUrl, tricode: meta.tricode },
                                                                 });
                                                             }}
                                                             onMouseLeave={() => setOddsTooltip(null)}
@@ -2113,13 +2113,13 @@ const TeamsTable = () => {
                         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.8)',
                     }}>
                         {/* Team logo */}
-                        {data.logoUrl && (
+                        {data.tricode && (
                             <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
-                                <Image src={data.logoUrl} alt="" fill className="object-contain" />
+                                <Image src={`/logos/${data.tricode}.svg`} alt="" fill className="object-contain" />
                             </div>
                         )}
                         {/* Divider */}
-                        {data.logoUrl && <div style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.08)' }} />}
+                        {data.tricode && <div style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.08)' }} />}
                         {/* xG prediction */}
                         {data.xg != null && (
                             <>
