@@ -53,7 +53,7 @@ function fmtToi(min: number | undefined): string {
 
 // ── NHL logo URL helper ───────────────────────────────────────────────────────
 function logoUrl(tri: string): string {
-    return `https://assets.nhle.com/logos/nhl/svg/${tri}_light.svg`;
+    return `/logos/${tri}.svg`;
 }
 
 // ── Column definition ─────────────────────────────────────────────────────────

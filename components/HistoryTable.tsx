@@ -55,13 +55,13 @@ const GameRow: React.FC<{
                     <div className="flex items-center gap-2 w-24 justify-end opacity-80">
                         <span className="text-sm font-bold">{entry.awayTeam.triCode}</span>
                         <div className="relative w-9 h-9">
-                            <Image src={entry.awayTeam.logoUrl} alt={entry.awayTeam.triCode} fill className="object-contain" />
+                            <Image src={`/logos/${entry.awayTeam.triCode}.svg`} alt={entry.awayTeam.triCode} fill className="object-contain" />
                         </div>
                     </div>
                     <span className="text-neutral-600 text-xs">@</span>
                     <div className="flex items-center gap-2 w-24 opacity-80">
                         <div className="relative w-9 h-9">
-                            <Image src={entry.homeTeam.logoUrl} alt={entry.homeTeam.triCode} fill className="object-contain" />
+                            <Image src={`/logos/${entry.homeTeam.triCode}.svg`} alt={entry.homeTeam.triCode} fill className="object-contain" />
                         </div>
                         <span className="text-sm font-bold">{entry.homeTeam.triCode}</span>
                     </div>
@@ -71,14 +71,14 @@ const GameRow: React.FC<{
                     <div className="flex items-center gap-2 h-5">
                         <span className="text-[10px] font-bold w-6">{entry.awayTeam.triCode}</span>
                         <div className="relative w-5 h-5">
-                            <Image src={entry.awayTeam.logoUrl} alt={entry.awayTeam.triCode} fill className="object-contain" />
+                            <Image src={`/logos/${entry.awayTeam.triCode}.svg`} alt={entry.awayTeam.triCode} fill className="object-contain" />
                         </div>
                     </div>
                     <div className="h-[10px] w-full invisible" />
                     <div className="flex items-center gap-2 h-5">
                         <span className="text-[10px] font-bold w-6">{entry.homeTeam.triCode}</span>
                         <div className="relative w-5 h-5">
-                            <Image src={entry.homeTeam.logoUrl} alt={entry.homeTeam.triCode} fill className="object-contain" />
+                            <Image src={`/logos/${entry.homeTeam.triCode}.svg`} alt={entry.homeTeam.triCode} fill className="object-contain" />
                         </div>
                     </div>
                 </div>
@@ -191,11 +191,11 @@ const ByDateView: React.FC<{ entries: HistoryEntry[] }> = ({ entries }) => {
                                                 {dayEntries.slice(0, 4).map((entry, idx) => (
                                                     <div key={idx} className="flex items-center gap-0.5 opacity-60">
                                                         <div className="relative w-4 h-4 md:w-5 md:h-5">
-                                                            <Image src={entry.awayTeam.logoUrl} alt={entry.awayTeam.triCode} fill className="object-contain" />
+                                                            <Image src={`/logos/${entry.awayTeam.triCode}.svg`} alt={entry.awayTeam.triCode} fill className="object-contain" />
                                                         </div>
                                                         <span className="text-neutral-600 text-[7px] md:text-[8px]">@</span>
                                                         <div className="relative w-4 h-4 md:w-5 md:h-5">
-                                                            <Image src={entry.homeTeam.logoUrl} alt={entry.homeTeam.triCode} fill className="object-contain" />
+                                                            <Image src={`/logos/${entry.homeTeam.triCode}.svg`} alt={entry.homeTeam.triCode} fill className="object-contain" />
                                                         </div>
                                                         {idx < Math.min(dayEntries.length, 4) - 1 && (
                                                             <span className="text-neutral-700 text-[8px] ml-0.5 hidden md:inline">·</span>
@@ -322,7 +322,7 @@ const ByTeamView: React.FC<{ entries: HistoryEntry[]; pickFilter?: 'win' | 'loss
                                         >▶</motion.div>
 
                                         <div className="relative w-7 h-7 md:w-9 md:h-9 flex-shrink-0">
-                                            <Image src={logoUrl} alt={triCode} fill className="object-contain" />
+                                            <Image src={`/logos/${triCode}.svg`} alt={triCode} fill className="object-contain" />
                                         </div>
 
                                         <span className="text-xs md:text-sm font-black text-white tracking-wide">

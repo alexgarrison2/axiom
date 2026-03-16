@@ -65,7 +65,7 @@ export default function TeamDetailPage() {
 
                 const logos: Record<string, string> = {};
                 mapped.forEach((t) => {
-                    if (t.CommonName) logos[t.CommonName.trim()] = t.TeamLogoURL;
+                    if (t.CommonName && t.TeamTricode) logos[t.CommonName.trim()] = `/logos/${t.TeamTricode}.svg`;
                 });
                 setTeamLogos(logos);
             } catch (e) { console.error(e); }
