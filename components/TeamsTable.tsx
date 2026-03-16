@@ -1856,7 +1856,7 @@ const TeamsTable = () => {
                             ))}
                         </tr>
 
-                        <tr className="border-b border-gray-800 bg-gray-900 sticky top-[23px] z-40 text-xs uppercase tracking-wider text-gray-400">
+                        <tr className="border-b border-gray-800 bg-gray-900 sticky top-0 md:top-[23px] z-40 text-xs uppercase tracking-wider text-gray-400">
                             <th className="px-2 py-1.5 font-semibold sticky left-0 bg-gray-900 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.8)]">Team</th>
 
                             {valuesMode === 'Ratings' ? (
