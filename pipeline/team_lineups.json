@@ -41,7 +41,7 @@
                 "pos": "c",
                 "id": 33612,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Lucas Raymond",
@@ -67,7 +67,7 @@
                 "pos": "c",
                 "id": 36364,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "John Leonard",
@@ -279,7 +279,7 @@
                 "pos": "lw",
                 "id": 3905,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Connor Zary",
@@ -295,7 +295,7 @@
                 "pos": "rw",
                 "id": 28414,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -313,7 +313,7 @@
                 "pos": "rd",
                 "id": 31179,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d2": [
@@ -323,7 +323,7 @@
                 "pos": "ld",
                 "id": 1792,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Hunter Brzustewicz",
@@ -331,7 +331,7 @@
                 "pos": "rd",
                 "id": 33252,
                 "ppUnit": 1,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d3": [
@@ -383,7 +383,7 @@
                 "pos": "ir4",
                 "id": 30745,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -654,12 +654,12 @@
         ],
         "f4": [
             {
-                "name": "Michael Eyssimont",
-                "number": 81,
+                "name": "Alexander Steeves",
+                "number": 21,
                 "pos": "lw",
-                "id": 4693,
+                "id": 26446,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Sean Kuraly",
@@ -724,12 +724,12 @@
                 "movement": null
             },
             {
-                "name": "Andrew Peeke",
-                "number": 52,
+                "name": "Henri Jokiharju",
+                "number": 20,
                 "pos": "rd",
-                "id": 27242,
+                "id": 2798,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ]
     },
@@ -1191,7 +1191,7 @@
                 "pos": "rw",
                 "id": 2725,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -2808,6 +2808,14 @@
                 "id": 2398,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Andrei Svechnikov",
+                "number": 37,
+                "pos": "ir4",
+                "id": 4787,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ]
     },
