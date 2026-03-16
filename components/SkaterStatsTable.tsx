@@ -237,49 +237,49 @@ export default function SkaterStatsTable() {
                             return (
                                 <tr key={player.id} className={`${rowBg} border-b border-white/5 hover:bg-white/5 transition-colors`}>
                                     {/* Rank */}
-                                    <td className={`py-1.5 px-3 text-[9px] text-neutral-600 font-mono sticky left-0 z-10 ${rowBg || 'bg-[#050505]'}`}>
+                                    <td className={`py-0 px-3 text-[9px] text-neutral-600 font-mono sticky left-0 z-10 ${rowBg || 'bg-[#050505]'}`}>
                                         {idx + 1}
                                     </td>
                                     {/* Player name + team logo */}
-                                    <td className={`py-1.5 px-2 sticky left-6 z-10 ${rowBg || 'bg-[#050505]'}`}>
+                                    <td className={`py-0 px-2 sticky left-6 z-10 ${rowBg || 'bg-[#050505]'}`}>
                                         <div className="flex items-center gap-2 min-w-0">
                                             <img
                                                 src={logoUrl(player.team)}
                                                 alt={player.team}
-                                                className="w-5 h-5 object-contain shrink-0 opacity-80"
+                                                className="w-8 h-8 object-contain shrink-0 opacity-80"
                                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                             />
                                             <span className="font-semibold text-neutral-200 truncate text-[11px]">{player.name}</span>
                                         </div>
                                     </td>
                                     {/* Position */}
-                                    <td className="py-1.5 px-2 text-center">
+                                    <td className="py-0 px-2 text-center">
                                         <span className="text-[9px] font-mono text-neutral-500">{player.position}</span>
                                     </td>
                                     {/* GP */}
-                                    <td className="py-1.5 px-2 text-center font-mono text-[11px] text-neutral-400">{player.games_played}</td>
+                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-400">{player.games_played}</td>
                                     {/* G */}
-                                    <td className="py-1.5 px-2 text-center font-mono text-[11px] text-neutral-300">{player.goals ?? '—'}</td>
+                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-300">{player.goals ?? '—'}</td>
                                     {/* A */}
-                                    <td className="py-1.5 px-2 text-center font-mono text-[11px] text-neutral-300">{player.assists ?? '—'}</td>
+                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-300">{player.assists ?? '—'}</td>
                                     {/* PTS */}
-                                    <td className="py-1.5 px-2 text-center font-mono text-[11px] font-bold text-white">{player.points ?? '—'}</td>
+                                    <td className="py-0 px-2 text-center font-mono text-[11px] font-bold text-white">{player.points ?? '—'}</td>
                                     {/* SOG/G */}
-                                    <td className="py-1.5 px-2 text-center font-mono text-[11px] text-neutral-400">{player.sog_per_game?.toFixed(1) ?? '—'}</td>
+                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-400">{player.sog_per_game?.toFixed(1) ?? '—'}</td>
                                     {/* TOI/GP */}
-                                    <td className="py-1.5 px-2 text-center font-mono text-[11px] text-neutral-400">{fmtToi(player.toi_per_game_all)}</td>
+                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-400">{fmtToi(player.toi_per_game_all)}</td>
                                     {/* Impact components */}
                                     {(['impact_ev_off', 'impact_ev_def', 'impact_pp', 'impact_pk'] as SortKey[]).map(k => {
                                         const v = player[k] as number;
                                         return (
-                                            <td key={k} className="py-1.5 px-2 text-center font-mono text-[11px]"
+                                            <td key={k} className="py-0 px-2 text-center font-mono text-[11px]"
                                                 style={{ color: impactColor(v) }}>
                                                 {fmtZ(v)}
                                             </td>
                                         );
                                     })}
                                     {/* Total IMPACT */}
-                                    <td className="py-1.5 px-2 text-center border-l border-cyan-400/20">
+                                    <td className="py-0 px-2 text-center border-l border-cyan-400/20">
                                         <span
                                             className="font-black text-[12px] font-mono tabular-nums"
                                             style={{ color: impactColor(imp) }}

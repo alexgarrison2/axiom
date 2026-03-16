@@ -1840,7 +1840,7 @@ const TeamsTable = () => {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         {/* Desktop Group Headers */}
-                        <tr className="hidden md:table-row bg-gray-950 border-b border-gray-800 sticky top-0 z-50 shadow-[0_2px_0_0_rgb(17,24,39)]">
+                        <tr className="hidden md:table-row bg-gray-950 border-b border-gray-800 sticky top-0 z-50 shadow-[0_6px_0_0_#030712]">
                             <th className="sticky left-0 bg-gray-950 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)] border-r border-gray-800"></th>
                             {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
                                 <th
@@ -1855,7 +1855,7 @@ const TeamsTable = () => {
                             ))}
                         </tr>
 
-                        <tr className="border-b border-gray-800 bg-gray-900 sticky top-[25px] z-40 text-xs uppercase tracking-wider text-gray-400">
+                        <tr className="border-b border-gray-800 bg-gray-900 sticky top-[23px] z-40 text-xs uppercase tracking-wider text-gray-400">
                             <th className="px-2 py-1.5 font-semibold sticky left-0 bg-gray-900 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.8)]">Team</th>
 
                             {valuesMode === 'Ratings' ? (
@@ -1956,13 +1956,13 @@ const TeamsTable = () => {
                             return (
                                 <React.Fragment key={`${team.team}-${idx}`}>
                                     <tr className={rowStyle}>
-                                        <td className="px-2 py-0.5 font-medium text-white sticky left-0 bg-gray-900 z-30 shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">
+                                        <td className="px-2 py-0 font-medium text-white sticky left-0 bg-gray-900 z-30 shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">
                                             <div className="flex items-center justify-center md:justify-start gap-3">
                                                 {viewMode === 'All' && <span className="text-gray-600 text-xs w-4 text-center md:text-left">{idx + 1}</span>}
 
                                                 <Link href={`/teams/${meta.tricode || ''}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                                                     {meta.logoUrl && (
-                                                        <div className="w-10 h-10 md:w-8 md:h-8 relative shrink-0">
+                                                        <div className="w-10 h-10 md:w-9 md:h-9 relative shrink-0">
                                                             <Image
                                                                 src={meta.logoUrl}
                                                                 alt={team.team}

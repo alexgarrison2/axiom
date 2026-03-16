@@ -486,10 +486,10 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                         {/* Sticky: Date */}
                                         <td className={`p-1 sticky left-8 ${stickyBgRow} border-r border-gray-700 z-20 font-mono text-gray-300 min-w-[6rem] w-24 text-center text-[11px]`}>{game.date}</td>
                                         {/* Sticky: TM */}
-                                        <td className={`p-1 sticky left-32 ${stickyBgRow} border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center`}>
-                                            <div className="w-5 h-5 relative mx-auto" title={teamCommonName}>
+                                        <td className={`px-1 py-0 sticky left-32 ${stickyBgRow} border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center`}>
+                                            <div className="w-6 h-6 relative mx-auto" title={teamCommonName}>
                                                 {tmLogoUrl
-                                                    ? <img src={tmLogoUrl} alt={teamCommonName} className="w-5 h-5 object-contain" />
+                                                    ? <img src={tmLogoUrl} alt={teamCommonName} className="w-6 h-6 object-contain" />
                                                     : <span className="text-[9px] text-gray-500">{teamCommonName.substring(0, 3)}</span>
                                                 }
                                             </div>
@@ -499,9 +499,9 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                             {game.home_away === 'Home' ? 'vs' : '@'}
                                         </td>
                                         {/* Sticky: Opp */}
-                                        <td className={`p-1 sticky left-52 ${stickyBgRow} border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center`}>
-                                            <div className="w-5 h-5 relative mx-auto" title={game.opponent}>
-                                                {oppLogoUrl ? <img src={oppLogoUrl} alt={game.opponent} className="w-5 h-5 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
+                                        <td className={`px-1 py-0 sticky left-52 ${stickyBgRow} border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center`}>
+                                            <div className="w-6 h-6 relative mx-auto" title={game.opponent}>
+                                                {oppLogoUrl ? <img src={oppLogoUrl} alt={game.opponent} className="w-6 h-6 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
                                             </div>
                                         </td>
                                         <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.starting_goalie}>

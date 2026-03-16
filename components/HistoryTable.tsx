@@ -49,18 +49,18 @@ const GameRow: React.FC<{
             </td>
 
             {/* Matchup */}
-            <td className="p-1.5 md:p-2.5">
+            <td className="p-1.5 md:p-1.5">
                 {/* Desktop */}
                 <div className="hidden md:flex items-center gap-4">
                     <div className="flex items-center gap-2 w-24 justify-end opacity-80">
                         <span className="text-sm font-bold">{entry.awayTeam.triCode}</span>
-                        <div className="relative w-8 h-8">
+                        <div className="relative w-9 h-9">
                             <Image src={entry.awayTeam.logoUrl} alt={entry.awayTeam.triCode} fill className="object-contain" />
                         </div>
                     </div>
                     <span className="text-neutral-600 text-xs">@</span>
                     <div className="flex items-center gap-2 w-24 opacity-80">
-                        <div className="relative w-8 h-8">
+                        <div className="relative w-9 h-9">
                             <Image src={entry.homeTeam.logoUrl} alt={entry.homeTeam.triCode} fill className="object-contain" />
                         </div>
                         <span className="text-sm font-bold">{entry.homeTeam.triCode}</span>
