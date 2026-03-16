@@ -1701,11 +1701,11 @@ const TeamsTable = () => {
         <>
         <div className="w-full">
             {/* View Mode & Filters */}
-            <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-col gap-2 mb-3">
 
                 {/* Top Row: View Type + With */}
-                <div className="flex flex-row gap-6 items-end flex-wrap">
-                    <div className="flex flex-col gap-2">
+                <div className="flex flex-row gap-3 items-end flex-wrap">
+                    <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Type</label>
                         <ButtonGroup
                             options={['All', 'PlayingToday', 'PlayingTomorrow']}
@@ -1714,7 +1714,7 @@ const TeamsTable = () => {
                             onChange={(v) => setViewBase(v as ViewBase)}
                         />
                     </div>
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">With</label>
                         <div className="flex bg-gray-800 rounded-lg p-1 gap-1">
                             {(['Location', 'Starter', 'DayOfWeek'] as WithOption[]).map(opt => {
@@ -1746,10 +1746,10 @@ const TeamsTable = () => {
                 </div>
 
                 {/* Bottom Row: Filters (Only manual filters) */}
-                <div className="flex flex-row gap-4 items-center flex-wrap">
+                <div className="flex flex-row gap-3 items-center flex-wrap">
                     {/* Location Filter: Only show if NOT in PlayingTodayLocation/Starter(Location) mode AND not in Ratings mode */}
                     {!viewMode.includes('Location') && valuesMode !== 'Ratings' && (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</label>
                             <ButtonGroup
                                 options={['All', 'Home', 'Away']}
@@ -1761,7 +1761,7 @@ const TeamsTable = () => {
 
                     {/* Recent Filter: hidden in Ratings mode (lineup data is not game-filtered) */}
                     {valuesMode !== 'Ratings' && (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent</label>
                             <ButtonGroup
                                 options={['All', 5, 10, 20]}
@@ -1773,7 +1773,7 @@ const TeamsTable = () => {
 
                     {/* Period Filter: hidden in Ratings mode */}
                     {valuesMode !== 'Ratings' && (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Period</label>
                             <ButtonGroup
                                 options={['All', '1st', '2nd', '3rd', 'OT']}
@@ -1784,7 +1784,7 @@ const TeamsTable = () => {
                     )}
 
                     {/* Values Filter */}
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Values</label>
                         <ButtonGroup
                             options={['Stats', 'Ratings']}
@@ -1795,7 +1795,7 @@ const TeamsTable = () => {
 
                     {/* Division Filter (Only in All Teams view) */}
                     {viewMode === 'All' && (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Division</label>
                             <MultiSelectButtonGroup
                                 options={['Atlantic', 'Metro', 'Central', 'Pacific']}
@@ -1818,7 +1818,7 @@ const TeamsTable = () => {
             </div>
 
             {/* Table */}
-            <div className="flex flex-col gap-2 md:hidden mb-4">
+            <div className="flex flex-col gap-1 md:hidden mb-2">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Stat Category</label>
                 <div className="flex flex-wrap gap-2">
                     {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
@@ -1846,7 +1846,7 @@ const TeamsTable = () => {
                                 <th
                                     key={group.name}
                                     colSpan={group.columns.length}
-                                    className="px-2 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-center text-blue-500/80 border-r border-gray-800/50"
+                                    className="px-2 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-center text-blue-500/80 border-r border-gray-800/50"
                                 >
                                     <span className="bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
                                         {group.name}
@@ -1856,7 +1856,7 @@ const TeamsTable = () => {
                         </tr>
 
                         <tr className="border-b border-gray-800 bg-gray-900/95 sticky top-[33px] z-40 backdrop-blur-sm shadow-sm text-xs uppercase tracking-wider text-gray-400">
-                            <th className="px-2 py-3 font-semibold sticky left-0 bg-gray-900 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">Team</th>
+                            <th className="px-2 py-1.5 font-semibold sticky left-0 bg-gray-900 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">Team</th>
 
                             {valuesMode === 'Ratings' ? (
                                 <>
@@ -1867,7 +1867,7 @@ const TeamsTable = () => {
                                         return (
                                             <th
                                                 key={k}
-                                                className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative cursor-pointer hover:text-white ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative cursor-pointer hover:text-white ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
                                                 onClick={() => handleSort(k)}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -1889,7 +1889,7 @@ const TeamsTable = () => {
                                         return (
                                             <th
                                                 key={k}
-                                                className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative ${canSort ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'} ${groupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative ${canSort ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'} ${groupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
                                                 onClick={() => handleSort(k)}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -1915,7 +1915,7 @@ const TeamsTable = () => {
                                     return (
                                         <th
                                             key={k}
-                                            className={`px-2 py-3 font-semibold transition-colors text-center whitespace-nowrap group relative ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
+                                            className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
                                                 } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
                                             onClick={() => handleSort(k)}
                                         >

@@ -42,14 +42,14 @@ const GameRow: React.FC<{
             className="hover:bg-white/[0.02] transition-colors bg-black/20"
         >
             {/* Date column — shows date in team view, empty in date view */}
-            <td className="p-2 md:p-4">
+            <td className="p-1.5 md:p-2.5">
                 {showDate && (
                     <span className="text-[10px] md:text-xs font-mono text-neutral-500">{displayDate}</span>
                 )}
             </td>
 
             {/* Matchup */}
-            <td className="p-2 md:p-4">
+            <td className="p-1.5 md:p-2.5">
                 {/* Desktop */}
                 <div className="hidden md:flex items-center gap-4">
                     <div className="flex items-center gap-2 w-24 justify-end opacity-80">
@@ -85,7 +85,7 @@ const GameRow: React.FC<{
             </td>
 
             {/* Score */}
-            <td className="p-2 md:p-4 text-center font-mono text-[10px] md:text-sm whitespace-nowrap">
+            <td className="p-1.5 md:p-2.5 text-center font-mono text-[10px] md:text-sm whitespace-nowrap">
                 <span className="hidden md:inline">{aScore} - {hScore}</span>
                 <div className="flex flex-col items-center md:hidden gap-0.5">
                     <span className="h-5 flex items-center">{aScore}</span>
@@ -95,7 +95,7 @@ const GameRow: React.FC<{
             </td>
 
             {/* xG Prediction */}
-            <td className="p-2 md:p-4 text-center">
+            <td className="p-1.5 md:p-2.5 text-center">
                 <div className="hidden md:flex flex-col items-center">
                     <span className="text-sm font-bold text-blue-400 whitespace-nowrap">
                         {entry.awayXg.toFixed(2)} - {entry.homeXg.toFixed(2)}
@@ -109,7 +109,7 @@ const GameRow: React.FC<{
             </td>
 
             {/* Result */}
-            <td className="p-2 md:p-4 text-center">
+            <td className="p-1.5 md:p-2.5 text-center">
                 <div className={`inline-flex items-center justify-center gap-1.5 px-1.5 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold border ${
                     entry.isCorrect
                         ? 'bg-emerald-500/10 md:bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
@@ -134,7 +134,7 @@ const GameRow: React.FC<{
             </td>
 
             {/* Brier Score */}
-            <td className="p-2 md:p-4 text-right font-mono text-xs text-neutral-500 hidden md:table-cell">
+            <td className="p-1.5 md:p-2.5 text-right font-mono text-xs text-neutral-500 hidden md:table-cell">
                 {entry.brierScore.toFixed(4)}
             </td>
         </motion.tr>
@@ -177,7 +177,7 @@ const ByDateView: React.FC<{ entries: HistoryEntry[] }> = ({ entries }) => {
                             onClick={() => toggle(date)}
                             className="cursor-pointer hover:bg-white/5 transition-colors bg-white/[0.02] border-b border-white/5"
                         >
-                            <td colSpan={6} className="p-2 md:p-4">
+                            <td colSpan={6} className="p-1.5 md:p-2.5">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center gap-2">
                                         <motion.div
@@ -310,7 +310,7 @@ const ByTeamView: React.FC<{ entries: HistoryEntry[]; pickFilter?: 'win' | 'loss
                             onClick={() => toggle(triCode)}
                             className="cursor-pointer hover:bg-white/5 transition-colors bg-white/[0.02] border-b border-white/5"
                         >
-                            <td colSpan={6} className="p-2 md:p-4">
+                            <td colSpan={6} className="p-1.5 md:p-2.5">
                                 <div className="flex items-center justify-between w-full">
 
                                     {/* Left: expand icon + logo + tricode */}
@@ -395,17 +395,17 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries, viewMode = 'date',
                 <table className="w-full text-left border-collapse table-fixed md:table-auto">
                     <thead>
                         <tr className="bg-white/5 border-b border-white/10 text-neutral-400 text-[10px] md:text-xs uppercase tracking-widest">
-                            <th className="p-2 md:p-4 font-normal w-12 md:w-auto">
+                            <th className="p-1.5 md:p-2.5 font-normal w-12 md:w-auto">
                                 {viewMode === 'team' ? 'Date' : 'Date'}
                             </th>
-                            <th className="p-2 md:p-4 font-normal w-20 md:w-auto">Matchup</th>
-                            <th className="p-2 md:p-4 font-normal w-12 md:w-auto">Score</th>
-                            <th className="p-2 md:p-4 font-normal text-center w-20 md:w-auto">
+                            <th className="p-1.5 md:p-2.5 font-normal w-20 md:w-auto">Matchup</th>
+                            <th className="p-1.5 md:p-2.5 font-normal w-12 md:w-auto">Score</th>
+                            <th className="p-1.5 md:p-2.5 font-normal text-center w-20 md:w-auto">
                                 <span className="md:hidden">Pred</span>
                                 <span className="hidden md:inline">xG Model</span>
                             </th>
-                            <th className="p-2 md:p-4 font-normal text-center w-10 md:w-auto">Res</th>
-                            <th className="p-2 md:p-4 font-normal text-right hidden md:table-cell">Brier</th>
+                            <th className="p-1.5 md:p-2.5 font-normal text-center w-10 md:w-auto">Res</th>
+                            <th className="p-1.5 md:p-2.5 font-normal text-right hidden md:table-cell">Brier</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">

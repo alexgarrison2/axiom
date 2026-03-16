@@ -171,7 +171,7 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
 
     return (
         <div className="w-full relative">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pb-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 pb-2">
                 <TableSection
                     title="Western Conference"
                     groups={processedTeams.west}
@@ -186,7 +186,7 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
 
             {/* Matchup Matrices */}
             {processedTeams.west && processedTeams.east && (
-                <div className="grid grid-cols-1 gap-4 pb-6">
+                <div className="grid grid-cols-1 gap-3 pb-2">
                     <MatchupMatrix
                         currentStandings={currentStandings}
                         simResults={simResults}
@@ -216,7 +216,7 @@ const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: 
     if (!groups) return null;
     return (
         <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm h-full flex flex-col">
-            <h3 className="text-center py-4 text-sm font-bold uppercase tracking-widest text-[#5382BD] border-b border-white/5 bg-white/[0.02] shrink-0">
+            <h3 className="text-center py-2 text-sm font-bold uppercase tracking-widest text-[#5382BD] border-b border-white/5 bg-white/[0.02] shrink-0">
                 {title}
             </h3>
 
@@ -251,9 +251,9 @@ const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: 
 };
 
 const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup, isWildcard?: boolean, onSelectTeam: (t: string) => void }) => (
-    <div className="py-2">
+    <div className="py-1">
         {/* Section Title */}
-        <div className="px-4 py-2 flex items-center justify-between">
+        <div className="px-3 py-1 flex items-center justify-between">
             <h4 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 opacity-60">
                 {group.name}
             </h4>

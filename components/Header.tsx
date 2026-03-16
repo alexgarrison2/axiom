@@ -92,13 +92,13 @@ const Header: React.FC<HeaderProps> = ({ lastRefresh, compact = false }) => {
     const freshness = lastRefresh ? getFreshness(lastRefresh) : null;
 
     return (
-        <header ref={headerRef} className={`relative z-0 flex flex-col items-center justify-center ${compact ? 'mb-8 mt-4' : 'mb-12 mt-16'}`}>
+        <header ref={headerRef} className={`relative z-0 flex flex-col items-center justify-center ${compact ? 'mb-3 mt-2' : 'mb-6 mt-6'}`}>
             <Link href="/" className={`${compact ? 'w-[200px]' : 'w-full max-w-[340px] md:max-w-[600px]'} h-auto hover:opacity-90 transition-opacity`} ref={logoRef}>
                 <FullLogoAnimated />
             </Link>
 
             {lastRefresh && (
-                <div ref={refreshRef} className="mt-4 opacity-80" title={lastRefresh}>
+                <div ref={refreshRef} className="mt-2 opacity-80" title={lastRefresh}>
                     {freshness ? (
                         <div className="flex items-center gap-2 text-xs md:text-sm font-mono tracking-widest uppercase">
                             <span className="relative flex h-2 w-2">

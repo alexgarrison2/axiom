@@ -309,7 +309,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
             {isMainPage && <Header lastRefresh={lastRefresh} />}
 
             {/* Controls Container */}
-            <div className={`flex flex-col items-center gap-8 relative z-20 ${isMainPage ? 'mb-12' : 'mb-6 mt-6 md:mt-8'}`}>
+            <div className={`flex flex-col items-center gap-3 relative z-20 ${isMainPage ? 'mb-4' : 'mb-3 mt-3'}`}>
 
                 {/* Controls Row */}
                 <div className="flex items-center justify-center w-full relative z-20 max-w-full">
@@ -327,11 +327,11 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         <div
                             ref={tabBarRef}
                             onScroll={handleTabScroll}
-                            className="flex items-center gap-2 md:gap-3 bg-black/40 p-1.5 md:p-2.5 rounded-2xl md:rounded-3xl backdrop-blur-md border border-white/5 w-full max-w-full overflow-x-auto snap-x scrollbar-hide px-2 md:px-4">
+                            className="flex items-center gap-1 md:gap-2 bg-black/40 p-1 md:p-1.5 rounded-xl md:rounded-2xl backdrop-blur-md border border-white/5 w-full max-w-full overflow-x-auto snap-x scrollbar-hide px-1.5 md:px-3">
 
                             {/* Text Logo for non-main pages — always clickable to home */}
                             {!isMainPage && (
-                                <div className="flex-shrink-0 flex items-center pr-3 md:pr-4 border-r border-white/10 mr-1 md:mr-2 snap-start">
+                                <div className="flex-shrink-0 flex items-center pr-2 md:pr-3 border-r border-white/10 mr-1 snap-start">
                                     <Link href="/">
                                         <Image src="/ponyxG_condensed.png" alt="pony xG" width={80} height={24} className="h-4 md:h-5 w-auto object-contain drop-shadow-[0_0_8px_rgba(0,243,255,0.8)] hover:opacity-70 transition-opacity" />
                                     </Link>
@@ -349,7 +349,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                     <button
                                         key={date}
                                         onClick={() => setSelectedTab(date)}
-                                        className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start whitespace-nowrap ${selectedTab === date
+                                        className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start whitespace-nowrap ${selectedTab === date
                                             ? 'text-neon-blue border-neon-blue shadow-[0_0_20px_rgba(0,243,255,0.3)] text-glow-blue'
                                             : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                             }`}
@@ -369,7 +369,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             {/* News Button */}
                             <button
                                 onClick={() => setSelectedTab('News')}
-                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'News'
+                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'News'
                                     ? 'text-amber-400 border-amber-400 shadow-[0_0_20_rgba(251,191,36,0.3)] text-glow-amber'
                                     : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
@@ -387,7 +387,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             {/* Teams Button */}
                             <button
                                 onClick={() => setSelectedTab('Teams')}
-                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Teams'
+                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Teams'
                                     ? 'text-purple-400 border-purple-400 shadow-[0_0_20_rgba(168,85,247,0.3)] text-glow-purple'
                                     : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
@@ -405,7 +405,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             {/* History Button */}
                             <button
                                 onClick={() => setSelectedTab('History')}
-                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'History'
+                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'History'
                                     ? 'text-neon-green border-neon-green shadow-[0_0_20px_rgba(10,255,0,0.3)] text-glow-green'
                                     : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
@@ -423,7 +423,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             {/* Playoffs Button */}
                             <button
                                 onClick={() => setSelectedTab('Playoffs')}
-                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Playoffs'
+                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Playoffs'
                                     ? 'text-rose-400 border-rose-400 shadow-[0_0_20_rgba(244,63,94,0.3)] text-glow-rose'
                                     : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
@@ -441,7 +441,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             {/* Bracket Button */}
                             <button
                                 onClick={() => setSelectedTab('Bracket')}
-                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Bracket'
+                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Bracket'
                                     ? 'text-sky-400 border-sky-400 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
                                     : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
@@ -459,7 +459,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             {/* Skaters Button */}
                             <button
                                 onClick={() => setSelectedTab('Skaters')}
-                                className={`relative px-4 md:px-6 py-2 rounded-full font-bold text-[10px] md:text-sm tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Skaters'
+                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Skaters'
                                     ? 'text-cyan-400 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
                                     : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                     }`}
@@ -490,7 +490,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         className="w-full"
                     >
                         {/* History Filters & Slider */}
-                        <div className="flex flex-col items-center gap-4 mb-4 max-w-2xl mx-auto">
+                        <div className="flex flex-col items-center gap-2 mb-3 max-w-2xl mx-auto">
 
                             {/* View Toggle: By Date / By Team */}
                             <div className="flex items-center gap-2 flex-wrap justify-center">
@@ -585,7 +585,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         </div>
 
                         {/* Aggregate Stats Header */}
-                        <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-8">
+                        <div className="grid grid-cols-3 gap-2 mb-2 md:mb-3">
                             {(() => {
                                 // Use filteredHistory for stats
                                 const statsHistory = filteredHistory;
@@ -609,9 +609,9 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 return (
                                     <>
                                         {/* Accuracy Card */}
-                                        <div className="glass-panel p-2 md:p-6 rounded-xl md:rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                        <div className="glass-panel p-2 md:p-3 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
                                             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                            <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-1 md:mb-2 z-10 text-center">
+                                            <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-0.5 md:mb-1 z-10 text-center">
                                                 <span className="md:hidden">Accuracy</span>
                                                 <span className="hidden md:inline">Model Accuracy</span>
                                             </span>
@@ -624,9 +624,9 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                         </div>
 
                                         {/* Brier Score Card */}
-                                        <div className="glass-panel p-2 md:p-6 rounded-xl md:rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                        <div className="glass-panel p-2 md:p-3 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
                                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                            <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-1 md:mb-2 z-10 text-center">
+                                            <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-0.5 md:mb-1 z-10 text-center">
                                                 <span className="md:hidden">Brier</span>
                                                 <span className="hidden md:inline">Avg Brier Score</span>
                                             </span>
@@ -640,9 +640,9 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                         </div>
 
                                         {/* Log Loss Card */}
-                                        <div className="glass-panel p-2 md:p-6 rounded-xl md:rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                        <div className="glass-panel p-2 md:p-3 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
                                             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                            <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-1 md:mb-2 z-10 text-center">
+                                            <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-0.5 md:mb-1 z-10 text-center">
                                                 Log Loss
                                             </span>
                                             <div className="text-lg md:text-4xl font-bold text-white z-10 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
@@ -692,9 +692,9 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         className="w-full"
                     >
                         <div className="max-w-7xl mx-auto">
-                            <div className="text-center mb-4">
-                                <h2 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-orange-400 mb-1">Playoff Probability Dashboard</h2>
-                                <p className="text-neutral-400 text-xs md:text-sm">Monte Carlo simulations (5,000 runs). Projected points are averaged outcomes.</p>
+                            <div className="text-center mb-2">
+                                <h2 className="text-lg md:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-orange-400 mb-0.5">Playoff Probability Dashboard</h2>
+                                <p className="text-neutral-400 text-xs">Monte Carlo simulations (5,000 runs). Projected points are averaged outcomes.</p>
                             </div>
                             {Object.keys(simResults).length > 0 ? (
                                 <PlayoffTable currentStandings={currentStandings} simResults={simResults} />
@@ -738,7 +738,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                 ) : (
                     /* Grid Layout - Staggered Fade In */
                     <motion.div
-                        className="grid grid-cols-1 xl:grid-cols-2 gap-8 w-full pb-24"
+                        className="grid grid-cols-1 xl:grid-cols-2 gap-4 w-full pb-6"
                         variants={containerVariants}
                         initial="hidden"
                         animate="show"
