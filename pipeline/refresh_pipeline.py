@@ -350,6 +350,13 @@ def refresh_pipeline():
     # 4. Regenerate Ratings
     print("Regenerating Team & Goalie Ratings...")
     calculate_ratings(gamestats_file=gamestats_file)
+    # Verify the file was actually written fresh — catch silent failures.
+    import time as _time
+    _tr_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public', 'data', 'team_ratings.json')
+    _age = (_time.time() - os.path.getmtime(_tr_path)) / 60  # minutes
+    if _age > 5:
+        raise RuntimeError(f"team_ratings.json was not updated (age={_age:.1f}m). Aborting pipeline.")
+    print(f"team_ratings.json verified fresh ({_age:.1f}m old).")
 
     # 4b. Fetch MoneyPuck player-level data & compute impact scores
     # This runs after team ratings so the pipeline has fresh season context.

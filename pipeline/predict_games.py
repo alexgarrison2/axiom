@@ -568,8 +568,30 @@ def load_existing_predictions(filepath):
 
 def predict():
     print("Loading data...")
-    team_ratings = load_json('team_ratings.json')
-    goalie_ratings = load_json('goalie_ratings.json')
+    # Load from public/data/ — the single authoritative copy written by team_ratings.py.
+    # Using a relative path to pipeline/team_ratings.json caused a 2-month staleness
+    # bug (Jan 14 → Mar 16) because team_ratings.py never wrote there.
+    _script_dir = os.path.dirname(os.path.abspath(__file__))
+    _public_data = os.path.join(_script_dir, '..', 'public', 'data')
+    _tr_path = os.path.join(_public_data, 'team_ratings.json')
+    _gr_path = os.path.join(_public_data, 'goalie_ratings.json')
+
+    # Staleness guard — crash loudly rather than silently use stale data.
+    import time as _time
+    _max_age_days = 2
+    for _path, _label in [(_tr_path, 'team_ratings.json'), (_gr_path, 'goalie_ratings.json')]:
+        try:
+            _age_days = (_time.time() - os.path.getmtime(_path)) / 86400
+            if _age_days > _max_age_days:
+                raise RuntimeError(
+                    f"STALE DATA: {_label} is {_age_days:.1f} days old (>{_max_age_days}d). "
+                    f"Run team_ratings.py first."
+                )
+        except FileNotFoundError:
+            raise RuntimeError(f"MISSING: {_path} not found. Run team_ratings.py first.")
+
+    team_ratings = load_json(_tr_path)
+    goalie_ratings = load_json(_gr_path)
     goalie_percentiles = get_goalie_percentiles(goalie_ratings)
     # Load Upcoming Games
     try:
