@@ -162,6 +162,8 @@ interface Matchup {
     awayModelOdds?: string;
     homeEV?: number;
     awayEV?: number;
+    homeXg?: number;
+    awayXg?: number;
     recommendation?: string;
 }
 
@@ -169,6 +171,7 @@ interface TeamOdds {
     vegasOdds?: number;
     modelOdds?: string;
     ev?: number;
+    xg?: number;
     recommendation?: string;
     isRecommended?: boolean; // true only for the side the rec applies to
     logoUrl?: string;        // carried for tooltip rendering
@@ -1023,6 +1026,8 @@ const TeamsTable = () => {
                         awayModelOdds: row.away_model_odds?.trim() || undefined,
                         homeEV: row.home_ev ? parseFloat(row.home_ev) : undefined,
                         awayEV: row.away_ev ? parseFloat(row.away_ev) : undefined,
+                        homeXg: row.home_xg ? parseFloat(row.home_xg) : undefined,
+                        awayXg: row.away_xg ? parseFloat(row.away_xg) : undefined,
                         recommendation: row.wager_recommendation?.trim().replace(/^'|'$/g, '') || undefined,
                     });
 
@@ -1499,6 +1504,7 @@ const TeamsTable = () => {
                     vegasOdds: m.homeVegasOdds,
                     modelOdds: m.homeModelOdds,
                     ev: m.homeEV,
+                    xg: m.homeXg,
                     recommendation: m.recommendation,
                     isRecommended: homeIsRec,
                 });
@@ -1508,6 +1514,7 @@ const TeamsTable = () => {
                     vegasOdds: m.awayVegasOdds,
                     modelOdds: m.awayModelOdds,
                     ev: m.awayEV,
+                    xg: m.awayXg,
                     recommendation: m.recommendation,
                     isRecommended: awayIsRec,
                 });
@@ -2081,7 +2088,7 @@ const TeamsTable = () => {
                 ? data.recommendation.replace(/^(Home|Away)\s+/i, '')
                 : null;
             // Clamp left so tooltip stays on screen
-            const W = 260;
+            const W = 310;
             const vw = window.innerWidth;
             const left = Math.max(8, Math.min(x, vw - W - 8));
             return (
@@ -2113,6 +2120,16 @@ const TeamsTable = () => {
                         )}
                         {/* Divider */}
                         {data.logoUrl && <div style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.08)' }} />}
+                        {/* xG prediction */}
+                        {data.xg != null && (
+                            <>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                    <span style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{data.xg.toFixed(2)}</span>
+                                    <span style={{ fontSize: 8, fontWeight: 500, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.15em', lineHeight: 1 }}>xG</span>
+                                </div>
+                                <div style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.08)' }} />
+                            </>
+                        )}
                         {/* xOdds */}
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                             <span style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{modelStr ?? '—'}</span>
