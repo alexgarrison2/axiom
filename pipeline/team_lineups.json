@@ -922,12 +922,12 @@
                 "movement": null
             },
             {
-                "name": "Adrian Kempe",
-                "number": 9,
+                "name": "Mathieu Joseph",
+                "number": 17,
                 "pos": "rw",
-                "id": 2747,
-                "ppUnit": 1,
-                "movement": null
+                "id": 3891,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "f2": [
@@ -944,7 +944,7 @@
                 "number": 55,
                 "pos": "c",
                 "id": 29855,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1004,7 +1004,7 @@
                 "number": 52,
                 "pos": "rw",
                 "id": 36257,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1086,6 +1086,14 @@
                 "id": 1952,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Adrian Kempe",
+                "number": 9,
+                "pos": "ir4",
+                "id": 2747,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -1364,18 +1372,18 @@
         ],
         "f4": [
             {
-                "name": "Alex Kerfoot",
-                "number": 15,
+                "name": "Brandon Tanev",
+                "number": 13,
                 "pos": "lw",
-                "id": 2833,
+                "id": 2694,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Kevin Stenlund",
-                "number": 82,
+                "name": "Alex Kerfoot",
+                "number": 15,
                 "pos": "c",
-                "id": 4556,
+                "id": 2833,
                 "ppUnit": null,
                 "movement": null
             },
@@ -1441,17 +1449,27 @@
                 "ppUnit": 2,
                 "movement": null
             }
+        ],
+        "ir": [
+            {
+                "name": "Kevin Stenlund",
+                "number": 82,
+                "pos": "ir1",
+                "id": 4556,
+                "ppUnit": null,
+                "movement": "down"
+            }
         ]
     },
     "COL": {
         "f1": [
             {
-                "name": "Nazem Kadri",
-                "number": 91,
+                "name": "Valeri Nichushkin",
+                "number": 13,
                 "pos": "lw",
-                "id": 1425,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2142,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Nathan MacKinnon",
@@ -1472,12 +1490,12 @@
         ],
         "f2": [
             {
-                "name": "Joel Kiviranta",
-                "number": 94,
+                "name": "Nazem Kadri",
+                "number": 91,
                 "pos": "lw",
-                "id": 31187,
-                "ppUnit": null,
-                "movement": null
+                "id": 1425,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Brock Nelson",
@@ -1488,12 +1506,12 @@
                 "movement": null
             },
             {
-                "name": "Valeri Nichushkin",
-                "number": 13,
+                "name": "Nicolas Roy",
+                "number": 10,
                 "pos": "rw",
-                "id": 2142,
+                "id": 3818,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
@@ -1514,12 +1532,12 @@
                 "movement": null
             },
             {
-                "name": "Nicolas Roy",
-                "number": 10,
+                "name": "Joel Kiviranta",
+                "number": 94,
                 "pos": "rw",
-                "id": 3818,
-                "ppUnit": 2,
-                "movement": null
+                "id": 31187,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -1844,14 +1862,6 @@
                 "number": 49,
                 "pos": "ir6",
                 "id": 2773,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Justin Brazeau",
-                "number": 15,
-                "pos": "ir7",
-                "id": 28622,
                 "ppUnit": null,
                 "movement": null
             }
