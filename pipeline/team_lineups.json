@@ -110,7 +110,7 @@
                 "number": 44,
                 "pos": "ld",
                 "id": 1935,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -128,7 +128,7 @@
                 "number": 22,
                 "pos": "ld",
                 "id": 2349,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -142,12 +142,12 @@
         ],
         "d3": [
             {
-                "name": "Simon Benoit",
-                "number": 2,
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
                 "pos": "ld",
-                "id": 26550,
-                "ppUnit": null,
-                "movement": null
+                "id": 1172,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Troy Stecher",
@@ -180,14 +180,6 @@
                 "number": 34,
                 "pos": "ir3",
                 "id": 2433,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
-                "pos": "ir4",
-                "id": 1172,
                 "ppUnit": null,
                 "movement": null
             }
@@ -636,12 +628,12 @@
         ],
         "f3": [
             {
-                "name": "Alexander Steeves",
-                "number": 21,
+                "name": "Michael Eyssimont",
+                "number": 81,
                 "pos": "lw",
-                "id": 26446,
+                "id": 4693,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Elias Lindholm",
@@ -732,12 +724,12 @@
                 "movement": null
             },
             {
-                "name": "Henri Jokiharju",
-                "number": 20,
+                "name": "Andrew Peeke",
+                "number": 52,
                 "pos": "rd",
-                "id": 2798,
+                "id": 27242,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ]
     },
@@ -908,14 +900,6 @@
                 "id": 516,
                 "ppUnit": null,
                 "movement": null
-            },
-            {
-                "name": "Erik Gudbranson",
-                "number": 44,
-                "pos": "ir2",
-                "id": 1710,
-                "ppUnit": null,
-                "movement": null
             }
         ]
     },
@@ -1016,12 +1000,12 @@
                 "movement": null
             },
             {
-                "name": "Eric Robinson",
-                "number": 50,
+                "name": "Nicolas Deslauriers",
+                "number": 44,
                 "pos": "rw",
-                "id": 4650,
+                "id": 1699,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1101,14 +1085,6 @@
                 "pos": "ir3",
                 "id": 2398,
                 "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Andrei Svechnikov",
-                "number": 37,
-                "pos": "ir4",
-                "id": 4787,
-                "ppUnit": 1,
                 "movement": null
             }
         ]
@@ -1442,12 +1418,12 @@
                 "movement": null
             },
             {
-                "name": "Jeff Petry",
-                "number": 2,
+                "name": "Zach Bogosian",
+                "number": 24,
                 "pos": "rd",
-                "id": 556,
+                "id": 53,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -3050,6 +3026,14 @@
                 "id": 28792,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Alex Tuch",
+                "number": 89,
+                "pos": "ir7",
+                "id": 2739,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
