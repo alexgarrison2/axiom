@@ -1,70 +1,5 @@
 [
     {
-        "id": 2025021063,
-        "gameDate": "2026-03-16",
-        "startTimeUTC": "2026-03-16T23:00:00Z",
-        "homeTeam": "Red Wings",
-        "awayTeam": "Flames",
-        "homeTeamAbbrev": "DET",
-        "awayTeamAbbrev": "CGY",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025021064,
-        "gameDate": "2026-03-16",
-        "startTimeUTC": "2026-03-16T23:00:00Z",
-        "homeTeam": "Devils",
-        "awayTeam": "Bruins",
-        "homeTeamAbbrev": "NJD",
-        "awayTeamAbbrev": "BOS",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025021065,
-        "gameDate": "2026-03-16",
-        "startTimeUTC": "2026-03-16T23:00:00Z",
-        "homeTeam": "Rangers",
-        "awayTeam": "Kings",
-        "homeTeamAbbrev": "NYR",
-        "awayTeamAbbrev": "LAK",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025021066,
-        "gameDate": "2026-03-16",
-        "startTimeUTC": "2026-03-17T00:00:00Z",
-        "homeTeam": "Stars",
-        "awayTeam": "Mammoth",
-        "homeTeamAbbrev": "DAL",
-        "awayTeamAbbrev": "UTA",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025021067,
-        "gameDate": "2026-03-16",
-        "startTimeUTC": "2026-03-17T01:30:00Z",
-        "homeTeam": "Avalanche",
-        "awayTeam": "Penguins",
-        "homeTeamAbbrev": "COL",
-        "awayTeamAbbrev": "PIT",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025021068,
         "gameDate": "2026-03-17",
         "startTimeUTC": "2026-03-17T23:00:00Z",
@@ -85,9 +20,9 @@
         "awayTeam": "Bruins",
         "homeTeamAbbrev": "MTL",
         "awayTeamAbbrev": "BOS",
-        "homeGoalieConfirmed": "Jacob Fowler",
+        "homeGoalieConfirmed": "Jakub Dobes",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Joonas Korpisalo",
+        "awayGoalieConfirmed": "Jeremy Swayman",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -100,7 +35,7 @@
         "awayTeamAbbrev": "CAR",
         "homeGoalieConfirmed": "Jet Greaves",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Frederik Andersen",
+        "awayGoalieConfirmed": "Brandon Bussi",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -124,7 +59,7 @@
         "awayTeam": "Predators",
         "homeTeamAbbrev": "WPG",
         "awayTeamAbbrev": "NSH",
-        "homeGoalieConfirmed": "Eric Comrie",
+        "homeGoalieConfirmed": "Connor Hellebuyck",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Juuse Saros",
         "awayGoalieStatus": "Unconfirmed"
@@ -179,6 +114,84 @@
         "homeGoalieConfirmed": "Joey Daccord",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Andrei Vasilevskiy",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021077,
+        "gameDate": "2026-03-18",
+        "startTimeUTC": "2026-03-18T23:00:00Z",
+        "homeTeam": "Rangers",
+        "awayTeam": "Devils",
+        "homeTeamAbbrev": "NYR",
+        "awayTeamAbbrev": "NJD",
+        "homeGoalieConfirmed": "Igor Shesterkin",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jacob Markstrom",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021078,
+        "gameDate": "2026-03-18",
+        "startTimeUTC": "2026-03-18T23:00:00Z",
+        "homeTeam": "Hurricanes",
+        "awayTeam": "Penguins",
+        "homeTeamAbbrev": "CAR",
+        "awayTeamAbbrev": "PIT",
+        "homeGoalieConfirmed": "Brandon Bussi",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Arturs Silovs",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021079,
+        "gameDate": "2026-03-18",
+        "startTimeUTC": "2026-03-18T23:30:00Z",
+        "homeTeam": "Capitals",
+        "awayTeam": "Senators",
+        "homeTeamAbbrev": "WSH",
+        "awayTeamAbbrev": "OTT",
+        "homeGoalieConfirmed": "Logan Thompson",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "James Reimer",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021080,
+        "gameDate": "2026-03-18",
+        "startTimeUTC": "2026-03-19T01:30:00Z",
+        "homeTeam": "Avalanche",
+        "awayTeam": "Stars",
+        "homeTeamAbbrev": "COL",
+        "awayTeamAbbrev": "DAL",
+        "homeGoalieConfirmed": "Scott Wedgewood",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Casey DeSmith",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021081,
+        "gameDate": "2026-03-18",
+        "startTimeUTC": "2026-03-19T01:30:00Z",
+        "homeTeam": "Flames",
+        "awayTeam": "Blues",
+        "homeTeamAbbrev": "CGY",
+        "awayTeamAbbrev": "STL",
+        "homeGoalieConfirmed": "Dustin Wolf",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Joel Hofer",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021082,
+        "gameDate": "2026-03-18",
+        "startTimeUTC": "2026-03-19T02:00:00Z",
+        "homeTeam": "Ducks",
+        "awayTeam": "Flyers",
+        "homeTeamAbbrev": "ANA",
+        "awayTeamAbbrev": "PHI",
+        "homeGoalieConfirmed": "Lukas Dostal",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Dan Vladar",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
