@@ -2076,7 +2076,7 @@
                 "number": 72,
                 "pos": "lw",
                 "id": 34666,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2106,12 +2106,12 @@
                 "movement": null
             },
             {
-                "name": "Philipp Kurashev",
-                "number": 96,
+                "name": "Alexander Wennberg",
+                "number": 21,
                 "pos": "c",
-                "id": 28817,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2145,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Kiefer Sherwood",
@@ -2132,18 +2132,18 @@
                 "movement": null
             },
             {
-                "name": "Adam Gaudette",
-                "number": 81,
+                "name": "Zack Ostapchuk",
+                "number": 63,
                 "pos": "c",
-                "id": 4646,
+                "id": 34545,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Zack Ostapchuk",
-                "number": 63,
+                "name": "Adam Gaudette",
+                "number": 81,
                 "pos": "rw",
-                "id": 34545,
+                "id": 4646,
                 "ppUnit": null,
                 "movement": null
             }
@@ -2176,12 +2176,12 @@
                 "movement": null
             },
             {
-                "name": "Shakir Mukhamadullin",
-                "number": null,
+                "name": "Nick Leddy",
+                "number": 4,
                 "pos": "rd",
-                "id": 33038,
+                "id": 311,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d3": [
@@ -2224,14 +2224,6 @@
                 "number": 92,
                 "pos": "ir3",
                 "id": 38146,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Alexander Wennberg",
-                "number": 21,
-                "pos": "ir4",
-                "id": 2145,
                 "ppUnit": null,
                 "movement": null
             }
@@ -3220,6 +3212,14 @@
                 "id": 1864,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Eeli Tolvanen",
+                "number": 20,
+                "pos": "ir2",
+                "id": 2787,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
