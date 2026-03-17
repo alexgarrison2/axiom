@@ -1562,7 +1562,7 @@ const TeamsTable = () => {
             } else if (key === 'sv_pct') {
                 value = ((value as number) / 100).toFixed(3).replace(/^0+/, ''); // .925
             } else if (key === 'pp_lev' || key === 'pk_lev') {
-                value = (value as number).toFixed(1) + '%';
+                value = (value as number).toFixed(0) + '%';
             } else if (key.toString().includes('pct')) {
                 value = value.toFixed(1) + '%';
             } else if (key === 'time_leading_per_game' || key === 'time_trailing_per_game' || key === 'time_tied_per_game') {
