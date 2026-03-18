@@ -159,7 +159,18 @@ interface TeamOddsRowProps {
     dirField: 'awayDir' | 'homeDir';
 }
 
+function fmt12(ts: string): string {
+    // "14:30" → "2:30p", "09:17" → "9:17a"
+    const [hStr, mStr] = ts.split(':');
+    const h = parseInt(hStr, 10);
+    const suffix = h < 12 ? 'a' : 'p';
+    const h12 = h % 12 || 12;
+    return `${h12}:${mStr}${suffix}`;
+}
+
 function TeamOddsRow({ team, entries, field, dirField }: TeamOddsRowProps) {
+    const lastIdx = entries.length - 1;
+
     return (
         <div className="flex items-center gap-1 py-1 min-w-0">
             {/* Logo */}
@@ -179,36 +190,28 @@ function TeamOddsRow({ team, entries, field, dirField }: TeamOddsRowProps) {
                     const odds = entry[field];
                     const d = entry[dirField];
                     const isOpen = entry.isOpen;
-                    const oddsNum = parseInt(odds.replace(/[^-\d]/g, ''), 10);
-                    const isPositive = oddsNum > 0;
+                    const isLatest = i === lastIdx && !isOpen;
+                    const hasBg = isOpen || isLatest;
 
                     return (
                         <div
                             key={i}
                             className={`flex flex-col items-center justify-between rounded-lg px-2.5 pt-1.5 pb-1 min-w-[52px] flex-shrink-0 ${
-                                isOpen ? 'bg-white/5' : 'bg-transparent'
+                                hasBg ? 'bg-white/5' : 'bg-transparent'
                             }`}
                         >
                             {/* Arrow + Odds */}
                             <div className="flex items-center">
                                 {!isOpen && <Arrow dir={d} />}
-                                <span className={`text-[13px] font-black font-mono leading-none ${
-                                    isOpen
-                                        ? 'text-neutral-300'
-                                        : d === 'up'
-                                            ? isPositive ? 'text-green-400' : 'text-green-400'
-                                            : d === 'down'
-                                                ? 'text-red-400'
-                                                : 'text-neutral-400'
-                                }`}>
+                                <span className="text-[13px] font-black font-mono leading-none text-neutral-300">
                                     {odds}
                                 </span>
                             </div>
                             {/* Label / Timestamp */}
                             <span className={`text-[9px] font-mono mt-1 leading-none ${
-                                isOpen ? 'text-neutral-500' : 'text-neutral-600'
+                                hasBg ? 'text-neutral-500' : 'text-neutral-600'
                             }`}>
-                                {isOpen ? 'Open' : entry.timestamp}
+                                {isOpen ? 'Open' : fmt12(entry.timestamp)}
                             </span>
                         </div>
                     );
