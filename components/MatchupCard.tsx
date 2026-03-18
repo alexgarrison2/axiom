@@ -487,9 +487,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
             return 'border-white/10 shadow-[0_0_30px_-5px_rgba(0,243,255,0.15)] hover:shadow-[0_0_40px_-5px_rgba(0,243,255,0.25)]';
         }
         if (isHighImplication) {
-            // Flame glow — orange/amber "high stakes fire", NOT a red warning.
-            // Flickering box-shadow via keyframe; border hint in deep ember.
-            return 'border-orange-950/50 animate-flame-flicker';
+            // Tiny static ambient glow — spinning border does the visual work
+            return 'border-orange-950/50 shadow-[0_0_8px_-2px_rgba(251,146,60,0.35),_0_0_20px_-4px_rgba(234,88,12,0.18)]';
         }
         return 'border-white/5 hover:border-white/10';
     };

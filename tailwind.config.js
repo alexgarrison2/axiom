@@ -71,8 +71,6 @@ module.exports = {
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        // Slow ambient breathe — spinning border does the visual work; glow just pulses gently
-        'flame-flicker': 'flame-flicker 3.5s ease-in-out infinite',
       },
       keyframes: {
         'pulse-glow': {
@@ -82,11 +80,6 @@ module.exports = {
         'fade-in-up': {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        // Two-stop smooth breathe — very small delta so it's a glow, not a strobe
-        'flame-flicker': {
-          '0%, 100%': { boxShadow: '0 0 22px -4px rgba(251,146,60,0.32), 0 0 50px -8px rgba(234,88,12,0.18), 0 0 88px -16px rgba(185,28,28,0.1)' },
-          '50%':      { boxShadow: '0 0 30px -4px rgba(251,146,60,0.46), 0 0 62px -8px rgba(234,88,12,0.26), 0 0 105px -16px rgba(185,28,28,0.15)' },
         },
         "accordion-down": {
           from: { height: "0" },
