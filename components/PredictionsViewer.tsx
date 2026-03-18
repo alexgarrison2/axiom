@@ -8,6 +8,7 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { GamePrediction, HistoryEntry } from '@/utils/data';
 import { SimGame } from '@/utils/schedule';
 import { TeamStandings, SimResult } from '@/utils/simulation-engine';
+import { GameImplicationsData, findImplication } from '@/utils/implications';
 import MatchupCard from './MatchupCard';
 import HistoryTable from './HistoryTable';
 import TeamsTable from './TeamsTable';
@@ -24,6 +25,7 @@ interface PredictionsViewerProps {
     fullSchedule: SimGame[];
     currentStandings: TeamStandings[];
     lastRefresh?: string;
+    implicationsData?: GameImplicationsData | null;
 }
 
 const containerVariants: Variants = {
@@ -64,7 +66,7 @@ const itemVariants: Variants = {
     }
 };
 
-const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, fullSchedule, currentStandings, lastRefresh }) => {
+const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, fullSchedule, currentStandings, lastRefresh, implicationsData }) => {
     const [predictions, setPredictions] = useState<GamePrediction[]>(initialPredictions);
     const [simResults, setSimResults] = useState<Record<string, SimResult>>({});
     const workerRef = useRef<Worker | null>(null);
@@ -754,6 +756,11 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             >
                                 <MatchupCard
                                     prediction={prediction}
+                                    implications={findImplication(
+                                        implicationsData ?? null,
+                                        prediction.homeTeam.triCode,
+                                        prediction.awayTeam.triCode,
+                                    )}
                                 />
                             </motion.div>
                         ))}

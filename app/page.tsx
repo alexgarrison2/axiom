@@ -1,6 +1,7 @@
 import React from 'react';
 import { getPredictions, getLastRefresh, getHistory } from '@/utils/data';
 import { fetchRemainingSeason, fetchCurrentStandings } from '@/utils/schedule';
+import { getGameImplications } from '@/utils/implications-server';
 import PredictionsViewer from '@/components/PredictionsViewer';
 
 // Force dynamic revalidation to ensure data is fresh on every request
@@ -12,10 +13,11 @@ export default async function Home() {
     const history = await getHistory();
     const lastRefresh = await getLastRefresh();
 
-    // Fetch Simulation Data (Parallel)
-    const [fullSchedule, currentStandings] = await Promise.all([
+    // Fetch Simulation Data + Implications (Parallel)
+    const [fullSchedule, currentStandings, implicationsData] = await Promise.all([
         fetchRemainingSeason(),
-        fetchCurrentStandings()
+        fetchCurrentStandings(),
+        getGameImplications(),
     ]);
 
     return (
@@ -32,6 +34,7 @@ export default async function Home() {
                     fullSchedule={fullSchedule}
                     currentStandings={currentStandings}
                     lastRefresh={lastRefresh}
+                    implicationsData={implicationsData}
                 />
             </div>
         </main>

@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GamePrediction, LocationSplitRecord } from '@/utils/data';
+import { GameImplication } from '@/utils/implications';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import AnimatedNumber from './AnimatedNumber';
@@ -19,9 +20,10 @@ interface MatchupCardProps {
     prediction: GamePrediction;
     isSocial?: boolean;
     isUltraCompact?: boolean;
+    implications?: GameImplication | null;
 }
 
-const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false, isUltraCompact = false }) => {
+const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false, isUltraCompact = false, implications }) => {
     const {
         homeTeam,
         awayTeam,
@@ -70,6 +72,119 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     // Desktop Toggle (Simple height/opacity transition)
     const toggleDesktopExpand = () => {
         setIsDesktopExpanded(!isDesktopExpanded);
+    };
+
+    // --- Playoff Implications Panel ---
+    const PlayoffImplicationsPanel = () => {
+        if (!implications) return null;
+
+        const {
+            home_current_playoff_pct: hBase,
+            away_current_playoff_pct: aBase,
+            scenarios,
+        } = implications;
+
+        // Skip if both teams are trivially eliminated or clinched
+        const hTrivial = hBase === null || hBase === undefined || hBase >= 99 || hBase <= 1;
+        const aTrivial = aBase === null || aBase === undefined || aBase >= 99 || aBase <= 1;
+        if (hTrivial && aTrivial) return null;
+
+        // From each team's perspective:
+        //   If Win     → their reg win scenario
+        //   If Lose OT → opponent's OT win scenario (they get 1 pt OTL)
+        //   If Lose    → opponent's reg win scenario
+        const homeWin    = scenarios.home_reg_win.home_playoff_pct;
+        const homeLoseOt = scenarios.away_otw.home_playoff_pct;
+        const homeLoseReg = scenarios.away_reg_win.home_playoff_pct;
+
+        const awayWin    = scenarios.away_reg_win.away_playoff_pct;
+        const awayLoseOt = scenarios.home_otw.away_playoff_pct;
+        const awayLoseReg = scenarios.home_reg_win.away_playoff_pct;
+
+        type DeltaResult = { value: number; delta: number; fmt: string } | null;
+
+        const calcDelta = (base: number | null, scenario: number | null): DeltaResult => {
+            if (base === null || base === undefined || scenario === null || scenario === undefined) return null;
+            const delta = scenario - base;
+            return { value: scenario, delta, fmt: `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%` };
+        };
+
+        const deltaColor = (delta: number) => {
+            if (delta > 3)  return 'text-neon-green';
+            if (delta > 0)  return 'text-green-500';
+            if (delta < -3) return 'text-red-500';
+            if (delta < 0)  return 'text-red-400';
+            return 'text-neutral-500';
+        };
+
+        const Row = ({ label, result, labelColor }: {
+            label: string;
+            result: DeltaResult;
+            labelColor: string;
+        }) => (
+            <div className="flex items-center justify-between py-[3px]">
+                <span className={`text-[9px] font-mono font-bold uppercase tracking-wide ${labelColor}`}>{label}</span>
+                {result ? (
+                    <div className="flex items-center gap-1">
+                        <span className="text-[10px] font-mono text-white tabular-nums">{result.value.toFixed(1)}%</span>
+                        <span className={`text-[9px] font-mono font-bold tabular-nums ${deltaColor(result.delta)}`}>{result.fmt}</span>
+                    </div>
+                ) : (
+                    <span className="text-[9px] text-neutral-600 font-mono">—</span>
+                )}
+            </div>
+        );
+
+        return (
+            <div className="border-t border-white/5 pt-4 mt-4">
+                {/* Section header */}
+                <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[9px] font-mono font-bold tracking-widest text-neutral-500 uppercase">Playoff Implications</span>
+                    <div className="flex-1 h-px bg-white/5" />
+                </div>
+
+                {/* Two-column layout: Away | Home */}
+                <div className="grid grid-cols-2 gap-3">
+                    {/* Away Team */}
+                    {!aTrivial && (
+                        <div className="flex flex-col p-2.5 rounded-lg bg-white/[0.03] border border-white/5">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-wide">
+                                    {implications.away_abbrev}
+                                </span>
+                                {aBase !== null && (
+                                    <span className="text-[9px] text-neutral-500 font-mono">
+                                        {aBase.toFixed(1)}% now
+                                    </span>
+                                )}
+                            </div>
+                            <Row label="If Win"     result={calcDelta(aBase, awayWin)}    labelColor="text-emerald-400" />
+                            <Row label="If Lose OT" result={calcDelta(aBase, awayLoseOt)} labelColor="text-amber-400" />
+                            <Row label="If Lose"    result={calcDelta(aBase, awayLoseReg)} labelColor="text-red-400" />
+                        </div>
+                    )}
+
+                    {/* Home Team */}
+                    {!hTrivial && (
+                        <div className={`flex flex-col p-2.5 rounded-lg bg-white/[0.03] border border-white/5 ${aTrivial ? 'col-span-2' : ''}`}>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-wide">
+                                    {implications.home_abbrev}
+                                </span>
+                                {hBase !== null && (
+                                    <span className="text-[9px] text-neutral-500 font-mono">
+                                        {hBase.toFixed(1)}% now
+                                    </span>
+                                )}
+                            </div>
+                            <Row label="If Win"     result={calcDelta(hBase, homeWin)}    labelColor="text-emerald-400" />
+                            <Row label="If Lose OT" result={calcDelta(hBase, homeLoseOt)} labelColor="text-amber-400" />
+                            <Row label="If Lose"    result={calcDelta(hBase, homeLoseReg)} labelColor="text-red-400" />
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
     };
 
     // --- Helpers ---
@@ -1006,6 +1121,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                         </div>
                     </div>
+                    {/* Playoff Implications */}
+                    {implications && (
+                        <div className="px-6 pb-4">
+                            <PlayoffImplicationsPanel />
+                        </div>
+                    )}
+
                     {/* Legend Footer */}
                     <div className="w-full bg-black/40 border-t border-white/5 py-3 flex justify-center">
                         <Legend />
@@ -1340,6 +1462,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 <span className="text-xs font-bold text-neutral-300">TOTAL: {totalGoals.toFixed(1)}</span>
                             </div>
                         </div>
+
+                        {/* Playoff Implications (Mobile) */}
+                        {implications && (
+                            <div className="mt-4">
+                                <PlayoffImplicationsPanel />
+                            </div>
+                        )}
                     </div>
                 </div>
                 {/* Mobile Legend */}

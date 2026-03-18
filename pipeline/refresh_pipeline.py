@@ -434,6 +434,15 @@ def refresh_pipeline():
     except Exception as e:
         print(f"[WARN] Season simulator failed: {e}")
 
+    # 7c. Compute per-game playoff implications (delta sims for today's matchups)
+    # Must run AFTER season_simulator so season_projections.json exists as baseline.
+    print("Computing game playoff implications...")
+    try:
+        import game_implications
+        game_implications.compute_game_implications()
+    except Exception as e:
+        print(f"[WARN] Game implications failed: {e}")
+
     # 8. Final Sync of History and others
     print("Final Sync...")
     import shutil
