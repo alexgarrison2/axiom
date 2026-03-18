@@ -1100,8 +1100,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 </div>
                             </div>
 
-                            {/* Bottom: Wager Pill - Aligned with Bar */}
-                            <div className="h-5 flex items-center">
+                            {/* Bottom: Odds + Wager Pill - Aligned with Bar */}
+                            <div className="h-5 flex items-center gap-1.5">
+                                {!isExpanded && awayVegasOdds && (
+                                    <span className="text-[10px] font-mono font-bold text-neutral-400 leading-none">
+                                        {String(awayVegasOdds).startsWith('-') ? awayVegasOdds : `+${awayVegasOdds}`}
+                                    </span>
+                                )}
                                 {awayWager ? (
                                     <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(awayWager, awayVegasOdds)}`}>
                                         <span>+{Math.round(awayEv || 0)}%</span>
@@ -1167,8 +1172,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 </div>
                             </div>
 
-                            {/* Bottom: Wager Pill - Aligned with Bar */}
-                            <div className="h-5 flex items-center">
+                            {/* Bottom: Odds + Wager Pill - Aligned with Bar */}
+                            <div className="h-5 flex items-center gap-1.5">
+                                {!isExpanded && homeVegasOdds && (
+                                    <span className="text-[10px] font-mono font-bold text-neutral-400 leading-none">
+                                        {String(homeVegasOdds).startsWith('-') ? homeVegasOdds : `+${homeVegasOdds}`}
+                                    </span>
+                                )}
                                 {homeWager ? (
                                     <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(homeWager, homeVegasOdds)}`}>
                                         <span>+{Math.round(homeEv || 0)}%</span>
