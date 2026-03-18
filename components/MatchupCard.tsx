@@ -465,10 +465,31 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         return '#a3a3a3';
     };
 
+    // ≥10 pt swing between win% and lose% for either team = "high stakes" game
+    const isHighImplication = (() => {
+        if (!implications) return false;
+        const { home_current_playoff_pct: hBase, away_current_playoff_pct: aBase, scenarios } = implications;
+        const homeSwing =
+            hBase != null && hBase > 1 && hBase < 99
+                ? (scenarios.home_reg_win.home_playoff_pct ?? 0) - (scenarios.away_reg_win.home_playoff_pct ?? 0)
+                : 0;
+        const awaySwing =
+            aBase != null && aBase > 1 && aBase < 99
+                ? (scenarios.away_reg_win.away_playoff_pct ?? 0) - (scenarios.home_reg_win.away_playoff_pct ?? 0)
+                : 0;
+        return homeSwing >= 10 || awaySwing >= 10;
+    })();
+
     const getGlowColor = (homeWager: string | null, awayWager: string | null) => {
         if (isSocial) return 'border-white/10'; // Social: no hover glow
         if (homeWager || awayWager) {
+            // EV glow takes priority — cyan electric signal
             return 'border-white/10 shadow-[0_0_30px_-5px_rgba(0,243,255,0.15)] hover:shadow-[0_0_40px_-5px_rgba(0,243,255,0.25)]';
+        }
+        if (isHighImplication) {
+            // Flame glow — orange/amber "high stakes fire", NOT a red warning.
+            // Flickering box-shadow via keyframe; border hint in deep ember.
+            return 'border-orange-950/50 animate-flame-flicker';
         }
         return 'border-white/5 hover:border-white/10';
     };
@@ -992,6 +1013,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                 {isHighEv && !isSocial && (
                     <div className="absolute inset-0 rounded-3xl border border-neon-green/50 animate-pulse pointer-events-none"></div>
                 )}
+                {/* Flame glow — spinning amber/orange conic border for high-implication games */}
+                {isHighImplication && !isHighEv && !isSocial && (
+                    <div className="flame-border-mask rounded-3xl">
+                        <div className="flame-spinner" />
+                    </div>
+                )}
                 {/* Simplified Background for Social */}
                 {isSocial ? (
                     <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
@@ -1198,6 +1225,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                 onClick={toggleExpand}
                 ref={cardRef}
             >
+                {/* Flame glow overlay — mobile */}
+                {isHighImplication && !isHighEv && !isSocial && (
+                    <div className="flame-border-mask rounded-[2.5rem]">
+                        <div className="flame-spinner" />
+                    </div>
+                )}
                 {/* Background Mask (Inner) - Handles Order/Border/Radius */}
                 <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] border border-white/10 -z-10 pointer-events-none backdrop-blur-xl">
                     <div className="absolute inset-0 bg-[#0a0a0a]/90" />

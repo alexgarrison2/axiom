@@ -163,6 +163,56 @@
     }
   }
 
+  /* -----------------------------------------------------------------------
+   * Flame glow — playoff implication cards (high-stakes, not good/bad)
+   * Colors: deep ember → orange → amber → back. Reads as "fire/energy",
+   * not as a red warning — intentionally distinct from the cyan EV glow.
+   * ----------------------------------------------------------------------- */
+  .flame-border-mask {
+    position: absolute;
+    inset: 0;
+    /* border-radius set via Tailwind class at usage site */
+    padding: 1px;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 20;
+    overflow: hidden;
+  }
+
+  .flame-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    /* Concentrated amber/orange hotspot on one side, deep ember on the other.
+       As it rotates the "flame peak" sweeps around the card edge. */
+    background: conic-gradient(
+      from 0deg,
+      #431407 0deg,        /* orange-950 — darkest ember */
+      #7c2d12 45deg,       /* orange-900 */
+      #c2410c 90deg,       /* orange-700 */
+      #ea580c 125deg,      /* orange-600 */
+      #f97316 155deg,      /* orange-500 — main flame */
+      #fb923c 172deg,      /* orange-400 */
+      #fbbf24 183deg,      /* amber-400  — hottest tip */
+      #fb923c 194deg,      /* orange-400 */
+      #f97316 210deg,      /* orange-500 */
+      #ea580c 245deg,      /* orange-600 */
+      #c2410c 285deg,      /* orange-700 */
+      #7c2d12 325deg,      /* orange-900 */
+      #431407 360deg       /* orange-950 */
+    );
+    animation: spin 4.5s linear infinite;
+  }
+
   .high-ev-border-mask {
     position: absolute;
     inset: 0;
