@@ -368,9 +368,26 @@ def refresh_pipeline():
     except Exception as e:
         print(f"[WARN] MoneyPuck fetch failed (predictions will use team ratings only): {e}")
 
-    # 4c. Compute PBP-derived HD metrics (must run BEFORE player_impact so that
-    #     pbp_metrics.json is available for the impact score computation).
-    #     Requires: enriched PBP (run enrich_pbp.py) + shots CSV.
+    # 4c. Fetch shifts for any games not yet in the shifts CSV, then enrich the
+    #     raw PBP with on-ice player IDs.  Both steps are incremental — they
+    #     skip games already processed — so they're safe to run every cycle.
+    #     Must run BEFORE calc_pbp_impact which reads the enriched PBP.
+    print("Fetching missing shift data...")
+    try:
+        import fetch_shifts
+        fetch_shifts.main()
+    except Exception as e:
+        print(f"[WARN] fetch_shifts failed: {e}")
+
+    print("Enriching PBP with on-ice player IDs (enrich_pbp)...")
+    try:
+        import enrich_pbp
+        enrich_pbp.main()
+    except Exception as e:
+        print(f"[WARN] enrich_pbp failed: {e}")
+
+    # 4d. Compute PBP-derived HD metrics (must run AFTER enrich_pbp so that
+    #     home_on1-6/away_on1-6 are populated, and BEFORE player_impact).
     print("Computing PBP-derived HD metrics (calc_pbp_impact)...")
     try:
         import calc_pbp_impact

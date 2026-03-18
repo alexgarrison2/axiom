@@ -602,22 +602,48 @@ def predict():
         print(f"Error loading schedule from {schedule_path}: {e}")
         schedule = []
     
-    # Load Odds
+    # Load Odds — check pipeline/odds.json first, then public/data/odds.json as
+    # fallback.  pipeline/odds.json is the freshest (written by fetch_odds.py
+    # each run).  If it's stale (>6 hours old) or missing today's game keys,
+    # fall back to public/data/odds.json which may have been written by a
+    # parallel fetch or a previous successful run.
     try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        odds_path = os.path.join(script_dir, 'odds.json')
-        # Check if exists there, if not try CWD?
-        # Actually fetch_odds writes to CWD if run from root. 
-        # But let's standardize on pipeline/odds.json if possible, or check both.
-        if os.path.exists(odds_path):
-            with open(odds_path, 'r') as f:
-                odds_data = json.load(f)
-        elif os.path.exists('odds.json'):
-             with open('odds.json', 'r') as f:
-                odds_data = json.load(f)
+        import time as _odds_time
+        script_dir  = os.path.dirname(os.path.abspath(__file__))
+        pipeline_odds_path = os.path.join(script_dir, 'odds.json')
+        public_odds_path   = os.path.join(script_dir, '..', 'public', 'data', 'odds.json')
+
+        def _load_odds(path):
+            with open(path, 'r') as f:
+                return json.load(f)
+
+        def _odds_age_hours(path):
+            return (_odds_time.time() - os.path.getmtime(path)) / 3600
+
+        odds_data = {}
+        used_path = None
+
+        # Prefer pipeline/odds.json if it's fresh (< 6 h old)
+        if os.path.exists(pipeline_odds_path) and _odds_age_hours(pipeline_odds_path) < 6:
+            odds_data = _load_odds(pipeline_odds_path)
+            used_path = pipeline_odds_path
+        # Fall back to public/data/odds.json
+        elif os.path.exists(public_odds_path):
+            odds_data = _load_odds(public_odds_path)
+            used_path = public_odds_path
+        elif os.path.exists(pipeline_odds_path):
+            # Stale but it's all we have
+            odds_data = _load_odds(pipeline_odds_path)
+            used_path = pipeline_odds_path
+
+        if used_path:
+            age_h = _odds_age_hours(used_path)
+            print(f"Loaded odds from {os.path.basename(used_path)} "
+                  f"({len(odds_data)} games, {age_h:.1f}h old)")
+            if age_h > 6:
+                print(f"  [WARN] Odds are {age_h:.1f}h old — EV calculations may be stale.")
         else:
-             print("Warning: odds.json not found.")
-             odds_data = {}
+            print("Warning: odds.json not found — no Vegas odds available.")
     except Exception as e:
         print(f"Error loading odds: {e}")
         odds_data = {}

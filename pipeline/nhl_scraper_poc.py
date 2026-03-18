@@ -217,6 +217,162 @@ def parse_boxscore(game_id, boxscore):
              
     return rows
 
+def extract_pbp_rows(pbp_json, game_info, game_date):
+    """
+    Extract raw play-by-play event rows from the NHL API PBP JSON.
+    Returns a list of dicts matching the nhl_season_2025_2026_pbp.csv schema.
+    Each physical event generates TWO rows: one home-perspective, one away-perspective.
+
+    Columns required by enrich_pbp.py:
+        game_id, period, time_in_period, is_home_team, team_perspective
+    Columns required by calc_pbp_impact.py:
+        game_id, event_id, type_code, situation_code, is_home_team, team_perspective
+    On-ice columns (home_on1-6, away_on1-6) are left NULL — filled by enrich_pbp.py.
+    """
+    game_id   = game_info.get("id")
+    season    = pbp_json.get("season", 20252026)
+    game_type = game_info.get("gameType", 2)
+
+    home_team = game_info.get("homeTeam", {})
+    away_team = game_info.get("awayTeam", {})
+    home_name = home_team.get("commonName", {}).get("default", "")
+    away_name = away_team.get("commonName", {}).get("default", "")
+    home_id   = home_team.get("id")
+
+    roster_map = build_roster_map(pbp_json)
+
+    plays        = pbp_json.get("plays", [])
+    sorted_plays = sorted(plays, key=lambda x: x.get("sortOrder", 0))
+
+    # Running game-state trackers
+    home_score = 0
+    away_score = 0
+    home_sog   = 0
+    away_sog   = 0
+
+    rows = []
+    for play in sorted_plays:
+        period_desc = play.get("periodDescriptor", {})
+        period_num  = period_desc.get("number", 1)
+        period_type = period_desc.get("periodType", "REG")
+        if period_type == "SO":
+            continue
+
+        time_in_period = play.get("timeInPeriod", "00:00")
+        time_remaining = play.get("timeRemaining", "")
+        event_id       = play.get("eventId")
+        type_code      = play.get("typeCode")
+        type_desc      = play.get("typeDescKey", "")
+        sort_order     = play.get("sortOrder", 0)
+        sit_str        = play.get("situationCode", "")
+        details        = play.get("details", {})
+
+        try:
+            situation_code = int(sit_str) if sit_str else None
+        except (ValueError, TypeError):
+            situation_code = None
+
+        # Parse skater/goalie counts from 4-digit situation code
+        h_sk, a_sk, h_g, a_g = 5, 5, 1, 1
+        if sit_str and len(sit_str) == 4:
+            try:
+                a_g  = int(sit_str[0])
+                a_sk = int(sit_str[1])
+                h_sk = int(sit_str[2])
+                h_g  = int(sit_str[3])
+            except ValueError:
+                pass
+
+        x_coord  = details.get("xCoord")
+        y_coord  = details.get("yCoord")
+        zone_code  = details.get("zoneCode", "")
+        shot_type  = details.get("shotType", "")
+        reason     = details.get("reason", "")
+        sec_reason = details.get("secondaryReason", "")
+        video_url  = play.get("videoClip", "")
+
+        def _name(pid):
+            return roster_map.get(pid, "") if pid else ""
+
+        shooter_name      = _name(details.get("shootingPlayerId") or details.get("scoringPlayerId"))
+        goalie_name       = _name(details.get("goalieInNetId"))
+        blocker_name      = _name(details.get("blockingPlayerId"))
+        hitter_name       = _name(details.get("hittingPlayerId"))
+        hittee_name       = _name(details.get("hitteePlayerId"))
+        assist1_name      = _name(details.get("assist1PlayerId"))
+        assist2_name      = _name(details.get("assist2PlayerId"))
+        penalty_on_name   = _name(details.get("committedByPlayerId"))
+        penalty_drawn_name = _name(details.get("drawnByPlayerId"))
+
+        # Update running score / SOG state AFTER capturing the pre-event state
+        event_owner = details.get("eventOwnerTeamId")
+        if type_code == 505:   # Goal
+            if event_owner == home_id:
+                home_score += 1
+            else:
+                away_score += 1
+        if type_code in (505, 506):  # Goal or Shot on goal
+            if event_owner == home_id:
+                home_sog += 1
+            else:
+                away_sog += 1
+
+        is_pp_home = int(h_sk > a_sk)
+        is_pp_away = int(a_sk > h_sk)
+        is_en      = int(h_g == 0 or a_g == 0)
+
+        base = dict(
+            game_id=game_id, season=season, game_date=game_date, game_type=game_type,
+            period=period_num, period_type=period_type,
+            time_in_period=time_in_period, time_remaining=time_remaining,
+            event_id=event_id, type_code=type_code, type_desc=type_desc,
+            sort_order=sort_order, situation_code=situation_code,
+            x_coord=x_coord, y_coord=y_coord, zone_code=zone_code,
+            shot_type=shot_type, reason=reason, secondary_reason=sec_reason,
+            video_url=video_url,
+            home_sog=home_sog, away_sog=away_sog,
+            home_score_running=home_score, away_score_running=away_score,
+            shooter_name=shooter_name, goalie_name=goalie_name,
+            blocker_name=blocker_name, hitter_name=hitter_name,
+            hittee_name=hittee_name, assist1_name=assist1_name,
+            assist2_name=assist2_name, penalty_on_name=penalty_on_name,
+            penalty_drawn_by_name=penalty_drawn_name,
+            event_type=type_code, is_empty_net=is_en,
+            pp_number=None, pk_number=None,
+            home_on1=None, home_on2=None, home_on3=None,
+            home_on4=None, home_on5=None, home_on6=None,
+            away_on1=None, away_on2=None, away_on3=None,
+            away_on4=None, away_on5=None, away_on6=None,
+        )
+
+        home_row = {**base,
+            "team_perspective": home_name, "opponent_perspective": away_name,
+            "is_home_team": True,
+            "team_score": home_score, "opponent_score": away_score,
+            "team_sog_running": home_sog, "opponent_sog_running": away_sog,
+            "goals_for": home_score, "goals_against": away_score,
+            "goal_diff": home_score - away_score,
+            "team_skaters": h_sk, "opponent_skaters": a_sk,
+            "team_goalie": h_g, "opponent_goalie": a_g,
+            "is_pp": is_pp_home, "is_pk": is_pp_away,
+        }
+        away_row = {**base,
+            "team_perspective": away_name, "opponent_perspective": home_name,
+            "is_home_team": False,
+            "team_score": away_score, "opponent_score": home_score,
+            "team_sog_running": away_sog, "opponent_sog_running": home_sog,
+            "goals_for": away_score, "goals_against": home_score,
+            "goal_diff": away_score - home_score,
+            "team_skaters": a_sk, "opponent_skaters": h_sk,
+            "team_goalie": a_g, "opponent_goalie": h_g,
+            "is_pp": is_pp_away, "is_pk": is_pp_home,
+        }
+        rows.append(home_row)
+        rows.append(away_row)
+
+    return rows
+
+
 def build_roster_map(pbp_json):
     """
     Create a mapping of playerID -> Full Name from the 'rosterSpots' in the PBP JSON.
@@ -1610,6 +1766,7 @@ def main():
     all_player_stats = []
     all_rows = []
     all_shots = []
+    all_pbp_rows = []
 
     current_date = start_date
     team_game_counts = {} # Track games played per team ID
@@ -1776,6 +1933,14 @@ def main():
 
                     all_rows.extend(game_rows)
                     all_shots.extend(shot_rows)
+
+                    # Extract and store raw PBP event rows for enrich_pbp / calc_pbp_impact
+                    try:
+                        pbp_rows = extract_pbp_rows(pbp, game, date_str)
+                        all_pbp_rows.extend(pbp_rows)
+                    except Exception as e:
+                        print(f" [WARN] PBP row extraction failed for game {game_id}: {e}")
+
                     print(f" -> Added {len(game_rows)} stats rows, {len(shot_rows)} shots.")
 
                     # Update Game Counts and History (AFTER processing the game)
@@ -1838,6 +2003,28 @@ def main():
         print("Shot Data Done!")
     else:
         print("No new shot data found.")
+
+    # Export Raw PBP Events to CSV (consumed by enrich_pbp.py → calc_pbp_impact.py)
+    PBP_FILENAME = "nhl_season_2025_2026_pbp.csv"
+    if all_pbp_rows:
+        print(f"Writing {len(all_pbp_rows)} raw PBP rows to {PBP_FILENAME}...")
+        new_pbp_df = pd.DataFrame(all_pbp_rows)
+        if os.path.exists(PBP_FILENAME):
+            try:
+                existing_pbp_df = pd.read_csv(PBP_FILENAME, low_memory=False)
+                combined_pbp_df = pd.concat([existing_pbp_df, new_pbp_df], ignore_index=True)
+                combined_pbp_df.drop_duplicates(
+                    subset=["game_id", "event_id", "is_home_team"], keep="last", inplace=True
+                )
+                combined_pbp_df.to_csv(PBP_FILENAME, index=False)
+            except Exception as e:
+                print(f"Error merging PBP: {e}. Appending.")
+                new_pbp_df.to_csv(PBP_FILENAME, mode="a", header=False, index=False)
+        else:
+            new_pbp_df.to_csv(PBP_FILENAME, index=False)
+        print(f"PBP Data Done! ({new_pbp_df['game_id'].nunique()} games added)")
+    else:
+        print("No new PBP data to write.")
 
     # Export Player Stats to CSV
     PLAYER_STATS_FILENAME = "nhl_season_2025_2026_player_stats.csv"
