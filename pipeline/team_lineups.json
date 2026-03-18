@@ -1242,16 +1242,6 @@
                 "movement": null
             }
         ],
-        "d4": [
-            {
-                "name": "Nick Blankenburg",
-                "number": 37,
-                "pos": "rd",
-                "id": 36299,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
         "ir": [
             {
                 "name": "Logan O'Connor",
@@ -1552,38 +1542,38 @@
                 "movement": null
             },
             {
-                "name": "Victor Olofsson",
-                "number": 95,
+                "name": "Connor Zary",
+                "number": 47,
                 "pos": "rw",
-                "id": 4718,
-                "ppUnit": 1,
-                "movement": null
+                "id": 29510,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f4": [
             {
-                "name": "Ryan Lomberg",
-                "number": 70,
+                "name": "Victor Olofsson",
+                "number": 95,
                 "pos": "lw",
-                "id": 3905,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Connor Zary",
-                "number": 47,
-                "pos": "c",
-                "id": 29510,
-                "ppUnit": null,
-                "movement": null
+                "id": 4718,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Martin Pospisil",
                 "number": 76,
-                "pos": "rw",
+                "pos": "c",
                 "id": 28414,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Adam Klapka",
+                "number": 43,
+                "pos": "rw",
+                "id": 34398,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1854,12 +1844,12 @@
                 "movement": null
             },
             {
-                "name": "Troy Terry",
-                "number": 19,
+                "name": "Mason McTavish",
+                "number": 23,
                 "pos": "rw",
-                "id": 4645,
-                "ppUnit": 1,
-                "movement": null
+                "id": 30834,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "f2": [
@@ -1884,7 +1874,7 @@
                 "number": 45,
                 "pos": "rw",
                 "id": 36637,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -1920,7 +1910,7 @@
                 "number": 77,
                 "pos": "lw",
                 "id": 2545,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2004,20 +1994,20 @@
                 "movement": null
             },
             {
-                "name": "John Carlson",
-                "number": 74,
-                "pos": "ir2",
-                "id": 1507,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
                 "name": "Radko Gudas",
                 "number": 7,
-                "pos": "ir3",
+                "pos": "ir2",
                 "id": 1366,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Troy Terry",
+                "number": 19,
+                "pos": "ir3",
+                "id": 4645,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -2025,7 +2015,7 @@
         "f1": [
             {
                 "name": "Alex Bump",
-                "number": 90,
+                "number": 20,
                 "pos": "lw",
                 "id": 34874,
                 "ppUnit": 2,
@@ -2119,7 +2109,7 @@
             },
             {
                 "name": "Luke Glendening",
-                "number": 14,
+                "number": 41,
                 "pos": "rw",
                 "id": 2174,
                 "ppUnit": null,
