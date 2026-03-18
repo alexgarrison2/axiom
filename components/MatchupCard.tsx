@@ -90,48 +90,111 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         if (hTrivial && aTrivial) return null;
 
         // From each team's perspective:
-        //   If Win     → their reg win scenario
-        //   If Lose OT → opponent's OT win scenario (they get 1 pt OTL)
-        //   If Lose    → opponent's reg win scenario
-        const homeWin    = scenarios.home_reg_win.home_playoff_pct;
-        const homeLoseOt = scenarios.away_otw.home_playoff_pct;
+        //   Win     → their reg win scenario
+        //   Lose OT → opponent's OT win (they get 1 pt OTL)
+        //   Lose    → opponent's reg win
+        const homeWin     = scenarios.home_reg_win.home_playoff_pct;
+        const homeLoseOt  = scenarios.away_otw.home_playoff_pct;
         const homeLoseReg = scenarios.away_reg_win.home_playoff_pct;
 
-        const awayWin    = scenarios.away_reg_win.away_playoff_pct;
-        const awayLoseOt = scenarios.home_otw.away_playoff_pct;
+        const awayWin     = scenarios.away_reg_win.away_playoff_pct;
+        const awayLoseOt  = scenarios.home_otw.away_playoff_pct;
         const awayLoseReg = scenarios.home_reg_win.away_playoff_pct;
 
-        type DeltaResult = { value: number; delta: number; fmt: string } | null;
-
-        const calcDelta = (base: number | null, scenario: number | null): DeltaResult => {
-            if (base === null || base === undefined || scenario === null || scenario === undefined) return null;
-            const delta = scenario - base;
-            return { value: scenario, delta, fmt: `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%` };
+        type Delta = { value: number; delta: number } | null;
+        const calcDelta = (base: number | null | undefined, scenario: number | null | undefined): Delta => {
+            if (base == null || scenario == null) return null;
+            return { value: scenario, delta: scenario - base };
         };
 
-        const deltaColor = (delta: number) => {
-            if (delta > 3)  return 'text-neon-green';
-            if (delta > 0)  return 'text-green-500';
-            if (delta < -3) return 'text-red-500';
-            if (delta < 0)  return 'text-red-400';
-            return 'text-neutral-500';
-        };
-
-        const Row = ({ label, result, labelColor }: {
+        // Outcome card: colored border + label + pct + arrow delta
+        const OutcomeCard = ({
+            label, delta, borderColor, labelColor, arrowColor,
+        }: {
             label: string;
-            result: DeltaResult;
+            delta: Delta;
+            borderColor: string;
             labelColor: string;
+            arrowColor: (d: number) => string;
         }) => (
-            <div className="flex items-center justify-between py-[3px]">
-                <span className={`text-[9px] font-mono font-bold uppercase tracking-wide ${labelColor}`}>{label}</span>
-                {result ? (
-                    <div className="flex items-center gap-1">
-                        <span className="text-[10px] font-mono text-white tabular-nums">{result.value.toFixed(1)}%</span>
-                        <span className={`text-[9px] font-mono font-bold tabular-nums ${deltaColor(result.delta)}`}>{result.fmt}</span>
-                    </div>
+            <div className={`flex flex-col items-center justify-center gap-0.5 rounded-xl border px-2 py-2.5 min-w-0 flex-1 bg-black/30 ${borderColor}`}>
+                <span className={`text-[9px] font-bold uppercase tracking-widest font-mono ${labelColor}`}>{label}</span>
+                {delta ? (
+                    <>
+                        <span className="text-[17px] font-black tabular-nums leading-tight text-white">
+                            {delta.value.toFixed(1)}%
+                        </span>
+                        <div className={`flex items-center gap-0.5 text-[11px] font-bold tabular-nums ${arrowColor(delta.delta)}`}>
+                            {delta.delta >= 0
+                                ? <span>▲</span>
+                                : <span>▼</span>
+                            }
+                            <span>{Math.abs(delta.delta).toFixed(1)}%</span>
+                        </div>
+                    </>
                 ) : (
-                    <span className="text-[9px] text-neutral-600 font-mono">—</span>
+                    <span className="text-[13px] text-neutral-600 font-mono">—</span>
                 )}
+            </div>
+        );
+
+        const winArrow  = (d: number) => d > 0 ? 'text-emerald-400' : d < 0 ? 'text-red-400' : 'text-neutral-500';
+        const otlArrow  = (d: number) => d > 0 ? 'text-emerald-400' : d < 0 ? 'text-amber-400' : 'text-neutral-500';
+        const loseArrow = (d: number) => d > 0 ? 'text-emerald-400' : d < 0 ? 'text-red-400' : 'text-neutral-500';
+
+        // One full team row: logo + current% on left, 3 outcome cards on right
+        const TeamRow = ({
+            triCode, logoUrl, teamColor, base, win, ot, lose,
+        }: {
+            triCode: string;
+            logoUrl: string;
+            teamColor?: string;
+            base: number | null | undefined;
+            win: number | null | undefined;
+            ot: number | null | undefined;
+            lose: number | null | undefined;
+        }) => (
+            <div className="flex items-center gap-3">
+                {/* Logo + current % */}
+                <div className="flex flex-col items-center gap-1 shrink-0 w-12">
+                    <div className="w-9 h-9">
+                        <LogoDisplay
+                            src={logoUrl}
+                            alt={triCode}
+                            triCode={triCode}
+                            className="w-full h-full object-contain"
+                            primaryColor={teamColor}
+                        />
+                    </div>
+                    <span className="text-[11px] font-black tabular-nums text-neutral-200 leading-none">
+                        {base != null ? `${base.toFixed(1)}%` : '—'}
+                    </span>
+                </div>
+
+                {/* 3 outcome cards */}
+                <div className="flex gap-2 flex-1 min-w-0">
+                    <OutcomeCard
+                        label="Win"
+                        delta={calcDelta(base, win)}
+                        borderColor="border-emerald-500/50"
+                        labelColor="text-emerald-400"
+                        arrowColor={winArrow}
+                    />
+                    <OutcomeCard
+                        label="OTL"
+                        delta={calcDelta(base, ot)}
+                        borderColor="border-amber-500/50"
+                        labelColor="text-amber-400"
+                        arrowColor={otlArrow}
+                    />
+                    <OutcomeCard
+                        label="Lose"
+                        delta={calcDelta(base, lose)}
+                        borderColor="border-red-500/50"
+                        labelColor="text-red-400"
+                        arrowColor={loseArrow}
+                    />
+                </div>
             </div>
         );
 
@@ -143,44 +206,28 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     <div className="flex-1 h-px bg-white/5" />
                 </div>
 
-                {/* Two-column layout: Away | Home */}
-                <div className="grid grid-cols-2 gap-3">
-                    {/* Away Team */}
+                <div className="flex flex-col gap-3">
                     {!aTrivial && (
-                        <div className="flex flex-col p-2.5 rounded-lg bg-white/[0.03] border border-white/5">
-                            <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-wide">
-                                    {implications.away_abbrev}
-                                </span>
-                                {aBase !== null && (
-                                    <span className="text-[9px] text-neutral-500 font-mono">
-                                        {aBase.toFixed(1)}% now
-                                    </span>
-                                )}
-                            </div>
-                            <Row label="If Win"     result={calcDelta(aBase, awayWin)}    labelColor="text-emerald-400" />
-                            <Row label="If Lose OT" result={calcDelta(aBase, awayLoseOt)} labelColor="text-amber-400" />
-                            <Row label="If Lose"    result={calcDelta(aBase, awayLoseReg)} labelColor="text-red-400" />
-                        </div>
+                        <TeamRow
+                            triCode={awayTeam.triCode}
+                            logoUrl={awayTeam.logoUrl}
+                            teamColor={awayTeam.color1}
+                            base={aBase}
+                            win={awayWin}
+                            ot={awayLoseOt}
+                            lose={awayLoseReg}
+                        />
                     )}
-
-                    {/* Home Team */}
                     {!hTrivial && (
-                        <div className={`flex flex-col p-2.5 rounded-lg bg-white/[0.03] border border-white/5 ${aTrivial ? 'col-span-2' : ''}`}>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-wide">
-                                    {implications.home_abbrev}
-                                </span>
-                                {hBase !== null && (
-                                    <span className="text-[9px] text-neutral-500 font-mono">
-                                        {hBase.toFixed(1)}% now
-                                    </span>
-                                )}
-                            </div>
-                            <Row label="If Win"     result={calcDelta(hBase, homeWin)}    labelColor="text-emerald-400" />
-                            <Row label="If Lose OT" result={calcDelta(hBase, homeLoseOt)} labelColor="text-amber-400" />
-                            <Row label="If Lose"    result={calcDelta(hBase, homeLoseReg)} labelColor="text-red-400" />
-                        </div>
+                        <TeamRow
+                            triCode={homeTeam.triCode}
+                            logoUrl={homeTeam.logoUrl}
+                            teamColor={homeTeam.color1}
+                            base={hBase}
+                            win={homeWin}
+                            ot={homeLoseOt}
+                            lose={homeLoseReg}
+                        />
                     )}
                 </div>
             </div>
