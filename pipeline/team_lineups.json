@@ -1547,7 +1547,7 @@
                 "pos": "rw",
                 "id": 29510,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -1557,7 +1557,7 @@
                 "pos": "lw",
                 "id": 4718,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Martin Pospisil",
@@ -1573,7 +1573,7 @@
                 "pos": "rw",
                 "id": 34398,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -1720,12 +1720,12 @@
         ],
         "f3": [
             {
-                "name": "Pius Suter",
-                "number": 24,
+                "name": "Jonathan Drouin",
+                "number": 29,
                 "pos": "lw",
-                "id": 32940,
+                "id": 2136,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Dalibor Dvorsky",
@@ -1736,12 +1736,12 @@
                 "movement": null
             },
             {
-                "name": "Jonatan Berggren",
-                "number": 29,
+                "name": "Otto Stenberg",
+                "number": 28,
                 "pos": "rw",
-                "id": 29107,
+                "id": 38119,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -1762,12 +1762,12 @@
                 "movement": null
             },
             {
-                "name": "Oskar Sundqvist",
-                "number": 70,
+                "name": "Pius Suter",
+                "number": 24,
                 "pos": "rw",
-                "id": 2356,
+                "id": 32940,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -1816,12 +1816,12 @@
                 "movement": null
             },
             {
-                "name": "Justin Holl",
-                "number": 3,
+                "name": "Tyler Tucker",
+                "number": 75,
                 "pos": "rd",
-                "id": 2857,
+                "id": 27631,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ]
     },
@@ -1844,12 +1844,12 @@
                 "movement": null
             },
             {
-                "name": "Mason McTavish",
-                "number": 23,
+                "name": "Troy Terry",
+                "number": 19,
                 "pos": "rw",
-                "id": 30834,
-                "ppUnit": null,
-                "movement": "new"
+                "id": 4645,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1874,7 +1874,7 @@
                 "number": 45,
                 "pos": "rw",
                 "id": 36637,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1910,7 +1910,7 @@
                 "number": 77,
                 "pos": "lw",
                 "id": 2545,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -1963,7 +1963,7 @@
                 "pos": "rd",
                 "id": 1507,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -2000,14 +2000,6 @@
                 "id": 1366,
                 "ppUnit": null,
                 "movement": null
-            },
-            {
-                "name": "Troy Terry",
-                "number": 19,
-                "pos": "ir3",
-                "id": 4645,
-                "ppUnit": null,
-                "movement": "down"
             }
         ]
     },
