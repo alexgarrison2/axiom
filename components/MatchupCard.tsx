@@ -12,6 +12,7 @@ import RecentGamesList from './RecentGamesList';
 import PlayerNewsList from './PlayerNewsList';
 import LineupGrid from './LineupGrid';
 import { useAdmin } from './AdminProvider';
+import OddsHistoryModal from './OddsHistoryModal';
 
 
 gsap.registerPlugin(useGSAP);
@@ -1121,8 +1122,17 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-1 mt-1">Odds</span>
                                 <span className="text-xs font-mono text-neutral-400">{formatOdds(awayVegasOdds)}</span>
                             </div>
-                            {/* Divider */}
-                            <div className="w-px bg-neutral-800 h-12 self-center"></div>
+                            {/* Divider + History Button */}
+                            <div className="flex flex-col items-center gap-1 self-center">
+                                <div className="w-px bg-neutral-800 h-8"></div>
+                                <OddsHistoryModal
+                                    gameId={prediction.id}
+                                    date={prediction.date}
+                                    awayTeam={awayTeam}
+                                    homeTeam={homeTeam}
+                                />
+                                <div className="w-px bg-neutral-800 h-8"></div>
+                            </div>
                             {/* Home Odds */}
                             <div className="flex flex-col items-center flex-1">
                                 <span className="text-[9px] text-neutral-500 font-bold tracking-widest mb-2">xOdds</span>
@@ -1539,6 +1549,16 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     })()}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Odds History */}
+                        <div className="flex justify-center mt-3">
+                            <OddsHistoryModal
+                                gameId={prediction.id}
+                                date={prediction.date}
+                                awayTeam={awayTeam}
+                                homeTeam={homeTeam}
+                            />
                         </div>
 
                         {/* Recent Games Lists (Side-by-Side on Mobile) */}
