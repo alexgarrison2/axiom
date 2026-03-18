@@ -147,7 +147,7 @@
                 "pos": "ld",
                 "id": 1172,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Troy Stecher",
@@ -633,7 +633,7 @@
                 "pos": "lw",
                 "id": 4693,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Elias Lindholm",
@@ -729,7 +729,7 @@
                 "pos": "rd",
                 "id": 27242,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
@@ -889,7 +889,7 @@
                 "pos": "rd",
                 "id": 1710,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "ir": [
@@ -911,7 +911,7 @@
                 "pos": "lw",
                 "id": 4787,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sebastian Aho",
@@ -1005,7 +1005,7 @@
                 "pos": "rw",
                 "id": 1699,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -1423,7 +1423,7 @@
                 "pos": "rd",
                 "id": 53,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -1702,12 +1702,12 @@
         ],
         "f3": [
             {
-                "name": "Tyson Jost",
-                "number": 27,
+                "name": "Reid Schaefer",
+                "number": 49,
                 "pos": "lw",
-                "id": 2641,
+                "id": 32867,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Erik Haula",
@@ -1728,12 +1728,12 @@
         ],
         "f4": [
             {
-                "name": "Reid Schaefer",
-                "number": 49,
+                "name": "Tyson Jost",
+                "number": 27,
                 "pos": "lw",
-                "id": 32867,
+                "id": 2641,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Fedor Svechkov",
@@ -2436,12 +2436,12 @@
         ],
         "f2": [
             {
-                "name": "A.J. Greer",
-                "number": 10,
+                "name": "Jesper Boqvist",
+                "number": 70,
                 "pos": "lw",
-                "id": 2706,
-                "ppUnit": null,
-                "movement": null
+                "id": 28107,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Anton Lundell",
@@ -2478,12 +2478,12 @@
                 "movement": null
             },
             {
-                "name": "Jesper Boqvist",
-                "number": 70,
+                "name": "A.J. Greer",
+                "number": 10,
                 "pos": "rw",
-                "id": 28107,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2706,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -2843,7 +2843,7 @@
                 "pos": "rw",
                 "id": 2739,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -3033,7 +3033,7 @@
                 "pos": "ir7",
                 "id": 2739,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
