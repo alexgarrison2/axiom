@@ -71,8 +71,8 @@ module.exports = {
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        // Irregular flicker — non-uniform keyframe spacing mimics real flame rhythm
-        'flame-flicker': 'flame-flicker 2.6s ease-in-out infinite',
+        // Slow ambient breathe — spinning border does the visual work; glow just pulses gently
+        'flame-flicker': 'flame-flicker 3.5s ease-in-out infinite',
       },
       keyframes: {
         'pulse-glow': {
@@ -83,15 +83,10 @@ module.exports = {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        // Non-uniform stops (0, 20, 38, 55, 72, 88, 100) create organic flicker
+        // Two-stop smooth breathe — very small delta so it's a glow, not a strobe
         'flame-flicker': {
-          '0%':   { boxShadow: '0 0 18px -4px rgba(251,146,60,0.38), 0 0 45px -8px rgba(234,88,12,0.2),  0 0 80px -16px rgba(185,28,28,0.12)' },
-          '20%':  { boxShadow: '0 0 32px -4px rgba(251,146,60,0.58), 0 0 65px -8px rgba(234,88,12,0.34), 0 0 110px -16px rgba(185,28,28,0.22)' },
-          '38%':  { boxShadow: '0 0 12px -4px rgba(251,146,60,0.24), 0 0 36px -8px rgba(234,88,12,0.14), 0 0 64px -16px rgba(185,28,28,0.09)' },
-          '55%':  { boxShadow: '0 0 38px -4px rgba(251,146,60,0.64), 0 0 72px -8px rgba(234,88,12,0.38), 0 0 118px -16px rgba(185,28,28,0.26)' },
-          '72%':  { boxShadow: '0 0 22px -4px rgba(251,146,60,0.44), 0 0 52px -8px rgba(234,88,12,0.26), 0 0 90px -16px rgba(185,28,28,0.16)' },
-          '88%':  { boxShadow: '0 0 28px -4px rgba(251,146,60,0.52), 0 0 60px -8px rgba(234,88,12,0.30), 0 0 96px -16px rgba(185,28,28,0.18)' },
-          '100%': { boxShadow: '0 0 18px -4px rgba(251,146,60,0.38), 0 0 45px -8px rgba(234,88,12,0.2),  0 0 80px -16px rgba(185,28,28,0.12)' },
+          '0%, 100%': { boxShadow: '0 0 22px -4px rgba(251,146,60,0.32), 0 0 50px -8px rgba(234,88,12,0.18), 0 0 88px -16px rgba(185,28,28,0.1)' },
+          '50%':      { boxShadow: '0 0 30px -4px rgba(251,146,60,0.46), 0 0 62px -8px rgba(234,88,12,0.26), 0 0 105px -16px rgba(185,28,28,0.15)' },
         },
         "accordion-down": {
           from: { height: "0" },
