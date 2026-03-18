@@ -1484,7 +1484,22 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     {prediction.away_pp_rank && prediction.away_pp_rank >= 28 && <Badge color="red">#{prediction.away_pp_rank} PP</Badge>}
                                     {prediction.away_pk_rank && prediction.away_pk_rank <= 5 && <Badge color="blue">#{prediction.away_pk_rank} PK</Badge>}
                                     {prediction.away_pk_rank && prediction.away_pk_rank >= 28 && <Badge color="red">#{prediction.away_pk_rank} PK</Badge>}
-                                    {prediction.away_l7 && <Badge color="gray">{prediction.away_l7}</Badge>}
+                                    {prediction.away_l7 && <Badge color="gray">{prediction.away_l7} (L7)</Badge>}
+                                    {prediction.away_h2h_record && prediction.away_h2h_record !== '0-0' && (
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-sky-400 bg-sky-400/10 border-sky-400/25">H2H {prediction.away_h2h_record}</span>
+                                    )}
+                                    {prediction.away_is_6in9 && <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-red-400 bg-red-400/10 border-red-400/30">6in9</span>}
+                                    {prediction.away_is_4in6 && !prediction.away_is_6in9 && <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-orange-400 bg-orange-400/10 border-orange-400/30">4in6</span>}
+                                    {prediction.away_is_3in4 && !prediction.away_is_4in6 && !prediction.away_is_6in9 && <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-amber-400 bg-amber-400/10 border-amber-400/30">3in4</span>}
+                                    {prediction.away_is_b2b && !prediction.away_is_3in4 && !prediction.away_is_4in6 && !prediction.away_is_6in9 && <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-amber-300 bg-amber-300/10 border-amber-300/25">B2B</span>}
+                                    {prediction.away_l10_away && (() => {
+                                        const rec = prediction.away_l10_away;
+                                        const isGood = rec.ptsPct >= 0.800;
+                                        const isBad  = rec.ptsPct <= 0.300;
+                                        if (!isGood && !isBad) return null;
+                                        // away team — their split is "away"
+                                        return <span className={`text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold ${isGood ? 'text-blue-400 bg-blue-400/10 border-blue-400/30' : 'text-red-400 bg-red-400/10 border-red-400/30'}`}>ROAD</span>;
+                                    })()}
                                 </div>
                             </div>
 
@@ -1506,7 +1521,22 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     {prediction.home_pp_rank && prediction.home_pp_rank >= 28 && <Badge color="red">#{prediction.home_pp_rank} PP</Badge>}
                                     {prediction.home_pk_rank && prediction.home_pk_rank <= 5 && <Badge color="blue">#{prediction.home_pk_rank} PK</Badge>}
                                     {prediction.home_pk_rank && prediction.home_pk_rank >= 28 && <Badge color="red">#{prediction.home_pk_rank} PK</Badge>}
-                                    {prediction.home_l7 && <Badge color="gray">{prediction.home_l7}</Badge>}
+                                    {prediction.home_l7 && <Badge color="gray">{prediction.home_l7} (L7)</Badge>}
+                                    {prediction.home_h2h_record && prediction.home_h2h_record !== '0-0' && (
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-sky-400 bg-sky-400/10 border-sky-400/25">H2H {prediction.home_h2h_record}</span>
+                                    )}
+                                    {prediction.home_is_6in9 && <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-red-400 bg-red-400/10 border-red-400/30">6in9</span>}
+                                    {prediction.home_is_4in6 && !prediction.home_is_6in9 && <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-orange-400 bg-orange-400/10 border-orange-400/30">4in6</span>}
+                                    {prediction.home_is_3in4 && !prediction.home_is_4in6 && !prediction.home_is_6in9 && <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-amber-400 bg-amber-400/10 border-amber-400/30">3in4</span>}
+                                    {prediction.home_is_b2b && !prediction.home_is_3in4 && !prediction.home_is_4in6 && !prediction.home_is_6in9 && <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold text-amber-300 bg-amber-300/10 border-amber-300/25">B2B</span>}
+                                    {prediction.home_l10_home && (() => {
+                                        const rec = prediction.home_l10_home;
+                                        const isGood = rec.ptsPct >= 0.800;
+                                        const isBad  = rec.ptsPct <= 0.300;
+                                        if (!isGood && !isBad) return null;
+                                        // home team — their split is "home"
+                                        return <span className={`text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold ${isGood ? 'text-blue-400 bg-blue-400/10 border-blue-400/30' : 'text-red-400 bg-red-400/10 border-red-400/30'}`}>HOME</span>;
+                                    })()}
                                 </div>
                             </div>
                         </div>
