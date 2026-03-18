@@ -422,7 +422,7 @@
                 "number": 11,
                 "pos": "c",
                 "id": 1246,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -2222,7 +2222,7 @@
                 "number": 92,
                 "pos": "lw",
                 "id": 31738,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -2238,7 +2238,7 @@
                 "number": 88,
                 "pos": "rw",
                 "id": 2376,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -2602,7 +2602,7 @@
                 "number": 11,
                 "pos": "lw",
                 "id": 2380,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3200,7 +3200,7 @@
                 "number": 8,
                 "pos": "rw",
                 "id": 3791,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -3210,7 +3210,7 @@
                 "number": 4,
                 "pos": "lw",
                 "id": 34454,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3818,22 +3818,22 @@
                 "movement": null
             },
             {
-                "name": "Nick Perbix",
-                "number": 48,
+                "name": "Justin Barron",
+                "number": 20,
                 "pos": "rd",
-                "id": 28161,
+                "id": 29338,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d3": [
             {
-                "name": "Justin Barron",
-                "number": 20,
+                "name": "Nick Perbix",
+                "number": 48,
                 "pos": "ld",
-                "id": 29338,
+                "id": 28161,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Ryan Ufko",
@@ -4040,7 +4040,7 @@
                 "number": 22,
                 "pos": "lw",
                 "id": 31504,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -4074,7 +4074,7 @@
                 "number": 16,
                 "pos": "c",
                 "id": 2160,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -4082,7 +4082,7 @@
                 "number": 28,
                 "pos": "rw",
                 "id": 2499,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -4092,7 +4092,7 @@
                 "number": 92,
                 "pos": "lw",
                 "id": 30606,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -4242,7 +4242,7 @@
                 "number": 23,
                 "pos": "lw",
                 "id": 2818,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -4276,7 +4276,7 @@
                 "number": 15,
                 "pos": "c",
                 "id": 33026,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -4354,7 +4354,7 @@
                 "number": 5,
                 "pos": "rd",
                 "id": 2363,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -4372,7 +4372,7 @@
                 "number": 3,
                 "pos": "rd",
                 "id": 2137,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -4970,7 +4970,7 @@
                 "number": 15,
                 "pos": "ld",
                 "id": 2473,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -4978,7 +4978,7 @@
                 "number": 4,
                 "pos": "rd",
                 "id": 2762,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -5308,7 +5308,7 @@
                 "number": 9,
                 "pos": "ld",
                 "id": 1572,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -5316,7 +5316,7 @@
                 "number": 3,
                 "pos": "rd",
                 "id": 1678,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -5330,12 +5330,12 @@
                 "movement": null
             },
             {
-                "name": "Nick Leddy",
-                "number": 4,
+                "name": "Vincent Desharnais",
+                "number": 5,
                 "pos": "rd",
-                "id": 311,
+                "id": 25716,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d3": [
@@ -5348,12 +5348,12 @@
                 "movement": null
             },
             {
-                "name": "Vincent Desharnais",
-                "number": 5,
+                "name": "Nick Leddy",
+                "number": 4,
                 "pos": "rd",
-                "id": 25716,
+                "id": 311,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "ir": [
@@ -5406,7 +5406,7 @@
                 "number": 6,
                 "pos": "rw",
                 "id": 33544,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -5520,7 +5520,7 @@
                 "number": 25,
                 "pos": "rd",
                 "id": 30051,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
