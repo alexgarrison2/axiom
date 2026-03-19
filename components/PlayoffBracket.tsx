@@ -151,34 +151,48 @@ function matchup(a: ST, b: ST): {hi:ST; lo:ST} {
 
 const BH = 800;
 
+// Figma-derived Y positions (per node coordinate data from the design file)
+const DIV_Y: [number, number] = [288, 512];   // Div Final card centers
+const CF_Y  = BH / 2;                          // CF card center = 400
+const SCF_Y = 100;                             // SCF card center (top-aligned)
+
 const Conn: React.FC<{
   inputs: number; dir: 'ltr'|'rtl'; width?: number;
-}> = ({ inputs, dir, width = 44 }) => {
+  iYs?: number[]; oYs?: number[];
+}> = ({ inputs, dir, width = 44, iYs, oYs }) => {
   const w = width;
   const color = 'rgba(59,130,246,0.35)';
-  const x0   = dir === 'ltr' ? 0 : w;           // input edge
-  const x1   = dir === 'ltr' ? w : 0;           // output edge
-  // Vertical bar sits 72% of the way toward the output for LTR, 28% for RTL
+  const x0   = dir === 'ltr' ? 0 : w;
+  const x1   = dir === 'ltr' ? w : 0;
   const xbar = dir === 'ltr' ? Math.round(w * 0.72) : Math.round(w * 0.28);
 
-  const inYs  = Array.from({length:inputs},  (_,i) => BH*(2*i+1)/(2*inputs));
-  const outYs = inputs===1
-    ? [BH/2]
-    : Array.from({length:inputs/2}, (_,i) => BH*(2*i+1)/inputs);
+  // Fall back to evenly-spaced defaults if not provided
+  const inYs  = iYs ?? Array.from({length:inputs}, (_,i) => BH*(2*i+1)/(2*inputs));
+  const outYs = oYs ?? (inputs===1 ? [BH/2] : Array.from({length:inputs/2}, (_,i) => BH*(2*i+1)/inputs));
 
   const paths: string[] = [];
 
   if (inputs === 1) {
-    paths.push(`M${x0},${BH/2} H${x1}`);
+    const inY  = inYs[0];
+    const outY = outYs[0];
+    if (Math.abs(inY - outY) < 2) {
+      // Straight horizontal
+      paths.push(`M${x0},${inY} H${x1}`);
+    } else {
+      // Step connector: horizontal → vertical → horizontal (handles CF→SCF going up)
+      paths.push(`M${x0},${inY} H${xbar}`);
+      paths.push(`M${xbar},${inY} V${outY}`);
+      paths.push(`M${xbar},${outY} H${x1}`);
+    }
   } else {
     for (let i = 0; i < inputs; i += 2) {
       const y1   = inYs[i];
       const y2   = inYs[i+1];
       const yOut = outYs[i/2];
-      paths.push(`M${x0},${y1}    H${xbar}`);    // top input → bar
-      paths.push(`M${x0},${y2}    H${xbar}`);    // bottom input → bar
-      paths.push(`M${xbar},${y1}  V${y2}`);      // vertical bar
-      paths.push(`M${xbar},${yOut} H${x1}`);     // bar midpoint → output
+      paths.push(`M${x0},${y1}    H${xbar}`);
+      paths.push(`M${x0},${y2}    H${xbar}`);
+      paths.push(`M${xbar},${y1}  V${y2}`);
+      paths.push(`M${xbar},${yOut} H${x1}`);
     }
   }
 
@@ -335,18 +349,38 @@ const MatchupCard: React.FC<CardProps> = ({ hi, lo, isFinal=false, onClickTeam }
   );
 };
 
-// ─── Round column: fixed BH height, N equal-height slots ─────────────────────
+// ─── Round column: fixed BH height, N slots ───────────────────────────────────
+// Pass `centers` to pin each card to an exact Y (absolute mode).
+// Without `centers`, slots are divided equally (legacy behaviour).
 const RoundCol: React.FC<{
   slots: number; children: React.ReactNode[]; width: number;
-}> = ({ slots, children, width }) => (
-  <div style={{ height:BH, width, flexShrink:0, display:'flex', flexDirection:'column' }}>
-    {Array.from({length:slots}, (_,i) => (
-      <div key={i} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
-        {children[i] ?? null}
+  centers?: number[];
+}> = ({ slots, children, width, centers }) => {
+  if (centers) {
+    return (
+      <div style={{ height:BH, width, flexShrink:0, position:'relative' }}>
+        {Array.from({length:slots}, (_,i) => (
+          <div key={i} style={{
+            position:'absolute', left:0, right:0,
+            top: centers[i], transform:'translateY(-50%)',
+            display:'flex', justifyContent:'center',
+          }}>
+            {children[i] ?? null}
+          </div>
+        ))}
       </div>
-    ))}
-  </div>
-);
+    );
+  }
+  return (
+    <div style={{ height:BH, width, flexShrink:0, display:'flex', flexDirection:'column' }}>
+      {Array.from({length:slots}, (_,i) => (
+        <div key={i} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          {children[i] ?? null}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 // ─── Round header labels ───────────────────────────────────────────────────────
 const RoundLabel = ({text, accent}: {text:string; accent?:string}) => (
@@ -485,65 +519,67 @@ export default function PlayoffBracket({ currentStandings, simResults }: Playoff
           {/* ══ West R1 ══ */}
           <RoundCol slots={4} width={R1W}>
             {[
-              // Slot 0 — Central first matchup, with division banner
               <div className="flex flex-col items-center gap-2" key="w1">
                 <DivBanner name={wD1} color={W}/>
                 <MatchupCard hi={w1} lo={w8} onClickTeam={setSelTricode}/>
               </div>,
-              // Slot 1 — Central second matchup
               <MatchupCard key="w2" hi={w2} lo={w3} onClickTeam={setSelTricode}/>,
-              // Slot 2 — Pacific first matchup, with division banner
               <div className="flex flex-col items-center gap-2" key="w3">
                 <DivBanner name={wD2} color={W}/>
                 <MatchupCard hi={w4} lo={w7} onClickTeam={setSelTricode}/>
               </div>,
-              // Slot 3 — Pacific second matchup
               <MatchupCard key="w4" hi={w5} lo={w6} onClickTeam={setSelTricode}/>,
             ]}
           </RoundCol>
 
-          <Conn inputs={4} dir="ltr" width={CW}/>
+          {/* R1→DivFinal: outYs from Figma (288/512, not default 200/600) */}
+          <Conn inputs={4} dir="ltr" width={CW} oYs={[...DIV_Y]}/>
 
           {/* ══ West Div Finals ══ */}
-          <RoundCol slots={2} width={R2W}>
+          <RoundCol slots={2} width={R2W} centers={[...DIV_Y]}>
             {[
               <MatchupCard key="wr2a" hi={wR2a.hi} lo={wR2a.lo} onClickTeam={setSelTricode}/>,
               <MatchupCard key="wr2b" hi={wR2b.hi} lo={wR2b.lo} onClickTeam={setSelTricode}/>,
             ]}
           </RoundCol>
 
-          <Conn inputs={2} dir="ltr" width={CW}/>
+          {/* DivFinal→CF: iYs at 288/512, oY at CF_Y=400 */}
+          <Conn inputs={2} dir="ltr" width={CW} iYs={[...DIV_Y]} oYs={[CF_Y]}/>
 
           {/* ══ West CF ══ */}
-          <RoundCol slots={1} width={CFW}>
+          <RoundCol slots={1} width={CFW} centers={[CF_Y]}>
             {[<MatchupCard key="wcf" hi={wCF.hi} lo={wCF.lo} onClickTeam={setSelTricode}/>]}
           </RoundCol>
 
-          <Conn inputs={1} dir="ltr" width={CW}/>
+          {/* CF→SCF: steps up from CF_Y=400 to SCF_Y=100 */}
+          <Conn inputs={1} dir="ltr" width={CW} iYs={[CF_Y]} oYs={[SCF_Y]}/>
 
-          {/* ══ Stanley Cup Final ══ */}
-          <RoundCol slots={1} width={SCFW}>
+          {/* ══ Stanley Cup Final — top-aligned ══ */}
+          <RoundCol slots={1} width={SCFW} centers={[SCF_Y]}>
             {[<MatchupCard key="scf" hi={scf.hi} lo={scf.lo} isFinal onClickTeam={setSelTricode}/>]}
           </RoundCol>
 
-          <Conn inputs={1} dir="rtl" width={CW}/>
+          {/* SCF→CF: steps down from SCF_Y=100 to CF_Y=400 */}
+          <Conn inputs={1} dir="rtl" width={CW} iYs={[CF_Y]} oYs={[SCF_Y]}/>
 
           {/* ══ East CF ══ */}
-          <RoundCol slots={1} width={CFW}>
+          <RoundCol slots={1} width={CFW} centers={[CF_Y]}>
             {[<MatchupCard key="ecf" hi={eCF.hi} lo={eCF.lo} onClickTeam={setSelTricode}/>]}
           </RoundCol>
 
-          <Conn inputs={2} dir="rtl" width={CW}/>
+          {/* CF→DivFinal (East): iYs at CF_Y, oYs at 288/512 */}
+          <Conn inputs={2} dir="rtl" width={CW} iYs={[...DIV_Y]} oYs={[CF_Y]}/>
 
           {/* ══ East Div Finals ══ */}
-          <RoundCol slots={2} width={R2W}>
+          <RoundCol slots={2} width={R2W} centers={[...DIV_Y]}>
             {[
               <MatchupCard key="er2a" hi={eR2a.hi} lo={eR2a.lo} onClickTeam={setSelTricode}/>,
               <MatchupCard key="er2b" hi={eR2b.hi} lo={eR2b.lo} onClickTeam={setSelTricode}/>,
             ]}
           </RoundCol>
 
-          <Conn inputs={4} dir="rtl" width={CW}/>
+          {/* DivFinal→R1 (East): iYs at 288/512, outYs default (200/600 even spacing) */}
+          <Conn inputs={4} dir="rtl" width={CW} oYs={[...DIV_Y]}/>
 
           {/* ══ East R1 ══ */}
           <RoundCol slots={4} width={R1W}>
