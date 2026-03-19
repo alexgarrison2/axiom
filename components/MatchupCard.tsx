@@ -63,14 +63,19 @@ function PickDotsAndStats({ entries, isMobile = false }: { entries: PickEntry[];
         <div className="flex items-center gap-2">
             {!isMobile && (
                 <div className="flex items-center gap-[3px]">
-                    {entries.map((e, i) => (
-                        <div
-                            key={i}
-                            className={`w-[7px] h-[7px] rounded-full ${e.isCorrect
-                                ? 'bg-neon-green shadow-[0_0_4px_rgba(16,185,129,0.8)]'
-                                : 'bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.7)]'}`}
-                        />
-                    ))}
+                    {entries.map((e, i) => {
+                        // fade from 35% (oldest) to 100% (newest)
+                        const opacity = entries.length <= 1 ? 1 : 0.35 + (i / (entries.length - 1)) * 0.65;
+                        return (
+                            <div
+                                key={i}
+                                style={{ opacity }}
+                                className={`w-[7px] h-[7px] rounded-full ${e.isCorrect
+                                    ? 'bg-neon-green shadow-[0_0_4px_rgba(16,185,129,0.8)]'
+                                    : 'bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.7)]'}`}
+                            />
+                        );
+                    })}
                 </div>
             )}
             <span className="text-[11px] font-mono font-bold text-neutral-300 tabular-nums whitespace-nowrap">{wins} – {losses}</span>
