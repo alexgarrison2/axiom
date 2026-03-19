@@ -436,12 +436,25 @@ def refresh_pipeline():
 
     # 7c. Compute per-game playoff implications (delta sims for today's matchups)
     # Must run AFTER season_simulator so season_projections.json exists as baseline.
+    # Retries up to 3x with 60s backoff — NHL API calls can fail transiently.
     print("Computing game playoff implications...")
-    try:
-        import game_implications
-        game_implications.compute_game_implications()
-    except Exception as e:
-        print(f"[WARN] Game implications failed: {e}")
+    _impl_success = False
+    for _attempt in range(1, 4):
+        try:
+            import game_implications
+            import importlib
+            importlib.reload(game_implications)   # ensure fresh state on retry
+            game_implications.compute_game_implications()
+            _impl_success = True
+            break
+        except Exception as e:
+            print(f"[WARN] Game implications attempt {_attempt}/3 failed: {e}")
+            if _attempt < 3:
+                import time
+                print(f"  Retrying in 60s...")
+                time.sleep(60)
+    if not _impl_success:
+        print("[ERROR] Game implications failed after 3 attempts — implications will be stale.")
 
     # 8. Final Sync of History and others
     print("Final Sync...")
