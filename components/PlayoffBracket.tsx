@@ -155,7 +155,7 @@ const Conn: React.FC<{
   inputs: number; dir: 'ltr'|'rtl'; width?: number;
 }> = ({ inputs, dir, width = 44 }) => {
   const w = width;
-  const color = 'rgba(255,255,255,0.20)';
+  const color = 'rgba(59,130,246,0.35)';
   const x0   = dir === 'ltr' ? 0 : w;           // input edge
   const x1   = dir === 'ltr' ? w : 0;           // output edge
   // Vertical bar sits 72% of the way toward the output for LTR, 28% for RTL
@@ -233,8 +233,9 @@ const MatchupCard: React.FC<CardProps> = ({ hi, lo, isFinal=false, onClickTeam }
     <div style={{width:cardW}} className="relative"
       onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
 
-      <div className="rounded-2xl overflow-hidden ring-1 ring-white/12 bg-[#090b17]
-                      hover:ring-white/22 transition-all duration-200">
+      <div className="rounded-[2px] overflow-hidden bg-[#090b17]
+                      shadow-[0_0_0_1px_rgba(59,130,246,0.5)]
+                      hover:shadow-[0_0_0_1px_rgba(99,165,255,0.8)] transition-shadow duration-150">
 
         {/* ── Waffle fills edge-to-edge; numbers float in the corners ── */}
         <div className="relative">
@@ -300,8 +301,9 @@ const MatchupCard: React.FC<CardProps> = ({ hi, lo, isFinal=false, onClickTeam }
       {/* ── Hover tooltip ── */}
       {hov && (
         <div className="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2
-                        bg-[#070916]/96 backdrop-blur-xl border border-white/10
-                        rounded-xl p-3 shadow-2xl pointer-events-none"
+                        bg-[#070916]/96 backdrop-blur-xl
+                        shadow-[0_0_0_1px_rgba(59,130,246,0.4)]
+                        rounded-[2px] p-3 shadow-2xl pointer-events-none"
           style={{width:210}}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
@@ -314,7 +316,7 @@ const MatchupCard: React.FC<CardProps> = ({ hi, lo, isFinal=false, onClickTeam }
               <Logo code={lo.tricode} size={14}/>
             </div>
           </div>
-          <div className="flex h-5 rounded-lg overflow-hidden mb-2">
+          <div className="flex h-5 rounded-[1px] overflow-hidden mb-2">
             <div className="flex items-center justify-center text-[8px] font-black text-white/90"
               style={{width:`${brk.hw}%`, backgroundColor:hC}}>{brk.hw.toFixed(0)}%</div>
             <div className="flex items-center justify-center text-[8px] font-black text-white/90"
