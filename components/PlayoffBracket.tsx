@@ -28,7 +28,6 @@ const DIV: Record<string, string> = {
 const DNAME: Record<string,string> = {
   ATL:'Atlantic', MET:'Metropolitan', CEN:'Central', PAC:'Pacific',
 };
-// Short letter code for seed labels: C1, P2, A3, M1, WC1 etc.
 const DIV_ABBR: Record<string, string> = { CEN:'C', PAC:'P', ATL:'A', MET:'M' };
 
 // ─── Extended team type ───────────────────────────────────────────────────────
@@ -86,7 +85,7 @@ interface WafSeg { color: string; count: number }
 const WaffleGrid: React.FC<{
   segs: WafSeg[]; cols: number; rows: number;
   cs?: number; gap?: number; rx?: number; empty?: string;
-}> = ({ segs, cols, rows, cs=6, gap=1, rx=1, empty='#0c0e1c' }) => {
+}> = ({ segs, cols, rows, cs=12, gap=1, rx=1.5, empty='#0c0e1c' }) => {
   const total = cols * rows;
   const step  = cs + gap;
   const cells: string[] = [];
@@ -145,38 +144,59 @@ function matchup(a: ST, b: ST): {hi:ST; lo:ST} {
   return a.cups >= b.cups ? {hi:a, lo:b} : {hi:b, lo:a};
 }
 
-// ─── Bracket connector SVGs ───────────────────────────────────────────────────
-const BH = 700;
+// ─── Right-angle bracket connector ───────────────────────────────────────────
+// Classic tournament bracket shape: horizontal lines from each input card meet
+// a single vertical bar; the bar's midpoint then runs horizontal to the output.
+// Creates the distinctive "]" (LTR) or "[" (RTL) bracket appearance.
+
+const BH = 800;
 
 const Conn: React.FC<{
   inputs: number; dir: 'ltr'|'rtl'; width?: number;
-}> = ({ inputs, dir, width=22 }) => {
+}> = ({ inputs, dir, width = 44 }) => {
   const w = width;
-  const color = 'rgba(255,255,255,0.07)';
-  const x0 = dir==='ltr' ? 0 : w;
-  const x1 = dir==='ltr' ? w : 0;
-  const xm = w / 2;
+  const color = 'rgba(255,255,255,0.20)';
+  const x0   = dir === 'ltr' ? 0 : w;           // input edge
+  const x1   = dir === 'ltr' ? w : 0;           // output edge
+  // Vertical bar sits 72% of the way toward the output for LTR, 28% for RTL
+  const xbar = dir === 'ltr' ? Math.round(w * 0.72) : Math.round(w * 0.28);
+
   const inYs  = Array.from({length:inputs},  (_,i) => BH*(2*i+1)/(2*inputs));
   const outYs = inputs===1
     ? [BH/2]
     : Array.from({length:inputs/2}, (_,i) => BH*(2*i+1)/inputs);
-  const paths = inYs.map((y, i) => {
-    const outIdx = inputs===4 ? (i<2?0:1) : 0;
-    const oy2 = outYs[outIdx];
-    return `M${x0},${y} H${xm} V${oy2} H${x1}`;
-  });
+
+  const paths: string[] = [];
+
+  if (inputs === 1) {
+    paths.push(`M${x0},${BH/2} H${x1}`);
+  } else {
+    for (let i = 0; i < inputs; i += 2) {
+      const y1   = inYs[i];
+      const y2   = inYs[i+1];
+      const yOut = outYs[i/2];
+      paths.push(`M${x0},${y1}    H${xbar}`);    // top input → bar
+      paths.push(`M${x0},${y2}    H${xbar}`);    // bottom input → bar
+      paths.push(`M${xbar},${y1}  V${y2}`);      // vertical bar
+      paths.push(`M${xbar},${yOut} H${x1}`);     // bar midpoint → output
+    }
+  }
+
   return (
-    <svg width={w} height={BH} style={{flexShrink:0,display:'block',alignSelf:'stretch'}}>
+    <svg width={w} height={BH}
+      style={{flexShrink:0, display:'block', alignSelf:'stretch'}}>
       {paths.map((d,i) => (
         <path key={i} d={d} stroke={color} strokeWidth="1.5"
-          fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          fill="none" strokeLinecap="square" strokeLinejoin="miter"/>
       ))}
     </svg>
   );
 };
 
-// ─── Athletic-style Matchup Card ──────────────────────────────────────────────
-// Portrait waffle with large sim-count numbers and side-by-side team display.
+// ─── Matchup card — waffle-dominant Athletic style ────────────────────────────
+// The waffle IS the card. Sim-count numbers are overlaid in the corners of the
+// grid. Team info lives in a compact strip beneath. No separate numbers section.
+
 interface CardProps {
   hi: ST; lo: ST;
   isFinal?: boolean;
@@ -185,84 +205,90 @@ interface CardProps {
 
 const MatchupCard: React.FC<CardProps> = ({ hi, lo, isFinal=false, onClickTeam }) => {
   const [hov, setHov] = useState(false);
-  const brk = useMemo(() => seriesBreak(winProb(hi, lo)), [hi, lo]);
-  const hC  = tc(hi.tricode);
-  const lC  = tc(lo.tricode);
+  const brk  = useMemo(() => seriesBreak(winProb(hi, lo)), [hi, lo]);
+  const hC   = tc(hi.tricode);
+  const lC   = tc(lo.tricode);
 
-  // Portrait waffle: 10 cols × 10 rows = 100 cells (1 cell = 1 sim out of 100)
-  const cols = isFinal ? 12 : 10;
-  const rows = isFinal ? 10 : 10;
-  const cs   = isFinal ? 6.5 : 6;
+  // 10×10 = 100 cells; each cell = 1 sim win out of 100
+  const cs   = isFinal ? 13 : 12;
   const gap  = 1;
+  const cols = 10;
+  const rows = 10;
   const tot  = cols * rows;
   const hN   = Math.round((brk.hw / 100) * tot);
   const segs: WafSeg[] = [{color:hC, count:hN}, {color:lC, count:tot-hN}];
 
-  // Display counts as "out of 100" equivalents
   const hCount = Math.round(brk.hw);
   const lCount = Math.round(brk.lw);
 
-  const logoSz = isFinal ? 30 : 24;
-  const cardW  = isFinal ? 158 : 132;
+  // Waffle fills full card width (no horizontal padding on the grid)
+  const waffleW = cols * (cs + gap) - gap;   // 129px (normal) / 139px (final)
+  const cardW   = waffleW + 2;               // 131 / 141px
 
-  const hLabel = seedLabel(hi);
-  const lLabel = seedLabel(lo);
+  const logoSz  = isFinal ? 26 : 22;
+  const hLabel  = seedLabel(hi);
+  const lLabel  = seedLabel(lo);
 
   return (
     <div style={{width:cardW}} className="relative"
       onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
 
-      <div className="bg-[#0a0c18] rounded-2xl ring-1 ring-white/8 overflow-hidden hover:ring-white/16 transition-all p-2.5">
+      <div className="rounded-2xl overflow-hidden ring-1 ring-white/12 bg-[#090b17]
+                      hover:ring-white/22 transition-all duration-200">
 
-        {/* ── Sim count numbers ── */}
-        <div className="flex justify-between items-baseline mb-2 px-0.5">
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-[24px] font-black leading-none tabular-nums" style={{color:hC}}>
+        {/* ── Waffle fills edge-to-edge; numbers float in the corners ── */}
+        <div className="relative">
+          <WaffleGrid segs={segs} cols={cols} rows={rows} cs={cs} gap={gap} empty="#0d0f1e" />
+
+          {/* Number overlay */}
+          <div className="absolute inset-0 flex justify-between items-start
+                          pointer-events-none select-none"
+               style={{padding: '7px 8px 0'}}>
+            <span className="font-black leading-none tabular-nums"
+              style={{
+                fontSize: isFinal ? 22 : 19,
+                color: hC,
+                textShadow: '0 1px 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9)',
+              }}>
               {hCount}
             </span>
-          </div>
-          <span className="text-[7px] text-white/15 font-mono uppercase tracking-widest self-center">
-            / 100
-          </span>
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-[24px] font-black leading-none tabular-nums" style={{color:lC}}>
+            <span className="font-black leading-none tabular-nums"
+              style={{
+                fontSize: isFinal ? 22 : 19,
+                color: lC,
+                textShadow: '0 1px 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9)',
+              }}>
               {lCount}
             </span>
           </div>
         </div>
 
-        {/* ── Portrait waffle ── */}
-        <div className="rounded-xl overflow-hidden">
-          <WaffleGrid segs={segs} cols={cols} rows={rows} cs={cs} gap={gap} empty="#0c0e1c" />
-        </div>
-
-        {/* ── Team display: side by side ── */}
-        <div className="flex justify-between items-end mt-2.5 px-0.5">
+        {/* ── Team strip ── */}
+        <div className="flex justify-between items-center px-2 pt-2 pb-2.5">
 
           {/* Hi team */}
           <button onClick={()=>onClickTeam(hi.tricode)}
-            className="flex flex-col items-center gap-1 hover:opacity-75 transition-opacity">
+            className="flex flex-col items-center gap-[3px] hover:opacity-70 transition-opacity">
             <Logo code={hi.tricode} size={logoSz} />
-            <span className="text-[9px] font-black text-white leading-none tracking-wide">
+            <span className="text-[9px] font-black text-white/90 leading-none tracking-wide">
               {hi.tricode}
             </span>
-            <span className="text-[7px] font-black leading-none px-1.5 py-0.5 rounded"
+            <span className="text-[7px] font-black leading-none px-1.5 py-[2px] rounded"
               style={{color:hC, background:`${hC}22`}}>
               {hLabel}
             </span>
           </button>
 
-          {/* Center divider */}
-          <span className="text-[8px] text-white/12 font-mono mb-3">vs</span>
+          <span className="text-[7px] text-white/15 font-mono pb-4">vs</span>
 
           {/* Lo team */}
           <button onClick={()=>onClickTeam(lo.tricode)}
-            className="flex flex-col items-center gap-1 hover:opacity-75 transition-opacity">
+            className="flex flex-col items-center gap-[3px] hover:opacity-70 transition-opacity">
             <Logo code={lo.tricode} size={logoSz} />
-            <span className="text-[9px] font-black text-white leading-none tracking-wide">
+            <span className="text-[9px] font-black text-white/90 leading-none tracking-wide">
               {lo.tricode}
             </span>
-            <span className="text-[7px] font-black leading-none px-1.5 py-0.5 rounded"
+            <span className="text-[7px] font-black leading-none px-1.5 py-[2px] rounded"
               style={{color:lC, background:`${lC}22`}}>
               {lLabel}
             </span>
@@ -273,7 +299,9 @@ const MatchupCard: React.FC<CardProps> = ({ hi, lo, isFinal=false, onClickTeam }
 
       {/* ── Hover tooltip ── */}
       {hov && (
-        <div className="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[#070916]/96 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl pointer-events-none"
+        <div className="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2
+                        bg-[#070916]/96 backdrop-blur-xl border border-white/10
+                        rounded-xl p-3 shadow-2xl pointer-events-none"
           style={{width:210}}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
@@ -307,9 +335,7 @@ const MatchupCard: React.FC<CardProps> = ({ hi, lo, isFinal=false, onClickTeam }
 
 // ─── Round column: fixed BH height, N equal-height slots ─────────────────────
 const RoundCol: React.FC<{
-  slots: number;
-  children: React.ReactNode[];
-  width: number;
+  slots: number; children: React.ReactNode[]; width: number;
 }> = ({ slots, children, width }) => (
   <div style={{ height:BH, width, flexShrink:0, display:'flex', flexDirection:'column' }}>
     {Array.from({length:slots}, (_,i) => (
@@ -328,11 +354,14 @@ const RoundLabel = ({text, accent}: {text:string; accent?:string}) => (
   </div>
 );
 
-// ─── Division label chip ──────────────────────────────────────────────────────
-const DivLabel = ({name, color}: {name:string; color:string}) => (
-  <div className="text-[7px] uppercase tracking-[0.3em] font-black mb-1 text-center"
-    style={{color:`${color}80`}}>
-    {name}
+// ─── Division banner (shown in R1 above first matchup of each division) ───────
+const DivBanner = ({name, color}: {name:string; color:string}) => (
+  <div className="flex flex-col items-center gap-1">
+    <div className="text-[8px] uppercase tracking-[0.35em] font-black"
+      style={{color:`${color}90`}}>
+      {name}
+    </div>
+    <div style={{width:48, height:1, background:`${color}30`}}/>
   </div>
 );
 
@@ -376,29 +405,23 @@ export default function PlayoffBracket({ currentStandings, simResults }: Playoff
     return <div className="text-center text-white/30 py-20 text-sm">Awaiting playoff field…</div>;
   }
 
-  // West R1 winners
+  // ── Chalk projections ───────────────────────────────────────────────────────
   const wW1 = chalk(w1,w8); const wW2 = chalk(w2,w3);
   const wW3 = chalk(w4,w7); const wW4 = chalk(w5,w6);
-  // West R2
   const wR2a = matchup(wW1, wW2);
   const wR2b = matchup(wW3, wW4);
   const wR2aW = chalk(wR2a.hi, wR2a.lo);
   const wR2bW = chalk(wR2b.hi, wR2b.lo);
-  // West CF
-  const wCF = matchup(wR2aW, wR2bW);
+  const wCF   = matchup(wR2aW, wR2bW);
 
-  // East R1 winners
   const eW1 = chalk(e1,e8); const eW2 = chalk(e2,e3);
   const eW3 = chalk(e4,e7); const eW4 = chalk(e5,e6);
-  // East R2
   const eR2a = matchup(eW1, eW2);
   const eR2b = matchup(eW3, eW4);
   const eR2aW = chalk(eR2a.hi, eR2a.lo);
   const eR2bW = chalk(eR2b.hi, eR2b.lo);
-  // East CF
-  const eCF = matchup(eR2aW, eR2bW);
+  const eCF   = matchup(eR2aW, eR2bW);
 
-  // SCF
   const wRep = chalk(wCF.hi, wCF.lo);
   const eRep = chalk(eCF.hi, eCF.lo);
   const scf  = matchup(wRep, eRep);
@@ -408,14 +431,17 @@ export default function PlayoffBracket({ currentStandings, simResults }: Playoff
   const eD1 = DNAME[DIV[e1.tricode]??''] ?? 'Atlantic';
   const eD2 = DNAME[DIV[e4.tricode]??''] ?? 'Metropolitan';
 
-  const W = '#f59e0b';
-  const E = '#38bdf8';
+  const W = '#f59e0b';    // West accent (amber)
+  const E = '#38bdf8';    // East accent (sky)
 
-  const R1W  = 136;
-  const R2W  = 136;
-  const CFW  = 136;
-  const SCFW = 162;
-  const CW   = 20;
+  // Column widths — cards are 131px (normal) and 141px (final); cols add margin
+  const R1W  = 135;
+  const R2W  = 135;
+  const CFW  = 135;
+  const SCFW = 146;
+  const CW   = 44;   // wider connector for right-angle bracket visibility
+
+  const minW = R1W + CW + R2W + CW + CFW + CW + SCFW + CW + CFW + CW + R2W + CW + R1W;
 
   return (
     <div className="w-full select-none">
@@ -429,13 +455,13 @@ export default function PlayoffBracket({ currentStandings, simResults }: Playoff
           Stanley Cup Bracket
         </h2>
         <p className="text-[8px] text-white/18 mt-1.5 font-mono">
-          Chalk bracket · Numbers = series wins out of 100 simulations · Hover for breakdown · Click team for full odds
+          Chalk bracket · Grid squares = series wins per 100 sims · Hover for breakdown · Click team for full odds
         </p>
       </div>
 
-      {/* ── Round labels row ────────────────────────────────────────────── */}
-      <div className="flex justify-center items-center mb-3 gap-0" style={{minWidth:1060}}>
-        <div style={{width:R1W}}><RoundLabel text="First Round" accent={`${W}88`}/></div>
+      {/* ── Round labels ────────────────────────────────────────────────── */}
+      <div className="flex justify-center items-center mb-3 gap-0" style={{minWidth:minW}}>
+        <div style={{width:R1W}}><RoundLabel text="First Round"  accent={`${W}88`}/></div>
         <div style={{width:CW}}/>
         <div style={{width:R2W}}><RoundLabel text="Div. Final"/></div>
         <div style={{width:CW}}/>
@@ -447,32 +473,36 @@ export default function PlayoffBracket({ currentStandings, simResults }: Playoff
         <div style={{width:CW}}/>
         <div style={{width:R2W}}><RoundLabel text="Div. Final"/></div>
         <div style={{width:CW}}/>
-        <div style={{width:R1W}}><RoundLabel text="First Round" accent={`${E}88`}/></div>
+        <div style={{width:R1W}}><RoundLabel text="First Round"  accent={`${E}88`}/></div>
       </div>
 
-      {/* ── Bracket ────────────────────────────────────────────────────── */}
+      {/* ── Bracket ─────────────────────────────────────────────────────── */}
       <div className="overflow-x-auto pb-6">
-        <div className="flex items-stretch justify-center mx-auto" style={{minWidth:1060}}>
+        <div className="flex items-stretch justify-center mx-auto" style={{minWidth:minW}}>
 
           {/* ══ West R1 ══ */}
           <RoundCol slots={4} width={R1W}>
             {[
-              <div className="flex flex-col items-center" key="w1">
-                <DivLabel name={wD1} color={W}/>
+              // Slot 0 — Central first matchup, with division banner
+              <div className="flex flex-col items-center gap-2" key="w1">
+                <DivBanner name={wD1} color={W}/>
                 <MatchupCard hi={w1} lo={w8} onClickTeam={setSelTricode}/>
               </div>,
+              // Slot 1 — Central second matchup
               <MatchupCard key="w2" hi={w2} lo={w3} onClickTeam={setSelTricode}/>,
-              <div className="flex flex-col items-center" key="w3">
-                <DivLabel name={wD2} color={W}/>
+              // Slot 2 — Pacific first matchup, with division banner
+              <div className="flex flex-col items-center gap-2" key="w3">
+                <DivBanner name={wD2} color={W}/>
                 <MatchupCard hi={w4} lo={w7} onClickTeam={setSelTricode}/>
               </div>,
+              // Slot 3 — Pacific second matchup
               <MatchupCard key="w4" hi={w5} lo={w6} onClickTeam={setSelTricode}/>,
             ]}
           </RoundCol>
 
           <Conn inputs={4} dir="ltr" width={CW}/>
 
-          {/* ══ West R2 ══ */}
+          {/* ══ West Div Finals ══ */}
           <RoundCol slots={2} width={R2W}>
             {[
               <MatchupCard key="wr2a" hi={wR2a.hi} lo={wR2a.lo} onClickTeam={setSelTricode}/>,
@@ -503,7 +533,7 @@ export default function PlayoffBracket({ currentStandings, simResults }: Playoff
 
           <Conn inputs={2} dir="rtl" width={CW}/>
 
-          {/* ══ East R2 ══ */}
+          {/* ══ East Div Finals ══ */}
           <RoundCol slots={2} width={R2W}>
             {[
               <MatchupCard key="er2a" hi={eR2a.hi} lo={eR2a.lo} onClickTeam={setSelTricode}/>,
@@ -516,13 +546,13 @@ export default function PlayoffBracket({ currentStandings, simResults }: Playoff
           {/* ══ East R1 ══ */}
           <RoundCol slots={4} width={R1W}>
             {[
-              <div className="flex flex-col items-center" key="e1">
-                <DivLabel name={eD1} color={E}/>
+              <div className="flex flex-col items-center gap-2" key="e1">
+                <DivBanner name={eD1} color={E}/>
                 <MatchupCard hi={e1} lo={e8} onClickTeam={setSelTricode}/>
               </div>,
               <MatchupCard key="e2" hi={e2} lo={e3} onClickTeam={setSelTricode}/>,
-              <div className="flex flex-col items-center" key="e3">
-                <DivLabel name={eD2} color={E}/>
+              <div className="flex flex-col items-center gap-2" key="e3">
+                <DivBanner name={eD2} color={E}/>
                 <MatchupCard hi={e4} lo={e7} onClickTeam={setSelTricode}/>
               </div>,
               <MatchupCard key="e4" hi={e5} lo={e6} onClickTeam={setSelTricode}/>,
