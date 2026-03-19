@@ -1177,7 +1177,7 @@
                 "pos": "lw",
                 "id": 31757,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Zakhar Bardakov",
@@ -1198,12 +1198,12 @@
         ],
         "d1": [
             {
-                "name": "Devon Toews",
-                "number": 7,
+                "name": "Brett Kulak",
+                "number": 77,
                 "pos": "ld",
-                "id": 2874,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2466,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Cale Makar",
@@ -1216,12 +1216,12 @@
         ],
         "d2": [
             {
-                "name": "Josh Manson",
-                "number": 42,
+                "name": "Devon Toews",
+                "number": 7,
                 "pos": "ld",
-                "id": 2400,
-                "ppUnit": null,
-                "movement": null
+                "id": 2874,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Brent Burns",
@@ -1234,12 +1234,12 @@
         ],
         "d3": [
             {
-                "name": "Brett Kulak",
-                "number": 77,
+                "name": "Josh Manson",
+                "number": 42,
                 "pos": "ld",
-                "id": 2466,
+                "id": 2400,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Sam Malinski",
@@ -2092,17 +2092,9 @@
         ],
         "f4": [
             {
-                "name": "Carl Grundstrom",
-                "number": 91,
-                "pos": "lw",
-                "id": 2875,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Sean Couturier",
                 "number": 14,
-                "pos": "c",
+                "pos": "lw",
                 "id": 1777,
                 "ppUnit": null,
                 "movement": null
@@ -2110,10 +2102,18 @@
             {
                 "name": "Luke Glendening",
                 "number": 41,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2174,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Garnet Hathaway",
+                "number": 19,
+                "pos": "rw",
+                "id": 2561,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d1": [
