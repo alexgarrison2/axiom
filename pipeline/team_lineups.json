@@ -2257,7 +2257,7 @@
                 "pos": "rw",
                 "id": 2385,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -2387,7 +2387,7 @@
                 "pos": "ir6",
                 "id": 2385,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -3744,12 +3744,12 @@
                 "movement": null
             },
             {
-                "name": "Mathieu Joseph",
-                "number": 17,
+                "name": "Adrian Kempe",
+                "number": 9,
                 "pos": "rw",
-                "id": 3891,
-                "ppUnit": null,
-                "movement": null
+                "id": 2747,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -3766,7 +3766,7 @@
                 "number": 55,
                 "pos": "c",
                 "id": 29855,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3792,16 +3792,16 @@
                 "number": 24,
                 "pos": "c",
                 "id": 2018,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Jared Wright",
-                "number": 53,
+                "name": "Mathieu Joseph",
+                "number": 17,
                 "pos": "rw",
-                "id": 34797,
+                "id": 3891,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -3914,7 +3914,7 @@
                 "number": 9,
                 "pos": "ir4",
                 "id": 2747,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "movement": null
             }
         ]
