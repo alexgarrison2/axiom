@@ -166,6 +166,14 @@
                 "id": 32523,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Urho Vaakanainen",
+                "number": 18,
+                "pos": "ir2",
+                "id": 2807,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -758,7 +766,7 @@
                 "number": 17,
                 "pos": "c",
                 "id": 2474,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -776,16 +784,16 @@
                 "number": 21,
                 "pos": "lw",
                 "id": 30448,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Hendrix Lapierre",
-                "number": null,
+                "name": "Pierre-Luc Dubois",
+                "number": 80,
                 "pos": "c",
-                "id": 29894,
-                "ppUnit": null,
-                "movement": null
+                "id": 2636,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Tom Wilson",
@@ -806,19 +814,19 @@
                 "movement": null
             },
             {
-                "name": "Pierre-Luc Dubois",
-                "number": 80,
+                "name": "Justin Sourdif",
+                "number": 34,
                 "pos": "c",
-                "id": 2636,
-                "ppUnit": 1,
-                "movement": null
+                "id": 29606,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Ryan Leonard",
                 "number": 9,
                 "pos": "rw",
                 "id": 35645,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -832,19 +840,19 @@
                 "movement": null
             },
             {
-                "name": "Justin Sourdif",
-                "number": 34,
+                "name": "Hendrix Lapierre",
+                "number": null,
                 "pos": "c",
-                "id": 29606,
+                "id": 29894,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Ethen Frank",
                 "number": 53,
                 "pos": "rw",
                 "id": 27817,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1203,7 +1211,7 @@
                 "pos": "ld",
                 "id": 2466,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Cale Makar",
@@ -1221,7 +1229,7 @@
                 "pos": "ld",
                 "id": 2874,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Brent Burns",
@@ -1239,7 +1247,7 @@
                 "pos": "ld",
                 "id": 2400,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Sam Malinski",
@@ -2113,7 +2121,7 @@
                 "pos": "rw",
                 "id": 2561,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
