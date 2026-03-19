@@ -4958,12 +4958,12 @@
         ],
         "d2": [
             {
-                "name": "Devon Toews",
-                "number": 7,
+                "name": "Josh Manson",
+                "number": 42,
                 "pos": "ld",
-                "id": 2874,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2400,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Brent Burns",
@@ -4976,12 +4976,12 @@
         ],
         "d3": [
             {
-                "name": "Josh Manson",
-                "number": 42,
+                "name": "Devon Toews",
+                "number": 7,
                 "pos": "ld",
-                "id": 2400,
-                "ppUnit": null,
-                "movement": null
+                "id": 2874,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Sam Malinski",
@@ -5086,7 +5086,7 @@
                 "number": 17,
                 "pos": "lw",
                 "id": 29637,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -5102,7 +5102,7 @@
                 "number": 47,
                 "pos": "rw",
                 "id": 29510,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -5262,7 +5262,7 @@
                 "number": 64,
                 "pos": "c",
                 "id": 1934,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -5340,7 +5340,7 @@
                 "number": 65,
                 "pos": "rd",
                 "id": 2099,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -5836,7 +5836,7 @@
                 "number": 89,
                 "pos": "c",
                 "id": 2673,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -5854,7 +5854,7 @@
                 "number": 29,
                 "pos": "lw",
                 "id": 2136,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -5942,7 +5942,7 @@
                 "number": 17,
                 "pos": "ld",
                 "id": 16,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
