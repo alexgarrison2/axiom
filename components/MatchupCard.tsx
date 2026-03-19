@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { GamePrediction, LocationSplitRecord } from '@/utils/data';
+import { GamePrediction, LocationSplitRecord, HistoryEntry } from '@/utils/data';
 import { GameImplication } from '@/utils/implications';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -22,9 +22,64 @@ interface MatchupCardProps {
     isSocial?: boolean;
     isUltraCompact?: boolean;
     implications?: GameImplication | null;
+    history?: HistoryEntry[];
 }
 
-const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false, isUltraCompact = false, implications }) => {
+// --- Pick Form helpers ---
+const PICK_FORM_CUTOFF = '2026-01-18';
+
+interface PickEntry { isCorrect: boolean; }
+
+function getPickHistory(history: HistoryEntry[], teamCommonName: string): { pickedWin: PickEntry[]; pickedLose: PickEntry[] } {
+    const relevant = history
+        .filter(h =>
+            h.date >= PICK_FORM_CUTOFF &&
+            (h.homeTeam.commonName === teamCommonName || h.awayTeam.commonName === teamCommonName)
+        )
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+    const pickedWin: PickEntry[] = [];
+    const pickedLose: PickEntry[] = [];
+    for (const h of relevant) {
+        if (h.predictedWinner === teamCommonName) {
+            pickedWin.push({ isCorrect: h.isCorrect });
+        } else {
+            pickedLose.push({ isCorrect: h.isCorrect });
+        }
+    }
+    return {
+        pickedWin: pickedWin.slice(-10),
+        pickedLose: pickedLose.slice(-10),
+    };
+}
+
+function PickDotsAndStats({ entries, isMobile = false }: { entries: PickEntry[]; isMobile?: boolean }) {
+    if (entries.length === 0) return <span className="text-neutral-600 text-[10px] font-mono">—</span>;
+    const wins = entries.filter(e => e.isCorrect).length;
+    const losses = entries.length - wins;
+    const pct = Math.round((wins / entries.length) * 100);
+    const pctColor = pct >= 60 ? 'text-neon-green' : pct <= 40 ? 'text-red-400' : 'text-yellow-400';
+    return (
+        <div className="flex items-center gap-2">
+            {!isMobile && (
+                <div className="flex items-center gap-[3px]">
+                    {entries.map((e, i) => (
+                        <div
+                            key={i}
+                            className={`w-[7px] h-[7px] rounded-full ${e.isCorrect
+                                ? 'bg-neon-green shadow-[0_0_4px_rgba(16,185,129,0.8)]'
+                                : 'bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.7)]'}`}
+                        />
+                    ))}
+                </div>
+            )}
+            <span className="text-[11px] font-mono font-bold text-neutral-300 tabular-nums whitespace-nowrap">{wins} – {losses}</span>
+            <span className={`text-[11px] font-bold tabular-nums ${pctColor}`}>{pct}%</span>
+        </div>
+    );
+}
+
+const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false, isUltraCompact = false, implications, history = [] }) => {
     const {
         homeTeam,
         awayTeam,
@@ -1184,6 +1239,40 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
                 {/* --- DESKTOP EXPANDED: Recent Games --- */}
                 <div className={`overflow-hidden transition-all duration-300 ${isDesktopExpanded ? 'max-h-[3000px] border-t border-white/5 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    {/* Pick Form Row — spans both columns */}
+                    {(() => {
+                        const awayPicks = getPickHistory(history, awayTeam.commonName);
+                        const homePicks = getPickHistory(history, homeTeam.commonName);
+                        const hasAny = awayPicks.pickedWin.length > 0 || awayPicks.pickedLose.length > 0 || homePicks.pickedWin.length > 0 || homePicks.pickedLose.length > 0;
+                        if (!hasAny) return null;
+                        return (
+                            <div className="flex flex-row border-b border-white/5 bg-black/30">
+                                {/* Away picks */}
+                                <div className="flex-1 px-6 py-3 flex flex-col gap-1.5">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-500 w-24 shrink-0">Picked Win</span>
+                                        <PickDotsAndStats entries={awayPicks.pickedWin} />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-500 w-24 shrink-0">Picked Lose</span>
+                                        <PickDotsAndStats entries={awayPicks.pickedLose} />
+                                    </div>
+                                </div>
+                                <div className="w-px bg-white/10 self-stretch"></div>
+                                {/* Home picks */}
+                                <div className="flex-1 px-6 py-3 flex flex-col gap-1.5">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-500 w-24 shrink-0">Picked Win</span>
+                                        <PickDotsAndStats entries={homePicks.pickedWin} />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-500 w-24 shrink-0">Picked Lose</span>
+                                        <PickDotsAndStats entries={homePicks.pickedLose} />
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
                     <div className="p-6 flex flex-row bg-black/20">
                         {/* Away Team Recent Games */}
                         <div className="flex-1 pr-6 flex flex-col gap-6">
@@ -1560,6 +1649,42 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 homeTeam={homeTeam}
                             />
                         </div>
+
+                        {/* Pick Form — Mobile */}
+                        {(() => {
+                            const awayPicks = getPickHistory(history, awayTeam.commonName);
+                            const homePicks = getPickHistory(history, homeTeam.commonName);
+                            const hasAny = awayPicks.pickedWin.length > 0 || awayPicks.pickedLose.length > 0 || homePicks.pickedWin.length > 0 || homePicks.pickedLose.length > 0;
+                            if (!hasAny) return null;
+                            return (
+                                <div className="mt-3 rounded border border-white/5 bg-white/[0.03] overflow-hidden">
+                                    <div className="flex flex-row divide-x divide-white/5">
+                                        {/* Away */}
+                                        <div className="flex-1 px-3 py-2 flex flex-col gap-1.5">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-neutral-500 shrink-0">Picked Win</span>
+                                                <PickDotsAndStats entries={awayPicks.pickedWin} isMobile={true} />
+                                            </div>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-neutral-500 shrink-0">Picked Lose</span>
+                                                <PickDotsAndStats entries={awayPicks.pickedLose} isMobile={true} />
+                                            </div>
+                                        </div>
+                                        {/* Home */}
+                                        <div className="flex-1 px-3 py-2 flex flex-col gap-1.5">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-neutral-500 shrink-0">Picked Win</span>
+                                                <PickDotsAndStats entries={homePicks.pickedWin} isMobile={true} />
+                                            </div>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-neutral-500 shrink-0">Picked Lose</span>
+                                                <PickDotsAndStats entries={homePicks.pickedLose} isMobile={true} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
 
                         {/* Recent Games Lists (Side-by-Side on Mobile) */}
                         <div className="flex flex-row gap-2 mt-4 relative">

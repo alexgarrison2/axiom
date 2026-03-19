@@ -756,6 +756,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                             >
                                 <MatchupCard
                                     prediction={prediction}
+                                    history={history}
                                     implications={findImplication(
                                         implicationsData ?? null,
                                         prediction.homeTeam.triCode,
