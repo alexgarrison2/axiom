@@ -2176,12 +2176,12 @@
     "EDM": {
         "f1": [
             {
-                "name": "Matthew Savoie",
-                "number": 22,
+                "name": "Vasily Podkolzin",
+                "number": 92,
                 "pos": "lw",
-                "id": 31504,
-                "ppUnit": 1,
-                "movement": null
+                "id": 30606,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Connor McDavid",
@@ -2192,29 +2192,29 @@
                 "movement": null
             },
             {
-                "name": "Zach Hyman",
-                "number": 18,
+                "name": "Matthew Savoie",
+                "number": 22,
                 "pos": "rw",
-                "id": 2468,
+                "id": 31504,
                 "ppUnit": 1,
                 "movement": null
             }
         ],
         "f2": [
             {
-                "name": "Ryan Nugent-Hopkins",
-                "number": 93,
+                "name": "Zach Hyman",
+                "number": 18,
                 "pos": "lw",
-                "id": 1733,
+                "id": 2468,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Jason Dickinson",
-                "number": 16,
+                "name": "Ryan Nugent-Hopkins",
+                "number": 93,
                 "pos": "c",
-                "id": 2160,
-                "ppUnit": 2,
+                "id": 1733,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -2228,20 +2228,20 @@
         ],
         "f3": [
             {
-                "name": "Vasily Podkolzin",
-                "number": 92,
-                "pos": "lw",
-                "id": 30606,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Josh Samanski",
                 "number": null,
-                "pos": "c",
+                "pos": "lw",
                 "id": 38438,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Jason Dickinson",
+                "number": 16,
+                "pos": "c",
+                "id": 2160,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Kasperi Kapanen",

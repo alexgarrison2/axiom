@@ -1,6 +1,13 @@
 {
     "WPG": [
         {
+            "player": "Neal Pionk",
+            "news": "Pionk (undisclosed) was a full participant in Thursday's morning skate. ",
+            "category": "Injury",
+            "date": "2026-03-19",
+            "timestamp": "2026-03-19T16:02:39.719Z"
+        },
+        {
             "player": "Connor Hellebuyck",
             "news": "Hellebuyck will start in Boston on Thursday. ",
             "category": "Goalie Start",
@@ -15,7 +22,30 @@
             "timestamp": "2026-03-19T15:31:17.680Z"
         }
     ],
+    "MTL": [
+        {
+            "player": "Jakub Dobes",
+            "news": "Dobes will start in Detroit on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-19",
+            "timestamp": "2026-03-19T15:59:52.527Z"
+        },
+        {
+            "player": "Josh Anderson",
+            "news": "Anderson is day-to-day with an upper-body injury. ",
+            "category": "Injury",
+            "date": "2026-03-19",
+            "timestamp": "2026-03-19T15:02:38.185Z"
+        }
+    ],
     "MIN": [
+        {
+            "player": "Robby Fabbri",
+            "news": "Fabbri will be a healthy scratch vs. Chicago on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-19",
+            "timestamp": "2026-03-19T15:59:12.803Z"
+        },
         {
             "player": "Bobby Brink",
             "news": "Brink (upper-body) is expected to draw back into Minnesota's lineup vs. Chicago on Thursday. ",
@@ -29,6 +59,15 @@
             "category": "Goalie Start",
             "date": "2026-03-19",
             "timestamp": "2026-03-19T15:40:31.155Z"
+        }
+    ],
+    "CBJ": [
+        {
+            "player": "Jet Greaves",
+            "news": "Greaves will start vs. New York on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-19",
+            "timestamp": "2026-03-19T15:56:39.975Z"
         }
     ],
     "NYI": [
@@ -77,20 +116,6 @@
             "category": "Call Up",
             "date": "2026-03-19",
             "timestamp": "2026-03-19T14:51:43.413Z"
-        },
-        {
-            "player": "Noah Laba",
-            "news": "Laba (lower body) exited Wednesday's game and did not return. ",
-            "category": "Injury",
-            "date": "2026-03-19",
-            "timestamp": "2026-03-19T03:30:36.318Z"
-        },
-        {
-            "player": "Urho Vaakanainen",
-            "news": "Vaakanaien (upper body) exited Wednesday's game and did not return. ",
-            "category": "Injury",
-            "date": "2026-03-19",
-            "timestamp": "2026-03-19T03:30:12.025Z"
         }
     ],
     "DET": [
@@ -107,22 +132,6 @@
             "category": "Injury",
             "date": "2026-03-19",
             "timestamp": "2026-03-19T14:37:15.401Z"
-        },
-        {
-            "player": "John Gibson",
-            "news": "Gibson will start Thursday vs. the Canadiens. ",
-            "category": "Goalie Start",
-            "date": "2026-03-19",
-            "timestamp": "2026-03-19T14:34:04.913Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Josh Anderson",
-            "news": "Anderson is day-to-day with an upper-body injury. ",
-            "category": "Injury",
-            "date": "2026-03-19",
-            "timestamp": "2026-03-19T15:02:38.185Z"
         }
     ],
     "PIT": [
@@ -148,15 +157,6 @@
             "category": "Goalie Start",
             "date": "2026-03-19",
             "timestamp": "2026-03-19T14:57:31.802Z"
-        }
-    ],
-    "CBJ": [
-        {
-            "player": "Jet Greaves",
-            "news": "Greaves is in the starter's crease at Columbus' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-19",
-            "timestamp": "2026-03-19T14:32:53.631Z"
         }
     ]
 }
