@@ -119,7 +119,7 @@
                 "pos": "rd",
                 "id": 2692,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -137,7 +137,7 @@
                 "pos": "rd",
                 "id": 26550,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d3": [
@@ -816,9 +816,17 @@
                 "movement": null
             },
             {
+                "name": "Sacha Boisvert",
+                "number": null,
+                "pos": "c",
+                "id": 36376,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
                 "name": "Landon Slaggert",
                 "number": 84,
-                "pos": "c",
+                "pos": "rw",
                 "id": 38089,
                 "ppUnit": null,
                 "movement": null
@@ -874,16 +882,6 @@
                 "number": 46,
                 "pos": "rd",
                 "id": 29897,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d4": [
-            {
-                "name": "Ethan Del Mastro",
-                "number": 38,
-                "pos": "ld",
-                "id": 30841,
                 "ppUnit": null,
                 "movement": null
             }
@@ -1730,20 +1728,20 @@
         ],
         "f4": [
             {
-                "name": "Frank Vatrano",
-                "number": 77,
+                "name": "Tim Washe",
+                "number": null,
                 "pos": "lw",
-                "id": 2545,
+                "id": 32021,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Tim Washe",
-                "number": null,
+                "name": "Mason McTavish",
+                "number": 23,
                 "pos": "c",
-                "id": 32021,
-                "ppUnit": null,
-                "movement": null
+                "id": 30834,
+                "ppUnit": 2,
+                "movement": "new"
             },
             {
                 "name": "Jansen Harkins",
@@ -1768,7 +1766,7 @@
                 "number": 65,
                 "pos": "rd",
                 "id": 2099,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
