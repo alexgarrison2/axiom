@@ -450,7 +450,6 @@ def refresh_pipeline():
         except Exception as e:
             print(f"[WARN] Game implications attempt {_attempt}/3 failed: {e}")
             if _attempt < 3:
-                import time
                 print(f"  Retrying in 60s...")
                 time.sleep(60)
     if not _impl_success:
