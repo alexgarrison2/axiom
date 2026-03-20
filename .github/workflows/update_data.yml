@@ -91,6 +91,8 @@ jobs:
 
             python predict_games.py
             python snapshot_predictions.py
+            # Regenerate implications so they stay current as the day rolls over
+            python -c "import game_implications; game_implications.compute_game_implications()"
             # season_simulator.py runs in Full Refresh only — playoff odds don't need hourly precision
           fi
 
@@ -137,6 +139,9 @@ jobs:
             # Season simulation projections
             [ -f pipeline/data/season_projections.json ] && git add pipeline/data/season_projections.json
             [ -f public/data/season_projections.json ] && git add public/data/season_projections.json
+            # Playoff implications (must be committed so Vercel serves today's games)
+            [ -f pipeline/game_implications.json ] && git add pipeline/game_implications.json
+            [ -f public/data/game_implications.json ] && git add public/data/game_implications.json
             
             # Commit if changes exist
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"
