@@ -13353,7 +13353,7 @@
     "predictedWinner": "Sabres",
     "actualWinner": "Sabres",
     "isCorrect": true,
-    "brierScore": 0.2071
+    "brierScore": 0.207
   },
   {
     "date": "2026-03-19",
@@ -13367,7 +13367,7 @@
     "predictedWinner": "Golden Knights",
     "actualWinner": "Mammoth",
     "isCorrect": false,
-    "brierScore": 0.3222
+    "brierScore": 0.3226
   },
   {
     "date": "2026-03-19",
@@ -13381,7 +13381,7 @@
     "predictedWinner": "Lightning",
     "actualWinner": "Lightning",
     "isCorrect": true,
-    "brierScore": 0.096
+    "brierScore": 0.0961
   },
   {
     "date": "2026-03-19",
@@ -13395,7 +13395,7 @@
     "predictedWinner": "Oilers",
     "actualWinner": "Panthers",
     "isCorrect": false,
-    "brierScore": 0.4042
+    "brierScore": 0.4045
   },
   {
     "date": "2026-03-19",
@@ -13409,7 +13409,7 @@
     "predictedWinner": "Kraken",
     "actualWinner": "Predators",
     "isCorrect": false,
-    "brierScore": 0.2696
+    "brierScore": 0.2694
   },
   {
     "date": "2026-03-19",
@@ -13423,7 +13423,7 @@
     "predictedWinner": "Bruins",
     "actualWinner": "Bruins",
     "isCorrect": true,
-    "brierScore": 0.2059
+    "brierScore": 0.2061
   },
   {
     "date": "2026-03-19",
@@ -13437,7 +13437,7 @@
     "predictedWinner": "Wild",
     "actualWinner": "Blackhawks",
     "isCorrect": false,
-    "brierScore": 0.4675
+    "brierScore": 0.4679
   },
   {
     "date": "2026-03-19",
@@ -13465,7 +13465,7 @@
     "predictedWinner": "Red Wings",
     "actualWinner": "Red Wings",
     "isCorrect": true,
-    "brierScore": 0.2468
+    "brierScore": 0.247
   },
   {
     "date": "2026-03-19",
@@ -13479,7 +13479,7 @@
     "predictedWinner": "Senators",
     "actualWinner": "Senators",
     "isCorrect": true,
-    "brierScore": 0.1802
+    "brierScore": 0.1806
   },
   {
     "date": "2026-03-19",
@@ -13493,6 +13493,76 @@
     "predictedWinner": "Kings",
     "actualWinner": "Flyers",
     "isCorrect": false,
-    "brierScore": 0.401
+    "brierScore": 0.4007
+  },
+  {
+    "date": "2026-03-20",
+    "homeTeam": "Flames",
+    "awayTeam": "Panthers",
+    "homeScore": 4,
+    "awayScore": 1,
+    "homeXg": 2.98,
+    "awayXg": 2.9,
+    "homeWinProb": 51.1,
+    "predictedWinner": "Flames",
+    "actualWinner": "Flames",
+    "isCorrect": true,
+    "brierScore": 0.2387
+  },
+  {
+    "date": "2026-03-20",
+    "homeTeam": "Blackhawks",
+    "awayTeam": "Avalanche",
+    "homeScore": 1,
+    "awayScore": 4,
+    "homeXg": 2.18,
+    "awayXg": 3.45,
+    "homeWinProb": 29.9,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Avalanche",
+    "isCorrect": true,
+    "brierScore": 0.0896
+  },
+  {
+    "date": "2026-03-20",
+    "homeTeam": "Mammoth",
+    "awayTeam": "Ducks",
+    "homeScore": 1,
+    "awayScore": 4,
+    "homeXg": 3.03,
+    "awayXg": 3.06,
+    "homeWinProb": 49.6,
+    "predictedWinner": "Ducks",
+    "actualWinner": "Ducks",
+    "isCorrect": true,
+    "brierScore": 0.246
+  },
+  {
+    "date": "2026-03-20",
+    "homeTeam": "Capitals",
+    "awayTeam": "Devils",
+    "homeScore": 2,
+    "awayScore": 1,
+    "homeXg": 2.94,
+    "awayXg": 2.83,
+    "homeWinProb": 51.7,
+    "predictedWinner": "Capitals",
+    "actualWinner": "Capitals",
+    "isCorrect": true,
+    "brierScore": 0.2336
+  },
+  {
+    "date": "2026-03-20",
+    "homeTeam": "Maple Leafs",
+    "awayTeam": "Hurricanes",
+    "homeScore": 3,
+    "awayScore": 4,
+    "homeXg": 2.68,
+    "awayXg": 3.9,
+    "homeWinProb": 31.9,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Hurricanes",
+    "isCorrect": true,
+    "brierScore": 0.1017
   }
 ]
