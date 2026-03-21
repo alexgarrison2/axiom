@@ -190,14 +190,6 @@
                 "id": 3689,
                 "ppUnit": null,
                 "movement": null
-            },
-            {
-                "name": "Samuel Girard",
-                "number": 49,
-                "pos": "ir5",
-                "id": 2773,
-                "ppUnit": null,
-                "movement": null
             }
         ]
     },
@@ -1530,12 +1522,12 @@
     "SJS": {
         "f1": [
             {
-                "name": "Collin Graf",
-                "number": 51,
+                "name": "Philipp Kurashev",
+                "number": 96,
                 "pos": "lw",
-                "id": 38105,
+                "id": 28817,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Macklin Celebrini",
@@ -1546,12 +1538,12 @@
                 "movement": null
             },
             {
-                "name": "Tyler Toffoli",
-                "number": 73,
+                "name": "Will Smith",
+                "number": 2,
                 "pos": "rw",
-                "id": 1656,
+                "id": 38126,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1560,7 +1552,7 @@
                 "number": 72,
                 "pos": "lw",
                 "id": 34666,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1582,12 +1574,12 @@
         ],
         "f3": [
             {
-                "name": "Pavol Regenda",
-                "number": 84,
+                "name": "Collin Graf",
+                "number": 51,
                 "pos": "lw",
-                "id": 36378,
-                "ppUnit": 2,
-                "movement": null
+                "id": 38105,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Alexander Wennberg",
@@ -1598,12 +1590,12 @@
                 "movement": null
             },
             {
-                "name": "Will Smith",
-                "number": 2,
+                "name": "Adam Gaudette",
+                "number": 81,
                 "pos": "rw",
-                "id": 38126,
-                "ppUnit": 1,
-                "movement": null
+                "id": 4646,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f4": [
@@ -1628,54 +1620,54 @@
                 "number": 81,
                 "pos": "rw",
                 "id": 4646,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
         "d1": [
+            {
+                "name": "Mario Ferraro",
+                "number": 38,
+                "pos": "ld",
+                "id": 27666,
+                "ppUnit": null,
+                "movement": "up"
+            },
+            {
+                "name": "Shakir Mukhamadullin",
+                "number": null,
+                "pos": "rd",
+                "id": 33038,
+                "ppUnit": null,
+                "movement": "up"
+            }
+        ],
+        "d2": [
             {
                 "name": "Dmitry Orlov",
                 "number": 9,
                 "pos": "ld",
                 "id": 1572,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Vincent Desharnais",
-                "number": 5,
+                "name": "John Klingberg",
+                "number": 3,
                 "pos": "rd",
-                "id": 25716,
-                "ppUnit": null,
-                "movement": null
+                "id": 1678,
+                "ppUnit": 2,
+                "movement": "new"
             }
         ],
-        "d2": [
+        "d3": [
             {
                 "name": "Sam Dickinson",
                 "number": null,
                 "pos": "ld",
                 "id": 37090,
                 "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Mario Ferraro",
-                "number": 38,
-                "pos": "rd",
-                "id": 27666,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Shakir Mukhamadullin",
-                "number": null,
-                "pos": "ld",
-                "id": 33038,
-                "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Nick Leddy",
@@ -1710,6 +1702,14 @@
                 "id": 38146,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Tyler Toffoli",
+                "number": 73,
+                "pos": "ir4",
+                "id": 1656,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -2252,10 +2252,10 @@
     "MTL": {
         "f1": [
             {
-                "name": "Juraj Slafkovsky",
-                "number": 20,
+                "name": "Cole Caufield",
+                "number": 13,
                 "pos": "lw",
-                "id": 35721,
+                "id": 30424,
                 "ppUnit": 1,
                 "movement": null
             },
@@ -2268,10 +2268,10 @@
                 "movement": null
             },
             {
-                "name": "Cole Caufield",
-                "number": 13,
+                "name": "Juraj Slafkovsky",
+                "number": 20,
                 "pos": "rw",
-                "id": 30424,
+                "id": 35721,
                 "ppUnit": 1,
                 "movement": null
             }
@@ -2304,10 +2304,10 @@
         ],
         "f3": [
             {
-                "name": "Alexandre Texier",
-                "number": 85,
+                "name": "Zack Bolduc",
+                "number": 76,
                 "pos": "lw",
-                "id": 4759,
+                "id": 31240,
                 "ppUnit": null,
                 "movement": null
             },
@@ -2320,10 +2320,10 @@
                 "movement": null
             },
             {
-                "name": "Zack Bolduc",
-                "number": 76,
+                "name": "Alexandre Texier",
+                "number": 85,
                 "pos": "rw",
-                "id": 31240,
+                "id": 4759,
                 "ppUnit": null,
                 "movement": null
             }
