@@ -2089,7 +2089,7 @@
                 "pos": "lw",
                 "id": 2787,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Chandler Stephenson",
@@ -2115,7 +2115,7 @@
                 "pos": "lw",
                 "id": 2488,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Shane Wright",
@@ -2237,7 +2237,7 @@
                 "pos": "ir3",
                 "id": 2488,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2918,7 +2918,7 @@
                 "number": 22,
                 "pos": "ld",
                 "id": 2349,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2932,12 +2932,12 @@
         ],
         "d2": [
             {
-                "name": "Morgan Rielly",
-                "number": 44,
+                "name": "Philippe Myers",
+                "number": 51,
                 "pos": "ld",
-                "id": 1935,
-                "ppUnit": 2,
-                "movement": null
+                "id": 24151,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Brandon Carlo",
@@ -2990,6 +2990,14 @@
                 "id": 2433,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Morgan Rielly",
+                "number": 44,
+                "pos": "ir4",
+                "id": 1935,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -3338,12 +3346,22 @@
                 "movement": null
             },
             {
+                "name": "Justin Holl",
+                "number": 3,
+                "pos": "rd",
+                "id": 2857,
+                "ppUnit": null,
+                "movement": "new"
+            }
+        ],
+        "ir": [
+            {
                 "name": "Tyler Tucker",
                 "number": 75,
-                "pos": "rd",
+                "pos": "ir1",
                 "id": 27631,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ]
     },
@@ -4020,11 +4038,11 @@
         ],
         "d2": [
             {
-                "name": "Victor Hedman",
-                "number": 77,
+                "name": "Ryan McDonagh",
+                "number": 27,
                 "pos": "ld",
-                "id": 1369,
-                "ppUnit": 2,
+                "id": 1048,
+                "ppUnit": null,
                 "movement": "up"
             },
             {
@@ -4038,19 +4056,19 @@
         ],
         "d3": [
             {
-                "name": "Ryan McDonagh",
-                "number": 27,
+                "name": "Emil Lilleberg",
+                "number": null,
                 "pos": "ld",
-                "id": 1048,
+                "id": 37940,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Charle-Edouard D'Astous",
                 "number": 51,
                 "pos": "rd",
                 "id": 26500,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -4084,7 +4102,7 @@
                 "number": 77,
                 "pos": "ir4",
                 "id": 1369,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ]
