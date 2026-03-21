@@ -2922,22 +2922,22 @@
                 "movement": null
             },
             {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
+                "name": "Troy Stecher",
+                "number": 28,
                 "pos": "rd",
-                "id": 1172,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2702,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "d2": [
             {
-                "name": "Philippe Myers",
-                "number": 51,
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
                 "pos": "ld",
-                "id": 24151,
-                "ppUnit": null,
-                "movement": "new"
+                "id": 1172,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Brandon Carlo",
@@ -2958,12 +2958,12 @@
                 "movement": null
             },
             {
-                "name": "Troy Stecher",
-                "number": 28,
+                "name": "Philippe Myers",
+                "number": 51,
                 "pos": "rd",
-                "id": 2702,
+                "id": 24151,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "ir": [
@@ -2997,18 +2997,18 @@
                 "pos": "ir4",
                 "id": 1935,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
     "VAN": {
         "f1": [
             {
-                "name": "Jake DeBrusk",
-                "number": 74,
+                "name": "Drew O'Connor",
+                "number": 18,
                 "pos": "lw",
-                "id": 2490,
-                "ppUnit": 1,
+                "id": 32925,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3020,12 +3020,12 @@
                 "movement": null
             },
             {
-                "name": "Drew O'Connor",
-                "number": 18,
+                "name": "Linus Karlsson",
+                "number": 94,
                 "pos": "rw",
-                "id": 32925,
+                "id": 29135,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -3056,12 +3056,12 @@
         ],
         "f3": [
             {
-                "name": "Max Sasson",
-                "number": null,
+                "name": "Nils Hoglander",
+                "number": 21,
                 "pos": "lw",
-                "id": 30007,
+                "id": 30614,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Teddy Blueger",
@@ -3072,22 +3072,22 @@
                 "movement": null
             },
             {
-                "name": "Linus Karlsson",
-                "number": 94,
+                "name": "Jake DeBrusk",
+                "number": 74,
                 "pos": "rw",
-                "id": 29135,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2490,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f4": [
             {
-                "name": "Nils Hoglander",
-                "number": 21,
+                "name": "Curtis Douglas",
+                "number": 42,
                 "pos": "lw",
-                "id": 30614,
+                "id": 27811,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Aatu Raty",
@@ -3351,7 +3351,7 @@
                 "pos": "rd",
                 "id": 2857,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -3361,7 +3361,7 @@
                 "pos": "ir1",
                 "id": 27631,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -4043,7 +4043,7 @@
                 "pos": "ld",
                 "id": 1048,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Erik Cernak",
@@ -4061,7 +4061,7 @@
                 "pos": "ld",
                 "id": 37940,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Charle-Edouard D'Astous",
