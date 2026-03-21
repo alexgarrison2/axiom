@@ -1,4 +1,95 @@
 {
+    "TBL": [
+        {
+            "player": "Victor Hedman",
+            "news": "Hedman (illness) will not play Saturday in Edmonton. ",
+            "category": "Injury",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T18:27:45.659Z"
+        }
+    ],
+    "PHI": [
+        {
+            "player": "Dan Vladar",
+            "news": "Vladar will start Saturday in San Jose. ",
+            "category": "Goalie Start",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T18:05:26.557Z"
+        }
+    ],
+    "LAK": [
+        {
+            "player": "Joel Armia",
+            "news": "The Kings have activated Joel Armia (upper-body) from IR. \r\n",
+            "category": "Injury",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T17:57:48.356Z"
+        }
+    ],
+    "SJS": [
+        {
+            "player": "Vincent Desharnais",
+            "news": "Desharnais (lower-body) will not play on Saturday. \r\n",
+            "category": "Injury",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T17:57:24.742Z"
+        },
+        {
+            "player": "Alex Nedeljkovic",
+            "news": "Nedeljkovic will start Saturday vs. the Flyers. ",
+            "category": "Goalie Start",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T17:38:53.914Z"
+        }
+    ],
+    "VGK": [
+        {
+            "player": "Kaedan Korczak",
+            "news": "Korczak will be a healthy scratch on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T17:57:10.375Z"
+        },
+        {
+            "player": "Ben Hutton",
+            "news": "Hutton will be back in the Golden Knights' lineup on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T17:56:40.477Z"
+        },
+        {
+            "player": "Akira Schmid",
+            "news": "Schmid led the Golden Knights onto the ice for warmups. ",
+            "category": "Goalie Start",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T17:31:11.073Z"
+        }
+    ],
+    "NYR": [
+        {
+            "player": "Jonathan Quick",
+            "news": "Quick is day-to-day with an upper-body injury. \r\n",
+            "category": "Injury",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T17:43:52.618Z"
+        },
+        {
+            "player": "Urho Vaakanainen",
+            "news": "Vaakanainen is week-to-week with a lower-body injury. \r\n",
+            "category": "Injury",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T15:43:27.626Z"
+        }
+    ],
+    "NSH": [
+        {
+            "player": "Justus Annunen",
+            "news": "Annunen led the Predators onto the ice for warmups. ",
+            "category": "Goalie Start",
+            "date": "2026-03-21",
+            "timestamp": "2026-03-21T17:30:41.799Z"
+        }
+    ],
     "BOS": [
         {
             "player": "Jeremy Swayman",
@@ -29,13 +120,6 @@
             "category": "Goalie Start",
             "date": "2026-03-21",
             "timestamp": "2026-03-21T16:17:44.259Z"
-        },
-        {
-            "player": "Ilya Sorokin",
-            "news": "Sorokin is in the starter's crease at the Islanders morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T15:27:22.721Z"
         }
     ],
     "WPG": [
@@ -75,86 +159,6 @@
             "category": "Goalie Start",
             "date": "2026-03-21",
             "timestamp": "2026-03-21T16:14:38.742Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Urho Vaakanainen",
-            "news": "Vaakanainen is week-to-week with a lower-body injury. \r\n",
-            "category": "Injury",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T15:43:27.626Z"
-        },
-        {
-            "player": "Noah Laba",
-            "news": "Laba is week-to-week with a lower-body injury. \r\n",
-            "category": "Injury",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T15:42:14.619Z"
-        }
-    ],
-    "DET": [
-        {
-            "player": "Michael Brandsegg-Nyg\u00e5rd",
-            "news": "Brandsegg-Nyg\u00e5rd (undisclosed) will be a game-time decision on Saturday. \r\n",
-            "category": "Injury",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T15:34:58.758Z"
-        },
-        {
-            "player": "Dylan Larkin",
-            "news": "Larkin (lower-body) skated again on Saturday but will not play vs. the Bruins. \r\n",
-            "category": "Injury",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T15:24:21.033Z"
-        }
-    ],
-    "OTT": [
-        {
-            "player": "Jake Sanderson",
-            "news": "Sanderson (upper-body) has resumed skating and could be back in roughly 7-to-10 days. \r\n",
-            "category": "Injury",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T15:21:44.190Z"
-        },
-        {
-            "player": "Linus Ullmark",
-            "news": "Ullmark will start Saturday vs. the Maple Leafs. ",
-            "category": "Goalie Start",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T15:17:19.705Z"
-        },
-        {
-            "player": "Linus Ullmark",
-            "news": "Ullmark was the first goalie off the ice at the Senators morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T14:53:16.632Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Samuel Girard",
-            "news": "Girard (upper-body) is expected to return to the Penguins lineup on Saturday. \r\n",
-            "category": "Injury",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T15:06:14.839Z"
-        },
-        {
-            "player": "Arturs Silovs",
-            "news": "Silovs will start Saturday vs. the Jets. ",
-            "category": "Goalie Start",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T15:03:09.012Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Jacob Fowler",
-            "news": "Fowler will start Saturday vs. the Islanders. ",
-            "category": "Goalie Start",
-            "date": "2026-03-21",
-            "timestamp": "2026-03-21T14:49:48.376Z"
         }
     ]
 }
