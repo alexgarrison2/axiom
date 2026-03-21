@@ -212,12 +212,12 @@
                 "movement": null
             },
             {
-                "name": "Alex Iafallo",
-                "number": 9,
+                "name": "Gabriel Vilardi",
+                "number": 13,
                 "pos": "rw",
-                "id": 2888,
-                "ppUnit": null,
-                "movement": null
+                "id": 2783,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -238,12 +238,12 @@
                 "movement": null
             },
             {
-                "name": "Gabriel Vilardi",
-                "number": 13,
+                "name": "Alex Iafallo",
+                "number": 9,
                 "pos": "rw",
-                "id": 2783,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2888,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "f3": [
@@ -330,7 +330,7 @@
                 "number": 57,
                 "pos": "rd",
                 "id": 36380,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -344,23 +344,15 @@
                 "movement": null
             },
             {
-                "name": "Jacob Bryson",
-                "number": 78,
+                "name": "Neal Pionk",
+                "number": 4,
                 "pos": "rd",
-                "id": 27240,
-                "ppUnit": null,
-                "movement": null
+                "id": 4545,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "ir": [
-            {
-                "name": "Neal Pionk",
-                "number": 4,
-                "pos": "ir1",
-                "id": 4545,
-                "ppUnit": null,
-                "movement": null
-            },
             {
                 "name": "Colin Miller",
                 "number": 6,
@@ -2451,7 +2443,7 @@
                 "pos": "lw",
                 "id": 2071,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Bo Horvat",
@@ -2493,7 +2485,7 @@
                 "pos": "rw",
                 "id": 33094,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -2503,7 +2495,7 @@
                 "pos": "lw",
                 "id": 1830,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jean-Gabriel Pageau",
@@ -2519,7 +2511,7 @@
                 "pos": "rw",
                 "id": 30654,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -2529,7 +2521,7 @@
                 "pos": "lw",
                 "id": 35084,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Casey Cizikas",
@@ -2545,7 +2537,7 @@
                 "pos": "rw",
                 "id": 37866,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
