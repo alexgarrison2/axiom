@@ -575,7 +575,7 @@
                 "pos": "lw",
                 "id": 1763,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Brock Nelson",
@@ -635,7 +635,7 @@
                 "pos": "c",
                 "id": 3818,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Gavin Brindley",
@@ -678,7 +678,7 @@
                 "number": 70,
                 "pos": "rd",
                 "id": 37993,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -696,7 +696,7 @@
                 "number": 84,
                 "pos": "rd",
                 "id": 792,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -870,10 +870,10 @@
         ],
         "d3": [
             {
-                "name": "Ryan Shea",
-                "number": 5,
+                "name": "Ryan Graves",
+                "number": 27,
                 "pos": "ld",
-                "id": 26606,
+                "id": 3689,
                 "ppUnit": null,
                 "movement": "up"
             },
@@ -912,17 +912,9 @@
                 "movement": null
             },
             {
-                "name": "Ryan Graves",
-                "number": 27,
-                "pos": "ir4",
-                "id": 3689,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Ryan Shea",
                 "number": 5,
-                "pos": "ir5",
+                "pos": "ir4",
                 "id": 26606,
                 "ppUnit": null,
                 "movement": null
@@ -2299,7 +2291,7 @@
                 "pos": "rw",
                 "id": 4718,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -2317,7 +2309,7 @@
                 "pos": "c",
                 "id": 38842,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Adam Klapka",
@@ -2421,7 +2413,7 @@
                 "pos": "ir5",
                 "id": 29510,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
