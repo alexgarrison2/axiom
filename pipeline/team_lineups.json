@@ -473,7 +473,7 @@
                 "pos": "rw",
                 "id": 27817,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d1": [
@@ -545,7 +545,7 @@
                 "pos": "ir2",
                 "id": 27817,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -1160,22 +1160,22 @@
                 "movement": null
             },
             {
-                "name": "Teuvo Teravainen",
-                "number": 86,
+                "name": "Nick Lardis",
+                "number": 76,
                 "pos": "rw",
-                "id": 2128,
-                "ppUnit": 1,
-                "movement": null
+                "id": 35088,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Landon Slaggert",
-                "number": 84,
+                "name": "Teuvo Teravainen",
+                "number": 86,
                 "pos": "lw",
-                "id": 38089,
-                "ppUnit": null,
-                "movement": null
+                "id": 2128,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Ryan Donato",
@@ -1196,12 +1196,12 @@
         ],
         "f4": [
             {
-                "name": "Nick Lardis",
-                "number": 76,
+                "name": "Landon Slaggert",
+                "number": 84,
                 "pos": "lw",
-                "id": 35088,
-                "ppUnit": 2,
-                "movement": null
+                "id": 38089,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Dominic Toninato",
@@ -1258,12 +1258,12 @@
         ],
         "d3": [
             {
-                "name": "Ethan Del Mastro",
-                "number": 38,
+                "name": "Louis Crevier",
+                "number": 46,
                 "pos": "ld",
-                "id": 30841,
+                "id": 29897,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Matt Grzelcyk",
@@ -1284,17 +1284,9 @@
                 "movement": null
             },
             {
-                "name": "Louis Crevier",
-                "number": 46,
-                "pos": "ir2",
-                "id": 29897,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Andrew Mangiapane",
                 "number": 88,
-                "pos": "ir3",
+                "pos": "ir2",
                 "id": 4622,
                 "ppUnit": null,
                 "movement": null
@@ -1398,12 +1390,12 @@
                 "movement": null
             },
             {
-                "name": "Ozzy Wiesblatt",
-                "number": 89,
+                "name": "Joakim Kemell",
+                "number": 25,
                 "pos": "rw",
-                "id": 32605,
+                "id": 35691,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1444,12 +1436,12 @@
         ],
         "d3": [
             {
-                "name": "Justin Barron",
-                "number": 20,
+                "name": "Adam Wilsby",
+                "number": 83,
                 "pos": "ld",
-                "id": 29338,
+                "id": 36308,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Ryan Ufko",
@@ -1457,24 +1449,6 @@
                 "pos": "rd",
                 "id": 34622,
                 "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "ir": [
-            {
-                "name": "Adam Wilsby",
-                "number": 83,
-                "pos": "ir1",
-                "id": 36308,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Juuse Saros",
-                "number": 74,
-                "pos": "ir2",
-                "id": 2557,
-                "ppUnit": null,
                 "movement": null
             }
         ]
