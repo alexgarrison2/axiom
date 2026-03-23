@@ -463,6 +463,16 @@ def refresh_pipeline():
     except Exception as e:
         print(f"[WARN] PBP HD metrics failed (impact scores will use MoneyPuck only): {e}")
 
+    # 4e. RAPM player isolation (must run AFTER shifts data is fresh,
+    #     and BEFORE player_impact which merges RAPM as an additional signal).
+    print("Computing RAPM player ratings (calc_rapm)...")
+    try:
+        import calc_rapm
+        rapm_results = calc_rapm.run_rapm()
+        print(f"  RAPM scores computed: {len(rapm_results)} players")
+    except Exception as e:
+        print(f"[WARN] RAPM computation failed (impact scores will use MoneyPuck + PBP only): {e}")
+
     print("Computing player impact scores...")
     try:
         import player_impact

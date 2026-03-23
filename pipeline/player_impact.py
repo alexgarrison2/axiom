@@ -157,6 +157,28 @@ def _load_pbp_metrics(script_dir: str) -> dict:
         return {}
 
 
+def _load_rapm_scores(script_dir: str) -> dict:
+    """
+    Load RAPM scores from rapm_scores.json (produced by calc_rapm.py).
+
+    Returns: {player_id_str: {rapm_off, rapm_def, rapm_net, rapm_toi, rapm_stints}}
+             Empty dict if file not found.
+    """
+    path = os.path.join(script_dir, "rapm_scores.json")
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        print(f"  Loaded rapm_scores.json ({len(data)} player keys)")
+        return data
+    except FileNotFoundError:
+        print("  [INFO] rapm_scores.json not found — run calc_rapm.py first.")
+        print("         RAPM-isolated signals will not be included in impact scores.")
+        return {}
+    except Exception as e:
+        print(f"  [WARN] Could not load rapm_scores.json: {e}")
+        return {}
+
+
 def calculate_player_impact(
     skater_file: str = "moneypuck_skaters.csv",
     output_file: str = "player_impact.json",
@@ -175,6 +197,9 @@ def calculate_player_impact(
     # ── Load PBP metrics (calc_pbp_impact.py must have run first) ──
     script_dir = os.path.dirname(os.path.abspath(__file__))
     pbp_metrics = _load_pbp_metrics(script_dir)
+
+    # ── Load RAPM scores (calc_rapm.py must have run first) ──
+    rapm_scores = _load_rapm_scores(script_dir)
 
     # ── Load data ──
     if not os.path.exists(skater_file):
@@ -425,6 +450,22 @@ def calculate_player_impact(
     else:
         print("  PBP metrics unavailable — impact scores will use MoneyPuck signals only")
 
+    # ── Merge RAPM scores (Phase 3A) ──
+    if rapm_scores:
+        rapm_merged = 0
+        for pid, data in player_impact.items():
+            rapm = rapm_scores.get(pid, rapm_scores.get(str(pid)))
+            if rapm is None:
+                continue
+            data['rapm_off'] = rapm.get('rapm_off', 0.0)
+            data['rapm_def'] = rapm.get('rapm_def', 0.0)
+            data['rapm_net'] = rapm.get('rapm_net', 0.0)
+            data['rapm_toi'] = rapm.get('rapm_toi', 0.0)
+            rapm_merged += 1
+        print(f"  RAPM scores merged into {rapm_merged} player profiles")
+    else:
+        print("  RAPM scores unavailable — impact scores will use MoneyPuck + PBP only")
+
     # ── League-average baselines by position group ──
     fwd_profiles = [v for v in player_impact.values() if v['is_forward']]
     def_profiles = [v for v in player_impact.values() if not v['is_forward']]
@@ -476,6 +517,19 @@ def calculate_player_impact(
     if fwd_with_pbp or def_with_pbp:
         print(f"  PBP coverage — fwd: {len(fwd_with_pbp)}/{len(fwd_profiles)}  "
               f"def: {len(def_with_pbp)}/{len(def_profiles)}")
+
+    # RAPM averages — only among players with RAPM data
+    fwd_with_rapm = [v for v in fwd_profiles if v.get('rapm_off') is not None]
+    def_with_rapm = [v for v in def_profiles if v.get('rapm_off') is not None]
+    if fwd_with_rapm:
+        league_avgs['fwd_rapm_off'] = _avg(fwd_with_rapm, 'rapm_off')
+        league_avgs['fwd_rapm_def'] = _avg(fwd_with_rapm, 'rapm_def')
+    if def_with_rapm:
+        league_avgs['def_rapm_off'] = _avg(def_with_rapm, 'rapm_off')
+        league_avgs['def_rapm_def'] = _avg(def_with_rapm, 'rapm_def')
+    if fwd_with_rapm or def_with_rapm:
+        print(f"  RAPM coverage — fwd: {len(fwd_with_rapm)}/{len(fwd_profiles)}  "
+              f"def: {len(def_with_rapm)}/{len(def_profiles)}")
 
     # ── xG Above Average per game (xGAA/game) ──────────────────────────────────
     # Custom metric: expected goals added above a league-average player at the
@@ -586,17 +640,36 @@ def calculate_player_impact(
             d.get('pbp_ihd_per60', np.nan) for d in data_list
         ])
         has_pbp_fwd = np.isfinite(pbp_ihd_raw).any()
+
+        # RAPM offensive signal — ridge-regression isolated player contribution
+        # to on-ice xGF/60, controlling for all teammates and opponents.
+        # This is the single most informative isolation signal — it separates
+        # individual skill from linemate and deployment effects.
+        rapm_off_raw = np.array([
+            d.get('rapm_off', np.nan) for d in data_list
+        ])
+        has_rapm = np.isfinite(rapm_off_raw).any()
+
+        # Build EV OFF blend dynamically based on available signals
+        off_signals = [z_ind_off, z_prod_off, z_team_off]  # always present
+
         if fwd_weights and has_pbp_fwd:
             mean_pbp_ihd = float(np.nanmean(pbp_ihd_raw))
             pbp_ihd_fill = np.where(np.isfinite(pbp_ihd_raw), pbp_ihd_raw, mean_pbp_ihd)
             pbp_ihd_s    = mean_pbp_ihd + (pbp_ihd_fill - mean_pbp_ihd) * shrink
             z_pbp_ihd    = zsc(pbp_ihd_s)
-            # 4-way equal blend: ind_xg, ev_prod, team_off, pbp_ihd
-            ev_off_arr = (z_ind_off + z_prod_off + z_team_off + z_pbp_ihd) / 4.0
+            off_signals.append(z_pbp_ihd)
         else:
-            z_pbp_ihd  = np.zeros(len(data_list))
-            # 3-way equal blend (original)
-            ev_off_arr = (z_ind_off + z_prod_off + z_team_off) / 3.0
+            z_pbp_ihd = np.zeros(len(data_list))
+
+        if has_rapm:
+            mean_rapm_off = float(np.nanmean(rapm_off_raw))
+            rapm_off_fill = np.where(np.isfinite(rapm_off_raw), rapm_off_raw, mean_rapm_off)
+            rapm_off_s    = mean_rapm_off + (rapm_off_fill - mean_rapm_off) * shrink
+            z_rapm_off    = zsc(rapm_off_s)
+            off_signals.append(z_rapm_off)
+
+        ev_off_arr = sum(off_signals) / len(off_signals)
 
         # ── EV DEF: signal blend ──────────────────────────────────────────────
         # Base signal (always present, from MoneyPuck):
@@ -606,26 +679,42 @@ def calculate_player_impact(
         #  2. -pbp_oihda_per60 — on-ice HD attempts Against/60 (sign-flipped:
         #                        fewer HD against = better). Captures shot suppression.
         #
-        # oihdf (on-ice HD For) is intentionally excluded — it reflects team
-        # offensive quality, not individual defensive ability, and introduces
-        # heavy team-context bias (defenders on elite offenses score too high).
+        # RAPM defensive signal (when rapm_scores.json is available):
+        #  3. -rapm_def        — RAPM-isolated defensive xGA/60 (sign-flipped:
+        #                        lower xGA = better defense). Controls for linemate
+        #                        and deployment effects that contaminate raw on-ice rates.
         #
-        # If PBP signal available:  2-way equal blend → defender EV DEF
-        # If PBP signal missing:    1-way (original xgaa_ev_def only)
+        # oihdf (on-ice HD For) is intentionally excluded — it reflects team
+        # offensive quality, not individual defensive ability.
         xgaa_def_raw = np.array([d['xgaa_ev_def'] for d in data_list])
 
         pbp_oihda_raw = np.array([d.get('pbp_oihda_per60', np.nan) for d in data_list])
         has_pbp_def = np.isfinite(pbp_oihda_raw).any()
+
+        rapm_def_raw = np.array([
+            d.get('rapm_def', np.nan) for d in data_list
+        ])
+        has_rapm_def = np.isfinite(rapm_def_raw).any()
+
+        # Build EV DEF blend dynamically
+        z_xgaa_def = zsc(xgaa_def_raw * shrink)
+        def_signals = [z_xgaa_def]
+
         if not fwd_weights and has_pbp_def:
             mean_pbp_oihda  = float(np.nanmean(pbp_oihda_raw))
             pbp_oihda_fill  = np.where(np.isfinite(pbp_oihda_raw), pbp_oihda_raw, mean_pbp_oihda)
             pbp_oihda_s     = mean_pbp_oihda + (pbp_oihda_fill - mean_pbp_oihda) * shrink
-            z_xgaa_def      = zsc(xgaa_def_raw * shrink)
             z_pbp_hda       = zsc(-pbp_oihda_s)   # negate: lower HD against = better
-            # 2-way equal blend: xgaa_ev_def, -pbp_oihda
-            ev_def_arr = (z_xgaa_def + z_pbp_hda) / 2.0
-        else:
-            ev_def_arr = xgaa_def_raw * shrink
+            def_signals.append(z_pbp_hda)
+
+        if has_rapm_def:
+            mean_rapm_def = float(np.nanmean(rapm_def_raw))
+            rapm_def_fill = np.where(np.isfinite(rapm_def_raw), rapm_def_raw, mean_rapm_def)
+            rapm_def_s    = mean_rapm_def + (rapm_def_fill - mean_rapm_def) * shrink
+            z_rapm_def    = zsc(-rapm_def_s)    # negate: lower xGA/60 = better defense
+            def_signals.append(z_rapm_def)
+
+        ev_def_arr = sum(def_signals) / len(def_signals)
 
         pp_arr = np.array([d['xgaa_pp'] for d in data_list])
         pk_arr = np.array([d['xgaa_pk'] for d in data_list])
