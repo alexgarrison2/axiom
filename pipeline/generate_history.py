@@ -251,8 +251,8 @@ def generate_history():
                 a_gsax = max(-1.0, min(1.0, a_gsax))
                 
                 h_final_xg, a_final_xg = max(0.1, h_final_xg - (a_gsax * 0.5)), max(0.1, a_final_xg - (h_gsax * 0.5))
-                h_prob, a_prob, tie_prob = simulate_game(h_final_xg, a_final_xg)
-                h_win_prob = h_prob + (tie_prob * 0.5)
+                h_prob, a_prob, tie_prob, home_ot_frac = simulate_game(h_final_xg, a_final_xg)
+                h_win_prob = h_prob + (tie_prob * home_ot_frac)
                 
                 predicted_winner = home_team if h_win_prob > 0.5 else away_team
 

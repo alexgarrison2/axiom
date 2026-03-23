@@ -1,0 +1,313 @@
+{
+  "feature_columns": [
+    "h_f_xgf_5v5",
+    "h_f_xga_5v5",
+    "h_f_xgf",
+    "h_f_xga",
+    "h_f_gf",
+    "h_f_ga",
+    "h_f_sf",
+    "h_f_sa",
+    "h_f_win_rate",
+    "h_f_season_win_rate",
+    "h_f_sv_pct",
+    "h_f_pp_pct",
+    "h_f_pk_pct",
+    "h_f_cf_pct",
+    "h_f_shooting_talent",
+    "h_f_save_talent",
+    "h_f_rest_days",
+    "h_f_is_b2b",
+    "h_f_is_3in4",
+    "h_f_games_played",
+    "a_f_xgf_5v5",
+    "a_f_xga_5v5",
+    "a_f_xgf",
+    "a_f_xga",
+    "a_f_gf",
+    "a_f_ga",
+    "a_f_sf",
+    "a_f_sa",
+    "a_f_win_rate",
+    "a_f_season_win_rate",
+    "a_f_sv_pct",
+    "a_f_pp_pct",
+    "a_f_pk_pct",
+    "a_f_cf_pct",
+    "a_f_shooting_talent",
+    "a_f_save_talent",
+    "a_f_rest_days",
+    "a_f_is_b2b",
+    "a_f_is_3in4",
+    "a_f_games_played",
+    "d_xgf_5v5",
+    "d_xga_5v5",
+    "d_xg_net",
+    "d_win_rate",
+    "d_sv_pct",
+    "d_pp_pct",
+    "d_pk_pct",
+    "d_cf_pct",
+    "d_rest",
+    "d_shooting_talent",
+    "d_save_talent",
+    "d_season_wr",
+    "matchup_h_off_vs_a_def",
+    "matchup_a_off_vs_h_def",
+    "matchup_ratio"
+  ],
+  "training_date": "2026-03-23T10:08:32.406569",
+  "ewma_halflife": 12,
+  "min_games": 10,
+  "cv_results": [
+    {
+      "test_season": 2024,
+      "train_size": 1380,
+      "test_size": 1193,
+      "log_loss": 0.6935416199340716,
+      "brier_score": 0.2491397089938708,
+      "accuracy": 0.5557418273260687,
+      "home_win_rate": 0.5649622799664711
+    },
+    {
+      "test_season": 2025,
+      "train_size": 2573,
+      "test_size": 1098,
+      "log_loss": 0.700335663484631,
+      "brier_score": 0.2534305146098251,
+      "accuracy": 0.5154826958105647,
+      "home_win_rate": 0.5218579234972678
+    }
+  ],
+  "holdout": {
+    "holdout_log_loss": 0.6944202256228897,
+    "holdout_accuracy": 0.5392156862745098,
+    "holdout_brier": 0.25047974808873524
+  },
+  "avg_log_loss": 0.6969386417093513,
+  "avg_accuracy": 0.5356122615683168,
+  "feature_importance": [
+    {
+      "feature": "d_sv_pct",
+      "importance": 0.03588753193616867
+    },
+    {
+      "feature": "d_xg_net",
+      "importance": 0.033124133944511414
+    },
+    {
+      "feature": "a_f_sv_pct",
+      "importance": 0.029360422864556313
+    },
+    {
+      "feature": "d_cf_pct",
+      "importance": 0.027524668723344803
+    },
+    {
+      "feature": "d_season_wr",
+      "importance": 0.024311725050210953
+    },
+    {
+      "feature": "d_rest",
+      "importance": 0.024311436340212822
+    },
+    {
+      "feature": "a_f_rest_days",
+      "importance": 0.021601306274533272
+    },
+    {
+      "feature": "d_xga_5v5",
+      "importance": 0.0212447140365839
+    },
+    {
+      "feature": "a_f_cf_pct",
+      "importance": 0.02113189734518528
+    },
+    {
+      "feature": "matchup_ratio",
+      "importance": 0.02079838514328003
+    },
+    {
+      "feature": "matchup_a_off_vs_h_def",
+      "importance": 0.020723171532154083
+    },
+    {
+      "feature": "h_f_sa",
+      "importance": 0.02048901654779911
+    },
+    {
+      "feature": "a_f_sa",
+      "importance": 0.01992866024374962
+    },
+    {
+      "feature": "h_f_cf_pct",
+      "importance": 0.019699474796652794
+    },
+    {
+      "feature": "d_xgf_5v5",
+      "importance": 0.019307566806674004
+    },
+    {
+      "feature": "a_f_season_win_rate",
+      "importance": 0.019187012687325478
+    },
+    {
+      "feature": "d_shooting_talent",
+      "importance": 0.019074490293860435
+    },
+    {
+      "feature": "h_f_sv_pct",
+      "importance": 0.018844638019800186
+    },
+    {
+      "feature": "h_f_pp_pct",
+      "importance": 0.01883568800985813
+    },
+    {
+      "feature": "a_f_pp_pct",
+      "importance": 0.018690267577767372
+    },
+    {
+      "feature": "a_f_ga",
+      "importance": 0.018185535445809364
+    },
+    {
+      "feature": "a_f_sf",
+      "importance": 0.018026988953351974
+    },
+    {
+      "feature": "d_win_rate",
+      "importance": 0.017973976209759712
+    },
+    {
+      "feature": "a_f_shooting_talent",
+      "importance": 0.01787312515079975
+    },
+    {
+      "feature": "h_f_season_win_rate",
+      "importance": 0.0178730096668005
+    },
+    {
+      "feature": "h_f_sf",
+      "importance": 0.017804039642214775
+    },
+    {
+      "feature": "h_f_is_3in4",
+      "importance": 0.01759243756532669
+    },
+    {
+      "feature": "d_pp_pct",
+      "importance": 0.017589149996638298
+    },
+    {
+      "feature": "h_f_xga",
+      "importance": 0.017558375373482704
+    },
+    {
+      "feature": "h_f_xgf_5v5",
+      "importance": 0.017314903438091278
+    },
+    {
+      "feature": "a_f_games_played",
+      "importance": 0.01696741208434105
+    },
+    {
+      "feature": "h_f_ga",
+      "importance": 0.016902731731534004
+    },
+    {
+      "feature": "h_f_xga_5v5",
+      "importance": 0.016886044293642044
+    },
+    {
+      "feature": "a_f_pk_pct",
+      "importance": 0.016715170815587044
+    },
+    {
+      "feature": "a_f_gf",
+      "importance": 0.016714060679078102
+    },
+    {
+      "feature": "h_f_xgf",
+      "importance": 0.016710788011550903
+    },
+    {
+      "feature": "a_f_xgf_5v5",
+      "importance": 0.01658170111477375
+    },
+    {
+      "feature": "a_f_xga",
+      "importance": 0.016551543027162552
+    },
+    {
+      "feature": "a_f_win_rate",
+      "importance": 0.01630827784538269
+    },
+    {
+      "feature": "d_pk_pct",
+      "importance": 0.016296090558171272
+    },
+    {
+      "feature": "h_f_win_rate",
+      "importance": 0.016202956438064575
+    },
+    {
+      "feature": "a_f_xga_5v5",
+      "importance": 0.016036489978432655
+    },
+    {
+      "feature": "h_f_pk_pct",
+      "importance": 0.01599258743226528
+    },
+    {
+      "feature": "a_f_xgf",
+      "importance": 0.01589328423142433
+    },
+    {
+      "feature": "h_f_gf",
+      "importance": 0.015865975990891457
+    },
+    {
+      "feature": "h_f_save_talent",
+      "importance": 0.015838535502552986
+    },
+    {
+      "feature": "h_f_games_played",
+      "importance": 0.0156236682087183
+    },
+    {
+      "feature": "a_f_is_b2b",
+      "importance": 0.015606881119310856
+    },
+    {
+      "feature": "d_save_talent",
+      "importance": 0.015317658893764019
+    },
+    {
+      "feature": "a_f_save_talent",
+      "importance": 0.01520610973238945
+    },
+    {
+      "feature": "matchup_h_off_vs_a_def",
+      "importance": 0.01512662973254919
+    },
+    {
+      "feature": "h_f_shooting_talent",
+      "importance": 0.014489070512354374
+    },
+    {
+      "feature": "h_f_rest_days",
+      "importance": 0.01429861318320036
+    },
+    {
+      "feature": "h_f_is_b2b",
+      "importance": 0.0
+    },
+    {
+      "feature": "a_f_is_3in4",
+      "importance": 0.0
+    }
+  ],
+  "model_type": "XGBoost",
+  "calibration": "isotonic_5fold"
+}

@@ -27,6 +27,18 @@ except ImportError:
 # This is conservative initially; can be tuned as model accuracy is validated.
 LINEUP_BLEND_WEIGHT = 0.50
 
+# ── ML Game Model (trained outcome predictor) ────────────────────────────────
+try:
+    from ml_predict import MLPredictor
+    _ML_MODEL_AVAILABLE = True
+except ImportError:
+    _ML_MODEL_AVAILABLE = False
+    print("[WARN] ml_predict module not found — ML predictions disabled")
+
+# Weight for ML model vs Poisson simulation in final probability
+# 0.60 = 60% ML model, 40% Poisson (ML is data-learned, Poisson is physics-based)
+ML_BLEND_WEIGHT = 0.60
+
 # ── (imports end) ─────────────────────────────────────────────────────────────
 
 def convert_to_central(utc_str):
@@ -538,6 +550,16 @@ def fetch_team_rankings():
         return {}
 
 def simulate_game(home_final, away_final):
+    """
+    Simulate game outcome using Poisson distribution for regulation,
+    and exponential distribution for overtime/shootout.
+    
+    Returns: (home_reg_win_prob, away_reg_win_prob, tie_prob, home_ot_win_frac)
+    
+    The home_ot_win_frac is the fraction of tied games the home team wins in OT/SO.
+    Uses the BayesBet-inspired exponential distribution: P(home OT win) = λ_h / (λ_h + λ_a)
+    with a small home ice OT bonus.
+    """
     prob_home_win = 0
     prob_away_win = 0
     prob_draw = 0
@@ -551,7 +573,20 @@ def simulate_game(home_final, away_final):
                 prob_away_win += p
             else:
                 prob_draw += p
-    return prob_home_win, prob_away_win, prob_draw
+    
+    # OT win probability using competing exponential distributions
+    # P(home scores first) = λ_home / (λ_home + λ_away) 
+    # Plus small home ice OT advantage (~2.5% empirical)
+    HOME_OT_BONUS = 0.025
+    
+    if (home_final + away_final) > 0:
+        home_ot_base = home_final / (home_final + away_final)
+    else:
+        home_ot_base = 0.5
+    
+    home_ot_frac = min(0.65, max(0.35, home_ot_base + HOME_OT_BONUS))
+    
+    return prob_home_win, prob_away_win, prob_draw, home_ot_frac
 
 def load_existing_predictions(filepath):
     """Loads existing CSV into a dict keyed by game_id."""
@@ -767,6 +802,15 @@ def predict():
             print("[WARN] No player-impact data — predictions will use team ratings only")
         if team_baselines_data:
             print(f"Team baselines loaded: {len(team_baselines_data)} teams")
+
+    # ── Initialize ML Game Model ─────────────────────────────────────────────
+    ml_predictor = None
+    if _ML_MODEL_AVAILABLE:
+        try:
+            ml_predictor = MLPredictor(game_stats_df)
+        except Exception as e:
+            print(f"[WARN] ML predictor init failed: {e}")
+            ml_predictor = None
 
     # ── Load player stats for absence-decay + trade-departure computation ────
     # Builds: team_game_dates  = {tri_code → sorted [date_str, ...]}
@@ -1583,29 +1627,17 @@ def predict():
         # Star penalty is now handled implicitly by lineup blending.
         # h_star_penalty and a_star_penalty remain 0.0 (safety net; no-op).
         
-        # --- [V3] SATURDAY NIGHT BOOST ---
-        # Methodology: +5% Win Prob & +0.25 xG for High-Variance Home Teams on Saturdays
-        # Targets: BOS, UTA, TBL, LAK, DAL, FLA
-        is_sat_boost = False
-        target_boost_teams = ["BOS", "UTA", "TBL", "LAK", "DAL", "FLA"]
-        h_tri = game.get('homeTeamAbbrev')
-        a_tri = game.get('awayTeamAbbrev')
+        # --- [REMOVED] Saturday Night Boost, PDO Momentum, Hits Anti-Proxy ---
+        # These heuristic adjustments were removed as part of the model rebuild.
+        # They injected noise and were not validated against out-of-sample data.
         
-        if h_tri in target_boost_teams:
-            try:
-                g_dt = datetime.strptime(game_date, "%Y-%m-%d")
-                if g_dt.weekday() == 5: # Saturday
-                    is_sat_boost = True
-                    print(f"  [SATURDAY BOOST] {home_team} @ Home on Saturday -> +0.25 xG & +5% Win Prob")
-                    h_xg += 0.25
-            except Exception as e:
-                pass
-        
-        # Dampen GSAx
-        GOALIE_IMPACT_FACTOR = 0.5
+        # Goalie GSAx impact — increased from 0.5 to 0.65 (MoneyPuck gives goaltending 29% weight)
+        GOALIE_IMPACT_FACTOR = 0.65
 
         # --- GOALIE VS OPPONENT HISTORY ---
         # Fetch stats
+        h_tri = game.get('homeTeamAbbrev')
+        a_tri = game.get('awayTeamAbbrev')
         # Clean names: remove (Confirmed) etc.
         h_starter_clean = h_goalie_display.split('(')[0].strip() if h_goalie_display else ""
         a_starter_clean = a_goalie_display.split('(')[0].strip() if a_goalie_display else ""
@@ -1620,28 +1652,10 @@ def predict():
         if a_starter_clean:
             a_vs_opp_stats = fetch_goalie_history.fetch_goalie_vs_opponent(a_starter_clean, a_tri, h_tri)
             
-        # Apply Adjustments
-        # Dominance: GP>=5, Win%>=.700, Sv%>=.920 -> -0.2 xG for OPPONENT
-        # Struggle: GP>=5, Win%<=.300, Sv%<=.825 -> +0.2 xG for OPPONENT
-        
+        # Goalie vs opponent history: data kept for display, but no longer modifies prediction math.
+        # Hard-coded threshold-based xG adjustments were removed as part of the model rebuild.
         h_hist_adj = 0.0
         a_hist_adj = 0.0
-        
-        if h_vs_opp_stats and h_vs_opp_stats['gp'] >= 5:
-            if h_vs_opp_stats['win_pct'] >= 0.700 and h_vs_opp_stats['sv'] >= 0.910:
-                print(f"  [GOALIE HIST] {h_starter_clean} dominates {away_team}: {h_vs_opp_stats['record']} . {h_vs_opp_stats['sv']} -> -0.2 xG for Opp")
-                a_hist_adj -= 0.2
-            elif h_vs_opp_stats['win_pct'] <= 0.300 and h_vs_opp_stats['sv'] <= 0.825:
-                print(f"  [GOALIE HIST] {h_starter_clean} struggles vs {away_team}: {h_vs_opp_stats['record']} . {h_vs_opp_stats['sv']} -> +0.2 xG for Opp")
-                a_hist_adj += 0.2
-                
-        if a_vs_opp_stats and a_vs_opp_stats['gp'] >= 5:
-            if a_vs_opp_stats['win_pct'] >= 0.700 and a_vs_opp_stats['sv'] >= 0.910:
-                print(f"  [GOALIE HIST] {a_starter_clean} dominates {home_team}: {a_vs_opp_stats['record']} . {a_vs_opp_stats['sv']} -> -0.2 xG for Opp")
-                h_hist_adj -= 0.2
-            elif a_vs_opp_stats['win_pct'] <= 0.300 and a_vs_opp_stats['sv'] <= 0.825:
-                print(f"  [GOALIE HIST] {a_starter_clean} struggles vs {home_team}: {a_vs_opp_stats['record']} . {a_vs_opp_stats['sv']} -> +0.2 xG for Opp")
-                h_hist_adj += 0.2
         
         
         # --- GAS CALCULATION ---
@@ -1706,10 +1720,6 @@ def predict():
 
         # (Star penalty note removed — lineup blending now handles player absences)
 
-        # Saturday Boost
-        if is_sat_boost:
-             h_explained.append("Saturday Boost: +0.25")
-
         # 2. Goalie Impact
         # h_xg_adj = max(0.1, h_xg - (a_gsax * GOALIE_IMPACT_FACTOR))
         h_goalie_impact = -(a_gsax * GOALIE_IMPACT_FACTOR)
@@ -1720,11 +1730,7 @@ def predict():
         if abs(a_goalie_impact) > 0.01:
             a_explained.append(f"Opp Goalie ({h_starter_clean}): {a_goalie_impact:+.2f}")
 
-        # 3. History Adjustment
-        if abs(h_hist_adj) > 0.001:
-            h_explained.append(f"vs Opp History: {h_hist_adj:+.2f}")
-        if abs(a_hist_adj) > 0.001:
-            a_explained.append(f"vs Opp History: {a_hist_adj:+.2f}")
+        # 3. History Adjustment (removed — no longer modifies predictions)
 
         # 4. GAS / Fatigue (Pre-calculated in breakdown, but let's add summary if impactful)
         # Recalculating effectively used penalties.
@@ -1734,103 +1740,37 @@ def predict():
         # Wait, lines 1074-1075 use h_hist_adj but NO GAS variable.
         # If GAS is re-enabled or used elsewhere, we capture it. For now, it seems unused in xG.
         
-        h_xg_adj = max(0.1, h_xg + h_goalie_impact) + h_hist_adj
-        a_xg_adj = max(0.1, a_xg + a_goalie_impact) + a_hist_adj
+        h_xg_adj = max(0.1, h_xg + h_goalie_impact)
+        a_xg_adj = max(0.1, a_xg + a_goalie_impact)
         
-        # --- [V3] THE ORACLE UPGRADES (Anti-Hits & PDO) ---
-        
-        # Calculate Rolling Stats (Last 10 games for stability)
-        # We reuse the `season_df` loaded for GAS calc
-        def get_trend_stats(team_name, df, current_date):
-            # Sort chronologically, filter for team, filter BEFORE today
-            # Note: We need to match 'team' column.
-            # Using clean names from team_ratings keys might differ from CSV team names?
-            # Assuming consistency for now as they come from same source mostly.
-            
-            # Filter history
-            # Ensure current_date is a timestamp for comparison
-            # game_date from schedule is "YYYY-MM-DD" string
-            t_date = pd.to_datetime(current_date)
-            history = df[(df['team'] == team_name) & (df['game_date'] < t_date)].sort_values('game_date')
-            
-            if len(history) < 5:
-                return 1000, 20 # New season defaults (PDO 1000, Hits 20)
-                
-            recent = history.tail(7) # Last 7 Games
-            
-            # PDO Calc
-            goals = recent['goals_for'].sum()
-            sog = recent['sog_for'].sum()
-            saves = recent['saves_for'].sum()
-            sa = recent['sog_ag'].sum()
-            
-            sh_pct = goals / sog if sog > 0 else 0
-            sv_pct = saves / sa if sa > 0 else 0
-            pdo = (sh_pct + sv_pct) * 1000
-            
-            if pd.isna(pdo): pdo = 1000
-            
-            # Hits Calc
-            hits = recent['hits_for'].mean()
-            if pd.isna(hits): hits = 20
-            return pdo, hits
+        # --- [REMOVED] PDO Momentum & Hits Anti-Proxy ---
+        # PDO is mean-reverting — rewarding high PDO is backward.
+        # Hits have near-zero predictive value for game outcomes.
+        # Both removed as part of the model rebuild.
 
-        # Fetch Pre-Game Trends
-        h_pdo, h_hits = get_trend_stats(home_team, game_stats_df, game_date)
-        a_pdo, a_hits = get_trend_stats(away_team, game_stats_df, game_date)
+        # Simulate (Poisson baseline)
+        h_prob, a_prob, tie_prob, home_ot_frac = simulate_game(h_xg_adj, a_xg_adj)
+        h_win_prob_poisson = h_prob + (tie_prob * home_ot_frac)
+        a_win_prob_poisson = a_prob + (tie_prob * (1.0 - home_ot_frac))
         
-        # 1. PDO Momentum (Reward the "Lucky"/Good)
-        # If I have high PDO and you have low, I am playing better.
-        pdo_diff = h_pdo - a_pdo
+        # ML Model prediction (data-learned)
+        h_win_prob = h_win_prob_poisson
+        a_win_prob = a_win_prob_poisson
         
-        h_pre_pdo = h_xg_adj
-        a_pre_pdo = a_xg_adj
+        if ml_predictor and ml_predictor.available:
+            ml_result = ml_predictor.predict(
+                home_team, away_team, game_date,
+                h_is_b2b=h_is_b2b if 'h_is_b2b' in dir() else False,
+                a_is_b2b=a_is_b2b if 'a_is_b2b' in dir() else False
+            )
+            if ml_result:
+                h_win_prob_ml, a_win_prob_ml = ml_result
+                # Blend ML and Poisson
+                h_win_prob = (ML_BLEND_WEIGHT * h_win_prob_ml) + ((1 - ML_BLEND_WEIGHT) * h_win_prob_poisson)
+                a_win_prob = 1.0 - h_win_prob
+                print(f"  [ML] Poisson: {h_win_prob_poisson:.1%} | ML: {h_win_prob_ml:.1%} | Blended: {h_win_prob:.1%}")
         
-        if pdo_diff > 40: # e.g. 1020 vs 980
-            print(f"  [PDO MOMENTUM] {home_team} (PDO {h_pdo:.0f}) vs {away_team} (PDO {a_pdo:.0f}) -> +5% Boost")
-            h_xg_adj *= 1.05
-            h_explained.append(f"PDO Momentum ({h_pdo:.0f} vs {a_pdo:.0f}): +0.05%") # Actually 5%
-        elif pdo_diff < -40:
-            print(f"  [PDO MOMENTUM] {away_team} (PDO {a_pdo:.0f}) vs {home_team} (PDO {h_pdo:.0f}) -> +5% Boost")
-            a_xg_adj *= 1.05
-            a_explained.append(f"PDO Momentum ({a_pdo:.0f} vs {h_pdo:.0f}): +0.05%")
-
-        # Capture PDO delta
-        if h_xg_adj != h_pre_pdo: h_explained[-1] = f"PDO Momentum: {h_xg_adj - h_pre_pdo:+.2f}"
-        if a_xg_adj != a_pre_pdo: a_explained[-1] = f"PDO Momentum: {a_xg_adj - a_pre_pdo:+.2f}"
-
-        # 2. Possession Proxy (Anti-Hits)
-        # If I hit a lot more than you, I am chasing the puck.
-        hits_diff = h_hits - a_hits
-        
-        h_pre_hits = h_xg_adj
-        a_pre_hits = a_xg_adj
-        
-        if hits_diff > 8: # Home hits way more
-            print(f"  [CHASING PLAY] {home_team} Avg Hits +{hits_diff:.1f} vs {away_team} -> -3% Penalty")
-            h_xg_adj *= 0.97
-            h_explained.append(f"Chasing Play (Hits +{hits_diff:.0f}): -3%")
-        elif hits_diff < -8: # Away hits way more
-            print(f"  [CHASING PLAY] {away_team} Avg Hits +{abs(hits_diff):.1f} vs {home_team} -> -3% Penalty")
-            a_xg_adj *= 0.97
-            a_explained.append(f"Chasing Play (Hits +{abs(hits_diff):.0f}): -3%")
-            
-        # Capture Hits delta
-        if h_xg_adj != h_pre_hits: h_explained[-1] = f"Heavy Hitting (Chasing): {h_xg_adj - h_pre_hits:+.2f}"
-        if a_xg_adj != a_pre_hits: a_explained[-1] = f"Heavy Hitting (Chasing): {a_xg_adj - a_pre_hits:+.2f}"
-
-        # Simulate
-        h_prob, a_prob, tie_prob = simulate_game(h_xg_adj, a_xg_adj)
-        h_win_prob = h_prob + (tie_prob * 0.5)
-        a_win_prob = a_prob + (tie_prob * 0.5)
-        
-        # Apply Saturday Win Prob Boost
-        if is_sat_boost:
-            h_win_prob += 0.05
-            a_win_prob -= 0.05
-            # Clamp
-            h_win_prob = min(0.99, max(0.01, h_win_prob))
-            a_win_prob = min(0.99, max(0.01, a_win_prob))
+        # [REMOVED] Saturday Win Prob Boost — was adding +5% to 6 specific home teams on Saturdays
         
         # Odds & EV
         # Construct unique matchup ID for specific game lookup

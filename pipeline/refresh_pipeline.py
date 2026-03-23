@@ -117,6 +117,54 @@ def refresh_pipeline():
             
             # Update data
             df['xG'] = probs
+            
+            # ── Flurry-Adjusted xG ──────────────────────────────────────────
+            # Shots within 3 seconds of each other by the same team form a "flurry"
+            # (rebounds, scrambles). 2nd/3rd shots are discounted because:
+            # - They represent less independent scoring chances
+            # - Raw xG of flurries is inflated and less predictive (MoneyPuck finding)
+            FLURRY_GAP_SECONDS = 3
+            FLURRY_DISCOUNTS = [1.0, 0.50, 0.25, 0.15]  # 1st, 2nd, 3rd, 4th+ shot
+            
+            if 'time_seconds' in df.columns and 'game_id' in df.columns:
+                df = df.sort_values(['game_id', 'team_id', 'time_seconds']).copy()
+                
+                # Identify flurry boundaries
+                same_game = df['game_id'] == df['game_id'].shift(1)
+                same_team = df['team_id'] == df['team_id'].shift(1)
+                time_diff = df['time_seconds'].astype(float) - df['time_seconds'].shift(1).astype(float)
+                
+                is_flurry = same_game & same_team & (time_diff <= FLURRY_GAP_SECONDS) & (time_diff >= 0)
+                
+                # Assign flurry position (0 = new sequence, 1 = 2nd shot, etc.)
+                flurry_pos = []
+                pos = 0
+                for flurry in is_flurry:
+                    if flurry:
+                        pos += 1
+                    else:
+                        pos = 0
+                    flurry_pos.append(pos)
+                
+                df['_flurry_pos'] = flurry_pos
+                df['_flurry_discount'] = df['_flurry_pos'].apply(
+                    lambda p: FLURRY_DISCOUNTS[min(p, len(FLURRY_DISCOUNTS) - 1)]
+                )
+                df['xG_flurry_adj'] = df['xG'] * df['_flurry_discount']
+                
+                # Cap total flurry xG at 1.0 per flurry
+                flurry_shots = df['_flurry_pos'] > 0
+                n_adjusted = flurry_shots.sum()
+                if n_adjusted > 0:
+                    avg_discount = df.loc[flurry_shots, '_flurry_discount'].mean()
+                    print(f"  Flurry xG: {n_adjusted} shots discounted "
+                          f"(avg discount={avg_discount:.2f})")
+                
+                # Clean up temp columns
+                df.drop(columns=['_flurry_pos', '_flurry_discount'], inplace=True, errors='ignore')
+            else:
+                df['xG_flurry_adj'] = df['xG']  # No time data, skip
+            # ────────────────────────────────────────────────────────────────
 
             # Validation guard: catch silently wrong predictions (e.g. from sklearn version mismatch)
             mean_xg = df['xG'].mean()
@@ -128,27 +176,27 @@ def refresh_pipeline():
                     f"Check that scikit-learn and xgboost versions match the model pickle."
                 )
 
-            # Save back to CSV
+            # Save back to CSV (includes both xG and xG_flurry_adj)
             df.to_csv(filename, index=False)
             print(f"Updated {filename} with new xG values.")
             
-            # Aggregate for GameStats
+            # Aggregate for GameStats — use flurry-adjusted xG for team totals
             # We need game_id, team_id, xG
             # Group by game_id, team_id, strength_state
             # We want both Total xG and 5v5 xG
             print(f"Aggregating xG from {filename}...")
             
-            # Total xG
-            agg_total = df.groupby(['game_id', 'team_id'])['xG'].sum().reset_index()
+            # Total xG (flurry-adjusted)
+            agg_total = df.groupby(['game_id', 'team_id'])['xG_flurry_adj'].sum().reset_index()
             agg_total.columns = ['game_id', 'team_id', 'xG_sum']
             
-            # 5v5 xG
+            # 5v5 xG (flurry-adjusted)
             if 'strength_state' in df.columns:
-                agg_5v5 = df[df['strength_state'] == '5v5'].groupby(['game_id', 'team_id'])['xG'].sum().reset_index()
+                agg_5v5 = df[df['strength_state'] == '5v5'].groupby(['game_id', 'team_id'])['xG_flurry_adj'].sum().reset_index()
                 agg_5v5.columns = ['game_id', 'team_id', 'xG_5v5_sum']
                 agg = pd.merge(agg_total, agg_5v5, on=['game_id', 'team_id'], how='left').fillna(0)
                 # 5v4 (Power Play) xG — used for xG-based PP/PK rates in team_ratings
-                agg_pp = df[df['strength_state'] == '5v4'].groupby(['game_id', 'team_id'])['xG'].sum().reset_index()
+                agg_pp = df[df['strength_state'] == '5v4'].groupby(['game_id', 'team_id'])['xG_flurry_adj'].sum().reset_index()
                 agg_pp.columns = ['game_id', 'team_id', 'xG_pp_sum']
                 agg = pd.merge(agg, agg_pp, on=['game_id', 'team_id'], how='left').fillna(0)
             else:
