@@ -807,7 +807,7 @@ def predict():
     ml_predictor = None
     if _ML_MODEL_AVAILABLE:
         try:
-            ml_predictor = MLPredictor(game_stats_df)
+            ml_predictor = MLPredictor(game_stats_df, goalie_ratings=goalie_ratings)
         except Exception as e:
             print(f"[WARN] ML predictor init failed: {e}")
             ml_predictor = None
@@ -1761,7 +1761,9 @@ def predict():
             ml_result = ml_predictor.predict(
                 home_team, away_team, game_date,
                 h_is_b2b=h_is_b2b if 'h_is_b2b' in dir() else False,
-                a_is_b2b=a_is_b2b if 'a_is_b2b' in dir() else False
+                a_is_b2b=a_is_b2b if 'a_is_b2b' in dir() else False,
+                h_goalie=h_goalie_name,
+                a_goalie=a_goalie_name
             )
             if ml_result:
                 h_win_prob_ml, a_win_prob_ml = ml_result

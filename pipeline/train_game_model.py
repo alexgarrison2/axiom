@@ -90,97 +90,163 @@ def ewma_col(series, halflife):
     return series.ewm(halflife=halflife, min_periods=1).mean()
 
 
+def compute_goalie_rolling_gsax(df):
+    """
+    Compute rolling GSAx per goalie across all their starts.
+    Returns a dict: (goalie_name) → list of (game_id, cumulative_gsax_per_game, goalie_gp).
+    Uses Bayesian regression: GSAx is shrunk toward 0 based on games played.
+    """
+    GOALIE_PRIOR_STRENGTH = 20  # games of "average goalie" prior
+
+    df = df.sort_values('game_date').copy()
+    for col in ['xG_against', 'goals_ag']:
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
+    goalie_game_gsax = {}  # game_id → regressed_gsax_per_game for that game's starter
+
+    # Track cumulative GSAx per goalie
+    goalie_cum = {}  # goalie → {'gsax': float, 'gp': int}
+
+    for _, row in df.iterrows():
+        goalie = row.get('starting_goalie')
+        if pd.isna(goalie):
+            continue
+        game_id = row['game_id']
+
+        if goalie not in goalie_cum:
+            goalie_cum[goalie] = {'gsax': 0.0, 'gp': 0}
+
+        # PRE-GAME feature: use cumulative stats BEFORE this game
+        cum = goalie_cum[goalie]
+        if cum['gp'] > 0:
+            raw_gsax_pg = cum['gsax'] / cum['gp']
+            regressed = (raw_gsax_pg * cum['gp']) / (cum['gp'] + GOALIE_PRIOR_STRENGTH)
+        else:
+            regressed = 0.0
+
+        goalie_game_gsax[game_id] = goalie_game_gsax.get(game_id, {})
+        # Store keyed by home/away
+        ha = row.get('home_away', '')
+        goalie_game_gsax[game_id][ha] = {
+            'gsax_pg': regressed,
+            'goalie_gp': cum['gp'],
+            'goalie_name': goalie,
+        }
+
+        # UPDATE cumulative AFTER recording the pre-game feature
+        game_gsax = row['xG_against'] - row['goals_ag']
+        cum['gsax'] += game_gsax
+        cum['gp'] += 1
+
+    return goalie_game_gsax
+
+
 def compute_team_features(df):
     """
     Compute pre-game features per team using EWMA on prior games.
     Season boundaries reset the rolling stats.
     """
     df = df.sort_values(['team', 'season', 'game_date']).copy()
-    
+
     # Ensure numeric columns
     numeric_cols = ['xG_for_5v5', 'xG_against_5v5', 'xG_for', 'xG_against',
                     'goals_for', 'goals_ag', 'sog_for', 'sog_ag',
                     'pp_goals', 'pp_opportunities', 'pp_goals_against', 'pk_opportunities',
                     'save_percentage', 'attempts_for', 'attempts_ag', 'is_win']
-    
+
     for col in numeric_cols:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce')
-    
+
+    # Pre-compute rolling goalie GSAx for all games
+    print("[FEATURES] Computing rolling goalie GSAx...")
+    goalie_game_gsax = compute_goalie_rolling_gsax(df)
+
     result_dfs = []
-    
+
     for (team, season), grp in df.groupby(['team', 'season']):
         grp = grp.sort_values('game_date').copy()
-        
+
         if len(grp) < 3:
             continue
-        
+
         # EWMA features — shift(1) ensures NO FUTURE LEAKAGE
         # (each row uses only data from games BEFORE this one)
-        
+
         # Core xG rates
         grp['f_xgf_5v5'] = ewma_col(grp['xG_for_5v5'].shift(1), EWMA_HALFLIFE)
         grp['f_xga_5v5'] = ewma_col(grp['xG_against_5v5'].shift(1), EWMA_HALFLIFE)
         grp['f_xgf'] = ewma_col(grp['xG_for'].shift(1), EWMA_HALFLIFE)
         grp['f_xga'] = ewma_col(grp['xG_against'].shift(1), EWMA_HALFLIFE)
-        
+
         # Goals
         grp['f_gf'] = ewma_col(grp['goals_for'].shift(1), EWMA_HALFLIFE)
         grp['f_ga'] = ewma_col(grp['goals_ag'].shift(1), EWMA_HALFLIFE)
-        
+
         # Shots
         grp['f_sf'] = ewma_col(grp['sog_for'].shift(1), EWMA_HALFLIFE)
         grp['f_sa'] = ewma_col(grp['sog_ag'].shift(1), EWMA_HALFLIFE)
-        
+
         # Win rate
         grp['f_win_rate'] = ewma_col(grp['is_win'].astype(float).shift(1), EWMA_HALFLIFE)
-        
+
         # Expanding season win rate
         grp['f_season_win_rate'] = grp['is_win'].shift(1).expanding().mean()
-        
+
         # Save percentage
         if 'save_percentage' in grp.columns:
             grp['f_sv_pct'] = ewma_col(grp['save_percentage'].shift(1), EWMA_HALFLIFE)
-        
+
         # PP/PK efficiency — compute from cumulative counts
         pp_goals_cum = grp['pp_goals'].shift(1).cumsum()
         pp_opps_cum = grp['pp_opportunities'].shift(1).cumsum()
         grp['f_pp_pct'] = np.where(pp_opps_cum > 0, pp_goals_cum / pp_opps_cum, 0.20)
-        
+
         pk_ga_cum = grp['pp_goals_against'].shift(1).cumsum()
         pk_opps_cum = grp['pk_opportunities'].shift(1).cumsum()
         grp['f_pk_pct'] = np.where(pk_opps_cum > 0, 1.0 - (pk_ga_cum / pk_opps_cum), 0.80)
-        
+
         # Corsi% proxy
         af = grp['attempts_for'].shift(1)
         aa = grp['attempts_ag'].shift(1)
         grp['f_cf_pct'] = ewma_col(af / (af + aa), EWMA_HALFLIFE).fillna(0.50)
-        
+
         # xG goal conversion (actual goals / xG — shooting talent proxy)
         gf_shifted = grp['goals_for'].shift(1)
         xgf_shifted = grp['xG_for'].shift(1).replace(0, np.nan)
         grp['f_shooting_talent'] = ewma_col(gf_shifted / xgf_shifted, EWMA_HALFLIFE).clip(0.5, 2.0).fillna(1.0)
-        
+
         # Save talent (goals against vs xG against)
         ga_shifted = grp['goals_ag'].shift(1)
         xga_shifted = grp['xG_against'].shift(1).replace(0, np.nan)
         grp['f_save_talent'] = ewma_col(ga_shifted / xga_shifted, EWMA_HALFLIFE).clip(0.5, 2.0).fillna(1.0)
-        
+
         # Rest days
         grp['f_rest_days'] = grp['game_date'].diff().dt.days.fillna(3).clip(0, 7)
-        
+
         # Fatigue flags
         for flag in ['is_b2b', 'is_3in4']:
             if flag in grp.columns:
                 grp[f'f_{flag}'] = grp[flag].astype(int)
             else:
                 grp[f'f_{flag}'] = 0
-        
+
         # Games played
         grp['f_games_played'] = range(1, len(grp) + 1)
-        
+
+        # Goalie GSAx — look up from pre-computed rolling stats
+        ha = grp['home_away'].iloc[0] if 'home_away' in grp.columns else ''
+        gsax_vals = []
+        goalie_gp_vals = []
+        for gid in grp['game_id']:
+            game_data = goalie_game_gsax.get(gid, {}).get(ha, {})
+            gsax_vals.append(game_data.get('gsax_pg', 0.0))
+            goalie_gp_vals.append(game_data.get('goalie_gp', 0))
+        grp['f_goalie_gsax'] = gsax_vals
+        grp['f_goalie_gp'] = goalie_gp_vals
+
         result_dfs.append(grp)
-    
+
     return pd.concat(result_dfs, ignore_index=True)
 
 
@@ -224,7 +290,11 @@ def build_game_matrix(df_feat):
     features['d_shooting_talent'] = features['h_f_shooting_talent'] - features['a_f_shooting_talent']
     features['d_save_talent'] = features['h_f_save_talent'] - features['a_f_save_talent']
     features['d_season_wr'] = features['h_f_season_win_rate'] - features['a_f_season_win_rate']
-    
+
+    # ── Goalie differential — the key Phase 2B feature ──
+    # Positive = home goalie is better (saves more above expected)
+    features['d_goalie_gsax'] = features['h_f_goalie_gsax'] - features['a_f_goalie_gsax']
+
     # ── Matchup interaction: home offense vs away defense ──
     features['matchup_h_off_vs_a_def'] = features['h_f_xgf_5v5'] * features['a_f_xga_5v5']
     features['matchup_a_off_vs_h_def'] = features['a_f_xgf_5v5'] * features['h_f_xga_5v5']

@@ -190,43 +190,108 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
             'games_played': games_played
         }
         
-    # --- Goalie Ratings ---
-    # print("Calculating Goalie Ratings...")
-    
-    goalie_stats = {}
-    
-    # Iterate through all rows to capture every start
-    for index, row in df.iterrows():
+    # --- Goalie Ratings (Multi-Season with Bayesian Regression) ---
+    #
+    # Phase 2B improvements:
+    #   1. Multi-season GSAx: weight current (50%) + prior (30%) + 2yr ago (20%)
+    #   2. Bayesian regression: heavier shrinkage for goalies with fewer starts
+    #   3. Output includes per-season breakdown for ML model consumption
+
+    # Load historical gamestats for prior seasons
+    hist_path = os.path.join(SCRIPT_DIR, 'nhl_historical_gamestats.csv')
+    hist_df = None
+    if os.path.exists(hist_path):
+        hist_df = pd.read_csv(hist_path, low_memory=False)
+        hist_df['game_date'] = pd.to_datetime(hist_df['game_date'])
+
+    # Combine current + historical, deduplicate
+    df['game_date'] = pd.to_datetime(df['game_date'])
+    if hist_df is not None:
+        all_games_df = pd.concat([hist_df, df], ignore_index=True)
+        all_games_df = all_games_df.drop_duplicates(subset=['game_id', 'team'], keep='last')
+    else:
+        all_games_df = df.copy()
+
+    # Assign season: Oct-Dec = that year, Jan-Jun = year - 1
+    all_games_df['season'] = all_games_df['game_date'].apply(
+        lambda d: d.year if d.month >= 9 else d.year - 1
+    )
+    current_season = all_games_df['season'].max()
+
+    # Compute per-goalie, per-season GSAx
+    goalie_season_stats = {}  # {goalie: {season: {xga, ga, games}}}
+
+    for _, row in all_games_df.iterrows():
         goalie = row['starting_goalie']
         if pd.isna(goalie):
             continue
-            
-        if goalie not in goalie_stats:
-            goalie_stats[goalie] = {'xga': 0, 'ga': 0, 'games': 0}
-            
-        goalie_stats[goalie]['xga'] += row['xG_against']
-        goalie_stats[goalie]['ga'] += row['goals_ag']
-        goalie_stats[goalie]['games'] += 1
-        
+        season = row['season']
+        xga = pd.to_numeric(row.get('xG_against', 0), errors='coerce') or 0
+        ga = pd.to_numeric(row.get('goals_ag', 0), errors='coerce') or 0
+
+        if goalie not in goalie_season_stats:
+            goalie_season_stats[goalie] = {}
+        if season not in goalie_season_stats[goalie]:
+            goalie_season_stats[goalie][season] = {'xga': 0, 'ga': 0, 'games': 0}
+
+        goalie_season_stats[goalie][season]['xga'] += xga
+        goalie_season_stats[goalie][season]['ga'] += ga
+        goalie_season_stats[goalie][season]['games'] += 1
+
+    # Multi-season weighting & Bayesian regression
+    SEASON_WEIGHTS = {0: 0.50, 1: 0.30, 2: 0.20}  # current, prior, 2yr ago
+    BAYESIAN_PRIOR_STRENGTH = 20  # equivalent games of "average goalie" prior
+    # A goalie with 20 GP gets 50% shrinkage; 40 GP gets 33%; 60 GP gets 25%
+
     goalie_ratings = {}
-    GOALIE_REGRESSION_GAMES = 5
-    
-    for goalie, stats in goalie_stats.items():
-        if stats['games'] < 1:
+
+    for goalie, seasons_data in goalie_season_stats.items():
+        # Compute weighted multi-season GSAx/game
+        weighted_gsax_sum = 0.0
+        weight_sum = 0.0
+        total_games_all = 0
+        current_season_games = 0
+        current_season_gsax = 0.0
+
+        for offset, weight in SEASON_WEIGHTS.items():
+            s = current_season - offset
+            if s in seasons_data:
+                stats = seasons_data[s]
+                gsax = stats['xga'] - stats['ga']
+                gp = stats['games']
+                if gp > 0:
+                    gsax_pg = gsax / gp
+                    weighted_gsax_sum += gsax_pg * weight
+                    weight_sum += weight
+                    total_games_all += gp
+                    if offset == 0:
+                        current_season_games = gp
+                        current_season_gsax = gsax
+
+        if weight_sum == 0 or total_games_all < 1:
             continue
-            
-        gsax = stats['xga'] - stats['ga']
-        
-        # Regress GSAx per game to 0
-        # (Total GSAx + (Reg_Games * 0)) / (Games + Reg_Games)
-        # Effectively shrinks the GSAx/game towards 0
-        gsax_per_game = gsax / (stats['games'] + GOALIE_REGRESSION_GAMES)
-        
+
+        # Normalize weights to sum to 1 (handles missing seasons)
+        raw_gsax_per_game = weighted_gsax_sum / weight_sum
+
+        # Bayesian regression toward 0 (league-average goalie)
+        # More regression for fewer current-season starts
+        # Uses current season GP as the evidence strength
+        evidence_games = current_season_games if current_season_games > 0 else total_games_all * 0.3
+        regressed_gsax_per_game = (raw_gsax_per_game * evidence_games) / (evidence_games + BAYESIAN_PRIOR_STRENGTH)
+
         goalie_ratings[goalie] = {
-            'gsax_total': gsax,
-            'gsax_per_game': gsax_per_game,
-            'games_played': stats['games']
+            'gsax_per_game': regressed_gsax_per_game,
+            'gsax_per_game_raw': raw_gsax_per_game,
+            'gsax_total': current_season_gsax,
+            'games_played': current_season_games,
+            'games_played_all': total_games_all,
+            'seasons_tracked': len([s for s in seasons_data if seasons_data[s]['games'] > 0]),
+            'regression_factor': round(evidence_games / (evidence_games + BAYESIAN_PRIOR_STRENGTH), 3),
         }
+
+    print(f"  Goalie ratings: {len(goalie_ratings)} goalies, "
+          f"{sum(1 for g in goalie_ratings.values() if g['seasons_tracked'] > 1)} multi-season")
         
     # Save to JSON
     if save_files:
