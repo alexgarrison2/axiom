@@ -21,8 +21,6 @@ interface SkaterData {
     impact_pk: number;
     impact_score: number;
     // RAPM (Regularized Adjusted Plus-Minus)
-    rapm_off: number;
-    rapm_def: number;
     rapm_net: number;
     // Per-60 rates
     ind_xg_per60: number;
@@ -35,8 +33,7 @@ type SortKey = keyof Pick<SkaterData,
     'games_played' | 'goals' | 'assists' | 'points' | 'sog_per_game' |
     'toi_per_game_all' | 'impact_ev_off' | 'impact_ev_def' |
     'impact_pp' | 'impact_pk' | 'impact_score' |
-    'rapm_off' | 'rapm_def' | 'rapm_net' |
-    'ind_xg_per60' | 'ev_xgf_per60'>;
+    'rapm_net' | 'ind_xg_per60' | 'ev_xgf_per60'>;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function impactColor(z: number): string {
@@ -97,9 +94,7 @@ const COLUMNS: { key: SortKey; label: string; title: string; group?: string }[] 
     { key: 'toi_per_game_all', label: 'TOI/GP',  title: 'Time on Ice per Game (all situations)' },
     { key: 'ind_xg_per60',     label: 'ixG/60',  title: 'Individual Expected Goals per 60 minutes — personal scoring threat rate', group: 'rate' },
     { key: 'ev_xgf_per60',     label: 'oixGF/60', title: 'On-Ice xG For per 60 min — team xGF rate when this player is on ice at 5v5', group: 'rate' },
-    { key: 'rapm_off',         label: 'RAPM O',  title: 'RAPM Offense: isolated offensive xG/60 above average via ridge regression on shift data. Controls for linemates and opponents.', group: 'rapm' },
-    { key: 'rapm_def',         label: 'RAPM D',  title: 'RAPM Defense: isolated defensive xGA/60 above average via ridge regression on shift data. Positive = suppresses goals.', group: 'rapm' },
-    { key: 'rapm_net',         label: 'RAPM',    title: 'RAPM Net: offense minus defense — total isolated player value per 60 min', group: 'rapm' },
+    { key: 'rapm_net',         label: 'RAPM',    title: 'RAPM: isolated net player value per 60 min via ridge regression on shift data. Controls for linemates and opponents. Bayesian-regressed by sample size.', group: 'rapm' },
     { key: 'impact_ev_off',    label: 'EV OFF',  title: 'EV Offense z-score: blend of individual xG/60 + on-ice xGF impact above avg × TOI.', group: 'impact' },
     { key: 'impact_ev_def',    label: 'EV DEF',  title: 'EV Defense z-score: xGA saved above position-avg × EV TOI per game. Positive = suppresses more goals than average.', group: 'impact' },
     { key: 'impact_pp',        label: 'PP',      title: 'Power Play impact z-score', group: 'impact' },
@@ -108,7 +103,7 @@ const COLUMNS: { key: SortKey; label: string; title: string; group?: string }[] 
 ];
 
 const IMPACT_KEYS: SortKey[] = ['impact_ev_off', 'impact_ev_def', 'impact_pp', 'impact_pk', 'impact_score'];
-const RAPM_KEYS: SortKey[] = ['rapm_off', 'rapm_def', 'rapm_net'];
+const RAPM_KEYS: SortKey[] = ['rapm_net'];
 const RATE_KEYS: SortKey[] = ['ind_xg_per60', 'ev_xgf_per60'];
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -266,7 +261,7 @@ export default function SkaterStatsTable() {
                                         ${!col.group ? 'text-neutral-500' : ''}
                                         ${col.key === sortKey ? 'text-white' : ''}
                                         ${col.key === 'impact_score' ? 'border-l border-cyan-400/30' : ''}
-                                        ${col.key === 'rapm_off' ? 'border-l border-purple-400/30' : ''}
+                                        ${col.key === 'rapm_net' ? 'border-l border-purple-400/30' : ''}
                                         ${col.key === 'ind_xg_per60' ? 'border-l border-emerald-400/30' : ''}`}
                                 >
                                     {col.label} <SortIcon col={col.key} />
@@ -321,16 +316,11 @@ export default function SkaterStatsTable() {
                                         style={{ color: per60Color(player.ev_xgf_per60 ?? 0, 2.5) }}>
                                         {fmtRate(player.ev_xgf_per60)}
                                     </td>
-                                    {/* RAPM columns */}
-                                    {(['rapm_off', 'rapm_def', 'rapm_net'] as SortKey[]).map((k, i) => {
-                                        const v = player[k] as number;
-                                        return (
-                                            <td key={k} className={`py-0 px-2 text-center font-mono text-[11px] ${i === 0 ? 'border-l border-purple-400/15' : ''} ${k === 'rapm_net' ? 'font-bold' : ''}`}
-                                                style={{ color: rapmColor(v) }}>
-                                                {fmtZ(v)}
-                                            </td>
-                                        );
-                                    })}
+                                    {/* RAPM */}
+                                    <td className="py-0 px-2 text-center font-mono text-[11px] font-bold border-l border-purple-400/15"
+                                        style={{ color: rapmColor(player.rapm_net) }}>
+                                        {fmtZ(player.rapm_net)}
+                                    </td>
                                     {/* Impact components */}
                                     {(['impact_ev_off', 'impact_ev_def', 'impact_pp', 'impact_pk'] as SortKey[]).map(k => {
                                         const v = player[k] as number;
