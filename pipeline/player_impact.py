@@ -737,6 +737,15 @@ def calculate_player_impact(
             player_impact[pid]['impact_pp']     = round(float(z_pp[i]),  3)
             player_impact[pid]['impact_pk']     = round(float(z_pk[i]),  3)
             player_impact[pid]['impact_score']  = round(float(composite[i]), 3)
+            # Overwrite raw RAPM with shrunk (Bayesian-regressed) values so the
+            # frontend displays sample-size-adjusted numbers, not noisy raw RAPM.
+            if has_rapm:
+                player_impact[pid]['rapm_off'] = round(float(rapm_off_s[i]), 4)
+            if has_rapm_def:
+                player_impact[pid]['rapm_def'] = round(float(rapm_def_s[i]), 4)
+            if has_rapm and has_rapm_def:
+                player_impact[pid]['rapm_net'] = round(
+                    float(rapm_off_s[i]) - float(rapm_def_s[i]), 4)
 
     fwd_pids = [pid for pid, d in player_impact.items() if d['is_forward']]
     def_pids = [pid for pid, d in player_impact.items() if not d['is_forward']]

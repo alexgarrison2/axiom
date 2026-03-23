@@ -217,6 +217,7 @@ interface PlayerImpactData {
     position: string;
     is_forward: boolean;
     ev_net_per60: number;
+    ev_toi_per_game?: number;
     impact_score?: number;
     games_played?: number;
     rapm_off?: number;
@@ -382,9 +383,9 @@ const RATINGS_COLS = [
     { k: 'd_impact',      l: 'D Tot',    desc: 'Total Defense Impact (D1+D2+D3 impact_score)',          inv: false, groupEnd: false },
     { k: 'dtop4_impact',  l: 'DTop4',    desc: 'Top 4 Defense Impact (D1+D2 impact_score)',             inv: false, groupEnd: true  },
     // RAPM Lineup group
-    { k: 'rapm_lineup',   l: 'RAPM Tot', desc: 'Total Lineup RAPM — sum of rapm_net for all skaters in lineup (F1–F4 + D1–D3)', inv: false, groupEnd: false },
-    { k: 'rapm_f',        l: 'F RAPM',   desc: 'Total Forward RAPM — sum of rapm_net for F1–F4 lines',                          inv: false, groupEnd: false },
-    { k: 'rapm_d',        l: 'D RAPM',   desc: 'Total Defense RAPM — sum of rapm_net for D1–D3 pairs',                           inv: false, groupEnd: true  },
+    { k: 'rapm_lineup',   l: 'RAPM Tot', desc: 'TOI-weighted Lineup RAPM — each player\'s isolated RAPM weighted by their EV ice time share (F1–F4 + D1–D3)', inv: false, groupEnd: false },
+    { k: 'rapm_f',        l: 'F RAPM',   desc: 'TOI-weighted Forward RAPM — forwards\' isolated RAPM weighted by EV ice time share',                          inv: false, groupEnd: false },
+    { k: 'rapm_d',        l: 'D RAPM',   desc: 'TOI-weighted Defense RAPM — defensemen\'s isolated RAPM weighted by EV ice time share',                        inv: false, groupEnd: true  },
     // Goalie group
     { k: 'goalie_impact', l: 'G Impact', desc: 'Goalie Impact (GSAx/G, sum of top-2 goalies by GP)',   inv: false, groupEnd: true  },
 ] as const;
@@ -845,12 +846,18 @@ const TeamsTable = () => {
                 return s + (entry?.impact_score ?? 0);
             }, 0);
 
-        const sumLineRapm = (players: LineupPlayer[]) =>
-            (players ?? []).reduce((s, p) => {
+        // TOI-weighted RAPM: each player's RAPM is weighted by their EV ice time
+        // share so depth players with fluky RAPM don't inflate the total.
+        const toiWeightedRapm = (players: LineupPlayer[]) => {
+            const entries = (players ?? []).map(p => {
                 const byId = playerImpact[String(p.id)];
                 const entry = byId ?? impactByName.get(normName(p.name ?? ''));
-                return s + (entry?.rapm_net ?? 0);
-            }, 0);
+                return { rapm: entry?.rapm_net ?? 0, toi: entry?.ev_toi_per_game ?? 0 };
+            });
+            const totalToi = entries.reduce((s, e) => s + e.toi, 0);
+            if (totalToi === 0) return 0;
+            return entries.reduce((s, e) => s + e.rapm * (e.toi / totalToi), 0) * entries.length;
+        };
 
         const result: Record<string, TeamRatingEntry> = {};
 
@@ -885,9 +892,11 @@ const TeamsTable = () => {
                 return sum + (gr?.gsax_per_game ?? 0);
             }, 0);
 
+            const allF = [...(lineup?.f1 ?? []), ...(lineup?.f2 ?? []), ...(lineup?.f3 ?? []), ...(lineup?.f4 ?? [])];
+            const allD = [...(lineup?.d1 ?? []), ...(lineup?.d2 ?? []), ...(lineup?.d3 ?? [])];
             const rapmImpacts = {
-                f: sumLineRapm(lineup?.f1 ?? []) + sumLineRapm(lineup?.f2 ?? []) + sumLineRapm(lineup?.f3 ?? []) + sumLineRapm(lineup?.f4 ?? []),
-                d: sumLineRapm(lineup?.d1 ?? []) + sumLineRapm(lineup?.d2 ?? []) + sumLineRapm(lineup?.d3 ?? []),
+                f: toiWeightedRapm(allF),
+                d: toiWeightedRapm(allD),
             };
 
             result[commonName] = { ratings, lineImpacts, rapmImpacts, goalieImpact };
