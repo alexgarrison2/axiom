@@ -215,9 +215,13 @@ interface PlayerImpactData {
     name: string;
     team: string;
     position: string;
+    is_forward: boolean;
     ev_net_per60: number;
     impact_score?: number;
     games_played?: number;
+    rapm_off?: number;
+    rapm_def?: number;
+    rapm_net?: number;
 }
 
 interface GoalieRating {
@@ -377,6 +381,10 @@ const RATINGS_COLS = [
     { k: 'fbot6_impact',  l: 'FBot6',    desc: 'Bottom 6 Forward Impact (F3+F4 impact_score)',          inv: false, groupEnd: false },
     { k: 'd_impact',      l: 'D Tot',    desc: 'Total Defense Impact (D1+D2+D3 impact_score)',          inv: false, groupEnd: false },
     { k: 'dtop4_impact',  l: 'DTop4',    desc: 'Top 4 Defense Impact (D1+D2 impact_score)',             inv: false, groupEnd: true  },
+    // RAPM Lineup group
+    { k: 'rapm_lineup',   l: 'RAPM Tot', desc: 'Total Lineup RAPM — sum of rapm_net for all skaters in lineup (F1–F4 + D1–D3)', inv: false, groupEnd: false },
+    { k: 'rapm_f',        l: 'F RAPM',   desc: 'Total Forward RAPM — sum of rapm_net for F1–F4 lines',                          inv: false, groupEnd: false },
+    { k: 'rapm_d',        l: 'D RAPM',   desc: 'Total Defense RAPM — sum of rapm_net for D1–D3 pairs',                           inv: false, groupEnd: true  },
     // Goalie group
     { k: 'goalie_impact', l: 'G Impact', desc: 'Goalie Impact (GSAx/G, sum of top-2 goalies by GP)',   inv: false, groupEnd: true  },
 ] as const;
@@ -385,6 +393,7 @@ const RATINGS_STAT_GROUPS = [
     { name: 'Record',         columns: ['ranking','gp','wins','losses','otl','points','pt_pct','rw'] },
     { name: 'xG Ratings',     columns: ['xgf_rating','xga_rating','xgf_rolling','xga_rolling','xgf_5v5','xga_5v5'] },
     { name: 'Lineup Impact',  columns: ['lineup_rating','f1_impact','f2_impact','f3_impact','f4_impact','d1_impact','d2_impact','d3_impact','f_impact','ftop6_impact','fmid6_impact','fbot6_impact','d_impact','dtop4_impact'] },
+    { name: 'RAPM',           columns: ['rapm_lineup','rapm_f','rapm_d'] },
     { name: 'Goalie',         columns: ['goalie_impact'] },
 ];
 // ──────────────────────────────────────────────────────────────────────────────
@@ -393,6 +402,7 @@ const RATINGS_STAT_GROUPS = [
 type TeamRatingEntry = {
     ratings: TeamRating | null;
     lineImpacts: { f1: number; f2: number; f3: number; f4: number; d1: number; d2: number; d3: number };
+    rapmImpacts: { f: number; d: number };
     goalieImpact: number;
 };
 
@@ -422,6 +432,9 @@ const extractRatingValue = (entry: TeamRatingEntry | undefined, colKey: string):
         case 'fbot6_impact':  return li.f3+li.f4;
         case 'd_impact':      return li.d1+li.d2+li.d3;
         case 'dtop4_impact':  return li.d1+li.d2;
+        case 'rapm_lineup':   return entry.rapmImpacts.f + entry.rapmImpacts.d;
+        case 'rapm_f':        return entry.rapmImpacts.f;
+        case 'rapm_d':        return entry.rapmImpacts.d;
         case 'goalie_impact': return goalieImpact;
         default:              return NaN;
     }
@@ -832,6 +845,13 @@ const TeamsTable = () => {
                 return s + (entry?.impact_score ?? 0);
             }, 0);
 
+        const sumLineRapm = (players: LineupPlayer[]) =>
+            (players ?? []).reduce((s, p) => {
+                const byId = playerImpact[String(p.id)];
+                const entry = byId ?? impactByName.get(normName(p.name ?? ''));
+                return s + (entry?.rapm_net ?? 0);
+            }, 0);
+
         const result: Record<string, TeamRatingEntry> = {};
 
         Object.entries(teams).forEach(([commonName, teamInfo]) => {
@@ -865,7 +885,12 @@ const TeamsTable = () => {
                 return sum + (gr?.gsax_per_game ?? 0);
             }, 0);
 
-            result[commonName] = { ratings, lineImpacts, goalieImpact };
+            const rapmImpacts = {
+                f: sumLineRapm(lineup?.f1 ?? []) + sumLineRapm(lineup?.f2 ?? []) + sumLineRapm(lineup?.f3 ?? []) + sumLineRapm(lineup?.f4 ?? []),
+                d: sumLineRapm(lineup?.d1 ?? []) + sumLineRapm(lineup?.d2 ?? []) + sumLineRapm(lineup?.d3 ?? []),
+            };
+
+            result[commonName] = { ratings, lineImpacts, rapmImpacts, goalieImpact };
         });
         return result;
     }, [teams, teamRatingsData, teamLineups, playerImpact, goalieRatings, rawData]);
@@ -900,6 +925,9 @@ const TeamsTable = () => {
             fbot6_impact:  rng(v => v.lineImpacts.f3 + v.lineImpacts.f4),
             d_impact:      rng(v => { const li = v.lineImpacts; return li.d1+li.d2+li.d3; }),
             dtop4_impact:  rng(v => v.lineImpacts.d1 + v.lineImpacts.d2),
+            rapm_lineup:   rng(v => v.rapmImpacts.f + v.rapmImpacts.d),
+            rapm_f:        rng(v => v.rapmImpacts.f),
+            rapm_d:        rng(v => v.rapmImpacts.d),
             goalie_impact: rng(v => v.goalieImpact),
         };
     }, [teamRatingsComputed]);

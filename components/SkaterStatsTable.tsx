@@ -20,6 +20,13 @@ interface SkaterData {
     impact_pp: number;
     impact_pk: number;
     impact_score: number;
+    // RAPM (Regularized Adjusted Plus-Minus)
+    rapm_off: number;
+    rapm_def: number;
+    rapm_net: number;
+    // Per-60 rates
+    ind_xg_per60: number;
+    ev_xgf_per60: number;
     // legacy fallback
     xgaa_per_game?: number;
 }
@@ -27,7 +34,9 @@ interface SkaterData {
 type SortKey = keyof Pick<SkaterData,
     'games_played' | 'goals' | 'assists' | 'points' | 'sog_per_game' |
     'toi_per_game_all' | 'impact_ev_off' | 'impact_ev_def' |
-    'impact_pp' | 'impact_pk' | 'impact_score'>;
+    'impact_pp' | 'impact_pk' | 'impact_score' |
+    'rapm_off' | 'rapm_def' | 'rapm_net' |
+    'ind_xg_per60' | 'ev_xgf_per60'>;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function impactColor(z: number): string {
@@ -44,6 +53,28 @@ function fmtZ(z: number | undefined): string {
     return `${sign}${z.toFixed(2)}`;
 }
 
+function fmtRate(v: number | undefined): string {
+    if (v === undefined || v === null) return '—';
+    return v.toFixed(2);
+}
+
+function rapmColor(v: number): string {
+    if (v >= 0.3)   return '#3b82f6';   // blue   – elite
+    if (v >= 0.1)   return '#38bdf8';   // sky    – above avg
+    if (v >= -0.1)  return '#6b7280';   // gray   – average
+    if (v >= -0.3)  return '#f97316';   // orange – below avg
+    return '#ef4444';                    // red    – bottom tier
+}
+
+function per60Color(v: number, avg: number): string {
+    const diff = v - avg;
+    if (diff >= 0.5)  return '#3b82f6';
+    if (diff >= 0.15) return '#38bdf8';
+    if (diff >= -0.15) return '#6b7280';
+    if (diff >= -0.5) return '#f97316';
+    return '#ef4444';
+}
+
 function fmtToi(min: number | undefined): string {
     if (!min) return '—';
     const m = Math.floor(min);
@@ -57,21 +88,28 @@ function logoUrl(tri: string): string {
 }
 
 // ── Column definition ─────────────────────────────────────────────────────────
-const COLUMNS: { key: SortKey; label: string; title: string; align?: string }[] = [
+const COLUMNS: { key: SortKey; label: string; title: string; group?: string }[] = [
     { key: 'games_played',     label: 'GP',      title: 'Games Played' },
     { key: 'goals',            label: 'G',       title: 'Goals' },
     { key: 'assists',          label: 'A',       title: 'Assists' },
     { key: 'points',           label: 'PTS',     title: 'Points' },
     { key: 'sog_per_game',     label: 'SOG/G',   title: 'Shots on Goal per Game' },
     { key: 'toi_per_game_all', label: 'TOI/GP',  title: 'Time on Ice per Game (all situations)' },
-    { key: 'impact_ev_off',    label: 'EV OFF',  title: 'EV Offense z-score: blend of individual xG/60 (personal scoring threat) + on-ice xGF impact above avg × TOI. Inspired by O Rating methodology.' },
-    { key: 'impact_ev_def',    label: 'EV DEF',  title: 'EV Defense z-score: xGA saved above position-avg × EV TOI per game. Positive = suppresses more goals than average.' },
-    { key: 'impact_pp',        label: 'PP',      title: 'Power Play impact z-score' },
-    { key: 'impact_pk',        label: 'PK',      title: 'Penalty Kill impact z-score' },
-    { key: 'impact_score',     label: 'IMPACT',  title: 'Composite position-weighted impact score (z-score)' },
+    { key: 'ind_xg_per60',     label: 'ixG/60',  title: 'Individual Expected Goals per 60 minutes — personal scoring threat rate', group: 'rate' },
+    { key: 'ev_xgf_per60',     label: 'oixGF/60', title: 'On-Ice xG For per 60 min — team xGF rate when this player is on ice at 5v5', group: 'rate' },
+    { key: 'rapm_off',         label: 'RAPM O',  title: 'RAPM Offense: isolated offensive xG/60 above average via ridge regression on shift data. Controls for linemates and opponents.', group: 'rapm' },
+    { key: 'rapm_def',         label: 'RAPM D',  title: 'RAPM Defense: isolated defensive xGA/60 above average via ridge regression on shift data. Positive = suppresses goals.', group: 'rapm' },
+    { key: 'rapm_net',         label: 'RAPM',    title: 'RAPM Net: offense minus defense — total isolated player value per 60 min', group: 'rapm' },
+    { key: 'impact_ev_off',    label: 'EV OFF',  title: 'EV Offense z-score: blend of individual xG/60 + on-ice xGF impact above avg × TOI.', group: 'impact' },
+    { key: 'impact_ev_def',    label: 'EV DEF',  title: 'EV Defense z-score: xGA saved above position-avg × EV TOI per game. Positive = suppresses more goals than average.', group: 'impact' },
+    { key: 'impact_pp',        label: 'PP',      title: 'Power Play impact z-score', group: 'impact' },
+    { key: 'impact_pk',        label: 'PK',      title: 'Penalty Kill impact z-score', group: 'impact' },
+    { key: 'impact_score',     label: 'IMPACT',  title: 'Composite position-weighted impact score (z-score)', group: 'impact' },
 ];
 
 const IMPACT_KEYS: SortKey[] = ['impact_ev_off', 'impact_ev_def', 'impact_pp', 'impact_pk', 'impact_score'];
+const RAPM_KEYS: SortKey[] = ['rapm_off', 'rapm_def', 'rapm_net'];
+const RATE_KEYS: SortKey[] = ['ind_xg_per60', 'ev_xgf_per60'];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function SkaterStatsTable() {
@@ -164,7 +202,8 @@ export default function SkaterStatsTable() {
                 <p className="text-neutral-400 text-xs md:text-sm">
                     Position-weighted z-scores. Fwd: 50% EV Off · 20% EV Def · 20% PP · 10% PK.
                     Def: 25% EV Off · 40% EV Def · 15% PP · 20% PK.
-                    <span className="text-neutral-500"> EV Off = individual xG/60 + on-ice xGF impact (inspired by O Rating).</span>
+                    <span className="text-neutral-500"> EV Off = individual xG/60 + on-ice xGF impact (inspired by O Rating).
+                    RAPM = isolated player value via ridge regression on shift data (controls for linemates/opponents).</span>
                 </p>
             </div>
 
@@ -221,9 +260,14 @@ export default function SkaterStatsTable() {
                                     title={col.title}
                                     onClick={() => handleSort(col.key)}
                                     className={`text-center py-2 px-2 text-[9px] font-bold uppercase tracking-widest whitespace-nowrap cursor-pointer select-none transition-colors hover:text-white
-                                        ${IMPACT_KEYS.includes(col.key) ? 'text-cyan-600' : 'text-neutral-500'}
+                                        ${IMPACT_KEYS.includes(col.key) ? 'text-cyan-600' : ''}
+                                        ${RAPM_KEYS.includes(col.key) ? 'text-purple-500' : ''}
+                                        ${RATE_KEYS.includes(col.key) ? 'text-emerald-600' : ''}
+                                        ${!col.group ? 'text-neutral-500' : ''}
                                         ${col.key === sortKey ? 'text-white' : ''}
-                                        ${col.key === 'impact_score' ? 'border-l border-cyan-400/30' : ''}`}
+                                        ${col.key === 'impact_score' ? 'border-l border-cyan-400/30' : ''}
+                                        ${col.key === 'rapm_off' ? 'border-l border-purple-400/30' : ''}
+                                        ${col.key === 'ind_xg_per60' ? 'border-l border-emerald-400/30' : ''}`}
                                 >
                                     {col.label} <SortIcon col={col.key} />
                                 </th>
@@ -268,6 +312,25 @@ export default function SkaterStatsTable() {
                                     <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-400">{player.sog_per_game?.toFixed(1) ?? '—'}</td>
                                     {/* TOI/GP */}
                                     <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-400">{fmtToi(player.toi_per_game_all)}</td>
+                                    {/* Per-60 rates */}
+                                    <td className="py-0 px-2 text-center font-mono text-[11px] border-l border-emerald-400/15"
+                                        style={{ color: per60Color(player.ind_xg_per60 ?? 0, player.is_forward ? 0.75 : 0.25) }}>
+                                        {fmtRate(player.ind_xg_per60)}
+                                    </td>
+                                    <td className="py-0 px-2 text-center font-mono text-[11px]"
+                                        style={{ color: per60Color(player.ev_xgf_per60 ?? 0, 2.5) }}>
+                                        {fmtRate(player.ev_xgf_per60)}
+                                    </td>
+                                    {/* RAPM columns */}
+                                    {(['rapm_off', 'rapm_def', 'rapm_net'] as SortKey[]).map((k, i) => {
+                                        const v = player[k] as number;
+                                        return (
+                                            <td key={k} className={`py-0 px-2 text-center font-mono text-[11px] ${i === 0 ? 'border-l border-purple-400/15' : ''} ${k === 'rapm_net' ? 'font-bold' : ''}`}
+                                                style={{ color: rapmColor(v) }}>
+                                                {fmtZ(v)}
+                                            </td>
+                                        );
+                                    })}
                                     {/* Impact components */}
                                     {(['impact_ev_off', 'impact_ev_def', 'impact_pp', 'impact_pk'] as SortKey[]).map(k => {
                                         const v = player[k] as number;
