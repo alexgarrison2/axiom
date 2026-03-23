@@ -13577,7 +13577,7 @@
     "predictedWinner": "Red Wings",
     "actualWinner": "Bruins",
     "isCorrect": false,
-    "brierScore": 0.2686
+    "brierScore": 0.2683
   },
   {
     "date": "2026-03-21",
@@ -13591,7 +13591,7 @@
     "predictedWinner": "Blues",
     "actualWinner": "Blues",
     "isCorrect": true,
-    "brierScore": 0.1926
+    "brierScore": 0.1927
   },
   {
     "date": "2026-03-21",
@@ -13605,7 +13605,7 @@
     "predictedWinner": "Senators",
     "actualWinner": "Senators",
     "isCorrect": true,
-    "brierScore": 0.0758
+    "brierScore": 0.0756
   },
   {
     "date": "2026-03-21",
@@ -13633,7 +13633,7 @@
     "predictedWinner": "Blue Jackets",
     "actualWinner": "Blue Jackets",
     "isCorrect": true,
-    "brierScore": 0.1549
+    "brierScore": 0.1552
   },
   {
     "date": "2026-03-21",
@@ -13647,7 +13647,7 @@
     "predictedWinner": "Sharks",
     "actualWinner": "Flyers",
     "isCorrect": false,
-    "brierScore": 0.2963
+    "brierScore": 0.2959
   },
   {
     "date": "2026-03-21",
@@ -13661,7 +13661,7 @@
     "predictedWinner": "Sabres",
     "actualWinner": "Sabres",
     "isCorrect": true,
-    "brierScore": 0.21
+    "brierScore": 0.2098
   },
   {
     "date": "2026-03-21",
@@ -13703,7 +13703,7 @@
     "predictedWinner": "Penguins",
     "actualWinner": "Penguins",
     "isCorrect": true,
-    "brierScore": 0.1683
+    "brierScore": 0.1681
   },
   {
     "date": "2026-03-21",
@@ -13717,6 +13717,132 @@
     "predictedWinner": "Oilers",
     "actualWinner": "Lightning",
     "isCorrect": false,
-    "brierScore": 0.2549
+    "brierScore": 0.255
+  },
+  {
+    "date": "2026-03-22",
+    "homeTeam": "Ducks",
+    "awayTeam": "Sabres",
+    "homeScore": 6,
+    "awayScore": 5,
+    "homeXg": 2.92,
+    "awayXg": 3.15,
+    "homeWinProb": 46.3,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Ducks",
+    "isCorrect": false,
+    "brierScore": 0.2886
+  },
+  {
+    "date": "2026-03-22",
+    "homeTeam": "Flames",
+    "awayTeam": "Lightning",
+    "homeScore": 4,
+    "awayScore": 3,
+    "homeXg": 2.99,
+    "awayXg": 2.92,
+    "homeWinProb": 51.1,
+    "predictedWinner": "Flames",
+    "actualWinner": "Flames",
+    "isCorrect": true,
+    "brierScore": 0.2394
+  },
+  {
+    "date": "2026-03-22",
+    "homeTeam": "Stars",
+    "awayTeam": "Golden Knights",
+    "homeScore": 2,
+    "awayScore": 3,
+    "homeXg": 2.89,
+    "awayXg": 2.46,
+    "homeWinProb": 57.2,
+    "predictedWinner": "Stars",
+    "actualWinner": "Golden Knights",
+    "isCorrect": false,
+    "brierScore": 0.3271
+  },
+  {
+    "date": "2026-03-22",
+    "homeTeam": "Islanders",
+    "awayTeam": "Blue Jackets",
+    "homeScore": 1,
+    "awayScore": 0,
+    "homeXg": 2.35,
+    "awayXg": 2.85,
+    "homeWinProb": 41.5,
+    "predictedWinner": "Blue Jackets",
+    "actualWinner": "Islanders",
+    "isCorrect": false,
+    "brierScore": 0.3426
+  },
+  {
+    "date": "2026-03-22",
+    "homeTeam": "Blackhawks",
+    "awayTeam": "Predators",
+    "homeScore": 2,
+    "awayScore": 3,
+    "homeXg": 2.82,
+    "awayXg": 2.59,
+    "homeWinProb": 53.8,
+    "predictedWinner": "Blackhawks",
+    "actualWinner": "Predators",
+    "isCorrect": false,
+    "brierScore": 0.2894
+  },
+  {
+    "date": "2026-03-22",
+    "homeTeam": "Penguins",
+    "awayTeam": "Hurricanes",
+    "homeScore": 1,
+    "awayScore": 5,
+    "homeXg": 3.13,
+    "awayXg": 3.76,
+    "homeWinProb": 40.7,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Hurricanes",
+    "isCorrect": true,
+    "brierScore": 0.166
+  },
+  {
+    "date": "2026-03-22",
+    "homeTeam": "Capitals",
+    "awayTeam": "Avalanche",
+    "homeScore": 2,
+    "awayScore": 3,
+    "homeXg": 2.83,
+    "awayXg": 3.25,
+    "homeWinProb": 43.4,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Avalanche",
+    "isCorrect": true,
+    "brierScore": 0.1881
+  },
+  {
+    "date": "2026-03-22",
+    "homeTeam": "Rangers",
+    "awayTeam": "Jets",
+    "homeScore": 2,
+    "awayScore": 2,
+    "homeXg": 2.96,
+    "awayXg": 2.64,
+    "homeWinProb": 55.2,
+    "predictedWinner": "Rangers",
+    "actualWinner": "Jets",
+    "isCorrect": false,
+    "brierScore": 0.3042
+  },
+  {
+    "date": "2026-03-22",
+    "homeTeam": "Mammoth",
+    "awayTeam": "Kings",
+    "homeScore": 4,
+    "awayScore": 3,
+    "homeXg": 2.9,
+    "awayXg": 2.27,
+    "homeWinProb": 60.6,
+    "predictedWinner": "Mammoth",
+    "actualWinner": "Mammoth",
+    "isCorrect": true,
+    "brierScore": 0.1551
   }
 ]
