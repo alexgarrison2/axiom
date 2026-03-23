@@ -6,6 +6,7 @@ import xgboost as xgb
 from xg_model import preprocess_data
 from team_ratings import calculate_ratings
 from predict_games import predict
+from shooting_talent import compute_shooting_talent, load_shooting_talent, apply_shooting_talent
 from dotenv import load_dotenv
 import os
 
@@ -90,7 +91,18 @@ def refresh_pipeline():
     print("Loading XGBoost model...")
     with open('xg_model_xgb.pkl', 'rb') as f:
         model = pickle.load(f)
-        
+
+    # 1b. Compute Shooting Talent Factors
+    # Uses existing xG values on disk (from previous scoring) to compute
+    # per-player goals/xG ratios with Bayesian shrinkage.
+    # Talent factors are then applied AFTER re-scoring shots below.
+    print("\n--- Computing Shooting Talent Factors ---")
+    try:
+        talent_map = compute_shooting_talent()
+    except Exception as e:
+        print(f"  [WARN] Shooting talent computation failed: {e}")
+        talent_map = {}
+
     # 2. Re-Score Shots (Historical & Current)
     shot_files = [
         "nhl_historical_shots.csv",
@@ -175,6 +187,14 @@ def refresh_pipeline():
                     f"Model may be producing invalid predictions due to library version mismatch. "
                     f"Check that scikit-learn and xgboost versions match the model pickle."
                 )
+
+            # ── Shooting Talent Adjustment ─────────────────────────────────
+            # Multiply each shot's xG by the shooter's talent factor.
+            # Elite finishers (Panarin, Thompson) get boosted; poor finishers
+            # get reduced. Unknown players default to 1.0 (no change).
+            if talent_map and 'player_id' in df.columns:
+                apply_shooting_talent(df, talent_map)
+            # ──────────────────────────────────────────────────────────────
 
             # Save back to CSV (includes both xG and xG_flurry_adj)
             df.to_csv(filename, index=False)
