@@ -46,9 +46,18 @@ from train_game_model import (
 def poisson_home_win_prob(h_xgf, a_xgf, n_max=10):
     """
     Compute home win probability using Poisson model.
-    Same logic as simulate_game() in predict_games.py.
+    Same OT logic as simulate_game() in predict_games.py.
+
+    OT model based on 5 seasons of NHL data (2021-2026, 1,424 OT+SO games):
+      - ~70% of OT games end in 3v3 overtime (skill-driven)
+      - ~30% go to shootout (coin flip — 50.1% home win rate)
+      - 3v3 OT: competing exponential blended with 53.6% historical base rate
     """
-    HOME_OT_BONUS = 0.025
+    OT_3V3_WEIGHT = 0.70
+    SO_WEIGHT = 0.30
+    HIST_HOME_OT_RATE = 0.536
+    SO_HOME_RATE = 0.50
+    EXPONENTIAL_WEIGHT = 0.60
 
     prob_home_reg = 0.0
     prob_away_reg = 0.0
@@ -64,12 +73,16 @@ def poisson_home_win_prob(h_xgf, a_xgf, n_max=10):
             else:
                 prob_tie += p
 
-    # OT model: competing exponential distributions
+    # Competing exponential for 3v3 OT
     if h_xgf + a_xgf > 0:
-        home_ot_base = h_xgf / (h_xgf + a_xgf)
+        raw_exponential = h_xgf / (h_xgf + a_xgf)
     else:
-        home_ot_base = 0.5
-    home_ot_frac = min(0.65, max(0.35, home_ot_base + HOME_OT_BONUS))
+        raw_exponential = 0.5
+
+    home_3v3_prob = (EXPONENTIAL_WEIGHT * raw_exponential +
+                     (1 - EXPONENTIAL_WEIGHT) * HIST_HOME_OT_RATE)
+    home_ot_frac = OT_3V3_WEIGHT * home_3v3_prob + SO_WEIGHT * SO_HOME_RATE
+    home_ot_frac = min(0.62, max(0.38, home_ot_frac))
 
     h_win_prob = prob_home_reg + (prob_tie * home_ot_frac)
     return h_win_prob

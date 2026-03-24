@@ -41,6 +41,7 @@ except ImportError:
 
 from sklearn.metrics import log_loss, brier_score_loss, accuracy_score
 from sklearn.calibration import CalibratedClassifierCV
+from scipy.stats import poisson
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -222,10 +223,56 @@ def compute_team_features(df):
     return pd.concat(result_dfs, ignore_index=True)
 
 
+def _poisson_ot_prob(h_xgf, a_xgf):
+    """
+    Compute home OT win probability using data-driven OT/SO model.
+
+    Based on 5 seasons of NHL data (2021-2026, 1,424 OT+SO games):
+      - 70% of OT games end in 3v3 (team quality matters)
+      - 30% go to shootout (coin flip — 50.1% home win rate)
+      - 3v3: competing exponential blended with 53.6% historical base rate
+    """
+    OT_3V3_WEIGHT = 0.70
+    SO_WEIGHT = 0.30
+    HIST_HOME_OT_RATE = 0.536
+    SO_HOME_RATE = 0.50
+    EXPONENTIAL_WEIGHT = 0.60
+
+    if (h_xgf + a_xgf) > 0:
+        raw_exp = h_xgf / (h_xgf + a_xgf)
+    else:
+        raw_exp = 0.5
+
+    home_3v3 = EXPONENTIAL_WEIGHT * raw_exp + (1 - EXPONENTIAL_WEIGHT) * HIST_HOME_OT_RATE
+    return OT_3V3_WEIGHT * home_3v3 + SO_WEIGHT * SO_HOME_RATE
+
+
+def _poisson_home_win_prob(h_xgf, a_xgf, n_max=10):
+    """Full Poisson + OT model home win probability."""
+    prob_home_reg = 0.0
+    prob_away_reg = 0.0
+    prob_tie = 0.0
+
+    for h in range(n_max + 1):
+        for a in range(n_max + 1):
+            p = poisson.pmf(h, h_xgf) * poisson.pmf(a, a_xgf)
+            if h > a:
+                prob_home_reg += p
+            elif a > h:
+                prob_away_reg += p
+            else:
+                prob_tie += p
+
+    ot_frac = _poisson_ot_prob(h_xgf, a_xgf)
+    ot_frac = min(0.62, max(0.38, ot_frac))
+    return prob_home_reg + prob_tie * ot_frac
+
+
 def build_game_matrix(df_feat):
     """Build one row per game from home-team perspective with matchup features.
 
-    v3: Pruned to 22 high-signal features (from 62).
+    v4: 24 features (was 22). Added Poisson-derived win probability and
+    estimated tie probability as features so the ML model can learn OT dynamics.
     """
 
     home = df_feat[df_feat['home_away'] == 'Home'].copy()
@@ -268,6 +315,25 @@ def build_game_matrix(df_feat):
     matchup_h = features['h_f_xgf_5v5'] * features['a_f_xga_5v5']
     matchup_a = features['a_f_xgf_5v5'] * features['h_f_xga_5v5']
     features['matchup_ratio'] = matchup_h / matchup_a.replace(0, 1)
+
+    # ── Poisson-derived OT features (2) ──
+    # Pre-computed Poisson win probability — gives the ML model a strong
+    # analytical prior to learn from, especially for OT-likely close games
+    features['poisson_home_wp'] = features.apply(
+        lambda r: _poisson_home_win_prob(
+            max(0.5, r['h_f_xgf_5v5']),
+            max(0.5, r['a_f_xgf_5v5'])
+        ), axis=1
+    )
+    # Estimated tie probability — tells the model how likely OT is for this matchup
+    # (close xG matchups → high tie prob → OT dynamics matter more)
+    features['poisson_tie_prob'] = features.apply(
+        lambda r: sum(
+            poisson.pmf(g, max(0.5, r['h_f_xgf_5v5'])) *
+            poisson.pmf(g, max(0.5, r['a_f_xgf_5v5']))
+            for g in range(11)
+        ), axis=1
+    )
 
     # ── Target ──
     features['home_win'] = merged['is_win_h'].astype(int)

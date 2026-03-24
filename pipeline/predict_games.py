@@ -551,18 +551,20 @@ def fetch_team_rankings():
 def simulate_game(home_final, away_final):
     """
     Simulate game outcome using Poisson distribution for regulation,
-    and exponential distribution for overtime/shootout.
-    
+    and a data-driven OT/SO model for overtime.
+
     Returns: (home_reg_win_prob, away_reg_win_prob, tie_prob, home_ot_win_frac)
-    
-    The home_ot_win_frac is the fraction of tied games the home team wins in OT/SO.
-    Uses the BayesBet-inspired exponential distribution: P(home OT win) = λ_h / (λ_h + λ_a)
-    with a small home ice OT bonus.
+
+    OT model based on 5 seasons of NHL data (2021-2026, 1,424 OT+SO games):
+      - ~70% of OT games end in 3v3 overtime (skill-driven, team quality matters)
+      - ~30% go to shootout (essentially a coin flip — 50.1% home win rate)
+      - 3v3 OT: competing exponential λ_h/(λ_h+λ_a), anchored to 53.6% home base rate
+      - Combined historical home OT+SO win rate: 52.5%
     """
     prob_home_win = 0
     prob_away_win = 0
     prob_draw = 0
-    
+
     for h in range(15):
         for a in range(15):
             p = poisson.pmf(h, home_final) * poisson.pmf(a, away_final)
@@ -572,19 +574,37 @@ def simulate_game(home_final, away_final):
                 prob_away_win += p
             else:
                 prob_draw += p
-    
-    # OT win probability using competing exponential distributions
-    # P(home scores first) = λ_home / (λ_home + λ_away) 
-    # Plus small home ice OT advantage (~2.5% empirical)
-    HOME_OT_BONUS = 0.025
-    
+
+    # ── Data-driven OT model (5-season empirical: 2021-2026) ──────────────
+    #
+    # 3v3 OT (70% of OT games): competing exponential distributions
+    #   Base: λ_home / (λ_home + λ_away), where λ = team's expected goals
+    #   Historical home 3v3 win rate: 53.6% (517/965 games)
+    #   Blend raw exponential with historical base to avoid overreacting
+    #   to small xG differences
+    OT_3V3_WEIGHT = 0.70       # 70% of OT games end in 3v3
+    SO_WEIGHT = 0.30           # 30% go to shootout
+    HIST_HOME_OT_RATE = 0.536  # 5-season home win rate in 3v3 OT
+    SO_HOME_RATE = 0.50        # shootouts are a coin flip (50.1% over 459 games)
+    EXPONENTIAL_WEIGHT = 0.60  # how much to trust xG-based exponential vs base rate
+
+    # Competing exponential: P(home scores first in OT) = λ_h / (λ_h + λ_a)
     if (home_final + away_final) > 0:
-        home_ot_base = home_final / (home_final + away_final)
+        raw_exponential = home_final / (home_final + away_final)
     else:
-        home_ot_base = 0.5
-    
-    home_ot_frac = min(0.65, max(0.35, home_ot_base + HOME_OT_BONUS))
-    
+        raw_exponential = 0.5
+
+    # Blend exponential estimate with historical base rate
+    # This prevents extreme OT predictions from small xG edges
+    home_3v3_prob = (EXPONENTIAL_WEIGHT * raw_exponential +
+                     (1 - EXPONENTIAL_WEIGHT) * HIST_HOME_OT_RATE)
+
+    # Combined: 70% weighted 3v3 + 30% weighted SO (coin flip)
+    home_ot_frac = OT_3V3_WEIGHT * home_3v3_prob + SO_WEIGHT * SO_HOME_RATE
+
+    # Clip to reasonable range
+    home_ot_frac = min(0.62, max(0.38, home_ot_frac))
+
     return prob_home_win, prob_away_win, prob_draw, home_ot_frac
 
 def load_existing_predictions(filepath):

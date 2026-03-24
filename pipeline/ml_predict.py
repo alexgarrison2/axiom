@@ -20,6 +20,7 @@ import json
 import pickle
 import numpy as np
 import pandas as pd
+from scipy.stats import poisson
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -161,6 +162,37 @@ class MLPredictor:
         data = self.goalie_ratings.get(goalie_name, {})
         return data.get('gsax_per_game', 0.0), data.get('games_played', 0)
 
+    @staticmethod
+    def _poisson_home_win_prob(h_xgf, a_xgf, n_max=10):
+        """Poisson + data-driven OT model for home win probability."""
+        OT_3V3_WEIGHT = 0.70
+        SO_WEIGHT = 0.30
+        HIST_HOME_OT_RATE = 0.536
+        SO_HOME_RATE = 0.50
+        EXPONENTIAL_WEIGHT = 0.60
+
+        prob_home_reg = 0.0
+        prob_tie = 0.0
+
+        for h in range(n_max + 1):
+            for a in range(n_max + 1):
+                p = poisson.pmf(h, h_xgf) * poisson.pmf(a, a_xgf)
+                if h > a:
+                    prob_home_reg += p
+                elif h == a:
+                    prob_tie += p
+
+        if (h_xgf + a_xgf) > 0:
+            raw_exp = h_xgf / (h_xgf + a_xgf)
+        else:
+            raw_exp = 0.5
+
+        home_3v3 = EXPONENTIAL_WEIGHT * raw_exp + (1 - EXPONENTIAL_WEIGHT) * HIST_HOME_OT_RATE
+        ot_frac = OT_3V3_WEIGHT * home_3v3 + SO_WEIGHT * SO_HOME_RATE
+        ot_frac = min(0.62, max(0.38, ot_frac))
+
+        return prob_home_reg + prob_tie * ot_frac
+
     def predict(self, home_team, away_team, game_date,
                 h_rest_days=None, a_rest_days=None,
                 h_is_b2b=False, a_is_b2b=False,
@@ -227,6 +259,15 @@ class MLPredictor:
         matchup_h = feat_dict['h_f_xgf_5v5'] * feat_dict['a_f_xga_5v5']
         matchup_a = feat_dict['a_f_xgf_5v5'] * feat_dict['h_f_xga_5v5']
         feat_dict['matchup_ratio'] = matchup_h / matchup_a if matchup_a > 0 else 1.0
+
+        # Poisson-derived OT features (v4)
+        h_xgf_raw = max(0.5, feat_dict['h_f_xgf_5v5'])
+        a_xgf_raw = max(0.5, feat_dict['a_f_xgf_5v5'])
+        feat_dict['poisson_home_wp'] = self._poisson_home_win_prob(h_xgf_raw, a_xgf_raw)
+        feat_dict['poisson_tie_prob'] = sum(
+            poisson.pmf(g, h_xgf_raw) * poisson.pmf(g, a_xgf_raw)
+            for g in range(11)
+        )
 
         # ── ML-derived xG (consistent with what the model sees) ──
         # Pythagorean matchup: (team offense × opponent defense) / league avg
