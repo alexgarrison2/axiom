@@ -1774,15 +1774,8 @@ def predict():
         
         # [REMOVED] Saturday Win Prob Boost — was adding +5% to 6 specific home teams on Saturdays
 
-        # ── Calibration shrinkage ──────────────────────────────────────
-        # Grid search on 2025-2026 season showed model is too extreme:
-        # overestimates favorites, underestimates underdogs.
-        # Shrink predictions toward base rate (home win ≈ 52.4%).
-        # Optimal shrinkage = 0.75 (LL 0.6902 → 0.6840).
-        CALIB_SHRINK = 0.75
-        CALIB_BASE = 0.524  # NHL home win rate
-        h_win_prob = CALIB_BASE + CALIB_SHRINK * (h_win_prob - CALIB_BASE)
-        a_win_prob = 1.0 - h_win_prob
+        # Note: Calibration is now handled by Platt scaling inside the ML model.
+        # External shrinkage removed — was compensating for old isotonic overfit.
 
         # Odds & EV
         # Construct unique matchup ID for specific game lookup

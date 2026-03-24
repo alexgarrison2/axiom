@@ -1,338 +1,150 @@
 {
   "feature_columns": [
     "h_f_xgf_5v5",
-    "h_f_xga_5v5",
-    "h_f_xgf",
-    "h_f_xga",
-    "h_f_gf",
-    "h_f_ga",
-    "h_f_sf",
-    "h_f_sa",
-    "h_f_win_rate",
-    "h_f_season_win_rate",
-    "h_f_sv_pct",
-    "h_f_pp_pct",
-    "h_f_pk_pct",
-    "h_f_cf_pct",
-    "h_f_shooting_talent",
-    "h_f_save_talent",
-    "h_f_rest_days",
-    "h_f_is_b2b",
-    "h_f_is_3in4",
-    "h_f_games_played",
-    "h_f_goalie_gsax",
-    "h_f_goalie_gp",
     "a_f_xgf_5v5",
+    "h_f_xga_5v5",
     "a_f_xga_5v5",
-    "a_f_xgf",
-    "a_f_xga",
-    "a_f_gf",
-    "a_f_ga",
-    "a_f_sf",
-    "a_f_sa",
-    "a_f_win_rate",
-    "a_f_season_win_rate",
-    "a_f_sv_pct",
+    "h_f_pp_pct",
     "a_f_pp_pct",
+    "h_f_pk_pct",
     "a_f_pk_pct",
-    "a_f_cf_pct",
-    "a_f_shooting_talent",
-    "a_f_save_talent",
-    "a_f_rest_days",
-    "a_f_is_b2b",
-    "a_f_is_3in4",
-    "a_f_games_played",
+    "h_f_goalie_gsax",
     "a_f_goalie_gsax",
+    "h_f_goalie_gp",
     "a_f_goalie_gp",
-    "d_xgf_5v5",
-    "d_xga_5v5",
+    "h_f_rest_days",
+    "a_f_rest_days",
+    "h_f_season_win_rate",
+    "a_f_season_win_rate",
+    "h_f_games_played",
+    "a_f_games_played",
     "d_xg_net",
-    "d_win_rate",
-    "d_sv_pct",
-    "d_pp_pct",
-    "d_pk_pct",
-    "d_cf_pct",
     "d_rest",
-    "d_shooting_talent",
-    "d_save_talent",
-    "d_season_wr",
     "d_goalie_gsax",
-    "matchup_h_off_vs_a_def",
-    "matchup_a_off_vs_h_def",
     "matchup_ratio"
   ],
-  "training_date": "2026-03-23T16:04:47.176698",
+  "training_date": "2026-03-23T21:37:47.421309",
   "ewma_halflife": 12,
-  "min_games": 10,
+  "min_games": 5,
   "cv_results": [
     {
       "test_season": 2024,
       "train_size": 1380,
       "test_size": 1193,
-      "log_loss": 0.6903230003095154,
-      "brier_score": 0.24775094207714915,
-      "accuracy": 0.5666387259010897,
+      "log_loss": 0.6791244594281267,
+      "log_loss_raw": 0.70061746139808,
+      "brier_score": 0.2430960709245511,
+      "accuracy": 0.5641240569991618,
       "home_win_rate": 0.5649622799664711
     },
     {
       "test_season": 2025,
       "train_size": 2573,
       "test_size": 1098,
-      "log_loss": 0.7082012440088921,
-      "brier_score": 0.25718394270178746,
-      "accuracy": 0.4936247723132969,
+      "log_loss": 0.6919037281450425,
+      "log_loss_raw": 0.6942350401098948,
+      "brier_score": 0.24938793838059536,
+      "accuracy": 0.5209471766848816,
       "home_win_rate": 0.5218579234972678
     }
   ],
   "holdout": {
-    "holdout_log_loss": 0.7056997687185746,
-    "holdout_accuracy": 0.5196078431372549,
-    "holdout_brier": 0.2559765573616503
+    "holdout_log_loss": 0.6933288741839813,
+    "holdout_accuracy": 0.5076252723311547,
+    "holdout_brier": 0.2501020728412446
   },
-  "avg_log_loss": 0.6992621221592037,
-  "avg_accuracy": 0.5301317491071933,
+  "avg_log_loss": 0.6855140937865847,
+  "avg_accuracy": 0.5425356168420217,
   "feature_importance": [
     {
-      "feature": "d_sv_pct",
-      "importance": 0.03354639187455177
+      "feature": "matchup_ratio",
+      "importance": 0.07819714397192001
     },
     {
       "feature": "d_xg_net",
-      "importance": 0.027133628726005554
-    },
-    {
-      "feature": "d_cf_pct",
-      "importance": 0.026700522750616074
-    },
-    {
-      "feature": "a_f_sv_pct",
-      "importance": 0.02628410793840885
-    },
-    {
-      "feature": "d_season_wr",
-      "importance": 0.025178438052535057
-    },
-    {
-      "feature": "h_f_sa",
-      "importance": 0.022025877609848976
-    },
-    {
-      "feature": "matchup_ratio",
-      "importance": 0.021199055016040802
+      "importance": 0.0717010647058487
     },
     {
       "feature": "d_rest",
-      "importance": 0.020948251709342003
-    },
-    {
-      "feature": "matchup_a_off_vs_h_def",
-      "importance": 0.020854556933045387
-    },
-    {
-      "feature": "h_f_save_talent",
-      "importance": 0.019932284951210022
-    },
-    {
-      "feature": "a_f_sa",
-      "importance": 0.019209163263440132
-    },
-    {
-      "feature": "d_xga_5v5",
-      "importance": 0.01824195869266987
-    },
-    {
-      "feature": "a_f_is_b2b",
-      "importance": 0.01821502484381199
-    },
-    {
-      "feature": "a_f_cf_pct",
-      "importance": 0.0178818479180336
-    },
-    {
-      "feature": "h_f_xgf_5v5",
-      "importance": 0.01787675730884075
-    },
-    {
-      "feature": "h_f_goalie_gsax",
-      "importance": 0.017681825906038284
-    },
-    {
-      "feature": "h_f_cf_pct",
-      "importance": 0.017497409135103226
-    },
-    {
-      "feature": "h_f_season_win_rate",
-      "importance": 0.01746460422873497
+      "importance": 0.0624711774289608
     },
     {
       "feature": "a_f_rest_days",
-      "importance": 0.017417501658201218
+      "importance": 0.045153502374887466
     },
     {
-      "feature": "a_f_ga",
-      "importance": 0.01726509816944599
-    },
-    {
-      "feature": "h_f_xga_5v5",
-      "importance": 0.017085211351513863
-    },
-    {
-      "feature": "d_pp_pct",
-      "importance": 0.01694631204009056
-    },
-    {
-      "feature": "a_f_goalie_gsax",
-      "importance": 0.01693929359316826
-    },
-    {
-      "feature": "h_f_sf",
-      "importance": 0.016863852739334106
-    },
-    {
-      "feature": "d_pk_pct",
-      "importance": 0.016852712258696556
-    },
-    {
-      "feature": "d_win_rate",
-      "importance": 0.01681472547352314
-    },
-    {
-      "feature": "a_f_pp_pct",
-      "importance": 0.016811737790703773
-    },
-    {
-      "feature": "a_f_pk_pct",
-      "importance": 0.016787312924861908
-    },
-    {
-      "feature": "a_f_goalie_gp",
-      "importance": 0.016779562458395958
-    },
-    {
-      "feature": "h_f_pk_pct",
-      "importance": 0.016618913039565086
-    },
-    {
-      "feature": "d_xgf_5v5",
-      "importance": 0.01653357967734337
-    },
-    {
-      "feature": "d_shooting_talent",
-      "importance": 0.016430990770459175
-    },
-    {
-      "feature": "a_f_season_win_rate",
-      "importance": 0.01596805825829506
-    },
-    {
-      "feature": "h_f_xga",
-      "importance": 0.015525506809353828
+      "feature": "h_f_season_win_rate",
+      "importance": 0.04508122801780701
     },
     {
       "feature": "h_f_games_played",
-      "importance": 0.015482760965824127
+      "importance": 0.045000359416007996
     },
     {
-      "feature": "h_f_pp_pct",
-      "importance": 0.015468750149011612
+      "feature": "h_f_xga_5v5",
+      "importance": 0.044407088309526443
     },
     {
-      "feature": "h_f_sv_pct",
-      "importance": 0.015445279888808727
-    },
-    {
-      "feature": "d_goalie_gsax",
-      "importance": 0.015428982675075531
-    },
-    {
-      "feature": "a_f_gf",
-      "importance": 0.015356193296611309
-    },
-    {
-      "feature": "a_f_sf",
-      "importance": 0.015287676826119423
-    },
-    {
-      "feature": "h_f_is_3in4",
-      "importance": 0.015260781161487103
-    },
-    {
-      "feature": "a_f_xgf",
-      "importance": 0.015183033421635628
-    },
-    {
-      "feature": "h_f_gf",
-      "importance": 0.01510777696967125
-    },
-    {
-      "feature": "h_f_ga",
-      "importance": 0.015063769184052944
-    },
-    {
-      "feature": "a_f_win_rate",
-      "importance": 0.014879731461405754
+      "feature": "a_f_season_win_rate",
+      "importance": 0.04430890828371048
     },
     {
       "feature": "a_f_games_played",
-      "importance": 0.014876537956297398
+      "importance": 0.043342627584934235
     },
     {
-      "feature": "matchup_h_off_vs_a_def",
-      "importance": 0.014513632282614708
+      "feature": "a_f_goalie_gsax",
+      "importance": 0.042930807918310165
+    },
+    {
+      "feature": "a_f_pp_pct",
+      "importance": 0.04240503907203674
+    },
+    {
+      "feature": "a_f_pk_pct",
+      "importance": 0.042197708040475845
+    },
+    {
+      "feature": "d_goalie_gsax",
+      "importance": 0.041296545416116714
     },
     {
       "feature": "h_f_goalie_gp",
-      "importance": 0.014465783722698689
+      "importance": 0.04098038002848625
     },
     {
-      "feature": "h_f_xgf",
-      "importance": 0.014222737401723862
+      "feature": "h_f_pp_pct",
+      "importance": 0.040875863283872604
     },
     {
-      "feature": "a_f_shooting_talent",
-      "importance": 0.013802606612443924
+      "feature": "a_f_goalie_gp",
+      "importance": 0.040534328669309616
     },
     {
-      "feature": "a_f_xgf_5v5",
-      "importance": 0.013744570314884186
+      "feature": "h_f_xgf_5v5",
+      "importance": 0.040191296488046646
     },
     {
-      "feature": "h_f_shooting_talent",
-      "importance": 0.013694524765014648
-    },
-    {
-      "feature": "h_f_win_rate",
-      "importance": 0.013495774939656258
-    },
-    {
-      "feature": "d_save_talent",
-      "importance": 0.013452503830194473
+      "feature": "h_f_pk_pct",
+      "importance": 0.03910239413380623
     },
     {
       "feature": "a_f_xga_5v5",
-      "importance": 0.013407869264483452
+      "importance": 0.03902386128902435
     },
     {
-      "feature": "a_f_xga",
-      "importance": 0.012818530201911926
+      "feature": "h_f_goalie_gsax",
+      "importance": 0.03867899999022484
     },
     {
-      "feature": "a_f_save_talent",
-      "importance": 0.012785800732672215
+      "feature": "a_f_xgf_5v5",
+      "importance": 0.03796431049704552
     },
     {
       "feature": "h_f_rest_days",
-      "importance": 0.01124238409101963
-    },
-    {
-      "feature": "h_f_is_b2b",
-      "importance": 0.0
-    },
-    {
-      "feature": "a_f_is_3in4",
-      "importance": 0.0
+      "importance": 0.034155331552028656
     }
   ],
   "model_type": "XGBoost",
-  "calibration": "isotonic_5fold"
+  "calibration": "sigmoid_5fold"
 }

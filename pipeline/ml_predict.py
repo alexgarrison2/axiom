@@ -7,6 +7,8 @@ At prediction time, this module:
 2. Computes EWMA features from game_stats for each team
 3. Returns calibrated home win probabilities
 
+v3: Pruned feature set (22 features), cross-season EWMA carryover.
+
 Usage in predict_games.py:
     from ml_predict import MLPredictor
     ml = MLPredictor(game_stats_df)
@@ -23,13 +25,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class MLPredictor:
     """Runtime predictor using the trained game outcome model."""
-    
+
     def __init__(self, game_stats_df, goalie_ratings=None):
-        """
-        Args:
-            game_stats_df: The season gamestats DataFrame (same as used in pipeline)
-            goalie_ratings: Optional goalie ratings dict (from goalie_ratings.json)
-        """
         self.model = None
         self.meta = None
         self.team_features = {}
@@ -64,9 +61,7 @@ class MLPredictor:
             self._precompute(game_stats_df)
 
             self.available = True
-            has_goalie = any('goalie' in c for c in self.feature_cols)
-            print(f"[ML] Model loaded: {len(self.feature_cols)} features "
-                  f"(goalie={'yes' if has_goalie else 'no'}), "
+            print(f"[ML] Model loaded: {len(self.feature_cols)} features, "
                   f"trained {self.meta.get('training_date', 'unknown')}")
             print(f"[ML] CV Log Loss: {self.meta.get('avg_log_loss', 'N/A'):.4f}")
             if self.goalie_ratings:
@@ -74,104 +69,91 @@ class MLPredictor:
         except Exception as e:
             print(f"[ML] Error loading model: {e}")
             self.available = False
-    
+
     def _ewma(self, series):
         """EWMA with configured halflife."""
         return series.ewm(halflife=self.ewma_halflife, min_periods=1).mean()
-    
+
     def _precompute(self, df):
-        """Pre-compute rolling features for all teams from game stats."""
+        """Pre-compute rolling features for all teams from game stats.
+
+        v3: Uses ALL available data (not just current season) so EWMA
+        carries prior-season signal into early current-season predictions.
+        """
         if df is None or df.empty:
             return
-            
+
+        # Also load historical data for cross-season carryover
+        hist_path = os.path.join(SCRIPT_DIR, 'nhl_historical_gamestats.csv')
+        if os.path.exists(hist_path):
+            try:
+                hist_df = pd.read_csv(hist_path, low_memory=False)
+                df = pd.concat([hist_df, df], ignore_index=True)
+                df = df.drop_duplicates(subset=['game_id', 'team'], keep='last')
+            except Exception as e:
+                print(f"[ML] Warning: Could not load historical data for carryover: {e}")
+
         df = df.copy()
         df['game_date'] = pd.to_datetime(df['game_date'])
-        
+
         # Derive season
         df['season'] = df['game_date'].apply(
             lambda d: d.year if d.month >= 9 else d.year - 1
         )
-        
+        current_season = df['season'].max()
+
         # Result flag
         df['is_win'] = df['result'].isin(['RW', 'OTW', 'SOW']).astype(int)
-        
+
         # Ensure numeric
-        for col in ['xG_for_5v5', 'xG_against_5v5', 'xG_for', 'xG_against',
-                     'goals_for', 'goals_ag', 'sog_for', 'sog_ag',
-                     'pp_goals', 'pp_opportunities', 'pp_goals_against', 'pk_opportunities',
-                     'save_percentage', 'attempts_for', 'attempts_ag']:
+        for col in ['xG_for_5v5', 'xG_against_5v5',
+                     'pp_goals', 'pp_opportunities', 'pp_goals_against', 'pk_opportunities']:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce')
-        
-        # Current season only for predictions
-        current_season = df['season'].max()
-        
+
         for team in df['team'].unique():
-            team_df = df[(df['team'] == team) & (df['season'] == current_season)].sort_values('game_date')
-            
+            # Use ALL seasons for EWMA (cross-season carryover)
+            team_df = df[df['team'] == team].sort_values('game_date')
+
             if len(team_df) < 3:
                 continue
-            
-            # Compute features on ALL data (the LAST value is the "as of now" feature set)
+
+            # Compute EWMA on full history — the LAST value is "as of now"
             feats = {}
-            
+
             feats['f_xgf_5v5'] = self._ewma(team_df['xG_for_5v5']).iloc[-1]
-            feats['f_xga_5v5'] = self._ewma(team_df['xG_against_5v5']).iloc[-1] 
-            feats['f_xgf'] = self._ewma(team_df['xG_for']).iloc[-1]
-            feats['f_xga'] = self._ewma(team_df['xG_against']).iloc[-1]
-            feats['f_gf'] = self._ewma(team_df['goals_for']).iloc[-1]
-            feats['f_ga'] = self._ewma(team_df['goals_ag']).iloc[-1]
-            feats['f_sf'] = self._ewma(team_df['sog_for']).iloc[-1]
-            feats['f_sa'] = self._ewma(team_df['sog_ag']).iloc[-1]
-            feats['f_win_rate'] = self._ewma(team_df['is_win'].astype(float)).iloc[-1]
-            feats['f_season_win_rate'] = team_df['is_win'].mean()
-            
-            if 'save_percentage' in team_df.columns:
-                sv = team_df['save_percentage'].astype(float)
-                sv = sv[sv > 0]  # filter out 0s
-                feats['f_sv_pct'] = self._ewma(sv).iloc[-1] if len(sv) > 0 else 0.910
+            feats['f_xga_5v5'] = self._ewma(team_df['xG_against_5v5']).iloc[-1]
+
+            # Season win rate (current season only)
+            curr_season_df = team_df[team_df['season'] == current_season]
+            feats['f_season_win_rate'] = curr_season_df['is_win'].mean() if len(curr_season_df) > 0 else 0.5
+
+            # PP/PK from current season cumulative
+            if len(curr_season_df) > 0:
+                pp_goals_tot = curr_season_df['pp_goals'].sum()
+                pp_opps_tot = curr_season_df['pp_opportunities'].sum()
+                feats['f_pp_pct'] = pp_goals_tot / pp_opps_tot if pp_opps_tot > 0 else 0.20
+
+                pk_ga_tot = curr_season_df['pp_goals_against'].sum()
+                pk_opps_tot = curr_season_df['pk_opportunities'].sum()
+                feats['f_pk_pct'] = 1.0 - (pk_ga_tot / pk_opps_tot) if pk_opps_tot > 0 else 0.80
             else:
-                feats['f_sv_pct'] = 0.910
-            
-            # PP/PK from season cumulative
-            pp_goals_tot = team_df['pp_goals'].sum()
-            pp_opps_tot = team_df['pp_opportunities'].sum()
-            feats['f_pp_pct'] = pp_goals_tot / pp_opps_tot if pp_opps_tot > 0 else 0.20
-            
-            pk_ga_tot = team_df['pp_goals_against'].sum()
-            pk_opps_tot = team_df['pk_opportunities'].sum()
-            feats['f_pk_pct'] = 1.0 - (pk_ga_tot / pk_opps_tot) if pk_opps_tot > 0 else 0.80
-            
-            # Corsi%
-            af = team_df['attempts_for'].astype(float)
-            aa = team_df['attempts_ag'].astype(float)
-            cf_series = af / (af + aa)
-            feats['f_cf_pct'] = self._ewma(cf_series.fillna(0.5)).iloc[-1]
-            
-            # Shooting talent: goals / xG 
-            gf_total = team_df['goals_for'].sum()
-            xgf_total = team_df['xG_for'].sum()
-            feats['f_shooting_talent'] = min(2.0, max(0.5, gf_total / xgf_total)) if xgf_total > 0 else 1.0
-            
-            # Save talent: goals against / xG against
-            ga_total = team_df['goals_ag'].sum()
-            xga_total = team_df['xG_against'].sum()
-            feats['f_save_talent'] = min(2.0, max(0.5, ga_total / xga_total)) if xga_total > 0 else 1.0
-            
-            # Games played
-            feats['f_games_played'] = len(team_df)
-            
+                feats['f_pp_pct'] = 0.20
+                feats['f_pk_pct'] = 0.80
+
+            # Games played (current season)
+            feats['f_games_played'] = len(curr_season_df)
+
             # Last game date for rest calculation
             feats['_last_game_date'] = team_df['game_date'].max()
-            
-            # Fatigue: check last game's flags (most recent)
-            feats['f_is_b2b'] = int(team_df['is_b2b'].iloc[-1]) if 'is_b2b' in team_df.columns else 0
-            feats['f_is_3in4'] = int(team_df['is_3in4'].iloc[-1]) if 'is_3in4' in team_df.columns else 0
-            
+
+            # Rest days (will be overridden per-prediction if available)
+            feats['f_rest_days'] = 2  # default
+
             self.team_features[team] = feats
-        
+
         print(f"[ML] Pre-computed features for {len(self.team_features)} teams")
-    
+
     def _get_goalie_gsax(self, goalie_name):
         """Look up regressed GSAx/game for a goalie from goalie_ratings.json."""
         if not goalie_name or not self.goalie_ratings:
@@ -185,9 +167,6 @@ class MLPredictor:
                 h_goalie=None, a_goalie=None):
         """
         Predict home win probability using the ML model.
-
-        Args:
-            h_goalie/a_goalie: Starting goalie names (for GSAx lookup)
 
         Returns: (home_win_prob, away_win_prob) or None if model unavailable
         """
@@ -215,10 +194,6 @@ class MLPredictor:
             else:
                 a_rest_days = 2
 
-        # Override b2b if provided
-        h_b2b = int(h_is_b2b) if h_is_b2b else h_feats.get('f_is_b2b', 0)
-        a_b2b = int(a_is_b2b) if a_is_b2b else a_feats.get('f_is_b2b', 0)
-
         # Goalie GSAx features
         h_gsax, h_goalie_gp = self._get_goalie_gsax(h_goalie)
         a_gsax, a_goalie_gp = self._get_goalie_gsax(a_goalie)
@@ -226,18 +201,10 @@ class MLPredictor:
         # Build feature vector matching training feature order
         feat_dict = {}
 
-        # Home team raw features
-        for key in ['f_xgf_5v5', 'f_xga_5v5', 'f_xgf', 'f_xga', 'f_gf', 'f_ga',
-                     'f_sf', 'f_sa', 'f_win_rate', 'f_season_win_rate', 'f_sv_pct',
-                     'f_pp_pct', 'f_pk_pct', 'f_cf_pct', 'f_shooting_talent',
-                     'f_save_talent', 'f_games_played']:
+        # Per-team features
+        for key in ['f_xgf_5v5', 'f_xga_5v5', 'f_pp_pct', 'f_pk_pct',
+                     'f_season_win_rate', 'f_games_played']:
             feat_dict[f'h_{key}'] = float(h_feats.get(key, 0))
-
-        # Away team raw features
-        for key in ['f_xgf_5v5', 'f_xga_5v5', 'f_xgf', 'f_xga', 'f_gf', 'f_ga',
-                     'f_sf', 'f_sa', 'f_win_rate', 'f_season_win_rate', 'f_sv_pct',
-                     'f_pp_pct', 'f_pk_pct', 'f_cf_pct', 'f_shooting_talent',
-                     'f_save_talent', 'f_games_played']:
             feat_dict[f'a_{key}'] = float(a_feats.get(key, 0))
 
         # Goalie features
@@ -246,42 +213,24 @@ class MLPredictor:
         feat_dict['h_f_goalie_gp'] = float(h_goalie_gp)
         feat_dict['a_f_goalie_gp'] = float(a_goalie_gp)
 
-        # Schedule features
+        # Rest
         feat_dict['h_f_rest_days'] = float(h_rest_days)
         feat_dict['a_f_rest_days'] = float(a_rest_days)
-        feat_dict['h_f_is_b2b'] = float(h_b2b)
-        feat_dict['a_f_is_b2b'] = float(a_b2b)
-        feat_dict['h_f_is_3in4'] = float(h_feats.get('f_is_3in4', 0))
-        feat_dict['a_f_is_3in4'] = float(a_feats.get('f_is_3in4', 0))
 
-        # Differential features
-        feat_dict['d_xgf_5v5'] = feat_dict['h_f_xgf_5v5'] - feat_dict['a_f_xgf_5v5']
-        feat_dict['d_xga_5v5'] = feat_dict['h_f_xga_5v5'] - feat_dict['a_f_xga_5v5']
+        # Differentials
         feat_dict['d_xg_net'] = ((feat_dict['h_f_xgf_5v5'] - feat_dict['h_f_xga_5v5']) -
                                   (feat_dict['a_f_xgf_5v5'] - feat_dict['a_f_xga_5v5']))
-        feat_dict['d_win_rate'] = feat_dict['h_f_win_rate'] - feat_dict['a_f_win_rate']
-        feat_dict['d_sv_pct'] = feat_dict['h_f_sv_pct'] - feat_dict['a_f_sv_pct']
-        feat_dict['d_pp_pct'] = feat_dict['h_f_pp_pct'] - feat_dict['a_f_pp_pct']
-        feat_dict['d_pk_pct'] = feat_dict['h_f_pk_pct'] - feat_dict['a_f_pk_pct']
-        feat_dict['d_cf_pct'] = feat_dict['h_f_cf_pct'] - feat_dict['a_f_cf_pct']
         feat_dict['d_rest'] = feat_dict['h_f_rest_days'] - feat_dict['a_f_rest_days']
-        feat_dict['d_shooting_talent'] = feat_dict['h_f_shooting_talent'] - feat_dict['a_f_shooting_talent']
-        feat_dict['d_save_talent'] = feat_dict['h_f_save_talent'] - feat_dict['a_f_save_talent']
-        feat_dict['d_season_wr'] = feat_dict['h_f_season_win_rate'] - feat_dict['a_f_season_win_rate']
         feat_dict['d_goalie_gsax'] = feat_dict['h_f_goalie_gsax'] - feat_dict['a_f_goalie_gsax']
 
-        # Matchup interactions
+        # Matchup interaction
         matchup_h = feat_dict['h_f_xgf_5v5'] * feat_dict['a_f_xga_5v5']
         matchup_a = feat_dict['a_f_xgf_5v5'] * feat_dict['h_f_xga_5v5']
-        feat_dict['matchup_h_off_vs_a_def'] = matchup_h
-        feat_dict['matchup_a_off_vs_h_def'] = matchup_a
         feat_dict['matchup_ratio'] = matchup_h / matchup_a if matchup_a > 0 else 1.0
 
         # Build feature vector in the EXACT order the model expects
         try:
             X = np.array([[feat_dict.get(col, 0.0) for col in self.feature_cols]])
-
-            # Handle any NaN/inf
             X = np.nan_to_num(X, nan=0.0, posinf=1.0, neginf=-1.0)
 
             h_prob = self.model.predict_proba(X)[0][1]
