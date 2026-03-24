@@ -1,6 +1,6 @@
 # 🏒 HockeyData — Master To-Do List
 
-> **Last updated:** 2026-03-24
+> **Last updated:** 2026-03-24 14:30
 
 ---
 
@@ -8,9 +8,9 @@
 
 | # | Task | Priority | Effort | Notes |
 |---|------|----------|--------|-------|
-| 1.1 | **Skater Tab: Rookie font color** — Change rookie skater names to `#D9FF82` | 🟢 Low | ⚡ Small (~30 min) | Pure CSS/conditional styling change |
-| 1.2 | **Matchup Card (Mobile): Move total goals pill** — Place right under the "History" text for odds history | 🟡 Medium | ⚡ Small (~1 hr) | Layout reorder in mobile view |
-| 1.3 | **Matchup Card: Bet pill color logic** — Green (`#0AFF00`, varying opacity) = +EV% AND projected to win. Amber (`#FFAA00`, varying opacity) = +EV% AND projected to lose | 🟡 Medium | 🔧 Medium (~2-3 hrs) | Need to wire up win% direction into pill color logic |
+| 1.1 | **Skaters page: Rookies filter button** — Add a "Rookies" toggle button (similar to position filters) that filters the skaters table to only show players with `isRookie: true` | 🟡 Medium | ⚡ Small (~1 hr) | `isRookie` flag already exists in `player_bio.json` and is fetched by `SkaterStatsTable.tsx` |
+| 1.2 | **Teams page: Clinch/elimination icons** — Display P/Z/Y/X/E badges next to team names in standings. Figma ref: https://www.figma.com/design/jmpyG8WAPoOr0OcJsDlbGw/Supotsu?node-id=580-331 | 🟡 Medium | 🔧 Medium (~2-3 hrs) | Need to determine clinch/elimination status from standings data |
+| 1.3 | **Teams page: Column group toggles** — Default all column groups on; selected state: bg `#25DBEB`, font `#343434` | 🟢 Low | 🔧 Medium (~2-3 hrs) | UX improvement for dense table |
 
 ---
 
@@ -29,6 +29,7 @@
 |---|------|----------|--------|-------|
 | 3.1 | **GSAx calibration issue** — Only 3 teams have negative GSAx. Doesn't align with Natural Stat Trick, HockeyStats, MoneyPuck. Possible xG inflation in our shot model | 🔴 High | 🔍 Investigation (~1-2 days) | Could indicate our xG model is systematically low, making most goalies look "good". Need to compare our xG/shot vs industry benchmarks |
 | 3.2 | **History tab correctness tracking** — Currently marks "Correct" based on which team scored more goals. Now win% and xG can disagree. Need to decide: track by win% favorite, xG favorite, or both? | 🟡 Medium | 🔧 Medium (~2-3 hrs) | Recommend switching to win% as primary correctness metric since that's our actual prediction |
+| 3.3 | **Will Borgen / EV Defense investigation** — Will Borgen is appearing as #1 EV Defender by RAPM. Investigate whether this is a data artifact (small sample, teammate effects, xG suppression in limited role) or if it's legitimate | 🟡 Medium | 🔍 Investigation (~1-2 hrs) | Check TOI, zone starts, teammates on ice, and compare to industry RAPM sources |
 
 ---
 
@@ -60,6 +61,7 @@
 
 | Date | Task | Commit |
 |------|------|--------|
+| 2026-03-24 14:00 | Visual: Rookie names in #D9FF82 (102 rookies via NHL stats API), bet pill colors (green=+EV+win, amber=+EV+lose), mobile total pill moved under History | `78f6fe4f` |
 | 2026-03-24 12:15 | Phase 3C: Flurry-adjusted xG applied to 263K historical shots + re-aggregated gamestats. Backtest LL 0.6865→0.6830, accuracy 53.9%→54.9%, blended ECE 0.0189 | `e902eadd` |
 | 2026-03-24 10:45 | Phase 2C: Data-driven OT model (70/30 OT/SO split, 5-season empirical) + Poisson features for ML (22→24 features). Backtest LL 0.6877→0.6865, ECE 0.0498→0.0386 | `1369421c` |
 | 2026-03-24 10:30 | Validation: Full backtest run — baseline LL=0.6877, ECE=0.0498, 50-55% bucket at 48% accuracy. Identified OT modeling and calibration as top priorities | — |

@@ -113,6 +113,7 @@ export default function SkaterStatsTable() {
     const [loading, setLoading] = useState(true);
     const [posFilter, setPosFilter] = useState<'All' | 'F' | 'D'>('All');
     const [teamFilter, setTeamFilter] = useState<string>('All');
+    const [rookieOnly, setRookieOnly] = useState(false);
     const [sortKey, setSortKey] = useState<SortKey>('impact_score');
     const [sortAsc, setSortAsc] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -146,6 +147,9 @@ export default function SkaterStatsTable() {
         // Team filter
         if (teamFilter !== 'All') rows = rows.filter(p => p.team === teamFilter);
 
+        // Rookie filter
+        if (rookieOnly) rows = rows.filter(p => bioData[p.id]?.isRookie === true);
+
         // Search
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase().trim();
@@ -160,7 +164,7 @@ export default function SkaterStatsTable() {
         });
 
         return rows;
-    }, [data, posFilter, teamFilter, sortKey, sortAsc, searchQuery]);
+    }, [data, posFilter, teamFilter, rookieOnly, sortKey, sortAsc, searchQuery, bioData]);
 
     const handleSort = (key: SortKey) => {
         if (key === sortKey) {
@@ -219,6 +223,18 @@ export default function SkaterStatsTable() {
                         </button>
                     ))}
                 </div>
+
+                {/* Rookie filter */}
+                <button
+                    onClick={() => setRookieOnly(prev => !prev)}
+                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all ${
+                        rookieOnly
+                            ? 'bg-[#D9FF82]/15 border-[#D9FF82]/40 text-[#D9FF82]'
+                            : 'bg-white/5 border-white/10 text-neutral-500 hover:text-neutral-300'
+                    }`}
+                >
+                    🌱 Rookies
+                </button>
 
                 {/* Team filter */}
                 <select
