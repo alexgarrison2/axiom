@@ -114,7 +114,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         home_rr_rate,
         away_rr_rate,
         home_recent_games,
-        away_recent_games
+        away_recent_games,
+        homeWinCiLow,
+        homeWinCiHigh,
+        confidence
     } = prediction;
 
     const cardRef = useRef<HTMLDivElement>(null);
@@ -1150,9 +1153,20 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             <span>{Math.round(homeModelWinPct)}%</span>
                         </div>
                         <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden flex relative shadow-inner">
+                            {/* Confidence interval zone */}
+                            {homeWinCiLow != null && homeWinCiHigh != null && (
+                                <div
+                                    className="absolute top-0 h-full z-[5] transition-all duration-1000 ease-out"
+                                    style={{
+                                        left: isInView ? `${100 - homeWinCiHigh}%` : '45%',
+                                        width: isInView ? `${homeWinCiHigh - homeWinCiLow}%` : '10%',
+                                        background: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 4px)',
+                                    }}
+                                />
+                            )}
                             {/* Away Bar (Left) - Animated Width */}
                             <div
-                                className="h-full shadow-[0_0_15px_rgba(255,b255,255,0.2)] z-10 transition-all duration-1000 ease-out flex justify-start items-center relative overflow-hidden"
+                                className="h-full shadow-[0_0_15px_rgba(255,255,255,0.2)] z-10 transition-all duration-1000 ease-out flex justify-start items-center relative overflow-hidden"
                                 style={{
                                     width: isInView ? `${awayModelWinPct}%` : '50%',
                                     background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
@@ -1172,6 +1186,23 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 }}
                             ></div>
                         </div>
+                        {/* Confidence label (desktop) */}
+                        {confidence && (
+                            <div className="flex justify-between w-full mt-1.5 px-1">
+                                <span className={`text-[8px] font-mono uppercase tracking-widest ${
+                                    confidence === 'HIGH' ? 'text-emerald-500/50' :
+                                    confidence === 'MED' ? 'text-amber-500/40' :
+                                    'text-red-400/40'
+                                }`}>
+                                    {confidence === 'HIGH' ? 'high confidence' : confidence === 'MED' ? 'med confidence' : 'low confidence'}
+                                </span>
+                                {homeWinCiLow != null && homeWinCiHigh != null && (
+                                    <span className="text-[8px] font-mono text-neutral-600">
+                                        ±{Math.round((homeWinCiHigh - homeWinCiLow) / 2)}%
+                                    </span>
+                                )}
+                            </div>
+                        )}
 
                         {/* Odds Comparison Box */}
                         <div className="flex flex-row justify-between w-full mt-6 px-2 gap-4">
@@ -1424,8 +1455,19 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         {/* CENTER (Time + Bar) */}
                         <div className="flex flex-col items-center justify-center flex-1 gap-1">
                             <span className="text-[10px] font-mono tracking-wider whitespace-nowrap mb-0.5" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
-                            {/* Bar - Taller (h-5) & Animated */}
+                            {/* Bar - Taller (h-5) & Animated + Confidence Interval */}
                             <div className="w-full h-5 bg-neutral-800/80 rounded-sm overflow-hidden flex relative shadow-inner border border-white/5">
+                                {/* Confidence interval zone — subtle striped band showing uncertainty range */}
+                                {homeWinCiLow != null && homeWinCiHigh != null && (
+                                    <div
+                                        className="absolute top-0 h-full z-[5] transition-all duration-1000 ease-out"
+                                        style={{
+                                            left: isInView ? `${100 - homeWinCiHigh}%` : '45%',
+                                            width: isInView ? `${homeWinCiHigh - homeWinCiLow}%` : '10%',
+                                            background: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 2px, transparent 2px, transparent 4px)',
+                                        }}
+                                    />
+                                )}
                                 {/* Away Bar (Left) - Animated Width */}
                                 <div
                                     className="h-full shadow-[0_0_10px_rgba(255,255,255,0.2)] flex items-center justify-start pl-1 z-10 transition-all duration-1000 ease-out overflow-hidden whitespace-nowrap"
@@ -1452,6 +1494,16 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     <span className={`text-[10px] font-bold drop-shadow-md whitespace-nowrap pr-1 ${getContrastTextClass(homeBarColor)}`}>{Math.round(homeModelWinPct)}%</span>
                                 </div>
                             </div>
+                            {/* Confidence label (mobile — compact) */}
+                            {confidence && homeWinCiLow != null && homeWinCiHigh != null && (
+                                <span className={`text-[7px] font-mono uppercase tracking-widest mt-0.5 whitespace-nowrap ${
+                                    confidence === 'HIGH' ? 'text-emerald-500/60' :
+                                    confidence === 'MED' ? 'text-amber-500/50' :
+                                    'text-red-400/50'
+                                }`}>
+                                    {confidence.toLowerCase()} conf <span className="text-neutral-600">±{Math.round((homeWinCiHigh - homeWinCiLow) / 2)}%</span>
+                                </span>
+                            )}
                         </div>
 
                         {/* RIGHT DATA (Home xG/Wager) */}

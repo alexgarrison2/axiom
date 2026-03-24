@@ -1756,7 +1756,8 @@ def predict():
         # ML Model prediction (data-learned)
         h_win_prob = h_win_prob_poisson
         a_win_prob = a_win_prob_poisson
-        
+        h_win_prob_ml = None  # Reset per game
+
         if ml_predictor and ml_predictor.available:
             ml_result = ml_predictor.predict(
                 home_team, away_team, game_date,
@@ -1773,7 +1774,51 @@ def predict():
                 print(f"  [ML] Poisson: {h_win_prob_poisson:.1%} | ML: {h_win_prob_ml:.1%} | Blended: {h_win_prob:.1%}")
         
         # [REMOVED] Saturday Win Prob Boost — was adding +5% to 6 specific home teams on Saturdays
-        
+
+        # ── Bayesian Uncertainty (confidence interval) ──────────────────
+        # Sources of uncertainty:
+        #   1. Model disagreement: |Poisson - ML| (bigger gap = less certain)
+        #   2. Sample size: fewer games played = wider interval
+        #   3. Goalie status: unconfirmed goalie adds uncertainty
+
+        # Base uncertainty from model disagreement
+        model_disagree = abs(h_win_prob_poisson - h_win_prob_ml) if h_win_prob_ml is not None else 0.05
+
+        # Sample size factor: sigma shrinks as sqrt(n) grows
+        h_gp = h_ratings.get('games_played', 40)
+        a_gp = team_ratings.get(away_team, {}).get('games_played', 40)
+        min_gp = min(h_gp, a_gp)
+        sample_factor = max(0.5, 1.0 - (min_gp / 82))  # 0.5 at 41+ GP, 1.0 at 0 GP
+
+        # Goalie uncertainty: unconfirmed goalie adds ~3%, likely ~1%
+        goalie_unc = 0.0
+        h_goalie_st = h_status if h_status else 'Unconfirmed'
+        a_goalie_st = a_status if a_status else 'Unconfirmed'
+        if 'Unconfirmed' in h_goalie_st or h_goalie_st == '':
+            goalie_unc += 0.03
+        elif 'Likely' in h_goalie_st:
+            goalie_unc += 0.01
+        if 'Unconfirmed' in a_goalie_st or a_goalie_st == '':
+            goalie_unc += 0.03
+        elif 'Likely' in a_goalie_st:
+            goalie_unc += 0.01
+
+        # Combined CI half-width (capped at reasonable bounds)
+        base_unc = 0.02  # Minimum irreducible uncertainty (~2%)
+        ci_half = base_unc + (model_disagree * 0.6) + (sample_factor * 0.02) + goalie_unc
+        ci_half = min(ci_half, 0.12)  # Cap at ±12%
+
+        h_win_ci_low = max(0.01, h_win_prob - ci_half)
+        h_win_ci_high = min(0.99, h_win_prob + ci_half)
+
+        # Confidence level label
+        if ci_half <= 0.07:
+            confidence = 'HIGH'
+        elif ci_half <= 0.10:
+            confidence = 'MED'
+        else:
+            confidence = 'LOW'
+
         # Odds & EV
         # Construct unique matchup ID for specific game lookup
         matchup_id = f"{game_date}:{away_team}@{home_team}"
@@ -1841,7 +1886,10 @@ def predict():
             'home_vegas_odds': h_odds if h_odds else "N/A",
             'home_vegas_win_pct': round(implied_prob(h_odds) * 100, 1),
             'home_ev': round(h_ev * 100, 2) if h_ev > -1 else "",
-            
+            'home_win_ci_low': round(h_win_ci_low * 100, 1),
+            'home_win_ci_high': round(h_win_ci_high * 100, 1),
+            'confidence': confidence,
+
             'away_team': away_team,
             'away_starter': a_goalie_display,
             'away_xg': round(a_xg_adj, 2),
