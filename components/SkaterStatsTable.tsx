@@ -109,6 +109,7 @@ const RATE_KEYS: SortKey[] = ['ind_xg_per60', 'ev_xgf_per60'];
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function SkaterStatsTable() {
     const [data,    setData]    = useState<Record<string, SkaterData> | null>(null);
+    const [bioData, setBioData] = useState<Record<string, { isRookie?: boolean }>>({});
     const [loading, setLoading] = useState(true);
     const [posFilter, setPosFilter] = useState<'All' | 'F' | 'D'>('All');
     const [teamFilter, setTeamFilter] = useState<string>('All');
@@ -117,15 +118,15 @@ export default function SkaterStatsTable() {
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        fetch('/data/player_impact.json')
-            .then(r => r.json())
-            .then((d: Record<string, SkaterData>) => {
-                // Inject player ID so React can use a truly unique key
-                Object.entries(d).forEach(([id, p]) => { p.id = id; });
-                setData(d);
-                setLoading(false);
-            })
-            .catch(() => setLoading(false));
+        Promise.all([
+            fetch('/data/player_impact.json').then(r => r.json()),
+            fetch('/data/player_bio.json').then(r => r.json()).catch(() => ({})),
+        ]).then(([impactData, bio]) => {
+            Object.entries(impactData as Record<string, SkaterData>).forEach(([id, p]) => { p.id = id; });
+            setData(impactData);
+            setBioData(bio || {});
+            setLoading(false);
+        }).catch(() => setLoading(false));
     }, []);
 
     const allTeams = useMemo(() => {
@@ -288,7 +289,7 @@ export default function SkaterStatsTable() {
                                                 className="w-8 h-8 object-contain shrink-0 opacity-80"
                                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                             />
-                                            <span className="font-semibold text-neutral-200 truncate text-[11px]">{player.name}</span>
+                                            <span className={`font-semibold truncate text-[11px] ${bioData[player.id]?.isRookie ? 'text-[#D9FF82]' : 'text-neutral-200'}`}>{player.name}</span>
                                         </div>
                                     </td>
                                     {/* Position */}

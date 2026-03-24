@@ -575,7 +575,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         return name;
     };
 
-    const getPillColors = (wagerStr: string | null | undefined, oddsVal: string | number | null | undefined) => {
+    const getPillColors = (wagerStr: string | null | undefined, oddsVal: string | number | null | undefined, isProjectedWinner?: boolean) => {
         let units = 0;
         let odds = 1000;
         if (wagerStr) {
@@ -589,7 +589,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         if (units < 0.3 && odds <= 110) {
             return "bg-neutral-800/80 border border-neutral-600 text-neutral-400 shadow-none hover:border-neutral-500";
         }
-        return "bg-neon-green/10 border border-neon-green/30 text-neon-green shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]";
+        // +EV but projected to LOSE → amber (#FFAA00)
+        if (isProjectedWinner === false) {
+            const opacity = units >= 1.0 ? '30' : units >= 0.5 ? '20' : '10';
+            return `bg-[#FFAA00]/${opacity} border border-[#FFAA00]/30 text-[#FFAA00] shadow-[0_0_10px_rgba(255,170,0,0.1)] hover:shadow-[0_0_15px_rgba(255,170,0,0.2)]`;
+        }
+        // +EV AND projected to WIN → green (#0AFF00)
+        const greenOpacity = units >= 1.0 ? '20' : units >= 0.5 ? '15' : '10';
+        return `bg-[#0AFF00]/${greenOpacity} border border-[#0AFF00]/30 text-[#0AFF00] shadow-[0_0_10px_rgba(10,255,0,0.1)] hover:shadow-[0_0_15px_rgba(10,255,0,0.2)]`;
     };
 
     const Badge = ({ children, color = 'blue', size = 'sm' }: { children: React.ReactNode, color?: 'blue' | 'red' | 'gray', size?: 'xs' | 'sm' }) => {
@@ -719,6 +726,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         l7,
         ev,
         wager,
+        modelWinPct,
         gas,
         gasBreakdown,
         goalieStats,
@@ -744,6 +752,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         l7?: string;
         ev: number | null;
         wager: string | null;
+        modelWinPct?: number;
         gas?: number;
         gasBreakdown?: string[];
         gsaxTotal?: number;
@@ -883,9 +892,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
                 {/* Wager Callout (Pushed to bottom) */}
                 {(evBadge || wager) && (
-                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold ${getPillColors(wager, odds)} ${isHighEv && !isSocial ? 'animate-pulse-glow' : ''} ${isSocial ? 'scale-90 origin-right' : ''}`}>
+                    <div className={`mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold ${getPillColors(wager, odds, modelWinPct !== undefined ? modelWinPct > 50 : undefined)} ${isHighEv && !isSocial ? 'animate-pulse-glow' : ''} ${isSocial ? 'scale-90 origin-right' : ''}`}>
                         {evBadge && <span>EV: {evBadge}</span>}
-                        {wager && <span className={`opacity-90 border-l pl-2 ${wager && wager.includes('u') && parseFloat(wager) < 0.3 && odds && (typeof odds === 'string' ? parseInt(odds) : odds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{wager}</span>}
+                        {wager && <span className={`opacity-90 border-l pl-2 ${wager && wager.includes('u') && parseFloat(wager) < 0.3 && odds && (typeof odds === 'string' ? parseInt(odds) : odds) <= 110 ? 'border-neutral-600' : (modelWinPct !== undefined && modelWinPct <= 50) ? 'border-[#FFAA00]/30' : 'border-[#0AFF00]/30'}`}>{wager}</span>}
                     </div>
                 )}
             </div>
@@ -1026,7 +1035,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 <span className="text-[11px] font-mono text-neutral-500">{formatOdds(awayVegasOdds)}</span>
                             </div>
                             {awayWager && (
-                                <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-black ${getPillColors(awayWager, awayVegasOdds)} shadow-sm whitespace-nowrap`}>
+                                <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-black ${getPillColors(awayWager, awayVegasOdds, awayModelWinPct > 50)} shadow-sm whitespace-nowrap`}>
                                     <span>+{Math.round(awayEv || 0)}%</span>
                                     <span>{awayWager}</span>
                                 </div>
@@ -1048,7 +1057,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 <span className="text-[11px] font-mono text-neutral-500">{formatOdds(homeVegasOdds)}</span>
                             </div>
                             {homeWager && (
-                                <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-black ${getPillColors(homeWager, homeVegasOdds)} shadow-sm whitespace-nowrap`}>
+                                <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-black ${getPillColors(homeWager, homeVegasOdds, homeModelWinPct > 50)} shadow-sm whitespace-nowrap`}>
                                     <span>+{Math.round(homeEv || 0)}%</span>
                                     <span>{homeWager}</span>
                                 </div>
@@ -1107,6 +1116,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             l7={isSocial ? undefined : prediction.away_l7} // Hide L7 in social
                             ev={awayEv}
                             wager={awayWager}
+                            modelWinPct={awayModelWinPct}
                             gas={isSocial ? undefined : prediction.away_gas} // Hide gas in social
                             gasBreakdown={prediction.away_gas_breakdown}
                             gsaxTotal={prediction.away_gsax_total}
@@ -1214,6 +1224,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             l7={isSocial ? undefined : prediction.home_l7}
                             ev={homeEv}
                             wager={homeWager}
+                            modelWinPct={homeModelWinPct}
                             gas={isSocial ? undefined : prediction.home_gas}
                             gasBreakdown={prediction.home_gas_breakdown}
                             gsaxTotal={prediction.home_gsax_total}
@@ -1412,9 +1423,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     </span>
                                 )}
                                 {awayWager ? (
-                                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(awayWager, awayVegasOdds)}`}>
+                                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(awayWager, awayVegasOdds, awayModelWinPct > 50)}`}>
                                         <span>+{Math.round(awayEv || 0)}%</span>
-                                        <span className={`opacity-90 border-l pl-1 ${awayWager && awayWager.includes('u') && parseFloat(awayWager) < 0.3 && awayVegasOdds && (typeof awayVegasOdds === 'string' ? parseInt(awayVegasOdds) : awayVegasOdds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{awayWager}</span>
+                                        <span className={`opacity-90 border-l pl-1 ${awayWager && awayWager.includes('u') && parseFloat(awayWager) < 0.3 && awayVegasOdds && (typeof awayVegasOdds === 'string' ? parseInt(awayVegasOdds) : awayVegasOdds) <= 110 ? 'border-neutral-600' : (awayModelWinPct <= 50) ? 'border-[#FFAA00]/30' : 'border-[#0AFF00]/30'}`}>{awayWager}</span>
                                     </div>
                                 ) : null}
                             </div>
@@ -1484,9 +1495,9 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     </span>
                                 )}
                                 {homeWager ? (
-                                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(homeWager, homeVegasOdds)}`}>
+                                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${getPillColors(homeWager, homeVegasOdds, homeModelWinPct > 50)}`}>
                                         <span>+{Math.round(homeEv || 0)}%</span>
-                                        <span className={`opacity-90 border-l pl-1 ${homeWager && homeWager.includes('u') && parseFloat(homeWager) < 0.3 && homeVegasOdds && (typeof homeVegasOdds === 'string' ? parseInt(homeVegasOdds) : homeVegasOdds) <= 110 ? 'border-neutral-600' : 'border-neon-green/30'}`}>{homeWager}</span>
+                                        <span className={`opacity-90 border-l pl-1 ${homeWager && homeWager.includes('u') && parseFloat(homeWager) < 0.3 && homeVegasOdds && (typeof homeVegasOdds === 'string' ? parseInt(homeVegasOdds) : homeVegasOdds) <= 110 ? 'border-neutral-600' : (homeModelWinPct <= 50) ? 'border-[#FFAA00]/30' : 'border-[#0AFF00]/30'}`}>{homeWager}</span>
                                     </div>
                                 ) : null}
                             </div>
@@ -1654,6 +1665,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             />
                         </div>
 
+                        {/* Total Display — right under History */}
+                        <div className="flex justify-center mt-2">
+                            <div className="px-4 py-1 rounded-full border border-neutral-800 bg-neutral-900">
+                                <span className="text-xs font-bold text-neutral-300">TOTAL: {totalGoals.toFixed(1)}</span>
+                            </div>
+                        </div>
+
                         {/* Pick Form — Mobile */}
                         {(() => {
                             const awayPicks = getPickHistory(history, awayTeam.commonName);
@@ -1714,12 +1732,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             </div>
                         </div>
 
-                        {/* Total Display in Center */}
-                        <div className="flex justify-center mt-4">
-                            <div className="px-4 py-1 rounded-full border border-neutral-800 bg-neutral-900">
-                                <span className="text-xs font-bold text-neutral-300">TOTAL: {totalGoals.toFixed(1)}</span>
-                            </div>
-                        </div>
+                        {/* Total pill moved up — now right under History */}
 
                         {/* Playoff Implications (Mobile) */}
                         {implications && (

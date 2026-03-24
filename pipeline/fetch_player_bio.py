@@ -90,11 +90,48 @@ def main():
                     "height": inches_to_ft(height_in) if height_in else None,
                     "weight": weight_lb,
                     "shoots": shoots if shoots else None,
+                    "isRookie": False,
                 }
                 count += 1
 
         print(f" {count} players")
         time.sleep(0.15)
+
+    # ── Fetch rookie list from NHL stats API ──
+    print("  Fetching rookies...", end="", flush=True)
+    rookie_ids = set()
+    for start in range(0, 300, 100):
+        rook_url = (
+            f"https://api.nhle.com/stats/rest/en/skater/summary?"
+            f"isAggregate=false&isGame=false&start={start}&limit=100"
+            f"&cayenneExp=seasonId={SEASON.replace('2025', '2025').replace('2026', '2026')}%20and%20isRookie=1%20and%20gameTypeId=2"
+        )
+        rook_data = get_url(rook_url)
+        if rook_data and rook_data.get("data"):
+            for p in rook_data["data"]:
+                rookie_ids.add(str(p.get("playerId", "")))
+            if len(rook_data["data"]) < 100:
+                break
+        time.sleep(0.15)
+
+    # Also check goalie rookies
+    rook_url_g = (
+        f"https://api.nhle.com/stats/rest/en/goalie/summary?"
+        f"isAggregate=false&isGame=false&start=0&limit=100"
+        f"&cayenneExp=seasonId={SEASON.replace('2025', '2025').replace('2026', '2026')}%20and%20isRookie=1%20and%20gameTypeId=2"
+    )
+    rook_data_g = get_url(rook_url_g)
+    if rook_data_g and rook_data_g.get("data"):
+        for p in rook_data_g["data"]:
+            rookie_ids.add(str(p.get("playerId", "")))
+
+    tagged = 0
+    for pid in rookie_ids:
+        if pid in bio:
+            bio[pid]["isRookie"] = True
+            tagged += 1
+
+    print(f" {len(rookie_ids)} rookies found, {tagged} matched to roster")
 
     with open(OUTPUT_FILE, "w") as f:
         json.dump(bio, f)
