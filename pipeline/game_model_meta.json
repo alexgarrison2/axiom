@@ -25,7 +25,7 @@
     "poisson_home_wp",
     "poisson_tie_prob"
   ],
-  "training_date": "2026-03-24T13:05:04.324233",
+  "training_date": "2026-03-24T13:17:37.796438",
   "ewma_halflife": 12,
   "min_games": 5,
   "cv_results": [
@@ -33,126 +33,126 @@
       "test_season": 2024,
       "train_size": 1380,
       "test_size": 1193,
-      "log_loss": 0.6780567078348838,
-      "log_loss_raw": 0.6952651436270194,
-      "brier_score": 0.24256427875031275,
-      "accuracy": 0.5607711651299245,
+      "log_loss": 0.6760576449612687,
+      "log_loss_raw": 0.6855786383475384,
+      "brier_score": 0.2416290468986806,
+      "accuracy": 0.5624476110645432,
       "home_win_rate": 0.5649622799664711
     },
     {
       "test_season": 2025,
       "train_size": 2573,
       "test_size": 1099,
-      "log_loss": 0.6914409095654446,
-      "log_loss_raw": 0.6951205680137527,
-      "brier_score": 0.24915996768711018,
-      "accuracy": 0.5195632393084623,
+      "log_loss": 0.6882353077617352,
+      "log_loss_raw": 0.6990635445959371,
+      "brier_score": 0.24757068358902215,
+      "accuracy": 0.5477707006369427,
       "home_win_rate": 0.521383075523203
     }
   ],
   "holdout": {
-    "holdout_log_loss": 0.6918439602687682,
-    "holdout_accuracy": 0.5098039215686274,
-    "holdout_brier": 0.2493687764703152
+    "holdout_log_loss": 0.6888295736793635,
+    "holdout_accuracy": 0.5250544662309368,
+    "holdout_brier": 0.2478928384250188
   },
-  "avg_log_loss": 0.6847488087001642,
-  "avg_accuracy": 0.5401672022191935,
+  "avg_log_loss": 0.6821464763615019,
+  "avg_accuracy": 0.5551091558507429,
   "feature_importance": [
     {
-      "feature": "matchup_ratio",
-      "importance": 0.0696130022406578
+      "feature": "d_xg_net",
+      "importance": 0.09998451173305511
     },
     {
-      "feature": "d_xg_net",
-      "importance": 0.06832068413496017
+      "feature": "matchup_ratio",
+      "importance": 0.07781051099300385
     },
     {
       "feature": "d_rest",
-      "importance": 0.05410361662507057
-    },
-    {
-      "feature": "a_f_pk_pct",
-      "importance": 0.04392433166503906
-    },
-    {
-      "feature": "a_f_season_win_rate",
-      "importance": 0.043523602187633514
-    },
-    {
-      "feature": "h_f_xga_5v5",
-      "importance": 0.043008238077163696
-    },
-    {
-      "feature": "a_f_rest_days",
-      "importance": 0.04126391559839249
-    },
-    {
-      "feature": "h_f_season_win_rate",
-      "importance": 0.04065854847431183
-    },
-    {
-      "feature": "h_f_goalie_gp",
-      "importance": 0.039672888815402985
-    },
-    {
-      "feature": "h_f_pp_pct",
-      "importance": 0.039398252964019775
-    },
-    {
-      "feature": "a_f_pp_pct",
-      "importance": 0.03889182582497597
-    },
-    {
-      "feature": "h_f_goalie_gsax",
-      "importance": 0.0386669784784317
-    },
-    {
-      "feature": "a_f_games_played",
-      "importance": 0.038426607847213745
-    },
-    {
-      "feature": "h_f_games_played",
-      "importance": 0.03802729398012161
-    },
-    {
-      "feature": "a_f_goalie_gsax",
-      "importance": 0.03799610212445259
-    },
-    {
-      "feature": "a_f_xgf_5v5",
-      "importance": 0.03723286837339401
+      "importance": 0.04852613806724548
     },
     {
       "feature": "a_f_xga_5v5",
-      "importance": 0.03693315014243126
-    },
-    {
-      "feature": "poisson_home_wp",
-      "importance": 0.03666824847459793
-    },
-    {
-      "feature": "a_f_goalie_gp",
-      "importance": 0.036369387060403824
-    },
-    {
-      "feature": "d_goalie_gsax",
-      "importance": 0.036272287368774414
-    },
-    {
-      "feature": "h_f_rest_days",
-      "importance": 0.03615989908576012
+      "importance": 0.046745553612709045
     },
     {
       "feature": "h_f_xgf_5v5",
-      "importance": 0.03561390936374664
+      "importance": 0.04453783854842186
     },
     {
-      "feature": "h_f_pk_pct",
-      "importance": 0.03500499576330185
+      "feature": "h_f_rest_days",
+      "importance": 0.04091466963291168
+    },
+    {
+      "feature": "a_f_rest_days",
+      "importance": 0.040020741522312164
+    },
+    {
+      "feature": "poisson_home_wp",
+      "importance": 0.03907860442996025
+    },
+    {
+      "feature": "h_f_season_win_rate",
+      "importance": 0.03853648900985718
+    },
+    {
+      "feature": "a_f_pp_pct",
+      "importance": 0.03744491934776306
+    },
+    {
+      "feature": "h_f_goalie_gsax",
+      "importance": 0.03720530867576599
+    },
+    {
+      "feature": "a_f_goalie_gsax",
+      "importance": 0.03718579560518265
+    },
+    {
+      "feature": "a_f_xgf_5v5",
+      "importance": 0.03714469075202942
+    },
+    {
+      "feature": "a_f_pk_pct",
+      "importance": 0.036119211465120316
+    },
+    {
+      "feature": "h_f_xga_5v5",
+      "importance": 0.03530880808830261
+    },
+    {
+      "feature": "a_f_season_win_rate",
+      "importance": 0.03476381301879883
+    },
+    {
+      "feature": "a_f_games_played",
+      "importance": 0.03475802019238472
+    },
+    {
+      "feature": "d_goalie_gsax",
+      "importance": 0.034290313720703125
+    },
+    {
+      "feature": "h_f_pp_pct",
+      "importance": 0.034083303064107895
+    },
+    {
+      "feature": "h_f_goalie_gp",
+      "importance": 0.033830899745225906
     },
     {
       "feature": "poisson_tie_prob",
-      "importance": 0.034249383956193924
+      "importance": 0.03375960513949394
+    },
+    {
+      "feature": "h_f_games_played",
+      "importance": 0.03367665410041809
+    },
+    {
+      "feature": "a_f_goalie_gp",
+      "importance": 0.03306584432721138
+    },
+    {
+      "feature": "h_f_pk_pct",
+      "importance": 0.031207706779241562
     }
   ],
   "model_type": "XGBoost",
