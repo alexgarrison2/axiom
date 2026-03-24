@@ -1769,8 +1769,11 @@ def predict():
                 a_goalie=a_goalie_name
             )
             if ml_result:
-                h_win_prob, a_win_prob = ml_result
-                print(f"  [ML] ML: {h_win_prob:.1%} | Poisson fallback: {h_win_prob_poisson:.1%}")
+                h_win_prob, a_win_prob, h_xg_ml, a_xg_ml = ml_result
+                # Use ML-derived xG for display (consistent with ML win%)
+                h_xg_adj = h_xg_ml
+                a_xg_adj = a_xg_ml
+                print(f"  [ML] ML: {h_win_prob:.1%} xG: {h_xg_adj:.2f}-{a_xg_adj:.2f} | Poisson: {h_win_prob_poisson:.1%}")
         
         # [REMOVED] Saturday Win Prob Boost — was adding +5% to 6 specific home teams on Saturdays
 

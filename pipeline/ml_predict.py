@@ -168,7 +168,7 @@ class MLPredictor:
         """
         Predict home win probability using the ML model.
 
-        Returns: (home_win_prob, away_win_prob) or None if model unavailable
+        Returns: (home_win_prob, away_win_prob, home_xg, away_xg) or None
         """
         if not self.available:
             return None
@@ -228,6 +228,20 @@ class MLPredictor:
         matchup_a = feat_dict['a_f_xgf_5v5'] * feat_dict['h_f_xga_5v5']
         feat_dict['matchup_ratio'] = matchup_h / matchup_a if matchup_a > 0 else 1.0
 
+        # ── ML-derived xG (consistent with what the model sees) ──
+        # Base: team's 5v5 xGF rolling average
+        # Adjusted for opponent goalie GSAx and PP contribution
+        h_xgf_base = float(h_feats.get('f_xgf_5v5', 2.8))
+        a_xgf_base = float(a_feats.get('f_xgf_5v5', 2.8))
+
+        # PP xG contribution: pp_pct * ~3.5 opportunities/game ≈ PP goals/game
+        h_pp_xg = float(h_feats.get('f_pp_pct', 0.20)) * 3.5
+        a_pp_xg = float(a_feats.get('f_pp_pct', 0.20)) * 3.5
+
+        # Opponent goalie impact: subtract opponent goalie's GSAx/game
+        h_xg_ml = max(0.5, h_xgf_base + h_pp_xg - a_gsax)
+        a_xg_ml = max(0.5, a_xgf_base + a_pp_xg - h_gsax)
+
         # Build feature vector in the EXACT order the model expects
         try:
             X = np.array([[feat_dict.get(col, 0.0) for col in self.feature_cols]])
@@ -239,7 +253,7 @@ class MLPredictor:
             h_prob = max(0.15, min(0.85, h_prob))
             a_prob = 1.0 - h_prob
 
-            return h_prob, a_prob
+            return h_prob, a_prob, round(h_xg_ml, 2), round(a_xg_ml, 2)
 
         except Exception as e:
             print(f"[ML] Prediction error for {home_team} vs {away_team}: {e}")
