@@ -229,18 +229,28 @@ class MLPredictor:
         feat_dict['matchup_ratio'] = matchup_h / matchup_a if matchup_a > 0 else 1.0
 
         # ── ML-derived xG (consistent with what the model sees) ──
-        # Base: team's 5v5 xGF rolling average
-        # Adjusted for opponent goalie GSAx and PP contribution
-        h_xgf_base = float(h_feats.get('f_xgf_5v5', 2.8))
-        a_xgf_base = float(a_feats.get('f_xgf_5v5', 2.8))
+        # Pythagorean matchup: (team offense × opponent defense) / league avg
+        # This accounts for BOTH sides — a good defense suppresses opponent xG
+        h_xgf = float(h_feats.get('f_xgf_5v5', 2.8))
+        a_xgf = float(a_feats.get('f_xgf_5v5', 2.8))
+        h_xga = float(h_feats.get('f_xga_5v5', 2.8))
+        a_xga = float(a_feats.get('f_xga_5v5', 2.8))
 
-        # PP xG contribution: pp_pct * ~3.5 opportunities/game ≈ PP goals/game
+        # League average 5v5 xG (mean of all teams' offensive rates)
+        all_xgf = [float(f.get('f_xgf_5v5', 2.5)) for f in self.team_features.values()]
+        league_avg = np.mean(all_xgf) if all_xgf else 2.5
+
+        # 5v5 base: Pythagorean (team offense vs opponent defense)
+        h_5v5_xg = (h_xgf * a_xga) / league_avg if league_avg > 0 else h_xgf
+        a_5v5_xg = (a_xgf * h_xga) / league_avg if league_avg > 0 else a_xgf
+
+        # PP xG contribution
         h_pp_xg = float(h_feats.get('f_pp_pct', 0.20)) * 3.5
         a_pp_xg = float(a_feats.get('f_pp_pct', 0.20)) * 3.5
 
-        # Opponent goalie impact: subtract opponent goalie's GSAx/game
-        h_xg_ml = max(0.5, h_xgf_base + h_pp_xg - a_gsax)
-        a_xg_ml = max(0.5, a_xgf_base + a_pp_xg - h_gsax)
+        # Goalie impact: opponent goalie's GSAx adjusts expected goals
+        h_xg_ml = max(0.5, h_5v5_xg + h_pp_xg - a_gsax)
+        a_xg_ml = max(0.5, a_5v5_xg + a_pp_xg - h_gsax)
 
         # Build feature vector in the EXACT order the model expects
         try:

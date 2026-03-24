@@ -992,8 +992,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 backgroundColor: awayBarColor
                             }}
                         >
-                            <span className={`text-[10px] font-black ${getContrastTextClass(awayBarColor)} leading-none`}>
-                                {Math.round(awayModelWinPct)}%
+                            <span className={`text-[11px] font-black ${getContrastTextClass(awayBarColor)} leading-none`}>
+                                {awayModelWinPct.toFixed(1)}%
                             </span>
                         </div>
                         <div className="absolute left-1/2 -translate-x-1/2 h-full w-px bg-white/20 z-20"></div>
@@ -1003,8 +1003,8 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 backgroundColor: homeBarColor
                             }}
                         >
-                            <span className={`text-[10px] font-black ${getContrastTextClass(homeBarColor)} leading-none`}>
-                                {Math.round(homeModelWinPct)}%
+                            <span className={`text-[11px] font-black ${getContrastTextClass(homeBarColor)} leading-none`}>
+                                {homeModelWinPct.toFixed(1)}%
                             </span>
                         </div>
                     </div>
@@ -1144,10 +1144,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         </div>
 
                         {/* Win Probability Bar */}
-                        <div className="w-full flex justify-between text-[10px] font-bold text-neutral-500 tracking-widest mb-2 px-1">
-                            <span>{Math.round(awayModelWinPct)}%</span>
-                            <span>xOdds WIN %</span>
-                            <span>{Math.round(homeModelWinPct)}%</span>
+                        <div className="w-full flex justify-between items-baseline mb-2 px-1">
+                            <span className="text-[14px] font-black text-white tracking-wide">{awayModelWinPct.toFixed(1)}%</span>
+                            <span className="text-[9px] font-bold text-neutral-600 tracking-widest uppercase">Win %</span>
+                            <span className="text-[14px] font-black text-white tracking-wide">{homeModelWinPct.toFixed(1)}%</span>
                         </div>
                         <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden flex relative shadow-inner">
                             {/* Away Bar (Left) - Animated Width */}
@@ -1434,7 +1434,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                         boxShadow: `0 0 10px ${awayBarColor}66`
                                     }}
                                 >
-                                    <span className={`text-[10px] font-bold drop-shadow-md whitespace-nowrap pl-1 ${getContrastTextClass(awayBarColor)}`}>{Math.round(awayModelWinPct)}%</span>
+                                    <span className={`text-[11px] font-black drop-shadow-md whitespace-nowrap pl-1 ${getContrastTextClass(awayBarColor)}`}>{awayModelWinPct.toFixed(1)}%</span>
                                 </div>
 
                                 {/* Center Separator */}
@@ -1448,7 +1448,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                         boxShadow: `0 0 10px ${homeBarColor}66`
                                     }}
                                 >
-                                    <span className={`text-[10px] font-bold drop-shadow-md whitespace-nowrap pr-1 ${getContrastTextClass(homeBarColor)}`}>{Math.round(homeModelWinPct)}%</span>
+                                    <span className={`text-[11px] font-black drop-shadow-md whitespace-nowrap pr-1 ${getContrastTextClass(homeBarColor)}`}>{homeModelWinPct.toFixed(1)}%</span>
                                 </div>
                             </div>
                         </div>
