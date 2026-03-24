@@ -418,6 +418,12 @@ const RATINGS_STAT_GROUPS = [
     { name: 'RAPM',           columns: ['rapm_lineup','rapm_f','rapm_d'] },
     { name: 'Goalie',         columns: ['goalie_impact'] },
 ];
+
+// Default group names (at module scope so they can seed useState)
+// Stats mode — all nine groups on by default
+const DEFAULT_STAT_GROUP_NAMES = ['Record', 'Goals', 'PP', 'PK', 'Saves', 'Shots', 'xGoals', 'Game Situation', 'Empty Net'];
+// Ratings mode — all five groups on by default
+const DEFAULT_RATINGS_GROUP_NAMES = RATINGS_STAT_GROUPS.map(g => g.name);
 // ──────────────────────────────────────────────────────────────────────────────
 
 // Type for a single precomputed team-ratings entry (used by extractRatingValue)
@@ -739,14 +745,23 @@ const TeamsTable = () => {
         return allGroups;
     }, [filterPeriod]);
 
-    const [activeCategory, setActiveCategory] = useState(STAT_GROUPS[0].name);
+    const [activeGroups, setActiveGroups] = useState<string[]>(DEFAULT_STAT_GROUP_NAMES);
 
-    // If activeCategory refers to a group that's been hidden (PP/PK when period filter active), reset to Record
+    // When valuesMode switches, reset active groups to all-on defaults for that mode
     useEffect(() => {
-        if (!STAT_GROUPS.find(g => g.name === activeCategory)) {
-            setActiveCategory(STAT_GROUPS[0].name);
+        setActiveGroups(valuesMode === 'Ratings' ? DEFAULT_RATINGS_GROUP_NAMES : DEFAULT_STAT_GROUP_NAMES);
+    }, [valuesMode]);
+
+    // When filterPeriod hides PP/PK/Empty Net, remove them from activeGroups
+    useEffect(() => {
+        if (filterPeriod !== 'All') {
+            setActiveGroups(prev => prev.filter(g => g !== 'PP' && g !== 'PK' && g !== 'Empty Net'));
         }
-    }, [STAT_GROUPS, activeCategory]);
+    }, [filterPeriod]);
+
+    const toggleGroup = (name: string) => {
+        setActiveGroups(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]);
+    };
 
     // Load filters from sessionStorage on mount
     useEffect(() => {
@@ -764,7 +779,7 @@ const TeamsTable = () => {
                     if (parsed.selectedDivisions) setSelectedDivisions(parsed.selectedDivisions);
                     if (parsed.sortKey) setSortKey(parsed.sortKey);
                     if (parsed.sortDesc !== undefined) setSortDesc(parsed.sortDesc);
-                    if (parsed.activeCategory) setActiveCategory(parsed.activeCategory);
+                    if (parsed.activeGroups) setActiveGroups(parsed.activeGroups);
                 }
             }
         } catch (e) {
@@ -777,14 +792,14 @@ const TeamsTable = () => {
         try {
             if (typeof window !== 'undefined') {
                 const filters = {
-                    viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeCategory
+                    viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeGroups
                 };
                 sessionStorage.setItem('teamsTableFilters', JSON.stringify(filters));
             }
         } catch (e) {
             console.error('Failed to save filters', e);
         }
-    }, [viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeCategory]);
+    }, [viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeGroups]);
 
     const COLUMNS = useMemo(() => [
         { k: 'ranking', l: 'Rank', desc: 'Projected Playoff Standing' },
@@ -1913,41 +1928,55 @@ const TeamsTable = () => {
             </div>
 
             {/* Table */}
-            <div className="flex flex-col gap-1 md:hidden mb-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Stat Category</label>
-                <div className="flex flex-wrap gap-2">
-                    {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
-                        <button
-                            key={group.name}
-                            onClick={() => setActiveCategory(group.name)}
-                            className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-tight rounded-full transition-all border ${activeCategory === group.name
-                                ? 'bg-blue-600 border-blue-500 text-white shadow-lg'
-                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+            {/* Column group toggles — multi-select, all on by default */}
+            <div className="flex flex-col gap-1 mb-2">
+                <div className="flex flex-wrap gap-1.5">
+                    {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => {
+                        const isOn = activeGroups.includes(group.name);
+                        return (
+                            <button
+                                key={group.name}
+                                onClick={() => toggleGroup(group.name)}
+                                style={isOn ? { background: 'rgba(37,219,235,0.15)', borderColor: 'rgba(37,219,235,0.45)', color: '#25DBEB' } : undefined}
+                                className={`px-3 py-1 text-[10px] font-bold uppercase tracking-tight rounded-full transition-all border ${
+                                    isOn ? '' : 'bg-gray-800/60 border-gray-700 text-gray-500 hover:text-gray-300'
                                 }`}
-                        >
-                            {group.name}
-                        </button>
-                    ))}
+                            >
+                                {group.name}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
             <div className="overflow-auto max-h-[75vh] bg-gray-900 border border-gray-800 rounded-xl shadow-2xl relative" style={{ scrollbarGutter: 'stable' }}>
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        {/* Desktop Group Headers */}
-                        <tr className="hidden md:table-row bg-gray-950 border-b border-gray-800 sticky top-0 z-50 shadow-[0_6px_0_0_#030712]">
+                        {/* Desktop Group Headers — clickable toggles */}
+                        <tr className="bg-gray-950 border-b border-gray-800 sticky top-0 z-50 shadow-[0_6px_0_0_#030712]">
                             <th className="sticky left-0 bg-gray-950 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)] border-r border-gray-800"></th>
-                            {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => (
-                                <th
-                                    key={group.name}
-                                    colSpan={group.columns.length}
-                                    className="px-2 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-center text-blue-500/80 border-r border-gray-800/50"
-                                >
-                                    <span className="bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                                        {group.name}
-                                    </span>
-                                </th>
-                            ))}
+                            {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => {
+                                const isOn = activeGroups.includes(group.name);
+                                return (
+                                    <th
+                                        key={group.name}
+                                        colSpan={isOn ? group.columns.length : 1}
+                                        className="px-2 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-center border-r border-gray-800/50 cursor-pointer select-none"
+                                        onClick={() => toggleGroup(group.name)}
+                                    >
+                                        <span
+                                            style={isOn
+                                                ? { background: 'rgba(37,219,235,0.12)', borderColor: 'rgba(37,219,235,0.35)', color: '#25DBEB' }
+                                                : undefined}
+                                            className={`inline-block px-3 py-1 rounded-full border transition-all ${
+                                                isOn ? '' : 'bg-gray-800/50 border-gray-700/50 text-gray-600 hover:text-gray-400'
+                                            }`}
+                                        >
+                                            {group.name}
+                                        </span>
+                                    </th>
+                                );
+                            })}
                         </tr>
 
                         <tr className="border-b border-gray-800 bg-gray-900 sticky top-0 md:top-[23px] z-40 text-xs uppercase tracking-wider text-gray-400">
@@ -1958,11 +1987,11 @@ const TeamsTable = () => {
                                     {/* First 8 Record columns (ranking → rw) */}
                                     {COLUMNS.slice(0, 8).map(({ k, l, desc, calc }) => {
                                         const isGroupEnd = k === 'rw'; // last Record col
-                                        const isInActiveCategory = RATINGS_STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
+                                        const isGroupActive = activeGroups.includes(RATINGS_STAT_GROUPS.find(g => g.columns.includes(k))?.name ?? '');
                                         return (
                                             <th
                                                 key={k}
-                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative cursor-pointer hover:text-white ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative cursor-pointer hover:text-white ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isGroupActive ? 'hidden' : 'table-cell'}`}
                                                 onClick={() => handleSort(k)}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -1979,12 +2008,12 @@ const TeamsTable = () => {
                                     })}
                                     {/* Rating / Lineup / Goalie columns */}
                                     {RATINGS_COLS.map(({ k, l, desc, groupEnd }) => {
-                                        const isInActiveCategory = RATINGS_STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
+                                        const isGroupActive = activeGroups.includes(RATINGS_STAT_GROUPS.find(g => (g.columns as readonly string[]).includes(k))?.name ?? '');
                                         const canSort = viewMode === 'All';
                                         return (
                                             <th
                                                 key={k}
-                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative ${canSort ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'} ${groupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative ${canSort ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'} ${groupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isGroupActive ? 'hidden' : 'table-cell'}`}
                                                 onClick={() => handleSort(k)}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -2005,13 +2034,13 @@ const TeamsTable = () => {
                                 COLUMNS.map(({ k, l, desc, calc }) => {
                                     // Determine if this is the last column in any group for vertical grid lines
                                     const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === k);
-                                    const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(k);
+                                    const isGroupActive = activeGroups.includes(STAT_GROUPS.find(g => g.columns.includes(k))?.name ?? '');
 
                                     return (
                                         <th
                                             key={k}
                                             className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
-                                                } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isInActiveCategory ? 'hidden md:table-cell' : 'table-cell'}`}
+                                                } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isGroupActive ? 'hidden' : 'table-cell'}`}
                                             onClick={() => handleSort(k)}
                                         >
                                             <div className="flex items-center justify-center gap-1">
@@ -2129,19 +2158,19 @@ const TeamsTable = () => {
                                                 {/* Record columns (ranking → rw) */}
                                                 {COLUMNS.slice(0, 8).map(col => {
                                                     const isGroupEnd = col.k === 'rw';
-                                                    const isInActiveCategory = RATINGS_STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
+                                                    const isGroupActive = activeGroups.includes(RATINGS_STAT_GROUPS.find(g => g.columns.includes(col.k))?.name ?? '');
                                                     return (
                                                         <React.Fragment key={col.k}>
-                                                            {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isInActiveCategory)}
+                                                            {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isGroupActive)}
                                                         </React.Fragment>
                                                     );
                                                 })}
                                                 {/* Ratings / Lineup / Goalie columns */}
                                                 {RATINGS_COLS.map(col => {
-                                                    const isInActiveCategory = RATINGS_STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
+                                                    const isGroupActive = activeGroups.includes(RATINGS_STAT_GROUPS.find(g => (g.columns as readonly string[]).includes(col.k))?.name ?? '');
                                                     return (
                                                         <React.Fragment key={col.k}>
-                                                            {renderRatingCell(team.team, col.k, col.inv, col.groupEnd, !isInActiveCategory)}
+                                                            {renderRatingCell(team.team, col.k, col.inv, col.groupEnd, !isGroupActive)}
                                                         </React.Fragment>
                                                     );
                                                 })}
@@ -2149,11 +2178,11 @@ const TeamsTable = () => {
                                         ) : (
                                             COLUMNS.map(col => {
                                                 const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === col.k);
-                                                const isInActiveCategory = STAT_GROUPS.find(g => g.name === activeCategory)?.columns.includes(col.k);
+                                                const isGroupActive = activeGroups.includes(STAT_GROUPS.find(g => g.columns.includes(col.k))?.name ?? '');
 
                                                 return (
                                                     <React.Fragment key={col.k}>
-                                                        {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isInActiveCategory)}
+                                                        {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isGroupActive)}
                                                     </React.Fragment>
                                                 );
                                             })
