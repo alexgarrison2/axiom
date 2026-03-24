@@ -135,11 +135,6 @@ export interface GamePrediction {
   home_xg_sparkline?: number[];
   away_xg_sparkline?: number[];
 
-  // Bayesian uncertainty (confidence intervals)
-  homeWinCiLow?: number;   // lower bound of home win probability (0-100)
-  homeWinCiHigh?: number;  // upper bound of home win probability (0-100)
-  confidence?: 'HIGH' | 'MED' | 'LOW';
-
   // L10 home/away location splits (computed from gamestats.csv)
   home_l10_home?: LocationSplitRecord; // home team's last 10 home games
   away_l10_away?: LocationSplitRecord; // away team's last 10 away games
@@ -237,9 +232,6 @@ interface RawPrediction {
   away_is_6in9?: string;
   home_xg_sparkline?: string;
   away_xg_sparkline?: string;
-  home_win_ci_low?: string;
-  home_win_ci_high?: string;
-  confidence?: string;
 }
 
 interface RawTeam {
@@ -475,10 +467,6 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       away_is_6in9: row.away_is_6in9?.toLowerCase() === 'true',
       home_xg_sparkline: parseSparkline(row.home_xg_sparkline),
       away_xg_sparkline: parseSparkline(row.away_xg_sparkline),
-
-      homeWinCiLow: row.home_win_ci_low ? parseFloat(row.home_win_ci_low) : undefined,
-      homeWinCiHigh: row.home_win_ci_high ? parseFloat(row.home_win_ci_high) : undefined,
-      confidence: (row.confidence as 'HIGH' | 'MED' | 'LOW') || undefined,
 
       home_l10_home: teamHomeL10.get(row.home_team),
       away_l10_away: teamAwayL10.get(row.away_team),
