@@ -147,7 +147,6 @@ interface TeamStat {
     // Clinch / elimination tracking (set after standings are computed, optional)
     magic_number?: number;  // M#: playoff teams only. 0 = clinched.
     tragic_number?: number; // E#: non-playoff teams only. 0 = eliminated.
-    clinch_badge?: 'y' | 'x' | 'e'; // y=div clinched, x=playoff clinched, e=eliminated
 }
 
 interface Matchup {
@@ -351,14 +350,23 @@ const getLeverageGradientColor = (value: number, min: number, max: number) => {
 };
 
 // ── Clinch / Elimination Badge ─────────────────────────────────────────────
+// Indicators from the NHL Standings API (clinchIndicator field):
+//   p = Presidents' Trophy (best record in league)
+//   z = Clinched Division
+//   y = Clinched Conference
+//   x = Clinched Playoff Spot
+//   e = Eliminated
 const CLINCH_BADGE_CONFIG: Record<string, { label: string; bg: string; text: string; title: string }> = {
-    y: { label: 'Y', bg: 'rgba(16,185,129,0.20)', text: '#10b981', title: 'Clinched Division' },
-    x: { label: 'X', bg: 'rgba(59,130,246,0.20)', text: '#60a5fa', title: 'Clinched Playoff Spot' },
-    e: { label: 'E', bg: 'rgba(239,68,68,0.15)',  text: '#f87171', title: 'Eliminated' },
+    p: { label: 'P', bg: 'rgba(234,179,8,0.20)',   text: '#facc15', title: "Presidents' Trophy" },
+    z: { label: 'Z', bg: 'rgba(16,185,129,0.22)',  text: '#34d399', title: 'Clinched Division' },
+    y: { label: 'Y', bg: 'rgba(16,185,129,0.15)',  text: '#10b981', title: 'Clinched Conference' },
+    x: { label: 'X', bg: 'rgba(59,130,246,0.20)',  text: '#60a5fa', title: 'Clinched Playoff Spot' },
+    e: { label: 'E', bg: 'rgba(239,68,68,0.15)',   text: '#f87171', title: 'Eliminated' },
 };
 
-function ClinchBadge({ badge }: { badge: 'y' | 'x' | 'e' }) {
-    const cfg = CLINCH_BADGE_CONFIG[badge];
+function ClinchBadge({ indicator }: { indicator: string }) {
+    const cfg = CLINCH_BADGE_CONFIG[indicator.toLowerCase()];
+    if (!cfg) return null;
     return (
         <span
             title={cfg.title}
@@ -699,6 +707,10 @@ const TeamsTable = () => {
     const [playerImpact, setPlayerImpact] = useState<Record<string, PlayerImpactData>>({});
     const [goalieRatings, setGoalieRatings] = useState<Record<string, GoalieRating>>({});
 
+    // Official clinch/elimination data from NHL API (keyed by team tricode)
+    // Values: "p"=Presidents', "z"=Division, "y"=Conference, "x"=Playoff, "e"=Eliminated, null=competing
+    const [clinchData, setClinchData] = useState<Record<string, string | null>>({});
+
     // Derive the legacy ViewMode string from the two new state variables
     // DayOfWeek is handled separately in getGames and does NOT affect ViewMode
     const viewMode = useMemo((): ViewMode => {
@@ -751,6 +763,20 @@ const TeamsTable = () => {
     useEffect(() => {
         setActiveGroups(valuesMode === 'Ratings' ? DEFAULT_RATINGS_GROUP_NAMES : DEFAULT_STAT_GROUP_NAMES);
     }, [valuesMode]);
+
+    // Precomputed set of column keys whose group is currently active.
+    // Used for conditional rendering (return null instead of CSS hidden) to avoid
+    // table cell count mismatches that cause data/header misalignment.
+    const activeColumnKeys = useMemo(() => {
+        const currentGroups = valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS;
+        const keys = new Set<string>();
+        currentGroups.forEach(g => {
+            if (activeGroups.includes(g.name)) {
+                (g.columns as readonly string[]).forEach(c => keys.add(c));
+            }
+        });
+        return keys;
+    }, [valuesMode, STAT_GROUPS, activeGroups]);
 
     // When filterPeriod hides PP/PK/Empty Net, remove them from activeGroups
     useEffect(() => {
@@ -982,14 +1008,15 @@ const TeamsTable = () => {
         const initLoad = async () => {
             try {
                 const t = new Date().getTime();
-                const [statsRes, teamsRes, predsRes, ratingsRes, lineupsRes, impactRes, goalieRes] = await Promise.all([
+                const [statsRes, teamsRes, predsRes, ratingsRes, lineupsRes, impactRes, goalieRes, clinchRes] = await Promise.all([
                     fetch(`/data/gamestats.csv?t=${t}`),
                     fetch(`/data/nhl_teams.csv?t=${t}`),
                     fetch(`/data/predictions_detailed.csv?t=${t}`),
                     fetch(`/data/team_ratings.json?t=${t}`),
                     fetch(`/data/team_lineups.json?t=${t}`),
                     fetch(`/data/player_impact.json?t=${t}`),
-                    fetch(`/data/goalie_ratings.json?t=${t}`)
+                    fetch(`/data/goalie_ratings.json?t=${t}`),
+                    fetch(`/data/clinch_status.json?t=${t}`)
                 ]);
 
                 const statsText = await statsRes.text();
@@ -1059,6 +1086,7 @@ const TeamsTable = () => {
                     if (lineupsRes.ok) setTeamLineups(await lineupsRes.json());
                     if (impactRes.ok) setPlayerImpact(await impactRes.json());
                     if (goalieRes.ok) setGoalieRatings(await goalieRes.json());
+                    if (clinchRes.ok) setClinchData(await clinchRes.json());
                 } catch (e) {
                     console.error('Failed to load team rating JSON files', e);
                 }
@@ -1387,51 +1415,18 @@ const TeamsTable = () => {
         });
         // ─────────────────────────────────────────────────────────────────────
 
-        // ── Clinch / Elimination Badges ──────────────────────────────────────
-        // y = division clinched: ranked #1 in division AND 2nd place cannot catch them
-        // x = playoff spot clinched: magic_number === 0 (non-division-clinched playoff team)
-        // e = eliminated: tragic_number === 0 AND not a playoff team
-        // ─────────────────────────────────────────────────────────────────────
-        const divClinchSet = new Set<string>();
-        Object.entries(divMap).forEach(([, divTeams]) => {
-            const leader = divTeams[0];
-            const second = divTeams[1];
-            if (!leader) return;
-            const leaderMT = magicTragicMap[leader.team];
-            if (leaderMT?.magic_number === 0) {
-                // Check if specifically clinched division (2nd can't catch leader)
-                if (second) {
-                    const maxPtsSecond = second.points + (SEASON_GP - second.gp) * 2;
-                    if (leader.points > maxPtsSecond) {
-                        divClinchSet.add(leader.team);
-                    }
-                } else {
-                    divClinchSet.add(leader.team); // solo in division
-                }
-            }
-        });
-
-        // Map props
-        const rMap: Record<string, { ranking: string, isPlayoff: boolean, magic_number?: number, tragic_number?: number, clinch_badge?: 'y' | 'x' | 'e' }> = {};
+        // Map props (ranking label + magic/tragic numbers)
+        // Clinch/elimination badges now come from clinch_status.json (NHL official data)
+        const rMap: Record<string, { ranking: string, isPlayoff: boolean, magic_number?: number, tragic_number?: number }> = {};
         standingsBaseline.forEach(t => {
             const inf = teams[t.team];
             if (inf && inf.division) {
                 const rank = divMap[inf.division].findIndex(x => x.team === t.team) + 1;
                 const mt = magicTragicMap[t.team];
-                const isPlayoff = plySet.has(t.team);
-
-                let clinch_badge: 'y' | 'x' | 'e' | undefined;
-                if (!isPlayoff && mt?.tragic_number === 0) {
-                    clinch_badge = 'e';
-                } else if (isPlayoff && mt?.magic_number === 0) {
-                    clinch_badge = divClinchSet.has(t.team) ? 'y' : 'x';
-                }
-
                 rMap[t.team] = {
                     ranking: `${divisionToInitial[inf.division]}${rank}`,
-                    isPlayoff,
+                    isPlayoff: plySet.has(t.team),
                     ...mt,
-                    clinch_badge,
                 };
             }
         });
@@ -1442,7 +1437,6 @@ const TeamsTable = () => {
                 t.isPlayoff = rMap[t.team].isPlayoff;
                 t.magic_number = rMap[t.team].magic_number;
                 t.tragic_number = rMap[t.team].tragic_number;
-                t.clinch_badge = rMap[t.team].clinch_badge;
             }
         });
 
@@ -1640,7 +1634,7 @@ const TeamsTable = () => {
         // Handle 0 GP (First Start) -> Show Blank
         if (team.gp === 0) {
             return (
-                <td className={`px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center text-gray-600 ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'}`}>
+                <td className={`px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center text-gray-600 ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden' : 'table-cell'}`}>
                     —
                 </td>
             );
@@ -1722,7 +1716,7 @@ const TeamsTable = () => {
         return (
             <td
                 key={isActiveSort ? `${key}-${flashKey}` : key}
-                className={`px-2 py-0.5 text-sm whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden md:table-cell' : 'table-cell'} ${key === 'ranking' ? (team.isPlayoff ? 'font-medium' : 'font-light') : 'font-medium'} ${isActiveSort ? 'animate-[sortFlash_0.6s_ease-out]' : ''}`}
+                className={`px-2 py-0.5 text-sm whitespace-nowrap text-center ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${isHidden ? 'hidden' : 'table-cell'} ${key === 'ranking' ? (team.isPlayoff ? 'font-medium' : 'font-light') : 'font-medium'} ${isActiveSort ? 'animate-[sortFlash_0.6s_ease-out]' : ''}`}
                 style={{ color }}
             >
                 {value}
@@ -1732,7 +1726,7 @@ const TeamsTable = () => {
 
     // Renders a single cell in the Team Ratings view (rating/lineup/goalie columns)
     const renderRatingCell = (teamName: string, colKey: string, isInverse: boolean, isGroupEnd: boolean, isHidden: boolean = false) => {
-        const visClass = isHidden ? 'hidden md:table-cell' : 'table-cell';
+        const visClass = isHidden ? 'hidden' : 'table-cell';
         const cellClass = `${visClass} px-2 py-0.5 text-sm font-medium whitespace-nowrap text-center${isGroupEnd ? ' md:border-r md:border-gray-700/50' : ''}`;
 
         const value = extractRatingValue(teamRatingsComputed[teamName], colKey);
@@ -1957,20 +1951,17 @@ const TeamsTable = () => {
                             <th className="sticky left-0 bg-gray-950 z-[55] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)] border-r border-gray-800"></th>
                             {(valuesMode === 'Ratings' ? RATINGS_STAT_GROUPS : STAT_GROUPS).map(group => {
                                 const isOn = activeGroups.includes(group.name);
+                                if (!isOn) return null; // don't render the <th> at all — keeps colSpan counts consistent
                                 return (
                                     <th
                                         key={group.name}
-                                        colSpan={isOn ? group.columns.length : 1}
+                                        colSpan={group.columns.length}
                                         className="px-2 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-center border-r border-gray-800/50 cursor-pointer select-none"
                                         onClick={() => toggleGroup(group.name)}
                                     >
                                         <span
-                                            style={isOn
-                                                ? { background: 'rgba(37,219,235,0.12)', borderColor: 'rgba(37,219,235,0.35)', color: '#25DBEB' }
-                                                : undefined}
-                                            className={`inline-block px-3 py-1 rounded-full border transition-all ${
-                                                isOn ? '' : 'bg-gray-800/50 border-gray-700/50 text-gray-600 hover:text-gray-400'
-                                            }`}
+                                            style={{ background: 'rgba(37,219,235,0.12)', borderColor: 'rgba(37,219,235,0.35)', color: '#25DBEB' }}
+                                            className="inline-block px-3 py-1 rounded-full border transition-all"
                                         >
                                             {group.name}
                                         </span>
@@ -1986,12 +1977,12 @@ const TeamsTable = () => {
                                 <>
                                     {/* First 8 Record columns (ranking → rw) */}
                                     {COLUMNS.slice(0, 8).map(({ k, l, desc, calc }) => {
+                                        if (!activeColumnKeys.has(k)) return null;
                                         const isGroupEnd = k === 'rw'; // last Record col
-                                        const isGroupActive = activeGroups.includes(RATINGS_STAT_GROUPS.find(g => g.columns.includes(k))?.name ?? '');
                                         return (
                                             <th
                                                 key={k}
-                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative cursor-pointer hover:text-white ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isGroupActive ? 'hidden' : 'table-cell'}`}
+                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative cursor-pointer hover:text-white ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} table-cell`}
                                                 onClick={() => handleSort(k)}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -2008,12 +1999,12 @@ const TeamsTable = () => {
                                     })}
                                     {/* Rating / Lineup / Goalie columns */}
                                     {RATINGS_COLS.map(({ k, l, desc, groupEnd }) => {
-                                        const isGroupActive = activeGroups.includes(RATINGS_STAT_GROUPS.find(g => (g.columns as readonly string[]).includes(k))?.name ?? '');
+                                        if (!activeColumnKeys.has(k)) return null;
                                         const canSort = viewMode === 'All';
                                         return (
                                             <th
                                                 key={k}
-                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative ${canSort ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'} ${groupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isGroupActive ? 'hidden' : 'table-cell'}`}
+                                                className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative ${canSort ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'} ${groupEnd ? 'md:border-r md:border-gray-700/50' : ''} table-cell`}
                                                 onClick={() => handleSort(k)}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -2032,15 +2023,15 @@ const TeamsTable = () => {
                                 </>
                             ) : (
                                 COLUMNS.map(({ k, l, desc, calc }) => {
+                                    if (!activeColumnKeys.has(k)) return null;
                                     // Determine if this is the last column in any group for vertical grid lines
                                     const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === k);
-                                    const isGroupActive = activeGroups.includes(STAT_GROUPS.find(g => g.columns.includes(k))?.name ?? '');
 
                                     return (
                                         <th
                                             key={k}
                                             className={`px-2 py-1.5 font-semibold transition-colors text-center whitespace-nowrap group relative ${viewMode === 'All' ? 'cursor-pointer hover:text-white' : 'cursor-default opacity-80'
-                                                } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} ${!isGroupActive ? 'hidden' : 'table-cell'}`}
+                                                } ${isGroupEnd ? 'md:border-r md:border-gray-700/50' : ''} table-cell`}
                                             onClick={() => handleSort(k)}
                                         >
                                             <div className="flex items-center justify-center gap-1">
@@ -2111,9 +2102,9 @@ const TeamsTable = () => {
                                                     </span>
                                                 </Link>
 
-                                                {/* Clinch / Elimination badge (All mode only) */}
-                                                {viewMode === 'All' && team.clinch_badge && (
-                                                    <ClinchBadge badge={team.clinch_badge} />
+                                                {/* Clinch / Elimination badge — official NHL data from clinch_status.json */}
+                                                {viewMode === 'All' && meta.tricode && clinchData[meta.tricode] && (
+                                                    <ClinchBadge indicator={clinchData[meta.tricode]!} />
                                                 )}
 
                                                 {/* Matchup visual indicator for Location Mode */}
@@ -2157,32 +2148,32 @@ const TeamsTable = () => {
                                             <>
                                                 {/* Record columns (ranking → rw) */}
                                                 {COLUMNS.slice(0, 8).map(col => {
+                                                    if (!activeColumnKeys.has(col.k)) return null;
                                                     const isGroupEnd = col.k === 'rw';
-                                                    const isGroupActive = activeGroups.includes(RATINGS_STAT_GROUPS.find(g => g.columns.includes(col.k))?.name ?? '');
                                                     return (
                                                         <React.Fragment key={col.k}>
-                                                            {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isGroupActive)}
+                                                            {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd)}
                                                         </React.Fragment>
                                                     );
                                                 })}
                                                 {/* Ratings / Lineup / Goalie columns */}
                                                 {RATINGS_COLS.map(col => {
-                                                    const isGroupActive = activeGroups.includes(RATINGS_STAT_GROUPS.find(g => (g.columns as readonly string[]).includes(col.k))?.name ?? '');
+                                                    if (!activeColumnKeys.has(col.k)) return null;
                                                     return (
                                                         <React.Fragment key={col.k}>
-                                                            {renderRatingCell(team.team, col.k, col.inv, col.groupEnd, !isGroupActive)}
+                                                            {renderRatingCell(team.team, col.k, col.inv, col.groupEnd)}
                                                         </React.Fragment>
                                                     );
                                                 })}
                                             </>
                                         ) : (
                                             COLUMNS.map(col => {
+                                                if (!activeColumnKeys.has(col.k)) return null;
                                                 const isGroupEnd = STAT_GROUPS.some(g => g.columns[g.columns.length - 1] === col.k);
-                                                const isGroupActive = activeGroups.includes(STAT_GROUPS.find(g => g.columns.includes(col.k))?.name ?? '');
 
                                                 return (
                                                     <React.Fragment key={col.k}>
-                                                        {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd, !isGroupActive)}
+                                                        {renderCell(team, col.k as keyof TeamStat, undefined, !!col.inv, !!col.isTime, isGroupEnd)}
                                                     </React.Fragment>
                                                 );
                                             })

@@ -9,8 +9,8 @@
 | # | Task | Priority | Effort | Notes |
 |---|------|----------|--------|-------|
 | 1.1 | **Skaters page: Rookies filter button** — Add a "Rookies" toggle button (similar to position filters) that filters the skaters table to only show players with `isRookie: true` | 🟡 Medium | ⚡ Small (~1 hr) | `isRookie` flag already exists in `player_bio.json` and is fetched by `SkaterStatsTable.tsx` |
-| 1.2 | **Teams page: Clinch/elimination icons** — Display P/Z/Y/X/E badges next to team names in standings. Figma ref: https://www.figma.com/design/jmpyG8WAPoOr0OcJsDlbGw/Supotsu?node-id=580-331 | 🟡 Medium | 🔧 Medium (~2-3 hrs) | Need to determine clinch/elimination status from standings data |
-| 1.3 | **Teams page: Column group toggles** — Default all column groups on; selected state: bg `#25DBEB`, font `#343434` | 🟢 Low | 🔧 Medium (~2-3 hrs) | UX improvement for dense table |
+| ~~1.2~~ | ~~Teams page: Clinch/elimination icons~~ | ✅ Done | — | P/Z/Y/X/E from NHL API (`clinch_status.json`), see section 7 |
+| ~~1.3~~ | ~~Teams page: Column group toggles~~ | ✅ Done | — | Multi-select, all-on default, conditional rendering fix, see section 7 |
 
 ---
 
@@ -61,6 +61,7 @@
 
 | Date | Task | Commit |
 |------|------|--------|
+| 2026-03-24 16:30 | Column group toggle fix: conditional rendering (return null) instead of CSS hidden — prevents cell count mismatch / data shift. Official clinch badges (P/Z/Y/X/E) from NHL API via `fetch_clinch_status.py` | `TBD` |
 | 2026-03-24 14:00 | Visual: Rookie names in #D9FF82 (102 rookies via NHL stats API), bet pill colors (green=+EV+win, amber=+EV+lose), mobile total pill moved under History | `78f6fe4f` |
 | 2026-03-24 12:15 | Phase 3C: Flurry-adjusted xG applied to 263K historical shots + re-aggregated gamestats. Backtest LL 0.6865→0.6830, accuracy 53.9%→54.9%, blended ECE 0.0189 | `e902eadd` |
 | 2026-03-24 10:45 | Phase 2C: Data-driven OT model (70/30 OT/SO split, 5-season empirical) + Poisson features for ML (22→24 features). Backtest LL 0.6877→0.6865, ECE 0.0498→0.0386 | `1369421c` |

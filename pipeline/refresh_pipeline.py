@@ -70,6 +70,15 @@ def refresh_pipeline():
     except Exception as e:
         print(f"[WARN] Player bio fetch failed: {e}")
 
+    # 0e2. Fetch official clinch/elimination status from NHL Standings API.
+    # Very fast (1 request). Updates clinch_status.json with p/z/y/x/e indicators.
+    print("Fetching clinch/elimination status...")
+    try:
+        import fetch_clinch_status
+        fetch_clinch_status.main()
+    except Exception as e:
+        print(f"[WARN] Clinch status fetch failed: {e}")
+
     # 0f. Fetch contract data (cap hit, UFA/RFA status) from PuckPedia
     # Only re-fetches if contracts.json is older than 7 days — contract data
     # rarely changes and PuckPedia blocks frequent scrapers.
