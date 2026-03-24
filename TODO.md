@@ -18,7 +18,7 @@
 
 | # | Task | Priority | Effort | Notes |
 |---|------|----------|--------|-------|
-| 2.1 | **Expand training data to 4+ seasons** — Incorporate 2022-23 PBP data to go from 3→4 seasons of training. More data = better generalization | 🔴 High | 🔧 Medium | `build_historical_2223.py` written — fetches 1,312 games from NHL API via `aggregate_game_stats()`. **IN PROGRESS**: running data build now, then retrain + backtest |
+| ~~2.1~~ | ~~Expand training data to 4+ seasons~~ | ✅ Done | — | `build_historical_2223.py`: 1,312 games via NHL API → +114K shots, +2,624 gamestats. Retrained on 4,965 games. Backtest: ML LL 0.6830→0.6811, Blended LL 0.6797, ECE 0.0189→0.0106, Acc 56.6% |
 | ~~2.2~~ | ~~Tighten prediction clip range [0.15, 0.85] → [0.25, 0.75]~~ | ✅ Done | — | Updated in `ml_predict.py` line 304, `backtest_model.py` lines 107 + 229 |
 
 ---
@@ -61,8 +61,9 @@
 
 | Date | Task | Commit |
 |------|------|--------|
-| 2026-03-24 17:30 | Clip range tightened [0.15, 0.85] → [0.25, 0.75] in ml_predict.py + backtest_model.py (3 locations) | `TBD` |
-| 2026-03-24 17:30 | Skaters page: Rookies filter button (🌱 toggle, lime-green `#D9FF82`, `isRookie` flag from NHL stats API) | `TBD` |
+| 2026-03-24 18:00 | Phase 4A: 4-season training (2022-26) + clip [0.25,0.75]. ML LL 0.6830→0.6811, Blended LL 0.6797, Blended ECE 0.0189→0.0106, Acc 56.6%. `build_historical_2223.py` | `a4a26809` |
+| 2026-03-24 17:30 | Clip range tightened [0.15, 0.85] → [0.25, 0.75] in ml_predict.py + backtest_model.py (3 locations) | `a4a26809` |
+| 2026-03-24 17:30 | Skaters page: Rookies filter button (🌱 toggle, lime-green `#D9FF82`, `isRookie` flag from NHL stats API) | `dcd7a553` |
 | 2026-03-24 16:30 | Column group toggle fix: conditional rendering (return null) instead of CSS hidden — prevents cell count mismatch / data shift. Official clinch badges (P/Z/Y/X/E) from NHL API via `fetch_clinch_status.py` | `TBD` |
 | 2026-03-24 14:00 | Visual: Rookie names in #D9FF82 (102 rookies via NHL stats API), bet pill colors (green=+EV+win, amber=+EV+lose), mobile total pill moved under History | `78f6fe4f` |
 | 2026-03-24 12:15 | Phase 3C: Flurry-adjusted xG applied to 263K historical shots + re-aggregated gamestats. Backtest LL 0.6865→0.6830, accuracy 53.9%→54.9%, blended ECE 0.0189 | `e902eadd` |
