@@ -1144,10 +1144,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         </div>
 
                         {/* Win Probability Bar */}
-                        <div className="w-full flex justify-between items-baseline mb-2 px-1">
-                            <span className="text-[14px] font-black text-white tracking-wide">{awayModelWinPct.toFixed(1)}%</span>
-                            <span className="text-[9px] font-bold text-neutral-600 tracking-widest uppercase">Win %</span>
-                            <span className="text-[14px] font-black text-white tracking-wide">{homeModelWinPct.toFixed(1)}%</span>
+                        <div className="w-full flex justify-between items-baseline mb-2 md:mb-3 px-1">
+                            <span className="text-[14px] md:text-[20px] font-black text-white tracking-wide">{awayModelWinPct.toFixed(1)}%</span>
+                            <span className="text-[9px] md:text-[11px] font-bold text-neutral-600 tracking-widest uppercase">Win %</span>
+                            <span className="text-[14px] md:text-[20px] font-black text-white tracking-wide">{homeModelWinPct.toFixed(1)}%</span>
                         </div>
                         <div className="w-full h-3 bg-neutral-800 rounded-full overflow-hidden flex relative shadow-inner">
                             {/* Away Bar (Left) - Animated Width */}
