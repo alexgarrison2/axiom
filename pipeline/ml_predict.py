@@ -301,7 +301,7 @@ class MLPredictor:
             h_prob = self.model.predict_proba(X)[0][1]
 
             # Clamp to reasonable range
-            h_prob = max(0.15, min(0.85, h_prob))
+            h_prob = max(0.25, min(0.75, h_prob))
             a_prob = 1.0 - h_prob
 
             return h_prob, a_prob, round(h_xg_ml, 2), round(a_xg_ml, 2)

@@ -1,6 +1,6 @@
 # 🏒 HockeyData — Master To-Do List
 
-> **Last updated:** 2026-03-24 14:30
+> **Last updated:** 2026-03-24 17:30
 
 ---
 
@@ -8,7 +8,7 @@
 
 | # | Task | Priority | Effort | Notes |
 |---|------|----------|--------|-------|
-| 1.1 | **Skaters page: Rookies filter button** — Add a "Rookies" toggle button (similar to position filters) that filters the skaters table to only show players with `isRookie: true` | 🟡 Medium | ⚡ Small (~1 hr) | `isRookie` flag already exists in `player_bio.json` and is fetched by `SkaterStatsTable.tsx` |
+| ~~1.1~~ | ~~Skaters page: Rookies filter button~~ | ✅ Done | — | 🌱 toggle button, lime-green active state, filters by `isRookie: true` from `player_bio.json` |
 | ~~1.2~~ | ~~Teams page: Clinch/elimination icons~~ | ✅ Done | — | P/Z/Y/X/E from NHL API (`clinch_status.json`), see section 7 |
 | ~~1.3~~ | ~~Teams page: Column group toggles~~ | ✅ Done | — | Multi-select, all-on default, conditional rendering fix, see section 7 |
 
@@ -18,8 +18,8 @@
 
 | # | Task | Priority | Effort | Notes |
 |---|------|----------|--------|-------|
-| 2.1 | **Expand training data to 4+ seasons** — Incorporate 2022-23 PBP data (already scraped in `data/historical_pbp/`) to go from 3→4 seasons of training. More data = better generalization | 🔴 High | 🔧 Medium (~2-3 hrs) | Raw PBP exists, needs shot feature extraction + gamestats generation |
-| 2.2 | **Tighten prediction clip range** — Currently [0.15, 0.85] but 85% bin is still miscalibrated (predicted 85%, actual 76%). Consider [0.25, 0.75] or data-driven clipping | 🟡 Medium | ⚡ Small (~30 min) | Quick calibration improvement at extremes |
+| 2.1 | **Expand training data to 4+ seasons** — Incorporate 2022-23 PBP data to go from 3→4 seasons of training. More data = better generalization | 🔴 High | 🔧 Medium | `build_historical_2223.py` written — fetches 1,312 games from NHL API via `aggregate_game_stats()`. **IN PROGRESS**: running data build now, then retrain + backtest |
+| ~~2.2~~ | ~~Tighten prediction clip range [0.15, 0.85] → [0.25, 0.75]~~ | ✅ Done | — | Updated in `ml_predict.py` line 304, `backtest_model.py` lines 107 + 229 |
 
 ---
 
@@ -61,6 +61,8 @@
 
 | Date | Task | Commit |
 |------|------|--------|
+| 2026-03-24 17:30 | Clip range tightened [0.15, 0.85] → [0.25, 0.75] in ml_predict.py + backtest_model.py (3 locations) | `TBD` |
+| 2026-03-24 17:30 | Skaters page: Rookies filter button (🌱 toggle, lime-green `#D9FF82`, `isRookie` flag from NHL stats API) | `TBD` |
 | 2026-03-24 16:30 | Column group toggle fix: conditional rendering (return null) instead of CSS hidden — prevents cell count mismatch / data shift. Official clinch badges (P/Z/Y/X/E) from NHL API via `fetch_clinch_status.py` | `TBD` |
 | 2026-03-24 14:00 | Visual: Rookie names in #D9FF82 (102 rookies via NHL stats API), bet pill colors (green=+EV+win, amber=+EV+lose), mobile total pill moved under History | `78f6fe4f` |
 | 2026-03-24 12:15 | Phase 3C: Flurry-adjusted xG applied to 263K historical shots + re-aggregated gamestats. Backtest LL 0.6865→0.6830, accuracy 53.9%→54.9%, blended ECE 0.0189 | `e902eadd` |

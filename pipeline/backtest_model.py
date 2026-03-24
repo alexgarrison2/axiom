@@ -104,7 +104,7 @@ def compute_poisson_predictions(features_df, team_features_df):
         a_expected = max(0.5, a_xgf)
 
         p = poisson_home_win_prob(h_expected, a_expected)
-        preds.append(max(0.15, min(0.85, p)))
+        preds.append(max(0.25, min(0.75, p)))
 
     return np.array(preds)
 
@@ -226,7 +226,7 @@ def run_backtest():
         cal_model.fit(X_train, y_train)
 
         y_pred_ml = cal_model.predict_proba(X_test)[:, 1]
-        y_pred_ml = np.clip(y_pred_ml, 0.15, 0.85)
+        y_pred_ml = np.clip(y_pred_ml, 0.25, 0.75)
 
         # ── Poisson Baseline ──
         y_pred_poisson = compute_poisson_predictions(test_df, df_feat)
