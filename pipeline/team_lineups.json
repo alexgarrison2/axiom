@@ -307,7 +307,7 @@
                 "pos": "rd",
                 "id": 1172,
                 "ppUnit": 1,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d3": [
@@ -325,7 +325,7 @@
                 "pos": "rd",
                 "id": 2702,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
@@ -2012,12 +2012,12 @@
         ],
         "f4": [
             {
-                "name": "Garrett Wilson",
-                "number": 10,
+                "name": "Luke Glendening",
+                "number": 41,
                 "pos": "lw",
-                "id": 1711,
+                "id": 2174,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sean Couturier",
@@ -5132,12 +5132,12 @@
         ],
         "d1": [
             {
-                "name": "Jake Walman",
-                "number": 96,
+                "name": "Mattias Ekholm",
+                "number": 14,
                 "pos": "ld",
-                "id": 2859,
+                "id": 1675,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Evan Bouchard",
@@ -5158,30 +5158,30 @@
                 "movement": null
             },
             {
-                "name": "Mattias Ekholm",
-                "number": 14,
-                "pos": "rd",
-                "id": 1675,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Spencer Stastney",
-                "number": 24,
-                "pos": "ld",
-                "id": 28862,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Connor Murphy",
                 "number": 5,
                 "pos": "rd",
                 "id": 1772,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Jake Walman",
+                "number": 96,
+                "pos": "ld",
+                "id": 2859,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Ty Emberson",
+                "number": 49,
+                "pos": "rd",
+                "id": 28812,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "ir": [
