@@ -147,6 +147,7 @@ interface TeamStat {
     // Clinch / elimination tracking (set after standings are computed, optional)
     magic_number?: number;  // M#: playoff teams only. 0 = clinched.
     tragic_number?: number; // E#: non-playoff teams only. 0 = eliminated.
+    clinch_badge?: 'y' | 'x' | 'e'; // y=div clinched, x=playoff clinched, e=eliminated
 }
 
 interface Matchup {
@@ -348,6 +349,26 @@ const getLeverageGradientColor = (value: number, min: number, max: number) => {
 
     return `rgb(${r}, ${g}, ${b})`;
 };
+
+// ── Clinch / Elimination Badge ─────────────────────────────────────────────
+const CLINCH_BADGE_CONFIG: Record<string, { label: string; bg: string; text: string; title: string }> = {
+    y: { label: 'Y', bg: 'rgba(16,185,129,0.20)', text: '#10b981', title: 'Clinched Division' },
+    x: { label: 'X', bg: 'rgba(59,130,246,0.20)', text: '#60a5fa', title: 'Clinched Playoff Spot' },
+    e: { label: 'E', bg: 'rgba(239,68,68,0.15)',  text: '#f87171', title: 'Eliminated' },
+};
+
+function ClinchBadge({ badge }: { badge: 'y' | 'x' | 'e' }) {
+    const cfg = CLINCH_BADGE_CONFIG[badge];
+    return (
+        <span
+            title={cfg.title}
+            style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.text}40` }}
+            className="inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-black shrink-0 leading-none"
+        >
+            {cfg.label}
+        </span>
+    );
+}
 
 const formatStarterName = (name?: string) => {
     if (!name) return '';
@@ -1351,16 +1372,51 @@ const TeamsTable = () => {
         });
         // ─────────────────────────────────────────────────────────────────────
 
+        // ── Clinch / Elimination Badges ──────────────────────────────────────
+        // y = division clinched: ranked #1 in division AND 2nd place cannot catch them
+        // x = playoff spot clinched: magic_number === 0 (non-division-clinched playoff team)
+        // e = eliminated: tragic_number === 0 AND not a playoff team
+        // ─────────────────────────────────────────────────────────────────────
+        const divClinchSet = new Set<string>();
+        Object.entries(divMap).forEach(([, divTeams]) => {
+            const leader = divTeams[0];
+            const second = divTeams[1];
+            if (!leader) return;
+            const leaderMT = magicTragicMap[leader.team];
+            if (leaderMT?.magic_number === 0) {
+                // Check if specifically clinched division (2nd can't catch leader)
+                if (second) {
+                    const maxPtsSecond = second.points + (SEASON_GP - second.gp) * 2;
+                    if (leader.points > maxPtsSecond) {
+                        divClinchSet.add(leader.team);
+                    }
+                } else {
+                    divClinchSet.add(leader.team); // solo in division
+                }
+            }
+        });
+
         // Map props
-        const rMap: Record<string, { ranking: string, isPlayoff: boolean, magic_number?: number, tragic_number?: number }> = {};
+        const rMap: Record<string, { ranking: string, isPlayoff: boolean, magic_number?: number, tragic_number?: number, clinch_badge?: 'y' | 'x' | 'e' }> = {};
         standingsBaseline.forEach(t => {
             const inf = teams[t.team];
             if (inf && inf.division) {
                 const rank = divMap[inf.division].findIndex(x => x.team === t.team) + 1;
+                const mt = magicTragicMap[t.team];
+                const isPlayoff = plySet.has(t.team);
+
+                let clinch_badge: 'y' | 'x' | 'e' | undefined;
+                if (!isPlayoff && mt?.tragic_number === 0) {
+                    clinch_badge = 'e';
+                } else if (isPlayoff && mt?.magic_number === 0) {
+                    clinch_badge = divClinchSet.has(t.team) ? 'y' : 'x';
+                }
+
                 rMap[t.team] = {
                     ranking: `${divisionToInitial[inf.division]}${rank}`,
-                    isPlayoff: plySet.has(t.team),
-                    ...magicTragicMap[t.team],
+                    isPlayoff,
+                    ...mt,
+                    clinch_badge,
                 };
             }
         });
@@ -1371,6 +1427,7 @@ const TeamsTable = () => {
                 t.isPlayoff = rMap[t.team].isPlayoff;
                 t.magic_number = rMap[t.team].magic_number;
                 t.tragic_number = rMap[t.team].tragic_number;
+                t.clinch_badge = rMap[t.team].clinch_badge;
             }
         });
 
@@ -2024,6 +2081,11 @@ const TeamsTable = () => {
                                                             : (meta.commonName || team.team)}
                                                     </span>
                                                 </Link>
+
+                                                {/* Clinch / Elimination badge (All mode only) */}
+                                                {viewMode === 'All' && team.clinch_badge && (
+                                                    <ClinchBadge badge={team.clinch_badge} />
+                                                )}
 
                                                 {/* Matchup visual indicator for Location Mode */}
                                                 {(viewMode.includes('Location')) && (
