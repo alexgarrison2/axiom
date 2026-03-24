@@ -18,9 +18,7 @@
 
 | # | Task | Priority | Effort | Notes |
 |---|------|----------|--------|-------|
-| 2.1 | **Phase 2C: Better Overtime Modeling** — Replace 50/50 coin flip with proper OT math (historical home OT win rate ~52-53%, or exponential distribution approach) | 🔴 High | 🔧 Medium (~1 day) | Direct log loss improvement on close games. Every game that goes to OT currently gets a 50/50 split — easy win |
-| 2.2 | **Phase 3C: Flurry-Adjusted xG** — Discount 2nd/3rd shots in rapid sequences (≤3s apart). More predictive & repeatable than raw xG | 🟡 Medium | 🔧 Medium (~1-2 days) | Requires PBP data processing changes. Improves underlying xG quality which feeds everything |
-| 2.3 | **Validation: Full backtest & calibration** — Calibration curves, rolling log loss windows, comparison vs MoneyPuck/Vegas closing lines | 🔴 High | 🔧 Medium (~1 day) | Backtesting pipeline exists (`5873d660`), needs to be run & analyzed. Critical for knowing where we actually stand |
+| 2.1 | **Phase 3C: Flurry-Adjusted xG** — Discount 2nd/3rd shots in rapid sequences (≤3s apart). More predictive & repeatable than raw xG | 🟡 Medium | 🔧 Medium (~1-2 days) | Requires PBP data processing changes. Improves underlying xG quality which feeds everything |
 
 ---
 
@@ -60,6 +58,8 @@
 
 | Date | Task | Commit |
 |------|------|--------|
+| 2026-03-24 10:45 | Phase 2C: Data-driven OT model (70/30 OT/SO split, 5-season empirical) + Poisson features for ML (22→24 features). Backtest LL 0.6877→0.6865, ECE 0.0498→0.0386 | `1369421c` |
+| 2026-03-24 10:30 | Validation: Full backtest run — baseline LL=0.6877, ECE=0.0498, 50-55% bucket at 48% accuracy. Identified OT modeling and calibration as top priorities | — |
 | 2026-03-24 08:35 | Increase win% text size on desktop (14px → 20px) | `0ed5f840` |
 | 2026-03-23 22:07 | Fix xG with Pythagorean matchup formula, make win% more prominent | `009bfd68` |
 | 2026-03-23 21:49 | Derive displayed xG from ML model features, remove Poisson dependency | `f24cd320` |
