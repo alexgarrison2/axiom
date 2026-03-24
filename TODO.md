@@ -18,7 +18,8 @@
 
 | # | Task | Priority | Effort | Notes |
 |---|------|----------|--------|-------|
-| 2.1 | **Phase 3C: Flurry-Adjusted xG** — Discount 2nd/3rd shots in rapid sequences (≤3s apart). More predictive & repeatable than raw xG | 🟡 Medium | 🔧 Medium (~1-2 days) | Requires PBP data processing changes. Improves underlying xG quality which feeds everything |
+| 2.1 | **Expand training data to 4+ seasons** — Incorporate 2022-23 PBP data (already scraped in `data/historical_pbp/`) to go from 3→4 seasons of training. More data = better generalization | 🔴 High | 🔧 Medium (~2-3 hrs) | Raw PBP exists, needs shot feature extraction + gamestats generation |
+| 2.2 | **Tighten prediction clip range** — Currently [0.15, 0.85] but 85% bin is still miscalibrated (predicted 85%, actual 76%). Consider [0.25, 0.75] or data-driven clipping | 🟡 Medium | ⚡ Small (~30 min) | Quick calibration improvement at extremes |
 
 ---
 
@@ -34,9 +35,10 @@
 ## 📋 4. Feature Development
 
 | # | Task | Priority | Effort | Notes |
-|---|------|----------|--------|-------|
+| --- | ------ | ---------- | -------- | ------- |
 | 4.1 | **Playoffs tab: Magic/Tragic number cleanup** — Hide Tragic Number once clinched; hide Magic Number once eliminated. Fix teams showing >0 numbers despite being officially clinched/eliminated | 🟡 Medium | 🔧 Medium (~3-4 hrs) | Need to cross-reference official clinch/elimination status with calculated numbers |
 | 4.2 | **Teams page: Blown Leads & Comeback Wins columns** — 8 new columns: BL, BL(3P), BL(2+), BL(3+), CW, CW(3P), CW(2+), CW(3+) | 🟢 Low | 🔨 Large (~1-2 days) | Requires parsing PBP or game score progression data to determine lead states at various points. Fun feature but not model-impacting |
+| 4.3 | **Pipeline: Daily Raw PBP Updater** — Create a script to append only new yesterday games to `raw_pbp_20252026.csv` instead of a full rebuild, and hook it into the automated daily GitHub action pipeline. | 🟡 Medium | ⚡ Small (~1 hr) | Keeps the comprehensive historical raw data up-to-date daily without needing a massive 15-minute scrape |
 
 ---
 
@@ -58,6 +60,7 @@
 
 | Date | Task | Commit |
 |------|------|--------|
+| 2026-03-24 12:15 | Phase 3C: Flurry-adjusted xG applied to 263K historical shots + re-aggregated gamestats. Backtest LL 0.6865→0.6830, accuracy 53.9%→54.9%, blended ECE 0.0189 | `e902eadd` |
 | 2026-03-24 10:45 | Phase 2C: Data-driven OT model (70/30 OT/SO split, 5-season empirical) + Poisson features for ML (22→24 features). Backtest LL 0.6877→0.6865, ECE 0.0498→0.0386 | `1369421c` |
 | 2026-03-24 10:30 | Validation: Full backtest run — baseline LL=0.6877, ECE=0.0498, 50-55% bucket at 48% accuracy. Identified OT modeling and calibration as top priorities | — |
 | 2026-03-24 08:35 | Increase win% text size on desktop (14px → 20px) | `0ed5f840` |
