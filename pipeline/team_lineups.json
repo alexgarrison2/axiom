@@ -3477,7 +3477,7 @@
                 "pos": "rd",
                 "id": 28161,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -3487,7 +3487,7 @@
                 "pos": "ld",
                 "id": 36308,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ryan Ufko",
@@ -4663,7 +4663,7 @@
                 "pos": "rw",
                 "id": 2747,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -5286,12 +5286,12 @@
         ],
         "d1": [
             {
-                "name": "Elias Nils Pettersson",
-                "number": 25,
+                "name": "Zeev Buium",
+                "number": 24,
                 "pos": "ld",
-                "id": 36406,
-                "ppUnit": null,
-                "movement": null
+                "id": 33153,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Filip Hronek",
@@ -5322,20 +5322,20 @@
         ],
         "d3": [
             {
-                "name": "Zeev Buium",
-                "number": 24,
+                "name": "Elias Nils Pettersson",
+                "number": 25,
                 "pos": "ld",
-                "id": 33153,
-                "ppUnit": 2,
-                "movement": null
+                "id": 36406,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
-                "name": "Victor Mancini",
-                "number": 90,
+                "name": "Pierre-Olivier Joseph",
+                "number": 7,
                 "pos": "rd",
-                "id": 33084,
+                "id": 2812,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "ir": [
@@ -5356,17 +5356,9 @@
                 "movement": null
             },
             {
-                "name": "Pierre-Olivier Joseph",
-                "number": 7,
-                "pos": "ir3",
-                "id": 2812,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Filip Chytil",
                 "number": 72,
-                "pos": "ir4",
+                "pos": "ir3",
                 "id": 2811,
                 "ppUnit": null,
                 "movement": null
