@@ -1,6 +1,6 @@
 # 🏒 HockeyData — Master To-Do List
 
-> **Last updated:** 2026-03-25 12:00
+> **Last updated:** 2026-03-25 14:00
 
 ---
 
@@ -66,6 +66,8 @@
 
 | Date | Task | Commit |
 |------|------|--------|
+| 2026-03-25 14:00 | Redesign MatchupCard collapsed view: win% values inside bar segments, goalie info horizontal next to logos, "WIN %" label tight above bar, reduced desktop card height (422px → ~320px), tightened mobile vertical spacing. Added 5 new TODO items (5.2–5.6) | `21601ba8` |
+| 2026-03-25 12:00 | TODO 4.2: Blown Leads & Comeback Wins — 8 new columns on Teams page + team detail gamelogs (BL, BL3P, BL2+, BL3+, CW, CW3P, CW2+, CW3+). Pipeline: `calc_blown_leads.py` computes from gamestats | `01e68816` |
 | 2026-03-24 18:00 | Phase 4A: 4-season training (2022-26) + clip [0.25,0.75]. ML LL 0.6830→0.6811, Blended LL 0.6797, Blended ECE 0.0189→0.0106, Acc 56.6%. `build_historical_2223.py` | `a4a26809` |
 | 2026-03-24 17:30 | Clip range tightened [0.15, 0.85] → [0.25, 0.75] in ml_predict.py + backtest_model.py (3 locations) | `a4a26809` |
 | 2026-03-24 17:30 | Skaters page: Rookies filter button (🌱 toggle, lime-green `#D9FF82`, `isRookie` flag from NHL stats API) | `dcd7a553` |

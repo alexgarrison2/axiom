@@ -1108,7 +1108,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     <div className="flex flex-row items-start justify-between w-full">
 
                         {/* AWAY SIDE: goalie info (right-aligned) + Logo */}
-                        <div className="flex items-center gap-3 flex-1 min-w-0 relative z-20">
+                        <div className="flex items-center gap-2 flex-1 min-w-0 relative z-20">
                             {/* Goalie info — right-aligned text */}
                             <div className="flex flex-col items-end flex-1 min-w-0">
                                 {(() => {
@@ -1118,7 +1118,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     const starterName = safeStarter.replace(/\s*\(.*?\)$/, '');
                                     return (
                                         <>
-                                            <span className={`text-xs font-bold uppercase tracking-wide truncate max-w-full ${
+                                            <span className={`text-sm font-bold uppercase tracking-wide truncate max-w-full ${
                                                 status?.toUpperCase()?.includes('UNCONFIRMED') ? 'text-gray-500' :
                                                 status?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green' :
                                                 status?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400' : 'text-gray-500'
@@ -1126,7 +1126,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                                 {formatGoalieName(starterName)}
                                             </span>
                                             {prediction.away_goalie_stats && (
-                                                <div className="mt-0.5 text-[9px] text-neutral-500 font-mono tracking-wide text-right">
+                                                <div className="mt-0.5 text-[11px] text-neutral-500 font-mono tracking-wide text-right">
                                                     {prediction.away_goalie_stats}
                                                 </div>
                                             )}
@@ -1140,32 +1140,29 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 src={awayTeam.logoUrl}
                                 alt={awayTeam.name}
                                 triCode={awayTeam.triCode}
-                                className={isSocial ? "w-14 h-14" : "w-28 h-28"}
+                                className={isSocial ? "w-14 h-14" : "w-36 h-36"}
                                 primaryColor={awayTeam.color1}
                                 variant="animated"
                             />
                             <NewsIndicator
                                 hasNews={prediction.away_news?.some(n => n.category !== 'Goalie Start') ?? false}
-                                className="absolute bottom-0 left-0"
+                                className="absolute top-0 left-0"
                             />
                         </div>
 
-                        {/* CENTER: Time + Total */}
-                        <div className="flex flex-col items-center justify-center px-4 shrink-0">
-                            <span className="text-xs font-mono tracking-[0.2em] mb-1" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
-                            <div className="px-5 py-1.5 rounded-full border border-neutral-700 bg-neutral-800/50 backdrop-blur-md min-w-[56px] text-center">
-                                <span className="text-sm font-bold text-neutral-200 tracking-wider">TOTAL: {totalGoals.toFixed(1)}</span>
-                            </div>
+                        {/* CENTER: Time only */}
+                        <div className="flex flex-col items-center justify-center px-2 shrink-0">
+                            <span className="text-xs font-mono tracking-[0.2em]" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
                         </div>
 
                         {/* HOME SIDE: Logo + goalie info (left-aligned) */}
-                        <div className="flex items-center gap-3 flex-1 min-w-0 relative z-20">
+                        <div className="flex items-center gap-2 flex-1 min-w-0 relative z-20">
                             {/* Home Logo */}
                             <LogoDisplay
                                 src={homeTeam.logoUrl}
                                 alt={homeTeam.name}
                                 triCode={homeTeam.triCode}
-                                className={isSocial ? "w-14 h-14" : "w-28 h-28"}
+                                className={isSocial ? "w-14 h-14" : "w-36 h-36"}
                                 primaryColor={homeTeam.color1}
                                 variant="animated"
                             />
@@ -1178,7 +1175,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     const starterName = safeStarter.replace(/\s*\(.*?\)$/, '');
                                     return (
                                         <>
-                                            <span className={`text-xs font-bold uppercase tracking-wide truncate max-w-full ${
+                                            <span className={`text-sm font-bold uppercase tracking-wide truncate max-w-full ${
                                                 status?.toUpperCase()?.includes('UNCONFIRMED') ? 'text-gray-500' :
                                                 status?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green' :
                                                 status?.toUpperCase()?.includes('LIKELY') ? 'text-yellow-400' : 'text-gray-500'
@@ -1186,7 +1183,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                                 {formatGoalieName(starterName)}
                                             </span>
                                             {prediction.home_goalie_stats && (
-                                                <div className="mt-0.5 text-[9px] text-neutral-500 font-mono tracking-wide text-left">
+                                                <div className="mt-0.5 text-[11px] text-neutral-500 font-mono tracking-wide text-left">
                                                     {prediction.home_goalie_stats}
                                                 </div>
                                             )}
@@ -1197,13 +1194,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             </div>
                             <NewsIndicator
                                 hasNews={prediction.home_news?.some(n => n.category !== 'Goalie Start') ?? false}
-                                className="absolute bottom-0 right-0"
+                                className="absolute top-0 right-0"
                             />
                         </div>
                     </div>
 
                     {/* WIN % SECTION — spans full width, hugs logos */}
-                    <div className="w-full mt-1">
+                    <div className="w-full -mt-2">
                         <div className="text-center mb-0.5">
                             <span className="text-[10px] uppercase tracking-widest text-neutral-500">Win %</span>
                         </div>
@@ -1217,7 +1214,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     boxShadow: `0 0 15px ${awayBarColor}66`
                                 }}
                             >
-                                <span className="text-[22px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">{awayModelWinPct.toFixed(1)}%</span>
+                                <span className={`text-[22px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
                             </div>
                             <div className="w-[2px] h-full bg-neutral-700 z-20" />
                             {/* Home Bar — with win% inside */}
@@ -1228,7 +1225,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     boxShadow: `0 0 15px ${homeBarColor}66`
                                 }}
                             >
-                                <span className="text-[22px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">{homeModelWinPct.toFixed(1)}%</span>
+                                <span className={`text-[22px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
                             </div>
                         </div>
                     </div>
@@ -1559,7 +1556,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     boxShadow: `0 0 15px ${awayBarColor}66`
                                 }}
                             >
-                                <span className="text-[14px] font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{awayModelWinPct.toFixed(1)}%</span>
+                                <span className={`text-[14px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
                             </div>
                             <div className="w-[2px] h-full bg-neutral-700 z-20" />
                             <div
@@ -1569,7 +1566,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     boxShadow: `0 0 15px ${homeBarColor}66`
                                 }}
                             >
-                                <span className="text-[14px] font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{homeModelWinPct.toFixed(1)}%</span>
+                                <span className={`text-[14px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
                             </div>
                         </div>
 
