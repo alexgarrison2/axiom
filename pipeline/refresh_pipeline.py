@@ -139,53 +139,18 @@ def refresh_pipeline():
             # Update data
             df['xG'] = probs
             
-            # ── Flurry-Adjusted xG ──────────────────────────────────────────
-            # Shots within 3 seconds of each other by the same team form a "flurry"
-            # (rebounds, scrambles). 2nd/3rd shots are discounted because:
-            # - They represent less independent scoring chances
-            # - Raw xG of flurries is inflated and less predictive (MoneyPuck finding)
-            FLURRY_GAP_SECONDS = 3
-            FLURRY_DISCOUNTS = [1.0, 0.50, 0.25, 0.15]  # 1st, 2nd, 3rd, 4th+ shot
-            
-            if 'time_seconds' in df.columns and 'game_id' in df.columns:
-                df = df.sort_values(['game_id', 'team_id', 'time_seconds']).copy()
-                
-                # Identify flurry boundaries
-                same_game = df['game_id'] == df['game_id'].shift(1)
-                same_team = df['team_id'] == df['team_id'].shift(1)
-                time_diff = df['time_seconds'].astype(float) - df['time_seconds'].shift(1).astype(float)
-                
-                is_flurry = same_game & same_team & (time_diff <= FLURRY_GAP_SECONDS) & (time_diff >= 0)
-                
-                # Assign flurry position (0 = new sequence, 1 = 2nd shot, etc.)
-                flurry_pos = []
-                pos = 0
-                for flurry in is_flurry:
-                    if flurry:
-                        pos += 1
-                    else:
-                        pos = 0
-                    flurry_pos.append(pos)
-                
-                df['_flurry_pos'] = flurry_pos
-                df['_flurry_discount'] = df['_flurry_pos'].apply(
-                    lambda p: FLURRY_DISCOUNTS[min(p, len(FLURRY_DISCOUNTS) - 1)]
-                )
-                df['xG_flurry_adj'] = df['xG'] * df['_flurry_discount']
-                
-                # Cap total flurry xG at 1.0 per flurry
-                flurry_shots = df['_flurry_pos'] > 0
-                n_adjusted = flurry_shots.sum()
-                if n_adjusted > 0:
-                    avg_discount = df.loc[flurry_shots, '_flurry_discount'].mean()
-                    print(f"  Flurry xG: {n_adjusted} shots discounted "
-                          f"(avg discount={avg_discount:.2f})")
-                
-                # Clean up temp columns
-                df.drop(columns=['_flurry_pos', '_flurry_discount'], inplace=True, errors='ignore')
-            else:
-                df['xG_flurry_adj'] = df['xG']  # No time data, skip
-            # ────────────────────────────────────────────────────────────────
+            # ── Empty Net Override ─────────────────────────────────────────
+            # The xG model has no concept of empty net — it assigns ~0.09 xG
+            # to EN shots that actually convert at ~52%. Override with the
+            # empirical EN goal rate so GSAx isn't distorted.
+            EN_XG = 0.52
+            if 'strength_state' in df.columns:
+                en_mask = df['strength_state'] == 'EmptyNet'
+                n_en = en_mask.sum()
+                if n_en > 0:
+                    df.loc[en_mask, 'xG'] = EN_XG
+                    print(f"  Empty net override: {n_en} shots → xG={EN_XG}")
+            # ──────────────────────────────────────────────────────────────
 
             # Validation guard: catch silently wrong predictions (e.g. from sklearn version mismatch)
             mean_xg = df['xG'].mean()
@@ -203,6 +168,26 @@ def refresh_pipeline():
             # get reduced. Unknown players default to 1.0 (no change).
             if talent_map and 'player_id' in df.columns:
                 apply_shooting_talent(df, talent_map)
+
+            # ── League-wide Normalization ─────────────────────────────────
+            # Scale all xG so total xG = total goals for this file.
+            # Seasonal conversion rates vary from the training mean (~7.1%),
+            # so without normalization GSAx drifts positive or negative
+            # league-wide. Standard practice (MoneyPuck, Evolving Hockey).
+            if 'is_goal' in df.columns:
+                total_xg = df['xG'].sum()
+                total_goals = df['is_goal'].sum()
+                if total_xg > 0 and total_goals > 0:
+                    norm_factor = total_goals / total_xg
+                    df['xG'] *= norm_factor
+                    print(f"  League normalization: factor={norm_factor:.4f} "
+                          f"(xG {total_xg:.0f} → {total_goals} goals)")
+
+            # xG_flurry_adj kept as a column for downstream compatibility,
+            # but set equal to xG (no flurry discount — see 3.1 investigation:
+            # rebound/scramble shots score at or above model predictions,
+            # so discounting them was destroying calibration).
+            df['xG_flurry_adj'] = df['xG']
             # ──────────────────────────────────────────────────────────────
 
             # Save back to CSV (includes both xG and xG_flurry_adj)

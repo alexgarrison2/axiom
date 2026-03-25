@@ -8,6 +8,7 @@ from sklearn.metrics import roc_auc_score, log_loss, accuracy_score
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+from sklearn.calibration import CalibratedClassifierCV
 import xgboost as xgb
 
 # Load Data
@@ -220,21 +221,37 @@ def main():
     lr_model = train_logistic_regression(X_train, y_train)
     evaluate_model(lr_model, X_test, y_test, "Logistic Regression")
     
-    # XGBoost
+    # XGBoost (raw, uncalibrated)
     xgb_model = train_xgboost(X_train, y_train)
-    evaluate_model(xgb_model, X_test, y_test, "XGBoost")
-    
+    evaluate_model(xgb_model, X_test, y_test, "XGBoost (raw)")
+
+    # Isotonic calibration — fixes the ~9% over-prediction on first shots
+    # Uses 5-fold CV on the full training set to get out-of-fold predictions,
+    # then fits an isotonic regression mapping raw proba → calibrated proba.
+    print("Calibrating XGBoost with isotonic regression (5-fold CV)...")
+    xgb_calibrated = CalibratedClassifierCV(xgb_model, method='isotonic', cv=5)
+    xgb_calibrated.fit(X_train, y_train)
+    evaluate_model(xgb_calibrated, X_test, y_test, "XGBoost (calibrated)")
+
+    # Calibration quality check
+    raw_probs = xgb_model.predict_proba(X_test)[:, 1]
+    cal_probs = xgb_calibrated.predict_proba(X_test)[:, 1]
+    actual_rate = y_test.mean()
+    print(f"  Test set actual goal rate: {actual_rate:.5f}")
+    print(f"  Raw model mean prediction: {raw_probs.mean():.5f}")
+    print(f"  Calibrated mean prediction: {cal_probs.mean():.5f}")
+
     # Sanity Check probabilities
     print("Sanity Check: Predicting on first 5 rows of test set...")
-    sample_probs = xgb_model.predict_proba(X_test.head())[:, 1]
+    sample_probs = xgb_calibrated.predict_proba(X_test.head())[:, 1]
     print(f"Sample Probs: {sample_probs}")
     if sample_probs.mean() > 0.5:
         print("WARNING: High average probability detected! Model might be broken.")
-    
-    # Save Best Model (XGBoost usually)
+
+    # Save calibrated model
     with open('xg_model_xgb.pkl', 'wb') as f:
-        pickle.dump(xgb_model, f)
-    print("Saved XGBoost model to xg_model_xgb.pkl")
+        pickle.dump(xgb_calibrated, f)
+    print("Saved calibrated XGBoost model to xg_model_xgb.pkl")
 
 if __name__ == "__main__":
     main()

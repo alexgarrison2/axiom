@@ -1,6 +1,6 @@
 # 🏒 HockeyData — Master To-Do List
 
-> **Last updated:** 2026-03-24 19:30
+> **Last updated:** 2026-03-24 22:30
 
 ---
 
@@ -27,7 +27,7 @@
 
 | # | Task | Priority | Effort | Notes |
 |---|------|----------|--------|-------|
-| 3.1 | **GSAx calibration issue** — Only 3 teams have negative GSAx. Doesn't align with Natural Stat Trick, HockeyStats, MoneyPuck. Possible xG inflation in our shot model | 🔴 High | 🔍 Investigation (~1-2 days) | Could indicate our xG model is systematically low, making most goalies look "good". Need to compare our xG/shot vs industry benchmarks |
+| ~~3.1~~ | ~~GSAx calibration issue~~ | ✅ Done | — | Root cause: 3 bugs — (1) EN shots got ~0.09 xG instead of ~0.52 (−358 xG), (2) flurry discount [1.0,0.5,0.25,0.15] removed 724 xG but those shots scored 1383 goals, (3) raw model over-predicted first shots by ~9%. Fix: isotonic calibration on XGBoost, EN override to 0.52, removed flurry discount entirely (rebounds score at/above model), added league-wide normalization (total xG = total goals). Result: league GSAx sums to 0.0, 18 pos / 14 neg teams, goalie rankings pass eye test (Sorokin, Thompson top; Binnington, Askarov bottom) |
 | ~~3.2~~ | ~~History tab correctness tracking~~ | ✅ Done | — | `HistoryTable.tsx`: renamed column "xG Model"→"Prediction", cell now shows favored team triCode + win% as primary with xG as small secondary. `isCorrect` was already win%-based in `generate_history.py` — display-only fix |
 | 3.3 | **Will Borgen / EV Defense investigation** — Will Borgen is appearing as #1 EV Defender by RAPM. Investigate whether this is a data artifact (small sample, teammate effects, xG suppression in limited role) or if it's legitimate | 🟡 Medium | 🔍 Investigation (~1-2 hrs) | Check TOI, zone starts, teammates on ice, and compare to industry RAPM sources |
 
