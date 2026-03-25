@@ -7,10 +7,11 @@ import FullLogoAnimated from '@/components/FullLogoAnimated';
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 
-export default async function SocialPage({ searchParams }: { searchParams: Promise<{ batch?: string, date?: string }> }) {
+export default async function SocialPage({ searchParams }: { searchParams: Promise<{ batch?: string, date?: string, single?: string }> }) {
     // Await searchParams in Next.js 15+ (if applicable, but safe to await)
     const params = await searchParams;
     const batchIndex = parseInt(params.batch || '0', 10);
+    const singleMode = params.single === '1';
 
     // Fetch Data
     const rawPredictions = await getPredictions();
@@ -47,6 +48,23 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
     // If no games, render empty or specific message
     if (selectedPredictions.length === 0) {
         return <div className="text-white">No more games.</div>;
+    }
+
+    if (singleMode) {
+        const prediction = selectedPredictions[0];
+
+        return (
+            <main className="min-h-screen bg-[#020617] text-white grid place-items-center p-10">
+                <div
+                    id="matchup-card-capture"
+                    className="w-full max-w-[720px] rounded-[32px] border border-cyan-500/15 bg-black/30 p-6 shadow-[0_40px_120px_rgba(8,145,178,0.18)] backdrop-blur-sm"
+                >
+                    <MatchupCard
+                        prediction={prediction}
+                    />
+                </div>
+            </main>
+        );
     }
 
     return (
