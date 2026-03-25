@@ -181,6 +181,8 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                 const rc = game.result_code?.toUpperCase() || '';
                 return (['RL', 'L', 'OTL', 'SOL'].includes(rc) && (game.time_trailing || 0) === 0) ? 1 : 0;
             }
+            case 'BL': return parseInt(game.raw?.['blownlead_1'] as string || '0') || 0;
+            case 'CW': return parseInt(game.raw?.['comeback_1'] as string || '0') || 0;
             default: return 0;
         }
     };
@@ -289,6 +291,22 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
             xgf: (xgf / count).toFixed(2), xga: (xga / count).toFixed(2), xgd: (xgf - xga).toFixed(2),
             gsax: gsax.toFixed(2),
             nlw, ntw, ntl,
+            bl: games.reduce((acc, g) => acc + (parseInt(g.raw?.['blownlead_1'] as string || '0') || 0), 0),
+            bl_3p: games.filter(g => {
+                const res = g.result_code?.toUpperCase() || '';
+                const isLoss = ['RL', 'L', 'OTL', 'SOL'].includes(res);
+                const gf2p = (parseInt(g.raw?.['goals_for_1P'] as string || '0') || 0) + (parseInt(g.raw?.['goals_for_2P'] as string || '0') || 0);
+                const ga2p = (parseInt(g.raw?.['goals_ag_1P'] as string || '0') || 0) + (parseInt(g.raw?.['goals_ag_2P'] as string || '0') || 0);
+                return isLoss && gf2p > ga2p;
+            }).length,
+            cw: games.reduce((acc, g) => acc + (parseInt(g.raw?.['comeback_1'] as string || '0') || 0), 0),
+            cw_3p: games.filter(g => {
+                const res = g.result_code?.toUpperCase() || '';
+                const isWin = ['RW', 'OTW', 'SOW', 'W'].includes(res);
+                const gf2p = (parseInt(g.raw?.['goals_for_1P'] as string || '0') || 0) + (parseInt(g.raw?.['goals_for_2P'] as string || '0') || 0);
+                const ga2p = (parseInt(g.raw?.['goals_ag_1P'] as string || '0') || 0) + (parseInt(g.raw?.['goals_ag_2P'] as string || '0') || 0);
+                return isWin && gf2p < ga2p;
+            }).length,
             en_gf, en_att, en_ga, en_att_ag,
             time_leading_avg, time_trailing_avg, time_tied_avg, control_score_avg,
             pp_goals, pp_opps, pk_goals_ag, pk_opps,
@@ -376,6 +394,8 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                 <SortTh colKey="NLW" className="text-center border-l border-gray-700 text-purple-300" title="No-Lead Wins: won with 0:00 time leading">NLW</SortTh>
                                 <SortTh colKey="NTW" className="text-center text-teal-300" title="No-Trail Wins: won with 0:00 time trailing">NTW</SortTh>
                                 <SortTh colKey="NTL" className="text-center text-orange-300" title="No-Trail Losses: lost with 0:00 time trailing">NTL</SortTh>
+                                <SortTh colKey="BL" className="text-center border-l border-gray-700 text-red-300" title="Blown Lead: had a lead and lost (3P = was leading after 2 periods)">BL</SortTh>
+                                <SortTh colKey="CW" className="text-center text-emerald-300" title="Comeback Win: trailed and won (3P = was trailing after 2 periods)">CW</SortTh>
                             </>
                         )}
                     </tr>
@@ -425,6 +445,8 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                     <td className="p-1 text-center border-l border-gray-700 text-purple-300 font-bold">{totals.nlw}</td>
                                     <td className="p-1 text-center text-teal-300 font-bold">{totals.ntw}</td>
                                     <td className="p-1 text-center text-orange-300 font-bold">{totals.ntl}</td>
+                                    <td className="p-1 text-center border-l border-gray-700 text-red-300 font-bold">{totals.bl}<span className="text-gray-500 text-[9px] ml-0.5">({totals.bl_3p})</span></td>
+                                    <td className="p-1 text-center text-emerald-300 font-bold">{totals.cw}<span className="text-gray-500 text-[9px] ml-0.5">({totals.cw_3p})</span></td>
                                 </>
                             )}
                         </tr>
@@ -432,7 +454,7 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                 </thead>
                 <tbody className="divide-y divide-gray-800">
                     {games.length === 0 ?
-                        <tr><td colSpan={30} className="p-4 text-center text-gray-500">No games played.</td></tr>
+                        <tr><td colSpan={50} className="p-4 text-center text-gray-500">No games played.</td></tr>
                         : sortedGames.map((game, idx) => {
                             const isExpanded = expandedGameId === game.game_id;
 
@@ -572,6 +594,12 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                             const isNLW = isWin && (game.time_leading || 0) === 0;
                                             const isNTW = isWin && (game.time_trailing || 0) === 0;
                                             const isNTL = isLoss && (game.time_trailing || 0) === 0;
+                                            const isBL = parseInt(game.raw?.['blownlead_1'] as string || '0') === 1;
+                                            const gf2p = (parseInt(game.raw?.['goals_for_1P'] as string || '0') || 0) + (parseInt(game.raw?.['goals_for_2P'] as string || '0') || 0);
+                                            const ga2p = (parseInt(game.raw?.['goals_ag_1P'] as string || '0') || 0) + (parseInt(game.raw?.['goals_ag_2P'] as string || '0') || 0);
+                                            const isBL3P = isLoss && gf2p > ga2p;
+                                            const isCW = parseInt(game.raw?.['comeback_1'] as string || '0') === 1;
+                                            const isCW3P = isWin && gf2p < ga2p;
                                             return (
                                                 <>
                                                     <td className="p-1 text-center border-l border-gray-700">
@@ -583,13 +611,19 @@ const GamesLogTable: React.FC<GamesLogTableProps> = ({
                                                     <td className="p-1 text-center">
                                                         {isNTL ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-orange-900/40 text-orange-300 border border-orange-500/30">NTL</span> : <span className="text-gray-700">—</span>}
                                                     </td>
+                                                    <td className="p-1 text-center border-l border-gray-700">
+                                                        {isBL ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-red-900/40 text-red-300 border border-red-500/30">{isBL3P ? 'BL(3P)' : 'BL'}</span> : <span className="text-gray-700">—</span>}
+                                                    </td>
+                                                    <td className="p-1 text-center">
+                                                        {isCW ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-emerald-900/40 text-emerald-300 border border-emerald-500/30">{isCW3P ? 'CW(3P)' : 'CW'}</span> : <span className="text-gray-700">—</span>}
+                                                    </td>
                                                 </>
                                             );
                                         })()}
                                     </tr>
                                     {isExpanded && !isAllTeams && (
                                         <tr>
-                                            <td colSpan={30} className="p-0 border-b border-gray-800 bg-gray-900/50">
+                                            <td colSpan={50} className="p-0 border-b border-gray-800 bg-gray-900/50">
                                                 <div className="p-4 border-l-4" style={{ borderColor: primaryColor }}>
                                                     <GameBoxscore
                                                         gameId={String(game.game_id)}

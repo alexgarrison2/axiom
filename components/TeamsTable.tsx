@@ -144,6 +144,15 @@ interface TeamStat {
     ntw: number; // No-Trail Wins: won with 0 seconds of time trailing (never trailed)
     ntl: number; // No-Trail Losses: lost with 0 seconds of time trailing (never trailed but lost)
 
+    bl: number;       // Blown Leads (had any lead and lost)
+    bl_3p: number;    // Blown 3rd Period Lead (leading after 2P and lost)
+    bl_2plus: number; // Blown 2+ goal lead
+    bl_3plus: number; // Blown 3+ goal lead
+    cw: number;       // Comeback Wins (opponent had any lead and we won)
+    cw_3p: number;    // 3rd Period Comeback (trailing after 2P and won)
+    cw_2plus: number; // Comeback from 2+ goal deficit
+    cw_3plus: number; // Comeback from 3+ goal deficit
+
     // Clinch / elimination tracking (set after standings are computed, optional)
     magic_number?: number;  // M#: playoff teams only. 0 = clinched.
     tragic_number?: number; // E#: non-playoff teams only. 0 = eliminated.
@@ -499,6 +508,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
             engf: 0, enga: 0, en_attempts: 0, ens_pct: 0, xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0, rw: 0, row: 0,
             time_leading_per_game: 0, time_trailing_per_game: 0, time_tied_per_game: 0, control_score: 1.0,
             nlw: 0, ntw: 0, ntl: 0,
+            bl: 0, bl_3p: 0, bl_2plus: 0, bl_3plus: 0, cw: 0, cw_3p: 0, cw_2plus: 0, cw_3plus: 0,
         };
     }
 
@@ -518,6 +528,8 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
     let time_leading = 0, time_trailing = 0, time_tied = 0;
     let control_score_sum = 0;
     let nlw = 0, ntw = 0, ntl = 0;
+    let bl = 0, bl_3p = 0, bl_2plus = 0, bl_3plus = 0;
+    let cw = 0, cw_3p = 0, cw_2plus = 0, cw_3plus = 0;
 
     teamGames.forEach(g => {
         gp++;
@@ -595,6 +607,20 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
         if (isWin  && tLead  === 0) nlw++;
         if (isWin  && tTrail === 0) ntw++;
         if (isLoss && tTrail === 0) ntl++;
+
+        // Blown Lead / Comeback tracking
+        bl       += parseInt(rawG['blownlead_1'] || '0');
+        bl_2plus += parseInt(rawG['blownlead_2'] || '0');
+        bl_3plus += parseInt(rawG['blownlead_3+'] || '0');
+        cw       += parseInt(rawG['comeback_1'] || '0');
+        cw_2plus += parseInt(rawG['comeback_2'] || '0');
+        cw_3plus += parseInt(rawG['comeback_3+'] || '0');
+
+        // 3P variants: leading/trailing after 2 periods
+        const gf_2p = parseFloat(rawG['goals_for_1P'] || '0') + parseFloat(rawG['goals_for_2P'] || '0');
+        const ga_2p = parseFloat(rawG['goals_ag_1P'] || '0') + parseFloat(rawG['goals_ag_2P'] || '0');
+        if (isLoss && gf_2p > ga_2p) bl_3p++;
+        if (isWin  && gf_2p < ga_2p) cw_3p++;
     });
 
     const points = wins * 2 + otl;
@@ -674,6 +700,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
         control_score: control_score_sum / gp,
 
         nlw, ntw, ntl,
+        bl, bl_3p, bl_2plus, bl_3plus, cw, cw_3p, cw_2plus, cw_3plus,
     };
 };
 
@@ -749,6 +776,7 @@ const TeamsTable = () => {
             { name: 'Game Situation', columns: filterPeriod === 'All'
                 ? ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score', 'nlw', 'ntw', 'ntl']
                 : ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score'] },
+            ...(filterPeriod === 'All' ? [{ name: 'Leads & Comebacks', columns: ['bl', 'bl_3p', 'bl_2plus', 'bl_3plus', 'cw', 'cw_3p', 'cw_2plus', 'cw_3plus'] }] : []),
             { name: 'Empty Net', columns: ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga'] },
         ];
         if (filterPeriod !== 'All') {
@@ -781,7 +809,7 @@ const TeamsTable = () => {
     // When filterPeriod hides PP/PK/Empty Net, remove them from activeGroups
     useEffect(() => {
         if (filterPeriod !== 'All') {
-            setActiveGroups(prev => prev.filter(g => g !== 'PP' && g !== 'PK' && g !== 'Empty Net'));
+            setActiveGroups(prev => prev.filter(g => g !== 'PP' && g !== 'PK' && g !== 'Empty Net' && g !== 'Leads & Comebacks'));
         }
     }, [filterPeriod]);
 
@@ -874,6 +902,14 @@ const TeamsTable = () => {
         { k: 'nlw', l: 'NLW', desc: 'No-Lead Wins: wins where time leading = 0:00 (came from behind or never led)' },
         { k: 'ntw', l: 'NTW', desc: 'No-Trail Wins: wins where time trailing = 0:00 (never trailed)' },
         { k: 'ntl', l: 'NTL', desc: 'No-Trail Losses: losses where time trailing = 0:00 (never trailed but still lost)', inv: true },
+        { k: 'bl', l: 'BL', desc: 'Blown Leads: games where team had a lead and lost', inv: true },
+        { k: 'bl_3p', l: 'BL(3P)', desc: 'Blown 3rd Period Lead: leading after 2 periods but lost', inv: true },
+        { k: 'bl_2plus', l: 'BL(2+)', desc: 'Blown 2+ Goal Lead: had a 2+ goal lead and lost', inv: true },
+        { k: 'bl_3plus', l: 'BL(3+)', desc: 'Blown 3+ Goal Lead: had a 3+ goal lead and lost', inv: true },
+        { k: 'cw', l: 'CW', desc: 'Comeback Wins: opponent had a lead and team won' },
+        { k: 'cw_3p', l: 'CW(3P)', desc: '3rd Period Comeback Win: trailing after 2 periods and won' },
+        { k: 'cw_2plus', l: 'CW(2+)', desc: 'Comeback from 2+ Goal Deficit: opponent had 2+ goal lead and team won' },
+        { k: 'cw_3plus', l: 'CW(3+)', desc: 'Comeback from 3+ Goal Deficit: opponent had 3+ goal lead and team won' },
         { k: 'engf', l: 'EN GF', desc: 'Empty Net Goals For' },
         { k: 'en_attempts', l: 'EN Att', desc: 'Empty Net Attempts (missed/blocked shots, icings, goals)' },
         { k: 'ens_pct', l: 'ENS%', desc: 'Empty Net Success %', calc: 'EN Goals / EN Attempts' },
@@ -1549,6 +1585,14 @@ const TeamsTable = () => {
             nlw: calculateRange('nlw'),
             ntw: calculateRange('ntw'),
             ntl: calculateRange('ntl'),
+            bl: calculateRange('bl'),
+            bl_3p: calculateRange('bl_3p'),
+            bl_2plus: calculateRange('bl_2plus'),
+            bl_3plus: calculateRange('bl_3plus'),
+            cw: calculateRange('cw'),
+            cw_3p: calculateRange('cw_3p'),
+            cw_2plus: calculateRange('cw_2plus'),
+            cw_3plus: calculateRange('cw_3plus'),
 
             true_gf_per_game: calculateRange('true_gf_per_game'),
             true_ga_per_game: calculateRange('true_ga_per_game'),
