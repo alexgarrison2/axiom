@@ -1512,13 +1512,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                     {/* Mobile Away News Indicator - Hoisted */}
                     <NewsIndicator
                         hasNews={prediction.away_news?.some(n => n.category !== 'Goalie Start') ?? false}
-                        className="absolute bottom-3 left-7 md:hidden z-20"
+                        className="absolute top-2 left-2 md:hidden z-20"
                     />
 
                     {/* Mobile Home News Indicator - Hoisted */}
                     <NewsIndicator
                         hasNews={prediction.home_news?.some(n => n.category !== 'Goalie Start') ?? false}
-                        className="absolute bottom-3 right-7 md:hidden z-20"
+                        className="absolute top-2 right-2 md:hidden z-20"
                     />
 
                     {/* CENTRAL CONTENT CONTAINER — Win% bar hero */}
