@@ -94,18 +94,36 @@ const GameRow: React.FC<{
                 </div>
             </td>
 
-            {/* xG Prediction */}
+            {/* Win% Prediction */}
             <td className="p-1.5 md:p-2.5 text-center">
-                <div className="hidden md:flex flex-col items-center">
-                    <span className="text-sm font-bold text-blue-400 whitespace-nowrap">
-                        {entry.awayXg.toFixed(2)} - {entry.homeXg.toFixed(2)}
-                    </span>
-                </div>
-                <div className="flex flex-col items-center md:hidden gap-0.5">
-                    <span className="text-blue-400 font-bold text-[10px] h-5 flex items-center">{entry.awayXg.toFixed(2)}</span>
-                    <span className="invisible text-[8px] h-[10px] flex items-center">-</span>
-                    <span className="text-blue-400 font-bold text-[10px] h-5 flex items-center">{entry.homeXg.toFixed(2)}</span>
-                </div>
+                {(() => {
+                    const homeFav = entry.homeWinProb >= 50;
+                    const favTeam = homeFav ? entry.homeTeam : entry.awayTeam;
+                    const favProb = homeFav ? entry.homeWinProb : (100 - entry.homeWinProb);
+                    return (
+                        <>
+                            {/* Desktop */}
+                            <div className="hidden md:flex flex-col items-center gap-0.5">
+                                <span className="text-sm font-black text-white/90 tracking-wide">
+                                    {favTeam.triCode} <span className="text-[#25DBEB]">{favProb.toFixed(0)}%</span>
+                                </span>
+                                <span className="text-[10px] text-neutral-500 font-mono">
+                                    {entry.awayXg.toFixed(2)} – {entry.homeXg.toFixed(2)}
+                                </span>
+                            </div>
+                            {/* Mobile */}
+                            <div className="flex flex-col items-center md:hidden gap-0.5">
+                                <span className="text-[10px] font-black text-white/90 h-5 flex items-center">
+                                    {favTeam.triCode} <span className="text-[#25DBEB] ml-0.5">{favProb.toFixed(0)}%</span>
+                                </span>
+                                <span className="invisible text-[8px] h-[10px] flex items-center">·</span>
+                                <span className="text-neutral-500 font-mono text-[9px] h-5 flex items-center">
+                                    {entry.awayXg.toFixed(1)}–{entry.homeXg.toFixed(1)}
+                                </span>
+                            </div>
+                        </>
+                    );
+                })()}
             </td>
 
             {/* Result */}
@@ -401,8 +419,8 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ entries, viewMode = 'date',
                             <th className="p-1.5 md:p-2.5 font-normal w-20 md:w-auto">Matchup</th>
                             <th className="p-1.5 md:p-2.5 font-normal w-12 md:w-auto">Score</th>
                             <th className="p-1.5 md:p-2.5 font-normal text-center w-20 md:w-auto">
-                                <span className="md:hidden">Pred</span>
-                                <span className="hidden md:inline">xG Model</span>
+                                <span className="md:hidden">Pick</span>
+                                <span className="hidden md:inline">Prediction</span>
                             </th>
                             <th className="p-1.5 md:p-2.5 font-normal text-center w-10 md:w-auto">Res</th>
                             <th className="p-1.5 md:p-2.5 font-normal text-right hidden md:table-cell">Brier</th>

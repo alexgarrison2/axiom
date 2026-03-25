@@ -1,6 +1,6 @@
 # 🏒 HockeyData — Master To-Do List
 
-> **Last updated:** 2026-03-24 17:30
+> **Last updated:** 2026-03-24 19:30
 
 ---
 
@@ -28,7 +28,7 @@
 | # | Task | Priority | Effort | Notes |
 |---|------|----------|--------|-------|
 | 3.1 | **GSAx calibration issue** — Only 3 teams have negative GSAx. Doesn't align with Natural Stat Trick, HockeyStats, MoneyPuck. Possible xG inflation in our shot model | 🔴 High | 🔍 Investigation (~1-2 days) | Could indicate our xG model is systematically low, making most goalies look "good". Need to compare our xG/shot vs industry benchmarks |
-| 3.2 | **History tab correctness tracking** — Currently marks "Correct" based on which team scored more goals. Now win% and xG can disagree. Need to decide: track by win% favorite, xG favorite, or both? | 🟡 Medium | 🔧 Medium (~2-3 hrs) | Recommend switching to win% as primary correctness metric since that's our actual prediction |
+| ~~3.2~~ | ~~History tab correctness tracking~~ | ✅ Done | — | `HistoryTable.tsx`: renamed column "xG Model"→"Prediction", cell now shows favored team triCode + win% as primary with xG as small secondary. `isCorrect` was already win%-based in `generate_history.py` — display-only fix |
 | 3.3 | **Will Borgen / EV Defense investigation** — Will Borgen is appearing as #1 EV Defender by RAPM. Investigate whether this is a data artifact (small sample, teammate effects, xG suppression in limited role) or if it's legitimate | 🟡 Medium | 🔍 Investigation (~1-2 hrs) | Check TOI, zone starts, teammates on ice, and compare to industry RAPM sources |
 
 ---
@@ -39,7 +39,7 @@
 | --- | ------ | ---------- | -------- | ------- |
 | 4.1 | **Playoffs tab: Magic/Tragic number cleanup** — Hide Tragic Number once clinched; hide Magic Number once eliminated. Fix teams showing >0 numbers despite being officially clinched/eliminated | 🟡 Medium | 🔧 Medium (~3-4 hrs) | Need to cross-reference official clinch/elimination status with calculated numbers |
 | 4.2 | **Teams page: Blown Leads & Comeback Wins columns** — 8 new columns: BL, BL(3P), BL(2+), BL(3+), CW, CW(3P), CW(2+), CW(3+) | 🟢 Low | 🔨 Large (~1-2 days) | Requires parsing PBP or game score progression data to determine lead states at various points. Fun feature but not model-impacting |
-| 4.3 | **Pipeline: Daily Raw PBP Updater** — Create a script to append only new yesterday games to `raw_pbp_20252026.csv` instead of a full rebuild, and hook it into the automated daily GitHub action pipeline. | 🟡 Medium | ⚡ Small (~1 hr) | Keeps the comprehensive historical raw data up-to-date daily without needing a massive 15-minute scrape |
+| ~~4.3~~ | ~~Pipeline: Daily Raw PBP Updater~~ | ✅ Done | — | `update_raw_pbp.py`: incremental append to `raw_pbp_20252026.csv` via NHL API, dedupes by game_id, `--days N` / `--dry-run` args. Hooked into Full Refresh block in `update_data.yml` after `enrich_pbp.py` |
 
 ---
 
