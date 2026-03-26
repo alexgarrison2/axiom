@@ -170,58 +170,111 @@ def fetch_odds():
             matchup_id = f"{date_str}:{away_team}@{home_team}"
             print(f"Found matchup: {matchup_id}")
             
-            # Find Game Lines
+            # Helper: parse american odds string to int
+            def parse_american(s):
+                if not s: return None
+                if s == 'EVEN': return 100
+                try: return int(s)
+                except ValueError: return None
+
+            # Helper: identify which team an outcome belongs to
+            def identify_team(out_desc):
+                if not out_desc: return None
+                # Direct match with raw event names
+                if out_desc == away_raw or out_desc.startswith(away_raw): return away_team
+                if out_desc == home_raw or out_desc.startswith(home_raw): return home_team
+                # Mapped match (handles Utah HC vs Utah Mammoth etc.)
+                mapped = TEAM_MAPPING.get(out_desc)
+                if mapped == away_team: return away_team
+                if mapped == home_team: return home_team
+                # Period-suffixed names like "Chicago Blackhawks - 1P"
+                base = out_desc.split(' - ')[0].strip()
+                if base == away_raw: return away_team
+                if base == home_raw: return home_team
+                mapped_base = TEAM_MAPPING.get(base)
+                if mapped_base == away_team: return away_team
+                if mapped_base == home_team: return home_team
+                return None
+
+            if matchup_id not in odds_data:
+                odds_data[matchup_id] = {}
+
+            # Collect all displayGroups we care about
             game_lines = None
+            game_props = None
             for group in event.get('displayGroups', []):
-                if group.get('description') == 'Game Lines':
-                    game_lines = group
-                    break
-            
+                gdesc = group.get('description', '')
+                if gdesc == 'Game Lines': game_lines = group
+                elif gdesc == 'Game Props': game_props = group
+
             if not game_lines:
                 continue
-                
-            # Extract Moneyline
-            # Market description is "Moneyline"
+
+            # Parse markets from Game Lines
             for market in game_lines.get('markets', []):
-                if market.get('description') == 'Moneyline':
+                mdesc = market.get('description', '')
+                outcomes = market.get('outcomes', [])
+
+                # --- Moneyline (full game) ---
+                if mdesc == 'Moneyline' and not any(o.get('description', '').endswith('P') for o in outcomes):
+                    for o in outcomes:
+                        team = identify_team(o.get('description'))
+                        val = parse_american(o.get('price', {}).get('american'))
+                        if team and val is not None:
+                            odds_data[matchup_id][team] = val
+                            print(f"  ML {team}: {val}")
+
+                # --- Puck Line (full game, ±1.5) ---
+                elif mdesc == 'Puck Line' and not any('P' in (o.get('description') or '')[-3:] for o in outcomes):
+                    for o in outcomes:
+                        team = identify_team(o.get('description'))
+                        val = parse_american(o.get('price', {}).get('american'))
+                        handicap = o.get('price', {}).get('handicap')
+                        if team and val is not None:
+                            odds_data[matchup_id][f'{team}_puckline'] = val
+                            if handicap:
+                                odds_data[matchup_id][f'{team}_puckline_spread'] = handicap
+
+                # --- Total (full game O/U) ---
+                elif mdesc == 'Total' and not any('P' in (o.get('description') or '')[-3:] for o in outcomes):
+                    for o in outcomes:
+                        desc = o.get('description', '')
+                        val = parse_american(o.get('price', {}).get('american'))
+                        handicap = o.get('price', {}).get('handicap')
+                        if val is not None:
+                            if desc.startswith('Over'):
+                                odds_data[matchup_id]['total_over'] = val
+                            elif desc.startswith('Under'):
+                                odds_data[matchup_id]['total_under'] = val
+                            if handicap:
+                                odds_data[matchup_id]['total_line'] = handicap
+
+                # --- 1st Period Moneyline ---
+                elif mdesc == 'Moneyline' and any('1P' in (o.get('description') or '') for o in outcomes):
+                    for o in outcomes:
+                        team = identify_team(o.get('description'))
+                        val = parse_american(o.get('price', {}).get('american'))
+                        if team and val is not None:
+                            odds_data[matchup_id][f'{team}_1p_ml'] = val
+
+            # Parse 3-Way Moneyline from Game Props
+            if game_props:
+                for market in game_props.get('markets', []):
+                    mdesc = market.get('description', '')
                     outcomes = market.get('outcomes', [])
-                    for outcome in outcomes:
-                        # outcome['description'] is usually the team name or 'Draw'
-                        # outcome['price']['american'] is the odds string (e.g. "-115", "+105")
-                        
-                        out_desc = outcome.get('description')
-                        price = outcome.get('price', {})
-                        odds_american = price.get('american')
-                        
-                        if odds_american and out_desc:
-                            try:
-                                if odds_american == 'EVEN':
-                                    odds_int = 100
-                                else:
-                                    odds_int = int(odds_american)
-                                
-                                # Map outcome description to team using the SAME mapping
-                                # This handles cases where Title is "Utah Mammoth" but Outcome is "Utah Hockey Club"
-                                mapped_outcome = TEAM_MAPPING.get(out_desc)
-                                
-                                target_team = None
-                                
-                                # 1. Direct match with raw names (Legacy)
-                                if out_desc == away_raw: target_team = away_team
-                                elif out_desc == home_raw: target_team = home_team
-                                
-                                # 2. Mapped match (Robust)
-                                elif mapped_outcome == away_team: target_team = away_team
-                                elif mapped_outcome == home_team: target_team = home_team
-                                
-                                if target_team:
-                                    if matchup_id not in odds_data:
-                                        odds_data[matchup_id] = {}
-                                    odds_data[matchup_id][target_team] = odds_int
-                                    print(f"  Added odds for {target_team}: {odds_int}")
-                                    
-                            except ValueError:
-                                pass
+                    # Full-game 3-way only (not period 3-ways)
+                    if mdesc == '3-Way Moneyline' and not any('P' in (o.get('description') or '')[-3:] for o in outcomes):
+                        for o in outcomes:
+                            desc = o.get('description', '')
+                            val = parse_american(o.get('price', {}).get('american'))
+                            if val is None: continue
+                            if 'Tie' in desc or 'Draw' in desc:
+                                odds_data[matchup_id]['three_way_tie'] = val
+                            else:
+                                team = identify_team(desc)
+                                if team:
+                                    odds_data[matchup_id][f'{team}_three_way'] = val
+                        break  # only need first 3-way market
 
             parsed_count += 1
 

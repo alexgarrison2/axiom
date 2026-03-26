@@ -138,6 +138,20 @@ export interface GamePrediction {
   // L10 home/away location splits (computed from gamestats.csv)
   home_l10_home?: LocationSplitRecord; // home team's last 10 home games
   away_l10_away?: LocationSplitRecord; // away team's last 10 away games
+
+  // Extended odds (Bovada-only markets)
+  total_line?: string;
+  total_over?: string;
+  total_under?: string;
+  home_puckline?: string;
+  away_puckline?: string;
+  home_puckline_spread?: string;
+  away_puckline_spread?: string;
+  home_1p_ml?: string;
+  away_1p_ml?: string;
+  home_three_way?: string;
+  away_three_way?: string;
+  three_way_tie?: string;
 }
 
 export interface HistoryEntry {
@@ -232,6 +246,20 @@ interface RawPrediction {
   away_is_6in9?: string;
   home_xg_sparkline?: string;
   away_xg_sparkline?: string;
+
+  // Extended odds
+  total_line?: string;
+  total_over?: string;
+  total_under?: string;
+  home_puckline?: string;
+  away_puckline?: string;
+  home_puckline_spread?: string;
+  away_puckline_spread?: string;
+  home_1p_ml?: string;
+  away_1p_ml?: string;
+  home_three_way?: string;
+  away_three_way?: string;
+  three_way_tie?: string;
 }
 
 interface RawTeam {
@@ -470,6 +498,20 @@ export async function getPredictions(): Promise<GamePrediction[]> {
 
       home_l10_home: teamHomeL10.get(row.home_team),
       away_l10_away: teamAwayL10.get(row.away_team),
+
+      // Extended odds
+      total_line: row.total_line || undefined,
+      total_over: row.total_over || undefined,
+      total_under: row.total_under || undefined,
+      home_puckline: row.home_puckline || undefined,
+      away_puckline: row.away_puckline || undefined,
+      home_puckline_spread: row.home_puckline_spread || undefined,
+      away_puckline_spread: row.away_puckline_spread || undefined,
+      home_1p_ml: row.home_1p_ml || undefined,
+      away_1p_ml: row.away_1p_ml || undefined,
+      home_three_way: row.home_three_way || undefined,
+      away_three_way: row.away_three_way || undefined,
+      three_way_tie: row.three_way_tie || undefined,
     };
   }).filter((p): p is GamePrediction => p !== null);
 

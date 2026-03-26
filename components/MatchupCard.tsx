@@ -463,7 +463,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
 
     // --- Restored Helpers ---
     const formatEv = (n: number) => `+${Math.round(n)}%`;
-    const formatOdds = (odds: string | number | null) => {
+    const formatOdds = (odds: string | number | null | undefined) => {
         if (!odds || odds === 'N/A') return null;
         const str = odds.toString();
         if (str.startsWith('+') || str.startsWith('-')) return str;
@@ -1420,6 +1420,52 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             </div>
                         );
                     })()}
+                    {/* MORE ODDS table — only show when at least one extended market exists */}
+                    {(prediction.total_line || prediction.home_puckline || prediction.home_1p_ml || prediction.home_three_way) && (
+                        <div className="flex justify-center border-b border-white/5 bg-black/30 py-3">
+                            <table className="text-[11px] font-mono tabular-nums">
+                                <thead>
+                                    <tr>
+                                        <td colSpan={4} className="text-center text-[9px] font-bold tracking-[0.2em] text-neutral-500 pb-2.5">MORE ODDS</td>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-neutral-300">
+                                    {prediction.total_line && (
+                                        <tr className="h-7">
+                                            <td className="pr-4 text-right text-[10px] font-bold tracking-widest text-neutral-500">TOTAL</td>
+                                            <td className="w-14 text-right">{formatOdds(prediction.total_under)}</td>
+                                            <td className="w-14 text-center text-white font-bold">{prediction.total_line}</td>
+                                            <td className="w-14 text-left">{formatOdds(prediction.total_over)}</td>
+                                        </tr>
+                                    )}
+                                    {prediction.home_puckline && (
+                                        <tr className="h-7">
+                                            <td className="pr-4 text-right text-[10px] font-bold tracking-widest text-neutral-500">PUCKLINE</td>
+                                            <td className="text-right">{formatOdds(prediction.away_puckline)}</td>
+                                            <td className="text-center text-white font-bold">±1.5</td>
+                                            <td className="text-left">{formatOdds(prediction.home_puckline)}</td>
+                                        </tr>
+                                    )}
+                                    {prediction.home_1p_ml && (
+                                        <tr className="h-7">
+                                            <td className="pr-4 text-right text-[10px] font-bold tracking-widest text-neutral-500">1ST PER</td>
+                                            <td className="text-right">{formatOdds(prediction.away_1p_ml)}</td>
+                                            <td className="text-center text-white font-bold">1P</td>
+                                            <td className="text-left">{formatOdds(prediction.home_1p_ml)}</td>
+                                        </tr>
+                                    )}
+                                    {prediction.home_three_way && (
+                                        <tr className="h-7">
+                                            <td className="pr-4 text-right text-[10px] font-bold tracking-widest text-neutral-500">3-WAY</td>
+                                            <td className="text-right">{formatOdds(prediction.away_three_way)}</td>
+                                            <td className="text-center text-white font-bold">{formatOdds(prediction.three_way_tie)}</td>
+                                            <td className="text-left">{formatOdds(prediction.home_three_way)}</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                     <div className="p-6 flex flex-row bg-black/20">
                         {/* Away Team Recent Games */}
                         <div className="flex-1 pr-6 flex flex-col gap-6">

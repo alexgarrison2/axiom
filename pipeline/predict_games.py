@@ -1958,7 +1958,21 @@ def predict():
             'home_is_6in9': h_is_6in9,
             'away_is_6in9': a_is_6in9,
             'home_xg_sparkline': json.dumps(h_spark),
-            'away_xg_sparkline': json.dumps(a_spark)
+            'away_xg_sparkline': json.dumps(a_spark),
+
+            # --- EXTENDED ODDS (Bovada only, empty when ESPN fallback) ---
+            'total_line': game_odds.get('total_line', ''),
+            'total_over': game_odds.get('total_over', ''),
+            'total_under': game_odds.get('total_under', ''),
+            'home_puckline': game_odds.get(f'{home_team}_puckline', ''),
+            'away_puckline': game_odds.get(f'{away_team}_puckline', ''),
+            'home_puckline_spread': game_odds.get(f'{home_team}_puckline_spread', ''),
+            'away_puckline_spread': game_odds.get(f'{away_team}_puckline_spread', ''),
+            'home_1p_ml': game_odds.get(f'{home_team}_1p_ml', ''),
+            'away_1p_ml': game_odds.get(f'{away_team}_1p_ml', ''),
+            'home_three_way': game_odds.get(f'{home_team}_three_way', ''),
+            'away_three_way': game_odds.get(f'{away_team}_three_way', ''),
+            'three_way_tie': game_odds.get('three_way_tie', ''),
         })        
 
     # Save Last Update Timestamp for Frontend (US/Central)
