@@ -1,31 +1,5 @@
 [
     {
-        "id": 2025021135,
-        "gameDate": "2026-03-25",
-        "startTimeUTC": "2026-03-25T23:30:00Z",
-        "homeTeam": "Sabres",
-        "awayTeam": "Bruins",
-        "homeTeamAbbrev": "BUF",
-        "awayTeamAbbrev": "BOS",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025021136,
-        "gameDate": "2026-03-25",
-        "startTimeUTC": "2026-03-25T23:30:00Z",
-        "homeTeam": "Maple Leafs",
-        "awayTeam": "Rangers",
-        "homeTeamAbbrev": "TOR",
-        "awayTeamAbbrev": "NYR",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025021137,
         "gameDate": "2026-03-26",
         "startTimeUTC": "2026-03-26T23:00:00Z",
@@ -48,7 +22,7 @@
         "awayTeamAbbrev": "PIT",
         "homeGoalieConfirmed": "Linus Ullmark",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Arturs Silovs",
+        "awayGoalieConfirmed": "Stuart Skinner",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -85,9 +59,9 @@
         "awayTeam": "Stars",
         "homeTeamAbbrev": "NYI",
         "awayTeamAbbrev": "DAL",
-        "homeGoalieConfirmed": "David Rittich",
+        "homeGoalieConfirmed": "Ilya Sorokin",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Jake Oettinger",
+        "awayGoalieConfirmed": "Casey DeSmith",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -113,7 +87,7 @@
         "awayTeamAbbrev": "SJS",
         "homeGoalieConfirmed": "Joel Hofer",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Alex Nedeljkovic",
+        "awayGoalieConfirmed": "Yaroslav Askarov",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -126,7 +100,7 @@
         "awayTeamAbbrev": "NJD",
         "homeGoalieConfirmed": "Juuse Saros",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Jake Allen",
+        "awayGoalieConfirmed": "Jacob Markstrom",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -152,7 +126,7 @@
         "awayTeamAbbrev": "WSH",
         "homeGoalieConfirmed": "Karel Vejmelka",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Charlie Lindgren",
+        "awayGoalieConfirmed": "Logan Thompson",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -163,7 +137,7 @@
         "awayTeam": "Ducks",
         "homeTeamAbbrev": "CGY",
         "awayTeamAbbrev": "ANA",
-        "homeGoalieConfirmed": "Dustin Wolf",
+        "homeGoalieConfirmed": "Devin Cooley",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Lukas Dostal",
         "awayGoalieStatus": "Unconfirmed"
@@ -178,7 +152,7 @@
         "awayTeamAbbrev": "EDM",
         "homeGoalieConfirmed": "Adin Hill",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Tristan Jarry",
+        "awayGoalieConfirmed": "Connor Ingram",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -192,6 +166,32 @@
         "homeGoalieConfirmed": "Kevin Lankinen",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Darcy Kuemper",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021150,
+        "gameDate": "2026-03-27",
+        "startTimeUTC": "2026-03-27T23:00:00Z",
+        "homeTeam": "Sabres",
+        "awayTeam": "Red Wings",
+        "homeTeamAbbrev": "BUF",
+        "awayTeamAbbrev": "DET",
+        "homeGoalieConfirmed": "Ukko-Pekka Luukkonen",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "John Gibson",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021151,
+        "gameDate": "2026-03-27",
+        "startTimeUTC": "2026-03-27T23:00:00Z",
+        "homeTeam": "Rangers",
+        "awayTeam": "Blackhawks",
+        "homeTeamAbbrev": "NYR",
+        "awayTeamAbbrev": "CHI",
+        "homeGoalieConfirmed": "Igor Shesterkin",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Spencer Knight",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
