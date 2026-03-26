@@ -470,6 +470,18 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         return `+${str}`;
     };
 
+    // No-vig implied probability for the away team (position of Vegas marker on win% bar)
+    const noVigAwayPct = (() => {
+        const a = typeof awayVegasOdds === 'string' ? parseInt(awayVegasOdds) : awayVegasOdds;
+        const h = typeof homeVegasOdds === 'string' ? parseInt(homeVegasOdds) : homeVegasOdds;
+        if (!a || !h || isNaN(a) || isNaN(h)) return null;
+        const impliedAway = a > 0 ? 100 / (a + 100) : Math.abs(a) / (Math.abs(a) + 100);
+        const impliedHome = h > 0 ? 100 / (h + 100) : Math.abs(h) / (Math.abs(h) + 100);
+        const total = impliedAway + impliedHome;
+        if (total === 0) return null;
+        return (impliedAway / total) * 100;
+    })();
+
     const getContrastTextClass = (hexColor: string): string => {
         if (!hexColor) return 'text-white';
         // Convert hex to RGB
@@ -1217,6 +1229,22 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 <span className={`text-[22px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
                             </div>
                             <div className="w-[2px] h-full bg-neutral-700 z-20" />
+                            {/* No-vig Vegas implied marker */}
+                            {noVigAwayPct != null && (
+                                <div
+                                    className="absolute top-0 h-full z-30 pointer-events-none transition-all duration-1000 ease-out"
+                                    style={{ left: isInView ? `${noVigAwayPct}%` : '50%' }}
+                                >
+                                    <div className="relative h-full flex flex-col items-center">
+                                        {/* Downward triangle */}
+                                        <div className="w-0 h-0 -mt-[1px]" style={{ borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '7px solid white' }} />
+                                        {/* Dotted vertical line */}
+                                        <div className="flex-1 w-0 border-l-[2px] border-dashed border-white/80" />
+                                        {/* Upward triangle */}
+                                        <div className="w-0 h-0 -mb-[1px]" style={{ borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderBottom: '7px solid white' }} />
+                                    </div>
+                                </div>
+                            )}
                             {/* Home Bar — with win% inside */}
                             <div
                                 className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-3"
@@ -1605,6 +1633,19 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 <span className={`text-[14px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
                             </div>
                             <div className="w-[2px] h-full bg-neutral-700 z-20" />
+                            {/* No-vig Vegas implied marker (mobile) */}
+                            {noVigAwayPct != null && (
+                                <div
+                                    className="absolute top-0 h-full z-30 pointer-events-none transition-all duration-1000 ease-out"
+                                    style={{ left: isInView ? `${noVigAwayPct}%` : '50%' }}
+                                >
+                                    <div className="relative h-full flex flex-col items-center">
+                                        <div className="w-0 h-0 -mt-[1px]" style={{ borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '5px solid white' }} />
+                                        <div className="flex-1 w-0 border-l-[2px] border-dashed border-white/80" />
+                                        <div className="w-0 h-0 -mb-[1px]" style={{ borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderBottom: '5px solid white' }} />
+                                    </div>
+                                </div>
+                            )}
                             <div
                                 className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-2"
                                 style={{
