@@ -1008,19 +1008,19 @@
                 "movement": null
             },
             {
-                "name": "Shane Wright",
-                "number": 51,
+                "name": "Oscar Fisker-Molgaard",
+                "number": 78,
                 "pos": "c",
-                "id": 30830,
-                "ppUnit": 2,
-                "movement": null
+                "id": 38133,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
-                "name": "Frederick Gaudreau",
-                "number": 89,
+                "name": "Shane Wright",
+                "number": 51,
                 "pos": "rw",
-                "id": 2701,
-                "ppUnit": null,
+                "id": 30830,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1028,10 +1028,18 @@
             {
                 "name": "Ben Meyers",
                 "number": 59,
-                "pos": "c",
+                "pos": "lw",
                 "id": 30084,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Frederick Gaudreau",
+                "number": 89,
+                "pos": "c",
+                "id": 2701,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Jacob Melanson",
@@ -1092,16 +1100,6 @@
                 "number": 41,
                 "pos": "rd",
                 "id": 32988,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d4": [
-            {
-                "name": "Cale Fleury",
-                "number": 8,
-                "pos": "ld",
-                "id": 26737,
                 "ppUnit": null,
                 "movement": null
             }
@@ -1659,7 +1657,7 @@
                 "pos": "ld",
                 "id": 33251,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Scott Mayfield",
@@ -1667,7 +1665,7 @@
                 "pos": "rd",
                 "id": 2350,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -1677,7 +1675,7 @@
                 "pos": "ld",
                 "id": 4529,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Adam Boqvist",
@@ -2316,12 +2314,12 @@
                 "movement": null
             },
             {
-                "name": "Robert Thomas",
-                "number": 18,
+                "name": "Dalibor Dvorsky",
+                "number": 54,
                 "pos": "c",
-                "id": 2810,
-                "ppUnit": 1,
-                "movement": null
+                "id": 35010,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Jimmy Snuggerud",
@@ -2346,7 +2344,7 @@
                 "number": 89,
                 "pos": "c",
                 "id": 2673,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -2360,26 +2358,26 @@
         ],
         "f3": [
             {
-                "name": "Otto Stenberg",
-                "number": 28,
+                "name": "Jonatan Berggren",
+                "number": 29,
                 "pos": "lw",
-                "id": 38119,
+                "id": 29107,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Dalibor Dvorsky",
-                "number": 54,
+                "name": "Pius Suter",
+                "number": 24,
                 "pos": "c",
-                "id": 35010,
-                "ppUnit": 2,
-                "movement": null
+                "id": 32940,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
-                "name": "Jonatan Berggren",
-                "number": 29,
+                "name": "Otto Stenberg",
+                "number": 28,
                 "pos": "rw",
-                "id": 29107,
+                "id": 38119,
                 "ppUnit": null,
                 "movement": null
             }
@@ -2402,12 +2400,12 @@
                 "movement": null
             },
             {
-                "name": "Pius Suter",
-                "number": 24,
+                "name": "Nathan Walker",
+                "number": 26,
                 "pos": "rw",
-                "id": 32940,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2831,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -2452,16 +2450,16 @@
                 "number": 17,
                 "pos": "ld",
                 "id": 16,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Justin Holl",
-                "number": 3,
+                "name": "Matthew Kessel",
+                "number": null,
                 "pos": "rd",
-                "id": 2857,
+                "id": 30737,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -2472,6 +2470,14 @@
                 "id": 27631,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Robert Thomas",
+                "number": 18,
+                "pos": "ir2",
+                "id": 2810,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -3062,38 +3068,12 @@
         ],
         "f3": [
             {
-                "name": "Cole Koepke",
-                "number": 45,
-                "pos": "lw",
-                "id": 29652,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Jonathan Toews",
-                "number": 19,
-                "pos": "c",
-                "id": 328,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Gustav Nyquist",
-                "number": 14,
-                "pos": "rw",
-                "id": 1611,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
                 "name": "Isak Rosen",
                 "number": 63,
                 "pos": "lw",
                 "id": 34670,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Morgan Barron",
@@ -3101,7 +3081,7 @@
                 "pos": "c",
                 "id": 26531,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Brad Lambert",
@@ -3109,7 +3089,33 @@
                 "pos": "rw",
                 "id": 31870,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Cole Koepke",
+                "number": 45,
+                "pos": "lw",
+                "id": 29652,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Jonathan Toews",
+                "number": 19,
+                "pos": "c",
+                "id": 328,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Gustav Nyquist",
+                "number": 14,
+                "pos": "rw",
+                "id": 1611,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -3447,7 +3453,7 @@
                 "pos": "rw",
                 "id": 38459,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -3537,7 +3543,7 @@
                 "pos": "ir1",
                 "id": 4796,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -4441,7 +4447,7 @@
                 "pos": "rd",
                 "id": 28812,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "ir": [
@@ -4539,7 +4545,7 @@
                 "pos": "lw",
                 "id": 2490,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Teddy Blueger",
@@ -4565,7 +4571,7 @@
                 "pos": "lw",
                 "id": 30007,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Aatu Raty",
