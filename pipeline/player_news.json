@@ -1,4 +1,105 @@
 {
+    "NJD": [
+        {
+            "player": "Jacob Markstrom",
+            "news": "Markstrom will start in Nashville on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T23:30:09.525Z"
+        }
+    ],
+    "SEA": [
+        {
+            "player": "Jacob Melanson",
+            "news": "Melanson is a healthy scratch for Thursday's game against the Lightning.",
+            "category": "Line Change",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:55:54.302Z"
+        },
+        {
+            "player": "Oscar Fisker-Molgaard",
+            "news": "Fisker-Molgaard will draw into the Kraken lineup on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:55:09.788Z"
+        },
+        {
+            "player": "Philipp Grubauer",
+            "news": "Grubauer will start in Tampa Bay on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:49:58.724Z"
+        }
+    ],
+    "NYI": [
+        {
+            "player": "Isaiah George",
+            "news": "George is a healthy scratch for Thursday's game against the Stars.",
+            "category": "Line Change",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:43:21.208Z"
+        },
+        {
+            "player": "Ryan Pulock",
+            "news": "Pulock (lower-body) took full part in warmups and is expected to play against the Stars on Thursday. ",
+            "category": "Injury",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:41:24.180Z"
+        },
+        {
+            "player": "Victor Eklund",
+            "news": "Eklund has been reassigned from Djurgardens IF (SHL) to Bridgeport (AHL). ",
+            "category": "Send Down",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T18:22:41.478Z"
+        }
+    ],
+    "TBL": [
+        {
+            "player": "Scott Sabourin",
+            "news": "Sabourin is a healthy scratch for Tuesday's game against the Kraken.",
+            "category": "Line Change",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:38:38.787Z"
+        },
+        {
+            "player": "Oliver Bjorkstrand",
+            "news": "Bjorkstrand will draw into the Lightning lineup on Thursday.",
+            "category": "Line Change",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:38:04.395Z"
+        },
+        {
+            "player": "Andrei Vasilevskiy",
+            "news": "Vasilevskiy will start against the Kraken on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:31:01.835Z"
+        }
+    ],
+    "MTL": [
+        {
+            "player": "Jakub Dobes",
+            "news": "Dobes will start against the Blue Jackets on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:34:57.776Z"
+        },
+        {
+            "player": "Joe Veleno",
+            "news": "Veleno will draw into the Canadiens lineup on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:32:37.751Z"
+        },
+        {
+            "player": "Alexandre Texier",
+            "news": "Texier is a healthy scratch for Thursday's game against the Blue Jackets. ",
+            "category": "Line Change",
+            "date": "2026-03-26",
+            "timestamp": "2026-03-26T22:32:17.959Z"
+        }
+    ],
     "DET": [
         {
             "player": "Michal Postava",
@@ -6,13 +107,6 @@
             "category": "Call Up",
             "date": "2026-03-26",
             "timestamp": "2026-03-26T21:25:42.621Z"
-        },
-        {
-            "player": "Sheldon Dries",
-            "news": "Dries has been reassigned to Grand Rapids (AHL). ",
-            "category": "Send Down",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T18:08:08.258Z"
         }
     ],
     "PHI": [
@@ -29,13 +123,6 @@
             "category": "Goalie Start",
             "date": "2026-03-26",
             "timestamp": "2026-03-26T20:47:39.605Z"
-        },
-        {
-            "player": "Riley Thompson",
-            "news": "Philadelphia has signed Riley Thompson to a one-year, entry-level contract. ",
-            "category": "Signing",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:40:47.537Z"
         }
     ],
     "BUF": [
@@ -45,15 +132,6 @@
             "category": "Send Down",
             "date": "2026-03-26",
             "timestamp": "2026-03-26T20:02:12.269Z"
-        }
-    ],
-    "NYI": [
-        {
-            "player": "Victor Eklund",
-            "news": "Eklund has been reassigned from Djurgardens IF (SHL) to Bridgeport (AHL). ",
-            "category": "Send Down",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T18:22:41.478Z"
         }
     ],
     "CHI": [
@@ -81,88 +159,6 @@
             "category": "Goalie Start",
             "date": "2026-03-26",
             "timestamp": "2026-03-26T18:13:14.401Z"
-        }
-    ],
-    "VGK": [
-        {
-            "player": "Adin Hill",
-            "news": "Hill will start vs. Edmonton on Thursday.",
-            "category": "Goalie Start",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:58:40.726Z"
-        }
-    ],
-    "NJD": [
-        {
-            "player": "Lenni Hameenaho",
-            "news": "Hameenaho will draw back into New Jersey's lineup in Nashville on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:49:19.088Z"
-        }
-    ],
-    "VAN": [
-        {
-            "player": "Nils Hoglander",
-            "news": "Hoglander will draw back into Vancouver's lineup vs. Los Angeles on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:46:21.431Z"
-        },
-        {
-            "player": "Curtis Douglas",
-            "news": "Douglas will be a healthy scratch vs. Los Angeles on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:45:58.681Z"
-        },
-        {
-            "player": "Kevin Lankinen",
-            "news": "Lankinen will start vs. Los Angeles on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:44:24.966Z"
-        }
-    ],
-    "SJS": [
-        {
-            "player": "Yaroslav Askarov",
-            "news": "Askarov will return and start in St. Louis on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:41:44.177Z"
-        }
-    ],
-    "UTA": [
-        {
-            "player": "Brandon Tanev",
-            "news": "Tanev will draw back into Utah's lineup vs. Washington on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:33:49.067Z"
-        },
-        {
-            "player": "Barrett Hayton",
-            "news": "Hayton is week-to-week with an upper-body injury. ",
-            "category": "Injury",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:32:34.873Z"
-        },
-        {
-            "player": "Daniil But",
-            "news": "But will draw back into Utah's lineup vs. Washington on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:28:42.122Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Connor Ingram",
-            "news": "Ingram will start in Vegas on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-26",
-            "timestamp": "2026-03-26T17:29:14.253Z"
         }
     ]
 }
