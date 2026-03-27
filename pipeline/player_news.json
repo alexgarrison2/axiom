@@ -1,18 +1,66 @@
 {
-    "PIT": [
+    "WPG": [
         {
-            "player": "Joona Koppanen",
-            "news": "Koppanen has been reassigned to Wilkes-Barre/Scranton (AHL). ",
-            "category": "Send Down",
+            "player": "Danny Zhilkin",
+            "news": "Zhilkin has been recalled from Manitoba (AHL) on emergency conditions. ",
+            "category": "Call Up",
             "date": "2026-03-27",
-            "timestamp": "2026-03-27T15:39:28.749Z"
+            "timestamp": "2026-03-27T16:16:28.130Z"
         },
         {
-            "player": "Avery Hayes",
-            "news": "Hayes has been reassigned to Wilkes-Barre/Scranton (AHL). ",
+            "player": "Parker Ford",
+            "news": "Ford has been recalled from Manitoba (AHL) on emergency conditions. ",
+            "category": "Call Up",
+            "date": "2026-03-27",
+            "timestamp": "2026-03-27T16:16:01.495Z"
+        },
+        {
+            "player": "Morgan Barron",
+            "news": "Barron is in concussion protocol after leaving Thursday\u2019s game vs. Colorado.",
+            "category": "Injury",
+            "date": "2026-03-27",
+            "timestamp": "2026-03-27T04:32:31.617Z"
+        }
+    ],
+    "TOR": [
+        {
+            "player": "Hayes Hundley",
+            "news": "Toronto has signed Hayes Hundley to a three-year, entry-level contract. ",
+            "category": "Signing",
+            "date": "2026-03-27",
+            "timestamp": "2026-03-27T15:54:26.600Z"
+        },
+        {
+            "player": "Bo Groulx",
+            "news": "Groulx has been reassigned to the Toronto Marlies (AHL). ",
             "category": "Send Down",
             "date": "2026-03-27",
-            "timestamp": "2026-03-27T15:39:02.290Z"
+            "timestamp": "2026-03-27T14:38:11.838Z"
+        }
+    ],
+    "DET": [
+        {
+            "player": "Cam Talbot",
+            "news": "Talbot (undisclosed) will be a game-time decision to back up John Gibson on Friday in Buffalo.",
+            "category": "Injury",
+            "date": "2026-03-27",
+            "timestamp": "2026-03-27T15:51:26.181Z"
+        },
+        {
+            "player": "John Gibson",
+            "news": "Gibson will start in Buffalo on Friday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-27",
+            "timestamp": "2026-03-27T15:48:11.546Z"
+        }
+    ],
+    "CHI": [
+        {
+            "player": "Jiri Felcman",
+            "news": "Chicago has signed Jiri Felcman to a three-year, entry-level contract worth $996,667 AAV. ",
+            "category": "Signing",
+            "date": "2026-03-27",
+            "timestamp": "2026-03-27T15:42:17.111Z"
         }
     ],
     "CAR": [
@@ -65,24 +113,6 @@
             "timestamp": "2026-03-27T14:36:04.364Z"
         }
     ],
-    "TOR": [
-        {
-            "player": "Bo Groulx",
-            "news": "Groulx has been reassigned to the Toronto Marlies (AHL). ",
-            "category": "Send Down",
-            "date": "2026-03-27",
-            "timestamp": "2026-03-27T14:38:11.838Z"
-        }
-    ],
-    "WPG": [
-        {
-            "player": "Morgan Barron",
-            "news": "Barron is in concussion protocol after leaving Thursday\u2019s game vs. Colorado.",
-            "category": "Injury",
-            "date": "2026-03-27",
-            "timestamp": "2026-03-27T04:32:31.617Z"
-        }
-    ],
     "ANA": [
         {
             "player": "Radko Gudas",
@@ -90,20 +120,6 @@
             "category": "Injury",
             "date": "2026-03-27",
             "timestamp": "2026-03-27T04:30:56.186Z"
-        },
-        {
-            "player": "Olen Zellweger",
-            "news": "Zellweger will draw into the Ducks lineup on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-03-27",
-            "timestamp": "2026-03-27T00:43:08.423Z"
-        },
-        {
-            "player": "Troy Terry",
-            "news": "Terry (undisclosed) will not play in Calgary on Thursday. ",
-            "category": "Injury",
-            "date": "2026-03-27",
-            "timestamp": "2026-03-27T00:40:25.428Z"
         }
     ],
     "SJS": [
@@ -129,33 +145,6 @@
             "category": "Send Down",
             "date": "2026-03-27",
             "timestamp": "2026-03-27T04:19:17.058Z"
-        }
-    ],
-    "FLA": [
-        {
-            "player": "Evan Rodrigues",
-            "news": "Rodrigues has a broken finger and is expected to miss the next 4-6 weeks.",
-            "category": "Injury",
-            "date": "2026-03-27",
-            "timestamp": "2026-03-27T04:17:19.240Z"
-        }
-    ],
-    "DAL": [
-        {
-            "player": "Sam Steel",
-            "news": "Steel left Thursday\u2019s game vs. New York with an undisclosed injury and didn\u2019t return.",
-            "category": "Injury",
-            "date": "2026-03-27",
-            "timestamp": "2026-03-27T04:15:46.771Z"
-        }
-    ],
-    "CBJ": [
-        {
-            "player": "Damon Severson",
-            "news": "Severson (upper-body) left Thursday's game vs. Montreal and did not return. ",
-            "category": "Injury",
-            "date": "2026-03-27",
-            "timestamp": "2026-03-27T02:07:42.787Z"
         }
     ]
 }
