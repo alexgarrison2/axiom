@@ -352,6 +352,14 @@
                 "id": 516,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Damon Severson",
+                "number": 78,
+                "pos": "ir2",
+                "id": 2038,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
@@ -573,7 +581,7 @@
                 "pos": "c",
                 "id": 1216,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Bryan Rust",
@@ -755,7 +763,7 @@
                 "pos": "ir5",
                 "id": 1216,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2523,7 +2531,7 @@
                 "pos": "rw",
                 "id": 4675,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -2533,7 +2541,7 @@
                 "pos": "lw",
                 "id": 38105,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Michael Misa",
@@ -2549,7 +2557,7 @@
                 "pos": "rw",
                 "id": 1656,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -2593,7 +2601,7 @@
                 "pos": "rd",
                 "id": 25716,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -2629,7 +2637,7 @@
                 "pos": "rd",
                 "id": 311,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -2648,6 +2656,22 @@
                 "id": 1343,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Yaroslav Askarov",
+                "number": 30,
+                "pos": "ir3",
+                "id": 33018,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
+                "name": "John Klingberg",
+                "number": 3,
+                "pos": "ir4",
+                "id": 1678,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
@@ -2753,7 +2777,7 @@
                 "pos": "rw",
                 "id": 32605,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -2789,7 +2813,7 @@
                 "pos": "rd",
                 "id": 28161,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -2799,7 +2823,7 @@
                 "pos": "ld",
                 "id": 36308,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ryan Ufko",
@@ -3225,7 +3249,7 @@
                 "pos": "lw",
                 "id": 2679,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Brock Nelson",
@@ -3251,7 +3275,7 @@
                 "pos": "lw",
                 "id": 27086,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Nazem Kadri",
@@ -3539,7 +3563,7 @@
                 "pos": "lw",
                 "id": 30448,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Dylan Strome",
@@ -3565,7 +3589,7 @@
                 "pos": "lw",
                 "id": 29203,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Pierre-Luc Dubois",
@@ -3591,7 +3615,7 @@
                 "pos": "lw",
                 "id": 2487,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Justin Sourdif",
@@ -3935,7 +3959,7 @@
                 "pos": "rw",
                 "id": 2545,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -4013,7 +4037,7 @@
                 "pos": "rw",
                 "id": 31897,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -4059,7 +4083,7 @@
                 "pos": "ld",
                 "id": 34623,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Radko Gudas",
@@ -4093,7 +4117,7 @@
                 "pos": "ir3",
                 "id": 4645,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -4734,12 +4758,12 @@
                 "movement": null
             },
             {
-                "name": "Jared Wright",
-                "number": 53,
+                "name": "Joel Armia",
+                "number": 40,
                 "pos": "rw",
-                "id": 34797,
-                "ppUnit": null,
-                "movement": null
+                "id": 1952,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f4": [
@@ -4760,12 +4784,12 @@
                 "movement": null
             },
             {
-                "name": "Joel Armia",
-                "number": 40,
+                "name": "Jared Wright",
+                "number": 53,
                 "pos": "rw",
-                "id": 1952,
-                "ppUnit": 2,
-                "movement": null
+                "id": 34797,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "d1": [
