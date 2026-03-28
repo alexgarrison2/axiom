@@ -2494,6 +2494,14 @@
                 "id": 2038,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Dmitri Voronkov",
+                "number": 10,
+                "pos": "ir3",
+                "id": 31266,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -2945,7 +2953,7 @@
                 "pos": "lw",
                 "id": 2488,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Oscar Fisker-Molgaard",
@@ -2987,7 +2995,7 @@
                 "pos": "rw",
                 "id": 2787,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -3015,7 +3023,7 @@
                 "pos": "ld",
                 "id": 32988,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Brandon Montour",
@@ -3041,7 +3049,7 @@
                 "pos": "rd",
                 "id": 4632,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
@@ -3060,6 +3068,14 @@
                 "id": 30837,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Shane Wright",
+                "number": 51,
+                "pos": "ir3",
+                "id": 30830,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
@@ -3074,12 +3090,12 @@
                 "movement": null
             },
             {
-                "name": "Thomas Bordeleau",
-                "number": null,
+                "name": "Robert Thomas",
+                "number": 18,
                 "pos": "c",
-                "id": 30806,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2810,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Jimmy Snuggerud",
@@ -3296,12 +3312,12 @@
                 "movement": null
             },
             {
-                "name": "Bo Groulx",
-                "number": 29,
+                "name": "Steven Lorentz",
+                "number": 18,
                 "pos": "c",
-                "id": 28732,
+                "id": 3916,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Matias Maccelli",
@@ -3514,14 +3530,6 @@
                 "id": 34353,
                 "ppUnit": null,
                 "movement": null
-            },
-            {
-                "name": "Ozzy Wiesblatt",
-                "number": 89,
-                "pos": "rw",
-                "id": 32605,
-                "ppUnit": null,
-                "movement": null
             }
         ],
         "d1": [
@@ -3576,6 +3584,16 @@
                 "id": 34622,
                 "ppUnit": 2,
                 "movement": null
+            }
+        ],
+        "d4": [
+            {
+                "name": "Justin Barron",
+                "number": 20,
+                "pos": "ld",
+                "id": 29338,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
@@ -3784,21 +3802,21 @@
                 "movement": null
             },
             {
-                "name": "Martin Necas",
-                "number": 88,
+                "name": "Artturi Lehkonen",
+                "number": 62,
                 "pos": "rw",
-                "id": 2804,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2679,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f2": [
             {
-                "name": "Ross Colton",
-                "number": 20,
+                "name": "Valeri Nichushkin",
+                "number": 13,
                 "pos": "lw",
-                "id": 27086,
-                "ppUnit": null,
+                "id": 2142,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3810,22 +3828,22 @@
                 "movement": null
             },
             {
-                "name": "Valeri Nichushkin",
-                "number": 13,
+                "name": "Martin Necas",
+                "number": 88,
                 "pos": "rw",
-                "id": 2142,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2804,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f3": [
             {
-                "name": "Artturi Lehkonen",
-                "number": 62,
+                "name": "Ross Colton",
+                "number": 20,
                 "pos": "lw",
-                "id": 2679,
-                "ppUnit": 2,
-                "movement": null
+                "id": 27086,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Nazem Kadri",
@@ -3998,11 +4016,11 @@
                 "movement": null
             },
             {
-                "name": "Morgan Barron",
-                "number": 36,
+                "name": "Jonathan Toews",
+                "number": 19,
                 "pos": "c",
-                "id": 26531,
-                "ppUnit": null,
+                "id": 328,
+                "ppUnit": 2,
                 "movement": "up"
             },
             {
@@ -4024,20 +4042,20 @@
                 "movement": null
             },
             {
-                "name": "Jonathan Toews",
-                "number": 19,
+                "name": "Danny Zhilkin",
+                "number": null,
                 "pos": "c",
-                "id": 328,
+                "id": 30843,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Gustav Nyquist",
-                "number": 14,
+                "name": "Parker Ford",
+                "number": 73,
                 "pos": "rw",
-                "id": 1611,
-                "ppUnit": 2,
-                "movement": null
+                "id": 30472,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d1": [
