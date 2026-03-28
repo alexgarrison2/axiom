@@ -655,7 +655,7 @@
                 "pos": "rw",
                 "id": 31226,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -5680,20 +5680,20 @@
         ],
         "f4": [
             {
-                "name": "Taylor Raddysh",
-                "number": 14,
-                "pos": "lw",
-                "id": 3922,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Jonny Brodzinski",
                 "number": 22,
-                "pos": "c",
+                "pos": "lw",
                 "id": 2757,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Noah Laba",
+                "number": 42,
+                "pos": "c",
+                "id": 34399,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Jaroslav Chmelar",
@@ -5724,18 +5724,18 @@
         ],
         "d2": [
             {
-                "name": "Will Borgen",
-                "number": 17,
+                "name": "Matthew Robertson",
+                "number": 29,
                 "pos": "ld",
-                "id": 4680,
+                "id": 29499,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Braden Schneider",
-                "number": 4,
+                "name": "Will Borgen",
+                "number": 17,
                 "pos": "rd",
-                "id": 29483,
+                "id": 4680,
                 "ppUnit": null,
                 "movement": null
             }
@@ -5750,12 +5750,12 @@
                 "movement": null
             },
             {
-                "name": "Matthew Robertson",
-                "number": 29,
+                "name": "Braden Schneider",
+                "number": 4,
                 "pos": "rd",
-                "id": 29499,
+                "id": 29483,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "ir": [
