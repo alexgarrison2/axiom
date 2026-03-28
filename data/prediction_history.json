@@ -14278,5 +14278,33 @@
     "actualWinner": "Kings",
     "isCorrect": true,
     "brierScore": 0.1962
+  },
+  {
+    "date": "2026-03-27",
+    "homeTeam": "Rangers",
+    "awayTeam": "Blackhawks",
+    "homeScore": 6,
+    "awayScore": 1,
+    "homeXg": 3.86,
+    "awayXg": 2.63,
+    "homeWinProb": 63.6,
+    "predictedWinner": "Rangers",
+    "actualWinner": "Rangers",
+    "isCorrect": true,
+    "brierScore": 0.1325
+  },
+  {
+    "date": "2026-03-27",
+    "homeTeam": "Sabres",
+    "awayTeam": "Red Wings",
+    "homeScore": 2,
+    "awayScore": 5,
+    "homeXg": 3.73,
+    "awayXg": 3.45,
+    "homeWinProb": 61.9,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Red Wings",
+    "isCorrect": false,
+    "brierScore": 0.3832
   }
 ]
