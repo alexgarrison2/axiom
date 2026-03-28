@@ -1519,7 +1519,7 @@
                 "pos": "rd",
                 "id": 556,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -1537,7 +1537,7 @@
                 "pos": "rd",
                 "id": 53,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
@@ -1559,7 +1559,7 @@
                 "pos": "lw",
                 "id": 2151,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Rickard Rakell",
@@ -1601,7 +1601,7 @@
                 "pos": "rw",
                 "id": 28622,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -1619,7 +1619,7 @@
                 "pos": "c",
                 "id": 37573,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ville Koivunen",
@@ -1761,7 +1761,7 @@
                 "pos": "lw",
                 "id": 3778,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Wyatt Johnston",
@@ -1787,7 +1787,7 @@
                 "pos": "lw",
                 "id": 2793,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Matt Duchene",
@@ -1813,7 +1813,7 @@
                 "pos": "lw",
                 "id": 425,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Justin Hryckowian",
@@ -2353,7 +2353,7 @@
                 "pos": "lw",
                 "id": 31266,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sean Monahan",
@@ -2405,7 +2405,7 @@
                 "pos": "lw",
                 "id": 34612,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Boone Jenner",
@@ -2457,7 +2457,7 @@
                 "pos": "rd",
                 "id": 31514,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -2467,7 +2467,7 @@
                 "pos": "ld",
                 "id": 25394,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Erik Gudbranson",
@@ -2777,7 +2777,7 @@
                 "pos": "lw",
                 "id": 32822,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Sam Carrick",
@@ -2892,7 +2892,7 @@
                 "number": 27,
                 "pos": "lw",
                 "id": 36542,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -2926,7 +2926,7 @@
                 "number": 9,
                 "pos": "c",
                 "id": 2538,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2940,12 +2940,12 @@
         ],
         "f3": [
             {
-                "name": "Eeli Tolvanen",
-                "number": 20,
+                "name": "Jared McCann",
+                "number": 19,
                 "pos": "lw",
-                "id": 2787,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2488,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Oscar Fisker-Molgaard",
@@ -2980,6 +2980,14 @@
                 "id": 2701,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Eeli Tolvanen",
+                "number": 20,
+                "pos": "rw",
+                "id": 2787,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -3002,12 +3010,12 @@
         ],
         "d2": [
             {
-                "name": "Ryan Lindgren",
-                "number": 55,
+                "name": "Ryker Evans",
+                "number": 41,
                 "pos": "ld",
-                "id": 4632,
+                "id": 32988,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Brandon Montour",
@@ -3028,22 +3036,12 @@
                 "movement": null
             },
             {
-                "name": "Ryker Evans",
-                "number": 41,
+                "name": "Ryan Lindgren",
+                "number": 55,
                 "pos": "rd",
-                "id": 32988,
+                "id": 4632,
                 "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d4": [
-            {
-                "name": "Cale Fleury",
-                "number": 8,
-                "pos": "ld",
-                "id": 26737,
-                "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "ir": [
@@ -3060,14 +3058,6 @@
                 "number": 26,
                 "pos": "ir2",
                 "id": 30837,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Jared McCann",
-                "number": 19,
-                "pos": "ir3",
-                "id": 2488,
                 "ppUnit": null,
                 "movement": null
             }
