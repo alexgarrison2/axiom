@@ -1,4 +1,118 @@
 {
+    "MIN": [
+        {
+            "player": "Zach Bogosian",
+            "news": "Bogosian will draw back into Minnesota's lineup in Boston on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:59:29.471Z"
+        },
+        {
+            "player": "Jared Spurgeon",
+            "news": "Spurgeon (undisclosed) is out vs. Boston on Saturday and considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:59:09.857Z"
+        },
+        {
+            "player": "Filip Gustavsson",
+            "news": "Gustavsson will start in Boston on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:56:50.978Z"
+        }
+    ],
+    "DAL": [
+        {
+            "player": "Adam Erne",
+            "news": "Erne will be a healthy scratch vs. Pittsburgh on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:55:05.380Z"
+        },
+        {
+            "player": "Michael Bunting",
+            "news": "Bunting will draw back into Dallas' lineup vs. Pittsburgh on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:54:41.270Z"
+        },
+        {
+            "player": "Mikko Rantanen",
+            "news": "Rantanen (lower-body) will return in Pittsburgh on Saturday.",
+            "category": "Injury",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:54:14.516Z"
+        },
+        {
+            "player": "Jake Oettinger",
+            "news": "Oettinger will start in Pittsburgh on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:53:40.908Z"
+        }
+    ],
+    "BOS": [
+        {
+            "player": "Jeremy Swayman",
+            "news": "Swayman will start vs. Minnesota on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:50:45.409Z"
+        }
+    ],
+    "UTA": [
+        {
+            "player": "Daniil But",
+            "news": "But will be a healthy scratch in Los Angeles on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:40:15.173Z"
+        }
+    ],
+    "WPG": [
+        {
+            "player": "Morgan Barron",
+            "news": "Barron is expected to be a healthy scratch vs. Colorado on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:39:34.039Z"
+        },
+        {
+            "player": "Danny Zhilkin",
+            "news": "Zhilkin is expected to draw back into Winnipeg's lineup vs. Colorado on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:39:12.079Z"
+        }
+    ],
+    "DET": [
+        {
+            "player": "Carter Mazur",
+            "news": "Mazur has been recalled from Grand Rapids (AHL). ",
+            "category": "Call Up",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:38:31.681Z"
+        }
+    ],
+    "BUF": [
+        {
+            "player": "Noah Ostlund",
+            "news": "Ostlund (upper-body) is expected to be out vs. Seattle on Saturday. ",
+            "category": "Injury",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:38:07.061Z"
+        }
+    ],
+    "WSH": [
+        {
+            "player": "Logan Thompson",
+            "news": "Thompson will start in Vegas on Saturday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-28",
+            "timestamp": "2026-03-28T19:36:16.262Z"
+        }
+    ],
     "LAK": [
         {
             "player": "Darcy Kuemper",
@@ -29,13 +143,6 @@
             "category": "Injury",
             "date": "2026-03-28",
             "timestamp": "2026-03-28T19:09:37.472Z"
-        },
-        {
-            "player": "Lukas Dostal",
-            "news": "Dostal will start in Edmonton on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T19:04:23.906Z"
         }
     ],
     "EDM": [
@@ -52,105 +159,6 @@
             "category": "Goalie Start",
             "date": "2026-03-28",
             "timestamp": "2026-03-28T19:07:06.847Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Rutger McGroarty",
-            "news": "McGroarty will draw back into Pittsburgh's lineup vs. Dallas on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T19:02:50.079Z"
-        },
-        {
-            "player": "Stuart Skinner",
-            "news": "Skinner will start vs. Dallas on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T19:02:22.071Z"
-        },
-        {
-            "player": "Evgeni Malkin",
-            "news": "Malkin (upper-body) will be out vs. Dallas on Saturday and is considered day-to-day. ",
-            "category": "Injury",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:57:49.934Z"
-        },
-        {
-            "player": "Sidney Crosby",
-            "news": "Crosby (lower-body) is out vs. Dallas on Saturday and considered day-to-day. ",
-            "category": "Injury",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:57:23.707Z"
-        }
-    ],
-    "CAR": [
-        {
-            "player": "Shayne Gostisbehere",
-            "news": "Gostisbehere (lower-body) is expected to return vs. New Jersey on Saturday. ",
-            "category": "Injury",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:51:17.192Z"
-        },
-        {
-            "player": "Brandon Bussi",
-            "news": "Bussi will start vs. New Jersey on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:50:49.025Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Juuso Parssinen",
-            "news": "Parssinen has been assigned to Hartford (AHL). ",
-            "category": "Send Down",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:46:37.832Z"
-        }
-    ],
-    "CBJ": [
-        {
-            "player": "Elvis Merzlikins",
-            "news": "Merzlikins will start vs. San Jose on Saturday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:43:36.063Z"
-        },
-        {
-            "player": "Danton Heinen",
-            "news": "Heinen will be a healthy scratch vs. San Jose on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:42:48.615Z"
-        },
-        {
-            "player": "Miles Wood",
-            "news": "Wood will be a healthy scratch vs. San Jose on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:42:26.414Z"
-        },
-        {
-            "player": "Dmitri Voronkov",
-            "news": "Voronkov will draw back into Columbus' lineup vs. San Jose on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:42:07.358Z"
-        },
-        {
-            "player": "Jake Christiansen",
-            "news": "Christiansen will draw back into Columbus' lineup vs. San Jose on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:41:35.586Z"
-        },
-        {
-            "player": "Kent Johnson",
-            "news": "Johnson will draw back into Columbus' lineup vs. San Jose on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-03-28",
-            "timestamp": "2026-03-28T18:41:11.839Z"
         }
     ]
 }
