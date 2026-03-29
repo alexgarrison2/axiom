@@ -1178,12 +1178,12 @@
         ],
         "f2": [
             {
-                "name": "Kent Johnson",
-                "number": 91,
+                "name": "Danton Heinen",
+                "number": 43,
                 "pos": "lw",
-                "id": 34612,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2691,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Sean Monahan",
@@ -1208,7 +1208,7 @@
                 "number": 4,
                 "pos": "lw",
                 "id": 34454,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1230,10 +1230,10 @@
         ],
         "f4": [
             {
-                "name": "Danton Heinen",
-                "number": 43,
+                "name": "Isac Lundestrom",
+                "number": 21,
                 "pos": "lw",
-                "id": 2691,
+                "id": 4804,
                 "ppUnit": null,
                 "movement": null
             },
@@ -1246,12 +1246,12 @@
                 "movement": null
             },
             {
-                "name": "Isac Lundestrom",
-                "number": 21,
+                "name": "Miles Wood",
+                "number": 28,
                 "pos": "rw",
-                "id": 4804,
+                "id": 2623,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1264,38 +1264,20 @@
                 "movement": null
             },
             {
-                "name": "Dante Fabbro",
-                "number": 15,
+                "name": "Ivan Provorov",
+                "number": 9,
                 "pos": "rd",
-                "id": 2651,
-                "ppUnit": null,
-                "movement": null
+                "id": 2478,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "d2": [
             {
-                "name": "Ivan Provorov",
-                "number": 9,
-                "pos": "ld",
-                "id": 2478,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Denton Mateychuk",
                 "number": 5,
-                "pos": "rd",
-                "id": 31514,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Jake Christiansen",
-                "number": 2,
                 "pos": "ld",
-                "id": 25394,
+                "id": 31514,
                 "ppUnit": null,
                 "movement": null
             },
@@ -1305,7 +1287,25 @@
                 "pos": "rd",
                 "id": 1710,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Egor Zamula",
+                "number": 6,
+                "pos": "ld",
+                "id": 28855,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
+                "name": "Dante Fabbro",
+                "number": 15,
+                "pos": "rd",
+                "id": 2651,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "ir": [
@@ -2523,7 +2523,7 @@
                 "pos": "rw",
                 "id": 2407,
                 "ppUnit": 1,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f3": [
@@ -2533,7 +2533,7 @@
                 "pos": "lw",
                 "id": 26595,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ben Kindel",
@@ -2559,7 +2559,7 @@
                 "pos": "lw",
                 "id": 33262,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Connor Dewar",
