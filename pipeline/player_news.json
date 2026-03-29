@@ -1,4 +1,84 @@
 {
+    "PHI": [
+        {
+            "player": "Samuel Ersson",
+            "news": "Ersson will start vs. Dallas on Sunday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:56:01.382Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Jake Allen",
+            "news": "Allen will start vs. Chicago on Sunday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:54:50.903Z"
+        }
+    ],
+    "NSH": [
+        {
+            "player": "Ryan Ufko",
+            "news": "Ufko will be a healthy scratch vs. Tampa Bay on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:42:58.930Z"
+        },
+        {
+            "player": "Joakim Kemell",
+            "news": "Kemell will draw back into Nashville's lineup vs. Tampa Bay on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:42:35.754Z"
+        },
+        {
+            "player": "Justus Annunen",
+            "news": "Annunen will start vs. Tampa Bay on Sunday.",
+            "category": "Goalie Start",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:30:20.502Z"
+        }
+    ],
+    "MTL": [
+        {
+            "player": "Josh Anderson",
+            "news": "Anderson (illness) will be out vs. Carolina on Sunday. ",
+            "category": "Injury",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:35:56.533Z"
+        },
+        {
+            "player": "Arber Xhekaj",
+            "news": "Xhekaj will draw back into Montreal's lineup vs. Carolina on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:35:33.012Z"
+        }
+    ],
+    "TBL": [
+        {
+            "player": "Nikita Kucherov",
+            "news": "Kucherov (illness) will remain out vs. Nashville on Sunday. ",
+            "category": "Injury",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:34:56.876Z"
+        },
+        {
+            "player": "Nick Paul",
+            "news": "Paul (illness) will return vs. Nashville on Sunday. ",
+            "category": "Injury",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:34:35.195Z"
+        },
+        {
+            "player": "Jonas Johansson",
+            "news": "Johansson will start vs. Nashville on Sunday.",
+            "category": "Goalie Start",
+            "date": "2026-03-29",
+            "timestamp": "2026-03-29T20:30:57.942Z"
+        }
+    ],
     "DAL": [
         {
             "player": "Roope Hintz",
@@ -6,27 +86,6 @@
             "category": "Injury",
             "date": "2026-03-29",
             "timestamp": "2026-03-29T20:06:24.957Z"
-        },
-        {
-            "player": "Adam Erne",
-            "news": "Erne will draw back into Dallas' lineup vs. Florida on Sunday. ",
-            "category": "Line Change",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T16:38:25.040Z"
-        },
-        {
-            "player": "Nathan Bastian",
-            "news": "Bastian (undisclosed) is out vs. Philadelphia on Sunday. ",
-            "category": "Injury",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T16:37:58.891Z"
-        },
-        {
-            "player": "Casey DeSmith",
-            "news": "DeSmith will start in Philadelphia on Sunday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T16:37:00.836Z"
         }
     ],
     "LAK": [
@@ -98,63 +157,6 @@
             "category": "Line Change",
             "date": "2026-03-29",
             "timestamp": "2026-03-29T18:37:04.833Z"
-        },
-        {
-            "player": "Miles Wood",
-            "news": "Wood will draw back into Columbus' lineup vs. Boston on Sunday. ",
-            "category": "Line Change",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T18:36:42.217Z"
-        },
-        {
-            "player": "Danton Heinen",
-            "news": "Heinen will draw back into Columbus' lineup vs. Boston on Sunday. ",
-            "category": "Line Change",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T18:36:20.994Z"
-        },
-        {
-            "player": "Jet Greaves",
-            "news": "Greaves will start vs. Boston on Sunday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T18:35:43.929Z"
-        }
-    ],
-    "DET": [
-        {
-            "player": "Anton Johansson",
-            "news": "Johansson has been reassigned to Grand Rapids (AHL) from Leksands (SHL). ",
-            "category": "Send Down",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T17:37:23.210Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Sidney Crosby",
-            "news": "Crosby (lower-body) was a full participant in practice on Sunday and will travel with the team. ",
-            "category": "Injury",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T17:10:36.714Z"
-        }
-    ],
-    "PHI": [
-        {
-            "player": "Porter Martone",
-            "news": "Philadelphia has signed Porter Martone to a three-year, entry-level contract. ",
-            "category": "Signing",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T17:03:44.626Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Taylor Raddysh",
-            "news": "Raddysh will be a healthy scratch vs. Florida on Sunday. ",
-            "category": "Line Change",
-            "date": "2026-03-29",
-            "timestamp": "2026-03-29T16:40:35.786Z"
         }
     ]
 }
