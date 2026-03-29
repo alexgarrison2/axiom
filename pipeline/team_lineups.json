@@ -1752,37 +1752,37 @@
                 "movement": null
             },
             {
-                "name": "Frank Nazar",
-                "number": null,
-                "pos": "rw",
-                "id": 33280,
-                "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Andre Burakovsky",
-                "number": 28,
-                "pos": "lw",
-                "id": 2154,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Ryan Donato",
-                "number": 8,
-                "pos": "c",
-                "id": 4635,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Ilya Mikheyev",
                 "number": 95,
                 "pos": "rw",
                 "id": 30651,
                 "ppUnit": null,
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Ryan Donato",
+                "number": 8,
+                "pos": "lw",
+                "id": 4635,
+                "ppUnit": 2,
+                "movement": null
+            },
+            {
+                "name": "Frank Nazar",
+                "number": null,
+                "pos": "c",
+                "id": 33280,
+                "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Andre Burakovsky",
+                "number": 28,
+                "pos": "rw",
+                "id": 2154,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1904,12 +1904,12 @@
     "PHI": {
         "f1": [
             {
-                "name": "Alex Bump",
-                "number": 20,
+                "name": "Carl Grundstrom",
+                "number": 91,
                 "pos": "lw",
-                "id": 34874,
+                "id": 2875,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Christian Dvorak",
@@ -1956,12 +1956,12 @@
         ],
         "f3": [
             {
-                "name": "Carl Grundstrom",
-                "number": 91,
+                "name": "Alex Bump",
+                "number": 20,
                 "pos": "lw",
-                "id": 2875,
+                "id": 34874,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Noah Cates",
