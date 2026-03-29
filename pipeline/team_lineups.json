@@ -261,7 +261,7 @@
                 "pos": "rw",
                 "id": 2706,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -287,7 +287,7 @@
                 "pos": "rw",
                 "id": 2539,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -315,7 +315,7 @@
                 "pos": "ld",
                 "id": 29785,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Seth Jones",
@@ -333,7 +333,7 @@
                 "pos": "ld",
                 "id": 593,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Michael Benning",
@@ -1183,7 +1183,7 @@
                 "pos": "lw",
                 "id": 34612,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sean Monahan",
@@ -1235,7 +1235,7 @@
                 "pos": "lw",
                 "id": 2691,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Boone Jenner",
@@ -1713,7 +1713,7 @@
                 "pos": "rw",
                 "id": 35088,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -1731,7 +1731,7 @@
                 "pos": "c",
                 "id": 38471,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Frank Nazar",
@@ -2163,7 +2163,7 @@
                 "pos": "rw",
                 "id": 2725,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -2259,7 +2259,7 @@
                 "pos": "ir5",
                 "id": 3887,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2510,30 +2510,30 @@
                 "movement": null
             },
             {
-                "name": "Tommy Novak",
-                "number": 18,
-                "pos": "c",
-                "id": 26595,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Evgeni Malkin",
                 "number": 71,
-                "pos": "rw",
+                "pos": "c",
                 "id": 1236,
                 "ppUnit": 1,
                 "movement": "up"
+            },
+            {
+                "name": "Bryan Rust",
+                "number": 17,
+                "pos": "rw",
+                "id": 2407,
+                "ppUnit": 1,
+                "movement": "new"
             }
         ],
         "f3": [
             {
-                "name": "Rutger McGroarty",
-                "number": 2,
+                "name": "Tommy Novak",
+                "number": 18,
                 "pos": "lw",
-                "id": 33262,
-                "ppUnit": null,
-                "movement": null
+                "id": 26595,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Ben Kindel",
@@ -2549,17 +2549,17 @@
                 "pos": "rw",
                 "id": 28622,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
             {
-                "name": "Elmer Soderblom",
-                "number": null,
+                "name": "Rutger McGroarty",
+                "number": 2,
                 "pos": "lw",
-                "id": 30683,
+                "id": 33262,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Connor Dewar",
@@ -2575,7 +2575,7 @@
                 "pos": "rw",
                 "id": 34677,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
