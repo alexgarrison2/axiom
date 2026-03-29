@@ -2353,7 +2353,7 @@
                 "pos": "lw",
                 "id": 31266,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sean Monahan",
@@ -2501,7 +2501,7 @@
                 "pos": "ir3",
                 "id": 31266,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2969,7 +2969,7 @@
                 "pos": "rw",
                 "id": 30830,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -3075,7 +3075,7 @@
                 "pos": "ir3",
                 "id": 30830,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -3095,7 +3095,7 @@
                 "pos": "c",
                 "id": 2810,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Jimmy Snuggerud",
@@ -3317,7 +3317,7 @@
                 "pos": "c",
                 "id": 3916,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Matias Maccelli",
@@ -3593,7 +3593,7 @@
                 "pos": "ld",
                 "id": 29338,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
@@ -3807,7 +3807,7 @@
                 "pos": "rw",
                 "id": 2679,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -3833,7 +3833,7 @@
                 "pos": "rw",
                 "id": 2804,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -3843,7 +3843,7 @@
                 "pos": "lw",
                 "id": 27086,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Nazem Kadri",
@@ -4021,7 +4021,7 @@
                 "pos": "c",
                 "id": 328,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Brad Lambert",
@@ -4047,7 +4047,7 @@
                 "pos": "c",
                 "id": 30843,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Parker Ford",
@@ -4055,7 +4055,7 @@
                 "pos": "rw",
                 "id": 30472,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -4202,28 +4202,28 @@
         ],
         "f3": [
             {
-                "name": "Marco Kasper",
-                "number": null,
-                "pos": "lw",
-                "id": 36364,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Emmitt Finnie",
                 "number": null,
-                "pos": "c",
+                "pos": "lw",
                 "id": 33612,
                 "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "James van Riemsdyk",
-                "number": 21,
-                "pos": "rw",
-                "id": 1156,
-                "ppUnit": 2,
+                "name": "Marco Kasper",
+                "number": null,
+                "pos": "c",
+                "id": 36364,
+                "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Carter Mazur",
+                "number": 43,
+                "pos": "rw",
+                "id": 34532,
+                "ppUnit": 2,
+                "movement": "new"
             }
         ],
         "f4": [
@@ -4236,18 +4236,18 @@
                 "movement": null
             },
             {
-                "name": "Mason Appleton",
-                "number": 22,
+                "name": "Dominik Shine",
+                "number": 50,
                 "pos": "c",
-                "id": 4582,
+                "id": 18790,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Dominik Shine",
-                "number": 50,
+                "name": "Mason Appleton",
+                "number": 22,
                 "pos": "rw",
-                "id": 18790,
+                "id": 4582,
                 "ppUnit": null,
                 "movement": null
             }
@@ -4320,14 +4320,6 @@
                 "number": 27,
                 "pos": "ir2",
                 "id": 2784,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Cam Talbot",
-                "number": 39,
-                "pos": "ir3",
-                "id": 1059,
                 "ppUnit": null,
                 "movement": null
             }
