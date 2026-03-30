@@ -212,12 +212,12 @@
     "PIT": {
         "f1": [
             {
-                "name": "Anthony Mantha",
-                "number": 39,
+                "name": "Egor Chinakhov",
+                "number": 59,
                 "pos": "lw",
-                "id": 2151,
-                "ppUnit": 1,
-                "movement": null
+                "id": 30655,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Sidney Crosby",
@@ -228,48 +228,48 @@
                 "movement": "up"
             },
             {
-                "name": "Rickard Rakell",
-                "number": 67,
-                "pos": "rw",
-                "id": 1682,
-                "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
-                "name": "Egor Chinakhov",
-                "number": 59,
-                "pos": "lw",
-                "id": 30655,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Tommy Novak",
-                "number": 18,
-                "pos": "c",
-                "id": 26595,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Bryan Rust",
                 "number": 17,
                 "pos": "rw",
                 "id": 2407,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f2": [
+            {
+                "name": "Anthony Mantha",
+                "number": 39,
+                "pos": "lw",
+                "id": 2151,
+                "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Rickard Rakell",
+                "number": 67,
+                "pos": "c",
+                "id": 1682,
+                "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Justin Brazeau",
+                "number": 15,
+                "pos": "rw",
+                "id": 28622,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Rutger McGroarty",
-                "number": 2,
+                "name": "Tommy Novak",
+                "number": 18,
                 "pos": "lw",
-                "id": 33262,
-                "ppUnit": null,
-                "movement": null
+                "id": 26595,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Ben Kindel",
@@ -280,12 +280,12 @@
                 "movement": null
             },
             {
-                "name": "Justin Brazeau",
-                "number": 15,
+                "name": "Avery Hayes",
+                "number": null,
                 "pos": "rw",
-                "id": 28622,
-                "ppUnit": 2,
-                "movement": null
+                "id": 29767,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "f4": [
@@ -306,12 +306,12 @@
                 "movement": null
             },
             {
-                "name": "Ville Koivunen",
-                "number": 41,
+                "name": "Noel Acciari",
+                "number": 55,
                 "pos": "rw",
-                "id": 34677,
+                "id": 2589,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -399,14 +399,6 @@
                 "pos": "ir4",
                 "id": 1236,
                 "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Sidney Crosby",
-                "number": 87,
-                "pos": "ir5",
-                "id": 1216,
-                "ppUnit": 1,
                 "movement": null
             }
         ]
