@@ -470,16 +470,21 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         return `+${str}`;
     };
 
-    // No-vig implied probability for the away team (position of Vegas marker on win% bar)
-    const noVigAwayPct = (() => {
+    // Vig-box calculation: left edge = floor for away, right edge = ceiling for away
+    const vigBoxBounds = (() => {
         const a = typeof awayVegasOdds === 'string' ? parseInt(awayVegasOdds) : awayVegasOdds;
         const h = typeof homeVegasOdds === 'string' ? parseInt(homeVegasOdds) : homeVegasOdds;
         if (!a || !h || isNaN(a) || isNaN(h)) return null;
-        const impliedAway = a > 0 ? 100 / (a + 100) : Math.abs(a) / (Math.abs(a) + 100);
-        const impliedHome = h > 0 ? 100 / (h + 100) : Math.abs(h) / (Math.abs(h) + 100);
-        const total = impliedAway + impliedHome;
-        if (total === 0) return null;
-        return (impliedAway / total) * 100;
+
+        // Calculate implied probabilities WITH vig
+        const awayImpliedWithVig = a > 0 ? 100 / (a + 100) : Math.abs(a) / (Math.abs(a) + 100);
+        const homeImpliedWithVig = h > 0 ? 100 / (h + 100) : Math.abs(h) / (Math.abs(h) + 100);
+
+        // Vig box edges
+        const leftEdge = 100 - (homeImpliedWithVig * 100);  // Floor for away team
+        const rightEdge = awayImpliedWithVig * 100;         // Ceiling for away team
+
+        return { leftEdge, rightEdge, width: rightEdge - leftEdge };
     })();
 
     const getContrastTextClass = (hexColor: string): string => {
@@ -1211,51 +1216,73 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         </div>
                     </div>
 
-                    {/* WIN % SECTION — spans full width, hugs logos */}
+                    {/* WIN % SECTION — vig box visualization */}
                     <div className="w-full -mt-2">
                         <div className="text-center mb-0.5">
                             <span className="text-[10px] uppercase tracking-widest text-neutral-500">Win %</span>
                         </div>
-                        <div className="w-full h-[49px] rounded-full overflow-hidden flex relative border border-neutral-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
-                            {/* Away Bar — with win% inside */}
-                            <div
-                                className="h-full z-10 transition-all duration-1000 ease-out flex items-center pl-3"
-                                style={{
-                                    width: isInView ? `${awayModelWinPct}%` : '50%',
-                                    background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
-                                    boxShadow: `0 0 15px ${awayBarColor}66`
-                                }}
-                            >
-                                <span className={`text-[22px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
-                            </div>
-                            <div className="w-[2px] h-full bg-neutral-700 z-20" />
-                            {/* No-vig Vegas implied marker */}
-                            {noVigAwayPct != null && (
+
+                        {vigBoxBounds && vigBoxBounds.width > 0 ? (
+                            // Vig box: container positioned within 0-100%, width = vig size
+                            <div className="w-full h-[49px] rounded-full overflow-visible relative border border-neutral-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]" style={{ background: 'rgba(20, 20, 20, 0.8)' }}>
+                                {/* Vig box container — positioned at left edge, width = vig range */}
                                 <div
-                                    className="absolute top-0 h-full z-30 pointer-events-none transition-all duration-1000 ease-out"
-                                    style={{ left: isInView ? `${noVigAwayPct}%` : '50%' }}
+                                    className="absolute h-full rounded-full flex overflow-hidden"
+                                    style={{
+                                        left: isInView ? `${vigBoxBounds.leftEdge}%` : '50%',
+                                        width: isInView ? `${vigBoxBounds.width}%` : '0%',
+                                        transition: 'all 1s ease-out'
+                                    }}
                                 >
-                                    <div className="relative h-full flex flex-col items-center">
-                                        {/* Downward triangle */}
-                                        <div className="w-0 h-0 -mt-[1px]" style={{ borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '7px solid white' }} />
-                                        {/* Dotted vertical line */}
-                                        <div className="flex-1 w-0 border-l-[2px] border-dashed border-white/80" />
-                                        {/* Upward triangle */}
-                                        <div className="w-0 h-0 -mb-[1px]" style={{ borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderBottom: '7px solid white' }} />
+                                    {/* Away Bar — from left edge to model away win% */}
+                                    <div
+                                        className="h-full z-10 transition-all duration-1000 ease-out flex items-center pl-3"
+                                        style={{
+                                            width: isInView ? `${((awayModelWinPct - vigBoxBounds.leftEdge) / vigBoxBounds.width) * 100}%` : '50%',
+                                            background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
+                                            boxShadow: `0 0 15px ${awayBarColor}66`
+                                        }}
+                                    >
+                                        <span className={`text-[22px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
+                                    </div>
+                                    <div className="w-[2px] h-full bg-neutral-700 z-20" />
+                                    {/* Home Bar — from model away win% to right edge */}
+                                    <div
+                                        className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-3"
+                                        style={{
+                                            background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
+                                            boxShadow: `0 0 15px ${homeBarColor}66`
+                                        }}
+                                    >
+                                        <span className={`text-[22px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
                                     </div>
                                 </div>
-                            )}
-                            {/* Home Bar — with win% inside */}
-                            <div
-                                className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-3"
-                                style={{
-                                    background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
-                                    boxShadow: `0 0 15px ${homeBarColor}66`
-                                }}
-                            >
-                                <span className={`text-[22px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
                             </div>
-                        </div>
+                        ) : (
+                            // Fallback: show 50/50 if no odds available
+                            <div className="w-full h-[49px] rounded-full overflow-hidden flex relative border border-neutral-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
+                                <div
+                                    className="h-full z-10 transition-all duration-1000 ease-out flex items-center pl-3"
+                                    style={{
+                                        width: isInView ? `${awayModelWinPct}%` : '50%',
+                                        background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
+                                        boxShadow: `0 0 15px ${awayBarColor}66`
+                                    }}
+                                >
+                                    <span className={`text-[22px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
+                                </div>
+                                <div className="w-[2px] h-full bg-neutral-700 z-20" />
+                                <div
+                                    className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-3"
+                                    style={{
+                                        background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
+                                        boxShadow: `0 0 15px ${homeBarColor}66`
+                                    }}
+                                >
+                                    <span className={`text-[22px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* BELOW BAR: Pills left | Odds center | Pills right */}
@@ -1619,43 +1646,65 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             </div>
                         )}
 
-                        {/* Win % Bar — values inside bars */}
-                        <div className="w-full h-8 rounded-full overflow-hidden flex relative border border-neutral-600">
-                            {/* Away bar */}
-                            <div
-                                className="h-full z-10 transition-all duration-1000 ease-out flex items-center pl-2"
-                                style={{
-                                    width: isInView ? `${awayModelWinPct}%` : '50%',
-                                    background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
-                                    boxShadow: `0 0 15px ${awayBarColor}66`
-                                }}
-                            >
-                                <span className={`text-[14px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
-                            </div>
-                            <div className="w-[2px] h-full bg-neutral-700 z-20" />
-                            {/* No-vig Vegas implied marker (mobile) */}
-                            {noVigAwayPct != null && (
+                        {/* Win % Bar — vig box visualization (mobile) */}
+                        {vigBoxBounds && vigBoxBounds.width > 0 ? (
+                            <div className="w-full h-8 rounded-full overflow-visible relative border border-neutral-600" style={{ background: 'rgba(20, 20, 20, 0.8)' }}>
+                                {/* Vig box container (mobile version) */}
                                 <div
-                                    className="absolute top-0 h-full z-30 pointer-events-none transition-all duration-1000 ease-out"
-                                    style={{ left: isInView ? `${noVigAwayPct}%` : '50%' }}
+                                    className="absolute h-full rounded-full flex overflow-hidden"
+                                    style={{
+                                        left: isInView ? `${vigBoxBounds.leftEdge}%` : '50%',
+                                        width: isInView ? `${vigBoxBounds.width}%` : '0%',
+                                        transition: 'all 1s ease-out'
+                                    }}
                                 >
-                                    <div className="relative h-full flex flex-col items-center">
-                                        <div className="w-0 h-0 -mt-[1px]" style={{ borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '5px solid white' }} />
-                                        <div className="flex-1 w-0 border-l-[2px] border-dashed border-white/80" />
-                                        <div className="w-0 h-0 -mb-[1px]" style={{ borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderBottom: '5px solid white' }} />
+                                    {/* Away bar */}
+                                    <div
+                                        className="h-full z-10 transition-all duration-1000 ease-out flex items-center pl-2"
+                                        style={{
+                                            width: isInView ? `${((awayModelWinPct - vigBoxBounds.leftEdge) / vigBoxBounds.width) * 100}%` : '50%',
+                                            background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
+                                            boxShadow: `0 0 15px ${awayBarColor}66`
+                                        }}
+                                    >
+                                        <span className={`text-[14px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
+                                    </div>
+                                    <div className="w-[2px] h-full bg-neutral-700 z-20" />
+                                    <div
+                                        className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-2"
+                                        style={{
+                                            background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
+                                            boxShadow: `0 0 15px ${homeBarColor}66`
+                                        }}
+                                    >
+                                        <span className={`text-[14px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
                                     </div>
                                 </div>
-                            )}
-                            <div
-                                className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-2"
-                                style={{
-                                    background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
-                                    boxShadow: `0 0 15px ${homeBarColor}66`
-                                }}
-                            >
-                                <span className={`text-[14px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="w-full h-8 rounded-full overflow-hidden flex relative border border-neutral-600">
+                                <div
+                                    className="h-full z-10 transition-all duration-1000 ease-out flex items-center pl-2"
+                                    style={{
+                                        width: isInView ? `${awayModelWinPct}%` : '50%',
+                                        background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
+                                        boxShadow: `0 0 15px ${awayBarColor}66`
+                                    }}
+                                >
+                                    <span className={`text-[14px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
+                                </div>
+                                <div className="w-[2px] h-full bg-neutral-700 z-20" />
+                                <div
+                                    className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-2"
+                                    style={{
+                                        background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
+                                        boxShadow: `0 0 15px ${homeBarColor}66`
+                                    }}
+                                >
+                                    <span className={`text-[14px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Bottom row: odds + wager pills */}
                         <div className="flex justify-between items-center w-full">
