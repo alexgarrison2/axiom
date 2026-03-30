@@ -1622,80 +1622,40 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             </div>
                         )}
 
-                        {/* Win % Bar — vig box visualization (mobile) */}
-                        {vigBoxBounds && vigBoxBounds.width > 0 ? (
-                            <div className="w-full h-8 rounded-full overflow-hidden flex relative border border-neutral-600">
-                                {/* Left spacer */}
+                        {/* Win % Bar — model split with vig-box overlay (mobile) */}
+                        <div className="w-full h-8 rounded-full overflow-hidden flex relative border border-neutral-600">
+                            <div
+                                className="h-full z-10 transition-all duration-1000 ease-out flex items-center pl-2"
+                                style={{
+                                    width: isInView ? `${awayModelWinPct}%` : '50%',
+                                    background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
+                                    boxShadow: `0 0 15px ${awayBarColor}66`
+                                }}
+                            >
+                                <span className={`text-[14px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
+                            </div>
+                            <div
+                                className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-2"
+                                style={{
+                                    background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
+                                    boxShadow: `0 0 15px ${homeBarColor}66`
+                                }}
+                            >
+                                <span className={`text-[14px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
+                            </div>
+                            {vigBoxBounds && vigBoxBounds.width > 0 && isInView && (
                                 <div
-                                    className="h-full transition-all duration-1000 ease-out"
+                                    className="absolute top-0 h-full z-20 pointer-events-none"
                                     style={{
-                                        width: isInView ? `${vigBoxBounds.leftEdge}%` : '50%',
-                                        background: 'rgba(20, 20, 20, 0.6)'
+                                        left: `${vigBoxBounds.leftEdge}%`,
+                                        width: `${vigBoxBounds.width}%`,
+                                        border: '2px dashed rgba(255,255,255,0.55)',
+                                        borderRadius: 4,
+                                        background: 'rgba(255,255,255,0.06)',
                                     }}
                                 />
-
-                                {/* Away bar */}
-                                <div
-                                    className="h-full z-10 transition-all duration-1000 ease-out flex items-center pl-2"
-                                    style={{
-                                        width: isInView ? `${((awayModelWinPct - vigBoxBounds.leftEdge) / vigBoxBounds.width) * vigBoxBounds.width}%` : '0%',
-                                        background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
-                                        boxShadow: `0 0 15px ${awayBarColor}66`
-                                    }}
-                                >
-                                    {isInView && awayModelWinPct > vigBoxBounds.leftEdge + 3 && (
-                                        <span className={`text-[14px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
-                                    )}
-                                </div>
-
-                                <div className="w-[2px] h-full bg-neutral-700 z-20" />
-
-                                {/* Home bar */}
-                                <div
-                                    className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-2"
-                                    style={{
-                                        background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
-                                        boxShadow: `0 0 15px ${homeBarColor}66`
-                                    }}
-                                >
-                                    {isInView && homeModelWinPct < vigBoxBounds.rightEdge - 3 && (
-                                        <span className={`text-[14px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
-                                    )}
-                                </div>
-
-                                {/* Right spacer */}
-                                <div
-                                    className="h-full transition-all duration-1000 ease-out"
-                                    style={{
-                                        width: isInView ? `${100 - vigBoxBounds.rightEdge}%` : '50%',
-                                        background: 'rgba(20, 20, 20, 0.6)'
-                                    }}
-                                />
-                            </div>
-                        ) : (
-                            <div className="w-full h-8 rounded-full overflow-hidden flex relative border border-neutral-600">
-                                <div
-                                    className="h-full z-10 transition-all duration-1000 ease-out flex items-center pl-2"
-                                    style={{
-                                        width: isInView ? `${awayModelWinPct}%` : '50%',
-                                        background: `linear-gradient(90deg, ${awayBarColor} 0%, ${awayBarColor}dd 100%)`,
-                                        boxShadow: `0 0 15px ${awayBarColor}66`
-                                    }}
-                                >
-                                    <span className={`text-[14px] font-black ${getContrastTextClass(awayBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{awayModelWinPct.toFixed(1)}%</span>
-                                </div>
-                                <div className="w-[2px] h-full bg-neutral-700 z-20" />
-                                <div
-                                    className="h-full flex-1 z-10 transition-all duration-1000 ease-out flex items-center justify-end pr-2"
-                                    style={{
-                                        background: `linear-gradient(90deg, ${homeBarColor}dd 0%, ${homeBarColor} 100%)`,
-                                        boxShadow: `0 0 15px ${homeBarColor}66`
-                                    }}
-                                >
-                                    <span className={`text-[14px] font-black ${getContrastTextClass(homeBarColor)} drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]`}>{homeModelWinPct.toFixed(1)}%</span>
-                                </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         {/* Bottom row: odds + wager pills */}
                         <div className="flex justify-between items-center w-full">
@@ -1888,12 +1848,52 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             />
                         </div>
 
-                        {/* Total Display — right under History */}
-                        <div className="flex justify-center mt-2">
-                            <div className="px-4 py-1 rounded-full border border-neutral-800 bg-neutral-900">
-                                <span className="text-xs font-bold text-neutral-300">TOTAL: {totalGoals.toFixed(1)}</span>
+                        {/* More Odds — mobile */}
+                        {(prediction.total_line || prediction.home_puckline || prediction.home_1p_ml || prediction.home_three_way) && (
+                            <div className="flex justify-center mt-3">
+                                <table className="text-[11px] font-mono tabular-nums">
+                                    <thead>
+                                        <tr>
+                                            <td colSpan={4} className="text-center text-[9px] font-bold tracking-[0.2em] text-neutral-500 pb-2">MORE ODDS</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-neutral-300">
+                                        {prediction.total_line && (
+                                            <tr className="h-7">
+                                                <td className="pr-3 text-right text-[10px] font-bold tracking-widest text-neutral-500">TOTAL</td>
+                                                <td className="w-12 text-right">{formatOdds(prediction.total_under)}</td>
+                                                <td className="w-12 text-center text-white font-bold">{prediction.total_line}</td>
+                                                <td className="w-12 text-left">{formatOdds(prediction.total_over)}</td>
+                                            </tr>
+                                        )}
+                                        {prediction.home_puckline && (
+                                            <tr className="h-7">
+                                                <td className="pr-3 text-right text-[10px] font-bold tracking-widest text-neutral-500">PUCKLINE</td>
+                                                <td className="text-right">{formatOdds(prediction.away_puckline)}</td>
+                                                <td className="text-center text-white font-bold">±1.5</td>
+                                                <td className="text-left">{formatOdds(prediction.home_puckline)}</td>
+                                            </tr>
+                                        )}
+                                        {prediction.home_1p_ml && (
+                                            <tr className="h-7">
+                                                <td className="pr-3 text-right text-[10px] font-bold tracking-widest text-neutral-500">1ST PER</td>
+                                                <td className="text-right">{formatOdds(prediction.away_1p_ml)}</td>
+                                                <td className="text-center text-white font-bold">1P</td>
+                                                <td className="text-left">{formatOdds(prediction.home_1p_ml)}</td>
+                                            </tr>
+                                        )}
+                                        {prediction.home_three_way && (
+                                            <tr className="h-7">
+                                                <td className="pr-3 text-right text-[10px] font-bold tracking-widest text-neutral-500">3-WAY</td>
+                                                <td className="text-right">{formatOdds(prediction.away_three_way)}</td>
+                                                <td className="text-center text-white font-bold">{formatOdds(prediction.three_way_tie)}</td>
+                                                <td className="text-left">{formatOdds(prediction.home_three_way)}</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
+                        )}
 
                         {/* Pick Form — Mobile */}
                         {(() => {
