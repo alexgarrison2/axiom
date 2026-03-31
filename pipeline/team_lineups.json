@@ -610,12 +610,12 @@
         ],
         "f2": [
             {
-                "name": "Calum Ritchie",
-                "number": 64,
+                "name": "Anthony Duclair",
+                "number": 11,
                 "pos": "lw",
-                "id": 35084,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2380,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Brayden Schenn",
@@ -630,7 +630,7 @@
                 "number": 13,
                 "pos": "rw",
                 "id": 2482,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -652,12 +652,12 @@
                 "movement": null
             },
             {
-                "name": "Simon Holmstrom",
-                "number": 92,
+                "name": "Calum Ritchie",
+                "number": 64,
                 "pos": "rw",
-                "id": 30654,
+                "id": 35084,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -774,12 +774,12 @@
                 "movement": null
             },
             {
-                "name": "Anthony Duclair",
-                "number": 11,
+                "name": "Simon Holmstrom",
+                "number": 92,
                 "pos": "ir5",
-                "id": 2380,
+                "id": 30654,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Tony DeAngelo",
@@ -2016,38 +2016,12 @@
         ],
         "f2": [
             {
-                "name": "Anthony Mantha",
-                "number": 39,
-                "pos": "lw",
-                "id": 2151,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
-                "name": "Rickard Rakell",
-                "number": 67,
-                "pos": "c",
-                "id": 1682,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
-                "name": "Justin Brazeau",
-                "number": 15,
-                "pos": "rw",
-                "id": 28622,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
                 "name": "Tommy Novak",
                 "number": 18,
                 "pos": "lw",
                 "id": 26595,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Ben Kindel",
@@ -2055,15 +2029,41 @@
                 "pos": "c",
                 "id": 37573,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Avery Hayes",
-                "number": null,
+                "name": "Evgeni Malkin",
+                "number": 71,
                 "pos": "rw",
-                "id": 29767,
+                "id": 1236,
+                "ppUnit": 1,
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Anthony Mantha",
+                "number": 39,
+                "pos": "lw",
+                "id": 2151,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Rickard Rakell",
+                "number": 67,
+                "pos": "c",
+                "id": 1682,
+                "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Justin Brazeau",
+                "number": 15,
+                "pos": "rw",
+                "id": 28622,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -2168,14 +2168,6 @@
                 "number": 30,
                 "pos": "ir3",
                 "id": 33020,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Evgeni Malkin",
-                "number": 71,
-                "pos": "ir4",
-                "id": 1236,
                 "ppUnit": null,
                 "movement": null
             }
@@ -3729,7 +3721,7 @@
                 "pos": "rw",
                 "id": 2787,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -3747,7 +3739,7 @@
                 "pos": "c",
                 "id": 38133,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Frederick Gaudreau",
