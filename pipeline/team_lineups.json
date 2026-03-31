@@ -172,12 +172,12 @@
     "DAL": {
         "f1": [
             {
-                "name": "Jason Robertson",
-                "number": 21,
+                "name": "Jamie Benn",
+                "number": 14,
                 "pos": "lw",
-                "id": 2793,
-                "ppUnit": 1,
-                "movement": null
+                "id": 425,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Wyatt Johnston",
@@ -198,12 +198,12 @@
         ],
         "f2": [
             {
-                "name": "Jamie Benn",
-                "number": 14,
+                "name": "Jason Robertson",
+                "number": 21,
                 "pos": "lw",
-                "id": 425,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2793,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Matt Duchene",
@@ -556,17 +556,9 @@
                 "movement": null
             },
             {
-                "name": "Jordan Greenway",
-                "number": 12,
-                "pos": "ir2",
-                "id": 4644,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Jiri Kulich",
                 "number": 20,
-                "pos": "ir3",
+                "pos": "ir2",
                 "id": 36381,
                 "ppUnit": null,
                 "movement": null
@@ -574,7 +566,7 @@
             {
                 "name": "Noah Ostlund",
                 "number": 86,
-                "pos": "ir4",
+                "pos": "ir3",
                 "id": 36383,
                 "ppUnit": null,
                 "movement": null
@@ -615,7 +607,7 @@
                 "pos": "lw",
                 "id": 2380,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Brayden Schenn",
@@ -657,7 +649,7 @@
                 "pos": "rw",
                 "id": 35084,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -779,7 +771,7 @@
                 "pos": "ir5",
                 "id": 30654,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Tony DeAngelo",
@@ -982,14 +974,6 @@
                 "id": 1369,
                 "ppUnit": null,
                 "movement": null
-            },
-            {
-                "name": "Nikita Kucherov",
-                "number": 86,
-                "pos": "ir5",
-                "id": 2031,
-                "ppUnit": 1,
-                "movement": null
             }
         ]
     },
@@ -1182,14 +1166,6 @@
                 "number": 45,
                 "pos": "ir4",
                 "id": 2732,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Josh Anderson",
-                "number": 17,
-                "pos": "ir5",
-                "id": 21932,
                 "ppUnit": null,
                 "movement": null
             }
@@ -1404,17 +1380,9 @@
                 "movement": null
             },
             {
-                "name": "Sam Bennett",
-                "number": 9,
-                "pos": "ir7",
-                "id": 2366,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
                 "name": "Evan Rodrigues",
                 "number": 17,
-                "pos": "ir8",
+                "pos": "ir7",
                 "id": 2620,
                 "ppUnit": null,
                 "movement": null
@@ -2021,7 +1989,7 @@
                 "pos": "lw",
                 "id": 26595,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Ben Kindel",
@@ -2029,7 +1997,7 @@
                 "pos": "c",
                 "id": 37573,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Evgeni Malkin",
@@ -2037,7 +2005,7 @@
                 "pos": "rw",
                 "id": 1236,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -2047,7 +2015,7 @@
                 "pos": "lw",
                 "id": 2151,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Rickard Rakell",
@@ -2055,7 +2023,7 @@
                 "pos": "c",
                 "id": 1682,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Justin Brazeau",
@@ -2063,7 +2031,7 @@
                 "pos": "rw",
                 "id": 28622,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [

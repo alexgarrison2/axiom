@@ -1,4 +1,79 @@
 {
+    "ANA": [
+        {
+            "player": "Jansen Harkins",
+            "news": "Harkins underwent successful hand surgery on Monday and is expected to be out four weeks. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T23:14:35.549Z"
+        },
+        {
+            "player": "Cutter Gauthier",
+            "news": "Gauthier (upper-body) will not travel to San Jose but is hopeful to return by the weekend. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T21:30:39.541Z"
+        }
+    ],
+    "MTL": [
+        {
+            "player": "Jakub Dobes",
+            "news": "Dobes will start in Tampa Bay on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T22:50:04.598Z"
+        }
+    ],
+    "COL": [
+        {
+            "player": "Cale Makar",
+            "news": "Makar is expected to miss multiple games with an upper-body injury. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T22:45:33.036Z"
+        }
+    ],
+    "BUF": [
+        {
+            "player": "Jordan Greenway",
+            "news": "Greenway (lower-body) will play against the Islanders on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T22:39:29.508Z"
+        },
+        {
+            "player": "Ukko-Pekka Luukkonen",
+            "news": "Luukkonen will start against the Islanders on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T22:31:11.280Z"
+        }
+    ],
+    "TBL": [
+        {
+            "player": "Nikita Kucherov",
+            "news": "Kucherov (illness) took full part in warmups and is expected to return to the Lightning lineup on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T22:37:49.498Z"
+        },
+        {
+            "player": "Andrei Vasilevskiy",
+            "news": "Vasilevskiy will start against the Canadiens on Tuesday.",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T22:31:55.607Z"
+        }
+    ],
+    "NJD": [
+        {
+            "player": "Jacob Markstrom",
+            "news": "Markstrom will start in New York on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T22:31:29.941Z"
+        }
+    ],
     "NYR": [
         {
             "player": "Igor Shesterkin",
@@ -15,13 +90,6 @@
             "category": "Goalie Start",
             "date": "2026-03-31",
             "timestamp": "2026-03-31T22:15:21.334Z"
-        },
-        {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebucyk is in the starter's crease at Winnipeg's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T16:31:30.480Z"
         }
     ],
     "NYI": [
@@ -45,15 +113,6 @@
             "category": "Goalie Start",
             "date": "2026-03-31",
             "timestamp": "2026-03-31T21:43:06.418Z"
-        }
-    ],
-    "ANA": [
-        {
-            "player": "Cutter Gauthier",
-            "news": "Gauthier (upper-body) will not travel to San Jose but is hopeful to return by the weekend. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T21:30:39.541Z"
         }
     ],
     "PIT": [
@@ -106,61 +165,6 @@
             "category": "Goalie Start",
             "date": "2026-03-31",
             "timestamp": "2026-03-31T17:54:32.395Z"
-        }
-    ],
-    "PHI": [
-        {
-            "player": "Alex Bump",
-            "news": "Bump will be a healthy scratch vs. Washington on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T17:36:52.091Z"
-        }
-    ],
-    "FLA": [
-        {
-            "player": "Niko Mikkola",
-            "news": "Mikkola (lower-body) will be out for the remainder of the 2025-26 season. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T17:27:46.624Z"
-        }
-    ],
-    "DAL": [
-        {
-            "player": "Tyler Myers",
-            "news": "Myers (undisclosed) will be out vs. Boston on Tuesday. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T16:38:28.014Z"
-        },
-        {
-            "player": "Ilya Lyubushkin",
-            "news": "Lyubushkin will draw back into Dallas' lineup vs. Boston on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T16:38:02.826Z"
-        },
-        {
-            "player": "Michael Bunting",
-            "news": "Bunting (lower-body) will be out vs. Boston on Tuesday. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T16:37:21.570Z"
-        },
-        {
-            "player": "Cameron Hughes",
-            "news": "Hughes will make his Dallas' debut on Tuesday in Boston.",
-            "category": "Line Change",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T16:35:25.483Z"
-        },
-        {
-            "player": "Jake Oettinger",
-            "news": "Oettinger will start in Boston on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T16:34:11.974Z"
         }
     ]
 }
