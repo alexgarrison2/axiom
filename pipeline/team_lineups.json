@@ -172,11 +172,11 @@
     "DAL": {
         "f1": [
             {
-                "name": "Michael Bunting",
-                "number": 58,
+                "name": "Jason Robertson",
+                "number": 21,
                 "pos": "lw",
-                "id": 3778,
-                "ppUnit": null,
+                "id": 2793,
+                "ppUnit": 1,
                 "movement": "up"
             },
             {
@@ -198,12 +198,12 @@
         ],
         "f2": [
             {
-                "name": "Jason Robertson",
-                "number": 21,
+                "name": "Jamie Benn",
+                "number": 14,
                 "pos": "lw",
-                "id": 2793,
-                "ppUnit": 1,
-                "movement": null
+                "id": 425,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Matt Duchene",
@@ -224,12 +224,12 @@
         ],
         "f3": [
             {
-                "name": "Jamie Benn",
-                "number": 14,
+                "name": "Adam Erne",
+                "number": 73,
                 "pos": "lw",
-                "id": 425,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2725,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Justin Hryckowian",
@@ -266,12 +266,12 @@
                 "movement": null
             },
             {
-                "name": "Adam Erne",
-                "number": 73,
+                "name": "Cameron Hughes",
+                "number": null,
                 "pos": "rw",
-                "id": 2725,
+                "id": 4668,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -320,12 +320,12 @@
                 "movement": null
             },
             {
-                "name": "Tyler Myers",
-                "number": 57,
+                "name": "Ilya Lyubushkin",
+                "number": 46,
                 "pos": "rd",
-                "id": 176,
+                "id": 4760,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -376,6 +376,14 @@
                 "id": 3778,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Tyler Myers",
+                "number": 57,
+                "pos": "ir7",
+                "id": 176,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -3678,7 +3686,7 @@
                 "number": 74,
                 "pos": "lw",
                 "id": 32922,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3686,7 +3694,7 @@
                 "number": 9,
                 "pos": "c",
                 "id": 2538,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -3819,14 +3827,6 @@
                 "pos": "ir2",
                 "id": 30837,
                 "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Shane Wright",
-                "number": 51,
-                "pos": "ir3",
-                "id": 30830,
-                "ppUnit": 2,
                 "movement": null
             }
         ]
@@ -5887,7 +5887,7 @@
                 "pos": "c",
                 "id": 33571,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jonathan Marchessault",
@@ -5939,7 +5939,7 @@
                 "pos": "c",
                 "id": 34353,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Joakim Kemell",
