@@ -1,4 +1,155 @@
 {
+    "OTT": [
+        {
+            "player": "Linus Ullmark",
+            "news": "Ullmark will start in Florida on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:49:02.744Z"
+        }
+    ],
+    "CBJ": [
+        {
+            "player": "Kent Johnson",
+            "news": "Johnson will draw back into Columbus' lineup vs. Carolina on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:47:07.212Z"
+        },
+        {
+            "player": "Jet Greaves",
+            "news": "Greaves will start vs. Carolina on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:46:08.045Z"
+        },
+        {
+            "player": "Mathieu Olivier",
+            "news": "Olivier is week-to-week with an upper-body injury. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:40:47.902Z"
+        }
+    ],
+    "TBL": [
+        {
+            "player": "Andrei Vasilevskiy",
+            "news": "Vasilevskiy is expected to start vs. Montreal on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:45:18.437Z"
+        },
+        {
+            "player": "Oliver Bjorkstrand",
+            "news": "Bjorkstrand is expected to be a healthy scratch vs. Montreal on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:19:41.512Z"
+        }
+    ],
+    "MTL": [
+        {
+            "player": "Jakub Dobes",
+            "news": "Dobes is expected to start in Tampa Bay on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:44:49.237Z"
+        }
+    ],
+    "CHI": [
+        {
+            "player": "Sacha Boisvert",
+            "news": "Boisvert is expected to be a healthy scratch vs. Winnipeg on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:35:31.296Z"
+        },
+        {
+            "player": "Spencer Knight",
+            "news": "Knight is in the starter's crease at Chicago's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:25:53.955Z"
+        }
+    ],
+    "PHI": [
+        {
+            "player": "Dan Vladar",
+            "news": "Vladar will start in Washington on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:34:18.496Z"
+        },
+        {
+            "player": "Dan Vladar",
+            "news": "Vladar was in the starter's crease at Philadelphia's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:27:22.014Z"
+        }
+    ],
+    "PIT": [
+        {
+            "player": "Ville Koivunen",
+            "news": "Koivunen has been reassigned to Wilkes-Barre/Scranton (AHL). ",
+            "category": "Send Down",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:31:18.583Z"
+        },
+        {
+            "player": "Rutger McGroarty",
+            "news": "McGroarty has been reassigned to Wilkes-Barre/Scranton (AHL). ",
+            "category": "Send Down",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:30:54.649Z"
+        }
+    ],
+    "WSH": [
+        {
+            "player": "Logan Thompson",
+            "news": "Thompson will start vs. Philadelphia on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:29:19.400Z"
+        },
+        {
+            "player": "David Kampf",
+            "news": "Kampf will make his Washington debut vs. Philadelphia on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:12:30.761Z"
+        }
+    ],
+    "FLA": [
+        {
+            "player": "Uvis Balinskis",
+            "news": "Balinskis (undisclosed) is likely to miss the reminder of the 2025-26 season. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:10:17.656Z"
+        },
+        {
+            "player": "Anton Lundell",
+            "news": "Lundell (upper-body) is likely to miss the remainder of the 2025-26 season. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:09:19.705Z"
+        },
+        {
+            "player": "Sam Reinhart",
+            "news": "Reinhart (undisclosed) is likely to miss the remainder of the 2025-26 season. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:07:46.530Z"
+        },
+        {
+            "player": "Brad Marchand",
+            "news": "Marchand (lower-body) is likely to miss the remainder of the 2025-26 season. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:07:10.093Z"
+        }
+    ],
     "BUF": [
         {
             "player": "Jordan Greenway",
@@ -6,138 +157,6 @@
             "category": "Injury",
             "date": "2026-03-31",
             "timestamp": "2026-03-31T15:02:48.296Z"
-        },
-        {
-            "player": "Ukko-Pekka Luukkonen",
-            "news": "Luukkonen is expected to start vs. New York on Tuesday.",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:59:46.863Z"
-        }
-    ],
-    "BOS": [
-        {
-            "player": "Joonas Korpisalo",
-            "news": "Korpisalo will start vs. Dallas on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:00:17.538Z"
-        }
-    ],
-    "NYR": [
-        {
-            "player": "Igor Shesterkin",
-            "news": "Shesterkin was the first goalie off the ice at New York's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:58:34.173Z"
-        }
-    ],
-    "FLA": [
-        {
-            "player": "Nolan Foote",
-            "news": "Foote will be a healthy scratch vs. Ottawa on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:51:45.389Z"
-        },
-        {
-            "player": "Sam Bennett",
-            "news": "Bennett (personal) will rejoin Florida's lineup vs. Ottawa on Tuesday. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:51:24.597Z"
-        },
-        {
-            "player": "Daniil Tarasov",
-            "news": "Tarasov will start vs. Ottawa on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:50:33.796Z"
-        },
-        {
-            "player": "Evan Rodrigues",
-            "news": "Rodrigues will have surgery on his broken finger and will miss the remainder of the 2025-26 season. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:49:43.583Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Nikita Kucherov",
-            "news": "Kucherov (illness) will be a game-time decision vs. Montreal on Tuesday. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:46:43.217Z"
-        },
-        {
-            "player": "Noah Steen",
-            "news": "Tampa has signed Noah Steen to a two-year, entry-level contract. ",
-            "category": "Signing",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:31:42.512Z"
-        }
-    ],
-    "NJD": [
-        {
-            "player": "Jacob Markstrom",
-            "news": "Markstrom is in the starter's crease at New Jersey's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:38:03.969Z"
-        }
-    ],
-    "CBJ": [
-        {
-            "player": "Jet Greaves",
-            "news": "Greaves is in the starter's crease at Columbus' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T14:32:25.156Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Alexandre Carrier",
-            "news": "Carrier will miss 2-to-4 weeks with an upper-body injury. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T13:03:15.261Z"
-        }
-    ],
-    "ANA": [
-        {
-            "player": "Cutter Gauthier",
-            "news": "Gauthier (upper-body) left Monday\u2019s game vs. Toronto and did not return.",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T03:13:00.508Z"
-        }
-    ],
-    "COL": [
-        {
-            "player": "Cale Makar",
-            "news": "Makar (upper-body) left Monday\u2019s game vs. Calgary and did not return.",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T02:52:04.568Z"
-        }
-    ],
-    "TOR": [
-        {
-            "player": "Calle Jarnkrok",
-            "news": "Jarnkrok will draw into the Maple Leafs lineup on Monday.",
-            "category": "Line Change",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T01:56:18.857Z"
-        },
-        {
-            "player": "Steven Lorentz",
-            "news": "Lorentz is a healthy scratch for Monday's game in Anaheim. ",
-            "category": "Line Change",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T01:54:39.997Z"
         }
     ]
 }
