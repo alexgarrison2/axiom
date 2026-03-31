@@ -869,7 +869,7 @@
                 "pos": "lw",
                 "id": 36,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Nick Paul",
@@ -1048,38 +1048,38 @@
                 "movement": null
             },
             {
+                "name": "Jake Evans",
+                "number": 71,
+                "pos": "c",
+                "id": 4708,
+                "ppUnit": null,
+                "movement": null
+            },
+            {
+                "name": "Josh Anderson",
+                "number": 17,
+                "pos": "rw",
+                "id": 21932,
+                "ppUnit": null,
+                "movement": "up"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Joe Veleno",
+                "number": 90,
+                "pos": "lw",
+                "id": 26350,
+                "ppUnit": null,
+                "movement": null
+            },
+            {
                 "name": "Phillip Danault",
                 "number": 24,
                 "pos": "c",
                 "id": 1846,
                 "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Jake Evans",
-                "number": 71,
-                "pos": "rw",
-                "id": 4708,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Arber Xhekaj",
-                "number": 72,
-                "pos": "lw",
-                "id": 29784,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Joe Veleno",
-                "number": 90,
-                "pos": "c",
-                "id": 26350,
-                "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Brendan Gallagher",
@@ -1136,12 +1136,12 @@
                 "movement": null
             },
             {
-                "name": "Alexandre Carrier",
-                "number": 45,
+                "name": "Arber Xhekaj",
+                "number": 72,
                 "pos": "rd",
-                "id": 2732,
+                "id": 29784,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "ir": [
@@ -1170,9 +1170,17 @@
                 "movement": null
             },
             {
+                "name": "Alexandre Carrier",
+                "number": 45,
+                "pos": "ir4",
+                "id": 2732,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
                 "name": "Josh Anderson",
                 "number": 17,
-                "pos": "ir4",
+                "pos": "ir5",
                 "id": 21932,
                 "ppUnit": null,
                 "movement": null
@@ -1535,7 +1543,7 @@
                 "pos": "ld",
                 "id": 37937,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jordan Spence",
@@ -1561,7 +1569,7 @@
                 "pos": "rd",
                 "id": 33595,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
@@ -2377,7 +2385,7 @@
                 "pos": "c",
                 "id": 2636,
                 "ppUnit": 1,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Tom Wilson",
@@ -3152,12 +3160,12 @@
                 "movement": null
             },
             {
-                "name": "Sacha Boisvert",
-                "number": null,
+                "name": "Sam Lafferty",
+                "number": 24,
                 "pos": "c",
-                "id": 36376,
+                "id": 4656,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Landon Slaggert",
@@ -3206,18 +3214,18 @@
         ],
         "d3": [
             {
-                "name": "Ethan Del Mastro",
-                "number": 38,
+                "name": "Kevin Korchinski",
+                "number": 14,
                 "pos": "ld",
-                "id": 30841,
+                "id": 31513,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Kevin Korchinski",
-                "number": 14,
+                "name": "Ethan Del Mastro",
+                "number": 38,
                 "pos": "rd",
-                "id": 31513,
+                "id": 30841,
                 "ppUnit": null,
                 "movement": null
             }

@@ -1,4 +1,114 @@
 {
+    "DAL": [
+        {
+            "player": "Tyler Myers",
+            "news": "Myers (undisclosed) will be out vs. Boston on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:38:28.014Z"
+        },
+        {
+            "player": "Ilya Lyubushkin",
+            "news": "Lyubushkin will draw back into Dallas' lineup vs. Boston on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:38:02.826Z"
+        },
+        {
+            "player": "Michael Bunting",
+            "news": "Bunting (lower-body) will be out vs. Boston on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:37:21.570Z"
+        },
+        {
+            "player": "Cameron Hughes",
+            "news": "Hughes will make his Dallas' debut on Tuesday in Boston.",
+            "category": "Line Change",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:35:25.483Z"
+        },
+        {
+            "player": "Jake Oettinger",
+            "news": "Oettinger will start in Boston on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:34:11.974Z"
+        }
+    ],
+    "WPG": [
+        {
+            "player": "Connor Hellebuyck",
+            "news": "Hellebucyk is in the starter's crease at Winnipeg's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:31:30.480Z"
+        }
+    ],
+    "CHI": [
+        {
+            "player": "Matt Grzelcyk",
+            "news": "Grzelcyk (undisclosed) will miss the remainder of the 2025-26 season. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:24:01.373Z"
+        },
+        {
+            "player": "Artyom Levshunov",
+            "news": "Levshunov (hand) will miss the remainder of the 2025-26 season. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:23:14.220Z"
+        },
+        {
+            "player": "Sam Lafferty",
+            "news": "Lafferty will draw into Chicago's lineup vs. Winnipeg on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:15:16.018Z"
+        },
+        {
+            "player": "Sacha Boisvert",
+            "news": "Boisvert is expected to be a healthy scratch vs. Winnipeg on Tuesday. ",
+            "category": "Line Change",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:35:31.296Z"
+        }
+    ],
+    "EDM": [
+        {
+            "player": "Connor Ingram",
+            "news": "Ingram will start vs. Seattle on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:22:14.475Z"
+        }
+    ],
+    "MTL": [
+        {
+            "player": "Josh Anderson",
+            "news": "Anderson (illness) is expected to return in Tampa Bay on Tuesday. ",
+            "category": "Injury",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:17:35.283Z"
+        },
+        {
+            "player": "Jakub Dobes",
+            "news": "Dobes is expected to start in Tampa Bay on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T15:44:49.237Z"
+        }
+    ],
+    "CAR": [
+        {
+            "player": "Brandon Bussi",
+            "news": "Bussi will start in Columbus on Tuesday. ",
+            "category": "Goalie Start",
+            "date": "2026-03-31",
+            "timestamp": "2026-03-31T16:07:01.835Z"
+        }
+    ],
     "OTT": [
         {
             "player": "Linus Ullmark",
@@ -38,38 +148,6 @@
             "category": "Goalie Start",
             "date": "2026-03-31",
             "timestamp": "2026-03-31T15:45:18.437Z"
-        },
-        {
-            "player": "Oliver Bjorkstrand",
-            "news": "Bjorkstrand is expected to be a healthy scratch vs. Montreal on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:19:41.512Z"
-        }
-    ],
-    "MTL": [
-        {
-            "player": "Jakub Dobes",
-            "news": "Dobes is expected to start in Tampa Bay on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:44:49.237Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Sacha Boisvert",
-            "news": "Boisvert is expected to be a healthy scratch vs. Winnipeg on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:35:31.296Z"
-        },
-        {
-            "player": "Spencer Knight",
-            "news": "Knight is in the starter's crease at Chicago's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:25:53.955Z"
         }
     ],
     "PHI": [
@@ -79,84 +157,6 @@
             "category": "Goalie Start",
             "date": "2026-03-31",
             "timestamp": "2026-03-31T15:34:18.496Z"
-        },
-        {
-            "player": "Dan Vladar",
-            "news": "Vladar was in the starter's crease at Philadelphia's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:27:22.014Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Ville Koivunen",
-            "news": "Koivunen has been reassigned to Wilkes-Barre/Scranton (AHL). ",
-            "category": "Send Down",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:31:18.583Z"
-        },
-        {
-            "player": "Rutger McGroarty",
-            "news": "McGroarty has been reassigned to Wilkes-Barre/Scranton (AHL). ",
-            "category": "Send Down",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:30:54.649Z"
-        }
-    ],
-    "WSH": [
-        {
-            "player": "Logan Thompson",
-            "news": "Thompson will start vs. Philadelphia on Tuesday. ",
-            "category": "Goalie Start",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:29:19.400Z"
-        },
-        {
-            "player": "David Kampf",
-            "news": "Kampf will make his Washington debut vs. Philadelphia on Tuesday. ",
-            "category": "Line Change",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:12:30.761Z"
-        }
-    ],
-    "FLA": [
-        {
-            "player": "Uvis Balinskis",
-            "news": "Balinskis (undisclosed) is likely to miss the reminder of the 2025-26 season. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:10:17.656Z"
-        },
-        {
-            "player": "Anton Lundell",
-            "news": "Lundell (upper-body) is likely to miss the remainder of the 2025-26 season. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:09:19.705Z"
-        },
-        {
-            "player": "Sam Reinhart",
-            "news": "Reinhart (undisclosed) is likely to miss the remainder of the 2025-26 season. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:07:46.530Z"
-        },
-        {
-            "player": "Brad Marchand",
-            "news": "Marchand (lower-body) is likely to miss the remainder of the 2025-26 season. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:07:10.093Z"
-        }
-    ],
-    "BUF": [
-        {
-            "player": "Jordan Greenway",
-            "news": "Greenway (lower-body) will be a game-time decision vs. the Islanders on Tuesday. ",
-            "category": "Injury",
-            "date": "2026-03-31",
-            "timestamp": "2026-03-31T15:02:48.296Z"
         }
     ]
 }
