@@ -106,48 +106,48 @@
         ],
         "d1": [
             {
-                "name": "Brett Kulak",
-                "number": 77,
-                "pos": "ld",
-                "id": 2466,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Cale Makar",
-                "number": 8,
-                "pos": "rd",
-                "id": 2788,
-                "ppUnit": 1,
-                "movement": "up"
-            }
-        ],
-        "d2": [
-            {
                 "name": "Devon Toews",
                 "number": 7,
                 "pos": "ld",
                 "id": 2874,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sam Malinski",
                 "number": 70,
                 "pos": "rd",
                 "id": 37993,
+                "ppUnit": 1,
+                "movement": "up"
+            }
+        ],
+        "d2": [
+            {
+                "name": "Brett Kulak",
+                "number": 77,
+                "pos": "ld",
+                "id": 2466,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
+            },
+            {
+                "name": "Josh Manson",
+                "number": 42,
+                "pos": "rd",
+                "id": 2400,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "d3": [
             {
-                "name": "Josh Manson",
-                "number": 42,
+                "name": "Nick Blankenburg",
+                "number": 37,
                 "pos": "ld",
-                "id": 2400,
+                "id": 36299,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Brent Burns",
@@ -172,7 +172,7 @@
                 "number": 8,
                 "pos": "ir2",
                 "id": 2788,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "movement": null
             }
         ]
@@ -1229,7 +1229,7 @@
                 "pos": "rd",
                 "id": 30423,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -1239,7 +1239,7 @@
                 "pos": "ld",
                 "id": 29922,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Carter Yakemchuk",
@@ -1379,7 +1379,7 @@
                 "pos": "c",
                 "id": 1914,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Beck Malenstyn",
@@ -1475,7 +1475,7 @@
                 "pos": "ir4",
                 "id": 1914,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -1697,7 +1697,7 @@
                 "pos": "rw",
                 "id": 1682,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -1707,7 +1707,7 @@
                 "pos": "lw",
                 "id": 2151,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Tommy Novak",
@@ -1733,7 +1733,7 @@
                 "pos": "lw",
                 "id": 29767,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Ben Kindel",
@@ -1741,7 +1741,7 @@
                 "pos": "c",
                 "id": 37573,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Justin Brazeau",
@@ -1863,7 +1863,7 @@
                 "pos": "ir4",
                 "id": 2407,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -1987,7 +1987,7 @@
                 "pos": "rd",
                 "id": 2363,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -2015,7 +2015,7 @@
                 "pos": "ld",
                 "id": 593,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Michael Benning",
@@ -2081,7 +2081,7 @@
                 "pos": "ir7",
                 "id": 2363,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Dmitry Kulikov",
@@ -2089,7 +2089,7 @@
                 "pos": "ir8",
                 "id": 593,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2643,7 +2643,7 @@
                 "pos": "lw",
                 "id": 2875,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Trevor Zegras",
@@ -2695,7 +2695,7 @@
                 "pos": "lw",
                 "id": 35098,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Noah Cates",
@@ -2837,7 +2837,7 @@
                 "pos": "rw",
                 "id": 34532,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -2889,7 +2889,7 @@
                 "pos": "rw",
                 "id": 31783,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -3255,7 +3255,7 @@
                 "pos": "c",
                 "id": 4804,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Miles Wood",
@@ -3359,7 +3359,7 @@
                 "pos": "ir5",
                 "id": 4804,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -5287,7 +5287,7 @@
                 "pos": "lw",
                 "id": 2488,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Matty Beniers",
@@ -5355,7 +5355,7 @@
                 "pos": "rw",
                 "id": 36542,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
