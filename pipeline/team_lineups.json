@@ -3487,7 +3487,7 @@
                 "pos": "lw",
                 "id": 945,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jason Dickinson",
@@ -3521,7 +3521,7 @@
                 "pos": "c",
                 "id": 38438,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Curtis Lazar",
@@ -3673,7 +3673,7 @@
                 "pos": "lw",
                 "id": 1864,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Oscar Fisker-Molgaard",
@@ -3681,7 +3681,7 @@
                 "pos": "c",
                 "id": 38133,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jared McCann",
@@ -3715,7 +3715,7 @@
                 "pos": "rw",
                 "id": 2787,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -3779,7 +3779,7 @@
                 "pos": "ir1",
                 "id": 30830,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ryan Winterton",
@@ -4210,10 +4210,10 @@
         ],
         "f3": [
             {
-                "name": "Mathieu Joseph",
-                "number": 17,
+                "name": "Joel Armia",
+                "number": 40,
                 "pos": "lw",
-                "id": 3891,
+                "id": 1952,
                 "ppUnit": null,
                 "movement": null
             },
@@ -4226,48 +4226,48 @@
                 "movement": null
             },
             {
-                "name": "Joel Armia",
-                "number": 40,
-                "pos": "rw",
-                "id": 1952,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Jeff Malott",
-                "number": 39,
-                "pos": "lw",
-                "id": 34555,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Samuel Helenius",
-                "number": null,
-                "pos": "c",
-                "id": 34674,
-                "ppUnit": null,
-                "movement": "up"
-            },
-            {
                 "name": "Jared Wright",
                 "number": 53,
                 "pos": "rw",
                 "id": 34797,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Mathieu Joseph",
+                "number": 17,
+                "pos": "lw",
+                "id": 3891,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Alex Turcotte",
+                "number": 15,
+                "pos": "c",
+                "id": 30420,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
+                "name": "Taylor Ward",
+                "number": 52,
+                "pos": "rw",
+                "id": 36257,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d1": [
             {
-                "name": "Mikey Anderson",
-                "number": 44,
+                "name": "Brian Dumoulin",
+                "number": 2,
                 "pos": "ld",
-                "id": 25509,
+                "id": 1928,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Drew Doughty",
@@ -4298,12 +4298,12 @@
         ],
         "d3": [
             {
-                "name": "Brian Dumoulin",
-                "number": 2,
+                "name": "Mikey Anderson",
+                "number": 44,
                 "pos": "ld",
-                "id": 1928,
+                "id": 25509,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Cody Ceci",
