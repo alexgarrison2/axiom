@@ -1,4 +1,105 @@
 {
+    "ANA": [
+        {
+            "player": "Nathan Gaucher",
+            "news": "Gaucher will make his NHL debut vs. San Jose on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:38:24.809Z"
+        },
+        {
+            "player": "Lukas Dostal",
+            "news": "Dostal is in the starter's crease at Anaheim's morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:04:47.018Z"
+        }
+    ],
+    "VAN": [
+        {
+            "player": "Pierre-Olivier Joseph",
+            "news": "Joseph will draw back into Vancouver's lineup vs. Colorado on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:28:39.199Z"
+        },
+        {
+            "player": "Max Sasson",
+            "news": "Sasson will draw back into Vancouver's lineup vs. Colorado on Wednesday. ",
+            "category": "Line Change",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:27:39.810Z"
+        },
+        {
+            "player": "Victor Mancini",
+            "news": "Mancini (undisclosed) is out vs. Colorado on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:24:46.407Z"
+        },
+        {
+            "player": "Evander Kane",
+            "news": "Kane (undisclosed) will be out vs. Colorado on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:24:14.700Z"
+        },
+        {
+            "player": "Kevin Lankinen",
+            "news": "Lankinen will start in Colorado on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:22:56.674Z"
+        },
+        {
+            "player": "Kevin Lankinen",
+            "news": "Lankinen was the first goalie off the ice at Vancouver's morning skate on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T16:58:41.724Z"
+        }
+    ],
+    "SJS": [
+        {
+            "player": "Yaroslav Askarov",
+            "news": "Askarov will start vs. Anaheim on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:26:06.123Z"
+        },
+        {
+            "player": "Igor Chernyshov",
+            "news": "Chernyshov (illness) will be a game-time decision vs. Anaheim on Wednesday",
+            "category": "Injury",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:19:18.324Z"
+        }
+    ],
+    "EDM": [
+        {
+            "player": "William Nicholl",
+            "news": "Edmonton has signed William Nicholl to a three-year, entry-level contract. ",
+            "category": "Signing",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:21:48.895Z"
+        }
+    ],
+    "CBJ": [
+        {
+            "player": "Isac Lundestrom",
+            "news": "Lundestrom (undisclosed) will be a game-time decision vs. Carolina on Wednesday. ",
+            "category": "Injury",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:20:33.547Z"
+        },
+        {
+            "player": "Mason Marchment",
+            "news": "Marchment (undisclosed) will be a game-time decision vs. Carolina on Thursday. ",
+            "category": "Injury",
+            "date": "2026-04-01",
+            "timestamp": "2026-04-01T17:19:52.592Z"
+        }
+    ],
     "COL": [
         {
             "player": "Cale Makar",
@@ -13,13 +114,6 @@
             "category": "Line Change",
             "date": "2026-04-01",
             "timestamp": "2026-04-01T16:27:36.935Z"
-        },
-        {
-            "player": "Mackenzie Blackwood",
-            "news": "Blackwood is expected to start vs. Vancouver on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T15:30:16.799Z"
         }
     ],
     "CGY": [
@@ -54,88 +148,6 @@
             "category": "Injury",
             "date": "2026-04-01",
             "timestamp": "2026-04-01T16:10:34.943Z"
-        }
-    ],
-    "CBJ": [
-        {
-            "player": "Zach Aston-Reese",
-            "news": "Aston-Reese has been recalled from Cleveland (AHL). ",
-            "category": "Call Up",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T15:34:28.936Z"
-        },
-        {
-            "player": "Isac Lundestrom",
-            "news": "Lundestrom (undisclosed) left Tuesday's game vs. Carolina and did not return. ",
-            "category": "Injury",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T13:15:46.377Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Adam Gajan",
-            "news": "Chicago has signed Adam Gajan to a two-year, entry-level contract. ",
-            "category": "Signing",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T15:33:42.498Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Avery Hayes",
-            "news": "Hayes drew back into Pittsburgh\u2019s lineup vs. Detroit on Tuesday.",
-            "category": "Line Change",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T14:28:06.079Z"
-        },
-        {
-            "player": "Bryan Rust",
-            "news": "Rust (lower-body) was a late scratch vs. Detroit on Tuesday.",
-            "category": "Injury",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T14:26:35.641Z"
-        }
-    ],
-    "BUF": [
-        {
-            "player": "Sam Carrick",
-            "news": "Carrick (upper-body) left Tuesday\u2019s game vs. New York and did not return.",
-            "category": "Injury",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T13:33:02.641Z"
-        }
-    ],
-    "FLA": [
-        {
-            "player": "Dmitry Kulikov",
-            "news": "Kulikov (upper-body) left Tuesday's game vs. Ottawa and did not return. ",
-            "category": "Injury",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T13:15:09.650Z"
-        },
-        {
-            "player": "Aaron Ekblad",
-            "news": "Ekblad (hand) left Tuesday's game vs. Ottawa and is expected to miss some time. ",
-            "category": "Injury",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T13:14:44.692Z"
-        }
-    ],
-    "SEA": [
-        {
-            "player": "Jaden Schwartz",
-            "news": "Schwartz will return to the Kraken lineup on Tuesday.",
-            "category": "Injury",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T00:55:11.728Z"
-        },
-        {
-            "player": "Shane Wright",
-            "news": "Wright (upper-body) will not play in Edmonton on Tuesday.",
-            "category": "Injury",
-            "date": "2026-04-01",
-            "timestamp": "2026-04-01T00:49:02.818Z"
         }
     ]
 }
