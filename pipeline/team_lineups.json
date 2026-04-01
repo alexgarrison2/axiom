@@ -184,7 +184,7 @@
                 "number": 92,
                 "pos": "lw",
                 "id": 36367,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -196,12 +196,12 @@
                 "movement": null
             },
             {
-                "name": "Linus Karlsson",
-                "number": 94,
+                "name": "Jake DeBrusk",
+                "number": 74,
                 "pos": "rw",
-                "id": 29135,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2490,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -232,12 +232,12 @@
         ],
         "f3": [
             {
-                "name": "Evander Kane",
-                "number": 91,
+                "name": "Max Sasson",
+                "number": null,
                 "pos": "lw",
-                "id": 65,
-                "ppUnit": 2,
-                "movement": null
+                "id": 30007,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Teddy Blueger",
@@ -248,12 +248,12 @@
                 "movement": null
             },
             {
-                "name": "Jake DeBrusk",
-                "number": 74,
+                "name": "Linus Karlsson",
+                "number": 94,
                 "pos": "rw",
-                "id": 2490,
-                "ppUnit": 1,
-                "movement": null
+                "id": 29135,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -328,12 +328,12 @@
                 "movement": null
             },
             {
-                "name": "Victor Mancini",
-                "number": 90,
+                "name": "Pierre-Olivier Joseph",
+                "number": 7,
                 "pos": "rd",
-                "id": 33084,
+                "id": 2812,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -418,10 +418,10 @@
         ],
         "f3": [
             {
-                "name": "Joel Armia",
-                "number": 40,
+                "name": "Jared Wright",
+                "number": 53,
                 "pos": "lw",
-                "id": 1952,
+                "id": 34797,
                 "ppUnit": null,
                 "movement": null
             },
@@ -434,10 +434,10 @@
                 "movement": null
             },
             {
-                "name": "Jared Wright",
-                "number": 53,
+                "name": "Joel Armia",
+                "number": 40,
                 "pos": "rw",
-                "id": 34797,
+                "id": 1952,
                 "ppUnit": null,
                 "movement": null
             }
@@ -902,6 +902,14 @@
                 "id": 1678,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Igor Chernyshov",
+                "number": 92,
+                "pos": "ir4",
+                "id": 38146,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
@@ -1002,12 +1010,12 @@
                 "movement": null
             },
             {
-                "name": "Ian Moore",
+                "name": "Nathan Gaucher",
                 "number": null,
                 "pos": "rw",
-                "id": 31897,
+                "id": 31234,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1056,12 +1064,12 @@
                 "movement": null
             },
             {
-                "name": "Radko Gudas",
-                "number": 7,
+                "name": "Ian Moore",
+                "number": null,
                 "pos": "rd",
-                "id": 1366,
+                "id": 31897,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "ir": [
