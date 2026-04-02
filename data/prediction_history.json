@@ -14810,5 +14810,47 @@
     "actualWinner": "Rangers",
     "isCorrect": true,
     "brierScore": 0.2052
+  },
+  {
+    "date": "2026-04-01",
+    "homeTeam": "Kings",
+    "awayTeam": "Blues",
+    "homeScore": 2,
+    "awayScore": 1,
+    "homeXg": 3.29,
+    "awayXg": 3.37,
+    "homeWinProb": 56.5,
+    "predictedWinner": "Kings",
+    "actualWinner": "Kings",
+    "isCorrect": true,
+    "brierScore": 0.1892
+  },
+  {
+    "date": "2026-04-01",
+    "homeTeam": "Sharks",
+    "awayTeam": "Ducks",
+    "homeScore": 4,
+    "awayScore": 3,
+    "homeXg": 3.9,
+    "awayXg": 3.76,
+    "homeWinProb": 54.6,
+    "predictedWinner": "Sharks",
+    "actualWinner": "Sharks",
+    "isCorrect": true,
+    "brierScore": 0.2061
+  },
+  {
+    "date": "2026-04-01",
+    "homeTeam": "Avalanche",
+    "awayTeam": "Canucks",
+    "homeScore": 6,
+    "awayScore": 8,
+    "homeXg": 4.8,
+    "awayXg": 2.92,
+    "homeWinProb": 70.2,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Canucks",
+    "isCorrect": false,
+    "brierScore": 0.4928
   }
 ]

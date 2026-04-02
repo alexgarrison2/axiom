@@ -1,44 +1,5 @@
 [
     {
-        "id": 2025021188,
-        "gameDate": "2026-04-01",
-        "startTimeUTC": "2026-04-02T00:30:00Z",
-        "homeTeam": "Avalanche",
-        "awayTeam": "Canucks",
-        "homeTeamAbbrev": "COL",
-        "awayTeamAbbrev": "VAN",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025021189,
-        "gameDate": "2026-04-01",
-        "startTimeUTC": "2026-04-02T01:00:00Z",
-        "homeTeam": "Kings",
-        "awayTeam": "Blues",
-        "homeTeamAbbrev": "LAK",
-        "awayTeamAbbrev": "STL",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
-        "id": 2025021190,
-        "gameDate": "2026-04-01",
-        "startTimeUTC": "2026-04-02T01:00:00Z",
-        "homeTeam": "Sharks",
-        "awayTeam": "Ducks",
-        "homeTeamAbbrev": "SJS",
-        "awayTeamAbbrev": "ANA",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed"
-    },
-    {
         "id": 2025021191,
         "gameDate": "2026-04-02",
         "startTimeUTC": "2026-04-02T23:00:00Z",
@@ -48,7 +9,7 @@
         "awayTeamAbbrev": "BUF",
         "homeGoalieConfirmed": "Linus Ullmark",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Ukko-Pekka Luukkonen",
+        "awayGoalieConfirmed": "Alex Lyon",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -111,7 +72,7 @@
         "awayTeam": "Blue Jackets",
         "homeTeamAbbrev": "CAR",
         "awayTeamAbbrev": "CBJ",
-        "homeGoalieConfirmed": "Brandon Bussi",
+        "homeGoalieConfirmed": "Frederik Andersen",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Jet Greaves",
         "awayGoalieStatus": "Unconfirmed"
@@ -124,7 +85,7 @@
         "awayTeam": "Capitals",
         "homeTeamAbbrev": "NJD",
         "awayTeamAbbrev": "WSH",
-        "homeGoalieConfirmed": "Jacob Markstrom",
+        "homeGoalieConfirmed": "Jake Allen",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Logan Thompson",
         "awayGoalieStatus": "Unconfirmed"
@@ -152,7 +113,7 @@
         "awayTeamAbbrev": "VAN",
         "homeGoalieConfirmed": "Filip Gustavsson",
         "homeGoalieStatus": "Confirmed",
-        "awayGoalieConfirmed": "Kevin Lankinen",
+        "awayGoalieConfirmed": "Nikita Tolopilo",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -189,9 +150,9 @@
         "awayTeam": "Maple Leafs",
         "homeTeamAbbrev": "SJS",
         "awayTeamAbbrev": "TOR",
-        "homeGoalieConfirmed": "Yaroslav Askarov",
+        "homeGoalieConfirmed": "Alex Nedeljkovic",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Anthony Stolarz",
+        "awayGoalieConfirmed": "Joseph Woll",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -218,6 +179,32 @@
         "homeGoalieConfirmed": "Darcy Kuemper",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Juuse Saros",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021205,
+        "gameDate": "2026-04-03",
+        "startTimeUTC": "2026-04-03T23:00:00Z",
+        "homeTeam": "Islanders",
+        "awayTeam": "Flyers",
+        "homeTeamAbbrev": "NYI",
+        "awayTeamAbbrev": "PHI",
+        "homeGoalieConfirmed": "Ilya Sorokin",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Dan Vladar",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021206,
+        "gameDate": "2026-04-03",
+        "startTimeUTC": "2026-04-04T02:00:00Z",
+        "homeTeam": "Ducks",
+        "awayTeam": "Blues",
+        "homeTeamAbbrev": "ANA",
+        "awayTeamAbbrev": "STL",
+        "homeGoalieConfirmed": "Lukas Dostal",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jordan Binnington",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
