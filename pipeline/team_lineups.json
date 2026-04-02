@@ -780,14 +780,6 @@
                 "id": 33020,
                 "ppUnit": null,
                 "movement": null
-            },
-            {
-                "name": "Bryan Rust",
-                "number": 17,
-                "pos": "ir4",
-                "id": 2407,
-                "ppUnit": 1,
-                "movement": null
             }
         ]
     },
@@ -906,12 +898,12 @@
                 "movement": null
             },
             {
-                "name": "Seth Jones",
-                "number": 3,
+                "name": "Michael Benning",
+                "number": null,
                 "pos": "rd",
-                "id": 2137,
-                "ppUnit": 1,
-                "movement": null
+                "id": 32952,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "d2": [
@@ -924,12 +916,12 @@
                 "movement": null
             },
             {
-                "name": "Michael Benning",
-                "number": null,
+                "name": "Seth Jones",
+                "number": 3,
                 "pos": "rd",
-                "id": 32952,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2137,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "d3": [
@@ -1258,22 +1250,22 @@
                 "movement": null
             },
             {
-                "name": "Adam Sykora",
-                "number": 37,
+                "name": "Jonny Brodzinski",
+                "number": 22,
                 "pos": "rw",
-                "id": 36392,
-                "ppUnit": null,
-                "movement": null
+                "id": 2757,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f4": [
             {
-                "name": "Jonny Brodzinski",
-                "number": 22,
+                "name": "Adam Sykora",
+                "number": 37,
                 "pos": "lw",
-                "id": 2757,
-                "ppUnit": 2,
-                "movement": null
+                "id": 36392,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Noah Laba",
@@ -2080,11 +2072,11 @@
     "CBJ": {
         "f1": [
             {
-                "name": "Mason Marchment",
-                "number": 27,
+                "name": "Luca Del Bel Belluz",
+                "number": 65,
                 "pos": "lw",
-                "id": 2855,
-                "ppUnit": 1,
+                "id": 30880,
+                "ppUnit": null,
                 "movement": "up"
             },
             {
@@ -2106,19 +2098,19 @@
         ],
         "f2": [
             {
-                "name": "Luca Del Bel Belluz",
-                "number": 65,
+                "name": "Boone Jenner",
+                "number": 38,
                 "pos": "lw",
-                "id": 30880,
-                "ppUnit": null,
-                "movement": null
+                "id": 1902,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Sean Monahan",
                 "number": 23,
                 "pos": "c",
                 "id": 2138,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -2148,22 +2140,22 @@
                 "movement": null
             },
             {
-                "name": "Boone Jenner",
-                "number": 38,
+                "name": "Danton Heinen",
+                "number": 43,
                 "pos": "rw",
-                "id": 1902,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2691,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f4": [
             {
-                "name": "Danton Heinen",
-                "number": 43,
+                "name": "Kent Johnson",
+                "number": 91,
                 "pos": "lw",
-                "id": 2691,
-                "ppUnit": null,
-                "movement": null
+                "id": 34612,
+                "ppUnit": 2,
+                "movement": "new"
             },
             {
                 "name": "Isac Lundestrom",
@@ -2270,19 +2262,11 @@
                 "movement": null
             },
             {
-                "name": "Isac Lundestrom",
-                "number": 21,
-                "pos": "ir5",
-                "id": 4804,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Mason Marchment",
                 "number": 27,
-                "pos": "ir6",
+                "pos": "ir5",
                 "id": 2855,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "movement": null
             }
         ]
@@ -3340,12 +3324,12 @@
                 "movement": null
             },
             {
-                "name": "Nils Hoglander",
-                "number": 21,
+                "name": "Ty Mueller",
+                "number": 39,
                 "pos": "rw",
-                "id": 30614,
+                "id": 31913,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
