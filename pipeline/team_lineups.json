@@ -4089,7 +4089,7 @@
                 "pos": "lw",
                 "id": 29510,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Martin Pospisil",
@@ -4114,7 +4114,7 @@
                 "number": 7,
                 "pos": "ld",
                 "id": 27807,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -4127,24 +4127,6 @@
             }
         ],
         "d2": [
-            {
-                "name": "Olli Maatta",
-                "number": 2,
-                "pos": "ld",
-                "id": 1792,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Hunter Brzustewicz",
-                "number": 48,
-                "pos": "rd",
-                "id": 33252,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "d3": [
             {
                 "name": "Yan Kuznetsov",
                 "number": 37,
@@ -4159,7 +4141,25 @@
                 "pos": "rd",
                 "id": 36725,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Olli Maatta",
+                "number": 2,
+                "pos": "ld",
+                "id": 1792,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Brayden Pachal",
+                "number": 94,
+                "pos": "rd",
+                "id": 25331,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "ir": [
@@ -4516,12 +4516,12 @@
                 "movement": null
             },
             {
-                "name": "Troy Stecher",
-                "number": 28,
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
                 "pos": "rd",
-                "id": 2702,
-                "ppUnit": null,
-                "movement": null
+                "id": 1172,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "d3": [
@@ -4534,12 +4534,12 @@
                 "movement": null
             },
             {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
+                "name": "Philippe Myers",
+                "number": 51,
                 "pos": "rd",
-                "id": 1172,
-                "ppUnit": 1,
-                "movement": null
+                "id": 24151,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "ir": [
