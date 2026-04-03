@@ -940,12 +940,12 @@
                 "movement": null
             },
             {
-                "name": "Carter Mazur",
-                "number": 43,
+                "name": "Mason Appleton",
+                "number": 22,
                 "pos": "rw",
-                "id": 34532,
-                "ppUnit": 2,
-                "movement": null
+                "id": 4582,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1006,7 +1006,7 @@
                 "number": 21,
                 "pos": "lw",
                 "id": 1156,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1018,22 +1018,22 @@
                 "movement": null
             },
             {
-                "name": "Mason Appleton",
-                "number": 22,
+                "name": "Dominik Shine",
+                "number": 50,
                 "pos": "rw",
-                "id": 4582,
+                "id": 18790,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
             {
-                "name": "Simon Edvinsson",
-                "number": 77,
+                "name": "Albert Johansson",
+                "number": 20,
                 "pos": "ld",
-                "id": 34667,
+                "id": 30661,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Moritz Seider",
@@ -1046,12 +1046,12 @@
         ],
         "d2": [
             {
-                "name": "Ben Chiarot",
-                "number": 8,
+                "name": "Simon Edvinsson",
+                "number": 77,
                 "pos": "ld",
-                "id": 1587,
+                "id": 34667,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Justin Faulk",
@@ -1064,12 +1064,12 @@
         ],
         "d3": [
             {
-                "name": "Albert Johansson",
-                "number": 20,
+                "name": "Ben Chiarot",
+                "number": 8,
                 "pos": "ld",
-                "id": 30661,
+                "id": 1587,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Jacob Bernard-Docker",
@@ -1282,6 +1282,14 @@
                 "id": 2492,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Tyler Kleven",
+                "number": 43,
+                "pos": "ir5",
+                "id": 30802,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
@@ -1902,7 +1910,7 @@
                 "number": 22,
                 "pos": "rw",
                 "id": 2603,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1938,7 +1946,7 @@
                 "number": 90,
                 "pos": "lw",
                 "id": 36,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -2270,12 +2278,12 @@
                 "movement": null
             },
             {
-                "name": "Ben Kindel",
-                "number": 81,
+                "name": "Rickard Rakell",
+                "number": 67,
                 "pos": "c",
-                "id": 37573,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1682,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Evgeni Malkin",
@@ -2296,12 +2304,12 @@
                 "movement": null
             },
             {
-                "name": "Rickard Rakell",
-                "number": 67,
+                "name": "Ben Kindel",
+                "number": 81,
                 "pos": "c",
-                "id": 1682,
-                "ppUnit": 1,
-                "movement": null
+                "id": 37573,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Justin Brazeau",
@@ -3586,12 +3594,12 @@
     "CBJ": {
         "f1": [
             {
-                "name": "Luca Del Bel Belluz",
-                "number": 65,
+                "name": "Cole Sillinger",
+                "number": 4,
                 "pos": "lw",
-                "id": 30880,
+                "id": 34454,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Adam Fantilli",
@@ -3612,38 +3620,38 @@
         ],
         "f2": [
             {
-                "name": "Boone Jenner",
-                "number": 38,
+                "name": "Kent Johnson",
+                "number": 91,
                 "pos": "lw",
-                "id": 1902,
+                "id": 34612,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sean Monahan",
                 "number": 23,
                 "pos": "c",
                 "id": 2138,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Conor Garland",
-                "number": 8,
+                "name": "Danton Heinen",
+                "number": 43,
                 "pos": "rw",
-                "id": 3791,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2691,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Cole Sillinger",
-                "number": 4,
+                "name": "Luca Del Bel Belluz",
+                "number": 65,
                 "pos": "lw",
-                "id": 34454,
-                "ppUnit": null,
-                "movement": null
+                "id": 30880,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Charlie Coyle",
@@ -3654,22 +3662,22 @@
                 "movement": null
             },
             {
-                "name": "Danton Heinen",
-                "number": 43,
+                "name": "Conor Garland",
+                "number": 8,
                 "pos": "rw",
-                "id": 2691,
-                "ppUnit": null,
-                "movement": null
+                "id": 3791,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f4": [
             {
-                "name": "Kent Johnson",
-                "number": 91,
+                "name": "Boone Jenner",
+                "number": 38,
                 "pos": "lw",
-                "id": 34612,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1902,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Isac Lundestrom",
@@ -3870,7 +3878,7 @@
                 "number": 63,
                 "pos": "lw",
                 "id": 34670,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3940,7 +3948,7 @@
                 "number": 57,
                 "pos": "rd",
                 "id": 36380,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -3976,6 +3984,14 @@
                 "id": 26531,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Elias Salomonsson",
+                "number": 57,
+                "pos": "ir5",
+                "id": 36380,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -4696,6 +4712,14 @@
                 "id": 2433,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
+                "pos": "ir4",
+                "id": 1172,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ]
     },
@@ -5784,12 +5808,12 @@
     "CHI": {
         "f1": [
             {
-                "name": "Ryan Greene",
-                "number": 20,
+                "name": "Teuvo Teravainen",
+                "number": 86,
                 "pos": "lw",
-                "id": 31310,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2128,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Connor Bedard",
@@ -5852,22 +5876,22 @@
                 "movement": null
             },
             {
-                "name": "Andre Burakovsky",
-                "number": 28,
+                "name": "Ryan Greene",
+                "number": 20,
                 "pos": "rw",
-                "id": 2154,
+                "id": 31310,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
             {
-                "name": "Teuvo Teravainen",
-                "number": 86,
+                "name": "Andre Burakovsky",
+                "number": 28,
                 "pos": "lw",
-                "id": 2128,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2154,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Sacha Boisvert",
