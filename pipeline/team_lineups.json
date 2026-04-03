@@ -945,7 +945,7 @@
                 "pos": "rw",
                 "id": 4582,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -1023,7 +1023,7 @@
                 "pos": "rw",
                 "id": 18790,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -1033,7 +1033,7 @@
                 "pos": "ld",
                 "id": 30661,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Moritz Seider",
@@ -1051,7 +1051,7 @@
                 "pos": "ld",
                 "id": 34667,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Justin Faulk",
@@ -1069,7 +1069,7 @@
                 "pos": "ld",
                 "id": 1587,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jacob Bernard-Docker",
@@ -1203,7 +1203,7 @@
                 "pos": "ld",
                 "id": 30802,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Artem Zub",
@@ -1289,7 +1289,7 @@
                 "pos": "ir5",
                 "id": 30802,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -2283,7 +2283,7 @@
                 "pos": "c",
                 "id": 1682,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Evgeni Malkin",
@@ -2309,7 +2309,7 @@
                 "pos": "c",
                 "id": 37573,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Justin Brazeau",
@@ -3599,7 +3599,7 @@
                 "pos": "lw",
                 "id": 34454,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Adam Fantilli",
@@ -3625,7 +3625,7 @@
                 "pos": "lw",
                 "id": 34612,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sean Monahan",
@@ -3641,7 +3641,7 @@
                 "pos": "rw",
                 "id": 2691,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -3651,7 +3651,7 @@
                 "pos": "lw",
                 "id": 30880,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Charlie Coyle",
@@ -3667,7 +3667,7 @@
                 "pos": "rw",
                 "id": 3791,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -3677,7 +3677,7 @@
                 "pos": "lw",
                 "id": 1902,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Isac Lundestrom",
@@ -3949,7 +3949,7 @@
                 "pos": "rd",
                 "id": 36380,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "ir": [
@@ -3991,7 +3991,7 @@
                 "pos": "ir5",
                 "id": 36380,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -4248,7 +4248,7 @@
                 "number": 22,
                 "pos": "c",
                 "id": 28796,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -4266,7 +4266,7 @@
                 "number": 15,
                 "pos": "lw",
                 "id": 2833,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -4348,6 +4348,14 @@
                 "id": 4796,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Jack McBain",
+                "number": 22,
+                "pos": "ir2",
+                "id": 28796,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -4640,7 +4648,7 @@
                 "number": 44,
                 "pos": "ld",
                 "id": 1935,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -4684,8 +4692,8 @@
                 "number": 95,
                 "pos": "rd",
                 "id": 1172,
-                "ppUnit": 1,
-                "movement": null
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "ir": [
@@ -4718,8 +4726,8 @@
                 "number": 95,
                 "pos": "ir4",
                 "id": 1172,
-                "ppUnit": 1,
-                "movement": "down"
+                "ppUnit": 2,
+                "movement": null
             }
         ]
     },
@@ -5118,7 +5126,7 @@
                 "number": 86,
                 "pos": "rw",
                 "id": 4799,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -5154,7 +5162,7 @@
                 "number": 17,
                 "pos": "lw",
                 "id": 29637,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -5452,7 +5460,7 @@
             {
                 "name": "Ryan Reaves",
                 "number": 75,
-                "pos": "ir2",
+                "pos": "ir1",
                 "id": 1343,
                 "ppUnit": null,
                 "movement": null
@@ -5460,7 +5468,7 @@
             {
                 "name": "John Klingberg",
                 "number": 3,
-                "pos": "ir3",
+                "pos": "ir2",
                 "id": 1678,
                 "ppUnit": null,
                 "movement": null
@@ -5642,7 +5650,7 @@
                 "number": 10,
                 "pos": "c",
                 "id": 30804,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -5660,7 +5668,7 @@
                 "number": 74,
                 "pos": "lw",
                 "id": 32922,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -5813,7 +5821,7 @@
                 "pos": "lw",
                 "id": 2128,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Connor Bedard",
@@ -5881,7 +5889,7 @@
                 "pos": "rw",
                 "id": 31310,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -5891,7 +5899,7 @@
                 "pos": "lw",
                 "id": 2154,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Sacha Boisvert",
