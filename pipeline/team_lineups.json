@@ -3339,7 +3339,7 @@
                 "pos": "ld",
                 "id": 33153,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Filip Hronek",
@@ -3375,7 +3375,7 @@
                 "pos": "ld",
                 "id": 36406,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Pierre-Olivier Joseph",
@@ -3463,7 +3463,7 @@
                 "pos": "rw",
                 "id": 2468,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -3473,7 +3473,7 @@
                 "pos": "lw",
                 "id": 2662,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jason Dickinson",
@@ -3499,7 +3499,7 @@
                 "pos": "lw",
                 "id": 945,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Josh Samanski",
@@ -3515,7 +3515,7 @@
                 "pos": "rw",
                 "id": 2657,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -4348,14 +4348,6 @@
                 "id": 1678,
                 "ppUnit": null,
                 "movement": null
-            },
-            {
-                "name": "Igor Chernyshov",
-                "number": 92,
-                "pos": "ir4",
-                "id": 38146,
-                "ppUnit": 2,
-                "movement": null
             }
         ]
     },
@@ -4474,12 +4466,12 @@
                 "movement": null
             },
             {
-                "name": "Brandon Carlo",
-                "number": 25,
+                "name": "Philippe Myers",
+                "number": 51,
                 "pos": "rd",
-                "id": 2692,
+                "id": 24151,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -4492,12 +4484,12 @@
                 "movement": null
             },
             {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
+                "name": "Brandon Carlo",
+                "number": 25,
                 "pos": "rd",
-                "id": 1172,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2692,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "d3": [
@@ -4510,12 +4502,12 @@
                 "movement": null
             },
             {
-                "name": "Philippe Myers",
-                "number": 51,
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
                 "pos": "rd",
-                "id": 24151,
-                "ppUnit": null,
-                "movement": null
+                "id": 1172,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "ir": [
@@ -4982,12 +4974,12 @@
                 "movement": null
             },
             {
-                "name": "Alex Turcotte",
-                "number": 15,
+                "name": "Samuel Helenius",
+                "number": null,
                 "pos": "c",
-                "id": 30420,
+                "id": 34674,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Taylor Ward",
@@ -5066,14 +5058,6 @@
                 "number": 96,
                 "pos": "ir2",
                 "id": 25254,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Samuel Helenius",
-                "number": null,
-                "pos": "ir3",
-                "id": 34674,
                 "ppUnit": null,
                 "movement": null
             }
