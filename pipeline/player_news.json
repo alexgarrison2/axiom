@@ -1,4 +1,82 @@
 {
+    "FLA": [
+        {
+            "player": "Vinnie Hinostroza",
+            "news": "Hinostroza will be a healthy scratch on Saturday. \r\n",
+            "category": "Line Change",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T18:58:17.012Z"
+        },
+        {
+            "player": "Nolan Foote",
+            "news": "Foote will be a healthy scratch on Saturday. \r\n",
+            "category": "Line Change",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T18:58:04.707Z"
+        },
+        {
+            "player": "Cole Reinhardt",
+            "news": "Reinhardt will be back in the Panthers' lineup on Saturday. \r\n",
+            "category": "Line Change",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T18:57:54.856Z"
+        },
+        {
+            "player": "Cole Schwindt",
+            "news": "Schwindt (lower-body) will return to the Panthers' lineup on Saturday. \r\n",
+            "category": "Injury",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T18:57:32.333Z"
+        },
+        {
+            "player": "Sergei Bobrovsky",
+            "news": "Bobrovsky will start Saturday in Pittsburgh. ",
+            "category": "Goalie Start",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T18:51:37.069Z"
+        }
+    ],
+    "DAL": [
+        {
+            "player": "Kyle Capobianco",
+            "news": "Capobianco will be a healthy scratch on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T18:55:12.544Z"
+        },
+        {
+            "player": "Alex Petrovic",
+            "news": "Petrovic will draw into the Stars' lineup on Saturday. ",
+            "category": "Line Change",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T18:54:55.452Z"
+        },
+        {
+            "player": "Casey DeSmith",
+            "news": "DeSmith will start Saturday vs. the Avalanche.",
+            "category": "Goalie Start",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T17:49:07.389Z"
+        }
+    ],
+    "CHI": [
+        {
+            "player": "Arvid Soderblom",
+            "news": "Soderblom is in the starter's crease at the Blackhawks morning skate. ",
+            "category": "Goalie Start",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T18:52:47.303Z"
+        }
+    ],
+    "NSH": [
+        {
+            "player": "Juuse Saros",
+            "news": "Saros will start Saturday in San Jose. ",
+            "category": "Goalie Start",
+            "date": "2026-04-04",
+            "timestamp": "2026-04-04T18:52:07.689Z"
+        }
+    ],
     "COL": [
         {
             "player": "Scott Wedgewood",
@@ -31,13 +109,6 @@
             "category": "Line Change",
             "date": "2026-04-04",
             "timestamp": "2026-04-04T17:57:31.607Z"
-        },
-        {
-            "player": "Alex Lyon",
-            "news": "Lyon is expected to start Saturday in Washington. ",
-            "category": "Goalie Start",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T16:12:31.794Z"
         }
     ],
     "SJS": [
@@ -47,15 +118,6 @@
             "category": "Goalie Start",
             "date": "2026-04-04",
             "timestamp": "2026-04-04T17:56:05.280Z"
-        }
-    ],
-    "DAL": [
-        {
-            "player": "Casey DeSmith",
-            "news": "DeSmith will start Saturday vs. the Avalanche.",
-            "category": "Goalie Start",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T17:49:07.389Z"
         }
     ],
     "SEA": [
@@ -97,68 +159,6 @@
             "category": "Injury",
             "date": "2026-04-04",
             "timestamp": "2026-04-04T16:57:20.146Z"
-        },
-        {
-            "player": "Linus Ullmark",
-            "news": "Ullmark led the Senators onto the ice for warmups. ",
-            "category": "Goalie Start",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T16:30:42.113Z"
-        }
-    ],
-    "DET": [
-        {
-            "player": "Michael Rasmussen",
-            "news": "Rasmussen (undisclosed) will draw back into the Red Wings lineup on Saturday. ",
-            "category": "Injury",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T16:40:55.994Z"
-        },
-        {
-            "player": "Mason Appleton",
-            "news": "Appleton is a healthy scratch Saturday in New York. ",
-            "category": "Line Change",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T16:40:21.323Z"
-        },
-        {
-            "player": "Axel Sandin-Pellikka",
-            "news": "Sandin-Pellika will draw into the Red Wings lineup on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T16:35:51.694Z"
-        }
-    ],
-    "WPG": [
-        {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebuyck will start Saturday in Columbus. ",
-            "category": "Goalie Start",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T16:01:56.338Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Bobby Brink",
-            "news": "Brink will be a healthy scratch on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T15:48:08.933Z"
-        },
-        {
-            "player": "Nick Foligno",
-            "news": "Foligno will draw back into the Wild lineup on Saturday. ",
-            "category": "Line Change",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T15:47:55.181Z"
-        },
-        {
-            "player": "Jesper Wallstedt",
-            "news": "Wallstedt will start Saturday in Ottawa. ",
-            "category": "Goalie Start",
-            "date": "2026-04-04",
-            "timestamp": "2026-04-04T15:47:29.742Z"
         }
     ]
 }
