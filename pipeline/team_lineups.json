@@ -1094,11 +1094,11 @@
     "OTT": {
         "f1": [
             {
-                "name": "Fabian Zetterlund",
-                "number": 20,
+                "name": "Drake Batherson",
+                "number": 19,
                 "pos": "lw",
-                "id": 28130,
-                "ppUnit": 2,
+                "id": 4831,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1110,12 +1110,12 @@
                 "movement": null
             },
             {
-                "name": "Drake Batherson",
-                "number": 19,
+                "name": "Claude Giroux",
+                "number": 28,
                 "pos": "rw",
-                "id": 4831,
-                "ppUnit": 1,
-                "movement": null
+                "id": 1126,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1146,12 +1146,12 @@
         ],
         "f3": [
             {
-                "name": "Michael Amadio",
-                "number": 22,
+                "name": "Nick Cousins",
+                "number": 21,
                 "pos": "lw",
-                "id": 2910,
+                "id": 1893,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Shane Pinto",
@@ -1162,11 +1162,11 @@
                 "movement": null
             },
             {
-                "name": "Claude Giroux",
-                "number": 28,
+                "name": "Michael Amadio",
+                "number": 22,
                 "pos": "rw",
-                "id": 1126,
-                "ppUnit": 2,
+                "id": 2910,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -1188,12 +1188,12 @@
                 "movement": null
             },
             {
-                "name": "Nick Cousins",
-                "number": 21,
+                "name": "Fabian Zetterlund",
+                "number": 20,
                 "pos": "rw",
-                "id": 1893,
-                "ppUnit": null,
-                "movement": null
+                "id": 28130,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -1340,38 +1340,12 @@
         ],
         "f3": [
             {
-                "name": "Nikolaj Ehlers",
-                "number": 27,
-                "pos": "lw",
-                "id": 2370,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Jordan Staal",
-                "number": 11,
-                "pos": "c",
-                "id": 1246,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Jordan Martinook",
-                "number": 48,
-                "pos": "rw",
-                "id": 2049,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
                 "name": "William Carrier",
                 "number": 28,
                 "pos": "lw",
                 "id": 2704,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Mark Jankowski",
@@ -1379,7 +1353,33 @@
                 "pos": "c",
                 "id": 2711,
                 "ppUnit": null,
+                "movement": "up"
+            },
+            {
+                "name": "Nikolaj Ehlers",
+                "number": 27,
+                "pos": "rw",
+                "id": 2370,
+                "ppUnit": 2,
                 "movement": null
+            }
+        ],
+        "f4": [
+            {
+                "name": "Nicolas Deslauriers",
+                "number": 44,
+                "pos": "lw",
+                "id": 1699,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
+                "name": "Jesperi Kotkaniemi",
+                "number": 82,
+                "pos": "c",
+                "id": 4788,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Eric Robinson",
@@ -1460,6 +1460,22 @@
                 "id": 30486,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Jordan Staal",
+                "number": 11,
+                "pos": "ir3",
+                "id": 1246,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Jordan Martinook",
+                "number": 48,
+                "pos": "ir4",
+                "id": 2049,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
