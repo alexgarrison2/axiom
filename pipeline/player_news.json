@@ -1,14 +1,76 @@
 {
-    "BOS": [
+    "PHI": [
         {
-            "player": "Joonas Korpisalo",
-            "news": "Korpisalo will start vs. Philadelphia on Sunday. ",
+            "player": "Carl Grundstrom",
+            "news": "Grundstrom will draw back into the lineup on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T19:20:30.730Z"
+        },
+        {
+            "player": "Garnet Hathaway",
+            "news": "Hathaway is expected to be a healthy scratch on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T19:12:08.600Z"
+        }
+    ],
+    "OTT": [
+        {
+            "player": "Linus Ullmark",
+            "news": "Ullmark will start vs. Carolina on Sunday. ",
             "category": "Goalie Start",
             "date": "2026-04-05",
-            "timestamp": "2026-04-05T18:23:56.009Z"
+            "timestamp": "2026-04-05T19:02:23.789Z"
+        }
+    ],
+    "PIT": [
+        {
+            "player": "Taylor Gauthier",
+            "news": "Gauthier has been recalled from the Wheeling Nailers (ECHL). ",
+            "category": "Call Up",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T18:45:30.190Z"
+        },
+        {
+            "player": "Avery Hayes",
+            "news": "Hayes has been recalled from Wilkes-Barre/Scranton (AHL). ",
+            "category": "Call Up",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T18:44:35.405Z"
+        },
+        {
+            "player": "Stuart Skinner",
+            "news": "Skinner (upper body) will not dress on Sunday. ",
+            "category": "Injury",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T18:44:07.435Z"
+        },
+        {
+            "player": "Arturs Silovs",
+            "news": "Silovs will start vs. Florida on Sunday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T18:31:31.423Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "Brennan Othmann",
+            "news": "Othmann has been re-assigned to the Calgary Wranglers (AHL). ",
+            "category": "Send Down",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T18:38:59.875Z"
         }
     ],
     "FLA": [
+        {
+            "player": "Mikulas Hovorka",
+            "news": "Hovorka has been loaned to Charlotte (AHL). ",
+            "category": "Send Down",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T18:33:24.673Z"
+        },
         {
             "player": "Mikulas Hovorka",
             "news": "Hovorka will be a healthy scratch on Sunday. ",
@@ -52,93 +114,41 @@
             "timestamp": "2026-04-05T17:21:43.679Z"
         }
     ],
-    "PHI": [
+    "BOS": [
         {
-            "player": "Dan Vladar",
-            "news": "Vladar will start vs. Boston on Sunday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-05",
-            "timestamp": "2026-04-05T17:17:04.379Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Jeff Petry",
-            "news": "Petry will draw into the Wild lineup on Sunday. ",
+            "player": "Michael Eyssimont",
+            "news": "Eyssimont will be a healthy scratch on Sunday. ",
             "category": "Line Change",
             "date": "2026-04-05",
-            "timestamp": "2026-04-05T16:32:17.366Z"
+            "timestamp": "2026-04-05T18:26:45.250Z"
         },
         {
-            "player": "Zach Bogosian",
-            "news": "Bogosian (lower-body) will not play Sunday in Detroit. ",
-            "category": "Injury",
-            "date": "2026-04-05",
-            "timestamp": "2026-04-05T16:31:53.654Z"
-        },
-        {
-            "player": "Filip Gustavsson",
-            "news": "Gustavsson led the Wild onto the ice for warmups. ",
-            "category": "Goalie Start",
-            "date": "2026-04-05",
-            "timestamp": "2026-04-05T16:31:15.623Z"
-        },
-        {
-            "player": "Filip Gustavsson",
-            "news": "Gustavsson is expected to start Sunday in Detroit. ",
-            "category": "Goalie Start",
-            "date": "2026-04-05",
-            "timestamp": "2026-04-05T16:06:25.014Z"
-        }
-    ],
-    "DET": [
-        {
-            "player": "Cam Talbot",
-            "news": "Talbot led the Red Wings onto the ice for warmups. ",
-            "category": "Goalie Start",
-            "date": "2026-04-05",
-            "timestamp": "2026-04-05T16:29:28.551Z"
-        },
-        {
-            "player": "Noah Dower-Nilsson",
-            "news": "Detroit has signed Dower-Nilsson to a three-year, entry-level contract. ",
-            "category": "Signing",
-            "date": "2026-04-05",
-            "timestamp": "2026-04-05T14:46:57.724Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Colton Dach",
-            "news": "The Oilers activated Colton Dach (undisclosed) from LTIR. \r\n",
-            "category": "Injury",
-            "date": "2026-04-05",
-            "timestamp": "2026-04-05T16:10:28.932Z"
-        }
-    ],
-    "CAR": [
-        {
-            "player": "Frederik Andersen",
-            "news": "Andersen is expected to play vs. Ottawa on Sunday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-05",
-            "timestamp": "2026-04-05T14:28:31.740Z"
-        }
-    ],
-    "ANA": [
-        {
-            "player": "Tyson Hinds",
-            "news": "Hinds will make his NHL debut on Saturday. ",
+            "player": "Lukas Reichel",
+            "news": "Reichel will draw into the lineup on Sunday. ",
             "category": "Line Change",
             "date": "2026-04-05",
-            "timestamp": "2026-04-05T01:48:54.141Z"
+            "timestamp": "2026-04-05T18:26:21.437Z"
         },
         {
-            "player": "Frank Vatrano",
-            "news": "Vatrano will be scratched Saturday vs. the Flames. ",
+            "player": "Jordan Harris",
+            "news": "Harris will be a healthy scratch on Sunday. ",
             "category": "Line Change",
             "date": "2026-04-05",
-            "timestamp": "2026-04-05T01:48:39.149Z"
+            "timestamp": "2026-04-05T18:25:49.544Z"
+        },
+        {
+            "player": "Mason Lohrei",
+            "news": "Lohrei will draw back into the lineup on Sunday. ",
+            "category": "Line Change",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T18:25:09.644Z"
+        },
+        {
+            "player": "Joonas Korpisalo",
+            "news": "Korpisalo will start vs. Philadelphia on Sunday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-05",
+            "timestamp": "2026-04-05T18:23:56.009Z"
         }
     ]
 }
