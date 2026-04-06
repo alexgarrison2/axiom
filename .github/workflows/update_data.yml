@@ -145,7 +145,9 @@ jobs:
             # Playoff implications (must be committed so Vercel serves today's games)
             [ -f pipeline/game_implications.json ] && git add pipeline/game_implications.json
             [ -f public/data/game_implications.json ] && git add public/data/game_implications.json
-            
+            # Clinch/elimination status (fetched in full refresh via fetch_clinch_status.py)
+            [ -f public/data/clinch_status.json ] && git add public/data/clinch_status.json
+
             # Commit if changes exist
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"
 
