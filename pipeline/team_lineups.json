@@ -132,12 +132,12 @@
                 "movement": null
             },
             {
-                "name": "Axel Sandin-Pellikka",
-                "number": null,
+                "name": "Jacob Bernard-Docker",
+                "number": 24,
                 "pos": "rd",
-                "id": 38121,
-                "ppUnit": 2,
-                "movement": null
+                "id": 4819,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "d3": [
@@ -150,19 +150,19 @@
                 "movement": null
             },
             {
-                "name": "Jacob Bernard-Docker",
-                "number": 24,
+                "name": "Axel Sandin-Pellikka",
+                "number": null,
                 "pos": "rd",
-                "id": 4819,
-                "ppUnit": null,
-                "movement": null
+                "id": 38121,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "ir": [
             {
                 "name": "Justin Faulk",
                 "number": 72,
-                "pos": "ir2",
+                "pos": "ir1",
                 "id": 1651,
                 "ppUnit": null,
                 "movement": null
@@ -306,7 +306,7 @@
                 "number": 46,
                 "pos": "rd",
                 "id": 1557,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -2244,12 +2244,12 @@
         ],
         "f2": [
             {
-                "name": "Gabriel Landeskog",
-                "number": 92,
+                "name": "Nazem Kadri",
+                "number": 91,
                 "pos": "lw",
-                "id": 1763,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1425,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Brock Nelson",
@@ -2260,30 +2260,30 @@
                 "movement": null
             },
             {
-                "name": "Valeri Nichushkin",
-                "number": 13,
+                "name": "Gabriel Landeskog",
+                "number": 92,
                 "pos": "rw",
-                "id": 2142,
+                "id": 1763,
                 "ppUnit": 2,
                 "movement": null
             }
         ],
         "f3": [
             {
-                "name": "Parker Kelly",
-                "number": 17,
+                "name": "Ross Colton",
+                "number": 20,
                 "pos": "lw",
-                "id": 4600,
+                "id": 27086,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Nazem Kadri",
-                "number": 91,
+                "name": "Jack Drury",
+                "number": 18,
                 "pos": "c",
-                "id": 1425,
-                "ppUnit": 1,
-                "movement": null
+                "id": 27584,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Joel Kiviranta",
@@ -2296,20 +2296,20 @@
         ],
         "f4": [
             {
-                "name": "Ross Colton",
-                "number": 20,
+                "name": "Parker Kelly",
+                "number": 17,
                 "pos": "lw",
-                "id": 27086,
+                "id": 4600,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Jack Drury",
-                "number": 18,
+                "name": "Zakhar Bardakov",
+                "number": 93,
                 "pos": "c",
-                "id": 27584,
+                "id": 34705,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Logan O'Connor",
@@ -2390,6 +2390,14 @@
                 "id": 2788,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Valeri Nichushkin",
+                "number": 13,
+                "pos": "ir3",
+                "id": 2142,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
@@ -2469,7 +2477,7 @@
                 "pos": "rw",
                 "id": 28113,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -2479,7 +2487,7 @@
                 "pos": "lw",
                 "id": 29594,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Pius Suter",
