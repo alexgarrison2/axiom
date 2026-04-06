@@ -618,12 +618,12 @@
         ],
         "f2": [
             {
-                "name": "Bobby McMann",
-                "number": 74,
+                "name": "Jaden Schwartz",
+                "number": 17,
                 "pos": "lw",
-                "id": 32922,
-                "ppUnit": 1,
-                "movement": null
+                "id": 1864,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Chandler Stephenson",
@@ -634,22 +634,22 @@
                 "movement": null
             },
             {
-                "name": "Kaapo Kakko",
-                "number": 84,
+                "name": "Eeli Tolvanen",
+                "number": 20,
                 "pos": "rw",
-                "id": 30605,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2787,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Jaden Schwartz",
-                "number": 17,
+                "name": "Bobby McMann",
+                "number": 74,
                 "pos": "lw",
-                "id": 1864,
-                "ppUnit": 2,
-                "movement": null
+                "id": 32922,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Berkly Catton",
@@ -660,25 +660,25 @@
                 "movement": null
             },
             {
-                "name": "Eeli Tolvanen",
-                "number": 20,
+                "name": "Kaapo Kakko",
+                "number": 84,
                 "pos": "rw",
-                "id": 2787,
-                "ppUnit": 1,
-                "movement": null
+                "id": 30605,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f4": [
             {
-                "name": "Ben Meyers",
-                "number": 59,
+                "name": "Ryan Winterton",
+                "number": 26,
                 "pos": "lw",
-                "id": 30084,
+                "id": 30837,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Oscar Fisker-Molgaard",
+                "name": "Oscar Fisker M\u00f8lgaard",
                 "number": 78,
                 "pos": "c",
                 "id": 38133,
@@ -696,12 +696,12 @@
         ],
         "d1": [
             {
-                "name": "Vince Dunn",
-                "number": 29,
+                "name": "Ryker Evans",
+                "number": 41,
                 "pos": "ld",
-                "id": 2837,
-                "ppUnit": 1,
-                "movement": null
+                "id": 32988,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Adam Larsson",
@@ -732,20 +732,20 @@
         ],
         "d3": [
             {
-                "name": "Ryker Evans",
-                "number": 41,
+                "name": "Vince Dunn",
+                "number": 29,
                 "pos": "ld",
-                "id": 32988,
-                "ppUnit": null,
-                "movement": null
+                "id": 2837,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
-                "name": "Jamie Oleksiak",
-                "number": 24,
+                "name": "Cale Fleury",
+                "number": 8,
                 "pos": "rd",
-                "id": 1790,
+                "id": 26737,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -754,14 +754,6 @@
                 "number": 51,
                 "pos": "ir1",
                 "id": 30830,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Ryan Winterton",
-                "number": 26,
-                "pos": "ir2",
-                "id": 30837,
                 "ppUnit": null,
                 "movement": null
             }
@@ -869,7 +861,7 @@
                 "pos": "rw",
                 "id": 4813,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
