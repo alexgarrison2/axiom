@@ -23,7 +23,7 @@
                 "pos": "rw",
                 "id": 2739,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -41,7 +41,7 @@
                 "pos": "c",
                 "id": 4810,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jack Quinn",
@@ -49,7 +49,7 @@
                 "pos": "rw",
                 "id": 32270,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -67,7 +67,7 @@
                 "pos": "c",
                 "id": 28056,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Josh Doan",
@@ -75,7 +75,7 @@
                 "pos": "rw",
                 "id": 32990,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -93,7 +93,7 @@
                 "pos": "c",
                 "id": 27938,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Beck Malenstyn",
@@ -155,7 +155,7 @@
                 "pos": "rd",
                 "id": 1442,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -463,7 +463,7 @@
                 "pos": "lw",
                 "id": 1553,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Vladislav Namestnikov",
@@ -471,7 +471,7 @@
                 "pos": "c",
                 "id": 1865,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Brad Lambert",
@@ -479,7 +479,7 @@
                 "pos": "rw",
                 "id": 31870,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -489,7 +489,7 @@
                 "pos": "lw",
                 "id": 29652,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jonathan Toews",
@@ -497,7 +497,7 @@
                 "pos": "c",
                 "id": 328,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Isak Rosen",
@@ -1424,30 +1424,30 @@
         ],
         "d1": [
             {
-                "name": "Brady Skjei",
-                "number": 76,
-                "pos": "ld",
-                "id": 2425,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Roman Josi",
                 "number": 59,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 897,
                 "ppUnit": 1,
                 "movement": null
+            },
+            {
+                "name": "Ryan Ufko",
+                "number": 85,
+                "pos": "rd",
+                "id": 34622,
+                "ppUnit": 2,
+                "movement": "new"
             }
         ],
         "d2": [
             {
-                "name": "Nicolas Hague",
-                "number": 41,
+                "name": "Brady Skjei",
+                "number": 76,
                 "pos": "ld",
-                "id": 2799,
+                "id": 2425,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Nick Perbix",
@@ -1474,6 +1474,16 @@
                 "id": 29338,
                 "ppUnit": null,
                 "movement": null
+            }
+        ],
+        "ir": [
+            {
+                "name": "Nicolas Hague",
+                "number": 41,
+                "pos": "ir1",
+                "id": 2799,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -5437,7 +5447,7 @@
                 "pos": "rw",
                 "id": 2380,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f2": [
@@ -5447,7 +5457,7 @@
                 "pos": "lw",
                 "id": 35084,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Mathew Barzal",
@@ -5463,7 +5473,7 @@
                 "pos": "rw",
                 "id": 773,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -5481,7 +5491,7 @@
                 "pos": "c",
                 "id": 2057,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Emil Heineman",
@@ -5489,7 +5499,7 @@
                 "pos": "rw",
                 "id": 33094,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -5507,7 +5517,7 @@
                 "pos": "c",
                 "id": 1807,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Marc Gatcomb",
@@ -5619,7 +5629,7 @@
                 "pos": "ir6",
                 "id": 30654,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Casey Cizikas",
@@ -5627,7 +5637,7 @@
                 "pos": "ir7",
                 "id": 1807,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
