@@ -1,14 +1,12 @@
 {
-    "WSH": [
-        {
-            "player": "Aliaksei Protas",
-            "news": "Protas has been recalled from Hershey (AHL).",
-            "category": "Call Up",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T21:16:55.768Z"
-        }
-    ],
     "SEA": [
+        {
+            "player": "Philipp Grubauer",
+            "news": "Grubauer will start in Winnipeg on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T23:16:46.834Z"
+        },
         {
             "player": "Ben Meyers",
             "news": "Meyers is expected to draw back into Seattle's lineup vs. Winnipeg on Monday. ",
@@ -36,6 +34,77 @@
             "category": "Line Change",
             "date": "2026-04-06",
             "timestamp": "2026-04-06T19:24:07.171Z"
+        }
+    ],
+    "TBL": [
+        {
+            "player": "Scott Sabourin",
+            "news": "Sabourin (undisclosed) will play in Buffalo on Monday. ",
+            "category": "Injury",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T22:36:11.209Z"
+        },
+        {
+            "player": "Anthony Cirelli",
+            "news": "Cirelli (undisclosed) will not play in Buffalo on Monday. ",
+            "category": "Injury",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T22:31:24.225Z"
+        },
+        {
+            "player": "Andrei Vasilevskiy",
+            "news": "Vasilevskiy will start in Buffalo on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T22:30:03.905Z"
+        }
+    ],
+    "SJS": [
+        {
+            "player": "Alex Nedeljkovic",
+            "news": "Nedeljkovic will start against the Blackhawks on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T22:34:21.786Z"
+        },
+        {
+            "player": "Adam Gaudette",
+            "news": "Gaudette will be a healthy scratch vs. Chicago on Monday. ",
+            "category": "Line Change",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T18:28:06.870Z"
+        },
+        {
+            "player": "Ty Dellandrea",
+            "news": "Dellandrea will draw back into San Jose's lineup vs. Chicago on Monday. ",
+            "category": "Line Change",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T18:27:43.484Z"
+        },
+        {
+            "player": "Macklin Celebrini",
+            "news": "Celebrini (maintenance) missed morning skate on Monday but will play vs. Chicago. ",
+            "category": "Injury",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T18:23:05.141Z"
+        }
+    ],
+    "BUF": [
+        {
+            "player": "Ukko-Pekka Luukkonen",
+            "news": "Luukkonen will start against the Lightning on Monday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T22:30:08.381Z"
+        }
+    ],
+    "WSH": [
+        {
+            "player": "Aliaksei Protas",
+            "news": "Protas has been recalled from Hershey (AHL).",
+            "category": "Call Up",
+            "date": "2026-04-06",
+            "timestamp": "2026-04-06T21:16:55.768Z"
         }
     ],
     "CHI": [
@@ -77,43 +146,6 @@
             "category": "Goalie Start",
             "date": "2026-04-06",
             "timestamp": "2026-04-06T19:07:07.774Z"
-        },
-        {
-            "player": "Anton Forsberg",
-            "news": "Forsberg was the first goalie off the ice at Los Angeles' morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T17:51:26.587Z"
-        }
-    ],
-    "SJS": [
-        {
-            "player": "Adam Gaudette",
-            "news": "Gaudette will be a healthy scratch vs. Chicago on Monday. ",
-            "category": "Line Change",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T18:28:06.870Z"
-        },
-        {
-            "player": "Ty Dellandrea",
-            "news": "Dellandrea will draw back into San Jose's lineup vs. Chicago on Monday. ",
-            "category": "Line Change",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T18:27:43.484Z"
-        },
-        {
-            "player": "Macklin Celebrini",
-            "news": "Celebrini (maintenance) missed morning skate on Monday but will play vs. Chicago. ",
-            "category": "Injury",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T18:23:05.141Z"
-        },
-        {
-            "player": "Alex Nedeljkovic",
-            "news": "Nedeljkovic was the first goalie off the ice at San Jose's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T17:51:58.589Z"
         }
     ],
     "ANA": [
@@ -123,40 +155,6 @@
             "category": "Injury",
             "date": "2026-04-06",
             "timestamp": "2026-04-06T18:14:45.509Z"
-        }
-    ],
-    "NSH": [
-        {
-            "player": "Jordan Oesterle",
-            "news": "Oesterle has been recalled from Milwaukee (AHL). ",
-            "category": "Call Up",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T18:07:31.384Z"
-        },
-        {
-            "player": "Juuse Saros",
-            "news": "Saros was in the starter's crease at Nashville's morning skate. ",
-            "category": "Goalie Start",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T18:07:09.417Z"
-        }
-    ],
-    "DAL": [
-        {
-            "player": "Nathan Bastian",
-            "news": "Bastain (undisclosed) is expected to be out for 3-4 weeks. ",
-            "category": "Injury",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T17:26:02.115Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Zach Hyman",
-            "news": "Hyman (undisclosed) is expected to return before the end of the regular season. ",
-            "category": "Injury",
-            "date": "2026-04-06",
-            "timestamp": "2026-04-06T17:13:56.670Z"
         }
     ]
 }

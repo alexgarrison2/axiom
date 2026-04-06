@@ -88,12 +88,12 @@
                 "movement": null
             },
             {
-                "name": "Josh Dunne",
-                "number": null,
+                "name": "Tyson Kozak",
+                "number": 48,
                 "pos": "c",
-                "id": 27938,
+                "id": 32822,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Beck Malenstyn",
@@ -196,12 +196,12 @@
     "TBL": {
         "f1": [
             {
-                "name": "Jake Guentzel",
-                "number": 59,
+                "name": "Gage Goncalves",
+                "number": 93,
                 "pos": "lw",
-                "id": 2707,
-                "ppUnit": 1,
-                "movement": null
+                "id": 32521,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Brayden Point",
@@ -222,27 +222,27 @@
         ],
         "f2": [
             {
+                "name": "Jake Guentzel",
+                "number": 59,
+                "pos": "lw",
+                "id": 2707,
+                "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Nick Paul",
+                "number": 20,
+                "pos": "c",
+                "id": 2357,
+                "ppUnit": 2,
+                "movement": "up"
+            },
+            {
                 "name": "Oliver Bjorkstrand",
                 "number": 22,
-                "pos": "lw",
+                "pos": "rw",
                 "id": 2603,
                 "ppUnit": 1,
-                "movement": null
-            },
-            {
-                "name": "Anthony Cirelli",
-                "number": 71,
-                "pos": "c",
-                "id": 3842,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Gage Goncalves",
-                "number": 93,
-                "pos": "rw",
-                "id": 32521,
-                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -282,19 +282,19 @@
                 "movement": null
             },
             {
-                "name": "Nick Paul",
-                "number": 20,
+                "name": "Scott Sabourin",
+                "number": 46,
                 "pos": "c",
-                "id": 2357,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2171,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Mitchell Chaffee",
                 "number": 41,
                 "pos": "rw",
                 "id": 32923,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -394,12 +394,12 @@
                 "movement": null
             },
             {
-                "name": "Scott Sabourin",
-                "number": 46,
+                "name": "Anthony Cirelli",
+                "number": 71,
                 "pos": "ir6",
-                "id": 2171,
+                "id": 3842,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ]
     },
