@@ -714,16 +714,16 @@
                 "number": 14,
                 "pos": "c",
                 "id": 31505,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Mitchell Chaffee",
-                "number": 41,
+                "name": "Dylan Duke",
+                "number": null,
                 "pos": "rw",
-                "id": 32923,
-                "ppUnit": 2,
-                "movement": null
+                "id": 30877,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1635,7 +1635,7 @@
                 "pos": "c",
                 "id": 1246,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jordan Martinook",
@@ -1643,7 +1643,7 @@
                 "pos": "rw",
                 "id": 2049,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -2151,7 +2151,7 @@
                 "pos": "rw",
                 "id": 3818,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -2177,7 +2177,7 @@
                 "pos": "rw",
                 "id": 24994,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -3122,12 +3122,12 @@
                 "movement": null
             },
             {
-                "name": "Sean Durzi",
-                "number": 50,
+                "name": "MacKenzie Weegar",
+                "number": 52,
                 "pos": "rd",
-                "id": 27104,
+                "id": 2777,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -3158,12 +3158,12 @@
                 "movement": null
             },
             {
-                "name": "Nick DeSimone",
-                "number": 57,
+                "name": "Sean Durzi",
+                "number": 50,
                 "pos": "rd",
-                "id": 2886,
+                "id": 27104,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "ir": [
@@ -3188,7 +3188,7 @@
                 "number": 52,
                 "pos": "ir3",
                 "id": 2777,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ]
@@ -3196,12 +3196,12 @@
     "EDM": {
         "f1": [
             {
-                "name": "Ryan Nugent-Hopkins",
-                "number": 93,
+                "name": "Vasily Podkolzin",
+                "number": 92,
                 "pos": "lw",
-                "id": 1733,
-                "ppUnit": 1,
-                "movement": null
+                "id": 30606,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Connor McDavid",
@@ -3222,46 +3222,20 @@
         ],
         "f2": [
             {
-                "name": "Vasily Podkolzin",
-                "number": 92,
-                "pos": "lw",
-                "id": 30606,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Jason Dickinson",
-                "number": 16,
-                "pos": "c",
-                "id": 2160,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Kasperi Kapanen",
                 "number": 42,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 2385,
                 "ppUnit": 2,
                 "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Trent Frederic",
-                "number": 10,
-                "pos": "lw",
-                "id": 2662,
-                "ppUnit": null,
-                "movement": null
             },
             {
-                "name": "Josh Samanski",
-                "number": null,
+                "name": "Ryan Nugent-Hopkins",
+                "number": 93,
                 "pos": "c",
-                "id": 38438,
-                "ppUnit": null,
-                "movement": null
+                "id": 1733,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Jack Roslovic",
@@ -3269,6 +3243,32 @@
                 "pos": "rw",
                 "id": 2499,
                 "ppUnit": 1,
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Colton Dach",
+                "number": 34,
+                "pos": "lw",
+                "id": 32903,
+                "ppUnit": null,
+                "movement": "up"
+            },
+            {
+                "name": "Jason Dickinson",
+                "number": 16,
+                "pos": "c",
+                "id": 2160,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Trent Frederic",
+                "number": 10,
+                "pos": "rw",
+                "id": 2662,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -3358,14 +3358,6 @@
                 "number": 13,
                 "pos": "ir1",
                 "id": 2447,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Colton Dach",
-                "number": 34,
-                "pos": "ir2",
-                "id": 32903,
                 "ppUnit": null,
                 "movement": null
             },
@@ -3473,7 +3465,7 @@
                 "pos": "lw",
                 "id": 27811,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Aatu Raty",
@@ -3489,7 +3481,7 @@
                 "pos": "rw",
                 "id": 30614,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -3535,7 +3527,7 @@
                 "pos": "ld",
                 "id": 36406,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Victor Mancini",
@@ -3585,7 +3577,7 @@
                 "pos": "ir5",
                 "id": 65,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
