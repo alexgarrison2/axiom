@@ -80,12 +80,12 @@
         ],
         "f4": [
             {
-                "name": "Brendan Gallagher",
-                "number": 11,
+                "name": "Alexandre Texier",
+                "number": 85,
                 "pos": "lw",
-                "id": 1791,
-                "ppUnit": 2,
-                "movement": null
+                "id": 4759,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Phillip Danault",
@@ -176,28 +176,28 @@
                 "movement": null
             },
             {
-                "name": "Kirby Dach",
-                "number": 77,
-                "pos": "ir3",
-                "id": 29585,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Alexandre Carrier",
                 "number": 45,
-                "pos": "ir4",
+                "pos": "ir3",
                 "id": 2732,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Alexandre Texier",
-                "number": 85,
+                "name": "Brendan Gallagher",
+                "number": 11,
+                "pos": "ir4",
+                "id": 1791,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Joe Veleno",
+                "number": 90,
                 "pos": "ir5",
-                "id": 4759,
+                "id": 26350,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ]
     },
@@ -1800,12 +1800,12 @@
         ],
         "f3": [
             {
-                "name": "Lukas Reichel",
-                "number": 73,
+                "name": "Alexander Steeves",
+                "number": 21,
                 "pos": "lw",
-                "id": 33034,
+                "id": 26446,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Fraser Minten",
@@ -2230,7 +2230,7 @@
                 "number": 84,
                 "pos": "rd",
                 "id": 792,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
