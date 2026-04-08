@@ -225,6 +225,7 @@ const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: 
                 <div className="w-5 shrink-0"></div> {/* Div abbr */}
                 <div className="w-16 px-3 py-2"></div> {/* Logo */}
                 <div className="w-24 px-2 py-2 text-left">Team</div>
+                <div className="w-12 px-2 py-2 text-center" title="Games Remaining">GR</div>
                 <div className="w-16 px-2 py-2 text-center">PTS</div>
                 <div className="w-12 px-2 py-2 text-center" title="Magic Number — games until playoff spot is clinched">M#</div>
                 <div className="w-12 px-2 py-2 text-center" title="Elimination Number — games until playoff elimination">E#</div>
@@ -341,6 +342,11 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
                             {isEliminated && (
                                 <span className="text-[8px] font-mono text-red-400 opacity-70" title="Eliminated">e</span>
                             )}
+                        </div>
+
+                        {/* Games Remaining */}
+                        <div className="w-12 px-2 py-1.5 text-center font-mono text-neutral-400 text-xs">
+                            {SEASON_GP - team.gamesPlayed}
                         </div>
 
                         {/* Current Points */}
