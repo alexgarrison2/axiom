@@ -222,6 +222,7 @@ const TableSection = ({ title, groups, onSelectTeam }: { title: string, groups: 
 
             {/* Unified Header Row */}
             <div className="flex text-neutral-500 font-mono text-[9px] uppercase tracking-wider border-b border-white/5 bg-white/[0.01]">
+                <div className="w-5 shrink-0"></div> {/* Div abbr */}
                 <div className="w-16 px-3 py-2"></div> {/* Logo */}
                 <div className="w-24 px-2 py-2 text-left">Team</div>
                 <div className="w-16 px-2 py-2 text-center">PTS</div>
@@ -307,6 +308,17 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
                             <div className="absolute bottom-0 left-0 right-0 border-b border-neutral-700/50 z-10 w-full pointer-events-none" />
                         )}
 
+                        {/* Division abbreviation */}
+                        {(() => {
+                            const divAbbr = team.division === 'CEN' ? 'C' : team.division === 'MET' ? 'M' : team.division === 'PAC' ? 'P' : 'A';
+                            const divColor = (team.division === 'CEN' || team.division === 'MET') ? '#9ABA2F' : '#EB6BC6';
+                            return (
+                                <div className="w-5 flex justify-center items-center shrink-0">
+                                    <span className="font-mono text-[9px] font-bold" style={{ color: divColor }}>{divAbbr}</span>
+                                </div>
+                            );
+                        })()}
+
                         {/* Logo */}
                         <div className="w-16 px-3 py-1.5 flex justify-center">
                             <div className="w-9 h-9 relative opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-200">
@@ -332,13 +344,15 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
                         </div>
 
                         {/* Current Points */}
-                        <div className="w-16 px-2 py-1.5 text-center font-mono text-neutral-300 font-bold">
+                        <div className="w-16 px-2 py-1.5 text-center font-mono text-white text-base font-bold">
                             {team.points}
                         </div>
 
                         {/* M# */}
                         <div className="w-12 px-2 py-1.5 text-center font-mono text-xs">
-                            {team.magic_number !== undefined ? (
+                            {team.tragic_number === 0 ? (
+                                <span className="text-neutral-600">—</span>
+                            ) : team.magic_number !== undefined ? (
                                 team.magic_number === 0
                                     ? <span className="text-emerald-400" title="Clinched playoff spot">✓</span>
                                     : <span className="text-blue-400">{team.magic_number}</span>
@@ -349,7 +363,9 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
 
                         {/* E# */}
                         <div className="w-12 px-2 py-1.5 text-center font-mono text-xs">
-                            {team.tragic_number !== undefined ? (
+                            {team.magic_number === 0 ? (
+                                <span className="text-neutral-600">—</span>
+                            ) : team.tragic_number !== undefined ? (
                                 team.tragic_number === 0
                                     ? <span className="text-neutral-500" title="Eliminated">✗</span>
                                     : <span className="text-red-400">{team.tragic_number}</span>
@@ -364,7 +380,7 @@ const GroupSection = ({ group, isWildcard, onSelectTeam }: { group: PlayoffGroup
                         </div>
 
                         {/* Projected */}
-                        <div className="w-16 px-2 py-1.5 text-center font-mono text-white text-base font-bold">
+                        <div className="w-16 px-2 py-1.5 text-center font-mono text-base font-bold" style={{ color: '#FDFFD5' }}>
                             {team.proj}
                         </div>
 
