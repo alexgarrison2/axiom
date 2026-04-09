@@ -535,7 +535,7 @@
                 "pos": "rd",
                 "id": 1172,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "ir": [
@@ -562,6 +562,14 @@
                 "id": 2433,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Anthony Stolarz",
+                "number": 41,
+                "pos": "ir4",
+                "id": 2432,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
@@ -739,7 +747,7 @@
                 "pos": "ir2",
                 "id": 2615,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
@@ -950,20 +958,20 @@
         ],
         "f2": [
             {
-                "name": "Kasperi Kapanen",
-                "number": 42,
-                "pos": "lw",
-                "id": 2385,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Ryan Nugent-Hopkins",
                 "number": 93,
-                "pos": "c",
+                "pos": "lw",
                 "id": 1733,
                 "ppUnit": 1,
                 "movement": null
+            },
+            {
+                "name": "Josh Samanski",
+                "number": null,
+                "pos": "c",
+                "id": 38438,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Jack Roslovic",
@@ -1018,12 +1026,12 @@
                 "movement": null
             },
             {
-                "name": "Curtis Lazar",
-                "number": 20,
+                "name": "Kasperi Kapanen",
+                "number": 42,
                 "pos": "rw",
-                "id": 2148,
-                "ppUnit": null,
-                "movement": null
+                "id": 2385,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "d1": [
