@@ -15594,5 +15594,47 @@
     "actualWinner": "Hurricanes",
     "isCorrect": true,
     "brierScore": 0.1239
+  },
+  {
+    "date": "2026-04-08",
+    "homeTeam": "Sharks",
+    "awayTeam": "Oilers",
+    "homeScore": 2,
+    "awayScore": 5,
+    "homeXg": 3.47,
+    "awayXg": 4.02,
+    "homeWinProb": 57.0,
+    "predictedWinner": "Sharks",
+    "actualWinner": "Oilers",
+    "isCorrect": false,
+    "brierScore": 0.3249
+  },
+  {
+    "date": "2026-04-08",
+    "homeTeam": "Rangers",
+    "awayTeam": "Sabres",
+    "homeScore": 3,
+    "awayScore": 5,
+    "homeXg": 3.41,
+    "awayXg": 3.61,
+    "homeWinProb": 58.5,
+    "predictedWinner": "Rangers",
+    "actualWinner": "Sabres",
+    "isCorrect": false,
+    "brierScore": 0.3422
+  },
+  {
+    "date": "2026-04-08",
+    "homeTeam": "Maple Leafs",
+    "awayTeam": "Capitals",
+    "homeScore": 0,
+    "awayScore": 4,
+    "homeXg": 3.17,
+    "awayXg": 3.6,
+    "homeWinProb": 51.9,
+    "predictedWinner": "Maple Leafs",
+    "actualWinner": "Capitals",
+    "isCorrect": false,
+    "brierScore": 0.2694
   }
 ]
