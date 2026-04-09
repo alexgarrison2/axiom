@@ -1,5 +1,74 @@
 {
+    "DET": [
+        {
+            "player": "Jacob Bernard-Docker",
+            "news": "Bernard-Docker will draw into the Red Wings lineup on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-04-09",
+            "timestamp": "2026-04-09T23:01:24.839Z"
+        },
+        {
+            "player": "Axel Sandin-Pellikka",
+            "news": "Sandin-Pellikka is a healthy scratch for Thursday's game against the Flyers.",
+            "category": "Line Change",
+            "date": "2026-04-09",
+            "timestamp": "2026-04-09T23:00:08.972Z"
+        }
+    ],
+    "PIT": [
+        {
+            "player": "Avery Hayes",
+            "news": "Hayes will draw into the Penguins lineup on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-04-09",
+            "timestamp": "2026-04-09T22:58:13.913Z"
+        },
+        {
+            "player": "Connor Dewar",
+            "news": "Dewar (lower-body) will not play in New Jersey on Thursday.",
+            "category": "Injury",
+            "date": "2026-04-09",
+            "timestamp": "2026-04-09T22:57:01.440Z"
+        }
+    ],
+    "BUF": [
+        {
+            "player": "Jordan Greenway",
+            "news": "Greenway will draw into the Sabres lineup on Thursday.",
+            "category": "Line Change",
+            "date": "2026-04-09",
+            "timestamp": "2026-04-09T22:55:55.395Z"
+        },
+        {
+            "player": "Tanner Pearson",
+            "news": "Pearson is a healthy scratch for Thursday's game against the Blue Jackets.",
+            "category": "Line Change",
+            "date": "2026-04-09",
+            "timestamp": "2026-04-09T22:55:18.113Z"
+        },
+        {
+            "player": "Alex Lyon",
+            "news": "Lyon (lower-body) is considered week-to-week but is hopeful to be ready before the playoffs. ",
+            "category": "Injury",
+            "date": "2026-04-09",
+            "timestamp": "2026-04-09T21:04:26.256Z"
+        }
+    ],
     "TBL": [
+        {
+            "player": "Corey Perry",
+            "news": "Perry (undisclosed) will play in Montreal on Thursday. ",
+            "category": "Injury",
+            "date": "2026-04-09",
+            "timestamp": "2026-04-09T22:44:17.708Z"
+        },
+        {
+            "player": "Anthony Cirelli",
+            "news": "Cirelli (undisclosed) will play in Montreal on Thursday. ",
+            "category": "Injury",
+            "date": "2026-04-09",
+            "timestamp": "2026-04-09T22:44:02.848Z"
+        },
         {
             "player": "Andrei Vasilevskiy",
             "news": "Vasilevskiy will start in Montreal on Thursday. ",
@@ -13,13 +82,15 @@
             "category": "Goalie Start",
             "date": "2026-04-09",
             "timestamp": "2026-04-09T21:25:07.409Z"
-        },
+        }
+    ],
+    "MTL": [
         {
-            "player": "Declan Carlile",
-            "news": "Carlile (undisclosed) has been activated off injured reserve. ",
-            "category": "Injury",
+            "player": "Jakub Dobes",
+            "news": "Dobes will start against the Lightning on Thursday. ",
+            "category": "Goalie Start",
             "date": "2026-04-09",
-            "timestamp": "2026-04-09T20:46:28.914Z"
+            "timestamp": "2026-04-09T22:39:12.392Z"
         }
     ],
     "CAR": [
@@ -80,81 +151,6 @@
             "category": "Line Change",
             "date": "2026-04-09",
             "timestamp": "2026-04-09T21:05:02.092Z"
-        },
-        {
-            "player": "William Villeneuve",
-            "news": "Villeneuve has been recalled from the Toronto Marlies (AHL) on en emergency basis. ",
-            "category": "Call Up",
-            "date": "2026-04-09",
-            "timestamp": "2026-04-09T19:48:49.530Z"
-        },
-        {
-            "player": "Luke Haymes",
-            "news": "Haymes has been recalled from the Toronto Marlies (AHL) on an emergency basis. ",
-            "category": "Call Up",
-            "date": "2026-04-09",
-            "timestamp": "2026-04-09T19:48:23.154Z"
-        }
-    ],
-    "BUF": [
-        {
-            "player": "Alex Lyon",
-            "news": "Lyon (lower-body) is considered week-to-week but is hopeful to be ready before the playoffs. ",
-            "category": "Injury",
-            "date": "2026-04-09",
-            "timestamp": "2026-04-09T21:04:26.256Z"
-        },
-        {
-            "player": "Colten Ellis",
-            "news": "Ellis will start vs. Columbus on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-09",
-            "timestamp": "2026-04-09T21:02:32.009Z"
-        }
-    ],
-    "WPG": [
-        {
-            "player": "Connor Hellebuyck",
-            "news": "Hellebuyck will start in St. Louis on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-09",
-            "timestamp": "2026-04-09T20:39:05.202Z"
-        }
-    ],
-    "VAN": [
-        {
-            "player": "Nikita Tolopilo",
-            "news": "Tolopilo will start in Los Angeles on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-09",
-            "timestamp": "2026-04-09T19:07:41.559Z"
-        }
-    ],
-    "CHI": [
-        {
-            "player": "Spencer Knight",
-            "news": "Knight will start vs. Carolina on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-09",
-            "timestamp": "2026-04-09T18:52:29.984Z"
-        }
-    ],
-    "LAK": [
-        {
-            "player": "Anton Forsberg",
-            "news": "Forsberg will start vs. Vancouver on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-09",
-            "timestamp": "2026-04-09T18:45:25.862Z"
-        }
-    ],
-    "VGK": [
-        {
-            "player": "Adin Hill",
-            "news": "Hill will start in Seattle on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-09",
-            "timestamp": "2026-04-09T18:22:38.230Z"
         }
     ]
 }
