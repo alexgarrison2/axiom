@@ -1207,7 +1207,7 @@
                 "pos": "lw",
                 "id": 34555,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Samuel Helenius",
@@ -1303,7 +1303,7 @@
                 "pos": "ir3",
                 "id": 34555,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -1864,12 +1864,12 @@
                 "movement": null
             },
             {
-                "name": "Brett Pesce",
-                "number": 22,
+                "name": "Jacob Markstrom",
+                "number": 25,
                 "pos": "ir3",
-                "id": 2541,
+                "id": 594,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Arseny Gritsyuk",
@@ -1884,6 +1884,14 @@
                 "number": 43,
                 "pos": "ir5",
                 "id": 31110,
+                "ppUnit": null,
+                "movement": null
+            },
+            {
+                "name": "Brett Pesce",
+                "number": 22,
+                "pos": "ir6",
+                "id": 2541,
                 "ppUnit": null,
                 "movement": null
             }
@@ -4761,7 +4769,7 @@
                 "pos": "ir3",
                 "id": 23589,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
