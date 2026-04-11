@@ -23,7 +23,7 @@
         "homeGoalieConfirmed": "Ilya Sorokin",
         "homeGoalieStatus": "Confirmed",
         "awayGoalieConfirmed": "Linus Ullmark",
-        "awayGoalieStatus": "Unconfirmed"
+        "awayGoalieStatus": "Confirmed"
     },
     {
         "id": 2025021263,
@@ -33,10 +33,10 @@
         "awayTeam": "Capitals",
         "homeTeamAbbrev": "PIT",
         "awayTeamAbbrev": "WSH",
-        "homeGoalieConfirmed": "Stuart Skinner",
+        "homeGoalieConfirmed": "Arturs Silovs",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Logan Thompson",
-        "awayGoalieStatus": "Unconfirmed"
+        "awayGoalieStatus": "Likely"
     },
     {
         "id": 2025021264,
@@ -72,9 +72,9 @@
         "awayTeam": "Blues",
         "homeTeamAbbrev": "CHI",
         "awayTeamAbbrev": "STL",
-        "homeGoalieConfirmed": "Arvid Soderblom",
+        "homeGoalieConfirmed": "Spencer Knight",
         "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Jordan Binnington",
+        "awayGoalieConfirmed": "Joel Hofer",
         "awayGoalieStatus": "Unconfirmed"
     },
     {
@@ -125,7 +125,7 @@
         "homeTeamAbbrev": "TOR",
         "awayTeamAbbrev": "FLA",
         "homeGoalieConfirmed": "Joseph Woll",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieStatus": "Confirmed",
         "awayGoalieConfirmed": "Daniil Tarasov",
         "awayGoalieStatus": "Unconfirmed"
     },
@@ -151,7 +151,7 @@
         "homeTeamAbbrev": "WPG",
         "awayTeamAbbrev": "PHI",
         "homeGoalieConfirmed": "Connor Hellebuyck",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieStatus": "Likely",
         "awayGoalieConfirmed": "Dan Vladar",
         "awayGoalieStatus": "Unconfirmed"
     },
@@ -192,6 +192,84 @@
         "homeGoalieConfirmed": "Alex Nedeljkovic",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Nikita Tolopilo",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021276,
+        "gameDate": "2026-04-12",
+        "startTimeUTC": "2026-04-12T19:00:00Z",
+        "homeTeam": "Capitals",
+        "awayTeam": "Penguins",
+        "homeTeamAbbrev": "WSH",
+        "awayTeamAbbrev": "PIT",
+        "homeGoalieConfirmed": "Logan Thompson",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Arturs Silovs",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021277,
+        "gameDate": "2026-04-12",
+        "startTimeUTC": "2026-04-12T22:00:00Z",
+        "homeTeam": "Islanders",
+        "awayTeam": "Canadiens",
+        "homeTeamAbbrev": "NYI",
+        "awayTeamAbbrev": "MTL",
+        "homeGoalieConfirmed": "Ilya Sorokin",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jakub Dobes",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021278,
+        "gameDate": "2026-04-12",
+        "startTimeUTC": "2026-04-12T22:00:00Z",
+        "homeTeam": "Blue Jackets",
+        "awayTeam": "Bruins",
+        "homeTeamAbbrev": "CBJ",
+        "awayTeamAbbrev": "BOS",
+        "homeGoalieConfirmed": "Jet Greaves",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jeremy Swayman",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021279,
+        "gameDate": "2026-04-12",
+        "startTimeUTC": "2026-04-12T23:00:00Z",
+        "homeTeam": "Devils",
+        "awayTeam": "Senators",
+        "homeTeamAbbrev": "NJD",
+        "awayTeamAbbrev": "OTT",
+        "homeGoalieConfirmed": "Nico Daws",
+        "homeGoalieStatus": "Confirmed",
+        "awayGoalieConfirmed": "Linus Ullmark",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021280,
+        "gameDate": "2026-04-12",
+        "startTimeUTC": "2026-04-13T00:00:00Z",
+        "homeTeam": "Ducks",
+        "awayTeam": "Canucks",
+        "homeTeamAbbrev": "ANA",
+        "awayTeamAbbrev": "VAN",
+        "homeGoalieConfirmed": "Lukas Dostal",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Nikita Tolopilo",
+        "awayGoalieStatus": "Unconfirmed"
+    },
+    {
+        "id": 2025021281,
+        "gameDate": "2026-04-12",
+        "startTimeUTC": "2026-04-13T01:00:00Z",
+        "homeTeam": "Flames",
+        "awayTeam": "Mammoth",
+        "homeTeamAbbrev": "CGY",
+        "awayTeamAbbrev": "UTA",
+        "homeGoalieConfirmed": "Devin Cooley",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Karel Vejmelka",
         "awayGoalieStatus": "Unconfirmed"
     }
 ]
