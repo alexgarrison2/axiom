@@ -167,7 +167,7 @@
                 "pos": "lw",
                 "id": 27046,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Anthony Cirelli",
@@ -193,7 +193,7 @@
                 "pos": "lw",
                 "id": 2707,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Brayden Point",
@@ -219,7 +219,7 @@
                 "pos": "lw",
                 "id": 2357,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Yanni Gourde",
@@ -253,7 +253,7 @@
                 "pos": "c",
                 "id": 31505,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Scott Sabourin",
@@ -261,7 +261,7 @@
                 "pos": "rw",
                 "id": 2171,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -279,7 +279,7 @@
                 "pos": "rd",
                 "id": 30124,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -357,7 +357,7 @@
                 "pos": "ir6",
                 "id": 4756,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Zemgus Girgensons",
@@ -365,7 +365,7 @@
                 "pos": "ir7",
                 "id": 1953,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -4177,7 +4177,7 @@
                 "pos": "ld",
                 "id": 25394,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Erik Gudbranson",
@@ -4762,6 +4762,14 @@
                 "id": 23589,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Matt Murray",
+                "number": 30,
+                "pos": "ir4",
+                "id": 2567,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
