@@ -127,6 +127,9 @@ def main():
 
     for f in [PBP_FILE, SHIFTS_FILE]:
         if not os.path.exists(f):
+            if f == PBP_FILE:
+                print(f"[SKIP] {f} not found — nothing to enrich.")
+                sys.exit(0)
             print(f"✗ {f} not found. Run from the pipeline/ directory.")
             sys.exit(1)
 
