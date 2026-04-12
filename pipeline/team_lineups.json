@@ -67,7 +67,7 @@
                 "pos": "c",
                 "id": 2636,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Ryan Leonard",
@@ -119,7 +119,7 @@
                 "pos": "rd",
                 "id": 4806,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -181,7 +181,7 @@
                 "pos": "ir3",
                 "id": 4806,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Pierre-Luc Dubois",
@@ -189,7 +189,7 @@
                 "pos": "ir4",
                 "id": 2636,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -803,7 +803,7 @@
                 "pos": "ir4",
                 "id": 4789,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Kaiden Guhle",
@@ -873,7 +873,7 @@
                 "pos": "rw",
                 "id": 3791,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -899,7 +899,7 @@
                 "pos": "rw",
                 "id": 2691,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -1421,7 +1421,7 @@
                 "pos": "lw",
                 "id": 4790,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Dylan Cozens",
@@ -1577,7 +1577,7 @@
                 "pos": "ir4",
                 "id": 4790,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -3093,7 +3093,7 @@
                 "pos": "ld",
                 "id": 2807,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Braden Schneider",
@@ -3593,7 +3593,7 @@
                 "pos": "ld",
                 "id": 29954,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Oliver Ekman-Larsson",
@@ -3611,7 +3611,7 @@
                 "pos": "ld",
                 "id": 1935,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Troy Stecher",
@@ -3637,7 +3637,7 @@
                 "pos": "rd",
                 "id": 2349,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
@@ -4145,7 +4145,7 @@
                 "pos": "c",
                 "id": 2156,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Bobby Brink",
@@ -4179,7 +4179,7 @@
                 "pos": "rw",
                 "id": 27037,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -4409,7 +4409,7 @@
                 "pos": "rd",
                 "id": 29338,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -4427,7 +4427,7 @@
                 "pos": "rd",
                 "id": 28161,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
@@ -4538,12 +4538,12 @@
                 "movement": null
             },
             {
-                "name": "Ty Dellandrea",
-                "number": 10,
+                "name": "Adam Gaudette",
+                "number": 81,
                 "pos": "rw",
-                "id": 4813,
+                "id": 4646,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -4802,6 +4802,14 @@
                 "id": 30841,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Frank Nazar",
+                "number": null,
+                "pos": "ir5",
+                "id": 33280,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ]
     },
@@ -5762,12 +5770,12 @@
     "VGK": {
         "f1": [
             {
-                "name": "Ivan Barbashev",
-                "number": 49,
+                "name": "Mitch Marner",
+                "number": 16,
                 "pos": "lw",
-                "id": 2737,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2475,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Jack Eichel",
@@ -5788,19 +5796,19 @@
         ],
         "f2": [
             {
-                "name": "Brett Howden",
-                "number": 21,
+                "name": "Ivan Barbashev",
+                "number": 49,
                 "pos": "lw",
-                "id": 2660,
+                "id": 2737,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Mitch Marner",
-                "number": 16,
+                "name": "Brett Howden",
+                "number": 21,
                 "pos": "c",
-                "id": 2475,
-                "ppUnit": 1,
+                "id": 2660,
+                "ppUnit": 2,
                 "movement": null
             },
             {
