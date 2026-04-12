@@ -243,6 +243,9 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     });
     // Multi-select state: Default to ['All']
     const [historyFilters, setHistoryFilters] = useState<string[]>(['All']);
+    // Custom % range inputs (empty string = unset)
+    const [customMin, setCustomMin] = useState<string>('');
+    const [customMax, setCustomMax] = useState<string>('');
     // History view mode: 'date' (default) or 'team'
     const [historyViewMode, setHistoryViewMode] = useState<'date' | 'team'>('date');
     // Secondary pick filter (only relevant in team view)
@@ -282,14 +285,25 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
         }
 
         // 2. Confidence Filters
-        if (historyFilters.includes('All') || historyFilters.length === 0) return filtered;
+        const customMinVal = customMin !== '' ? parseFloat(customMin) : null;
+        const customMaxVal = customMax !== '' ? parseFloat(customMax) : null;
+        const hasCustomRange = customMinVal !== null || customMaxVal !== null;
+
+        if (!hasCustomRange && (historyFilters.includes('All') || historyFilters.length === 0)) return filtered;
 
         return filtered.filter(h => {
             // Determine the model's win probability for the predicted winner
             const isHome = h.predictedWinner === h.homeTeam.commonName || h.predictedWinner === h.homeTeam.name;
             const modelConf = isHome ? h.homeWinProb : (100 - h.homeWinProb);
 
-            // Check against enabled filters
+            // Custom range takes priority when either bound is set
+            if (hasCustomRange) {
+                const aboveMin = customMinVal === null || modelConf >= customMinVal;
+                const belowMax = customMaxVal === null || modelConf <= customMaxVal;
+                return aboveMin && belowMax;
+            }
+
+            // Preset bucket filters
             if (historyFilters.includes('50-55') && (modelConf >= 50 && modelConf < 55)) return true;
             if (historyFilters.includes('55-65') && (modelConf >= 55 && modelConf < 65)) return true;
             if (historyFilters.includes('65-75') && (modelConf >= 65 && modelConf < 75)) return true;
@@ -297,7 +311,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 
             return false;
         });
-    }, [history, historyFilters, dateRange, uniqueHistoryDates]);
+    }, [history, historyFilters, customMin, customMax, dateRange, uniqueHistoryDates]);
 
     if (uniqueDates.length === 0 && history.length === 0) {
         return <div className="text-center text-gray-500 mt-12 font-mono uppercase tracking-widest animate-pulse">No data available.</div>;
@@ -553,23 +567,26 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 </div>
                             )}
 
-                            <div className="flex flex-wrap justify-center gap-2">
+                            <div className="flex flex-wrap justify-center items-center gap-2">
                                 {(['All', '50-55', '55-65', '65-75', '75+'] as const).map((filter) => {
-                                    const isActive = historyFilters.includes(filter);
+                                    const hasCustomRange = customMin !== '' || customMax !== '';
+                                    const isActive = !hasCustomRange && historyFilters.includes(filter);
                                     return (
                                         <button
                                             key={filter}
                                             onClick={() => {
+                                                // Clear custom range whenever a preset is clicked
+                                                setCustomMin('');
+                                                setCustomMax('');
                                                 if (filter === 'All') {
                                                     setHistoryFilters(['All']);
                                                 } else {
-                                                    let newFilters = historyFilters.filter(f => f !== 'All'); // Remove All if specific selected
+                                                    let newFilters = historyFilters.filter(f => f !== 'All');
                                                     if (newFilters.includes(filter)) {
                                                         newFilters = newFilters.filter(f => f !== filter);
                                                     } else {
                                                         newFilters.push(filter);
                                                     }
-                                                    // If nothing selected, revert to All
                                                     if (newFilters.length === 0) newFilters = ['All'];
                                                     setHistoryFilters(newFilters);
                                                 }
@@ -583,6 +600,40 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                         </button>
                                     );
                                 })}
+
+                                {/* Custom % range inputs */}
+                                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-all ${
+                                    customMin !== '' || customMax !== ''
+                                        ? 'bg-neon-green/10 border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                                        : 'bg-white/5 border-white/5'
+                                }`}>
+                                    <input
+                                        type="number"
+                                        min={50}
+                                        max={100}
+                                        placeholder="FROM"
+                                        value={customMin}
+                                        onChange={e => {
+                                            setCustomMin(e.target.value);
+                                            if (e.target.value !== '') setHistoryFilters(['All']);
+                                        }}
+                                        className="w-12 bg-transparent text-[10px] font-bold text-center text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                    <span className="text-neutral-600 text-[10px]">–</span>
+                                    <input
+                                        type="number"
+                                        min={50}
+                                        max={100}
+                                        placeholder="TO"
+                                        value={customMax}
+                                        onChange={e => {
+                                            setCustomMax(e.target.value);
+                                            if (e.target.value !== '') setHistoryFilters(['All']);
+                                        }}
+                                        className="w-12 bg-transparent text-[10px] font-bold text-center text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                    <span className={`text-[10px] font-bold ${customMin !== '' || customMax !== '' ? 'text-neon-green' : 'text-neutral-600'}`}>%</span>
+                                </div>
                             </div>
                         </div>
 
