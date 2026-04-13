@@ -11,7 +11,9 @@ interface FilterControlsProps {
         ppga: string;
         scoringFirst: string;
         minSf: string;
+        maxSf: string;
         minSa: string;
+        maxSa: string;
     };
     setFilters: React.Dispatch<React.SetStateAction<{
         goalie: string;
@@ -23,7 +25,9 @@ interface FilterControlsProps {
         ppga: string;
         scoringFirst: string;
         minSf: string;
+        maxSf: string;
         minSa: string;
+        maxSa: string;
     }>>;
     uniqueGoalies: string[];
 }
@@ -126,39 +130,53 @@ const FilterControls: React.FC<FilterControlsProps> = ({ filters, setFilters, un
                 </div>
             </div>
 
-            {/* Min Shots For */}
+            {/* Shots For range */}
             <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Shots For ≥</label>
-                <div className="flex items-center gap-1 px-2 py-1 bg-black/40 rounded-sm border border-white/10">
-                    <input
-                        type="number"
-                        min={0}
-                        placeholder="—"
-                        value={filters.minSf}
-                        onChange={e => set('minSf', e.target.value)}
-                        className="w-12 bg-transparent text-[10px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    {filters.minSf !== '' && (
-                        <button onClick={() => set('minSf', '')} className="text-gray-600 hover:text-white text-[10px] leading-none">✕</button>
-                    )}
+                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Shots For</label>
+                <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 px-2 py-1 bg-black/40 rounded-sm border border-white/10">
+                        <span className="text-[9px] text-gray-600 uppercase">Min</span>
+                        <input
+                            type="number" min={0} placeholder="—" value={filters.minSf}
+                            onChange={e => set('minSf', e.target.value)}
+                            className="w-10 bg-transparent text-[10px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        {filters.minSf !== '' && <button onClick={() => set('minSf', '')} className="text-gray-600 hover:text-white text-[9px] leading-none">✕</button>}
+                    </div>
+                    <div className="flex items-center gap-1 px-2 py-1 bg-black/40 rounded-sm border border-white/10">
+                        <span className="text-[9px] text-gray-600 uppercase">Max</span>
+                        <input
+                            type="number" min={0} placeholder="—" value={filters.maxSf}
+                            onChange={e => set('maxSf', e.target.value)}
+                            className="w-10 bg-transparent text-[10px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        {filters.maxSf !== '' && <button onClick={() => set('maxSf', '')} className="text-gray-600 hover:text-white text-[9px] leading-none">✕</button>}
+                    </div>
                 </div>
             </div>
 
-            {/* Min Shots Against */}
+            {/* Shots Against range */}
             <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Shots Against ≥</label>
-                <div className="flex items-center gap-1 px-2 py-1 bg-black/40 rounded-sm border border-white/10">
-                    <input
-                        type="number"
-                        min={0}
-                        placeholder="—"
-                        value={filters.minSa}
-                        onChange={e => set('minSa', e.target.value)}
-                        className="w-12 bg-transparent text-[10px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    {filters.minSa !== '' && (
-                        <button onClick={() => set('minSa', '')} className="text-gray-600 hover:text-white text-[10px] leading-none">✕</button>
-                    )}
+                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Shots Against</label>
+                <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 px-2 py-1 bg-black/40 rounded-sm border border-white/10">
+                        <span className="text-[9px] text-gray-600 uppercase">Min</span>
+                        <input
+                            type="number" min={0} placeholder="—" value={filters.minSa}
+                            onChange={e => set('minSa', e.target.value)}
+                            className="w-10 bg-transparent text-[10px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        {filters.minSa !== '' && <button onClick={() => set('minSa', '')} className="text-gray-600 hover:text-white text-[9px] leading-none">✕</button>}
+                    </div>
+                    <div className="flex items-center gap-1 px-2 py-1 bg-black/40 rounded-sm border border-white/10">
+                        <span className="text-[9px] text-gray-600 uppercase">Max</span>
+                        <input
+                            type="number" min={0} placeholder="—" value={filters.maxSa}
+                            onChange={e => set('maxSa', e.target.value)}
+                            className="w-10 bg-transparent text-[10px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        {filters.maxSa !== '' && <button onClick={() => set('maxSa', '')} className="text-gray-600 hover:text-white text-[9px] leading-none">✕</button>}
+                    </div>
                 </div>
             </div>
 

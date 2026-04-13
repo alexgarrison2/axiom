@@ -43,7 +43,9 @@ export default function TeamDetailPage() {
         ppga: 'All',
         scoringFirst: 'All',
         minSf: '',
+        maxSf: '',
         minSa: '',
+        maxSa: '',
     });
 
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
@@ -115,14 +117,10 @@ export default function TeamDetailPage() {
                 return filters.scoringFirst === 'Yes' ? scoredFirst : !scoredFirst;
             });
         }
-        if (filters.minSf !== '') {
-            const threshold = parseInt(filters.minSf);
-            if (!isNaN(threshold)) out = out.filter(g => g.sf >= threshold);
-        }
-        if (filters.minSa !== '') {
-            const threshold = parseInt(filters.minSa);
-            if (!isNaN(threshold)) out = out.filter(g => g.sa >= threshold);
-        }
+        if (filters.minSf !== '') { const v = parseInt(filters.minSf); if (!isNaN(v)) out = out.filter(g => g.sf >= v); }
+        if (filters.maxSf !== '') { const v = parseInt(filters.maxSf); if (!isNaN(v)) out = out.filter(g => g.sf <= v); }
+        if (filters.minSa !== '') { const v = parseInt(filters.minSa); if (!isNaN(v)) out = out.filter(g => g.sa >= v); }
+        if (filters.maxSa !== '') { const v = parseInt(filters.maxSa); if (!isNaN(v)) out = out.filter(g => g.sa <= v); }
         return out;
     }, [games, filters]);
 
