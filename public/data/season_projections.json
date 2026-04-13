@@ -5,94 +5,94 @@
             "team": "COL",
             "make_playoffs_pct": 100.0,
             "won_division_pct": 100.0,
-            "won_conference_pct": 19.5,
-            "won_cup_pct": 10.7,
+            "won_conference_pct": 19.8,
+            "won_cup_pct": 11.4,
             "avg_points": 118.6,
             "point_dist": {
-                "121": 786,
-                "117": 1059,
-                "119": 1637,
-                "116": 188,
-                "120": 489,
+                "121": 768,
+                "119": 1696,
                 "118": 619,
-                "115": 222
+                "117": 1076,
+                "116": 191,
+                "120": 452,
+                "115": 198
             },
             "div_rank_dist": {
                 "1": 5000
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2055,
-                "R2": 1251,
-                "CF": 721,
-                "F": 436,
-                "CUP": 537
+                "R1": 2068,
+                "R2": 1216,
+                "CF": 726,
+                "F": 419,
+                "CUP": 571
             },
             "r1_matchups": {
-                "ANA": 395,
-                "LAK": 2646,
-                "EDM": 496,
-                "UTA": 155,
-                "NSH": 1152,
-                "VGK": 95,
-                "SJS": 28,
-                "WPG": 33
+                "LAK": 2402,
+                "NSH": 1211,
+                "WPG": 42,
+                "EDM": 436,
+                "VGK": 101,
+                "UTA": 382,
+                "ANA": 400,
+                "SJS": 26
             }
         },
         {
             "team": "CAR",
             "make_playoffs_pct": 100.0,
             "won_division_pct": 100.0,
-            "won_conference_pct": 20.9,
-            "won_cup_pct": 11.6,
+            "won_conference_pct": 20.4,
+            "won_cup_pct": 11.0,
             "avg_points": 112.3,
             "point_dist": {
-                "112": 2041,
-                "111": 390,
-                "114": 1319,
-                "113": 567,
-                "110": 683
+                "114": 1374,
+                "111": 399,
+                "112": 1968,
+                "110": 693,
+                "113": 566
             },
             "div_rank_dist": {
                 "1": 5000
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2045,
-                "R2": 1231,
-                "CF": 678,
+                "R1": 2099,
+                "R2": 1226,
+                "CF": 657,
                 "F": 468,
-                "CUP": 578
+                "CUP": 550
             },
             "r1_matchups": {
-                "BOS": 3288,
-                "OTT": 1712
+                "OTT": 3348,
+                "BOS": 1652
             }
         },
         {
             "team": "DAL",
             "make_playoffs_pct": 100.0,
             "won_division_pct": 0.0,
-            "won_conference_pct": 13.0,
-            "won_cup_pct": 6.4,
+            "won_conference_pct": 13.3,
+            "won_cup_pct": 6.9,
             "avg_points": 110.2,
             "point_dist": {
-                "109": 446,
-                "111": 577,
-                "112": 1285,
-                "110": 1966,
-                "108": 726
+                "108": 760,
+                "111": 585,
+                "110": 1939,
+                "109": 433,
+                "112": 1283
             },
             "div_rank_dist": {
                 "2": 5000
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2442,
-                "R2": 1348,
-                "CF": 560,
-                "F": 330,
-                "CUP": 320
+                "R1": 2356,
+                "R2": 1359,
+                "CF": 621,
+                "F": 318,
+                "CUP": 346
             },
             "r1_matchups": {
                 "MIN": 5000
@@ -101,129 +101,127 @@
         {
             "team": "BUF",
             "make_playoffs_pct": 100.0,
-            "won_division_pct": 77.4,
+            "won_division_pct": 75.0,
             "won_conference_pct": 13.8,
-            "won_cup_pct": 7.5,
+            "won_cup_pct": 6.9,
             "avg_points": 108.3,
             "point_dist": {
-                "108": 1944,
-                "106": 699,
-                "110": 1396,
-                "107": 391,
-                "109": 570
+                "110": 1409,
+                "106": 702,
+                "108": 1997,
+                "107": 362,
+                "109": 530
             },
             "div_rank_dist": {
-                "2": 933,
-                "1": 3868,
-                "3": 199
+                "1": 3750,
+                "3": 339,
+                "2": 911
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2443,
-                "R2": 1168,
-                "CF": 698,
-                "F": 316,
-                "CUP": 375
+                "R1": 2300,
+                "R2": 1254,
+                "CF": 755,
+                "F": 344,
+                "CUP": 347
             },
             "r1_matchups": {
-                "MTL": 897,
-                "OTT": 2538,
-                "BOS": 1330,
-                "TBL": 235
-            }
-        },
-        {
-            "team": "TBL",
-            "make_playoffs_pct": 100.0,
-            "won_division_pct": 17.9,
-            "won_conference_pct": 11.8,
-            "won_cup_pct": 5.7,
-            "avg_points": 106.3,
-            "point_dist": {
-                "108": 1396,
-                "107": 599,
-                "106": 1970,
-                "104": 647,
-                "105": 388
-            },
-            "div_rank_dist": {
-                "1": 897,
-                "2": 2559,
-                "3": 1544
-            },
-            "round_exit_dist": {
-                "MISS": 0,
-                "R1": 2434,
-                "R2": 1310,
-                "CF": 667,
-                "F": 306,
-                "CUP": 283
-            },
-            "r1_matchups": {
-                "OTT": 602,
-                "BOS": 295,
-                "MTL": 3868,
-                "BUF": 235
+                "BOS": 2492,
+                "TBL": 424,
+                "MTL": 826,
+                "OTT": 1258
             }
         },
         {
             "team": "MTL",
             "make_playoffs_pct": 100.0,
-            "won_division_pct": 4.7,
-            "won_conference_pct": 10.4,
-            "won_cup_pct": 5.2,
-            "avg_points": 106.2,
+            "won_division_pct": 8.5,
+            "won_conference_pct": 11.5,
+            "won_cup_pct": 5.3,
+            "avg_points": 107.1,
             "point_dist": {
-                "106": 2015,
-                "104": 772,
-                "107": 570,
-                "108": 1185,
-                "105": 458
+                "106": 2046,
+                "108": 2350,
+                "107": 604
             },
             "div_rank_dist": {
-                "3": 3257,
-                "2": 1508,
-                "1": 235
+                "3": 2375,
+                "1": 424,
+                "2": 2201
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2635,
-                "R2": 1259,
-                "CF": 587,
-                "F": 258,
-                "CUP": 261
+                "R1": 2549,
+                "R2": 1231,
+                "CF": 644,
+                "F": 309,
+                "CUP": 267
             },
             "r1_matchups": {
-                "BUF": 897,
-                "TBL": 3868,
-                "OTT": 148,
-                "BOS": 87
+                "TBL": 3750,
+                "OTT": 147,
+                "BUF": 826,
+                "BOS": 277
+            }
+        },
+        {
+            "team": "TBL",
+            "make_playoffs_pct": 100.0,
+            "won_division_pct": 16.5,
+            "won_conference_pct": 11.9,
+            "won_cup_pct": 5.6,
+            "avg_points": 106.4,
+            "point_dist": {
+                "106": 2003,
+                "105": 373,
+                "108": 1435,
+                "104": 621,
+                "107": 568
+            },
+            "div_rank_dist": {
+                "2": 1888,
+                "3": 2286,
+                "1": 826
+            },
+            "round_exit_dist": {
+                "MISS": 0,
+                "R1": 2444,
+                "R2": 1274,
+                "CF": 687,
+                "F": 316,
+                "CUP": 279
+            },
+            "r1_matchups": {
+                "MTL": 3750,
+                "BUF": 424,
+                "OTT": 247,
+                "BOS": 579
             }
         },
         {
             "team": "MIN",
             "make_playoffs_pct": 100.0,
             "won_division_pct": 0.0,
-            "won_conference_pct": 12.0,
-            "won_cup_pct": 5.8,
+            "won_conference_pct": 10.7,
+            "won_cup_pct": 5.6,
             "avg_points": 104.3,
             "point_dist": {
-                "106": 1310,
-                "103": 410,
-                "105": 588,
-                "104": 1978,
-                "102": 714
+                "105": 608,
+                "104": 1989,
+                "102": 719,
+                "106": 1276,
+                "103": 408
             },
             "div_rank_dist": {
                 "3": 5000
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2558,
-                "R2": 1289,
-                "CF": 553,
-                "F": 309,
-                "CUP": 291
+                "R1": 2644,
+                "R2": 1275,
+                "CF": 547,
+                "F": 252,
+                "CUP": 282
             },
             "r1_matchups": {
                 "DAL": 5000
@@ -233,194 +231,181 @@
             "team": "PIT",
             "make_playoffs_pct": 100.0,
             "won_division_pct": 0.0,
-            "won_conference_pct": 11.2,
-            "won_cup_pct": 5.8,
-            "avg_points": 100.2,
+            "won_conference_pct": 10.3,
+            "won_cup_pct": 5.4,
+            "avg_points": 99.1,
             "point_dist": {
-                "98": 765,
-                "102": 1227,
-                "100": 1974,
-                "99": 464,
-                "101": 570
+                "98": 1970,
+                "99": 579,
+                "100": 2451
             },
             "div_rank_dist": {
                 "2": 5000
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2443,
-                "R2": 1373,
-                "CF": 624,
-                "F": 270,
-                "CUP": 290
+                "R1": 2428,
+                "R2": 1432,
+                "CF": 627,
+                "F": 244,
+                "CUP": 269
             },
             "r1_matchups": {
-                "PHI": 3465,
-                "CBJ": 1066,
-                "WSH": 295,
-                "NYI": 174
-            }
-        },
-        {
-            "team": "OTT",
-            "make_playoffs_pct": 100.0,
-            "won_division_pct": 0.0,
-            "won_conference_pct": 13.9,
-            "won_cup_pct": 7.6,
-            "avg_points": 98.4,
-            "point_dist": {
-                "98": 2007,
-                "99": 591,
-                "96": 601,
-                "100": 1450,
-                "97": 351
-            },
-            "div_rank_dist": {
-                "4": 3345,
-                "5": 1655
-            },
-            "round_exit_dist": {
-                "MISS": 0,
-                "R1": 2459,
-                "R2": 1201,
-                "CF": 643,
-                "F": 317,
-                "CUP": 380
-            },
-            "r1_matchups": {
-                "TBL": 602,
-                "CAR": 1712,
-                "BUF": 2538,
-                "MTL": 148
+                "PHI": 4105,
+                "WSH": 629,
+                "CBJ": 266
             }
         },
         {
             "team": "BOS",
             "make_playoffs_pct": 100.0,
             "won_division_pct": 0.0,
-            "won_conference_pct": 7.9,
-            "won_cup_pct": 3.2,
-            "avg_points": 98.2,
+            "won_conference_pct": 7.8,
+            "won_cup_pct": 3.3,
+            "avg_points": 99.1,
             "point_dist": {
-                "98": 1993,
-                "100": 1179,
-                "99": 587,
-                "97": 499,
-                "96": 742
+                "100": 2479,
+                "98": 1912,
+                "99": 609
             },
             "div_rank_dist": {
-                "5": 3345,
-                "4": 1655
+                "4": 3410,
+                "5": 1590
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2984,
-                "R2": 1093,
-                "CF": 529,
-                "F": 235,
-                "CUP": 159
+                "R1": 2950,
+                "R2": 1152,
+                "CF": 506,
+                "F": 225,
+                "CUP": 167
             },
             "r1_matchups": {
-                "CAR": 3288,
-                "TBL": 295,
-                "BUF": 1330,
-                "MTL": 87
+                "BUF": 2492,
+                "CAR": 1652,
+                "TBL": 579,
+                "MTL": 277
+            }
+        },
+        {
+            "team": "OTT",
+            "make_playoffs_pct": 100.0,
+            "won_division_pct": 0.0,
+            "won_conference_pct": 13.3,
+            "won_cup_pct": 7.2,
+            "avg_points": 98.2,
+            "point_dist": {
+                "99": 2806,
+                "98": 482,
+                "97": 1712
+            },
+            "div_rank_dist": {
+                "5": 3410,
+                "4": 1590
+            },
+            "round_exit_dist": {
+                "MISS": 0,
+                "R1": 2658,
+                "R2": 1116,
+                "CF": 561,
+                "F": 307,
+                "CUP": 358
+            },
+            "r1_matchups": {
+                "CAR": 3348,
+                "MTL": 147,
+                "TBL": 247,
+                "BUF": 1258
             }
         },
         {
             "team": "PHI",
-            "make_playoffs_pct": 69.3,
+            "make_playoffs_pct": 82.1,
             "won_division_pct": 0.0,
-            "won_conference_pct": 7.2,
-            "won_cup_pct": 3.9,
+            "won_conference_pct": 9.5,
+            "won_cup_pct": 4.8,
             "avg_points": 96.3,
             "point_dist": {
-                "96": 1961,
-                "98": 1300,
-                "95": 419,
-                "94": 735,
-                "97": 585
+                "96": 1979,
+                "98": 1301,
+                "95": 428,
+                "94": 696,
+                "97": 596
             },
             "div_rank_dist": {
-                "3": 3465,
-                "4": 1132,
-                "5": 355,
-                "6": 48
+                "3": 4105,
+                "4": 802,
+                "5": 93
             },
             "round_exit_dist": {
-                "MISS": 1535,
-                "R1": 1745,
-                "R2": 955,
-                "CF": 406,
-                "F": 165,
-                "CUP": 194
+                "MISS": 895,
+                "R1": 2073,
+                "R2": 1091,
+                "CF": 467,
+                "F": 234,
+                "CUP": 240
             },
             "r1_matchups": {
-                "PIT": 3465
-            }
-        },
-        {
-            "team": "CBJ",
-            "make_playoffs_pct": 21.3,
-            "won_division_pct": 0.0,
-            "won_conference_pct": 1.9,
-            "won_cup_pct": 0.9,
-            "avg_points": 94.3,
-            "point_dist": {
-                "94": 1943,
-                "96": 1409,
-                "95": 606,
-                "93": 394,
-                "92": 648
-            },
-            "div_rank_dist": {
-                "6": 1087,
-                "4": 1624,
-                "3": 1066,
-                "5": 1223
-            },
-            "round_exit_dist": {
-                "MISS": 3934,
-                "R1": 566,
-                "R2": 289,
-                "CF": 116,
-                "F": 48,
-                "CUP": 47
-            },
-            "r1_matchups": {
-                "PIT": 1066
+                "PIT": 4105
             }
         },
         {
             "team": "WSH",
-            "make_playoffs_pct": 5.9,
+            "make_playoffs_pct": 12.6,
+            "won_division_pct": 0.0,
+            "won_conference_pct": 1.0,
+            "won_cup_pct": 0.5,
+            "avg_points": 94.1,
+            "point_dist": {
+                "94": 628,
+                "93": 1979,
+                "95": 2393
+            },
+            "div_rank_dist": {
+                "4": 2392,
+                "5": 1979,
+                "3": 629
+            },
+            "round_exit_dist": {
+                "MISS": 4371,
+                "R1": 357,
+                "R2": 152,
+                "CF": 72,
+                "F": 25,
+                "CUP": 23
+            },
+            "r1_matchups": {
+                "PIT": 629
+            }
+        },
+        {
+            "team": "CBJ",
+            "make_playoffs_pct": 5.3,
             "won_division_pct": 0.0,
             "won_conference_pct": 0.6,
             "won_cup_pct": 0.3,
             "avg_points": 93.2,
             "point_dist": {
-                "94": 542,
-                "92": 478,
-                "93": 1996,
-                "95": 1184,
-                "91": 800
+                "94": 2607,
+                "92": 1831,
+                "93": 562
             },
             "div_rank_dist": {
-                "5": 1625,
-                "6": 1637,
-                "3": 295,
-                "4": 1443
+                "5": 1607,
+                "4": 1806,
+                "6": 1321,
+                "3": 266
             },
             "round_exit_dist": {
-                "MISS": 4705,
-                "R1": 147,
-                "R2": 83,
-                "CF": 33,
-                "F": 19,
-                "CUP": 13
+                "MISS": 4734,
+                "R1": 142,
+                "R2": 72,
+                "CF": 24,
+                "F": 13,
+                "CUP": 15
             },
             "r1_matchups": {
-                "PIT": 295
+                "PIT": 266
             }
         },
         {
@@ -429,13 +414,13 @@
             "won_division_pct": 0.0,
             "won_conference_pct": 0.0,
             "won_cup_pct": 0.0,
-            "avg_points": 93.1,
+            "avg_points": 93.2,
             "point_dist": {
-                "93": 2040,
-                "94": 553,
-                "95": 1116,
-                "91": 776,
-                "92": 515
+                "92": 482,
+                "93": 1984,
+                "94": 564,
+                "95": 1181,
+                "91": 789
             },
             "div_rank_dist": {
                 "6": 5000
@@ -451,250 +436,209 @@
             "r1_matchups": {}
         },
         {
-            "team": "NYI",
-            "make_playoffs_pct": 3.5,
-            "won_division_pct": 0.0,
-            "won_conference_pct": 0.4,
-            "won_cup_pct": 0.2,
-            "avg_points": 93.2,
-            "point_dist": {
-                "95": 1181,
-                "93": 1966,
-                "92": 443,
-                "91": 818,
-                "94": 592
-            },
-            "div_rank_dist": {
-                "4": 801,
-                "5": 1797,
-                "6": 2228,
-                "3": 174
-            },
-            "round_exit_dist": {
-                "MISS": 4826,
-                "R1": 99,
-                "R2": 38,
-                "CF": 19,
-                "F": 10,
-                "CUP": 8
-            },
-            "r1_matchups": {
-                "PIT": 174
-            }
-        },
-        {
             "team": "VGK",
             "make_playoffs_pct": 100.0,
-            "won_division_pct": 57.0,
-            "won_conference_pct": 14.3,
-            "won_cup_pct": 6.8,
+            "won_division_pct": 57.9,
+            "won_conference_pct": 14.9,
+            "won_cup_pct": 7.0,
             "avg_points": 93.4,
             "point_dist": {
-                "95": 1483,
-                "93": 1978,
-                "94": 570,
-                "91": 598,
-                "92": 371
+                "93": 1916,
+                "95": 1540,
+                "94": 571,
+                "91": 625,
+                "92": 348
             },
             "div_rank_dist": {
-                "1": 2848,
-                "3": 682,
-                "2": 1367,
-                "4": 103
+                "2": 1335,
+                "1": 2895,
+                "4": 117,
+                "3": 653
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2338,
-                "R2": 1261,
-                "CF": 686,
-                "F": 374,
-                "CUP": 341
+                "R1": 2263,
+                "R2": 1243,
+                "CF": 751,
+                "F": 394,
+                "CUP": 349
             },
             "r1_matchups": {
-                "UTA": 2777,
-                "EDM": 722,
-                "LAK": 358,
-                "ANA": 1048,
-                "COL": 95
+                "EDM": 537,
+                "UTA": 2689,
+                "ANA": 1183,
+                "COL": 101,
+                "LAK": 490
             }
+        },
+        {
+            "team": "NYI",
+            "make_playoffs_pct": 0.0,
+            "won_division_pct": 0.0,
+            "won_conference_pct": 0.0,
+            "won_cup_pct": 0.0,
+            "avg_points": 92.0,
+            "point_dist": {
+                "92": 605,
+                "93": 2318,
+                "91": 2077
+            },
+            "div_rank_dist": {
+                "6": 3679,
+                "5": 1321
+            },
+            "round_exit_dist": {
+                "MISS": 5000,
+                "R1": 0,
+                "R2": 0,
+                "CF": 0,
+                "F": 0,
+                "CUP": 0
+            },
+            "r1_matchups": {}
         },
         {
             "team": "UTA",
             "make_playoffs_pct": 100.0,
             "won_division_pct": 0.0,
             "won_conference_pct": 11.0,
-            "won_cup_pct": 4.9,
-            "avg_points": 93.5,
+            "won_cup_pct": 4.8,
+            "avg_points": 92.3,
             "point_dist": {
-                "93": 608,
-                "94": 1606,
-                "92": 1145,
-                "95": 460,
-                "96": 726,
-                "91": 204,
-                "90": 251
+                "92": 1934,
+                "94": 1357,
+                "91": 404,
+                "90": 696,
+                "93": 609
             },
             "div_rank_dist": {
                 "4": 5000
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2626,
-                "R2": 1157,
-                "CF": 669,
-                "F": 301,
-                "CUP": 247
+                "R1": 2733,
+                "R2": 1128,
+                "CF": 591,
+                "F": 310,
+                "CUP": 238
             },
             "r1_matchups": {
-                "VGK": 2777,
-                "COL": 155,
-                "EDM": 1203,
-                "ANA": 824,
-                "LAK": 41
+                "ANA": 584,
+                "VGK": 2689,
+                "EDM": 1299,
+                "COL": 382,
+                "LAK": 46
             }
         },
         {
             "team": "EDM",
             "make_playoffs_pct": 100.0,
-            "won_division_pct": 25.2,
-            "won_conference_pct": 11.8,
-            "won_cup_pct": 5.3,
+            "won_division_pct": 28.4,
+            "won_conference_pct": 11.6,
+            "won_cup_pct": 4.9,
             "avg_points": 92.3,
             "point_dist": {
-                "91": 458,
-                "90": 689,
-                "94": 1360,
-                "93": 587,
-                "92": 1906
+                "92": 2001,
+                "90": 673,
+                "91": 364,
+                "94": 1339,
+                "93": 623
             },
             "div_rank_dist": {
-                "3": 1474,
-                "4": 509,
-                "2": 1759,
-                "1": 1258
+                "3": 1251,
+                "2": 1868,
+                "1": 1421,
+                "4": 460
             },
             "round_exit_dist": {
                 "MISS": 0,
-                "R1": 2441,
-                "R2": 1290,
-                "CF": 680,
-                "F": 325,
-                "CUP": 264
+                "R1": 2433,
+                "R2": 1308,
+                "CF": 679,
+                "F": 337,
+                "CUP": 243
             },
             "r1_matchups": {
-                "LAK": 477,
-                "ANA": 2102,
-                "COL": 496,
-                "VGK": 722,
-                "UTA": 1203
+                "VGK": 537,
+                "ANA": 2154,
+                "UTA": 1299,
+                "COL": 436,
+                "LAK": 574
             }
         },
         {
             "team": "ANA",
-            "make_playoffs_pct": 96.3,
-            "won_division_pct": 17.0,
-            "won_conference_pct": 9.5,
-            "won_cup_pct": 4.5,
-            "avg_points": 92.4,
+            "make_playoffs_pct": 95.3,
+            "won_division_pct": 12.6,
+            "won_conference_pct": 9.7,
+            "won_cup_pct": 4.7,
+            "avg_points": 92.2,
             "point_dist": {
-                "90": 224,
-                "93": 1539,
-                "94": 439,
-                "91": 1125,
-                "95": 656,
-                "89": 282,
-                "92": 735
+                "94": 1184,
+                "92": 1976,
+                "91": 470,
+                "90": 797,
+                "93": 573
             },
             "div_rank_dist": {
-                "4": 591,
-                "2": 1582,
-                "1": 852,
-                "3": 1975
+                "1": 632,
+                "2": 1424,
+                "3": 2267,
+                "4": 677
             },
             "round_exit_dist": {
-                "MISS": 183,
-                "R1": 2570,
-                "R2": 1203,
-                "CF": 570,
-                "F": 248,
-                "CUP": 226
+                "MISS": 235,
+                "R1": 2509,
+                "R2": 1223,
+                "CF": 549,
+                "F": 251,
+                "CUP": 233
             },
             "r1_matchups": {
-                "COL": 395,
-                "EDM": 2102,
-                "LAK": 448,
-                "VGK": 1048,
-                "UTA": 824
+                "UTA": 584,
+                "EDM": 2154,
+                "VGK": 1183,
+                "LAK": 444,
+                "COL": 400
             }
         },
         {
             "team": "LAK",
-            "make_playoffs_pct": 79.4,
-            "won_division_pct": 0.8,
+            "make_playoffs_pct": 79.1,
+            "won_division_pct": 1.0,
             "won_conference_pct": 7.4,
-            "won_cup_pct": 3.2,
-            "avg_points": 90.5,
+            "won_cup_pct": 3.5,
+            "avg_points": 90.4,
             "point_dist": {
-                "93": 708,
-                "91": 1615,
-                "89": 1130,
-                "88": 213,
-                "90": 616,
-                "87": 263,
-                "92": 455
+                "92": 429,
+                "89": 1102,
+                "90": 622,
+                "91": 1660,
+                "88": 237,
+                "87": 259,
+                "93": 691
             },
             "div_rank_dist": {
-                "2": 292,
-                "4": 3729,
-                "3": 869,
-                "5": 68,
-                "1": 42
+                "4": 3663,
+                "5": 83,
+                "3": 829,
+                "2": 373,
+                "1": 52
             },
             "round_exit_dist": {
-                "MISS": 1030,
-                "R1": 2226,
-                "R2": 941,
-                "CF": 435,
-                "F": 210,
-                "CUP": 158
+                "MISS": 1044,
+                "R1": 2210,
+                "R2": 954,
+                "CF": 424,
+                "F": 193,
+                "CUP": 175
             },
             "r1_matchups": {
-                "EDM": 477,
-                "COL": 2646,
-                "ANA": 448,
-                "VGK": 358,
-                "UTA": 41
-            }
-        },
-        {
-            "team": "NSH",
-            "make_playoffs_pct": 23.0,
-            "won_division_pct": 0.0,
-            "won_conference_pct": 1.6,
-            "won_cup_pct": 0.5,
-            "avg_points": 88.3,
-            "point_dist": {
-                "88": 1968,
-                "87": 402,
-                "90": 1377,
-                "89": 554,
-                "86": 699
-            },
-            "div_rank_dist": {
-                "5": 4304,
-                "6": 659,
-                "7": 37
-            },
-            "round_exit_dist": {
-                "MISS": 3848,
-                "R1": 705,
-                "R2": 249,
-                "CF": 119,
-                "F": 52,
-                "CUP": 27
-            },
-            "r1_matchups": {
-                "COL": 1152
+                "COL": 2402,
+                "ANA": 444,
+                "EDM": 574,
+                "VGK": 490,
+                "UTA": 46
             }
         },
         {
@@ -703,13 +647,11 @@
             "won_division_pct": 0.0,
             "won_conference_pct": 0.0,
             "won_cup_pct": 0.0,
-            "avg_points": 87.2,
+            "avg_points": 88.1,
             "point_dist": {
-                "89": 1185,
-                "87": 1985,
-                "85": 778,
-                "88": 603,
-                "86": 449
+                "88": 554,
+                "89": 2521,
+                "87": 1925
             },
             "div_rank_dist": {
                 "7": 5000
@@ -725,69 +667,100 @@
             "r1_matchups": {}
         },
         {
-            "team": "WPG",
-            "make_playoffs_pct": 0.7,
+            "team": "NSH",
+            "make_playoffs_pct": 24.2,
             "won_division_pct": 0.0,
-            "won_conference_pct": 0.1,
+            "won_conference_pct": 1.7,
+            "won_cup_pct": 1.0,
+            "avg_points": 88.3,
+            "point_dist": {
+                "88": 1923,
+                "86": 729,
+                "87": 439,
+                "90": 1341,
+                "89": 568
+            },
+            "div_rank_dist": {
+                "5": 4259,
+                "6": 693,
+                "7": 48
+            },
+            "round_exit_dist": {
+                "MISS": 3789,
+                "R1": 737,
+                "R2": 281,
+                "CF": 106,
+                "F": 39,
+                "CUP": 48
+            },
+            "r1_matchups": {
+                "COL": 1211
+            }
+        },
+        {
+            "team": "WPG",
+            "make_playoffs_pct": 0.8,
+            "won_division_pct": 0.0,
+            "won_conference_pct": 0.0,
             "won_cup_pct": 0.0,
             "avg_points": 85.3,
             "point_dist": {
-                "87": 416,
-                "84": 1234,
-                "85": 747,
-                "86": 1493,
-                "83": 247,
-                "88": 549,
-                "82": 314
+                "87": 393,
+                "84": 1305,
+                "86": 1468,
+                "83": 271,
+                "88": 598,
+                "85": 657,
+                "82": 308
             },
             "div_rank_dist": {
-                "6": 2953,
-                "7": 1421,
-                "5": 626
+                "6": 2919,
+                "5": 669,
+                "7": 1412
             },
             "round_exit_dist": {
-                "MISS": 4967,
-                "R1": 20,
-                "R2": 4,
-                "CF": 6,
+                "MISS": 4958,
+                "R1": 28,
+                "R2": 9,
+                "CF": 3,
                 "F": 2,
-                "CUP": 1
+                "CUP": 0
             },
             "r1_matchups": {
-                "COL": 33
+                "COL": 42
             }
         },
         {
             "team": "SJS",
-            "make_playoffs_pct": 0.6,
+            "make_playoffs_pct": 0.5,
             "won_division_pct": 0.0,
             "won_conference_pct": 0.0,
             "won_cup_pct": 0.0,
-            "avg_points": 85.2,
+            "avg_points": 85.3,
             "point_dist": {
-                "86": 1427,
-                "83": 311,
-                "84": 1292,
-                "88": 574,
+                "85": 679,
+                "87": 466,
+                "86": 1531,
+                "88": 564,
                 "82": 299,
-                "87": 412,
-                "85": 685
+                "84": 1203,
+                "83": 258
             },
             "div_rank_dist": {
-                "5": 4324,
-                "4": 68,
-                "6": 608
+                "5": 4353,
+                "4": 83,
+                "6": 564
             },
             "round_exit_dist": {
-                "MISS": 4972,
+                "MISS": 4974,
                 "R1": 19,
-                "R2": 7,
-                "CF": 1,
-                "F": 1,
+                "R2": 4,
+                "CF": 3,
+                "F": 0,
                 "CUP": 0
             },
             "r1_matchups": {
-                "COL": 28
+                "COL": 26
             }
         },
         {
@@ -798,18 +771,18 @@
             "won_cup_pct": 0.0,
             "avg_points": 83.3,
             "point_dist": {
-                "82": 1179,
-                "81": 264,
-                "84": 1529,
-                "86": 622,
-                "83": 652,
-                "85": 452,
-                "80": 302
+                "84": 1530,
+                "82": 1186,
+                "80": 265,
+                "85": 450,
+                "86": 616,
+                "81": 291,
+                "83": 662
             },
             "div_rank_dist": {
-                "7": 3542,
+                "7": 3540,
                 "6": 1388,
-                "5": 70
+                "5": 72
             },
             "round_exit_dist": {
                 "MISS": 5000,
@@ -827,17 +800,17 @@
             "won_division_pct": 0.0,
             "won_conference_pct": 0.0,
             "won_cup_pct": 0.0,
-            "avg_points": 82.3,
+            "avg_points": 82.2,
             "point_dist": {
-                "81": 404,
-                "80": 661,
-                "82": 2009,
-                "83": 548,
-                "84": 1378
+                "82": 2010,
+                "81": 443,
+                "84": 1237,
+                "83": 582,
+                "80": 728
             },
             "div_rank_dist": {
-                "7": 4722,
-                "8": 278
+                "7": 4656,
+                "8": 344
             },
             "round_exit_dist": {
                 "MISS": 5000,
@@ -857,18 +830,18 @@
             "won_cup_pct": 0.0,
             "avg_points": 82.1,
             "point_dist": {
-                "80": 367,
-                "83": 1329,
-                "82": 754,
-                "81": 1307,
-                "84": 396,
-                "85": 465,
-                "79": 382
+                "81": 1310,
+                "85": 449,
+                "79": 350,
+                "83": 1412,
+                "82": 752,
+                "84": 400,
+                "80": 327
             },
             "div_rank_dist": {
-                "6": 4356,
-                "5": 608,
-                "7": 36
+                "6": 4357,
+                "5": 564,
+                "7": 79
             },
             "round_exit_dist": {
                 "MISS": 5000,
@@ -888,42 +861,15 @@
             "won_cup_pct": 0.0,
             "avg_points": 80.1,
             "point_dist": {
-                "81": 609,
-                "80": 1927,
-                "82": 1015,
-                "78": 889,
-                "79": 560
+                "81": 595,
+                "80": 2013,
+                "82": 1026,
+                "79": 537,
+                "78": 829
             },
             "div_rank_dist": {
-                "8": 4722,
-                "7": 278
-            },
-            "round_exit_dist": {
-                "MISS": 5000,
-                "R1": 0,
-                "R2": 0,
-                "CF": 0,
-                "F": 0,
-                "CUP": 0
-            },
-            "r1_matchups": {}
-        },
-        {
-            "team": "NYR",
-            "make_playoffs_pct": 0.0,
-            "won_division_pct": 0.0,
-            "won_conference_pct": 0.0,
-            "won_cup_pct": 0.0,
-            "avg_points": 77.1,
-            "point_dist": {
-                "77": 1959,
-                "79": 1109,
-                "75": 820,
-                "76": 497,
-                "78": 615
-            },
-            "div_rank_dist": {
-                "8": 5000
+                "8": 4656,
+                "7": 344
             },
             "round_exit_dist": {
                 "MISS": 5000,
@@ -941,19 +887,44 @@
             "won_division_pct": 0.0,
             "won_conference_pct": 0.0,
             "won_cup_pct": 0.0,
-            "avg_points": 76.2,
+            "avg_points": 77.1,
             "point_dist": {
-                "76": 707,
-                "77": 1470,
-                "75": 1271,
-                "79": 516,
-                "74": 302,
-                "78": 409,
-                "73": 325
+                "75": 801,
+                "77": 1946,
+                "79": 1161,
+                "78": 556,
+                "76": 536
             },
             "div_rank_dist": {
-                "7": 4964,
-                "6": 36
+                "7": 4921,
+                "6": 79
+            },
+            "round_exit_dist": {
+                "MISS": 5000,
+                "R1": 0,
+                "R2": 0,
+                "CF": 0,
+                "F": 0,
+                "CUP": 0
+            },
+            "r1_matchups": {}
+        },
+        {
+            "team": "NYR",
+            "make_playoffs_pct": 0.0,
+            "won_division_pct": 0.0,
+            "won_conference_pct": 0.0,
+            "won_cup_pct": 0.0,
+            "avg_points": 77.2,
+            "point_dist": {
+                "79": 1118,
+                "77": 1996,
+                "76": 480,
+                "78": 602,
+                "75": 804
+            },
+            "div_rank_dist": {
+                "8": 5000
             },
             "round_exit_dist": {
                 "MISS": 5000,
@@ -971,13 +942,13 @@
             "won_division_pct": 0.0,
             "won_conference_pct": 0.0,
             "won_cup_pct": 0.0,
-            "avg_points": 72.2,
+            "avg_points": 72.1,
             "point_dist": {
-                "72": 1995,
-                "74": 1177,
-                "70": 790,
-                "73": 586,
-                "71": 452
+                "71": 483,
+                "72": 2052,
+                "70": 824,
+                "73": 523,
+                "74": 1118
             },
             "div_rank_dist": {
                 "8": 5000
@@ -998,15 +969,13 @@
             "won_division_pct": 0.0,
             "won_conference_pct": 0.0,
             "won_cup_pct": 0.0,
-            "avg_points": 57.1,
+            "avg_points": 58.0,
             "point_dist": {
-                "58": 1399,
-                "56": 1281,
-                "55": 339,
-                "59": 379,
-                "57": 750,
-                "60": 499,
-                "54": 353
+                "58": 1943,
+                "59": 606,
+                "60": 1003,
+                "56": 920,
+                "57": 528
             },
             "div_rank_dist": {
                 "8": 5000
