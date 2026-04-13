@@ -206,6 +206,14 @@
                 "id": 27046,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Jonas Johansson",
+                "number": 31,
+                "pos": "ir7",
+                "id": 4561,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
@@ -306,12 +314,12 @@
                 "movement": null
             },
             {
-                "name": "Dominik Shine",
-                "number": 50,
+                "name": "Michael Brandsegg-Nyg\u00e5rd",
+                "number": null,
                 "pos": "rw",
-                "id": 18790,
+                "id": 38141,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -360,12 +368,12 @@
                 "movement": null
             },
             {
-                "name": "Jacob Bernard-Docker",
-                "number": 24,
+                "name": "Axel Sandin-Pellikka",
+                "number": null,
                 "pos": "rd",
-                "id": 4819,
+                "id": 38121,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -1144,11 +1152,11 @@
         ],
         "f2": [
             {
-                "name": "Matias Maccelli",
-                "number": 63,
+                "name": "Matthew Knies",
+                "number": 23,
                 "pos": "lw",
-                "id": 30063,
-                "ppUnit": 2,
+                "id": 34619,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1160,22 +1168,22 @@
                 "movement": null
             },
             {
-                "name": "Matthew Knies",
-                "number": 23,
+                "name": "Nicholas Robertson",
+                "number": 89,
                 "pos": "rw",
-                "id": 34619,
-                "ppUnit": 1,
-                "movement": null
+                "id": 29254,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Steven Lorentz",
-                "number": 18,
+                "name": "Matias Maccelli",
+                "number": 63,
                 "pos": "lw",
-                "id": 3916,
-                "ppUnit": null,
-                "movement": null
+                "id": 30063,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Luke Haymes",
@@ -1186,22 +1194,22 @@
                 "movement": null
             },
             {
-                "name": "Nicholas Robertson",
-                "number": 89,
+                "name": "Calle Jarnkrok",
+                "number": 19,
                 "pos": "rw",
-                "id": 29254,
+                "id": 1939,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
             {
-                "name": "Ryan Tverberg",
-                "number": null,
+                "name": "Steven Lorentz",
+                "number": 18,
                 "pos": "lw",
-                "id": 32967,
+                "id": 3916,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Jacob Quillan",
@@ -1212,11 +1220,11 @@
                 "movement": null
             },
             {
-                "name": "Calle Jarnkrok",
-                "number": 19,
+                "name": "Ryan Tverberg",
+                "number": null,
                 "pos": "rw",
-                "id": 1939,
-                "ppUnit": 2,
+                "id": 32967,
+                "ppUnit": null,
                 "movement": null
             }
         ],
