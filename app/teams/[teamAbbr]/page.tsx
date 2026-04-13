@@ -38,7 +38,12 @@ export default function TeamDetailPage() {
         loc: 'All',
         period: 'All',
         last: 'All',
-        result: 'All'
+        result: 'All',
+        ppg: 'All',
+        ppga: 'All',
+        scoringFirst: 'All',
+        minSf: '',
+        minSa: '',
     });
 
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
@@ -96,6 +101,27 @@ export default function TeamDetailPage() {
                 if (filters.result === 'L') return g.result === 'L' || g.result === 'OTL' || g.result === 'SOL';
                 return true;
             });
+        }
+        if (filters.ppg !== 'All') {
+            out = out.filter(g => filters.ppg === 'Yes' ? g.pp_goals >= 1 : g.pp_goals < 1);
+        }
+        if (filters.ppga !== 'All') {
+            out = out.filter(g => filters.ppga === 'Yes' ? g.pp_goals_against >= 1 : g.pp_goals_against < 1);
+        }
+        if (filters.scoringFirst !== 'All') {
+            out = out.filter(g => {
+                const raw = g.raw?.scored_first;
+                const scoredFirst = raw === '1' || raw === 1 || raw === true;
+                return filters.scoringFirst === 'Yes' ? scoredFirst : !scoredFirst;
+            });
+        }
+        if (filters.minSf !== '') {
+            const threshold = parseInt(filters.minSf);
+            if (!isNaN(threshold)) out = out.filter(g => g.sf >= threshold);
+        }
+        if (filters.minSa !== '') {
+            const threshold = parseInt(filters.minSa);
+            if (!isNaN(threshold)) out = out.filter(g => g.sa >= threshold);
         }
         return out;
     }, [games, filters]);
