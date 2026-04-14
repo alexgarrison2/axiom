@@ -71,6 +71,7 @@ interface RawGameStat {
     time_trailing: string;
     time_tied: string;
     control_score: string;
+    scored_first?: string; // "1" or "0"
 }
 
 interface TeamStat {
@@ -717,6 +718,26 @@ const TeamsTable = () => {
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
     const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
     const [filterPeriod, setFilterPeriod] = useState<'All' | '1st' | '2nd' | '3rd' | 'OT'>('All');
+
+    // Game-level stat filters (desktop only) — applied per-game before aggregating
+    const [gameFilters, setGameFilters] = useState({
+        ppg: 'All' as 'All' | 'Yes' | 'No',
+        ppga: 'All' as 'All' | 'Yes' | 'No',
+        scoringFirst: 'All' as 'All' | 'Yes' | 'No',
+        minSf: '', maxSf: '',
+        minSa: '', maxSa: '',
+        minHdf: '', maxHdf: '',
+        minHda: '', maxHda: '',
+        minCf: '', maxCf: '',
+        minCa: '', maxCa: '',
+        minCorsiDiff: '', maxCorsiDiff: '',
+        minXgDiff: '', maxXgDiff: '',
+        minPpOpps: '', maxPpOpps: '',
+        minPkOpps: '', maxPkOpps: '',
+        minSvPct: '', maxSvPct: '',
+        minShotDiff: '', maxShotDiff: '',
+    });
+    const setGF = (key: string, val: string) => setGameFilters(f => ({ ...f, [key]: val }));
     const [selectedDivisions, setSelectedDivisions] = useState<string[]>([]);
 
     // Sorting
@@ -834,6 +855,7 @@ const TeamsTable = () => {
                     if (parsed.sortKey) setSortKey(parsed.sortKey);
                     if (parsed.sortDesc !== undefined) setSortDesc(parsed.sortDesc);
                     if (parsed.activeGroups) setActiveGroups(parsed.activeGroups);
+                    if (parsed.gameFilters) setGameFilters(parsed.gameFilters);
                 }
             }
         } catch (e) {
@@ -846,14 +868,14 @@ const TeamsTable = () => {
         try {
             if (typeof window !== 'undefined') {
                 const filters = {
-                    viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeGroups
+                    viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeGroups, gameFilters
                 };
                 sessionStorage.setItem('teamsTableFilters', JSON.stringify(filters));
             }
         } catch (e) {
             console.error('Failed to save filters', e);
         }
-    }, [viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeGroups]);
+    }, [viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeGroups, gameFilters]);
 
     const COLUMNS = useMemo(() => [
         { k: 'ranking', l: 'Rank', desc: 'Projected Playoff Standing' },
@@ -1233,6 +1255,46 @@ const TeamsTable = () => {
                 games = games.filter(g => new Date(g.game_date + 'T12:00:00').getDay() === targetDow);
             }
 
+            // Apply game-level stat filters
+            const gf = gameFilters;
+            if (gf.ppg !== 'All') games = games.filter(g => gf.ppg === 'Yes' ? parseInt(g.pp_goals) >= 1 : parseInt(g.pp_goals) < 1);
+            if (gf.ppga !== 'All') games = games.filter(g => gf.ppga === 'Yes' ? parseInt(g.pp_goals_against) >= 1 : parseInt(g.pp_goals_against) < 1);
+            if (gf.scoringFirst !== 'All') {
+                games = games.filter(g => {
+                    const sf = g.scored_first;
+                    const scored = sf === '1' || sf === 'true' || sf === '1.0';
+                    return gf.scoringFirst === 'Yes' ? scored : !scored;
+                });
+            }
+            const applyIntRange = (arr: typeof games, field: (g: typeof games[0]) => number, min: string, max: string) => {
+                if (min !== '') { const v = parseInt(min); if (!isNaN(v)) arr = arr.filter(g => field(g) >= v); }
+                if (max !== '') { const v = parseInt(max); if (!isNaN(v)) arr = arr.filter(g => field(g) <= v); }
+                return arr;
+            };
+            const applyFloatRange = (arr: typeof games, field: (g: typeof games[0]) => number, min: string, max: string) => {
+                if (min !== '') { const v = parseFloat(min); if (!isNaN(v)) arr = arr.filter(g => field(g) >= v); }
+                if (max !== '') { const v = parseFloat(max); if (!isNaN(v)) arr = arr.filter(g => field(g) <= v); }
+                return arr;
+            };
+            games = applyIntRange(games, g => parseInt(g.sog_for)     || 0, gf.minSf,        gf.maxSf);
+            games = applyIntRange(games, g => parseInt(g.sog_ag)      || 0, gf.minSa,        gf.maxSa);
+            games = applyIntRange(games, g => (parseInt(g.sog_for) || 0) - (parseInt(g.sog_ag) || 0), gf.minShotDiff, gf.maxShotDiff);
+            games = applyIntRange(games, g => parseInt(g.hdf)         || 0, gf.minHdf,       gf.maxHdf);
+            games = applyIntRange(games, g => parseInt(g.hda)         || 0, gf.minHda,       gf.maxHda);
+            games = applyIntRange(games, g => parseInt(g.attempts_for)|| 0, gf.minCf,        gf.maxCf);
+            games = applyIntRange(games, g => parseInt(g.attempts_ag) || 0, gf.minCa,        gf.maxCa);
+            games = applyIntRange(games, g => (parseInt(g.attempts_for) || 0) - (parseInt(g.attempts_ag) || 0), gf.minCorsiDiff, gf.maxCorsiDiff);
+            games = applyFloatRange(games, g => (parseFloat(g.xG_for) || 0) - (parseFloat(g.xG_against) || 0), gf.minXgDiff, gf.maxXgDiff);
+            games = applyIntRange(games, g => parseInt(g.pp_opportunities) || 0, gf.minPpOpps, gf.maxPpOpps);
+            games = applyIntRange(games, g => parseInt(g.pk_opportunities) || 0, gf.minPkOpps, gf.maxPkOpps);
+            if (gf.minSvPct !== '' || gf.maxSvPct !== '') {
+                games = applyFloatRange(games, g => {
+                    const sa = parseInt(g.sog_ag) || 0;
+                    const sv = parseInt(g.saves_for ?? '0') || 0;
+                    return sa > 0 ? sv / sa : 0;
+                }, gf.minSvPct, gf.maxSvPct);
+            }
+
             // Apply Last N (Always applies unless 'All')
             if (filterLastN !== 'All') {
                 games = games.slice(0, filterLastN);
@@ -1478,7 +1540,7 @@ const TeamsTable = () => {
 
         setStats(processedTeams);
 
-    }, [rawData, viewMode, viewBase, withOptions, filterHomeAway, filterLastN, filterPeriod, todayMatchups, tomorrowMatchups, selectedDivisions, teams]);
+    }, [rawData, viewMode, viewBase, withOptions, filterHomeAway, filterLastN, filterPeriod, todayMatchups, tomorrowMatchups, selectedDivisions, teams, gameFilters]);
 
 
     const handleSort = (key: string) => {
@@ -1964,6 +2026,135 @@ const TeamsTable = () => {
                     )}
                 </div>
             </div>
+
+            {/* Desktop-only Game-Level Stat Filters */}
+            {valuesMode !== 'Ratings' && (
+                <div className="hidden md:block mb-3">
+                    <div className="flex flex-wrap gap-x-6 gap-y-3 p-3 bg-white/5 rounded-lg border border-white/10 items-end">
+
+                        {/* PPG */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">Scoring 1+ PPG</label>
+                            <div className="flex gap-1">
+                                {(['All', 'Yes', 'No'] as const).map(v => (
+                                    <button key={v} onClick={() => setGF('ppg', v)}
+                                        className={`px-2 py-0.5 rounded-sm text-[9px] uppercase font-bold transition-all ${gameFilters.ppg === v ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                                        {v}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* PPGA */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">Allowing 1+ PPGA</label>
+                            <div className="flex gap-1">
+                                {(['All', 'Yes', 'No'] as const).map(v => (
+                                    <button key={v} onClick={() => setGF('ppga', v)}
+                                        className={`px-2 py-0.5 rounded-sm text-[9px] uppercase font-bold transition-all ${gameFilters.ppga === v ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                                        {v}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Scored First */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">Scored First</label>
+                            <div className="flex gap-1">
+                                <button onClick={() => setGF('scoringFirst', 'All')} className={`px-2 py-0.5 rounded-sm text-[9px] uppercase font-bold transition-all ${gameFilters.scoringFirst === 'All' ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}>All</button>
+                                <button onClick={() => setGF('scoringFirst', 'Yes')} className={`px-2 py-0.5 rounded-sm text-[9px] uppercase font-bold transition-all ${gameFilters.scoringFirst === 'Yes' ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}>Yes</button>
+                                <button onClick={() => setGF('scoringFirst', 'No')}  className={`px-2 py-0.5 rounded-sm text-[9px] uppercase font-bold transition-all ${gameFilters.scoringFirst === 'No'  ? 'bg-white text-black' : 'bg-black/40 text-gray-400 hover:bg-white/10 hover:text-white'}`}>Trailed</button>
+                            </div>
+                        </div>
+
+                        {/* Range input helper rendered inline */}
+                        {([
+                            { label: 'Shots For',    minK: 'minSf',        maxK: 'maxSf' },
+                            { label: 'Shots Against',minK: 'minSa',        maxK: 'maxSa' },
+                            { label: 'Shot Diff',    minK: 'minShotDiff',  maxK: 'maxShotDiff' },
+                            { label: 'HD For',       minK: 'minHdf',       maxK: 'maxHdf' },
+                            { label: 'HD Against',   minK: 'minHda',       maxK: 'maxHda' },
+                            { label: 'CF',           minK: 'minCf',        maxK: 'maxCf' },
+                            { label: 'CA',           minK: 'minCa',        maxK: 'maxCa' },
+                            { label: 'Corsi Diff',   minK: 'minCorsiDiff', maxK: 'maxCorsiDiff' },
+                        ] as const).map(({ label, minK, maxK }) => (
+                            <div key={label} className="flex flex-col gap-1">
+                                <label className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">{label}</label>
+                                <div className="flex items-center gap-1">
+                                    {([['Min', minK], ['Max', maxK]] as const).map(([lbl, key]) => (
+                                        <div key={key} className="flex items-center gap-0.5 px-1.5 py-0.5 bg-black/40 rounded-sm border border-white/10">
+                                            <span className="text-[8px] text-gray-600 uppercase">{lbl}</span>
+                                            <input type="number" step="1" placeholder="—" value={gameFilters[key]}
+                                                onChange={e => setGF(key, e.target.value)}
+                                                className="w-9 bg-transparent text-[9px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            />
+                                            {gameFilters[key] !== '' && <button onClick={() => setGF(key, '')} className="text-gray-600 hover:text-white text-[8px] leading-none">✕</button>}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* xG Diff — float step */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">xG Diff</label>
+                            <div className="flex items-center gap-1">
+                                {([['Min', 'minXgDiff'], ['Max', 'maxXgDiff']] as const).map(([lbl, key]) => (
+                                    <div key={key} className="flex items-center gap-0.5 px-1.5 py-0.5 bg-black/40 rounded-sm border border-white/10">
+                                        <span className="text-[8px] text-gray-600 uppercase">{lbl}</span>
+                                        <input type="number" step="0.1" placeholder="—" value={gameFilters[key]}
+                                            onChange={e => setGF(key, e.target.value)}
+                                            className="w-10 bg-transparent text-[9px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        />
+                                        {gameFilters[key] !== '' && <button onClick={() => setGF(key, '')} className="text-gray-600 hover:text-white text-[8px] leading-none">✕</button>}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* PP / PK Opps */}
+                        {([
+                            { label: 'PP Opps', minK: 'minPpOpps', maxK: 'maxPpOpps' },
+                            { label: 'PK Opps', minK: 'minPkOpps', maxK: 'maxPkOpps' },
+                        ] as const).map(({ label, minK, maxK }) => (
+                            <div key={label} className="flex flex-col gap-1">
+                                <label className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">{label}</label>
+                                <div className="flex items-center gap-1">
+                                    {([['Min', minK], ['Max', maxK]] as const).map(([lbl, key]) => (
+                                        <div key={key} className="flex items-center gap-0.5 px-1.5 py-0.5 bg-black/40 rounded-sm border border-white/10">
+                                            <span className="text-[8px] text-gray-600 uppercase">{lbl}</span>
+                                            <input type="number" step="1" placeholder="—" value={gameFilters[key]}
+                                                onChange={e => setGF(key, e.target.value)}
+                                                className="w-9 bg-transparent text-[9px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            />
+                                            {gameFilters[key] !== '' && <button onClick={() => setGF(key, '')} className="text-gray-600 hover:text-white text-[8px] leading-none">✕</button>}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Save % */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">Save %</label>
+                            <div className="flex items-center gap-1">
+                                {([['Min', 'minSvPct'], ['Max', 'maxSvPct']] as const).map(([lbl, key]) => (
+                                    <div key={key} className="flex items-center gap-0.5 px-1.5 py-0.5 bg-black/40 rounded-sm border border-white/10">
+                                        <span className="text-[8px] text-gray-600 uppercase">{lbl}</span>
+                                        <input type="number" step="0.001" min="0" max="1" placeholder=".900" value={gameFilters[key]}
+                                            onChange={e => setGF(key, e.target.value)}
+                                            className="w-12 bg-transparent text-[9px] font-bold text-center text-white placeholder:text-gray-600 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        />
+                                        {gameFilters[key] !== '' && <button onClick={() => setGF(key, '')} className="text-gray-600 hover:text-white text-[8px] leading-none">✕</button>}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            )}
 
             {/* Table */}
             {/* Column group toggles — multi-select, all on by default */}

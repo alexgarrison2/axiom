@@ -54,6 +54,10 @@ def get_boxscore(game_id):
     return get_url(f"{BASE_URL}/gamecenter/{game_id}/boxscore")
 
 
+def get_right_rail(game_id):
+    return get_url(f"{BASE_URL}/gamecenter/{game_id}/right-rail")
+
+
 def get_pbp(game_id):
     return get_url(f"{BASE_URL}/gamecenter/{game_id}/play-by-play")
 
@@ -77,7 +81,20 @@ def game_id_to_round(game_id):
     return 0
 
 
-def parse_game(game_id, boxscore, pbp):
+def parse_right_rail_stats(right_rail):
+    """Extract team game stats from right-rail. Returns (home_stats, away_stats) dicts."""
+    home = {}
+    away = {}
+    if not right_rail:
+        return home, away
+    for item in right_rail.get("teamGameStats", []):
+        cat = item.get("category", "")
+        home[cat] = item.get("homeValue", 0)
+        away[cat] = item.get("awayValue", 0)
+    return home, away
+
+
+def parse_game(game_id, boxscore, pbp, right_rail=None):
     """Extract game-level stats for both teams. Returns list of 2 row dicts."""
     if not boxscore or not pbp:
         return []
@@ -111,21 +128,32 @@ def parse_game(game_id, boxscore, pbp):
             max_period = pnum
     ot_periods = max(0, max_period - 3)
 
-    # --- Extract team stats from boxscore ---
-    def team_stats(team_data):
-        ts = team_data.get("teamGameStats", [])
-        stats = {}
-        for item in ts:
-            cat = item.get("category", "")
-            val = item.get("value", 0)
-            stats[cat] = val
-        return stats
+    # --- Extract team stats from right-rail (has PP, hits, blocks, giveaways, takeaways) ---
+    rr_home, rr_away = parse_right_rail_stats(right_rail)
 
-    h_stats = team_stats(home_team_data)
-    a_stats = team_stats(away_team_data)
+    # --- Right-rail stats (authoritative for PP, hits, blocks, giveaways, takeaways) ---
+    def parse_pp(pp_val):
+        """Parse PP string like '2/4' into (goals, opps)."""
+        if isinstance(pp_val, str) and '/' in pp_val:
+            parts = pp_val.split('/')
+            try:
+                return int(parts[0]), int(parts[1])
+            except (ValueError, IndexError):
+                return 0, 0
+        return 0, 0
 
-    # --- PBP-derived metrics ---
-    # Count events by type, situation, period
+    h_pp_g, h_pp_o = parse_pp(rr_home.get("powerPlay", "0/0"))
+    a_pp_g, a_pp_o = parse_pp(rr_away.get("powerPlay", "0/0"))
+    h_hits = int(rr_home.get("hits", 0))
+    a_hits = int(rr_away.get("hits", 0))
+    h_blocks = int(rr_home.get("blockedShots", 0))
+    a_blocks = int(rr_away.get("blockedShots", 0))
+    h_giveaways = int(rr_home.get("giveaways", 0))
+    a_giveaways = int(rr_away.get("giveaways", 0))
+    h_takeaways = int(rr_home.get("takeaways", 0))
+    a_takeaways = int(rr_away.get("takeaways", 0))
+
+    # --- PBP-derived metrics (period-by-period, attempts, HD chances) ---
     h_goals_by_period = {1: 0, 2: 0, 3: 0, "OT": 0}
     a_goals_by_period = {1: 0, 2: 0, 3: 0, "OT": 0}
     h_shots_by_period = {1: 0, 2: 0, 3: 0, "OT": 0}
@@ -136,18 +164,8 @@ def parse_game(game_id, boxscore, pbp):
     a_attempts_5v5 = 0
     h_hd_chances = 0  # high-danger shot attempts
     a_hd_chances = 0
-    h_hits = 0
-    a_hits = 0
-    h_blocks = 0
-    a_blocks = 0
-    h_penalties = 0  # minor penalties drawn (opponent took)
-    a_penalties = 0
-    h_pp_goals = 0
-    a_pp_goals = 0
-    h_giveaways = 0
-    a_giveaways = 0
-    h_takeaways = 0
-    a_takeaways = 0
+    h_pp_goals_pbp = 0  # keep for validation
+    a_pp_goals_pbp = 0
 
     # Time tracking for 5v5 estimation
     # Situation code: 4 digits — away_goalie, away_skaters, home_skaters, home_goalie
@@ -204,11 +222,11 @@ def parse_game(game_id, boxscore, pbp):
             if event_owner == home_id:
                 h_goals_by_period[period_key] = h_goals_by_period.get(period_key, 0) + 1
                 if is_pp_home:
-                    h_pp_goals += 1
+                    h_pp_goals_pbp += 1
             elif event_owner == away_id:
                 a_goals_by_period[period_key] = a_goals_by_period.get(period_key, 0) + 1
                 if is_pp_away:
-                    a_pp_goals += 1
+                    a_pp_goals_pbp += 1
 
         # Shots on goal
         if type_code in (505, 506):  # goal or shot
@@ -254,32 +272,7 @@ def parse_game(game_id, boxscore, pbp):
                     a_attempts_5v5 += 1
                 h_blocks += 1
 
-        # Hits
-        if type_code == 503:
-            if event_owner == home_id:
-                h_hits += 1
-            elif event_owner == away_id:
-                a_hits += 1
-
-        # Penalties (504)
-        if type_code == 504:
-            # The team that committed the penalty
-            if event_owner == home_id:
-                a_penalties += 1  # away drew the penalty
-            elif event_owner == away_id:
-                h_penalties += 1  # home drew the penalty
-
-        # Giveaways (502) / Takeaways (501)
-        if type_code == 502:
-            if event_owner == home_id:
-                h_giveaways += 1
-            elif event_owner == away_id:
-                a_giveaways += 1
-        if type_code == 501:
-            if event_owner == home_id:
-                h_takeaways += 1
-            elif event_owner == away_id:
-                a_takeaways += 1
+        # (hits, penalties, giveaways, takeaways sourced from right-rail)
 
     # SOG totals
     h_sog = sum(h_shots_by_period.values())
@@ -291,23 +284,7 @@ def parse_game(game_id, boxscore, pbp):
     h_sv_pct = (a_sog - a_goals) / a_sog if a_sog > 0 else 0.0  # home goalie vs away shots
     a_sv_pct = (h_sog - h_goals) / h_sog if h_sog > 0 else 0.0  # away goalie vs home shots
 
-    # PP opportunities from boxscore stats
-    h_pp_opps = h_stats.get("powerPlayPctg", 0)
-    a_pp_opps = a_stats.get("powerPlayPctg", 0)
-    # Actually, let's get PP from the faceoff/stat summary differently
-    # The boxscore "powerPlay" field is usually "X/Y" format
-    h_pp_str = h_stats.get("powerPlay", "0/0")
-    a_pp_str = a_stats.get("powerPlay", "0/0")
-
-    def parse_pp(pp_val):
-        """Parse PP string like '2/4' or extract from numeric."""
-        if isinstance(pp_val, str) and '/' in pp_val:
-            parts = pp_val.split('/')
-            return int(parts[0]), int(parts[1])
-        return 0, 0
-
-    h_pp_g, h_pp_o = parse_pp(h_pp_str)
-    a_pp_g, a_pp_o = parse_pp(a_pp_str)
+    # PP values already set from right-rail above
 
     # Build rows (one per team perspective)
     def make_row(team_abbr, opp_abbr, is_home, goals_for, goals_against,
@@ -377,7 +354,7 @@ def parse_game(game_id, boxscore, pbp):
         h_sog, a_sog, h_attempts, a_attempts,
         h_attempts_5v5, a_attempts_5v5,
         h_hd_chances, a_hd_chances, h_hits, a_hits,
-        h_blocks, a_blocks, h_penalties,
+        h_blocks, a_blocks, h_pp_o,  # penalties_drawn = our PP opps = opponent's penalties taken
         h_pp_g, h_pp_o, a_pp_g, a_pp_o,
         h_giveaways, h_takeaways, h_goals_by_period, a_goals_by_period,
         h_shots_by_period, a_shots_by_period, h_sv_pct
@@ -388,7 +365,7 @@ def parse_game(game_id, boxscore, pbp):
         a_sog, h_sog, a_attempts, h_attempts,
         a_attempts_5v5, h_attempts_5v5,
         a_hd_chances, h_hd_chances, a_hits, h_hits,
-        a_blocks, h_blocks, a_penalties,
+        a_blocks, h_blocks, a_pp_o,
         a_pp_g, a_pp_o, h_pp_g, h_pp_o,
         a_giveaways, a_takeaways, a_goals_by_period, h_goals_by_period,
         a_shots_by_period, h_shots_by_period, a_sv_pct
@@ -455,9 +432,10 @@ def main():
 
                         boxscore = get_boxscore(game_id)
                         pbp = get_pbp(game_id)
+                        right_rail = get_right_rail(game_id)
                         time.sleep(0.3)  # Rate limit
 
-                        rows = parse_game(game_id, boxscore, pbp)
+                        rows = parse_game(game_id, boxscore, pbp, right_rail)
                         if rows:
                             all_rows.extend(rows)
                             processed_ids.add(game_id)

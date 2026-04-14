@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import TeamChart from '@/components/TeamChart';
 import { useTeamData } from '@/hooks/useTeamData';
 import TeamHeader from '@/components/team/TeamHeader';
-import FilterControls from '@/components/team/FilterControls';
+import FilterControls, { GameFilters } from '@/components/team/FilterControls';
 import GamesLogTable from '@/components/team/GamesLogTable';
 import SkaterGrid from '@/components/team/SkaterGrid';
 // import { TeamInfo } from '@/types';
@@ -33,7 +33,7 @@ export default function TeamDetailPage() {
     };
 
     // Filters
-    const [filters, setFilters] = useState({
+    const [filters, setFilters] = useState<GameFilters>({
         goalie: 'All',
         loc: 'All',
         period: 'All',
@@ -42,10 +42,18 @@ export default function TeamDetailPage() {
         ppg: 'All',
         ppga: 'All',
         scoringFirst: 'All',
-        minSf: '',
-        maxSf: '',
-        minSa: '',
-        maxSa: '',
+        minSf: '', maxSf: '',
+        minSa: '', maxSa: '',
+        minHdf: '', maxHdf: '',
+        minHda: '', maxHda: '',
+        minPpOpps: '', maxPpOpps: '',
+        minPkOpps: '', maxPkOpps: '',
+        minSvPct: '', maxSvPct: '',
+        minShotDiff: '', maxShotDiff: '',
+        minXgDiff: '', maxXgDiff: '',
+        minCf: '', maxCf: '',
+        minCa: '', maxCa: '',
+        minCorsiDiff: '', maxCorsiDiff: '',
     });
 
     const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
@@ -117,10 +125,38 @@ export default function TeamDetailPage() {
                 return filters.scoringFirst === 'Yes' ? scoredFirst : !scoredFirst;
             });
         }
+        // Shots For/Against
         if (filters.minSf !== '') { const v = parseInt(filters.minSf); if (!isNaN(v)) out = out.filter(g => g.sf >= v); }
         if (filters.maxSf !== '') { const v = parseInt(filters.maxSf); if (!isNaN(v)) out = out.filter(g => g.sf <= v); }
         if (filters.minSa !== '') { const v = parseInt(filters.minSa); if (!isNaN(v)) out = out.filter(g => g.sa >= v); }
         if (filters.maxSa !== '') { const v = parseInt(filters.maxSa); if (!isNaN(v)) out = out.filter(g => g.sa <= v); }
+        // Shot Differential
+        if (filters.minShotDiff !== '') { const v = parseInt(filters.minShotDiff); if (!isNaN(v)) out = out.filter(g => (g.sf - g.sa) >= v); }
+        if (filters.maxShotDiff !== '') { const v = parseInt(filters.maxShotDiff); if (!isNaN(v)) out = out.filter(g => (g.sf - g.sa) <= v); }
+        // High Danger For/Against
+        if (filters.minHdf !== '') { const v = parseInt(filters.minHdf); if (!isNaN(v)) out = out.filter(g => g.hdf >= v); }
+        if (filters.maxHdf !== '') { const v = parseInt(filters.maxHdf); if (!isNaN(v)) out = out.filter(g => g.hdf <= v); }
+        if (filters.minHda !== '') { const v = parseInt(filters.minHda); if (!isNaN(v)) out = out.filter(g => g.hda >= v); }
+        if (filters.maxHda !== '') { const v = parseInt(filters.maxHda); if (!isNaN(v)) out = out.filter(g => g.hda <= v); }
+        // Corsi For/Against
+        if (filters.minCf !== '') { const v = parseInt(filters.minCf); if (!isNaN(v)) out = out.filter(g => g.cf >= v); }
+        if (filters.maxCf !== '') { const v = parseInt(filters.maxCf); if (!isNaN(v)) out = out.filter(g => g.cf <= v); }
+        if (filters.minCa !== '') { const v = parseInt(filters.minCa); if (!isNaN(v)) out = out.filter(g => g.ca >= v); }
+        if (filters.maxCa !== '') { const v = parseInt(filters.maxCa); if (!isNaN(v)) out = out.filter(g => g.ca <= v); }
+        // Corsi Diff
+        if (filters.minCorsiDiff !== '') { const v = parseInt(filters.minCorsiDiff); if (!isNaN(v)) out = out.filter(g => (g.cf - g.ca) >= v); }
+        if (filters.maxCorsiDiff !== '') { const v = parseInt(filters.maxCorsiDiff); if (!isNaN(v)) out = out.filter(g => (g.cf - g.ca) <= v); }
+        // xG Differential
+        if (filters.minXgDiff !== '') { const v = parseFloat(filters.minXgDiff); if (!isNaN(v)) out = out.filter(g => (g.xgf - g.xga) >= v); }
+        if (filters.maxXgDiff !== '') { const v = parseFloat(filters.maxXgDiff); if (!isNaN(v)) out = out.filter(g => (g.xgf - g.xga) <= v); }
+        // PP / PK Opps
+        if (filters.minPpOpps !== '') { const v = parseInt(filters.minPpOpps); if (!isNaN(v)) out = out.filter(g => g.pp_opps >= v); }
+        if (filters.maxPpOpps !== '') { const v = parseInt(filters.maxPpOpps); if (!isNaN(v)) out = out.filter(g => g.pp_opps <= v); }
+        if (filters.minPkOpps !== '') { const v = parseInt(filters.minPkOpps); if (!isNaN(v)) out = out.filter(g => g.pk_opps >= v); }
+        if (filters.maxPkOpps !== '') { const v = parseInt(filters.maxPkOpps); if (!isNaN(v)) out = out.filter(g => g.pk_opps <= v); }
+        // Save %
+        if (filters.minSvPct !== '') { const v = parseFloat(filters.minSvPct); if (!isNaN(v)) out = out.filter(g => g.sv_pct >= v); }
+        if (filters.maxSvPct !== '') { const v = parseFloat(filters.maxSvPct); if (!isNaN(v)) out = out.filter(g => g.sv_pct <= v); }
         return out;
     }, [games, filters]);
 
