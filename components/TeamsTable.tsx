@@ -1565,17 +1565,31 @@ const TeamsTable = () => {
         //   seed1's div: 2nd vs 3rd
         //   seed2's div: 2nd vs 3rd
         // Higher seed (lower number) listed first in each pair.
+        // Build a lookup from leagueBaseline (filtered stats) so the bracket shows filtered data
+        const filteredByTeam = new Map<string, TeamStat>();
+        leagueBaseline.forEach(t => filteredByTeam.set(t.team, t));
+        // Apply rMap to leagueBaseline entries so ranking/isPlayoff are set
+        leagueBaseline.forEach(t => {
+            if (rMap[t.team]) {
+                t.ranking = rMap[t.team].ranking;
+                t.isPlayoff = rMap[t.team].isPlayoff;
+            }
+        });
+
         const bracket: PlayoffConferenceBracket[] = [];
 
         (['Eastern', 'Western'] as const).forEach(conf => {
             const confDivisions = conf === 'Eastern' ? ['Atlantic', 'Metro'] : ['Central', 'Pacific'];
 
-            // Division winners and their rosters
+            // Use standingsBaseline order to determine seeding, but return filtered stats for display
+            const resolve = (t: TeamStat | undefined) => t ? (filteredByTeam.get(t.team) ?? t) : undefined;
+
+            // Division winners and their rosters (seeding order from standingsBaseline)
             const divWinners = confDivisions.map(div => ({
                 div,
-                winner: divMap[div][0] as TeamStat | undefined,
-                second: divMap[div][1] as TeamStat | undefined,
-                third:  divMap[div][2] as TeamStat | undefined,
+                winner: resolve(divMap[div][0]),
+                second: resolve(divMap[div][1]),
+                third:  resolve(divMap[div][2]),
             })).filter(d => d.winner);
 
             if (divWinners.length < 2) return;
@@ -1594,8 +1608,8 @@ const TeamsTable = () => {
                 })
                 .sort(sortForRank);
 
-            const wc1 = wcTeams[0]; // WC1 = more points (plays worse div winner)
-            const wc2 = wcTeams[1]; // WC2 = fewer points (plays better div winner)
+            const wc1 = resolve(wcTeams[0]); // WC1 = more points (plays worse div winner)
+            const wc2 = resolve(wcTeams[1]); // WC2 = fewer points (plays better div winner)
 
             const matchups: [TeamStat, TeamStat][] = [];
 
@@ -2117,7 +2131,7 @@ const TeamsTable = () => {
             </div>
 
             {/* Desktop-only Game-Level Stat Filters */}
-            {valuesMode !== 'Ratings' && viewMode !== 'PlayoffMatchup' && (
+            {valuesMode !== 'Ratings' && (
                 <div className="hidden md:block mb-3">
                     <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Game Filters</span>
