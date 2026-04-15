@@ -718,12 +718,16 @@ const TeamsTable = () => {
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
     const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
     const [filterPeriod, setFilterPeriod] = useState<'All' | '1st' | '2nd' | '3rd' | 'OT'>('All');
+    const [filterPlayoff, setFilterPlayoff] = useState<'All' | 'Yes' | 'No'>('All');
+    const [moreFiltersOpen, setMoreFiltersOpen] = useState(true);
 
     // Game-level stat filters (desktop only) — applied per-game before aggregating
     const [gameFilters, setGameFilters] = useState({
         ppg: 'All' as 'All' | 'Yes' | 'No',
         ppga: 'All' as 'All' | 'Yes' | 'No',
         scoringFirst: 'All' as 'All' | 'Yes' | 'No',
+        minGf: '', maxGf: '',
+        minGa: '', maxGa: '',
         minSf: '', maxSf: '',
         minSa: '', maxSa: '',
         minHdf: '', maxHdf: '',
@@ -851,6 +855,7 @@ const TeamsTable = () => {
                     if (parsed.filterHomeAway) setFilterHomeAway(parsed.filterHomeAway);
                     if (parsed.filterLastN) setFilterLastN(parsed.filterLastN);
                     if (parsed.filterPeriod) setFilterPeriod(parsed.filterPeriod);
+                    if (parsed.filterPlayoff) setFilterPlayoff(parsed.filterPlayoff);
                     if (parsed.selectedDivisions) setSelectedDivisions(parsed.selectedDivisions);
                     if (parsed.sortKey) setSortKey(parsed.sortKey);
                     if (parsed.sortDesc !== undefined) setSortDesc(parsed.sortDesc);
@@ -868,14 +873,14 @@ const TeamsTable = () => {
         try {
             if (typeof window !== 'undefined') {
                 const filters = {
-                    viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeGroups, gameFilters
+                    viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, filterPlayoff, selectedDivisions, sortKey, sortDesc, activeGroups, gameFilters
                 };
                 sessionStorage.setItem('teamsTableFilters', JSON.stringify(filters));
             }
         } catch (e) {
             console.error('Failed to save filters', e);
         }
-    }, [viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, selectedDivisions, sortKey, sortDesc, activeGroups, gameFilters]);
+    }, [viewBase, withOptions, valuesMode, filterHomeAway, filterLastN, filterPeriod, filterPlayoff, selectedDivisions, sortKey, sortDesc, activeGroups, gameFilters]);
 
     const COLUMNS = useMemo(() => [
         { k: 'ranking', l: 'Rank', desc: 'Projected Playoff Standing' },
@@ -1276,7 +1281,9 @@ const TeamsTable = () => {
                 if (max !== '') { const v = parseFloat(max); if (!isNaN(v)) arr = arr.filter(g => field(g) <= v); }
                 return arr;
             };
-            games = applyIntRange(games, g => parseInt(g.sog_for)     || 0, gf.minSf,        gf.maxSf);
+            games = applyIntRange(games, g => parseInt(g.goals_for)    || 0, gf.minGf,        gf.maxGf);
+            games = applyIntRange(games, g => parseInt(g.goals_ag)     || 0, gf.minGa,        gf.maxGa);
+            games = applyIntRange(games, g => parseInt(g.sog_for)      || 0, gf.minSf,        gf.maxSf);
             games = applyIntRange(games, g => parseInt(g.sog_ag)      || 0, gf.minSa,        gf.maxSa);
             games = applyIntRange(games, g => (parseInt(g.sog_for) || 0) - (parseInt(g.sog_ag) || 0), gf.minShotDiff, gf.maxShotDiff);
             games = applyIntRange(games, g => parseInt(g.hdf)         || 0, gf.minHdf,       gf.maxHdf);
@@ -1336,11 +1343,15 @@ const TeamsTable = () => {
             // Apply Division Filter
             let filteredBase = leagueBaseline;
             if (selectedDivisions.length > 0) {
-                filteredBase = leagueBaseline.filter(s => {
+                filteredBase = filteredBase.filter(s => {
                     const teamInfo = teams[s.team];
-                    // Only include if team is in one of the selected divisions
                     return teamInfo && teamInfo.division && selectedDivisions.includes(teamInfo.division);
                 });
+            }
+
+            // Apply Playoff Filter
+            if (filterPlayoff !== 'All') {
+                filteredBase = filteredBase.filter(s => filterPlayoff === 'Yes' ? s.isPlayoff : !s.isPlayoff);
             }
 
             processedTeams.push(...filteredBase);
@@ -1540,7 +1551,7 @@ const TeamsTable = () => {
 
         setStats(processedTeams);
 
-    }, [rawData, viewMode, viewBase, withOptions, filterHomeAway, filterLastN, filterPeriod, todayMatchups, tomorrowMatchups, selectedDivisions, teams, gameFilters]);
+    }, [rawData, viewMode, viewBase, withOptions, filterHomeAway, filterLastN, filterPeriod, filterPlayoff, todayMatchups, tomorrowMatchups, selectedDivisions, teams, gameFilters]);
 
 
     const handleSort = (key: string) => {
@@ -2024,13 +2035,53 @@ const TeamsTable = () => {
                             />
                         </div>
                     )}
+
+                    {/* Playoff Filter (Only in All Teams view) */}
+                    {viewMode === 'All' && (
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Playoffs</label>
+                            <ButtonGroup
+                                options={['All', 'Yes', 'No']}
+                                current={filterPlayoff}
+                                onChange={(v) => setFilterPlayoff(v as 'All' | 'Yes' | 'No')}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Desktop-only Game-Level Stat Filters */}
             {valuesMode !== 'Ratings' && (
                 <div className="hidden md:block mb-3">
-                    <div className="flex flex-wrap gap-x-6 gap-y-3 p-3 bg-white/5 rounded-lg border border-white/10 items-end">
+                    <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Game Filters</span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setGameFilters(f => ({
+                                    ...f,
+                                    ppg: 'All', ppga: 'All', scoringFirst: 'All',
+                                    minGf: '', maxGf: '', minGa: '', maxGa: '',
+                                    minSf: '', maxSf: '', minSa: '', maxSa: '',
+                                    minHdf: '', maxHdf: '', minHda: '', maxHda: '',
+                                    minCf: '', maxCf: '', minCa: '', maxCa: '',
+                                    minCorsiDiff: '', maxCorsiDiff: '',
+                                    minXgDiff: '', maxXgDiff: '',
+                                    minPpOpps: '', maxPpOpps: '', minPkOpps: '', maxPkOpps: '',
+                                    minSvPct: '', maxSvPct: '', minShotDiff: '', maxShotDiff: '',
+                                }))}
+                                className="text-[9px] uppercase font-bold text-gray-500 hover:text-white transition-colors px-2 py-0.5 rounded border border-gray-700 hover:border-gray-500"
+                            >
+                                Clear All
+                            </button>
+                            <button
+                                onClick={() => setMoreFiltersOpen(o => !o)}
+                                className="text-[9px] uppercase font-bold text-gray-500 hover:text-white transition-colors px-2 py-0.5 rounded border border-gray-700 hover:border-gray-500"
+                            >
+                                {moreFiltersOpen ? 'Collapse' : 'Expand'}
+                            </button>
+                        </div>
+                    </div>
+                    {moreFiltersOpen && <div className="flex flex-wrap gap-x-6 gap-y-3 p-3 bg-white/5 rounded-lg border border-white/10 items-end">
 
                         {/* PPG */}
                         <div className="flex flex-col gap-1">
@@ -2070,6 +2121,8 @@ const TeamsTable = () => {
 
                         {/* Range input helper rendered inline */}
                         {([
+                            { label: 'GF',           minK: 'minGf',        maxK: 'maxGf' },
+                            { label: 'GA',           minK: 'minGa',        maxK: 'maxGa' },
                             { label: 'Shots For',    minK: 'minSf',        maxK: 'maxSf' },
                             { label: 'Shots Against',minK: 'minSa',        maxK: 'maxSa' },
                             { label: 'Shot Diff',    minK: 'minShotDiff',  maxK: 'maxShotDiff' },
@@ -2152,7 +2205,7 @@ const TeamsTable = () => {
                             </div>
                         </div>
 
-                    </div>
+                    </div>}
                 </div>
             )}
 
