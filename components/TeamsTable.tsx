@@ -242,9 +242,14 @@ interface GoalieRating {
 }
 
 type SortKey = keyof TeamStat;
-type ViewBase = 'All' | 'PlayingToday' | 'PlayingTomorrow';
+type ViewBase = 'All' | 'PlayingToday' | 'PlayingTomorrow' | 'PlayoffMatchup';
 type WithOption = 'Location' | 'Starter' | 'DayOfWeek';
-type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter';
+type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter' | 'PlayoffMatchup';
+
+interface PlayoffConferenceBracket {
+    conf: string;
+    matchups: [TeamStat, TeamStat][]; // [higher seed, lower seed]
+}
 type ValuesMode = 'Stats' | 'Ratings';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -708,6 +713,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
 const TeamsTable = () => {
     const [stats, setStats] = useState<TeamStat[]>([]);
     const [leagueStats, setLeagueStats] = useState<TeamStat[]>([]); // For consistent ranges
+    const [playoffBracket, setPlayoffBracket] = useState<PlayoffConferenceBracket[]>([]);
     const [loading, setLoading] = useState(true);
     const [teams, setTeams] = useState<Record<string, TeamInfo>>({});
 
@@ -767,6 +773,7 @@ const TeamsTable = () => {
     // DayOfWeek is handled separately in getGames and does NOT affect ViewMode
     const viewMode = useMemo((): ViewMode => {
         if (viewBase === 'All') return 'All';
+        if (viewBase === 'PlayoffMatchup') return 'PlayoffMatchup';
         const hasLoc = withOptions.includes('Location');
         const hasStar = withOptions.includes('Starter');
         const suffix = hasLoc && hasStar ? 'LocationStarter' : hasLoc ? 'Location' : hasStar ? 'Starter' : '';
@@ -1551,6 +1558,62 @@ const TeamsTable = () => {
 
         setStats(finalTeams);
 
+        // ── Compute Playoff Bracket ───────────────────────────────────────────
+        // NHL first-round format per conference:
+        //   seed1 (better div winner) vs WC2
+        //   seed2 (other div winner)  vs WC1
+        //   seed1's div: 2nd vs 3rd
+        //   seed2's div: 2nd vs 3rd
+        // Higher seed (lower number) listed first in each pair.
+        const bracket: PlayoffConferenceBracket[] = [];
+
+        (['Eastern', 'Western'] as const).forEach(conf => {
+            const confDivisions = conf === 'Eastern' ? ['Atlantic', 'Metro'] : ['Central', 'Pacific'];
+
+            // Division winners and their rosters
+            const divWinners = confDivisions.map(div => ({
+                div,
+                winner: divMap[div][0] as TeamStat | undefined,
+                second: divMap[div][1] as TeamStat | undefined,
+                third:  divMap[div][2] as TeamStat | undefined,
+            })).filter(d => d.winner);
+
+            if (divWinners.length < 2) return;
+
+            // Sort division winners by points to assign seed1 / seed2
+            const [dw1, dw2] = divWinners.sort((a, b) => sortForRank(a.winner!, b.winner!));
+
+            // Wild cards: in this conference, in plySet, but NOT in top-3 of their division
+            const wcTeams = standingsBaseline
+                .filter(t => {
+                    const inf = teams[t.team];
+                    return inf?.division
+                        && CONFERENCE_MAPPING[inf.division] === conf
+                        && plySet.has(t.team)
+                        && divMap[inf.division].slice(0, 3).every(d => d.team !== t.team);
+                })
+                .sort(sortForRank);
+
+            const wc1 = wcTeams[0]; // WC1 = more points (plays worse div winner)
+            const wc2 = wcTeams[1]; // WC2 = fewer points (plays better div winner)
+
+            const matchups: [TeamStat, TeamStat][] = [];
+
+            // seed1 (dw1.winner) vs WC2 — seed1 on top
+            if (dw1.winner && wc2) matchups.push([dw1.winner, wc2]);
+            // seed2 (dw2.winner) vs WC1 — seed2 on top
+            if (dw2.winner && wc1) matchups.push([dw2.winner, wc1]);
+            // seed1's division: 2nd vs 3rd — 2nd on top
+            if (dw1.second && dw1.third) matchups.push([dw1.second, dw1.third]);
+            // seed2's division: 2nd vs 3rd — 2nd on top
+            if (dw2.second && dw2.third) matchups.push([dw2.second, dw2.third]);
+
+            if (matchups.length > 0) bracket.push({ conf, matchups });
+        });
+
+        setPlayoffBracket(bracket);
+        // ─────────────────────────────────────────────────────────────────────
+
     }, [rawData, viewMode, viewBase, withOptions, filterHomeAway, filterLastN, filterPeriod, filterPlayoff, todayMatchups, tomorrowMatchups, selectedDivisions, teams, gameFilters]);
 
 
@@ -1568,7 +1631,10 @@ const TeamsTable = () => {
     };
 
     const sortedStats = useMemo(() => {
-        // If in Playing Today/Tomorrow modes, PRESERVE ORDER created in useEffect
+        // If in Playing Today/Tomorrow/PlayoffMatchup modes, PRESERVE ORDER
+        if (viewMode === 'PlayoffMatchup') {
+            return playoffBracket.flatMap(conf => conf.matchups.flatMap(([a, b]) => [a, b]));
+        }
         if (viewMode !== 'All') return stats;
 
         const sorted = [...stats];
@@ -1610,7 +1676,7 @@ const TeamsTable = () => {
                 : (valA as number) - (valB as number);
         });
         return sorted;
-    }, [stats, sortKey, sortDesc, viewMode, teamRatingsComputed]);
+    }, [stats, sortKey, sortDesc, viewMode, teamRatingsComputed, playoffBracket]);
 
     // Calculate min/max for gradients (ALWAYS based on leagueStats for consistency)
     const ranges = useMemo(() => {
@@ -1929,8 +1995,8 @@ const TeamsTable = () => {
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View Type</label>
                         <ButtonGroup
-                            options={['All', 'PlayingToday', 'PlayingTomorrow']}
-                            labels={['All Teams', 'Playing Today', 'Playing Tomorrow']}
+                            options={['All', 'PlayingToday', 'PlayingTomorrow', 'PlayoffMatchup']}
+                            labels={['All Teams', 'Playing Today', 'Playing Tomorrow', 'Playoff Matchups']}
                             current={viewBase}
                             onChange={(v) => setViewBase(v as ViewBase)}
                         />
@@ -1940,7 +2006,7 @@ const TeamsTable = () => {
                         <div className="flex bg-gray-800 rounded-lg p-1 gap-1">
                             {(['Location', 'Starter', 'DayOfWeek'] as WithOption[]).map(opt => {
                                 const isActive = withOptions.includes(opt);
-                                const isDisabled = (opt === 'Location' || opt === 'Starter') && viewBase === 'All';
+                                const isDisabled = viewBase === 'PlayoffMatchup' || ((opt === 'Location' || opt === 'Starter') && viewBase === 'All');
                                 const targetDow = getTargetDayOfWeek(viewBase);
                                 const label = opt === 'DayOfWeek'
                                     ? (isActive ? `${DAY_NAMES[targetDow]}s` : 'Day of Week')
@@ -2051,7 +2117,7 @@ const TeamsTable = () => {
             </div>
 
             {/* Desktop-only Game-Level Stat Filters */}
-            {valuesMode !== 'Ratings' && (
+            {valuesMode !== 'Ratings' && viewMode !== 'PlayoffMatchup' && (
                 <div className="hidden md:block mb-3">
                     <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Game Filters</span>
@@ -2356,8 +2422,29 @@ const TeamsTable = () => {
                                 }
                             }
 
+                            // For PlayoffMatchup view: show conference header before first team of each conference
+                            let confHeaderRow: React.ReactNode = null;
+                            if (viewMode === 'PlayoffMatchup') {
+                                let teamCount = 0;
+                                for (const confBracket of playoffBracket) {
+                                    if (teamCount === idx) {
+                                        confHeaderRow = (
+                                            <tr key={`conf-${confBracket.conf}`}>
+                                                <td colSpan={999} className="px-3 pt-5 pb-1 bg-gray-900">
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/70">{confBracket.conf} Conference</span>
+                                                </td>
+                                            </tr>
+                                        );
+                                        break;
+                                    }
+                                    teamCount += confBracket.matchups.length * 2;
+                                }
+                            }
+                            const playoffSeedLabel = viewMode === 'PlayoffMatchup' ? team.ranking : null;
+
                             return (
                                 <React.Fragment key={`${team.team}-${idx}`}>
+                                    {confHeaderRow}
                                     <tr className={rowStyle}>
                                         <td className="px-2 py-0 font-medium text-white sticky left-0 bg-gray-900 z-30 shadow-[2px_0_8px_-2px_rgba(0,0,0,0.6)]">
                                             <div className="flex items-center justify-center md:justify-start gap-3">
@@ -2393,6 +2480,11 @@ const TeamsTable = () => {
                                                 {/* Clinch / Elimination badge — official NHL data from clinch_status.json */}
                                                 {viewMode === 'All' && meta.tricode && clinchData[meta.tricode] && (
                                                     <ClinchBadge indicator={clinchData[meta.tricode]!} />
+                                                )}
+
+                                                {/* Playoff seed label in Playoff Matchup view */}
+                                                {viewMode === 'PlayoffMatchup' && playoffSeedLabel && (
+                                                    <span className="text-[10px] font-bold text-gray-500 ml-1 hidden md:inline">{playoffSeedLabel}</span>
                                                 )}
 
                                                 {/* Matchup visual indicator for Location Mode */}
