@@ -1349,11 +1349,6 @@ const TeamsTable = () => {
                 });
             }
 
-            // Apply Playoff Filter
-            if (filterPlayoff !== 'All') {
-                filteredBase = filteredBase.filter(s => filterPlayoff === 'Yes' ? s.isPlayoff : !s.isPlayoff);
-            }
-
             processedTeams.push(...filteredBase);
         } else {
             // Playing Today/Tomorrow Views (Force specific order: Away, Home, Away, Home...)
@@ -1549,7 +1544,12 @@ const TeamsTable = () => {
             }
         });
 
-        setStats(processedTeams);
+        // Apply Playoff Filter after isPlayoff has been assigned
+        const finalTeams = filterPlayoff === 'All'
+            ? processedTeams
+            : processedTeams.filter(t => filterPlayoff === 'Yes' ? t.isPlayoff : !t.isPlayoff);
+
+        setStats(finalTeams);
 
     }, [rawData, viewMode, viewBase, withOptions, filterHomeAway, filterLastN, filterPeriod, filterPlayoff, todayMatchups, tomorrowMatchups, selectedDivisions, teams, gameFilters]);
 
