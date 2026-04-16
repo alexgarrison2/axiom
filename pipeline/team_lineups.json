@@ -720,12 +720,12 @@
                 "movement": null
             },
             {
-                "name": "Isak Rosen",
-                "number": 63,
+                "name": "Gabriel Vilardi",
+                "number": 13,
                 "pos": "rw",
-                "id": 34670,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2783,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -746,22 +746,22 @@
                 "movement": null
             },
             {
-                "name": "Brad Lambert",
-                "number": 93,
+                "name": "Nino Niederreiter",
+                "number": 62,
                 "pos": "rw",
-                "id": 31870,
+                "id": 1553,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Nikita Chibrikov",
-                "number": null,
+                "name": "Isak Rosen",
+                "number": 63,
                 "pos": "lw",
-                "id": 34368,
-                "ppUnit": null,
-                "movement": null
+                "id": 34670,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Jonathan Toews",
@@ -772,21 +772,21 @@
                 "movement": null
             },
             {
-                "name": "Gabriel Vilardi",
-                "number": 13,
+                "name": "Brad Lambert",
+                "number": 93,
                 "pos": "rw",
-                "id": 2783,
-                "ppUnit": 1,
-                "movement": null
+                "id": 31870,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f4": [
             {
-                "name": "Nino Niederreiter",
-                "number": 62,
+                "name": "Cole Koepke",
+                "number": 45,
                 "pos": "lw",
-                "id": 1553,
-                "ppUnit": 2,
+                "id": 29652,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -798,12 +798,12 @@
                 "movement": null
             },
             {
-                "name": "Cole Koepke",
-                "number": 45,
+                "name": "Nikita Chibrikov",
+                "number": null,
                 "pos": "rw",
-                "id": 29652,
+                "id": 34368,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -834,29 +834,29 @@
                 "movement": null
             },
             {
-                "name": "Jacob Bryson",
-                "number": 78,
-                "pos": "rd",
-                "id": 27240,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Ville Heinola",
-                "number": 34,
-                "pos": "ld",
-                "id": 30611,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Colin Miller",
                 "number": 6,
                 "pos": "rd",
                 "id": 2470,
                 "ppUnit": 2,
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Haydn Fleury",
+                "number": 24,
+                "pos": "ld",
+                "id": 2369,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
+                "name": "Ville Heinola",
+                "number": 34,
+                "pos": "rd",
+                "id": 30611,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -3765,7 +3765,7 @@
                 "pos": "rw",
                 "id": 2475,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -3783,7 +3783,7 @@
                 "pos": "c",
                 "id": 2737,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Pavel Dorofeyev",
@@ -3817,7 +3817,7 @@
                 "pos": "rw",
                 "id": 3790,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -3835,7 +3835,7 @@
                 "pos": "c",
                 "id": 2030,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Nic Dowd",
@@ -4865,7 +4865,7 @@
                 "pos": "lw",
                 "id": 34532,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Emmitt Finnie",
