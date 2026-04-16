@@ -179,20 +179,48 @@ def extract_players(text: str, teams: list[str]) -> str:
     """Return a comma-joined string of player names found in the tweet for the matched teams."""
     normed = _norm(text)
     found: list[str] = []
-    seen:  set[str]  = set()
+    seen_tokens:    set[str] = set()
+    seen_last_words: set[str] = set()  # prevent "Necas, Necas" from full+last name both matching
 
-    for tri in teams:
-        for token, tricodes in NAME_TO_TEAMS.items():
-            if tri not in tricodes or token in seen or len(token) <= 3:
-                continue
-            if token in normed:
-                # Find original capitalisation in source text
-                last = token.split()[-1]
-                m = re.search(r'\b' + re.escape(last) + r'\b', text, re.IGNORECASE)
-                if m:
-                    found.append(m.group(0))
-                    seen.add(token)
+    # Process longer tokens first so full name wins over last-name-only token
+    sorted_tokens = sorted(NAME_TO_TEAMS.keys(), key=len, reverse=True)
+
+    for token in sorted_tokens:
+        tricodes = NAME_TO_TEAMS[token]
+        if not any(t in tricodes for t in teams):
+            continue
+        if token in seen_tokens or len(token) <= 3:
+            continue
+        if token not in normed:
+            continue
+        last = token.split()[-1]
+        if last in seen_last_words:
+            # already found via a longer token — skip to avoid duplicating the name
+            seen_tokens.add(token)
+            continue
+        m = re.search(r'\b' + re.escape(last) + r'\b', text, re.IGNORECASE)
+        if m:
+            found.append(m.group(0))
+            seen_tokens.add(token)
+            seen_last_words.add(last)
     return ', '.join(found) if found else 'Team Update'
+
+
+def _jaccard(a: str, b: str) -> float:
+    """Word-level Jaccard similarity between two strings."""
+    wa = set(_norm(a).split())
+    wb = set(_norm(b).split())
+    if not wa or not wb:
+        return 0.0
+    return len(wa & wb) / len(wa | wb)
+
+
+def is_duplicate(new_text: str, existing_items: list[dict], threshold: float = 0.40) -> bool:
+    """Return True if new_text is too similar to any existing item's news text."""
+    for item in existing_items:
+        if _jaccard(new_text, item.get('news', '')) >= threshold:
+            return True
+    return False
 
 
 # ── RSS fetch ─────────────────────────────────────────────────────────────────
@@ -300,6 +328,9 @@ def fetch_dfo_tweets() -> None:
         }
 
         for tri in teams:
+            existing = accumulated.get(tri, [])
+            if is_duplicate(tweet['text'], existing):
+                continue
             accumulated.setdefault(tri, []).append(dict(item))
         seen_ids.add(tid)
         new_count += 1
