@@ -447,17 +447,19 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         );
     };
 
-    const getBarColor = (team: { triCode: string; color1: string; color2?: string }) => {
-        // Teams with very dark/black primary colors that blend into the background
-        const darkTeams = ['PIT', 'LAK', 'UTA', 'SEA', 'TBL', 'BOS', 'ANA'];
-        if (darkTeams.includes(team.triCode)) {
-            // Use secondary color if available and distinct
-            if (team.color2 && team.color2 !== '#000000' && team.color2 !== '#FFFFFF') return team.color2;
-            // Fallback for teams like LAK where color2 might be silver/grey (ok) or white
-            return team.color2 || '#FFFFFF';
-        }
-        return team.color1;
+    // Shared vivid color map — must stay in sync with PlayoffHub.tsx VIVID
+    const VIVID: Record<string, string> = {
+        EDM:'#FF4C00', WPG:'#5b8ee8', TOR:'#5b8ee8', TBL:'#3278d4',
+        VAN:'#00943D', LAK:'#A8AEB5', SEA:'#7de0de', STL:'#5b8ee8',
+        BUF:'#0066CC', PIT:'#FCB514', CBJ:'#CE1126', WSH:'#C8102E',
+        NJD:'#CE1126', DET:'#CE1126', MIN:'#3a8f5a', COL:'#9B4060',
+        NYR:'#0083C6', PHI:'#F74902', CAR:'#CE1126', FLA:'#C8102E',
+        OTT:'#C5A028', BOS:'#FCB514', CGY:'#D2001C', VGK:'#B4975A',
+        ANA:'#F47A38', SJS:'#007889', NSH:'#FFB81C', CHI:'#CF0A2C',
+        DAL:'#006847', MTL:'#AF1E2D', UTA:'#71AFE5',
     };
+    const getBarColor = (team: { triCode: string; color1: string; color2?: string }) =>
+        VIVID[team.triCode] ?? team.color1;
 
     const homeBarColor = getBarColor(homeTeam);
     const awayBarColor = getBarColor(awayTeam);
