@@ -63,10 +63,10 @@ export default function TornadoChart({ t1, t2, c1, c2, name1, name2, ratings, tr
       <div className="flex items-center justify-between mb-2 px-1">
         <div className="flex items-center gap-1">
           <img src={`/logos/${t1}.svg`} alt={t1} className="w-4 h-4" />
-          <span className="text-[10px] font-semibold" style={{ color: c1 }}>{name1}</span>
+          <span className="text-xs font-semibold" style={{ color: c1 }}>{name1}</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-[10px] font-semibold" style={{ color: c2 }}>{name2}</span>
+          <span className="text-xs font-semibold" style={{ color: c2 }}>{name2}</span>
           <img src={`/logos/${t2}.svg`} alt={t2} className="w-4 h-4" />
         </div>
       </div>
@@ -82,10 +82,10 @@ export default function TornadoChart({ t1, t2, c1, c2, name1, name2, ratings, tr
 
           return (
             <div key={stat.key}>
-              <div className="text-[8px] text-neutral-500 text-center mb-0.5">{stat.label}</div>
+              <div className="text-xs text-neutral-500 text-center mb-0.5">{stat.label}</div>
               <div className="flex items-center gap-1">
                 {/* Left value */}
-                <span className={`text-[9px] w-10 text-right font-mono ${t1Better ? 'text-white font-bold' : 'text-neutral-500'}`}>
+                <span className={`text-xs w-12 text-right font-mono ${t1Better ? 'text-white font-bold' : 'text-neutral-500'}`}>
                   {stat.format(val1)}
                 </span>
 
@@ -121,7 +121,7 @@ export default function TornadoChart({ t1, t2, c1, c2, name1, name2, ratings, tr
                 </div>
 
                 {/* Right value */}
-                <span className={`text-[9px] w-10 text-left font-mono ${!t1Better ? 'text-white font-bold' : 'text-neutral-500'}`}>
+                <span className={`text-xs w-12 text-left font-mono ${!t1Better ? 'text-white font-bold' : 'text-neutral-500'}`}>
                   {stat.format(val2)}
                 </span>
               </div>
@@ -131,7 +131,7 @@ export default function TornadoChart({ t1, t2, c1, c2, name1, name2, ratings, tr
       </div>
 
       {/* Legend */}
-      <div className="text-[7px] text-neutral-600 text-center mt-2">
+      <div className="text-[10px] text-neutral-600 text-center mt-2">
         Bar width = league percentile (0–100). Bold = advantage.
       </div>
     </div>

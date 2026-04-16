@@ -32,29 +32,29 @@ export default function ScheduleStrip({ series, teamsMap }: ScheduleStripProps) 
               }
             `}
           >
-            <div className={`text-[9px] font-bold ${isNext ? 'text-cyan-400' : 'text-neutral-400'}`}>
+            <div className={`text-xs font-bold ${isNext ? 'text-cyan-400' : 'text-neutral-400'}`}>
               G{i + 1}
             </div>
 
             {game ? (
               <>
-                <div className="text-[8px] text-neutral-500 mt-0.5">
+                <div className="text-[10px] text-neutral-500 mt-0.5">
                   {new Date(game.startTimeUTC).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </div>
-                <div className="text-[7px] text-neutral-600 mt-0.5">
+                <div className="text-[10px] text-neutral-600 mt-0.5">
                   @{game.homeTriCode}
                 </div>
                 {isFinal && game.score && (
-                  <div className="text-[9px] font-bold text-neutral-300 mt-0.5">
+                  <div className="text-xs font-bold text-neutral-300 mt-0.5">
                     {game.score[0]}–{game.score[1]}
                   </div>
                 )}
                 {game.tvNetwork !== 'TBD' && (
-                  <div className="text-[7px] text-neutral-600 mt-0.5">{game.tvNetwork}</div>
+                  <div className="text-[10px] text-neutral-600 mt-0.5">{game.tvNetwork}</div>
                 )}
               </>
             ) : (
-              <div className="text-[8px] text-neutral-700 mt-1">TBD</div>
+              <div className="text-[10px] text-neutral-700 mt-1">TBD</div>
             )}
           </div>
         );

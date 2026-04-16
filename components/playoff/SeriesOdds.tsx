@@ -58,33 +58,33 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
       {/* Vegas Series Odds */}
       {vegasOdds1 != null && vegasOdds2 != null && (
         <div>
-          <div className="text-xs text-neutral-400 text-center mb-2 font-medium">Vegas Series Price</div>
+          <div className="text-sm font-semibold text-neutral-400 text-center mb-2">Vegas Series Price</div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 flex-1 justify-end">
               <img src={`/logos/${t1}.svg`} alt={t1} className="w-5 h-5" />
-              <span className="text-sm font-bold" style={{ color: c1 }}>{name1}</span>
+              <span className="text-base font-bold" style={{ color: c1 }}>{name1}</span>
             </div>
             <div className="flex gap-3 items-center">
               <div className="text-center">
-                <div className="text-lg font-black text-neutral-200 tabular-nums">
+                <div className="text-2xl font-black text-neutral-200 tabular-nums">
                   {vegasOdds1 > 0 ? '+' : ''}{vegasOdds1}
                 </div>
-                <div className="text-[10px] text-neutral-500">
+                <div className="text-xs text-neutral-500">
                   {vegasImplied1 != null ? `${(vegasImplied1 * 100).toFixed(0)}%` : ''}
                 </div>
               </div>
               <div className="text-xs text-neutral-600">vs</div>
               <div className="text-center">
-                <div className="text-lg font-black text-neutral-200 tabular-nums">
+                <div className="text-2xl font-black text-neutral-200 tabular-nums">
                   {vegasOdds2 > 0 ? '+' : ''}{vegasOdds2}
                 </div>
-                <div className="text-[10px] text-neutral-500">
+                <div className="text-xs text-neutral-500">
                   {vegasImplied2 != null ? `${(vegasImplied2 * 100).toFixed(0)}%` : ''}
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 flex-1">
-              <span className="text-sm font-bold" style={{ color: c2 }}>{name2}</span>
+              <span className="text-base font-bold" style={{ color: c2 }}>{name2}</span>
               <img src={`/logos/${t2}.svg`} alt={t2} className="w-5 h-5" />
             </div>
           </div>
@@ -94,32 +94,32 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
       {/* xOdds & EV */}
       {modelBreak && vegasOdds1 != null && vegasOdds2 != null && (
         <div>
-          <div className="text-xs text-neutral-400 text-center mb-2 font-medium">Model xOdds & Edge</div>
+          <div className="text-sm font-semibold text-neutral-400 text-center mb-2">Model xOdds & Edge</div>
           <div className="flex items-center gap-3">
             <div className="flex-1 text-right">
-              <div className="text-base font-black text-blue-400 tabular-nums">
+              <div className="text-xl font-black text-blue-400 tabular-nums">
                 {probToAmerican(modelBreak.hw / 100)}
               </div>
               {(() => {
                 const ev1 = (modelBreak.hw / 100) - (vegasImplied1 ?? 0);
                 return ev1 > 0 ? (
-                  <div className="text-[10px] font-bold text-emerald-400">+{(ev1 * 100).toFixed(0)}% EV</div>
+                  <div className="text-sm font-bold text-emerald-400">+{(ev1 * 100).toFixed(0)}% EV</div>
                 ) : (
-                  <div className="text-[10px] text-neutral-600">{(ev1 * 100).toFixed(0)}% EV</div>
+                  <div className="text-sm text-neutral-600">{(ev1 * 100).toFixed(0)}% EV</div>
                 );
               })()}
             </div>
-            <div className="text-[10px] text-neutral-600">xOdds</div>
+            <div className="text-xs text-neutral-600">xOdds</div>
             <div className="flex-1">
-              <div className="text-base font-black text-blue-400 tabular-nums">
+              <div className="text-xl font-black text-blue-400 tabular-nums">
                 {probToAmerican(modelBreak.lw / 100)}
               </div>
               {(() => {
                 const ev2 = (modelBreak.lw / 100) - (vegasImplied2 ?? 0);
                 return ev2 > 0 ? (
-                  <div className="text-[10px] font-bold text-emerald-400">+{(ev2 * 100).toFixed(0)}% EV</div>
+                  <div className="text-sm font-bold text-emerald-400">+{(ev2 * 100).toFixed(0)}% EV</div>
                 ) : (
-                  <div className="text-[10px] text-neutral-600">{(ev2 * 100).toFixed(0)}% EV</div>
+                  <div className="text-sm text-neutral-600">{(ev2 * 100).toFixed(0)}% EV</div>
                 );
               })()}
             </div>
@@ -130,11 +130,11 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
       {/* Model Series Probabilities */}
       {modelBreak && (
         <div>
-          <div className="text-xs text-neutral-400 text-center mb-2 font-medium">Model Series Win Probability</div>
+          <div className="text-sm font-semibold text-neutral-400 text-center mb-2">Model Series Win Probability</div>
 
           {/* Overall bar */}
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm font-black w-12 text-right tabular-nums" style={{ color: c1 }}>
+            <span className="text-base font-black w-12 text-right tabular-nums" style={{ color: c1 }}>
               {modelBreak.hw.toFixed(0)}%
             </span>
             <div className="flex-1 h-5 rounded-full overflow-hidden bg-white/5 flex">
@@ -147,7 +147,7 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
                 style={{ width: `${modelBreak.lw}%`, backgroundColor: c2 }}
               />
             </div>
-            <span className="text-sm font-black w-12 tabular-nums" style={{ color: c2 }}>
+            <span className="text-base font-black w-12 tabular-nums" style={{ color: c2 }}>
               {modelBreak.lw.toFixed(0)}%
             </span>
           </div>
@@ -158,7 +158,7 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
               const maxPct = Math.max(...modelBreak.bars.map(b => Math.max(b.h, b.l)));
               return (
                 <div key={bar.g} className="text-center">
-                  <div className="text-[10px] text-neutral-400 mb-1 font-medium">In {bar.g}</div>
+                  <div className="text-xs text-neutral-400 mb-1 font-medium">In {bar.g}</div>
                   <div className="h-12 flex flex-col justify-end items-center gap-0.5 relative">
                     <div
                       className="w-full rounded-t transition-all duration-500"
@@ -169,7 +169,7 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
                       }}
                     />
                   </div>
-                  <div className="text-[10px] font-mono font-semibold mt-1">
+                  <div className="text-xs font-mono font-semibold mt-1">
                     <span style={{ color: c1 }}>{bar.h.toFixed(0)}%</span>
                     <span className="text-neutral-600"> / </span>
                     <span style={{ color: c2 }}>{bar.l.toFixed(0)}%</span>

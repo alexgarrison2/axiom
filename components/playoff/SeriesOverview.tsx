@@ -22,7 +22,7 @@ interface SeriesOverviewProps {
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-semibold mb-2">
+    <div className="text-xs uppercase tracking-widest text-neutral-500 font-semibold mb-2">
       {children}
     </div>
   );
@@ -43,8 +43,8 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
         <div className="flex items-center justify-center gap-3">
           <img src={`/logos/${t1}.svg`} alt={t1} className="w-8 h-8" />
           <div className="text-center">
-            <div className="text-xs font-bold text-neutral-300">Series Preview</div>
-            <div className="text-[10px] text-neutral-500">
+            <div className="text-sm font-bold text-neutral-300">Series Preview</div>
+            <div className="text-xs text-neutral-500">
               ({series.higherSeed.seed}) {name1} vs ({series.lowerSeed.seed}) {name2}
             </div>
           </div>
@@ -95,14 +95,14 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <img src={`/logos/${t1}.svg`} alt={t1} className="w-4 h-4" />
-              <span className="text-[10px] font-semibold" style={{ color: c1 }}>{name1}</span>
+              <span className="text-xs font-semibold" style={{ color: c1 }}>{name1}</span>
             </div>
             <LineupGrid lineup={lineups[t1]} triCode={t1} />
           </div>
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <img src={`/logos/${t2}.svg`} alt={t2} className="w-4 h-4" />
-              <span className="text-[10px] font-semibold" style={{ color: c2 }}>{name2}</span>
+              <span className="text-xs font-semibold" style={{ color: c2 }}>{name2}</span>
             </div>
             <LineupGrid lineup={lineups[t2]} triCode={t2} />
           </div>
@@ -189,17 +189,17 @@ function TeamNewsSection({ t1, t2, c1, c2, playerNews, teamsMap }: {
                 });
               }}
             >
-              <span className="text-[9px] font-mono font-bold text-neutral-500 uppercase tracking-widest">
+              <span className="text-[10px] font-mono font-bold text-neutral-500 uppercase tracking-widest">
                 {formatDateLabel(date)}
               </span>
               <div className="flex-1 h-px bg-white/5" />
               {!isFirst && (
-                <span className="text-[9px] font-bold text-neutral-600 group-hover:text-neutral-400 transition-colors w-4 text-center">
+                <span className="text-[10px] font-bold text-neutral-600 group-hover:text-neutral-400 transition-colors w-4 text-center">
                   {isExpanded ? '−' : '+'}
                 </span>
               )}
               {isFirst && (
-                <span className="text-[9px] font-mono text-neutral-600">{items.length}</span>
+                <span className="text-[10px] font-mono text-neutral-600">{items.length}</span>
               )}
             </button>
 
@@ -210,9 +210,9 @@ function TeamNewsSection({ t1, t2, c1, c2, playerNews, teamsMap }: {
                   <div key={i} className="pl-2 py-1 border-l-2" style={{ borderColor: item.color + '80' }}>
                     <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                       <img src={`/logos/${item.tri}.svg`} alt={item.tri} className="w-3 h-3" />
-                      <span className="text-[10px] font-semibold text-neutral-300">{item.player}</span>
+                      <span className="text-xs font-semibold text-neutral-300">{item.player}</span>
                       {item.category && (
-                        <span className={`text-[8px] font-mono font-bold uppercase px-1 rounded border ${
+                        <span className={`text-[10px] font-mono font-bold uppercase px-1 rounded border ${
                           item.category.toLowerCase().includes('injury')
                             ? 'text-red-400 bg-red-400/10 border-red-400/20'
                             : 'text-blue-400 bg-blue-400/10 border-blue-400/20'
@@ -220,9 +220,9 @@ function TeamNewsSection({ t1, t2, c1, c2, playerNews, teamsMap }: {
                           {item.category}
                         </span>
                       )}
-                      <span className="ml-auto text-[9px] text-neutral-600 font-mono">{formatTs(item)}</span>
+                      <span className="ml-auto text-[10px] text-neutral-600 font-mono">{formatTs(item)}</span>
                     </div>
-                    <p className="text-[9px] text-neutral-400 leading-snug ml-4.5">{item.news}</p>
+                    <p className="text-xs text-neutral-400 leading-snug ml-4.5">{item.news}</p>
                   </div>
                 ))}
               </div>
