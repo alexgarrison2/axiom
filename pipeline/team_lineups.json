@@ -1519,7 +1519,7 @@
                 "pos": "lw",
                 "id": 30606,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ryan Nugent-Hopkins",
@@ -2336,7 +2336,7 @@
                 "number": 49,
                 "pos": "c",
                 "id": 31798,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -2344,7 +2344,7 @@
                 "number": 58,
                 "pos": "rw",
                 "id": 3778,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -2388,7 +2388,7 @@
                 "number": 5,
                 "pos": "rd",
                 "id": 4821,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -2456,7 +2456,7 @@
             {
                 "name": "Nathan Bastian",
                 "number": 11,
-                "pos": "ir5",
+                "pos": "ir4",
                 "id": 3887,
                 "ppUnit": null,
                 "movement": null
@@ -3744,11 +3744,11 @@
     "VGK": {
         "f1": [
             {
-                "name": "Ivan Barbashev",
-                "number": 49,
+                "name": "Mark Stone",
+                "number": 61,
                 "pos": "lw",
-                "id": 2737,
-                "ppUnit": 2,
+                "id": 1779,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -3760,12 +3760,12 @@
                 "movement": null
             },
             {
-                "name": "Mark Stone",
-                "number": 61,
+                "name": "Mitch Marner",
+                "number": 16,
                 "pos": "rw",
-                "id": 1779,
+                "id": 2475,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -3778,12 +3778,12 @@
                 "movement": null
             },
             {
-                "name": "Mitch Marner",
-                "number": 16,
+                "name": "Ivan Barbashev",
+                "number": 49,
                 "pos": "c",
-                "id": 2475,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2737,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Pavel Dorofeyev",
@@ -3812,12 +3812,12 @@
                 "movement": null
             },
             {
-                "name": "Colton Sissons",
-                "number": 10,
+                "name": "Keegan Kolesar",
+                "number": 55,
                 "pos": "rw",
-                "id": 2030,
+                "id": 3790,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -3830,18 +3830,18 @@
                 "movement": null
             },
             {
-                "name": "Nic Dowd",
-                "number": 26,
+                "name": "Colton Sissons",
+                "number": 10,
                 "pos": "c",
-                "id": 2607,
+                "id": 2030,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Keegan Kolesar",
-                "number": 55,
+                "name": "Nic Dowd",
+                "number": 26,
                 "pos": "rw",
-                "id": 3790,
+                "id": 2607,
                 "ppUnit": null,
                 "movement": null
             }
@@ -4860,11 +4860,19 @@
     "DET": {
         "f1": [
             {
+                "name": "Carter Mazur",
+                "number": 43,
+                "pos": "lw",
+                "id": 34532,
+                "ppUnit": null,
+                "movement": "up"
+            },
+            {
                 "name": "Emmitt Finnie",
                 "number": null,
-                "pos": "lw",
+                "pos": "c",
                 "id": 33612,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -4890,7 +4898,7 @@
                 "number": 18,
                 "pos": "c",
                 "id": 2457,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -4903,14 +4911,6 @@
             }
         ],
         "f3": [
-            {
-                "name": "Carter Mazur",
-                "number": 43,
-                "pos": "lw",
-                "id": 34532,
-                "ppUnit": null,
-                "movement": null
-            },
             {
                 "name": "J.T. Compher",
                 "number": 37,
@@ -4942,7 +4942,7 @@
                 "number": null,
                 "pos": "c",
                 "id": 36364,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -4950,7 +4950,7 @@
                 "number": null,
                 "pos": "rw",
                 "id": 38141,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -5070,7 +5070,7 @@
                 "number": 24,
                 "pos": "lw",
                 "id": 29846,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -5086,7 +5086,7 @@
                 "number": null,
                 "pos": "rw",
                 "id": 2568,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -5130,7 +5130,7 @@
                 "number": 42,
                 "pos": "c",
                 "id": 34399,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -5138,7 +5138,7 @@
                 "number": 14,
                 "pos": "rw",
                 "id": 3922,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -5664,7 +5664,7 @@
                 "number": 32,
                 "pos": "lw",
                 "id": 38357,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -5698,7 +5698,7 @@
                 "number": 79,
                 "pos": "c",
                 "id": 29210,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -5742,7 +5742,7 @@
                 "number": 54,
                 "pos": "rd",
                 "id": 36387,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -5898,7 +5898,7 @@
                 "number": null,
                 "pos": "c",
                 "id": 30989,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
