@@ -50,30 +50,40 @@ export default function H2HGameLog({ games, t1, t2, c1, c2, teamsMap }: H2HGameL
 
           return (
             <div key={i} className="flex items-center gap-1.5 text-xs py-1 px-1.5 rounded bg-white/[0.02]">
-              <span className="text-neutral-500 w-14 shrink-0">
+              <span className="text-neutral-500 w-12 shrink-0">
                 {new Date(g.gameDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
-              <div className="flex items-center gap-0.5 flex-1 justify-end">
-                <img src={`/logos/${g.awayTeam}.svg`} alt={g.awayTeam} className="w-3.5 h-3.5" />
-                <span className="text-neutral-400 w-6">{g.awayTeam}</span>
+              {/* Away team */}
+              <div className="flex items-center gap-1 flex-1 justify-end">
+                <div className="text-right">
+                  <div className="flex items-center gap-0.5 justify-end">
+                    <span className="text-neutral-400">{g.awayTeam}</span>
+                    <img src={`/logos/${g.awayTeam}.svg`} alt={g.awayTeam} className="w-3.5 h-3.5" />
+                  </div>
+                  {g.awayGoalie && <div className="text-[10px] text-neutral-600">{g.awayGoalie.split(' ').slice(-1)[0]}</div>}
+                </div>
               </div>
-              <div className="flex items-center gap-0.5 w-14 justify-center">
-                <span className={`text-sm font-bold ${!homeWon ? 'text-white' : 'text-neutral-500'}`} style={!homeWon ? { color: awayColor } : {}}>
+              {/* Score */}
+              <div className="flex items-center gap-0.5 w-12 justify-center shrink-0">
+                <span className={`text-sm font-bold`} style={{ color: !homeWon ? awayColor : '#4b5563' }}>
                   {g.awayGoals}
                 </span>
                 <span className="text-neutral-600">–</span>
-                <span className={`text-sm font-bold ${homeWon ? 'text-white' : 'text-neutral-500'}`} style={homeWon ? { color: homeColor } : {}}>
+                <span className={`text-sm font-bold`} style={{ color: homeWon ? homeColor : '#4b5563' }}>
                   {g.homeGoals}
                 </span>
-                {isOT && <span className="text-[10px] text-neutral-600">{g.result.includes('SO') ? 'SO' : 'OT'}</span>}
+                {isOT && <span className="text-[10px] text-neutral-600 ml-0.5">{g.result.includes('SO') ? 'SO' : 'OT'}</span>}
               </div>
-              <div className="flex items-center gap-0.5 flex-1">
-                <span className="text-neutral-400 w-6">{g.homeTeam}</span>
-                <img src={`/logos/${g.homeTeam}.svg`} alt={g.homeTeam} className="w-3.5 h-3.5" />
+              {/* Home team */}
+              <div className="flex items-center gap-1 flex-1">
+                <div>
+                  <div className="flex items-center gap-0.5">
+                    <img src={`/logos/${g.homeTeam}.svg`} alt={g.homeTeam} className="w-3.5 h-3.5" />
+                    <span className="text-neutral-400">{g.homeTeam}</span>
+                  </div>
+                  {g.homeGoalie && <div className="text-[10px] text-neutral-600">{g.homeGoalie.split(' ').slice(-1)[0]}</div>}
+                </div>
               </div>
-              <span className="text-neutral-500 text-[10px] w-20 text-right truncate">
-                {g.awayGoalie?.split(' ').pop()} / {g.homeGoalie?.split(' ').pop()}
-              </span>
             </div>
           );
         })}

@@ -70,7 +70,7 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
                   {vegasOdds1 > 0 ? '+' : ''}{vegasOdds1}
                 </div>
                 <div className="text-xs text-neutral-500">
-                  {vegasImplied1 != null ? `${(vegasImplied1 * 100).toFixed(0)}%` : ''}
+                  {vegasImplied1 != null ? `${(vegasImplied1 * 100).toFixed(1)}%` : ''}
                 </div>
               </div>
               <div className="text-xs text-neutral-600">vs</div>
@@ -79,7 +79,7 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
                   {vegasOdds2 > 0 ? '+' : ''}{vegasOdds2}
                 </div>
                 <div className="text-xs text-neutral-500">
-                  {vegasImplied2 != null ? `${(vegasImplied2 * 100).toFixed(0)}%` : ''}
+                  {vegasImplied2 != null ? `${(vegasImplied2 * 100).toFixed(1)}%` : ''}
                 </div>
               </div>
             </div>
@@ -103,9 +103,9 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
               {(() => {
                 const ev1 = (modelBreak.hw / 100) - (vegasImplied1 ?? 0);
                 return ev1 > 0 ? (
-                  <div className="text-sm font-bold text-emerald-400">+{(ev1 * 100).toFixed(0)}% EV</div>
+                  <div className="text-sm font-bold text-emerald-400">+{(ev1 * 100).toFixed(1)}% EV</div>
                 ) : (
-                  <div className="text-sm text-neutral-600">{(ev1 * 100).toFixed(0)}% EV</div>
+                  <div className="text-sm text-neutral-600">{(ev1 * 100).toFixed(1)}% EV</div>
                 );
               })()}
             </div>
@@ -117,9 +117,9 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
               {(() => {
                 const ev2 = (modelBreak.lw / 100) - (vegasImplied2 ?? 0);
                 return ev2 > 0 ? (
-                  <div className="text-sm font-bold text-emerald-400">+{(ev2 * 100).toFixed(0)}% EV</div>
+                  <div className="text-sm font-bold text-emerald-400">+{(ev2 * 100).toFixed(1)}% EV</div>
                 ) : (
-                  <div className="text-sm text-neutral-600">{(ev2 * 100).toFixed(0)}% EV</div>
+                  <div className="text-sm text-neutral-600">{(ev2 * 100).toFixed(1)}% EV</div>
                 );
               })()}
             </div>
@@ -135,7 +135,7 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
           {/* Overall bar */}
           <div className="flex items-center gap-2 mb-3">
             <span className="text-base font-black w-12 text-right tabular-nums" style={{ color: c1 }}>
-              {modelBreak.hw.toFixed(0)}%
+              {modelBreak.hw.toFixed(1)}%
             </span>
             <div className="flex-1 h-5 rounded-full overflow-hidden bg-white/5 flex">
               <div
@@ -148,7 +148,7 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
               />
             </div>
             <span className="text-base font-black w-12 tabular-nums" style={{ color: c2 }}>
-              {modelBreak.lw.toFixed(0)}%
+              {modelBreak.lw.toFixed(1)}%
             </span>
           </div>
 
@@ -170,9 +170,9 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
                     />
                   </div>
                   <div className="text-xs font-mono font-semibold mt-1">
-                    <span style={{ color: c1 }}>{bar.h.toFixed(0)}%</span>
+                    <span style={{ color: c1 }}>{bar.h.toFixed(1)}%</span>
                     <span className="text-neutral-600"> / </span>
-                    <span style={{ color: c2 }}>{bar.l.toFixed(0)}%</span>
+                    <span style={{ color: c2 }}>{bar.l.toFixed(1)}%</span>
                   </div>
                 </div>
               );

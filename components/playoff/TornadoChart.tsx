@@ -31,23 +31,36 @@ const STATS: StatDef[] = [
   { key: 'pentaken', label: 'Pen Taken/60', field: 'penalties_taken_per_60', higherBetter: false, format: v => v.toFixed(2) },
 ];
 
+function ordinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
+}
+
 export default function TornadoChart({ t1, t2, c1, c2, name1, name2, ratings, triToCommon }: TornadoChartProps) {
-  // Compute percentiles for all 32 teams on each stat
-  const percentiles = useMemo(() => {
+  // Compute percentiles and ranks for all teams on each stat
+  const { percentiles, ranks, totalTeams } = useMemo(() => {
     const allTeams = Object.entries(ratings).map(([name, r]) => ({ name, ...r }));
-    const result: Record<string, Record<string, number>> = {};
+    const pct: Record<string, Record<string, number>> = {};
+    const rnk: Record<string, Record<string, number>> = {};
+    const n = allTeams.length;
 
     STATS.forEach(stat => {
       const values = allTeams.map(t => ({ name: t.name, val: (t as any)[stat.field] as number }));
-      // Sort: for higherBetter, higher rank = higher percentile; for lowerBetter, lower value = higher percentile
-      values.sort((a, b) => stat.higherBetter ? a.val - b.val : b.val - a.val);
+      // Sort best → worst for rank (rank 1 = best)
+      values.sort((a, b) => stat.higherBetter ? b.val - a.val : a.val - b.val);
       values.forEach((v, i) => {
-        if (!result[v.name]) result[v.name] = {};
-        result[v.name][stat.key] = (i / (values.length - 1)) * 100;
+        if (!pct[v.name]) pct[v.name] = {};
+        if (!rnk[v.name]) rnk[v.name] = {};
+        // percentile: for bar sizing, still rank ascending
+        pct[v.name][stat.key] = stat.higherBetter
+          ? ((n - 1 - i) / (n - 1)) * 100
+          : (i / (n - 1)) * 100;
+        rnk[v.name][stat.key] = i + 1;
       });
     });
 
-    return result;
+    return { percentiles: pct, ranks: rnk, totalTeams: n };
   }, [ratings]);
 
   const r1 = ratings[name1];
@@ -78,16 +91,23 @@ export default function TornadoChart({ t1, t2, c1, c2, name1, name2, ratings, tr
           const val2 = (r2 as any)[stat.field] as number;
           const pct1 = percentiles[name1]?.[stat.key] ?? 50;
           const pct2 = percentiles[name2]?.[stat.key] ?? 50;
+          const rank1 = ranks[name1]?.[stat.key];
+          const rank2 = ranks[name2]?.[stat.key];
           const t1Better = pct1 > pct2;
 
           return (
             <div key={stat.key}>
               <div className="text-xs text-neutral-500 text-center mb-0.5">{stat.label}</div>
               <div className="flex items-center gap-1">
-                {/* Left value */}
-                <span className={`text-xs w-12 text-right font-mono ${t1Better ? 'text-white font-bold' : 'text-neutral-500'}`}>
-                  {stat.format(val1)}
-                </span>
+                {/* Left value + rank */}
+                <div className="w-14 text-right">
+                  <span className={`text-xs font-mono ${t1Better ? 'text-white font-bold' : 'text-neutral-500'}`}>
+                    {stat.format(val1)}
+                  </span>
+                  {rank1 != null && (
+                    <div className="text-[9px] text-neutral-600 tabular-nums">{ordinal(rank1)}/{totalTeams}</div>
+                  )}
+                </div>
 
                 {/* Left bar (t1) */}
                 <div className="flex-1 flex justify-end">
@@ -120,10 +140,15 @@ export default function TornadoChart({ t1, t2, c1, c2, name1, name2, ratings, tr
                   </div>
                 </div>
 
-                {/* Right value */}
-                <span className={`text-xs w-12 text-left font-mono ${!t1Better ? 'text-white font-bold' : 'text-neutral-500'}`}>
-                  {stat.format(val2)}
-                </span>
+                {/* Right value + rank */}
+                <div className="w-14">
+                  <span className={`text-xs font-mono ${!t1Better ? 'text-white font-bold' : 'text-neutral-500'}`}>
+                    {stat.format(val2)}
+                  </span>
+                  {rank2 != null && (
+                    <div className="text-[9px] text-neutral-600 tabular-nums">{ordinal(rank2)}/{totalTeams}</div>
+                  )}
+                </div>
               </div>
             </div>
           );

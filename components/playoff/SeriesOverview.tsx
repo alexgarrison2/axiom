@@ -8,6 +8,7 @@ import SeriesOdds from './SeriesOdds';
 import LineupGrid from '@/components/LineupGrid';
 import { teamColor } from './PlayoffHub';
 import type { PlayoffSeries, TeamInfo, TeamRatings, H2HGame } from '@/app/new/page';
+import type { GamePrediction } from '@/utils/data';
 
 interface SeriesOverviewProps {
   series: PlayoffSeries;
@@ -18,6 +19,7 @@ interface SeriesOverviewProps {
   lineups: Record<string, any>;
   playerNews: Record<string, any[]>;
   playoffPlayerNews: Record<string, any[]>;
+  prediction?: GamePrediction;
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
@@ -28,7 +30,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews }: SeriesOverviewProps) {
+export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, prediction }: SeriesOverviewProps) {
   const t1 = series.higherSeed.triCode;
   const t2 = series.lowerSeed.triCode;
   const c1 = teamColor(t1, teamsMap);
@@ -89,25 +91,39 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
       </div>
 
       {/* Lineups — using real LineupGrid component */}
-      <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-2xl p-3">
-        <SectionHeader>Projected Lineups</SectionHeader>
-        <div className="space-y-3">
-          <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <img src={`/logos/${t1}.svg`} alt={t1} className="w-4 h-4" />
-              <span className="text-xs font-semibold" style={{ color: c1 }}>{name1}</span>
+      {(() => {
+        // Determine which triCode is home/away in the prediction so goalie assignment is correct
+        const homeIst1 = prediction?.homeTeam?.triCode === t1;
+        const t1Goalie = homeIst1 ? prediction?.homeStarter : prediction?.awayStarter;
+        const t2Goalie = homeIst1 ? prediction?.awayStarter : prediction?.homeStarter;
+        const t1GoalieStats = homeIst1 ? prediction?.home_goalie_stats : prediction?.away_goalie_stats;
+        const t2GoalieStats = homeIst1 ? prediction?.away_goalie_stats : prediction?.home_goalie_stats;
+        const t1Gsax = homeIst1 ? prediction?.home_gsax : prediction?.away_gsax;
+        const t2Gsax = homeIst1 ? prediction?.away_gsax : prediction?.home_gsax;
+        const t1GsaxPct = homeIst1 ? prediction?.home_gsax_pct : prediction?.away_gsax_pct;
+        const t2GsaxPct = homeIst1 ? prediction?.away_gsax_pct : prediction?.home_gsax_pct;
+        return (
+          <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+            <SectionHeader>Projected Lineups</SectionHeader>
+            <div className="space-y-3">
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <img src={`/logos/${t1}.svg`} alt={t1} className="w-4 h-4" />
+                  <span className="text-xs font-semibold" style={{ color: c1 }}>{name1}</span>
+                </div>
+                <LineupGrid lineup={lineups[t1]} triCode={t1} goalieStarter={t1Goalie} gsaxPerGame={t1Gsax} gsaxPct={t1GsaxPct} goalieStatLine={t1GoalieStats} />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <img src={`/logos/${t2}.svg`} alt={t2} className="w-4 h-4" />
+                  <span className="text-xs font-semibold" style={{ color: c2 }}>{name2}</span>
+                </div>
+                <LineupGrid lineup={lineups[t2]} triCode={t2} goalieStarter={t2Goalie} gsaxPerGame={t2Gsax} gsaxPct={t2GsaxPct} goalieStatLine={t2GoalieStats} />
+              </div>
             </div>
-            <LineupGrid lineup={lineups[t1]} triCode={t1} />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <img src={`/logos/${t2}.svg`} alt={t2} className="w-4 h-4" />
-              <span className="text-xs font-semibold" style={{ color: c2 }}>{name2}</span>
-            </div>
-            <LineupGrid lineup={lineups[t2]} triCode={t2} />
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Team News */}
       <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-2xl p-3">

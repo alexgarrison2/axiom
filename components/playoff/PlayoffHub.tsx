@@ -12,7 +12,7 @@ import type { GamePrediction } from '@/utils/data';
 const VIVID: Record<string, string> = {
   EDM:'#FF4C00', WPG:'#5b8ee8', TOR:'#5b8ee8', TBL:'#3278d4',
   VAN:'#00943D', LAK:'#A8AEB5', SEA:'#7de0de', STL:'#5b8ee8',
-  BUF:'#FCB514', PIT:'#FCB514', CBJ:'#CE1126', WSH:'#C8102E',
+  BUF:'#0066CC', PIT:'#FCB514', CBJ:'#CE1126', WSH:'#C8102E',
   NJD:'#CE1126', DET:'#CE1126', MIN:'#3a8f5a', COL:'#9B4060',
   NYR:'#0083C6', PHI:'#F74902', CAR:'#CE1126', FLA:'#C8102E',
   OTT:'#e21219', BOS:'#FCB514', CGY:'#D2001C', VGK:'#B4975A',
@@ -158,6 +158,7 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
                   lineups={lineups}
                   playerNews={playerNews}
                   playoffPlayerNews={playoffPlayerNews}
+                  prediction={prediction}
                 />
               </div>
             </motion.div>
