@@ -1,160 +1,339 @@
 {
-    "COL": [
-        {
-            "player": "Martin Necas",
-            "news": "Necas (rest) will be out vs. Seattle on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:56:29.503Z"
-        },
-        {
-            "player": "Scott Wedgewood",
-            "news": "Wedgewood will start vs. Seattle on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:39:30.066Z"
-        },
-        {
-            "player": "Jason Polin",
-            "news": "Polin has been recalled from the Colorado Eagles (AHL). ",
-            "category": "Call Up",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T15:19:02.170Z"
-        },
-        {
-            "player": "Alex Barr\u00e9-Boulet",
-            "news": "Barre-Boulet has been recalled from the Colorado Eagles (AHL). ",
-            "category": "Call Up",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T15:18:30.368Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Quinn Hughes",
-            "news": "Hughes (illness) missed practice on Friday and is hopeful to be ready to return for Minnesota's first playoff game on Saturday. ",
-            "category": "Injury",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:52:00.425Z"
-        }
-    ],
-    "CGY": [
-        {
-            "player": "Zach Whitecloud",
-            "news": "Whitecloud (upper-body) is expected to play vs. Los Angeles after leaving last game early. ",
-            "category": "Injury",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:34:48.290Z"
-        },
-        {
-            "player": "Tyson Gross",
-            "news": "Gross is expected to be a healthy scratch vs. Los Angeles on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:34:13.698Z"
-        },
-        {
-            "player": "Matt Coronato",
-            "news": "Coronato (undisclosed) is expected to draw back into Calgary's lineup vs. Los Angeles. ",
-            "category": "Injury",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:33:40.610Z"
-        },
-        {
-            "player": "Arsenii Sergeev",
-            "news": "Sergeev is in the starter's crease at Calgary's morning skate on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:20:30.208Z"
-        },
-        {
-            "player": "Arsenii Sergeev",
-            "news": "Sergeev has been recalled from the Calgary Wranglers (AHL). ",
-            "category": "Call Up",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:02:22.835Z"
-        },
-        {
-            "player": "Devin Cooley",
-            "news": "Cooley (illness) will be out vs. Los Angeles on Thursday. ",
-            "category": "Injury",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:02:01.906Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Connor Ingram",
-            "news": "Ingram will start vs. Vancouver on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:10:50.600Z"
-        }
-    ],
-    "NSH": [
-        {
-            "player": "Cole O'Hara",
-            "news": "O'Hara is expected to make his NHL debut vs. Anaheim on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:08:06.139Z"
-        },
-        {
-            "player": "Aiden Fink",
-            "news": "Fink is expected to make his NHL debut vs. Anaheim on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:07:45.205Z"
-        }
-    ],
-    "TBL": [
-        {
-            "player": "Brandon Halverson",
-            "news": "Halverson has been reassigned to Syracuse (AHL). ",
-            "category": "Send Down",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:03:57.144Z"
-        }
-    ],
-    "PIT": [
-        {
-            "player": "Connor Dewar",
-            "news": "Dewar (lower-body) returned to practice in a full contact jersey on Thursday. ",
-            "category": "Injury",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T15:06:10.414Z"
-        },
-        {
-            "player": "Blake Lizotte",
-            "news": "Lizotte (upper-body) returned to practice in a regular jersey on Thursday. ",
-            "category": "Injury",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T15:05:45.081Z"
-        }
-    ],
-    "CBJ": [
-        {
-            "player": "Luca Del Bel Belluz",
-            "news": "Del Bel Belluz has been loaned to Cleveland (AHL). ",
-            "category": "Send Down",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T15:05:11.651Z"
-        },
-        {
-            "player": "Zach Aston-Reese",
-            "news": "Aston-Reese has been loaned to Cleveland (AHL). ",
-            "category": "Send Down",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T15:04:47.699Z"
-        }
-    ],
-    "SEA": [
-        {
-            "player": "Nikke Kokko",
-            "news": "Kokko will start in Vegas on Wednesday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-15",
-            "timestamp": "2026-04-16T01:31:42.512Z"
-        }
-    ]
+  "COL": [
+    {
+      "player": "Martin Necas",
+      "news": "Necas (rest) will be out vs. Seattle on Thursday. ",
+      "category": "Line Change",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:56:29.503Z"
+    },
+    {
+      "player": "Necas, Necas",
+      "news": "\u274cMartin Necas (rest) is out vs. SEA on Thursday. #GoAvsGo\n\n*More expected to come.",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:56:00+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044822125941248387"
+    },
+    {
+      "player": "Scott Wedgewood",
+      "news": "Wedgewood will start vs. Seattle on Thursday. ",
+      "category": "Goalie Start",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:39:30.066Z"
+    },
+    {
+      "player": "Jason Polin",
+      "news": "Polin has been recalled from the Colorado Eagles (AHL). ",
+      "category": "Call Up",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:19:02.170Z"
+    },
+    {
+      "player": "Alex Barr\u00e9-Boulet",
+      "news": "Barre-Boulet has been recalled from the Colorado Eagles (AHL). ",
+      "category": "Call Up",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:18:30.368Z"
+    },
+    {
+      "player": "Team Update",
+      "news": "We have recalled Jason Polin and Alex Barre-Boulet from the Colorado Eagles.",
+      "category": "Line Change",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:17:36+00:00",
+      "source": "X/@DFOFantasy (via @Avalanche)",
+      "tweet_id": "2044797362611310611"
+    }
+  ],
+  "MIN": [
+    {
+      "player": "Quinn Hughes",
+      "news": "Hughes (illness) missed practice on Friday and is hopeful to be ready to return for Minnesota's first playoff game on Saturday. ",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:52:00.425Z"
+    },
+    {
+      "player": "Team Update",
+      "news": "\u274cQuinn Hughes (llness) missed practice on Thursday and is hopeful to be ready for Game 1 vs. DAL on Saturday. #mnwild",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:51:25+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044820972750918056"
+    }
+  ],
+  "CGY": [
+    {
+      "player": "Zach Whitecloud",
+      "news": "Whitecloud (upper-body) is expected to play vs. Los Angeles after leaving last game early. ",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:34:48.290Z"
+    },
+    {
+      "player": "Tyson Gross",
+      "news": "Gross is expected to be a healthy scratch vs. Los Angeles on Thursday. ",
+      "category": "Line Change",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:34:13.698Z"
+    },
+    {
+      "player": "Matt Coronato",
+      "news": "Coronato (undisclosed) is expected to draw back into Calgary's lineup vs. Los Angeles. ",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:33:40.610Z"
+    },
+    {
+      "player": "Arsenii Sergeev",
+      "news": "Sergeev is in the starter's crease at Calgary's morning skate on Thursday. ",
+      "category": "Goalie Start",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:20:30.208Z"
+    },
+    {
+      "player": "Arsenii Sergeev",
+      "news": "Sergeev has been recalled from the Calgary Wranglers (AHL). ",
+      "category": "Call Up",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:02:22.835Z"
+    },
+    {
+      "player": "Devin Cooley",
+      "news": "Cooley (illness) will be out vs. Los Angeles on Thursday. ",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:02:01.906Z"
+    }
+  ],
+  "EDM": [
+    {
+      "player": "Connor Ingram",
+      "news": "Ingram will start vs. Vancouver on Thursday. ",
+      "category": "Goalie Start",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:10:50.600Z"
+    }
+  ],
+  "NSH": [
+    {
+      "player": "Cole O'Hara",
+      "news": "O'Hara is expected to make his NHL debut vs. Anaheim on Thursday. ",
+      "category": "Line Change",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:08:06.139Z"
+    },
+    {
+      "player": "Aiden Fink",
+      "news": "Fink is expected to make his NHL debut vs. Anaheim on Thursday. ",
+      "category": "Line Change",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:07:45.205Z"
+    }
+  ],
+  "TBL": [
+    {
+      "player": "Brandon Halverson",
+      "news": "Halverson has been reassigned to Syracuse (AHL). ",
+      "category": "Send Down",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:03:57.144Z"
+    }
+  ],
+  "PIT": [
+    {
+      "player": "Connor Dewar",
+      "news": "Dewar (lower-body) returned to practice in a full contact jersey on Thursday. ",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:06:10.414Z"
+    },
+    {
+      "player": "Blake Lizotte",
+      "news": "Lizotte (upper-body) returned to practice in a regular jersey on Thursday. ",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:05:45.081Z"
+    }
+  ],
+  "CBJ": [
+    {
+      "player": "Luca Del Bel Belluz",
+      "news": "Del Bel Belluz has been loaned to Cleveland (AHL). ",
+      "category": "Send Down",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:05:11.651Z"
+    },
+    {
+      "player": "Zach Aston-Reese",
+      "news": "Aston-Reese has been loaned to Cleveland (AHL). ",
+      "category": "Send Down",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:04:47.699Z"
+    }
+  ],
+  "SEA": [
+    {
+      "player": "Nikke Kokko",
+      "news": "Kokko will start in Vegas on Wednesday. ",
+      "category": "Goalie Start",
+      "date": "2026-04-15",
+      "timestamp": "2026-04-16T01:31:42.512Z"
+    }
+  ],
+  "CAR": [
+    {
+      "player": "Brind, Brind",
+      "news": "Rod Brind'Amour isn't ready to name a Game 1 goalie just yet.\n\nHe said there's a likelihood we see both Freddie Andersen and Brandon Bussi in the series.\n\n\"They both played really well down the stretch.\"\n\nHe also said Pyotr Kochetkov isn't an option right now, but he is healthy.",
+      "category": "News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T17:06:25+00:00",
+      "source": "X/@DFOFantasy (via @WaltRuff)",
+      "tweet_id": "2044824749210055021"
+    }
+  ],
+  "GENERAL": [
+    {
+      "player": "Team Update",
+      "news": "\ud83e\udd45: Eric Comrie (WPG) \u2705 will start vs. SJS on Thursday. \n\n12-10-1 | 3.00 GAA | .893 SV%",
+      "category": "Goalie News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T17:04:09+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044824177476022534"
+    },
+    {
+      "player": "Team Update",
+      "news": "\ud83e\udd45: Scott Wedgewood (COL) \u2705 will start Game 82 vs. SEA on Thursday. \n\n30-6-6 | 2.07 GAA | .919 SV% | 3 SO",
+      "category": "Goalie News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:40:08+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044818133588889811"
+    },
+    {
+      "player": "Team Update",
+      "news": "#Flames expected lineup changes vs. LAK on Thursday: \n\nIN \u25b2 Matt Coronato (undisclosed) \nOUT \u25bd Tyson Gross\n\n\u2714\ufe0fZach Whitecloud (upper-body) will play after leaving last game early with an injury.",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:32:36+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044816239080403034"
+    },
+    {
+      "player": "Team Update",
+      "news": "\ud83e\udd45: Arsenii Sergeev (CGY) \ud83c\udd7f\ufe0f is expected to make his first career start vs. LAK on Thursday. \n\n*If he starts he will have appeared in the ECHL, AHL and NHL this season.",
+      "category": "Goalie News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:24:01+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044814077390619081"
+    },
+    {
+      "player": "Team Update",
+      "news": "Rick Bowness will return as Columbus' head coach next season.  #CBJ\n\nTook over in January 2026 - posted a 21-11-5 record from there and barely missed the playoffs.",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:14:52+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044811775996985639"
+    },
+    {
+      "player": "Team Update",
+      "news": "\ud83e\udd45: Connor Ingram (EDM) \u2705 will start Game 82 vs. VAN on Thursday. \n\n15-10-3 | 2.65 GAA | .898 SV% | 2 SO",
+      "category": "Goalie News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:11:37+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044810958376255684"
+    },
+    {
+      "player": "Team Update",
+      "news": "Update on the #GoJetsGo goalie situation for Game 82 vs. SJS. \n\n*We will be projecting Comrie for now but will have the confirm around 7:30 PM EST",
+      "category": "News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:57:32+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044807412960432349"
+    },
+    {
+      "player": "Team Update",
+      "news": "\ud83e\udd45: Connor Hellebuyck (WPG) \ud83c\udd7f\ufe0f is expected to start vs. SJS on Thursday. \n\n23-23-11 | 2.86 GAA | .895 SV% | 0 SO",
+      "category": "Goalie News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:31:01+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044800739801702432"
+    },
+    {
+      "player": "Team Update",
+      "news": "We did not get to see Aleksander Barkov this season but this is a great sign for his health in the upcoming 2026-27 campaign\ud83d\udc47",
+      "category": "News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T15:20:24+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044798069254840695"
+    },
+    {
+      "player": "Team Update",
+      "news": "TRANSACTIONS: #CBJ have loaned forwards Zach Aston-Reese and Luca Del Bel Belluz to @monstershockey.\n\nhttps://cbj.co/loan-tw-041626",
+      "category": "News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T14:15:40+00:00",
+      "source": "X/@DFOFantasy (via @BlueJacketsPR)",
+      "tweet_id": "2044781778750087633"
+    },
+    {
+      "player": "Team Update",
+      "news": "#SeaKraken forward Jaden Schwartz will not play tonight due to an upper-body injury.",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T01:28:25+00:00",
+      "source": "X/@DFOFantasy (via @SeattleKrakenPR)",
+      "tweet_id": "2044588693252653244"
+    }
+  ],
+  "VGK": [
+    {
+      "player": "Team Update",
+      "news": "We have (some) of the opening round Playoff Schedule: \n\nSAT (04/18): \n\n3:00 PM EST - OTT @ CAR\n\n5:30 PM EST - MIN @ DAL\n\n8:00 PM EST - PHI @ PIT\n\nSUN (04/19):\n*All times TBD\n\n- Western WC #2 @ COL\n\n- MTL @ TBL\n\n- BOS @ BUF\n\n- UTA @ VGK\n\nMON (04/20):\n- Pacific #3 @ Pacific #2",
+      "category": "News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:44:44+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044819289929089088"
+    }
+  ],
+  "UTA": [
+    {
+      "player": "Cole",
+      "news": "#Smashville is expected to have a pair of players debut vs. ANA on Thursday: \n\n\u2714\ufe0f Aiden Fink (RW) - 2023 7th round pick (218th overall)\n\n\u2714\ufe0f Cole O'Hara (RW) - 2022 4th round pick (114th overall)",
+      "category": "News",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:07:17+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044809867118920000"
+    },
+    {
+      "player": "Cooley",
+      "news": "\u274cDevin Cooley (illness) is out for Game 82 vs. LAK on Thursday. #Flames",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:01:31+00:00",
+      "source": "X/@DFOFantasy (via @DFOFantasy)",
+      "tweet_id": "2044808414711181636"
+    },
+    {
+      "player": "Cooley",
+      "news": "#Flames Roster Update: Goaltender Arsenii Sergeev has been recalled from the @AHLWranglers on an emergency basis.\n\nDevin Cooley is out with illness.",
+      "category": "Injury",
+      "date": "2026-04-16",
+      "timestamp": "2026-04-16T16:00:34+00:00",
+      "source": "X/@DFOFantasy (via @NHLFlames)",
+      "tweet_id": "2044808175837421857"
+    }
+  ]
 }

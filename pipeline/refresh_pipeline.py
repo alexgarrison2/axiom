@@ -484,6 +484,14 @@ def refresh_pipeline():
     except Exception as e:
         print(f"[WARN] Player news fetch failed: {e}")
 
+    # 4g. Fetch @DFOFantasy tweets and merge into playoff news
+    print("Fetching @DFOFantasy tweets...")
+    try:
+        import fetch_dfo_tweets
+        fetch_dfo_tweets.fetch_dfo_tweets()
+    except Exception as e:
+        print(f"[WARN] DFO tweet fetch failed: {e}")
+
     # 5. Fetch Latest Schedule, Goalies, and Odds
     print("Fetching latest Schedule & Goalies...")
     import fetch_upcoming
