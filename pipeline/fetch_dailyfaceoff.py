@@ -222,6 +222,106 @@ def fetch_player_news():
         return {}
 
 
+def fetch_playoff_player_news():
+    print("Fetching Daily Faceoff Playoff Player News (accumulating)...")
+
+    pipeline_dir = os.path.dirname(os.path.abspath(__file__))
+    local_path = os.path.join(pipeline_dir, 'playoff_player_news.json')
+    public_path = os.path.join(pipeline_dir, '..', 'public', 'data', 'playoff_player_news.json')
+
+    # Load existing accumulated data
+    accumulated = {}
+    if os.path.exists(local_path):
+        try:
+            with open(local_path, 'r') as f:
+                accumulated = json.load(f)
+        except Exception:
+            accumulated = {}
+
+    # Build dedup set from existing items
+    existing_sigs = set()
+    for items in accumulated.values():
+        for item in items:
+            sig = f"{item.get('player','')}-{item.get('timestamp', item.get('date',''))}"
+            existing_sigs.add(sig)
+
+    # Use curl to mimic a browser
+    cmd = [
+        'curl',
+        '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
+        'https://www.dailyfaceoff.com/hockey-player-news'
+    ]
+
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        html = result.stdout
+
+        match = re.search(r'<script[^>]*id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL)
+        if not match:
+            print("Could not find __NEXT_DATA__ in HTML.")
+            return accumulated
+
+        data = json.loads(match.group(1))
+        news_items = data.get('props', {}).get('pageProps', {}).get('data', {}).get('data', [])
+        print(f"Found {len(news_items)} news items.")
+
+        new_count = 0
+        for item in news_items:
+            # No date filter — keep all items
+            category = item.get('newsCategoryName', 'Unknown')
+            player_name = item.get('playerName', 'Unknown')
+            details = item.get('details', '')
+            if not details:
+                continue
+            tri_code = item.get('teamAbbreviation')
+            if not tri_code:
+                continue
+
+            news_date = item.get('date', '')
+            timestamp = item.get('createdAt')
+
+            sig = f"{player_name}-{timestamp or news_date}"
+            if sig in existing_sigs:
+                continue
+
+            existing_sigs.add(sig)
+            if tri_code not in accumulated:
+                accumulated[tri_code] = []
+            accumulated[tri_code].append({
+                'player': player_name,
+                'news': details,
+                'category': category,
+                'date': news_date,
+                'timestamp': timestamp,
+            })
+            new_count += 1
+
+        # Sort each team's list by timestamp desc
+        for tri_code in accumulated:
+            accumulated[tri_code].sort(
+                key=lambda x: x.get('timestamp') or x.get('date') or '',
+                reverse=True
+            )
+
+        print(f"Added {new_count} new items. Total teams with news: {len(accumulated)}.")
+
+        with open(local_path, 'w') as f:
+            json.dump(accumulated, f, indent=4)
+
+        # Copy to public/data/
+        public_dir = os.path.dirname(public_path)
+        if os.path.exists(public_dir):
+            with open(public_path, 'w') as f:
+                json.dump(accumulated, f, indent=4)
+            print(f"Copied playoff_player_news.json to public/data/")
+
+        return accumulated
+
+    except Exception as e:
+        print(f"Error fetching playoff player news: {e}")
+        return accumulated
+
+
 def fetch_lineups(teams):
     """
     Fetches lineup data for a list of team info objects (need 'triCode' and 'name'/'slug').

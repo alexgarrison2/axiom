@@ -17,6 +17,7 @@ interface SeriesOverviewProps {
   h2hGames: H2HGame[];
   lineups: Record<string, any>;
   playerNews: Record<string, any[]>;
+  playoffPlayerNews: Record<string, any[]>;
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
@@ -27,7 +28,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews }: SeriesOverviewProps) {
+export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews }: SeriesOverviewProps) {
   const t1 = series.higherSeed.triCode;
   const t2 = series.lowerSeed.triCode;
   const c1 = teamColor(t1, teamsMap);
@@ -111,7 +112,7 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
       {/* Team News */}
       <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-2xl p-3">
         <SectionHeader>Team News</SectionHeader>
-        <TeamNewsSection t1={t1} t2={t2} c1={c1} c2={c2} playerNews={playerNews} teamsMap={teamsMap} />
+        <TeamNewsSection t1={t1} t2={t2} c1={c1} c2={c2} playerNews={playoffPlayerNews} teamsMap={teamsMap} />
       </div>
     </div>
   );
@@ -122,30 +123,113 @@ function TeamNewsSection({ t1, t2, c1, c2, playerNews, teamsMap }: {
   t1: string; t2: string; c1: string; c2: string;
   playerNews: Record<string, any[]>; teamsMap: Record<string, TeamInfo>;
 }) {
-  const news1 = playerNews[t1] ?? [];
-  const news2 = playerNews[t2] ?? [];
+  const [expandedDates, setExpandedDates] = React.useState<Set<string>>(new Set());
 
-  if (news1.length === 0 && news2.length === 0) {
+  // Merge both teams' news, tag with team, sort by timestamp desc
+  const allItems = React.useMemo(() => {
+    const items: any[] = [];
+    for (const [tri, color] of [[t1, c1], [t2, c2]] as [string, string][]) {
+      (playerNews[tri] ?? []).forEach(item => items.push({ ...item, tri, color }));
+    }
+    return items.sort((a, b) => {
+      const ta = a.timestamp ?? a.date ?? '';
+      const tb = b.timestamp ?? b.date ?? '';
+      return tb.localeCompare(ta);
+    });
+  }, [t1, t2, c1, c2, playerNews]);
+
+  if (allItems.length === 0) {
     return <div className="text-xs text-neutral-600 text-center py-2">No recent news</div>;
   }
 
+  // Group by date string (YYYY-MM-DD)
+  const grouped = React.useMemo(() => {
+    const map = new Map<string, any[]>();
+    allItems.forEach(item => {
+      const d = item.date ?? item.timestamp?.slice(0, 10) ?? 'Unknown';
+      if (!map.has(d)) map.set(d, []);
+      map.get(d)!.push(item);
+    });
+    return Array.from(map.entries()); // sorted by date desc (since allItems sorted)
+  }, [allItems]);
+
+  const formatTs = (item: any): string => {
+    if (!item.timestamp) return item.date ?? '';
+    try {
+      return new Date(item.timestamp).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+        hour12: true, timeZone: 'America/Chicago',
+      }).toUpperCase();
+    } catch { return item.date ?? ''; }
+  };
+
+  const formatDateLabel = (d: string): string => {
+    try {
+      const dt = new Date(d + 'T12:00:00');
+      return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
+    } catch { return d; }
+  };
+
   return (
     <div className="space-y-2">
-      {[{ tri: t1, color: c1, news: news1 }, { tri: t2, color: c2, news: news2 }].map(({ tri, color, news }) =>
-        news.length > 0 && (
-          <div key={tri}>
-            <div className="flex items-center gap-1 mb-1">
-              <img src={`/logos/${tri}.svg`} alt={tri} className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-semibold" style={{ color }}>{teamsMap[tri]?.commonName ?? tri}</span>
-            </div>
-            {news.slice(0, 3).map((item: any, i: number) => (
-              <div key={i} className="text-[9px] text-neutral-400 ml-5 mb-0.5">
-                <span className="text-neutral-300">{item.player}</span> — {item.news}
+      {grouped.map(([date, items], gi) => {
+        const isFirst = gi === 0;
+        const isExpanded = isFirst || expandedDates.has(date);
+        return (
+          <div key={date}>
+            {/* Date header with toggle */}
+            <button
+              className="w-full flex items-center gap-2 mb-1 group"
+              onClick={() => {
+                if (isFirst) return; // first group always expanded
+                setExpandedDates(prev => {
+                  const next = new Set(prev);
+                  if (next.has(date)) next.delete(date); else next.add(date);
+                  return next;
+                });
+              }}
+            >
+              <span className="text-[9px] font-mono font-bold text-neutral-500 uppercase tracking-widest">
+                {formatDateLabel(date)}
+              </span>
+              <div className="flex-1 h-px bg-white/5" />
+              {!isFirst && (
+                <span className="text-[9px] font-bold text-neutral-600 group-hover:text-neutral-400 transition-colors w-4 text-center">
+                  {isExpanded ? '−' : '+'}
+                </span>
+              )}
+              {isFirst && (
+                <span className="text-[9px] font-mono text-neutral-600">{items.length}</span>
+              )}
+            </button>
+
+            {/* Items */}
+            {isExpanded && (
+              <div className="space-y-1">
+                {items.map((item, i) => (
+                  <div key={i} className="pl-2 py-1 border-l-2" style={{ borderColor: item.color + '80' }}>
+                    <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                      <img src={`/logos/${item.tri}.svg`} alt={item.tri} className="w-3 h-3" />
+                      <span className="text-[10px] font-semibold text-neutral-300">{item.player}</span>
+                      {item.category && (
+                        <span className={`text-[8px] font-mono font-bold uppercase px-1 rounded border ${
+                          item.category.toLowerCase().includes('injury')
+                            ? 'text-red-400 bg-red-400/10 border-red-400/20'
+                            : 'text-blue-400 bg-blue-400/10 border-blue-400/20'
+                        }`}>
+                          {item.category}
+                        </span>
+                      )}
+                      <span className="ml-auto text-[9px] text-neutral-600 font-mono">{formatTs(item)}</span>
+                    </div>
+                    <p className="text-[9px] text-neutral-400 leading-snug ml-4.5">{item.news}</p>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )
-      )}
+        );
+      })}
     </div>
   );
 }

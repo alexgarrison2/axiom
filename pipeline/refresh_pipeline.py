@@ -475,6 +475,15 @@ def refresh_pipeline():
     except Exception as e:
         print(f"[WARN] Player impact calculation failed: {e}")
 
+    # 4f. Fetch today's player news (overwrites) and accumulate playoff news
+    print("Fetching player news...")
+    try:
+        import fetch_dailyfaceoff
+        fetch_dailyfaceoff.fetch_player_news()
+        fetch_dailyfaceoff.fetch_playoff_player_news()
+    except Exception as e:
+        print(f"[WARN] Player news fetch failed: {e}")
+
     # 5. Fetch Latest Schedule, Goalies, and Odds
     print("Fetching latest Schedule & Goalies...")
     import fetch_upcoming
