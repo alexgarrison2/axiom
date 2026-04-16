@@ -23,6 +23,7 @@ interface MatchupCardProps {
     isUltraCompact?: boolean;
     implications?: GameImplication | null;
     history?: HistoryEntry[];
+    defaultExpanded?: boolean;
 }
 
 // --- Pick Form helpers ---
@@ -84,7 +85,7 @@ function PickDotsAndStats({ entries, isMobile = false }: { entries: PickEntry[];
     );
 }
 
-const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false, isUltraCompact = false, implications, history = [] }) => {
+const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false, isUltraCompact = false, implications, history = [], defaultExpanded = false }) => {
     const {
         homeTeam,
         awayTeam,
@@ -120,7 +121,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     const cardRef = useRef<HTMLDivElement>(null);
     const desktopCardRef = useRef<HTMLDivElement>(null); // Ref for desktop card
     const [isExpanded, setIsExpanded] = useState(false);
-    const [isDesktopExpanded, setIsDesktopExpanded] = useState(false); // New state for desktop
+    const [isDesktopExpanded, setIsDesktopExpanded] = useState(defaultExpanded); // New state for desktop
     // Fixed-position tooltip for HOME/ROAD location pill
     const [locationTooltip, setLocationTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
     const { isAdmin } = useAdmin();
@@ -1502,7 +1503,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         <div className="flex-1 pr-6 flex flex-col gap-6">
                             <TeamNavButtons triCode={awayTeam.triCode} />
                             <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} currentStarter={awayStarter} />
-                            <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} />
+                            <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} goalieStatLine={prediction.away_goalie_stats} />
                             <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                         </div>
 
@@ -1513,7 +1514,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         <div className="flex-1 pl-6 flex flex-col gap-6">
                             <TeamNavButtons triCode={homeTeam.triCode} justify="end" />
                             <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} currentStarter={homeStarter} />
-                            <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} />
+                            <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} goalieStatLine={prediction.home_goalie_stats} />
                             <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                         </div>
                     </div>
@@ -1938,7 +1939,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} currentStarter={awayStarter} />
-                                    <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} />
+                                    <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} goalieStatLine={prediction.away_goalie_stats} />
                                     <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                                 </div>
                             </div>
@@ -1949,7 +1950,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} currentStarter={homeStarter} />
-                                    <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} />
+                                    <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} goalieStatLine={prediction.home_goalie_stats} />
                                     <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                                 </div>
                             </div>

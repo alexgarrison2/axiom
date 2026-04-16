@@ -11,6 +11,7 @@ interface LineupGridProps {
     goalieStarter?: string;   // projected starter full name
     gsaxPerGame?: number;     // GSAx per game (positive = above avg)
     gsaxPct?: number;         // percentile rank among NHL starters (0–100)
+    goalieStatLine?: string;  // pre-formatted stats string, e.g. "(31-12-3) | .914 | 2.30"
 }
 
 // ── Player impact data types ───────────────────────────────────────────────────
@@ -64,6 +65,14 @@ function goalieColor(gsax: number): string {
     if (gsax >= 0.05) return '#22c55e';
     if (gsax > -0.05) return '#6b7280';
     if (gsax > -0.15) return '#f97316';
+    return '#ef4444';
+}
+
+function playerImpactColor(z: number): string {
+    if (z >= 1.0) return '#3b82f6';
+    if (z >= 0.3) return '#38bdf8';
+    if (z >= -0.3) return '#6b7280';
+    if (z >= -1.0) return '#f97316';
     return '#ef4444';
 }
 
@@ -286,7 +295,7 @@ function lookupInMap(m: Map<string, number>, name: string): number | undefined {
 
 // ── Main grid ─────────────────────────────────────────────────────────────────
 export default function LineupGrid({
-    lineup, triCode, goalieStarter, gsaxPerGame, gsaxPct,
+    lineup, triCode, goalieStarter, gsaxPerGame, gsaxPct, goalieStatLine,
 }: LineupGridProps) {
     // ── Hooks (must precede any early returns per Rules of Hooks) ─────────────
     const [piData, setPiData] = useState<PiData | null>(null);
@@ -569,22 +578,30 @@ export default function LineupGrid({
                         <div key={i} className={`grid grid-cols-3 ${showImp ? 'md:grid-cols-[1fr_1fr_1fr_3.5rem]' : ''} ${i !== forwards.length - 1 ? 'border-b border-white/5' : ''}`}>
                             {[0, 1, 2].map(colIndex => {
                                 const player = line[colIndex];
+                                const playerScore = player ? lookupInMap(impactScoreMap, player.name) : undefined;
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-x border-white/5' : ''}`}>
-                                        <div className="flex items-center gap-1">
-                                            {player?.movement === 'up' && <ArrowUp className="w-3 h-3 text-green-500" strokeWidth={3} />}
-                                            {player?.movement === 'down' && <ArrowDown className="w-3 h-3 text-red-500" strokeWidth={3} />}
-                                            {player?.movement === 'new' && <Plus className="w-3 h-3 text-orange-500" strokeWidth={3} />}
-                                            <span
-                                                className="text-[10px] leading-tight select-none"
-                                                style={{
-                                                    color: player?.ppUnit === 1 ? '#5382BD' :
-                                                        player?.ppUnit === 2 ? '#FFFFFF' : '#697281',
-                                                    fontWeight: player?.ppUnit === 1 ? 700 : 500,
-                                                }}
-                                            >
-                                                {player ? formatName(player.name) : '-'}
-                                            </span>
+                                        <div className="flex flex-col items-center gap-0">
+                                            <div className="flex items-center gap-1">
+                                                {player?.movement === 'up' && <ArrowUp className="w-3 h-3 text-green-500" strokeWidth={3} />}
+                                                {player?.movement === 'down' && <ArrowDown className="w-3 h-3 text-red-500" strokeWidth={3} />}
+                                                {player?.movement === 'new' && <Plus className="w-3 h-3 text-orange-500" strokeWidth={3} />}
+                                                <span
+                                                    className="text-[10px] leading-tight select-none"
+                                                    style={{
+                                                        color: player?.ppUnit === 1 ? '#5382BD' :
+                                                            player?.ppUnit === 2 ? '#FFFFFF' : '#697281',
+                                                        fontWeight: player?.ppUnit === 1 ? 700 : 500,
+                                                    }}
+                                                >
+                                                    {player ? formatName(player.name) : '-'}
+                                                </span>
+                                            </div>
+                                            {playerScore !== undefined && (
+                                                <span className="text-[8px] tabular-nums leading-none" style={{ color: playerImpactColor(playerScore) }}>
+                                                    {playerScore >= 0 ? '+' : ''}{playerScore.toFixed(2)}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -609,22 +626,30 @@ export default function LineupGrid({
                         <div key={i} className={`grid grid-cols-2 ${showImp ? 'md:grid-cols-[1fr_1fr_3.5rem]' : ''} ${i !== defense.length - 1 ? 'border-b border-white/5' : ''}`}>
                             {[0, 1].map(colIndex => {
                                 const player = pair[colIndex];
+                                const playerScore = player ? lookupInMap(impactScoreMap, player.name) : undefined;
                                 return (
                                     <div key={colIndex} className={`py-1.5 px-1 flex items-center justify-center text-center gap-1 ${colIndex === 1 ? 'border-l border-white/5' : ''}`}>
-                                        <div className="flex items-center gap-1">
-                                            {player?.movement === 'up' && <ArrowUp className="w-3 h-3 text-green-500" strokeWidth={3} />}
-                                            {player?.movement === 'down' && <ArrowDown className="w-3 h-3 text-red-500" strokeWidth={3} />}
-                                            {player?.movement === 'new' && <Plus className="w-3 h-3 text-orange-500" strokeWidth={3} />}
-                                            <span
-                                                className="text-[10px] leading-tight select-none"
-                                                style={{
-                                                    color: player?.ppUnit === 1 ? '#5382BD' :
-                                                        player?.ppUnit === 2 ? '#FFFFFF' : '#697281',
-                                                    fontWeight: player?.ppUnit === 1 ? 700 : 500,
-                                                }}
-                                            >
-                                                {player ? formatName(player.name) : '-'}
-                                            </span>
+                                        <div className="flex flex-col items-center gap-0">
+                                            <div className="flex items-center gap-1">
+                                                {player?.movement === 'up' && <ArrowUp className="w-3 h-3 text-green-500" strokeWidth={3} />}
+                                                {player?.movement === 'down' && <ArrowDown className="w-3 h-3 text-red-500" strokeWidth={3} />}
+                                                {player?.movement === 'new' && <Plus className="w-3 h-3 text-orange-500" strokeWidth={3} />}
+                                                <span
+                                                    className="text-[10px] leading-tight select-none"
+                                                    style={{
+                                                        color: player?.ppUnit === 1 ? '#5382BD' :
+                                                            player?.ppUnit === 2 ? '#FFFFFF' : '#697281',
+                                                        fontWeight: player?.ppUnit === 1 ? 700 : 500,
+                                                    }}
+                                                >
+                                                    {player ? formatName(player.name) : '-'}
+                                                </span>
+                                            </div>
+                                            {playerScore !== undefined && (
+                                                <span className="text-[8px] tabular-nums leading-none" style={{ color: playerImpactColor(playerScore) }}>
+                                                    {playerScore >= 0 ? '+' : ''}{playerScore.toFixed(2)}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -637,6 +662,40 @@ export default function LineupGrid({
                         </div>
                     ))}
                 </div>
+
+                {/* Goalies Section */}
+                {goalieStarter && (() => {
+                    const cleanName = cleanGoalieName(goalieStarter);
+                    const lastName = cleanName.split(' ').pop() ?? cleanName;
+                    const gsaxSign = (gsaxPerGame ?? 0) >= 0 ? '+' : '';
+                    // Parse statLine "(W-L-OT) | .SV% | GAA" → extract SV% and GAA
+                    const statParts = goalieStatLine?.split(' | ') ?? [];
+                    const svPct = statParts.length === 3 ? statParts[1] : undefined;
+                    const gaa = statParts.length === 3 ? statParts[2] : undefined;
+                    const gsaxColor = gsaxPerGame !== undefined ? goalieColor(gsaxPerGame) : '#6b7280';
+                    return (
+                        <div className="border border-white/10 rounded-lg overflow-hidden">
+                            <div className="grid grid-cols-2 bg-white/5 border-b border-white/10">
+                                <div className="py-1 col-span-2 text-center text-[9px] font-bold text-neutral-500 uppercase">Goalies</div>
+                            </div>
+                            <div className="grid grid-cols-2">
+                                <div className="py-2 px-2 flex flex-col items-center gap-0.5">
+                                    <span className="text-[10px] text-neutral-300 font-medium leading-tight">{lastName}</span>
+                                    <div className="flex items-center gap-1 text-[8px] tabular-nums text-neutral-500 leading-none">
+                                        {gsaxPerGame !== undefined && (
+                                            <span style={{ color: gsaxColor }}>{gsaxSign}{gsaxPerGame.toFixed(2)} GSAx</span>
+                                        )}
+                                        {svPct && <><span className="text-neutral-700">|</span><span>{svPct} SV%</span></>}
+                                        {gaa && <><span className="text-neutral-700">|</span><span>{gaa} GAA</span></>}
+                                    </div>
+                                </div>
+                                <div className="py-2 px-2 border-l border-white/5 flex flex-col items-center justify-center">
+                                    <span className="text-[9px] text-neutral-700">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* Out / IR Section — excludes anyone already placed in a lineup slot */}
                 {(() => {

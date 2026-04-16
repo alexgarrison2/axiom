@@ -1,0 +1,387 @@
+import React from 'react';
+import fs from 'fs';
+import path from 'path';
+import Papa from 'papaparse';
+import PlayoffHub from '@/components/playoff/PlayoffHub';
+import type { GamePrediction, RecentGame, TeamLineup } from '@/utils/data';
+
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+
+// Types for the data we load
+export interface PlayoffSeriesGame {
+  gameNumber: number;
+  date: string;
+  startTimeUTC: string;
+  homeTriCode: string;
+  awayTriCode: string;
+  tvNetwork: string;
+  score: [number, number] | null;
+  status: 'scheduled' | 'live' | 'final';
+}
+
+export interface PlayoffSeries {
+  seriesId: string;
+  round: number;
+  conference: string;
+  higherSeed: { triCode: string; seed: string; commonName: string };
+  lowerSeed: { triCode: string; seed: string; commonName: string };
+  seriesScore: [number, number];
+  games: PlayoffSeriesGame[];
+  seriesOdds: Record<string, number>;
+}
+
+export interface TeamInfo {
+  name: string;
+  commonName: string;
+  triCode: string;
+  logoUrl: string;
+  color1: string;
+  color2: string;
+}
+
+export interface H2HGame {
+  gameDate: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeGoals: number;
+  awayGoals: number;
+  homeGoalie: string;
+  awayGoalie: string;
+  result: string;
+  homeSog: number;
+  awaySog: number;
+}
+
+export interface TeamRatings {
+  [teamName: string]: {
+    xgf_rating: number;
+    xga_rating: number;
+    xgf_5v5_rating: number;
+    xga_5v5_rating: number;
+    pp_rating: number;
+    pk_rating: number;
+    pp_xgf_per_opp: number;
+    pk_xga_per_opp: number;
+    penalties_drawn_per_60: number;
+    penalties_taken_per_60: number;
+    games_played: number;
+    xgf_rolling: number;
+    xga_rolling: number;
+  };
+}
+
+// ─── Series probability math (server-side replica) ────────────────────────────
+function fac(n: number): number { let r = 1; for (let i = 2; i <= n; i++) r *= i; return r; }
+function poisson(k: number, l: number) { return (l ** k * Math.exp(-l)) / fac(k); }
+
+function computeWinProb(
+  hXgf5: number, hXga5: number, hPp: number, hPk: number, hPenDrw: number, hPenTkn: number, hGoalie: number,
+  aXgf5: number, aXga5: number, aPp: number, aPk: number, aPenDrw: number, aPenTkn: number, aGoalie: number,
+): number {
+  const AVG = 2.35, HI = 0.16, ST = 0.18;
+  const h5 = (hXgf5 * aXga5) / AVG;
+  const a5 = (aXgf5 * hXga5) / AVG;
+  const hO = (hPenDrw + aPenTkn) / 2;
+  const aO = (aPenDrw + hPenTkn) / 2;
+  const hX = Math.max(0.1, h5 + HI + hO * ST * hPp * aPk - aGoalie * 0.5);
+  const aX = Math.max(0.1, a5 + aO * ST * aPp * hPk - hGoalie * 0.5);
+  let w = 0, l = 0, t = 0;
+  for (let h = 0; h < 12; h++) for (let a = 0; a < 12; a++) {
+    const p = poisson(h, hX) * poisson(a, aX);
+    if (h > a) w += p; else if (a > h) l += p; else t += p;
+  }
+  const tot = w + l + t;
+  return (w / tot) + (t / tot) * (hX / (hX + aX));
+}
+
+function probToAmerican(p: number): string {
+  if (p <= 0 || p >= 1) return '';
+  if (p >= 0.5) return String(Math.round(-100 * p / (1 - p)));
+  return '+' + Math.round(100 * (1 - p) / p);
+}
+
+function loadData() {
+  const dataDir = path.join(process.cwd(), 'data');
+  const publicDataDir = path.join(process.cwd(), 'public', 'data');
+
+  // Load playoff series
+  const seriesJson = fs.readFileSync(path.join(publicDataDir, 'playoff_series.json'), 'utf8');
+  const series: PlayoffSeries[] = JSON.parse(seriesJson);
+
+  // Load teams
+  const teamsCsv = fs.readFileSync(path.join(dataDir, 'nhl_teams.csv'), 'utf8');
+  const teamsParsed = Papa.parse(teamsCsv, { header: true, skipEmptyLines: true });
+  const teamsMap: Record<string, TeamInfo> = {};
+  const commonToTri: Record<string, string> = {};
+  const triToCommon: Record<string, string> = {};
+  const teamNameToTri: Record<string, string> = {};
+  teamsParsed.data.forEach((row: any) => {
+    teamsMap[row['Team Tricode']] = {
+      name: row['Team Name'],
+      commonName: row['Common Name'],
+      triCode: row['Team Tricode'],
+      logoUrl: row['Team Logo URL'],
+      color1: row['Hex Color 1'],
+      color2: row['Hex Color 2'],
+    };
+    commonToTri[row['Common Name']] = row['Team Tricode'];
+    triToCommon[row['Team Tricode']] = row['Common Name'];
+    teamNameToTri[row['Team Name']] = row['Team Tricode'];
+  });
+
+  // Load team ratings
+  const ratingsJson = fs.readFileSync(path.join(publicDataDir, 'team_ratings.json'), 'utf8');
+  const ratings: TeamRatings = JSON.parse(ratingsJson);
+
+  // Load goalie ratings + compute percentiles
+  let goalieRatings: Record<string, { gsax_per_game: number; gsax_total: number; games_played: number }> = {};
+  try {
+    goalieRatings = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'goalie_ratings.json'), 'utf8'));
+  } catch { /* ok */ }
+  const goalieSorted = Object.values(goalieRatings).sort((a, b) => a.gsax_per_game - b.gsax_per_game);
+  function goalieGsaxPct(name: string): number {
+    const idx = goalieSorted.findIndex(g => g === goalieRatings[name]);
+    if (idx === -1) return 50;
+    return Math.round((idx / Math.max(goalieSorted.length - 1, 1)) * 100);
+  }
+
+  // Load gamestats
+  const gamestatsCsv = fs.readFileSync(path.join(dataDir, 'gamestats.csv'), 'utf8');
+  const gamestatsParsed = Papa.parse(gamestatsCsv, { header: true, skipEmptyLines: true });
+  const allRows: any[] = gamestatsParsed.data as any[];
+
+  // Per-team: sorted by date desc
+  const teamRows: Record<string, any[]> = {};
+  allRows.forEach((row: any) => {
+    const tri = commonToTri[row.team?.trim()];
+    if (!tri) return;
+    if (!teamRows[tri]) teamRows[tri] = [];
+    teamRows[tri].push(row);
+  });
+  Object.values(teamRows).forEach(rows => rows.sort((a, b) => b.game_date.localeCompare(a.game_date)));
+
+  // Identify #1 goalie per team: most starts in last 20 games
+  function getTopGoalie(tri: string): string {
+    const rows = (teamRows[tri] ?? []).slice(0, 20);
+    const counts: Record<string, number> = {};
+    rows.forEach((r: any) => {
+      const g = r.starting_goalie?.trim();
+      if (g) counts[g] = (counts[g] ?? 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'TBD';
+  }
+
+  // L7 record per team
+  function getL7(tri: string): string {
+    const rows = (teamRows[tri] ?? []).slice(0, 7);
+    let w = 0, otl = 0, l = 0;
+    rows.forEach((r: any) => {
+      const res = r.result?.trim();
+      if (res === 'RW' || res === 'OTW' || res === 'SOW') w++;
+      else if (res === 'OTL' || res === 'SOL') otl++;
+      else l++;
+    });
+    return `${w}-${l}-${otl}`;
+  }
+
+  // Recent games (last 5) per team shaped as RecentGame[]
+  function getRecentGames(tri: string): RecentGame[] {
+    return (teamRows[tri] ?? []).slice(0, 5).map((r: any) => {
+      const oppTri = commonToTri[r.opponent?.trim()];
+      const res = r.result?.trim() ?? '';
+      let result: RecentGame['result'] = 'L';
+      if (res === 'RW') result = 'W';
+      else if (res === 'OTW') result = 'W-OT';
+      else if (res === 'SOW') result = 'W-SO';
+      else if (res === 'OTL' || res === 'SOL') result = 'O';
+      const [yr, mo, dy] = r.game_date.split('-');
+      const fmtDate = yr && mo && dy ? `${parseInt(mo)}/${parseInt(dy)}` : r.game_date;
+      return {
+        date: fmtDate,
+        opponent: oppTri ?? r.opponent,
+        opponentLogo: oppTri ? `/logos/${oppTri}.svg` : '',
+        isHome: r.home_away === 'Home',
+        score: `${r.goals_for ?? 0}-${r.goals_ag ?? 0}`,
+        result,
+        opponentColor: teamsMap[oppTri ?? '']?.color1 ?? '#888',
+        starter: r.starting_goalie?.trim() ?? '',
+      };
+    });
+  }
+
+  // PP/PK ranks (rank all 32 teams by pp_rating and pk_rating)
+  const ratingEntries = Object.entries(ratings);
+  const ppRanked = [...ratingEntries].sort((a, b) => b[1].pp_rating - a[1].pp_rating);
+  const pkRanked = [...ratingEntries].sort((a, b) => b[1].pk_rating - a[1].pk_rating);
+  const ppRank: Record<string, number> = {};
+  const pkRank: Record<string, number> = {};
+  ppRanked.forEach(([name], i) => { const tri = commonToTri[name]; if (tri) ppRank[tri] = i + 1; });
+  pkRanked.forEach(([name], i) => { const tri = commonToTri[name]; if (tri) pkRank[tri] = i + 1; });
+
+  // Load goalie season stats (W-L-OT | SV% | GAA strings)
+  let goalieStatsMap: Record<string, string> = {};
+  try {
+    goalieStatsMap = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'pipeline', 'nhl_goalie_stats.json'), 'utf8'));
+  } catch { /* ok */ }
+
+  // Load lineups
+  let lineups: Record<string, any> = {};
+  try { lineups = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'team_lineups.json'), 'utf8')); } catch { /* ok */ }
+
+  // Load player news
+  let playerNews: Record<string, any[]> = {};
+  try { playerNews = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'player_news.json'), 'utf8')); } catch { /* ok */ }
+
+  // Build H2H game log
+  const seriesTeamPairs = series.map(s => [s.higherSeed.triCode, s.lowerSeed.triCode]);
+  const h2hGames: Record<string, H2HGame[]> = {};
+  seriesTeamPairs.forEach(([t1, t2]) => { h2hGames[`${t1}_${t2}`] = []; });
+
+  allRows.forEach((row: any) => {
+    if (row.home_away !== 'Home') return;
+    const teamTri = commonToTri[row.team?.trim()];
+    const oppTri = commonToTri[row.opponent?.trim()];
+    if (!teamTri || !oppTri) return;
+    for (const [t1, t2] of seriesTeamPairs) {
+      if ((teamTri === t1 && oppTri === t2) || (teamTri === t2 && oppTri === t1)) {
+        h2hGames[`${t1}_${t2}`].push({
+          gameDate: row.game_date,
+          homeTeam: teamTri,
+          awayTeam: oppTri,
+          homeGoals: parseInt(row.goals_for) || 0,
+          awayGoals: parseInt(row.goals_ag) || 0,
+          homeGoalie: row.starting_goalie || '',
+          awayGoalie: row.starting_goalie_opp || '',
+          result: row.result || '',
+          homeSog: parseInt(row.sog_for) || 0,
+          awaySog: parseInt(row.sog_ag) || 0,
+        });
+        break;
+      }
+    }
+  });
+  Object.values(h2hGames).forEach(games => games.sort((a, b) => a.gameDate.localeCompare(b.gameDate)));
+
+  // ─── Build Game 1 predictions for each series ─────────────────────────────
+  // Higher seed always has home ice for Game 1
+  const seriesPredictions: Record<string, GamePrediction> = {};
+
+  for (const s of series) {
+    const homeTri = s.higherSeed.triCode;
+    const awayTri = s.lowerSeed.triCode;
+    const homeCommon = triToCommon[homeTri];
+    const awayCommon = triToCommon[awayTri];
+    const homeRatings = ratings[homeCommon];
+    const awayRatings = ratings[awayCommon];
+    if (!homeRatings || !awayRatings) continue;
+
+    const homeGoalie = getTopGoalie(homeTri);
+    const awayGoalie = getTopGoalie(awayTri);
+    const homeGsax = goalieRatings[homeGoalie]?.gsax_per_game ?? 0;
+    const awayGsax = goalieRatings[awayGoalie]?.gsax_per_game ?? 0;
+
+    const homeWinPct = computeWinProb(
+      homeRatings.xgf_5v5_rating, homeRatings.xga_5v5_rating,
+      homeRatings.pp_rating / 100, homeRatings.pk_rating / 100,
+      homeRatings.penalties_drawn_per_60, homeRatings.penalties_taken_per_60, homeGsax,
+      awayRatings.xgf_5v5_rating, awayRatings.xga_5v5_rating,
+      awayRatings.pp_rating / 100, awayRatings.pk_rating / 100,
+      awayRatings.penalties_drawn_per_60, awayRatings.penalties_taken_per_60, awayGsax,
+    ) * 100;
+    const awayWinPct = 100 - homeWinPct;
+
+    const homeXg = homeRatings.xgf_rolling * (awayRatings.xga_5v5_rating / 2.35);
+    const awayXg = awayRatings.xgf_rolling * (homeRatings.xga_5v5_rating / 2.35);
+
+    const homeTeam = teamsMap[homeTri];
+    const awayTeam = teamsMap[awayTri];
+    if (!homeTeam || !awayTeam) continue;
+
+    seriesPredictions[s.seriesId] = {
+      id: `playoff_${s.seriesId}_g1`,
+      date: 'TBD',
+      startTime: 'Game 1',
+      homeTeam: { ...homeTeam },
+      awayTeam: { ...awayTeam },
+      homeStarter: homeGoalie,
+      awayStarter: awayGoalie,
+      homeXg: parseFloat(homeXg.toFixed(2)),
+      awayXg: parseFloat(awayXg.toFixed(2)),
+      homeModelWinPct: parseFloat(homeWinPct.toFixed(1)),
+      awayModelWinPct: parseFloat(awayWinPct.toFixed(1)),
+      homeVegasWinPct: parseFloat(homeWinPct.toFixed(1)),
+      awayVegasWinPct: parseFloat(awayWinPct.toFixed(1)),
+      homeEv: 0,
+      awayEv: 0,
+      totalGoals: parseFloat((homeXg + awayXg).toFixed(2)),
+      homeWager: null,
+      awayWager: null,
+      homeModelOdds: probToAmerican(homeWinPct / 100),
+      awayModelOdds: probToAmerican(awayWinPct / 100),
+      homeVegasOdds: '',
+      awayVegasOdds: '',
+
+      home_pp_rank: ppRank[homeTri],
+      away_pp_rank: ppRank[awayTri],
+      home_pk_rank: pkRank[homeTri],
+      away_pk_rank: pkRank[awayTri],
+
+      home_l7: getL7(homeTri),
+      away_l7: getL7(awayTri),
+      home_recent_games: getRecentGames(homeTri),
+      away_recent_games: getRecentGames(awayTri),
+
+      home_gsax: homeGsax,
+      away_gsax: awayGsax,
+      home_gsax_total: goalieRatings[homeGoalie]?.gsax_total,
+      away_gsax_total: goalieRatings[awayGoalie]?.gsax_total,
+      home_gsax_pct: goalieGsaxPct(homeGoalie),
+      away_gsax_pct: goalieGsaxPct(awayGoalie),
+
+      homeGoalieStatus: 'Likely',
+      homeGoalieConfirmed: homeGoalie,
+      awayGoalieStatus: 'Likely',
+      awayGoalieConfirmed: awayGoalie,
+
+      home_goalie_stats: goalieStatsMap[homeGoalie],
+      away_goalie_stats: goalieStatsMap[awayGoalie],
+
+      home_lineup: lineups[homeTri] as TeamLineup | undefined,
+      away_lineup: lineups[awayTri] as TeamLineup | undefined,
+
+      home_news: playerNews[homeTri] ?? [],
+      away_news: playerNews[awayTri] ?? [],
+    };
+  }
+
+  return {
+    series, teamsMap, ratings, triToCommon, h2hGames,
+    lineups, playerNews, seriesPredictions,
+  };
+}
+
+export default async function NewPage() {
+  const {
+    series, teamsMap, ratings, triToCommon, h2hGames,
+    lineups, playerNews, seriesPredictions,
+  } = loadData();
+
+  return (
+    <main className="min-h-screen bg-black text-white font-sans relative overflow-x-hidden selection:bg-emerald-500/30">
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
+      <div className="relative z-10 h-screen">
+        <PlayoffHub
+          series={series}
+          teamsMap={teamsMap}
+          ratings={ratings}
+          triToCommon={triToCommon}
+          h2hGames={h2hGames}
+          lineups={lineups}
+          playerNews={playerNews}
+          seriesPredictions={seriesPredictions}
+        />
+      </div>
+    </main>
+  );
+}

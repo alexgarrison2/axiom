@@ -1,0 +1,122 @@
+[
+  {
+    "seriesId": "R1_E_MET1vWC2",
+    "round": 1,
+    "conference": "East",
+    "higherSeed": { "triCode": "CAR", "seed": "M1", "commonName": "Hurricanes" },
+    "lowerSeed": { "triCode": "OTT", "seed": "WC2", "commonName": "Senators" },
+    "seriesScore": [0, 0],
+    "games": [
+      { "gameNumber": 1, "date": "2026-04-19", "startTimeUTC": "2026-04-19T23:00:00Z", "homeTriCode": "CAR", "awayTriCode": "OTT", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 2, "date": "2026-04-21", "startTimeUTC": "2026-04-21T23:00:00Z", "homeTriCode": "CAR", "awayTriCode": "OTT", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 3, "date": "2026-04-23", "startTimeUTC": "2026-04-23T23:30:00Z", "homeTriCode": "OTT", "awayTriCode": "CAR", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 4, "date": "2026-04-25", "startTimeUTC": "2026-04-25T23:00:00Z", "homeTriCode": "OTT", "awayTriCode": "CAR", "tvNetwork": "TBD", "score": null, "status": "scheduled" }
+    ],
+    "seriesOdds": { "CAR": -200, "OTT": 170 }
+  },
+  {
+    "seriesId": "R1_E_ATL1vATL4",
+    "round": 1,
+    "conference": "East",
+    "higherSeed": { "triCode": "BUF", "seed": "A1", "commonName": "Sabres" },
+    "lowerSeed": { "triCode": "BOS", "seed": "A4", "commonName": "Bruins" },
+    "seriesScore": [0, 0],
+    "games": [
+      { "gameNumber": 1, "date": "2026-04-19", "startTimeUTC": "2026-04-19T23:00:00Z", "homeTriCode": "BUF", "awayTriCode": "BOS", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 2, "date": "2026-04-21", "startTimeUTC": "2026-04-21T23:00:00Z", "homeTriCode": "BUF", "awayTriCode": "BOS", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 3, "date": "2026-04-23", "startTimeUTC": "2026-04-23T23:30:00Z", "homeTriCode": "BOS", "awayTriCode": "BUF", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 4, "date": "2026-04-25", "startTimeUTC": "2026-04-25T23:00:00Z", "homeTriCode": "BOS", "awayTriCode": "BUF", "tvNetwork": "TBD", "score": null, "status": "scheduled" }
+    ],
+    "seriesOdds": { "BUF": -180, "BOS": 155 }
+  },
+  {
+    "seriesId": "R1_E_ATL2vATL3",
+    "round": 1,
+    "conference": "East",
+    "higherSeed": { "triCode": "TBL", "seed": "A2", "commonName": "Lightning" },
+    "lowerSeed": { "triCode": "MTL", "seed": "A3", "commonName": "Canadiens" },
+    "seriesScore": [0, 0],
+    "games": [
+      { "gameNumber": 1, "date": "2026-04-18", "startTimeUTC": "2026-04-18T23:00:00Z", "homeTriCode": "TBL", "awayTriCode": "MTL", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 2, "date": "2026-04-20", "startTimeUTC": "2026-04-20T23:00:00Z", "homeTriCode": "TBL", "awayTriCode": "MTL", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 3, "date": "2026-04-22", "startTimeUTC": "2026-04-22T23:30:00Z", "homeTriCode": "MTL", "awayTriCode": "TBL", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 4, "date": "2026-04-24", "startTimeUTC": "2026-04-24T23:00:00Z", "homeTriCode": "MTL", "awayTriCode": "TBL", "tvNetwork": "TBD", "score": null, "status": "scheduled" }
+    ],
+    "seriesOdds": { "TBL": -160, "MTL": 140 }
+  },
+  {
+    "seriesId": "R1_E_MET2vMET3",
+    "round": 1,
+    "conference": "East",
+    "higherSeed": { "triCode": "PIT", "seed": "M2", "commonName": "Penguins" },
+    "lowerSeed": { "triCode": "PHI", "seed": "M3", "commonName": "Flyers" },
+    "seriesScore": [0, 0],
+    "games": [
+      { "gameNumber": 1, "date": "2026-04-18", "startTimeUTC": "2026-04-18T23:30:00Z", "homeTriCode": "PIT", "awayTriCode": "PHI", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 2, "date": "2026-04-20", "startTimeUTC": "2026-04-20T23:00:00Z", "homeTriCode": "PIT", "awayTriCode": "PHI", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 3, "date": "2026-04-22", "startTimeUTC": "2026-04-22T23:30:00Z", "homeTriCode": "PHI", "awayTriCode": "PIT", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 4, "date": "2026-04-24", "startTimeUTC": "2026-04-24T23:00:00Z", "homeTriCode": "PHI", "awayTriCode": "PIT", "tvNetwork": "TBD", "score": null, "status": "scheduled" }
+    ],
+    "seriesOdds": { "PIT": -120, "PHI": 100 }
+  },
+  {
+    "seriesId": "R1_W_CEN1vWC2",
+    "round": 1,
+    "conference": "West",
+    "higherSeed": { "triCode": "COL", "seed": "C1", "commonName": "Avalanche" },
+    "lowerSeed": { "triCode": "LAK", "seed": "WC2", "commonName": "Kings" },
+    "seriesScore": [0, 0],
+    "games": [
+      { "gameNumber": 1, "date": "2026-04-19", "startTimeUTC": "2026-04-20T02:00:00Z", "homeTriCode": "COL", "awayTriCode": "LAK", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 2, "date": "2026-04-21", "startTimeUTC": "2026-04-22T02:00:00Z", "homeTriCode": "COL", "awayTriCode": "LAK", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 3, "date": "2026-04-23", "startTimeUTC": "2026-04-24T02:30:00Z", "homeTriCode": "LAK", "awayTriCode": "COL", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 4, "date": "2026-04-25", "startTimeUTC": "2026-04-26T02:00:00Z", "homeTriCode": "LAK", "awayTriCode": "COL", "tvNetwork": "TBD", "score": null, "status": "scheduled" }
+    ],
+    "seriesOdds": { "COL": -250, "LAK": 200 }
+  },
+  {
+    "seriesId": "R1_W_CEN2vCEN3",
+    "round": 1,
+    "conference": "West",
+    "higherSeed": { "triCode": "DAL", "seed": "C2", "commonName": "Stars" },
+    "lowerSeed": { "triCode": "MIN", "seed": "C3", "commonName": "Wild" },
+    "seriesScore": [0, 0],
+    "games": [
+      { "gameNumber": 1, "date": "2026-04-18", "startTimeUTC": "2026-04-19T01:00:00Z", "homeTriCode": "DAL", "awayTriCode": "MIN", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 2, "date": "2026-04-20", "startTimeUTC": "2026-04-21T01:00:00Z", "homeTriCode": "DAL", "awayTriCode": "MIN", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 3, "date": "2026-04-22", "startTimeUTC": "2026-04-23T01:30:00Z", "homeTriCode": "MIN", "awayTriCode": "DAL", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 4, "date": "2026-04-24", "startTimeUTC": "2026-04-25T01:00:00Z", "homeTriCode": "MIN", "awayTriCode": "DAL", "tvNetwork": "TBD", "score": null, "status": "scheduled" }
+    ],
+    "seriesOdds": { "DAL": -150, "MIN": 130 }
+  },
+  {
+    "seriesId": "R1_W_PAC1vWC1",
+    "round": 1,
+    "conference": "West",
+    "higherSeed": { "triCode": "VGK", "seed": "P1", "commonName": "Golden Knights" },
+    "lowerSeed": { "triCode": "UTA", "seed": "WC1", "commonName": "Mammoth" },
+    "seriesScore": [0, 0],
+    "games": [
+      { "gameNumber": 1, "date": "2026-04-19", "startTimeUTC": "2026-04-20T02:00:00Z", "homeTriCode": "VGK", "awayTriCode": "UTA", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 2, "date": "2026-04-21", "startTimeUTC": "2026-04-22T02:00:00Z", "homeTriCode": "VGK", "awayTriCode": "UTA", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 3, "date": "2026-04-23", "startTimeUTC": "2026-04-24T02:30:00Z", "homeTriCode": "UTA", "awayTriCode": "VGK", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 4, "date": "2026-04-25", "startTimeUTC": "2026-04-26T02:00:00Z", "homeTriCode": "UTA", "awayTriCode": "VGK", "tvNetwork": "TBD", "score": null, "status": "scheduled" }
+    ],
+    "seriesOdds": { "VGK": -170, "UTA": 145 }
+  },
+  {
+    "seriesId": "R1_W_PAC2vPAC3",
+    "round": 1,
+    "conference": "West",
+    "higherSeed": { "triCode": "EDM", "seed": "P2", "commonName": "Oilers" },
+    "lowerSeed": { "triCode": "ANA", "seed": "P3", "commonName": "Ducks" },
+    "seriesScore": [0, 0],
+    "games": [
+      { "gameNumber": 1, "date": "2026-04-18", "startTimeUTC": "2026-04-19T02:00:00Z", "homeTriCode": "EDM", "awayTriCode": "ANA", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 2, "date": "2026-04-20", "startTimeUTC": "2026-04-21T02:00:00Z", "homeTriCode": "EDM", "awayTriCode": "ANA", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 3, "date": "2026-04-22", "startTimeUTC": "2026-04-23T02:30:00Z", "homeTriCode": "ANA", "awayTriCode": "EDM", "tvNetwork": "TBD", "score": null, "status": "scheduled" },
+      { "gameNumber": 4, "date": "2026-04-24", "startTimeUTC": "2026-04-25T02:00:00Z", "homeTriCode": "ANA", "awayTriCode": "EDM", "tvNetwork": "TBD", "score": null, "status": "scheduled" }
+    ],
+    "seriesOdds": { "EDM": -140, "ANA": 120 }
+  }
+]
