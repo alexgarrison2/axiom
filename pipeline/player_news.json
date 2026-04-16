@@ -1,51 +1,28 @@
 {
-    "CGY": [
+    "SJS": [
         {
-            "player": "Arsenii Sergeev",
-            "news": "Sergeev will start vs. Los Angeles on Thursday. ",
-            "category": "Goalie Start",
+            "player": "Eric Pohlkamp",
+            "news": "San Jose has signed Eric Pohlkamp to a two-year, entry-level contract. ",
+            "category": "Signing",
             "date": "2026-04-16",
-            "timestamp": "2026-04-16T17:56:28.242Z"
-        },
-        {
-            "player": "Zach Whitecloud",
-            "news": "Whitecloud (upper-body) is expected to play vs. Los Angeles after leaving last game early. ",
-            "category": "Injury",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:34:48.290Z"
-        },
-        {
-            "player": "Tyson Gross",
-            "news": "Gross is expected to be a healthy scratch vs. Los Angeles on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:34:13.698Z"
-        },
-        {
-            "player": "Matt Coronato",
-            "news": "Coronato (undisclosed) is expected to draw back into Calgary's lineup vs. Los Angeles. ",
-            "category": "Injury",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:33:40.610Z"
-        },
-        {
-            "player": "Arsenii Sergeev",
-            "news": "Sergeev is in the starter's crease at Calgary's morning skate on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:20:30.208Z"
-        }
-    ],
-    "LAK": [
-        {
-            "player": "Anton Forsberg",
-            "news": "Forsberg will start in Calgary on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T17:53:38.381Z"
+            "timestamp": "2026-04-16T19:03:27.191Z"
         }
     ],
     "COL": [
+        {
+            "player": "Jason Polin",
+            "news": "Polin is expected to draw back into Colorado's lineup vs. Seattle on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-04-16",
+            "timestamp": "2026-04-16T18:30:35.306Z"
+        },
+        {
+            "player": "Alex Barr\u00e9-Boulet",
+            "news": "Barre-Boulet is expected to draw back into Colorado's lineup vs. Seattle on Thursday. ",
+            "category": "Line Change",
+            "date": "2026-04-16",
+            "timestamp": "2026-04-16T18:30:02.785Z"
+        },
         {
             "player": "Devon Toews",
             "news": "Toews (rest) is expected to draw back into Colorado's lineup vs. Seattle on Thursday. ",
@@ -66,20 +43,72 @@
             "category": "Line Change",
             "date": "2026-04-16",
             "timestamp": "2026-04-16T17:28:17.150Z"
-        },
+        }
+    ],
+    "VAN": [
         {
-            "player": "Martin Necas",
-            "news": "Necas (rest) will be out vs. Seattle on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:56:29.503Z"
-        },
-        {
-            "player": "Scott Wedgewood",
-            "news": "Wedgewood will start vs. Seattle on Thursday. ",
+            "player": "Kevin Lankinen",
+            "news": "Lankinen will start in Edmonton on Thursday. ",
             "category": "Goalie Start",
             "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:39:30.066Z"
+            "timestamp": "2026-04-16T18:22:16.991Z"
+        }
+    ],
+    "EDM": [
+        {
+            "player": "Isaac Howard",
+            "news": "Howard has been reassigned to Bakersfield (AHL) on Thursday. ",
+            "category": "Send Down",
+            "date": "2026-04-16",
+            "timestamp": "2026-04-16T18:21:33.172Z"
+        }
+    ],
+    "DET": [
+        {
+            "player": "Dominik Shine",
+            "news": "Shine has been reassigned to Grand Rapids (AHL) on Thursday. ",
+            "category": "Send Down",
+            "date": "2026-04-16",
+            "timestamp": "2026-04-16T18:20:36.490Z"
+        },
+        {
+            "player": "Axel Sandin-Pellikka",
+            "news": "Sandin-Pellikka has been reassigned to Grand Rapids (AHL). ",
+            "category": "Send Down",
+            "date": "2026-04-16",
+            "timestamp": "2026-04-16T18:20:12.335Z"
+        },
+        {
+            "player": "Carter Mazur",
+            "news": "Mazur has been reassigned to Grand Rapids (AHL). ",
+            "category": "Send Down",
+            "date": "2026-04-16",
+            "timestamp": "2026-04-16T18:19:31.007Z"
+        },
+        {
+            "player": "Michael Brandsegg-Nyg\u00e5rd",
+            "news": "Brandsegg-Nygard has been reassigned to Grand Rapids (AHL). ",
+            "category": "Send Down",
+            "date": "2026-04-16",
+            "timestamp": "2026-04-16T18:19:09.195Z"
+        }
+    ],
+    "CGY": [
+        {
+            "player": "Arsenii Sergeev",
+            "news": "Sergeev will start vs. Los Angeles on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-16",
+            "timestamp": "2026-04-16T17:56:28.242Z"
+        }
+    ],
+    "LAK": [
+        {
+            "player": "Anton Forsberg",
+            "news": "Forsberg will start in Calgary on Thursday. ",
+            "category": "Goalie Start",
+            "date": "2026-04-16",
+            "timestamp": "2026-04-16T17:53:38.381Z"
         }
     ],
     "BUF": [
@@ -128,33 +157,6 @@
             "category": "Goalie Start",
             "date": "2026-04-16",
             "timestamp": "2026-04-16T17:03:32.683Z"
-        }
-    ],
-    "MIN": [
-        {
-            "player": "Quinn Hughes",
-            "news": "Hughes (illness) missed practice on Thursday and is hopeful to be ready to return for Minnesota's first playoff game on Saturday. ",
-            "category": "Injury",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:52:00.425Z"
-        }
-    ],
-    "EDM": [
-        {
-            "player": "Connor Ingram",
-            "news": "Ingram will start vs. Vancouver on Thursday. ",
-            "category": "Goalie Start",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:10:50.600Z"
-        }
-    ],
-    "NSH": [
-        {
-            "player": "Cole O'Hara",
-            "news": "O'Hara is expected to make his NHL debut vs. Anaheim on Thursday. ",
-            "category": "Line Change",
-            "date": "2026-04-16",
-            "timestamp": "2026-04-16T16:08:06.139Z"
         }
     ]
 }
