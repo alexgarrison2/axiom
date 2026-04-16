@@ -42,14 +42,6 @@
                 "id": 33387,
                 "ppUnit": 1,
                 "movement": null
-            },
-            {
-                "name": "Dylan Guenther",
-                "number": 11,
-                "pos": "rw",
-                "id": 34613,
-                "ppUnit": 1,
-                "movement": null
             }
         ],
         "f3": [
@@ -58,7 +50,7 @@
                 "number": 77,
                 "pos": "lw",
                 "id": 31777,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -128,7 +120,7 @@
                 "number": 88,
                 "pos": "ld",
                 "id": 2093,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -150,12 +142,22 @@
                 "movement": null
             },
             {
-                "name": "Sean Durzi",
-                "number": 50,
+                "name": "Nick DeSimone",
+                "number": 57,
                 "pos": "rd",
-                "id": 27104,
+                "id": 2886,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
+            }
+        ],
+        "d4": [
+            {
+                "name": "Dmitri Simashev",
+                "number": 26,
+                "pos": "ld",
+                "id": 38458,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "ir": [
@@ -174,6 +176,22 @@
                 "id": 28796,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Dylan Guenther",
+                "number": 11,
+                "pos": "ir3",
+                "id": 34613,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Sean Durzi",
+                "number": 50,
+                "pos": "ir4",
+                "id": 27104,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
@@ -248,12 +266,12 @@
                 "movement": null
             },
             {
-                "name": "Jonathan Drouin",
+                "name": "Jonatan Berggren",
                 "number": 29,
                 "pos": "rw",
-                "id": 2136,
+                "id": 29107,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -266,12 +284,12 @@
                 "movement": null
             },
             {
-                "name": "Oskar Sundqvist",
-                "number": 70,
+                "name": "Jack Finley",
+                "number": 62,
                 "pos": "c",
-                "id": 2356,
+                "id": 29594,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Nathan Walker",
@@ -328,12 +346,12 @@
                 "movement": null
             },
             {
-                "name": "Matthew Kessel",
-                "number": null,
+                "name": "Justin Holl",
+                "number": 3,
                 "pos": "rd",
-                "id": 30737,
+                "id": 2857,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ]
     },
@@ -945,7 +963,7 @@
                 "pos": "c",
                 "id": 37508,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Kiefer Sherwood",
@@ -971,7 +989,7 @@
                 "pos": "c",
                 "id": 4813,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Pavol Regenda",
@@ -979,7 +997,7 @@
                 "pos": "rw",
                 "id": 36378,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -1005,7 +1023,7 @@
                 "pos": "rw",
                 "id": 28817,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -1023,7 +1041,7 @@
                 "pos": "rd",
                 "id": 1678,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d2": [
@@ -1059,7 +1077,7 @@
                 "pos": "rd",
                 "id": 33038,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
