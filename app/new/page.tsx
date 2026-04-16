@@ -229,6 +229,10 @@ function loadData() {
   let lineups: Record<string, any> = {};
   try { lineups = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'team_lineups.json'), 'utf8')); } catch { /* ok */ }
 
+  // Load team goalies (sorted by GP, used to identify backups)
+  let teamGoalies: Record<string, string[]> = {};
+  try { teamGoalies = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'team_goalies.json'), 'utf8')); } catch { /* ok */ }
+
   // Load player news
   let playerNews: Record<string, any[]> = {};
   try { playerNews = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'player_news.json'), 'utf8')); } catch { /* ok */ }
@@ -361,14 +365,14 @@ function loadData() {
 
   return {
     series, teamsMap, ratings, triToCommon, h2hGames,
-    lineups, playerNews, playoffPlayerNews, seriesPredictions,
+    lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap,
   };
 }
 
 export default async function NewPage() {
   const {
     series, teamsMap, ratings, triToCommon, h2hGames,
-    lineups, playerNews, playoffPlayerNews, seriesPredictions,
+    lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap,
   } = loadData();
 
   return (
@@ -385,6 +389,8 @@ export default async function NewPage() {
           playerNews={playerNews}
           playoffPlayerNews={playoffPlayerNews}
           seriesPredictions={seriesPredictions}
+          teamGoalies={teamGoalies}
+          goalieStatsMap={goalieStatsMap}
         />
       </div>
     </main>

@@ -20,6 +20,8 @@ interface SeriesOverviewProps {
   playerNews: Record<string, any[]>;
   playoffPlayerNews: Record<string, any[]>;
   prediction?: GamePrediction;
+  teamGoalies?: Record<string, string[]>;
+  goalieStatsMap?: Record<string, string>;
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
@@ -30,7 +32,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, prediction }: SeriesOverviewProps) {
+export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, prediction, teamGoalies, goalieStatsMap }: SeriesOverviewProps) {
   const t1 = series.higherSeed.triCode;
   const t2 = series.lowerSeed.triCode;
   const c1 = teamColor(t1, teamsMap);
@@ -102,6 +104,15 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
         const t2Gsax = homeIst1 ? prediction?.away_gsax : prediction?.home_gsax;
         const t1GsaxPct = homeIst1 ? prediction?.home_gsax_pct : prediction?.away_gsax_pct;
         const t2GsaxPct = homeIst1 ? prediction?.away_gsax_pct : prediction?.home_gsax_pct;
+        // Backup goalies: first in teamGoalies list that isn't the starter
+        const getBackup = (tri: string, starter?: string) => {
+          const list = teamGoalies?.[tri] ?? [];
+          return list.find(g => g.toLowerCase() !== (starter ?? '').toLowerCase());
+        };
+        const t1Backup = getBackup(t1, t1Goalie);
+        const t2Backup = getBackup(t2, t2Goalie);
+        const t1BackupStats = t1Backup ? goalieStatsMap?.[t1Backup] : undefined;
+        const t2BackupStats = t2Backup ? goalieStatsMap?.[t2Backup] : undefined;
         return (
           <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-2xl p-3">
             <SectionHeader>Projected Lineups</SectionHeader>
@@ -111,14 +122,14 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
                   <img src={`/logos/${t1}.svg`} alt={t1} className="w-4 h-4" />
                   <span className="text-xs font-semibold" style={{ color: c1 }}>{name1}</span>
                 </div>
-                <LineupGrid lineup={lineups[t1]} triCode={t1} goalieStarter={t1Goalie} gsaxPerGame={t1Gsax} gsaxPct={t1GsaxPct} goalieStatLine={t1GoalieStats} />
+                <LineupGrid lineup={lineups[t1]} triCode={t1} goalieStarter={t1Goalie} gsaxPerGame={t1Gsax} gsaxPct={t1GsaxPct} goalieStatLine={t1GoalieStats} backupGoalie={t1Backup} backupGoalieStatLine={t1BackupStats} />
               </div>
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <img src={`/logos/${t2}.svg`} alt={t2} className="w-4 h-4" />
                   <span className="text-xs font-semibold" style={{ color: c2 }}>{name2}</span>
                 </div>
-                <LineupGrid lineup={lineups[t2]} triCode={t2} goalieStarter={t2Goalie} gsaxPerGame={t2Gsax} gsaxPct={t2GsaxPct} goalieStatLine={t2GoalieStats} />
+                <LineupGrid lineup={lineups[t2]} triCode={t2} goalieStarter={t2Goalie} gsaxPerGame={t2Gsax} gsaxPct={t2GsaxPct} goalieStatLine={t2GoalieStats} backupGoalie={t2Backup} backupGoalieStatLine={t2BackupStats} />
               </div>
             </div>
           </div>

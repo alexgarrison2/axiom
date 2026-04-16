@@ -73,9 +73,11 @@ interface PlayoffHubProps {
   playerNews: Record<string, any[]>;
   playoffPlayerNews: Record<string, any[]>;
   seriesPredictions: Record<string, GamePrediction>;
+  teamGoalies: Record<string, string[]>;
+  goalieStatsMap?: Record<string, string>;
 }
 
-export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, seriesPredictions }: PlayoffHubProps) {
+export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap }: PlayoffHubProps) {
   const [selectedId, setSelectedId] = useState<string>(series[0]?.seriesId ?? '');
 
   const selected = useMemo(() => series.find(s => s.seriesId === selectedId) ?? series[0], [series, selectedId]);
@@ -159,6 +161,8 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
                   playerNews={playerNews}
                   playoffPlayerNews={playoffPlayerNews}
                   prediction={prediction}
+                  teamGoalies={teamGoalies}
+                  goalieStatsMap={goalieStatsMap}
                 />
               </div>
             </motion.div>

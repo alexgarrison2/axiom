@@ -8,10 +8,12 @@ import { ArrowUp, ArrowDown, Plus } from 'lucide-react';
 interface LineupGridProps {
     lineup?: TeamLineup;
     triCode: string;
-    goalieStarter?: string;   // projected starter full name
-    gsaxPerGame?: number;     // GSAx per game (positive = above avg)
-    gsaxPct?: number;         // percentile rank among NHL starters (0–100)
-    goalieStatLine?: string;  // pre-formatted stats string, e.g. "(31-12-3) | .914 | 2.30"
+    goalieStarter?: string;         // projected starter full name
+    gsaxPerGame?: number;           // GSAx per game (positive = above avg)
+    gsaxPct?: number;               // percentile rank among NHL starters (0–100)
+    goalieStatLine?: string;        // pre-formatted stats string, e.g. "(31-12-3) | .914 | 2.30"
+    backupGoalie?: string;          // backup goalie full name
+    backupGoalieStatLine?: string;  // backup goalie stats string
 }
 
 // ── Player impact data types ───────────────────────────────────────────────────
@@ -296,6 +298,7 @@ function lookupInMap(m: Map<string, number>, name: string): number | undefined {
 // ── Main grid ─────────────────────────────────────────────────────────────────
 export default function LineupGrid({
     lineup, triCode, goalieStarter, gsaxPerGame, gsaxPct, goalieStatLine,
+    backupGoalie, backupGoalieStatLine,
 }: LineupGridProps) {
     // ── Hooks (must precede any early returns per Rules of Hooks) ─────────────
     const [piData, setPiData] = useState<PiData | null>(null);
@@ -665,32 +668,39 @@ export default function LineupGrid({
 
                 {/* Goalies Section */}
                 {goalieStarter && (() => {
-                    const cleanName = cleanGoalieName(goalieStarter);
-                    const lastName = cleanName.split(' ').pop() ?? cleanName;
-                    const gsaxSign = (gsaxPerGame ?? 0) >= 0 ? '+' : '';
-                    // Parse statLine "(W-L-OT) | .SV% | GAA" → extract SV% and GAA
-                    const statParts = goalieStatLine?.split(' | ') ?? [];
-                    const svPct = statParts.length === 3 ? statParts[1] : undefined;
-                    const gaa = statParts.length === 3 ? statParts[2] : undefined;
-                    const gsaxColor = gsaxPerGame !== undefined ? goalieColor(gsaxPerGame) : '#6b7280';
+                    const renderGoalie = (name: string, statLine?: string, gsax?: number) => {
+                        const clean = cleanGoalieName(name);
+                        const last = clean.split(' ').pop() ?? clean;
+                        const parts = statLine?.split(' | ') ?? [];
+                        const svPct = parts.length === 3 ? parts[1] : undefined;
+                        const gaa  = parts.length === 3 ? parts[2] : undefined;
+                        const gsaxColor = gsax !== undefined ? goalieColor(gsax) : '#6b7280';
+                        const gsaxSign  = (gsax ?? 0) >= 0 ? '+' : '';
+                        return (
+                            <div className="py-2 px-2 flex flex-col items-center gap-0.5">
+                                <span className="text-[10px] text-neutral-300 font-medium leading-tight">{last}</span>
+                                <div className="flex items-center gap-1 text-[8px] tabular-nums text-neutral-500 leading-none flex-wrap justify-center">
+                                    {gsax !== undefined && (
+                                        <span style={{ color: gsaxColor }}>{gsaxSign}{gsax.toFixed(2)} GSAx</span>
+                                    )}
+                                    {svPct && <><span className="text-neutral-700">|</span><span>{svPct} SV%</span></>}
+                                    {gaa && <><span className="text-neutral-700">|</span><span>{gaa} GAA</span></>}
+                                </div>
+                            </div>
+                        );
+                    };
                     return (
                         <div className="border border-white/10 rounded-lg overflow-hidden">
                             <div className="grid grid-cols-2 bg-white/5 border-b border-white/10">
                                 <div className="py-1 col-span-2 text-center text-[9px] font-bold text-neutral-500 uppercase">Goalies</div>
                             </div>
                             <div className="grid grid-cols-2">
-                                <div className="py-2 px-2 flex flex-col items-center gap-0.5">
-                                    <span className="text-[10px] text-neutral-300 font-medium leading-tight">{lastName}</span>
-                                    <div className="flex items-center gap-1 text-[8px] tabular-nums text-neutral-500 leading-none">
-                                        {gsaxPerGame !== undefined && (
-                                            <span style={{ color: gsaxColor }}>{gsaxSign}{gsaxPerGame.toFixed(2)} GSAx</span>
-                                        )}
-                                        {svPct && <><span className="text-neutral-700">|</span><span>{svPct} SV%</span></>}
-                                        {gaa && <><span className="text-neutral-700">|</span><span>{gaa} GAA</span></>}
-                                    </div>
-                                </div>
-                                <div className="py-2 px-2 border-l border-white/5 flex flex-col items-center justify-center">
-                                    <span className="text-[9px] text-neutral-700">—</span>
+                                {renderGoalie(goalieStarter, goalieStatLine, gsaxPerGame)}
+                                <div className="border-l border-white/5">
+                                    {backupGoalie
+                                        ? renderGoalie(backupGoalie, backupGoalieStatLine)
+                                        : <div className="py-2 px-2 flex items-center justify-center"><span className="text-[9px] text-neutral-700">—</span></div>
+                                    }
                                 </div>
                             </div>
                         </div>
