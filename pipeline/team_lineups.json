@@ -392,11 +392,11 @@
         ],
         "f3": [
             {
-                "name": "Jamie Benn",
-                "number": 14,
+                "name": "Michael Bunting",
+                "number": 58,
                 "pos": "lw",
-                "id": 425,
-                "ppUnit": 2,
+                "id": 3778,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -408,11 +408,11 @@
                 "movement": null
             },
             {
-                "name": "Michael Bunting",
-                "number": 58,
+                "name": "Jamie Benn",
+                "number": 14,
                 "pos": "rw",
-                "id": 3778,
-                "ppUnit": null,
+                "id": 425,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -444,38 +444,38 @@
         ],
         "d1": [
             {
+                "name": "Esa Lindell",
+                "number": 23,
+                "pos": "ld",
+                "id": 2517,
+                "ppUnit": 2,
+                "movement": "up"
+            },
+            {
+                "name": "Miro Heiskanen",
+                "number": 4,
+                "pos": "rd",
+                "id": 2803,
+                "ppUnit": 1,
+                "movement": "up"
+            }
+        ],
+        "d2": [
+            {
                 "name": "Thomas Harley",
                 "number": 55,
                 "pos": "ld",
                 "id": 29213,
-                "ppUnit": 1,
-                "movement": null
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Nils Lundkvist",
                 "number": 5,
                 "pos": "rd",
                 "id": 4821,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "d2": [
-            {
-                "name": "Esa Lindell",
-                "number": 23,
-                "pos": "ld",
-                "id": 2517,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Ilya Lyubushkin",
-                "number": 46,
-                "pos": "rd",
-                "id": 4760,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d3": [
@@ -510,7 +510,7 @@
                 "number": 4,
                 "pos": "ir2",
                 "id": 2803,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -4117,7 +4117,7 @@
                 "pos": "c",
                 "id": 1733,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Trent Frederic",
@@ -4293,7 +4293,7 @@
                 "pos": "rw",
                 "id": 34613,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -4399,7 +4399,7 @@
                 "pos": "rd",
                 "id": 27104,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "ir": [
