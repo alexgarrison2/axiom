@@ -74,6 +74,7 @@ export interface GamePrediction {
   homeVegasOdds: string;
   awayVegasOdds: string;
   startTime: string;
+  tvNetwork?: string;
 
   home_pp_rank?: number;
   home_pk_rank?: number;
@@ -116,6 +117,10 @@ export interface GamePrediction {
   homeGoalieConfirmed?: string;
   awayGoalieStatus?: string;
   awayGoalieConfirmed?: string;
+  homeBackupGoalie?: string;
+  homeBackupGoalieStats?: string;
+  awayBackupGoalie?: string;
+  awayBackupGoalieStats?: string;
 
   home_avg_speed?: number;
   away_avg_speed?: number;
@@ -274,6 +279,32 @@ interface RawTeam {
 export async function getPredictions(): Promise<GamePrediction[]> {
   const dataDir = path.join(process.cwd(), 'data');
   const predictionsCsv = fs.readFileSync(path.join(dataDir, 'predictions_detailed.csv'), 'utf8');
+
+  // Load backup goalie data
+  const teamGoaliesMap = new Map<string, string[]>(); // triCode -> sorted goalies by GP
+  const goalieStatsMap = new Map<string, string>(); // fullName -> stat line string
+  try {
+    const tgPath = path.join(process.cwd(), 'public', 'data', 'team_goalies.json');
+    const teamGoalies: Record<string, string[]> = JSON.parse(fs.readFileSync(tgPath, 'utf8'));
+    Object.entries(teamGoalies).forEach(([tri, goalies]) => teamGoaliesMap.set(tri, goalies));
+  } catch { /* ok */ }
+  try {
+    const gsPath = path.join(process.cwd(), 'pipeline', 'nhl_goalie_stats.json');
+    const goalieStats: Record<string, string> = JSON.parse(fs.readFileSync(gsPath, 'utf8'));
+    Object.entries(goalieStats).forEach(([name, stat]) => goalieStatsMap.set(name, stat));
+  } catch { /* ok */ }
+
+  // Load TV network lookup from upcoming_games.json (keyed by homeAbbrev_awayAbbrev)
+  const tvNetworkMap = new Map<string, string>();
+  try {
+    const upcomingPath = path.join(process.cwd(), 'public', 'data', 'upcoming_games.json');
+    const upcomingGames: Array<{ homeTeamAbbrev: string; awayTeamAbbrev: string; tvNetwork?: string }> = JSON.parse(fs.readFileSync(upcomingPath, 'utf8'));
+    upcomingGames.forEach(g => {
+      if (g.tvNetwork) {
+        tvNetworkMap.set(`${g.homeTeamAbbrev}_${g.awayTeamAbbrev}`, g.tvNetwork);
+      }
+    });
+  } catch { /* ok */ }
   const teamsCsv = fs.readFileSync(path.join(dataDir, 'nhl_teams.csv'), 'utf8');
   // const lastUpdate = fs.readFileSync(path.join(dataDir, 'last_update.txt'), 'utf8');
 
@@ -435,6 +466,7 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       homeVegasOdds: row.home_vegas_odds || '',
       awayVegasOdds: row.away_vegas_odds || '',
       startTime: row.game_start_time || '',
+      tvNetwork: tvNetworkMap.get(`${homeTeam.triCode}_${awayTeam.triCode}`) || '',
 
       home_pp_rank: row.home_pp_rank ? parseInt(row.home_pp_rank) : undefined,
       home_pk_rank: row.home_pk_rank ? parseInt(row.home_pk_rank) : undefined,
@@ -477,6 +509,22 @@ export async function getPredictions(): Promise<GamePrediction[]> {
       homeGoalieConfirmed: row.home_goalie_confirmed,
       awayGoalieStatus: row.away_goalie_status,
       awayGoalieConfirmed: row.away_goalie_confirmed,
+      ...(() => {
+        const htri = homeTeam.triCode;
+        const atri = awayTeam.triCode;
+        const starter1 = row.home_starter?.split(' (')[0]?.trim() ?? '';
+        const starter2 = row.away_starter?.split(' (')[0]?.trim() ?? '';
+        const homeGoalies = teamGoaliesMap.get(htri) ?? [];
+        const awayGoalies = teamGoaliesMap.get(atri) ?? [];
+        const hBackup = homeGoalies.find(g => g.toLowerCase() !== starter1.toLowerCase());
+        const aBackup = awayGoalies.find(g => g.toLowerCase() !== starter2.toLowerCase());
+        return {
+          homeBackupGoalie: hBackup,
+          homeBackupGoalieStats: hBackup ? goalieStatsMap.get(hBackup) : undefined,
+          awayBackupGoalie: aBackup,
+          awayBackupGoalieStats: aBackup ? goalieStatsMap.get(aBackup) : undefined,
+        };
+      })(),
 
       home_avg_speed: row.home_avg_speed ? parseFloat(row.home_avg_speed) : undefined,
       away_avg_speed: row.away_avg_speed ? parseFloat(row.away_avg_speed) : undefined,

@@ -203,6 +203,14 @@ def fetch_schedule():
                             else:
                                 away_status = "Unconfirmed"
                         
+                        # Extract US national TV network (prefer national over local)
+                        tv_network = ''
+                        broadcasts = game.get('tvBroadcasts', [])
+                        # Priority: national US broadcasts first
+                        national_us = [b['network'] for b in broadcasts if b.get('market') == 'N' and b.get('countryCode') == 'US']
+                        if national_us:
+                            tv_network = national_us[0]
+
                         game_info = {
                             'id': game['id'],
                             'gameDate': target_date, # Explicitly save the date we fetched for
@@ -214,7 +222,8 @@ def fetch_schedule():
                             'homeGoalieConfirmed': home_goalie,
                             'homeGoalieStatus': home_status,
                             'awayGoalieConfirmed': away_goalie,
-                            'awayGoalieStatus': away_status
+                            'awayGoalieStatus': away_status,
+                            'tvNetwork': tv_network,
                         }
                         all_games.append(game_info)
                     break

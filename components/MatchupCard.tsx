@@ -105,6 +105,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
         homeVegasOdds,
         awayVegasOdds,
         startTime,
+        tvNetwork,
         home_gas,
         away_gas,
         home_gas_breakdown,
@@ -945,10 +946,13 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center gap-1">
                         <span className="text-[10px] font-mono font-bold uppercase tracking-widest leading-none mt-1" style={{ color: getTimeColor(startTime || '') }}>
                             {formatTime(startTime || '')}
                         </span>
+                        {tvNetwork && (
+                            <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-5 w-auto object-contain" title={tvNetwork} />
+                        )}
                     </div>
 
                     <div className="flex flex-col items-end">
@@ -1170,9 +1174,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             />
                         </div>
 
-                        {/* CENTER: Time only */}
-                        <div className="flex flex-col items-center justify-center px-2 shrink-0">
+                        {/* CENTER: Time + Network */}
+                        <div className="flex flex-col items-center justify-center px-2 shrink-0 gap-0.5">
                             <span className="text-xs font-mono tracking-[0.2em]" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
+                            {tvNetwork && (
+                                <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-4 w-auto object-contain" title={tvNetwork} />
+                            )}
                         </div>
 
                         {/* HOME SIDE: Logo + goalie info (left-aligned) */}
@@ -1505,7 +1512,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         <div className="flex-1 pr-6 flex flex-col gap-6">
                             <TeamNavButtons triCode={awayTeam.triCode} />
                             <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} currentStarter={awayStarter} />
-                            <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} goalieStatLine={prediction.away_goalie_stats} />
+                            <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} goalieStatLine={prediction.away_goalie_stats} backupGoalie={prediction.awayBackupGoalie} backupGoalieStatLine={prediction.awayBackupGoalieStats} />
                             <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                         </div>
 
@@ -1516,7 +1523,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         <div className="flex-1 pl-6 flex flex-col gap-6">
                             <TeamNavButtons triCode={homeTeam.triCode} justify="end" />
                             <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} currentStarter={homeStarter} />
-                            <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} goalieStatLine={prediction.home_goalie_stats} />
+                            <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} goalieStatLine={prediction.home_goalie_stats} backupGoalie={prediction.homeBackupGoalie} backupGoalieStatLine={prediction.homeBackupGoalieStats} />
                             <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                         </div>
                     </div>
@@ -1614,7 +1621,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 }`}>
                                     {cleanStarterName(awayStarter || '').split(' ').pop()}
                                 </span>
-                                <span className="text-[10px] font-mono tracking-wider whitespace-nowrap" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
+                                <span className="flex flex-col items-center gap-0.5">
+                                    <span className="text-[10px] font-mono tracking-wider whitespace-nowrap" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
+                                    {tvNetwork && <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-3 w-auto object-contain" />}
+                                </span>
                                 <span className={`text-[10px] font-bold uppercase tracking-wider leading-none truncate max-w-[35%] text-right ${
                                     (homeStarter?.toUpperCase()?.includes('UNCONFIRMED') || !homeStarter) ? 'text-neutral-500' :
                                     homeStarter?.toUpperCase()?.includes('CONFIRMED') ? 'text-neon-green' :
@@ -1941,7 +1951,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={away_recent_games || []} teamTriCode={awayTeam.triCode} isMobile={true} currentStarter={awayStarter} />
-                                    <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} goalieStatLine={prediction.away_goalie_stats} />
+                                    <LineupGrid lineup={prediction.away_lineup} triCode={awayTeam.triCode} goalieStarter={prediction.awayStarter} gsaxPerGame={prediction.away_gsax} gsaxPct={prediction.away_gsax_pct} goalieStatLine={prediction.away_goalie_stats} backupGoalie={prediction.awayBackupGoalie} backupGoalieStatLine={prediction.awayBackupGoalieStats} />
                                     <PlayerNewsList news={prediction.away_news || []} teamTriCode={awayTeam.triCode} />
                                 </div>
                             </div>
@@ -1952,7 +1962,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 {/* Recent Games & Lineups & News */}
                                 <div className="mt-4 flex flex-col gap-4">
                                     <RecentGamesList games={home_recent_games || []} teamTriCode={homeTeam.triCode} isMobile={true} currentStarter={homeStarter} />
-                                    <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} goalieStatLine={prediction.home_goalie_stats} />
+                                    <LineupGrid lineup={prediction.home_lineup} triCode={homeTeam.triCode} goalieStarter={prediction.homeStarter} gsaxPerGame={prediction.home_gsax} gsaxPct={prediction.home_gsax_pct} goalieStatLine={prediction.home_goalie_stats} backupGoalie={prediction.homeBackupGoalie} backupGoalieStatLine={prediction.homeBackupGoalieStats} />
                                     <PlayerNewsList news={prediction.home_news || []} teamTriCode={homeTeam.triCode} />
                                 </div>
                             </div>

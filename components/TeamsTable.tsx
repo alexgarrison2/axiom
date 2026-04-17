@@ -244,7 +244,7 @@ interface GoalieRating {
 type SortKey = keyof TeamStat;
 type ViewBase = 'All' | 'PlayingToday' | 'PlayingTomorrow' | 'PlayoffMatchup';
 type WithOption = 'Location' | 'Starter' | 'DayOfWeek';
-type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter' | 'PlayoffMatchup';
+type ViewMode = 'All' | 'PlayingToday' | 'PlayingTodayLocation' | 'PlayingTodayStarter' | 'PlayingTodayLocationStarter' | 'PlayingTomorrow' | 'PlayingTomorrowLocation' | 'PlayingTomorrowStarter' | 'PlayingTomorrowLocationStarter' | 'PlayoffMatchup' | 'PlayoffMatchupLocation' | 'PlayoffMatchupStarter' | 'PlayoffMatchupLocationStarter';
 
 interface PlayoffConferenceBracket {
     conf: string;
@@ -722,7 +722,7 @@ const TeamsTable = () => {
     const [withOptions, setWithOptions] = useState<WithOption[]>([]);
     const [valuesMode, setValuesMode] = useState<ValuesMode>('Stats');
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
-    const [filterLastN, setFilterLastN] = useState<number | 'All'>('All');
+    const [filterLastN, setFilterLastN] = useState<number | 'All' | 'Olympics'>('All');
     const [filterPeriod, setFilterPeriod] = useState<'All' | '1st' | '2nd' | '3rd' | 'OT'>('All');
     const [filterPlayoff, setFilterPlayoff] = useState<'All' | 'Yes' | 'No'>('All');
     const [moreFiltersOpen, setMoreFiltersOpen] = useState(true);
@@ -773,7 +773,6 @@ const TeamsTable = () => {
     // DayOfWeek is handled separately in getGames and does NOT affect ViewMode
     const viewMode = useMemo((): ViewMode => {
         if (viewBase === 'All') return 'All';
-        if (viewBase === 'PlayoffMatchup') return 'PlayoffMatchup';
         const hasLoc = withOptions.includes('Location');
         const hasStar = withOptions.includes('Starter');
         const suffix = hasLoc && hasStar ? 'LocationStarter' : hasLoc ? 'Location' : hasStar ? 'Starter' : '';
@@ -1310,7 +1309,10 @@ const TeamsTable = () => {
             }
 
             // Apply Last N (Always applies unless 'All')
-            if (filterLastN !== 'All') {
+            if (filterLastN === 'Olympics') {
+                // Since Olympics: games on or after Feb 22, 2026
+                games = games.filter(g => g.game_date >= '2026-02-22');
+            } else if (filterLastN !== 'All') {
                 games = games.slice(0, filterLastN);
             }
             return games;
@@ -1334,9 +1336,32 @@ const TeamsTable = () => {
 
         // 2. Calculate League Baseline (Respecting Filters)
         // This is used for Ranges (color gradients) - usually we want gradients to reflect the filtered view (e.g. "Who has best PP in last 10?")
+
+        // For PlayoffMatchup with Location/Starter filters: build per-team maps from next game data
+        const isPlayoffWithFilter = viewMode.startsWith('PlayoffMatchup') && viewMode !== 'PlayoffMatchup';
+        const playoffTeamLocation = new Map<string, 'Home' | 'Away'>();
+        const playoffTeamStarter = new Map<string, string | undefined>();
+        if (isPlayoffWithFilter) {
+            const sourceMatchups = [...todayMatchups, ...tomorrowMatchups];
+            sourceMatchups.forEach(m => {
+                playoffTeamLocation.set(m.home, 'Home');
+                playoffTeamLocation.set(m.away, 'Away');
+                if (viewMode.includes('Starter')) {
+                    playoffTeamStarter.set(m.home, m.homeStarter);
+                    playoffTeamStarter.set(m.away, m.awayStarter);
+                }
+            });
+        }
+
         const leagueBaseline: TeamStat[] = [];
         allTeamsList.forEach(teamName => {
-            const games = getGames(teamName, filterHomeAway); // Use current filters but for ALL teams
+            const loc = isPlayoffWithFilter && viewMode.includes('Location')
+                ? (playoffTeamLocation.get(teamName) ?? filterHomeAway)
+                : filterHomeAway;
+            const starter = isPlayoffWithFilter && viewMode.includes('Starter')
+                ? playoffTeamStarter.get(teamName)
+                : undefined;
+            const games = getGames(teamName, loc, starter); // Use current filters but for ALL teams
             if (games.length > 0) {
                 leagueBaseline.push(calculateTeamStats(teamName, games, filterPeriod));
             }
@@ -1646,7 +1671,7 @@ const TeamsTable = () => {
 
     const sortedStats = useMemo(() => {
         // If in Playing Today/Tomorrow/PlayoffMatchup modes, PRESERVE ORDER
-        if (viewMode === 'PlayoffMatchup') {
+        if (viewMode.startsWith('PlayoffMatchup')) {
             return playoffBracket.flatMap(conf => conf.matchups.flatMap(([a, b]) => [a, b]));
         }
         if (viewMode !== 'All') return stats;
@@ -2020,7 +2045,7 @@ const TeamsTable = () => {
                         <div className="flex bg-gray-800 rounded-lg p-1 gap-1">
                             {(['Location', 'Starter', 'DayOfWeek'] as WithOption[]).map(opt => {
                                 const isActive = withOptions.includes(opt);
-                                const isDisabled = viewBase === 'PlayoffMatchup' || ((opt === 'Location' || opt === 'Starter') && viewBase === 'All');
+                                const isDisabled = (opt === 'DayOfWeek' && viewBase === 'PlayoffMatchup') || ((opt === 'Location' || opt === 'Starter') && viewBase === 'All');
                                 const targetDow = getTargetDayOfWeek(viewBase);
                                 const label = opt === 'DayOfWeek'
                                     ? (isActive ? `${DAY_NAMES[targetDow]}s` : 'Day of Week')
@@ -2065,9 +2090,10 @@ const TeamsTable = () => {
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent</label>
                             <ButtonGroup
-                                options={['All', 5, 10, 20]}
+                                options={['All', 5, 10, 20, 'Olympics']}
+                                labels={['All', 'L5', 'L10', 'L20', 'Olympics']}
                                 current={filterLastN}
-                                onChange={(v) => setFilterLastN(v as number | 'All')}
+                                onChange={(v) => setFilterLastN(v as number | 'All' | 'Olympics')}
                             />
                         </div>
                     )}
@@ -2438,7 +2464,7 @@ const TeamsTable = () => {
 
                             // For PlayoffMatchup view: show conference header before first team of each conference
                             let confHeaderRow: React.ReactNode = null;
-                            if (viewMode === 'PlayoffMatchup') {
+                            if (viewMode.startsWith('PlayoffMatchup')) {
                                 let teamCount = 0;
                                 for (const confBracket of playoffBracket) {
                                     if (teamCount === idx) {
@@ -2454,7 +2480,7 @@ const TeamsTable = () => {
                                     teamCount += confBracket.matchups.length * 2;
                                 }
                             }
-                            const playoffSeedLabel = viewMode === 'PlayoffMatchup' ? team.ranking : null;
+                            const playoffSeedLabel = viewMode.startsWith('PlayoffMatchup') ? team.ranking : null;
 
                             return (
                                 <React.Fragment key={`${team.team}-${idx}`}>
@@ -2497,7 +2523,7 @@ const TeamsTable = () => {
                                                 )}
 
                                                 {/* Playoff seed label in Playoff Matchup view */}
-                                                {viewMode === 'PlayoffMatchup' && playoffSeedLabel && (
+                                                {viewMode.startsWith('PlayoffMatchup') && playoffSeedLabel && (
                                                     <span className="text-[10px] font-bold text-gray-500 ml-1 hidden md:inline">{playoffSeedLabel}</span>
                                                 )}
 

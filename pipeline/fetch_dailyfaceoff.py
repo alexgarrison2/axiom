@@ -128,94 +128,72 @@ def fetch_player_news():
         # Actually, let's store by Team Name first, then map to TriCode later if possible, 
         # or just match by name like we do for goalies.
         
-        team_news = {} 
-        
-        # Get today's date in DFO format (likely ISO or similar)
-        # The user said "date stamp = today"
-        # Let's inspect the date format. Usually "2025-12-09T..."
+        # Load existing accumulated news
+        pipeline_dir = os.path.dirname(os.path.abspath(__file__))
+        local_path = os.path.join(pipeline_dir, 'player_news.json')
+        public_path = os.path.join(pipeline_dir, '..', 'public', 'data', 'player_news.json')
+        accumulated = {}
+        try:
+            if os.path.exists(local_path):
+                with open(local_path, 'r') as f:
+                    accumulated = json.load(f)
+        except Exception:
+            accumulated = {}
+
         today_str = datetime.date.today().strftime("%Y-%m-%d")
-        print(f"Filtering for news from: {today_str}")
-        
+        print(f"Accumulating news (today: {today_str})")
+
         for item in news_items:
-            # Verified Keys:
-            # - date: "2025-12-09"
-            # - details: "Name (injury) will return..."
-            # - newsCategoryName: "Injury", "Goalie Start", "Line Change"
-            # - teamAbbreviation: "NYI"
-            # - playerName: "Jean-Gabriel Pageau"
-            
-            # 1. Date Check
-            news_date = item.get('date', '') 
-            if news_date != today_str:
-                # Debug print for first few skipped
-                # print(f"Skipping older news: {news_date}")
-                continue
-                
-            # 2. Category Check (Exclude Goalie Start - REMOVED, now allowing)
+            # 1. Category Check
             category = item.get('newsCategoryName', 'Unknown')
-            # if 'goalie' in category.lower() and 'start' in category.lower():
-            #     continue
-                
-            # 3. Helpers
+
+            # 2. Helpers
             player_name = item.get('playerName', 'Unknown')
             details = item.get('details', '')
-            # Clean details: sometimes might be HTML, but 'details' usually plain text?
-            # 'fantasyDetails' is the long one. 'details' is short.
-            # Example: "Pageau (upper-body) will return vs. Vegas on Tuesday"
-            
-            # If details is empty, try fantasyDetails but truncated?
             if not details:
                 continue
-            
+
             tri_code = item.get('teamAbbreviation')
             if not tri_code:
-                # content usually has teamName
                 continue
-            
-            # Normalize TriCode (e.g. MON -> MTL check?)
-            # DFO usually standard, but let's trust it for now.
-            
-            # Formatted Message
-            # The user requested format: "Dumba: healthy scratch vs. ANA"
-            # Check if details starts with name.
-            # "Pageau (upper-body)..." matches "Dumba..."
-            # If so, just use details.
-            
-            # If details doesn't start with player name, prepend it?
-            # "will be a healthy scratch" -> NO.
-            # Let's verify.
-            
-            news_text = details
-            
-            # Store it keyed by TriCode
-            if tri_code not in team_news:
-                team_news[tri_code] = []
-                
-            team_news[tri_code].append({
-                'player': player_name,
-                'news': news_text,
-                'category': category,
-                'date': news_date,
-                'timestamp': item.get('createdAt')
-            })
-            
-        print(f"Extracted news for {len(team_news)} teams.")
-        
-        with open('player_news.json', 'w') as f:
-            json.dump(team_news, f, indent=4)
-            
-        return team_news
-        
-    except Exception as e:
-        print(f"Error fetching player news: {e}")
-        return {}
-            
-        print(f"Extracted news for {len(team_news)} teams.")
-        
-        with open('player_news.json', 'w') as f:
-            json.dump(team_news, f, indent=4)
-            
-        return team_news
+
+            news_date = item.get('date', today_str)
+            timestamp = item.get('createdAt')
+
+            # Dedup key
+            dedup_key = f"{player_name}-{timestamp or news_date}"
+
+            if tri_code not in accumulated:
+                accumulated[tri_code] = []
+
+            # Check for duplicate
+            existing_keys = {f"{n['player']}-{n.get('timestamp') or n.get('date', '')}" for n in accumulated[tri_code]}
+            if dedup_key not in existing_keys:
+                accumulated[tri_code].append({
+                    'player': player_name,
+                    'news': details,
+                    'category': category,
+                    'date': news_date,
+                    'timestamp': timestamp,
+                })
+
+        # Sort each team's news by timestamp desc
+        for tri in accumulated:
+            accumulated[tri].sort(key=lambda x: x.get('timestamp') or x.get('date', ''), reverse=True)
+
+        # Prune: keep only last 30 days of news per team
+        cutoff = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+        for tri in accumulated:
+            accumulated[tri] = [n for n in accumulated[tri] if (n.get('date') or '') >= cutoff]
+
+        print(f"Accumulated news for {len(accumulated)} teams.")
+
+        with open(local_path, 'w') as f:
+            json.dump(accumulated, f, indent=4)
+        with open(public_path, 'w') as f:
+            json.dump(accumulated, f, indent=4)
+
+        return accumulated
         
     except Exception as e:
         print(f"Error fetching player news: {e}")

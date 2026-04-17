@@ -344,6 +344,26 @@ def fetch_dfo_tweets() -> None:
     ACCUM_FILE.write_text(json.dumps(accumulated, indent=2))
     PUBLIC_FILE.write_text(json.dumps(accumulated, indent=2))
 
+    # Also merge into player_news.json (non-playoff game cards) — same accumulation
+    player_news_local  = PIPELINE_DIR / 'player_news.json'
+    player_news_public = PUBLIC_DATA  / 'player_news.json'
+    try:
+        pn: dict = json.loads(player_news_local.read_text()) if player_news_local.exists() else {}
+    except Exception:
+        pn = {}
+    for tri, items in accumulated.items():
+        if tri == 'GENERAL':
+            continue
+        existing_pn = {f"{n['player']}-{n.get('timestamp') or n.get('date','')}" for n in pn.get(tri, [])}
+        for item in items:
+            sig = f"{item['player']}-{item.get('timestamp') or item.get('date','')}"
+            if sig not in existing_pn:
+                pn.setdefault(tri, []).append(item)
+    for tri in pn:
+        pn[tri].sort(key=lambda x: x.get('timestamp', x.get('date', '')), reverse=True)
+    player_news_local.write_text(json.dumps(pn, indent=2))
+    player_news_public.write_text(json.dumps(pn, indent=2))
+
     x_teams = sorted(t for t, items in accumulated.items()
                      if any('tweet_id' in i for i in items) and t != 'GENERAL')
     print(f'  ✓ {new_count} new items  |  {skipped} already seen  |  teams: {x_teams}')
