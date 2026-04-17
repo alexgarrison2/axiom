@@ -5,6 +5,7 @@ import ScheduleStrip from './ScheduleStrip';
 import H2HGameLog from './H2HGameLog';
 import TornadoChart from './TornadoChart';
 import SeriesOdds from './SeriesOdds';
+import PlayoffHistory from './PlayoffHistory';
 import LineupGrid from '@/components/LineupGrid';
 import { teamColor } from './PlayoffHub';
 import type { PlayoffSeries, TeamInfo, TeamRatings, H2HGame } from '@/app/playoffs/page';
@@ -22,6 +23,7 @@ interface SeriesOverviewProps {
   prediction?: GamePrediction;
   teamGoalies?: Record<string, string[]>;
   goalieStatsMap?: Record<string, string>;
+  playoffHistory?: any[];
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
@@ -32,7 +34,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, prediction, teamGoalies, goalieStatsMap }: SeriesOverviewProps) {
+export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, prediction, teamGoalies, goalieStatsMap, playoffHistory }: SeriesOverviewProps) {
   const t1 = series.higherSeed.triCode;
   const t2 = series.lowerSeed.triCode;
   const c1 = teamColor(t1, teamsMap);
@@ -80,6 +82,17 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
           <H2HGameLog games={h2hGames} t1={t1} t2={t2} c1={c1} c2={c2} teamsMap={teamsMap} />
         </div>
       )}
+
+      {/* Playoff History */}
+      <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+        <SectionHeader>Playoff History</SectionHeader>
+        <PlayoffHistory
+          t1={t1}
+          t2={t2}
+          teamsMap={teamsMap}
+          history={playoffHistory ?? []}
+        />
+      </div>
 
       {/* Tornado Chart */}
       <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-2xl p-3">

@@ -255,6 +255,10 @@ function loadData() {
   let playoffPlayerNews: Record<string, any[]> = {};
   try { playoffPlayerNews = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'playoff_player_news.json'), 'utf8')); } catch { /* ok */ }
 
+  // Load playoff history (historical series between each matchup pair)
+  let playoffHistory: Record<string, any[]> = {};
+  try { playoffHistory = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'playoff_history.json'), 'utf8')); } catch { /* ok */ }
+
   // Build H2H game log
   const seriesTeamPairs = series.map(s => [s.higherSeed.triCode, s.lowerSeed.triCode]);
   const h2hGames: Record<string, H2HGame[]> = {};
@@ -518,6 +522,7 @@ function loadData() {
   return {
     series, teamsMap, ratings, triToCommon, h2hGames,
     lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap,
+    playoffHistory,
   };
 }
 
@@ -525,6 +530,7 @@ export default async function NewPage() {
   const {
     series, teamsMap, ratings, triToCommon, h2hGames,
     lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap,
+    playoffHistory,
   } = loadData();
 
   return (
@@ -543,6 +549,7 @@ export default async function NewPage() {
           seriesPredictions={seriesPredictions}
           teamGoalies={teamGoalies}
           goalieStatsMap={goalieStatsMap}
+          playoffHistory={playoffHistory}
         />
       </div>
     </main>
