@@ -1167,6 +1167,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                                 </div>
                                             )}
                                             {!isSocial && <VsOppStatsDisplay statsStr={prediction.awayGoalieVsOpp} oppTriCode={homeTeam.triCode} align="right" />}
+                                            {!isSocial && prediction.awayGoaliePlayoffStats && (
+                                                <div className="text-[10px] font-mono text-purple-400/80 mt-0.5 text-right">
+                                                    <span className="text-[8px] text-neutral-600 uppercase mr-1">PO</span>
+                                                    {prediction.awayGoaliePlayoffStats}
+                                                </div>
+                                            )}
                                         </>
                                     );
                                 })()}
@@ -1227,6 +1233,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                                 </div>
                                             )}
                                             {!isSocial && <VsOppStatsDisplay statsStr={prediction.homeGoalieVsOpp} oppTriCode={awayTeam.triCode} align="left" />}
+                                            {!isSocial && prediction.homeGoaliePlayoffStats && (
+                                                <div className="text-[10px] font-mono text-purple-400/80 mt-0.5 text-left">
+                                                    {prediction.homeGoaliePlayoffStats}
+                                                    <span className="text-[8px] text-neutral-600 uppercase ml-1">PO</span>
+                                                </div>
+                                            )}
                                         </>
                                     );
                                 })()}

@@ -334,6 +334,8 @@ function loadData() {
     let awayGsaxPct: number;
     let homeGoalieStats: string | undefined;
     let awayGoalieStats: string | undefined;
+    let homeGoalieVsOpp: string | undefined;
+    let awayGoalieVsOpp: string | undefined;
     let homeVegasOdds = '';
     let awayVegasOdds = '';
     let homeVegasWinPct: number;
@@ -369,6 +371,8 @@ function loadData() {
         homeGsaxPct = pipHomeGsaxPct; awayGsaxPct = pipAwayGsaxPct;
         homeGoalieStats = pipRow.home_goalie_stats?.trim();
         awayGoalieStats = pipRow.away_goalie_stats?.trim();
+        homeGoalieVsOpp = pipRow.home_starter_vs_opp?.trim();
+        awayGoalieVsOpp = pipRow.away_starter_vs_opp?.trim();
         homeVegasOdds = pipHomeVegasOdds; awayVegasOdds = pipAwayVegasOdds;
         homeVegasWinPct = pipHomeVegasWinPct; awayVegasWinPct = pipAwayVegasWinPct;
         homeEv = pipHomeEv; awayEv = pipAwayEv;
@@ -381,6 +385,8 @@ function loadData() {
         homeGsaxPct = pipAwayGsaxPct; awayGsaxPct = pipHomeGsaxPct;
         homeGoalieStats = pipRow.away_goalie_stats?.trim();
         awayGoalieStats = pipRow.home_goalie_stats?.trim();
+        homeGoalieVsOpp = pipRow.away_starter_vs_opp?.trim();
+        awayGoalieVsOpp = pipRow.home_starter_vs_opp?.trim();
         homeVegasOdds = pipAwayVegasOdds; awayVegasOdds = pipHomeVegasOdds;
         homeVegasWinPct = pipAwayVegasWinPct; awayVegasWinPct = pipHomeVegasWinPct;
         homeEv = pipAwayEv; awayEv = pipHomeEv;
@@ -459,6 +465,8 @@ function loadData() {
 
       home_goalie_stats: homeGoalieStats,
       away_goalie_stats: awayGoalieStats,
+      homeGoalieVsOpp: homeGoalieVsOpp || undefined,
+      awayGoalieVsOpp: awayGoalieVsOpp || undefined,
 
       // TV network from schedule
       tvNetwork: tvNetworkMap[homeTri + '_' + awayTri] ?? tvNetworkMap[awayTri + '_' + homeTri] ?? '',
