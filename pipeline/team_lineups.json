@@ -449,7 +449,7 @@
                 "pos": "ld",
                 "id": 2517,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Miro Heiskanen",
@@ -467,7 +467,7 @@
                 "pos": "ld",
                 "id": 29213,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Nils Lundkvist",
@@ -475,7 +475,7 @@
                 "pos": "rd",
                 "id": 4821,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -4094,22 +4094,22 @@
                 "movement": "up"
             },
             {
-                "name": "Jack Roslovic",
-                "number": 28,
+                "name": "Kasperi Kapanen",
+                "number": 42,
                 "pos": "rw",
-                "id": 2499,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2385,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Colton Dach",
-                "number": 34,
+                "name": "Adam Henrique",
+                "number": 19,
                 "pos": "lw",
-                "id": 32903,
-                "ppUnit": null,
-                "movement": null
+                "id": 945,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Ryan Nugent-Hopkins",
@@ -4120,36 +4120,36 @@
                 "movement": null
             },
             {
-                "name": "Trent Frederic",
-                "number": 10,
+                "name": "Jack Roslovic",
+                "number": 28,
                 "pos": "rw",
-                "id": 2662,
-                "ppUnit": null,
-                "movement": null
+                "id": 2499,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f4": [
             {
+                "name": "Colton Dach",
+                "number": 34,
+                "pos": "lw",
+                "id": 32903,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Josh Samanski",
+                "number": null,
+                "pos": "c",
+                "id": 38438,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
                 "name": "Curtis Lazar",
                 "number": 20,
-                "pos": "lw",
-                "id": 2148,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Adam Henrique",
-                "number": 19,
-                "pos": "c",
-                "id": 945,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Kasperi Kapanen",
-                "number": 42,
                 "pos": "rw",
-                "id": 2385,
+                "id": 2148,
                 "ppUnit": null,
                 "movement": null
             }
