@@ -1341,21 +1341,7 @@ const TeamsTable = () => {
         // (populated after playoff seeding computed — see "playoff matchup" block inserted after plySet)
         const leagueBaseline: TeamStat[] = [];
 
-        if (viewMode === 'All') {
-            // Standard View - matches leagueBaseline
-            // (duplicate work technically but keeps logic clean if filters for baseline diverge later)
-
-            // Apply Division Filter
-            let filteredBase = leagueBaseline;
-            if (selectedDivisions.length > 0) {
-                filteredBase = filteredBase.filter(s => {
-                    const teamInfo = teams[s.team];
-                    return teamInfo && teamInfo.division && selectedDivisions.includes(teamInfo.division);
-                });
-            }
-
-            processedTeams.push(...filteredBase);
-        } else {
+        if (viewMode !== 'All') {
             // Playing Today/Tomorrow Views (Force specific order: Away, Home, Away, Home...)
             const isTomorrow = viewMode.startsWith('PlayingTomorrow');
             const targetMatchups = isTomorrow ? tomorrowMatchups : todayMatchups;
@@ -1523,6 +1509,18 @@ const TeamsTable = () => {
             }
         });
         setLeagueStats(leagueBaseline);
+
+        // For 'All' view, populate processedTeams from leagueBaseline (now fully populated)
+        if (viewMode === 'All') {
+            let filteredBase = leagueBaseline;
+            if (selectedDivisions.length > 0) {
+                filteredBase = filteredBase.filter(s => {
+                    const teamInfo = teams[s.team];
+                    return teamInfo && teamInfo.division && selectedDivisions.includes(teamInfo.division);
+                });
+            }
+            processedTeams.push(...filteredBase);
+        }
 
         // ── Magic Number / Tragic Number ─────────────────────────────────────
         // M# (playoff teams): combined pts a team needs to earn + pts the 9th-place

@@ -142,6 +142,8 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
         const t2Backup = getBackup(t2, t2Goalie);
         const t1BackupStats = t1Backup ? goalieStatsMap?.[t1Backup] : undefined;
         const t2BackupStats = t2Backup ? goalieStatsMap?.[t2Backup] : undefined;
+        const t1BackupGsax = t1Backup ? goalieRatings?.[t1Backup]?.gsax_per_game : undefined;
+        const t2BackupGsax = t2Backup ? goalieRatings?.[t2Backup]?.gsax_per_game : undefined;
         return (
           <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-2xl p-3">
             <SectionHeader>Projected Lineups</SectionHeader>
@@ -151,14 +153,14 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
                   <img src={`/logos/${t1}.svg`} alt={t1} className="w-4 h-4" />
                   <span className="text-xs font-semibold" style={{ color: c1 }}>{name1}</span>
                 </div>
-                <LineupGrid lineup={lineups[t1]} triCode={t1} goalieStarter={t1Goalie} gsaxPerGame={t1Gsax} gsaxPct={t1GsaxPct} goalieStatLine={t1GoalieStats} backupGoalie={t1Backup} backupGoalieStatLine={t1BackupStats} />
+                <LineupGrid lineup={lineups[t1]} triCode={t1} goalieStarter={t1Goalie} gsaxPerGame={t1Gsax} gsaxPct={t1GsaxPct} goalieStatLine={t1GoalieStats} backupGoalie={t1Backup} backupGoalieStatLine={t1BackupStats} backupGoalieGsax={t1BackupGsax} />
               </div>
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <img src={`/logos/${t2}.svg`} alt={t2} className="w-4 h-4" />
                   <span className="text-xs font-semibold" style={{ color: c2 }}>{name2}</span>
                 </div>
-                <LineupGrid lineup={lineups[t2]} triCode={t2} goalieStarter={t2Goalie} gsaxPerGame={t2Gsax} gsaxPct={t2GsaxPct} goalieStatLine={t2GoalieStats} backupGoalie={t2Backup} backupGoalieStatLine={t2BackupStats} />
+                <LineupGrid lineup={lineups[t2]} triCode={t2} goalieStarter={t2Goalie} gsaxPerGame={t2Gsax} gsaxPct={t2GsaxPct} goalieStatLine={t2GoalieStats} backupGoalie={t2Backup} backupGoalieStatLine={t2BackupStats} backupGoalieGsax={t2BackupGsax} />
               </div>
             </div>
           </div>

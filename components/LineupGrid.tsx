@@ -14,6 +14,7 @@ interface LineupGridProps {
     goalieStatLine?: string;        // pre-formatted stats string, e.g. "(31-12-3) | .914 | 2.30"
     backupGoalie?: string;          // backup goalie full name
     backupGoalieStatLine?: string;  // backup goalie stats string
+    backupGoalieGsax?: number;      // backup GSAx per game
 }
 
 // ── Player impact data types ───────────────────────────────────────────────────
@@ -298,7 +299,7 @@ function lookupInMap(m: Map<string, number>, name: string): number | undefined {
 // ── Main grid ─────────────────────────────────────────────────────────────────
 export default function LineupGrid({
     lineup, triCode, goalieStarter, gsaxPerGame, gsaxPct, goalieStatLine,
-    backupGoalie, backupGoalieStatLine,
+    backupGoalie, backupGoalieStatLine, backupGoalieGsax,
 }: LineupGridProps) {
     // ── Hooks (must precede any early returns per Rules of Hooks) ─────────────
     const [piData, setPiData] = useState<PiData | null>(null);
@@ -698,7 +699,7 @@ export default function LineupGrid({
                                 {renderGoalie(goalieStarter, goalieStatLine, gsaxPerGame)}
                                 <div className="border-l border-white/5">
                                     {backupGoalie
-                                        ? renderGoalie(backupGoalie, backupGoalieStatLine)
+                                        ? renderGoalie(backupGoalie, backupGoalieStatLine, backupGoalieGsax)
                                         : <div className="py-2 px-2 flex items-center justify-center"><span className="text-[9px] text-neutral-700">—</span></div>
                                     }
                                 </div>

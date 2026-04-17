@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
 import PlayoffHub from '@/components/playoff/PlayoffHub';
+import Header from '@/components/Header';
 import type { GamePrediction, RecentGame, TeamLineup } from '@/utils/data';
 
 export const revalidate = 0;
@@ -442,8 +443,24 @@ function loadData() {
       homeEv,
       awayEv,
       totalGoals: parseFloat((homeXg + awayXg).toFixed(2)),
-      homeWager: null,
-      awayWager: null,
+      homeWager: (() => {
+        if (!pipRow) return null;
+        const rec = pipRow.wager_recommendation ?? '';
+        if (rec.toLowerCase().includes('home') && rec.toLowerCase().includes('unit')) {
+          const m = rec.match(/(\d+(\.\d+)?)\s*Unit/i);
+          return m ? `${m[1]}u` : null;
+        }
+        return null;
+      })(),
+      awayWager: (() => {
+        if (!pipRow) return null;
+        const rec = pipRow.wager_recommendation ?? '';
+        if (rec.toLowerCase().includes('away') && rec.toLowerCase().includes('unit')) {
+          const m = rec.match(/(\d+(\.\d+)?)\s*Unit/i);
+          return m ? `${m[1]}u` : null;
+        }
+        return null;
+      })(),
       homeModelOdds: probToAmerican(homeWinPct / 100),
       awayModelOdds: probToAmerican(awayWinPct / 100),
       homeVegasOdds,
@@ -453,6 +470,30 @@ function loadData() {
       away_pp_rank: ppRank[awayTri],
       home_pk_rank: pkRank[homeTri],
       away_pk_rank: pkRank[awayTri],
+
+      // H2H regular season record
+      ...(() => {
+        const games = h2hGames[`${homeTri}_${awayTri}`] ?? h2hGames[`${awayTri}_${homeTri}`] ?? [];
+        let homeW = 0, homeL = 0, awayW = 0, awayL = 0;
+        games.forEach(g => {
+          const homeWon = g.homeGoals > g.awayGoals;
+          if (g.homeTeam === homeTri) { homeWon ? homeW++ : homeL++; }
+          else { homeWon ? awayW++ : awayL++; }
+        });
+        // From home team's perspective: wins when homeTeam = homeTri or when awayTeam won
+        // Recount from each team's perspective
+        let hW = 0, hL = 0;
+        games.forEach(g => {
+          const homeWon = g.homeGoals > g.awayGoals;
+          if (g.homeTeam === homeTri) { homeWon ? hW++ : hL++; }
+          else { homeWon ? hL++ : hW++; }
+        });
+        const aW = hL; const aL = hW;
+        return {
+          home_h2h_record: games.length > 0 ? `${hW}-${hL}` : undefined,
+          away_h2h_record: games.length > 0 ? `${aW}-${aL}` : undefined,
+        };
+      })(),
 
       home_l7: getL7(homeTri),
       away_l7: getL7(awayTri),
@@ -481,8 +522,8 @@ function loadData() {
 
       // Backup goalies + career playoff stats
       ...(() => {
-        const starter1 = homeGoalie.split(' (')[0]?.trim() ?? '';
-        const starter2 = awayGoalie.split(' (')[0]?.trim() ?? '';
+        const starter1 = homeGoalie.split(' (')[0]?.trim() || teamGoalies[homeTri]?.[0] || '';
+        const starter2 = awayGoalie.split(' (')[0]?.trim() || teamGoalies[awayTri]?.[0] || '';
         const homeGoalies = teamGoalies[homeTri] ?? [];
         const awayGoalies = teamGoalies[awayTri] ?? [];
         const hBackup = homeGoalies.find((g: string) => g.toLowerCase() !== starter1.toLowerCase());
@@ -540,7 +581,9 @@ export default async function NewPage() {
   return (
     <main className="min-h-screen bg-black text-white font-sans relative overflow-x-hidden selection:bg-emerald-500/30">
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
-      <div className="relative z-10 h-screen">
+      <div className="relative z-10 h-screen flex flex-col">
+        <Header compact />
+        <div className="flex-1 min-h-0">
         <PlayoffHub
           series={series}
           teamsMap={teamsMap}
@@ -557,6 +600,7 @@ export default async function NewPage() {
           teamStatsExtended={teamStatsExtended}
           goalieRatings={goalieRatings}
         />
+        </div>
       </div>
     </main>
   );
