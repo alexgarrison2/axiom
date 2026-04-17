@@ -7,7 +7,7 @@ import TornadoChart from './TornadoChart';
 import SeriesOdds from './SeriesOdds';
 import LineupGrid from '@/components/LineupGrid';
 import { teamColor } from './PlayoffHub';
-import type { PlayoffSeries, TeamInfo, TeamRatings, H2HGame } from '@/app/new/page';
+import type { PlayoffSeries, TeamInfo, TeamRatings, H2HGame } from '@/app/playoffs/page';
 import type { GamePrediction } from '@/utils/data';
 
 interface SeriesOverviewProps {

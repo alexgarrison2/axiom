@@ -236,7 +236,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     const [selectedTab, setSelectedTab] = useState<string>(() => {
         if (tabParam) {
             // Named tabs land directly (Teams, News, etc.)
-            const named = ['News', 'Teams', 'History', 'Playoffs', 'Bracket', 'Skaters'];
+            const named = ['News', 'Teams', 'History', 'Bracket', 'Skaters'];
             if (named.includes(tabParam)) return tabParam;
         }
         return uniqueDates[0] || 'History';
@@ -269,7 +269,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 
     // Filter predictions for the selected date
     const filteredPredictions = useMemo(() => {
-        if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News' || selectedTab === 'Playoffs' || selectedTab === 'Bracket' || selectedTab === 'Skaters') return [];
+        if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News' || selectedTab === 'Bracket' || selectedTab === 'Skaters') return [];
         return predictions.filter(p => p.date === selectedTab);
     }, [predictions, selectedTab]);
 
@@ -317,7 +317,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
         return <div className="text-center text-gray-500 mt-12 font-mono uppercase tracking-widest animate-pulse">No data available.</div>;
     }
 
-    const isMainPage = !['News', 'Teams', 'History', 'Playoffs', 'Bracket', 'Skaters'].includes(selectedTab);
+    const isMainPage = !['News', 'Teams', 'History', 'Bracket', 'Skaters'].includes(selectedTab);
 
     return (
         <div className="w-full">
@@ -436,23 +436,13 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 <span className="relative z-10">HISTORY</span>
                             </button>
 
-                            {/* Playoffs Button */}
-                            <button
-                                onClick={() => setSelectedTab('Playoffs')}
-                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Playoffs'
-                                    ? 'text-rose-400 border-rose-400 shadow-[0_0_20_rgba(244,63,94,0.3)] text-glow-rose'
-                                    : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
-                                    }`}
+                            {/* Playoffs Button — navigates to /playoffs hub */}
+                            <Link
+                                href="/playoffs"
+                                className="relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start bg-transparent text-gray-500 border-transparent hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/5"
                             >
-                                {selectedTab === 'Playoffs' && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-rose-400/10 rounded-full"
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    />
-                                )}
                                 <span className="relative z-10">PLAYOFFS</span>
-                            </button>
+                            </Link>
 
                             {/* Bracket Button */}
                             <button
@@ -734,29 +724,6 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                         className="w-full"
                     >
                         <NewsSection predictions={predictions} />
-                    </motion.div>
-                ) : selectedTab === 'Playoffs' ? (
-                    <motion.div
-                        key="tab-playoffs"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full"
-                    >
-                        <div className="max-w-7xl mx-auto">
-                            <div className="text-center mb-2">
-                                <h2 className="text-lg md:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-orange-400 mb-0.5">Playoff Probability Dashboard</h2>
-                                <p className="text-neutral-400 text-xs">Monte Carlo simulations (5,000 runs). Projected points are averaged outcomes.</p>
-                            </div>
-                            {Object.keys(simResults).length > 0 ? (
-                                <PlayoffTable currentStandings={currentStandings} simResults={simResults} />
-                            ) : (
-                                <div className="flex justify-center items-center py-24">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
-                                </div>
-                            )}
-                        </div>
                     </motion.div>
                 ) : selectedTab === 'Bracket' ? (
                     <motion.div

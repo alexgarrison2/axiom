@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { H2HGame, TeamInfo } from '@/app/new/page';
+import type { H2HGame, TeamInfo } from '@/app/playoffs/page';
 
 interface H2HGameLogProps {
   games: H2HGame[];

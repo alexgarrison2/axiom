@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SeriesCard from './SeriesCard';
 import SeriesOverview from './SeriesOverview';
 import MatchupCard from '@/components/MatchupCard';
-import type { PlayoffSeries, TeamInfo, TeamRatings, H2HGame } from '@/app/new/page';
+import type { PlayoffSeries, TeamInfo, TeamRatings, H2HGame } from '@/app/playoffs/page';
 import type { GamePrediction } from '@/utils/data';
 
 // ─── Vivid color overrides (same as PlayoffBracket) ──────────────────────────
@@ -102,6 +102,11 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
     <div className="h-full flex">
       {/* ─── Left Sidebar ─── */}
       <div className="w-[180px] min-w-[180px] border-r border-white/5 flex flex-col py-3 px-2 gap-1 overflow-y-auto scrollbar-hide">
+        {/* Back to main */}
+        <a href="/" className="flex items-center gap-1.5 text-[10px] text-neutral-600 hover:text-neutral-400 transition-colors mb-1 px-1 group">
+          <svg className="w-3 h-3 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+          <span>Predictions</span>
+        </a>
         <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-semibold px-1 mb-1">Eastern</div>
         {eastSeries.map((s, i) => (
           <motion.div key={s.seriesId} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>

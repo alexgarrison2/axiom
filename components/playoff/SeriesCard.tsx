@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { teamColor } from './PlayoffHub';
-import type { PlayoffSeries, TeamInfo } from '@/app/new/page';
+import type { PlayoffSeries, TeamInfo } from '@/app/playoffs/page';
 
 interface SeriesCardProps {
   series: PlayoffSeries;

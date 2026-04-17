@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import type { TeamRatings } from '@/app/new/page';
+import type { TeamRatings } from '@/app/playoffs/page';
 
 interface TornadoChartProps {
   t1: string;
@@ -28,7 +28,7 @@ const STATS: StatDef[] = [
   { key: 'pp', label: 'PP%', field: 'pp_rating', higherBetter: true, format: v => v.toFixed(1) + '%' },
   { key: 'pk', label: 'PK%', field: 'pk_rating', higherBetter: true, format: v => v.toFixed(1) + '%' },
   { key: 'pendrawn', label: 'Pen Drawn/60', field: 'penalties_drawn_per_60', higherBetter: true, format: v => v.toFixed(2) },
-  { key: 'pentaken', label: 'Pen Taken/60', field: 'penalties_taken_per_60', higherBetter: false, format: v => v.toFixed(2) },
+  { key: 'pentaken', label: 'Pen Taken/60 ↓', field: 'penalties_taken_per_60', higherBetter: false, format: v => v.toFixed(2) },
 ];
 
 function ordinal(n: number): string {

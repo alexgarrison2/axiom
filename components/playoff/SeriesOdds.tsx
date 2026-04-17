@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { teamColor, winProb, seriesBreak } from './PlayoffHub';
-import type { PlayoffSeries, TeamInfo, TeamRatings } from '@/app/new/page';
+import type { PlayoffSeries, TeamInfo, TeamRatings } from '@/app/playoffs/page';
 
 interface SeriesOddsProps {
   series: PlayoffSeries;
