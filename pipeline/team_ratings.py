@@ -314,8 +314,88 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         with open(pipeline_gr_path, 'w') as f:
             json.dump(goalie_ratings, f, indent=4)
         print(f"Saved goalie_ratings.json to {pipeline_gr_path}")
-    
+
+        # Compute and save team_stats_extended.json (splits by time/location/starter)
+        _save_extended_stats(df, PUBLIC_DATA_DIR)
+
     return team_ratings, goalie_ratings, league_xg_for, league_xg_5v5
+
+
+def _save_extended_stats(df, public_data_dir):
+    """Compute per-team stat splits and save to team_stats_extended.json."""
+    import numpy as np
+    df = df.copy()
+    df['game_date'] = pd.to_datetime(df['game_date'])
+    OLYMPICS_CUTOFF = pd.Timestamp('2026-02-22')
+    WIN_RESULTS = {'RW', 'OTW', 'SOW', 'W'}
+    OTL_RESULTS = {'OTL', 'SOL'}
+
+    num_cols = ['goals_for','goals_ag','sog_for','sog_ag','xG_for','xG_against',
+                'xG_for_5v5','xG_against_5v5','save_percentage',
+                'control_score','pp_goals','pp_opportunities','pp_goals_against','pk_opportunities']
+    for c in num_cols:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
+
+    def calc_pts_pct(group):
+        wins = group['result'].isin(WIN_RESULTS).sum()
+        otl = group['result'].isin(OTL_RESULTS).sum()
+        gp = len(group)
+        return round(float((wins * 2 + otl) / (gp * 2)), 4) if gp > 0 else 0.5
+
+    def calc_stats(group):
+        if group is None or len(group) == 0:
+            return None
+        gp = len(group)
+        pp_opps = float(group['pp_opportunities'].sum())
+        pk_opps = float(group['pk_opportunities'].sum())
+        xgf5 = float(group['xG_for_5v5'].sum())
+        xga5 = float(group['xG_against_5v5'].sum())
+        sv_list = group['save_percentage'].replace(0, float('nan')).dropna()
+        sv_pct = float(sv_list.mean()) if len(sv_list) > 0 else 0.90
+        return {
+            'gf_per_game': round(float(group['goals_for'].sum() / gp), 3),
+            'ga_per_game': round(float(group['goals_ag'].sum() / gp), 3),
+            'sf_per_game': round(float(group['sog_for'].sum() / gp), 2),
+            'sa_per_game': round(float(group['sog_ag'].sum() / gp), 2),
+            'pts_pct': calc_pts_pct(group),
+            'sv_pct': round(sv_pct, 4),
+            'xg_delta': round(float(xgf5 / gp - xga5 / gp), 4),
+            'xg_pct': round(float(xgf5 / (xgf5 + xga5)), 4) if (xgf5 + xga5) > 0 else 0.5,
+            'control': round(float(group['control_score'].mean()), 4),
+            'xgf_5v5': round(float(xgf5 / gp), 4),
+            'xga_5v5': round(float(xga5 / gp), 4),
+            'pp': round(float(group['pp_goals'].sum() / pp_opps * 100), 2) if pp_opps > 0 else 0,
+            'pk': round(float((1 - group['pp_goals_against'].sum() / pk_opps) * 100), 2) if pk_opps > 0 else 0,
+            'pen_drawn': round(float(pp_opps / gp), 4),
+            'pen_taken': round(float(pk_opps / gp), 4),
+            'games': int(gp),
+        }
+
+    result = {}
+    for team, tg in df.groupby('team'):
+        tg = tg.sort_values('game_date')
+        since = tg[tg['game_date'] >= OLYMPICS_CUTOFF]
+        home = tg[tg['home_away'] == 'Home']
+        away = tg[tg['home_away'] == 'Away']
+        by_goalie = {}
+        for goalie, gg in tg.groupby('starting_goalie'):
+            if isinstance(goalie, str) and goalie.strip():
+                gs = calc_stats(gg)
+                if gs and gs['games'] >= 5:
+                    by_goalie[goalie] = gs
+        result[team] = {
+            'all': calc_stats(tg),
+            'since_olympics': calc_stats(since),
+            'home': calc_stats(home),
+            'away': calc_stats(away),
+            'by_goalie': by_goalie,
+        }
+
+    out_path = os.path.join(public_data_dir, 'team_stats_extended.json')
+    with open(out_path, 'w') as f:
+        json.dump(result, f, indent=2)
+    print(f"Saved team_stats_extended.json ({len(result)} teams)")
 
 if __name__ == "__main__":
     calculate_ratings()

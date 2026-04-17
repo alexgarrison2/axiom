@@ -24,6 +24,8 @@ interface SeriesOverviewProps {
   teamGoalies?: Record<string, string[]>;
   goalieStatsMap?: Record<string, string>;
   playoffHistory?: any[];
+  teamStatsExtended?: Record<string, any>;
+  goalieRatings?: Record<string, any>;
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
@@ -34,13 +36,22 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, prediction, teamGoalies, goalieStatsMap, playoffHistory }: SeriesOverviewProps) {
+export default function SeriesOverview({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, prediction, teamGoalies, goalieStatsMap, playoffHistory, teamStatsExtended, goalieRatings }: SeriesOverviewProps) {
   const t1 = series.higherSeed.triCode;
   const t2 = series.lowerSeed.triCode;
   const c1 = teamColor(t1, teamsMap);
   const c2 = teamColor(t2, teamsMap);
   const name1 = triToCommon[t1] ?? t1;
   const name2 = triToCommon[t2] ?? t2;
+
+  // Determine starters and next game home team for TornadoChart filters
+  const homeIst1 = prediction?.homeTeam?.triCode === t1;
+  const t1Goalie = homeIst1 ? prediction?.homeStarter : prediction?.awayStarter;
+  const t2Goalie = homeIst1 ? prediction?.awayStarter : prediction?.homeStarter;
+  const nextGameHomeTriCode = (() => {
+    const nextGame = series.games.find(g => g.status === 'scheduled' || g.status === 'live');
+    return nextGame?.homeTriCode ?? undefined;
+  })();
 
   return (
     <div className="space-y-3">
@@ -102,15 +113,17 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
           name1={name1} name2={name2}
           ratings={ratings}
           triToCommon={triToCommon}
+          extendedStats={teamStatsExtended}
+          goalieRatings={goalieRatings}
+          t1Goalie={t1Goalie}
+          t2Goalie={t2Goalie}
+          nextGameHomeTriCode={nextGameHomeTriCode}
         />
       </div>
 
       {/* Lineups — using real LineupGrid component */}
       {(() => {
-        // Determine which triCode is home/away in the prediction so goalie assignment is correct
-        const homeIst1 = prediction?.homeTeam?.triCode === t1;
-        const t1Goalie = homeIst1 ? prediction?.homeStarter : prediction?.awayStarter;
-        const t2Goalie = homeIst1 ? prediction?.awayStarter : prediction?.homeStarter;
+        // homeIst1, t1Goalie, t2Goalie already computed above
         const t1GoalieStats = homeIst1 ? prediction?.home_goalie_stats : prediction?.away_goalie_stats;
         const t2GoalieStats = homeIst1 ? prediction?.away_goalie_stats : prediction?.home_goalie_stats;
         const t1Gsax = homeIst1 ? prediction?.home_gsax : prediction?.away_gsax;

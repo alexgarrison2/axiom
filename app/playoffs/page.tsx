@@ -134,6 +134,10 @@ function loadData() {
   const ratingsJson = fs.readFileSync(path.join(publicDataDir, 'team_ratings.json'), 'utf8');
   const ratings: TeamRatings = JSON.parse(ratingsJson);
 
+  // Load extended stats (splits by time/location/starter)
+  let teamStatsExtended: Record<string, any> = {};
+  try { teamStatsExtended = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'team_stats_extended.json'), 'utf8')); } catch { /* ok */ }
+
   // Load goalie ratings + compute percentiles
   let goalieRatings: Record<string, { gsax_per_game: number; gsax_total: number; games_played: number }> = {};
   try {
@@ -522,7 +526,7 @@ function loadData() {
   return {
     series, teamsMap, ratings, triToCommon, h2hGames,
     lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap,
-    playoffHistory,
+    playoffHistory, teamStatsExtended, goalieRatings,
   };
 }
 
@@ -530,7 +534,7 @@ export default async function NewPage() {
   const {
     series, teamsMap, ratings, triToCommon, h2hGames,
     lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap,
-    playoffHistory,
+    playoffHistory, teamStatsExtended, goalieRatings,
   } = loadData();
 
   return (
@@ -550,6 +554,8 @@ export default async function NewPage() {
           teamGoalies={teamGoalies}
           goalieStatsMap={goalieStatsMap}
           playoffHistory={playoffHistory}
+          teamStatsExtended={teamStatsExtended}
+          goalieRatings={goalieRatings}
         />
       </div>
     </main>
