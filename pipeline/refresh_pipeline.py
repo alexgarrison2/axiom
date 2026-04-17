@@ -499,7 +499,14 @@ def refresh_pipeline():
     
     print("Fetching official goalie stats...")
     import fetch_nhl_goalie_stats
-    fetch_nhl_goalie_stats.fetch_nhl_goalie_stats() # Added call
+    fetch_nhl_goalie_stats.fetch_nhl_goalie_stats()
+
+    print("Fetching goalie career playoff stats...")
+    try:
+        import fetch_goalie_playoff_career_stats
+        fetch_goalie_playoff_career_stats.main()
+    except Exception as e:
+        print(f"[WARN] Goalie playoff career stats fetch failed: {e}")
     
     print("Fetching latest Odds...")
     import fetch_odds

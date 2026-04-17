@@ -986,6 +986,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             <div className="transform scale-[0.85] origin-left mt-0.5">
                                 <VsOppStatsDisplay statsStr={prediction.awayGoalieVsOpp} oppTriCode={homeTeam.triCode} align="left" />
                             </div>
+                            {prediction.awayGoaliePlayoffStats && (
+                                <div className="text-[8px] font-mono text-purple-400/80 mt-0.5">
+                                    <span className="text-[7px] text-neutral-600 uppercase mr-1">PO</span>
+                                    {prediction.awayGoaliePlayoffStats}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -1008,6 +1014,12 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             <div className="transform scale-[0.85] origin-right mt-0.5">
                                 <VsOppStatsDisplay statsStr={prediction.homeGoalieVsOpp} oppTriCode={awayTeam.triCode} align="right" />
                             </div>
+                            {prediction.homeGoaliePlayoffStats && (
+                                <div className="text-[8px] font-mono text-purple-400/80 mt-0.5 text-right">
+                                    {prediction.homeGoaliePlayoffStats}
+                                    <span className="text-[7px] text-neutral-600 uppercase ml-1">PO</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -121,6 +121,8 @@ export interface GamePrediction {
   homeBackupGoalieStats?: string;
   awayBackupGoalie?: string;
   awayBackupGoalieStats?: string;
+  homeGoaliePlayoffStats?: string; // e.g. "24-34 | .903 | 2.90"
+  awayGoaliePlayoffStats?: string;
 
   home_avg_speed?: number;
   away_avg_speed?: number;
@@ -292,6 +294,14 @@ export async function getPredictions(): Promise<GamePrediction[]> {
     const gsPath = path.join(process.cwd(), 'pipeline', 'nhl_goalie_stats.json');
     const goalieStats: Record<string, string> = JSON.parse(fs.readFileSync(gsPath, 'utf8'));
     Object.entries(goalieStats).forEach(([name, stat]) => goalieStatsMap.set(name, stat));
+  } catch { /* ok */ }
+
+  // Load career playoff goalie stats
+  const goaliePlayoffCareerMap = new Map<string, string>(); // fullName -> display string
+  try {
+    const gpcPath = path.join(process.cwd(), 'public', 'data', 'goalie_playoff_career_stats.json');
+    const gpc: Record<string, { display: string }> = JSON.parse(fs.readFileSync(gpcPath, 'utf8'));
+    Object.entries(gpc).forEach(([name, stats]) => goaliePlayoffCareerMap.set(name, stats.display));
   } catch { /* ok */ }
 
   // Load TV network lookup from upcoming_games.json (keyed by homeAbbrev_awayAbbrev)
@@ -518,11 +528,25 @@ export async function getPredictions(): Promise<GamePrediction[]> {
         const awayGoalies = teamGoaliesMap.get(atri) ?? [];
         const hBackup = homeGoalies.find(g => g.toLowerCase() !== starter1.toLowerCase());
         const aBackup = awayGoalies.find(g => g.toLowerCase() !== starter2.toLowerCase());
+        // Career playoff stats lookup (try full name match)
+        const findPlayoffStats = (starterName: string): string | undefined => {
+          if (!starterName) return undefined;
+          // Direct match
+          if (goaliePlayoffCareerMap.has(starterName)) return goaliePlayoffCareerMap.get(starterName);
+          // Case-insensitive match
+          const lower = starterName.toLowerCase();
+          for (const [k, v] of goaliePlayoffCareerMap) {
+            if (k.toLowerCase() === lower) return v;
+          }
+          return undefined;
+        };
         return {
           homeBackupGoalie: hBackup,
           homeBackupGoalieStats: hBackup ? goalieStatsMap.get(hBackup) : undefined,
           awayBackupGoalie: aBackup,
           awayBackupGoalieStats: aBackup ? goalieStatsMap.get(aBackup) : undefined,
+          homeGoaliePlayoffStats: findPlayoffStats(starter1),
+          awayGoaliePlayoffStats: findPlayoffStats(starter2),
         };
       })(),
 

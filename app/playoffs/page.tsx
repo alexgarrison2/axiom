@@ -233,6 +233,20 @@ function loadData() {
   let teamGoalies: Record<string, string[]> = {};
   try { teamGoalies = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'team_goalies.json'), 'utf8')); } catch { /* ok */ }
 
+  // Load career playoff goalie stats
+  let goaliePlayoffCareerMap: Record<string, string> = {};
+  try {
+    const gpc: Record<string, { display: string }> = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'goalie_playoff_career_stats.json'), 'utf8'));
+    Object.entries(gpc).forEach(([name, stats]) => { goaliePlayoffCareerMap[name] = stats.display; });
+  } catch { /* ok */ }
+
+  // Load TV network lookup from upcoming_games.json
+  const tvNetworkMap: Record<string, string> = {};
+  try {
+    const upcoming: Array<{ homeTeamAbbrev: string; awayTeamAbbrev: string; tvNetwork?: string }> = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'upcoming_games.json'), 'utf8'));
+    upcoming.forEach(g => { if (g.tvNetwork) tvNetworkMap[g.homeTeamAbbrev + '_' + g.awayTeamAbbrev] = g.tvNetwork; });
+  } catch { /* ok */ }
+
   // Load player news
   let playerNews: Record<string, any[]> = {};
   try { playerNews = JSON.parse(fs.readFileSync(path.join(publicDataDir, 'player_news.json'), 'utf8')); } catch { /* ok */ }
@@ -445,6 +459,29 @@ function loadData() {
 
       home_goalie_stats: homeGoalieStats,
       away_goalie_stats: awayGoalieStats,
+
+      // TV network from schedule
+      tvNetwork: tvNetworkMap[homeTri + '_' + awayTri] ?? tvNetworkMap[awayTri + '_' + homeTri] ?? '',
+
+      // Backup goalies + career playoff stats
+      ...(() => {
+        const starter1 = homeGoalie.split(' (')[0]?.trim() ?? '';
+        const starter2 = awayGoalie.split(' (')[0]?.trim() ?? '';
+        const homeGoalies = teamGoalies[homeTri] ?? [];
+        const awayGoalies = teamGoalies[awayTri] ?? [];
+        const hBackup = homeGoalies.find((g: string) => g.toLowerCase() !== starter1.toLowerCase());
+        const aBackup = awayGoalies.find((g: string) => g.toLowerCase() !== starter2.toLowerCase());
+        const findPlayoff = (name: string) => goaliePlayoffCareerMap[name] ??
+          Object.entries(goaliePlayoffCareerMap).find(([k]) => k.toLowerCase() === name.toLowerCase())?.[1];
+        return {
+          homeBackupGoalie: hBackup,
+          homeBackupGoalieStats: hBackup ? goalieStatsMap[hBackup] : undefined,
+          awayBackupGoalie: aBackup,
+          awayBackupGoalieStats: aBackup ? goalieStatsMap[aBackup] : undefined,
+          homeGoaliePlayoffStats: findPlayoff(starter1),
+          awayGoaliePlayoffStats: findPlayoff(starter2),
+        };
+      })(),
 
       home_lineup: lineups[homeTri] as TeamLineup | undefined,
       away_lineup: lineups[awayTri] as TeamLineup | undefined,

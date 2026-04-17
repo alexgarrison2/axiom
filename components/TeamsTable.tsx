@@ -1337,36 +1337,9 @@ const TeamsTable = () => {
         // 2. Calculate League Baseline (Respecting Filters)
         // This is used for Ranges (color gradients) - usually we want gradients to reflect the filtered view (e.g. "Who has best PP in last 10?")
 
-        // For PlayoffMatchup with Location/Starter filters: build per-team maps from next game data
-        const isPlayoffWithFilter = viewMode.startsWith('PlayoffMatchup') && viewMode !== 'PlayoffMatchup';
-        const playoffTeamLocation = new Map<string, 'Home' | 'Away'>();
-        const playoffTeamStarter = new Map<string, string | undefined>();
-        if (isPlayoffWithFilter) {
-            const sourceMatchups = [...todayMatchups, ...tomorrowMatchups];
-            sourceMatchups.forEach(m => {
-                playoffTeamLocation.set(m.home, 'Home');
-                playoffTeamLocation.set(m.away, 'Away');
-                if (viewMode.includes('Starter')) {
-                    playoffTeamStarter.set(m.home, m.homeStarter);
-                    playoffTeamStarter.set(m.away, m.awayStarter);
-                }
-            });
-        }
-
+        // leagueBaseline: for PlayoffMatchup modes, applies per-team location/starter filters
+        // (populated after playoff seeding computed — see "playoff matchup" block inserted after plySet)
         const leagueBaseline: TeamStat[] = [];
-        allTeamsList.forEach(teamName => {
-            const loc = isPlayoffWithFilter && viewMode.includes('Location')
-                ? (playoffTeamLocation.get(teamName) ?? filterHomeAway)
-                : filterHomeAway;
-            const starter = isPlayoffWithFilter && viewMode.includes('Starter')
-                ? playoffTeamStarter.get(teamName)
-                : undefined;
-            const games = getGames(teamName, loc, starter); // Use current filters but for ALL teams
-            if (games.length > 0) {
-                leagueBaseline.push(calculateTeamStats(teamName, games, filterPeriod));
-            }
-        });
-        setLeagueStats(leagueBaseline);
 
         if (viewMode === 'All') {
             // Standard View - matches leagueBaseline
@@ -1488,6 +1461,68 @@ const TeamsTable = () => {
             confTeams.sort(sortForRank);
             confTeams.slice(0, 2).forEach(t => plySet.add(t.team));
         });
+
+        // ── Playoff Matchup Location/Starter filters ───────────────────────
+        // Now that divMap and plySet are ready, derive each team's home/away
+        // from their playoff seed (higher seed = Home ice advantage).
+        // Div winners (rank 0) and div 2nd-place (rank 1) = HOME
+        // Div 3rd-place (rank 2) and wild cards = AWAY
+        const isPlayoffWithFilter = viewMode.startsWith('PlayoffMatchup') && viewMode !== 'PlayoffMatchup';
+        const playoffTeamLocation = new Map<string, 'Home' | 'Away'>();
+        const playoffTeamStarter = new Map<string, string | undefined>();
+        if (isPlayoffWithFilter) {
+            // Location: derive from seeding
+            if (viewMode.includes('Location')) {
+                Object.values(divMap).forEach(list => {
+                    if (list[0]) playoffTeamLocation.set(list[0].team, 'Home'); // div winner
+                    if (list[1]) playoffTeamLocation.set(list[1].team, 'Home'); // div 2nd
+                    if (list[2]) playoffTeamLocation.set(list[2].team, 'Away'); // div 3rd
+                });
+                // Wild cards are away
+                standingsBaseline.forEach(t => {
+                    const inf = teams[t.team];
+                    if (!inf?.division) return;
+                    const divRank = divMap[inf.division].findIndex(x => x.team === t.team);
+                    if (plySet.has(t.team) && divRank >= 3) {
+                        playoffTeamLocation.set(t.team, 'Away');
+                    }
+                });
+            }
+            // Starter: use next available game prediction (today then tomorrow), fall back to #1 historical goalie
+            if (viewMode.includes('Starter')) {
+                const allMatchups = [...todayMatchups, ...tomorrowMatchups];
+                // Build starter map from predictions
+                allMatchups.forEach(m => {
+                    if (!playoffTeamStarter.has(m.home) && m.homeStarter) playoffTeamStarter.set(m.home, m.homeStarter);
+                    if (!playoffTeamStarter.has(m.away) && m.awayStarter) playoffTeamStarter.set(m.away, m.awayStarter);
+                });
+                // Fallback: #1 goalie by most starts in last 20 games for each playoff team
+                plySet.forEach(teamName => {
+                    if (!playoffTeamStarter.has(teamName)) {
+                        const recentGames = rawData.filter(g => g.team === teamName).sort((a, b) => b.game_date.localeCompare(a.game_date)).slice(0, 20);
+                        const counts: Record<string, number> = {};
+                        recentGames.forEach(g => { if (g.starting_goalie) counts[g.starting_goalie] = (counts[g.starting_goalie] ?? 0) + 1; });
+                        const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+                        if (top) playoffTeamStarter.set(teamName, top);
+                    }
+                });
+            }
+        }
+
+        // Fill leagueBaseline (uses playoffTeamLocation/Starter if in playoff filter mode)
+        allTeamsList.forEach(teamName => {
+            const loc = isPlayoffWithFilter && viewMode.includes('Location')
+                ? (playoffTeamLocation.get(teamName) ?? filterHomeAway)
+                : filterHomeAway;
+            const starter = isPlayoffWithFilter && viewMode.includes('Starter')
+                ? playoffTeamStarter.get(teamName)
+                : undefined;
+            const games = getGames(teamName, loc, starter);
+            if (games.length > 0) {
+                leagueBaseline.push(calculateTeamStats(teamName, games, filterPeriod));
+            }
+        });
+        setLeagueStats(leagueBaseline);
 
         // ── Magic Number / Tragic Number ─────────────────────────────────────
         // M# (playoff teams): combined pts a team needs to earn + pts the 9th-place
@@ -2528,11 +2563,25 @@ const TeamsTable = () => {
                                                 )}
 
                                                 {/* Matchup visual indicator for Location Mode */}
-                                                {(viewMode.includes('Location')) && (
-                                                    <span className="text-[10px] font-bold text-gray-500 uppercase ml-2 bg-gray-800 px-1 rounded">
-                                                        {idx % 2 === 0 ? 'AWAY' : 'HOME'}
-                                                    </span>
-                                                )}
+                                                {(viewMode.includes('Location')) && (() => {
+                                                    // For PlayoffMatchup: derive from team's playoff seeding (higher seed = home)
+                                                    // Higher seeds: div winner [0] and div 2nd [1] → HOME; div 3rd [2] and WC → AWAY
+                                                    if (viewMode.startsWith('PlayoffMatchup')) {
+                                                        if (!team.isPlayoff) return null;
+                                                        const label = idx % 2 === 0 ? 'HOME' : 'AWAY';
+                                                        const isHome = label === 'HOME';
+                                                        return (
+                                                            <span className={isHome ? "text-[10px] font-bold uppercase ml-2 px-1 rounded text-blue-400 bg-blue-900/40" : "text-[10px] font-bold uppercase ml-2 px-1 rounded text-orange-400 bg-orange-900/40"}>
+                                                                {label}
+                                                            </span>
+                                                        );
+                                                    }
+                                                    return (
+                                                        <span className="text-[10px] font-bold text-gray-500 uppercase ml-2 bg-gray-800 px-1 rounded">
+                                                            {idx % 2 === 0 ? 'HOME' : 'AWAY'}
+                                                        </span>
+                                                    );
+                                                })()}
 
                                                 {/* Odds Badge (Playing Today / Tomorrow modes only) */}
                                                 {viewMode !== 'All' && (() => {
