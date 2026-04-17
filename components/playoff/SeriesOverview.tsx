@@ -46,8 +46,11 @@ export default function SeriesOverview({ series, teamsMap, ratings, triToCommon,
 
   // Determine starters and next game home team for TornadoChart filters
   const homeIst1 = prediction?.homeTeam?.triCode === t1;
-  const t1Goalie = homeIst1 ? prediction?.homeStarter : prediction?.awayStarter;
-  const t2Goalie = homeIst1 ? prediction?.awayStarter : prediction?.homeStarter;
+  // Fall back to teamGoalies[0] when prediction goalie is missing/unconfirmed
+  const predT1Goalie = homeIst1 ? prediction?.homeStarter : prediction?.awayStarter;
+  const predT2Goalie = homeIst1 ? prediction?.awayStarter : prediction?.homeStarter;
+  const t1Goalie = predT1Goalie || teamGoalies?.[t1]?.[0];
+  const t2Goalie = predT2Goalie || teamGoalies?.[t2]?.[0];
   const nextGameHomeTriCode = (() => {
     const nextGame = series.games.find(g => g.status === 'scheduled' || g.status === 'live');
     return nextGame?.homeTriCode ?? undefined;

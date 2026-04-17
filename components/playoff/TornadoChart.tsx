@@ -19,10 +19,11 @@ interface TeamExtended {
   since_olympics: StatSplit | null;
   home: StatSplit | null;
   away: StatSplit | null;
+  home_since_olympics: StatSplit | null;
+  away_since_olympics: StatSplit | null;
   by_goalie: Record<string, StatSplit>;
+  by_goalie_since_olympics: Record<string, StatSplit>;
 }
-
-type FilterMode = 'all' | 'since_olympics' | 'with_starter' | 'location';
 
 interface TornadoChartProps {
   t1: string; t2: string;
@@ -41,7 +42,7 @@ interface TornadoChartProps {
 interface StatDef {
   key: string;
   label: string;
-  extKey: keyof StatSplit | null; // null = special-cased
+  extKey: keyof StatSplit | null;
   higherBetter: boolean;
   format: (v: number) => string;
 }
@@ -78,214 +79,239 @@ export default function TornadoChart({
   extendedStats, goalieRatings,
   t1Goalie, t2Goalie, nextGameHomeTriCode,
 }: TornadoChartProps) {
-  const [filter, setFilter] = useState<FilterMode>('all');
+  // Filter state: time period (radio) + independent modifiers (toggles)
+  const [sinceOlympics, setSinceOlympics] = useState(false);
+  const [withStarter, setWithStarter] = useState(false);
+  const [locationMode, setLocationMode] = useState(false);
 
-  // Determine location roles
   const t1IsHome = nextGameHomeTriCode === t1;
 
-  // Get the correct split for a team given the active filter
+  // Pick the right split key based on active filters
   function getSplit(teamName: string, triCode: string, goalie?: string): StatSplit | null {
     const ext = extendedStats?.[teamName];
     if (!ext) return null;
-    if (filter === 'since_olympics') return ext.since_olympics;
-    if (filter === 'with_starter' && goalie) {
-      return ext.by_goalie[goalie] ?? ext.all;
+    const isHome = triCode === t1 ? t1IsHome : !t1IsHome;
+
+    // Priority: location > with_starter > time_period
+    if (locationMode && withStarter) {
+      // Location takes precedence when both are on
+      const key = sinceOlympics
+        ? (isHome ? 'home_since_olympics' : 'away_since_olympics')
+        : (isHome ? 'home' : 'away');
+      return (ext as any)[key] ?? ext.all;
     }
-    if (filter === 'location') {
-      const isHome = triCode === t1 ? t1IsHome : !t1IsHome;
-      return isHome ? ext.home : ext.away;
+    if (locationMode) {
+      const key = sinceOlympics
+        ? (isHome ? 'home_since_olympics' : 'away_since_olympics')
+        : (isHome ? 'home' : 'away');
+      return (ext as any)[key] ?? ext.all;
     }
-    return ext.all;
+    if (withStarter && goalie) {
+      const byGoalie = sinceOlympics ? ext.by_goalie_since_olympics : ext.by_goalie;
+      return byGoalie[goalie] ?? (sinceOlympics ? ext.since_olympics : ext.all) ?? ext.all;
+    }
+    return sinceOlympics ? (ext.since_olympics ?? ext.all) : ext.all;
   }
 
-  // GSAx from goalie ratings (not split-dependent)
-  function getGsax(goalie?: string): number | null {
-    if (!goalie || !goalieRatings?.[goalie]) return null;
-    return goalieRatings[goalie].gsax_per_game;
-  }
+  const hasStarters = !!(t1Goalie && t2Goalie);
+  const hasLocation = !!nextGameHomeTriCode;
 
-  // Build per-stat values and percentile rankings
-  const { statRows, totalTeams } = useMemo(() => {
-    if (!extendedStats) return { statRows: [], totalTeams: 32 };
-
+  // Compute stat rows with correct percentile rankings
+  const statRows = useMemo(() => {
+    if (!extendedStats) return [];
     const allTeamNames = Object.keys(extendedStats);
     const n = allTeamNames.length;
 
-    const rows = STATS.map(stat => {
-      // Collect all team values for ranking
-      const teamVals: { name: string; tri: string; val: number }[] = [];
-
+    return STATS.map(stat => {
+      // ── GSAx: special goalie-based stat ──────────────────────────────────
       if (stat.extKey === null) {
-        // GSAx — rank across all known goalies' gsax_per_game
-        // Use league-wide goalie rankings
         const allGsax = Object.entries(goalieRatings ?? {});
-        const sortedGsax = [...allGsax].sort((a, b) => a[1].gsax_per_game - b[1].gsax_per_game);
-        const n2 = sortedGsax.length;
-
-        const getGsaxPct = (name?: string) => {
-          if (!name || !goalieRatings?.[name]) return 50;
-          const idx = sortedGsax.findIndex(([g]) => g === name);
-          return idx === -1 ? 50 : (idx / Math.max(n2 - 1, 1)) * 100;
+        // Sort ascending so we can find idx and compute rank correctly
+        const sorted = [...allGsax].sort((a, b) => a[1].gsax_per_game - b[1].gsax_per_game);
+        const n2 = sorted.length;
+        const getInfo = (goalie?: string) => {
+          if (!goalie || !goalieRatings?.[goalie]) return { val: 0, pct: 50, rank: null as number | null };
+          const val = goalieRatings[goalie].gsax_per_game;
+          const idx = sorted.findIndex(([g]) => g === goalie);
+          // idx=0 is worst (lowest), idx=n2-1 is best (highest) for higherBetter
+          const pct = idx === -1 ? 50 : (idx / Math.max(n2 - 1, 1)) * 100;
+          const rank = idx === -1 ? null : n2 - idx; // rank 1 = best
+          return { val, pct, rank };
         };
-        const getGsaxRank = (name?: string) => {
-          if (!name || !goalieRatings?.[name]) return null;
-          const idx = sortedGsax.findIndex(([g]) => g === name);
-          return idx === -1 ? null : n2 - idx; // rank 1 = best
-        };
-
-        const v1 = getGsax(t1Goalie);
-        const v2 = getGsax(t2Goalie);
-        const p1 = getGsaxPct(t1Goalie);
-        const p2 = getGsaxPct(t2Goalie);
-        const r1 = getGsaxRank(t1Goalie);
-        const r2 = getGsaxRank(t2Goalie);
-
-        return { stat, val1: v1 ?? 0, val2: v2 ?? 0, pct1: p1, pct2: p2, rank1: r1, rank2: r2, totalN: n2 };
+        const i1 = getInfo(t1Goalie); const i2 = getInfo(t2Goalie);
+        return { stat, val1: i1.val, val2: i2.val, pct1: i1.pct, pct2: i2.pct, rank1: i1.rank, rank2: i2.rank, totalN: n2 };
       }
 
+      // ── Regular stats ──────────────────────────────────────────────────────
+      // Compute league-wide ranking using the same contextual split
+      const teamVals: { name: string; val: number }[] = [];
       for (const teamName of allTeamNames) {
-        const tri = triToCommon
-          ? Object.entries(triToCommon).find(([, nm]) => nm === teamName)?.[0] ?? ''
-          : '';
-
-        let split: StatSplit | null = null;
-        if (filter === 'since_olympics') split = extendedStats[teamName]?.since_olympics ?? null;
-        else if (filter === 'location') {
-          // For location filter, rank home-role teams in home split and away-role teams in away split
-          // For simplicity: rank all teams in 'all' split for cross-team comparison
-          split = extendedStats[teamName]?.all ?? null;
-        }
-        else if (filter === 'with_starter') split = extendedStats[teamName]?.all ?? null; // fallback
-        else split = extendedStats[teamName]?.all ?? null;
-
-        if (!split) continue;
-        const val = split[stat.extKey!] as number;
+        const ext = extendedStats[teamName];
+        if (!ext) continue;
+        // For ranking, use the same split type but we don't know each team's home/away role
+        // → rank using the base time-period split (all or since_olympics), not location-specific
+        const rankSplit = sinceOlympics ? (ext.since_olympics ?? ext.all) : ext.all;
+        if (!rankSplit) continue;
+        const val = rankSplit[stat.extKey] as number;
         if (val == null || isNaN(val)) continue;
-        teamVals.push({ name: teamName, tri, val });
+        teamVals.push({ name: teamName, val });
       }
 
-      // Sort best → worst
+      // Sort: best → worst. After sorting, idx=0 is always best.
       teamVals.sort((a, b) => stat.higherBetter ? b.val - a.val : a.val - b.val);
 
-      const getRank = (nm: string) => teamVals.findIndex(t => t.name === nm) + 1;
+      // Percentile: idx=0 (best) → 100%, idx=n-1 (worst) → 0%
       const getPct = (nm: string) => {
         const idx = teamVals.findIndex(t => t.name === nm);
-        if (idx === -1) return 50;
-        return stat.higherBetter
-          ? ((n - 1 - idx) / (n - 1)) * 100
-          : (idx / (n - 1)) * 100;
+        if (idx === -1 || teamVals.length <= 1) return 50;
+        return ((teamVals.length - 1 - idx) / (teamVals.length - 1)) * 100;
+      };
+      const getRank = (nm: string) => {
+        const idx = teamVals.findIndex(t => t.name === nm);
+        return idx === -1 ? null : idx + 1;
       };
 
-      // Get the actual split-specific value for t1/t2
+      // Get actual split-specific value for t1/t2
       const s1 = getSplit(name1, t1, t1Goalie);
       const s2 = getSplit(name2, t2, t2Goalie);
-      const val1 = s1 ? (s1[stat.extKey!] as number) : 0;
-      const val2 = s2 ? (s2[stat.extKey!] as number) : 0;
+      const val1 = s1 ? (s1[stat.extKey] as number ?? 0) : 0;
+      const val2 = s2 ? (s2[stat.extKey] as number ?? 0) : 0;
 
-      // For percentile: for location mode, use the actual split value to compute rank
+      // For percentile display: recompute if using location/starter splits
       let pct1: number, pct2: number, rank1: number | null, rank2: number | null;
-      if (filter === 'location') {
-        // Recompute against actual split
-        const makeVals = (splitKey: 'home' | 'away') => {
-          return allTeamNames
-            .map(nm => ({ name: nm, val: (extendedStats[nm]?.[splitKey] as StatSplit | null)?.[stat.extKey!] as number ?? NaN }))
+      if (locationMode) {
+        // Rank in the appropriate home/away distribution
+        const makeLocVals = (splitKey: string) =>
+          allTeamNames
+            .map(nm => {
+              const ext = extendedStats[nm];
+              const sp = sinceOlympics
+                ? ((ext as any)[splitKey + '_since_olympics'] ?? ext?.since_olympics ?? ext?.all)
+                : ((ext as any)[splitKey] ?? ext?.all);
+              const val = sp?.[stat.extKey!] as number ?? NaN;
+              return { name: nm, val };
+            })
             .filter(x => !isNaN(x.val))
             .sort((a, b) => stat.higherBetter ? b.val - a.val : a.val - b.val);
-        };
-        const homeVals = makeVals('home');
-        const awayVals = makeVals('away');
-        const hLen = homeVals.length;
-        const aLen = awayVals.length;
 
-        const getLocPct = (vals: typeof homeVals, nm: string, len: number) => {
+        const hVals = makeLocVals('home');
+        const aVals = makeLocVals('away');
+
+        const locPct = (vals: typeof hVals, nm: string) => {
           const idx = vals.findIndex(t => t.name === nm);
-          if (idx === -1) return 50;
-          return stat.higherBetter ? ((len - 1 - idx) / (len - 1)) * 100 : (idx / (len - 1)) * 100;
+          if (idx === -1 || vals.length <= 1) return 50;
+          return ((vals.length - 1 - idx) / (vals.length - 1)) * 100;
         };
-        const getLocRank = (vals: typeof homeVals, nm: string) => {
-          const idx = vals.findIndex(t => t.name === nm); return idx === -1 ? null : idx + 1;
+        const locRank = (vals: typeof hVals, nm: string) => {
+          const idx = vals.findIndex(t => t.name === nm);
+          return idx === -1 ? null : idx + 1;
         };
 
-        if (t1IsHome) {
-          pct1 = getLocPct(homeVals, name1, hLen); rank1 = getLocRank(homeVals, name1);
-          pct2 = getLocPct(awayVals, name2, aLen); rank2 = getLocRank(awayVals, name2);
-        } else {
-          pct1 = getLocPct(awayVals, name1, aLen); rank1 = getLocRank(awayVals, name1);
-          pct2 = getLocPct(homeVals, name2, hLen); rank2 = getLocRank(homeVals, name2);
-        }
+        pct1 = locPct(t1IsHome ? hVals : aVals, name1);
+        rank1 = locRank(t1IsHome ? hVals : aVals, name1);
+        pct2 = locPct(!t1IsHome ? hVals : aVals, name2);
+        rank2 = locRank(!t1IsHome ? hVals : aVals, name2);
       } else {
-        pct1 = getPct(name1); rank1 = getRank(name1) || null;
-        pct2 = getPct(name2); rank2 = getRank(name2) || null;
+        pct1 = getPct(name1); rank1 = getRank(name1);
+        pct2 = getPct(name2); rank2 = getRank(name2);
       }
 
       return { stat, val1, val2, pct1, pct2, rank1, rank2, totalN: n };
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [extendedStats, sinceOlympics, withStarter, locationMode, name1, name2, t1, t2, t1Goalie, t2Goalie, t1IsHome, goalieRatings]);
 
-    return { statRows: rows, totalTeams: n };
-  }, [extendedStats, filter, name1, name2, t1, t2, t1Goalie, t2Goalie, t1IsHome, goalieRatings]);
-
-  const filterButtons: { key: FilterMode; label: string; available: boolean }[] = [
-    { key: 'all', label: 'Full Season', available: true },
-    { key: 'since_olympics', label: 'Since Olympics', available: !!extendedStats?.[name1]?.since_olympics },
-    { key: 'with_starter', label: 'With Starter', available: !!(t1Goalie && t2Goalie && extendedStats) },
-    { key: 'location', label: 'Location', available: !!nextGameHomeTriCode },
-  ];
-
-  // Fallback if no extendedStats — use original ratings-based rendering
   if (!extendedStats) {
-    return <FallbackTornado t1={t1} t2={t2} c1={c1} c2={c2} name1={name1} name2={name2} ratings={ratings} />;
+    return <div className="text-xs text-neutral-600 text-center py-2">Extended stats loading…</div>;
   }
 
   const locationLabel = nextGameHomeTriCode
-    ? `${triToCommon[nextGameHomeTriCode] ?? nextGameHomeTriCode} hosts`
+    ? `${triToCommon[nextGameHomeTriCode] ?? nextGameHomeTriCode} home`
     : '';
 
   return (
     <div>
-      {/* Team headers */}
-      <div className="flex items-center justify-between mb-2 px-1">
-        <div className="flex items-center gap-1.5">
-          <img src={`/logos/${t1}.svg`} alt={t1} className="w-4 h-4" />
-          <span className="text-xs font-semibold" style={{ color: c1 }}>{name1}</span>
-          {filter === 'location' && (
-            <span className="text-[9px] text-neutral-600">{t1IsHome ? '(H)' : '(A)'}</span>
-          )}
-          {filter === 'with_starter' && t1Goalie && (
-            <span className="text-[9px] text-neutral-600 truncate max-w-[70px]">{t1Goalie.split(' ').at(-1)}</span>
-          )}
+      {/* Team headers with large logos */}
+      <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-2">
+          <img src={`/logos/${t1}.svg`} alt={t1} className="w-11 h-11" />
+          <div>
+            <span className="text-sm font-bold" style={{ color: c1 }}>{name1}</span>
+            {locationMode && (
+              <div className="text-[9px] text-neutral-500">{t1IsHome ? 'Home' : 'Away'}</div>
+            )}
+            {withStarter && !locationMode && t1Goalie && (
+              <div className="text-[9px] text-neutral-500">{t1Goalie.split(' ').slice(-1)[0]}</div>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          {filter === 'with_starter' && t2Goalie && (
-            <span className="text-[9px] text-neutral-600 truncate max-w-[70px]">{t2Goalie.split(' ').at(-1)}</span>
-          )}
-          {filter === 'location' && (
-            <span className="text-[9px] text-neutral-600">{!t1IsHome ? '(H)' : '(A)'}</span>
-          )}
-          <span className="text-xs font-semibold" style={{ color: c2 }}>{name2}</span>
-          <img src={`/logos/${t2}.svg`} alt={t2} className="w-4 h-4" />
+        <div className="flex items-center gap-2">
+          <div className="text-right">
+            <span className="text-sm font-bold" style={{ color: c2 }}>{name2}</span>
+            {locationMode && (
+              <div className="text-[9px] text-neutral-500 text-right">{!t1IsHome ? 'Home' : 'Away'}</div>
+            )}
+            {withStarter && !locationMode && t2Goalie && (
+              <div className="text-[9px] text-neutral-500 text-right">{t2Goalie.split(' ').slice(-1)[0]}</div>
+            )}
+          </div>
+          <img src={`/logos/${t2}.svg`} alt={t2} className="w-11 h-11" />
         </div>
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-1 mb-3 flex-wrap">
-        {filterButtons.map(btn => (
-          <button
-            key={btn.key}
-            onClick={() => btn.available && setFilter(btn.key)}
-            disabled={!btn.available}
-            className={`text-[10px] px-2 py-0.5 rounded-full font-semibold transition-all ${
-              filter === btn.key
-                ? 'bg-white/15 text-white'
-                : btn.available
-                  ? 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
-                  : 'text-neutral-700 cursor-not-allowed'
-            }`}
-          >
-            {btn.label}
-          </button>
-        ))}
-        {filter === 'location' && locationLabel && (
-          <span className="text-[9px] text-neutral-600 self-center ml-1">{locationLabel}</span>
+      {/* Filter controls */}
+      <div className="flex flex-wrap gap-x-3 gap-y-1.5 mb-3 items-center">
+        {/* Time period — radio */}
+        <div className="flex gap-1">
+          {[
+            { key: false, label: 'Full Season' },
+            { key: true, label: 'Since Olympics' },
+          ].map(opt => (
+            <button
+              key={String(opt.key)}
+              onClick={() => setSinceOlympics(opt.key)}
+              className={`text-[10px] px-2 py-0.5 rounded-full font-semibold transition-all ${
+                sinceOlympics === opt.key
+                  ? 'bg-white/15 text-white'
+                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="w-px h-3 bg-white/10" />
+
+        {/* Modifier toggles */}
+        <button
+          onClick={() => hasStarters && setWithStarter(v => !v)}
+          disabled={!hasStarters}
+          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold transition-all ${
+            withStarter
+              ? 'bg-white/15 text-white ring-1 ring-white/20'
+              : hasStarters
+                ? 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                : 'text-neutral-700 cursor-not-allowed'
+          }`}
+        >
+          With Starter
+        </button>
+        <button
+          onClick={() => hasLocation && setLocationMode(v => !v)}
+          disabled={!hasLocation}
+          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold transition-all ${
+            locationMode
+              ? 'bg-white/15 text-white ring-1 ring-white/20'
+              : hasLocation
+                ? 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                : 'text-neutral-700 cursor-not-allowed'
+          }`}
+        >
+          Location
+        </button>
+        {locationMode && locationLabel && (
+          <span className="text-[9px] text-neutral-600">{locationLabel}</span>
         )}
       </div>
 
@@ -294,11 +320,11 @@ export default function TornadoChart({
         {statRows.map(row => {
           if (!row) return null;
           const { stat, val1, val2, pct1, pct2, rank1, rank2, totalN } = row;
-          const t1Better = pct1 > pct2;
+          // t1Better: whichever team has HIGHER percentile (percentile = 100 means best, regardless of direction)
+          const t1Better = pct1 >= pct2;
 
           return (
             <div key={stat.key}>
-              {/* Label — tighter spacing */}
               <div className="text-[11px] text-neutral-400 text-center mb-0.5 leading-none">{stat.label}</div>
               <div className="flex items-center gap-1">
                 {/* Left value + rank */}
@@ -329,7 +355,6 @@ export default function TornadoChart({
                   </div>
                 </div>
 
-                {/* Center divider */}
                 <div className="w-px h-4 bg-white/10 shrink-0" />
 
                 {/* Right bar (t2) */}
@@ -365,21 +390,9 @@ export default function TornadoChart({
         })}
       </div>
 
-      {/* Legend */}
       <div className="text-[10px] text-neutral-600 text-center mt-3">
         Bar width = league percentile (0–100). Bold = advantage.
       </div>
     </div>
   );
-}
-
-// ─── Fallback if no extended stats ────────────────────────────────────────────
-function FallbackTornado({ t1, t2, c1, c2, name1, name2, ratings }: {
-  t1: string; t2: string; c1: string; c2: string;
-  name1: string; name2: string; ratings: TeamRatings;
-}) {
-  const r1 = ratings[name1];
-  const r2 = ratings[name2];
-  if (!r1 || !r2) return <div className="text-xs text-neutral-600 text-center py-2">Team ratings not available</div>;
-  return <div className="text-xs text-neutral-600 text-center py-2">Extended stats loading…</div>;
 }

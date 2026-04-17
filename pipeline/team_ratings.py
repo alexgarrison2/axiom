@@ -384,12 +384,23 @@ def _save_extended_stats(df, public_data_dir):
                 gs = calc_stats(gg)
                 if gs and gs['games'] >= 5:
                     by_goalie[goalie] = gs
+        home_since = since[since['home_away'] == 'Home']
+        away_since = since[since['home_away'] == 'Away']
+        by_goalie_since = {}
+        for goalie, gg in tg.groupby('starting_goalie'):
+            if isinstance(goalie, str) and goalie.strip():
+                gs_since = calc_stats(gg[gg['game_date'] >= OLYMPICS_CUTOFF])
+                if gs_since and gs_since['games'] >= 3:
+                    by_goalie_since[goalie] = gs_since
         result[team] = {
             'all': calc_stats(tg),
             'since_olympics': calc_stats(since),
             'home': calc_stats(home),
             'away': calc_stats(away),
+            'home_since_olympics': calc_stats(home_since),
+            'away_since_olympics': calc_stats(away_since),
             'by_goalie': by_goalie,
+            'by_goalie_since_olympics': by_goalie_since,
         }
 
     out_path = os.path.join(public_data_dir, 'team_stats_extended.json')
