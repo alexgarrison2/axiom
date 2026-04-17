@@ -271,12 +271,28 @@ function loadData() {
   });
   Object.values(h2hGames).forEach(games => games.sort((a, b) => a.gameDate.localeCompare(b.gameDate)));
 
+  // ─── Load pipeline predictions (predictions_detailed.csv) ───────────────────
+  // Build lookup by triCode pair so we can match regardless of home/away order
+  const pipelinePredMap: Record<string, any> = {};
+  try {
+    const predCsv = fs.readFileSync(path.join(dataDir, 'predictions_detailed.csv'), 'utf8');
+    const predParsed = Papa.parse(predCsv, { header: true, skipEmptyLines: true });
+    (predParsed.data as any[]).forEach((row: any) => {
+      const ht = commonToTri[row.home_team?.trim()] ?? teamNameToTri[row.home_team?.trim()];
+      const at = commonToTri[row.away_team?.trim()] ?? teamNameToTri[row.away_team?.trim()];
+      if (ht && at) {
+        pipelinePredMap[`${ht}_${at}`] = row;
+        pipelinePredMap[`${at}_${ht}`] = row; // reverse lookup
+      }
+    });
+  } catch { /* ok — fallback to computeWinProb */ }
+
   // ─── Build Game 1 predictions for each series ─────────────────────────────
   // Higher seed always has home ice for Game 1
   const seriesPredictions: Record<string, GamePrediction> = {};
 
   for (const s of series) {
-    const homeTri = s.higherSeed.triCode;
+    const homeTri = s.higherSeed.triCode; // home ice = higher seed
     const awayTri = s.lowerSeed.triCode;
     const homeCommon = triToCommon[homeTri];
     const awayCommon = triToCommon[awayTri];
@@ -284,27 +300,102 @@ function loadData() {
     const awayRatings = ratings[awayCommon];
     if (!homeRatings || !awayRatings) continue;
 
-    const homeGoalie = getTopGoalie(homeTri);
-    const awayGoalie = getTopGoalie(awayTri);
-    const homeGsax = goalieRatings[homeGoalie]?.gsax_per_game ?? 0;
-    const awayGsax = goalieRatings[awayGoalie]?.gsax_per_game ?? 0;
-
-    const homeWinPct = computeWinProb(
-      homeRatings.xgf_5v5_rating, homeRatings.xga_5v5_rating,
-      homeRatings.pp_rating / 100, homeRatings.pk_rating / 100,
-      homeRatings.penalties_drawn_per_60, homeRatings.penalties_taken_per_60, homeGsax,
-      awayRatings.xgf_5v5_rating, awayRatings.xga_5v5_rating,
-      awayRatings.pp_rating / 100, awayRatings.pk_rating / 100,
-      awayRatings.penalties_drawn_per_60, awayRatings.penalties_taken_per_60, awayGsax,
-    ) * 100;
-    const awayWinPct = 100 - homeWinPct;
-
-    const homeXg = homeRatings.xgf_rolling * (awayRatings.xga_5v5_rating / 2.35);
-    const awayXg = awayRatings.xgf_rolling * (homeRatings.xga_5v5_rating / 2.35);
-
     const homeTeam = teamsMap[homeTri];
     const awayTeam = teamsMap[awayTri];
     if (!homeTeam || !awayTeam) continue;
+
+    // Try pipeline prediction first (match by home_tri_away_tri or reverse)
+    const pipRow = pipelinePredMap[`${homeTri}_${awayTri}`] ?? pipelinePredMap[`${awayTri}_${homeTri}`];
+    const pipHomeIsHigher = pipRow ? (commonToTri[pipRow.home_team?.trim()] ?? teamNameToTri[pipRow.home_team?.trim()]) === homeTri : true;
+
+    let homeWinPct: number;
+    let awayWinPct: number;
+    let homeXg: number;
+    let awayXg: number;
+    let homeGoalie: string;
+    let awayGoalie: string;
+    let homeGsax: number;
+    let awayGsax: number;
+    let homeGsaxPct: number;
+    let awayGsaxPct: number;
+    let homeGoalieStats: string | undefined;
+    let awayGoalieStats: string | undefined;
+    let homeVegasOdds = '';
+    let awayVegasOdds = '';
+    let homeVegasWinPct: number;
+    let awayVegasWinPct: number;
+    let homeEv = 0;
+    let awayEv = 0;
+
+    if (pipRow) {
+      // Pipeline row may have home = higher seed or home = lower seed depending on actual schedule
+      // pipHomeIsHigher = true means pipRow.home_team == higherSeed (our "home")
+      const pipHomeWinPct = parseFloat(pipRow.home_win_pct) || 50;
+      const pipAwayWinPct = parseFloat(pipRow.away_win_pct) || 50;
+      const pipHomeXg = parseFloat(pipRow.home_xg) || 2.5;
+      const pipAwayXg = parseFloat(pipRow.away_xg) || 2.5;
+      const pipHomeStarter = pipRow.home_starter?.trim() || '';
+      const pipAwayStarter = pipRow.away_starter?.trim() || '';
+      const pipHomeGsax = parseFloat(pipRow.home_gsax) || 0;
+      const pipAwayGsax = parseFloat(pipRow.away_gsax) || 0;
+      const pipHomeGsaxPct = parseFloat(pipRow.home_gsax_pct) || 50;
+      const pipAwayGsaxPct = parseFloat(pipRow.away_gsax_pct) || 50;
+      const pipHomeVegasOdds = pipRow.home_vegas_odds?.trim() ?? '';
+      const pipAwayVegasOdds = pipRow.away_vegas_odds?.trim() ?? '';
+      const pipHomeVegasWinPct = parseFloat(pipRow.home_vegas_win_pct) || pipHomeWinPct;
+      const pipAwayVegasWinPct = parseFloat(pipRow.away_vegas_win_pct) || pipAwayWinPct;
+      const pipHomeEv = parseFloat(pipRow.home_ev) || 0;
+      const pipAwayEv = parseFloat(pipRow.away_ev) || 0;
+
+      if (pipHomeIsHigher) {
+        homeWinPct = pipHomeWinPct; awayWinPct = pipAwayWinPct;
+        homeXg = pipHomeXg; awayXg = pipAwayXg;
+        homeGoalie = pipHomeStarter; awayGoalie = pipAwayStarter;
+        homeGsax = pipHomeGsax; awayGsax = pipAwayGsax;
+        homeGsaxPct = pipHomeGsaxPct; awayGsaxPct = pipAwayGsaxPct;
+        homeGoalieStats = pipRow.home_goalie_stats?.trim();
+        awayGoalieStats = pipRow.away_goalie_stats?.trim();
+        homeVegasOdds = pipHomeVegasOdds; awayVegasOdds = pipAwayVegasOdds;
+        homeVegasWinPct = pipHomeVegasWinPct; awayVegasWinPct = pipAwayVegasWinPct;
+        homeEv = pipHomeEv; awayEv = pipAwayEv;
+      } else {
+        // Pipeline has lower seed as home — swap
+        homeWinPct = pipAwayWinPct; awayWinPct = pipHomeWinPct;
+        homeXg = pipAwayXg; awayXg = pipHomeXg;
+        homeGoalie = pipAwayStarter; awayGoalie = pipHomeStarter;
+        homeGsax = pipAwayGsax; awayGsax = pipHomeGsax;
+        homeGsaxPct = pipAwayGsaxPct; awayGsaxPct = pipHomeGsaxPct;
+        homeGoalieStats = pipRow.away_goalie_stats?.trim();
+        awayGoalieStats = pipRow.home_goalie_stats?.trim();
+        homeVegasOdds = pipAwayVegasOdds; awayVegasOdds = pipHomeVegasOdds;
+        homeVegasWinPct = pipAwayVegasWinPct; awayVegasWinPct = pipHomeVegasWinPct;
+        homeEv = pipAwayEv; awayEv = pipHomeEv;
+      }
+    } else {
+      // Fallback: compute from ratings
+      homeGoalie = getTopGoalie(homeTri);
+      awayGoalie = getTopGoalie(awayTri);
+      homeGsax = goalieRatings[homeGoalie]?.gsax_per_game ?? 0;
+      awayGsax = goalieRatings[awayGoalie]?.gsax_per_game ?? 0;
+      homeGsaxPct = goalieGsaxPct(homeGoalie);
+      awayGsaxPct = goalieGsaxPct(awayGoalie);
+      homeGoalieStats = goalieStatsMap[homeGoalie];
+      awayGoalieStats = goalieStatsMap[awayGoalie];
+
+      homeWinPct = computeWinProb(
+        homeRatings.xgf_5v5_rating, homeRatings.xga_5v5_rating,
+        homeRatings.pp_rating / 100, homeRatings.pk_rating / 100,
+        homeRatings.penalties_drawn_per_60, homeRatings.penalties_taken_per_60, homeGsax,
+        awayRatings.xgf_5v5_rating, awayRatings.xga_5v5_rating,
+        awayRatings.pp_rating / 100, awayRatings.pk_rating / 100,
+        awayRatings.penalties_drawn_per_60, awayRatings.penalties_taken_per_60, awayGsax,
+      ) * 100;
+      awayWinPct = 100 - homeWinPct;
+      homeXg = homeRatings.xgf_rolling * (awayRatings.xga_5v5_rating / 2.35);
+      awayXg = awayRatings.xgf_rolling * (homeRatings.xga_5v5_rating / 2.35);
+      homeVegasWinPct = homeWinPct;
+      awayVegasWinPct = awayWinPct;
+    }
 
     seriesPredictions[s.seriesId] = {
       id: `playoff_${s.seriesId}_g1`,
@@ -318,17 +409,17 @@ function loadData() {
       awayXg: parseFloat(awayXg.toFixed(2)),
       homeModelWinPct: parseFloat(homeWinPct.toFixed(1)),
       awayModelWinPct: parseFloat(awayWinPct.toFixed(1)),
-      homeVegasWinPct: parseFloat(homeWinPct.toFixed(1)),
-      awayVegasWinPct: parseFloat(awayWinPct.toFixed(1)),
-      homeEv: 0,
-      awayEv: 0,
+      homeVegasWinPct: parseFloat(homeVegasWinPct.toFixed(1)),
+      awayVegasWinPct: parseFloat(awayVegasWinPct.toFixed(1)),
+      homeEv,
+      awayEv,
       totalGoals: parseFloat((homeXg + awayXg).toFixed(2)),
       homeWager: null,
       awayWager: null,
       homeModelOdds: probToAmerican(homeWinPct / 100),
       awayModelOdds: probToAmerican(awayWinPct / 100),
-      homeVegasOdds: '',
-      awayVegasOdds: '',
+      homeVegasOdds,
+      awayVegasOdds,
 
       home_pp_rank: ppRank[homeTri],
       away_pp_rank: ppRank[awayTri],
@@ -344,22 +435,38 @@ function loadData() {
       away_gsax: awayGsax,
       home_gsax_total: goalieRatings[homeGoalie]?.gsax_total,
       away_gsax_total: goalieRatings[awayGoalie]?.gsax_total,
-      home_gsax_pct: goalieGsaxPct(homeGoalie),
-      away_gsax_pct: goalieGsaxPct(awayGoalie),
+      home_gsax_pct: homeGsaxPct,
+      away_gsax_pct: awayGsaxPct,
 
       homeGoalieStatus: 'Likely',
       homeGoalieConfirmed: homeGoalie,
       awayGoalieStatus: 'Likely',
       awayGoalieConfirmed: awayGoalie,
 
-      home_goalie_stats: goalieStatsMap[homeGoalie],
-      away_goalie_stats: goalieStatsMap[awayGoalie],
+      home_goalie_stats: homeGoalieStats,
+      away_goalie_stats: awayGoalieStats,
 
       home_lineup: lineups[homeTri] as TeamLineup | undefined,
       away_lineup: lineups[awayTri] as TeamLineup | undefined,
 
       home_news: playerNews[homeTri] ?? [],
       away_news: playerNews[awayTri] ?? [],
+
+      // Rich pipeline fields
+      ...(pipRow ? {
+        home_lineup_score: pipHomeIsHigher
+          ? (parseFloat(pipRow.home_lineup_score) || undefined)
+          : (parseFloat(pipRow.away_lineup_score) || undefined),
+        away_lineup_score: pipHomeIsHigher
+          ? (parseFloat(pipRow.away_lineup_score) || undefined)
+          : (parseFloat(pipRow.home_lineup_score) || undefined),
+        home_xg_explained: (() => {
+          try { return JSON.parse(pipHomeIsHigher ? pipRow.home_xg_explained : pipRow.away_xg_explained); } catch { return undefined; }
+        })(),
+        away_xg_explained: (() => {
+          try { return JSON.parse(pipHomeIsHigher ? pipRow.away_xg_explained : pipRow.home_xg_explained); } catch { return undefined; }
+        })(),
+      } : {}),
     };
   }
 
