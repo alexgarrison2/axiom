@@ -616,7 +616,7 @@
                 "number": 20,
                 "pos": "rw",
                 "id": 28130,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -630,10 +630,10 @@
                 "movement": null
             },
             {
-                "name": "Artem Zub",
-                "number": 2,
+                "name": "Nikolas Matinpalo",
+                "number": 33,
                 "pos": "rd",
-                "id": 27678,
+                "id": 37937,
                 "ppUnit": null,
                 "movement": "up"
             }
@@ -652,7 +652,7 @@
                 "number": 21,
                 "pos": "rd",
                 "id": 29922,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -666,12 +666,12 @@
                 "movement": null
             },
             {
-                "name": "Nikolas Matinpalo",
-                "number": 33,
+                "name": "Lassi Thomson",
+                "number": 60,
                 "pos": "rd",
-                "id": 37937,
+                "id": 30423,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -704,12 +704,12 @@
     "DAL": {
         "f1": [
             {
-                "name": "Sam Steel",
-                "number": 18,
+                "name": "Justin Hryckowian",
+                "number": 49,
                 "pos": "lw",
-                "id": 2663,
-                "ppUnit": null,
-                "movement": null
+                "id": 31798,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Wyatt Johnston",
@@ -756,20 +756,20 @@
         ],
         "f3": [
             {
-                "name": "Oskar Back",
-                "number": 10,
+                "name": "Sam Steel",
+                "number": 18,
                 "pos": "lw",
-                "id": 29109,
+                "id": 2663,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Justin Hryckowian",
-                "number": 49,
+                "name": "Arttu Hyry",
+                "number": 25,
                 "pos": "c",
-                "id": 31798,
-                "ppUnit": 2,
-                "movement": null
+                "id": 38114,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Jamie Benn",
@@ -782,12 +782,12 @@
         ],
         "f4": [
             {
-                "name": "Adam Erne",
-                "number": 73,
+                "name": "Oskar Back",
+                "number": 10,
                 "pos": "lw",
-                "id": 2725,
+                "id": 29109,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Radek Faksa",
@@ -2459,7 +2459,7 @@
                 "pos": "c",
                 "id": 28796,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Brandon Tanev",
