@@ -127,12 +127,15 @@ def fetch_goalie_vs_opponent(player_name, team_tri, opponent_tri):
     total_goals_against = 0
     total_saves = 0
     
-    for season in seasons:
-        url = f"https://api-web.nhle.com/v1/player/{player_id}/game-log/{season}/2"
+    # Include current-season playoff games (game type 3) in addition to regular season
+    season_game_types = [(s, 2) for s in seasons] + [("20252026", 3)]
+
+    for season, game_type in season_game_types:
+        url = f"https://api-web.nhle.com/v1/player/{player_id}/game-log/{season}/{game_type}"
         data = make_request(url)
         if not data or 'gameLog' not in data:
             continue
-            
+
         for g in data['gameLog']:
             # Check opponent match
             if g.get('opponentAbbrev') in target_opponents:

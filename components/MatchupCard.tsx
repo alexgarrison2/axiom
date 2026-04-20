@@ -534,7 +534,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     //   6:00–8:00 PM CT → neutral
     const getTimeColor = (timeStr: string): string => {
         if (!timeStr) return '#a3a3a3';
-        const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
         if (!match) return '#a3a3a3';
         let hours = parseInt(match[1], 10);
         const minutes = parseInt(match[2], 10);
