@@ -62,11 +62,11 @@ export function seriesBreak(p: number, hWins = 0, lWins = 0): SeriesBreakResult 
 
   for (let totalGames = 4; totalGames <= 7; totalGames++) {
     const gamesLeft = totalGames - gamesPlayed;
-    if (gamesLeft < Math.max(needH, needL)) { bars.push({g: totalGames, h: 0, l: 0}); continue; }
-    // Prob higher seed wins in exactly gamesLeft more games
+    // Prob higher seed wins in exactly gamesLeft more games (0 if they can't reach 4 wins)
     const ph = needH > 0 && needH <= gamesLeft
       ? choose(gamesLeft - 1, needH - 1) * p ** needH * (1 - p) ** (gamesLeft - needH)
       : 0;
+    // Prob lower seed wins in exactly gamesLeft more games (0 if they can't reach 4 wins)
     const pl = needL > 0 && needL <= gamesLeft
       ? choose(gamesLeft - 1, needL - 1) * (1 - p) ** needL * p ** (gamesLeft - needL)
       : 0;
