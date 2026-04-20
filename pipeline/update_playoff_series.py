@@ -10,6 +10,7 @@ import json
 import os
 import sys
 import datetime
+import subprocess
 import urllib.request
 import ssl
 
@@ -112,6 +113,65 @@ def fetch_game_results_for_date(date_str):
     return results
 
 
+BOVADA_TEAM_MAP = {
+    "Anaheim Ducks": "ANA", "Boston Bruins": "BOS", "Buffalo Sabres": "BUF",
+    "Calgary Flames": "CGY", "Carolina Hurricanes": "CAR", "Chicago Blackhawks": "CHI",
+    "Colorado Avalanche": "COL", "Columbus Blue Jackets": "CBJ", "Dallas Stars": "DAL",
+    "Detroit Red Wings": "DET", "Edmonton Oilers": "EDM", "Florida Panthers": "FLA",
+    "Los Angeles Kings": "LAK", "Minnesota Wild": "MIN", "Montreal Canadiens": "MTL",
+    "Nashville Predators": "NSH", "New Jersey Devils": "NJD", "New York Islanders": "NYI",
+    "New York Rangers": "NYR", "Ottawa Senators": "OTT", "Philadelphia Flyers": "PHI",
+    "Pittsburgh Penguins": "PIT", "San Jose Sharks": "SJS", "Seattle Kraken": "SEA",
+    "St. Louis Blues": "STL", "Tampa Bay Lightning": "TBL", "Toronto Maple Leafs": "TOR",
+    "Utah Hockey Club": "UTA", "Utah Mammoth": "UTA", "Vancouver Canucks": "VAN",
+    "Vegas Golden Knights": "VGK", "Washington Capitals": "WSH", "Winnipeg Jets": "WPG",
+}
+
+def fetch_series_odds():
+    """Fetch live series winner odds from Bovada. Returns dict: (triA, triB) -> {triA: odds, triB: odds}."""
+    url = "https://www.bovada.lv/services/sports/event/v2/events/A/description/hockey/nhl-playoff-series-betting"
+    try:
+        result = subprocess.run(
+            ["curl", "-s", "--max-time", "15", "-H", "User-Agent: Mozilla/5.0", url],
+            capture_output=True, text=True, timeout=20
+        )
+        if result.returncode != 0 or not result.stdout:
+            return {}
+        data = json.loads(result.stdout)
+        events = data[0].get("events", []) if isinstance(data, list) else data.get("events", [])
+    except Exception as e:
+        print(f"  Warning: could not fetch series odds: {e}")
+        return {}
+
+    odds_map = {}
+    for ev in events:
+        teams_in_desc = ev.get("description", "")
+        for dg in ev.get("displayGroups", []):
+            for mkt in dg.get("markets", []):
+                if mkt.get("description", "").lower() not in ("series winner", "moneyline"):
+                    continue
+                outcomes = mkt.get("outcomes", [])
+                if len(outcomes) != 2:
+                    continue
+                pair = {}
+                for o in outcomes:
+                    name = o.get("description", "")
+                    tri = BOVADA_TEAM_MAP.get(name)
+                    raw = o.get("price", {}).get("american", "")
+                    if tri and raw:
+                        try:
+                            pair[tri] = int(raw.replace("+", "").replace("EVEN", "100"))
+                            if raw == "EVEN":
+                                pair[tri] = 100
+                        except ValueError:
+                            pass
+                if len(pair) == 2:
+                    key = frozenset(pair.keys())
+                    odds_map[key] = pair
+    print(f"  Fetched series odds for {len(odds_map)} series from Bovada")
+    return odds_map
+
+
 def get_all_playoff_dates(series_list):
     """Collect all game dates from our local series data."""
     dates = set()
@@ -209,6 +269,18 @@ def main():
                 s["seriesScore"][1] += 1
 
         applied += 1
+
+    # Fetch and update series odds
+    series_odds = fetch_series_odds()
+    odds_updated = 0
+    for s in series_list:
+        ht = s["higherSeed"]["triCode"]
+        lt = s["lowerSeed"]["triCode"]
+        key = frozenset([ht, lt])
+        if key in series_odds:
+            s["seriesOdds"] = series_odds[key]
+            odds_updated += 1
+    print(f"Updated series odds for {odds_updated} series.")
 
     # Mark series status
     for s in series_list:
