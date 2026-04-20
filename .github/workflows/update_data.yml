@@ -95,6 +95,10 @@ jobs:
             python snapshot_predictions.py
             # Regenerate implications so they stay current as the day rolls over
             python -c "import game_implications; game_implications.compute_game_implications()"
+            # Update playoff series results and series odds after each game
+            python update_playoff_series.py
+            # Keep goalie career playoff stats current during postseason
+            python fetch_goalie_playoff_career_stats.py
             # season_simulator.py runs in Full Refresh only — playoff odds don't need hourly precision
           fi
 
@@ -152,6 +156,9 @@ jobs:
             [ -f public/data/goalie_ratings.json ] && git add public/data/goalie_ratings.json
             # Goalie season stats (W-L-OT, SV%, GAA) used on playoffs and matchup cards
             [ -f pipeline/nhl_goalie_stats.json ] && git add pipeline/nhl_goalie_stats.json
+            # Goalie career playoff stats (W-L, SV%, GAA all-time postseason)
+            [ -f public/data/goalie_playoff_career_stats.json ] && git add public/data/goalie_playoff_career_stats.json
+            [ -f pipeline/goalie_playoff_career_stats.json ] && git add pipeline/goalie_playoff_career_stats.json
             # Last-updated timestamp shown on site
             [ -f public/data/last_updated.json ] && git add public/data/last_updated.json
             # Playoff series results and odds (written by update_playoff_series.py)
