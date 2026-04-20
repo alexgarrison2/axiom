@@ -45,8 +45,8 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
       r2.xgf_5v5_rating, r2.xga_5v5_rating, r2.pp_rating / 100, r2.pk_rating / 100,
       r2.penalties_drawn_per_60, r2.penalties_taken_per_60, 0,
     );
-    return seriesBreak(p);
-  }, [r1, r2]);
+    return seriesBreak(p, series.seriesScore[0], series.seriesScore[1]);
+  }, [r1, r2, series.seriesScore]);
 
   const vegasOdds1 = series.seriesOdds[t1];
   const vegasOdds2 = series.seriesOdds[t2];

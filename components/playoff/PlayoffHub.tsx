@@ -51,16 +51,34 @@ export function winProb(
 }
 
 export interface SeriesBreakResult { hw: number; lw: number; bars:{g:number;h:number;l:number}[] }
-export function seriesBreak(p: number): SeriesBreakResult {
-  let hw=0, lw=0;
-  const bars=[4,5,6,7].map(g=>{
-    const ways=choose(g-1,3);
-    const ph=ways*p**4*(1-p)**(g-4);
-    const pl=ways*(1-p)**4*p**(g-4);
-    hw+=ph; lw+=pl;
-    return {g, h:ph*100, l:pl*100};
-  });
-  return {hw:hw*100, lw:lw*100, bars};
+
+export function seriesBreak(p: number, hWins = 0, lWins = 0): SeriesBreakResult {
+  const needH = 4 - hWins;
+  const needL = 4 - lWins;
+  const gamesPlayed = hWins + lWins;
+
+  let hw = 0, lw = 0;
+  const bars: {g:number;h:number;l:number}[] = [];
+
+  for (let totalGames = 4; totalGames <= 7; totalGames++) {
+    const gamesLeft = totalGames - gamesPlayed;
+    if (gamesLeft < Math.max(needH, needL)) { bars.push({g: totalGames, h: 0, l: 0}); continue; }
+    // Prob higher seed wins in exactly gamesLeft more games
+    const ph = needH > 0 && needH <= gamesLeft
+      ? choose(gamesLeft - 1, needH - 1) * p ** needH * (1 - p) ** (gamesLeft - needH)
+      : 0;
+    const pl = needL > 0 && needL <= gamesLeft
+      ? choose(gamesLeft - 1, needL - 1) * (1 - p) ** needL * p ** (gamesLeft - needL)
+      : 0;
+    hw += ph; lw += pl;
+    bars.push({g: totalGames, h: ph * 100, l: pl * 100});
+  }
+
+  // Normalize to sum to 100% (floating point safety)
+  const total = hw + lw;
+  if (total > 0) { hw /= total; lw /= total; }
+
+  return {hw: hw * 100, lw: lw * 100, bars};
 }
 
 interface PlayoffHubProps {
