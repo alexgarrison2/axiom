@@ -511,6 +511,13 @@ def refresh_pipeline():
     print("Fetching latest Odds...")
     import fetch_odds
     fetch_odds.fetch_odds()
+
+    print("Updating playoff series results...")
+    try:
+        import update_playoff_series
+        update_playoff_series.main()
+    except Exception as e:
+        print(f"[WARN] Playoff series update failed: {e}")
     
     # 6. Predict Games
     print("Running Predictions...")

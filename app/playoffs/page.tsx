@@ -310,13 +310,21 @@ function loadData() {
     });
   } catch { /* ok — fallback to computeWinProb */ }
 
-  // ─── Build Game 1 predictions for each series ─────────────────────────────
-  // Higher seed always has home ice for Game 1
+  // ─── Build next-game predictions for each series ──────────────────────────
   const seriesPredictions: Record<string, GamePrediction> = {};
 
   for (const s of series) {
-    const homeTri = s.higherSeed.triCode; // home ice = higher seed
-    const awayTri = s.lowerSeed.triCode;
+    // Determine next game from the schedule (first non-final game)
+    const nextGame = s.games.find((g: PlayoffSeriesGame) => g.status === 'scheduled' || g.status === 'live');
+    const nextGameNum = nextGame?.gameNumber ?? (s.seriesScore[0] + s.seriesScore[1] + 1);
+    const nextGameLabel = `Game ${nextGameNum}`;
+
+    // Home team for the next game comes from the schedule; fall back to higher seed
+    const nextHomeTriCode = nextGame?.homeTriCode ?? s.higherSeed.triCode;
+    const nextAwayTriCode = nextGame?.awayTriCode ?? s.lowerSeed.triCode;
+
+    const homeTri = nextHomeTriCode;
+    const awayTri = nextAwayTriCode;
     const homeCommon = triToCommon[homeTri];
     const awayCommon = triToCommon[awayTri];
     const homeRatings = ratings[homeCommon];
@@ -427,9 +435,9 @@ function loadData() {
     }
 
     seriesPredictions[s.seriesId] = {
-      id: `playoff_${s.seriesId}_g1`,
+      id: `playoff_${s.seriesId}_g${nextGameNum}`,
       date: 'TBD',
-      startTime: 'Game 1',
+      startTime: nextGameLabel,
       homeTeam: { ...homeTeam },
       awayTeam: { ...awayTeam },
       homeStarter: homeGoalie,

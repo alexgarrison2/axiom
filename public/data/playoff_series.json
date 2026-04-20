@@ -14,7 +14,7 @@
       "commonName": "Senators"
     },
     "seriesScore": [
-      0,
+      1,
       0
     ],
     "games": [
@@ -26,8 +26,11 @@
         "homeTriCode": "CAR",
         "awayTriCode": "OTT",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          2,
+          0
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 2,
@@ -99,7 +102,8 @@
     "seriesOdds": {
       "CAR": -200,
       "OTT": 170
-    }
+    },
+    "status": "active"
   },
   {
     "seriesId": "R1_E_ATL1vATL4",
@@ -116,7 +120,7 @@
       "commonName": "Bruins"
     },
     "seriesScore": [
-      0,
+      1,
       0
     ],
     "games": [
@@ -128,8 +132,11 @@
         "homeTriCode": "BUF",
         "awayTriCode": "BOS",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          4,
+          3
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 2,
@@ -201,7 +208,8 @@
     "seriesOdds": {
       "BUF": -180,
       "BOS": 155
-    }
+    },
+    "status": "active"
   },
   {
     "seriesId": "R1_E_ATL2vATL3",
@@ -219,7 +227,7 @@
     },
     "seriesScore": [
       0,
-      0
+      1
     ],
     "games": [
       {
@@ -230,8 +238,11 @@
         "homeTriCode": "TBL",
         "awayTriCode": "MTL",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          3,
+          4
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 2,
@@ -303,7 +314,8 @@
     "seriesOdds": {
       "TBL": -160,
       "MTL": 140
-    }
+    },
+    "status": "active"
   },
   {
     "seriesId": "R1_E_MET2vMET3",
@@ -321,7 +333,7 @@
     },
     "seriesScore": [
       0,
-      0
+      1
     ],
     "games": [
       {
@@ -332,8 +344,11 @@
         "homeTriCode": "PIT",
         "awayTriCode": "PHI",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          2,
+          3
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 2,
@@ -405,7 +420,8 @@
     "seriesOdds": {
       "PIT": -120,
       "PHI": 100
-    }
+    },
+    "status": "active"
   },
   {
     "seriesId": "R1_W_CEN1vWC2",
@@ -422,7 +438,7 @@
       "commonName": "Kings"
     },
     "seriesScore": [
-      0,
+      1,
       0
     ],
     "games": [
@@ -434,8 +450,11 @@
         "homeTriCode": "COL",
         "awayTriCode": "LAK",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          2,
+          1
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 2,
@@ -507,7 +526,8 @@
     "seriesOdds": {
       "COL": -250,
       "LAK": 200
-    }
+    },
+    "status": "active"
   },
   {
     "seriesId": "R1_W_CEN2vCEN3",
@@ -525,7 +545,7 @@
     },
     "seriesScore": [
       0,
-      0
+      1
     ],
     "games": [
       {
@@ -536,8 +556,11 @@
         "homeTriCode": "DAL",
         "awayTriCode": "MIN",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          1,
+          6
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 2,
@@ -609,7 +632,8 @@
     "seriesOdds": {
       "DAL": -150,
       "MIN": 130
-    }
+    },
+    "status": "active"
   },
   {
     "seriesId": "R1_W_PAC1vWC1",
@@ -626,7 +650,7 @@
       "commonName": "Mammoth"
     },
     "seriesScore": [
-      0,
+      1,
       0
     ],
     "games": [
@@ -638,8 +662,11 @@
         "homeTriCode": "VGK",
         "awayTriCode": "UTA",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          4,
+          2
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 2,
@@ -711,7 +738,8 @@
     "seriesOdds": {
       "VGK": -170,
       "UTA": 145
-    }
+    },
+    "status": "active"
   },
   {
     "seriesId": "R1_W_PAC2vPAC3",
@@ -802,6 +830,7 @@
     "seriesOdds": {
       "EDM": -140,
       "ANA": 120
-    }
+    },
+    "status": "scheduled"
   }
 ]
