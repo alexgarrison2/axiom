@@ -159,12 +159,20 @@ export default function SeriesOdds({ series, teamsMap, ratings, triToCommon }: S
               return (
                 <div key={bar.g} className="text-center">
                   <div className="text-xs text-neutral-400 mb-1 font-medium">In {bar.g}</div>
-                  <div className="h-12 flex flex-col justify-end items-center gap-0.5 relative">
+                  <div className="h-12 flex flex-row justify-center items-end gap-0.5 relative">
                     <div
-                      className="w-full rounded-t transition-all duration-500"
+                      className="w-[45%] rounded-t transition-all duration-500"
                       style={{
-                        height: `${Math.max(bar.h / maxPct * 100, 3)}%`,
+                        height: bar.h > 0 ? `${bar.h / maxPct * 100}%` : '0%',
                         backgroundColor: c1,
+                        opacity: 0.7,
+                      }}
+                    />
+                    <div
+                      className="w-[45%] rounded-t transition-all duration-500"
+                      style={{
+                        height: bar.l > 0 ? `${bar.l / maxPct * 100}%` : '0%',
+                        backgroundColor: c2,
                         opacity: 0.7,
                       }}
                     />
