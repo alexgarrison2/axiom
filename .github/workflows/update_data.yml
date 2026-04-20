@@ -147,6 +147,20 @@ jobs:
             [ -f public/data/game_implications.json ] && git add public/data/game_implications.json
             # Clinch/elimination status (fetched in full refresh via fetch_clinch_status.py)
             [ -f public/data/clinch_status.json ] && git add public/data/clinch_status.json
+            # Team and goalie ratings (written by team_ratings.py in full refresh)
+            [ -f public/data/team_ratings.json ] && git add public/data/team_ratings.json
+            [ -f public/data/goalie_ratings.json ] && git add public/data/goalie_ratings.json
+            # Goalie season stats (W-L-OT, SV%, GAA) used on playoffs and matchup cards
+            [ -f pipeline/nhl_goalie_stats.json ] && git add pipeline/nhl_goalie_stats.json
+            # Last-updated timestamp shown on site
+            [ -f public/data/last_updated.json ] && git add public/data/last_updated.json
+            # Playoff series results and odds (written by update_playoff_series.py)
+            [ -f public/data/playoff_series.json ] && git add public/data/playoff_series.json
+            # Upcoming games and player news (written by fetch_upcoming.py)
+            [ -f public/data/upcoming_games.json ] && git add public/data/upcoming_games.json
+            [ -f public/data/player_news.json ] && git add public/data/player_news.json
+            [ -f public/data/playoff_player_news.json ] && git add public/data/playoff_player_news.json
+            [ -f public/data/team_goalies.json ] && git add public/data/team_goalies.json
 
             # Commit if changes exist
             git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"

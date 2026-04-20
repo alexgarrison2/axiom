@@ -21,7 +21,7 @@ const NAV_ITEMS = [
 export default function NavBar({ activePage, dates = [] }: NavBarProps) {
   return (
     <div className="flex flex-col items-center gap-3 relative z-20 mb-3 mt-2">
-      <div className="relative w-full max-w-2xl md:max-w-3xl px-3 md:px-0">
+      <div className="relative w-full px-3 md:px-0">
         <div className="flex items-center gap-1 md:gap-2 bg-black/40 p-1 md:p-1.5 rounded-xl md:rounded-2xl backdrop-blur-md border border-white/5 w-full overflow-x-auto snap-x scrollbar-hide px-1.5 md:px-3">
 
           {/* Logo */}
