@@ -14,6 +14,7 @@ export interface PlayoffSeriesGame {
   gameNumber: number;
   date: string;
   startTimeUTC: string;
+  startTimeCT?: string;
   homeTriCode: string;
   awayTriCode: string;
   tvNetwork: string;
@@ -436,8 +437,8 @@ function loadData() {
 
     seriesPredictions[s.seriesId] = {
       id: `playoff_${s.seriesId}_g${nextGameNum}`,
-      date: 'TBD',
-      startTime: nextGameLabel,
+      date: nextGame?.date ?? 'TBD',
+      startTime: nextGame?.startTimeCT ? `${nextGameLabel} · ${nextGame.startTimeCT} CT` : nextGameLabel,
       homeTeam: { ...homeTeam },
       awayTeam: { ...awayTeam },
       homeStarter: homeGoalie,
