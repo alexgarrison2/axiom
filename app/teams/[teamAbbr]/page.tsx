@@ -42,6 +42,9 @@ export default function TeamDetailPage() {
         ppg: 'All',
         ppga: 'All',
         scoringFirst: 'All',
+        opponent: 'All',
+        minGf: '', maxGf: '',
+        minGa: '', maxGa: '',
         minSf: '', maxSf: '',
         minSa: '', maxSa: '',
         minHdf: '', maxHdf: '',
@@ -96,14 +99,26 @@ export default function TeamDetailPage() {
     const isAllTeams = teamAbbr === 'ALL';
 
     const uniqueGoalies = useMemo(() => {
-        if (isAllTeams) return []; // too many goalies across all teams
+        if (isAllTeams) return [];
         const set = new Set(games.map(g => g.starting_goalie).filter(Boolean));
+        return Array.from(set).sort();
+    }, [games, isAllTeams]);
+
+    const uniqueOpponents = useMemo(() => {
+        if (isAllTeams) return [];
+        const set = new Set(games.map(g => g.opponent).filter(Boolean));
         return Array.from(set).sort();
     }, [games, isAllTeams]);
 
     const filteredGames = useMemo(() => {
         let out = [...games];
         if (filters.goalie !== 'All') out = out.filter(g => g.starting_goalie === filters.goalie);
+        if (filters.opponent !== 'All') out = out.filter(g => g.opponent === filters.opponent);
+        // Goals For/Against
+        if (filters.minGf !== '') { const v = parseInt(filters.minGf); if (!isNaN(v)) out = out.filter(g => g.gf >= v); }
+        if (filters.maxGf !== '') { const v = parseInt(filters.maxGf); if (!isNaN(v)) out = out.filter(g => g.gf <= v); }
+        if (filters.minGa !== '') { const v = parseInt(filters.minGa); if (!isNaN(v)) out = out.filter(g => g.ga >= v); }
+        if (filters.maxGa !== '') { const v = parseInt(filters.maxGa); if (!isNaN(v)) out = out.filter(g => g.ga <= v); }
         if (filters.loc !== 'All') out = out.filter(g => filters.loc === 'Home' ? g.home_away === 'Home' : g.home_away === 'Away');
         if (filters.result !== 'All') {
             out = out.filter(g => {
@@ -285,6 +300,7 @@ export default function TeamDetailPage() {
                                 filters={filters}
                                 setFilters={setFilters}
                                 uniqueGoalies={uniqueGoalies}
+                                uniqueOpponents={uniqueOpponents}
                             />
                             <GamesLogTable
                                 games={displayedGames}

@@ -9,6 +9,11 @@ export interface GameFilters {
     ppg: string;
     ppga: string;
     scoringFirst: string;
+    opponent: string;
+    minGf: string;
+    maxGf: string;
+    minGa: string;
+    maxGa: string;
     minSf: string;
     maxSf: string;
     minSa: string;
@@ -40,6 +45,7 @@ interface FilterControlsProps {
     filters: GameFilters;
     setFilters: React.Dispatch<React.SetStateAction<GameFilters>>;
     uniqueGoalies: string[];
+    uniqueOpponents: string[];
 }
 
 const btn = (active: boolean) =>
@@ -78,7 +84,7 @@ const RangeInputs: React.FC<{
     </div>
 );
 
-const FilterControls: React.FC<FilterControlsProps> = ({ filters, setFilters, uniqueGoalies }) => {
+const FilterControls: React.FC<FilterControlsProps> = ({ filters, setFilters, uniqueGoalies, uniqueOpponents }) => {
     const set = (key: string, val: string) => setFilters(f => ({ ...f, [key]: val }));
 
     return (
@@ -96,6 +102,33 @@ const FilterControls: React.FC<FilterControlsProps> = ({ filters, setFilters, un
                     ))}
                 </div>
             </div>
+
+            {/* GF */}
+            <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">GF</label>
+                <RangeInputs minKey="minGf" maxKey="maxGf" minVal={filters.minGf} maxVal={filters.maxGf} set={set} />
+            </div>
+
+            {/* GA */}
+            <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">GA</label>
+                <RangeInputs minKey="minGa" maxKey="maxGa" minVal={filters.minGa} maxVal={filters.maxGa} set={set} />
+            </div>
+
+            {/* Opponent */}
+            {uniqueOpponents.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Opponent</label>
+                    <div className="flex flex-wrap gap-1">
+                        <button onClick={() => set('opponent', 'All')} className={btn(filters.opponent === 'All')}>All</button>
+                        {uniqueOpponents.map(opp => (
+                            <button key={opp} onClick={() => set('opponent', opp)} className={btn(filters.opponent === opp)}>
+                                {opp.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Location */}
             <div className="flex flex-col gap-1.5">
