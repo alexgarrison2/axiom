@@ -103,8 +103,8 @@
       }
     ],
     "seriesOdds": {
-      "CAR": -290,
-      "OTT": 240
+      "CAR": -310,
+      "OTT": 255
     },
     "status": "active"
   },
@@ -424,8 +424,8 @@
       }
     ],
     "seriesOdds": {
-      "PIT": 305,
-      "PHI": -410
+      "PIT": 135,
+      "PHI": -160
     },
     "status": "active"
   },
@@ -530,8 +530,8 @@
       }
     ],
     "seriesOdds": {
-      "COL": -1400,
-      "LAK": 750
+      "COL": -1200,
+      "LAK": 700
     },
     "status": "active"
   },
@@ -550,7 +550,7 @@
       "commonName": "Wild"
     },
     "seriesScore": [
-      0,
+      1,
       1
     ],
     "games": [
@@ -576,8 +576,11 @@
         "homeTriCode": "DAL",
         "awayTriCode": "MIN",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          4,
+          2
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 3,
@@ -636,8 +639,8 @@
       }
     ],
     "seriesOdds": {
-      "DAL": 155,
-      "MIN": -180
+      "DAL": 160,
+      "MIN": -185
     },
     "status": "active"
   },
@@ -742,8 +745,8 @@
       }
     ],
     "seriesOdds": {
-      "VGK": -320,
-      "UTA": 260
+      "VGK": -190,
+      "UTA": 163
     },
     "status": "active"
   },
@@ -762,7 +765,7 @@
       "commonName": "Ducks"
     },
     "seriesScore": [
-      0,
+      1,
       0
     ],
     "games": [
@@ -774,8 +777,11 @@
         "homeTriCode": "EDM",
         "awayTriCode": "ANA",
         "tvNetwork": "ESPN2",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          4,
+          3
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 2,
@@ -834,9 +840,9 @@
       }
     ],
     "seriesOdds": {
-      "EDM": -240,
-      "ANA": 200
+      "EDM": -230,
+      "ANA": 190
     },
-    "status": "scheduled"
+    "status": "active"
   }
 ]
