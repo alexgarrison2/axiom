@@ -14,7 +14,7 @@
       "commonName": "Senators"
     },
     "seriesScore": [
-      1,
+      2,
       0
     ],
     "games": [
@@ -40,8 +40,11 @@
         "homeTriCode": "CAR",
         "awayTriCode": "OTT",
         "tvNetwork": "ESPN2",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          3,
+          2
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 3,
