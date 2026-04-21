@@ -333,7 +333,7 @@
     },
     "seriesScore": [
       0,
-      1
+      2
     ],
     "games": [
       {
@@ -358,8 +358,11 @@
         "homeTriCode": "PIT",
         "awayTriCode": "PHI",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          0,
+          3
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 3,
@@ -418,8 +421,8 @@
       }
     ],
     "seriesOdds": {
-      "PIT": 135,
-      "PHI": -160
+      "PIT": 305,
+      "PHI": -410
     },
     "status": "active"
   },

@@ -333,7 +333,7 @@
                 "pos": "rd",
                 "id": 2500,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -359,7 +359,7 @@
                 "pos": "ir3",
                 "id": 33033,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -914,12 +914,12 @@
                 "movement": null
             },
             {
-                "name": "Mats Zuccarello",
-                "number": 36,
+                "name": "Vladimir Tarasenko",
+                "number": 11,
                 "pos": "rw",
-                "id": 1065,
+                "id": 1983,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -950,12 +950,12 @@
         ],
         "f3": [
             {
-                "name": "Vladimir Tarasenko",
-                "number": 11,
+                "name": "Nick Foligno",
+                "number": 17,
                 "pos": "lw",
-                "id": 1983,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1081,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Danila Yurov",
@@ -966,12 +966,12 @@
                 "movement": null
             },
             {
-                "name": "Yakov Trenin",
-                "number": 13,
+                "name": "Bobby Brink",
+                "number": 10,
                 "pos": "rw",
-                "id": 3775,
-                "ppUnit": null,
-                "movement": null
+                "id": 30223,
+                "ppUnit": 2,
+                "movement": "new"
             }
         ],
         "f4": [
@@ -992,12 +992,12 @@
                 "movement": null
             },
             {
-                "name": "Nick Foligno",
-                "number": 17,
+                "name": "Yakov Trenin",
+                "number": 13,
                 "pos": "rw",
-                "id": 1081,
+                "id": 3775,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -1056,20 +1056,12 @@
         ],
         "ir": [
             {
-                "name": "Zach Bogosian",
-                "number": 24,
+                "name": "Mats Zuccarello",
+                "number": 36,
                 "pos": "ir1",
-                "id": 53,
+                "id": 1065,
                 "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Quinn Hughes",
-                "number": 43,
-                "pos": "ir2",
-                "id": 4794,
-                "ppUnit": 1,
-                "movement": null
+                "movement": "down"
             }
         ]
     },
@@ -1115,7 +1107,7 @@
                 "pos": "c",
                 "id": 2365,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Kasperi Kapanen",
@@ -1246,14 +1238,6 @@
                 "number": 46,
                 "pos": "ir2",
                 "id": 2657,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Jason Dickinson",
-                "number": 16,
-                "pos": "ir3",
-                "id": 2160,
                 "ppUnit": null,
                 "movement": null
             }
@@ -1432,14 +1416,6 @@
                 "number": 24,
                 "pos": "ir2",
                 "id": 3913,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Radko Gudas",
-                "number": 7,
-                "pos": "ir3",
-                "id": 1366,
                 "ppUnit": null,
                 "movement": null
             }
