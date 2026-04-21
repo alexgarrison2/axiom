@@ -156,7 +156,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({ filters, setFilters, un
             <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Last</label>
                 <div className="flex gap-1">
-                    {['All', '5', '10', '15', '20'].map(opt => (
+                    {['All', 'Reg', 'Playoffs', '5', '10', '15', '20'].map(opt => (
                         <button key={opt} onClick={() => set('last', opt)} className={btn(filters.last === opt)}>
                             {opt === 'All' ? 'Season' : opt}
                         </button>

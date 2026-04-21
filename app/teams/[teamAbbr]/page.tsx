@@ -177,11 +177,13 @@ export default function TeamDetailPage() {
 
     const displayedGames = useMemo(() => {
         let out = [...filteredGames];
-        if (filters.last !== 'All') {
-            if (filters.last !== 'Season') {
-                const n = parseInt(filters.last);
-                out = out.slice(0, n);
-            }
+        if (filters.last === 'Reg') {
+            out = out.filter(g => g.game_number <= 82);
+        } else if (filters.last === 'Playoffs') {
+            out = out.filter(g => g.game_number > 82);
+        } else if (filters.last !== 'All') {
+            const n = parseInt(filters.last);
+            if (!isNaN(n)) out = out.slice(0, n);
         }
         return out;
     }, [filteredGames, filters.last]);
