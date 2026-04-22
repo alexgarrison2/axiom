@@ -66,9 +66,18 @@ const itemVariants: Variants = {
     }
 };
 
+interface PlayoffSeriesEntry {
+    higherSeed: { triCode: string };
+    lowerSeed: { triCode: string };
+    seriesScore: [number, number];
+    status: string;
+}
+
 const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, fullSchedule, currentStandings, lastRefresh, implicationsData }) => {
     const [predictions, setPredictions] = useState<GamePrediction[]>(initialPredictions);
     const [simResults, setSimResults] = useState<Record<string, SimResult>>({});
+    // Map of "AWAY_TRI|HOME_TRI" → { awayWins, homeWins } for active playoff series
+    const [seriesScoreMap, setSeriesScoreMap] = useState<Record<string, { awayWins: number; homeWins: number }>>({});
     const workerRef = useRef<Worker | null>(null);
     const tabBarRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -142,6 +151,25 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
         };
 
         fetchProjections();
+    }, []);
+
+    // Load playoff series scores
+    useEffect(() => {
+        fetch('/data/playoff_series.json')
+            .then(r => r.json())
+            .then((series: PlayoffSeriesEntry[]) => {
+                const map: Record<string, { awayWins: number; homeWins: number }> = {};
+                series.filter(s => s.status === 'active').forEach(s => {
+                    const hi = s.higherSeed.triCode;
+                    const lo = s.lowerSeed.triCode;
+                    const [hiWins, loWins] = s.seriesScore;
+                    // Index by both orientations (either team could be home)
+                    map[`${lo}|${hi}`] = { awayWins: loWins, homeWins: hiWins };
+                    map[`${hi}|${lo}`] = { awayWins: hiWins, homeWins: loWins };
+                });
+                setSeriesScoreMap(map);
+            })
+            .catch(() => { /* not in playoffs yet — silent */ });
     }, []);
 
     // Worker Disabled in favor of Backend Projections
@@ -780,6 +808,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                         prediction.homeTeam.triCode,
                                         prediction.awayTeam.triCode,
                                     )}
+                                    seriesScore={seriesScoreMap[`${prediction.awayTeam.triCode}|${prediction.homeTeam.triCode}`]}
                                 />
                             </motion.div>
                         ))}

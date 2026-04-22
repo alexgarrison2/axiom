@@ -162,7 +162,19 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
               {/* Center: Game 1 Matchup Card */}
               <div className="flex-1 min-w-0 overflow-y-auto scrollbar-hide">
                 {prediction ? (
-                  <MatchupCard prediction={prediction} defaultExpanded={true} />
+                  <MatchupCard
+                    prediction={prediction}
+                    defaultExpanded={true}
+                    seriesScore={(() => {
+                      if (!selected) return undefined;
+                      const awayTri = prediction.awayTeam.triCode;
+                      const hiTri = selected.higherSeed.triCode;
+                      const [hiW, loW] = selected.seriesScore;
+                      return awayTri === hiTri
+                        ? { awayWins: hiW, homeWins: loW }
+                        : { awayWins: loW, homeWins: hiW };
+                    })()}
+                  />
                 ) : (
                   <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-2xl p-8 text-center text-neutral-600 text-sm">
                     Prediction not available

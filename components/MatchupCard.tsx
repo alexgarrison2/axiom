@@ -24,6 +24,7 @@ interface MatchupCardProps {
     implications?: GameImplication | null;
     history?: HistoryEntry[];
     defaultExpanded?: boolean;
+    seriesScore?: { awayWins: number; homeWins: number };
 }
 
 // --- Pick Form helpers ---
@@ -85,7 +86,7 @@ function PickDotsAndStats({ entries, isMobile = false }: { entries: PickEntry[];
     );
 }
 
-const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false, isUltraCompact = false, implications, history = [], defaultExpanded = false }) => {
+const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false, isUltraCompact = false, implications, history = [], defaultExpanded = false, seriesScore }) => {
     const {
         homeTeam,
         awayTeam,
@@ -953,6 +954,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                         {tvNetwork && (
                             <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-5 w-auto object-contain" title={tvNetwork} />
                         )}
+                        {seriesScore && (
+                            <span className="text-[9px] font-bold font-mono tracking-wider text-neutral-400 whitespace-nowrap">
+                                {seriesScore.awayWins}–{seriesScore.homeWins}
+                            </span>
+                        )}
                     </div>
 
                     <div className="flex flex-col items-end">
@@ -1197,6 +1203,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             <span className="text-xs font-mono tracking-[0.2em]" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
                             {tvNetwork && (
                                 <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-4 w-auto object-contain" title={tvNetwork} />
+                            )}
+                            {seriesScore && (
+                                <span className="text-[9px] font-bold font-mono tracking-wider text-neutral-400 whitespace-nowrap">
+                                    {seriesScore.awayWins}–{seriesScore.homeWins}
+                                </span>
                             )}
                         </div>
 
@@ -1648,6 +1659,11 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 <span className="flex flex-col items-center gap-0.5">
                                     <span className="text-[10px] font-mono tracking-wider whitespace-nowrap" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
                                     {tvNetwork && <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-3 w-auto object-contain" />}
+                                    {seriesScore && (
+                                        <span className="text-[9px] font-bold font-mono tracking-wider text-neutral-400 whitespace-nowrap">
+                                            {seriesScore.awayWins}–{seriesScore.homeWins}
+                                        </span>
+                                    )}
                                 </span>
                                 <span className={`text-[10px] font-bold uppercase tracking-wider leading-none truncate max-w-[35%] text-right ${
                                     (homeStarter?.toUpperCase()?.includes('UNCONFIRMED') || !homeStarter) ? 'text-neutral-500' :
