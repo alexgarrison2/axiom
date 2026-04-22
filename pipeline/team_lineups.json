@@ -188,12 +188,12 @@
     "PIT": {
         "f1": [
             {
-                "name": "Egor Chinakhov",
-                "number": 59,
+                "name": "Rickard Rakell",
+                "number": 67,
                 "pos": "lw",
-                "id": 30655,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1682,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Sidney Crosby",
@@ -214,19 +214,19 @@
         ],
         "f2": [
             {
-                "name": "Tommy Novak",
-                "number": 18,
+                "name": "Anthony Mantha",
+                "number": 39,
                 "pos": "lw",
-                "id": 26595,
+                "id": 2151,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Rickard Rakell",
-                "number": 67,
+                "name": "Tommy Novak",
+                "number": 18,
                 "pos": "c",
-                "id": 1682,
-                "ppUnit": 1,
+                "id": 26595,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -240,12 +240,12 @@
         ],
         "f3": [
             {
-                "name": "Elmer Soderblom",
-                "number": null,
+                "name": "Egor Chinakhov",
+                "number": 59,
                 "pos": "lw",
-                "id": 30683,
-                "ppUnit": null,
-                "movement": null
+                "id": 30655,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Ben Kindel",
@@ -256,12 +256,12 @@
                 "movement": null
             },
             {
-                "name": "Anthony Mantha",
-                "number": 39,
+                "name": "Justin Brazeau",
+                "number": 15,
                 "pos": "rw",
-                "id": 2151,
-                "ppUnit": 2,
-                "movement": null
+                "id": 28622,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "f4": [
@@ -816,12 +816,12 @@
                 "movement": null
             },
             {
-                "name": "Adam Henrique",
-                "number": 19,
+                "name": "Josh Samanski",
+                "number": null,
                 "pos": "c",
-                "id": 945,
+                "id": 38438,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": "new"
             },
             {
                 "name": "Trent Frederic",
@@ -1150,7 +1150,7 @@
                 "number": 44,
                 "pos": "lw",
                 "id": 37375,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1228,7 +1228,7 @@
                 "number": 6,
                 "pos": "rd",
                 "id": 37934,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -1300,7 +1300,7 @@
                 "number": 22,
                 "pos": "rw",
                 "id": 32270,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -1326,7 +1326,7 @@
                 "number": 91,
                 "pos": "rw",
                 "id": 32990,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1806,7 +1806,7 @@
                 "number": 10,
                 "pos": "lw",
                 "id": 2519,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1936,7 +1936,7 @@
                 "number": 92,
                 "pos": "rd",
                 "id": 30833,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -2802,7 +2802,7 @@
                 "number": 19,
                 "pos": "lw",
                 "id": 1853,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -2844,7 +2844,7 @@
                 "number": 10,
                 "pos": "rw",
                 "id": 2030,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -3094,14 +3094,6 @@
                 "number": 8,
                 "pos": "ir2",
                 "id": 4789,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Alexandre Carrier",
-                "number": 45,
-                "pos": "ir3",
-                "id": 2732,
                 "ppUnit": null,
                 "movement": null
             }
