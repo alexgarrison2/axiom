@@ -99,7 +99,10 @@ interface PlayoffHubProps {
 }
 
 export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap, playoffHistory, teamStatsExtended, goalieRatings }: PlayoffHubProps) {
-  const [selectedId, setSelectedId] = useState<string>(series[0]?.seriesId ?? '');
+  const [selectedId, setSelectedId] = useState<string>(
+    series.find(s => s.higherSeed.triCode === 'DAL' || s.lowerSeed.triCode === 'DAL' || s.higherSeed.triCode === 'MIN' || s.lowerSeed.triCode === 'MIN')?.seriesId
+    ?? series[0]?.seriesId ?? ''
+  );
 
   const selected = useMemo(() => series.find(s => s.seriesId === selectedId) ?? series[0], [series, selectedId]);
 
