@@ -450,7 +450,7 @@
       "commonName": "Kings"
     },
     "seriesScore": [
-      1,
+      2,
       0
     ],
     "games": [
@@ -476,8 +476,11 @@
         "homeTriCode": "COL",
         "awayTriCode": "LAK",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          2,
+          1
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 3,
