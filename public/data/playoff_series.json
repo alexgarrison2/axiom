@@ -124,7 +124,7 @@
     },
     "seriesScore": [
       1,
-      0
+      1
     ],
     "games": [
       {
@@ -149,8 +149,11 @@
         "homeTriCode": "BUF",
         "awayTriCode": "BOS",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          2,
+          4
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 3,
@@ -229,7 +232,7 @@
       "commonName": "Canadiens"
     },
     "seriesScore": [
-      0,
+      1,
       1
     ],
     "games": [
@@ -255,8 +258,11 @@
         "homeTriCode": "TBL",
         "awayTriCode": "MTL",
         "tvNetwork": "ESPN2",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          3,
+          2
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 3,
@@ -660,7 +666,7 @@
     },
     "seriesScore": [
       1,
-      0
+      1
     ],
     "games": [
       {
@@ -685,8 +691,11 @@
         "homeTriCode": "VGK",
         "awayTriCode": "UTA",
         "tvNetwork": "ESPN2",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          2,
+          3
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 3,
