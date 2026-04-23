@@ -134,6 +134,8 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
               teamsMap={teamsMap}
               isSelected={s.seriesId === selectedId}
               onClick={() => setSelectedId(s.seriesId)}
+              ratings={ratings}
+              triToCommon={triToCommon}
             />
           </motion.div>
         ))}
@@ -145,6 +147,8 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
               teamsMap={teamsMap}
               isSelected={s.seriesId === selectedId}
               onClick={() => setSelectedId(s.seriesId)}
+              ratings={ratings}
+              triToCommon={triToCommon}
             />
           </motion.div>
         ))}

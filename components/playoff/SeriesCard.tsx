@@ -1,22 +1,38 @@
 'use client';
 
 import React from 'react';
-import { teamColor } from './PlayoffHub';
-import type { PlayoffSeries, TeamInfo } from '@/app/playoffs/page';
+import { teamColor, winProb, seriesBreak } from './PlayoffHub';
+import type { PlayoffSeries, TeamInfo, TeamRatings } from '@/app/playoffs/page';
 
 interface SeriesCardProps {
   series: PlayoffSeries;
   teamsMap: Record<string, TeamInfo>;
   isSelected: boolean;
   onClick: () => void;
+  ratings: TeamRatings;
+  triToCommon: Record<string, string>;
 }
 
-export default function SeriesCard({ series, teamsMap, isSelected, onClick }: SeriesCardProps) {
+export default function SeriesCard({ series, teamsMap, isSelected, onClick, ratings, triToCommon }: SeriesCardProps) {
   const t1 = series.higherSeed.triCode;
   const t2 = series.lowerSeed.triCode;
   const c1 = teamColor(t1, teamsMap);
   const c2 = teamColor(t2, teamsMap);
   const leading = series.seriesScore[0] > series.seriesScore[1] ? 1 : series.seriesScore[1] > series.seriesScore[0] ? 2 : 0;
+
+  const probBar = React.useMemo(() => {
+    const r1 = ratings[triToCommon[t1] ?? t1];
+    const r2 = ratings[triToCommon[t2] ?? t2];
+    if (!r1 || !r2) return null;
+    const p = winProb(
+      r1.xgf_5v5_rating, r1.xga_5v5_rating, r1.pp_rating / 100, r1.pk_rating / 100,
+      r1.penalties_drawn_per_60, r1.penalties_taken_per_60, 0,
+      r2.xgf_5v5_rating, r2.xga_5v5_rating, r2.pp_rating / 100, r2.pk_rating / 100,
+      r2.penalties_drawn_per_60, r2.penalties_taken_per_60, 0,
+    );
+    const { hw, lw } = seriesBreak(p, series.seriesScore[0], series.seriesScore[1]);
+    return { hw, lw };
+  }, [ratings, triToCommon, t1, t2, series.seriesScore]);
 
   return (
     <button
@@ -54,6 +70,20 @@ export default function SeriesCard({ series, teamsMap, isSelected, onClick }: Se
           <span className="text-[8px] uppercase tracking-wider text-neutral-500 font-medium">{series.lowerSeed.seed}</span>
         </div>
       </div>
+
+      {/* Probability bar */}
+      {probBar && (
+        <div className="mt-2 h-1 w-full rounded-full overflow-hidden flex">
+          <div
+            className="h-full rounded-l-full transition-all duration-500"
+            style={{ width: `${probBar.hw}%`, backgroundColor: c1, opacity: 0.7 }}
+          />
+          <div
+            className="h-full rounded-r-full transition-all duration-500"
+            style={{ width: `${probBar.lw}%`, backgroundColor: c2, opacity: 0.7 }}
+          />
+        </div>
+      )}
     </button>
   );
 }
