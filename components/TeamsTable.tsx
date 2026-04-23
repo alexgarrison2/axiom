@@ -64,6 +64,8 @@ interface RawGameStat {
     saves_for: string;
     emptynet_goalsfor: string;
     emptynet_goalsagainst: string;
+    en_pp_goalsfor: string;
+    en_pp_goalsagainst: string;
     en_attempts_for: string;
     en_attempts_against: string;
 
@@ -528,6 +530,7 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
     let hdf = 0, hda = 0;
     let saves = 0;
     let engf = 0, enga = 0;
+    let en_pp_gf = 0, en_pp_ga = 0;
     let en_attempts = 0;
     let xgf = 0, xga = 0;
     let otml = 0;
@@ -584,6 +587,8 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
         if (period === 'All') {
             engf += parseFloat(g.emptynet_goalsfor || '0');
             enga += parseFloat(g.emptynet_goalsagainst || '0');
+            en_pp_gf += parseFloat(g.en_pp_goalsfor || '0');
+            en_pp_ga += parseFloat(g.en_pp_goalsagainst || '0');
             en_attempts += parseFloat(g.en_attempts_for || '0');
         }
 
@@ -633,8 +638,9 @@ const calculateTeamStats = (teamName: string, teamGames: RawGameStat[], period: 
 
     // Calculations for new stats
     // In period mode, PP/EN goals aren't available per-period, so true goals = raw goals
-    const true_gf = period === 'All' ? gf - pp_goals - engf : gf;
-    const true_ga = period === 'All' ? ga - pk_goals_allowed - enga : ga;
+    // Remove PP goals and EN goals, but add back any EN goals that were already counted as PP (avoid double-subtract)
+    const true_gf = period === 'All' ? gf - pp_goals - engf + en_pp_gf : gf;
+    const true_ga = period === 'All' ? ga - pk_goals_allowed - enga + en_pp_ga : ga;
 
     // PP Time Per Goal (Lower is Better)
     const pp_sec_per_goal = pp_goals > 0 ? (pp_time / pp_goals) : 0;

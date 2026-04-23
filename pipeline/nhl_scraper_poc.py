@@ -491,6 +491,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "pk": {'opportunities': 0, 'time': 0},
             "saves": 0,
             "empty_net_goals": 0,
+            "en_pp_goals": 0,
             "posts": 0,
             "toi": {}, # 5v5, 5v4, etc.
             "time_leading": 0,
@@ -526,6 +527,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "pk": {'opportunities': 0, 'time': 0},
             "saves": 0,
             "empty_net_goals": 0,
+            "en_pp_goals": 0,
             "posts": 0,
             "toi": {},
             "time_leading": 0,
@@ -1050,6 +1052,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                    (owner_id == away_id and (situation_code and situation_code[3] == '0')):
                     teams[owner_id]['empty_net_goals'] += 1
                     teams[owner_id]['en_attempts'] += 1
+                    if is_pp_goal:
+                        teams[owner_id]['en_pp_goals'] += 1
 
         # Shots (506)
         elif type_code == 506:
@@ -1624,6 +1628,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             # Other
             "emptynet_goalsfor": stats['empty_net_goals'],
             "emptynet_goalsagainst": opp_stats['empty_net_goals'],
+            "en_pp_goalsfor": stats['en_pp_goals'],
+            "en_pp_goalsagainst": opp_stats['en_pp_goals'],
             "en_attempts_for": stats['en_attempts'],
             "en_attempts_against": opp_stats['en_attempts'],
             "hitpost_for": stats['posts'],

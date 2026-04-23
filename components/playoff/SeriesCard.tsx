@@ -20,6 +20,9 @@ export default function SeriesCard({ series, teamsMap, isSelected, onClick, rati
   const c2 = teamColor(t2, teamsMap);
   const leading = series.seriesScore[0] > series.seriesScore[1] ? 1 : series.seriesScore[1] > series.seriesScore[0] ? 2 : 0;
 
+  const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+  const hasGameToday = series.games.some(g => g.status === 'scheduled' && g.date === today);
+
   const probBar = React.useMemo(() => {
     const r1 = ratings[triToCommon[t1] ?? t1];
     const r2 = ratings[triToCommon[t2] ?? t2];
@@ -38,14 +41,17 @@ export default function SeriesCard({ series, teamsMap, isSelected, onClick, rati
     <button
       onClick={onClick}
       className={`
-        w-full rounded-xl px-2 py-2.5 transition-all duration-200
-        backdrop-blur-md border
+        relative w-full rounded-xl px-2 py-2.5 transition-all duration-200
+        backdrop-blur-md border overflow-hidden
         ${isSelected
           ? 'bg-white/[0.08] border-cyan-400/40 shadow-[0_0_12px_rgba(0,243,255,0.15)]'
           : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10'
         }
       `}
     >
+      {hasGameToday && (
+        <div className="absolute right-0 top-2 bottom-2 w-[3px] rounded-full bg-white/60 shadow-[0_0_8px_2px_rgba(255,255,255,0.3)]" />
+      )}
       <div className="flex items-center justify-between">
         {/* Team 1 logo + seed */}
         <div className="flex flex-col items-center gap-0.5">
