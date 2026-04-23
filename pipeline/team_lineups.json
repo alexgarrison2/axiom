@@ -504,31 +504,23 @@
         ],
         "d3": [
             {
-                "name": "Dennis Gilbert",
-                "number": 8,
+                "name": "Tyler Kleven",
+                "number": 43,
                 "pos": "ld",
-                "id": 4712,
+                "id": 30802,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Lassi Thomson",
-                "number": 60,
+                "name": "Cameron Crotty",
+                "number": null,
                 "pos": "rd",
-                "id": 30423,
+                "id": 28075,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
-            {
-                "name": "Tyler Kleven",
-                "number": 43,
-                "pos": "ir1",
-                "id": 30802,
-                "ppUnit": null,
-                "movement": null
-            },
             {
                 "name": "Nick Jensen",
                 "number": 3,
@@ -1784,12 +1776,12 @@
     "ANA": {
         "f1": [
             {
-                "name": "Chris Kreider",
-                "number": 20,
+                "name": "Cutter Gauthier",
+                "number": 61,
                 "pos": "lw",
-                "id": 1926,
-                "ppUnit": 1,
-                "movement": null
+                "id": 33248,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Leo Carlsson",
@@ -1830,32 +1822,32 @@
                 "number": 45,
                 "pos": "rw",
                 "id": 36637,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
         "f3": [
             {
-                "name": "Mason McTavish",
-                "number": 23,
+                "name": "Chris Kreider",
+                "number": 20,
                 "pos": "lw",
-                "id": 30834,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1926,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Ryan Poehling",
                 "number": 25,
                 "pos": "c",
                 "id": 2792,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Cutter Gauthier",
-                "number": 61,
+                "name": "Mason McTavish",
+                "number": 23,
                 "pos": "rw",
-                "id": 33248,
+                "id": 30834,
                 "ppUnit": 2,
                 "movement": null
             }
@@ -2572,7 +2564,7 @@
                 "number": 38,
                 "pos": "c",
                 "id": 2161,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2624,7 +2616,7 @@
                 "number": 22,
                 "pos": "c",
                 "id": 36363,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -2632,7 +2624,7 @@
                 "number": 11,
                 "pos": "rw",
                 "id": 1983,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -2694,7 +2686,7 @@
                 "number": 46,
                 "pos": "rd",
                 "id": 1557,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -3290,6 +3282,14 @@
                 "id": 33033,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Dan Vladar",
+                "number": 80,
+                "pos": "ir4",
+                "id": 3831,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
