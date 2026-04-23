@@ -9,31 +9,21 @@ interface ScheduleStripProps {
   teamsMap: Record<string, TeamInfo>;
 }
 
-function formatGameTime(startTimeUTC: string, startTimeCT?: string): string {
-  if (startTimeCT) return startTimeCT;
-  try {
-    const d = new Date(startTimeUTC);
-    // Convert to Central Time
-    const ct = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/Chicago',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }).format(d);
-    return ct;
-  } catch {
-    return '';
-  }
+const PLACEHOLDER_TIME = '11:00 AM';
+
+function formatGameTime(startTimeCT?: string): string {
+  if (!startTimeCT || startTimeCT === PLACEHOLDER_TIME) return 'TBD';
+  return startTimeCT;
 }
 
-function formatDate(startTimeUTC: string): string {
+function formatDate(gameDate: string): string {
   try {
-    const d = new Date(startTimeUTC);
-    return d.toLocaleDateString('en-US', {
-      timeZone: 'America/Chicago',
-      month: 'short',
-      day: 'numeric',
-    });
+    // gameDate is YYYY-MM-DD local date — parse without timezone shift
+    const [year, month, day] = gameDate.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    const dow = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const md = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${dow} ${md}`;
   } catch {
     return '';
   }
@@ -82,14 +72,14 @@ export default function ScheduleStrip({ series, teamsMap }: ScheduleStripProps) 
             {game ? (
               <>
                 <div className="text-[10px] text-neutral-500 mt-0.5">
-                  {formatDate(game.startTimeUTC)}
+                  {formatDate(game.date ?? game.startTimeUTC)}
                 </div>
                 <div className="text-[10px] text-neutral-600 mt-0.5">
                   @{game.homeTriCode}
                 </div>
                 {!isFinal && (
                   <div className={`text-[9px] mt-0.5 font-mono ${isNext ? 'text-cyan-500' : 'text-neutral-600'}`}>
-                    {formatGameTime(game.startTimeUTC, (game as any).startTimeCT)}
+                    {formatGameTime((game as any).startTimeCT)}
                   </div>
                 )}
                 {isFinal && game.score && (

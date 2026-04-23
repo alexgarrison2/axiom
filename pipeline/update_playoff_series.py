@@ -172,6 +172,107 @@ def fetch_series_odds():
     return odds_map
 
 
+NETWORK_MAP = {
+    "ESPN": "ESPN", "ESPN2": "ESPN2", "ABC": "ABC",
+    "TNT": "TNT", "TBS": "TBS", "MAX": "MAX",
+    "SN": "SN", "TVAS": "TVAS", "NHL Network": "NHLN",
+}
+
+def fetch_scheduled_game_times(series_list):
+    """
+    Fetch start times and TV networks for all future scheduled playoff games
+    from the NHL schedule API. Updates games in-place.
+    """
+    import datetime
+    today = datetime.date.today()
+    future_dates = set()
+    for s in series_list:
+        for g in s.get("games", []):
+            if g.get("status") != "final":
+                d = g.get("date", "")
+                if d:
+                    future_dates.add(d)
+
+    if not future_dates:
+        return
+
+    print(f"Fetching scheduled times for {len(future_dates)} future date(s): {sorted(future_dates)}")
+
+    # Build lookup: (homeTriCode, awayTriCode) -> game data
+    api_games = {}
+    for d in sorted(future_dates):
+        url = f"https://api-web.nhle.com/v1/schedule/{d}"
+        try:
+            data = fetch_json(url)
+        except Exception as e:
+            print(f"  Warning: could not fetch {d}: {e}")
+            continue
+        for day in data.get("gameWeek", []):
+            if day.get("date") != d:
+                continue
+            for g in day.get("games", []):
+                if g.get("gameType") != 3:
+                    continue
+                home = g.get("homeTeam", {}).get("abbrev", "")
+                away = g.get("awayTeam", {}).get("abbrev", "")
+                start_utc = g.get("startTimeUTC", "")
+                # Derive CT time
+                start_ct = ""
+                try:
+                    from datetime import datetime as dt
+                    import re
+                    utc_dt = dt.fromisoformat(start_utc.replace("Z", "+00:00"))
+                    # UTC to CT (CST=-6, CDT=-5; use CDT during April-Oct)
+                    offset_hours = -5  # CDT
+                    ct_dt = utc_dt.replace(tzinfo=None)
+                    from datetime import timedelta
+                    ct_dt = dt.fromisoformat(start_utc.replace("Z", "")).replace(tzinfo=None)
+                    import calendar
+                    ct_hour = ct_dt.hour - 5  # CDT offset
+                    if ct_hour < 0:
+                        ct_hour += 24
+                    ampm = "AM" if ct_hour < 12 else "PM"
+                    h12 = ct_hour % 12 or 12
+                    mins = ct_dt.minute
+                    start_ct = f"{h12}:{mins:02d} {ampm}"
+                except Exception:
+                    pass
+                # Extract TV broadcast
+                tv = ""
+                for broadcast in g.get("tvBroadcasts", []):
+                    if broadcast.get("market") in ("N", "U"):  # National/US
+                        raw = broadcast.get("network", "")
+                        tv = NETWORK_MAP.get(raw, raw)
+                        break
+                api_games[(home, away, d)] = {
+                    "startTimeUTC": start_utc,
+                    "startTimeCT": start_ct,
+                    "tvNetwork": tv,
+                }
+
+    # Apply to series games
+    updated = 0
+    for s in series_list:
+        for g in s.get("games", []):
+            if g.get("status") == "final":
+                continue
+            home = g.get("homeTriCode", "")
+            away = g.get("awayTriCode", "")
+            game_date = g.get("date", "")
+            if (home, away, game_date) in api_games:
+                info = api_games[(home, away, game_date)]
+                if info["startTimeUTC"]:
+                    g["startTimeUTC"] = info["startTimeUTC"]
+                if info["startTimeCT"]:
+                    g["startTimeCT"] = info["startTimeCT"]
+                else:
+                    g["startTimeCT"] = ""  # unknown → show TBD
+                if info["tvNetwork"]:
+                    g["tvNetwork"] = info["tvNetwork"]
+                updated += 1
+    print(f"  Updated start times for {updated} scheduled game(s).")
+
+
 def get_all_playoff_dates(series_list):
     """Collect all game dates from our local series data."""
     dates = set()
@@ -269,6 +370,9 @@ def main():
                 s["seriesScore"][1] += 1
 
         applied += 1
+
+    # Fetch start times and TV networks for scheduled games
+    fetch_scheduled_game_times(series_list)
 
     # Fetch and update series odds
     series_odds = fetch_series_odds()
