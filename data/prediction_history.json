@@ -16770,5 +16770,47 @@
     "actualWinner": "Mammoth",
     "isCorrect": false,
     "brierScore": 0.3329
+  },
+  {
+    "date": "2026-04-22",
+    "homeTeam": "Oilers",
+    "awayTeam": "Ducks",
+    "homeScore": 4,
+    "awayScore": 6,
+    "homeXg": 3.9,
+    "awayXg": 3.6,
+    "homeWinProb": 53.4,
+    "predictedWinner": "Oilers",
+    "actualWinner": "Ducks",
+    "isCorrect": false,
+    "brierScore": 0.2852
+  },
+  {
+    "date": "2026-04-22",
+    "homeTeam": "Flyers",
+    "awayTeam": "Penguins",
+    "homeScore": 5,
+    "awayScore": 2,
+    "homeXg": 2.81,
+    "awayXg": 2.99,
+    "homeWinProb": 53.5,
+    "predictedWinner": "Flyers",
+    "actualWinner": "Flyers",
+    "isCorrect": true,
+    "brierScore": 0.2162
+  },
+  {
+    "date": "2026-04-22",
+    "homeTeam": "Wild",
+    "awayTeam": "Stars",
+    "homeScore": 3,
+    "awayScore": 4,
+    "homeXg": 3.05,
+    "awayXg": 3.36,
+    "homeWinProb": 48.7,
+    "predictedWinner": "Stars",
+    "actualWinner": "Stars",
+    "isCorrect": true,
+    "brierScore": 0.2372
   }
 ]

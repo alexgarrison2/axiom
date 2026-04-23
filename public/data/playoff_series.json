@@ -562,7 +562,7 @@
       "commonName": "Wild"
     },
     "seriesScore": [
-      1,
+      2,
       1
     ],
     "games": [
@@ -602,8 +602,11 @@
         "homeTriCode": "MIN",
         "awayTriCode": "DAL",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          3,
+          4
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 4,
@@ -651,8 +654,8 @@
       }
     ],
     "seriesOdds": {
-      "DAL": -112,
-      "MIN": -108
+      "DAL": -250,
+      "MIN": 210
     },
     "status": "active"
   },
@@ -781,7 +784,7 @@
     },
     "seriesScore": [
       1,
-      0
+      1
     ],
     "games": [
       {
@@ -806,8 +809,11 @@
         "homeTriCode": "ANA",
         "awayTriCode": "EDM",
         "tvNetwork": "TBS",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          4,
+          6
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 3,
@@ -855,8 +861,8 @@
       }
     ],
     "seriesOdds": {
-      "EDM": -480,
-      "ANA": 350
+      "EDM": -190,
+      "ANA": 163
     },
     "status": "active"
   }
