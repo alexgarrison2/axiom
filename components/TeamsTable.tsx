@@ -722,7 +722,7 @@ const TeamsTable = () => {
     const [withOptions, setWithOptions] = useState<WithOption[]>([]);
     const [valuesMode, setValuesMode] = useState<ValuesMode>('Stats');
     const [filterHomeAway, setFilterHomeAway] = useState<'All' | 'Home' | 'Away'>('All');
-    const [filterLastN, setFilterLastN] = useState<number | 'All' | 'Olympics'>('All');
+    const [filterLastN, setFilterLastN] = useState<number | 'All' | 'Olympics' | 'Playoffs'>('All');
     const [filterPeriod, setFilterPeriod] = useState<'All' | '1st' | '2nd' | '3rd' | 'OT'>('All');
     const [filterPlayoff, setFilterPlayoff] = useState<'All' | 'Yes' | 'No'>('All');
     const [moreFiltersOpen, setMoreFiltersOpen] = useState(true);
@@ -1309,7 +1309,10 @@ const TeamsTable = () => {
             }
 
             // Apply Last N (Always applies unless 'All')
-            if (filterLastN === 'Olympics') {
+            if (filterLastN === 'Playoffs') {
+                // NHL game IDs: digits 5-6 are '03' for playoff games
+                games = games.filter(g => g.game_id.substring(4, 6) === '03');
+            } else if (filterLastN === 'Olympics') {
                 // Since Olympics: games on or after Feb 22, 2026
                 games = games.filter(g => g.game_date >= '2026-02-22');
             } else if (filterLastN !== 'All') {
@@ -2123,10 +2126,10 @@ const TeamsTable = () => {
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent</label>
                             <ButtonGroup
-                                options={['All', 5, 10, 20, 'Olympics']}
-                                labels={['All', 'L5', 'L10', 'L20', 'Olympics']}
+                                options={['All', 5, 10, 20, 'Olympics', 'Playoffs']}
+                                labels={['All', 'L5', 'L10', 'L20', 'Olympics', 'Playoffs']}
                                 current={filterLastN}
-                                onChange={(v) => setFilterLastN(v as number | 'All' | 'Olympics')}
+                                onChange={(v) => setFilterLastN(v as number | 'All' | 'Olympics' | 'Playoffs')}
                             />
                         </div>
                     )}
