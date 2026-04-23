@@ -342,7 +342,7 @@
     },
     "seriesScore": [
       0,
-      2
+      3
     ],
     "games": [
       {
@@ -381,8 +381,11 @@
         "homeTriCode": "PHI",
         "awayTriCode": "PIT",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          5,
+          2
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 4,

@@ -382,12 +382,12 @@
                 "movement": null
             },
             {
-                "name": "Vladimir Tarasenko",
-                "number": 11,
+                "name": "Bobby Brink",
+                "number": 10,
                 "pos": "rw",
-                "id": 1983,
+                "id": 30223,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -434,12 +434,12 @@
                 "movement": null
             },
             {
-                "name": "Bobby Brink",
-                "number": 10,
+                "name": "Vladimir Tarasenko",
+                "number": 11,
                 "pos": "rw",
-                "id": 30223,
+                "id": 1983,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -782,20 +782,20 @@
         ],
         "f3": [
             {
+                "name": "Colton Dach",
+                "number": 34,
+                "pos": "lw",
+                "id": 32903,
+                "ppUnit": null,
+                "movement": "up"
+            },
+            {
                 "name": "Ryan Nugent-Hopkins",
                 "number": 93,
-                "pos": "lw",
+                "pos": "c",
                 "id": 1733,
                 "ppUnit": 1,
                 "movement": null
-            },
-            {
-                "name": "Jason Dickinson",
-                "number": 16,
-                "pos": "c",
-                "id": 2160,
-                "ppUnit": null,
-                "movement": "up"
             },
             {
                 "name": "Jack Roslovic",
@@ -808,10 +808,10 @@
         ],
         "f4": [
             {
-                "name": "Colton Dach",
-                "number": 34,
+                "name": "Trent Frederic",
+                "number": 10,
                 "pos": "lw",
-                "id": 32903,
+                "id": 2662,
                 "ppUnit": null,
                 "movement": null
             },
@@ -824,12 +824,12 @@
                 "movement": null
             },
             {
-                "name": "Trent Frederic",
-                "number": 10,
+                "name": "Curtis Lazar",
+                "number": 20,
                 "pos": "rw",
-                "id": 2662,
+                "id": 2148,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
