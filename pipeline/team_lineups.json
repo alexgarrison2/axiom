@@ -908,12 +908,12 @@
     "EDM": {
         "f1": [
             {
-                "name": "Matthew Savoie",
-                "number": 22,
+                "name": "Ryan Nugent-Hopkins",
+                "number": 93,
                 "pos": "lw",
-                "id": 31504,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1733,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Connor McDavid",
@@ -960,20 +960,20 @@
         ],
         "f3": [
             {
-                "name": "Colton Dach",
-                "number": 34,
+                "name": "Matthew Savoie",
+                "number": 22,
                 "pos": "lw",
-                "id": 32903,
-                "ppUnit": null,
-                "movement": null
+                "id": 31504,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
-                "name": "Ryan Nugent-Hopkins",
-                "number": 93,
+                "name": "Samuel Jonsson",
+                "number": null,
                 "pos": "c",
-                "id": 1733,
-                "ppUnit": 1,
-                "movement": null
+                "id": 38451,
+                "ppUnit": null,
+                "movement": "new"
             },
             {
                 "name": "Jack Roslovic",
@@ -986,26 +986,26 @@
         ],
         "f4": [
             {
-                "name": "Trent Frederic",
-                "number": 10,
+                "name": "Colton Dach",
+                "number": 34,
                 "pos": "lw",
-                "id": 2662,
+                "id": 32903,
                 "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Josh Samanski",
-                "number": null,
-                "pos": "c",
-                "id": 38438,
-                "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Curtis Lazar",
                 "number": 20,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2148,
+                "ppUnit": null,
+                "movement": null
+            },
+            {
+                "name": "Trent Frederic",
+                "number": 10,
+                "pos": "rw",
+                "id": 2662,
                 "ppUnit": null,
                 "movement": null
             }
