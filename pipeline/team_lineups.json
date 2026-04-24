@@ -28,20 +28,20 @@
         ],
         "f2": [
             {
-                "name": "Alexandre Texier",
-                "number": 85,
+                "name": "Alex Newhook",
+                "number": 15,
                 "pos": "lw",
-                "id": 4759,
+                "id": 30425,
                 "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Alex Newhook",
-                "number": 15,
+                "name": "Oliver Kapanen",
+                "number": null,
                 "pos": "c",
-                "id": 30425,
-                "ppUnit": 2,
-                "movement": null
+                "id": 34678,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Ivan Demidov",
@@ -54,26 +54,26 @@
         ],
         "f3": [
             {
-                "name": "Zack Bolduc",
-                "number": 76,
+                "name": "Alexandre Texier",
+                "number": 85,
                 "pos": "lw",
-                "id": 31240,
+                "id": 4759,
                 "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Oliver Kapanen",
-                "number": null,
-                "pos": "c",
-                "id": 34678,
-                "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Kirby Dach",
                 "number": 77,
-                "pos": "rw",
+                "pos": "c",
                 "id": 29585,
+                "ppUnit": 2,
+                "movement": null
+            },
+            {
+                "name": "Zack Bolduc",
+                "number": 76,
+                "pos": "rw",
+                "id": 31240,
                 "ppUnit": 2,
                 "movement": null
             }
