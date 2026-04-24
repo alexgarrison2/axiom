@@ -697,7 +697,7 @@
                 "pos": "rd",
                 "id": 2508,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -1262,10 +1262,18 @@
             {
                 "name": "Nick Jensen",
                 "number": 3,
-                "pos": "ir2",
+                "pos": "ir1",
                 "id": 2576,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Jake Sanderson",
+                "number": 85,
+                "pos": "ir2",
+                "id": 30807,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Artem Zub",
@@ -1344,7 +1352,7 @@
                 "number": 11,
                 "pos": "c",
                 "id": 1246,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -1370,7 +1378,7 @@
                 "number": 77,
                 "pos": "c",
                 "id": 2711,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2331,6 +2339,16 @@
                 "ppUnit": 2,
                 "movement": null
             }
+        ],
+        "ir": [
+            {
+                "name": "Josh Manson",
+                "number": 42,
+                "pos": "ir1",
+                "id": 2400,
+                "ppUnit": null,
+                "movement": "down"
+            }
         ]
     },
     "NJD": {
@@ -2778,7 +2796,7 @@
                 "number": 55,
                 "pos": "c",
                 "id": 29855,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -2874,7 +2892,7 @@
                 "number": 92,
                 "pos": "rd",
                 "id": 30833,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
