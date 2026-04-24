@@ -16812,5 +16812,47 @@
     "actualWinner": "Stars",
     "isCorrect": true,
     "brierScore": 0.2372
+  },
+  {
+    "date": "2026-04-23",
+    "homeTeam": "Kings",
+    "awayTeam": "Avalanche",
+    "homeScore": 2,
+    "awayScore": 4,
+    "homeXg": 2.78,
+    "awayXg": 3.59,
+    "homeWinProb": 42.5,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Avalanche",
+    "isCorrect": true,
+    "brierScore": 0.1806
+  },
+  {
+    "date": "2026-04-23",
+    "homeTeam": "Bruins",
+    "awayTeam": "Sabres",
+    "homeScore": 1,
+    "awayScore": 3,
+    "homeXg": 3.26,
+    "awayXg": 3.29,
+    "homeWinProb": 50.7,
+    "predictedWinner": "Bruins",
+    "actualWinner": "Sabres",
+    "isCorrect": false,
+    "brierScore": 0.257
+  },
+  {
+    "date": "2026-04-23",
+    "homeTeam": "Senators",
+    "awayTeam": "Hurricanes",
+    "homeScore": 1,
+    "awayScore": 2,
+    "homeXg": 3.48,
+    "awayXg": 3.86,
+    "homeWinProb": 47.0,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Hurricanes",
+    "isCorrect": true,
+    "brierScore": 0.2209
   }
 ]
