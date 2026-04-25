@@ -330,8 +330,8 @@
       }
     ],
     "seriesOdds": {
-      "TBL": -183,
-      "MTL": 158
+      "TBL": 120,
+      "MTL": -140
     },
     "status": "active"
   },
@@ -687,7 +687,7 @@
     },
     "seriesScore": [
       1,
-      1
+      2
     ],
     "games": [
       {
@@ -726,8 +726,11 @@
         "homeTriCode": "UTA",
         "awayTriCode": "VGK",
         "tvNetwork": "TBS",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          4,
+          2
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 4,
@@ -775,8 +778,8 @@
       }
     ],
     "seriesOdds": {
-      "VGK": -155,
-      "UTA": 133
+      "VGK": 135,
+      "UTA": -160
     },
     "status": "active"
   },
@@ -796,7 +799,7 @@
     },
     "seriesScore": [
       1,
-      1
+      2
     ],
     "games": [
       {
@@ -835,8 +838,11 @@
         "homeTriCode": "ANA",
         "awayTriCode": "EDM",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          7,
+          4
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 4,
@@ -873,8 +879,8 @@
       }
     ],
     "seriesOdds": {
-      "EDM": -198,
-      "ANA": 168
+      "EDM": 115,
+      "ANA": -135
     },
     "status": "active"
   }
