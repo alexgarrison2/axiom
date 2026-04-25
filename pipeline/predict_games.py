@@ -239,15 +239,15 @@ def fetch_l7_record(tri_code, starter_lookup=None, common_names=None):
     games = data.get('games', [])
     today_str = datetime.now().strftime("%Y-%m-%d")
     
-    # Filter for completed regular season games
+    # Filter for completed regular season + playoff games
     regular_season_games = [
-        g for g in games 
-        if g['gameType'] == 2 and g['gameDate'] < today_str and g.get('gameState') in ['OFF', 'FINAL']
+        g for g in games
+        if g['gameType'] in (2, 3) and g['gameDate'] < today_str and g.get('gameState') in ['OFF', 'FINAL']
     ]
-    
+
     # Sort by date descending (Newest first)
     regular_season_games.sort(key=lambda x: x['gameDate'], reverse=True)
-    
+
     # specific L7 slice
     l7 = regular_season_games[:7]
     
