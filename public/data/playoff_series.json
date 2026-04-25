@@ -14,7 +14,7 @@
       "commonName": "Senators"
     },
     "seriesScore": [
-      3,
+      4,
       0
     ],
     "games": [
@@ -68,8 +68,11 @@
         "homeTriCode": "OTT",
         "awayTriCode": "CAR",
         "tvNetwork": "TBS",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          2,
+          4
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 5,
@@ -109,7 +112,7 @@
       "CAR": -3500,
       "OTT": 1150
     },
-    "status": "active"
+    "status": "complete"
   },
   {
     "seriesId": "R1_E_ATL1vATL4",
