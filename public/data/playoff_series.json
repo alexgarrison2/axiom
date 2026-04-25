@@ -239,7 +239,7 @@
     },
     "seriesScore": [
       1,
-      1
+      2
     ],
     "games": [
       {
@@ -278,8 +278,11 @@
         "homeTriCode": "MTL",
         "awayTriCode": "TBL",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          3,
+          2
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 4,
