@@ -952,10 +952,10 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                             {formatTime(startTime || '')}
                         </span>
                         {tvNetwork && (
-                            <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-8 w-auto object-contain" title={tvNetwork} />
+                            <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-5 w-auto object-contain" title={tvNetwork} />
                         )}
                         {seriesScore && (
-                            <span className="text-[22.5px] font-bold font-mono tracking-wider text-neutral-400 whitespace-nowrap">
+                            <span className="text-base font-bold font-mono tracking-wider text-neutral-400 whitespace-nowrap">
                                 {seriesScore.awayWins}–{seriesScore.homeWins}
                             </span>
                         )}
@@ -1660,7 +1660,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                     <span className="text-[10px] font-mono tracking-wider whitespace-nowrap" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
                                     {tvNetwork && <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-5 w-auto object-contain" />}
                                     {seriesScore && (
-                                        <span className="text-[22.5px] font-bold font-mono tracking-wider text-neutral-400 whitespace-nowrap">
+                                        <span className="text-base font-bold font-mono tracking-wider text-neutral-400 whitespace-nowrap">
                                             {seriesScore.awayWins}–{seriesScore.homeWins}
                                         </span>
                                     )}
