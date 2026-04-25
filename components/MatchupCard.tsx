@@ -1658,12 +1658,14 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
                                 </span>
                                 <span className="flex flex-col items-center gap-0.5">
                                     <span className="text-[10px] font-mono tracking-wider whitespace-nowrap" style={{ color: getTimeColor(startTime || '') }}>{formatTime(startTime || '')}</span>
-                                    {tvNetwork && <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-5 w-auto object-contain" />}
-                                    {seriesScore && (
-                                        <span className="text-base font-bold font-mono tracking-wider text-neutral-400 whitespace-nowrap">
-                                            {seriesScore.awayWins}–{seriesScore.homeWins}
-                                        </span>
-                                    )}
+                                    <span className="flex items-center gap-1.5">
+                                        {tvNetwork && <img src={`/logos/networks/${tvNetwork}.svg`} alt={tvNetwork} className="h-5 w-auto object-contain" />}
+                                        {seriesScore && (
+                                            <span className="text-base font-bold font-mono tracking-wider text-neutral-400 whitespace-nowrap">
+                                                {seriesScore.awayWins}–{seriesScore.homeWins}
+                                            </span>
+                                        )}
+                                    </span>
                                 </span>
                                 <span className={`text-[10px] font-bold uppercase tracking-wider leading-none truncate max-w-[35%] text-right ${
                                     (homeStarter?.toUpperCase()?.includes('UNCONFIRMED') || !homeStarter) ? 'text-neutral-500' :
