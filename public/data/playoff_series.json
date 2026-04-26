@@ -129,7 +129,7 @@
       "commonName": "Bruins"
     },
     "seriesScore": [
-      2,
+      3,
       1
     ],
     "games": [
@@ -183,8 +183,11 @@
         "homeTriCode": "BOS",
         "awayTriCode": "BUF",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          1,
+          6
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 5,
@@ -448,8 +451,8 @@
       }
     ],
     "seriesOdds": {
-      "PIT": 500,
-      "PHI": -750
+      "PIT": 460,
+      "PHI": -675
     },
     "status": "active"
   },
@@ -675,8 +678,8 @@
       }
     ],
     "seriesOdds": {
-      "DAL": -125,
-      "MIN": 105
+      "DAL": -128,
+      "MIN": 107
     },
     "status": "active"
   },
