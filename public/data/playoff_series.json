@@ -578,7 +578,7 @@
     },
     "seriesScore": [
       2,
-      1
+      2
     ],
     "games": [
       {
@@ -631,8 +631,11 @@
         "homeTriCode": "MIN",
         "awayTriCode": "DAL",
         "tvNetwork": "TBS",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          3,
+          2
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 5,
