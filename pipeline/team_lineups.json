@@ -157,6 +157,16 @@
                 "ppUnit": null,
                 "movement": null
             }
+        ],
+        "ir": [
+            {
+                "name": "Viktor Arvidsson",
+                "number": 71,
+                "pos": "ir1",
+                "id": 2453,
+                "ppUnit": 2,
+                "movement": "down"
+            }
         ]
     },
     "BUF": {
@@ -416,12 +426,12 @@
         ],
         "f3": [
             {
-                "name": "Joel Armia",
-                "number": 40,
+                "name": "Alex Turcotte",
+                "number": 15,
                 "pos": "lw",
-                "id": 1952,
+                "id": 30420,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Scott Laughton",
@@ -432,12 +442,12 @@
                 "movement": null
             },
             {
-                "name": "Andrei Kuzmenko",
-                "number": 96,
+                "name": "Jared Wright",
+                "number": 53,
                 "pos": "rw",
-                "id": 25254,
-                "ppUnit": 2,
-                "movement": null
+                "id": 34797,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f4": [
@@ -458,12 +468,12 @@
                 "movement": null
             },
             {
-                "name": "Jared Wright",
-                "number": 53,
+                "name": "Taylor Ward",
+                "number": 52,
                 "pos": "rw",
-                "id": 34797,
-                "ppUnit": null,
-                "movement": null
+                "id": 36257,
+                "ppUnit": 2,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -526,14 +536,6 @@
                 "number": 22,
                 "pos": "ir1",
                 "id": 2455,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Alex Turcotte",
-                "number": 15,
-                "pos": "ir2",
-                "id": 30420,
                 "ppUnit": null,
                 "movement": null
             }
@@ -672,12 +674,12 @@
                 "movement": null
             },
             {
-                "name": "Josh Manson",
-                "number": 42,
+                "name": "Nick Blankenburg",
+                "number": 37,
                 "pos": "rd",
-                "id": 2400,
+                "id": 36299,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": "new"
             }
         ],
         "d3": [
