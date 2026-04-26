@@ -1634,12 +1634,12 @@
     "PHI": {
         "f1": [
             {
-                "name": "Tyson Foerster",
-                "number": 71,
+                "name": "Denver Barkey",
+                "number": null,
                 "pos": "lw",
-                "id": 29750,
+                "id": 35098,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Trevor Zegras",
@@ -1686,12 +1686,12 @@
         ],
         "f3": [
             {
-                "name": "Denver Barkey",
-                "number": null,
+                "name": "Alex Bump",
+                "number": 20,
                 "pos": "lw",
-                "id": 35098,
+                "id": 34874,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Noah Cates",
@@ -1702,12 +1702,12 @@
                 "movement": null
             },
             {
-                "name": "Matvei Michkov",
-                "number": 39,
+                "name": "Tyson Foerster",
+                "number": 71,
                 "pos": "rw",
-                "id": 33997,
+                "id": 29750,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -1782,12 +1782,12 @@
                 "movement": null
             },
             {
-                "name": "Noah Juulsen",
-                "number": 47,
+                "name": "Emil Andrae",
+                "number": null,
                 "pos": "rd",
-                "id": 2500,
+                "id": 33033,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "ir": [
@@ -1812,14 +1812,6 @@
                 "number": null,
                 "pos": "ir3",
                 "id": 33033,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Dan Vladar",
-                "number": 80,
-                "pos": "ir4",
-                "id": 3831,
                 "ppUnit": null,
                 "movement": null
             }
@@ -2022,22 +2014,22 @@
                 "movement": null
             },
             {
-                "name": "Mark Stone",
-                "number": 61,
+                "name": "Pavel Dorofeyev",
+                "number": 16,
                 "pos": "rw",
-                "id": 1779,
+                "id": 30622,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
             {
-                "name": "Brett Howden",
-                "number": 21,
+                "name": "Reilly Smith",
+                "number": 19,
                 "pos": "lw",
-                "id": 2660,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1853,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Mitch Marner",
@@ -2048,22 +2040,22 @@
                 "movement": null
             },
             {
-                "name": "Pavel Dorofeyev",
-                "number": 16,
+                "name": "Mark Stone",
+                "number": 61,
                 "pos": "rw",
-                "id": 30622,
+                "id": 1779,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f3": [
             {
-                "name": "Reilly Smith",
-                "number": 19,
+                "name": "Brett Howden",
+                "number": 21,
                 "pos": "lw",
-                "id": 1853,
-                "ppUnit": null,
-                "movement": null
+                "id": 2660,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Tomas Hertl",
