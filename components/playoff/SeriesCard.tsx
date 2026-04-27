@@ -22,6 +22,8 @@ export default function SeriesCard({ series, teamsMap, isSelected, onClick, rati
 
   const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
   const isComplete = Math.max(series.seriesScore[0], series.seriesScore[1]) === 4;
+  const t1Eliminated = isComplete && series.seriesScore[0] < series.seriesScore[1];
+  const t2Eliminated = isComplete && series.seriesScore[1] < series.seriesScore[0];
   const hasGameToday = !isComplete && series.games.some(g => g.status === 'scheduled' && g.date === today);
 
   const probBar = React.useMemo(() => {
@@ -56,7 +58,7 @@ export default function SeriesCard({ series, teamsMap, isSelected, onClick, rati
       <div className="flex items-center justify-between">
         {/* Team 1 logo + seed */}
         <div className="flex flex-col items-center gap-0.5">
-          <img src={`/logos/${t1}.svg`} alt={t1} className="w-9 h-9" />
+          <img src={`/logos/${t1}.svg`} alt={t1} className={`w-9 h-9 transition-opacity ${t1Eliminated ? 'opacity-25 grayscale' : ''}`} />
           <span className="text-[8px] uppercase tracking-wider text-neutral-500 font-medium">{series.higherSeed.seed}</span>
         </div>
 
@@ -73,7 +75,7 @@ export default function SeriesCard({ series, teamsMap, isSelected, onClick, rati
 
         {/* Team 2 logo + seed */}
         <div className="flex flex-col items-center gap-0.5">
-          <img src={`/logos/${t2}.svg`} alt={t2} className="w-9 h-9" />
+          <img src={`/logos/${t2}.svg`} alt={t2} className={`w-9 h-9 transition-opacity ${t2Eliminated ? 'opacity-25 grayscale' : ''}`} />
           <span className="text-[8px] uppercase tracking-wider text-neutral-500 font-medium">{series.lowerSeed.seed}</span>
         </div>
       </div>
