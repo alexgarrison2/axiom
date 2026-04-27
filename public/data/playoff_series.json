@@ -471,7 +471,7 @@
       "commonName": "Kings"
     },
     "seriesScore": [
-      3,
+      4,
       0
     ],
     "games": [
@@ -525,8 +525,11 @@
         "homeTriCode": "LAK",
         "awayTriCode": "COL",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          1,
+          5
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 5,
@@ -566,7 +569,7 @@
       "COL": -20000,
       "LAK": 2800
     },
-    "status": "active"
+    "status": "complete"
   },
   {
     "seriesId": "R1_W_CEN2vCEN3",
