@@ -21,7 +21,8 @@ export default function SeriesCard({ series, teamsMap, isSelected, onClick, rati
   const leading = series.seriesScore[0] > series.seriesScore[1] ? 1 : series.seriesScore[1] > series.seriesScore[0] ? 2 : 0;
 
   const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
-  const hasGameToday = series.games.some(g => g.status === 'scheduled' && g.date === today);
+  const isComplete = Math.max(series.seriesScore[0], series.seriesScore[1]) === 4;
+  const hasGameToday = !isComplete && series.games.some(g => g.status === 'scheduled' && g.date === today);
 
   const probBar = React.useMemo(() => {
     const r1 = ratings[triToCommon[t1] ?? t1];
