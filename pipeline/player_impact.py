@@ -202,6 +202,10 @@ def calculate_player_impact(
     rapm_scores = _load_rapm_scores(script_dir)
 
     # ── Load data ──
+    # Resolve skater_file relative to this script's directory if not absolute,
+    # so it works correctly whether called directly or imported from another dir.
+    if not os.path.isabs(skater_file):
+        skater_file = os.path.join(script_dir, skater_file)
     if not os.path.exists(skater_file):
         print(f"  ERROR: {skater_file} not found. Run fetch_moneypuck.py first.")
         return {}, {}
