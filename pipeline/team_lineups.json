@@ -150,12 +150,12 @@
                 "movement": null
             },
             {
-                "name": "Connor Clifton",
-                "number": 75,
+                "name": "Ilya Solovyov",
+                "number": 28,
                 "pos": "rd",
-                "id": 4833,
+                "id": 31769,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
@@ -180,38 +180,12 @@
     "PHI": {
         "f1": [
             {
-                "name": "Denver Barkey",
-                "number": null,
-                "pos": "lw",
-                "id": 35098,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Trevor Zegras",
-                "number": 46,
-                "pos": "c",
-                "id": 30202,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Owen Tippett",
-                "number": 74,
-                "pos": "rw",
-                "id": 2786,
-                "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
                 "name": "Travis Konecny",
                 "number": 11,
                 "pos": "lw",
                 "id": 2498,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Christian Dvorak",
@@ -219,7 +193,7 @@
                 "pos": "c",
                 "id": 2682,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Porter Martone",
@@ -227,17 +201,43 @@
                 "pos": "rw",
                 "id": 37366,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f2": [
+            {
+                "name": "Tyson Foerster",
+                "number": 71,
+                "pos": "lw",
+                "id": 29750,
+                "ppUnit": 2,
+                "movement": "up"
+            },
+            {
+                "name": "Trevor Zegras",
+                "number": 46,
+                "pos": "c",
+                "id": 30202,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Owen Tippett",
+                "number": 74,
+                "pos": "rw",
+                "id": 2786,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f3": [
             {
-                "name": "Alex Bump",
-                "number": 20,
+                "name": "Denver Barkey",
+                "number": null,
                 "pos": "lw",
-                "id": 34874,
+                "id": 35098,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Noah Cates",
@@ -248,12 +248,12 @@
                 "movement": null
             },
             {
-                "name": "Tyson Foerster",
-                "number": 71,
+                "name": "Matvei Michkov",
+                "number": 39,
                 "pos": "rw",
-                "id": 29750,
+                "id": 33997,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -328,12 +328,12 @@
                 "movement": null
             },
             {
-                "name": "Emil Andrae",
-                "number": null,
+                "name": "Noah Juulsen",
+                "number": 47,
                 "pos": "rd",
-                "id": 33033,
+                "id": 2500,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": "new"
             }
         ],
         "ir": [
