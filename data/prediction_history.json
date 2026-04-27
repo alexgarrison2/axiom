@@ -16938,5 +16938,61 @@
     "actualWinner": "Wild",
     "isCorrect": false,
     "brierScore": 0.2663
+  },
+  {
+    "date": "2026-04-26",
+    "homeTeam": "Canadiens",
+    "awayTeam": "Lightning",
+    "homeScore": 2,
+    "awayScore": 3,
+    "homeXg": 3.01,
+    "awayXg": 3.0,
+    "homeWinProb": 53.2,
+    "predictedWinner": "Canadiens",
+    "actualWinner": "Lightning",
+    "isCorrect": false,
+    "brierScore": 0.283
+  },
+  {
+    "date": "2026-04-26",
+    "homeTeam": "Ducks",
+    "awayTeam": "Oilers",
+    "homeScore": 4,
+    "awayScore": 3,
+    "homeXg": 3.77,
+    "awayXg": 3.84,
+    "homeWinProb": 50.4,
+    "predictedWinner": "Ducks",
+    "actualWinner": "Ducks",
+    "isCorrect": true,
+    "brierScore": 0.246
+  },
+  {
+    "date": "2026-04-26",
+    "homeTeam": "Bruins",
+    "awayTeam": "Sabres",
+    "homeScore": 1,
+    "awayScore": 6,
+    "homeXg": 3.0,
+    "awayXg": 3.11,
+    "homeWinProb": 48.8,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Sabres",
+    "isCorrect": true,
+    "brierScore": 0.2381
+  },
+  {
+    "date": "2026-04-26",
+    "homeTeam": "Kings",
+    "awayTeam": "Avalanche",
+    "homeScore": 1,
+    "awayScore": 5,
+    "homeXg": 2.66,
+    "awayXg": 3.39,
+    "homeWinProb": 43.9,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Avalanche",
+    "isCorrect": true,
+    "brierScore": 0.1927
   }
 ]
