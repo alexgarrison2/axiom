@@ -244,7 +244,7 @@
       "commonName": "Canadiens"
     },
     "seriesScore": [
-      1,
+      2,
       2
     ],
     "games": [
@@ -298,8 +298,11 @@
         "homeTriCode": "MTL",
         "awayTriCode": "TBL",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          2,
+          3
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 5,
@@ -336,8 +339,8 @@
       }
     ],
     "seriesOdds": {
-      "TBL": 120,
-      "MTL": -140
+      "TBL": -183,
+      "MTL": 158
     },
     "status": "active"
   },
@@ -814,7 +817,7 @@
     },
     "seriesScore": [
       1,
-      2
+      3
     ],
     "games": [
       {
@@ -867,8 +870,11 @@
         "homeTriCode": "ANA",
         "awayTriCode": "EDM",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          4,
+          3
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 5,
