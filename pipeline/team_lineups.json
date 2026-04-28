@@ -517,7 +517,7 @@
                 "pos": "rd",
                 "id": 176,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -535,7 +535,7 @@
                 "pos": "rd",
                 "id": 4760,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "ir": [
@@ -589,7 +589,7 @@
                 "pos": "c",
                 "id": 2494,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Matt Boldy",
@@ -597,7 +597,7 @@
                 "pos": "rw",
                 "id": 30421,
                 "ppUnit": 1,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -615,7 +615,7 @@
                 "pos": "c",
                 "id": 2161,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Bobby Brink",
@@ -623,7 +623,7 @@
                 "pos": "rw",
                 "id": 30223,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -1850,7 +1850,7 @@
                 "number": 49,
                 "pos": "lw",
                 "id": 2737,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1862,12 +1862,12 @@
                 "movement": null
             },
             {
-                "name": "Pavel Dorofeyev",
-                "number": 16,
+                "name": "Brett Howden",
+                "number": 21,
                 "pos": "rw",
-                "id": 30622,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2660,
+                "ppUnit": 2,
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1884,7 +1884,7 @@
                 "number": 16,
                 "pos": "c",
                 "id": 2475,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1898,19 +1898,19 @@
         ],
         "f3": [
             {
-                "name": "Brett Howden",
-                "number": 21,
+                "name": "Pavel Dorofeyev",
+                "number": 16,
                 "pos": "lw",
-                "id": 2660,
-                "ppUnit": 2,
-                "movement": null
+                "id": 30622,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Tomas Hertl",
                 "number": 48,
                 "pos": "c",
                 "id": 2125,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1944,7 +1944,7 @@
                 "number": 10,
                 "pos": "rw",
                 "id": 2030,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -1962,7 +1962,7 @@
                 "number": 27,
                 "pos": "rd",
                 "id": 2157,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -1972,7 +1972,7 @@
                 "number": 15,
                 "pos": "ld",
                 "id": 2473,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
