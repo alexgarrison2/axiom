@@ -124,19 +124,19 @@
         ],
         "d2": [
             {
-                "name": "Owen Power",
-                "number": 25,
+                "name": "Bowen Byram",
+                "number": 4,
                 "pos": "ld",
-                "id": 30051,
-                "ppUnit": null,
+                "id": 28523,
+                "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Bowen Byram",
-                "number": 4,
+                "name": "Owen Power",
+                "number": 25,
                 "pos": "rd",
-                "id": 28523,
-                "ppUnit": 2,
+                "id": 30051,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -589,7 +589,7 @@
                 "pos": "c",
                 "id": 2161,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Mats Zuccarello",
@@ -615,7 +615,7 @@
                 "pos": "c",
                 "id": 2494,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Matt Boldy",
@@ -623,7 +623,7 @@
                 "pos": "rw",
                 "id": 30421,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -934,6 +934,22 @@
                 "id": 945,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Connor McDavid",
+                "number": 97,
+                "pos": "ir4",
+                "id": 2471,
+                "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Jason Dickinson",
+                "number": 16,
+                "pos": "ir5",
+                "id": 2160,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
