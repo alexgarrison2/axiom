@@ -707,7 +707,7 @@
       "commonName": "Mammoth"
     },
     "seriesScore": [
-      1,
+      2,
       2
     ],
     "games": [
@@ -761,8 +761,11 @@
         "homeTriCode": "UTA",
         "awayTriCode": "VGK",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          4,
+          5
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 5,
@@ -799,8 +802,8 @@
       }
     ],
     "seriesOdds": {
-      "VGK": 135,
-      "UTA": -160
+      "VGK": -160,
+      "UTA": 135
     },
     "status": "active"
   },
