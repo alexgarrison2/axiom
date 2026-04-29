@@ -17022,5 +17022,47 @@
     "actualWinner": "Penguins",
     "isCorrect": true,
     "brierScore": 0.2421
+  },
+  {
+    "date": "2026-04-28",
+    "homeTeam": "Oilers",
+    "awayTeam": "Ducks",
+    "homeScore": 4,
+    "awayScore": 1,
+    "homeXg": 3.83,
+    "awayXg": 3.39,
+    "homeWinProb": 52.0,
+    "predictedWinner": "Oilers",
+    "actualWinner": "Oilers",
+    "isCorrect": true,
+    "brierScore": 0.2304
+  },
+  {
+    "date": "2026-04-28",
+    "homeTeam": "Sabres",
+    "awayTeam": "Bruins",
+    "homeScore": 1,
+    "awayScore": 2,
+    "homeXg": 3.29,
+    "awayXg": 2.92,
+    "homeWinProb": 62.3,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Bruins",
+    "isCorrect": false,
+    "brierScore": 0.3881
+  },
+  {
+    "date": "2026-04-28",
+    "homeTeam": "Stars",
+    "awayTeam": "Wild",
+    "homeScore": 2,
+    "awayScore": 4,
+    "homeXg": 3.54,
+    "awayXg": 2.99,
+    "homeWinProb": 55.8,
+    "predictedWinner": "Stars",
+    "actualWinner": "Wild",
+    "isCorrect": false,
+    "brierScore": 0.3114
   }
 ]

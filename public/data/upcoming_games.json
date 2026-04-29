@@ -1,47 +1,5 @@
 [
     {
-        "id": 2025030115,
-        "gameDate": "2026-04-28",
-        "startTimeUTC": "2026-04-28T23:30:00Z",
-        "homeTeam": "Sabres",
-        "awayTeam": "Bruins",
-        "homeTeamAbbrev": "BUF",
-        "awayTeamAbbrev": "BOS",
-        "homeGoalieConfirmed": "Alex Lyon",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Jeremy Swayman",
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "TNT"
-    },
-    {
-        "id": 2025030165,
-        "gameDate": "2026-04-28",
-        "startTimeUTC": "2026-04-29T00:00:00Z",
-        "homeTeam": "Stars",
-        "awayTeam": "Wild",
-        "homeTeamAbbrev": "DAL",
-        "awayTeamAbbrev": "MIN",
-        "homeGoalieConfirmed": "Jake Oettinger",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Jesper Wallstedt",
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "ESPN2"
-    },
-    {
-        "id": 2025030185,
-        "gameDate": "2026-04-28",
-        "startTimeUTC": "2026-04-29T02:00:00Z",
-        "homeTeam": "Oilers",
-        "awayTeam": "Ducks",
-        "homeTeamAbbrev": "EDM",
-        "awayTeamAbbrev": "ANA",
-        "homeGoalieConfirmed": "Tristan Jarry",
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": "Lukas Dostal",
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "TNT"
-    },
-    {
         "id": 2025030125,
         "gameDate": "2026-04-29",
         "startTimeUTC": "2026-04-29T23:00:00Z",
@@ -80,6 +38,34 @@
         "homeGoalieConfirmed": "Carter Hart",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Karel Vejmelka",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "TNT"
+    },
+    {
+        "id": 2025030166,
+        "gameDate": "2026-04-30",
+        "startTimeUTC": "2026-04-30T23:30:00Z",
+        "homeTeam": "Wild",
+        "awayTeam": "Stars",
+        "homeTeamAbbrev": "MIN",
+        "awayTeamAbbrev": "DAL",
+        "homeGoalieConfirmed": "Jesper Wallstedt",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jake Oettinger",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "TNT"
+    },
+    {
+        "id": 2025030186,
+        "gameDate": "2026-04-30",
+        "startTimeUTC": "2026-05-01T02:00:00Z",
+        "homeTeam": "Ducks",
+        "awayTeam": "Oilers",
+        "homeTeamAbbrev": "ANA",
+        "awayTeamAbbrev": "EDM",
+        "homeGoalieConfirmed": "Lukas Dostal",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Connor Ingram",
         "awayGoalieStatus": "Unconfirmed",
         "tvNetwork": "TNT"
     }
