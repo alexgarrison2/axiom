@@ -94,6 +94,15 @@ export interface PlayoffPlayerGameStat {
   xGAgainst: number;
   goalsFor: number;
   goalsAgainst: number;
+  // Enriched from NHL boxscore API
+  assists?: number;
+  pim?: number;
+  hits?: number;
+  blockedShots?: number;
+  faceoffWins?: number;
+  faceoffLosses?: number;
+  ppToiSeconds?: number;
+  pkToiSeconds?: number;
 }
 
 export interface PlayoffGoalieGameStat {
@@ -464,6 +473,72 @@ function loadPlayoffGameAnalyses(
 
   Object.values(result).forEach(games => games.sort((a, b) => a.gameNumber - b.gameNumber));
   return result;
+}
+
+function parseToi(toi: string): number {
+  const [m, s] = toi.split(':').map(Number);
+  return (m || 0) * 60 + (s || 0);
+}
+
+async function enrichGameAnalysesWithBoxscore(
+  gameAnalyses: Record<string, PlayoffGameAnalysis[]>,
+): Promise<void> {
+  const gameIds = new Set<string>();
+  Object.values(gameAnalyses).flat().forEach(g => gameIds.add(g.gameId));
+
+  await Promise.allSettled(Array.from(gameIds).map(async (gameId) => {
+    try {
+      const res = await fetch(`https://api-web.nhle.com/v1/gamecenter/${gameId}/boxscore`, {
+        next: { revalidate: 300 },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const pgs = data?.playerByGameStats;
+      if (!pgs) return;
+
+      type BxPlayer = {
+        playerId: number;
+        position?: string;
+        assists?: number;
+        pim?: number;
+        hits?: number;
+        blockedShots?: number;
+        faceoffs?: { wins?: number; losses?: number };
+        toi?: string;
+        powerPlayToi?: string;
+        shorthandedToi?: string;
+      };
+
+      const allBx: BxPlayer[] = [
+        ...(pgs.homeTeam?.forwards ?? []),
+        ...(pgs.homeTeam?.defense ?? []),
+        ...(pgs.awayTeam?.forwards ?? []),
+        ...(pgs.awayTeam?.defense ?? []),
+      ];
+      const bxMap = new Map<string, BxPlayer>();
+      allBx.forEach(p => bxMap.set(String(p.playerId), p));
+
+      Object.values(gameAnalyses).flat()
+        .filter(g => g.gameId === gameId)
+        .forEach(game => {
+          game.players.forEach(p => {
+            const bp = bxMap.get(p.playerId);
+            if (!bp) return;
+            if (!p.position && bp.position) p.position = bp.position;
+            p.assists = bp.assists ?? 0;
+            p.pim = bp.pim ?? 0;
+            p.hits = bp.hits ?? 0;
+            p.blockedShots = bp.blockedShots ?? 0;
+            if (bp.faceoffs) {
+              p.faceoffWins = bp.faceoffs.wins ?? 0;
+              p.faceoffLosses = bp.faceoffs.losses ?? 0;
+            }
+            if (bp.powerPlayToi != null) p.ppToiSeconds = parseToi(bp.powerPlayToi);
+            if (bp.shorthandedToi != null) p.pkToiSeconds = parseToi(bp.shorthandedToi);
+          });
+        });
+    } catch { /* skip */ }
+  }));
 }
 
 function loadData() {
@@ -953,6 +1028,8 @@ export default async function NewPage() {
     lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap,
     playoffHistory, teamStatsExtended, goalieRatings, gameAnalyses,
   } = loadData();
+
+  await enrichGameAnalysesWithBoxscore(gameAnalyses);
 
   const predictions = await getPredictions();
   const navDates = Array.from(new Set(predictions.map(p => p.date))).sort().slice(-2);

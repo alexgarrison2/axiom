@@ -702,24 +702,85 @@ function PlayerShare({ game, teamsMap, awayColor, homeColor, playerQuery }: {
   );
 }
 
+type SortCol = 'toi' | 'g' | 'a' | 'pts' | 'sog' | 'att' | 'ixg' | 'xgf' | 'pm' | 'pim' | 'hits' | 'blk' | 'fow' | 'pptoi' | 'pktoi' | 'evtoi';
+
 function GameTables({ game, teamsMap }: { game: PlayoffGameAnalysis; teamsMap: Record<string, TeamInfo> }) {
-  const sortedPlayers = [...game.players].sort((a, b) => b.toiSeconds - a.toiSeconds);
+  const [sortCol, setSortCol] = useState<SortCol>('toi');
+  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+  const [teamFilter, setTeamFilter] = useState<'both' | string>('both');
+
+  function toggleSort(col: SortCol) {
+    if (sortCol === col) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
+    else { setSortCol(col); setSortDir('desc'); }
+  }
+
+  const players = useMemo(() => {
+    let list = [...game.players];
+    if (teamFilter !== 'both') list = list.filter(p => p.teamTriCode === teamFilter);
+    list.sort((a, b) => {
+      let av = 0, bv = 0;
+      switch (sortCol) {
+        case 'toi':   av = a.toiSeconds; bv = b.toiSeconds; break;
+        case 'g':     av = a.goals; bv = b.goals; break;
+        case 'a':     av = a.assists ?? 0; bv = b.assists ?? 0; break;
+        case 'pts':   av = a.goals + (a.assists ?? 0); bv = b.goals + (b.assists ?? 0); break;
+        case 'sog':   av = a.shots; bv = b.shots; break;
+        case 'att':   av = a.attempts; bv = b.attempts; break;
+        case 'ixg':   av = a.ixG; bv = b.ixG; break;
+        case 'xgf':   av = shareValue(a); bv = shareValue(b); break;
+        case 'pm':    av = a.goalsFor - a.goalsAgainst; bv = b.goalsFor - b.goalsAgainst; break;
+        case 'pim':   av = a.pim ?? 0; bv = b.pim ?? 0; break;
+        case 'hits':  av = a.hits ?? 0; bv = b.hits ?? 0; break;
+        case 'blk':   av = a.blockedShots ?? 0; bv = b.blockedShots ?? 0; break;
+        case 'fow':   av = a.faceoffWins ?? 0; bv = b.faceoffWins ?? 0; break;
+        case 'pptoi': av = a.ppToiSeconds ?? 0; bv = b.ppToiSeconds ?? 0; break;
+        case 'pktoi': av = a.pkToiSeconds ?? 0; bv = b.pkToiSeconds ?? 0; break;
+        case 'evtoi': av = Math.max(0, a.toiSeconds - (a.ppToiSeconds ?? 0) - (a.pkToiSeconds ?? 0));
+                      bv = Math.max(0, b.toiSeconds - (b.ppToiSeconds ?? 0) - (b.pkToiSeconds ?? 0)); break;
+      }
+      return sortDir === 'desc' ? bv - av : av - bv;
+    });
+    return list;
+  }, [game.players, sortCol, sortDir, teamFilter]);
+
+  function Th({ col, label, title }: { col: SortCol; label: string; title?: string }) {
+    const active = sortCol === col;
+    return (
+      <th
+        onClick={() => toggleSort(col)}
+        title={title}
+        className={`px-2 py-3 text-left font-black cursor-pointer select-none whitespace-nowrap transition-colors ${
+          active ? 'text-sky-300' : 'text-neutral-400 hover:text-white'
+        }`}
+      >
+        <span className="flex items-center gap-0.5">
+          {label}
+          <span className="text-[10px] opacity-60">{active ? (sortDir === 'desc' ? '▼' : '▲') : ''}</span>
+        </span>
+      </th>
+    );
+  }
+
+  const homeColor = teamsMap[game.homeTriCode]?.color1 ?? '#22c55e';
+  const awayColor = teamsMap[game.awayTriCode]?.color1 ?? '#3b82f6';
+
   return (
     <div className="space-y-4">
+      {/* ── Goalies ── */}
       <div className="overflow-x-auto rounded-xl border border-blue-900/50">
         <table className="w-full text-sm">
           <thead className="bg-blue-950/45 text-neutral-300">
             <tr>
               {['#', 'Goalie', 'TOI', 'SA', 'FA', 'GA', 'xGA', 'GSAx', 'Sv%', 'xSv%', 'dSv%'].map(h => (
-                <th key={h} className="px-3 py-3 text-left font-black">{h}</th>
+                <th key={h} className="px-3 py-3 text-left font-black text-neutral-400">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {game.goalies.map((g, i) => (
               <tr key={g.name} className="odd:bg-black/25 even:bg-white/[0.03] border-t border-blue-950/60">
-                <td className="px-3 py-3 text-neutral-400 font-black">{i + 1}</td>
-                <td className="px-3 py-3 font-black text-neutral-100 min-w-[220px]">
+                <td className="px-3 py-3 text-neutral-500 font-black">{i + 1}</td>
+                <td className="px-3 py-3 font-black text-neutral-100 min-w-[200px]">
                   <div className="flex items-center gap-2">
                     <img src={`/logos/${g.teamTriCode}.svg`} alt="" className="w-6 h-6" />
                     {g.name}
@@ -730,49 +791,120 @@ function GameTables({ game, teamsMap }: { game: PlayoffGameAnalysis; teamsMap: R
                 <td className="px-3 py-3 tabular-nums font-bold">{g.fenwickAgainst}</td>
                 <td className="px-3 py-3 tabular-nums font-bold">{g.goalsAgainst}</td>
                 <td className="px-3 py-3 tabular-nums font-bold">{fmt(g.xGA)}</td>
-                <td className="px-3 py-3 tabular-nums font-black text-sky-400">{fmt(g.gsax)}</td>
+                <td className={`px-3 py-3 tabular-nums font-black ${g.gsax > 0 ? 'text-emerald-400' : g.gsax < 0 ? 'text-red-400' : 'text-neutral-300'}`}>{fmt(g.gsax)}</td>
                 <td className="px-3 py-3 tabular-nums font-bold">{g.savePct.toFixed(3).replace(/^0/, '')}</td>
                 <td className="px-3 py-3 tabular-nums font-bold">{g.expectedSavePct.toFixed(3).replace(/^0/, '')}</td>
-                <td className="px-3 py-3 tabular-nums font-bold">{g.deltaSavePct.toFixed(3).replace(/^0/, '')}</td>
+                <td className={`px-3 py-3 tabular-nums font-bold ${g.deltaSavePct > 0 ? 'text-emerald-400' : g.deltaSavePct < 0 ? 'text-red-400' : ''}`}>
+                  {g.deltaSavePct > 0 ? '+' : ''}{g.deltaSavePct.toFixed(3).replace(/^0/, '')}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="overflow-x-auto max-h-[480px] rounded-xl border border-blue-900/50">
-        <table className="w-full text-sm">
-          <thead className="bg-blue-950/45 text-neutral-300 sticky top-0 z-10">
-            <tr>
-              {['#', 'Player', 'Pos', 'TOI', 'G', 'SOG', 'Att', 'iXG', 'GAX', 'xGF%', 'GF-GA'].map(h => (
-                <th key={h} className="px-3 py-3 text-left font-black">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedPlayers.map((p, i) => (
-              <tr key={p.playerId} className="odd:bg-black/25 even:bg-white/[0.03] border-t border-blue-950/60">
-                <td className="px-3 py-3 text-neutral-400 font-black">{i + 1}</td>
-                <td className="px-3 py-3 min-w-[220px]">
-                  <div className="flex items-center gap-2">
-                    <img src={`/logos/${p.teamTriCode}.svg`} alt="" className="w-5 h-5" />
-                    <img src={headshot(p.playerId)} alt="" className="w-7 h-7 rounded-full bg-slate-900" />
-                    <span className="font-black text-neutral-100">{p.name}</span>
-                  </div>
-                </td>
-                <td className="px-3 py-3 font-bold text-neutral-300">{p.position || '-'}</td>
-                <td className="px-3 py-3 tabular-nums font-bold">{clock(p.toiSeconds)}</td>
-                <td className="px-3 py-3 tabular-nums font-bold">{p.goals}</td>
-                <td className="px-3 py-3 tabular-nums font-bold">{p.shots}</td>
-                <td className="px-3 py-3 tabular-nums font-bold">{p.attempts}</td>
-                <td className="px-3 py-3 tabular-nums font-bold">{fmt(p.ixG)}</td>
-                <td className="px-3 py-3 tabular-nums font-bold">{fmt(p.goals - p.ixG)}</td>
-                <td className="px-3 py-3 tabular-nums font-bold">{pct(shareValue(p), 1)}</td>
-                <td className="px-3 py-3 tabular-nums font-bold">{p.goalsFor}-{p.goalsAgainst}</td>
+      {/* ── Skaters: team toggle + sortable table ── */}
+      <div>
+        {/* Team filter toggle */}
+        <div className="flex items-center gap-2 mb-2">
+          <button
+            onClick={() => setTeamFilter('both')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all border ${
+              teamFilter === 'both'
+                ? 'bg-blue-900/60 border-blue-600 text-white'
+                : 'border-blue-900/40 text-neutral-500 hover:text-neutral-300 hover:border-blue-700/50'
+            }`}
+          >
+            Both
+          </button>
+          {([game.awayTriCode, game.homeTriCode] as const).map(tri => (
+            <button
+              key={tri}
+              onClick={() => setTeamFilter(tri)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all border ${
+                teamFilter === tri
+                  ? 'border-blue-600 text-white'
+                  : 'border-blue-900/40 text-neutral-500 hover:text-neutral-300 hover:border-blue-700/50'
+              }`}
+              style={teamFilter === tri ? { backgroundColor: `${tri === game.homeTriCode ? homeColor : awayColor}33`, borderColor: tri === game.homeTriCode ? homeColor : awayColor } : {}}
+            >
+              <img src={`/logos/${tri}.svg`} alt={tri} className="w-4 h-4" />
+              {tri}
+            </button>
+          ))}
+          <span className="ml-auto text-xs text-neutral-600">Click column headers to sort</span>
+        </div>
+
+        <div className="overflow-x-auto max-h-[520px] rounded-xl border border-blue-900/50">
+          <table className="w-full text-xs">
+            <thead className="bg-[#0a1929] sticky top-0 z-10 border-b border-blue-900/60">
+              <tr>
+                <th className="px-2 py-3 text-left font-black text-neutral-500 w-8">#</th>
+                <th className="px-3 py-3 text-left font-black text-neutral-400 min-w-[180px]">Player</th>
+                <Th col="toi"   label="TOI"    title="Total time on ice" />
+                <Th col="evtoi" label="5v5"    title="Even-strength TOI" />
+                <Th col="pptoi" label="PP"     title="Power play TOI" />
+                <Th col="pktoi" label="PK"     title="Penalty kill TOI" />
+                <Th col="g"     label="G"      title="Goals" />
+                <Th col="a"     label="A"      title="Assists" />
+                <Th col="pts"   label="Pts"    title="Points" />
+                <Th col="sog"   label="SOG"    title="Shots on goal" />
+                <Th col="att"   label="Att"    title="Shot attempts (Corsi)" />
+                <Th col="ixg"   label="ixG"    title="Individual expected goals" />
+                <Th col="xgf"   label="xGF%"   title="On-ice xG share while on ice" />
+                <Th col="pm"    label="+/-"    title="On-ice goals for minus against" />
+                <Th col="hits"  label="Hits"   title="Hits delivered" />
+                <Th col="blk"   label="Blk"    title="Shots blocked" />
+                <Th col="fow"   label="FO"     title="Faceoff wins-losses" />
+                <Th col="pim"   label="PIM"    title="Penalty minutes" />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {players.map((p, i) => {
+                const pts = p.goals + (p.assists ?? 0);
+                const pm = p.goalsFor - p.goalsAgainst;
+                const evToi = Math.max(0, p.toiSeconds - (p.ppToiSeconds ?? 0) - (p.pkToiSeconds ?? 0));
+                const hasBoxscore = p.assists != null;
+                const fo = p.faceoffWins != null
+                  ? `${p.faceoffWins}-${p.faceoffLosses}`
+                  : '—';
+                return (
+                  <tr key={p.playerId} className="odd:bg-black/20 even:bg-white/[0.025] border-t border-blue-950/50 hover:bg-blue-950/30 transition-colors">
+                    <td className="px-2 py-2.5 text-neutral-600 font-black">{i + 1}</td>
+                    <td className="px-3 py-2.5 min-w-[180px]">
+                      <div className="flex items-center gap-1.5">
+                        <img src={`/logos/${p.teamTriCode}.svg`} alt="" className="w-4 h-4 flex-shrink-0" />
+                        <img src={headshot(p.playerId)} alt="" className="w-6 h-6 rounded-full bg-slate-900 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <span className="font-black text-neutral-100 truncate block leading-tight">{p.name}</span>
+                          <span className="text-neutral-500 text-[10px] leading-none">{p.position || '?'}{p.number ? ` · #${p.number}` : ''}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold text-neutral-300">{clock(p.toiSeconds)}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold text-neutral-400">{hasBoxscore ? clock(evToi) : '—'}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold text-neutral-400">{p.ppToiSeconds != null ? clock(p.ppToiSeconds) : '—'}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold text-neutral-400">{p.pkToiSeconds != null ? clock(p.pkToiSeconds) : '—'}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-black text-white">{p.goals > 0 ? <span className="text-yellow-300">{p.goals}</span> : 0}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold">{hasBoxscore ? p.assists : '—'}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-black">{hasBoxscore ? (pts > 0 ? <span className="text-sky-300">{pts}</span> : 0) : '—'}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold">{p.shots}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold">{p.attempts}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold text-blue-300">{fmt(p.ixG)}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold">{pct(shareValue(p), 1)}</td>
+                    <td className={`px-2 py-2.5 tabular-nums font-black ${pm > 0 ? 'text-emerald-400' : pm < 0 ? 'text-red-400' : 'text-neutral-500'}`}>
+                      {pm > 0 ? '+' : ''}{pm}
+                    </td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold">{hasBoxscore ? (p.hits ?? 0) : '—'}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold">{hasBoxscore ? (p.blockedShots ?? 0) : '—'}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold text-neutral-400">{fo}</td>
+                    <td className="px-2 py-2.5 tabular-nums font-bold">{hasBoxscore ? (p.pim ?? 0) : '—'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
