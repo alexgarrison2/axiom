@@ -17064,5 +17064,47 @@
     "actualWinner": "Wild",
     "isCorrect": false,
     "brierScore": 0.3114
+  },
+  {
+    "date": "2026-04-29",
+    "homeTeam": "Golden Knights",
+    "awayTeam": "Mammoth",
+    "homeScore": 5,
+    "awayScore": 4,
+    "homeXg": 4.15,
+    "awayXg": 2.98,
+    "homeWinProb": 56.8,
+    "predictedWinner": "Golden Knights",
+    "actualWinner": "Golden Knights",
+    "isCorrect": true,
+    "brierScore": 0.1866
+  },
+  {
+    "date": "2026-04-29",
+    "homeTeam": "Lightning",
+    "awayTeam": "Canadiens",
+    "homeScore": 2,
+    "awayScore": 3,
+    "homeXg": 2.92,
+    "awayXg": 2.86,
+    "homeWinProb": 55.2,
+    "predictedWinner": "Lightning",
+    "actualWinner": "Canadiens",
+    "isCorrect": false,
+    "brierScore": 0.3047
+  },
+  {
+    "date": "2026-04-29",
+    "homeTeam": "Flyers",
+    "awayTeam": "Penguins",
+    "homeScore": 1,
+    "awayScore": 0,
+    "homeXg": 2.88,
+    "awayXg": 2.97,
+    "homeWinProb": 51.2,
+    "predictedWinner": "Flyers",
+    "actualWinner": "Flyers",
+    "isCorrect": true,
+    "brierScore": 0.2381
   }
 ]

@@ -719,7 +719,7 @@
       "commonName": "Mammoth"
     },
     "seriesScore": [
-      2,
+      3,
       2
     ],
     "games": [
@@ -787,8 +787,11 @@
         "homeTriCode": "VGK",
         "awayTriCode": "UTA",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          5,
+          4
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 6,
