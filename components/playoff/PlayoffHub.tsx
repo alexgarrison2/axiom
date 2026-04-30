@@ -4,8 +4,9 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SeriesCard from './SeriesCard';
 import SeriesOverview from './SeriesOverview';
+import GameAnalysis from './GameAnalysis';
 import MatchupCard from '@/components/MatchupCard';
-import type { PlayoffSeries, TeamInfo, TeamRatings, H2HGame } from '@/app/playoffs/page';
+import type { PlayoffSeries, TeamInfo, TeamRatings, H2HGame, PlayoffGameAnalysis } from '@/app/playoffs/page';
 import type { GamePrediction } from '@/utils/data';
 
 // ─── Vivid color overrides (same as PlayoffBracket) ──────────────────────────
@@ -96,9 +97,10 @@ interface PlayoffHubProps {
   playoffHistory: Record<string, any[]>;
   teamStatsExtended?: Record<string, any>;
   goalieRatings?: Record<string, any>;
+  gameAnalyses: Record<string, PlayoffGameAnalysis[]>;
 }
 
-export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap, playoffHistory, teamStatsExtended, goalieRatings }: PlayoffHubProps) {
+export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2hGames, lineups, playerNews, playoffPlayerNews, seriesPredictions, teamGoalies, goalieStatsMap, playoffHistory, teamStatsExtended, goalieRatings, gameAnalyses }: PlayoffHubProps) {
   const [selectedId, setSelectedId] = useState<string>(
     series.find(s => s.higherSeed.triCode === 'DAL' || s.lowerSeed.triCode === 'DAL' || s.higherSeed.triCode === 'MIN' || s.lowerSeed.triCode === 'MIN')?.seriesId
     ?? series[0]?.seriesId ?? ''
@@ -123,12 +125,12 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
   const prediction = selected ? seriesPredictions[selected.seriesId] : undefined;
 
   return (
-    <div className="h-full flex">
+    <div className="h-full flex max-lg:flex-col">
       {/* ─── Left Sidebar ─── */}
-      <div className="w-[180px] min-w-[180px] border-r border-white/5 flex flex-col py-3 px-2 gap-1 overflow-y-auto scrollbar-hide">
+      <div className="w-[180px] min-w-[180px] border-r border-white/5 flex flex-col py-3 px-2 gap-1 overflow-y-auto scrollbar-hide max-lg:w-full max-lg:min-w-0 max-lg:h-[132px] max-lg:flex-row max-lg:items-stretch max-lg:overflow-x-auto max-lg:overflow-y-hidden max-lg:border-r-0 max-lg:border-b">
         <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-semibold px-1 mb-1">Eastern</div>
         {eastSeries.map((s, i) => (
-          <motion.div key={s.seriesId} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
+          <motion.div key={s.seriesId} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="max-lg:min-w-[160px]">
             <SeriesCard
               series={s}
               teamsMap={teamsMap}
@@ -141,7 +143,7 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
         ))}
         <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-semibold px-1 mt-3 mb-1">Western</div>
         {westSeries.map((s, i) => (
-          <motion.div key={s.seriesId} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: (eastSeries.length + i) * 0.05 }}>
+          <motion.div key={s.seriesId} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: (eastSeries.length + i) * 0.05 }} className="max-lg:min-w-[160px]">
             <SeriesCard
               series={s}
               teamsMap={teamsMap}
@@ -155,7 +157,7 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
       </div>
 
       {/* ─── Main Content ─── */}
-      <div className="flex-1 flex gap-3 p-3 overflow-hidden">
+      <div className="flex-1 flex gap-3 p-3 overflow-hidden max-lg:overflow-y-auto">
         <AnimatePresence mode="wait">
           {selected && (
             <motion.div
@@ -164,10 +166,14 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="flex-1 flex gap-3 min-w-0"
+              className="flex-1 flex gap-3 min-w-0 max-lg:flex-col"
             >
-              {/* Center: Game 1 Matchup Card */}
-              <div className="flex-1 min-w-0 overflow-y-auto scrollbar-hide">
+              {/* Center: completed game analysis + next game card */}
+              <div className="flex-1 min-w-0 overflow-y-auto scrollbar-hide space-y-3 max-lg:flex-none max-lg:overflow-visible">
+                <GameAnalysis
+                  games={gameAnalyses[selected.seriesId] ?? []}
+                  teamsMap={teamsMap}
+                />
                 {prediction ? (
                   <MatchupCard
                     prediction={prediction}
@@ -190,7 +196,7 @@ export default function PlayoffHub({ series, teamsMap, ratings, triToCommon, h2h
               </div>
 
               {/* Right: Series Overview */}
-              <div className="w-[540px] min-w-[540px] overflow-y-auto scrollbar-hide">
+              <div className="w-[540px] min-w-[540px] overflow-y-auto scrollbar-hide max-lg:w-full max-lg:min-w-0 max-lg:overflow-visible">
                 <SeriesOverview
                   series={selected}
                   teamsMap={teamsMap}
