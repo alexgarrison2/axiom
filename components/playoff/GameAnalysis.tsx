@@ -172,6 +172,15 @@ function aggregateSeries(games: PlayoffGameAnalysis[]): PlayoffGameAnalysis | nu
       current.xGAgainst += player.xGAgainst;
       current.goalsFor += player.goalsFor;
       current.goalsAgainst += player.goalsAgainst;
+      // Sum enriched boxscore fields
+      if (player.assists != null)      current.assists      = (current.assists      ?? 0) + player.assists;
+      if (player.pim != null)          current.pim          = (current.pim          ?? 0) + player.pim;
+      if (player.hits != null)         current.hits         = (current.hits         ?? 0) + player.hits;
+      if (player.blockedShots != null) current.blockedShots = (current.blockedShots ?? 0) + player.blockedShots;
+      if (player.faceoffWins != null)  current.faceoffWins  = (current.faceoffWins  ?? 0) + player.faceoffWins;
+      if (player.faceoffLosses != null) current.faceoffLosses = (current.faceoffLosses ?? 0) + player.faceoffLosses;
+      if (player.ppToiSeconds != null) current.ppToiSeconds = (current.ppToiSeconds ?? 0) + player.ppToiSeconds;
+      if (player.pkToiSeconds != null) current.pkToiSeconds = (current.pkToiSeconds ?? 0) + player.pkToiSeconds;
       players.set(key, current);
     });
 

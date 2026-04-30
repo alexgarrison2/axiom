@@ -475,7 +475,7 @@ function loadPlayoffGameAnalyses(
   return result;
 }
 
-function parseToi(toi: string): number {
+function toiStrToSec(toi: string): number {
   const [m, s] = toi.split(':').map(Number);
   return (m || 0) * 60 + (s || 0);
 }
@@ -486,58 +486,146 @@ async function enrichGameAnalysesWithBoxscore(
   const gameIds = new Set<string>();
   Object.values(gameAnalyses).flat().forEach(g => gameIds.add(g.gameId));
 
-  await Promise.allSettled(Array.from(gameIds).map(async (gameId) => {
-    try {
-      const res = await fetch(`https://api-web.nhle.com/v1/gamecenter/${gameId}/boxscore`, {
-        next: { revalidate: 300 },
+  // ── Load raw shifts for situation-TOI computation ─────────────────────────
+  type RawShift = { period: number; start: number; end: number; playerId: string; teamTriCode: string };
+  const shiftsByGame = new Map<string, RawShift[]>();
+  try {
+    const shiftsText = fs.readFileSync(
+      path.join(process.cwd(), 'pipeline', 'nhl_season_2025_2026_shifts.csv'), 'utf8');
+    const lines = shiftsText.split(/\r?\n/);
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i]) continue;
+      const c = parseCsvLine(lines[i]);
+      const gameId = c[0];
+      if (!gameIds.has(gameId)) continue;
+      if (!shiftsByGame.has(gameId)) shiftsByGame.set(gameId, []);
+      shiftsByGame.get(gameId)!.push({
+        period: parseInt(c[1]) || 1,
+        start: parseFloat(c[2]) || 0,
+        end: parseFloat(c[3]) || 0,
+        playerId: c[4],
+        teamTriCode: c[7],
       });
-      if (!res.ok) return;
-      const data = await res.json();
-      const pgs = data?.playerByGameStats;
-      if (!pgs) return;
+    }
+  } catch { /* optional */ }
 
-      type BxPlayer = {
-        playerId: number;
-        position?: string;
-        assists?: number;
-        pim?: number;
-        hits?: number;
-        blockedShots?: number;
-        faceoffs?: { wins?: number; losses?: number };
-        toi?: string;
-        powerPlayToi?: string;
-        shorthandedToi?: string;
-      };
+  await Promise.allSettled(Array.from(gameIds).map(async (gameId) => {
+    const gameInstances = Object.values(gameAnalyses).flat().filter(g => g.gameId === gameId);
+    if (!gameInstances.length) return;
+    const game = gameInstances[0];
 
-      const allBx: BxPlayer[] = [
-        ...(pgs.homeTeam?.forwards ?? []),
-        ...(pgs.homeTeam?.defense ?? []),
-        ...(pgs.awayTeam?.forwards ?? []),
-        ...(pgs.awayTeam?.defense ?? []),
-      ];
-      const bxMap = new Map<string, BxPlayer>();
-      allBx.forEach(p => bxMap.set(String(p.playerId), p));
+    // ── Fetch boxscore + play-by-play in parallel ─────────────────────────
+    const nhlHeaders = { 'User-Agent': 'Mozilla/5.0 (compatible; NHL-Stats/1.0)' };
+    const [bsResult, pbpResult] = await Promise.allSettled([
+      fetch(`https://api-web.nhle.com/v1/gamecenter/${gameId}/boxscore`, { headers: nhlHeaders, next: { revalidate: 300 } }),
+      fetch(`https://api-web.nhle.com/v1/gamecenter/${gameId}/play-by-play`, { headers: nhlHeaders, next: { revalidate: 300 } }),
+    ]);
 
-      Object.values(gameAnalyses).flat()
-        .filter(g => g.gameId === gameId)
-        .forEach(game => {
-          game.players.forEach(p => {
-            const bp = bxMap.get(p.playerId);
-            if (!bp) return;
-            if (!p.position && bp.position) p.position = bp.position;
-            p.assists = bp.assists ?? 0;
-            p.pim = bp.pim ?? 0;
-            p.hits = bp.hits ?? 0;
-            p.blockedShots = bp.blockedShots ?? 0;
-            if (bp.faceoffs) {
-              p.faceoffWins = bp.faceoffs.wins ?? 0;
-              p.faceoffLosses = bp.faceoffs.losses ?? 0;
-            }
-            if (bp.powerPlayToi != null) p.ppToiSeconds = parseToi(bp.powerPlayToi);
-            if (bp.shorthandedToi != null) p.pkToiSeconds = parseToi(bp.shorthandedToi);
-          });
+    // ── Boxscore: assists, pim, hits, blockedShots, position ─────────────
+    type BxPlayer = { playerId: number; position?: string; assists?: number; pim?: number; hits?: number; blockedShots?: number };
+    const bxMap = new Map<string, BxPlayer>();
+    if (bsResult.status === 'fulfilled' && bsResult.value.ok) {
+      try {
+        const data = await bsResult.value.json();
+        const pgs = data?.playerByGameStats;
+        const allBx: BxPlayer[] = [
+          ...(pgs?.homeTeam?.forwards ?? []), ...(pgs?.homeTeam?.defense ?? []),
+          ...(pgs?.awayTeam?.forwards ?? []), ...(pgs?.awayTeam?.defense ?? []),
+        ];
+        allBx.forEach(p => bxMap.set(String(p.playerId), p));
+      } catch { /* skip */ }
+    }
+
+    // ── Play-by-play: situation timeline + faceoff W-L ───────────────────
+    type SitInterval = { period: number; start: number; end: number; homeSk: number; awaySk: number; bothGoalies: boolean };
+    const sitIntervals: SitInterval[] = [];
+    const foWins = new Map<string, number>();
+    const foLosses = new Map<string, number>();
+
+    if (pbpResult.status === 'fulfilled' && pbpResult.value.ok) {
+      try {
+        const pbp = await pbpResult.value.json();
+        const plays: Array<{ eventId: number; sortOrder: number; periodDescriptor?: { number?: number }; timeInPeriod: string; situationCode?: string; typeCode?: number; details?: { winningPlayerId?: number; losingPlayerId?: number } }> = pbp.plays ?? [];
+
+        // Deduplicate by eventId and sort
+        const seen = new Set<number>();
+        const unique = plays.filter(p => { if (seen.has(p.eventId)) return false; seen.add(p.eventId); return true; });
+        unique.sort((a, b) => a.sortOrder - b.sortOrder);
+
+        // Group by period
+        const byPeriod = new Map<number, typeof unique>();
+        unique.forEach(p => {
+          const pd = p.periodDescriptor?.number ?? 1;
+          if (!byPeriod.has(pd)) byPeriod.set(pd, []);
+          byPeriod.get(pd)!.push(p);
         });
-    } catch { /* skip */ }
+
+        for (const [period, periodPlays] of byPeriod) {
+          for (let i = 0; i < periodPlays.length; i++) {
+            const play = periodPlays[i];
+            const startSec = toiStrToSec(play.timeInPeriod);
+            const endSec = i < periodPlays.length - 1 ? toiStrToSec(periodPlays[i + 1].timeInPeriod) : 1200;
+            if (endSec <= startSec) continue;
+
+            const sc = play.situationCode ?? '1551';
+            // Only track non-empty-net situations for PP/PK (both goalies must be on)
+            const bothGoalies = sc[0] === '1' && sc[3] === '1';
+            sitIntervals.push({ period, start: startSec, end: endSec, homeSk: parseInt(sc[1]) || 5, awaySk: parseInt(sc[2]) || 5, bothGoalies });
+
+            if (play.typeCode === 502) {
+              const w = String(play.details?.winningPlayerId ?? '');
+              const l = String(play.details?.losingPlayerId ?? '');
+              if (w) foWins.set(w, (foWins.get(w) ?? 0) + 1);
+              if (l) foLosses.set(l, (foLosses.get(l) ?? 0) + 1);
+            }
+          }
+        }
+      } catch { /* skip */ }
+    }
+
+    // ── Compute situation TOI per player via shift × interval overlap ─────
+    const sitToi = new Map<string, { pp: number; pk: number }>();
+    const rawShifts = shiftsByGame.get(gameId) ?? [];
+    for (const shift of rawShifts) {
+      if (!sitToi.has(shift.playerId)) sitToi.set(shift.playerId, { pp: 0, pk: 0 });
+      const toi = sitToi.get(shift.playerId)!;
+      const isHome = shift.teamTriCode === game.homeTriCode;
+
+      for (const iv of sitIntervals) {
+        if (iv.period !== shift.period) continue;
+        const os = Math.max(shift.start, iv.start);
+        const oe = Math.min(shift.end, iv.end);
+        if (oe <= os) continue;
+        const overlap = oe - os;
+        const playerSk = isHome ? iv.homeSk : iv.awaySk;
+        const oppSk    = isHome ? iv.awaySk : iv.homeSk;
+        // Only credit PP/PK when both goalies are on (excludes pulled-goalie empty net situations)
+        if (iv.bothGoalies && playerSk > oppSk) toi.pp += overlap;
+        else if (iv.bothGoalies && playerSk < oppSk) toi.pk += overlap;
+      }
+    }
+
+    // ── Apply all enriched stats to every game instance ───────────────────
+    gameInstances.forEach(gi => {
+      gi.players.forEach(p => {
+        const bp = bxMap.get(p.playerId);
+        if (bp) {
+          if (!p.position && bp.position) p.position = bp.position;
+          p.assists     = bp.assists      ?? 0;
+          p.pim         = bp.pim          ?? 0;
+          p.hits        = bp.hits         ?? 0;
+          p.blockedShots = bp.blockedShots ?? 0;
+        }
+        const sit = sitToi.get(p.playerId);
+        if (sit) {
+          p.ppToiSeconds = Math.round(sit.pp);
+          p.pkToiSeconds = Math.round(sit.pk);
+        }
+        const fw = foWins.get(p.playerId) ?? 0;
+        const fl = foLosses.get(p.playerId) ?? 0;
+        if (fw > 0 || fl > 0) { p.faceoffWins = fw; p.faceoffLosses = fl; }
+      });
+    });
   }));
 }
 
