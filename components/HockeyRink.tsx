@@ -358,18 +358,18 @@ export default function HockeyRink({
         <path d={rinkPath} fill="none" stroke="#c8d6e0" strokeWidth="6"   opacity="0.5" />
         <path d={rinkPath} fill="none" stroke="#8fa8bc" strokeWidth="1.2" opacity="0.6" />
 
-        {/* ── Team labels ── */}
+        {/* ── Team labels — centered in each attacking zone ── */}
         {homeTriCode && (
           <text
-            x={sx(89) - 60}
+            x={sx(57)}
             y={sy(0) + 10}
-            transform={`rotate(90 ${sx(89) - 60} ${sy(0)})`}
+            transform={`rotate(90 ${sx(57)} ${sy(0)})`}
             fill="#1a2d3f"
             fontSize="26"
             fontWeight="900"
             fontFamily="'Barlow Semi Condensed', sans-serif"
             textAnchor="middle"
-            opacity="0.6"
+            opacity="0.5"
             letterSpacing="0.06em"
           >
             {homeTriCode}
@@ -377,15 +377,15 @@ export default function HockeyRink({
         )}
         {awayTriCode && (
           <text
-            x={sx(-89) + 60}
+            x={sx(-57)}
             y={sy(0) + 10}
-            transform={`rotate(-90 ${sx(-89) + 60} ${sy(0)})`}
+            transform={`rotate(-90 ${sx(-57)} ${sy(0)})`}
             fill="#1a2d3f"
             fontSize="26"
             fontWeight="900"
             fontFamily="'Barlow Semi Condensed', sans-serif"
             textAnchor="middle"
-            opacity="0.6"
+            opacity="0.5"
             letterSpacing="0.06em"
           >
             {awayTriCode}
@@ -396,11 +396,11 @@ export default function HockeyRink({
         {homeTriCode && (
           <image
             href={`/logos/${homeTriCode}.svg`}
-            x={sx(0) - 44}
-            y={sy(0) - 44}
-            width="88"
-            height="88"
-            opacity="0.28"
+            x={sx(0) - 40}
+            y={sy(0) - 40}
+            width="80"
+            height="80"
+            opacity="0.22"
           />
         )}
       </g>

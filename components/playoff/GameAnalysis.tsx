@@ -75,6 +75,36 @@ function teamColor(tri: string, teamsMap: Record<string, TeamInfo>): string {
   return teamsMap[tri]?.color1 || '#22c55e';
 }
 
+/** Parse a hex color to [r, g, b] 0-255 */
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+/** Perceived color distance (0–1). Values below ~0.15 are near-identical. */
+function colorDistance(a: string, b: string): number {
+  const [r1, g1, b1] = hexToRgb(a);
+  const [r2, g2, b2] = hexToRgb(b);
+  return Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2) / 441.7;
+}
+
+/**
+ * Pick colors for home and away so they are visually distinct.
+ * Falls back to color2 for the away team if both color1s are too similar.
+ */
+function teamColors(
+  homeTri: string,
+  awayTri: string,
+  teamsMap: Record<string, TeamInfo>,
+): { homeColor: string; awayColor: string } {
+  const homeC1 = teamsMap[homeTri]?.color1 || '#22c55e';
+  const awayC1  = teamsMap[awayTri]?.color1  || '#3b82f6';
+  const awayC2  = teamsMap[awayTri]?.color2  || awayC1;
+  // If the two primary colors are too close, use the away team's secondary
+  const awayColor = colorDistance(homeC1, awayC1) < 0.18 ? awayC2 : awayC1;
+  return { homeColor: homeC1, awayColor };
+}
+
 function strengthLabel(strength: string): string {
   if (strength === 'EmptyNet') return 'Empty net';
   const match = strength.match(/^(\d)v(\d)$/);
@@ -216,8 +246,7 @@ export default function GameAnalysis({ games, teamsMap }: { games: PlayoffGameAn
     );
   }
 
-  const awayColor = teamColor(game.awayTriCode, teamsMap);
-  const homeColor = teamColor(game.homeTriCode, teamsMap);
+  const { homeColor, awayColor } = teamColors(game.homeTriCode, game.awayTriCode, teamsMap);
 
   return (
     <section className="backdrop-blur-xl bg-[#0f2132]/90 border border-blue-900/60 rounded-2xl p-3 sm:p-4 shadow-[0_0_40px_rgba(37,99,235,0.08)]">
