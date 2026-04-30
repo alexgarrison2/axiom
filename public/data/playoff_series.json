@@ -248,7 +248,7 @@
     },
     "seriesScore": [
       2,
-      2
+      3
     ],
     "games": [
       {
@@ -315,8 +315,11 @@
         "homeTriCode": "TBL",
         "awayTriCode": "MTL",
         "tvNetwork": "ESPN2",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          2,
+          3
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 6,
@@ -363,7 +366,7 @@
     },
     "seriesScore": [
       2,
-      3
+      4
     ],
     "games": [
       {
@@ -444,8 +447,11 @@
         "homeTriCode": "PHI",
         "awayTriCode": "PIT",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          1,
+          0
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 7,
@@ -463,7 +469,7 @@
       "PIT": 235,
       "PHI": -285
     },
-    "status": "active"
+    "status": "complete"
   },
   {
     "seriesId": "R1_W_CEN1vWC2",
