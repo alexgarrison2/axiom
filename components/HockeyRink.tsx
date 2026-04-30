@@ -267,43 +267,17 @@ export default function HockeyRink({
       aria-label="Hockey rink shot map"
     >
       <defs>
-        {/* Ice surface: soft blue-white radial gradient */}
-        <radialGradient id={`ice-${uid}`} cx="50%" cy="46%" r="76%">
-          <stop offset="0%"   stopColor="#ffffff" />
-          <stop offset="45%"  stopColor="#eef5fa" />
-          <stop offset="100%" stopColor="#ccd9e3" />
+        {/* Ice surface base gradient */}
+        <radialGradient id={`ice-${uid}`} cx="50%" cy="46%" r="78%">
+          <stop offset="0%"   stopColor="#fafcff" />
+          <stop offset="40%"  stopColor="#eef5fb" />
+          <stop offset="100%" stopColor="#d4e4f0" />
         </radialGradient>
 
-        {/* Subtle grain / ice texture */}
-        <filter id={`grain-${uid}`} x="-5%" y="-5%" width="110%" height="110%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.055 0.22" numOctaves="4" seed="7" result="noise" />
-          <feColorMatrix in="noise" type="saturate" values="0" result="gray" />
-          <feComponentTransfer in="gray" result="softNoise">
-            <feFuncA type="table" tableValues="0 0.09" />
-          </feComponentTransfer>
-          <feBlend in="SourceGraphic" in2="softNoise" mode="multiply" />
-        </filter>
-
-        {/* Skate scratch pattern */}
-        <pattern id={`scratches-${uid}`} patternUnits="userSpaceOnUse" width="200" height="130">
-          <path
-            d="M-20 20 C 40 4, 80 46, 210 16 M-28 88 C 38 56, 96 134, 218 78 M38 -14 C 70 26, 116 68, 180 24 M-14 50 C 52 38, 80 78, 160 48"
-            stroke="#8fa0ad" strokeWidth="0.85" opacity="0.15" fill="none"
-          />
-          <path
-            d="M28 108 L132 10 M84 130 L188 38 M18 26 L76 82 M130 -8 L196 62"
-            stroke="#c1ccd4" strokeWidth="0.7" opacity="0.14"
-          />
-          <path
-            d="M20 70 C 42 62, 56 62, 80 70 M120 98 C 140 88, 160 89, 182 102"
-            stroke="#7f909e" strokeWidth="0.6" opacity="0.12" fill="none"
-          />
-        </pattern>
-
         {/* Edge vignette */}
-        <radialGradient id={`vignette-${uid}`} cx="50%" cy="50%" r="70%">
-          <stop offset="60%"  stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="100%" stopColor="#9fb5c8" stopOpacity="0.28" />
+        <radialGradient id={`vignette-${uid}`} cx="50%" cy="50%" r="68%">
+          <stop offset="55%"  stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="100%" stopColor="#8fafc8" stopOpacity="0.22" />
         </radialGradient>
 
         {/* Rink outline clip */}
@@ -314,11 +288,18 @@ export default function HockeyRink({
 
       {/* ── Ice surface ── */}
       <g clipPath={`url(#clip-${uid})`}>
-        {/* Base ice color + grain */}
-        <rect x="0" y="0" width={W} height={H} fill={`url(#ice-${uid})`} filter={`url(#grain-${uid})`} />
-        {/* Skate scratches */}
-        <rect x="0" y="0" width={W} height={H} fill={`url(#scratches-${uid})`} />
-        {/* Edge shadow */}
+        {/* Base ice colour */}
+        <rect x="0" y="0" width={W} height={H} fill={`url(#ice-${uid})`} />
+        {/* Real NHL ice texture overlaid via multiply — adds grain without darkening */}
+        <image
+          href="/images/nhl_ice_surface.png"
+          x="0" y="0"
+          width={W} height={H}
+          preserveAspectRatio="xMidYMid slice"
+          opacity="0.55"
+          style={{ mixBlendMode: 'multiply' } as React.CSSProperties}
+        />
+        {/* Edge vignette */}
         <rect x="0" y="0" width={W} height={H} fill={`url(#vignette-${uid})`} />
 
         {/* ── Lines ── */}
