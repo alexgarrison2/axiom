@@ -1,33 +1,5 @@
 [
     {
-        "id": 2025030166,
-        "gameDate": "2026-04-30",
-        "startTimeUTC": "2026-04-30T23:30:00Z",
-        "homeTeam": "Wild",
-        "awayTeam": "Stars",
-        "homeTeamAbbrev": "MIN",
-        "awayTeamAbbrev": "DAL",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "TNT"
-    },
-    {
-        "id": 2025030186,
-        "gameDate": "2026-04-30",
-        "startTimeUTC": "2026-05-01T02:00:00Z",
-        "homeTeam": "Ducks",
-        "awayTeam": "Oilers",
-        "homeTeamAbbrev": "ANA",
-        "awayTeamAbbrev": "EDM",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "TNT"
-    },
-    {
         "id": 2025030126,
         "gameDate": "2026-05-01",
         "startTimeUTC": "2026-05-01T23:00:00Z",
@@ -68,5 +40,19 @@
         "awayGoalieConfirmed": "Carter Hart",
         "awayGoalieStatus": "Unconfirmed",
         "tvNetwork": "ESPN"
+    },
+    {
+        "id": 2025030221,
+        "gameDate": "2026-05-02",
+        "startTimeUTC": "2026-05-03T00:00:00Z",
+        "homeTeam": "Hurricanes",
+        "awayTeam": "Flyers",
+        "homeTeamAbbrev": "CAR",
+        "awayTeamAbbrev": "PHI",
+        "homeGoalieConfirmed": "Frederik Andersen",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Dan Vladar",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "ABC"
     }
 ]

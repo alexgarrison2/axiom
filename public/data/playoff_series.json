@@ -602,7 +602,7 @@
     },
     "seriesScore": [
       2,
-      3
+      4
     ],
     "games": [
       {
@@ -683,8 +683,11 @@
         "homeTriCode": "MIN",
         "awayTriCode": "DAL",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          5,
+          2
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 7,
@@ -702,7 +705,7 @@
       "DAL": 250,
       "MIN": -300
     },
-    "status": "active"
+    "status": "complete"
   },
   {
     "seriesId": "R1_W_PAC1vWC1",
@@ -838,7 +841,7 @@
     },
     "seriesScore": [
       2,
-      3
+      4
     ],
     "games": [
       {
@@ -919,14 +922,17 @@
         "homeTriCode": "EDM",
         "awayTriCode": "ANA",
         "tvNetwork": "",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          5,
+          2
+        ],
+        "status": "final"
       }
     ],
     "seriesOdds": {
       "EDM": 180,
       "ANA": -220
     },
-    "status": "active"
+    "status": "complete"
   }
 ]
