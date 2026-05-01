@@ -17106,5 +17106,33 @@
     "actualWinner": "Flyers",
     "isCorrect": true,
     "brierScore": 0.2381
+  },
+  {
+    "date": "2026-04-30",
+    "homeTeam": "Ducks",
+    "awayTeam": "Oilers",
+    "homeScore": 5,
+    "awayScore": 2,
+    "homeXg": 3.28,
+    "awayXg": 3.74,
+    "homeWinProb": 46.8,
+    "predictedWinner": "Oilers",
+    "actualWinner": "Ducks",
+    "isCorrect": false,
+    "brierScore": 0.283
+  },
+  {
+    "date": "2026-04-30",
+    "homeTeam": "Wild",
+    "awayTeam": "Stars",
+    "homeScore": 5,
+    "awayScore": 2,
+    "homeXg": 2.94,
+    "awayXg": 3.49,
+    "homeWinProb": 49.2,
+    "predictedWinner": "Stars",
+    "actualWinner": "Wild",
+    "isCorrect": false,
+    "brierScore": 0.2581
   }
 ]

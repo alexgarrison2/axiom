@@ -1822,12 +1822,12 @@
     "ANA": {
         "f1": [
             {
-                "name": "Cutter Gauthier",
-                "number": 61,
+                "name": "Chris Kreider",
+                "number": 20,
                 "pos": "lw",
-                "id": 33248,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1926,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Leo Carlsson",
@@ -1874,11 +1874,11 @@
         ],
         "f3": [
             {
-                "name": "Chris Kreider",
-                "number": 20,
+                "name": "Mason McTavish",
+                "number": 23,
                 "pos": "lw",
-                "id": 1926,
-                "ppUnit": 1,
+                "id": 30834,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1890,12 +1890,12 @@
                 "movement": null
             },
             {
-                "name": "Mason McTavish",
-                "number": 23,
+                "name": "Cutter Gauthier",
+                "number": 61,
                 "pos": "rw",
-                "id": 30834,
+                "id": 33248,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -4493,7 +4493,7 @@
                 "pos": "c",
                 "id": 2160,
                 "ppUnit": null,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jack Roslovic",
@@ -4532,11 +4532,11 @@
         ],
         "d1": [
             {
-                "name": "Darnell Nurse",
-                "number": 25,
+                "name": "Mattias Ekholm",
+                "number": 14,
                 "pos": "ld",
-                "id": 2139,
-                "ppUnit": null,
+                "id": 1675,
+                "ppUnit": 2,
                 "movement": "up"
             },
             {
@@ -4550,12 +4550,12 @@
         ],
         "d2": [
             {
-                "name": "Jake Walman",
-                "number": 96,
+                "name": "Darnell Nurse",
+                "number": 25,
                 "pos": "ld",
-                "id": 2859,
-                "ppUnit": 2,
-                "movement": "up"
+                "id": 2139,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Connor Murphy",
@@ -4568,10 +4568,10 @@
         ],
         "d3": [
             {
-                "name": "Mattias Ekholm",
-                "number": 14,
+                "name": "Jake Walman",
+                "number": 96,
                 "pos": "ld",
-                "id": 1675,
+                "id": 2859,
                 "ppUnit": 2,
                 "movement": "down"
             },
