@@ -341,11 +341,11 @@
       {
         "gameNumber": 7,
         "date": "2026-05-03",
-        "startTimeUTC": "2026-05-03T16:00:00Z",
-        "startTimeCT": "11:00 AM",
+        "startTimeUTC": "2026-05-03T22:00:00Z",
+        "startTimeCT": "5:00 PM",
         "homeTriCode": "TBL",
         "awayTriCode": "MTL",
-        "tvNetwork": "",
+        "tvNetwork": "TNT",
         "score": null,
         "status": "scheduled"
       }
@@ -728,7 +728,7 @@
       "commonName": "Mammoth"
     },
     "seriesScore": [
-      3,
+      4,
       2
     ],
     "games": [
@@ -810,8 +810,11 @@
         "homeTriCode": "UTA",
         "awayTriCode": "VGK",
         "tvNetwork": "ESPN",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          1,
+          5
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 7,
@@ -829,7 +832,7 @@
       "VGK": -460,
       "UTA": 340
     },
-    "status": "active"
+    "status": "complete"
   },
   {
     "seriesId": "R1_W_PAC2vPAC3",
