@@ -129,7 +129,7 @@
       "commonName": "Bruins"
     },
     "seriesScore": [
-      3,
+      4,
       2
     ],
     "games": [
@@ -211,8 +211,11 @@
         "homeTriCode": "BUF",
         "awayTriCode": "BOS",
         "tvNetwork": "",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          1,
+          4
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 7,
@@ -230,7 +233,7 @@
       "BUF": -480,
       "BOS": 350
     },
-    "status": "active"
+    "status": "complete"
   },
   {
     "seriesId": "R1_E_ATL2vATL3",
@@ -247,7 +250,7 @@
       "commonName": "Canadiens"
     },
     "seriesScore": [
-      2,
+      3,
       3
     ],
     "games": [
@@ -329,8 +332,11 @@
         "homeTriCode": "MTL",
         "awayTriCode": "TBL",
         "tvNetwork": "ESPN2",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          0,
+          1
+        ],
+        "status": "final"
       },
       {
         "gameNumber": 7,
