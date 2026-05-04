@@ -17190,5 +17190,33 @@
     "actualWinner": "Hurricanes",
     "isCorrect": true,
     "brierScore": 0.1289
+  },
+  {
+    "date": "2026-05-03",
+    "homeTeam": "Avalanche",
+    "awayTeam": "Wild",
+    "homeScore": 9,
+    "awayScore": 6,
+    "homeXg": 3.54,
+    "awayXg": 2.81,
+    "homeWinProb": 63.6,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Avalanche",
+    "isCorrect": true,
+    "brierScore": 0.1325
+  },
+  {
+    "date": "2026-05-03",
+    "homeTeam": "Lightning",
+    "awayTeam": "Canadiens",
+    "homeScore": 1,
+    "awayScore": 2,
+    "homeXg": 2.96,
+    "awayXg": 2.89,
+    "homeWinProb": 56.0,
+    "predictedWinner": "Lightning",
+    "actualWinner": "Canadiens",
+    "isCorrect": false,
+    "brierScore": 0.3136
   }
 ]
