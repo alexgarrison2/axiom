@@ -251,7 +251,7 @@
     },
     "seriesScore": [
       3,
-      3
+      4
     ],
     "games": [
       {
@@ -346,15 +346,18 @@
         "homeTriCode": "TBL",
         "awayTriCode": "MTL",
         "tvNetwork": "TNT",
-        "score": null,
-        "status": "scheduled"
+        "score": [
+          1,
+          2
+        ],
+        "status": "final"
       }
     ],
     "seriesOdds": {
       "TBL": 190,
       "MTL": -230
     },
-    "status": "active"
+    "status": "complete"
   },
   {
     "seriesId": "R1_E_MET2vMET3",
