@@ -1,35 +1,19 @@
 {
-    "2026-05-04:Flyers@Hurricanes": {
-        "Flyers": -190,
-        "Hurricanes": 145,
-        "Flyers_puckline": 130,
-        "Flyers_puckline_spread": "-1.5",
-        "Hurricanes_puckline": -170,
-        "Hurricanes_puckline_spread": "1.5",
-        "total_over": -105,
-        "total_line": "7.0",
-        "total_under": -125,
-        "Flyers_1p_ml": -7000,
-        "Hurricanes_1p_ml": 1600,
-        "Flyers_three_way": -130,
-        "Hurricanes_three_way": 290,
-        "three_way_tie": 295
-    },
     "2026-05-04:Ducks@Golden Knights": {
-        "Ducks": 142,
-        "Golden Knights": -168,
+        "Ducks": 140,
+        "Golden Knights": -165,
         "Ducks_puckline": -175,
         "Ducks_puckline_spread": "1.5",
         "Golden Knights_puckline": 150,
         "Golden Knights_puckline_spread": "-1.5",
-        "total_over": -115,
+        "total_over": -105,
         "total_line": "6.5",
-        "total_under": -105,
+        "total_under": -115,
+        "Ducks_three_way": 205,
+        "Golden Knights_three_way": -105,
+        "three_way_tie": 320,
         "Ducks_1p_ml": 120,
-        "Golden Knights_1p_ml": -160,
-        "Ducks_three_way": 210,
-        "Golden Knights_three_way": -106,
-        "three_way_tie": 320
+        "Golden Knights_1p_ml": -160
     },
     "2026-05-05:Wild@Avalanche": {
         "Wild_puckline": -145,
@@ -62,5 +46,21 @@
         "Canadiens_three_way": 164,
         "Sabres_three_way": 125,
         "three_way_tie": 300
+    },
+    "2026-05-04:Flyers@Hurricanes": {
+        "Flyers": 215,
+        "Hurricanes": -260,
+        "Flyers_puckline": -128,
+        "Flyers_puckline_spread": "1.5",
+        "Hurricanes_puckline": 107,
+        "Hurricanes_puckline_spread": "-1.5",
+        "total_over": 110,
+        "total_line": "5.5",
+        "total_under": -130,
+        "Flyers_1p_ml": 155,
+        "Hurricanes_1p_ml": -210,
+        "Flyers_three_way": 310,
+        "Hurricanes_three_way": -150,
+        "three_way_tie": 335
     }
 }
