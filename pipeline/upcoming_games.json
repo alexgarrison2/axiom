@@ -1,19 +1,5 @@
 [
     {
-        "id": 2025030232,
-        "gameDate": "2026-05-05",
-        "startTimeUTC": "2026-05-06T00:00:00Z",
-        "homeTeam": "Avalanche",
-        "awayTeam": "Wild",
-        "homeTeamAbbrev": "COL",
-        "awayTeamAbbrev": "MIN",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "ESPN"
-    },
-    {
         "id": 2025030211,
         "gameDate": "2026-05-06",
         "startTimeUTC": "2026-05-06T23:00:00Z",
@@ -38,6 +24,20 @@
         "homeGoalieConfirmed": "Carter Hart",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Lukas Dostal",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "TNT"
+    },
+    {
+        "id": 2025030223,
+        "gameDate": "2026-05-07",
+        "startTimeUTC": "2026-05-08T00:00:00Z",
+        "homeTeam": "Flyers",
+        "awayTeam": "Hurricanes",
+        "homeTeamAbbrev": "PHI",
+        "awayTeamAbbrev": "CAR",
+        "homeGoalieConfirmed": "Dan Vladar",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Frederik Andersen",
         "awayGoalieStatus": "Unconfirmed",
         "tvNetwork": "TNT"
     }
