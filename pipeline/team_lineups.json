@@ -106,48 +106,48 @@
         ],
         "d1": [
             {
-                "name": "Mattias Samuelsson",
-                "number": 23,
+                "name": "Rasmus Dahlin",
+                "number": 26,
                 "pos": "ld",
-                "id": 28792,
-                "ppUnit": null,
+                "id": 4786,
+                "ppUnit": 1,
                 "movement": null
             },
             {
-                "name": "Rasmus Dahlin",
-                "number": 26,
+                "name": "Mattias Samuelsson",
+                "number": 23,
                 "pos": "rd",
-                "id": 4786,
-                "ppUnit": 1,
+                "id": 28792,
+                "ppUnit": null,
                 "movement": null
             }
         ],
         "d2": [
             {
-                "name": "Owen Power",
-                "number": 25,
+                "name": "Bowen Byram",
+                "number": 4,
                 "pos": "ld",
-                "id": 30051,
-                "ppUnit": null,
+                "id": 28523,
+                "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Bowen Byram",
-                "number": 4,
+                "name": "Owen Power",
+                "number": 25,
                 "pos": "rd",
-                "id": 28523,
-                "ppUnit": 2,
+                "id": 30051,
+                "ppUnit": null,
                 "movement": null
             }
         ],
         "d3": [
             {
-                "name": "Michael Kesselring",
-                "number": 8,
+                "name": "Logan Stanley",
+                "number": 64,
                 "pos": "ld",
-                "id": 29644,
+                "id": 2652,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Conor Timmins",
@@ -198,14 +198,6 @@
                 "id": 28686,
                 "ppUnit": null,
                 "movement": null
-            },
-            {
-                "name": "Logan Stanley",
-                "number": 64,
-                "pos": "ir6",
-                "id": 2652,
-                "ppUnit": null,
-                "movement": null
             }
         ]
     },
@@ -238,20 +230,20 @@
         ],
         "f2": [
             {
-                "name": "Brendan Gallagher",
-                "number": 11,
+                "name": "Alex Newhook",
+                "number": 15,
                 "pos": "lw",
-                "id": 1791,
+                "id": 30425,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Alex Newhook",
-                "number": 15,
+                "name": "Jake Evans",
+                "number": 71,
                 "pos": "c",
-                "id": 30425,
-                "ppUnit": 2,
-                "movement": null
+                "id": 4708,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Ivan Demidov",
@@ -264,12 +256,12 @@
         ],
         "f3": [
             {
-                "name": "Jake Evans",
-                "number": 71,
+                "name": "Alexandre Texier",
+                "number": 85,
                 "pos": "lw",
-                "id": 4708,
-                "ppUnit": null,
-                "movement": null
+                "id": 4759,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Phillip Danault",
@@ -306,12 +298,12 @@
                 "movement": null
             },
             {
-                "name": "Alexandre Texier",
-                "number": 85,
+                "name": "Brendan Gallagher",
+                "number": 11,
                 "pos": "rw",
-                "id": 4759,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1791,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "d1": [
@@ -364,7 +356,7 @@
                 "number": 8,
                 "pos": "rd",
                 "id": 4789,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -1890,7 +1882,7 @@
                 "number": 38,
                 "pos": "c",
                 "id": 2161,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1916,7 +1908,7 @@
                 "number": 22,
                 "pos": "c",
                 "id": 36363,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1986,7 +1978,7 @@
                 "number": 43,
                 "pos": "ld",
                 "id": 4794,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -1994,7 +1986,7 @@
                 "number": 7,
                 "pos": "rd",
                 "id": 30792,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
