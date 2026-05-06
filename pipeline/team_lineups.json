@@ -282,9 +282,17 @@
         ],
         "f4": [
             {
+                "name": "Zack Bolduc",
+                "number": 76,
+                "pos": "lw",
+                "id": 31240,
+                "ppUnit": 2,
+                "movement": null
+            },
+            {
                 "name": "Joe Veleno",
                 "number": 90,
-                "pos": "lw",
+                "pos": "c",
                 "id": 26350,
                 "ppUnit": null,
                 "movement": null
@@ -292,16 +300,8 @@
             {
                 "name": "Kirby Dach",
                 "number": 77,
-                "pos": "c",
-                "id": 29585,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Zack Bolduc",
-                "number": 76,
                 "pos": "rw",
-                "id": 31240,
+                "id": 29585,
                 "ppUnit": 2,
                 "movement": null
             }
@@ -326,19 +326,19 @@
         ],
         "d2": [
             {
-                "name": "Kaiden Guhle",
-                "number": 21,
+                "name": "Lane Hutson",
+                "number": 48,
                 "pos": "ld",
-                "id": 32947,
-                "ppUnit": null,
+                "id": 33307,
+                "ppUnit": 1,
                 "movement": null
             },
             {
-                "name": "Lane Hutson",
-                "number": 48,
+                "name": "Kaiden Guhle",
+                "number": 21,
                 "pos": "rd",
-                "id": 33307,
-                "ppUnit": 1,
+                "id": 32947,
+                "ppUnit": null,
                 "movement": null
             }
         ],
