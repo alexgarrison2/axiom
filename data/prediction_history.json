@@ -17260,5 +17260,33 @@
     "actualWinner": "Avalanche",
     "isCorrect": true,
     "brierScore": 0.1731
+  },
+  {
+    "date": "2026-05-06",
+    "homeTeam": "Golden Knights",
+    "awayTeam": "Ducks",
+    "homeScore": 1,
+    "awayScore": 3,
+    "homeXg": 3.62,
+    "awayXg": 3.08,
+    "homeWinProb": 53.9,
+    "predictedWinner": "Golden Knights",
+    "actualWinner": "Ducks",
+    "isCorrect": false,
+    "brierScore": 0.2905
+  },
+  {
+    "date": "2026-05-06",
+    "homeTeam": "Sabres",
+    "awayTeam": "Canadiens",
+    "homeScore": 4,
+    "awayScore": 2,
+    "homeXg": 3.0,
+    "awayXg": 2.83,
+    "homeWinProb": 59.1,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Sabres",
+    "isCorrect": true,
+    "brierScore": 0.1673
   }
 ]

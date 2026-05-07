@@ -1,33 +1,5 @@
 [
     {
-        "id": 2025030211,
-        "gameDate": "2026-05-06",
-        "startTimeUTC": "2026-05-06T23:00:00Z",
-        "homeTeam": "Sabres",
-        "awayTeam": "Canadiens",
-        "homeTeamAbbrev": "BUF",
-        "awayTeamAbbrev": "MTL",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "TNT"
-    },
-    {
-        "id": 2025030242,
-        "gameDate": "2026-05-06",
-        "startTimeUTC": "2026-05-07T01:30:00Z",
-        "homeTeam": "Golden Knights",
-        "awayTeam": "Ducks",
-        "homeTeamAbbrev": "VGK",
-        "awayTeamAbbrev": "ANA",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "TNT"
-    },
-    {
         "id": 2025030223,
         "gameDate": "2026-05-07",
         "startTimeUTC": "2026-05-08T00:00:00Z",
@@ -38,6 +10,34 @@
         "homeGoalieConfirmed": "Dan Vladar",
         "homeGoalieStatus": "Unconfirmed",
         "awayGoalieConfirmed": "Frederik Andersen",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "TNT"
+    },
+    {
+        "id": 2025030212,
+        "gameDate": "2026-05-08",
+        "startTimeUTC": "2026-05-08T23:00:00Z",
+        "homeTeam": "Sabres",
+        "awayTeam": "Canadiens",
+        "homeTeamAbbrev": "BUF",
+        "awayTeamAbbrev": "MTL",
+        "homeGoalieConfirmed": "Alex Lyon",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jakub Dobes",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "TNT"
+    },
+    {
+        "id": 2025030243,
+        "gameDate": "2026-05-08",
+        "startTimeUTC": "2026-05-09T01:30:00Z",
+        "homeTeam": "Ducks",
+        "awayTeam": "Golden Knights",
+        "homeTeamAbbrev": "ANA",
+        "awayTeamAbbrev": "VGK",
+        "homeGoalieConfirmed": "Lukas Dostal",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Carter Hart",
         "awayGoalieStatus": "Unconfirmed",
         "tvNetwork": "TNT"
     }
