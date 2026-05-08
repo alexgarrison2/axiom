@@ -322,7 +322,7 @@
                 "number": 79,
                 "pos": "ld",
                 "id": 4812,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -336,30 +336,20 @@
         ],
         "d3": [
             {
-                "name": "Mike Reilly",
-                "number": 6,
-                "pos": "ld",
-                "id": 2469,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Shayne Gostisbehere",
                 "number": 4,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 2398,
                 "ppUnit": 1,
                 "movement": null
-            }
-        ],
-        "ir": [
+            },
             {
                 "name": "Alexander Nikishin",
                 "number": 21,
-                "pos": "ir1",
+                "pos": "rd",
                 "id": 32897,
-                "ppUnit": null,
-                "movement": null
+                "ppUnit": 2,
+                "movement": "up"
             }
         ]
     },
