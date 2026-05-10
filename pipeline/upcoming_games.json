@@ -1,33 +1,5 @@
 [
     {
-        "id": 2025030224,
-        "gameDate": "2026-05-09",
-        "startTimeUTC": "2026-05-09T22:00:00Z",
-        "homeTeam": "Flyers",
-        "awayTeam": "Hurricanes",
-        "homeTeamAbbrev": "PHI",
-        "awayTeamAbbrev": "CAR",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "TNT"
-    },
-    {
-        "id": 2025030233,
-        "gameDate": "2026-05-09",
-        "startTimeUTC": "2026-05-10T01:00:00Z",
-        "homeTeam": "Wild",
-        "awayTeam": "Avalanche",
-        "homeTeamAbbrev": "MIN",
-        "awayTeamAbbrev": "COL",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "TNT"
-    },
-    {
         "id": 2025030213,
         "gameDate": "2026-05-10",
         "startTimeUTC": "2026-05-10T23:00:00Z",
@@ -52,6 +24,20 @@
         "homeGoalieConfirmed": "Lukas Dostal",
         "homeGoalieStatus": "Confirmed",
         "awayGoalieConfirmed": "Carter Hart",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "ESPN"
+    },
+    {
+        "id": 2025030234,
+        "gameDate": "2026-05-11",
+        "startTimeUTC": "2026-05-12T00:00:00Z",
+        "homeTeam": "Wild",
+        "awayTeam": "Avalanche",
+        "homeTeamAbbrev": "MIN",
+        "awayTeamAbbrev": "COL",
+        "homeGoalieConfirmed": "Jesper Wallstedt",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Scott Wedgewood",
         "awayGoalieStatus": "Unconfirmed",
         "tvNetwork": "ESPN"
     }
