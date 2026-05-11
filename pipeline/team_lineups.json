@@ -180,12 +180,12 @@
     "COL": {
         "f1": [
             {
-                "name": "Artturi Lehkonen",
-                "number": 62,
+                "name": "Gabriel Landeskog",
+                "number": 92,
                 "pos": "lw",
-                "id": 2679,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1763,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Nathan MacKinnon",
@@ -206,12 +206,12 @@
         ],
         "f2": [
             {
-                "name": "Gabriel Landeskog",
-                "number": 92,
+                "name": "Ross Colton",
+                "number": 20,
                 "pos": "lw",
-                "id": 1763,
-                "ppUnit": 1,
-                "movement": null
+                "id": 27086,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Brock Nelson",
@@ -222,22 +222,22 @@
                 "movement": null
             },
             {
-                "name": "Valeri Nichushkin",
-                "number": 13,
+                "name": "Nicolas Roy",
+                "number": 10,
                 "pos": "rw",
-                "id": 2142,
-                "ppUnit": 2,
-                "movement": null
+                "id": 3818,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Ross Colton",
-                "number": 20,
+                "name": "Valeri Nichushkin",
+                "number": 13,
                 "pos": "lw",
-                "id": 27086,
-                "ppUnit": null,
-                "movement": null
+                "id": 2142,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Nazem Kadri",
@@ -248,12 +248,12 @@
                 "movement": null
             },
             {
-                "name": "Nicolas Roy",
-                "number": 10,
+                "name": "Logan O'Connor",
+                "number": 25,
                 "pos": "rw",
-                "id": 3818,
+                "id": 24994,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -274,12 +274,12 @@
                 "movement": null
             },
             {
-                "name": "Logan O'Connor",
-                "number": 25,
+                "name": "Joel Kiviranta",
+                "number": 94,
                 "pos": "rw",
-                "id": 24994,
+                "id": 31187,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d1": [
@@ -310,22 +310,22 @@
                 "movement": null
             },
             {
-                "name": "Sam Malinski",
-                "number": 70,
+                "name": "Brent Burns",
+                "number": 84,
                 "pos": "rd",
-                "id": 37993,
+                "id": 792,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d3": [
             {
-                "name": "Brent Burns",
-                "number": 84,
+                "name": "Jack Ahcan",
+                "number": 15,
                 "pos": "ld",
-                "id": 792,
+                "id": 27178,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Josh Manson",
@@ -338,20 +338,20 @@
         ],
         "ir": [
             {
-                "name": "Josh Manson",
-                "number": 42,
+                "name": "Sam Malinski",
+                "number": 70,
                 "pos": "ir1",
-                "id": 2400,
+                "id": 37993,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Joel Kiviranta",
-                "number": 94,
+                "name": "Artturi Lehkonen",
+                "number": 62,
                 "pos": "ir2",
-                "id": 31187,
+                "id": 2679,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ]
     },
