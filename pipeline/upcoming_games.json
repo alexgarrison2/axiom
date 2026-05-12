@@ -1,19 +1,5 @@
 [
     {
-        "id": 2025030234,
-        "gameDate": "2026-05-11",
-        "startTimeUTC": "2026-05-12T00:00:00Z",
-        "homeTeam": "Wild",
-        "awayTeam": "Avalanche",
-        "homeTeamAbbrev": "MIN",
-        "awayTeamAbbrev": "COL",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "ESPN"
-    },
-    {
         "id": 2025030214,
         "gameDate": "2026-05-12",
         "startTimeUTC": "2026-05-12T23:00:00Z",
@@ -40,5 +26,19 @@
         "awayGoalieConfirmed": "Lukas Dostal",
         "awayGoalieStatus": "Unconfirmed",
         "tvNetwork": "ESPN"
+    },
+    {
+        "id": 2025030235,
+        "gameDate": "2026-05-13",
+        "startTimeUTC": "2026-05-14T00:00:00Z",
+        "homeTeam": "Avalanche",
+        "awayTeam": "Wild",
+        "homeTeamAbbrev": "COL",
+        "awayTeamAbbrev": "MIN",
+        "homeGoalieConfirmed": "Mackenzie Blackwood",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Jesper Wallstedt",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "TNT"
     }
 ]

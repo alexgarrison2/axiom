@@ -17358,5 +17358,47 @@
     "actualWinner": "Hurricanes",
     "isCorrect": true,
     "brierScore": 0.2079
+  },
+  {
+    "date": "2026-05-10",
+    "homeTeam": "Canadiens",
+    "awayTeam": "Sabres",
+    "homeScore": 6,
+    "awayScore": 2,
+    "homeXg": 2.88,
+    "awayXg": 2.87,
+    "homeWinProb": 49.9,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Canadiens",
+    "isCorrect": false,
+    "brierScore": 0.251
+  },
+  {
+    "date": "2026-05-10",
+    "homeTeam": "Ducks",
+    "awayTeam": "Golden Knights",
+    "homeScore": 4,
+    "awayScore": 3,
+    "homeXg": 2.99,
+    "awayXg": 3.67,
+    "homeWinProb": 47.0,
+    "predictedWinner": "Golden Knights",
+    "actualWinner": "Ducks",
+    "isCorrect": false,
+    "brierScore": 0.2809
+  },
+  {
+    "date": "2026-05-11",
+    "homeTeam": "Wild",
+    "awayTeam": "Avalanche",
+    "homeScore": 2,
+    "awayScore": 5,
+    "homeXg": 2.85,
+    "awayXg": 3.57,
+    "homeWinProb": 45.5,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Avalanche",
+    "isCorrect": true,
+    "brierScore": 0.207
   }
 ]
