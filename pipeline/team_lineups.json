@@ -28,38 +28,12 @@
         ],
         "f2": [
             {
-                "name": "Jason Zucker",
-                "number": 17,
-                "pos": "lw",
-                "id": 1898,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Konsta Helenius",
-                "number": 94,
-                "pos": "c",
-                "id": 38139,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Jack Quinn",
-                "number": 22,
-                "pos": "rw",
-                "id": 32270,
-                "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
                 "name": "Zach Benson",
                 "number": 6,
                 "pos": "lw",
                 "id": 33544,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Josh Norris",
@@ -67,7 +41,7 @@
                 "pos": "c",
                 "id": 28056,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Josh Doan",
@@ -75,7 +49,33 @@
                 "pos": "rw",
                 "id": 32990,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Jason Zucker",
+                "number": 17,
+                "pos": "lw",
+                "id": 1898,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Konsta Helenius",
+                "number": 94,
+                "pos": "c",
+                "id": 38139,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Jack Quinn",
+                "number": 22,
+                "pos": "rw",
+                "id": 32270,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -150,12 +150,12 @@
                 "movement": null
             },
             {
-                "name": "Logan Stanley",
-                "number": 64,
+                "name": "Conor Timmins",
+                "number": 21,
                 "pos": "rd",
-                "id": 2652,
+                "id": 2797,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "ir": [
