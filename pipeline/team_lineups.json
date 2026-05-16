@@ -172,38 +172,12 @@
     "BUF": {
         "f1": [
             {
-                "name": "Peyton Krebs",
-                "number": 19,
-                "pos": "lw",
-                "id": 28684,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Tage Thompson",
-                "number": 72,
-                "pos": "c",
-                "id": 2659,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
-                "name": "Alex Tuch",
-                "number": 89,
-                "pos": "rw",
-                "id": 2739,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
                 "name": "Zach Benson",
                 "number": 6,
                 "pos": "lw",
                 "id": 33544,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Josh Norris",
@@ -211,15 +185,41 @@
                 "pos": "c",
                 "id": 28056,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
+            {
+                "name": "Tage Thompson",
+                "number": 72,
+                "pos": "rw",
+                "id": 2659,
+                "ppUnit": 1,
+                "movement": null
+            }
+        ],
+        "f2": [
             {
                 "name": "Josh Doan",
                 "number": 91,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 32990,
                 "ppUnit": 1,
                 "movement": null
+            },
+            {
+                "name": "Ryan McLeod",
+                "number": 71,
+                "pos": "c",
+                "id": 4810,
+                "ppUnit": 2,
+                "movement": "up"
+            },
+            {
+                "name": "Alex Tuch",
+                "number": 89,
+                "pos": "rw",
+                "id": 2739,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f3": [
@@ -258,12 +258,12 @@
                 "movement": null
             },
             {
-                "name": "Ryan McLeod",
-                "number": 71,
+                "name": "Peyton Krebs",
+                "number": 19,
                 "pos": "c",
-                "id": 4810,
-                "ppUnit": 2,
-                "movement": null
+                "id": 28684,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Beck Malenstyn",
@@ -312,12 +312,12 @@
         ],
         "d3": [
             {
-                "name": "Luke Schenn",
-                "number": 2,
+                "name": "Zach Metsa",
+                "number": 73,
                 "pos": "ld",
-                "id": 1442,
+                "id": 28387,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Conor Timmins",
