@@ -1,19 +1,5 @@
 [
     {
-        "id": 2025030321,
-        "gameDate": "2026-05-20",
-        "startTimeUTC": "2026-05-21T00:00:00Z",
-        "homeTeam": "Avalanche",
-        "awayTeam": "Golden Knights",
-        "homeTeamAbbrev": "COL",
-        "awayTeamAbbrev": "VGK",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "ESPN"
-    },
-    {
         "id": 2025030311,
         "gameDate": "2026-05-21",
         "startTimeUTC": "2026-05-22T00:00:00Z",
@@ -26,5 +12,19 @@
         "awayGoalieConfirmed": "Jakub Dobes",
         "awayGoalieStatus": "Unconfirmed",
         "tvNetwork": "TNT"
+    },
+    {
+        "id": 2025030322,
+        "gameDate": "2026-05-22",
+        "startTimeUTC": "2026-05-23T00:00:00Z",
+        "homeTeam": "Avalanche",
+        "awayTeam": "Golden Knights",
+        "homeTeamAbbrev": "COL",
+        "awayTeamAbbrev": "VGK",
+        "homeGoalieConfirmed": "Scott Wedgewood",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Carter Hart",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "ESPN"
     }
 ]
