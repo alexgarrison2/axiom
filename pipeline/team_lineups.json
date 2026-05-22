@@ -7,7 +7,7 @@
                 "pos": "lw",
                 "id": 2679,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Nathan MacKinnon",
@@ -33,7 +33,7 @@
                 "pos": "lw",
                 "id": 2142,
                 "ppUnit": 2,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Brock Nelson",
@@ -49,7 +49,7 @@
                 "pos": "rw",
                 "id": 2804,
                 "ppUnit": 1,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -75,7 +75,7 @@
                 "pos": "rw",
                 "id": 3818,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -132,28 +132,28 @@
                 "movement": null
             },
             {
-                "name": "Brent Burns",
-                "number": 84,
-                "pos": "rd",
-                "id": 792,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Jack Ahcan",
-                "number": 15,
-                "pos": "ld",
-                "id": 27178,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Josh Manson",
                 "number": 42,
                 "pos": "rd",
                 "id": 2400,
+                "ppUnit": null,
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Brent Burns",
+                "number": 84,
+                "pos": "ld",
+                "id": 792,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Jack Ahcan",
+                "number": 15,
+                "pos": "rd",
+                "id": 27178,
                 "ppUnit": null,
                 "movement": null
             }
