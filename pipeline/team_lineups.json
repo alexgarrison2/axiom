@@ -274,48 +274,48 @@
                 "movement": null
             },
             {
-                "name": "Alexandre Carrier",
-                "number": 45,
-                "pos": "rd",
-                "id": 2732,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d2": [
-            {
-                "name": "Lane Hutson",
-                "number": 48,
-                "pos": "ld",
-                "id": 33307,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
                 "name": "Noah Dobson",
                 "number": 8,
                 "pos": "rd",
                 "id": 4789,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
-        "d3": [
+        "d2": [
             {
                 "name": "Jayden Struble",
                 "number": 47,
                 "pos": "ld",
                 "id": 30435,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
+            {
+                "name": "Lane Hutson",
+                "number": 48,
+                "pos": "rd",
+                "id": 33307,
+                "ppUnit": 1,
+                "movement": null
+            }
+        ],
+        "d3": [
             {
                 "name": "Kaiden Guhle",
                 "number": 21,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 32947,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Alexandre Carrier",
+                "number": 45,
+                "pos": "rd",
+                "id": 2732,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "ir": [
