@@ -2,11 +2,11 @@
     "COL": {
         "f1": [
             {
-                "name": "Artturi Lehkonen",
-                "number": 62,
+                "name": "Gabriel Landeskog",
+                "number": 92,
                 "pos": "lw",
-                "id": 2679,
-                "ppUnit": 2,
+                "id": 1763,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -18,22 +18,22 @@
                 "movement": null
             },
             {
-                "name": "Gabriel Landeskog",
-                "number": 92,
+                "name": "Martin Necas",
+                "number": 88,
                 "pos": "rw",
-                "id": 1763,
+                "id": 2804,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
             {
-                "name": "Valeri Nichushkin",
-                "number": 13,
+                "name": "Artturi Lehkonen",
+                "number": 62,
                 "pos": "lw",
-                "id": 2142,
+                "id": 2679,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Brock Nelson",
@@ -44,12 +44,12 @@
                 "movement": null
             },
             {
-                "name": "Martin Necas",
-                "number": 88,
+                "name": "Nicolas Roy",
+                "number": 10,
                 "pos": "rw",
-                "id": 2804,
-                "ppUnit": 1,
-                "movement": null
+                "id": 3818,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "f3": [
@@ -70,12 +70,12 @@
                 "movement": null
             },
             {
-                "name": "Nicolas Roy",
-                "number": 10,
+                "name": "Valeri Nichushkin",
+                "number": 13,
                 "pos": "rw",
-                "id": 3818,
-                "ppUnit": null,
-                "movement": null
+                "id": 2142,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -132,30 +132,30 @@
                 "movement": null
             },
             {
+                "name": "Brent Burns",
+                "number": 84,
+                "pos": "rd",
+                "id": 792,
+                "ppUnit": 2,
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Nick Blankenburg",
+                "number": 37,
+                "pos": "ld",
+                "id": 36299,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
                 "name": "Josh Manson",
                 "number": 42,
                 "pos": "rd",
                 "id": 2400,
                 "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Brent Burns",
-                "number": 84,
-                "pos": "ld",
-                "id": 792,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Jack Ahcan",
-                "number": 15,
-                "pos": "rd",
-                "id": 27178,
-                "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "ir": [
