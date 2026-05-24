@@ -18,12 +18,12 @@
                 "movement": null
             },
             {
-                "name": "Pavel Dorofeyev",
-                "number": 16,
+                "name": "Mark Stone",
+                "number": 61,
                 "pos": "rw",
-                "id": 30622,
+                "id": 1779,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -54,19 +54,19 @@
         ],
         "f3": [
             {
-                "name": "Brandon Saad",
-                "number": 20,
+                "name": "Pavel Dorofeyev",
+                "number": 16,
                 "pos": "lw",
-                "id": 1785,
-                "ppUnit": null,
-                "movement": null
+                "id": 30622,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Tomas Hertl",
                 "number": 48,
                 "pos": "c",
                 "id": 2125,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -128,7 +128,7 @@
                 "number": 15,
                 "pos": "ld",
                 "id": 2473,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -164,14 +164,6 @@
                 "number": 3,
                 "pos": "ir1",
                 "id": 3787,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Mark Stone",
-                "number": 61,
-                "pos": "ir2",
-                "id": 1779,
                 "ppUnit": null,
                 "movement": null
             }
