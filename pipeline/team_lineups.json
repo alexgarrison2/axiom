@@ -18,10 +18,10 @@
                 "movement": null
             },
             {
-                "name": "Mark Stone",
-                "number": 61,
+                "name": "Pavel Dorofeyev",
+                "number": 16,
                 "pos": "rw",
-                "id": 1779,
+                "id": 30622,
                 "ppUnit": 1,
                 "movement": "up"
             }
@@ -54,17 +54,9 @@
         ],
         "f3": [
             {
-                "name": "Pavel Dorofeyev",
-                "number": 16,
-                "pos": "lw",
-                "id": 30622,
-                "ppUnit": 1,
-                "movement": "down"
-            },
-            {
                 "name": "Tomas Hertl",
                 "number": 48,
-                "pos": "c",
+                "pos": "lw",
                 "id": 2125,
                 "ppUnit": 2,
                 "movement": null
@@ -72,10 +64,18 @@
             {
                 "name": "Colton Sissons",
                 "number": 10,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2030,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Mark Stone",
+                "number": 61,
+                "pos": "rw",
+                "id": 1779,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -142,18 +142,18 @@
         ],
         "d3": [
             {
-                "name": "Kaedan Korczak",
-                "number": 6,
+                "name": "Dylan Coghlan",
+                "number": 52,
                 "pos": "ld",
-                "id": 28524,
+                "id": 4601,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Dylan Coghlan",
-                "number": 52,
+                "name": "Kaedan Korczak",
+                "number": 6,
                 "pos": "rd",
-                "id": 4601,
+                "id": 28524,
                 "ppUnit": null,
                 "movement": null
             }
@@ -172,12 +172,12 @@
     "COL": {
         "f1": [
             {
-                "name": "Gabriel Landeskog",
-                "number": 92,
+                "name": "Artturi Lehkonen",
+                "number": 62,
                 "pos": "lw",
-                "id": 1763,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2679,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Nathan MacKinnon",
@@ -188,22 +188,22 @@
                 "movement": null
             },
             {
-                "name": "Martin Necas",
-                "number": 88,
+                "name": "Gabriel Landeskog",
+                "number": 92,
                 "pos": "rw",
-                "id": 2804,
+                "id": 1763,
                 "ppUnit": 1,
                 "movement": null
             }
         ],
         "f2": [
             {
-                "name": "Artturi Lehkonen",
-                "number": 62,
+                "name": "Nazem Kadri",
+                "number": 91,
                 "pos": "lw",
-                "id": 2679,
-                "ppUnit": 2,
-                "movement": null
+                "id": 1425,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Brock Nelson",
@@ -214,12 +214,12 @@
                 "movement": null
             },
             {
-                "name": "Nicolas Roy",
-                "number": 10,
+                "name": "Martin Necas",
+                "number": 88,
                 "pos": "rw",
-                "id": 3818,
-                "ppUnit": null,
-                "movement": null
+                "id": 2804,
+                "ppUnit": 1,
+                "movement": "down"
             }
         ],
         "f3": [
@@ -232,12 +232,12 @@
                 "movement": null
             },
             {
-                "name": "Nazem Kadri",
-                "number": 91,
+                "name": "Nicolas Roy",
+                "number": 10,
                 "pos": "c",
-                "id": 1425,
-                "ppUnit": 1,
-                "movement": null
+                "id": 3818,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Valeri Nichushkin",
@@ -280,16 +280,16 @@
                 "number": 7,
                 "pos": "ld",
                 "id": 2874,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Sam Malinski",
-                "number": 70,
+                "name": "Cale Makar",
+                "number": 8,
                 "pos": "rd",
-                "id": 37993,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2788,
+                "ppUnit": 1,
+                "movement": "up"
             }
         ],
         "d2": [
@@ -302,40 +302,30 @@
                 "movement": null
             },
             {
-                "name": "Brent Burns",
-                "number": 84,
+                "name": "Sam Malinski",
+                "number": 70,
                 "pos": "rd",
-                "id": 792,
+                "id": 37993,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d3": [
             {
-                "name": "Nick Blankenburg",
-                "number": 37,
+                "name": "Josh Manson",
+                "number": 42,
                 "pos": "ld",
-                "id": 36299,
+                "id": 2400,
                 "ppUnit": null,
                 "movement": null
             },
             {
-                "name": "Josh Manson",
-                "number": 42,
+                "name": "Brent Burns",
+                "number": 84,
                 "pos": "rd",
-                "id": 2400,
+                "id": 792,
                 "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "ir": [
-            {
-                "name": "Cale Makar",
-                "number": 8,
-                "pos": "ir1",
-                "id": 2788,
-                "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ]
     },
