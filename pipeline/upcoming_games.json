@@ -1,19 +1,5 @@
 [
     {
-        "id": 2025030323,
-        "gameDate": "2026-05-24",
-        "startTimeUTC": "2026-05-25T00:00:00Z",
-        "homeTeam": "Golden Knights",
-        "awayTeam": "Avalanche",
-        "homeTeamAbbrev": "VGK",
-        "awayTeamAbbrev": "COL",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "ESPN"
-    },
-    {
         "id": 2025030313,
         "gameDate": "2026-05-25",
         "startTimeUTC": "2026-05-26T00:00:00Z",
@@ -26,5 +12,19 @@
         "awayGoalieConfirmed": "Frederik Andersen",
         "awayGoalieStatus": "Unconfirmed",
         "tvNetwork": "TNT"
+    },
+    {
+        "id": 2025030324,
+        "gameDate": "2026-05-26",
+        "startTimeUTC": "2026-05-27T01:00:00Z",
+        "homeTeam": "Golden Knights",
+        "awayTeam": "Avalanche",
+        "homeTeamAbbrev": "VGK",
+        "awayTeamAbbrev": "COL",
+        "homeGoalieConfirmed": "Carter Hart",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Scott Wedgewood",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "ESPN"
     }
 ]
