@@ -88,12 +88,12 @@
                 "movement": null
             },
             {
-                "name": "Oliver Kapanen",
-                "number": null,
+                "name": "Joe Veleno",
+                "number": 90,
                 "pos": "c",
-                "id": 34678,
+                "id": 26350,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Kirby Dach",
@@ -388,7 +388,7 @@
                 "number": 48,
                 "pos": "lw",
                 "id": 2125,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -448,7 +448,7 @@
                 "number": 27,
                 "pos": "rd",
                 "id": 2157,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -575,7 +575,7 @@
                 "pos": "rw",
                 "id": 2142,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -665,7 +665,7 @@
                 "pos": "ir1",
                 "id": 2142,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
@@ -5055,7 +5055,7 @@
                 "pos": "c",
                 "id": 2131,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Nicholas Robertson",
@@ -5227,7 +5227,7 @@
                 "pos": "ir7",
                 "id": 2131,
                 "ppUnit": 2,
-                "movement": "down"
+                "movement": null
             }
         ]
     },
