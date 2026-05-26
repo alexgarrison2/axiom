@@ -1,19 +1,5 @@
 [
     {
-        "id": 2025030313,
-        "gameDate": "2026-05-25",
-        "startTimeUTC": "2026-05-26T00:00:00Z",
-        "homeTeam": "Canadiens",
-        "awayTeam": "Hurricanes",
-        "homeTeamAbbrev": "MTL",
-        "awayTeamAbbrev": "CAR",
-        "homeGoalieConfirmed": null,
-        "homeGoalieStatus": "Unconfirmed",
-        "awayGoalieConfirmed": null,
-        "awayGoalieStatus": "Unconfirmed",
-        "tvNetwork": "TNT"
-    },
-    {
         "id": 2025030324,
         "gameDate": "2026-05-26",
         "startTimeUTC": "2026-05-27T01:00:00Z",
@@ -26,5 +12,19 @@
         "awayGoalieConfirmed": "Scott Wedgewood",
         "awayGoalieStatus": "Unconfirmed",
         "tvNetwork": "ESPN"
+    },
+    {
+        "id": 2025030314,
+        "gameDate": "2026-05-27",
+        "startTimeUTC": "2026-05-28T00:00:00Z",
+        "homeTeam": "Canadiens",
+        "awayTeam": "Hurricanes",
+        "homeTeamAbbrev": "MTL",
+        "awayTeamAbbrev": "CAR",
+        "homeGoalieConfirmed": "Jakub Dobes",
+        "homeGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Frederik Andersen",
+        "awayGoalieStatus": "Unconfirmed",
+        "tvNetwork": "TNT"
     }
 ]
