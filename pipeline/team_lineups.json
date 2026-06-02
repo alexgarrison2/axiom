@@ -302,28 +302,18 @@
         ],
         "d3": [
             {
-                "name": "Dylan Coghlan",
-                "number": 52,
-                "pos": "ld",
-                "id": 4601,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Kaedan Korczak",
-                "number": 6,
-                "pos": "rd",
-                "id": 28524,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "ir": [
-            {
                 "name": "Jeremy Lauzon",
                 "number": 3,
-                "pos": "ir1",
+                "pos": "ld",
                 "id": 3787,
+                "ppUnit": null,
+                "movement": "up"
+            },
+            {
+                "name": "Dylan Coghlan",
+                "number": 52,
+                "pos": "rd",
+                "id": 4601,
                 "ppUnit": null,
                 "movement": null
             }
