@@ -128,7 +128,7 @@
                 "number": 79,
                 "pos": "ld",
                 "id": 4812,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -154,7 +154,7 @@
                 "number": 21,
                 "pos": "rd",
                 "id": 32897,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ]
@@ -966,12 +966,12 @@
                 "movement": null
             },
             {
-                "name": "Ross Johnston",
-                "number": 44,
+                "name": "Ian Moore",
+                "number": null,
                 "pos": "rw",
-                "id": 3759,
+                "id": 31897,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -1020,12 +1020,12 @@
                 "movement": null
             },
             {
-                "name": "Ian Moore",
-                "number": null,
+                "name": "Radko Gudas",
+                "number": 7,
                 "pos": "rd",
-                "id": 31897,
+                "id": 1366,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "ir": [
