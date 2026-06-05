@@ -17624,5 +17624,33 @@
     "actualWinner": "Hurricanes",
     "isCorrect": true,
     "brierScore": 0.1096
+  },
+  {
+    "date": "2026-06-02",
+    "homeTeam": "Hurricanes",
+    "awayTeam": "Golden Knights",
+    "homeScore": 4,
+    "awayScore": 5,
+    "homeXg": 3.32,
+    "awayXg": 3.0,
+    "homeWinProb": 50.8,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Golden Knights",
+    "isCorrect": false,
+    "brierScore": 0.2581
+  },
+  {
+    "date": "2026-06-04",
+    "homeTeam": "Hurricanes",
+    "awayTeam": "Golden Knights",
+    "homeScore": 4,
+    "awayScore": 3,
+    "homeXg": 3.32,
+    "awayXg": 3.0,
+    "homeWinProb": 50.8,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Hurricanes",
+    "isCorrect": true,
+    "brierScore": 0.2421
   }
 ]
