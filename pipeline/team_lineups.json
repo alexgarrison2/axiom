@@ -1820,10 +1820,10 @@
     "PHI": {
         "f1": [
             {
-                "name": "Alex Bump",
-                "number": 20,
+                "name": "Travis Konecny",
+                "number": 11,
                 "pos": "lw",
-                "id": 34874,
+                "id": 2498,
                 "ppUnit": 1,
                 "movement": null
             },
@@ -1836,12 +1836,12 @@
                 "movement": null
             },
             {
-                "name": "Travis Konecny",
-                "number": 11,
+                "name": "Porter Martone",
+                "number": null,
                 "pos": "rw",
-                "id": 2498,
+                "id": 37366,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1862,48 +1862,48 @@
                 "movement": null
             },
             {
-                "name": "Porter Martone",
-                "number": null,
+                "name": "Owen Tippett",
+                "number": 74,
                 "pos": "rw",
-                "id": 37366,
+                "id": 2786,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Carl Grundstrom",
-                "number": 91,
+                "name": "Alex Bump",
+                "number": 20,
                 "pos": "lw",
-                "id": 2875,
+                "id": 34874,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Denver Barkey",
-                "number": null,
+                "name": "Noah Cates",
+                "number": 27,
                 "pos": "c",
-                "id": 35098,
+                "id": 28087,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Jett Luchanko",
-                "number": 17,
+                "name": "Matvei Michkov",
+                "number": 39,
                 "pos": "rw",
-                "id": 37264,
+                "id": 33997,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
             {
-                "name": "Luke Glendening",
-                "number": 41,
+                "name": "Denver Barkey",
+                "number": null,
                 "pos": "lw",
-                "id": 2174,
+                "id": 35098,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Sean Couturier",
@@ -1936,7 +1936,7 @@
                 "number": 55,
                 "pos": "rd",
                 "id": 2140,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -1946,7 +1946,7 @@
                 "number": 8,
                 "pos": "ld",
                 "id": 30422,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -1968,46 +1968,12 @@
                 "movement": null
             },
             {
-                "name": "Oliver Bonk",
-                "number": 59,
+                "name": "David Jiricek",
+                "number": null,
                 "pos": "rd",
-                "id": 35107,
+                "id": 34374,
                 "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "ir": [
-            {
-                "name": "Rodrigo Abols",
-                "number": 18,
-                "pos": "ir1",
-                "id": 26850,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Nikita Grebenkin",
-                "number": 29,
-                "pos": "ir2",
-                "id": 38116,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Owen Tippett",
-                "number": 74,
-                "pos": "ir3",
-                "id": 2786,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Noah Cates",
-                "number": 27,
-                "pos": "ir4",
-                "id": 28087,
-                "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ]
     },
