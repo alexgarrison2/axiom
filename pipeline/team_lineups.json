@@ -1606,12 +1606,12 @@
                 "movement": null
             },
             {
-                "name": "Anze Kopitar",
-                "number": 11,
+                "name": "Alex Laferriere",
+                "number": 14,
                 "pos": "c",
-                "id": 758,
-                "ppUnit": 1,
-                "movement": null
+                "id": 32954,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Adrian Kempe",
@@ -1624,44 +1624,44 @@
         ],
         "f2": [
             {
-                "name": "Trevor Moore",
-                "number": 12,
+                "name": "Kevin Fiala",
+                "number": 22,
                 "pos": "lw",
-                "id": 2878,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2455,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Quinton Byfield",
                 "number": 55,
                 "pos": "c",
                 "id": 29855,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             },
             {
-                "name": "Alex Laferriere",
-                "number": 14,
+                "name": "Trevor Moore",
+                "number": 12,
                 "pos": "rw",
-                "id": 32954,
-                "ppUnit": 1,
+                "id": 2878,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
         "f3": [
             {
-                "name": "Alex Turcotte",
-                "number": 15,
+                "name": "Joel Armia",
+                "number": 40,
                 "pos": "lw",
-                "id": 30420,
-                "ppUnit": null,
-                "movement": null
+                "id": 1952,
+                "ppUnit": 2,
+                "movement": "new"
             },
             {
-                "name": "Scott Laughton",
-                "number": 24,
+                "name": "Alex Turcotte",
+                "number": 15,
                 "pos": "c",
-                "id": 2018,
+                "id": 30420,
                 "ppUnit": 2,
                 "movement": null
             },
@@ -1676,12 +1676,12 @@
         ],
         "f4": [
             {
-                "name": "Jeff Malott",
-                "number": 39,
+                "name": "Andre Lee",
+                "number": null,
                 "pos": "lw",
-                "id": 34555,
+                "id": 30215,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Samuel Helenius",
@@ -1696,7 +1696,7 @@
                 "number": 52,
                 "pos": "rw",
                 "id": 36257,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -1750,16 +1750,6 @@
                 "number": 44,
                 "pos": "rd",
                 "id": 2052,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "ir": [
-            {
-                "name": "Kevin Fiala",
-                "number": 22,
-                "pos": "ir1",
-                "id": 2455,
                 "ppUnit": null,
                 "movement": null
             }
