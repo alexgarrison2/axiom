@@ -129,7 +129,7 @@
                 "pos": "ld",
                 "id": 2466,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Sam Malinski",
@@ -147,7 +147,7 @@
                 "pos": "ld",
                 "id": 2400,
                 "ppUnit": null,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Brent Burns",
@@ -155,7 +155,7 @@
                 "pos": "rd",
                 "id": 792,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             }
         ]
     },
@@ -2443,7 +2443,7 @@
                 "pos": "rd",
                 "id": 2664,
                 "ppUnit": 2,
-                "movement": "new"
+                "movement": null
             }
         ],
         "ir": [
@@ -4190,11 +4190,29 @@
         ],
         "d2": [
             {
+                "name": "Olen Zellweger",
+                "number": 51,
+                "pos": "ld",
+                "id": 34623,
+                "ppUnit": null,
+                "movement": "new"
+            },
+            {
                 "name": "Owen Power",
                 "number": 25,
-                "pos": "ld",
+                "pos": "rd",
                 "id": 30051,
                 "ppUnit": 2,
+                "movement": null
+            }
+        ],
+        "d3": [
+            {
+                "name": "Conor Timmins",
+                "number": 21,
+                "pos": "ld",
+                "id": 2797,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -4203,25 +4221,7 @@
                 "pos": "rd",
                 "id": 29897,
                 "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Zach Metsa",
-                "number": 73,
-                "pos": "ld",
-                "id": 28387,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Conor Timmins",
-                "number": 21,
-                "pos": "rd",
-                "id": 2797,
-                "ppUnit": null,
-                "movement": null
+                "movement": "down"
             }
         ],
         "ir": [
