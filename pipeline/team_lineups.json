@@ -690,7 +690,7 @@
                 "number": 64,
                 "pos": "c",
                 "id": 1934,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -704,11 +704,11 @@
         ],
         "f3": [
             {
-                "name": "Mason McTavish",
-                "number": 23,
+                "name": "Cutter Gauthier",
+                "number": 61,
                 "pos": "lw",
-                "id": 30834,
-                "ppUnit": 2,
+                "id": 33248,
+                "ppUnit": 1,
                 "movement": null
             },
             {
@@ -720,22 +720,22 @@
                 "movement": null
             },
             {
-                "name": "Cutter Gauthier",
-                "number": 61,
+                "name": "Sam Colangelo",
+                "number": 12,
                 "pos": "rw",
-                "id": 33248,
-                "ppUnit": 2,
-                "movement": null
+                "id": 32857,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "f4": [
             {
-                "name": "Frank Vatrano",
-                "number": 77,
+                "name": "Nikita Nesterenko",
+                "number": 13,
                 "pos": "lw",
-                "id": 2545,
+                "id": 30726,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Tim Washe",
@@ -746,11 +746,11 @@
                 "movement": null
             },
             {
-                "name": "Ian Moore",
-                "number": null,
+                "name": "Frank Vatrano",
+                "number": 77,
                 "pos": "rw",
-                "id": 31897,
-                "ppUnit": null,
+                "id": 2545,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -778,16 +778,16 @@
                 "number": 34,
                 "pos": "ld",
                 "id": 34372,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Olen Zellweger",
-                "number": 51,
+                "name": "Ian Moore",
+                "number": null,
                 "pos": "rd",
-                "id": 34623,
-                "ppUnit": 2,
-                "movement": null
+                "id": 31897,
+                "ppUnit": null,
+                "movement": "up"
             }
         ],
         "d3": [
@@ -1729,7 +1729,7 @@
                 "pos": "rw",
                 "id": 37264,
                 "ppUnit": null,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -1790,12 +1790,12 @@
     "VGK": {
         "f1": [
             {
-                "name": "Pavel Dorofeyev",
-                "number": 16,
+                "name": "Ivan Barbashev",
+                "number": 49,
                 "pos": "lw",
-                "id": 30622,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2737,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Jack Eichel",
@@ -1816,20 +1816,20 @@
         ],
         "f2": [
             {
-                "name": "Ivan Barbashev",
-                "number": 49,
+                "name": "Brett Howden",
+                "number": 21,
                 "pos": "lw",
-                "id": 2737,
+                "id": 2660,
                 "ppUnit": 2,
                 "movement": null
             },
             {
-                "name": "Brett Howden",
-                "number": 21,
+                "name": "William Karlsson",
+                "number": 71,
                 "pos": "c",
-                "id": 2660,
+                "id": 2387,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Mitch Marner",
@@ -1842,38 +1842,38 @@
         ],
         "f3": [
             {
+                "name": "Braeden Bowman",
+                "number": 42,
+                "pos": "lw",
+                "id": 30925,
+                "ppUnit": null,
+                "movement": "up"
+            },
+            {
                 "name": "Tomas Hertl",
                 "number": 48,
-                "pos": "lw",
+                "pos": "c",
                 "id": 2125,
                 "ppUnit": 1,
                 "movement": null
             },
             {
-                "name": "Colton Sissons",
-                "number": 10,
-                "pos": "c",
-                "id": 2030,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Reilly Smith",
-                "number": 19,
+                "name": "Alexander Holtz",
+                "number": 26,
                 "pos": "rw",
-                "id": 1853,
-                "ppUnit": null,
-                "movement": null
+                "id": 33025,
+                "ppUnit": 2,
+                "movement": "new"
             }
         ],
         "f4": [
             {
-                "name": "Cole Smith",
-                "number": 36,
+                "name": "Kai Uchacz",
+                "number": null,
                 "pos": "lw",
-                "id": 32926,
+                "id": 32835,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Nic Dowd",
@@ -1884,12 +1884,12 @@
                 "movement": null
             },
             {
-                "name": "Braeden Bowman",
-                "number": 42,
+                "name": "Keegan Kolesar",
+                "number": 55,
                 "pos": "rw",
-                "id": 30925,
+                "id": 3790,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1906,7 +1906,7 @@
                 "number": 27,
                 "pos": "rd",
                 "id": 2157,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "movement": null
             }
         ],
@@ -1916,25 +1916,7 @@
                 "number": 15,
                 "pos": "ld",
                 "id": 2473,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Rasmus Andersson",
-                "number": 4,
-                "pos": "rd",
-                "id": 2762,
                 "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Jeremy Lauzon",
-                "number": 3,
-                "pos": "ld",
-                "id": 3787,
-                "ppUnit": null,
                 "movement": null
             },
             {
@@ -1943,29 +1925,37 @@
                 "pos": "rd",
                 "id": 28524,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
-        "ir": [
+        "d3": [
             {
-                "name": "William Karlsson",
-                "number": 71,
-                "pos": "ir1",
-                "id": 2387,
+                "name": "Jeremy Davies",
+                "number": null,
+                "pos": "ld",
+                "id": 23859,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
+            },
+            {
+                "name": "Jaycob Megna",
+                "number": null,
+                "pos": "rd",
+                "id": 2775,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
     "BOS": {
         "f1": [
             {
-                "name": "Marat Khusnutdinov",
-                "number": 92,
+                "name": "JJ Peterka",
+                "number": 77,
                 "pos": "lw",
-                "id": 31738,
+                "id": 31777,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Pavel Zacha",
@@ -2012,12 +2002,12 @@
         ],
         "f3": [
             {
-                "name": "James Hagens",
-                "number": 44,
+                "name": "Marat Khusnutdinov",
+                "number": 92,
                 "pos": "lw",
-                "id": 37375,
+                "id": 31738,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Fraser Minten",
@@ -3042,12 +3032,12 @@
                 "movement": null
             },
             {
-                "name": "Arthur Kaliyev",
-                "number": 34,
+                "name": "Andre Burakovsky",
+                "number": 28,
                 "pos": "rw",
-                "id": 29140,
+                "id": 2154,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -3268,12 +3258,12 @@
     "NYR": {
         "f1": [
             {
-                "name": "Gabriel Perreault",
-                "number": 94,
+                "name": "Pavel Dorofeyev",
+                "number": 16,
                 "pos": "lw",
-                "id": 35165,
-                "ppUnit": 2,
-                "movement": null
+                "id": 30622,
+                "ppUnit": 1,
+                "movement": "new"
             },
             {
                 "name": "Mika Zibanejad",
@@ -3288,7 +3278,7 @@
                 "number": 13,
                 "pos": "rw",
                 "id": 28771,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "movement": null
             }
         ],
@@ -3320,12 +3310,12 @@
         ],
         "f3": [
             {
-                "name": "Tye Kartye",
-                "number": 24,
+                "name": "Gabriel Perreault",
+                "number": 94,
                 "pos": "lw",
-                "id": 29846,
-                "ppUnit": null,
-                "movement": null
+                "id": 35165,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Noah Laba",
@@ -3336,22 +3326,22 @@
                 "movement": null
             },
             {
-                "name": "Jaroslav Chmelar",
-                "number": 49,
+                "name": "Taylor Raddysh",
+                "number": 14,
                 "pos": "rw",
-                "id": 34742,
+                "id": 3922,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
             {
-                "name": "Taylor Raddysh",
-                "number": 14,
+                "name": "Tye Kartye",
+                "number": 24,
                 "pos": "lw",
-                "id": 3922,
-                "ppUnit": 2,
-                "movement": null
+                "id": 29846,
+                "ppUnit": null,
+                "movement": "down"
             },
             {
                 "name": "Adam Edstrom",
@@ -3484,7 +3474,7 @@
                 "number": 76,
                 "pos": "lw",
                 "id": 35088,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3506,12 +3496,12 @@
         ],
         "f4": [
             {
-                "name": "Andrew Mangiapane",
-                "number": 88,
+                "name": "Jordan Greenway",
+                "number": 12,
                 "pos": "lw",
-                "id": 4622,
+                "id": 4644,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Ryan Donato",
@@ -3522,11 +3512,11 @@
                 "movement": null
             },
             {
-                "name": "Andre Burakovsky",
-                "number": 28,
+                "name": "Andrew Mangiapane",
+                "number": 88,
                 "pos": "rw",
-                "id": 2154,
-                "ppUnit": 2,
+                "id": 4622,
+                "ppUnit": null,
                 "movement": null
             }
         ],
@@ -3748,20 +3738,20 @@
     "UTA": {
         "f1": [
             {
-                "name": "Lawson Crouse",
-                "number": 67,
-                "pos": "lw",
-                "id": 2476,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
                 "name": "Nick Schmaltz",
                 "number": 8,
-                "pos": "c",
+                "pos": "lw",
                 "id": 2678,
                 "ppUnit": 1,
                 "movement": null
+            },
+            {
+                "name": "Barrett Hayton",
+                "number": 27,
+                "pos": "c",
+                "id": 4796,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Clayton Keller",
@@ -3774,12 +3764,12 @@
         ],
         "f2": [
             {
-                "name": "JJ Peterka",
-                "number": 77,
+                "name": "Daniil But",
+                "number": 19,
                 "pos": "lw",
-                "id": 31777,
+                "id": 38459,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Logan Cooley",
@@ -3800,12 +3790,12 @@
         ],
         "f3": [
             {
-                "name": "Daniil But",
-                "number": 19,
+                "name": "Lawson Crouse",
+                "number": 67,
                 "pos": "lw",
-                "id": 38459,
+                "id": 2476,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Jack McBain",
@@ -3831,14 +3821,6 @@
                 "pos": "lw",
                 "id": 2694,
                 "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Barrett Hayton",
-                "number": 27,
-                "pos": "c",
-                "id": 4796,
-                "ppUnit": 2,
                 "movement": null
             },
             {
@@ -3900,8 +3882,18 @@
                 "number": 50,
                 "pos": "rd",
                 "id": 27104,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
+            }
+        ],
+        "d4": [
+            {
+                "name": "Maveric Lamoureux",
+                "number": null,
+                "pos": "rd",
+                "id": 34080,
+                "ppUnit": null,
+                "movement": "new"
             }
         ]
     },
@@ -4238,12 +4230,12 @@
     "FLA": {
         "f1": [
             {
-                "name": "Carter Verhaeghe",
-                "number": 23,
+                "name": "Brady Tkachuk",
+                "number": 7,
                 "pos": "lw",
-                "id": 2818,
-                "ppUnit": 2,
-                "movement": null
+                "id": 4790,
+                "ppUnit": 1,
+                "movement": "up"
             },
             {
                 "name": "Aleksander Barkov",
@@ -4264,12 +4256,12 @@
         ],
         "f2": [
             {
-                "name": "Brady Tkachuk",
-                "number": 7,
+                "name": "Carter Verhaeghe",
+                "number": 23,
                 "pos": "lw",
-                "id": 4790,
-                "ppUnit": 1,
-                "movement": null
+                "id": 2818,
+                "ppUnit": 2,
+                "movement": "down"
             },
             {
                 "name": "Sam Bennett",
@@ -4602,12 +4594,12 @@
                 "movement": null
             },
             {
-                "name": "Pius Suter",
-                "number": 24,
+                "name": "Mason McTavish",
+                "number": 23,
                 "pos": "c",
-                "id": 32940,
-                "ppUnit": null,
-                "movement": null
+                "id": 30834,
+                "ppUnit": 2,
+                "movement": "new"
             },
             {
                 "name": "Pavel Buchnevich",
@@ -4632,7 +4624,7 @@
                 "number": 54,
                 "pos": "c",
                 "id": 35010,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "movement": null
             },
             {
@@ -4654,12 +4646,12 @@
                 "movement": null
             },
             {
-                "name": "Jack Finley",
-                "number": 62,
+                "name": "Pius Suter",
+                "number": 24,
                 "pos": "c",
-                "id": 29594,
+                "id": 32940,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Jonatan Berggren",
