@@ -3362,12 +3362,12 @@
                 "movement": null
             },
             {
-                "name": "Adam Edstrom",
-                "number": 84,
+                "name": "Juuso Parssinen",
+                "number": 16,
                 "pos": "c",
-                "id": 30691,
+                "id": 30659,
                 "ppUnit": null,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Matt Rempe",
@@ -4512,30 +4512,12 @@
         ],
         "d1": [
             {
-                "name": "Morgan Rielly",
-                "number": 44,
-                "pos": "ld",
-                "id": 1935,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Brandon Carlo",
-                "number": 25,
-                "pos": "rd",
-                "id": 2692,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "d2": [
-            {
                 "name": "Oliver Ekman-Larsson",
                 "number": 95,
                 "pos": "ld",
                 "id": 1172,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Darren Raddysh",
@@ -4543,17 +4525,17 @@
                 "pos": "rd",
                 "id": 4756,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             }
         ],
-        "d3": [
+        "d2": [
             {
                 "name": "Jake McCabe",
                 "number": 22,
                 "pos": "ld",
                 "id": 2349,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Chris Tanev",
@@ -4561,7 +4543,25 @@
                 "pos": "rd",
                 "id": 1494,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Morgan Rielly",
+                "number": 44,
+                "pos": "ld",
+                "id": 1935,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Emil Andrae",
+                "number": null,
+                "pos": "rd",
+                "id": 33033,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "ir": [
@@ -4708,12 +4708,12 @@
                 "movement": null
             },
             {
-                "name": "Logan Mailloux",
-                "number": 23,
+                "name": "Brandon Carlo",
+                "number": 25,
                 "pos": "rd",
-                "id": 30862,
-                "ppUnit": 2,
-                "movement": null
+                "id": 2692,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d3": [
@@ -4726,12 +4726,12 @@
                 "movement": null
             },
             {
-                "name": "Matthew Kessel",
-                "number": null,
+                "name": "Logan Mailloux",
+                "number": 23,
                 "pos": "rd",
-                "id": 30737,
-                "ppUnit": null,
-                "movement": null
+                "id": 30862,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ]
     },
