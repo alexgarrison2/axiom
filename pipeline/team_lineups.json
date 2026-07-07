@@ -4488,38 +4488,12 @@
         ],
         "f3": [
             {
-                "name": "Nick Paul",
-                "number": 20,
-                "pos": "lw",
-                "id": 2357,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Colton Sissons",
-                "number": 10,
-                "pos": "c",
-                "id": 2030,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Brandon Duhaime",
-                "number": 22,
-                "pos": "rw",
-                "id": 26984,
-                "ppUnit": null,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
                 "name": "Dakota Joshua",
                 "number": 81,
                 "pos": "lw",
                 "id": 25020,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Teddy Blueger",
@@ -4527,7 +4501,7 @@
                 "pos": "c",
                 "id": 3798,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Easton Cowan",
@@ -4535,7 +4509,33 @@
                 "pos": "rw",
                 "id": 35106,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Nick Paul",
+                "number": 20,
+                "pos": "lw",
+                "id": 2357,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Colton Sissons",
+                "number": 10,
+                "pos": "c",
+                "id": 2030,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Brandon Duhaime",
+                "number": 22,
+                "pos": "rw",
+                "id": 26984,
+                "ppUnit": null,
+                "movement": "down"
             }
         ],
         "d1": [
