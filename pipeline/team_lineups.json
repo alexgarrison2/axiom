@@ -3466,12 +3466,12 @@
     "CHI": {
         "f1": [
             {
-                "name": "Tyler Bertuzzi",
-                "number": 59,
+                "name": "Frank Nazar",
+                "number": null,
                 "pos": "lw",
-                "id": 2392,
+                "id": 33280,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Connor Bedard",
@@ -3482,48 +3482,48 @@
                 "movement": "up"
             },
             {
+                "name": "Patrick Kane",
+                "number": 88,
+                "pos": "rw",
+                "id": 305,
+                "ppUnit": 1,
+                "movement": "new"
+            }
+        ],
+        "f2": [
+            {
+                "name": "Tyler Bertuzzi",
+                "number": 59,
+                "pos": "lw",
+                "id": 2392,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Anton Frondell",
+                "number": 16,
+                "pos": "c",
+                "id": 38471,
+                "ppUnit": 1,
+                "movement": null
+            },
+            {
                 "name": "Roman Kantserov",
                 "number": null,
                 "pos": "rw",
                 "id": 38906,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "down"
             }
         ],
-        "f2": [
+        "f3": [
             {
                 "name": "Teuvo Teravainen",
                 "number": 86,
                 "pos": "lw",
                 "id": 2128,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
-                "name": "Frank Nazar",
-                "number": null,
-                "pos": "c",
-                "id": 33280,
                 "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Anton Frondell",
-                "number": 16,
-                "pos": "rw",
-                "id": 38471,
-                "ppUnit": 1,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Ryan Greene",
-                "number": 20,
-                "pos": "lw",
-                "id": 31310,
-                "ppUnit": 2,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Oliver Moore",
@@ -3544,12 +3544,12 @@
         ],
         "f4": [
             {
-                "name": "Jordan Greenway",
-                "number": 12,
+                "name": "Ryan Greene",
+                "number": 20,
                 "pos": "lw",
-                "id": 4644,
+                "id": 31310,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Ryan Donato",
