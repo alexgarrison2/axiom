@@ -4124,12 +4124,12 @@
                 "movement": null
             },
             {
-                "name": "Josh Norris",
-                "number": 9,
+                "name": "Jiri Kulich",
+                "number": 20,
                 "pos": "c",
-                "id": 28056,
-                "ppUnit": 1,
-                "movement": null
+                "id": 36381,
+                "ppUnit": 2,
+                "movement": "up"
             },
             {
                 "name": "Tage Thompson",
@@ -4142,38 +4142,38 @@
         ],
         "f2": [
             {
-                "name": "Jason Zucker",
-                "number": 17,
-                "pos": "lw",
-                "id": 1898,
-                "ppUnit": 1,
-                "movement": null
-            },
-            {
-                "name": "Ryan McLeod",
-                "number": 71,
-                "pos": "c",
-                "id": 4810,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Jack Quinn",
-                "number": 22,
-                "pos": "rw",
-                "id": 32270,
-                "ppUnit": 2,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
                 "name": "Noah Ostlund",
                 "number": 86,
                 "pos": "lw",
                 "id": 36383,
                 "ppUnit": 2,
-                "movement": null
+                "movement": "up"
+            },
+            {
+                "name": "Josh Norris",
+                "number": 9,
+                "pos": "c",
+                "id": 28056,
+                "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Josh Doan",
+                "number": 91,
+                "pos": "rw",
+                "id": 32990,
+                "ppUnit": 1,
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Jason Zucker",
+                "number": 17,
+                "pos": "lw",
+                "id": 1898,
+                "ppUnit": 1,
+                "movement": "down"
             },
             {
                 "name": "Konsta Helenius",
@@ -4184,12 +4184,12 @@
                 "movement": null
             },
             {
-                "name": "Josh Doan",
-                "number": 91,
+                "name": "Jack Quinn",
+                "number": 22,
                 "pos": "rw",
-                "id": 32990,
-                "ppUnit": 1,
-                "movement": null
+                "id": 32270,
+                "ppUnit": 2,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -4202,12 +4202,12 @@
                 "movement": null
             },
             {
-                "name": "Sam Carrick",
-                "number": 39,
+                "name": "Ryan McLeod",
+                "number": 71,
                 "pos": "c",
-                "id": 1914,
+                "id": 4810,
                 "ppUnit": null,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Beck Malenstyn",
@@ -4278,7 +4278,7 @@
                 "number": 20,
                 "pos": "ir1",
                 "id": 36381,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "movement": null
             }
         ]
