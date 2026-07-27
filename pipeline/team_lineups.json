@@ -2558,12 +2558,12 @@
         ],
         "f3": [
             {
-                "name": "Cole Sillinger",
-                "number": 4,
+                "name": "Dmitri Voronkov",
+                "number": 10,
                 "pos": "lw",
-                "id": 34454,
+                "id": 31266,
                 "ppUnit": null,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Charlie Coyle",
@@ -2584,28 +2584,28 @@
         ],
         "f4": [
             {
-                "name": "Dmitri Voronkov",
-                "number": 10,
-                "pos": "lw",
-                "id": 31266,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Isac Lundestrom",
-                "number": 21,
-                "pos": "c",
-                "id": 4804,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Ryan Lomberg",
                 "number": 70,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 3905,
                 "ppUnit": null,
                 "movement": null
+            },
+            {
+                "name": "Cole Sillinger",
+                "number": 4,
+                "pos": "c",
+                "id": 34454,
+                "ppUnit": null,
+                "movement": "down"
+            },
+            {
+                "name": "Miles Wood",
+                "number": 28,
+                "pos": "rw",
+                "id": 2623,
+                "ppUnit": null,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -2660,6 +2660,16 @@
                 "id": 2651,
                 "ppUnit": null,
                 "movement": null
+            }
+        ],
+        "ir": [
+            {
+                "name": "Isac Lundestrom",
+                "number": 21,
+                "pos": "ir1",
+                "id": 4804,
+                "ppUnit": null,
+                "movement": "down"
             }
         ]
     },
