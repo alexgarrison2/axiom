@@ -14,7 +14,7 @@
       "commonName": "Senators"
     },
     "seriesScore": [
-      4,
+      3,
       0
     ],
     "games": [
@@ -68,11 +68,8 @@
         "homeTriCode": "OTT",
         "awayTriCode": "CAR",
         "tvNetwork": "TBS",
-        "score": [
-          2,
-          4
-        ],
-        "status": "final"
+        "score": null,
+        "status": "scheduled"
       },
       {
         "gameNumber": 5,
@@ -112,7 +109,7 @@
       "CAR": -3500,
       "OTT": 1150
     },
-    "status": "complete"
+    "status": "active"
   },
   {
     "seriesId": "R1_E_ATL1vATL4",
@@ -374,7 +371,7 @@
       "commonName": "Flyers"
     },
     "seriesScore": [
-      2,
+      1,
       4
     ],
     "games": [
@@ -428,11 +425,8 @@
         "homeTriCode": "PHI",
         "awayTriCode": "PIT",
         "tvNetwork": "TBS",
-        "score": [
-          2,
-          4
-        ],
-        "status": "final"
+        "score": null,
+        "status": "scheduled"
       },
       {
         "gameNumber": 5,
@@ -611,7 +605,7 @@
     },
     "seriesScore": [
       2,
-      4
+      3
     ],
     "games": [
       {
@@ -664,11 +658,8 @@
         "homeTriCode": "MIN",
         "awayTriCode": "DAL",
         "tvNetwork": "TBS",
-        "score": [
-          3,
-          2
-        ],
-        "status": "final"
+        "score": null,
+        "status": "scheduled"
       },
       {
         "gameNumber": 5,
@@ -714,7 +705,7 @@
       "DAL": 250,
       "MIN": -300
     },
-    "status": "complete"
+    "status": "active"
   },
   {
     "seriesId": "R1_W_PAC1vWC1",
