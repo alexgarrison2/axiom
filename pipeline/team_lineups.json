@@ -5116,12 +5116,12 @@
     "NSH": {
         "f1": [
             {
-                "name": "Steven Stamkos",
-                "number": 91,
+                "name": "Filip Forsberg",
+                "number": 9,
                 "pos": "lw",
-                "id": 1392,
+                "id": 2064,
                 "ppUnit": 1,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Ryan O'Reilly",
@@ -5142,26 +5142,26 @@
         ],
         "f2": [
             {
-                "name": "Filip Forsberg",
-                "number": 9,
+                "name": "Steven Stamkos",
+                "number": 91,
                 "pos": "lw",
-                "id": 2064,
+                "id": 1392,
                 "ppUnit": 1,
+                "movement": "down"
+            },
+            {
+                "name": "Mavrik Bourque",
+                "number": 22,
+                "pos": "c",
+                "id": 29958,
+                "ppUnit": 2,
                 "movement": null
             },
             {
                 "name": "Matthew Wood",
                 "number": 71,
-                "pos": "c",
-                "id": 33571,
-                "ppUnit": 2,
-                "movement": null
-            },
-            {
-                "name": "Mavrik Bourque",
-                "number": 22,
                 "pos": "rw",
-                "id": 29958,
+                "id": 33571,
                 "ppUnit": 2,
                 "movement": null
             }
@@ -5176,12 +5176,12 @@
                 "movement": null
             },
             {
-                "name": "Vitali Pinchuk",
-                "number": null,
+                "name": "Jack Drury",
+                "number": 18,
                 "pos": "c",
-                "id": 31775,
-                "ppUnit": 2,
-                "movement": null
+                "id": 27584,
+                "ppUnit": null,
+                "movement": "up"
             },
             {
                 "name": "Jonathan Marchessault",
@@ -5194,26 +5194,26 @@
         ],
         "f4": [
             {
-                "name": "Nils Hoglander",
-                "number": 21,
-                "pos": "lw",
-                "id": 30614,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
-                "name": "Jack Drury",
-                "number": 18,
-                "pos": "c",
-                "id": 27584,
-                "ppUnit": null,
-                "movement": null
-            },
-            {
                 "name": "Alex Kerfoot",
                 "number": 15,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 2833,
+                "ppUnit": null,
+                "movement": null
+            },
+            {
+                "name": "Vitali Pinchuk",
+                "number": null,
+                "pos": "c",
+                "id": 31775,
+                "ppUnit": 2,
+                "movement": "down"
+            },
+            {
+                "name": "Nils Hoglander",
+                "number": 21,
+                "pos": "rw",
+                "id": 30614,
                 "ppUnit": null,
                 "movement": null
             }
