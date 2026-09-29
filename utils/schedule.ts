@@ -15,6 +15,7 @@ interface TeamRating {
 // NHL API Types
 interface NHLScheduleResponse {
     nextStartDate: string;
+    regularSeasonEndDate?: string;
     previousStartDate: string;
     gameWeek: NHLGameWeek[];
 }
@@ -125,17 +126,19 @@ function parseSchedule(data: NHLScheduleResponse): SimGame[] {
 export async function fetchRemainingSeason(): Promise<SimGame[]> {
     let allGames: SimGame[] = [];
     let currentDate = new Date().toISOString().split('T')[0]; // Today
-    const SEASON_END = '2026-04-18'; // Approximate Regular Season End
+    // Filled from the first schedule response; the API reports the current season's end date.
+    let seasonEnd: string | undefined;
 
-    // Safety break to prevent infinite loops
+    // Safety break to prevent infinite loops (a regular season is ~28 weeks)
     let loops = 0;
-    while (currentDate < SEASON_END && loops < 25) {
+    while ((!seasonEnd || currentDate <= seasonEnd) && loops < 40) {
         const url = `https://api-web.nhle.com/v1/schedule/${currentDate}`;
         try {
             const res = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
             if (!res.ok) break;
 
             const data: NHLScheduleResponse = await res.json();
+            seasonEnd ??= data.regularSeasonEndDate;
             const weekGames = parseSchedule(data);
             allGames = [...allGames, ...weekGames];
 

@@ -2,7 +2,7 @@
 fetch_shifts.py
 ---------------
 Fetches NHL shift chart data for all games in the current season and saves to
-nhl_season_2025_2026_shifts.csv.
+the current season shifts CSV (season.season_file("shifts")).
 
 Strategy (two-source approach):
   1. Try the NHL stats REST API (fast, JSON, but has gaps for ~50% of games)
@@ -13,6 +13,7 @@ Run modes:
   python fetch_shifts.py --full    # Full re-fetch of all games
 """
 
+from season import season_file, SEASON_ID
 import urllib.request
 import json
 import ssl
@@ -30,10 +31,10 @@ ssl._create_default_https_context = ssl._create_unverified_context
 # ── Config ──────────────────────────────────────────────────────────────────
 SHIFTS_API = "https://api.nhle.com/stats/rest/en/shiftcharts?cayenneExp=gameId={game_id}"
 HTML_REPORT = "https://www.nhl.com/scores/htmlreports/{season}/{team_code}{game_num}.HTM"
-SEASON = "20252026"
+SEASON = SEASON_ID
 
-GAMESTATS_FILE = "nhl_season_2025_2026_gamestats.csv"
-SHIFTS_FILE = "nhl_season_2025_2026_shifts.csv"
+GAMESTATS_FILE = season_file("gamestats")
+SHIFTS_FILE = season_file("shifts")
 
 SHIFTS_COLUMNS = [
     "game_id", "period", "start_seconds", "end_seconds",
@@ -270,7 +271,7 @@ def build_game_metadata_from_pbp() -> dict[int, dict]:
     Uses is_home_team column and team_perspective + team_id from shots.
     """
     try:
-        shots = pd.read_csv("nhl_season_2025_2026_shots.csv",
+        shots = pd.read_csv(season_file("shots"),
                             usecols=["game_id", "team_id"])
         teams_df  = pd.read_csv("nhl_teams.csv")
         id_to_abbrev = dict(zip(teams_df["NHL Team ID"], teams_df["Team Tricode"]))

@@ -1,7 +1,7 @@
 """
 update_raw_pbp.py
 
-Incremental daily updater for raw_pbp_20252026.csv.
+Incremental daily updater for raw_pbp_<season>.csv.
 
 Fetches PBP for any completed games from the last N days that are not
 already present in the CSV, and appends them.  Much faster than a full
@@ -18,6 +18,7 @@ Options (via env / CLI):
     --dry-run      Print what would be added without writing
 """
 
+from season import SEASON_ID
 import argparse
 import os
 import sys
@@ -33,9 +34,9 @@ import pandas as pd
 _PIPELINE = os.path.dirname(os.path.abspath(__file__))
 _ROOT     = os.path.dirname(_PIPELINE)
 
-RAW_PBP   = os.path.join(_ROOT, "data", "historical_pbp", "raw_pbp_20252026.csv")
+RAW_PBP   = os.path.join(_ROOT, "data", "historical_pbp", f"raw_pbp_{SEASON_ID}.csv")
 BASE_URL  = "https://api-web.nhle.com/v1"
-SEASON    = 20252026
+SEASON    = int(SEASON_ID)
 DELAY     = 0.25   # seconds between API calls
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -64,7 +65,7 @@ RAW_PBP_COLS = [
     "details.highlightClip", "details.highlightClipFr",
     "details.discreteClip", "details.discreteClipFr",
     "details.servedByPlayerId",
-    # Note: no "is_playoff" column — not present in raw_pbp_20252026.csv
+    # Note: no "is_playoff" column — not present in the raw_pbp CSVs
 ]
 
 
@@ -165,7 +166,7 @@ def get_schedule_games(date_str: str) -> list[dict]:
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 def main(days_back: int = 2, dry_run: bool = False):
-    print(f"{'[DRY RUN] ' if dry_run else ''}update_raw_pbp.py — incremental 2025-26 PBP updater")
+    print(f"{'[DRY RUN] ' if dry_run else ''}update_raw_pbp.py — incremental {SEASON_ID} PBP updater")
 
     # 1. Which game IDs do we already have?
     existing_ids = load_existing_game_ids()
@@ -193,7 +194,7 @@ def main(days_back: int = 2, dry_run: bool = False):
             if gstate not in ("OFF", "FINAL"):
                 continue
             # Skip games from previous seasons
-            if str(gid)[:4] != "2025":
+            if str(gid)[:4] != SEASON_ID[:4]:
                 continue
             # Skip if already in CSV
             if gid in existing_ids:

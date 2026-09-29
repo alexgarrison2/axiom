@@ -1,3 +1,4 @@
+from season import SEASON_GAMES
 import urllib.request
 import json
 import datetime
@@ -61,9 +62,9 @@ class GasCalculator:
         if self.df.empty:
             return 65, ["No Data (Default: 65)"]
             
-        # User Feedback: Base should decay based on games played (82 - GP) * 1.25
+        # User Feedback: Base should decay based on games played (season games - GP) * 1.25
         games_played = self._get_season_games_count(team, game_date)
-        base_gas = max(10, (82 - games_played) * 1.25) # Floor at 10 to avoid negative base
+        base_gas = max(10, (SEASON_GAMES - games_played) * 1.25) # Floor at 10 to avoid negative base
         
         breakdown = [f"Base (GP {games_played}): {base_gas}"]
         

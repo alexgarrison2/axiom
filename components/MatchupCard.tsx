@@ -13,6 +13,7 @@ import PlayerNewsList from './PlayerNewsList';
 import LineupGrid from './LineupGrid';
 import { useAdmin } from './AdminProvider';
 import OddsHistoryModal from './OddsHistoryModal';
+import { SEASON_START_DATE } from '@/lib/season';
 
 
 gsap.registerPlugin(useGSAP);
@@ -28,7 +29,7 @@ interface MatchupCardProps {
 }
 
 // --- Pick Form helpers ---
-const PICK_FORM_CUTOFF = '2026-01-18';
+const PICK_FORM_CUTOFF = SEASON_START_DATE;
 
 interface PickEntry { isCorrect: boolean; }
 

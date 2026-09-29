@@ -16,6 +16,7 @@ Data flow:
 Output: rapm_scores.json — per-player RAPM offensive and defensive ratings.
 """
 
+from season import season_file
 import os
 import sys
 import json
@@ -108,7 +109,7 @@ def _build_goalie_set():
     goalie_ids = set()
 
     # From player stats
-    ps_path = os.path.join(SCRIPT_DIR, 'nhl_season_2025_2026_player_stats.csv')
+    ps_path = os.path.join(SCRIPT_DIR, season_file("player_stats"))
     if os.path.exists(ps_path):
         ps = pd.read_csv(ps_path, usecols=['player_id', 'is_goalie'], low_memory=False)
         goalie_ids.update(
@@ -177,7 +178,7 @@ def _resolve_player_ids(shifts):
 
 def _build_game_home_lookup():
     """Returns {game_id: home_team_id} from gamestats."""
-    gs_path = os.path.join(SCRIPT_DIR, 'nhl_season_2025_2026_gamestats.csv')
+    gs_path = os.path.join(SCRIPT_DIR, season_file("gamestats"))
     teams_path = os.path.join(SCRIPT_DIR, 'nhl_teams.csv')
 
     gs = pd.read_csv(gs_path, usecols=['game_id', 'team', 'home_away'], low_memory=False)
@@ -520,8 +521,8 @@ def run_rapm(fast=False):
     print("\n--- RAPM Player Isolation ---")
 
     # Load data
-    shifts_path = os.path.join(SCRIPT_DIR, 'nhl_season_2025_2026_shifts.csv')
-    shots_path = os.path.join(SCRIPT_DIR, 'nhl_season_2025_2026_shots.csv')
+    shifts_path = os.path.join(SCRIPT_DIR, season_file("shifts"))
+    shots_path = os.path.join(SCRIPT_DIR, season_file("shots"))
 
     shifts = pd.read_csv(shifts_path, low_memory=False)
     shots = pd.read_csv(shots_path, low_memory=False)
@@ -608,7 +609,7 @@ def _print_diagnostics(results, player_index, coef_off, coef_def):
         id_to_name = dict(zip(mp['playerId'].astype(int).astype(str), mp['name']))
 
     # Also try player stats
-    ps_path = os.path.join(SCRIPT_DIR, 'nhl_season_2025_2026_player_stats.csv')
+    ps_path = os.path.join(SCRIPT_DIR, season_file("player_stats"))
     if os.path.exists(ps_path):
         ps = pd.read_csv(ps_path, usecols=['player_id', 'name'], low_memory=False)
         ps_map = dict(zip(ps['player_id'].dropna().astype(int).astype(str),

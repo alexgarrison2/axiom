@@ -21,6 +21,7 @@ Output files (written to pipeline/ directory):
 Source: https://moneypuck.com/data.htm
 """
 
+from season import START_YEAR
 import urllib.request
 import ssl
 import pandas as pd
@@ -40,7 +41,7 @@ NHL_TEAMS = [
 ]
 
 # Season start year: 2025 = 2025-26 season
-CURRENT_SEASON = 2025
+CURRENT_SEASON = START_YEAR
 
 SKATER_URL  = "https://www.moneypuck.com/moneypuck/playerData/seasonSummary/{year}/regular/teams/skaters/{team}.csv"
 GOALIE_URL  = "https://www.moneypuck.com/moneypuck/playerData/seasonSummary/{year}/regular/teams/goalies/{team}.csv"

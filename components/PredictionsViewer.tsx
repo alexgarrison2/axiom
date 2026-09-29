@@ -18,6 +18,7 @@ import PlayoffBracket from './PlayoffBracket';
 import SkaterStatsTable from './SkaterStatsTable';
 import Header from './Header';
 import { Slider } from '@/components/ui/slider';
+import { SEASON_START_DATE } from '@/lib/season';
 
 interface PredictionsViewerProps {
     predictions: GamePrediction[];
@@ -78,6 +79,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     const [simResults, setSimResults] = useState<Record<string, SimResult>>({});
     // Map of "AWAY_TRI|HOME_TRI" → { awayWins, homeWins } for active playoff series
     const [seriesScoreMap, setSeriesScoreMap] = useState<Record<string, { awayWins: number; homeWins: number }>>({});
+    const [playoffsActive, setPlayoffsActive] = useState(false);
     const workerRef = useRef<Worker | null>(null);
     const tabBarRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -168,6 +170,7 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                     map[`${hi}|${lo}`] = { awayWins: hiWins, homeWins: loWins };
                 });
                 setSeriesScoreMap(map);
+                setPlayoffsActive(series.some(s => s.status !== 'complete'));
             })
             .catch(() => { /* not in playoffs yet — silent */ });
     }, []);
@@ -287,10 +290,10 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
 
     const [dateRange, setDateRange] = useState<number[]>([0, 0]);
 
-    // Initialize range when data loads — default start to 2026-01-18
+    // Initialize range when data loads — default start to this season's first graded date
     useEffect(() => {
         if (uniqueHistoryDates.length > 0) {
-            const defaultStart = uniqueHistoryDates.indexOf('2026-01-18');
+            const defaultStart = uniqueHistoryDates.findIndex(d => d >= SEASON_START_DATE);
             setDateRange([defaultStart >= 0 ? defaultStart : 0, uniqueHistoryDates.length - 1]);
         }
     }, [uniqueHistoryDates]);
@@ -464,13 +467,15 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
                                 <span className="relative z-10">HISTORY</span>
                             </button>
 
-                            {/* Playoffs Button — navigates to /playoffs hub */}
-                            <Link
-                                href="/playoffs"
-                                className="relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start bg-transparent text-gray-500 border-transparent hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/5"
-                            >
-                                <span className="relative z-10">PLAYOFFS</span>
-                            </Link>
+                            {/* Playoffs Button — navigates to /playoffs hub (postseason only) */}
+                            {playoffsActive && (
+                                <Link
+                                    href="/playoffs"
+                                    className="relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start bg-transparent text-gray-500 border-transparent hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/5"
+                                >
+                                    <span className="relative z-10">PLAYOFFS</span>
+                                </Link>
+                            )}
 
                             {/* Bracket Button */}
                             <button

@@ -1,3 +1,4 @@
+from season import season_file, PREV_START_YEAR, season_of_game_id
 import pandas as pd
 import json
 import os
@@ -9,94 +10,117 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR) # Parent of pipeline
 PUBLIC_DATA_DIR = os.path.join(PROJECT_ROOT, 'public', 'data')
 
-def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.csv', save_files=True):
+# Regression Parameters
+REGRESSION_GAMES = 10
+# Share of last season's above/below-average xG a team carries into the new
+# season (the rest regresses to league mean for roster turnover).
+PRIOR_KEEP = 0.5
+XG_COLS = ['xG_for', 'xG_against', 'xG_for_5v5', 'xG_against_5v5']
+
+
+def load_prior_season_games():
+    """Last season's regular-season rows (archived by archive_season.py)."""
+    path = os.path.join(SCRIPT_DIR, 'nhl_historical_gamestats.csv')
+    if not os.path.exists(path):
+        return None
+    hist = pd.read_csv(path, low_memory=False)
+    is_prev = hist['game_id'].map(season_of_game_id) == PREV_START_YEAR
+    is_regular = hist['game_id'].astype(str).str[4:6] == '02'
+    prior = hist[is_prev & is_regular]
+    return prior if not prior.empty else None
+
+
+def team_priors(prior_df):
+    """League per-game xG averages and each team's regressed per-game xG last season."""
+    league = prior_df[XG_COLS].mean()
+    team_means = prior_df.groupby('team')[XG_COLS].mean()
+    priors = {
+        team: {c: league[c] + PRIOR_KEEP * (row[c] - league[c]) for c in XG_COLS}
+        for team, row in team_means.iterrows()
+    }
+    return league, priors
+
+
+def blended_rating(series, target):
+    """50% recent form (EWMA, halflife 7 games) + 50% season average regressed
+    toward `target` with REGRESSION_GAMES of weight. Recent form ramps in over
+    the first REGRESSION_GAMES games so one early game can't swing a rating.
+    Returns (rating, rolling)."""
+    gp = len(series)
+    regressed = (series.sum() + REGRESSION_GAMES * target) / (gp + REGRESSION_GAMES)
+    if gp == 0:
+        return regressed, target
+    rolling = series.ewm(halflife=7, min_periods=1).mean().iloc[-1]
+    w_recent = 0.5 * min(1.0, gp / REGRESSION_GAMES)
+    return rolling * w_recent + regressed * (1 - w_recent), rolling
+
+
+def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_files=True):
+    # Production runs (df loaded from disk) regress toward last season's
+    # ratings; backtests pass df and regress toward the league mean.
+    prior_df = None
     if df is None:
-        print(f"Loading data from {gamestats_file}...")
-        df = pd.read_csv(gamestats_file)
-    
+        prior_df = load_prior_season_games()
+        if os.path.exists(gamestats_file):
+            print(f"Loading data from {gamestats_file}...")
+            df = pd.read_csv(gamestats_file)
+        elif prior_df is not None:
+            print(f"{gamestats_file} not found (no games yet) - ratings from last season")
+            df = prior_df.iloc[0:0].copy()
+        else:
+            raise FileNotFoundError(gamestats_file)
+
+    prior_league, priors = team_priors(prior_df) if prior_df is not None else (None, {})
+
     # --- Team Ratings ---
-    # print("Calculating Team Ratings...") # Reduce noise during backtest
-    teams = df['team'].unique()
+    # Teams with no games yet this season are rated from their prior alone.
+    teams = sorted(set(df['team'].unique()) | set(priors))
     team_ratings = {}
-    
-    # League Averages for normalization
-    league_xg_for = df['xG_for'].mean()
-    league_xg_for = df['xG_for'].mean()
+
+    # League Averages for normalization. With a prior, blend in last season's
+    # averages worth REGRESSION_GAMES games per team so the first nights of a
+    # season don't set the baseline.
+    prior_rows = 32 * REGRESSION_GAMES
+
+    def league_avg(col):
+        if prior_league is None:
+            return df[col].mean()
+        return (df[col].sum() + prior_rows * prior_league[col]) / (len(df) + prior_rows)
+
+    league_xg_for = league_avg('xG_for')
     # Check if 5v5 data is valid (sum > 0)
-    has_5v5_data = 'xG_for_5v5' in df.columns and df['xG_for_5v5'].sum() > 0
-    
+    has_5v5_data = 'xG_for_5v5' in df.columns and (
+        df['xG_for_5v5'].sum() > 0 or (df.empty and prior_league is not None))
+
     if has_5v5_data:
-        league_xg_5v5 = df['xG_for_5v5'].mean()
+        league_xg_5v5 = league_avg('xG_for_5v5')
     else:
-        league_xg_5v5 = df['xG_for'].mean() * 0.8 # Fallback to 80%
-        
-    # print(f"League Average xG: {league_xg_for:.2f}, 5v5: {league_xg_5v5:.2f} (Has Data: {has_5v5_data})")
-    
-    # Regression Parameters
-    REGRESSION_GAMES = 10
-    
+        league_xg_5v5 = league_xg_for * 0.8 # Fallback to 80%
+
     for team in teams:
         team_games = df[df['team'] == team].sort_values('game_date')
-        
-        # Calculate EWMA (halflife=7 games: smooth exponential decay, no cliff effect)
-        rolling_xgf = team_games['xG_for'].ewm(halflife=7, min_periods=1).mean().iloc[-1]
-        season_xgf = team_games['xG_for'].mean()
-        
-        # 5v5 xGF
-        col_5v5 = 'xG_for_5v5' if has_5v5_data else 'xG_for' # Fallback
-        rolling_xgf_5v5 = team_games[col_5v5].ewm(halflife=7, min_periods=1).mean().iloc[-1]
-        season_xgf_5v5 = team_games[col_5v5].mean()
-        season_xgf_5v5 = team_games[col_5v5].mean()
-        
-        # Regress Season Average to League Mean
-        # (Season Sum + (Reg_Games * League_Avg)) / (Games_Played + Reg_Games)
         games_played = len(team_games)
-        regressed_season_xgf = ((season_xgf * games_played) + (league_xg_for * REGRESSION_GAMES)) / (games_played + REGRESSION_GAMES)
-        
-        # Weighted Rating (50% Recent, 50% Regressed Season)
-        # Reduced recency bias from 70/30 to 50/50 to reduce volatility
-        xgf_rating = (rolling_xgf * 0.5) + (regressed_season_xgf * 0.5)
-        
-        # SAFETY FLOOR: If data is missing (0.0), default to LEAGUE AVERAGE per user feedback (Utah is playoff tier)
+        prior = priors.get(team, {})
+
+        # League Avg xG For is approx League Avg xG Against, so both sides
+        # regress toward league_xg_for when there's no team prior.
+        xgf_rating, rolling_xgf = blended_rating(team_games['xG_for'], prior.get('xG_for', league_xg_for))
+        xga_rating, rolling_xga = blended_rating(team_games['xG_against'], prior.get('xG_against', league_xg_for))
+
+        # SAFETY FLOOR: If data is missing (0.0), default to LEAGUE AVERAGE
         if xgf_rating < 0.5:
-             print(f"DEBUG: Patching xGF for {team} (was {xgf_rating:.2f}) -> Setting to League Avg")
-             xgf_rating = league_xg_for * 1.0
-        
-             xgf_rating = league_xg_for * 1.0
-             
-        # Regress 5v5
-        if has_5v5_data:
-             regressed_season_5v5 = ((season_xgf_5v5 * games_played) + (league_xg_5v5 * REGRESSION_GAMES)) / (games_played + REGRESSION_GAMES)
-             xgf_5v5_rating = (rolling_xgf_5v5 * 0.5) + (regressed_season_5v5 * 0.5)
-        else:
-             xgf_5v5_rating = xgf_rating * 0.8 # Fallback heuristic
-             # print(f"DEBUG: {team} 5v5 Fallback. xgf_rating={xgf_rating:.2f} -> 5v5={xgf_5v5_rating:.2f}")
-        
-        # xGA Strength (Defense)
-        rolling_xga = team_games['xG_against'].ewm(halflife=7, min_periods=1).mean().iloc[-1]
-        season_xga = team_games['xG_against'].mean()
-        
-        # 5v5 xGA
-        col_ga_5v5 = 'xG_against_5v5' if has_5v5_data else 'xG_against'
-        rolling_xga_5v5 = team_games[col_ga_5v5].ewm(halflife=7, min_periods=1).mean().iloc[-1]
-        season_xga_5v5 = team_games[col_ga_5v5].mean()
-        season_xga_5v5 = team_games[col_ga_5v5].mean()
-        
-        # Regress to League Mean (League Avg xG For is approx League Avg xG Against)
-        regressed_season_xga = ((season_xga * games_played) + (league_xg_for * REGRESSION_GAMES)) / (games_played + REGRESSION_GAMES)
-        
-        xga_rating = (rolling_xga * 0.5) + (regressed_season_xga * 0.5)
-        
-        # SAFETY FLOOR: If data is missing (0.0), default to LEAGUE AVERAGE defense
+            print(f"DEBUG: Patching xGF for {team} (was {xgf_rating:.2f}) -> Setting to League Avg")
+            xgf_rating = league_xg_for
         if xga_rating < 0.5:
-            xga_rating = league_xg_for * 1.0
-            
-        # Regress 5v5 Def
+            xga_rating = league_xg_for
+
         if has_5v5_data:
-             reg_season_xga_5v5 = ((season_xga_5v5 * games_played) + (league_xg_5v5 * REGRESSION_GAMES)) / (games_played + REGRESSION_GAMES)
-             xga_5v5_rating = (rolling_xga_5v5 * 0.5) + (reg_season_xga_5v5 * 0.5)
+            xgf_5v5_rating, _ = blended_rating(team_games['xG_for_5v5'], prior.get('xG_for_5v5', league_xg_5v5))
+            xga_5v5_rating, _ = blended_rating(team_games['xG_against_5v5'], prior.get('xG_against_5v5', league_xg_5v5))
         else:
-             xga_5v5_rating = xga_rating * 0.8
+            xgf_5v5_rating = xgf_rating * 0.8 # Fallback heuristic
+            xga_5v5_rating = xga_rating * 0.8
+
         
         # Special Teams Ratings
         # PP% = PP Goals / PP Opps
@@ -107,12 +131,13 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         pp_opps = team_games['pp_opportunities'].sum()
         pp_pct = pp_goals / pp_opps if pp_opps > 0 else 0.20 # League Avg approx 20%
         # New: Penalties Taken/Drawn per game (Volume)
-        penalties_drawn_per_game = pp_opps / games_played if games_played > 0 else 3.0
+        # Regressed toward ~3/game with REGRESSION_GAMES of weight (stable early season)
+        penalties_drawn_per_game = (pp_opps + REGRESSION_GAMES * 3.0) / (games_played + REGRESSION_GAMES)
         
         pk_goals_ag = team_games['pp_goals_against'].sum()
         pk_opps = team_games['pk_opportunities'].sum()
         pk_pct = 1 - (pk_goals_ag / pk_opps) if pk_opps > 0 else 0.80 # League Avg approx 80%
-        penalties_taken_per_game = pk_opps / games_played if games_played > 0 else 3.0
+        penalties_taken_per_game = (pk_opps + REGRESSION_GAMES * 3.0) / (games_played + REGRESSION_GAMES)
         
         # Weighted Special Teams Ratings (User Request: 40% L10, 50% L20, 10% Season)
         
@@ -165,11 +190,13 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
         # xG-based PP/PK rates (per opportunity)
         # More stable than goal-based PP%/PK% — same xG philosophy used throughout the model.
         # Falls back to 0.18 (league-average baseline) if xG_pp columns not yet in gamestats.
+        # Regressed toward that baseline with ~10 games of opportunities.
         _LEAGUE_AVG_ST_XG = 0.18
+        _ST_PRIOR_OPPS = 30
         has_pp_xg_data = 'xG_pp_for' in team_games.columns and team_games['xG_pp_for'].sum() > 0
         if has_pp_xg_data:
-            pp_xgf_per_opp = team_games['xG_pp_for'].sum() / pp_opps if pp_opps > 0 else _LEAGUE_AVG_ST_XG
-            pk_xga_per_opp = team_games['xG_pp_against'].sum() / pk_opps if pk_opps > 0 else _LEAGUE_AVG_ST_XG
+            pp_xgf_per_opp = (team_games['xG_pp_for'].sum() + _ST_PRIOR_OPPS * _LEAGUE_AVG_ST_XG) / (pp_opps + _ST_PRIOR_OPPS)
+            pk_xga_per_opp = (team_games['xG_pp_against'].sum() + _ST_PRIOR_OPPS * _LEAGUE_AVG_ST_XG) / (pk_opps + _ST_PRIOR_OPPS)
         else:
             pp_xgf_per_opp = _LEAGUE_AVG_ST_XG
             pk_xga_per_opp = _LEAGUE_AVG_ST_XG
@@ -212,10 +239,8 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
     else:
         all_games_df = df.copy()
 
-    # Assign season: Oct-Dec = that year, Jan-Jun = year - 1
-    all_games_df['season'] = all_games_df['game_date'].apply(
-        lambda d: d.year if d.month >= 9 else d.year - 1
-    )
+    # Season start year from the game id (2026020001 -> 2026)
+    all_games_df['season'] = all_games_df['game_id'].map(season_of_game_id)
     current_season = all_games_df['season'].max()
 
     # Compute per-goalie, per-season GSAx
@@ -276,8 +301,9 @@ def calculate_ratings(df=None, gamestats_file='nhl_season_2025_2026_gamestats.cs
 
         # Bayesian regression toward 0 (league-average goalie)
         # More regression for fewer current-season starts
-        # Uses current season GP as the evidence strength
-        evidence_games = current_season_games if current_season_games > 0 else total_games_all * 0.3
+        # Uses current season GP as the evidence strength, but never less than
+        # 30% of multi-season GP so early-season starts don't erase past seasons
+        evidence_games = max(current_season_games, total_games_all * 0.3)
         regressed_gsax_per_game = (raw_gsax_per_game * evidence_games) / (evidence_games + BAYESIAN_PRIOR_STRENGTH)
 
         goalie_ratings[goalie] = {

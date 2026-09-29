@@ -1,3 +1,4 @@
+from season import season_file, read_season_csv, PLAYER_MODEL_MIN_GAMES
 import pandas as pd
 import pickle
 import json
@@ -25,7 +26,7 @@ def refresh_pipeline():
     # -1. Prune Recent Data (Force Re-scrape for Special Teams fix)
     # We remove games >= 2026-01-13 so they get re-processed with H-Ref data
     print("Pruning recent gamestats to force re-scrape...")
-    gamestats_file = "nhl_season_2025_2026_gamestats.csv"
+    gamestats_file = season_file("gamestats")
     try:
         df = pd.read_csv(gamestats_file)
         # Convert date
@@ -115,7 +116,7 @@ def refresh_pipeline():
     # 2. Re-Score Shots (Historical & Current)
     shot_files = [
         "nhl_historical_shots.csv",
-        "nhl_season_2025_2026_shots.csv"
+        season_file("shots")
     ]
     
     all_game_xg = []
@@ -124,7 +125,10 @@ def refresh_pipeline():
         print(f"Processing {filename}...")
         try:
             df = pd.read_csv(filename)
-            
+            if df.empty:
+                print(f"Skipping {filename} (no shots yet)")
+                continue
+
             # Preprocess to get features (Bins, Off-Wing, Handedness)
             # This uses the logic we updated in xg_model.py
             # Note: preprocess_data returns X, y. We just need to ensure it applies to the whole df.
@@ -174,11 +178,14 @@ def refresh_pipeline():
             # Seasonal conversion rates vary from the training mean (~7.1%),
             # so without normalization GSAx drifts positive or negative
             # league-wide. Standard practice (MoneyPuck, Evolving Hockey).
+            # NORM_PRIOR_GOALS shrinks the factor toward 1.0 so a file with
+            # only a few days of games (season start) isn't normalized on noise.
+            NORM_PRIOR_GOALS = 1000
             if 'is_goal' in df.columns:
                 total_xg = df['xG'].sum()
                 total_goals = df['is_goal'].sum()
                 if total_xg > 0 and total_goals > 0:
-                    norm_factor = total_goals / total_xg
+                    norm_factor = (total_goals + NORM_PRIOR_GOALS) / (total_xg + NORM_PRIOR_GOALS)
                     df['xG'] *= norm_factor
                     print(f"  League normalization: factor={norm_factor:.4f} "
                           f"(xG {total_xg:.0f} → {total_goals} goals)")
@@ -231,7 +238,7 @@ def refresh_pipeline():
     HIGH_DANGER_BINS = {'D2_W3_In', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1'}  # D3_W2 removed
     try:
         from nhl_scraper_poc import assign_bin
-        shots_hd_file = "nhl_season_2025_2026_shots.csv"
+        shots_hd_file = season_file("shots")
         shots_hd = pd.read_csv(shots_hd_file)
 
         teams_csv = pd.read_csv("nhl_teams.csv")
@@ -299,7 +306,7 @@ def refresh_pipeline():
     # We load the existing gamestats, and UPDATE the xG_for / xG_against columns
     # We do NOT want to lose other stats (goals, hits, etc)
     print("Updating GameStats...")
-    gamestats_file = "nhl_season_2025_2026_gamestats.csv"
+    gamestats_file = season_file("gamestats")
     try:
         df_stats = pd.read_csv(gamestats_file)
         
@@ -420,15 +427,27 @@ def refresh_pipeline():
         raise RuntimeError(f"team_ratings.json was not updated (age={_age:.1f}m). Aborting pipeline.")
     print(f"team_ratings.json verified fresh ({_age:.1f}m old).")
 
-    # 4b. Fetch MoneyPuck player-level data & compute impact scores
-    # This runs after team ratings so the pipeline has fresh season context.
-    # MoneyPuck updates nightly; we fetch once per full pipeline run (~12-14 UTC).
-    print("Fetching MoneyPuck player-level data...")
-    try:
-        import fetch_moneypuck
-        fetch_moneypuck.fetch_moneypuck()
-    except Exception as e:
-        print(f"[WARN] MoneyPuck fetch failed (predictions will use team ratings only): {e}")
+    # Player models (MoneyPuck impact, PBP HD metrics, RAPM) are rebuilt only
+    # once the season has enough games; before that a few games of noise would
+    # overwrite last season's committed ratings (player_impact.json etc.),
+    # which predictions keep using in the meantime.
+    season_games = read_season_csv("gamestats")
+    n_season_games = season_games['game_id'].nunique() if 'game_id' in season_games else 0
+    rebuild_player_models = n_season_games >= PLAYER_MODEL_MIN_GAMES
+    if not rebuild_player_models:
+        print(f"Skipping player model rebuild: {n_season_games} games this season "
+              f"(< {PLAYER_MODEL_MIN_GAMES}); keeping last season's player ratings.")
+
+    if rebuild_player_models:
+        # 4b. Fetch MoneyPuck player-level data & compute impact scores
+        # This runs after team ratings so the pipeline has fresh season context.
+        # MoneyPuck updates nightly; we fetch once per full pipeline run (~12-14 UTC).
+        print("Fetching MoneyPuck player-level data...")
+        try:
+            import fetch_moneypuck
+            fetch_moneypuck.fetch_moneypuck()
+        except Exception as e:
+            print(f"[WARN] MoneyPuck fetch failed (predictions will use team ratings only): {e}")
 
     # 4c. Fetch shifts for any games not yet in the shifts CSV, then enrich the
     #     raw PBP with on-ice player IDs.  Both steps are incremental — they
@@ -438,42 +457,43 @@ def refresh_pipeline():
     try:
         import fetch_shifts
         fetch_shifts.main()
-    except Exception as e:
+    except (Exception, SystemExit) as e:  # main() sys.exit()s when there's nothing to fetch
         print(f"[WARN] fetch_shifts failed: {e}")
 
     print("Enriching PBP with on-ice player IDs (enrich_pbp)...")
     try:
         import enrich_pbp
         enrich_pbp.main()
-    except Exception as e:
+    except (Exception, SystemExit) as e:  # main() sys.exit()s when there's no PBP yet
         print(f"[WARN] enrich_pbp failed: {e}")
 
-    # 4d. Compute PBP-derived HD metrics (must run AFTER enrich_pbp so that
-    #     home_on1-6/away_on1-6 are populated, and BEFORE player_impact).
-    print("Computing PBP-derived HD metrics (calc_pbp_impact)...")
-    try:
-        import calc_pbp_impact
-        calc_pbp_impact.run_pbp_impact()
-    except Exception as e:
-        print(f"[WARN] PBP HD metrics failed (impact scores will use MoneyPuck only): {e}")
+    if rebuild_player_models:
+        # 4d. Compute PBP-derived HD metrics (must run AFTER enrich_pbp so that
+        #     home_on1-6/away_on1-6 are populated, and BEFORE player_impact).
+        print("Computing PBP-derived HD metrics (calc_pbp_impact)...")
+        try:
+            import calc_pbp_impact
+            calc_pbp_impact.run_pbp_impact()
+        except Exception as e:
+            print(f"[WARN] PBP HD metrics failed (impact scores will use MoneyPuck only): {e}")
 
-    # 4e. RAPM player isolation (must run AFTER shifts data is fresh,
-    #     and BEFORE player_impact which merges RAPM as an additional signal).
-    print("Computing RAPM player ratings (calc_rapm)...")
-    try:
-        import calc_rapm
-        rapm_results = calc_rapm.run_rapm()
-        print(f"  RAPM scores computed: {len(rapm_results)} players")
-    except Exception as e:
-        print(f"[WARN] RAPM computation failed (impact scores will use MoneyPuck + PBP only): {e}")
+        # 4e. RAPM player isolation (must run AFTER shifts data is fresh,
+        #     and BEFORE player_impact which merges RAPM as an additional signal).
+        print("Computing RAPM player ratings (calc_rapm)...")
+        try:
+            import calc_rapm
+            rapm_results = calc_rapm.run_rapm()
+            print(f"  RAPM scores computed: {len(rapm_results)} players")
+        except Exception as e:
+            print(f"[WARN] RAPM computation failed (impact scores will use MoneyPuck + PBP only): {e}")
 
-    print("Computing player impact scores...")
-    try:
-        import player_impact
-        pi, la = player_impact.calculate_player_impact()
-        print(f"  Player impact profiles built: {len(pi)} players")
-    except Exception as e:
-        print(f"[WARN] Player impact calculation failed: {e}")
+        print("Computing player impact scores...")
+        try:
+            import player_impact
+            pi, la = player_impact.calculate_player_impact()
+            print(f"  Player impact profiles built: {len(pi)} players")
+        except Exception as e:
+            print(f"[WARN] Player impact calculation failed: {e}")
 
     # 4f. Fetch today's player news (overwrites) and accumulate playoff news
     print("Fetching player news...")
@@ -589,7 +609,7 @@ def refresh_pipeline():
             shutil.copy("team_lineups.json", "../public/data/team_lineups.json")
             print("Synced team_lineups.json to public/data")
 
-        # Note: nhl_season_2025_2026_player_stats.csv is written directly to
+        # Note: the season player_stats CSV is written directly to
         # public/data/ by backfill_player_stats.py (step 0d above). No copy needed.
         
         # Sync Odds

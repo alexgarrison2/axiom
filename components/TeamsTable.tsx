@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Papa from 'papaparse';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SEASON_GAMES } from '@/lib/season';
 
 const DIVISION_MAPPING: Record<string, string> = {
     'BOS': 'Atlantic', 'BUF': 'Atlantic', 'DET': 'Atlantic', 'FLA': 'Atlantic',
@@ -1535,13 +1536,13 @@ const TeamsTable = () => {
         // M# (playoff teams): combined pts a team needs to earn + pts the 9th-place
         //   team needs to lose to guarantee a playoff spot.
         //   Formula: (9th team's max possible pts) − team's current pts + 1
-        //   Where max possible pts = current pts + remaining games × 2  (remaining = 82 − GP)
+        //   Where max possible pts = current pts + remaining games × 2  (remaining = season games − GP)
         // E# (non-playoff teams): combined pts they need to earn + pts the 8th-place
         //   team needs to lose before elimination.
         //   Formula: (8th team's max possible pts) − team's current pts + 1
         // Reference boundary: the Wild Card cutoff in each conference
         // ─────────────────────────────────────────────────────────────────────
-        const SEASON_GP = 82;
+        const SEASON_GP = SEASON_GAMES;
         const magicTragicMap: Record<string, { magic_number?: number; tragic_number?: number }> = {};
 
         (['Eastern', 'Western'] as const).forEach(conf => {

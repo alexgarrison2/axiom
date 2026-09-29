@@ -20,6 +20,7 @@ Output format (keyed by player_id string):
 Run: python3 pipeline/fetch_contracts.py
 """
 
+from season import SEASON_ID, SEASON_LABEL, START_YEAR
 import urllib.request
 import json
 import os
@@ -37,7 +38,7 @@ NHL_API = "https://api-web.nhle.com/v1"
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT_FILE = os.path.join(_ROOT, "public", "data", "contracts.json")
 
-SEASON = "20252026"
+SEASON = SEASON_ID
 
 # Map NHL 3-letter code → PuckPedia URL slug
 TEAM_SLUGS = {
@@ -180,16 +181,16 @@ def parse_puckpedia_team(html: str, roster_lookup: dict[str, int]) -> dict[str, 
         if len(headers) < 3:
             continue
 
-        # Contract tables have year headers like "2025-26"
+        # Contract tables have year headers like "2026-27"
         year_pattern = re.compile(r"20\d{2}-\d{2}")
         year_cols = [(i, h) for i, h in enumerate(headers) if year_pattern.match(h)]
         if not year_cols:
             continue
 
-        # Find the current season column (2025-26)
+        # Find the current season column (e.g. 2026-27)
         current_col_idx = None
         for idx, h in year_cols:
-            if h == "2025-26":
+            if h == SEASON_LABEL:
                 current_col_idx = idx
                 break
         if current_col_idx is None:
@@ -305,8 +306,8 @@ def parse_puckpedia_team(html: str, roster_lookup: dict[str, int]) -> dict[str, 
                             year = int(ym.group(1))
                         break
 
-            # If year equals next off-season (2026), it means UFA/RFA THIS off-season → null
-            if year is not None and year <= 2026:
+            # If year equals next off-season (e.g. 2027 during 2026-27), it means UFA/RFA THIS off-season → null
+            if year is not None and year <= START_YEAR + 1:
                 year = None
 
             contracts[pid_str] = {

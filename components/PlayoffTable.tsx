@@ -5,6 +5,7 @@ import LogoDisplay from './LogoDisplay';
 import PlayoffDetailModal from './PlayoffDetailModal';
 import { Info } from 'lucide-react';
 import MatchupMatrix from './MatchupMatrix';
+import { SEASON_GAMES } from '@/lib/season';
 
 interface PlayoffTableProps {
     currentStandings: TeamStandings[];
@@ -22,7 +23,7 @@ interface ProcessedTeam extends TeamStandings {
     tragic_number?: number; // E#: non-playoff teams. 0 = eliminated.
 }
 
-const SEASON_GP = 82;
+const SEASON_GP = SEASON_GAMES;
 
 // Sort by current NHL standings tiebreakers (pts → RW → ROW → wins)
 const standingsSort = (a: TeamStandings, b: TeamStandings) => {
@@ -57,7 +58,7 @@ const PlayoffTable: React.FC<PlayoffTableProps> = ({ currentStandings, simResult
         // 1. Map Data
         const mapped = currentStandings.map(team => {
             const sim = simResults[team.tricode] || { madePlayoffs: 0, totalSims: 1, totalPoints: 0, wonCup: 0, pointDist: new Map(), divRankDist: new Map(), roundExitDist: {} };
-            const pace = team.gamesPlayed > 0 ? Math.round((team.points / team.gamesPlayed) * 82) : 0;
+            const pace = team.gamesPlayed > 0 ? Math.round((team.points / team.gamesPlayed) * SEASON_GP) : 0;
             const proj = Math.round(sim.totalPoints / sim.totalSims);
             const playoffOdds = (sim.madePlayoffs / sim.totalSims) * 100;
             const cupOdds = (sim.wonCup / sim.totalSims) * 100;

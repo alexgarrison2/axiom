@@ -121,11 +121,12 @@ jobs:
             [ -f pipeline/dailyfaceoff_goalies.json ] && git add pipeline/dailyfaceoff_goalies.json
             [ -f pipeline/player_news.json ] && git add pipeline/player_news.json
             [ -f pipeline/team_lineups.json ] && git add pipeline/team_lineups.json
-            [ -f pipeline/nhl_season_2025_2026_gamestats.csv ] && git add pipeline/nhl_season_2025_2026_gamestats.csv
-            [ -f pipeline/nhl_season_2025_2026_shots.csv ] && git add pipeline/nhl_season_2025_2026_shots.csv
-            [ -f pipeline/nhl_season_2025_2026_shifts.csv ] && git add pipeline/nhl_season_2025_2026_shifts.csv
-            [ -f pipeline/nhl_season_2025_2026_pbp.csv ] && git add pipeline/nhl_season_2025_2026_pbp.csv || true
-            [ -f data/historical_pbp/raw_pbp_20252026.csv ] && git add data/historical_pbp/raw_pbp_20252026.csv || true
+            # Season files (current season name comes from pipeline/season.py)
+            git add pipeline/nhl_season_*_gamestats.csv 2>/dev/null || true
+            git add pipeline/nhl_season_*_shots.csv 2>/dev/null || true
+            git add pipeline/nhl_season_*_shifts.csv 2>/dev/null || true
+            git add pipeline/nhl_season_*_pbp.csv 2>/dev/null || true
+            git add data/historical_pbp/raw_pbp_*.csv 2>/dev/null || true
             [ -f data/last_updated.json ] && git add data/last_updated.json
             # Player-impact outputs (committed so lite runs can load them)
             [ -f pipeline/player_impact.json ] && git add pipeline/player_impact.json
@@ -134,7 +135,7 @@ jobs:
             [ -f public/data/player_impact.json ] && git add public/data/player_impact.json
             [ -f public/data/league_avg_impact.json ] && git add public/data/league_avg_impact.json
             # Player boxscore stats (availability strip + counting stats in SkaterGrid)
-            [ -f public/data/nhl_season_2025_2026_player_stats.csv ] && git add public/data/nhl_season_2025_2026_player_stats.csv
+            git add public/data/nhl_season_*_player_stats.csv 2>/dev/null || true
             # Player bio data (age, height, weight, shoots)
             [ -f public/data/player_bio.json ] && git add public/data/player_bio.json
             # Contract data (cap hit, UFA/RFA status) from PuckPedia

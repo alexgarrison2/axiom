@@ -1,3 +1,4 @@
+from season import season_file
 import urllib.request
 import json
 import csv
@@ -10,8 +11,8 @@ import pandas as pd
 # Constants
 BASE_URL = "https://api-web.nhle.com/v1"
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # axiom root
-OUTPUT_FILENAME = os.path.join(_ROOT, "public", "data", "nhl_season_2025_2026_player_stats.csv")
-GAME_STATS_FILE = os.path.join(_ROOT, "public", "data", "gamestats.csv")
+OUTPUT_FILENAME = os.path.join(_ROOT, "public", "data", season_file("player_stats"))
+GAME_STATS_FILE = os.path.join(_ROOT, "pipeline", season_file("gamestats"))
 
 # Create unverified context for SSL to avoid cert errors
 ssl._create_default_https_context = ssl._create_unverified_context

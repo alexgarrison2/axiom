@@ -4,6 +4,7 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { TeamStandings, SimResult } from '@/utils/simulation-engine';
 import { getTeamColor } from '@/utils/team-colors';
 import PlayoffDetailModal from './PlayoffDetailModal';
+import { SEASON_START_YEAR } from '@/lib/season';
 
 // ─── Vivid color overrides for dark-bg legibility ─────────────────────────────
 const VIVID: Record<string, string> = {
@@ -599,7 +600,7 @@ export default function PlayoffBracket({ currentStandings, simResults }: Playoff
         <h2 className="text-3xl sm:text-4xl relative font-bold italic overflow-hidden uppercase text-white"
           style={{ fontFamily: "'Arial Black Italic', 'Arial Black', sans-serif", fontStyle: 'italic' }}>
           <span className="relative inline-block">
-            NHL Playoff Bracket (2026)
+            NHL Playoff Bracket ({SEASON_START_YEAR + 1})
             <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-600 rounded-full" />
           </span>
         </h2>

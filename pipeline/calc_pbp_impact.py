@@ -38,6 +38,7 @@ Usage:
   from calc_pbp_impact import run_pbp_impact  # Called from refresh_pipeline.py
 """
 
+from season import season_file
 import os
 import json
 import pandas as pd
@@ -45,9 +46,9 @@ import numpy as np
 from datetime import datetime
 
 # ── Config ──────────────────────────────────────────────────────────────────
-PBP_FILE    = "nhl_season_2025_2026_pbp.csv"
-SHIFTS_FILE = "nhl_season_2025_2026_shifts.csv"
-SHOTS_FILE  = "nhl_season_2025_2026_shots.csv"
+PBP_FILE    = season_file("pbp")
+SHIFTS_FILE = season_file("shifts")
+SHOTS_FILE  = season_file("shots")
 OUTPUT_FILE = "pbp_metrics.json"
 
 # 5v5 situation code

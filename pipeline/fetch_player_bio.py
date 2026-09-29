@@ -17,6 +17,7 @@ Output format (keyed by player_id string):
 Run: python3 pipeline/fetch_player_bio.py
 """
 
+from season import SEASON_ID
 import urllib.request
 import json
 import os
@@ -28,7 +29,7 @@ BASE_URL = "https://api-web.nhle.com/v1"
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT_FILE = os.path.join(_ROOT, "public", "data", "player_bio.json")
 
-SEASON = "20252026"
+SEASON = SEASON_ID
 
 NHL_TEAMS = [
     "ANA", "BOS", "BUF", "CAR", "CBJ", "CGY", "CHI", "COL", "DAL", "DET",

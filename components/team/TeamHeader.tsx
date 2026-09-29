@@ -7,6 +7,7 @@ import { TeamInfo } from '@/types';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { usePlayoffsActive } from '@/hooks/usePlayoffsActive';
 
 // Derive "Mar-06" style labels for today and tomorrow
 function getNavDates(): { label: string; tab: string }[] {
@@ -33,7 +34,6 @@ const NAV_TABS = [
     { label: 'NEWS',     tab: 'News' },
     { label: 'TEAMS',    tab: 'Teams' },
     { label: 'HISTORY',  tab: 'History' },
-    { label: 'PLAYOFFS', tab: 'Playoffs' },
     { label: 'BRACKET',  tab: 'Bracket' },
     { label: 'SKATERS',  tab: 'Skaters' },
 ];
@@ -48,6 +48,7 @@ interface TeamHeaderProps {
 
 const TeamHeader: React.FC<TeamHeaderProps> = ({ teamInfo, allTeamsList }) => {
     const primaryColor = teamInfo.HexColor1;
+    const playoffsActive = usePlayoffsActive();
     const bgRef = useRef<HTMLDivElement>(null);
     const navRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
@@ -140,6 +141,14 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teamInfo, allTeamsList }) => {
                                 {label}
                             </Link>
                         ))}
+                        {playoffsActive && (
+                            <Link
+                                href="/playoffs"
+                                className="px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap text-gray-500 hover:text-white hover:bg-white/5 transition-all flex-shrink-0"
+                            >
+                                PLAYOFFS
+                            </Link>
+                        )}
                     </nav>
                 </div>
             </div>

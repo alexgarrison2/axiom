@@ -1,4 +1,5 @@
 
+from season import START_YEAR
 import urllib.request
 import csv
 import time
@@ -22,7 +23,7 @@ TEAM_MAPPING = {
 OUTPUT_FILE = "href_stats.csv"
 
 def fetch_team_gamelog(tricode, href_code):
-    url = f"https://www.hockey-reference.com/teams/{href_code}/2026_gamelog.html"
+    url = f"https://www.hockey-reference.com/teams/{href_code}/{START_YEAR + 1}_gamelog.html"
     print(f"Fetching {tricode} ({href_code}) from {url}...")
     
     headers = {

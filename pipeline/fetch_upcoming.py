@@ -1,3 +1,4 @@
+from season import season_file, read_season_csv
 import urllib.request
 import json
 import datetime
@@ -16,14 +17,14 @@ def normalize_name(name):
     normalized = unicodedata.normalize('NFD', name)
     return "".join(c for c in normalized if unicodedata.category(c) != 'Mn').lower().strip()
 
-def get_team_goalies(gamestats_file="nhl_season_2025_2026_gamestats.csv"):
+def get_team_goalies(gamestats_file=season_file("gamestats")):
     """
     Builds a map of Team Name -> set of Goalies who primarily play for them.
     A goalie is considered 'belonging' to a team if they have played 
     more games for that team than any other team in the dataset.
     """
     try:
-        df = pd.read_csv(gamestats_file)
+        df = read_season_csv("gamestats", gamestats_file)
         if df.empty:
             return {}
             

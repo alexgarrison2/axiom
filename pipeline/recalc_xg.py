@@ -1,4 +1,5 @@
 
+from season import season_file
 import pandas as pd
 import pickle
 import os
@@ -8,8 +9,8 @@ def recalculate():
     print("Loading model and data...")
     
     # Paths
-    SHOTS_FILE = "nhl_season_2025_2026_shots.csv"
-    GAME_STATS_FILE = "nhl_season_2025_2026_gamestats.csv"
+    SHOTS_FILE = season_file("shots")
+    GAME_STATS_FILE = season_file("gamestats")
     MODEL_FILE = "xg_model_xgb.pkl"
     
     # Check for files in pipeline/ or root, prioritize pipeline

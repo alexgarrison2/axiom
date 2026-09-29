@@ -1,3 +1,4 @@
+from season import season_file
 import pandas as pd
 import urllib.request
 import json
@@ -10,7 +11,7 @@ def fetch_player_handedness():
     
     files = [
         "nhl_historical_shots.csv",
-        "nhl_season_2025_2026_shots.csv"
+        season_file("shots")
     ]
     
     for f in files:

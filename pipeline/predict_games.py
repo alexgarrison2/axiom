@@ -1,3 +1,4 @@
+from season import SEASON_ID, season_file, read_season_csv, PLAYER_MODEL_MIN_GAMES
 import os
 import fetch_dailyfaceoff
 import fetch_goalie_history # New Module
@@ -77,7 +78,7 @@ def get_best_goalie(team_name, goalie_ratings, confirmed_goalie=None):
         return confirmed_goalie
             
     # Fallback to finding the starter with most games
-    df = pd.read_csv('nhl_season_2025_2026_gamestats.csv')
+    df = read_season_csv("gamestats")
     team_goalies = df[df['team'] == team_name]['starting_goalie'].unique()
     
     best_goalie = None
@@ -223,7 +224,7 @@ def fetch_l7_record(tri_code, starter_lookup=None, common_names=None):
     if not tri_code:
         return "N/A", []
         
-    url = f"https://api-web.nhle.com/v1/club-schedule-season/{tri_code}/20252026"
+    url = f"https://api-web.nhle.com/v1/club-schedule-season/{tri_code}/{SEASON_ID}"
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -471,10 +472,8 @@ def fetch_team_rankings():
     """
     print("Fetching special teams rankings...")
     try:
-        url = "https://api.nhle.com/stats/rest/en/team/summary?isAggregate=false&isGame=false&sort=%5B%7B%22property%22:%22points%22,%22direction%22:%22DESC%22%7D,%7B%22property%22:%22wins%22,%22direction%22:%22DESC%22%7D,%7B%22property%22:%22teamId%22,%22direction%22:%22ASC%22%7D%5D&start=0&limit=50&factCayenneExp=gamesPlayed%3E=1&cayenneExp=gameTypeId=2%20and%20seasonId%3C=20252026%20and%20seasonId%3E=20252026"
+        url = "https://api.nhle.com/stats/rest/en/team/summary?isAggregate=false&isGame=false&sort=%5B%7B%22property%22:%22points%22,%22direction%22:%22DESC%22%7D,%7B%22property%22:%22wins%22,%22direction%22:%22DESC%22%7D,%7B%22property%22:%22teamId%22,%22direction%22:%22ASC%22%7D%5D&start=0&limit=50&factCayenneExp=gamesPlayed%3E=1&cayenneExp=gameTypeId=2%20and%20seasonId%3C=" + SEASON_ID + "%20and%20seasonId%3E=" + SEASON_ID
         
-        # Note: seasonId is hardcoded to 20252026 as per assumed context. 
-        # Ideally we fetch dynamically, but this matches our other scripts.
         
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         import ssl
@@ -492,12 +491,17 @@ def fetch_team_rankings():
         
         # 1. Extract needed stats
         # Team names in API might differ slightly (full names).
+        # Regress toward league-typical rates with ST_PRIOR_GAMES of weight so
+        # a 0-for-3 PP (or 0% PK) in the first games doesn't swing PP xG.
+        ST_PRIOR_GAMES = 10
         stats = []
         for t in teams_data:
+            gp = t.get('gamesPlayed') or 0
+            w = gp / (gp + ST_PRIOR_GAMES)
             stats.append({
                 'name': t['teamFullName'],
-                'pp': t['powerPlayPct'],
-                'pk': t['penaltyKillPct']
+                'pp': w * (t['powerPlayPct'] or 0) + (1 - w) * 0.20,
+                'pk': w * (t['penaltyKillPct'] or 0) + (1 - w) * 0.80
             })
             
         # 2. Sort for PP (High is Better)
@@ -720,7 +724,7 @@ def predict():
 
     # Load game stats for GasCalculator and Starter Lookup
     print("Loading game stats for GasCalculator and Starter Lookup...")
-    game_stats_df = pd.read_csv('nhl_season_2025_2026_gamestats.csv')
+    game_stats_df = read_season_csv("gamestats")
     
     # Load Scoring Coefficients
     try:
@@ -771,18 +775,19 @@ def predict():
         league_xg_5v5 = 2.35
     
     # SP Teams Avg
+    # League rates, regressed toward 20%/80% with ST_PRIOR_OPPS of weight so
+    # the first nights of a season don't set the baseline.
+    ST_PRIOR_OPPS = 500
     avg_pp_pct = 0.20
     avg_pk_pct = 0.80
     if not game_stats_df.empty:
          tot_pp_opps = game_stats_df['pp_opportunities'].sum()
          tot_pp_goals = game_stats_df['pp_goals'].sum()
-         if tot_pp_opps > 0:
-             avg_pp_pct = tot_pp_goals / tot_pp_opps
-        
+         avg_pp_pct = (tot_pp_goals + ST_PRIOR_OPPS * 0.20) / (tot_pp_opps + ST_PRIOR_OPPS)
+
          tot_pk_opps = game_stats_df['pk_opportunities'].sum()
          tot_pp_ga = game_stats_df['pp_goals_against'].sum()
-         if tot_pk_opps > 0:
-             avg_pk_pct = 1 - (tot_pp_ga / tot_pk_opps)
+         avg_pk_pct = 1 - (tot_pp_ga + ST_PRIOR_OPPS * 0.20) / (tot_pk_opps + ST_PRIOR_OPPS)
     
     # Build Starter Lookup: (DateStr, TeamCommonName) -> StarterName
     starter_lookup = {}
@@ -844,10 +849,10 @@ def predict():
         from player_impact import normalize_name as _norm_name
         _ps_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 '..', 'public', 'data',
-                                'nhl_season_2025_2026_player_stats.csv')
+                                season_file("player_stats"))
         if not os.path.exists(_ps_path):
             _ps_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                    'nhl_season_2025_2026_player_stats.csv')
+                                    season_file("player_stats"))
         if os.path.exists(_ps_path):
             _ps_df = pd.read_csv(_ps_path)
             # Exclude goalies (they have is_goalie=1 or position='G')
@@ -878,7 +883,10 @@ def predict():
     # (player_last_team, from player_stats.csv).  A mismatch means a trade.
     # We apply a decayed xG penalty to the OLD team for up to TRADE_LOOKBACK_GAMES.
     TRADE_LOOKBACK_GAMES = 14  # ignore trades older than this many old-team games
-    if player_impact_data and player_last_team and team_game_dates:
+    # Early season player_impact still carries last season's teams (see
+    # PLAYER_MODEL_MIN_GAMES), so every offseason move would look like a trade.
+    impact_is_current = game_stats_df['game_id'].nunique() >= PLAYER_MODEL_MIN_GAMES if 'game_id' in game_stats_df else False
+    if impact_is_current and player_impact_data and player_last_team and team_game_dates:
         for pid, pdata in player_impact_data.items():
             current_tri  = pdata.get('team')            # where they play NOW
             last_tri_csv = player_last_team.get(pid)    # last team in game logs

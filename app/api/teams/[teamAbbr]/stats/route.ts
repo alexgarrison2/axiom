@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
 import { TeamInfo, GameLog, PlayerBoxscoreRow, TeamRating, TeamStatsResponse, TeamLineup } from '@/types';
+import { seasonFile } from '@/lib/season';
 
 const APP_TIME_ZONE = 'America/Chicago';
 
@@ -271,7 +272,9 @@ export async function GET(
         // 4. Fetch Player Stats (The Big One)
         // Only read and parse if necessary? No, we need it for the table.
         // But we FILTER it immediately.
-        const playersText = readCsv('nhl_season_2025_2026_player_stats.csv');
+        // Missing until the first games of a new season are backfilled
+        const playersFile = path.join(process.cwd(), 'public/data', seasonFile('player_stats'));
+        const playersText = fs.existsSync(playersFile) ? fs.readFileSync(playersFile, 'utf8') : '';
         const players = Papa.parse(playersText, { header: true, skipEmptyLines: true, dynamicTyping: true }).data as PlayerBoxscoreRow[];
         // Include ALL rows for players currently on this team (not just rows while on this team)
         // so traded players' pre-trade games are visible in the availability strip

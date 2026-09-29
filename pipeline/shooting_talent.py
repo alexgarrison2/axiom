@@ -26,6 +26,7 @@ Where prior_xG controls shrinkage strength:
     - High xG player (star):   talent dominates, near raw ratio
 """
 
+from season import season_file, START_YEAR
 import json
 import os
 import sys
@@ -42,9 +43,9 @@ TALENT_CEILING = 1.35  # Don't let anyone exceed 135% (prevents small-sample exp
 
 # Season weighting for multi-season aggregation
 SEASON_WEIGHTS = {
-    2025: 0.50,  # Current season (2025-2026)
-    2024: 0.30,  # Last season (2024-2025)
-    2023: 0.20,  # Two seasons ago (2023-2024)
+    START_YEAR: 0.50,      # Current season
+    START_YEAR - 1: 0.30,  # Last season
+    START_YEAR - 2: 0.20,  # Two seasons ago
 }
 
 # Strength states to include (EV play is where talent is most stable/repeatable)
@@ -69,7 +70,7 @@ def compute_shooting_talent(pipeline_dir=None):
     # ── Load all shot data ─────────────────────────────────────────────
     shot_files = [
         os.path.join(pipeline_dir, "nhl_historical_shots.csv"),
-        os.path.join(pipeline_dir, "nhl_season_2025_2026_shots.csv"),
+        os.path.join(pipeline_dir, season_file("shots")),
     ]
 
     frames = []

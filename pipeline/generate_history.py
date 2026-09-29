@@ -1,3 +1,4 @@
+from season import season_file
 import pandas as pd
 import numpy as np
 from scipy.stats import poisson
@@ -95,7 +96,7 @@ def generate_history():
             print(f"Warning: Could not load detailed predictions CSV: {e}")
     
     # Load all game data
-    df = pd.read_csv('nhl_season_2025_2026_gamestats.csv')
+    df = pd.read_csv(season_file("gamestats"))
         
     df['game_date'] = pd.to_datetime(df['game_date'])
     df = df.sort_values('game_date')

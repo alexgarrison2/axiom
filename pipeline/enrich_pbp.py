@@ -12,14 +12,15 @@ Usage:
   python enrich_pbp.py --full                  # Re-enrich all games from scratch
 """
 
+from season import season_file
 import pandas as pd
 import sys
 import os
 from datetime import datetime
 
 # ── Config ──────────────────────────────────────────────────────────────────
-PBP_FILE    = "nhl_season_2025_2026_pbp.csv"
-SHIFTS_FILE = "nhl_season_2025_2026_shifts.csv"
+PBP_FILE    = season_file("pbp")
+SHIFTS_FILE = season_file("shifts")
 TEAMS_FILE  = "nhl_teams.csv"
 MAX_ON_ICE  = 6   # 5 skaters + 1 goalie per team
 

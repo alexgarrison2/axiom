@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { PlayerBoxscoreRow, GameLog, TeamLineup, LineupPlayer } from '@/types';
 import { TEAM_COLORS } from '@/utils/team-colors';
+import { SEASON_ID, SEASON_GAMES } from '@/lib/season';
 
 /* ═══════════════════════════════════════════════════════
    Types
@@ -202,7 +203,7 @@ function StatCell({ val, label, pct, blank, color }: {
 }
 
 /* ═══════════════════════════════════════════════════════
-   AvailStrip — 82-game season availability indicator
+   AvailStrip — full-season availability indicator
    • white  = player played
    • orange = team played, player did not
    • dark   = future game
@@ -271,10 +272,10 @@ function AvailStrip({ teamGames, playedToi, otherTeamDates }: {
 }) {
     const [tt, setTt] = useState<TooltipState | null>(null);
 
-    // 82 total slots: played games + future placeholders
+    // One slot per regular-season game: played games + future placeholders
     const slots: (TeamGameSlot | null)[] = [
         ...teamGames,
-        ...Array.from({ length: Math.max(0, 82 - teamGames.length) }, () => null),
+        ...Array.from({ length: Math.max(0, SEASON_GAMES - teamGames.length) }, () => null),
     ];
 
     const half = Math.ceil(slots.length / 2);
@@ -483,7 +484,7 @@ function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCa
     const posC = posAccent(pi.position);
 
     // Headshot — season-specific transparent-bg PNG from NHL CDN
-    const headshot = `https://assets.nhle.com/mugs/nhl/20252026/${pi.team}/${player.id}.png`;
+    const headshot = `https://assets.nhle.com/mugs/nhl/${SEASON_ID}/${pi.team}/${player.id}.png`;
 
     // Advanced stat grid — new column order
     // Col 1: xGF/60 | xGA/60 | xG%

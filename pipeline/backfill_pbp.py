@@ -12,6 +12,7 @@ After this script completes, run:
     python calc_pbp_impact.py     # regenerates pbp_metrics.json
 """
 
+from season import season_file
 import os
 import sys
 import time
@@ -22,8 +23,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from nhl_scraper_poc import get_pbp, extract_pbp_rows
 
-GAMESTATS_FILE = "nhl_season_2025_2026_gamestats.csv"
-PBP_FILE       = "nhl_season_2025_2026_pbp.csv"
+GAMESTATS_FILE = season_file("gamestats")
+PBP_FILE       = season_file("pbp")
 RATE_LIMIT_SEC = 0.4   # seconds between NHL API calls
 
 

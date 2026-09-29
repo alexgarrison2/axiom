@@ -1,4 +1,6 @@
+from season import season_file
 import json
+import os
 import pandas as pd
 import numpy as np
 import pickle
@@ -199,7 +201,7 @@ def main():
         
     # Also include current season shots — more data improves calibration,
     # and xG features (location, shot type, rebound) are stable year-over-year.
-    for current_path in ["pipeline/nhl_season_2025_2026_shots.csv", "nhl_season_2025_2026_shots.csv"]:
+    for current_path in [os.path.join("pipeline", season_file("shots")), season_file("shots")]:
         try:
             dfs.append(load_data(current_path))
             break

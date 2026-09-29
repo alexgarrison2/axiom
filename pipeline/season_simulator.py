@@ -380,7 +380,7 @@ def fetch_remaining_schedule():
     Falls back to the static remaining_schedule.json filtered to today+ if the
     live fetch fails.
     """
-    SEASON_END = '2026-04-18'
+    season_end = None  # filled from the first response (regularSeasonEndDate)
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -390,13 +390,14 @@ def fetch_remaining_schedule():
     current_date = today
     loops = 0
 
-    print(f"Fetching remaining schedule from {today} to {SEASON_END}...")
-    while current_date <= SEASON_END and loops < 30:
+    print(f"Fetching remaining schedule from {today}...")
+    while (season_end is None or current_date <= season_end) and loops < 40:
         url = f"https://api-web.nhle.com/v1/schedule/{current_date}"
         try:
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
                 data = json.load(resp)
+            season_end = season_end or data.get('regularSeasonEndDate')
 
             for week in data.get('gameWeek', []):
                 for game in week.get('games', []):

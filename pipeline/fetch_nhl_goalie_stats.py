@@ -1,3 +1,4 @@
+from season import SEASON_ID
 import json
 import urllib.request
 import urllib.parse
@@ -10,8 +11,7 @@ def fetch_nhl_goalie_stats():
     """
     print("Fetching Goalie Stats from NHL API...")
     
-    # Season ID: 20252026
-    season_id = "20252026"
+    season_id = SEASON_ID
     
     # Endpoint
     url = "https://api.nhle.com/stats/rest/en/goalie/summary"

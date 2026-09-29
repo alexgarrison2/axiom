@@ -1,3 +1,4 @@
+from season import season_file, SEASON_ID, SEASON_START_DATE as _SEASON_START_DATE
 import urllib.request
 import os
 import json
@@ -85,8 +86,8 @@ def get_href_stats(date_str, tricode):
 
 # Constants
 BASE_URL = "https://api-web.nhle.com/v1"
-SEASON_START_DATE = "2025-10-04" 
-OUTPUT_FILENAME = "nhl_season_2025_2026_gamestats.csv"
+SEASON_START_DATE = _SEASON_START_DATE
+OUTPUT_FILENAME = season_file("gamestats")
 
 
 # Create unverified context for SSL to avoid cert errors
@@ -220,7 +221,7 @@ def parse_boxscore(game_id, boxscore):
 def extract_pbp_rows(pbp_json, game_info, game_date):
     """
     Extract raw play-by-play event rows from the NHL API PBP JSON.
-    Returns a list of dicts matching the nhl_season_2025_2026_pbp.csv schema.
+    Returns a list of dicts matching the season PBP CSV schema.
     Each physical event generates TWO rows: one home-perspective, one away-perspective.
 
     Columns required by enrich_pbp.py:
@@ -230,7 +231,7 @@ def extract_pbp_rows(pbp_json, game_info, game_date):
     On-ice columns (home_on1-6, away_on1-6) are left NULL — filled by enrich_pbp.py.
     """
     game_id   = game_info.get("id")
-    season    = pbp_json.get("season", 20252026)
+    season    = pbp_json.get("season", int(SEASON_ID))
     game_type = game_info.get("gameType", 2)
 
     home_team = game_info.get("homeTeam", {})
@@ -1989,7 +1990,7 @@ def main():
 
 
     # Export Shot Data to CSV
-    SHOTS_FILENAME = "nhl_season_2025_2026_shots.csv"
+    SHOTS_FILENAME = season_file("shots")
     if all_shots:
         print(f"Writing {len(all_shots)} shots to {SHOTS_FILENAME}...")
         new_shots_df = pd.DataFrame(all_shots)
@@ -2011,7 +2012,7 @@ def main():
         print("No new shot data found.")
 
     # Export Raw PBP Events to CSV (consumed by enrich_pbp.py → calc_pbp_impact.py)
-    PBP_FILENAME = "nhl_season_2025_2026_pbp.csv"
+    PBP_FILENAME = season_file("pbp")
     if all_pbp_rows:
         print(f"Writing {len(all_pbp_rows)} raw PBP rows to {PBP_FILENAME}...")
         new_pbp_df = pd.DataFrame(all_pbp_rows)
@@ -2033,7 +2034,7 @@ def main():
         print("No new PBP data to write.")
 
     # Export Player Stats to CSV
-    PLAYER_STATS_FILENAME = "nhl_season_2025_2026_player_stats.csv"
+    PLAYER_STATS_FILENAME = season_file("player_stats")
     if all_player_stats:
         print(f"Writing {len(all_player_stats)} player stats to {PLAYER_STATS_FILENAME}...")
         new_stats_df = pd.DataFrame(all_player_stats)

@@ -289,6 +289,12 @@ def main():
     with open(DATA_FILE) as f:
         series_list = json.load(f)
 
+    # Regular season / offseason: every series is complete, so leave last
+    # postseason's file alone. Seed new series here when the next postseason starts.
+    if all(s.get("status") == "complete" for s in series_list):
+        print("No playoff series in progress — skipping.")
+        return
+
     # Build a lookup: series_code -> series index in our list
     # We need to match NHL's series codes to our seriesIds
     # Strategy: match by team tri-codes

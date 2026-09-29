@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePlayoffsActive } from '@/hooks/usePlayoffsActive';
 
 interface NavBarProps {
   activePage: 'playoffs' | 'bracket' | 'teams' | 'history' | 'news' | 'skaters' | string;
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
 ];
 
 export default function NavBar({ activePage, dates = [] }: NavBarProps) {
+  const playoffsActive = usePlayoffsActive();
   return (
     <div className="flex flex-col items-center gap-3 relative z-20 mb-3 mt-2">
       <div className="relative w-full px-3 md:px-0">
@@ -34,7 +36,7 @@ export default function NavBar({ activePage, dates = [] }: NavBarProps) {
           {/* Date tabs */}
           {dates.map(date => {
             const [, m, d] = date.split('-').map(Number);
-            const monthShort = new Date(2026, m - 1, d).toLocaleDateString('en-US', { month: 'short' });
+            const monthShort = new Date(2000, m - 1, d).toLocaleDateString('en-US', { month: 'short' });
             const label = `${monthShort}-${String(d).padStart(2, '0')}`;
             return (
               <Link
@@ -48,7 +50,7 @@ export default function NavBar({ activePage, dates = [] }: NavBarProps) {
           })}
 
           {/* Nav items */}
-          {NAV_ITEMS.map(item => {
+          {NAV_ITEMS.filter(item => item.key !== 'playoffs' || playoffsActive || activePage === 'playoffs').map(item => {
             const isActive = activePage === item.key;
             return (
               <Link

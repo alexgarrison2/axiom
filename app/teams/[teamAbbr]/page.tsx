@@ -11,6 +11,7 @@ import GamesLogTable from '@/components/team/GamesLogTable';
 import SkaterGrid from '@/components/team/SkaterGrid';
 // import { TeamInfo } from '@/types';
 import { motion } from 'framer-motion';
+import { SEASON_GAMES } from '@/lib/season';
 
 export default function TeamDetailPage() {
     const params = useParams();
@@ -178,9 +179,9 @@ export default function TeamDetailPage() {
     const displayedGames = useMemo(() => {
         let out = [...filteredGames];
         if (filters.last === 'Reg') {
-            out = out.filter(g => g.game_number <= 82);
+            out = out.filter(g => g.game_number <= SEASON_GAMES);
         } else if (filters.last === 'Playoffs') {
-            out = out.filter(g => g.game_number > 82);
+            out = out.filter(g => g.game_number > SEASON_GAMES);
         } else if (filters.last !== 'All') {
             const n = parseInt(filters.last);
             if (!isNaN(n)) out = out.slice(0, n);

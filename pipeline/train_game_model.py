@@ -19,6 +19,7 @@ Output:
     pipeline/game_model_meta.json — feature names, training stats, validation metrics
 """
 
+from season import season_file
 import os
 import sys
 import json
@@ -55,7 +56,7 @@ GOALIE_PRIOR_STRENGTH = 20  # Bayesian prior for goalie GSAx regression
 def load_all_games():
     """Load and combine historical + current season game data, deduplicated."""
     hist_path = os.path.join(SCRIPT_DIR, 'nhl_historical_gamestats.csv')
-    curr_path = os.path.join(SCRIPT_DIR, 'nhl_season_2025_2026_gamestats.csv')
+    curr_path = os.path.join(SCRIPT_DIR, season_file("gamestats"))
 
     dfs = []
     if os.path.exists(hist_path):
