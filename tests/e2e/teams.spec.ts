@@ -43,16 +43,51 @@ test.describe('/teams', () => {
         await expect(car.locator('td').nth(5)).toHaveText('113');
     });
 
+    test('a shared ?season= link is prerendered, not swapped in after hydration', async ({ request }) => {
+        const html = (await (await request.get('/teams?season=20252026')).text()).replace(/<!-- -->/g, '');
+        const caption = html.match(/<caption[^>]*>(.*?)<\/caption>/)?.[1].replace(/<[^>]+>/g, '') ?? '';
+        expect(caption).toContain('2025-26 regular season');
+        expect(caption).toContain('through 82 games');
+    });
+
+    test('no clinch or elimination codes before they belong to this season', async ({ page }) => {
+        await page.goto('/teams');
+        for (const label of ['Eliminated', 'Clinched playoff spot', 'Clinched division', "Presidents' Trophy"]) {
+            await expect(page.locator(`[title="${label}"]`)).toHaveCount(0);
+        }
+    });
+
+    test('re-visiting /teams in-session makes no new data requests', async ({ page }) => {
+        await page.goto('/teams');
+        await page.getByRole('radio', { name: '2025-26' }).first().click();
+        await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
+        await page.getByRole('radio', { name: '2026-27' }).first().click();
+        const data: string[] = [];
+        page.on('request', r => {
+            if (/\/api\/|\/data\//.test(r.url())) data.push(r.url());
+        });
+        await page.getByRole('radio', { name: '2025-26' }).first().click();
+        await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
+        await page.locator('a[href="/teams/EDM"]').first().click();
+        await expect(page).toHaveURL(/\/teams\/EDM/);
+        await page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Teams' }).click();
+        await expect(page).toHaveURL(/\/teams$/);
+        await page.getByRole('radio', { name: '2025-26' }).first().click();
+        await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
+        expect(data).toEqual([]);
+    });
+
     test('column headers stay visible after scrolling', async ({ page }) => {
         await page.goto('/teams?season=20252026');
         await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
-        await page.mouse.wheel(0, 900);
-        await page.waitForTimeout(300);
+        // Streamed static HTML reveals the table on React's next reveal tick.
+        await expect(page.locator('caption').first()).toBeVisible();
+        await page.evaluate(() => window.scrollTo(0, 900));
+        await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
         const head = page.getByRole('columnheader', { name: /^GP/ }).first();
-        const box = await head.boundingBox();
-        expect(box).not.toBeNull();
-        expect(box!.y).toBeGreaterThanOrEqual(0);
-        expect(box!.y).toBeLessThan(200);
+        // The header follows the page once hydrated (it re-measures on mount).
+        await expect.poll(async () => (await head.boundingBox())?.y ?? -1, { timeout: 5000 }).toBeGreaterThanOrEqual(0);
+        await expect.poll(async () => (await head.boundingBox())?.y ?? 9999, { timeout: 5000 }).toBeLessThan(200);
     });
 
     test('axe: 0 serious/critical', async ({ page }) => {
@@ -75,6 +110,26 @@ test.describe('/teams/[abbr]', () => {
         const box = await h1.boundingBox();
         expect(box!.y).toBeLessThan(400);
         await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('Teams');
+    });
+
+    test('2025-26 regular-season totals exclude the playoffs', async ({ page }) => {
+        await page.goto('/teams/EDM?season=20252026');
+        const summary = page.getByRole('tabpanel');
+        await expect(summary).toContainText('41-30-11');
+        await expect(summary).toContainText('93');
+        await expect(summary).toContainText('82 of 82 games');
+    });
+
+    test('skaters come from the current roster with season-consistent lines', async ({ request }) => {
+        const res = await request.get('/api/teams/EDM/stats');
+        const body = await res.json();
+        const names: string[] = body.skaters.map((s: { name: string }) => s.name);
+        for (const gone of ['Darnell Nurse', 'Adam Henrique', 'Jack Roslovic']) expect(names).not.toContain(gone);
+        const mcd = body.skaters.find((s: { name: string }) => s.name === 'Connor McDavid');
+        expect(mcd.last).toMatchObject({ gp: 82 });
+        expect(mcd.last.pts).toBeGreaterThan(0);
+        expect(mcd.current?.gp ?? 0).toBeLessThanOrEqual(1);
+        for (const s of body.skaters) for (const line of [s.current, s.last]) if (line) expect(line.pts).toBe(line.g + line.a);
     });
 
     test('keyboard can sort the game log and expand a row', async ({ page, isMobile }) => {

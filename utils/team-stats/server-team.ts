@@ -18,8 +18,6 @@ import type {
     Boxscores, GoalieLine, GoalieSeason, NextGame, Pctl, SeasonLine, SkaterCardData, SkaterImpact, TeamHero, TeamPayload,
 } from './team-types';
 
-const PUBLIC_DATA = path.join(process.cwd(), 'public', 'data');
-
 // ── roster ───────────────────────────────────────────────────────────────────
 
 export interface RosterPlayer {
@@ -208,13 +206,12 @@ const toiSec = (s: string | undefined) => {
 function seasonLine(pid: string, rows: PlayerRow[], teamGames: GameRow[], tri: string): SeasonLine | null {
     const mine = rows.filter(r => String(r.player_id) === pid && gameTypeOf(r.game_id) === 2 && toiSec(r.toi) > 0);
     if (mine.length === 0 && teamGames.length === 0) return null;
-    let g = 0, a = 0, pts = 0, sog = 0, toi = 0;
+    let g = 0, a = 0, sog = 0, toi = 0;
     const withTeam = new Set<string>();
     const otherDates = new Set<string>();
     for (const r of mine) {
         g += n(r.goals);
         a += n(r.assists);
-        pts += n(r.points);
         sog += n(r.shots);
         toi += toiSec(r.toi);
         if (r.team === tri) withTeam.add(String(r.game_id));
@@ -227,7 +224,7 @@ function seasonLine(pid: string, rows: PlayerRow[], teamGames: GameRow[], tri: s
     const first = marks.indexOf('1');
     for (let i = 0; i < (first < 0 ? marks.length : first); i++) if (marks[i] === '0') marks[i] = '-';
     const avail = marks.join('');
-    return { gp: mine.length, g, a, pts, sog, toi: mine.length ? Math.round(toi / mine.length) : 0, avail };
+    return { gp: mine.length, g, a, pts: g + a, sog, toi: mine.length ? Math.round(toi / mine.length) : 0, avail };
 }
 
 // ── impact + percentiles ─────────────────────────────────────────────────────
@@ -290,10 +287,11 @@ function impactBuilder() {
 
 // ── goalies ──────────────────────────────────────────────────────────────────
 
-function goalieSeason(pid: string, name: string, rows: PlayerRow[], teamGames: GameRow[], tri: string): GoalieSeason | null {
+/** A goalie's regular-season line; starts (GSAx, last five) count for any club, so a newcomer's season is complete. */
+function goalieSeason(pid: string, name: string, rows: PlayerRow[], leagueGames: GameRow[]): GoalieSeason | null {
     const mine = rows.filter(r => String(r.player_id) === pid && gameTypeOf(r.game_id) === 2 && toiSec(r.toi) > 0);
     const key = goalieKey(name);
-    const starts = teamGames.filter(g => g.type === 2 && g.tri === tri && g.starter && goalieKey(g.starter) === key);
+    const starts = leagueGames.filter(g => g.type === 2 && g.starter && goalieKey(g.starter) === key);
     if (mine.length === 0 && starts.length === 0) return null;
     const s: GoalieSeason = { gp: mine.length, gs: starts.length, w: 0, l: 0, ot: 0, sa: 0, sv: 0, ga: 0, toi: 0, gsax: null, last5: [] };
     for (const r of mine) {
@@ -458,7 +456,6 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
     const summary = leaguesSummary(standings);
 
     const { players: roster, source } = await loadRoster(tri);
-    const rosterIds = new Set(roster.map(p => p.id));
     const rc = rosterChanges(tri);
     const addedIds = new Set((rc?.added ?? []).map(p => String(p.id)));
     const addedFrom = new Map((rc?.added ?? []).map(p => [String(p.id), p.from ?? null]));
@@ -468,8 +465,10 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
     const lastSeason = prevSeasonId(SEASON_ID);
     const curRows = loadPlayerStats(curSeason);
     const lastRows = loadPlayerStats(lastSeason);
-    const curTeamGames = season === curSeason ? teamGames : leagueStandings(curSeason).games.filter(g => g.tri === tri);
-    const lastTeamGames = season === lastSeason ? teamGames : leagueStandings(lastSeason).games.filter(g => g.tri === tri);
+    const curLeagueGames = season === curSeason ? leagueGames : leagueStandings(curSeason).games;
+    const lastLeagueGames = season === lastSeason ? leagueGames : leagueStandings(lastSeason).games;
+    const curTeamGames = curLeagueGames.filter(g => g.tri === tri);
+    const lastTeamGames = lastLeagueGames.filter(g => g.tri === tri);
     const lastSeasonTeamIds = new Set(lastRows.filter(r => r.team === tri).map(r => String(r.player_id)));
 
     const bios = readPublicJson<Record<string, Bio>>('player_bio.json') ?? {};
@@ -515,8 +514,11 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
         .filter(p => p.pos === 'G')
         .map(p => {
             const r = ratingByKey.get(goalieKey(p.name));
-            const seasons = Object.keys(r?.games_by_season ?? {}).sort();
-            const label = r && (r.games_played ?? 0) > 0 ? seasonLabel(SEASON_ID) : seasons.length > 1 ? `${seasons[0]} to ${seasons[seasons.length - 1]}` : seasons[0] ?? 'prior seasons';
+            // The rating blends every tracked season (plus this one once he has played).
+            const seasons = Object.keys(r?.games_by_season ?? {});
+            if (r && (r.games_played ?? 0) > 0) seasons.push(seasonLabel(SEASON_ID));
+            const span = [...new Set(seasons)].sort();
+            const label = span.length > 1 ? `${span[0]} to ${span[span.length - 1]}` : span[0] ?? 'prior seasons';
             const nextStatus = next?.goalie && goalieKey(next.goalie.name) === goalieKey(p.name) ? { date: next.date, status: next.goalie.status, opp: next.opp } : null;
             return {
                 id: p.id,
@@ -524,8 +526,8 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
                 number: p.number,
                 isNew: addedIds.has(p.id),
                 injury: injuryFor(p.id, p.name),
-                current: goalieSeason(p.id, p.name, curRows, curTeamGames, tri),
-                last: goalieSeason(p.id, p.name, lastRows, lastTeamGames, tri),
+                current: goalieSeason(p.id, p.name, curRows, curLeagueGames),
+                last: goalieSeason(p.id, p.name, lastRows, lastLeagueGames),
                 rating: r && typeof r.gsax_per_game === 'number' ? { gsaxPerGame: r2(r.gsax_per_game), label } : null,
                 next: nextStatus,
             };
@@ -548,7 +550,6 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
     }
 
     const kpis = standing && standing.gp > 0 ? summary.kpis(tri) : null;
-    void rosterIds;
     return {
         season,
         seasonLabel: seasonLabel(season),

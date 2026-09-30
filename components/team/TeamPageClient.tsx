@@ -133,7 +133,7 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
                     <TabsTrigger value="skaters">Skaters</TabsTrigger>
                     <TabsTrigger value="goalies">Goalies</TabsTrigger>
                 </TabsList>
-                {tab !== 'skaters' ? (
+                {tab === 'games' || tab === 'charts' ? (
                     <Segmented label="Season" value={season} onChange={changeSeason} options={seasons.map(s => ({ value: s, label: seasonLabel(s) }))} />
                 ) : null}
             </div>

@@ -31,7 +31,7 @@ export function SeasonBanner({ seasonLabel, maxGp, isCurrent, startsOn, previous
                 className,
             )}
         >
-            <div className="min-w-0 flex-1">
+            <div className="min-w-[16rem] flex-1">
                 {empty ? (
                     <>
                         <p className="text-body-sm font-semibold text-fg-1">
