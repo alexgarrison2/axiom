@@ -1,7 +1,7 @@
 /** Skeleton matching the team page: breadcrumb, hero (crest, record, next game, KPI tiles), tabs, rows. */
 export default function TeamLoading() {
     return (
-        <main className="mx-auto w-full max-w-[1800px] px-4 pb-tabbar pt-2 md:px-6 md:pt-4" aria-busy="true">
+        <main className="page pb-tabbar pt-2 md:pt-4" aria-busy="true">
             <p className="sr-only" role="status">
                 Loading team
             </p>

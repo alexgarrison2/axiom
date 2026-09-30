@@ -9,6 +9,7 @@ import { SortHeader } from '@/components/ui/sort-header';
 import { TEAM_CODES } from '@/components/ui/team-color';
 import { TeamLogo } from '@/components/views/TeamLogo';
 import { cn } from '@/lib/utils';
+import { scrollBehavior } from '@/lib/scroll';
 import { CELL_BG } from '@/components/teams-table/table-style';
 import { compactSkaters, filterSkaters, sortSkaters, type Skater, type SkaterFilter, type SortKey } from './players/model';
 
@@ -36,10 +37,14 @@ const toi = (min: number | null) => {
     return `${m}:${String(Math.round((min - m) * 60)).padStart(2, '0')}`;
 };
 
-/** Signed value tone: contrast-safe on every surface (average stays --text-2). */
-function tone(v: number | null, strong = 0.5): string {
+/** Colour a rating only with enough games behind it (same idea as the 5+ GP rule on /teams). */
+export const COLOR_MIN_GP = 10;
+
+/** Signed value tone: green = good, red = bad, only past `strong` and with COLOR_MIN_GP games (average stays --text-2). */
+export function tone(v: number | null, gp: number | null | undefined, strong = 0.5): string {
     if (v == null) return 'text-fg-3';
-    if (v >= strong) return 'text-brand';
+    if ((gp ?? 0) < COLOR_MIN_GP) return 'text-fg-2';
+    if (v >= strong) return 'text-pos';
     if (v <= -strong) return 'text-neg';
     return 'text-fg-2';
 }
@@ -51,11 +56,11 @@ const COLUMNS: Column[] = [
     { key: 'a', label: 'A', title: 'Assists', sets: ['scoring'], render: p => p.a },
     { key: 'toiPg', label: 'TOI', title: 'Time on ice per game', sets: ['scoring'], render: p => toi(p.toiPg) },
     { key: 'sogPg', label: 'SOG/GP', title: 'Shots on goal per game', sets: ['rates'], render: p => dec(p.sogPg) },
-    { key: 'evOff', label: 'EV Off', title: 'Even-strength offence (z-score)', sets: ['impact'], render: p => <span className={tone(p.evOff)}>{z(p.evOff)}</span> },
-    { key: 'evDef', label: 'EV Def', title: 'Even-strength defence (z-score)', sets: ['impact'], render: p => <span className={tone(p.evDef)}>{z(p.evDef)}</span> },
-    { key: 'pp', label: 'PP', title: 'Power-play impact (z-score)', sets: ['impact'], render: p => <span className={tone(p.pp)}>{z(p.pp)}</span> },
-    { key: 'pk', label: 'PK', title: 'Penalty-kill impact (z-score)', sets: ['impact'], render: p => <span className={tone(p.pk)}>{z(p.pk)}</span> },
-    { key: 'rapm', label: 'RAPM', title: 'Isolated net impact per 60 (ridge regression)', sets: ['rates'], render: p => <span className={tone(p.rapm, 0.1)}>{z(p.rapm)}</span> },
+    { key: 'evOff', label: 'EV Off', title: 'Even-strength offence (z-score)', sets: ['impact'], render: p => <span className={tone(p.evOff, p.gp)}>{z(p.evOff)}</span> },
+    { key: 'evDef', label: 'EV Def', title: 'Even-strength defence (z-score)', sets: ['impact'], render: p => <span className={tone(p.evDef, p.gp)}>{z(p.evDef)}</span> },
+    { key: 'pp', label: 'PP', title: 'Power-play impact (z-score)', sets: ['impact'], render: p => <span className={tone(p.pp, p.gp)}>{z(p.pp)}</span> },
+    { key: 'pk', label: 'PK', title: 'Penalty-kill impact (z-score)', sets: ['impact'], render: p => <span className={tone(p.pk, p.gp)}>{z(p.pk)}</span> },
+    { key: 'rapm', label: 'RAPM', title: 'Isolated net impact per 60 (ridge regression)', sets: ['rates'], render: p => <span className={tone(p.rapm, p.gp, 0.1)}>{z(p.rapm)}</span> },
     { key: 'ixg60', label: 'ixG/60', title: 'Individual expected goals per 60', sets: ['rates'], render: p => dec(p.ixg60) },
     { key: 'oixgf60', label: 'oixGF/60', title: 'On-ice expected goals for per 60 at 5v5', sets: ['rates'], render: p => dec(p.oixgf60) },
 ];
@@ -81,6 +86,7 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
     const [set, setSet] = React.useState<ColumnSet>('overview');
     const ids = { search: React.useId(), team: React.useId(), gp: React.useId(), cols: React.useId() };
     const tableTop = React.useRef<HTMLDivElement>(null);
+    const filterBar = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         let alive = true;
@@ -111,9 +117,23 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
     };
     const goPage = (p: number) => {
         setPage(p);
-        tableTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        tableTop.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     };
     const colClass = (c: Column) => (c.sets.includes(set) ? 'table-cell' : 'hidden md:table-cell');
+    /**
+     * Focusing the table region itself: the browser scrolls it just below the
+     * app bar, under the sticky filter bar. Nudge it down so the column
+     * header row shows below the bar.
+     */
+    const revealRegion = (e: React.FocusEvent<HTMLDivElement>) => {
+        if (e.target !== e.currentTarget) return;
+        const region = e.currentTarget;
+        requestAnimationFrame(() => {
+            const bar = filterBar.current?.getBoundingClientRect().bottom ?? 0;
+            const top = region.getBoundingClientRect().top;
+            if (top < bar + 8) window.scrollBy({ top: top - bar - 8, behavior: 'auto' });
+        });
+    };
 
     const list = players ?? preview?.rows;
     if (!list) return <div aria-busy="true" className="h-96 rounded-card border border-line bg-surface-1/60" />;
@@ -121,7 +141,7 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="sticky top-appbar z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:flex-row md:items-center md:px-6">
+            <div ref={filterBar} className="sticky top-appbar z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:flex-row md:items-center md:px-6">
                 <div className="flex items-end gap-2">
                     <div className="flex min-w-0 flex-1 flex-col gap-1 md:max-w-md">
                         <label htmlFor={ids.search} className="sr-only">
@@ -212,7 +232,7 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
             {rows.length === 0 ? (
                 <p className="panel label p-card">No matches</p>
             ) : (
-                <ScrollRegion label="Skater ratings table" className="scroll-mt-filterbar rounded-card border border-line bg-surface-1">
+                <ScrollRegion label="Skater ratings table" onFocus={revealRegion} className="scroll-mt-filterbar rounded-card border border-line bg-surface-1">
                     <table className="w-full min-w-full font-mono text-caption tabular-nums md:min-w-[1100px]">
                         <caption className="sr-only">Skaters sorted by {sort.key === 'impact' ? 'impact' : sort.key}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}</caption>
                         <thead className="scroll-mt-filterbar bg-bg">
@@ -250,14 +270,21 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
                                                     <span className="hidden md:inline">{p.team} </span>
                                                     {p.pos}
                                                     {p.rookie ? ' R' : ''}
-                                                    {p.prevTeam ? <span className="text-warn"> {p.prevTeam}</span> : null}
+                                                    {p.prevTeam ? (
+                                                        <abbr title={`from ${p.prevTeam}`} className="text-warn no-underline">
+                                                            {' '}
+                                                            <span aria-hidden="true">←</span>
+                                                            <span className="sr-only">from </span>
+                                                            {p.prevTeam}
+                                                        </abbr>
+                                                    ) : null}
                                                     {!p.onRoster ? ' FA' : ''}
                                                 </span>
                                             </span>
                                         </span>
                                     </th>
                                     <td className={cn(CELL_BG, 'h-8 border-b border-line px-2')}>
-                                        <ImpactBar value={p.impact} />
+                                        <ImpactBar value={p.impact} gp={p.gp} />
                                     </td>
                                     {COLUMNS.map(c => (
                                         <td key={c.key} className={cn(CELL_BG, 'h-8 border-b border-line px-2 text-right text-fg-2', colClass(c))}>
@@ -305,7 +332,7 @@ function shortName(name: string): string {
 }
 
 /** Diverging bar around 0 (±2.5 z shown), value to the right. */
-function ImpactBar({ value }: { value: number | null }) {
+function ImpactBar({ value, gp }: { value: number | null; gp: number }) {
     if (value == null) return <span className="text-fg-3">—</span>;
     const clamped = Math.max(-2.5, Math.min(2.5, value));
     const half = (Math.abs(clamped) / 2.5) * 50;
@@ -319,7 +346,7 @@ function ImpactBar({ value }: { value: number | null }) {
                     style={pos ? { left: '50%', width: `${half}%` } : { right: '50%', width: `${half}%` }}
                 />
             </span>
-            <span className={cn('w-11 text-right font-bold', tone(value))}>{z(value)}</span>
+            <span className={cn('w-11 text-right font-bold', tone(value, gp))}>{z(value)}</span>
         </span>
     );
 }

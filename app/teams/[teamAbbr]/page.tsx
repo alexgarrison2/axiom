@@ -36,7 +36,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamAbbr:
     const prevKpis = leaguesSummary(prevRows).kpis(tri);
 
     return (
-        <main className="mx-auto w-full max-w-[1800px] px-4 pb-tabbar pt-2 md:px-6 md:pb-10 md:pt-4">
+        <main className="page pb-tabbar pt-2 md:pb-10 md:pt-4">
             <nav aria-label="Breadcrumb" className="mb-2 flex items-center justify-between gap-3">
                 <ol className="flex min-w-0 items-center gap-1.5 text-micro font-medium uppercase tracking-label">
                     <li>

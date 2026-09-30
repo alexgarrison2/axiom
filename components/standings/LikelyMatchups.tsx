@@ -4,9 +4,6 @@ import { Crest } from '@/components/ui/crest';
 import { fmtSimPct } from '@/components/views/format';
 import { likelyMatchups, type Conference, type StandingsRow } from './model';
 
-/** Bars run on a fixed 0-25% axis (widened in 5-point steps only if a pairing exceeds it). */
-const AXIS_MAX = 0.25;
-
 /**
  * Early season: the first-round series that came up most often across the
  * simulations (r1_matchups), instead of a bracket seeded from 0-0-0 standings.
@@ -17,8 +14,6 @@ export function LikelyMatchups({ rows, totalSims }: { rows: StandingsRow[]; tota
         <div className="grid gap-3 md:grid-cols-2">
             {confs.map(conf => {
                 const list = likelyMatchups(rows, conf, 6);
-                const top = Math.max(0, ...list.map(m => m.p));
-                const max = Math.max(AXIS_MAX, Math.ceil(top * 20) / 20);
                 return (
                     <section key={conf} aria-labelledby={`likely-${conf}`} className="panel px-3 py-2.5">
                         <h3 id={`likely-${conf}`} className="heading-sub mb-1">
@@ -43,10 +38,11 @@ export function LikelyMatchups({ rows, totalSims }: { rows: StandingsRow[]; tota
                                                 ({TEAM_NAMES[m.a]?.short} against {TEAM_NAMES[m.b]?.short})
                                             </span>
                                         </span>
+                                        {/* Full track = 100%: an 11% pairing fills 11%. */}
                                         <span aria-hidden="true" className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-track">
                                             <span
                                                 className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-brand/35 to-brand"
-                                                style={{ width: `${Math.min(1, m.p / max) * 100}%` }}
+                                                style={{ width: `${Math.max(0, Math.min(1, m.p)) * 100}%` }}
                                             />
                                         </span>
                                         <span className="w-11 shrink-0 text-right font-bold text-fg-1">{fmtSimPct(m.p * 100)}</span>

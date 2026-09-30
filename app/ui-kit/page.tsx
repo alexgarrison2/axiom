@@ -16,7 +16,7 @@ export const metadata: Metadata = {
  */
 export default function UiKitPage() {
     return (
-        <main className="mx-auto max-w-[1180px] px-4 pb-10 pt-5 md:px-5 md:pt-7">
+        <main className="page pb-10 pt-5 md:pt-7">
             <PageHeading title="UI kit" tag={PRIOR_SEASON_TAG} actions={<WinBarLegend className="ml-auto" />} className="mb-6" />
             <Kit />
         </main>

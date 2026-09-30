@@ -169,7 +169,7 @@ export default function MethodologyPage() {
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto max-w-[1200px] px-4 py-5 md:px-6 md:py-7">
+            <div className="page py-5 md:py-7">
                 <h1 className="heading-page">Methodology</h1>
 
                 <div className="mt-5 grid gap-6 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-10">
