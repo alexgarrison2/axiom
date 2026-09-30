@@ -15,8 +15,13 @@ PIPELINE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 @pytest.fixture(scope='module')
 def state(feature_games):
+    # Measure against the season after the last one in which some goalie has a
+    # full (>= 20 GP) line, so the test is independent of the calendar: with
+    # no current-season data that is max(season) + 1, and early in a season
+    # (a few games scraped) it is the current season itself.
     st = F.build_state(feature_games)
-    st.ensure_season_for_date(None, season=int(feature_games['season'].max()) + 1)
+    full = [s for by in st.goalies.values() for s, g in by.items() if g.gp >= 20]
+    st.ensure_season_for_date(None, season=max(full) + 1)
     return st
 
 
@@ -40,11 +45,15 @@ def test_one_start_moves_rating_at_most_0_3(state):
         prev = by.get(season - 1)
         if not prev or prev.gp < 20:
             continue
-        before = state.goalie_rating(name, season)[0]
+        # Baseline without any current-season line (early-season data may already hold one).
+        base = copy.copy(state)
+        base.goalies = dict(state.goalies)
+        base.goalies[name] = {s: g for s, g in by.items() if s != season}
+        before = base.goalie_rating(name, season)[0]
         for xga, ga in ((0.8, 7.0), (5.0, 0.0)):       # a shelling and a shutout steal
-            st = copy.copy(state)
-            st.goalies = dict(state.goalies)
-            st.goalies[name] = dict(by)
+            st = copy.copy(base)
+            st.goalies = dict(base.goalies)
+            st.goalies[name] = dict(base.goalies[name])
             st.goalies[name][season] = F.GoalieSeason(xga=xga / st.season_factor(season), ga=ga, gp=1)
             moved.append(abs(st.goalie_rating(name, season)[0] - before))
     assert moved and max(moved) <= 0.3

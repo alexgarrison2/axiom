@@ -58,9 +58,10 @@ def test_goalie_one_start_moves_rating_little(feature_games):
     st = F.build_state(feature_games)
     st.ensure_season_for_date('2026-10-01')
     name = 'Tristan Jarry'
+    by = st.goalies[name]
+    by.pop(st.season, None)       # drop any real current-season line so the baseline is 0 GP
     before, _, gp0 = st.goalie_rating(name)
     assert gp0 == 0
-    by = st.goalies[name]
     by[st.season] = F.GoalieSeason(xga=1.0, ga=6.0, gp=1)   # a -5 GSAx disaster
     after, _, gp1 = st.goalie_rating(name)
     assert gp1 == 1
