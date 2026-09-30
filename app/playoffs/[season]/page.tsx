@@ -136,7 +136,7 @@ export default async function PlayoffArchivePage({ params }: { params: Promise<{
                 </div>
 
                 <section aria-labelledby="leaders-title" className="flex flex-col gap-3">
-                    <h2 id="leaders-title" className="text-title font-bold text-fg-1">
+                    <h2 id="leaders-title" className="heading-section">
                         Playoff leaders
                     </h2>
                     <Leaders archive={archive} />

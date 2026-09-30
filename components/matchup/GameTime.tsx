@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { fmtTime } from '@/lib/matchup/format';
+import { LocalTime } from '@/components/ui/local-time';
 
 const noop = () => () => {};
 
@@ -12,15 +12,11 @@ export function useHydrated(): boolean {
 
 /**
  * Puck drop in the viewer's time zone with its abbreviation ("5:00 PM EDT").
- * The server (and the first client paint) renders Eastern time.
+ * Thin wrapper over the site-wide <LocalTime> (Eastern on the server, local
+ * after hydration, Eastern in the tooltip).
  */
 export function GameTime({ iso, className }: { iso: string; className?: string }) {
-    const hydrated = useHydrated();
-    return (
-        <time dateTime={iso} className={className}>
-            {fmtTime(iso, hydrated ? undefined : 'America/New_York')}
-        </time>
-    );
+    return <LocalTime iso={iso} className={className} />;
 }
 
 export default GameTime;

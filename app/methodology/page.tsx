@@ -128,7 +128,7 @@ function Section({ id, index, title, children }: { id: string; index: number; ti
     return (
         <section id={id} aria-labelledby={`${id}-h`} className="scroll-mt-24 border-t border-line pt-10">
             <p className="hud-label text-brand">{String(index).padStart(2, '0')}</p>
-            <h2 id={`${id}-h`} className="mt-1 text-h2 font-black text-fg-1">
+            <h2 id={`${id}-h`} className="heading-section mt-1">
                 {title}
             </h2>
             <div className="mt-4 space-y-4 text-body text-fg-2">{children}</div>
@@ -149,7 +149,7 @@ export default function MethodologyPage() {
             <header className="grid items-center gap-8 md:grid-cols-[1fr_320px]">
                 <div>
                     <p className="hud-label text-brand">Methodology · {current} season</p>
-                    <h1 className="mt-2 text-display font-black tracking-tight text-fg-1 md:text-hero">How Pony xG works</h1>
+                    <h1 className="mt-2 text-h2 font-black tracking-tight text-fg-1 md:text-display">How Pony xG works</h1>
                     <p className="mt-4 max-w-2xl text-title font-normal text-fg-2">
                         We estimate every NHL game from shot quality, goaltending and schedule, then show you where our numbers agree and disagree
                         with the betting market — and keep a public record of how that has gone.
@@ -400,7 +400,7 @@ export default function MethodologyPage() {
 
                     <section id="glossary" aria-labelledby="glossary-h" className="scroll-mt-24 border-t border-line pt-10">
                         <p className="hud-label text-brand">{String(++i).padStart(2, '0')}</p>
-                        <h2 id="glossary-h" className="mt-1 text-h2 font-black text-fg-1">
+                        <h2 id="glossary-h" className="heading-section mt-1">
                             Glossary
                         </h2>
                         <dl className="mt-6 grid gap-3 sm:grid-cols-2">

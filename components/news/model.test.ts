@@ -44,7 +44,7 @@ describe('news cards', () => {
     });
 
     it('formats times in Eastern with a zone', () => {
-        expect(etLabel('2026-09-29T23:30:20.622Z')).toBe('Sep 29, 7:30 PM ET');
+        expect(etLabel('2026-09-29T23:30:20.622Z')).toBe('Sep 29, 7:30 PM EDT');
     });
 
     it('timestamps use --text-2, ≥4.5:1 on card surfaces', () => {

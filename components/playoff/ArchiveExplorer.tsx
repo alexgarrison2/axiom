@@ -68,7 +68,7 @@ export default function ArchiveExplorer({ archive }: { archive: PlayoffArchive }
     return (
         <div className="flex flex-col gap-8">
             <section aria-labelledby="bracket-title" className="flex flex-col gap-4">
-                <h2 id="bracket-title" className="text-h2 font-black uppercase italic tracking-tight text-fg-1">
+                <h2 id="bracket-title" className="heading-section">
                     The bracket
                 </h2>
 
@@ -170,7 +170,7 @@ function SeriesDetail({ series: s, archive }: { series: ArchiveSeries; archive: 
                     {s.conference ? ` · ${s.conference}` : ''}
                 </p>
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                    <h2 id={`series-${s.letter}-title`} className="flex items-center gap-3 text-h2 font-black tracking-tight text-fg-1">
+                    <h2 id={`series-${s.letter}-title`} className="heading-section flex items-center gap-3">
                         <TeamLogo tri={s.top.tri} size={40} />
                         <span className="tabular-nums">
                             {s.top.tri} {s.topWins}

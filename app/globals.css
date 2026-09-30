@@ -222,6 +222,29 @@
 }
 
 @layer components {
+  /* Heading system. Page titles are the H1 in <PageHeader> (32px). Every
+     section H2 uses .heading-section (24px, weight 800, sentence case, upright)
+     and every sub-section H3 uses .heading-sub (18px, weight 700). Italic
+     uppercase is reserved for the champion-name display moment only. */
+  .heading-section {
+    font-size: 24px;
+    line-height: 28px;
+    letter-spacing: -0.01em;
+    font-weight: 800;
+    font-style: normal;
+    text-transform: none;
+    color: var(--text-1);
+  }
+  .heading-sub {
+    font-size: 18px;
+    line-height: 24px;
+    letter-spacing: -0.005em;
+    font-weight: 700;
+    font-style: normal;
+    text-transform: none;
+    color: var(--text-1);
+  }
+
   /* HUD panel: the default card surface. */
   .hud-panel {
     background-color: var(--surface-1);

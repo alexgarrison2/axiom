@@ -6,6 +6,7 @@ import { FilterChip } from '@/components/ui/filter-chip';
 import { TEAM_NAMES } from '@/components/ui/team-color';
 import { TeamLogo } from '@/components/views/TeamLogo';
 import { cn } from '@/lib/utils';
+import { LocalTime } from '@/components/ui/local-time';
 import { KIND_LABEL, matchesFilter, type NewsCard, type NewsFilter, type NewsGroup, type NewsKind } from './model';
 
 /** A group whose timestamps were formatted on the server (no hydration drift). */
@@ -74,7 +75,11 @@ export function NewsFeed({ groups, dayLabel }: { groups: FeedGroup[]; dayLabel: 
                                         </span>
                                     ) : null}
                                 </h2>
-                                {g.startLabel ? <span className="text-body-sm text-fg-2">{g.startLabel}</span> : null}
+                                {g.game?.startUtc ? (
+                                    <LocalTime iso={g.game.startUtc} className="text-body-sm text-fg-2" />
+                                ) : g.startLabel ? (
+                                    <span className="text-body-sm text-fg-2">{g.startLabel}</span>
+                                ) : null}
                                 {g.game ? (
                                     <Link
                                         href={`/#${g.game.away.toLowerCase()}-${g.game.home.toLowerCase()}`}
@@ -143,9 +148,7 @@ function NewsCardView({ card }: { card: FeedGroup['cards'][number] }) {
             </header>
             <p className="text-body-sm text-fg-1">{latest.text}</p>
             {latest.at ? (
-                <time dateTime={latest.at} className="text-caption text-fg-2">
-                    {latest.label}
-                </time>
+                <When at={latest.at} label={latest.label} className="text-caption text-fg-2" />
             ) : null}
             {older.length ? (
                 <ol aria-label="Earlier updates" className="mt-1 flex flex-col gap-2 border-l border-line-strong pl-3">
@@ -153,9 +156,7 @@ function NewsCardView({ card }: { card: FeedGroup['cards'][number] }) {
                         <li key={i} className="relative text-caption text-fg-2">
                             <span aria-hidden="true" className="absolute -left-[17px] top-1 h-2 w-2 rounded-full bg-fg-3" />
                             {u.at ? (
-                                <time dateTime={u.at} className="block text-fg-2">
-                                    {u.label}
-                                </time>
+                                <When at={u.at} label={u.label} className="block text-fg-2" />
                             ) : null}
                             <span className="text-fg-2">{u.text}</span>
                         </li>
@@ -167,3 +168,15 @@ function NewsCardView({ card }: { card: FeedGroup['cards'][number] }) {
 }
 
 export default NewsFeed;
+
+/** A news timestamp: date-only values keep the server label; full instants go local via <LocalTime>. */
+function When({ at, label, className }: { at: string; label: string; className?: string }) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(at) || Number.isNaN(new Date(at).getTime())) {
+        return (
+            <time dateTime={at} className={className}>
+                {label}
+            </time>
+        );
+    }
+    return <LocalTime iso={at} style="datetime" className={className} />;
+}
