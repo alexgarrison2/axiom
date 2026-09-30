@@ -339,7 +339,7 @@ function Boxscore({ rows, players, state }: { rows: BoxRow[] | undefined; player
                     {goalies.map(r => `${who(r[0])[0]} ${r[9]}/${r[8]} saves (${r[5]})`).join(' · ')}
                 </p>
             ) : null}
-            <div className="overflow-x-auto">
+            <ScrollRegion label="Skater boxscore">
                 <table className="w-full min-w-[420px] text-caption">
                     <caption className="sr-only">Skater boxscore</caption>
                     <thead className="text-fg-3">
@@ -371,7 +371,7 @@ function Boxscore({ rows, players, state }: { rows: BoxRow[] | undefined; player
                         })}
                     </tbody>
                 </table>
-            </div>
+            </ScrollRegion>
         </div>
     );
 }

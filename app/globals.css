@@ -107,6 +107,21 @@
     scroll-padding-top: calc(var(--appbar-h) + 12px);
   }
 
+  /* Below md the fixed tab bar covers the bottom of the viewport: keep
+     keyboard focus (and scrollIntoView) clear of it. */
+  @media (max-width: 767.98px) {
+    html {
+      scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 12px);
+    }
+  }
+
+  /* Header controls that sit under a sticky filter bar (e.g. /players) stay
+     clear of it when focused. */
+  .scroll-mt-filterbar,
+  .scroll-mt-filterbar button {
+    scroll-margin-top: calc(var(--appbar-h) + var(--filterbar-h, 180px) + 12px);
+  }
+
   body {
     @apply font-sans antialiased;
     background-color: var(--bg);
