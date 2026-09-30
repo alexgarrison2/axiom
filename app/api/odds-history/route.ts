@@ -1,81 +1,98 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import Papa from 'papaparse';
 
+/**
+ * Moneyline movement for one game from the frozen pregame snapshots in
+ * public/data/SiteHistory/<date>.csv.
+ *
+ *   GET /api/odds-history?gameId=2026020008&date=2026-09-30
+ *
+ * gameId is the 10-digit NHL id (matched against an NHL-id column when the
+ * snapshot has one); `legacyId` is the snapshot's "gameid" key
+ * ("2026-09-30-Islanders-Maple Leafs"), which today's snapshots use. Inputs are validated
+ * before any filesystem access; the resolved path must stay inside
+ * SiteHistory.
+ */
 export interface OddsEntry {
+    /** ISO UTC when available, else the legacy Central "HH:MM". */
     timestamp: string;
     awayOdds: string;
     homeOdds: string;
     awayDir: 'up' | 'down' | null;
     homeDir: 'up' | 'down' | null;
     isOpen: boolean;
+    isLatest: boolean;
 }
 
-function parseOddsNum(odds: string): number {
-    if (!odds) return 0;
-    return parseInt(odds.replace(/[^-\d]/g, ''), 10) || 0;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const ID_RE = /^\d{10}$/;
+const LEGACY_RE = /^\d{4}-\d{2}-\d{2}-[\p{L} .'’-]{2,40}-[\p{L} .'’-]{2,40}$/u;
+const HISTORY_DIR = path.join(process.cwd(), 'public', 'data', 'SiteHistory');
+
+const bad = (msg: string) => NextResponse.json({ error: msg }, { status: 400 });
+
+function oddsNum(odds: string): number {
+    return parseInt((odds ?? '').replace(/[^-\d]/g, ''), 10) || 0;
 }
 
 function dir(curr: string, prev: string): 'up' | 'down' | null {
-    const c = parseOddsNum(curr);
-    const p = parseOddsNum(prev);
-    if (c > p) return 'up';
-    if (c < p) return 'down';
-    return null;
+    const c = oddsNum(curr);
+    const p = oddsNum(prev);
+    return c > p ? 'up' : c < p ? 'down' : null;
 }
 
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
-    const gameId = searchParams.get('gameId');
-    const date = searchParams.get('date'); // YYYY-MM-DD
+    const sp = request.nextUrl.searchParams;
+    const gameId = sp.get('gameId') ?? '';
+    const date = sp.get('date') ?? '';
+    const legacyId = sp.get('legacyId');
 
-    if (!gameId || !date) {
-        return NextResponse.json({ error: 'Missing gameId or date' }, { status: 400 });
+    if (!DATE_RE.test(date)) return bad('date must be YYYY-MM-DD');
+    if (!ID_RE.test(gameId)) return bad('gameId must be a 10-digit NHL game id');
+    if (legacyId != null && !LEGACY_RE.test(legacyId)) return bad('invalid legacyId');
+
+    const csvPath = path.resolve(HISTORY_DIR, `${date}.csv`);
+    if (path.dirname(csvPath) !== HISTORY_DIR) return bad('invalid date');
+
+    const headers = { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600' };
+    let csv: string;
+    try {
+        csv = await fs.promises.readFile(csvPath, 'utf-8');
+    } catch {
+        return NextResponse.json({ entries: [] }, { headers });
     }
 
-    const csvPath = path.join(process.cwd(), 'public', 'data', 'SiteHistory', `${date}.csv`);
-    if (!fs.existsSync(csvPath)) {
-        return NextResponse.json({ entries: [] });
-    }
+    const parsed = Papa.parse<Record<string, string>>(csv, { header: true, skipEmptyLines: true });
+    const idCols = ['nhl_game_id', 'nhlGameId', 'game_pk', 'gamePk'];
+    const rows = parsed.data.filter(r => {
+        if (!r.away_Odds || !r.home_Odds) return false;
+        if (idCols.some(c => r[c] === gameId)) return true;
+        return legacyId != null && r.gameid === legacyId;
+    });
+    if (rows.length === 0) return NextResponse.json({ entries: [] }, { headers });
 
-    const csv = fs.readFileSync(csvPath, 'utf-8');
-    const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
-    const rows = (parsed.data as Record<string, string>[])
-        .filter(r => r.gameid === gameId && r.away_Odds && r.home_Odds);
-
-    if (rows.length === 0) return NextResponse.json({ entries: [] });
-
-    // Deduplicate consecutive identical odds pairs
+    // Drop consecutive identical odds pairs, then keep the opening line and the last 6 moves.
     const deduped: typeof rows = [];
     for (const row of rows) {
-        if (deduped.length === 0) {
-            deduped.push(row);
-        } else {
-            const prev = deduped[deduped.length - 1];
-            if (row.away_Odds !== prev.away_Odds || row.home_Odds !== prev.home_Odds) {
-                deduped.push(row);
-            }
-        }
+        const prev = deduped[deduped.length - 1];
+        if (!prev || row.away_Odds !== prev.away_Odds || row.home_Odds !== prev.home_Odds) deduped.push(row);
     }
-
-    // Keep opening + last 6 changes
-    const opening = deduped[0];
-    const changes = deduped.slice(1);
-    const recent = changes.slice(-6);
-    const selected = opening ? [opening, ...recent] : recent;
+    const selected = [deduped[0], ...deduped.slice(1).slice(-6)];
 
     const entries: OddsEntry[] = selected.map((row, i) => {
         const prev = i === 0 ? null : selected[i - 1];
         return {
-            timestamp: row.timestamp,
+            timestamp: row.timestamp_utc || row.timestamp,
             awayOdds: row.away_Odds,
             homeOdds: row.home_Odds,
             awayDir: prev ? dir(row.away_Odds, prev.away_Odds) : null,
             homeDir: prev ? dir(row.home_Odds, prev.home_Odds) : null,
             isOpen: i === 0,
+            isLatest: i === selected.length - 1 && i > 0,
         };
     });
 
-    return NextResponse.json({ entries });
+    return NextResponse.json({ entries }, { headers });
 }

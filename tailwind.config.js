@@ -184,6 +184,11 @@ module.exports = {
     ({ addVariant }) => {
       addVariant("coarse", "@media (pointer: coarse)");
       addVariant("fine", "@media (pointer: fine)");
+      // Container queries (nearest ancestor with [container-type:inline-size]),
+      // e.g. the matchup card lays out by its own width, not the viewport.
+      addVariant("cq-sm", "@container (min-width: 30rem)");
+      addVariant("cq-md", "@container (min-width: 34rem)");
+      addVariant("cq-lg", "@container (min-width: 44rem)");
     },
   ],
 };

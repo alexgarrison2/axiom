@@ -1,791 +1,201 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { GamePrediction, HistoryEntry } from '@/utils/data';
-import { SimGame } from '@/utils/schedule';
-import { TeamStandings, SimResult } from '@/utils/simulation-engine';
-import { GameImplicationsData, findImplication } from '@/utils/implications';
-import MatchupCard from './MatchupCard';
-import HistoryTable from './HistoryTable';
-import TeamsTable from './TeamsTable';
-import NewsSection from './NewsSection';
-import PlayoffBracket from './PlayoffBracket';
-import SkaterStatsTable from './SkaterStatsTable';
-import Header from './Header';
-import { Slider } from '@/components/ui/slider';
-import { SEASON_START_DATE } from '@/lib/season';
+import { Suspense, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import type { PickSummaries, Prediction } from '@/types/prediction';
+import { biggestGames, findImplication, type GameImplicationsData } from '@/utils/implications';
+import { PageHeading } from '@/components/ui/page-heading';
+import { MatchupCard } from '@/components/matchup/MatchupCard';
+import { BiggestGames, YourTeamStrip } from '@/components/matchup/SlateStrips';
+import { useLiveScores } from '@/hooks/useLiveScores';
+import { useFavorites } from '@/hooks/useFavorites';
+import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
+import { gateClosedSiteWide, slateGateReason } from '@/lib/matchup/edge';
+import { dayLabel, easternDate, shortDate, weekdayDate } from '@/lib/matchup/format';
+import { cn } from '@/lib/utils';
+import styles from '@/components/matchup/slate.module.css';
 
-interface PredictionsViewerProps {
-    predictions: GamePrediction[];
-    history: HistoryEntry[];
-    fullSchedule: SimGame[];
-    currentStandings: TeamStandings[];
-    lastRefresh?: string;
-    implicationsData?: GameImplicationsData | null;
+export interface PredictionsViewerProps {
+    predictions: Prediction[];
+    picks: PickSummaries;
+    implications: GameImplicationsData | null;
+    playoffOdds: Record<string, number>;
+    /** Eastern slate date when the page was rendered. */
+    today: string;
+    /** Date shown on first paint. */
+    initialDate: string | null;
+    /** Playoff series scores keyed "AWAY|HOME" (postseason only). */
+    series?: Record<string, { away: number; home: number }>;
 }
 
-const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.15, // Increased stagger for better wave effect
-            delayChildren: 0.2
-        }
-    }
-};
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const noopSubscribe = () => () => {};
 
-const itemVariants: Variants = {
-    hidden: {
-        opacity: 0,
-        y: 100, // Slide up from further down
-        scale: 0.9,
-        filter: 'blur(10px)' // Add blur on entry
-    },
-    show: {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        filter: 'blur(0px)',
-        transition: {
-            type: 'spring',
-            stiffness: 70,
-            damping: 18,
-            mass: 1.2
-        }
-    },
-    exit: {
-        opacity: 0,
-        scale: 0.9,
-        filter: 'blur(10px)',
-        transition: { duration: 0.3 }
-    }
-};
-
-interface PlayoffSeriesEntry {
-    higherSeed: { triCode: string };
-    lowerSeed: { triCode: string };
-    seriesScore: [number, number];
-    status: string;
+/** Reads ?date= after hydration (inside <Suspense>, so the slate itself stays static). */
+function DateParam({ onDate }: { onDate: (d: string) => void }) {
+    const sp = useSearchParams();
+    const d = sp?.get('date');
+    useEffect(() => {
+        if (d && DATE_RE.test(d)) onDate(d);
+    }, [d, onDate]);
+    return null;
 }
 
-const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: initialPredictions, history, fullSchedule, currentStandings, lastRefresh, implicationsData }) => {
-    const [predictions, setPredictions] = useState<GamePrediction[]>(initialPredictions);
-    const [simResults, setSimResults] = useState<Record<string, SimResult>>({});
-    // Map of "AWAY_TRI|HOME_TRI" → { awayWins, homeWins } for active playoff series
-    const [seriesScoreMap, setSeriesScoreMap] = useState<Record<string, { awayWins: number; homeWins: number }>>({});
-    const [playoffsActive, setPlayoffsActive] = useState(false);
-    const tabBarRef = useRef<HTMLDivElement>(null);
-    const [canScrollLeft, setCanScrollLeft] = useState(false);
-    const [canScrollRight, setCanScrollRight] = useState(false);
+export default function PredictionsViewer({ predictions, picks, implications, playoffOdds, today: serverToday, initialDate, series }: PredictionsViewerProps) {
+    const router = useRouter();
+    // The page may have been rendered on an earlier day: "today" is re-derived in the browser.
+    const today = useSyncExternalStore(noopSubscribe, easternDate, () => serverToday);
+    const [picked, setDate] = useState<string | null>(null);
+    const [target, setTarget] = useState<string | null>(null);
+    const { favorites, toggle } = useFavorites();
 
-    const handleTabScroll = useCallback(() => {
-        const el = tabBarRef.current;
-        if (!el) return;
-        setCanScrollLeft(el.scrollLeft > 5);
-        setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 5);
-    }, []);
+    const dates = useMemo(() => [...new Set(predictions.map(p => p.date))].sort(), [predictions]);
+    const date = picked ?? (today === serverToday ? initialDate : defaultDate(dates, today));
+    const byId = useMemo(() => new Map(predictions.map(p => [p.id, p])), [predictions]);
+    const dayGames = useMemo(() => predictions.filter(p => p.date === date), [predictions, date]);
+    const live = useLiveScores(date, dayGames);
+    const slate = useMemo(() => sortSlate(dayGames, live, favorites), [dayGames, live, favorites]);
+    const gateClosed = gateClosedSiteWide(dayGames);
+    const gateReason = slateGateReason(dayGames);
+    const swings = useMemo(() => (date ? biggestGames(implications, date) : []), [implications, date]);
 
-    // Check initial scroll state
+    const pick = useCallback(
+        (d: string) => {
+            setDate(d);
+            router.replace(`/?date=${d}${window.location.hash}`, { scroll: false });
+        },
+        [router],
+    );
+
+    const fromUrl = useCallback((d: string) => setDate(d), []);
+
+    // Deep link to a card: /#van-edm or /?date=…#van-edm scrolls to and highlights it.
+    const jump = useCallback(
+        (d: string, anchor: string) => {
+            setDate(d);
+            setTarget(anchor);
+            if (window.location.hash !== `#${anchor}`) router.replace(`/?date=${d}#${anchor}`, { scroll: false });
+        },
+        [router],
+    );
+
     useEffect(() => {
-        // Small delay to let tabs render
-        const timer = setTimeout(handleTabScroll, 200);
-        return () => clearTimeout(timer);
-    }, [handleTabScroll]);
-
-    // Load Season Projections from Backend (JSON)
-    useEffect(() => {
-        const fetchProjections = async () => {
-            try {
-                const res = await fetch(`/data/season_projections.json?t=${new Date().getTime()}`);
-                if (!res.ok) throw new Error("No projection file");
-
-                const data = await res.json();
-                const processedResults: Record<string, SimResult> = {};
-
-                // Handle both old format (array) and new format (wrapper object)
-                const teamsData = Array.isArray(data) ? data : data.teams;
-                const totalSims = !Array.isArray(data) && data.total_simulations ? data.total_simulations : 2000;
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                teamsData.forEach((row: any) => {
-                    // Reverse-engineer SimResult from percentages
-                    // We treat percentages as "counts out of 100" for simplicity
-                    // or "counts out of 1000" for decimals. 
-                    // Let's use 10,000 to keep precision (e.g. 0.1%)
-
-                    // Parse Maps from JSON objects
-                    const pointDist = new Map<number, number>();
-                    if (row.point_dist) {
-                        Object.entries(row.point_dist).forEach(([pt, count]) => pointDist.set(Number(pt), Number(count)));
-                    }
-
-                    const divRankDist = new Map<number, number>();
-                    if (row.div_rank_dist) {
-                        Object.entries(row.div_rank_dist).forEach(([rank, count]) => divRankDist.set(Number(rank), Number(count)));
-                    }
-
-                    processedResults[row.team] = {
-                        madePlayoffs: Math.round((row.make_playoffs_pct / 100) * totalSims),
-                        wonDivision: Math.round((row.won_division_pct / 100) * totalSims),
-                        wonCup: Math.round((row.won_cup_pct / 100) * totalSims),
-                        totalSims: totalSims,
-                        totalPoints: row.avg_points * totalSims,
-
-                        pointDist: pointDist,
-                        divRankDist: divRankDist,
-                        roundExitDist: row.round_exit_dist || { 'MISS': 0, 'R1': 0, 'R2': 0, 'CF': 0, 'F': 0, 'CUP': 0 },
-                        r1Matchups: row.r1_matchups || {}
-                    };
-                });
-
-                setSimResults(processedResults);
-            } catch (err) {
-                console.warn("Could not load Season Projections, falling back to Worker?", err);
-                // Fallback logic could go here, or we simple leave it empty/loading
+        const onHash = () => {
+            const a = window.location.hash.slice(1).toLowerCase();
+            if (!/^[a-z]{3}-[a-z]{3}$/.test(a)) return;
+            const p = predictions.find(x => cardAnchor(x) === a && (!window.location.search.includes('date=') || x.date === new URLSearchParams(window.location.search).get('date')));
+            if (p) {
+                setDate(p.date);
+                setTarget(a);
             }
         };
-
-        fetchProjections();
-    }, []);
-
-    // Load playoff series scores
-    useEffect(() => {
-        fetch('/data/playoff_series.json')
-            .then(r => r.json())
-            .then((series: PlayoffSeriesEntry[]) => {
-                const map: Record<string, { awayWins: number; homeWins: number }> = {};
-                series.filter(s => s.status === 'active').forEach(s => {
-                    const hi = s.higherSeed.triCode;
-                    const lo = s.lowerSeed.triCode;
-                    const [hiWins, loWins] = s.seriesScore;
-                    // Index by both orientations (either team could be home)
-                    map[`${lo}|${hi}`] = { awayWins: loWins, homeWins: hiWins };
-                    map[`${hi}|${lo}`] = { awayWins: hiWins, homeWins: loWins };
-                });
-                setSeriesScoreMap(map);
-                setPlayoffsActive(series.some(s => s.status !== 'complete'));
-            })
-            .catch(() => { /* not in playoffs yet — silent */ });
-    }, []);
-
-    // Sync Predictions with live News
-    React.useEffect(() => {
-        const fetchNews = async () => {
-            try {
-                const res = await fetch('/data/player_news.json');
-                const newsData = await res.json();
-
-                const updated = initialPredictions.map(p => {
-                    let newHomeStatus = p.homeGoalieStatus;
-                    let newAwayStatus = p.awayGoalieStatus;
-
-                    const checkOverride = (teamAbbr: string, currentStatus: string, expectedStarter: string) => {
-                        if (currentStatus !== 'Unconfirmed' || !expectedStarter) return currentStatus;
-
-                        const teamNews = newsData[teamAbbr] || [];
-                        const starterNews = teamNews.find((n: { category: string; player: string }) =>
-                            n.category === 'Goalie Start' &&
-                            (n.player.includes(expectedStarter) || expectedStarter.includes(n.player))
-                        );
-                        return starterNews ? 'Confirmed' : currentStatus;
-                    };
-
-                    if (p.homeTeam?.triCode) newHomeStatus = checkOverride(p.homeTeam.triCode, p.homeGoalieStatus || 'Unconfirmed', p.homeGoalieConfirmed || '');
-                    if (p.awayTeam?.triCode) newAwayStatus = checkOverride(p.awayTeam.triCode, p.awayGoalieStatus || 'Unconfirmed', p.awayGoalieConfirmed || '');
-
-                    if (newHomeStatus !== p.homeGoalieStatus || newAwayStatus !== p.awayGoalieStatus) {
-                        return {
-                            ...p,
-                            homeGoalieStatus: newHomeStatus,
-                            awayGoalieStatus: newAwayStatus
-                        };
-                    }
-                    return p;
-                });
-
-                setPredictions(updated);
-            } catch (e) {
-                console.error("Failed to sync news overrides:", e);
-            }
-        };
-        fetchNews();
-    }, [initialPredictions]);
-
-    // Extract unique dates and sort them
-    const uniqueDates = useMemo(() => {
-        const dates = Array.from(new Set(predictions.map(p => p.date)));
-        return dates.sort();
+        onHash();
+        window.addEventListener('hashchange', onHash);
+        return () => window.removeEventListener('hashchange', onHash);
     }, [predictions]);
 
-
-    // Read optional ?tab= param so team-page nav links can deep-link here
-    const searchParams = useSearchParams();
-    const tabParam = searchParams?.get('tab');
-
-    // State for selected date
-    const [selectedTab, setSelectedTab] = useState<string>(() => {
-        if (tabParam) {
-            // Named tabs land directly (Teams, News, etc.)
-            const named = ['News', 'Teams', 'History', 'Bracket', 'Skaters'];
-            if (named.includes(tabParam)) return tabParam;
-        }
-        return uniqueDates[0] || 'History';
-    });
-    // Multi-select state: Default to ['All']
-    const [historyFilters, setHistoryFilters] = useState<string[]>(['All']);
-    // Custom % range inputs (empty string = unset)
-    const [customMin, setCustomMin] = useState<string>('');
-    const [customMax, setCustomMax] = useState<string>('');
-    // History view mode: 'date' (default) or 'team'
-    const [historyViewMode, setHistoryViewMode] = useState<'date' | 'team'>('date');
-    // Secondary pick filter (only relevant in team view)
-    const [historyPickFilter, setHistoryPickFilter] = useState<'win' | 'loss' | null>(null);
-
-    // History Date Range Logic
-    const uniqueHistoryDates = useMemo(() => {
-        const dates = Array.from(new Set(history.map(h => h.date))).sort();
-        return dates;
-    }, [history]);
-
-    const [dateRange, setDateRange] = useState<number[]>([0, 0]);
-
-    // Initialize range when data loads — default start to this season's first graded date
     useEffect(() => {
-        if (uniqueHistoryDates.length > 0) {
-            const defaultStart = uniqueHistoryDates.findIndex(d => d >= SEASON_START_DATE);
-            setDateRange([defaultStart >= 0 ? defaultStart : 0, uniqueHistoryDates.length - 1]);
-        }
-    }, [uniqueHistoryDates]);
+        if (!target) return;
+        const el = document.getElementById(target);
+        if (!el) return;
+        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+        const t = window.setTimeout(() => setTarget(null), 2400);
+        return () => window.clearTimeout(t);
+    }, [target, date]);
 
-    // Filter predictions for the selected date
-    const filteredPredictions = useMemo(() => {
-        if (selectedTab === 'History' || selectedTab === 'Teams' || selectedTab === 'News' || selectedTab === 'Bracket' || selectedTab === 'Skaters') return [];
-        return predictions.filter(p => p.date === selectedTab);
-    }, [predictions, selectedTab]);
-
-    // Filter history based on date range and model confidence
-    const filteredHistory = useMemo(() => {
-        let filtered = history;
-
-        // 1. Date Range Filter
-        if (uniqueHistoryDates.length > 0) {
-            const startDate = uniqueHistoryDates[dateRange[0]];
-            const endDate = uniqueHistoryDates[dateRange[1]];
-            filtered = filtered.filter(h => h.date >= startDate && h.date <= endDate);
-        }
-
-        // 2. Confidence Filters
-        const customMinVal = customMin !== '' ? parseFloat(customMin) : null;
-        const customMaxVal = customMax !== '' ? parseFloat(customMax) : null;
-        const hasCustomRange = customMinVal !== null || customMaxVal !== null;
-
-        if (!hasCustomRange && (historyFilters.includes('All') || historyFilters.length === 0)) return filtered;
-
-        return filtered.filter(h => {
-            // Determine the model's win probability for the predicted winner
-            const isHome = h.predictedWinner === h.homeTeam.commonName || h.predictedWinner === h.homeTeam.name;
-            const modelConf = isHome ? h.homeWinProb : (100 - h.homeWinProb);
-
-            // Custom range takes priority when either bound is set
-            if (hasCustomRange) {
-                const aboveMin = customMinVal === null || modelConf >= customMinVal;
-                const belowMax = customMaxVal === null || modelConf <= customMaxVal;
-                return aboveMin && belowMax;
-            }
-
-            // Preset bucket filters
-            if (historyFilters.includes('50-55') && (modelConf >= 50 && modelConf < 55)) return true;
-            if (historyFilters.includes('55-65') && (modelConf >= 55 && modelConf < 65)) return true;
-            if (historyFilters.includes('65-75') && (modelConf >= 65 && modelConf < 75)) return true;
-            if (historyFilters.includes('75+') && (modelConf >= 75)) return true;
-
-            return false;
-        });
-    }, [history, historyFilters, customMin, customMax, dateRange, uniqueHistoryDates]);
-
-    if (uniqueDates.length === 0 && history.length === 0) {
-        return <div className="text-center text-gray-500 mt-12 font-mono uppercase tracking-widest animate-pulse">No data available.</div>;
-    }
-
-    const isMainPage = !['News', 'Teams', 'History', 'Bracket', 'Skaters'].includes(selectedTab);
+    const next = date ? dates.find(d => d > date) : null;
+    const nextCount = next ? predictions.filter(p => p.date === next).length : 0;
+    const headingDate = date ? weekdayDate(date) : weekdayDate(today);
 
     return (
-        <div className="w-full">
-            {/* Header Section (Only on Main Prediction Pages) */}
-            {isMainPage && <Header lastRefresh={lastRefresh} />}
+        <div className="flex flex-col gap-4">
+            <PageHeading visuallyHidden title={`NHL predictions for ${headingDate}`} />
+            <Suspense fallback={null}>
+                <DateParam onDate={fromUrl} />
+            </Suspense>
 
-            {/* Controls Container */}
-            <div className={`flex flex-col items-center gap-3 relative z-20 ${isMainPage ? 'mb-4' : 'mb-3 mt-3'}`}>
-
-                {/* Controls Row */}
-                <div className="flex items-center justify-center w-full relative z-20 max-w-full">
-                    {/* Tab bar container with fade hints */}
-                    <div className="relative w-full max-w-full">
-                        {/* Left fade */}
-                        <div
-                            className={`absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black/90 to-transparent z-10 pointer-events-none transition-opacity duration-300 md:hidden ${canScrollLeft ? 'opacity-100' : 'opacity-0'}`}
-                        />
-                        {/* Right fade */}
-                        <div
-                            className={`absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/90 to-transparent z-10 pointer-events-none transition-opacity duration-300 md:hidden ${canScrollRight ? 'opacity-100' : 'opacity-0'}`}
-                        />
-                        {/* Date Selector */}
-                        <div
-                            ref={tabBarRef}
-                            onScroll={handleTabScroll}
-                            className="flex items-center gap-1 md:gap-2 bg-black/40 p-1 md:p-1.5 rounded-xl md:rounded-2xl backdrop-blur-md border border-white/5 w-full max-w-full overflow-x-auto snap-x scrollbar-hide px-1.5 md:px-3">
-
-                            {/* Text Logo for non-main pages — always clickable to home */}
-                            {!isMainPage && (
-                                <div className="flex-shrink-0 flex items-center pr-2 md:pr-3 border-r border-white/10 mr-1 snap-start">
-                                    <Link href="/">
-                                        <Image src="/ponyxG_condensed.png" alt="pony xG" width={80} height={24} className="h-4 md:h-5 w-auto object-contain drop-shadow-[0_0_8px_rgba(0,243,255,0.8)] hover:opacity-70 transition-opacity" />
-                                    </Link>
-                                </div>
-                            )}
-
-                            {/* Date Buttons — TODAY / TOMORROW first */}
-                            {uniqueDates.map((date, idx) => {
-                                const [y, m, d] = date.split('-').map(Number);
-                                const dateObj = new Date(y, m - 1, d);
-                                const monthShort = dateObj.toLocaleDateString('en-US', { month: 'short' });
-                                const dayStr = String(d).padStart(2, '0');
-                                const label = `${monthShort}-${dayStr}`;
-                                return (
-                                    <button
-                                        key={date}
-                                        onClick={() => setSelectedTab(date)}
-                                        className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start whitespace-nowrap ${selectedTab === date
-                                            ? 'text-neon-blue border-neon-blue shadow-[0_0_20px_rgba(0,243,255,0.3)] text-glow-blue'
-                                            : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
-                                            }`}
-                                    >
-                                        {selectedTab === date && (
-                                            <motion.div
-                                                layoutId="activeTab"
-                                                className="absolute inset-0 bg-neon-blue/10 rounded-full"
-                                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                            />
+            {/* Slate bar: day switcher + slate notes */}
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                <nav aria-label="Game day" className="-mx-1 max-w-full overflow-x-auto px-1 [scrollbar-width:none]">
+                    <ul className="flex items-center gap-1">
+                        {dates.map(d => {
+                            const on = d === date;
+                            const n = predictions.filter(p => p.date === d).length;
+                            return (
+                                <li key={d}>
+                                    <a
+                                        href={`/?date=${d}`}
+                                        aria-current={on ? 'date' : undefined}
+                                        onClick={e => {
+                                            if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+                                            e.preventDefault();
+                                            pick(d);
+                                        }}
+                                        className={cn(
+                                            'flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-body-sm font-semibold transition-colors coarse:min-h-11',
+                                            on ? 'border-brand/60 bg-brand/10 text-fg-1 shadow-[inset_0_0_0_1px_rgb(var(--brand-rgb)/0.25)]' : 'border-line text-fg-2 hover:border-line-strong hover:text-fg-1',
                                         )}
-                                        <span className="relative z-10">{label}</span>
-                                    </button>
-                                );
-                            })}
-
-                            {/* News Button */}
-                            <button
-                                onClick={() => setSelectedTab('News')}
-                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'News'
-                                    ? 'text-amber-400 border-amber-400 shadow-[0_0_20_rgba(251,191,36,0.3)] text-glow-amber'
-                                    : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                {selectedTab === 'News' && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-amber-400/10 rounded-full"
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                <span className="relative z-10">NEWS</span>
-                            </button>
-
-                            {/* Teams Button */}
-                            <button
-                                onClick={() => setSelectedTab('Teams')}
-                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Teams'
-                                    ? 'text-purple-400 border-purple-400 shadow-[0_0_20_rgba(168,85,247,0.3)] text-glow-purple'
-                                    : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                {selectedTab === 'Teams' && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-purple-400/10 rounded-full"
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                <span className="relative z-10">TEAMS</span>
-                            </button>
-
-                            {/* History Button */}
-                            <button
-                                onClick={() => setSelectedTab('History')}
-                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'History'
-                                    ? 'text-neon-green border-neon-green shadow-[0_0_20px_rgba(10,255,0,0.3)] text-glow-green'
-                                    : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                {selectedTab === 'History' && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-neon-green/10 rounded-full"
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                <span className="relative z-10">HISTORY</span>
-                            </button>
-
-                            {/* Playoffs Button — navigates to /playoffs hub (postseason only) */}
-                            {playoffsActive && (
-                                <Link
-                                    href="/playoffs"
-                                    className="relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start bg-transparent text-gray-500 border-transparent hover:text-rose-400 hover:border-rose-400/40 hover:bg-rose-400/5"
-                                >
-                                    <span className="relative z-10">PLAYOFFS</span>
-                                </Link>
-                            )}
-
-                            {/* Bracket Button */}
-                            <button
-                                onClick={() => setSelectedTab('Bracket')}
-                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Bracket'
-                                    ? 'text-sky-400 border-sky-400 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
-                                    : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                {selectedTab === 'Bracket' && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-sky-400/10 rounded-full"
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                <span className="relative z-10">BRACKET</span>
-                            </button>
-
-                            {/* Skaters Button */}
-                            <button
-                                onClick={() => setSelectedTab('Skaters')}
-                                className={`relative px-3 md:px-4 py-1.5 rounded-full font-bold text-[10px] md:text-xs tracking-wider transition-all duration-300 border flex-shrink-0 snap-start ${selectedTab === 'Skaters'
-                                    ? 'text-cyan-400 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
-                                    : 'bg-transparent text-gray-500 border-transparent hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                {selectedTab === 'Skaters' && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-cyan-400/10 rounded-full"
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                <span className="relative z-10">SKATERS</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                                    >
+                                        {dayLabel(d, today)}
+                                        <span className={cn('text-caption tabular-nums', on ? 'text-brand' : 'text-fg-3')}>{n}</span>
+                                    </a>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </nav>
+                {gateClosed ? (
+                    <p className="text-caption text-fg-2" title={gateReason ?? undefined}>
+                        No bets: model hasn&apos;t beaten the market yet (see{' '}
+                        <a href="/accuracy" className="font-semibold text-brand hover:underline">
+                            Accuracy
+                        </a>
+                        )
+                    </p>
+                ) : null}
             </div>
 
-            {/* Content Area */}
-            <AnimatePresence mode="wait">
-                {selectedTab === 'History' ? (
-                    <motion.div
-                        key="tab-history"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full"
-                    >
-                        {/* History Filters & Slider */}
-                        <div className="flex flex-col items-center gap-2 mb-3 max-w-2xl mx-auto">
+            <YourTeamStrip favorites={favorites} predictions={predictions} live={live} today={today} playoffOdds={playoffOdds} onJump={jump} />
+            <BiggestGames swings={swings} byId={byId} onJump={jump} />
 
-                            {/* View Toggle: By Date / By Team */}
-                            <div className="flex items-center gap-2 flex-wrap justify-center">
-                                <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/8">
-                                    {(['date', 'team'] as const).map((mode) => (
-                                        <button
-                                            key={mode}
-                                            onClick={() => {
-                                                setHistoryViewMode(mode);
-                                                if (mode === 'date') setHistoryPickFilter(null);
-                                            }}
-                                            className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${historyViewMode === mode
-                                                ? 'bg-white/10 text-white shadow-sm'
-                                                : 'text-neutral-500 hover:text-neutral-300'
-                                                }`}
-                                        >
-                                            {mode === 'date' ? 'By Date' : 'By Team'}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Secondary: Pick direction filter — team mode only */}
-                                {historyViewMode === 'team' && (
-                                    <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/8">
-                                        {([null, 'win', 'loss'] as const).map((f) => (
-                                            <button
-                                                key={String(f)}
-                                                onClick={() => setHistoryPickFilter(f)}
-                                                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${historyPickFilter === f
-                                                    ? 'bg-white/10 text-white shadow-sm'
-                                                    : 'text-neutral-500 hover:text-neutral-300'
-                                                    }`}
-                                            >
-                                                {f === null ? 'All Picks' : f === 'win' ? 'Picked to Win' : 'Picked to Lose'}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Date Range Slider */}
-                            {uniqueHistoryDates.length > 1 && (
-                                <div className="w-full px-4 md:px-0">
-                                    <div className="flex justify-between text-xs md:text-sm text-neutral-400 mb-2 font-mono">
-                                        <span>{uniqueHistoryDates[dateRange[0]]}</span>
-                                        <span className="text-white/50">DATE RANGE</span>
-                                        <span>{uniqueHistoryDates[dateRange[1]]}</span>
-                                    </div>
-                                    <Slider
-                                        defaultValue={[0, uniqueHistoryDates.length - 1]}
-                                        value={dateRange}
-                                        min={0}
-                                        max={uniqueHistoryDates.length - 1}
-                                        step={1}
-                                        onValueChange={setDateRange}
-                                        className="py-4"
-                                    />
-                                </div>
-                            )}
-
-                            <div className="flex flex-wrap justify-center items-center gap-2">
-                                {(['All', '50-55', '55-65', '65-75', '75+'] as const).map((filter) => {
-                                    const hasCustomRange = customMin !== '' || customMax !== '';
-                                    const isActive = !hasCustomRange && historyFilters.includes(filter);
-                                    return (
-                                        <button
-                                            key={filter}
-                                            onClick={() => {
-                                                // Clear custom range whenever a preset is clicked
-                                                setCustomMin('');
-                                                setCustomMax('');
-                                                if (filter === 'All') {
-                                                    setHistoryFilters(['All']);
-                                                } else {
-                                                    let newFilters = historyFilters.filter(f => f !== 'All');
-                                                    if (newFilters.includes(filter)) {
-                                                        newFilters = newFilters.filter(f => f !== filter);
-                                                    } else {
-                                                        newFilters.push(filter);
-                                                    }
-                                                    if (newFilters.length === 0) newFilters = ['All'];
-                                                    setHistoryFilters(newFilters);
-                                                }
-                                            }}
-                                            className={`px-3 py-1 text-[10px] font-bold rounded-full border transition-all ${isActive
-                                                ? 'bg-neon-green/10 text-neon-green border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
-                                                : 'bg-white/5 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white'
-                                                }`}
-                                        >
-                                            {filter === 'All' ? 'ALL GAMES' : `${filter}%`}
-                                        </button>
-                                    );
-                                })}
-
-                                {/* Custom % range inputs */}
-                                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-all ${
-                                    customMin !== '' || customMax !== ''
-                                        ? 'bg-neon-green/10 border-neon-green shadow-[0_0_10px_rgba(16,185,129,0.2)]'
-                                        : 'bg-white/5 border-white/5'
-                                }`}>
-                                    <input
-                                        type="number"
-                                        min={50}
-                                        max={100}
-                                        placeholder="FROM"
-                                        value={customMin}
-                                        onChange={e => {
-                                            setCustomMin(e.target.value);
-                                            if (e.target.value !== '') setHistoryFilters(['All']);
-                                        }}
-                                        className="w-12 bg-transparent text-[10px] font-bold text-center text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    />
-                                    <span className="text-neutral-600 text-[10px]">–</span>
-                                    <input
-                                        type="number"
-                                        min={50}
-                                        max={100}
-                                        placeholder="TO"
-                                        value={customMax}
-                                        onChange={e => {
-                                            setCustomMax(e.target.value);
-                                            if (e.target.value !== '') setHistoryFilters(['All']);
-                                        }}
-                                        className="w-12 bg-transparent text-[10px] font-bold text-center text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    />
-                                    <span className={`text-[10px] font-bold ${customMin !== '' || customMax !== '' ? 'text-neon-green' : 'text-neutral-600'}`}>%</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Aggregate Stats Header */}
-                        <div className="grid grid-cols-3 gap-2 mb-2 md:mb-3">
-                            {(() => {
-                                // Use filteredHistory for stats
-                                const statsHistory = filteredHistory;
-                                const totalGames = statsHistory.length;
-                                const correctPicks = statsHistory.filter(h => h.isCorrect).length;
-                                const accuracy = totalGames > 0 ? ((correctPicks / totalGames) * 100).toFixed(1) : '0.0';
-
-                                // Average Brier Score
-                                const avgBrier = totalGames > 0
-                                    ? (statsHistory.reduce((acc, curr) => acc + curr.brierScore, 0) / totalGames).toFixed(4)
-                                    : '0.0000';
-
-                                // Log Loss Calculation
-                                const logLossSum = statsHistory.reduce((acc, curr) => {
-                                    const p = Math.max(0.0001, Math.min(0.9999, curr.homeWinProb / 100)); // Convert % to Prob & Clip
-                                    const y = curr.actualWinner === curr.homeTeam.commonName ? 1 : 0;
-                                    return acc + (y * Math.log(p) + (1 - y) * Math.log(1 - p));
-                                }, 0);
-                                const avgLogLoss = totalGames > 0 ? (-1 * (logLossSum / totalGames)).toFixed(4) : '0.0000';
-
-                                return (
-                                    <>
-                                        {/* Accuracy Card */}
-                                        <div className="glass-panel p-2 md:p-3 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                            <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-0.5 md:mb-1 z-10 text-center">
-                                                <span className="md:hidden">Accuracy</span>
-                                                <span className="hidden md:inline">Model Accuracy</span>
-                                            </span>
-                                            <div className="text-lg md:text-4xl font-bold text-white z-10 text-glow-green">
-                                                {accuracy}%
-                                            </div>
-                                            <div className="text-emerald-400/60 text-[8px] md:text-xs mt-0.5 md:mt-1 font-mono text-center leading-tight">
-                                                {correctPicks}-{totalGames - correctPicks} <span className="hidden md:inline">Record</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Brier Score Card */}
-                                        <div className="glass-panel p-2 md:p-3 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                            <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-0.5 md:mb-1 z-10 text-center">
-                                                <span className="md:hidden">Brier</span>
-                                                <span className="hidden md:inline">Avg Brier Score</span>
-                                            </span>
-                                            <div className="text-lg md:text-4xl font-bold text-white z-10 text-glow-blue">
-                                                {avgBrier}
-                                            </div>
-                                            <div className="text-blue-400/60 text-[8px] md:text-xs mt-0.5 md:mt-1 font-mono text-center leading-tight">
-                                                <span className="md:hidden">Lower=Best</span>
-                                                <span className="hidden md:inline">Lower is Better</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Log Loss Card */}
-                                        <div className="glass-panel p-2 md:p-3 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                            <span className="text-gray-400 text-[8px] md:text-xs font-mono uppercase tracking-widest mb-0.5 md:mb-1 z-10 text-center">
-                                                Log Loss
-                                            </span>
-                                            <div className="text-lg md:text-4xl font-bold text-white z-10 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
-                                                {avgLogLoss}
-                                            </div>
-                                            <div className="text-purple-400/60 text-[8px] md:text-xs mt-0.5 md:mt-1 font-mono text-center leading-tight">
-                                                <span className="md:hidden">Prob Error</span>
-                                                <span className="hidden md:inline">Probabilistic Error</span>
-                                            </div>
-                                        </div>
-                                    </>
-                                );
-                            })()}
-                        </div>
-
-                        <HistoryTable entries={filteredHistory} viewMode={historyViewMode} pickFilter={historyPickFilter} />
-                    </motion.div>
-                ) : selectedTab === 'Teams' ? (
-                    <motion.div
-                        key="tab-teams"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full"
-                    >
-                        <TeamsTable />
-                    </motion.div>
-                ) : selectedTab === 'News' ? (
-                    <motion.div
-                        key="tab-news"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full"
-                    >
-                        <NewsSection predictions={predictions} />
-                    </motion.div>
-                ) : selectedTab === 'Bracket' ? (
-                    <motion.div
-                        key="tab-bracket"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full"
-                    >
-                        <div className="w-full">
-                            {Object.keys(simResults).length > 0 ? (
-                                <PlayoffBracket currentStandings={currentStandings} simResults={simResults} />
-                            ) : (
-                                <div className="flex justify-center items-center py-24">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500" />
-                                </div>
-                            )}
-                        </div>
-                    </motion.div>
-                ) : selectedTab === 'Skaters' ? (
-                    <motion.div
-                        key="tab-skaters"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full"
-                    >
-                        <SkaterStatsTable />
-                    </motion.div>
-                ) : (
-                    /* Grid Layout - Staggered Fade In */
-                    <motion.div
-                        className="grid grid-cols-1 xl:grid-cols-2 gap-4 w-full pb-6"
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="show"
-                        exit={{ opacity: 0 }}
-                        key={`tab-date-${selectedTab}`} // Re-trigger animation on date change
-                    >
-                        {filteredPredictions.map((prediction) => (
-                            <motion.div
-                                key={prediction.id}
-                                variants={itemVariants}
-                                layout
-                                whileHover={{ scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 10 } }}
-                            >
-                                <MatchupCard
-                                    prediction={prediction}
-                                    history={history}
-                                    implications={findImplication(
-                                        implicationsData ?? null,
-                                        prediction.homeTeam.triCode,
-                                        prediction.awayTeam.triCode,
-                                    )}
-                                    seriesScore={seriesScoreMap[`${prediction.awayTeam.triCode}|${prediction.homeTeam.triCode}`]}
-                                />
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {slate.length ? (
+                <ul className="grid grid-cols-1 gap-4 xl:grid-cols-2" aria-label={`Games, ${headingDate}`}>
+                    {slate.map((p, i) => (
+                        <li key={p.id} className={styles.rise} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
+                            <MatchupCard
+                                p={p}
+                                live={live[p.id] ?? null}
+                                implication={findImplication(implications, p.home.team.triCode, p.away.team.triCode)}
+                                picks={picks}
+                                playoffOdds={playoffOdds}
+                                favorites={favorites}
+                                onFavorite={toggle}
+                                highlighted={target === cardAnchor(p)}
+                                seriesScore={series?.[`${p.away.team.triCode}|${p.home.team.triCode}`] ?? null}
+                            />
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <div className="flex flex-col items-center gap-2 rounded-card border border-dashed border-line-strong px-6 py-12 text-center">
+                    <p className="text-title font-bold text-fg-1">{date ? `No games on ${shortDate(date)}` : 'No games scheduled'}</p>
+                    {next ? (
+                        <a
+                            href={`/?date=${next}`}
+                            onClick={e => {
+                                e.preventDefault();
+                                pick(next);
+                            }}
+                            className="text-body font-semibold text-brand hover:underline"
+                        >
+                            Next: {shortDate(next)} ({nextCount} game{nextCount === 1 ? '' : 's'}) →
+                        </a>
+                    ) : (
+                        <p className="text-body-sm text-fg-2">New predictions appear here each morning.</p>
+                    )}
+                </div>
+            )}
         </div>
     );
-};
-
-export default PredictionsViewer;
+}

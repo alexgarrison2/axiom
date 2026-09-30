@@ -1,674 +1,184 @@
-import fs from 'fs';
-import path from 'path';
+import 'server-only';
+import fs from 'node:fs';
+import path from 'node:path';
 import Papa from 'papaparse';
+import { SEASON_ID, SEASON_START_DATE } from '@/lib/season';
+import { TEAM_NAMES, TEAM_CODES } from '@/components/ui/team-color';
+import { parseRow, parseRecent, recordFromRecent, str, type RawRow } from '@/lib/matchup/parse';
+import type { PickSummaries, Prediction } from '@/types/prediction';
 
-export interface Team {
-  name: string;
-  commonName: string;
-  logoUrl: string;
-  color1: string;
-  color2: string;
-  triCode: string;
-}
+export type { Prediction, PickSummaries } from '@/types/prediction';
 
-export interface RecentGame {
-  date: string;
-  gameNumber?: string;
-  opponent: string;
-  opponentLogo: string;
-  isHome: boolean;
-  score: string;
-  result: 'W' | 'L' | 'O' | 'W-OT' | 'W-SO';
-  opponentColor?: string;
-  starter?: string;
-}
-
+/** DailyFaceoff news item (predictions side_news, player_news.json). */
 export interface PlayerNewsItem {
-  player: string;
-  news: string;
-  category: string;
-  date: string;
-  timestamp?: string;
-}
-
-export interface LineupPlayer {
-  id: number;
-  name: string;
-  number: number | null;
-  pos: string;
-  ppUnit?: number; // 1 or 2
-  movement?: 'up' | 'down' | 'new';
-}
-
-export interface TeamLineup {
-  [key: string]: LineupPlayer[]; // f1, f2, f3, f4, d1, d2, d3
-}
-
-export interface LocationSplitRecord {
-  w: number;
-  l: number;
-  ot: number;
-  ptsPct: number; // (W*2 + OT) / (GP*2)
-}
-
-export interface GamePrediction {
-  id: string;
-  date: string;
-  homeTeam: Team;
-  awayTeam: Team;
-  homeStarter: string;
-  awayStarter: string;
-  homeXg: number;
-  awayXg: number;
-  homeModelWinPct: number;
-  awayModelWinPct: number;
-  homeVegasWinPct: number;
-  awayVegasWinPct: number;
-  homeEv: number;
-  awayEv: number;
-  totalGoals: number;
-  homeWager: string | null;
-  awayWager: string | null;
-  homeModelOdds: string;
-  awayModelOdds: string;
-  homeVegasOdds: string;
-  awayVegasOdds: string;
-  startTime: string;
-  tvNetwork?: string;
-
-  home_pp_rank?: number;
-  home_pk_rank?: number;
-  away_pp_rank?: number;
-  away_pk_rank?: number;
-  home_l7?: string;
-  away_l7?: string;
-  home_recent_games?: RecentGame[];
-  away_recent_games?: RecentGame[];
-  home_gas?: number;
-  away_gas?: number;
-  home_gas_breakdown?: string[];
-  away_gas_breakdown?: string[];
-  home_gsax?: number;        // GSAx per game for projected home starter
-  away_gsax?: number;
-  home_gsax_total?: number;
-  home_gsax_pct?: number;
-  away_gsax_total?: number;
-  away_gsax_pct?: number;
-
-  home_news?: PlayerNewsItem[];
-  away_news?: PlayerNewsItem[];
-
-  home_lineup?: TeamLineup;
-  away_lineup?: TeamLineup;
-  home_lineup_score?: number;    // quality ratio vs league avg (1.0 = avg, 1.05 = +5%)
-  away_lineup_score?: number;
-  home_lineup_vs_team?: number;  // quality ratio vs this team's own historical avg
-  away_lineup_vs_team?: number;
-
-  home_goalie_stats?: string;
-  away_goalie_stats?: string;
-  homeGoalieVsOpp?: string; // JSON string
-  awayGoalieVsOpp?: string; // JSON string
-
-  home_xg_explained?: string[]; // JSON Array from Python
-  away_xg_explained?: string[]; // JSON Array from Python
-
-  homeGoalieStatus?: string;
-  homeGoalieConfirmed?: string;
-  awayGoalieStatus?: string;
-  awayGoalieConfirmed?: string;
-  homeBackupGoalie?: string;
-  homeBackupGoalieStats?: string;
-  awayBackupGoalie?: string;
-  awayBackupGoalieStats?: string;
-  homeGoaliePlayoffStats?: string; // e.g. "24-34 | .903 | 2.90"
-  awayGoaliePlayoffStats?: string;
-
-  home_avg_speed?: number;
-  away_avg_speed?: number;
-  home_rr_rate?: number;
-  away_rr_rate?: number;
-
-  home_h2h_record?: string;
-  away_h2h_record?: string;
-  home_is_b2b?: boolean;
-  away_is_b2b?: boolean;
-  home_is_3in4?: boolean;
-  away_is_3in4?: boolean;
-  home_is_4in6?: boolean;
-  away_is_4in6?: boolean;
-  home_is_6in9?: boolean;
-  away_is_6in9?: boolean;
-  home_xg_sparkline?: number[];
-  away_xg_sparkline?: number[];
-
-  // L10 home/away location splits (computed from gamestats.csv)
-  home_l10_home?: LocationSplitRecord; // home team's last 10 home games
-  away_l10_away?: LocationSplitRecord; // away team's last 10 away games
-
-  // Extended odds (Bovada-only markets)
-  total_line?: string;
-  total_over?: string;
-  total_under?: string;
-  home_puckline?: string;
-  away_puckline?: string;
-  home_puckline_spread?: string;
-  away_puckline_spread?: string;
-  home_1p_ml?: string;
-  away_1p_ml?: string;
-  home_three_way?: string;
-  away_three_way?: string;
-  three_way_tie?: string;
-}
-
-export interface HistoryEntry {
-  date: string;
-  homeTeam: Team;
-  awayTeam: Team;
-  homeScore: number;
-  awayScore: number;
-  homeXg: number;
-  awayXg: number;
-  homeWinProb: number;
-  predictedWinner: string;
-  actualWinner: string;
-  isCorrect: boolean;
-  brierScore: number;
-}
-
-interface RawPrediction {
-  game_date: string;
-  game_id: string;
-  home_team: string;
-  home_starter: string;
-  home_xg: string;
-  home_win_pct: string;
-  home_vegas_win_pct: string;
-  home_ev: string;
-  away_team: string;
-  away_starter: string;
-  away_xg: string;
-  away_win_pct: string;
-  away_vegas_win_pct: string;
-  away_ev: string;
-  wager_recommendation: string;
-  home_model_odds: string;
-  away_model_odds: string;
-  home_vegas_odds: string;
-  away_vegas_odds: string;
-  game_start_time: string;
-
-  home_pp_rank?: string;
-  home_pk_rank?: string;
-  away_pp_rank?: string;
-  away_pk_rank?: string;
-  home_l7?: string;
-  away_l7?: string;
-  home_l7_games?: string;
-  away_l7_games?: string;
-  home_gas?: string;
-  away_gas?: string;
-  home_gas_breakdown?: string;
-  away_gas_breakdown?: string;
-  home_gsax?: string;
-  away_gsax?: string;
-  home_gsax_total?: string;
-  home_gsax_pct?: string;
-  away_gsax_total?: string;
-  away_gsax_pct?: string;
-  home_news?: string;
-  away_news?: string;
-  home_lineup?: string;
-  away_lineup?: string;
-  home_lineup_score?: string;
-  away_lineup_score?: string;
-  home_lineup_vs_team?: string;
-  away_lineup_vs_team?: string;
-  home_goalie_stats?: string;
-  away_goalie_stats?: string;
-  home_starter_vs_opp?: string;
-  away_starter_vs_opp?: string;
-  home_xg_explained?: string;
-  away_xg_explained?: string;
-
-  home_goalie_status?: string;
-  home_goalie_confirmed?: string;
-  away_goalie_status?: string;
-  away_goalie_confirmed?: string;
-
-  home_avg_speed?: string;
-  away_avg_speed?: string;
-  home_rr_rate?: string;
-  away_rr_rate?: string;
-
-  home_h2h_record?: string;
-  away_h2h_record?: string;
-  home_is_b2b?: string;
-  away_is_b2b?: string;
-  home_is_3in4?: string;
-  away_is_3in4?: string;
-  home_is_4in6?: string;
-  away_is_4in6?: string;
-  home_is_6in9?: string;
-  away_is_6in9?: string;
-  home_xg_sparkline?: string;
-  away_xg_sparkline?: string;
-
-  // Extended odds
-  total_line?: string;
-  total_over?: string;
-  total_under?: string;
-  home_puckline?: string;
-  away_puckline?: string;
-  home_puckline_spread?: string;
-  away_puckline_spread?: string;
-  home_1p_ml?: string;
-  away_1p_ml?: string;
-  home_three_way?: string;
-  away_three_way?: string;
-  three_way_tie?: string;
-}
-
-interface RawTeam {
-  'Team Name': string;
-  'Common Name': string;
-  'Team Logo URL': string;
-  'Hex Color 1': string;
-  'Hex Color 2': string;
-  'Team Tricode': string;
-}
-
-export async function getPredictions(): Promise<GamePrediction[]> {
-  const dataDir = path.join(process.cwd(), 'data');
-  const predictionsCsv = fs.readFileSync(path.join(dataDir, 'predictions_detailed.csv'), 'utf8');
-
-  // Load backup goalie data
-  const teamGoaliesMap = new Map<string, string[]>(); // triCode -> sorted goalies by GP
-  const goalieStatsMap = new Map<string, string>(); // fullName -> stat line string
-  try {
-    const tgPath = path.join(process.cwd(), 'public', 'data', 'team_goalies.json');
-    const teamGoalies: Record<string, string[]> = JSON.parse(fs.readFileSync(tgPath, 'utf8'));
-    Object.entries(teamGoalies).forEach(([tri, goalies]) => teamGoaliesMap.set(tri, goalies));
-  } catch { /* ok */ }
-  try {
-    const gsPath = path.join(process.cwd(), 'pipeline', 'nhl_goalie_stats.json');
-    const goalieStats: Record<string, string> = JSON.parse(fs.readFileSync(gsPath, 'utf8'));
-    Object.entries(goalieStats).forEach(([name, stat]) => goalieStatsMap.set(name, stat));
-  } catch { /* ok */ }
-
-  // Load career playoff goalie stats
-  const goaliePlayoffCareerMap = new Map<string, string>(); // fullName -> display string
-  try {
-    const gpcPath = path.join(process.cwd(), 'public', 'data', 'goalie_playoff_career_stats.json');
-    const gpc: Record<string, { display: string }> = JSON.parse(fs.readFileSync(gpcPath, 'utf8'));
-    Object.entries(gpc).forEach(([name, stats]) => goaliePlayoffCareerMap.set(name, stats.display));
-  } catch { /* ok */ }
-
-  // Load TV network lookup from upcoming_games.json (keyed by homeAbbrev_awayAbbrev)
-  const tvNetworkMap = new Map<string, string>();
-  try {
-    const upcomingPath = path.join(process.cwd(), 'public', 'data', 'upcoming_games.json');
-    const upcomingGames: Array<{ homeTeamAbbrev: string; awayTeamAbbrev: string; tvNetwork?: string }> = JSON.parse(fs.readFileSync(upcomingPath, 'utf8'));
-    upcomingGames.forEach(g => {
-      if (g.tvNetwork) {
-        tvNetworkMap.set(`${g.homeTeamAbbrev}_${g.awayTeamAbbrev}`, g.tvNetwork);
-      }
-    });
-  } catch { /* ok */ }
-  const teamsCsv = fs.readFileSync(path.join(dataDir, 'nhl_teams.csv'), 'utf8');
-  // const lastUpdate = fs.readFileSync(path.join(dataDir, 'last_update.txt'), 'utf8');
-
-  const predictionsParsed = Papa.parse<RawPrediction>(predictionsCsv, { header: true, skipEmptyLines: true });
-  const teamsParsed = Papa.parse<RawTeam>(teamsCsv, { header: true, skipEmptyLines: true });
-
-  // ---- L10 home/away location splits from gamestats.csv ----
-  interface RawGameStat { game_date: string; team: string; home_away: string; result: string; }
-  const gamestatsCsv = fs.readFileSync(path.join(dataDir, 'gamestats.csv'), 'utf8');
-  const gamestatsParsed = Papa.parse<RawGameStat>(gamestatsCsv, { header: true, skipEmptyLines: true });
-
-  const teamHomeGames = new Map<string, { date: string; result: string }[]>();
-  const teamAwayGames = new Map<string, { date: string; result: string }[]>();
-  gamestatsParsed.data.forEach(row => {
-    const team = row.team?.trim();
-    const ha = row.home_away?.trim();
-    const result = row.result?.trim();
-    const date = row.game_date?.trim();
-    if (!team || !ha || !result || !date) return;
-    const bucket = ha === 'Home' ? teamHomeGames : ha === 'Away' ? teamAwayGames : null;
-    if (!bucket) return;
-    if (!bucket.has(team)) bucket.set(team, []);
-    bucket.get(team)!.push({ date, result });
-  });
-
-  const computeL10 = (games: { date: string; result: string }[]): LocationSplitRecord => {
-    const sorted = [...games].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
-    let w = 0, l = 0, ot = 0;
-    for (const g of sorted) {
-      if (g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW') w++;
-      else if (g.result === 'OTL' || g.result === 'SOL') ot++;
-      else l++;
-    }
-    const gp = sorted.length;
-    return { w, l, ot, ptsPct: gp > 0 ? (w * 2 + ot) / (gp * 2) : 0 };
-  };
-
-  const teamHomeL10 = new Map<string, LocationSplitRecord>();
-  const teamAwayL10 = new Map<string, LocationSplitRecord>();
-  teamHomeGames.forEach((games, team) => teamHomeL10.set(team, computeL10(games)));
-  teamAwayGames.forEach((games, team) => teamAwayL10.set(team, computeL10(games)));
-  // ---- end location splits ----
-
-  const teamsMap = new Map<string, Team>();
-  teamsParsed.data.forEach((row) => {
-    teamsMap.set(row['Common Name'], {
-      name: row['Team Name'],
-      commonName: row['Common Name'],
-      logoUrl: row['Team Logo URL'],
-      color1: row['Hex Color 1'],
-      color2: row['Hex Color 2'],
-      triCode: row['Team Tricode'],
-    });
-  });
-
-  // Create TriCode maps for recent games parsing
-  const triCodeToLogoMap = new Map<string, string>();
-  const triCodeToColorMap = new Map<string, string>();
-  teamsParsed.data.forEach((row) => {
-    triCodeToLogoMap.set(row['Team Tricode'], row['Team Logo URL']);
-    triCodeToColorMap.set(row['Team Tricode'], row['Hex Color 1']);
-  });
-
-  const predictions = predictionsParsed.data.map((row): GamePrediction | null => {
-    const homeTeam = teamsMap.get(row.home_team);
-    const awayTeam = teamsMap.get(row.away_team);
-
-    // Parse Recent Games with Logo Mapping
-    const parseRecent = (jsonStr?: string): RecentGame[] => {
-      if (!jsonStr) return [];
-      try {
-        const games = JSON.parse(jsonStr) as Omit<RecentGame, 'opponentLogo'>[];
-        return games.map(g => ({
-          ...g,
-          opponentLogo: triCodeToLogoMap.get(g.opponent) || '',
-          opponentColor: triCodeToColorMap.get(g.opponent) || ''
-        }));
-      } catch (e) {
-        console.error("Error parsing recent games", e);
-        return [];
-      }
-    };
-
-    // Parse News
-    const parseNews = (jsonStr?: string): PlayerNewsItem[] => {
-      if (!jsonStr) return [];
-      try {
-        return JSON.parse(jsonStr) as PlayerNewsItem[];
-      } catch (e) {
-        console.error("Error parsing news", e);
-        return [];
-      }
-    };
-
-    // Parse Lineups
-    const parseLineup = (jsonStr?: string): TeamLineup | undefined => {
-      if (!jsonStr || jsonStr === '{}') return undefined; // Empty or null
-      try {
-        return JSON.parse(jsonStr) as TeamLineup;
-      } catch (e) {
-        console.error("Error parsing lineup", e);
-        return undefined;
-      }
-    };
-
-    // Parse Explanation
-    const parseExplanation = (jsonStr?: string): string[] => {
-      if (!jsonStr) return [];
-      try {
-        return JSON.parse(jsonStr) as string[];
-      } catch {
-        return [];
-      }
-    };
-
-    // Parse Sparkline
-    // Python's json.dumps writes literal 'NaN' for float NaN, which is invalid JSON.
-    // Replace 'NaN' with 'null' before parsing, then filter out nulls/non-finite values.
-    const parseSparkline = (jsonStr?: string): number[] => {
-      if (!jsonStr || jsonStr === '[]') return [];
-      try {
-        const fixed = jsonStr.replace(/\bNaN\b/g, 'null');
-        const arr = JSON.parse(fixed) as (number | null)[];
-        return arr.filter((v): v is number => v !== null && isFinite(v));
-      } catch {
-        return [];
-      }
-    };
-
-    if (!homeTeam || !awayTeam) {
-      // console.warn(`Team not found for game ${row.game_id}: ${row.home_team} vs ${row.away_team}`);
-      return null; // Skip invalid teams
-    }
-
-    const homeXg = parseFloat(row.home_xg);
-    const awayXg = parseFloat(row.away_xg);
-    const totalGoals = homeXg + awayXg;
-
-    return {
-      id: row.game_id,
-      date: row.game_date,
-      homeTeam,
-      awayTeam,
-      homeStarter: row.home_starter,
-      awayStarter: row.away_starter,
-      homeXg,
-      awayXg,
-      homeModelWinPct: parseFloat(row.home_win_pct),
-      awayModelWinPct: parseFloat(row.away_win_pct),
-      homeVegasWinPct: parseFloat(row.home_vegas_win_pct),
-      awayVegasWinPct: parseFloat(row.away_vegas_win_pct),
-      homeEv: row.home_ev ? parseFloat(row.home_ev) : 0,
-      awayEv: row.away_ev ? parseFloat(row.away_ev) : 0,
-      totalGoals,
-      homeWager: parseWager(row.wager_recommendation, 'Home'),
-      awayWager: parseWager(row.wager_recommendation, 'Away'),
-      homeModelOdds: row.home_model_odds || '',
-      awayModelOdds: row.away_model_odds || '',
-      homeVegasOdds: row.home_vegas_odds || '',
-      awayVegasOdds: row.away_vegas_odds || '',
-      startTime: row.game_start_time || '',
-      tvNetwork: tvNetworkMap.get(`${homeTeam.triCode}_${awayTeam.triCode}`) || '',
-
-      home_pp_rank: row.home_pp_rank ? parseInt(row.home_pp_rank) : undefined,
-      home_pk_rank: row.home_pk_rank ? parseInt(row.home_pk_rank) : undefined,
-      away_pp_rank: row.away_pp_rank ? parseInt(row.away_pp_rank) : undefined,
-      away_pk_rank: row.away_pk_rank ? parseInt(row.away_pk_rank) : undefined,
-      home_l7: row.home_l7 || undefined,
-      away_l7: row.away_l7 || undefined,
-      home_recent_games: parseRecent(row.home_l7_games),
-      away_recent_games: parseRecent(row.away_l7_games),
-      home_gas: row.home_gas ? parseInt(row.home_gas) : undefined,
-      away_gas: row.away_gas ? parseInt(row.away_gas) : undefined,
-      home_gas_breakdown: row.home_gas_breakdown ? row.home_gas_breakdown.split('|') : [],
-      away_gas_breakdown: row.away_gas_breakdown ? row.away_gas_breakdown.split('|') : [],
-      home_gsax: row.home_gsax ? parseFloat(row.home_gsax) : undefined,
-      away_gsax: row.away_gsax ? parseFloat(row.away_gsax) : undefined,
-      home_gsax_total: row.home_gsax_total ? parseFloat(row.home_gsax_total) : undefined,
-      home_gsax_pct: row.home_gsax_pct ? parseFloat(row.home_gsax_pct) : undefined,
-      away_gsax_total: row.away_gsax_total ? parseFloat(row.away_gsax_total) : undefined,
-      away_gsax_pct: row.away_gsax_pct ? parseFloat(row.away_gsax_pct) : undefined,
-
-      home_news: parseNews(row.home_news),
-      away_news: parseNews(row.away_news),
-      home_lineup: parseLineup(row.home_lineup),
-      away_lineup: parseLineup(row.away_lineup),
-      home_lineup_score: row.home_lineup_score ? parseFloat(row.home_lineup_score) : undefined,
-      away_lineup_score: row.away_lineup_score ? parseFloat(row.away_lineup_score) : undefined,
-      home_lineup_vs_team: row.home_lineup_vs_team ? parseFloat(row.home_lineup_vs_team) : undefined,
-      away_lineup_vs_team: row.away_lineup_vs_team ? parseFloat(row.away_lineup_vs_team) : undefined,
-
-      home_goalie_stats: row.home_goalie_stats || undefined,
-      away_goalie_stats: row.away_goalie_stats || undefined,
-
-      homeGoalieVsOpp: row.home_starter_vs_opp || undefined,
-      awayGoalieVsOpp: row.away_starter_vs_opp || undefined,
-
-      home_xg_explained: parseExplanation(row.home_xg_explained),
-      away_xg_explained: parseExplanation(row.away_xg_explained),
-
-      homeGoalieStatus: row.home_goalie_status,
-      homeGoalieConfirmed: row.home_goalie_confirmed,
-      awayGoalieStatus: row.away_goalie_status,
-      awayGoalieConfirmed: row.away_goalie_confirmed,
-      ...(() => {
-        const htri = homeTeam.triCode;
-        const atri = awayTeam.triCode;
-        const starter1 = row.home_starter?.split(' (')[0]?.trim() ?? '';
-        const starter2 = row.away_starter?.split(' (')[0]?.trim() ?? '';
-        const homeGoalies = teamGoaliesMap.get(htri) ?? [];
-        const awayGoalies = teamGoaliesMap.get(atri) ?? [];
-        const hBackup = homeGoalies.find(g => g.toLowerCase() !== starter1.toLowerCase());
-        const aBackup = awayGoalies.find(g => g.toLowerCase() !== starter2.toLowerCase());
-        // Career playoff stats lookup (try full name match)
-        const findPlayoffStats = (starterName: string): string | undefined => {
-          if (!starterName) return undefined;
-          // Direct match
-          if (goaliePlayoffCareerMap.has(starterName)) return goaliePlayoffCareerMap.get(starterName);
-          // Case-insensitive match
-          const lower = starterName.toLowerCase();
-          for (const [k, v] of goaliePlayoffCareerMap) {
-            if (k.toLowerCase() === lower) return v;
-          }
-          return undefined;
-        };
-        return {
-          homeBackupGoalie: hBackup,
-          homeBackupGoalieStats: hBackup ? goalieStatsMap.get(hBackup) : undefined,
-          awayBackupGoalie: aBackup,
-          awayBackupGoalieStats: aBackup ? goalieStatsMap.get(aBackup) : undefined,
-          homeGoaliePlayoffStats: findPlayoffStats(starter1),
-          awayGoaliePlayoffStats: findPlayoffStats(starter2),
-        };
-      })(),
-
-      home_avg_speed: row.home_avg_speed ? parseFloat(row.home_avg_speed) : undefined,
-      away_avg_speed: row.away_avg_speed ? parseFloat(row.away_avg_speed) : undefined,
-      home_rr_rate: row.home_rr_rate ? parseFloat(row.home_rr_rate) : undefined,
-      away_rr_rate: row.away_rr_rate ? parseFloat(row.away_rr_rate) : undefined,
-
-      home_h2h_record: row.home_h2h_record || undefined,
-      away_h2h_record: row.away_h2h_record || undefined,
-      home_is_b2b: row.home_is_b2b?.toLowerCase() === 'true',
-      away_is_b2b: row.away_is_b2b?.toLowerCase() === 'true',
-      home_is_3in4: row.home_is_3in4?.toLowerCase() === 'true',
-      away_is_3in4: row.away_is_3in4?.toLowerCase() === 'true',
-      home_is_4in6: row.home_is_4in6?.toLowerCase() === 'true',
-      away_is_4in6: row.away_is_4in6?.toLowerCase() === 'true',
-      home_is_6in9: row.home_is_6in9?.toLowerCase() === 'true',
-      away_is_6in9: row.away_is_6in9?.toLowerCase() === 'true',
-      home_xg_sparkline: parseSparkline(row.home_xg_sparkline),
-      away_xg_sparkline: parseSparkline(row.away_xg_sparkline),
-
-      home_l10_home: teamHomeL10.get(row.home_team),
-      away_l10_away: teamAwayL10.get(row.away_team),
-
-      // Extended odds
-      total_line: row.total_line || undefined,
-      total_over: row.total_over || undefined,
-      total_under: row.total_under || undefined,
-      home_puckline: row.home_puckline || undefined,
-      away_puckline: row.away_puckline || undefined,
-      home_puckline_spread: row.home_puckline_spread || undefined,
-      away_puckline_spread: row.away_puckline_spread || undefined,
-      home_1p_ml: row.home_1p_ml || undefined,
-      away_1p_ml: row.away_1p_ml || undefined,
-      home_three_way: row.home_three_way || undefined,
-      away_three_way: row.away_three_way || undefined,
-      three_way_tie: row.three_way_tie || undefined,
-    };
-  }).filter((p): p is GamePrediction => p !== null);
-
-  return predictions;
-}
-
-export async function getHistory(): Promise<HistoryEntry[]> {
-  const dataDir = path.join(process.cwd(), 'data');
-  const teamsCsv = fs.readFileSync(path.join(dataDir, 'nhl_teams.csv'), 'utf8');
-  const historyJson = fs.readFileSync(path.join(dataDir, 'prediction_history.json'), 'utf8');
-
-  const teamsParsed = Papa.parse<RawTeam>(teamsCsv, { header: true, skipEmptyLines: true });
-  const rawHistory = JSON.parse(historyJson);
-
-  const teamsMap = new Map<string, Team>();
-  teamsParsed.data.forEach((row) => {
-    teamsMap.set(row['Common Name'], {
-      name: row['Team Name'],
-      commonName: row['Common Name'],
-      logoUrl: row['Team Logo URL'],
-      color1: row['Hex Color 1'],
-      color2: row['Hex Color 2'],
-      triCode: row['Team Tricode'],
-    });
-  });
-
-  interface RawHistoryEntry {
+    player: string;
+    news: string;
+    category: string;
     date: string;
+    timestamp?: string;
+}
+
+/*
+ * Every path is a literal: a path.join(process.cwd(), variable) makes
+ * Turbopack trace whole directories into the function (the home function
+ * has a 5MB trace budget).
+ */
+const READ = {
+    predictions: () => fs.readFileSync(path.join(process.cwd(), 'data', 'predictions_detailed.csv'), 'utf8'),
+    history: () => fs.readFileSync(path.join(process.cwd(), 'data', 'prediction_history.json'), 'utf8'),
+    upcoming: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'upcoming_games.json'), 'utf8'),
+    projections: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'season_projections.json'), 'utf8'),
+    series: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'playoff_series.json'), 'utf8'),
+    implications: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'game_implications.json'), 'utf8'),
+} as const;
+
+function readJson<T>(k: keyof typeof READ): T | null {
+    try {
+        return JSON.parse(READ[k]()) as T;
+    } catch {
+        return null;
+    }
+}
+
+function readRows(): RawRow[] {
+    try {
+        return Papa.parse<RawRow>(READ.predictions(), { header: true, skipEmptyLines: true }).data;
+    } catch {
+        return [];
+    }
+}
+
+function tvNetworks(): Map<string, string> {
+    const m = new Map<string, string>();
+    const games = readJson<{ id?: number; homeTeamAbbrev?: string; awayTeamAbbrev?: string; tvNetwork?: string }[]>('upcoming') ?? [];
+    for (const g of games) {
+        if (!g.tvNetwork) continue;
+        if (g.id) m.set(String(g.id), g.tvNetwork);
+        m.set(`${g.homeTeamAbbrev}_${g.awayTeamAbbrev}`, g.tvNetwork);
+    }
+    return m;
+}
+
+/**
+ * Current-season W-L-OTL from the NHL (Data Cache, 30 min). Null on any
+ * failure or when the feed still returns last season (the /now endpoints lag
+ * around opening night).
+ */
+async function nhlRecords(): Promise<Record<string, string> | null> {
+    try {
+        const res = await fetch('https://api-web.nhle.com/v1/standings/now', {
+            next: { revalidate: 1800 },
+            signal: AbortSignal.timeout(4000),
+            headers: { 'User-Agent': 'pony-xg (home slate)' },
+        });
+        if (!res.ok) return null;
+        const body = (await res.json()) as {
+            standings?: { teamAbbrev?: { default?: string }; wins?: number; losses?: number; otLosses?: number; seasonId?: number }[];
+        };
+        const out: Record<string, string> = {};
+        for (const t of body.standings ?? []) {
+            const tri = t.teamAbbrev?.default;
+            if (!tri || (t.seasonId && String(t.seasonId) !== SEASON_ID)) continue;
+            out[tri] = `${t.wins ?? 0}-${t.losses ?? 0}-${t.otLosses ?? 0}`;
+        }
+        return Object.keys(out).length ? out : null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * The slate: every row of predictions_detailed.csv (contract v2) as a
+ * light, client-safe Prediction. Heavy per-game data (lineups, news, recent
+ * games) is served separately by /api/matchup-details on first expand.
+ */
+export async function getPredictions(): Promise<Prediction[]> {
+    const rows = readRows();
+    const tv = tvNetworks();
+    const preds: Prediction[] = [];
+    const recentGp = new Map<string, { gp: number; rec: string | null }>();
+    for (const row of rows) {
+        const p = parseRow(row, tv.get(str(row.nhl_game_id) ?? '') ?? tv.get(`${row.home_abbrev}_${row.away_abbrev}`) ?? null);
+        if (!p) continue;
+        for (const s of ['home', 'away'] as const) {
+            const rec = recordFromRecent(p[s].gp, parseRecent(row[`${s}_l7_games`]));
+            const prev = recentGp.get(p[s].team.triCode);
+            if (!prev || p[s].gp >= prev.gp) recentGp.set(p[s].team.triCode, { gp: p[s].gp, rec });
+            p[s].record = rec;
+        }
+        preds.push(p);
+    }
+    const nhl = preds.length ? await nhlRecords() : null;
+    if (nhl) for (const p of preds) for (const s of ['home', 'away'] as const) p[s].record = nhl[p[s].team.triCode] ?? p[s].record;
+    return preds;
+}
+
+interface RawHistory {
+    date: string;
+    season?: string;
     homeTeam: string;
     awayTeam: string;
-    homeScore: number;
-    awayScore: number;
-    homeXg: number;
-    awayXg: number;
-    homeWinProb: number;
     predictedWinner: string;
-    actualWinner: string;
     isCorrect: boolean;
-    brierScore: number;
-  }
-
-  // Sort Descending by Date
-  // rawHistory is list of objects.
-  const history: HistoryEntry[] = rawHistory.map((row: RawHistoryEntry) => {
-    const homeTeam = teamsMap.get(row.homeTeam);
-    const awayTeam = teamsMap.get(row.awayTeam);
-
-    if (!homeTeam || !awayTeam) return null;
-
-    return {
-      date: row.date,
-      homeTeam,
-      awayTeam,
-      homeScore: row.homeScore,
-      awayScore: row.awayScore,
-      homeXg: row.homeXg,
-      awayXg: row.awayXg,
-      homeWinProb: row.homeWinProb,
-      predictedWinner: row.predictedWinner,
-      actualWinner: row.actualWinner,
-      isCorrect: row.isCorrect,
-      brierScore: row.brierScore
-    };
-  }).filter((h: HistoryEntry | null): h is HistoryEntry => h !== null);
-
-  return history.reverse(); // Newest first (assuming generation was chronological)
+    retro?: boolean;
 }
 
-function parseWager(recommendation: string, side: 'Home' | 'Away'): string | null {
-  if (!recommendation) return null;
-  if (recommendation.includes(side) && recommendation.toLowerCase().includes('unit')) {
-    const match = recommendation.match(/(\d+(\.\d+)?)\s*Unit/i);
-    return match ? `${match[1]}u` : null;
-  }
-  return null;
+const TRI_BY_SHORT = new Map(TEAM_CODES.map(t => [TEAM_NAMES[t].short, t]));
+
+/**
+ * Pick form per team: this season's graded picks, newest last, the last 10
+ * where the model picked the team to win and to lose. Replaces shipping the
+ * whole prediction history (460KB) to the browser.
+ */
+export async function getPickSummaries(teams?: string[]): Promise<PickSummaries> {
+    const hist = readJson<RawHistory[]>('history') ?? [];
+    const want = teams ? new Set(teams) : null;
+    const out: PickSummaries = {};
+    const rows = hist.filter(h => h && h.date >= SEASON_START_DATE && !h.retro).sort((a, b) => a.date.localeCompare(b.date));
+    for (const h of rows) {
+        for (const name of [h.homeTeam, h.awayTeam]) {
+            const tri = TRI_BY_SHORT.get(name);
+            if (!tri || (want && !want.has(tri))) continue;
+            const s = (out[tri] ??= { pickedWin: [], pickedLose: [] });
+            (h.predictedWinner === name ? s.pickedWin : s.pickedLose).push(!!h.isCorrect);
+        }
+    }
+    for (const s of Object.values(out)) {
+        s.pickedWin = s.pickedWin.slice(-10);
+        s.pickedLose = s.pickedLose.slice(-10);
+    }
+    return out;
 }
 
-export async function getLastRefresh(): Promise<string> {
-  const filePath = path.join(process.cwd(), 'data/last_updated.json');
-  try {
-    const fileContents = await fs.promises.readFile(filePath, 'utf8');
-    const data = JSON.parse(fileContents);
-    return data.last_refresh || "Unknown";
-  } catch (error) {
-    console.error("Error reading last_updated.json:", error);
-    return "Unknown";
-  }
+/** Playoff % per team from season_projections.json, only when it is this season's. */
+export async function getPlayoffOdds(): Promise<Record<string, number>> {
+    const d = readJson<{ season_id?: string; teams?: { team: string; make_playoffs_pct: number }[] }>('projections');
+    if (!d || String(d.season_id) !== SEASON_ID) return {};
+    return Object.fromEntries((d.teams ?? []).map(t => [t.team, t.make_playoffs_pct]));
+}
+
+export async function getImplications() {
+    const d = readJson<import('./implications').GameImplicationsData & { season_id?: string }>('implications');
+    if (!d || (d.season_id && String(d.season_id) !== SEASON_ID)) return null;
+    return d;
+}
+
+/**
+ * Active playoff series scores keyed "AWAY|HOME" for the playoff games on the
+ * slate (empty outside the postseason, and the file is not read then).
+ */
+export async function getPlayoffSeries(preds: Prediction[]): Promise<Record<string, { away: number; home: number }>> {
+    const po = preds.filter(p => p.gameType === '03');
+    if (!po.length) return {};
+    const series = readJson<{ status?: string; higherSeed?: { triCode?: string }; lowerSeed?: { triCode?: string }; seriesScore?: [number, number] }[]>('series') ?? [];
+    const out: Record<string, { away: number; home: number }> = {};
+    for (const s of series) {
+        const hi = s.higherSeed?.triCode;
+        const lo = s.lowerSeed?.triCode;
+        if (!hi || !lo || !Array.isArray(s.seriesScore) || s.status === 'complete') continue;
+        const [hw, lw] = s.seriesScore;
+        out[`${lo}|${hi}`] = { away: lw, home: hw };
+        out[`${hi}|${lo}`] = { away: hw, home: lw };
+    }
+    return Object.fromEntries(po.map(p => `${p.away.team.triCode}|${p.home.team.triCode}`).filter(k => out[k]).map(k => [k, out[k]]));
 }

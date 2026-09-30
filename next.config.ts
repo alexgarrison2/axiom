@@ -162,6 +162,26 @@ const nextConfig: NextConfig = {
     };
   },
 
+  /*
+   * The old home-page tabs (/?tab=Teams …) are real routes now. Keep shared
+   * links working with a temporary redirect to the new page.
+   */
+  async redirects() {
+    const tabs: [string, string][] = [
+      ["[Tt]eams", "/teams"],
+      ["[Hh]istory", "/accuracy"],
+      ["[Ss]katers", "/players"],
+      ["[Bb]racket", "/standings"],
+      ["[Nn]ews", "/news"],
+    ];
+    return tabs.map(([value, destination]) => ({
+      source: "/",
+      has: [{ type: "query" as const, key: "tab", value }],
+      destination,
+      permanent: false,
+    }));
+  },
+
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
