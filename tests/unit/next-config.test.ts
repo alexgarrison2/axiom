@@ -47,6 +47,16 @@ describe('next.config cache headers', () => {
     });
 });
 
+describe('next.config home caching', () => {
+    it('lets the CDN hold / for 5 minutes with stale-while-revalidate, never the browser', async () => {
+        const h = Object.fromEntries((await headersFor('/')).map((x) => [x.key, x.value]));
+        expect(h['Cache-Control']).toMatch(/\bs-maxage=300\b/);
+        expect(h['Cache-Control']).toMatch(/\bmax-age=0\b/);
+        expect(h['Cache-Control']).toContain('stale-while-revalidate');
+        expect(h['CDN-Cache-Control']).toBe('max-age=300, stale-while-revalidate=600');
+    });
+});
+
 describe('next.config function tracing', () => {
     it('keeps raw pipeline data, backups and binaries out of every function', () => {
         const global = nextConfig.outputFileTracingExcludes?.['/*'] ?? [];

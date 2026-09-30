@@ -128,6 +128,15 @@ const WEEK = 60 * 60 * 24 * 7;
 const DAY = 60 * 60 * 24;
 const assetCache = `public, max-age=${WEEK}, stale-while-revalidate=${DAY}`;
 const dataCache = `public, max-age=60, s-maxage=3600, stale-while-revalidate=${DAY}`;
+// Home: 5 minutes at the edge, then serve stale for up to 10 while one
+// request re-renders. Browsers always revalidate. Next.js manages
+// Cache-Control on dynamic pages itself, so the CDN directive also goes in
+// CDN-Cache-Control, which Vercel's edge honours and Next leaves alone.
+const HOME_EDGE = "s-maxage=300, stale-while-revalidate=600";
+const homeCacheHeaders = [
+  { key: "Cache-Control", value: `public, max-age=0, ${HOME_EDGE}` },
+  { key: "CDN-Cache-Control", value: HOME_EDGE.replace("s-maxage", "max-age") },
+];
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -203,6 +212,11 @@ const nextConfig: NextConfig = {
       { source: "/images/:path*", headers: [{ key: "Cache-Control", value: assetCache }] },
       { source: "/ponyxG_full.svg", headers: [{ key: "Cache-Control", value: assetCache }] },
       { source: "/data/:path*", headers: [{ key: "Cache-Control", value: dataCache }] },
+      // The home page renders per request (it reads ?date=) but holds nothing
+      // per viewer (favourites live in localStorage, live scores are polled
+      // client-side). The CDN keys on the full URL, so every ?date= slate is
+      // its own entry; each pipeline run redeploys and purges it.
+      { source: "/", headers: homeCacheHeaders },
     ];
   },
 };

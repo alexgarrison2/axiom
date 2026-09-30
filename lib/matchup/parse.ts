@@ -31,6 +31,16 @@ export function int(v: string | undefined | null): number | null {
     return n == null ? null : Math.round(n);
 }
 
+/** Fair American line of a win % (0-100), as the pipeline writes it ("+157", "-106", "+100"). */
+export function fairLine(pct: number | null): string | null {
+    if (pct == null || !(pct > 0 && pct < 100)) return null;
+    const p = pct / 100;
+    if (Math.abs(p - 0.5) < 1e-12) return '+100';
+    const o = p > 0.5 ? -(p / (1 - p)) * 100 : ((1 - p) / p) * 100;
+    const r = Math.round(o);
+    return r > 0 ? `+${r}` : String(r);
+}
+
 export function bool(v: string | undefined | null): boolean {
     return str(v)?.toLowerCase() === 'true';
 }
@@ -71,7 +81,10 @@ function side(row: RawRow, s: Side, team: TeamRef): SideData {
         team,
         modelWinPct: num(k('model_win_pct')),
         winPct: num(k('win_pct')),
-        fairOdds: str(k('model_odds')),
+        // "Fair" sits next to the published % (Our forecast), so it is the
+        // fair line of that blended %: *_blend_odds (fix1-G1). *_model_odds is
+        // the model-only line. Rows without blend_odds derive it from win_pct.
+        fairOdds: str(k('blend_odds')) ?? fairLine(num(k('win_pct'))),
         marketOdds: int(k('vegas_odds')),
         marketWinPct: num(k('vegas_win_pct')),
         ev: num(k('ev')),

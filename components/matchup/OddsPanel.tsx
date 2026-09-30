@@ -97,7 +97,7 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
                             home={`${market.home}%`}
                         />
                     ) : null}
-                    <Row label="Fair (model)" away={fmtOdds(p.away.fairOdds)} home={fmtOdds(p.home.fairOdds)} />
+                    <Row label="Fair (forecast)" away={fmtOdds(p.away.fairOdds)} home={fmtOdds(p.home.fairOdds)} />
                     {p.away.puckline != null && p.home.puckline != null ? (
                         <Row label="Puck line" away={`${p.away.pucklineSpread ?? ''} ${fmtOdds(p.away.puckline)}`} home={`${p.home.pucklineSpread ?? ''} ${fmtOdds(p.home.puckline)}`} />
                     ) : null}

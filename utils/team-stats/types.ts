@@ -215,6 +215,7 @@ export interface Matchup {
     awayStarterStatus?: string;
     homeVegasOdds?: number;
     awayVegasOdds?: number;
+    /** Fair American line of the published (blended) win %. */
     homeModelOdds?: string;
     awayModelOdds?: string;
     homeEV?: number;
