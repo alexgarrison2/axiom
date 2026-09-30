@@ -63,6 +63,14 @@ SIMULATIONS = 5000
 SIGMA0 = 0.20
 SIGMA_GP = 40
 SEED = 20262027
+# Regulation ties.  Independent Poisson scoring gives P(tied after 60) of
+# about 0.16 at a 6.1-goal total, but 22.4% of regular-season games went to
+# OT/SO in 2022-23..2025-26 (nhl_historical_gamestats.csv: 23.0/20.7/21.0/
+# 24.8%; score effects make ties likelier than independence implies).  The
+# tie probability is scaled by TIE_SCALE so the simulated loser-point rate,
+# and with it every team's point total, matches the league (``--backtest``
+# reports the mean signed points error with and without the scale).
+TIE_SCALE = 1.38
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 PUBLIC_DATA = os.path.join(SCRIPT_DIR, "..", "public", "data")
 PROJECTIONS_FILE = os.path.join(PUBLIC_DATA, "season_projections.json")
@@ -162,14 +170,19 @@ def get_game_prob(home_rating, away_rating):
     return 0.77 * raw, 0.77 * (1 - raw), 0.23, raw
 
 
-def split_outcomes(p_home, total):
+def split_outcomes(p_home, total, tie_scale=None):
     """(p_home_reg, p_away_reg, p_tie, p_home_ot) implied by P(home win) and
-    the expected total, via goal_model (same Poisson model as the site)."""
+    the expected total, via goal_model (same Poisson model as the site), with
+    the tie probability scaled by ``tie_scale`` (TIE_SCALE) to the league's
+    real OT/SO rate.  P(home win) is unchanged by the scaling."""
     import goal_model
+    tie_scale = TIE_SCALE if tie_scale is None else tie_scale
     lh, la = goal_model.goal_rates(p_home, total)
     ph, pt, pa, _ = goal_model.outcome_probs(lh, la)
     q = (p_home - ph) / pt if pt > 0 else 0.5
     q = min(max(q, 0.05), 0.95)
+    # keep both regulation-win probabilities non-negative
+    pt = min(pt * tie_scale, 0.95 * min(p_home / q, (1 - p_home) / (1 - q)))
     return p_home - pt * q, 1 - p_home - pt * (1 - q), pt, q
 
 
@@ -190,8 +203,9 @@ def rest_days_by_game(schedule):
 class Probabilities:
     """Game-level probabilities from the game model, with a ratings fallback."""
 
-    def __init__(self, team_map, ml=None, ratings=None):
+    def __init__(self, team_map, ml=None, ratings=None, tie_scale=None):
         self.team_map = team_map
+        self.tie_scale = TIE_SCALE if tie_scale is None else tie_scale
         self.ml = ml
         self.ratings = ratings or {}
         self.cache = {}
@@ -204,7 +218,7 @@ class Probabilities:
         if self.ml is not None:
             d = self.ml.predict_detail(self.team_map.get(home, home), self.team_map.get(away, away), date,
                                        h_rest_days=h_rest, a_rest_days=a_rest)
-            res = split_outcomes(float(d["home_win_prob"]), float(d["expected_total"]))
+            res = split_outcomes(float(d["home_win_prob"]), float(d["expected_total"]), self.tie_scale)
             res = (res[0], res[1], res[2], res[3], float(d["home_win_prob"]))
         else:
             dflt = {"xgf_rating": 3.0, "xga_rating": 3.0}
@@ -499,7 +513,7 @@ def full_simulation_loop(n_sims=SIMULATIONS, now=None, standings=None, schedule=
     return {"status": "ok", "rows_written": len(out["teams"])}
 
 
-def backtest(seasons=(2023, 2025), sigmas=(0.0, 0.1, 0.2, 0.3), n_sims=1000,
+def backtest(seasons=(2023, 2025), sigmas=(0.0, 0.1, 0.2, 0.3), n_sims=1000, tie_scales=(1.0, TIE_SCALE),
              out_path=os.path.join(SCRIPT_DIR, "tests", "out", "season_sim_backtest.json")):
     """Preseason projection check for the strength-uncertainty sigma.
 
@@ -507,7 +521,9 @@ def backtest(seasons=(2023, 2025), sigmas=(0.0, 0.1, 0.2, 0.3), n_sims=1000,
     opening night only, every regular-season game of that season is
     simulated from 0-0-0, and the projection is scored against the final
     table: Brier / log loss of 'makes the playoffs' (NHL clinch flags) and
-    the share of teams whose final points fall inside the 80% interval.
+    the share of teams whose final points fall inside the 80% interval,
+    the mean absolute and mean signed (bias) points error.  The sigma sweep
+    uses TIE_SCALE; ``tie_scales`` are compared at SIGMA0.
     (Seasons with an incomplete archive, e.g. 2024-25 without October, are
     skipped; the game model's coefficients saw these seasons, so this tests
     the simulation layer, not the model.)"""
@@ -516,7 +532,8 @@ def backtest(seasons=(2023, 2025), sigmas=(0.0, 0.1, 0.2, 0.3), n_sims=1000,
     from ml_predict import MLPredictor
     games, _ = F.load_feature_games(SCRIPT_DIR)
     report = {"method": backtest.__doc__.strip().split("\n")[0], "n_sims": n_sims, "seasons": {}, "sigmas": {}}
-    per_sigma = {s: {"brier": [], "ll": [], "cover80": [], "mae_pts": []} for s in sigmas}
+    runs = [(s, TIE_SCALE) for s in sigmas] + [(SIGMA0, t) for t in tie_scales if t != TIE_SCALE]
+    per_run = {r: {"brier": [], "ll": [], "cover80": [], "mae_pts": [], "bias_pts": []} for r in runs}
     for y in seasons:
         g = games[(games["season"] == y) & (games["game_id"].astype(str).str[4:6] == "02")]
         start = g["game_date"].min()
@@ -536,25 +553,33 @@ def backtest(seasons=(2023, 2025), sigmas=(0.0, 0.1, 0.2, 0.3), n_sims=1000,
                      for t in teams}
         made = {t: 0 if info[t].get("clinchIndicator") in (None, "e") else 1 for t in teams}
         pts = {t: info[t]["points"] for t in teams}
-        probs = Probabilities({t: t for t in teams}, ml=ml)
         report["seasons"][str(y)] = {"games": len(sched), "playoff_teams": sum(made.values())}
-        for s in sigmas:
-            eng = Engine(standings, sched, probs, n_sims=n_sims, sigma0=s, seed=SEED + y)
+        probs_by_tie = {t: Probabilities({tm: tm for tm in teams}, ml=ml, tie_scale=t) for t in {r[1] for r in runs}}
+        for s, ts in runs:
+            eng = Engine(standings, sched, probs_by_tie[ts], n_sims=n_sims, sigma0=s, seed=SEED + y)
             r = eng.run(playoffs=False)
             for i, t in enumerate(eng.teams):
                 p = min(max(r["made"][i] / n_sims, 1e-3), 1 - 1e-3)
-                per_sigma[s]["brier"].append((p - made[t]) ** 2)
-                per_sigma[s]["ll"].append(-math.log(p if made[t] else 1 - p))
+                m = per_run[(s, ts)]
+                m["brier"].append((p - made[t]) ** 2)
+                m["ll"].append(-math.log(p if made[t] else 1 - p))
                 dist = sorted(int(k) for k, c in r["point_dist"][i].items() for _ in range(c))
                 lo, hi = dist[int(0.1 * len(dist))], dist[int(0.9 * len(dist)) - 1]
-                per_sigma[s]["cover80"].append(1.0 if lo <= pts[t] <= hi else 0.0)
-                per_sigma[s]["mae_pts"].append(abs(float(r["pts"][i]) / n_sims - pts[t]))
-    for s, m in per_sigma.items():
-        report["sigmas"][f"{s:.2f}"] = {k: round(float(np.mean(v)), 4) for k, v in m.items()}
-        report["sigmas"][f"{s:.2f}"]["n_team_seasons"] = len(m["brier"])
+                m["cover80"].append(1.0 if lo <= pts[t] <= hi else 0.0)
+                m["mae_pts"].append(abs(float(r["pts"][i]) / n_sims - pts[t]))
+                m["bias_pts"].append(float(r["pts"][i]) / n_sims - pts[t])
+    report["tie_scale"] = TIE_SCALE
+    report["tie_scales"] = {}
+    for (s, ts), m in per_run.items():
+        row = {k: round(float(np.mean(v)), 4) for k, v in m.items()}
+        row["n_team_seasons"] = len(m["brier"])
+        if ts == TIE_SCALE:
+            report["sigmas"][f"{s:.2f}"] = row
+        if s == SIGMA0:
+            report["tie_scales"][f"{ts:.2f}"] = row
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     _write_json(out_path, report)
-    print(json.dumps(report["sigmas"], indent=1))
+    print(json.dumps({"sigmas": report["sigmas"], "tie_scales": report["tie_scales"]}, indent=1))
     return report
 
 

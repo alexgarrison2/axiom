@@ -13,31 +13,54 @@
   },
   "sigmas": {
     "0.00": {
-      "brier": 0.218,
-      "ll": 0.6176,
-      "cover80": 0.6094,
-      "mae_pts": 10.9049,
+      "brier": 0.2178,
+      "ll": 0.6169,
+      "cover80": 0.5938,
+      "mae_pts": 10.5872,
+      "bias_pts": -0.0958,
       "n_team_seasons": 64
     },
     "0.10": {
-      "brier": 0.2151,
-      "ll": 0.6108,
-      "cover80": 0.6875,
-      "mae_pts": 10.9151,
+      "brier": 0.2156,
+      "ll": 0.6122,
+      "cover80": 0.6094,
+      "mae_pts": 10.6094,
+      "bias_pts": -0.0958,
       "n_team_seasons": 64
     },
     "0.20": {
+      "brier": 0.211,
+      "ll": 0.6033,
+      "cover80": 0.7656,
+      "mae_pts": 10.6383,
+      "bias_pts": -0.0958,
+      "n_team_seasons": 64
+    },
+    "0.30": {
+      "brier": 0.2126,
+      "ll": 0.6103,
+      "cover80": 0.8594,
+      "mae_pts": 10.656,
+      "bias_pts": -0.0958,
+      "n_team_seasons": 64
+    }
+  },
+  "tie_scale": 1.38,
+  "tie_scales": {
+    "1.38": {
+      "brier": 0.211,
+      "ll": 0.6033,
+      "cover80": 0.7656,
+      "mae_pts": 10.6383,
+      "bias_pts": -0.0958,
+      "n_team_seasons": 64
+    },
+    "1.00": {
       "brier": 0.2119,
       "ll": 0.6055,
       "cover80": 0.75,
       "mae_pts": 10.9409,
-      "n_team_seasons": 64
-    },
-    "0.30": {
-      "brier": 0.2124,
-      "ll": 0.6094,
-      "cover80": 0.8594,
-      "mae_pts": 10.9807,
+      "bias_pts": -2.6363,
       "n_team_seasons": 64
     }
   }
