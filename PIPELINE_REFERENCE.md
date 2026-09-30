@@ -1,5 +1,7 @@
 # NHL Predictions Pipeline — Full Reference
 
+> **Note (2026-09-29):** this reference was written for the 2025-26 pipeline. Season file names now come from `pipeline/season.py` (`nhl_season_<yyyy>_<yyyy>_*.csv`), one-off scripts moved to `pipeline/tools/`, and `fetch_dfo_tweets.py`, `recalc_xg.py`, `feature_engine.py` and the local cron scripts were removed. See `README.md` and `CLAUDE.md` for the current layout.
+
 > **Purpose:** Complete reference for what data is fetched, computed, and written on every pipeline run. Use this to diagnose stale data, understand prediction inputs, and audit the update schedule.
 
 ---

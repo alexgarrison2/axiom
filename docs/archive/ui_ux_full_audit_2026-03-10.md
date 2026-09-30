@@ -19,10 +19,10 @@ The highest-priority problem is not "make it prettier." It is "make the impressi
 ## Frontend Stack Driving Presentation
 
 - Framework: Next.js 16 App Router
-- Styling: Tailwind CSS with custom utility classes in [app/globals.css](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/app/globals.css)
+- Styling: Tailwind CSS with custom utility classes in [app/globals.css](../../app/globals.css)
 - Motion: Framer Motion in page/tab transitions and list reveals; GSAP for header/logo/team-page effects; Lenis wrapper exists but is not actively integrated
 - UI primitives: shadcn/Radix inputs, tabs, sliders, selects
-- Data-heavy rendering: large custom tables and grids in [components/TeamsTable.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/TeamsTable.tsx), [components/SkaterStatsTable.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/SkaterStatsTable.tsx), [components/team/GamesLogTable.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/team/GamesLogTable.tsx)
+- Data-heavy rendering: large custom tables and grids in [components/TeamsTable.tsx](../../components/TeamsTable.tsx), [components/SkaterStatsTable.tsx](../../components/SkaterStatsTable.tsx), [components/team/GamesLogTable.tsx](../../components/team/GamesLogTable.tsx)
 
 ## Severity Scale
 
@@ -45,9 +45,9 @@ The highest-priority problem is not "make it prettier." It is "make the impressi
 Severity: 9.1
 
 Evidence:
-- [components/PredictionsViewer.tsx:327](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/PredictionsViewer.tsx#L327)
-- [components/PredictionsViewer.tsx:369](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/PredictionsViewer.tsx#L369)
-- [components/team/TeamHeader.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/team/TeamHeader.tsx)
+- [components/PredictionsViewer.tsx:327](../../components/PredictionsViewer.tsx#L327)
+- [components/PredictionsViewer.tsx:369](../../components/PredictionsViewer.tsx#L369)
+- [components/team/TeamHeader.tsx](../../components/team/TeamHeader.tsx)
 
 Problem:
 - Dates and product sections are mixed into one long chip rail.
@@ -70,9 +70,9 @@ Recommendations:
 Severity: 8.9
 
 Evidence:
-- [components/SkaterStatsTable.tsx:171](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/SkaterStatsTable.tsx#L171)
-- [components/team/GamesLogTable.tsx:147](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/team/GamesLogTable.tsx#L147)
-- [components/TeamsTable.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/TeamsTable.tsx)
+- [components/SkaterStatsTable.tsx:171](../../components/SkaterStatsTable.tsx#L171)
+- [components/team/GamesLogTable.tsx:147](../../components/team/GamesLogTable.tsx#L147)
+- [components/TeamsTable.tsx](../../components/TeamsTable.tsx)
 
 Problem:
 - The site repeatedly falls back to large, dense tables with tiny text, sticky columns, and compressed filters.
@@ -94,12 +94,12 @@ Recommendations:
 Severity: 8.3
 
 Evidence:
-- [components/PredictionsViewer.tsx:482](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/PredictionsViewer.tsx#L482)
-- [components/Header.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/Header.tsx)
-- [components/team/TeamHeader.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/team/TeamHeader.tsx)
-- [components/FullLogoAnimated.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/FullLogoAnimated.tsx)
-- [app/template.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/app/template.tsx)
-- [components/SmoothScrolling.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/SmoothScrolling.tsx)
+- [components/PredictionsViewer.tsx:482](../../components/PredictionsViewer.tsx#L482)
+- [components/Header.tsx](../../components/Header.tsx)
+- [components/team/TeamHeader.tsx](../../components/team/TeamHeader.tsx)
+- [components/FullLogoAnimated.tsx](../../components/FullLogoAnimated.tsx)
+- [app/template.tsx](../../app/template.tsx)
+- [components/SmoothScrolling.tsx](../../components/SmoothScrolling.tsx)
 
 Problem:
 - Framer Motion handles page and tab transitions.
@@ -123,7 +123,7 @@ Recommendations:
 Severity: 8.1
 
 Evidence:
-- [components/MatchupCard.tsx:430](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/MatchupCard.tsx#L430)
+- [components/MatchupCard.tsx:430](../../components/MatchupCard.tsx#L430)
 - Console audit found a hydration mismatch on the home page tied to random sparkline clip-path IDs
 
 Problem:
@@ -142,8 +142,8 @@ Recommendations:
 Severity: 7.9
 
 Evidence:
-- [components/PlayoffBracket.tsx:218](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/PlayoffBracket.tsx#L218)
-- [components/PlayoffBracket.tsx:287](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/PlayoffBracket.tsx#L287)
+- [components/PlayoffBracket.tsx:218](../../components/PlayoffBracket.tsx#L218)
+- [components/PlayoffBracket.tsx:287](../../components/PlayoffBracket.tsx#L287)
 
 Problem:
 - Desktop bracket: visually distinctive, but surrounded by too much dead space and low-information emptiness.
@@ -164,7 +164,7 @@ Recommendations:
 Severity: 7.7
 
 Evidence:
-- [app/globals.css:61](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/app/globals.css#L61)
+- [app/globals.css:61](../../app/globals.css#L61)
 
 Problem:
 - Fira Code is globally forced onto headings, table headers, and anything using `.font-mono`.
@@ -185,8 +185,8 @@ Recommendations:
 Severity: 7.4
 
 Evidence:
-- [app/globals.css:73](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/app/globals.css#L73)
-- [components/PredictionsViewer.tsx:612](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/PredictionsViewer.tsx#L612)
+- [app/globals.css:73](../../app/globals.css#L73)
+- [components/PredictionsViewer.tsx:612](../../components/PredictionsViewer.tsx#L612)
 
 Problem:
 - Glass panels, glow text, blur, neon borders, colored shadows, and gradient chips are used everywhere.
@@ -207,8 +207,8 @@ Recommendations:
 Severity: 7.3
 
 Evidence:
-- [app/teams/[teamAbbr]/page.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/app/teams/[teamAbbr]/page.tsx)
-- [components/team/GamesLogTable.tsx:147](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/team/GamesLogTable.tsx#L147)
+- [app/teams/[teamAbbr]/page.tsx](../../app/teams/[teamAbbr]/page.tsx)
+- [components/team/GamesLogTable.tsx:147](../../components/team/GamesLogTable.tsx#L147)
 
 Problem:
 - The team experience opens into another compressed table-heavy environment.
@@ -228,7 +228,7 @@ Recommendations:
 Severity: 6.8
 
 Evidence:
-- [components/NewsSection.tsx:90](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/NewsSection.tsx#L90)
+- [components/NewsSection.tsx:90](../../components/NewsSection.tsx#L90)
 
 Problem:
 - Every news card is visually similar.
@@ -245,8 +245,8 @@ Recommendations:
 Severity: 6.7
 
 Evidence:
-- [app/layout.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/app/layout.tsx)
-- [components/FullLogoAnimated.tsx](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/components/FullLogoAnimated.tsx)
+- [app/layout.tsx](../../app/layout.tsx)
+- [components/FullLogoAnimated.tsx](../../components/FullLogoAnimated.tsx)
 - Console audit reported the top logo image as LCP on multiple pages
 
 Problem:
@@ -270,7 +270,7 @@ Severity: 6.9
 Evidence:
 - No `prefers-reduced-motion` handling found across the animated stack
 - Very small text is common across tabs, tables, labels, and metadata
-- Several tab panels suppress visible focus outlines, for example [app/teams/[teamAbbr]/page.tsx:215](/Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app/app/teams/[teamAbbr]/page.tsx#L215)
+- Several tab panels suppress visible focus outlines, for example [app/teams/[teamAbbr]/page.tsx:215](../../app/teams/[teamAbbr]/page.tsx#L215)
 
 Problem:
 - Heavy motion without reduced-motion alternatives excludes some users.
