@@ -168,7 +168,11 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                     {entries.map((e, i) => (
                         <tr key={i}>
                             <th scope="row" className="text-left font-normal text-fg-2">
-                                {e.isOpen ? <span className="mr-1.5 rounded-chip border border-line px-1 text-micro font-bold uppercase tracking-wide text-fg-1">First</span> : null}
+                                {e.isOpen ? (
+                                    <span title="First line we captured" className="mr-1.5 rounded-chip border border-line px-1 text-micro font-bold uppercase tracking-wide text-fg-1">
+                                        First
+                                    </span>
+                                ) : null}
                                 {e.isLatest ? <span className="mr-1.5 rounded-chip border border-brand/50 px-1 text-micro font-bold uppercase tracking-wide text-brand">{started ? 'Close' : 'Latest'}</span> : null}
                                 {when(e.timestamp)}
                             </th>

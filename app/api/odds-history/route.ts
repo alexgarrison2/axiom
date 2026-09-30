@@ -31,7 +31,7 @@ export interface OddsEntry {
 }
 
 export interface OddsTotal {
-    /** Over/under goals line, e.g. "6" or "5.5". */
+    /** Over/under goals line with one decimal, as the Odds tab shows it: "6.0", "5.5". */
     line: string;
     /** American prices, e.g. "-117". */
     over: string;
@@ -53,7 +53,7 @@ function totalOf(row: Record<string, string>): OddsTotal | null {
     const line = (row.total_line ?? '').trim();
     const n = Number(line);
     if (!line || !Number.isFinite(n) || n < 3 || n > 12) return null;
-    return { line: String(n), over: (row.total_over ?? '').trim(), under: (row.total_under ?? '').trim() };
+    return { line: n.toFixed(1), over: (row.total_over ?? '').trim(), under: (row.total_under ?? '').trim() };
 }
 
 const totalKey = (t: OddsTotal | null) => (t ? `${t.line}|${t.over}|${t.under}` : '');
