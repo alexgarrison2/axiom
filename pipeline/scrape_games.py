@@ -1819,6 +1819,8 @@ def completed_schedule_games(start, end, game_types=(2, 3)):
 
 # ── Official special-teams counts (replaces the Hockey-Reference scrape) ─────
 
+REPORT_LAG_DAYS = 2    # games this recent may not be in the stats report yet
+
 def fetch_special_teams(season_id=SEASON_ID):
     """{(gameId, teamId): {pp_goals, pp_opportunities, pp_time, pp_goals_against,
     pk_opportunities, pk_time}} from the NHL per-game team reports (2 requests).
@@ -1879,7 +1881,11 @@ def patch_special_teams(gamestats_path=None, season_id=SEASON_ID, report=None,
     for c in ST_COLS:
         if c not in df.columns:
             df[c] = 0
-    matched = missing = changed = 0
+    matched = missing = pending = changed = 0
+    # The stats report trails the gamecenter feed by a few hours, so games
+    # from the last REPORT_LAG_DAYS that aren't in it yet keep their
+    # PBP-derived counts and are patched on a later run instead of failing.
+    lag_cutoff = (today_local() - timedelta(days=REPORT_LAG_DAYS)).isoformat()
     for i in df.index[in_season]:
         gid = int(df.at[i, "game_id"])
         tid = name_to_id.get(df.at[i, "team"])
@@ -1887,7 +1893,10 @@ def patch_special_teams(gamestats_path=None, season_id=SEASON_ID, report=None,
         if rec is None and (tid in utah_ids or df.at[i, "team"] in ("Mammoth", "Utah Hockey Club", "Hockey Club")):
             rec = report.get((gid, 68)) or report.get((gid, 59))
         if rec is None:
-            missing += 1
+            if str(df.at[i, "game_date"]) >= lag_cutoff:
+                pending += 1
+            else:
+                missing += 1
             continue
         matched += 1
         for c in ST_COLS:
@@ -1896,11 +1905,15 @@ def patch_special_teams(gamestats_path=None, season_id=SEASON_ID, report=None,
                 changed += 1
     if write and changed:
         atomic_write_csv(gamestats_path, df, min_rows=len(df), label=os.path.basename(gamestats_path))
-    clear_stale("special_teams")
+    if missing:
+        mark_stale("special_teams", f"{missing} team-games missing from the NHL PP/PK report")
+    else:
+        clear_stale("special_teams")
     print(f"  Special teams patched from NHL report ({sid}): {matched} team-games matched, "
-          f"{missing} unmatched, {changed} values changed")
+          f"{missing} unmatched, {pending} recent team-games not in the report yet, {changed} values changed")
     return {"status": "ok" if missing == 0 else "fail", "rows_written": matched if changed else 0,
-            "matched": matched, "missing": missing, "changed": changed}
+            "matched": matched, "missing": missing, "pending": pending, "changed": changed,
+            "reason": f"{pending} recent team-games pending in the NHL report" if pending and not missing else ""}
 
 
 # ── Post-run check against official standings ────────────────────────────────

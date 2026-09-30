@@ -113,6 +113,31 @@ def atomic_write_text(path: str, text: str) -> None:
     _replace_from_tmp(path, lambda f: f.write(text))
 
 
+VOLATILE_KEYS = frozenset({"fetched_at", "captured_at"})
+
+
+def strip_volatile(obj, keys=VOLATILE_KEYS):
+    """``obj`` without timestamp-only keys (recursively), for change detection."""
+    if isinstance(obj, dict):
+        return {k: strip_volatile(v, keys) for k, v in obj.items() if k not in keys}
+    if isinstance(obj, list):
+        return [strip_volatile(v, keys) for v in obj]
+    return obj
+
+
+def keep_if_unchanged(old, new, keys=VOLATILE_KEYS):
+    """Return ``old`` when ``new`` differs from it only in timestamp keys.
+
+    Hourly runs re-fetch the same odds / injuries / lineups; rewriting them
+    with a new ``fetched_at`` alone would make every run a data commit (and a
+    Vercel build).  Unchanged records therefore keep their original timestamp,
+    which then reads as "unchanged since"; the time of the latest check is
+    recorded per source in manifest.json instead."""
+    if old is not None and strip_volatile(old, keys) == strip_volatile(new, keys):
+        return old
+    return new
+
+
 def read_json(path: str, default=None):
     try:
         with open(path, encoding="utf-8") as f:

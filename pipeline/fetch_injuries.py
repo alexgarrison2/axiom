@@ -11,6 +11,9 @@ Output: a list sorted by team then name:
     date, espn_id, fetched_at}]
 
 status is ESPN's label: "Out", "Injured Reserve", "Day-To-Day", "Suspension".
+fetched_at is when the entry was first seen in its current form (an entry
+ESPN still reports unchanged keeps it); manifest.sources.espn_injuries
+records the latest fetch.
 A failed or empty fetch never overwrites the previous file (the stale flag is
 recorded in public/data/manifest.json instead).
 
@@ -21,7 +24,7 @@ import unicodedata
 from urllib.parse import quote
 
 from http_utils import get_json, try_get_json, HttpError
-from io_utils import atomic_write_json, read_json, utc_now_iso, mark_stale
+from io_utils import atomic_write_json, read_json, utc_now_iso, mark_stale, keep_if_unchanged, record_source
 from paths import public_path, pipeline_path
 
 URL = "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/injuries"
@@ -83,8 +86,9 @@ def fetch_injuries(rosters=None, search_budget=40):
         from fetch_player_bio import fetch_rosters
         rosters = fetch_rosters()
     by_team, by_name = _name_index(rosters)
-    prev_ids = {(e.get("team"), norm(e.get("name"))): e.get("playerId")
-                for e in (read_json(OUTPUT_FILE, []) or []) if isinstance(e, dict) and e.get("playerId")}
+    prev_list = [e for e in (read_json(OUTPUT_FILE, []) or []) if isinstance(e, dict)]
+    prev_ids = {(e.get("team"), norm(e.get("name"))): e.get("playerId") for e in prev_list if e.get("playerId")}
+    prev_by_key = {(e.get("espn_id"), e.get("team"), e.get("name")): e for e in prev_list}
 
     fetched_at = utc_now_iso()
     out, unmatched, searches = [], [], 0
@@ -116,11 +120,16 @@ def fetch_injuries(rosters=None, search_budget=40):
                 "espn_id": inj.get("id"),
                 "fetched_at": fetched_at,
             })
+    # Unchanged entries keep their previous fetched_at, so a run where ESPN
+    # reports nothing new writes an identical file (no commit, no rebuild).
+    out = [keep_if_unchanged(prev_by_key.get((e["espn_id"], e["team"], e["name"])), e) for e in out]
     out.sort(key=lambda e: (e["team"] or "", e["name"] or ""))
     matched = sum(1 for e in out if e["playerId"])
     print(f"  {len(out)} injuries, {matched} matched to NHL ids"
           + (f"; unmatched: {', '.join(unmatched[:8])}" if unmatched else ""))
     ok = atomic_write_json(OUTPUT_FILE, out, min_items=1, indent=1, label="injuries.json")
+    if ok:
+        record_source("espn_injuries", entries=len(out), matched=matched)
     return {"status": "ok" if ok else "fail", "rows_written": len(out) if ok else 0,
             "matched": matched, "unmatched": len(unmatched)}
 

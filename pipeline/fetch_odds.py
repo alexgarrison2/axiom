@@ -21,6 +21,9 @@ Rules
     ±2500 (ML) are dropped as live/garbage lines.
   * odds_closing.json keeps the last pregame snapshot of every game and is
     never modified after the game starts.
+  * A game whose markets did not move keeps its previous entry and
+    fetched_at ("unchanged since"), so a no-change run writes identical
+    files; manifest.sources.odds.fetched_at records the latest check.
   * odds.json is written atomically and never empty.
 
 Output (pipeline/odds.json, public/data/odds.json, data/odds.json):
@@ -36,7 +39,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 from http_utils import try_get_json
-from io_utils import atomic_write_json, read_json, utc_now_iso, mark_stale
+from io_utils import atomic_write_json, read_json, utc_now_iso, mark_stale, keep_if_unchanged, record_source
 from paths import pipeline_path, public_path, data_path
 
 ODDS_FILE = pipeline_path("odds.json")
@@ -406,9 +409,16 @@ def fetch_odds(now=None, upcoming=None):
             continue
         fresh[str(gid)] = e
 
+    # A game whose markets are unchanged keeps its previous entry (and
+    # fetched_at, i.e. "price unchanged since"), so an hourly run with no line
+    # moves writes a byte-identical file: no data commit, no site rebuild.
+    prev = read_json(ODDS_FILE, {}) or {}
+    for k in list(fresh):
+        if isinstance(prev.get(k), dict):
+            fresh[k] = keep_if_unchanged(prev[k], fresh[k])
+
     # Carry forward still-pregame games from the previous file when every
     # source missed them this run (e.g. Bovada blocked, NHL feed lagging).
-    prev = read_json(ODDS_FILE, {}) or {}
     for k, e in prev.items():
         if k in fresh or not (str(k).isdigit() and isinstance(e, dict)):
             continue
@@ -427,6 +437,7 @@ def fetch_odds(now=None, upcoming=None):
             if os.path.isdir(os.path.dirname(path)):
                 atomic_write_json(path, out, indent=4, label="odds.json")
         update_closing(out, now)
+        record_source("odds", games=len(out), counts=counts)
         print(f"  ✓ odds.json: {len(out)} pregame games")
     else:
         mark_stale("odds.json", "no valid pregame odds this run")
@@ -447,8 +458,10 @@ def update_closing(odds, now, path=None):
             continue
         snap = dict(e)
         snap["captured_at"] = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
-        closing[gid] = snap
-        changed += 1
+        kept = keep_if_unchanged(closing.get(gid), snap)
+        if kept is snap:
+            closing[gid] = snap
+            changed += 1
     if changed:
         atomic_write_json(path, dict(sorted(closing.items())), indent=1, min_items=len(closing),
                           label="odds_closing.json")

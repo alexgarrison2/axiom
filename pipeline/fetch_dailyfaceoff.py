@@ -22,7 +22,7 @@ from datetime import datetime, timedelta, timezone
 from season import today_local
 from http_utils import get_text, HttpError
 from io_utils import (atomic_write_json, read_json, record_source, source_age_hours,
-                      utc_now_iso, mark_stale)
+                      utc_now_iso, mark_stale, keep_if_unchanged)
 from paths import PIPELINE_DIR, public_path
 
 GOALIES_FILE = os.path.join(PIPELINE_DIR, "dailyfaceoff_goalies.json")
@@ -77,12 +77,14 @@ def merge_goalie_entry(old, new):
         return new
     if not new.get("goalie"):
         return old
+    if keep_if_unchanged(old, new) is old:     # same report: keep it byte-identical
+        return old
     same = (old.get("goalie") or "").lower() == (new.get("goalie") or "").lower()
     if same and _rank(old.get("status")) > _rank(new.get("status")):
         kept = dict(old)
         kept["fetched_at"] = new.get("fetched_at")
         kept["note"] = f"kept {old.get('status')} (DFO now says {new.get('status') or 'nothing'})"
-        return kept
+        return keep_if_unchanged(old, kept)
     return new
 
 
@@ -94,6 +96,12 @@ def fetch_dailyfaceoff_goalies(dates=None, now=None, force=False):
     age_min = (source_age_hours("dfo_goalies") or 1e9) * 60
     if not force and dates is None and age_min < GOALIE_REUSE_MINUTES and existing:
         print(f"Daily Faceoff goalies fetched {age_min:.0f} min ago — reusing")
+        return existing
+
+    if not force and dates is None and not teams_playing_within(now=now):
+        # No game in the next 36h (off-days, breaks, offseason): nothing to
+        # confirm, so spend no DFO requests this hour.
+        print("Daily Faceoff goalies: no games within 36h — skipping")
         return existing
 
     today = today_local(now)
@@ -322,11 +330,14 @@ def fetch_lineups(teams, force_all=False, now=None):
         if not any(g.startswith("f") for g in lines):
             print(f"  [WARN] {tri}: empty lineup payload — keeping stored lineup")
             continue
-        _movement(lines, old.get(tri))
+        prev = old.get(tri) if isinstance(old.get(tri), dict) else None
+        _movement(lines, prev)
         entry = dict(lines)
         entry.update({"lineup_source": meta["lineup_source"], "updated_at": meta["updated_at"],
                       "fetched_at": fetched_at})
-        merged[tri] = entry
+        # Same lines as stored: keep the stored entry (its movement arrows and
+        # fetched_at) instead of rewriting it with a new timestamp.
+        merged[tri] = keep_if_unchanged(prev, entry, keys=("fetched_at", "movement"))
         CAP_DATA[tri] = cap_rows
         _LINEUPS_FETCHED_THIS_RUN[tri] = fetched_at
         ok += 1

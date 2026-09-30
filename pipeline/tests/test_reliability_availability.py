@@ -165,3 +165,61 @@ def test_lineups_hourly_only_for_teams_playing_soon(tmp_path, monkeypatch):
     assert merged["TOR"]["lineup_source"] == "Practice" and merged["TOR"]["updated_at"]
     assert merged["BOS"]["f1"][0]["name"] == "old"                  # untouched, not deleted
     assert dfo.CAP_DATA["TOR"][0]["cap"]["capHit"] == 1000000
+
+
+def test_unchanged_lineups_and_injuries_are_not_rewritten(tmp_path, monkeypatch):
+    """B10/B12: identical DFO lines / ESPN injuries keep the stored entries
+    (movement arrows and fetched_at), so a no-change run writes nothing new."""
+    lfile = tmp_path / "team_lineups.json"
+    monkeypatch.setattr(dfo, "LINEUPS_FILE", str(lfile))
+    monkeypatch.setattr(dfo, "_write_both", lambda path, name, data, **kw:
+                        io_utils.atomic_write_json(path, data, **kw))
+    payload = {"props": {"pageProps": {"combinations": {
+        "sourceName": "Projected", "updatedAt": "2026-10-01T15:00:00Z",
+        "players": [{"groupIdentifier": "f1", "name": "P", "playerId": 1, "positionIdentifier": "c"},
+                    {"groupIdentifier": "f2", "name": "Q", "playerId": 2, "positionIdentifier": "c"}]}}}}
+    monkeypatch.setattr(dfo, "_next_data", lambda url: payload)
+    teams = [{"triCode": "TOR", "teamName": "Toronto Maple Leafs"}]
+    lfile.write_text(json.dumps({"TOR": {"f1": [{"name": "Q", "id": 2, "pos": "c"}],
+                                         "f2": [{"name": "P", "id": 1, "pos": "c"}]}}))
+    monkeypatch.setattr(dfo, "_LINEUPS_FETCHED_THIS_RUN", {})
+    first = dfo.fetch_lineups(teams, force_all=True)["TOR"]
+    assert first["f1"][0]["movement"] == "up"
+    snapshot = lfile.read_bytes()
+    monkeypatch.setattr(dfo, "_LINEUPS_FETCHED_THIS_RUN", {})
+    second = dfo.fetch_lineups(teams, force_all=True)["TOR"]
+    assert second == first and second["f1"][0]["movement"] == "up"   # arrows kept
+    assert lfile.read_bytes() == snapshot
+
+    out = tmp_path / "injuries.json"
+    monkeypatch.setattr(fetch_injuries, "OUTPUT_FILE", str(out))
+    feed = {"injuries": [{"injuries": [{
+        "id": "1", "status": "Out", "shortComment": "c", "date": "2026-09-29T16:32Z",
+        "details": {"type": "Lower Body", "returnDate": "2026-10-13"},
+        "athlete": {"displayName": "Ryan Nugent-Hopkins", "team": {"abbreviation": "EDM"},
+                    "position": {"abbreviation": "C"}}}]}]}
+    monkeypatch.setattr(fetch_injuries, "get_json", lambda url, **kw: feed)
+    monkeypatch.setattr(fetch_injuries, "utc_now_iso", lambda: "2026-10-01T10:00:00Z")
+    fetch_injuries.fetch_injuries(rosters={})
+    snapshot = out.read_bytes()
+    monkeypatch.setattr(fetch_injuries, "utc_now_iso", lambda: "2026-10-01T11:00:00Z")
+    fetch_injuries.fetch_injuries(rosters={})
+    assert out.read_bytes() == snapshot
+
+
+def test_dfo_goalies_spend_no_requests_without_games(tmp_path, monkeypatch):
+    """B7: hourly DFO requests <= 2 x teams playing within 36h — so zero on an off-day."""
+    upcoming = tmp_path / "upcoming.json"
+    upcoming.write_text("[]")
+    real_tpw = dfo.teams_playing_within
+    monkeypatch.setattr(dfo, "teams_playing_within",
+                        lambda hours=36, now=None, upcoming_path=None: real_tpw(hours, now, str(upcoming)))
+    monkeypatch.setattr(dfo, "GOALIES_FILE", str(tmp_path / "dfo.json"))
+    calls = []
+    monkeypatch.setattr(dfo, "_next_data", lambda url: calls.append(url))
+    dfo.fetch_dailyfaceoff_goalies()
+    assert calls == []
+    upcoming.write_text(json.dumps([{"startTimeUTC": "2026-10-01T23:00:00Z",
+                                     "homeTeamAbbrev": "TOR", "awayTeamAbbrev": "MTL"}]))
+    dfo.fetch_dailyfaceoff_goalies(now=datetime(2026, 10, 1, 16, 0, tzinfo=timezone.utc))
+    assert len(calls) == 2 <= 2 * 2

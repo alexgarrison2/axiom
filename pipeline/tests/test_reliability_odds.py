@@ -141,10 +141,12 @@ def test_never_writes_empty_file(sandbox):
 def test_closing_snapshot_frozen_after_start(sandbox):
     tmp, feeds = sandbox
     fetch_odds.fetch_odds(now=NOW, upcoming=UPCOMING)
+    feeds["partner-game"]["games"][1]["homeTeam"]["odds"][0]["value"] = -140   # line moves pregame
     fetch_odds.fetch_odds(now=NOW + timedelta(minutes=50), upcoming=UPCOMING)
     closing = json.load(open(tmp / "odds_closing.json"))
     snap = closing["2026020021"]
-    assert snap["captured_at"] == iso(NOW + timedelta(minutes=50))   # last pregame capture
+    assert snap["captured_at"] == iso(NOW + timedelta(minutes=50))   # last pregame price
+    assert snap["home_ml"] == -140
     # after puck drop the price moves (live) — the closing entry must not change
     feeds["partner-game"]["games"][1]["homeTeam"]["odds"][0]["value"] = -900
     fetch_odds.fetch_odds(now=NOW + timedelta(hours=2), upcoming=UPCOMING)
@@ -165,3 +167,19 @@ def test_validator_rejects_live_line(tmp_path, monkeypatch):
     pl = dict(low, total_line="6.5", **{"Leafs_puckline": 1400})
     assert any("puckline" in p for p in fetch_odds.sanity_problems(pl))
     assert fetch_odds.validate_odds({"2026-10-01:A@B": low}) == "non-gameId keys"
+
+
+def test_no_line_moves_means_identical_files(sandbox):
+    """B10/B12: an hourly run where no price moved must not rewrite the
+    odds files with only a new fetched_at (that would be a commit + deploy)."""
+    tmp, feeds = sandbox
+    fetch_odds.fetch_odds(now=NOW - timedelta(minutes=20), upcoming=UPCOMING)
+    before = {n: (tmp / n).read_bytes() for n in ("odds.json", "odds_closing.json")}
+    fetch_odds.fetch_odds(now=NOW - timedelta(minutes=10), upcoming=UPCOMING)
+    assert {n: (tmp / n).read_bytes() for n in before} == before
+    # a real move is written, with a new fetched_at for that game only
+    feeds["partner-game"]["games"][1]["homeTeam"]["odds"][0]["value"] = -150
+    fetch_odds.fetch_odds(now=NOW, upcoming=UPCOMING)
+    odds = json.load(open(tmp / "odds.json"))
+    assert odds["2026020021"]["home_ml"] == -150 and odds["2026020021"]["fetched_at"] == iso(NOW)
+    assert odds["2026020022"]["fetched_at"] == iso(NOW - timedelta(minutes=20))
