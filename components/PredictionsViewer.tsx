@@ -13,7 +13,6 @@ import MatchupCard from './MatchupCard';
 import HistoryTable from './HistoryTable';
 import TeamsTable from './TeamsTable';
 import NewsSection from './NewsSection';
-import PlayoffTable from './PlayoffTable';
 import PlayoffBracket from './PlayoffBracket';
 import SkaterStatsTable from './SkaterStatsTable';
 import Header from './Header';

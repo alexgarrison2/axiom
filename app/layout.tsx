@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Fira_Code, Fira_Sans } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { AdminProvider } from "@/components/AdminProvider";
 
@@ -32,12 +31,6 @@ export default function RootLayout({
       <body
         className={`${firaSans.variable} ${firaCode.variable} antialiased`}
       >
-        {process.env.NODE_ENV === "development" ? (
-          <Script
-            src="https://mcp.figma.com/mcp/html-to-design/capture.js"
-            strategy="afterInteractive"
-          />
-        ) : null}
         <AdminProvider>
           {children}
         </AdminProvider>
