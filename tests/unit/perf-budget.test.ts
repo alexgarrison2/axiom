@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { budgetFor, evaluateBudgets, toBudgetMetrics, traceLimitMB, traceRouteFromNft } from '../../scripts/perf-budget.mjs';
+import { budgetFor, evaluateBudgets, missingTraceFiles, RUNTIME_TRACE_REQUIREMENTS, toBudgetMetrics, traceLimitMB, traceRouteFromNft } from '../../scripts/perf-budget.mjs';
 
 type Result = { metric: string; value: number; limit: number; pass: boolean };
 
@@ -60,6 +60,29 @@ describe('function trace budgets', () => {
         expect(traceRouteFromNft('.next/server/app/teams/[teamAbbr]/page.js.nft.json')).toBe('/teams/[teamAbbr]');
         expect(traceRouteFromNft('.next/server/app/api/odds-history/route.js.nft.json')).toBe('/api/odds-history');
         expect(traceRouteFromNft('.next/server/chunks/foo.js.nft.json')).toBeNull();
+    });
+
+    it('flags a runtime-read file that is on disk but missing from the trace', () => {
+        const traced = ['pipeline/data/nhl_schedule_20262027.json', 'public/data/player_news.json'];
+        const { missing, absent } = missingTraceFiles('/news', traced, (g: string) => g !== 'public/data/manifest.json');
+        expect(missing).toContain('public/data/upcoming_games.json');
+        expect(missing).not.toContain('pipeline/data/nhl_schedule_*.json');
+        expect(missing).not.toContain('public/data/player_news.json');
+        // absent at build (fresh checkout): a note, not a failure
+        expect(absent).toEqual(['public/data/manifest.json']);
+    });
+
+    it('matches * within one path segment only', () => {
+        const r = missingTraceFiles('/api/odds-history', ['public/data/SiteHistory/old/2026-09-30.csv']);
+        expect(r.missing).toEqual(['public/data/SiteHistory/*.csv']);
+        expect(missingTraceFiles('/api/odds-history', ['public/data/SiteHistory/2026-09-30.csv']).missing).toEqual([]);
+    });
+
+    it('requires the schedule on every route that reads it with fs', () => {
+        for (const route of ['/news', '/teams/[teamAbbr]']) {
+            expect(RUNTIME_TRACE_REQUIREMENTS[route as keyof typeof RUNTIME_TRACE_REQUIREMENTS]).toContain('pipeline/data/nhl_schedule_*.json');
+        }
+        expect(missingTraceFiles('/unknown-route', []).missing).toEqual([]);
     });
 
     it('holds home to 5MB, playoffs to 15MB and everything else to 50MB', () => {

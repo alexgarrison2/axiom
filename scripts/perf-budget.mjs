@@ -93,6 +93,71 @@ export function traceLimitMB(route) {
     return TRACE_BUDGET_MB.default;
 }
 
+/*
+ * Files each function reads with fs at request time (ISR re-renders, dynamic
+ * routes). The build fails --traces when a route's nft.json lacks one of them,
+ * because on Vercel the function would silently fall back to empty data.
+ * Source of truth: `grep -rnE "readFile|readdir|existsSync" app utils lib
+ * components`. `*` matches within one path segment. A file absent on disk at
+ * build time (e.g. the pipeline-written manifest.json in a fresh checkout) is
+ * reported but not failed: nft can only trace files that exist.
+ */
+const STAMP_FILES = ['data/last_updated.json', 'public/data/last_updated.json', 'public/data/manifest.json'];
+const READ_DATA = ['public/data/player_impact.json', 'public/data/player_bio.json', 'public/data/player_news.json',
+    'public/data/upcoming_games.json', 'public/data/season_projections.json', 'public/data/team_ratings.json'];
+export const RUNTIME_TRACE_REQUIREMENTS = {
+    '/': ['data/predictions_detailed.csv', 'data/prediction_history.json', 'public/data/upcoming_games.json',
+        'public/data/season_projections.json', 'public/data/playoff_series.json', 'public/data/game_implications.json',
+        ...STAMP_FILES],
+    '/accuracy': ['public/data/model_report.json', 'public/data/bet_ledger.json', 'public/data/gamestats.csv',
+        'data/prediction_history.json', ...STAMP_FILES],
+    '/methodology': ['public/data/model_report.json', ...STAMP_FILES],
+    '/news': ['pipeline/data/nhl_schedule_*.json', ...READ_DATA, ...STAMP_FILES],
+    '/players': [...READ_DATA, ...STAMP_FILES],
+    '/standings': [...READ_DATA, ...STAMP_FILES],
+    '/teams/[teamAbbr]': ['pipeline/data/nhl_schedule_*.json', 'public/data/upcoming_games.json',
+        'public/data/gamestats.csv', 'public/data/nhl_teams.csv', ...STAMP_FILES],
+    '/api/matchup-details': ['data/predictions_detailed.csv', 'data/prediction_history.json',
+        'public/data/team_goalies.json', 'public/data/goalie_season_lines.json', 'public/data/goalie_ratings.json',
+        'public/data/injuries.json', 'public/data/player_impact.json', 'public/data/team_lineups.json'],
+    '/api/odds-history': ['public/data/SiteHistory/*.csv'],
+    '/opengraph-image': ['data/predictions_detailed.csv'],
+};
+
+const globRe = (g) => new RegExp('^' + g.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[^/]*') + '$');
+
+/**
+ * Required files missing from a route's trace. `traced` are repo-relative
+ * paths; `exists(glob)` says whether the requirement has any file on disk.
+ * Returns { missing, absent }: missing = on disk but not traced (a failure),
+ * absent = not on disk at build time (a note).
+ * @param {string} route
+ * @param {string[]} traced
+ * @param {(glob: string) => boolean} [exists]
+ */
+export function missingTraceFiles(route, traced, exists = (_glob) => true) {
+    const need = RUNTIME_TRACE_REQUIREMENTS[route] ?? [];
+    const missing = [];
+    const absent = [];
+    for (const g of need) {
+        const re = globRe(g);
+        if (traced.some((f) => re.test(f))) continue;
+        (exists(g) ? missing : absent).push(g);
+    }
+    return { missing, absent };
+}
+
+function existsOnDisk(glob) {
+    if (!glob.includes('*')) return fs.existsSync(path.join(ROOT, glob));
+    const dir = path.join(ROOT, path.dirname(glob));
+    const re = globRe(path.basename(glob));
+    try {
+        return fs.readdirSync(dir).some((f) => re.test(f));
+    } catch {
+        return false;
+    }
+}
+
 function checkTraces() {
     const serverDir = path.join(ROOT, '.next', 'server');
     if (!fs.existsSync(serverDir)) {
@@ -124,15 +189,25 @@ function checkTraces() {
             if (st.size > MB && !abs.includes(`${path.sep}node_modules${path.sep}`)) big.push(`${path.relative(ROOT, abs)} ${(st.size / MB).toFixed(1)}MB`);
         }
         const limit = traceLimitMB(route);
-        rows.push({ route, mb: bytes / MB, limit, pass: bytes / MB <= limit, big });
+        const traced = files.map((rel) => path.relative(ROOT, path.resolve(path.dirname(nft), rel)).split(path.sep).join('/'));
+        const { missing, absent } = missingTraceFiles(route, traced, existsOnDisk);
+        rows.push({ route, mb: bytes / MB, limit, pass: bytes / MB <= limit && missing.length === 0, big, missing, absent });
     }
     rows.sort((a, b) => b.mb - a.mb);
     let failed = 0;
     for (const r of rows) {
         if (!r.pass) failed++;
-        console.log(`${r.pass ? 'ok  ' : 'FAIL'} ${r.mb.toFixed(1).padStart(6)}MB / ${String(r.limit).padStart(2)}MB  ${r.route}${r.pass ? '' : `\n       largest: ${r.big.slice(0, 5).join(', ')}`}`);
+        const over = r.mb > r.limit ? `\n       largest: ${r.big.slice(0, 5).join(', ')}` : '';
+        const miss = r.missing.length ? `\n       not traced (read at runtime): ${r.missing.join(', ')}` : '';
+        const note = r.absent.length ? `\n       note: not on disk at build, cannot trace: ${r.absent.join(', ')}` : '';
+        console.log(`${r.pass ? 'ok  ' : 'FAIL'} ${r.mb.toFixed(1).padStart(6)}MB / ${String(r.limit).padStart(2)}MB  ${r.route}${over}${miss}${note}`);
     }
-    console.log(failed ? `\n${failed} function trace(s) over budget.` : '\nAll function traces within budget.');
+    const unseen = Object.keys(RUNTIME_TRACE_REQUIREMENTS).filter((k) => !rows.some((r) => r.route === k));
+    if (unseen.length) {
+        failed += unseen.length;
+        console.log(`FAIL no function trace for runtime route(s): ${unseen.join(', ')}`);
+    }
+    console.log(failed ? `\n${failed} function trace(s) over budget or missing runtime files.` : '\nAll function traces within budget and every runtime-read file is traced.');
     return failed === 0;
 }
 

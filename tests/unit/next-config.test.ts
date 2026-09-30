@@ -58,4 +58,18 @@ describe('next.config function tracing', () => {
     it('still ships the SiteHistory snapshots the odds-history API reads', () => {
         expect(nextConfig.outputFileTracingIncludes?.['/api/odds-history']).toContain('public/data/SiteHistory/*.csv');
     });
+
+    it('ships the season schedule to the routes that read it at request time', () => {
+        for (const route of ['/news', '/teams/[teamAbbr]']) {
+            expect(nextConfig.outputFileTracingIncludes?.[route], route).toContain('pipeline/data/nhl_schedule_*.json');
+        }
+        // *.json under pipeline/ is not excluded, so the include is not fighting an exclude
+        expect((nextConfig.outputFileTracingExcludes?.['/*'] ?? []).some((p) => p.includes('*.json'))).toBe(false);
+    });
+
+    it('ships the data-stamp files (manifest may be absent at build time) to every function', () => {
+        expect(nextConfig.outputFileTracingIncludes?.['/*']).toEqual(
+            expect.arrayContaining(['public/data/manifest.json', 'public/data/last_updated.json', 'data/last_updated.json']),
+        );
+    });
 });

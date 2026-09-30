@@ -81,6 +81,12 @@ const NEVER_READ_AT_RUNTIME = [
 // matches /teams/[teamAbbr]/opengraph-image).
 const OG_RUNTIME = ["node_modules/next/dist/compiled/@vercel/og/**"];
 
+// Runtime fs reads that must be traced even when the tracer cannot see them.
+// `node scripts/perf-budget.mjs --traces` checks every runtime route against
+// RUNTIME_TRACE_REQUIREMENTS there, so a new fs read needs an entry in both.
+const RUNTIME_STAMP_FILES = ["public/data/manifest.json", "public/data/last_updated.json", "data/last_updated.json"];
+const RUNTIME_SCHEDULE = ["pipeline/data/nhl_schedule_*.json"];
+
 /*
  * ── Security headers ───────────────────────────────────────────────────────
  * CSP ships report-only first: violations surface in the browser console
@@ -137,6 +143,15 @@ const nextConfig: NextConfig = {
     "/api/teams/**": ["public/data/SiteHistory/**"],
   },
   outputFileTracingIncludes: {
+    // The site-wide data stamp (root layout) reads these. manifest.json is
+    // written by the pipeline and may be absent in a fresh checkout, so the
+    // tracer cannot find it on its own; an include makes it explicit.
+    "/*": RUNTIME_STAMP_FILES,
+    // nextGameFor (/teams/[teamAbbr]) and the /news "previous game" join read
+    // the pipeline's season schedule at request time (both fail soft, so a
+    // missing file would silently drop the Next game line on Vercel).
+    "/news": RUNTIME_SCHEDULE,
+    "/teams/[teamAbbr]": RUNTIME_SCHEDULE,
     "/opengraph-image": OG_RUNTIME,
     "/api/odds-history": ["public/data/SiteHistory/*.csv"],
     "/playoffs": PLAYOFFS_RAW_CSVS.filter((f) =>
