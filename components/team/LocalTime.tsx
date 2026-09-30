@@ -14,7 +14,8 @@ export function LocalTime({ utc, className }: { utc: string; className?: string 
             day: 'numeric',
             hour: 'numeric',
             minute: '2-digit',
-            ...(tz ? { timeZone: tz, timeZoneName: 'short' } : {}),
+            timeZoneName: 'short',
+            ...(tz ? { timeZone: tz } : {}),
         });
     const [text, setText] = React.useState(() => fmt('America/New_York'));
     React.useEffect(() => {

@@ -6,6 +6,9 @@ export function rankOf(value: number, all: number[], higherIsBetter: boolean): n
     return 1 + all.filter(v => (higherIsBetter ? v > value : v < value)).length;
 }
 
+/** League ranks appear once every team has played this many games. */
+export const RANK_MIN_GP = 10;
+
 const r = (v: number, d = 3) => Math.round(v * 10 ** d) / 10 ** d;
 
 /** League ranks for the team-page KPI tiles (only teams with games count). */
@@ -20,6 +23,8 @@ export function leaguesSummary(rows: TeamStat[]) {
         pk_pct: col('pk_pct'),
         pt_pct: col('pt_pct'),
     };
+    // Same gate as the matchup PP/PK ranks: no league ranks until every team has 10+ GP.
+    const ranked = rows.length > 0 && rows.every(s => s.gp >= RANK_MIN_GP);
     return {
         teams: played.length,
         kpis(tri: string): KpiSet | null {
@@ -34,6 +39,7 @@ export function leaguesSummary(rows: TeamStat[]) {
                 pp_opps: s.pp_opps,
                 pk_opps: s.pk_opps,
                 pt_pct: r(s.pt_pct, 3),
+                ranked,
                 ranks: {
                     xgf_pct: rankOf(s.xgf_pct, cols.xgf_pct, true),
                     gf_pg: rankOf(s.gf_per_game, cols.gf_pg, true),

@@ -74,8 +74,8 @@ export default async function Image({ params }: { params: Promise<{ teamAbbr: st
                 </div>
                 <div style={{ display: 'flex', gap: 20, marginTop: 48 }}>
                     {stat(`${label} record`, s ? `${s.wins}-${s.losses}-${s.otl}` : '0-0-0', s ? `${s.points} PTS` : undefined)}
-                    {stat('xGF%', k ? `${k.xgf_pct.toFixed(1)}%` : '—', k ? `#${k.ranks.xgf_pct} in NHL` : undefined)}
-                    {stat('PP / PK', k ? `${k.pp_pct.toFixed(0)} / ${k.pk_pct.toFixed(0)}` : '—', k ? `#${k.ranks.pp_pct} / #${k.ranks.pk_pct}` : undefined)}
+                    {stat('xGF%', k ? `${k.xgf_pct.toFixed(1)}%` : '—', k?.ranked ? `#${k.ranks.xgf_pct} in NHL` : undefined)}
+                    {stat('PP / PK', k ? `${k.pp_pct.toFixed(0)} / ${k.pk_pct.toFixed(0)}` : '—', k?.ranked ? `#${k.ranks.pp_pct} / #${k.ranks.pk_pct}` : undefined)}
                     {hero.playoffOdds ? stat('Playoff odds', `${hero.playoffOdds.pct.toFixed(0)}%`) : null}
                 </div>
                 <div style={{ display: 'flex', marginTop: 'auto', justifyContent: 'space-between', alignItems: 'flex-end' }}>
