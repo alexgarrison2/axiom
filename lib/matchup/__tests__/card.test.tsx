@@ -158,7 +158,7 @@ describe('lifecycle states on the card (E1)', () => {
         expect(t).toContain('1-0');
         expect(t).toContain('Model pick wrong');
         expect(visible(el)).toContain('✕ Pick');
-        expect(el.querySelector('[role="img"]')?.className).toContain('opacity-[.55]');
+        expect(el.querySelector('[role="img"]')?.getAttribute('data-dimmed')).toBe('true');
         expect(t).not.toContain('EV');
         expect(t).not.toMatch(/\d(\.\d)?u\b/);
         expect(t).not.toContain('Edge');

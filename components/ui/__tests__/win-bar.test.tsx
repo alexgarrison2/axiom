@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { WinBar, WinBarLegend, marketProbFromOdds } from '../win-bar';
+import { WinBar, WinBarLegend, marketProbFromOdds, pctInk } from '../win-bar';
+import { contrastRatio } from '../color';
+import { TEAM_PALETTE } from '../team-color';
 
 const html = (el: React.ReactElement) => renderToStaticMarkup(el);
 
@@ -57,8 +59,11 @@ describe('WinBar', () => {
     it('keeps tricodes out of the bar unless showCodes, but in sr-only text', () => {
         const out = html(<WinBar away="LAK" home="COL" pAway={0.36} />);
         expect(out).toContain('<span class="sr-only">LAK 36%</span>');
-        expect(out).not.toContain('opacity-80');
-        expect(html(<WinBar away="LAK" home="COL" pAway={0.36} showCodes />)).toContain('opacity-80');
+        expect(out).not.toContain('>LAK<');
+        const coded = html(<WinBar away="LAK" home="COL" pAway={0.36} showCodes />);
+        expect(coded).toContain('>LAK<');
+        // Full-strength tricode (a faded one fell under AA on some fills).
+        expect(coded).not.toContain('opacity-80');
     });
 
     it('labels a sliver below the bar and clamps out-of-range input', () => {
@@ -71,9 +76,48 @@ describe('WinBar', () => {
         expect(nan).toContain('width:50%');
     });
 
-    it('dims finals and can skip the animation', () => {
-        expect(html(<WinBar away="VAN" home="EDM" pAway={0.27} dimmed />)).toContain('opacity-[.55]');
+    it('dims only the fills on finals, never the % ink, and can skip the animation', () => {
+        const out = html(<WinBar away="VAN" home="EDM" pAway={0.27} market={0.3} dimmed />);
+        const fills = out.match(/<span aria-hidden="true" class="wb-fill[^>]*>/g) ?? [];
+        expect(fills).toHaveLength(2);
+        for (const f of fills) expect(f).toContain('opacity:0.55');
+        expect(out).not.toContain('opacity-[.55]');
+        // The % labels carry no opacity of their own.
+        expect(out).not.toMatch(/style="color:[^"]*opacity/);
         expect(html(<WinBar away="VAN" home="EDM" pAway={0.27} animate={false} />)).not.toContain('wb-anim');
+    });
+});
+
+describe('win-bar % contrast', () => {
+    const colours = Object.entries(TEAM_PALETTE).flatMap(([tri, pal]) => [
+        [tri, 'primary', pal.primary],
+        [tri, 'alt', pal.alt],
+    ]);
+
+    it.each([false, true])('every team colour, favourite and underdog, keeps the %% at >=3:1 (dimmed=%s)', dimmed => {
+        expect(colours).toHaveLength(64);
+        for (const [tri, variant, hex] of colours) {
+            for (const dog of [false, true]) {
+                const { ink, backdrop } = pctInk(hex, dog, dimmed);
+                // 26px bold italic is large text: 3:1 is the WCAG minimum.
+                expect(contrastRatio(ink, backdrop), `${tri} ${variant} dog=${dog}`).toBeGreaterThanOrEqual(3);
+            }
+        }
+    });
+
+    it('paints the ink picked against the faded fill on a dimmed bar', () => {
+        // BOS gold as the dimmed favourite measured 2.72:1 when the whole bar faded.
+        const out = html(<WinBar away="NYR" home="BOS" pAway={0.497} dimmed />);
+        const { ink } = pctInk('#FFB81C', false, true);
+        expect(out.toLowerCase()).toContain(`color:${ink.toLowerCase()}`);
+    });
+
+    it('shows one decimal for a coin flip when asked', () => {
+        const out = html(<WinBar away="NYR" home="BOS" pAway={0.497} digits={1} dimmed />);
+        expect(out).toContain('49.7');
+        expect(out).toContain('50.3');
+        expect(out).toContain('NYR 49.7%');
+        expect(out).not.toContain('--wb-to');
     });
 });
 
