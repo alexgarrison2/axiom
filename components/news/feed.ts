@@ -1,5 +1,5 @@
 import { TEAM_CODES } from '@/components/ui/team-color';
-import { buildCards, groupByGames, type GameRef, type RawNewsItem } from './model';
+import { buildCards, dropSpent, groupByGames, type GameRef, type RawNewsItem } from './model';
 import type { FeedGroup } from './NewsFeed';
 
 import { formatTimeET } from '@/lib/format/time';
@@ -22,8 +22,16 @@ export function etTime(at: string | null): string | null {
     return formatTimeET(d, 'time');
 }
 
-export function toFeedGroups(byTeam: Record<string, RawNewsItem[]>, games: GameRef[]): FeedGroup[] {
-    const cards = buildCards(byTeam, new Set(TEAM_CODES));
+/**
+ * Cards grouped for the page. `lastEnd` (each team's latest finished game end,
+ * ISO UTC) drops starter/lineup notes about games that are already final.
+ */
+export function toFeedGroups(
+    byTeam: Record<string, RawNewsItem[]>,
+    games: GameRef[],
+    lastEnd: Partial<Record<string, string | null>> = {},
+): FeedGroup[] {
+    const cards = dropSpent(buildCards(byTeam, new Set(TEAM_CODES)), lastEnd);
     return groupByGames(cards, games).map(g => ({
         ...g,
         startLabel: g.game ? etTime(g.game.startUtc) : null,

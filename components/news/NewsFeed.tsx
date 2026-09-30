@@ -8,6 +8,7 @@ import { Crest } from '@/components/ui/crest';
 import { clashSafePair, TEAM_NAMES } from '@/components/ui/team-color';
 import { cn } from '@/lib/utils';
 import { LocalTime } from '@/components/ui/local-time';
+import { formatTime, formatTimeET } from '@/lib/format/time';
 import { KIND_LABEL, matchesFilter, type NewsCard, type NewsFilter, type NewsGroup, type NewsKind } from './model';
 
 /** A group whose timestamps were formatted on the server (no hydration drift). */
@@ -43,12 +44,13 @@ export function NewsFeed({ groups, dayLabel }: { groups: FeedGroup[]; dayLabel: 
     }, [groups]);
     const visible = groups
         .map(g => ({ ...g, cards: g.cards.filter(c => matchesFilter(c.kind, filter)) }))
-        .filter(g => g.cards.length > 0 || (filter === 'all' && g.game));
+        .filter(g => g.cards.length > 0);
     const games = visible.filter(g => g.game);
     const rest = visible.find(g => !g.game);
 
     const chips = (
-        <div role="group" aria-label="Filter news" className="flex flex-wrap gap-1.5 max-sm:[&>button]:flex-1">
+        // One row: scrolls sideways on narrow phones instead of wrapping a chip onto its own line.
+        <div role="group" aria-label="Filter news" className="-mx-4 flex gap-1.5 overflow-x-auto px-4 py-0.5 scrollbar-hide sm:mx-0 sm:px-0 [&>button]:shrink-0">
             {FILTERS.map(f => (
                 <FilterChip key={f.value} selected={filter === f.value} onSelectedChange={() => setFilter(f.value)} count={counts[f.value]}>
                     {f.label}
@@ -101,12 +103,12 @@ function GameGroup({ group: g }: { group: FeedGroup }) {
             className="panel team-wash scroll-mt-[calc(var(--appbar-h)+12px)] overflow-hidden"
             style={{ '--ac': wash.away, '--hc': wash.home } as React.CSSProperties}
         >
-            <header className={cn('flex min-h-11 items-center gap-2.5 px-3 py-1.5', g.cards.length > 0 && 'border-b border-line')}>
+            <header className="flex min-h-11 min-w-0 items-center gap-2.5 whitespace-nowrap border-b border-line px-3 py-1.5">
                 <span aria-hidden="true" className="flex items-center gap-1">
                     <Crest tri={game.away} size={24} className="drop-shadow-none" />
                     <Crest tri={game.home} size={24} className="drop-shadow-none" />
                 </span>
-                <h2 id={`${g.key}-h`} className="font-display text-title font-semibold uppercase tracking-[0.04em] text-fg-1">
+                <h2 id={`${g.key}-h`} className="shrink-0 font-display text-title font-semibold uppercase tracking-[0.04em] text-fg-1">
                     {g.title}
                     <span className="sr-only">
                         {' '}
@@ -114,16 +116,14 @@ function GameGroup({ group: g }: { group: FeedGroup }) {
                     </span>
                 </h2>
                 {game.startUtc ? (
-                    <LocalTime iso={game.startUtc} className="label" />
+                    <GameTime iso={game.startUtc} />
                 ) : g.startLabel ? (
                     <span className="label">{g.startLabel}</span>
                 ) : null}
-                {g.cards.length ? (
-                    <span className="label rounded-chip border border-line-strong px-1.5 text-fg-2">
-                        <span className="sr-only">News items: </span>
-                        {g.cards.length}
-                    </span>
-                ) : null}
+                <span className="label rounded-chip border border-line-strong px-1.5 text-fg-2 max-[359.98px]:hidden">
+                    <span className="sr-only">News items: </span>
+                    {g.cards.length}
+                </span>
                 <Link
                     href={`/#${game.away.toLowerCase()}-${game.home.toLowerCase()}`}
                     className="label ml-auto inline-flex min-h-8 items-center text-brand hover:underline coarse:min-h-11"
@@ -131,13 +131,11 @@ function GameGroup({ group: g }: { group: FeedGroup }) {
                     Game<span className="sr-only"> preview</span> →
                 </Link>
             </header>
-            {g.cards.length ? (
-                <ul>
-                    {g.cards.map(c => (
-                        <NewsRow key={c.id} card={c} />
-                    ))}
-                </ul>
-            ) : null}
+            <ul>
+                {g.cards.map(c => (
+                    <NewsRow key={c.id} card={c} />
+                ))}
+            </ul>
         </section>
     );
 }
@@ -188,6 +186,24 @@ function NewsRow({ card, showTeam }: { card: FeedGroup['cards'][number]; showTea
 }
 
 export default NewsFeed;
+
+const noop = () => () => {};
+
+/** Puck drop in the viewer's zone ("9:00 PM CDT"); the zone drops below 400px so the header stays one line. */
+function GameTime({ iso }: { iso: string }) {
+    const hydrated = React.useSyncExternalStore(noop, () => true, () => false);
+    const et = formatTimeET(iso, 'time');
+    if (!et) return null;
+    const text = hydrated ? (formatTime(iso, 'time') ?? et) : et;
+    const cut = text.lastIndexOf(' ');
+    const [clock, zone] = cut > 0 && /[A-Z]/.test(text.slice(cut + 1)) ? [text.slice(0, cut), text.slice(cut)] : [text, ''];
+    return (
+        <time dateTime={iso} className="label shrink-0" title={text === et ? undefined : `${et} (Eastern)`}>
+            {clock}
+            {zone ? <span className="max-[399.98px]:hidden">{zone}</span> : null}
+        </time>
+    );
+}
 
 /** A news timestamp: date-only values keep the server label; full instants go local via <LocalTime>. */
 function When({ at, label, className }: { at: string; label: string; className?: string }) {

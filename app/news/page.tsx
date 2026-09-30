@@ -17,9 +17,12 @@ function prevGameEnds(beforeUtc: string | null): Record<string, string> {
         };
         const cutoff = beforeUtc ? Date.parse(beforeUtc) : Date.now();
         for (const g of Object.values(raw.games ?? {})) {
-            if (!g.start_utc || (g.state !== 'FINAL' && g.state !== 'OFF') || Date.parse(g.start_utc) >= cutoff) continue;
+            const start = g.start_utc ? Date.parse(g.start_utc) : NaN;
+            if (!Number.isFinite(start) || start >= cutoff) continue;
+            // Final per the schedule, or started 4h+ ago (the schedule file can lag a refresh).
+            if (g.state !== 'FINAL' && g.state !== 'OFF' && start + 4 * 3600 * 1000 > Date.now()) continue;
             // A game is final about 2.5 hours after puck drop.
-            const end = new Date(Date.parse(g.start_utc) + 2.5 * 3600 * 1000).toISOString();
+            const end = new Date(start + 2.5 * 3600 * 1000).toISOString();
             for (const t of [g.home_abbrev, g.away_abbrev]) if (t && (!out[t] || out[t] < end)) out[t] = end;
         }
     } catch {
@@ -73,7 +76,8 @@ export default function NewsPage() {
         const ends = prevGameEnds(g.startUtc);
         return { ...g, names, prevEndUtc: { [g.home]: ends[g.home] ?? null, [g.away]: ends[g.away] ?? null } };
     });
-    const groups = toFeedGroups(news, withPrev);
+    // Starter/lineup notes about games that have since gone final are dropped.
+    const groups = toFeedGroups(news, withPrev, prevGameEnds(null));
     const isToday = day === todayEt();
     const dayLabel = day
         ? isToday
@@ -83,7 +87,7 @@ export default function NewsPage() {
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto max-w-[1400px] px-4 py-5 md:px-6 md:py-7">
+            <div className="page py-5 md:py-7">
                 <NewsFeed groups={groups} dayLabel={dayLabel} />
             </div>
         </main>
