@@ -148,13 +148,13 @@ def version_block(rows):
     """n / accuracy / Brier / log loss for one model version's live picks. The pick record
     (correct, n_picks, accuracy) leaves out coin flips; Brier and log loss use every game."""
     if not rows:
-        return {'n': 0, 'n_picks': 0, 'correct': 0, 'accuracy': None, 'brier': None, 'log_loss': None}
+        return {'n': 0, 'n_picks': 0, 'correct': 0, 'accuracy': None, 'accuracy_all': None, 'brier': None, 'log_loss': None}
     y = np.array([1 if r['actualWinner'] == r['homeTeam'] else 0 for r in rows])
     p = np.array([r['homeWinProb'] / 100 for r in rows])
     picks = [r for r in rows if is_pick(r)]
     k = int(sum(1 for r in picks if r['isCorrect']))
     return {'n': len(rows), 'n_picks': len(picks), 'correct': k, 'accuracy': k / len(picks) if picks else None,
-            'brier': _brier(y, p), 'log_loss': _ll(y, p)}
+            'accuracy_all': _acc(y, p), 'brier': _brier(y, p), 'log_loss': _ll(y, p)}
 
 
 def block(rows, home_rate, home_rate_source, closing):
@@ -171,7 +171,7 @@ def block(rows, home_rate, home_rate_source, closing):
            'by_model': {'current': version_block([r for r in live if not is_legacy(r)]),
                         'legacy': version_block([r for r in live if is_legacy(r)])}}
     if n == 0:
-        out.update({'accuracy': None, 'accuracy_ci': [None, None], 'brier': None, 'log_loss': None,
+        out.update({'accuracy': None, 'accuracy_all': None, 'accuracy_ci': [None, None], 'brier': None, 'log_loss': None,
                     'baselines': {'home_rate': {'rate': home_rate, 'source': home_rate_source, 'n': 0,
                                                 'log_loss': None, 'brier': None, 'accuracy': None},
                                   'market': {'n': 0, 'source': None, 'log_loss': None, 'brier': None,
@@ -186,6 +186,9 @@ def block(rows, home_rate, home_rate_source, closing):
     k = int(sum(1 for r in picks if r['isCorrect']))
     lo, hi = wilson(k, len(picks))
     out.update({'accuracy': k / len(picks) if picks else None, 'accuracy_ci': [lo, hi], 'correct': k,
+                # Every game with a coin flip as half a pick: the same basis as the market and home-rate
+                # accuracy below, so a comparison table sets like beside like.
+                'accuracy_all': _acc(y, p),
                 'brier': _brier(y, p), 'log_loss': _ll(y, p),
                 'mean_pred_home': float(p.mean()), 'actual_home': float(y.mean()),
                 'first_date': live[0]['date'], 'last_date': live[-1]['date']})

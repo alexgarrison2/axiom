@@ -108,7 +108,8 @@ function metricRow(label: string, o: Obj, isModel = false): MetricRow {
         label,
         isModel,
         n: num(o, 'n', 'games', 'n_games', 'count'),
-        accuracy: num(o, 'accuracy', 'acc', 'hit_rate'),
+        // The model row uses the baselines' basis (every game, a coin flip as half a pick) so the Acc column compares like with like.
+        accuracy: isModel ? num(o, 'accuracy_all', 'accuracy', 'acc', 'hit_rate') : num(o, 'accuracy', 'acc', 'hit_rate'),
         brier: num(o, 'brier', 'brier_score'),
         logLoss: num(o, 'log_loss', 'logloss', 'logLoss'),
     };

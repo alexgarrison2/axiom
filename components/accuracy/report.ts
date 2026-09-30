@@ -25,6 +25,8 @@ export interface VersionStats {
     nPicks: number;
     correct: number;
     accuracy: number | null;
+    /** Every game, a coin flip as half a pick: the basis the market and home-rate accuracy use. */
+    accuracyAll: number | null;
     brier: number | null;
     logLoss: number | null;
 }
@@ -80,6 +82,8 @@ export interface ReportBlock {
     /** The same picks split by model: current = recorded model version, legacy = previous site model. */
     byModel: { current: VersionStats; legacy: VersionStats } | null;
     accuracy: number | null;
+    /** Every game, a coin flip as half a pick: the like-for-like number beside the baselines. */
+    accuracyAll: number | null;
     accuracyCi: [number, number] | null;
     correct: number;
     brier: number | null;
@@ -151,7 +155,7 @@ function parseCall(v: unknown): CallRow | null {
 function parseVersion(v: unknown): VersionStats {
     const o = isObj(v) ? v : {};
     const total = n(o.n) ?? 0;
-    return { n: total, nPicks: n(o.n_picks) ?? total, correct: n(o.correct) ?? 0, accuracy: n(o.accuracy), brier: n(o.brier), logLoss: n(o.log_loss) };
+    return { n: total, nPicks: n(o.n_picks) ?? total, correct: n(o.correct) ?? 0, accuracy: n(o.accuracy), accuracyAll: n(o.accuracy_all), brier: n(o.brier), logLoss: n(o.log_loss) };
 }
 
 /** Best calls and worst misses need a real lean: at least this confidence (%) on the pick. */
@@ -172,6 +176,7 @@ export function parseBlock(v: unknown): ReportBlock | null {
         nLegacy: n(v.n_legacy) ?? 0,
         byModel: bm ? { current: parseVersion(bm.current), legacy: parseVersion(bm.legacy) } : null,
         accuracy: n(v.accuracy),
+        accuracyAll: n(v.accuracy_all),
         accuracyCi: pair(v.accuracy_ci),
         correct: n(v.correct) ?? 0,
         brier: n(v.brier),
@@ -272,6 +277,7 @@ function combineVersion(list: VersionStats[]): VersionStats {
         nPicks: picks,
         correct,
         accuracy: picks ? correct / picks : null,
+        accuracyAll: wavg(list.map(b => ({ w: b.n, v: b.accuracyAll }))),
         brier: wavg(list.map(b => ({ w: b.n, v: b.brier }))),
         logLoss: wavg(list.map(b => ({ w: b.n, v: b.logLoss }))),
     };
@@ -298,6 +304,7 @@ export function combineBlocks(blocks: ReportBlock[]): ReportBlock | null {
             ? { current: combineVersion(bs.map(b => b.byModel!.current)), legacy: combineVersion(bs.map(b => b.byModel!.legacy)) }
             : null,
         accuracy: picks ? correct / picks : null,
+        accuracyAll: wavg(bs.map(b => ({ w: b.n, v: b.accuracyAll }))),
         accuracyCi: wilson(correct, picks),
         correct,
         brier: wavg(bs.map(b => ({ w: b.n, v: b.brier }))),

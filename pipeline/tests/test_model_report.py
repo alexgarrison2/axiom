@@ -83,3 +83,16 @@ def test_history_flags_coin_flips_as_no_lean():
     assert GH.is_lean(49.1) is False
     assert GH.is_lean(51.0) is True
     assert GH.is_lean(48.9) is True
+
+
+def test_accuracy_all_sits_on_the_baselines_basis():
+    """The pick record leaves coin flips out; accuracy_all keeps every game with a coin flip as half a
+    pick, the basis the market and home-rate accuracy use, so a comparison table compares like with like."""
+    rows = [_row(1, 50.3, True, market=60.0), _row(2, 71.9, False, market=74.2), _row(3, 75.1, True, market=71.7),
+            _row(4, 64.0, True, market=58.0)]
+    b = MR.block(rows, 0.536, 'test', {})
+    assert b['accuracy'] == 2 / 3                      # pick record: 2-1, the coin flip left out
+    assert b['accuracy_all'] == (2 + 0.5) / 4          # every game, the coin flip as half a pick
+    assert b['accuracy_all'] == b['baselines']['market']['model_accuracy_same_games']
+    assert b['by_model']['legacy']['accuracy_all'] == b['accuracy_all']
+    assert MR.version_block([])['accuracy_all'] is None

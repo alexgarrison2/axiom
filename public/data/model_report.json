@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-09-30T20:53:05.035643+00:00",
+ "generated_at": "2026-09-30T21:28:29.076879+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -17,6 +17,7 @@
       "n_picks": 0,
       "correct": 0,
       "accuracy": null,
+      "accuracy_all": null,
       "brier": null,
       "log_loss": null
      },
@@ -25,6 +26,7 @@
       "n_picks": 387,
       "correct": 218,
       "accuracy": 0.5633,
+      "accuracy_all": 0.5582,
       "brier": 0.2447,
       "log_loss": 0.6822
      }
@@ -35,6 +37,7 @@
      0.6119
     ],
     "correct": 218,
+    "accuracy_all": 0.5582,
     "brier": 0.2447,
     "log_loss": 0.6822,
     "mean_pred_home": 0.5484,
@@ -2205,6 +2208,7 @@
       "n_picks": 0,
       "correct": 0,
       "accuracy": null,
+      "accuracy_all": null,
       "brier": null,
       "log_loss": null
      },
@@ -2213,6 +2217,7 @@
       "n_picks": 315,
       "correct": 174,
       "accuracy": 0.5524,
+      "accuracy_all": 0.5487,
       "brier": 0.2451,
       "log_loss": 0.6831
      }
@@ -2223,6 +2228,7 @@
      0.6063
     ],
     "correct": 174,
+    "accuracy_all": 0.5487,
     "brier": 0.2451,
     "log_loss": 0.6831,
     "mean_pred_home": 0.5519,
@@ -3901,6 +3907,7 @@
       "n_picks": 0,
       "correct": 0,
       "accuracy": null,
+      "accuracy_all": null,
       "brier": null,
       "log_loss": null
      },
@@ -3909,6 +3916,7 @@
       "n_picks": 72,
       "correct": 44,
       "accuracy": 0.6111,
+      "accuracy_all": 0.5976,
       "brier": 0.2428,
       "log_loss": 0.6785
      }
@@ -3919,6 +3927,7 @@
      0.7153
     ],
     "correct": 44,
+    "accuracy_all": 0.5976,
     "brier": 0.2428,
     "log_loss": 0.6785,
     "mean_pred_home": 0.5337,
@@ -4225,6 +4234,7 @@
       "n_picks": 0,
       "correct": 0,
       "accuracy": null,
+      "accuracy_all": null,
       "brier": null,
       "log_loss": null
      },
@@ -4233,6 +4243,7 @@
       "n_picks": 2,
       "correct": 1,
       "accuracy": 0.5,
+      "accuracy_all": 0.5,
       "brier": 0.2753,
       "log_loss": 0.7476
      }
@@ -4243,6 +4254,7 @@
      0.9055
     ],
     "correct": 1,
+    "accuracy_all": 0.5,
     "brier": 0.2753,
     "log_loss": 0.7476,
     "mean_pred_home": 0.6577,
@@ -4442,6 +4454,7 @@
       "n_picks": 0,
       "correct": 0,
       "accuracy": null,
+      "accuracy_all": null,
       "brier": null,
       "log_loss": null
      },
@@ -4450,6 +4463,7 @@
       "n_picks": 2,
       "correct": 1,
       "accuracy": 0.5,
+      "accuracy_all": 0.5,
       "brier": 0.2753,
       "log_loss": 0.7476
      }
@@ -4460,6 +4474,7 @@
      0.9055
     ],
     "correct": 1,
+    "accuracy_all": 0.5,
     "brier": 0.2753,
     "log_loss": 0.7476,
     "mean_pred_home": 0.6577,
@@ -4659,6 +4674,7 @@
       "n_picks": 0,
       "correct": 0,
       "accuracy": null,
+      "accuracy_all": null,
       "brier": null,
       "log_loss": null
      },
@@ -4667,11 +4683,13 @@
       "n_picks": 0,
       "correct": 0,
       "accuracy": null,
+      "accuracy_all": null,
       "brier": null,
       "log_loss": null
      }
     },
     "accuracy": null,
+    "accuracy_all": null,
     "accuracy_ci": [
      null,
      null

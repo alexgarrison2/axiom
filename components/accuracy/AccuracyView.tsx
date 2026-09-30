@@ -355,7 +355,8 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
                   { label: 'Pony xG', ...versionRow(b.byModel.current) },
                   { label: 'Prev. model', ...versionRow(b.byModel.legacy) },
               ]
-            : [{ label: modelLabel ?? 'Site model', n: b.n, acc: b.accuracy, brier: b.brier, ll: b.logLoss, model: true }];
+            : // Acc here is on the baselines' basis (every game, a coin flip as half a pick), not the pick record above.
+              [{ label: modelLabel ?? 'Site model', n: b.n, acc: b.accuracyAll ?? b.accuracy, brier: b.brier, ll: b.logLoss, model: true }];
     if (m.n) {
         // The model on the market's games; merged into the row above when they are the same games.
         if (m.n !== b.n || rows.length > 1)
@@ -438,8 +439,8 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
     );
 }
 
-function versionRow(v: { n: number; accuracy: number | null; brier: number | null; logLoss: number | null }): Omit<BaselineRow, 'label'> {
-    return { n: v.n, acc: v.accuracy, brier: v.brier, ll: v.logLoss, model: true };
+function versionRow(v: { n: number; accuracy: number | null; accuracyAll?: number | null; brier: number | null; logLoss: number | null }): Omit<BaselineRow, 'label'> {
+    return { n: v.n, acc: v.accuracyAll ?? v.accuracy, brier: v.brier, ll: v.logLoss, model: true };
 }
 
 const WORD_TONE: Record<VerdictWord, string> = { BETTER: 'text-pos', WORSE: 'text-neg', SAME: 'text-fg-1' };

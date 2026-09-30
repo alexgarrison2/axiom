@@ -445,7 +445,7 @@ export default function MethodologyPage() {
                                 <p>
                                     <strong>{current}:</strong>{' '}
                                     {tally.n
-                                        ? `through ${tally.n} ${tally.n === 1 ? 'game' : 'games'}: ${tally.correct}-${tally.picks - tally.correct}${tally.legacyN ? ` (${tally.legacyN === tally.n ? 'all' : tally.legacyN} from the previous site model)` : ''}. The full report updates after the nightly refresh.`
+                                        ? `through ${tally.n} ${tally.n === 1 ? 'game' : 'games'}: ${tally.correct}-${tally.picks - tally.correct}${tally.n > tally.picks ? `, ${tally.n - tally.picks} no lean` : ''}${tally.legacyN ? ` (${tally.legacyN === tally.n ? 'all' : tally.legacyN} from the previous site model)` : ''}. The full report updates after the nightly refresh.`
                                         : 'no games graded yet. The first results post after the first games go final.'}
                                     {tally.excluded.length ? ` ${tally.excluded.length} ${tally.excluded.length === 1 ? 'game was' : 'games were'} not graded (no pregame snapshot before puck drop).` : ''}{' '}
                                     See the <Link href="/accuracy" className="font-semibold text-brand underline underline-offset-4">Accuracy page</Link>.

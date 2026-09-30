@@ -40,6 +40,17 @@ describe('model_report.json → report card', () => {
         expect(both.nPicks).toBe(a.nPicks * 2);
         expect(both.accuracy).toBeCloseTo(a.correct / a.nPicks, 6);
         expect(both.logLoss).toBeCloseTo(a.logLoss!, 6);
+        expect(both.accuracyAll).toBeCloseTo(a.accuracyAll!, 6);
+    });
+
+    it('puts the model beside the baselines on their basis: every game, a coin flip as half a pick', () => {
+        const a = report.seasons['2025-26']!.all!;
+        // The pick record drops coin flips; the comparison number keeps them at half credit like the market's.
+        expect(a.nNoLean).toBeGreaterThan(0);
+        expect(a.accuracyAll).not.toBeNull();
+        expect(a.accuracyAll).not.toBeCloseTo(a.accuracy!, 4);
+        if (a.market.n === a.n) expect(a.accuracyAll).toBeCloseTo(a.market.modelAccuracySame!, 4);
+        expect(a.byModel!.legacy.accuracyAll).toBeCloseTo(a.accuracyAll!, 4);
     });
 
     it('reads the gate with reasons', () => {
@@ -206,8 +217,8 @@ describe('fix round 3: verdicts, legacy labels, small samples', () => {
         const b = report.seasons['2026-27']?.all;
         if (b && b.n > 0 && b.nLegacy === b.n) expect(modelLabelOf(b, 'Pony xG')).toBe('Prev. model');
         const base = report.seasons['2025-26']!.all!;
-        const current = { n: 5, nPicks: 5, correct: 3, accuracy: 0.6, brier: 0.2, logLoss: 0.6 };
-        const none = { n: 0, nPicks: 0, correct: 0, accuracy: null, brier: null, logLoss: null };
+        const current = { n: 5, nPicks: 5, correct: 3, accuracy: 0.6, accuracyAll: 0.6, brier: 0.2, logLoss: 0.6 };
+        const none = { n: 0, nPicks: 0, correct: 0, accuracy: null, accuracyAll: null, brier: null, logLoss: null };
         expect(modelLabelOf({ ...base, n: 5, nLegacy: 0, byModel: { current, legacy: none } }, 'x')).toBe('Pony xG');
         expect(modelLabelOf({ ...base, n: 7, nLegacy: 2, byModel: { current, legacy: { ...current, n: 2 } } }, 'x')).toBeNull();
     });
