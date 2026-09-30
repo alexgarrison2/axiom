@@ -236,6 +236,27 @@ test.describe('home slate', () => {
         expect(behaviours).not.toContain('smooth');
     });
 
+    test('the legend opens Reading a card, and a Why-tab chip opens its glossary entry', async ({ page }) => {
+        await page.goto('/');
+        const legend = page.locator('a[href="/methodology#reading"]').first();
+        if (await legend.count()) {
+            await legend.click();
+            await expect(page).toHaveURL(/\/methodology#reading$/);
+            await expect(page.locator('#reading')).toBeInViewport();
+            await page.goBack();
+        }
+        const card = page.locator('article[id]').first();
+        await card.locator('h2 button[aria-expanded]').click();
+        await card.getByRole('radio', { name: 'Why' }).click();
+        // Anchors G3 is still adding (term-opener, term-wt, term-lean) are skipped here.
+        const chip = card.locator('[role="region"] a[href^="/methodology#term-"]:not([href$="-opener"]):not([href$="-wt"]):not([href$="-lean"])').first();
+        await expect(chip).toBeVisible();
+        const href = (await chip.getAttribute('href')) ?? '';
+        await chip.click();
+        await expect(page).toHaveURL(new RegExp(`${href.replace(/[#/]/g, '\\$&')}$`));
+        await expect(page.locator(`[id="${href.split('#')[1]}"]`)).toBeInViewport();
+    });
+
     test('Odds tab: the line-move dialog shows moneyline and total movement with zoned times (mocked API)', async ({ page }) => {
         const entries = [
             { timestamp: '2026-09-30T12:42:49Z', awayOdds: '+110', homeOdds: '-130', awayDir: null, homeDir: null, isOpen: true, isLatest: false, total: { line: '6', over: '-117', under: '-103' }, totalDir: null },

@@ -15,22 +15,29 @@ export const CARD_TERMS: Record<string, string> = {
     loc: 'term-last-n',
     pp: 'term-pp-pk',
     pk: 'term-pp-pk',
-    b2b: 'term-b2b',
+    // The Rest / B2B entry covers back-to-backs and 3-in-4s.
+    b2b: 'term-rest',
     '3in4': 'term-rest',
     trip: 'term-rest',
     h2h: 'term-h2h',
     'h2h-prior': 'term-h2h',
     rest: 'term-rest',
     'proj-g': 'term-projected-goals',
-    conf: 'term-conf',
+    conf: 'term-confidence',
     wt: 'term-wt',
     lean: 'term-lean',
 };
 
+/**
+ * Anchors that lib/glossary.ts gains in fix3-G3 (G3-6). Until that lands they
+ * fall back to the top of /methodology; every other anchor resolves today.
+ */
+export const PENDING_ANCHORS: readonly string[] = ['term-opener', 'term-wt', 'term-lean'];
+
 /** Every /methodology anchor the card links to. */
 export const CARD_ANCHORS: string[] = [READING_A_CARD, ...new Set(Object.values(CARD_TERMS))];
 
-/** "/methodology#term-b2b" for a chip / tile key, or null when the key has no entry. */
+/** "/methodology#term-rest" for a chip / tile key, or null when the key has no entry. */
 export function termHref(key: string): string | null {
     const a = CARD_TERMS[key];
     return a ? `/methodology#${a}` : null;

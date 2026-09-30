@@ -15,7 +15,10 @@ import type { GameDetails } from '../../client-data';
 import type { ArchiveGame } from '../archive';
 import { byTeams, fixture, withOverrides } from './fixtures';
 import { gsaxHeadline, isCoinFlip, shortAge, windowTag, SMALL_SAMPLE_GP } from '../format';
-import { CARD_ANCHORS, READING_HREF, termHref } from '../glossary-links';
+import { CARD_ANCHORS, PENDING_ANCHORS, READING_HREF, termHref } from '../glossary-links';
+import { GLOSSARY_TERMS } from '../../glossary';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { slateTitle } from '../archive';
 import { SEASON_ID } from '../../season';
 
@@ -216,14 +219,15 @@ describe('G1-10 glossary links', () => {
         expect(legend.getAttribute('href')).toBe('/methodology#reading');
         expect(visible(legend)).toBe('Market Model');
         cleanup();
-        expect(termHref('b2b')).toBe('/methodology#term-b2b');
+        expect(termHref('b2b')).toBe('/methodology#term-rest');
+        expect(termHref('conf')).toBe('/methodology#term-confidence');
         expect(termHref('nope')).toBeNull();
         expect(CARD_ANCHORS).toContain('term-opener');
 
         const b2b = withOverrides(pitPhi, {}, { home: { isB2b: true, gp: 1 } });
         const chips = render(<ContextChips p={b2b} />).container;
         const hrefs = [...chips.querySelectorAll('a')].map(a => a.getAttribute('href'));
-        expect(hrefs).toContain('/methodology#term-b2b');
+        expect(hrefs).toContain('/methodology#term-rest');
         cleanup();
 
         const why = render(<WhyPanel p={withOverrides(pitPhi, { blendWeight: 0.2, confidenceGrade: null })} phase="pre" state={{ status: 'loading' }} implication={null} />).container;
@@ -235,5 +239,18 @@ describe('G1-10 glossary links', () => {
 describe('G1-11 document title', () => {
     it('matches the server metadata format', () => {
         expect(slateTitle('2026-10-01', '2026-09-30')).toBe('NHL predictions for Thu, Oct 1 | Pony xG');
+    });
+});
+
+describe('G1-10 anchors resolve', () => {
+    it('every card link lands on a /methodology section or glossary term (bar the ones G3 is adding)', () => {
+        const page = readFileSync(resolve(__dirname, '../../../app/methodology/page.tsx'), 'utf8');
+        const sections = new Set([...page.matchAll(/(?:Section|section|p) id="([a-z0-9-]+)"/g)].map(m => m[1]));
+        const terms = new Set(GLOSSARY_TERMS.map(k => `term-${k}`));
+        expect(sections.has('reading')).toBe(true);
+        const missing = CARD_ANCHORS.filter(a => !sections.has(a) && !terms.has(a));
+        for (const a of missing) expect(PENDING_ANCHORS, `${a} does not resolve`).toContain(a);
+        // Rest / B2B, confidence, form, special teams, H2H and projected goals resolve today.
+        for (const a of ['term-rest', 'term-confidence', 'term-last-n', 'term-pp-pk', 'term-h2h', 'term-projected-goals']) expect(terms.has(a), a).toBe(true);
     });
 });
