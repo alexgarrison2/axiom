@@ -90,6 +90,7 @@ FEATURE_COLUMNS = [
 CANDIDATE_COLUMNS = [
     'd_st',             # special-teams xG net per game
     'd_travel_km', 'h_tz_shift', 'a_tz_shift',  # C10 candidates
+    'h_3in4', 'a_3in4',  # third game in four nights (the old IN3_4_PENALTY)
 ]
 
 
@@ -344,6 +345,7 @@ class TeamState:
     rs_gp: int = 0
     last_date: pd.Timestamp | None = None
     last_venue: tuple | None = None
+    recent_dates: tuple = ()      # dates of the last 3 games (3-in-4 candidate)
 
 
 @dataclass
@@ -566,6 +568,7 @@ class FeatureState:
                 elif row.result in OTL_RESULTS:
                     t.pts2 += 0.5
             t.last_date = pd.Timestamp(row.game_date)
+            t.recent_dates = (t.recent_dates + (t.last_date,))[-3:]
             t.last_venue = _arena(h.team)
 
         # Goalies (starter credited; EN excluded; raw xG, normalised at read time)
@@ -627,6 +630,10 @@ class FeatureState:
         a_tz = (venue[2] - at.last_venue[2]) if (at.last_venue and venue) else 0
         recent = lambda r: 1.0 if r <= 2 else 0.0  # travel only matters on short rest
 
+        def three_in_four(t):
+            # tonight would be the 3rd game in 4 nights: 2+ games in the previous 3 days
+            return 1.0 if sum(1 for d in t.recent_dates if 1 <= (gd - d).days <= 3) >= 2 else 0.0
+
         return {
             'd_xg_share': ht.xg_share - at.xg_share,
             'd_xg_share_all': ht.xg_share_all - at.xg_share_all,
@@ -640,6 +647,7 @@ class FeatureState:
             'd_travel_km': (h_km * recent(h_rest) - a_km * recent(a_rest)) / 1000.0,
             'h_tz_shift': abs(h_tz) * recent(h_rest),
             'a_tz_shift': abs(a_tz) * recent(a_rest),
+            'h_3in4': three_in_four(ht), 'a_3in4': three_in_four(at),
             # context (not model inputs)
             'h_gp': float(ht.gp), 'a_gp': float(at.gp),
             'h_rs_gp': float(ht.rs_gp), 'a_rs_gp': float(at.rs_gp),

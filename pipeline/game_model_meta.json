@@ -1,7 +1,7 @@
 {
   "model_version": "logit-elo-v5-20260930",
   "model_type": "logistic_regression_l2",
-  "training_date": "2026-09-30T04:41:57.093372+00:00",
+  "training_date": "2026-09-30T04:48:01.310069+00:00",
   "training_seasons": [
     2022,
     2023,
@@ -256,5 +256,49 @@
   },
   "avg_log_loss": 0.667907131621066,
   "avg_accuracy": 0.573952948402706,
-  "evaluation": "season-level walk-forward: train on seasons < S, C tuned on S-1; early = either team game number <= 15"
+  "evaluation": "season-level walk-forward: train on seasons < S, C tuned on S-1; early = either team game number <= 15",
+  "promotion": {
+    "promoted_at": "2026-09-30T04:48:01.321883+00:00",
+    "replaced": "logit-elo-v5-20260930",
+    "checks": [
+      {
+        "check": "2023 fold log loss <= current + 0.0005",
+        "candidate": 0.6590777245212592,
+        "current": 0.6590777245212592,
+        "passed": true
+      },
+      {
+        "check": "2023 beats home-rate by >= 0.01",
+        "gain": 0.03196831029929914,
+        "passed": true
+      },
+      {
+        "check": "2024 fold log loss <= current + 0.0005",
+        "candidate": 0.6653669716293886,
+        "current": 0.6653669716293886,
+        "passed": true
+      },
+      {
+        "check": "2024 beats home-rate by >= 0.01",
+        "gain": 0.021375995999855846,
+        "passed": true
+      },
+      {
+        "check": "2025 fold log loss <= current + 0.0005",
+        "candidate": 0.6792766987125499,
+        "current": 0.6792766987125499,
+        "passed": true
+      },
+      {
+        "check": "2025 beats home-rate by >= 0.01",
+        "gain": 0.01422296903659348,
+        "passed": true
+      },
+      {
+        "check": "2025 calibration slope in [0.9, 1.1]",
+        "slope": 0.91917433370924,
+        "passed": true
+      }
+    ]
+  }
 }

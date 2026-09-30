@@ -1,21 +1,17 @@
 {
-  "xg_5v5_coeff": 0.3125129643559148,
-  "pp_opp_val": 0.19,
-  "pk_opp_cost": 0.09264146579921702,
-  "b2b_cost_gf": -0.2551794697083588,
-  "b2b_cost_ga": -0.028033892167855238,
-  "3in4_cost_gf": -0.12,
-  "3in4_cost_ga": 0.14457053406250353,
-  "home_ice_gf": 0.16023895153035392,
-  "home_ice_ga": 0.007150623182964281,
-  "market_blend_weight": {
-    "value": 0.738,
-    "fit": "market.py --backtest: in-sample best on live SiteHistory games shrunk toward the prior 0.2 with 200 pseudo-games",
-    "in_sample_best": 1.0,
-    "n_games": 410,
-    "fitted_at": "2026-09-30T04:42:12.258048+00:00"
-  },
-  "fitted_constants": {
+  "generated_at": "2026-09-30T04:47:37.343852+00:00",
+  "model_C": 0.003,
+  "features": [
+    "d_xg_share",
+    "d_xg_share_all",
+    "d_elo",
+    "d_goalie_gsax",
+    "d_pts_pct",
+    "h_b2b",
+    "a_b2b",
+    "d_rest"
+  ],
+  "constants": {
     "home_ice_logit": {
       "value": 0.1153299220432886,
       "se": 0.028939952988770647,
@@ -244,20 +240,45 @@
       "fitted_at": "2026-09-30T04:47:37.343852+00:00"
     }
   },
-  "ot_decided_share": {
-    "value": 0.6924,
-    "se": 0.0134,
-    "fit": "OT / (OT + SO) over tied-after-regulation games 2022-2025"
+  "total_model": {
+    "total_pace_weight": {
+      "value": 0.45,
+      "se": 0.07990378829952549
+    },
+    "total_scale": {
+      "value": 1.0,
+      "se": 0.005369369442041398
+    },
+    "train_seasons": [
+      2022,
+      2023,
+      2024
+    ],
+    "holdout_season": 2025,
+    "holdout_fitted": {
+      "deviance": 0.8924378523087422,
+      "mean_pred": 6.11027391601005,
+      "mean_actual": 6.149210903873745,
+      "bias": -0.03893698786369448
+    },
+    "holdout_no_pace": {
+      "deviance": 0.8949676075157276,
+      "mean_pred": 6.091449634148314,
+      "mean_actual": 6.149210903873745,
+      "bias": -0.05776126972543061
+    },
+    "holdout_defaults": {
+      "deviance": 0.8929922503250186,
+      "mean_pred": 6.112365502883578,
+      "mean_actual": 6.149210903873745,
+      "bias": -0.036845400990166866
+    },
+    "pace_kept": true
   },
-  "total_pace_weight": {
-    "value": 0.45,
-    "se": 0.0799,
-    "fit": "Poisson deviance of game totals, 2022-2024"
-  },
-  "total_scale": {
-    "value": 1.0,
-    "se": 0.0054,
-    "fit": "Poisson deviance of game totals, 2022-2024"
-  },
-  "_notes": "fitted_constants and the ot_/total_/market_ keys are written by retrain.py / market.py with standard errors and ablations (tests/out/constants_fit.json). xg_5v5_coeff, pp_opp_val, pk_opp_cost, b2b_cost_*, 3in4_cost_*, home_ice_* are read only by the legacy Poisson path in predict_games.py and go away when it switches to ml_predict + market (A10)."
+  "policy_constants": {
+    "MIN_EV": "market.py 0.03 - betting policy threshold (not fitted)",
+    "KELLY_FRACTION": "market.py 0.25 - documented quarter Kelly (not fitted)",
+    "ROI_CI_FLOOR / ROLLING_N / MIN_TEAM_GP": "market.py gate policy (not fitted)",
+    "market_blend_weight": "fitted by market.py --backtest (tests/out/market_backtest.json)"
+  }
 }

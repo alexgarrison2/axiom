@@ -1,0 +1,19 @@
+{
+  "season": "2025-26",
+  "n": 1394,
+  "xg_favourite_differs_from_win_favourite": 0.0,
+  "mean_predicted_total": 6.107134339256272,
+  "mean_actual_total": 6.149210903873745,
+  "total_bias": -0.042076564617472556,
+  "total_corr": 0.05038446483008681,
+  "baseline_before": {
+    "xg_favourite_differs_share": 0.181,
+    "total_bias": 0.36,
+    "source": "audit:model-quality on 421 live 2025-26 games"
+  },
+  "coefficients": {
+    "ot_decided_share": 0.6924,
+    "total_pace_weight": 0.45,
+    "total_scale": 1.0
+  }
+}

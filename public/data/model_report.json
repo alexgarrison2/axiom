@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-09-30T04:42:31.305954+00:00",
+ "generated_at": "2026-09-30T04:48:27.066560+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -4295,7 +4295,7 @@
   ],
   "version": "logit-elo-v5-20260930",
   "type": "logistic_regression_l2",
-  "trained_at": "2026-09-30T04:41:57.093372+00:00",
+  "trained_at": "2026-09-30T04:48:01.310069+00:00",
   "features": [
    "d_xg_share",
    "d_xg_share_all",
