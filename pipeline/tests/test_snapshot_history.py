@@ -61,3 +61,29 @@ def test_two_runs_with_price_change_give_two_points(tmp_path):
 
     sh = S.load_site_history(str(hist))
     assert set(sh['nhl_game_id']) == {'2026020010', '2026020011'}
+
+
+def test_legacy_file_gets_ids_backfilled_and_separators_dropped(tmp_path):
+    """A day file written before nhl_game_id existed (with ',,,' separator rows)
+    is upgraded on the next write, so /api/odds-history finds its first point."""
+    pred = tmp_path / 'pred.csv'
+    hist = tmp_path / 'SiteHistory'
+    hist.mkdir()
+    legacy_cols = [c for c in SP.FIELDNAMES if c != 'nhl_game_id']
+    old = {c: '' for c in legacy_cols}
+    old.update({'date': '10/1/26', 'gameid': '2026-10-01-Flyers-Devils', 'timestamp': '11:00', 'run': '1',
+                'awayteam': 'Flyers', 'hometeam': 'Devils', 'away_Odds': '+110', 'home_Odds': '-125',
+                'timestamp_utc': '2026-10-01T16:00:00Z'})
+    with open(hist / '2026-10-01.csv', 'w', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=legacy_cols)
+        w.writeheader()
+        w.writerow(old)
+        f.write(',' * (len(legacy_cols) - 1) + '\n')
+    _write(pred, [_game('2026020010', '2026-10-01-Flyers-Devils', '2026-10-01T23:00:00Z', -140)])
+    SP.snapshot(str(pred), str(hist), dt.datetime(2026, 10, 1, 17, 0, tzinfo=UTC))
+
+    text = (hist / '2026-10-01.csv').read_text()
+    assert not any(set(line) <= {','} for line in text.splitlines())   # no blank separator rows
+    rows = list(csv.DictReader(text.splitlines()))
+    assert [r['nhl_game_id'] for r in rows] == ['2026020010', '2026020010']
+    assert [r['home_Odds'] for r in rows] == ['-125', '-140']

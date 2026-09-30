@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-09-30T14:11:59.482195+00:00",
+ "generated_at": "2026-09-30T14:32:13.935596+00:00",
  "unit": "1 unit = 1% of bankroll ($5 in the SiteHistory snapshots)",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Bet sizes are hidden while the model has not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId; results from NHL final scores",
@@ -15,7 +15,7 @@
   "reasons": [
    "Backtest ROI 95% CI lower bound -9.5% is not above -2%.",
    "Backtest closing-line value -5.20% is not positive.",
-   "Only 0 live games with odds this season; need 200 to compare with the market."
+   "Only 0 graded games with market odds were predicted by the current model (logit-elo) so far (3 graded in 2026-27 in all); need 200 to compare it with the market."
   ]
  },
  "seasons": {

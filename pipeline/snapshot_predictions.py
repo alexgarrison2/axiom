@@ -164,10 +164,13 @@ def snapshot(predictions_path=None, history_dir=None, now_utc=None):
 
     # Read today's pregame predictions
     rows_to_write = []
+    id_map = {}  # legacy gameid -> 10-digit NHL id, to back-fill rows written before nhl_game_id
     with open(predictions_path, 'r') as f:
         for row in csv.DictReader(f):
             if row.get('game_date', '') != date_str:
                 continue
+            if row.get('game_id') and row.get('nhl_game_id'):
+                id_map[row['game_id']] = row['nhl_game_id']
             if not _is_pregame(row, now_utc):
                 continue
             wager = row.get('wager_recommendation', '')
@@ -225,6 +228,9 @@ def snapshot(predictions_path=None, history_dir=None, now_utc=None):
         return {'status': 'ok', 'rows_written': 0}
 
     all_rows.extend(changed)
+    for row in all_rows:
+        if not row.get('nhl_game_id') and id_map.get(row.get('gameid')):
+            row['nhl_game_id'] = id_map[row['gameid']]
 
     # Apply format to all rows (fixes runs from earlier today)
     for row in all_rows:

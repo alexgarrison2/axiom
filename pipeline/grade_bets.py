@@ -176,6 +176,16 @@ def build_ledger(allow_fetch=True, now=None):
     finished = [b for b in bets if pd.Timestamp(b['startUtc']) < pd.Timestamp(now) - pd.Timedelta(hours=6)]
     joined = [b for b in finished if b['result'] != 'pending']
     ok, reasons = market.site_gate()
+    # model_report.json (rebuilt just before this stage) carries the same gate with the
+    # rolling count computed from the graded record and plain-English reasons; mirror it
+    # so the two files never disagree.
+    try:
+        with open(os.path.join(ROOT, 'public', 'data', 'model_report.json')) as f:
+            rg = json.load(f).get('gate') or {}
+        if isinstance(rg.get('open'), bool) and isinstance(rg.get('reasons'), list):
+            ok, reasons = rg['open'], rg['reasons']
+    except Exception:
+        pass
     ledger = {
         'schema_version': SCHEMA_VERSION,
         'generated_at': now.isoformat(),
