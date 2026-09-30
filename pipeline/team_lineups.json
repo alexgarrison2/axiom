@@ -2891,7 +2891,7 @@
                 "id": 4622,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -3054,6 +3054,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Andrew Mangiapane",
+                "number": 88,
+                "pos": "ir2",
+                "id": 4622,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3133,8 +3142,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-09-29)",
-        "updated_at": "2026-09-30T12:20:35.778Z",
-        "fetched_at": "2026-09-30T12:42:02Z"
+        "updated_at": "2026-09-30T13:35:54.493Z",
+        "fetched_at": "2026-09-30T14:39:09Z"
     },
     "PHI": {
         "f1": [
