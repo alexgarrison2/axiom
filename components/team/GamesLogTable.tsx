@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import Image from 'next/image';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
 import { mmss, pct3, shortDate, signed } from '@/utils/team-stats/format';
@@ -185,7 +184,8 @@ export default function GamesLogTable({ games, period, seasonLabel, teamColor, l
                                         className="grid min-h-14 w-full grid-cols-[52px_28px_minmax(0,1fr)_auto_auto] items-center gap-2 px-3 py-2 text-left hover:bg-surface-2"
                                     >
                                         <span className="text-caption tabular-nums text-fg-2">{shortDate(g.date)}</span>
-                                        <Image src={`/logos/${g.opp}.svg`} alt="" width={28} height={28} unoptimized className="h-7 w-7 object-contain" />
+                                        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
+                                        <img src={`/logos/${g.opp}.svg`} alt="" width={28} height={28} className="h-7 w-7 object-contain" loading="lazy" decoding="async" />
                                         <span className="min-w-0">
                                             <span className="block text-body-sm font-semibold text-fg-1">
                                                 {g.home ? 'vs' : '@'} {g.opp}
@@ -268,7 +268,8 @@ export default function GamesLogTable({ games, period, seasonLabel, teamColor, l
                                                             <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" />
                                                         </svg>
                                                         <span className="w-12 shrink-0 text-caption tabular-nums text-fg-2">{shortDate(g.date)}</span>
-                                                        <Image src={`/logos/${g.opp}.svg`} alt="" width={22} height={22} unoptimized className="h-5 w-5 shrink-0 object-contain" />
+                                                        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
+                                                        <img src={`/logos/${g.opp}.svg`} alt="" width={22} height={22} className="h-5 w-5 shrink-0 object-contain" loading="lazy" decoding="async" />
                                                         <span className="whitespace-nowrap font-semibold text-fg-1">
                                                             {g.home ? 'vs' : '@'} {g.opp}
                                                         </span>

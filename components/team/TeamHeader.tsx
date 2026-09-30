@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { InfoTip } from '@/components/ui/info-tip';
 import { cn } from '@/lib/utils';
@@ -91,14 +90,16 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                 }}
             />
             <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 -z-10 h-56 w-56 opacity-[0.07] md:h-80 md:w-80">
-                <Image src={`/logos/${team.tri}.svg`} alt="" fill unoptimized className="object-contain" />
+                {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image is a client component and ships ~6KB of JS for no optimisation */}
+                <img src={`/logos/${team.tri}.svg`} alt="" className="absolute inset-0 h-full w-full object-contain" decoding="async" />
             </div>
 
             <div className="grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,380px)] md:gap-6 md:p-6">
                 {/* identity + record */}
                 <div className="min-w-0">
                     <div className="flex items-center gap-3 md:gap-4">
-                        <Image src={`/logos/${team.tri}.svg`} alt="" width={64} height={64} unoptimized priority className="h-12 w-12 shrink-0 object-contain md:h-16 md:w-16" />
+                        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image is a client component and ships ~6KB of JS for no optimisation */}
+                        <img src={`/logos/${team.tri}.svg`} alt="" width={64} height={64} fetchPriority="high" className="h-12 w-12 shrink-0 object-contain md:h-16 md:w-16" />
                         <div className="min-w-0">
                             <h1 id="team-title" className="truncate text-h2 font-black tracking-tight text-fg-1 md:text-display">
                                 {team.name}
@@ -289,7 +290,8 @@ function NextGameCard({ team, hero }: { team: TeamMeta; hero: TeamHero }) {
                 {g.tv ? <span className="text-micro text-fg-3">{g.tv}</span> : null}
             </div>
             <div className="flex items-center gap-3">
-                <Image src={`/logos/${g.opp}.svg`} alt="" width={40} height={40} unoptimized className="h-10 w-10 shrink-0 object-contain" />
+                {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image is a client component and ships ~6KB of JS for no optimisation */}
+                <img src={`/logos/${g.opp}.svg`} alt="" width={40} height={40} decoding="async" className="h-10 w-10 shrink-0 object-contain" />
                 <div className="min-w-0">
                     <p className="text-title font-bold text-fg-1">
                         {g.home ? 'vs' : '@'} {g.opp}

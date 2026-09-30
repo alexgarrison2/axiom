@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import * as Popover from '@radix-ui/react-popover';
 import { ChevronDown, Search } from 'lucide-react';
@@ -52,7 +51,8 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
                 )}
                 aria-label={`Switch team (current: ${cur?.name ?? current})`}
             >
-                <Image src={`/logos/${current}.svg`} alt="" width={20} height={20} unoptimized className="h-5 w-5 object-contain" />
+                {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
+                <img src={`/logos/${current}.svg`} alt="" width={20} height={20} className="h-5 w-5 object-contain" decoding="async" />
                 <span>Switch team</span>
                 <ChevronDown aria-hidden="true" className={cn('h-4 w-4 text-fg-2 transition-transform', open && 'rotate-180')} />
             </Popover.Trigger>
@@ -107,7 +107,8 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
                                                             t.tri === current ? 'bg-surface-3 font-semibold text-fg-1 shadow-[inset_0_0_0_1px_rgb(var(--brand-rgb))]' : 'text-fg-2 hover:text-fg-1',
                                                         )}
                                                     >
-                                                        <Image src={`/logos/${t.tri}.svg`} alt="" width={22} height={22} unoptimized className="h-5 w-5 object-contain" />
+                                                        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
+                                                        <img src={`/logos/${t.tri}.svg`} alt="" width={22} height={22} className="h-5 w-5 object-contain" loading="lazy" decoding="async" />
                                                         {t.common}
                                                     </Link>
                                                 </li>
