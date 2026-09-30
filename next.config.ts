@@ -52,6 +52,10 @@ const NEVER_READ_AT_RUNTIME = [
   "data/*.bak*",
   "data/**/*.bak*",
   "data/training_*",
+  // Season-archive copies that only the pipeline reads. The tracer pulls them
+  // in because `path.join(dataDir, 'gamestats.csv')` also matches
+  // *_gamestats.csv, which pushed the home function over its 5MB budget.
+  "data/nhl_season_*_gamestats.csv",
   "data/historical_pbp/**",
   "**/*.log",
   "**/*.pdf",

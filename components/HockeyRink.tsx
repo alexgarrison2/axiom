@@ -292,7 +292,7 @@ export default function HockeyRink({
         <rect x="0" y="0" width={W} height={H} fill={`url(#ice-${uid})`} />
         {/* Real NHL ice texture overlaid via multiply — adds grain without darkening */}
         <image
-          href="/images/nhl_ice_surface.png"
+          href="/images/nhl_ice_surface.webp"
           x="0" y="0"
           width={W} height={H}
           preserveAspectRatio="xMidYMid slice"
