@@ -193,8 +193,8 @@ describe('review fixes', () => {
         const side = { goalies: [goalie] } as unknown as GameDetails['home'];
         const data = { home: side, away: { goalies: [] } } as unknown as GameDetails;
         const t = text(render(<GoaliesPanel p={p} state={{ status: 'ready', data }} />).container);
-        expect(t).toMatch(/GSAx\/gm\s*\(25-26\)/);
-        expect(t).not.toMatch(/GSAx\/gm\s*\(26-27/);
+        expect(t).toMatch(/Rating.*GSAx\/gm\s*\(regressed · 25-26\)/);
+        expect(t).not.toMatch(/GSAx\/gm\s*\(regressed · 26-27/);
         expect(gsaxTag(3)).toBe('26-27 · 3 GP');
     });
 });

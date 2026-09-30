@@ -47,9 +47,10 @@ function StarterCard({ s, opp, now, gsaxTag }: { s: SideData; opp: string; now: 
             ) : null}
             <SeasonLines curText={s.goalieCur} prevText={s.goaliePrev} />
             {s.gsax != null ? (
-                <span className="flex items-center gap-1 text-caption tabular-nums text-fg-2">
+                <span className="flex flex-wrap items-center gap-1 text-caption tabular-nums text-fg-2">
+                    <span>Rating</span>
                     <span className={cn('font-semibold', s.gsax > 0.05 ? 'text-pos' : s.gsax < -0.05 ? 'text-neg' : 'text-fg-1')}>{fmtSigned(s.gsax)}</span> GSAx/gm
-                    {gsaxTag ? <span className="text-fg-3">({gsaxTag})</span> : null}
+                    <span className="text-fg-3">({gsaxTag ? `regressed · ${gsaxTag}` : 'regressed multi-season'})</span>
                     <InfoTip term="gsax" />
                 </span>
             ) : null}
