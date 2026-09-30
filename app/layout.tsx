@@ -3,6 +3,7 @@ import { Fira_Code, Fira_Sans } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/components/SiteNav";
 import Footer from "@/components/Footer";
+import { FocusReveal } from "@/components/ui/focus-reveal";
 
 // Four preloaded weights (regular, semibold, bold, black). font-medium falls
 // back to 400 and font-extrabold is mapped to 900 in tailwind.config.js.
@@ -81,6 +82,7 @@ export default function RootLayout({
           {children}
         </div>
         <Footer />
+        <FocusReveal />
       </body>
     </html>
   );

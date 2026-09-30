@@ -105,6 +105,8 @@
     background-color: var(--bg);
     -webkit-text-size-adjust: 100%;
     scroll-padding-top: calc(var(--appbar-h) + 12px);
+    /* focus scrolling leaves a margin at the bottom edge too */
+    scroll-padding-bottom: 12px;
   }
 
   /* Below md the fixed tab bar covers the bottom of the viewport: keep

@@ -207,7 +207,7 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
             {rows.length === 0 ? (
                 <p className="hud-panel p-5 text-body-sm text-fg-2">No skaters match. Try fewer filters or a lower games-played minimum.</p>
             ) : (
-                <ScrollRegion label="Skater ratings table" className="rounded-card border border-line bg-surface-1">
+                <ScrollRegion label="Skater ratings table" className="scroll-mt-filterbar rounded-card border border-line bg-surface-1">
                     <table className="w-full min-w-full text-body-sm md:min-w-[1100px]">
                         <caption className="sr-only">Skaters sorted by {sort.key === 'impact' ? 'impact' : sort.key}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}</caption>
                         <thead className="scroll-mt-filterbar bg-surface-2">
