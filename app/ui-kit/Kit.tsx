@@ -91,7 +91,8 @@ const ROWS = [
 /** A demo "updated 4 minutes ago" stamp, set after mount so the server and client render the same badge. */
 function useDemoStamp(): string | null {
     const [stamp, setStamp] = React.useState<string | null>(null);
-    React.useEffect(() => setStamp(new Date(Date.now() - 4 * 60_000).toISOString()), []);
+    // 4.5 minutes back: the badge's own clock may have been read a moment before this effect, and 4:00 exactly would floor to "3m".
+    React.useEffect(() => setStamp(new Date(Date.now() - 4.5 * 60_000).toISOString()), []);
     return stamp;
 }
 

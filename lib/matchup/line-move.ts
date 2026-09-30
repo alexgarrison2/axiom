@@ -19,7 +19,21 @@ export function bookChanged(prev: SourcedSnapshot | null | undefined, cur: Sourc
     return !!a && !!b && a !== b;
 }
 
-/** True when any consecutive pair in the list switches book (the open → latest summary is then cross-book). */
+/**
+ * Per row: did the book change since the last row whose book is known? A
+ * snapshot from before the source column (source null) sits between two books
+ * without hiding the switch: Bovada, unknown, DraftKings still flags the last row.
+ */
+export function bookSwitches(entries: SourcedSnapshot[]): boolean[] {
+    let known: SourcedSnapshot | null = null;
+    return entries.map(e => {
+        const switched = bookChanged(known, e);
+        if (sourceTag(e.source)) known = e;
+        return switched;
+    });
+}
+
+/** True when the list holds more than one book (the open → latest summary is then cross-book). */
 export function anyBookChange(entries: SourcedSnapshot[]): boolean {
-    return entries.some((e, i) => i > 0 && bookChanged(entries[i - 1], e));
+    return bookSwitches(entries).some(Boolean);
 }

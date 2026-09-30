@@ -10,7 +10,7 @@ import OddsHistoryModal from '../../../components/OddsHistoryModal';
 import type { OddsEntry } from '../../../app/api/odds-history/route';
 import type { Prediction, TeamRef } from '../../../types/prediction';
 import { sourceLabel, sourceTag } from '../format';
-import { anyBookChange, bookChanged } from '../line-move';
+import { anyBookChange, bookChanged, bookSwitches } from '../line-move';
 import { modelLean } from '../edge';
 import { byTeams, fixture, withOverrides } from './fixtures';
 
@@ -100,6 +100,9 @@ describe('F4-8 line move across a book switch', () => {
         expect(bookChanged(null, entries[0])).toBe(false);
         expect(anyBookChange(entries)).toBe(true);
         expect(anyBookChange(entries.slice(0, 2))).toBe(false);
+        // An unknown-source snapshot between two books does not hide the switch.
+        expect(bookSwitches([{ source: 'bovada' }, { source: null }, { source: 'nhl_partner_draftkings' }])).toEqual([false, false, true]);
+        expect(bookSwitches([{ source: null }, { source: 'bovada' }, { source: 'bovada' }])).toEqual([false, false, false]);
     });
 
     it('shows the book per row and no shortened/drifted arrow on the switch', () => {

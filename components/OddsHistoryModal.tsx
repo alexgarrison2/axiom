@@ -4,7 +4,7 @@ import { Dialog } from '@/components/ui/dialog';
 import type { OddsEntry, OddsTotal } from '@/app/api/odds-history/route';
 import type { TeamRef } from '@/types/prediction';
 import { fmtOdds, sourceLabel, sourceTag } from '@/lib/matchup/format';
-import { anyBookChange, bookChanged } from '@/lib/matchup/line-move';
+import { bookSwitches } from '@/lib/matchup/line-move';
 import { cn } from '@/lib/utils';
 
 /** Snapshot time: ISO UTC → viewer's clock, plus the day when it is not today; legacy "HH:MM" (US Central) → "6:22 PM CT". */
@@ -172,7 +172,8 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
     const firstTotal = entries.find(e => e.total)?.total;
     const total = totalSummary(firstTotal, last.total);
     // Across a book switch the open → latest difference is not a market move.
-    const crossBook = anyBookChange(entries);
+    const switches = bookSwitches(entries);
+    const crossBook = switches.some(Boolean);
     return (
         <Dialog
             title="Line move"
@@ -224,7 +225,7 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                 </thead>
                 <tbody>
                     {entries.map((e, i) => (
-                        <SnapshotRow key={i} e={e} switched={bookChanged(entries[i - 1], e)} started={started} hasTotals={hasTotals} />
+                        <SnapshotRow key={i} e={e} switched={switches[i]} started={started} hasTotals={hasTotals} />
                     ))}
                 </tbody>
             </table>
