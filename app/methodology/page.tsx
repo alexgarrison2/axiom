@@ -6,6 +6,7 @@ import FullLogoAnimated from '@/components/FullLogoAnimated';
 import { GLOSSARY, GLOSSARY_TERMS } from '@/lib/glossary';
 import { SEASON_GAMES, SEASON_START_YEAR } from '@/lib/season';
 import { loadExcludedGames, loadGradedGames, tallySeason } from '@/components/accuracy/data';
+import { reportLags } from '@/components/accuracy/report';
 import { tidyReason } from '@/components/accuracy/ledger-data';
 import { parseReport, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
 
@@ -142,12 +143,16 @@ export default function MethodologyPage() {
     const { model, seasons, found } = loadReport();
     const prior = `${SEASON_START_YEAR - 1}-${String(SEASON_START_YEAR).slice(2)}`;
     const current = `${SEASON_START_YEAR}-${String(SEASON_START_YEAR + 1).slice(2)}`;
-    const priorSummary = seasons.find(s => s.season === prior);
+    // Past seasons were graded on the site model of the day, not the current one.
+    const priorRaw = seasons.find(s => s.season === prior);
+    const priorSummary = priorRaw
+        ? { ...priorRaw, rows: priorRaw.rows.map(r => (r.isModel ? { ...r, label: r.label.replace('Pony xG model', 'Previous site model (live)') } : r)) }
+        : undefined;
     const graded = loadGradedGames();
     const tally = tallySeason(graded, current, loadExcludedGames(current, graded));
     const reportN = seasons.find(s => s.season === current)?.rows.find(r => r.isModel)?.n ?? 0;
-    // Same count as /accuracy: a report that lags the graded list is not shown as the current record.
-    const currentSummary = tally.n > (reportN ?? 0) ? undefined : seasons.find(s => s.season === current);
+    // Same count as /accuracy: a report that lags the graded list (or has no games yet) is not shown as the current record.
+    const currentSummary = reportN === 0 || reportLags(reportN, tally) ? undefined : seasons.find(s => s.season === current);
     let i = 0;
 
     return (
@@ -330,7 +335,7 @@ export default function MethodologyPage() {
                             <p>
                                 <span className="text-fg-1">{current}:</span>{' '}
                                 {tally.n
-                                    ? `through ${tally.n} ${tally.n === 1 ? 'game' : 'games'}: ${tally.correct}-${tally.n - tally.correct}. The full report updates after the nightly refresh.`
+                                    ? `through ${tally.n} ${tally.n === 1 ? 'game' : 'games'}: ${tally.correct}-${tally.n - tally.correct}${tally.legacyN ? ` (${tally.legacyN === tally.n ? 'all' : tally.legacyN} from the previous site model)` : ''}. The full report updates after the nightly refresh.`
                                     : 'no games graded yet. The first results post after the first games go final.'}
                                 {tally.excluded.length ? ` ${tally.excluded.length} ${tally.excluded.length === 1 ? 'game was' : 'games were'} not graded (no pregame snapshot before puck drop).` : ''}{' '}
                                 See the <Link href="/accuracy" className="font-semibold text-brand underline underline-offset-4">Accuracy page</Link>.

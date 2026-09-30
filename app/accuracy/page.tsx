@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHeading } from '@/components/ui/page-heading';
 import { SEASON_START_YEAR } from '@/lib/season';
-import { loadExcludedGames, loadGradedGames, loadLedger, loadLedgerRaw, loadReport, pendingBetFinals, tallySeason } from '@/components/accuracy/data';
+import { loadExcludedGames, loadGradedGames, loadLedger, loadLedgerRaw, loadReport, pendingBetFinals, tallyByType } from '@/components/accuracy/data';
 import { reconcileLedger } from '@/components/accuracy/ledger-data';
 import type { SeasonTally } from '@/components/accuracy/types';
+import type { GameTypeKey } from '@/components/accuracy/report';
 import { AccuracyView } from '@/components/accuracy/AccuracyView';
 
 // Rebuilt with every data refresh (each pipeline commit redeploys).
@@ -30,7 +31,7 @@ export default function AccuracyPage() {
         .sort()
         .reverse();
     // The current season is reconciled against the graded list so a report that lags a refresh never contradicts it.
-    const tallies: Record<string, SeasonTally> = { [CURRENT]: tallySeason(graded, CURRENT, loadExcludedGames(CURRENT, graded)) };
+    const tallies: Record<string, Record<GameTypeKey, SeasonTally>> = { [CURRENT]: tallyByType(graded, CURRENT, loadExcludedGames(CURRENT, graded)) };
 
     return (
         <main className="pb-tabbar">

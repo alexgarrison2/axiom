@@ -8,7 +8,7 @@ import { ScrollRegion } from '@/components/ui/scroll-region';
 import { TeamLogo } from '@/components/views/TeamLogo';
 import { plural, shortDate, signed } from '@/components/views/format';
 import { teamTriFromName } from './names';
-import { combineBlocks, type AccuracyReport, type CallRow, type GameTypeKey, type ReportBlock } from './report';
+import { combineBlocks, reportLags, type AccuracyReport, type CallRow, type GameTypeKey, type ReportBlock } from './report';
 import { ReliabilityChart, RollingChart, TierBars } from './charts';
 import { GameList } from './GameList';
 import { Ledger } from './Ledger';
@@ -20,8 +20,8 @@ export interface AccuracyViewProps {
     /** Season labels with data, newest first, e.g. ["2026-27", "2025-26"]. */
     seasons: string[];
     currentSeason: string;
-    /** Record straight from the graded list, per season (reconciles a stale report). */
-    tallies?: Record<string, SeasonTally>;
+    /** Record straight from the graded list, per season and game type (reconciles a stale report). */
+    tallies?: Record<string, Partial<Record<GameTypeKey, SeasonTally>>>;
     /** Finals for ledger bets still listed as pending. */
     finals?: Record<number, BetFinal>;
 }
@@ -67,9 +67,9 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
     }, [report, season, seasons, type]);
 
     const seasonOptions = [...seasons.map(s => ({ value: s, label: s })), { value: 'all', label: 'All' }];
-    const tally = season !== 'all' && type !== 'playoffs' ? tallies[season] : undefined;
+    const tally = season !== 'all' ? tallies[season]?.[type] : undefined;
     // The report file can lag the graded list by a refresh; never let it say "no games" over graded rows.
-    const stale = !!tally && tally.n > (block?.n ?? 0);
+    const stale = reportLags(block?.n, tally);
     const empty = !stale && (!block || block.n === 0);
     const priorSeason = seasons.find(s => s !== currentSeason && (report.seasons[s]?.all?.n ?? 0) > 0);
     const seasonWord = season === 'all' ? 'all seasons' : season;
@@ -99,7 +99,7 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                 ) : empty ? (
                     <EmptyState season={season} currentSeason={currentSeason} type={type} prior={priorSeason} onPrior={() => priorSeason && selectSeason(priorSeason)} />
                 ) : (
-                    <ReportCard block={block!} seasonWord={seasonWord} modelLabel={season !== 'all' && season < currentSeason ? 'Previous site model (live)' : 'Pony xG model'} />
+                    <ReportCard block={block!} seasonWord={seasonWord} modelLabel={season === 'all' ? 'Site model (live)' : season < currentSeason ? 'Previous site model (live)' : 'Pony xG model'} />
                 )}
             </section>
 
@@ -107,7 +107,7 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                 <h2 id="every-pick" className="text-h2 font-black tracking-tight text-fg-1">
                     Every pick
                 </h2>
-                <GameList season={season} seasons={seasons} type={type} currentSeason={currentSeason} excluded={season === 'all' ? [] : (tallies[season]?.excluded ?? [])} />
+                <GameList season={season} seasons={seasons} type={type} currentSeason={currentSeason} excluded={season === 'all' ? [] : (tallies[season]?.[type]?.excluded ?? [])} />
             </section>
 
             <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-4">
@@ -177,7 +177,9 @@ function ThroughSummary({ tally: t, season }: { tally: SeasonTally; season: stri
             <p className="max-w-3xl text-body-sm text-fg-2">
                 Tiny sample, so read these as a starting line, not a verdict. The full {season} report (calibration, confidence tiers, baselines)
                 updates after the nightly refresh.
-                {t.legacyN ? ` ${t.legacyN === t.n ? 'All' : t.legacyN} of these picks came from the previous (legacy) site model.` : ''}
+                {t.legacyN
+                    ? ` ${t.legacyN === t.n ? `All ${t.n}` : t.legacyN} of these picks came from the previous (legacy) site model, so they are graded here but do not count toward the bet gate.`
+                    : ''}
             </p>
         </div>
     );

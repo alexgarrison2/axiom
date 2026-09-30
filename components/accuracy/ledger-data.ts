@@ -150,9 +150,16 @@ export function reconcileLedger(ledger: LedgerData, raw: unknown, finals: Record
     return { ...ledger, seasons };
 }
 
-/** "Only 0 live games with odds" → "No live games with odds"; "1 games" → "1 game". */
+/**
+ * Gate copy from the pipeline, made readable: plurals fixed, and the live
+ * count spelled out as current-model games (older site models' picks do not
+ * count toward the gate, so it can read 0 while the graded list has rows).
+ */
 export function tidyReason(r: string): string {
     return r
+        .replace(/\bOnly 0 live games with odds this season\b/i, 'No games with odds from the current model yet this season')
+        .replace(/\bOnly 1 live games with odds this season\b/i, 'Only 1 game with odds from the current model this season')
+        .replace(/\bOnly (\d+) live games with odds this season\b/i, 'Only $1 games with odds from the current model this season')
         .replace(/\bOnly 0 (live )?games\b/i, (_m, live: string | undefined) => `No ${live ?? ''}games`)
         .replace(/\b1 (live )?games\b/g, (_m, live: string | undefined) => `1 ${live ?? ''}game`);
 }

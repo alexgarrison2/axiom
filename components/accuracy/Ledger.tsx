@@ -189,7 +189,7 @@ export function Ledger({
                                             {units(summary.unitsProfit)}
                                         </span>
                                     }
-                                    sub={`on ${summary.unitsStaked.toFixed(1)}u staked`}
+                                    sub={gateOpen ? `on ${summary.unitsStaked.toFixed(1)}u staked` : 'on past suggested stakes (sizes hidden while the gate is closed)'}
                                 />
                                 <KpiTile
                                     label="ROI"
@@ -219,10 +219,12 @@ export function Ledger({
                                 )}
                             </section>
 
-                            <div className="grid gap-4 lg:grid-cols-2">
-                                <BucketTable title="By edge at bet time" buckets={summary.byEv} />
-                                <BucketTable title="By stake size" buckets={summary.byStake} />
-                            </div>
+                            {summary.byEv.some(b => b.n > 0) || summary.byStake.some(b => b.n > 0) ? (
+                                <div className="grid gap-4 lg:grid-cols-2">
+                                    <BucketTable title="By edge at bet time" buckets={summary.byEv} />
+                                    <BucketTable title="By stake size" buckets={summary.byStake} />
+                                </div>
+                            ) : null}
                         </>
                     )}
 

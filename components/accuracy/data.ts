@@ -2,10 +2,10 @@ import 'server-only';
 import fs from 'node:fs';
 import path from 'node:path';
 import { teamTriFromName } from './names';
-import { parseAccuracyReport, type AccuracyReport } from './report';
+import { deriveExcluded, parseAccuracyReport, type AccuracyReport } from './report';
 import { parseLedger } from './ledger-data';
 import type { BetFinal, ExcludedGame, GradedGame, LedgerData } from './types';
-export { tallySeason } from './report';
+export { tallyByType, tallySeason } from './report';
 
 // Literal, statically scoped paths so the tracer includes only these files.
 function readJson(file: string): unknown {
@@ -34,11 +34,6 @@ export function isPlaceholderOdds(home: unknown, away: unknown): boolean {
     return num(home) === -110 && num(away) === -110;
 }
 
-const seasonOfId = (id: number): string => {
-    const y = Math.floor(id / 1_000_000);
-    return y > 1900 ? `${y}-${String(y + 1).slice(2)}` : '';
-};
-
 /**
  * Every graded NHL game (types 02/03) from data/prediction_history.json,
  * compacted. Rows whose teams aren't NHL clubs (e.g. Olympic games) are
@@ -49,7 +44,7 @@ export function loadGradedGames(): GradedGame[] {
     if (!Array.isArray(raw)) return [];
     const out: GradedGame[] = [];
     for (const r of raw as Obj[]) {
-        if (!r || typeof r !== 'object') continue;
+        if (!r || typeof r !== 'object' || r.excluded) continue;
         const type = String(r.gameType ?? String(r.gameId ?? '').slice(4, 6));
         if (type !== '02' && type !== '03') continue;
         const home = teamTri(r.homeTeam as string);
@@ -89,58 +84,19 @@ export function historySeasons(games: GradedGame[]): string[] {
     return [...new Set(games.map(g => g.season).filter(Boolean))].sort().reverse();
 }
 
-const REASONS: Record<string, string> = {
-    snapshot_after_start: 'No pregame snapshot before puck drop',
-    no_snapshot: 'No pregame snapshot before puck drop',
-};
-
 /**
- * Final games left out of grading. Reads explicit exclusion records from
+ * Final games left out of grading: explicit exclusion records in
  * prediction_history ({gameId, excluded}) and, as a fallback, any final in
  * gamestats.csv for the season that has no graded row.
  */
 export function loadExcludedGames(season: string, graded: GradedGame[]): ExcludedGame[] {
-    const out = new Map<number, ExcludedGame>();
-    const gradedIds = new Set(graded.map(g => g.id));
-    const raw = readJson(path.join(process.cwd(), 'data', 'prediction_history.json'));
-    if (Array.isArray(raw)) {
-        for (const r of raw as Obj[]) {
-            if (!r || typeof r !== 'object' || !r.excluded) continue;
-            const id = num(r.gameId) ?? 0;
-            if (!id || gradedIds.has(id)) continue;
-            if ((String(r.season ?? '') || seasonOfId(id)) !== season) continue;
-            out.set(id, {
-                id,
-                date: String(r.date ?? '').slice(0, 10),
-                home: teamTri(r.homeTeam as string) ?? String(r.homeTeam ?? ''),
-                away: teamTri(r.awayTeam as string) ?? String(r.awayTeam ?? ''),
-                reason: REASONS[String(r.excluded)] ?? String(r.excluded).replace(/_/g, ' '),
-            });
-        }
-    }
     let csv = '';
     try {
         csv = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'gamestats.csv'), 'utf8');
     } catch {
         csv = '';
     }
-    const lines = csv.split('\n');
-    const head = (lines[0] ?? '').split(',');
-    const [iId, iDate, iTeam, iOpp, iHA] = ['game_id', 'game_date', 'team', 'opponent', 'home_away'].map(k => head.indexOf(k));
-    if (iId >= 0 && iTeam >= 0 && iOpp >= 0 && iHA >= 0) {
-        for (const line of lines.slice(1)) {
-            const c = line.split(',');
-            const id = Number(c[iId]);
-            if (!id || c[iHA] !== 'Home' || gradedIds.has(id) || out.has(id) || seasonOfId(id) !== season) continue;
-            const type = String(id).slice(4, 6);
-            if (type !== '02' && type !== '03') continue;
-            const home = teamTri(c[iTeam]);
-            const away = teamTri(c[iOpp]);
-            if (!home || !away) continue;
-            out.set(id, { id, date: (c[iDate] ?? '').slice(0, 10), home, away, reason: 'No pregame snapshot before puck drop' });
-        }
-    }
-    return [...out.values()].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+    return deriveExcluded(readJson(path.join(process.cwd(), 'data', 'prediction_history.json')), csv, season, graded, teamTri);
 }
 
 /** Finals for ledger bets the ledger file still lists as pending. */

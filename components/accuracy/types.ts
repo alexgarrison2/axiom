@@ -36,6 +36,8 @@ export interface ExcludedGame {
     home: string;
     away: string;
     reason: string;
+    /** NHL game type ("02" regular, "03" playoffs). */
+    type?: string;
 }
 
 /** Record computed straight from the graded list (never stale). */

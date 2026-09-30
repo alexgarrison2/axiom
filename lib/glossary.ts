@@ -69,7 +69,7 @@ export const GLOSSARY = {
     priors: {
         label: 'Preseason ratings',
         title: 'Priors / preseason ratings',
-        short: 'Each team’s starting strength before any games are played, built from last season’s results and roster changes.',
+        short: 'Each team’s starting strength before any games are played: last season’s rating, pulled part of the way back toward league average.',
         detail: 'Early in the season the model "leans on preseason ratings": this season’s few games move the numbers only a little until the sample grows.',
         anchor: 'early-season',
         aliases: ['priors', 'prior', 'preseason', 'model on priors', 'leans on preseason ratings'],
