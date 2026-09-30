@@ -71,3 +71,22 @@ def test_2026_27_clean_start_excludes_postdrop_games(monkeypatch):
     assert 2026020001 not in ids and 2026020002 not in ids
     assert 2026020003 in ids
     assert all(not r['retro'] for r in new)
+
+
+def test_snapshot_times_accept_central_wall_clock_and_iso_utc():
+    """A12 moves SiteHistory timestamps to ISO-8601 UTC; both formats must key the same instant."""
+    t = S.snapshot_times(pd.Series(['9/29/26', '9/29/26', '2026-09-29']),
+                         pd.Series(['18:22', '2026-09-29T23:22:00Z', '2026-09-29T23:22:00']))
+    assert t.notna().all()
+    assert (t == pd.Timestamp('2026-09-29T23:22:00Z')).all()
+
+
+def test_rolling_gate_uses_model_only_probability_when_recorded():
+    import model_report as MR
+    rows = [{'retro': False, 'modelVersion': 'logit-elo-v5-x', 'date': '2026-10-01', 'gameId': 2026020100 + i,
+             'marketHomeProb': 50.0, 'homeWinProb': 60.0, 'modelHomeProb': 70.0 if i % 2 else None,
+             'actualWinner': 'A', 'homeTeam': 'A'} for i in range(4)]
+    r = MR.rolling_gate_stats(rows, {})
+    import math
+    expect = -(math.log(0.6) * 2 + math.log(0.7) * 2) / 4
+    assert r['n'] == 4 and abs(r['model_log_loss'] - expect) < 1e-12

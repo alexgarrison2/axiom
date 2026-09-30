@@ -102,6 +102,8 @@ def row_from_snapshot(snap, res) -> dict:
             abs(snap['home_odds']) >= 100 and abs(snap['away_odds']) >= 100:
         q = market.devig([snap['home_odds'], snap['away_odds']])[0]
     pc = min(max(p, 1e-6), 1 - 1e-6)
+    pm = snap.get('p_home_model')
+    pm = None if pm is None or (isinstance(pm, float) and math.isnan(pm)) or not 0 < pm < 1 else float(pm)
     return {
         'gameId': int(res['game_id']),
         'season': season_label(res['game_id']),
@@ -121,6 +123,8 @@ def row_from_snapshot(snap, res) -> dict:
         'snapshotUtc': snap['snapshot_utc'].isoformat().replace('+00:00', 'Z'),
         'startUtc': snap['start_ts'].isoformat().replace('+00:00', 'Z'),
         'marketHomeProb': _round(100 * q, 1) if q is not None else None,
+        # Model-only probability before the market blend (snapshots written after A10); None before.
+        'modelHomeProb': _round(100 * pm, 1) if pm is not None else None,
         'homeOdds': _round(snap['home_odds'], 0), 'awayOdds': _round(snap['away_odds'], 0),
         'modelVersion': snap['model_version'] if isinstance(snap.get('model_version'), str) else None,
     }
@@ -150,7 +154,7 @@ def row_from_retro(old: dict, res) -> dict:
         'retro': True,
         'source': 'retro_backfill',
         'snapshotUtc': None, 'startUtc': None,
-        'marketHomeProb': None, 'homeOdds': None, 'awayOdds': None,
+        'marketHomeProb': None, 'modelHomeProb': None, 'homeOdds': None, 'awayOdds': None,
         'modelVersion': None,
     }
 

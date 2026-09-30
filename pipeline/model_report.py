@@ -193,14 +193,18 @@ def block(rows, home_rate, home_rate_source, closing):
 
 def rolling_gate_stats(rows, closing, family=CURRENT_MODEL_FAMILY, window=market.ROLLING_N):
     """Last ``window`` live games with a market price, predicted by the CURRENT
-    model family (older site models do not count as evidence for this one)."""
+    model family (older site models do not count as evidence for this one).
+    The model side is the model-only probability (``modelHomeProb``) when the
+    snapshot recorded it, else the published probability."""
     live = [r for r in rows if not r.get('retro') and str(r.get('modelVersion') or '').startswith(family)]
     live = sorted(live, key=lambda r: (r['date'], r['gameId']))
     pairs = []
     for r in live:
         qv = closing.get(r['gameId'], (r['marketHomeProb'] / 100) if r.get('marketHomeProb') is not None else None)
+        pm = r.get('modelHomeProb')
+        pv = (pm if pm is not None else r['homeWinProb']) / 100
         if qv is not None:
-            pairs.append((1 if r['actualWinner'] == r['homeTeam'] else 0, r['homeWinProb'] / 100, qv))
+            pairs.append((1 if r['actualWinner'] == r['homeTeam'] else 0, pv, qv))
     pairs = pairs[-window:]
     if not pairs:
         return {'n': 0, 'window': window, 'model_family': family, 'model_log_loss': None, 'market_log_loss': None}

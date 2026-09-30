@@ -296,10 +296,19 @@ def fetch_rosters(season_id, cache_dir=os.path.join(SCRIPT_DIR, 'cache'), max_ag
             return json.load(f)
     teams = pd.read_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
     out = {}
+    failures = 0
     for abbr in teams['Team Tricode']:
-        r = requests.get(ROSTER_URL.format(abbr=abbr, season_id=season_id), timeout=20)
-        if r.status_code != 200:
+        if failures >= 3:          # API down: stop hammering it, fall back below
+            break
+        try:
+            r = requests.get(ROSTER_URL.format(abbr=abbr, season_id=season_id), timeout=20)
+        except Exception:
+            failures += 1
             continue
+        if r.status_code != 200:
+            failures += r.status_code >= 500
+            continue
+        failures = 0
         d = r.json()
         out[abbr] = [{'id': int(p['id']),
                       'name': f"{p['firstName']['default']} {p['lastName']['default']}",
@@ -308,6 +317,9 @@ def fetch_rosters(season_id, cache_dir=os.path.join(SCRIPT_DIR, 'cache'), max_ag
     if len(out) >= 30:
         with open(path, 'w') as f:
             json.dump(out, f)
+    elif os.path.exists(path):     # partial fetch: a stale complete cache beats a partial one
+        with open(path) as f:
+            return json.load(f)
     return out
 
 
@@ -324,12 +336,18 @@ def fetch_current_teams(ids, season_id, cache_dir=os.path.join(SCRIPT_DIR, 'cach
     if os.path.exists(path) and time.time() - os.path.getmtime(path) < max_age_h * 3600:
         with open(path) as f:
             cache = {int(k): v for k, v in json.load(f).items()}
+    consecutive_failures = 0
     for pid in ids:
         if pid in cache:
             continue
+        if consecutive_failures >= 5:      # API unreachable: leave the rest unverified (not 'lost')
+            print(f"  [WARN] player landing lookups failing - {sum(1 for i in ids if i not in cache)} "
+                  "players left unverified")
+            break
+        ok = False
         for attempt in range(4):
             try:
-                r = requests.get(PLAYER_URL.format(pid=pid), timeout=20)
+                r = requests.get(PLAYER_URL.format(pid=pid), timeout=10)
             except Exception:
                 break
             if r.status_code == 429:           # rate limited: back off, never cache a failure
@@ -338,7 +356,11 @@ def fetch_current_teams(ids, season_id, cache_dir=os.path.join(SCRIPT_DIR, 'cach
             if r.status_code == 200:
                 d = r.json()
                 cache[pid] = d.get('currentTeamAbbrev') if d.get('isActive', True) else None
+                ok = True
+            elif r.status_code == 404:
+                ok = True                      # the API answered; this player simply has no page
             break
+        consecutive_failures = 0 if ok else consecutive_failures + 1
         time.sleep(0.25)
     os.makedirs(cache_dir, exist_ok=True)
     with open(path, 'w') as f:

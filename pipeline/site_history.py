@@ -159,6 +159,31 @@ def schedule_frame(season_ids, allow_fetch=True) -> pd.DataFrame:
 
 # ─── SiteHistory ──────────────────────────────────────────────────────────────
 
+def snapshot_times(dates: pd.Series, stamps: pd.Series) -> pd.Series:
+    """UTC time of each snapshot run.
+
+    Two formats are accepted: the legacy US/Central wall clock ('9/29/26' +
+    '18:22') and ISO-8601 timestamps ('2026-09-29T23:22:00Z', naive = UTC),
+    which A12 switches the snapshot writer to."""
+    ts = stamps.astype(str).str.strip()
+    iso = ts.str.match(r'^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}')
+    day = pd.to_datetime(dates, format='%m/%d/%y', errors='coerce')
+    day = day.fillna(pd.to_datetime(dates, format='%Y-%m-%d', errors='coerce'))
+    local = pd.to_datetime(day.dt.strftime('%Y-%m-%d') + ' ' + ts.where(~iso, ''),
+                           format='%Y-%m-%d %H:%M', errors='coerce')
+    out = local.dt.tz_localize(RUN_TZ, ambiguous='NaT', nonexistent='NaT').dt.tz_convert('UTC')
+    if iso.any():
+        parsed = pd.Series(pd.NaT, index=ts.index, dtype='datetime64[ns, UTC]')
+        for i, v in ts[iso].items():
+            try:
+                t = pd.Timestamp(v)
+                parsed[i] = t.tz_localize('UTC') if t.tzinfo is None else t.tz_convert('UTC')
+            except (ValueError, TypeError):
+                pass
+        out = out.where(~iso, parsed)
+    return out
+
+
 def load_site_history(site_dir=SITE_DIR) -> pd.DataFrame:
     frames = []
     for f in sorted(glob.glob(os.path.join(site_dir, '*.csv'))):
@@ -176,10 +201,7 @@ def load_site_history(site_dir=SITE_DIR) -> pd.DataFrame:
     d = d.dropna(subset=['gameid'])
     d = d[d['gameid'].str.strip() != '']
     d['run'] = d['run'].astype(float).astype(int)
-    run_day = pd.to_datetime(d['date'], format='%m/%d/%y', errors='coerce')
-    local = pd.to_datetime(run_day.dt.strftime('%Y-%m-%d') + ' ' + d['timestamp'].str.strip(),
-                           format='%Y-%m-%d %H:%M', errors='coerce')
-    d['snapshot_utc'] = local.dt.tz_localize(RUN_TZ, ambiguous='NaT', nonexistent='NaT').dt.tz_convert('UTC')
+    d['snapshot_utc'] = snapshot_times(d['date'], d['timestamp'])
     gid = d['gameid'].astype(str)
     is_nhl_id = gid.str.fullmatch(r'\d{10}')
     d['nhl_game_id'] = np.where(is_nhl_id, gid, None)
@@ -196,6 +218,7 @@ def load_site_history(site_dir=SITE_DIR) -> pd.DataFrame:
     for col in ('home_model%', 'home_market%', 'model_version'):
         if col not in d.columns:
             d[col] = np.nan
+    d['p_home_model'] = d['home_model%'].map(_num) / 100
     return d
 
 

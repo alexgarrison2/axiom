@@ -144,3 +144,21 @@ def test_roster_prior_backtest_recorded():
     assert set(rep['folds']) == {'2024', '2025'}
     ship = all(v['improvement'] >= 0.002 for v in rep['folds'].values())
     assert rep['enabled'] is ship
+
+
+def test_roster_fetch_fails_soft_and_fast_when_api_is_down(tmp_path, monkeypatch):
+    """A dead NHL API must not stall the ratings step (hundreds of 20s timeouts)."""
+    import time
+    import requests
+
+    calls = []
+
+    def boom(*a, **k):
+        calls.append(a)
+        raise requests.ConnectionError('down')
+
+    monkeypatch.setattr(requests, 'get', boom)
+    t = time.time()
+    assert TR.fetch_rosters('20262027', cache_dir=str(tmp_path)) == {}
+    assert TR.fetch_current_teams(list(range(200)), '20262027', cache_dir=str(tmp_path)) == {}
+    assert len(calls) <= 10 and time.time() - t < 5

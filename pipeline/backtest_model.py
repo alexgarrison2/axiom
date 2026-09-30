@@ -34,8 +34,9 @@ from scipy.stats import poisson
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Import feature engineering from training pipeline
-from train_game_model import (
+# The retired v4 XGB feature pipeline lives in legacy_xgb.py (train_game_model.py
+# now trains the v5 logistic + Elo model; its walk-forward is the live backtest).
+from legacy_xgb import (
     load_all_games, compute_team_features, build_game_matrix,
     EWMA_HALFLIFE, _make_model
 )
