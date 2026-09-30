@@ -3,10 +3,17 @@ import { getPredictions, getLastRefresh, getHistory } from '@/utils/data';
 import { fetchRemainingSeason, fetchCurrentStandings } from '@/utils/schedule';
 import { getGameImplications } from '@/utils/implications-server';
 import PredictionsViewer from '@/components/PredictionsViewer';
+import type { Metadata } from 'next';
+import { homeTitle } from '@/components/ui/slate-date';
 
 // Force dynamic revalidation to ensure data is fresh on every request
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
+
+/** Dated title, e.g. "NHL predictions for Wed, Sep 30 | Pony xG" (set by the design-system shell). */
+export function generateMetadata(): Metadata {
+    return { title: { absolute: homeTitle() } };
+}
 
 export default async function Home() {
     const predictions = await getPredictions();
