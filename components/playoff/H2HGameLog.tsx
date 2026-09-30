@@ -1,93 +1,45 @@
-'use client';
+import * as React from 'react';
+import { TeamLogo } from '@/components/views/TeamLogo';
+import { shortDate } from '@/components/views/format';
+import { cn } from '@/lib/utils';
+import type { H2HMeeting } from './types';
 
-import React from 'react';
-import type { H2HGame, TeamInfo } from '@/app/playoffs/page';
-
-interface H2HGameLogProps {
-  games: H2HGame[];
-  t1: string;
-  t2: string;
-  c1: string;
-  c2: string;
-  teamsMap: Record<string, TeamInfo>;
-}
-
-export default function H2HGameLog({ games, t1, t2, c1, c2, teamsMap }: H2HGameLogProps) {
-  if (games.length === 0) {
-    return <div className="text-xs text-neutral-600 text-center py-2">No regular season matchups</div>;
-  }
-
-  // Tally
-  let t1Wins = 0, t2Wins = 0;
-  games.forEach(g => {
-    const homeWon = g.homeGoals > g.awayGoals;
-    if ((homeWon && g.homeTeam === t1) || (!homeWon && g.awayTeam === t1)) t1Wins++;
-    else t2Wins++;
-  });
-
-  return (
-    <div>
-      {/* Summary */}
-      <div className="flex items-center justify-center gap-3 mb-2">
-        <div className="flex items-center gap-1">
-          <img src={`/logos/${t1}.svg`} alt={t1} className="w-4 h-4" />
-          <span className="text-sm font-bold" style={{ color: c1 }}>{t1Wins}</span>
-        </div>
-        <span className="text-xs text-neutral-600">–</span>
-        <div className="flex items-center gap-1">
-          <span className="text-sm font-bold" style={{ color: c2 }}>{t2Wins}</span>
-          <img src={`/logos/${t2}.svg`} alt={t2} className="w-4 h-4" />
-        </div>
-      </div>
-
-      {/* Game rows */}
-      <div className="space-y-1">
-        {games.map((g, i) => {
-          const homeWon = g.homeGoals > g.awayGoals;
-          const isOT = g.result.includes('OT') || g.result.includes('SO');
-          const homeColor = g.homeTeam === t1 ? c1 : c2;
-          const awayColor = g.awayTeam === t1 ? c1 : c2;
-
-          return (
-            <div key={i} className="flex items-center gap-1.5 text-xs py-1 px-1.5 rounded bg-white/[0.02]">
-              <span className="text-neutral-500 w-12 shrink-0">
-                {new Date(g.gameDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-              {/* Away team */}
-              <div className="flex items-center gap-1 flex-1 justify-end">
-                <div className="text-right">
-                  <div className="flex items-center gap-0.5 justify-end">
-                    <span className="text-neutral-400">{g.awayTeam}</span>
-                    <img src={`/logos/${g.awayTeam}.svg`} alt={g.awayTeam} className="w-3.5 h-3.5" />
-                  </div>
-                  {g.awayGoalie && <div className="text-[10px] text-neutral-600">{g.awayGoalie.split(' ').slice(-1)[0]}</div>}
-                </div>
-              </div>
-              {/* Score */}
-              <div className="flex items-center gap-0.5 w-12 justify-center shrink-0">
-                <span className={`text-sm font-bold`} style={{ color: !homeWon ? awayColor : '#4b5563' }}>
-                  {g.awayGoals}
+/** Regular-season meetings between two playoff opponents, with the season series tally. */
+export default function H2HGameLog({ games, t1, t2, seasonLabel }: { games: H2HMeeting[]; t1: string; t2: string; seasonLabel: string }) {
+    if (!games.length) return <p className="text-body-sm text-fg-3">They didn&apos;t meet in the {seasonLabel} regular season.</p>;
+    const won = (g: H2HMeeting, tri: string) => (g.homeGoals > g.awayGoals ? g.home === tri : g.away === tri);
+    const w1 = games.filter(g => won(g, t1)).length;
+    const w2 = games.length - w1;
+    return (
+        <div className="flex flex-col gap-2">
+            <p className="text-body-sm text-fg-2">
+                Season series:{' '}
+                <span className="font-bold text-fg-1">
+                    {t1} {w1}–{w2} {t2}
                 </span>
-                <span className="text-neutral-600">–</span>
-                <span className={`text-sm font-bold`} style={{ color: homeWon ? homeColor : '#4b5563' }}>
-                  {g.homeGoals}
-                </span>
-                {isOT && <span className="text-[10px] text-neutral-600 ml-0.5">{g.result.includes('SO') ? 'SO' : 'OT'}</span>}
-              </div>
-              {/* Home team */}
-              <div className="flex items-center gap-1 flex-1">
-                <div>
-                  <div className="flex items-center gap-0.5">
-                    <img src={`/logos/${g.homeTeam}.svg`} alt={g.homeTeam} className="w-3.5 h-3.5" />
-                    <span className="text-neutral-400">{g.homeTeam}</span>
-                  </div>
-                  {g.homeGoalie && <div className="text-[10px] text-neutral-600">{g.homeGoalie.split(' ').slice(-1)[0]}</div>}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+            </p>
+            <ol className="flex flex-col gap-1">
+                {games.map(g => {
+                    const homeWon = g.homeGoals > g.awayGoals;
+                    return (
+                        <li key={`${g.date}-${g.home}`} className="grid grid-cols-[3.5rem_1fr_auto_1fr] items-center gap-2 rounded-chip bg-surface-2/60 px-2 py-1.5 text-body-sm">
+                            <span className="tabular-nums text-fg-3">{shortDate(g.date)}</span>
+                            <span className={cn('flex items-center justify-end gap-1.5', !homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
+                                {g.away}
+                                <TeamLogo tri={g.away} size={18} />
+                            </span>
+                            <span className="whitespace-nowrap text-center font-bold tabular-nums text-fg-1">
+                                {g.awayGoals}–{g.homeGoals}
+                                {g.decision !== 'REG' ? <span className="ml-1 text-caption font-normal text-fg-3">{g.decision}</span> : null}
+                            </span>
+                            <span className={cn('flex items-center gap-1.5', homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
+                                <TeamLogo tri={g.home} size={18} />
+                                {g.home}
+                            </span>
+                        </li>
+                    );
+                })}
+            </ol>
+        </div>
+    );
 }
