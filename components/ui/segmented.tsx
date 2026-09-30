@@ -31,9 +31,12 @@ export interface SegmentedProps<T extends string> {
 export function Segmented<T extends string>({ options, value, onChange, label, size = 'md', block = false, className }: SegmentedProps<T>) {
     const refs = React.useRef<(HTMLButtonElement | null)[]>([]);
     const enabled = options.filter(o => !o.disabled);
+    // Roving tab stop: the selected option, or the first enabled one if nothing matches `value`.
+    const tabStop = options.some(o => o.value === value && !o.disabled) ? value : enabled[0]?.value;
 
     const move = (from: number, dir: 1 | -1) => {
         const idx = enabled.findIndex(o => o.value === options[from].value);
+        if (!enabled.length) return;
         const next = enabled[(idx + dir + enabled.length) % enabled.length];
         const nextIndex = options.findIndex(o => o.value === next.value);
         onChange(next.value);
@@ -63,7 +66,7 @@ export function Segmented<T extends string>({ options, value, onChange, label, s
                         aria-checked={selected}
                         aria-label={o.ariaLabel}
                         disabled={o.disabled}
-                        tabIndex={selected ? 0 : -1}
+                        tabIndex={o.value === tabStop ? 0 : -1}
                         onClick={() => onChange(o.value)}
                         onKeyDown={e => {
                             if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {

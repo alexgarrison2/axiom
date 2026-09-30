@@ -24,41 +24,30 @@ const firaCode = Fira_Code({
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ponyxg.com";
 
-/** "Tue, Sep 29" in Eastern time (the NHL's slate day). */
-function slateDateLabel(now = new Date()): string {
-  return now.toLocaleDateString("en-US", {
-    timeZone: "America/New_York",
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-export function generateMetadata(): Metadata {
-  return {
-    metadataBase: new URL(SITE_URL),
-    title: {
-      // Pages without their own title (the home slate) get today's date.
-      default: `NHL predictions for ${slateDateLabel()} | Pony xG`,
-      template: "%s | Pony xG",
-    },
-    description:
-      "Nightly NHL win probabilities from an expected-goals model, compared honestly with the betting market. Team and player analytics, standings odds and a public model record.",
-    applicationName: "Pony xG",
-    openGraph: {
-      type: "website",
-      siteName: "Pony xG",
-      locale: "en_US",
-    },
-    twitter: { card: "summary_large_image" },
-    appleWebApp: {
-      capable: true,
-      title: "Pony xG",
-      statusBarStyle: "black-translucent",
-    },
-    formatDetection: { telephone: false },
-  };
-}
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    // Pages without their own title. The home page sets a dated title
+    // (components/ui/slate-date.ts) in app/page.tsx.
+    default: "Pony xG · NHL predictions and expected-goals analytics",
+    template: "%s | Pony xG",
+  },
+  description:
+    "Nightly NHL win probabilities from an expected-goals model, compared honestly with the betting market. Team and player analytics, standings odds and a public model record.",
+  applicationName: "Pony xG",
+  openGraph: {
+    type: "website",
+    siteName: "Pony xG",
+    locale: "en_US",
+  },
+  twitter: { card: "summary_large_image" },
+  appleWebApp: {
+    capable: true,
+    title: "Pony xG",
+    statusBarStyle: "black-translucent",
+  },
+  formatDetection: { telephone: false },
+};
 
 export const viewport: Viewport = {
   themeColor: "#05070B",

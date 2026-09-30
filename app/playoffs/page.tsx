@@ -1120,7 +1120,7 @@ export default async function NewPage() {
   return (
     <main className="min-h-screen bg-black text-white font-sans relative overflow-x-hidden selection:bg-emerald-500/30">
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
-      <div className="relative z-10 h-[calc(100dvh-var(--appbar-h))] flex flex-col">
+      <div className="relative z-10 h-[calc(100dvh-var(--appbar-h)-var(--tabbar-h)-env(safe-area-inset-bottom))] md:h-[calc(100dvh-var(--appbar-h))] flex flex-col">
         <div className="flex-1 min-h-0">
         <PlayoffHub
           series={series}

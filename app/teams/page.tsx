@@ -2,7 +2,7 @@ import TeamsTable from '@/components/TeamsTable';
 import Header from '@/components/Header';
 
 export const metadata = {
-    title: 'Team Stats | Pony xG',
+    title: 'Team Stats',
     description: 'Advanced NHL team statistics including xG, PP/PK performance, and more.',
 };
 

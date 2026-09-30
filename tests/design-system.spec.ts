@@ -48,6 +48,21 @@ test.describe('primitives (/ui-kit)', () => {
         await expect(trigger).toBeFocused();
     });
 
+    test('InfoTip is portalled; Tab steps into its link, then past the trigger', async ({ page }) => {
+        await page.goto('/ui-kit');
+        const trigger = page.getByRole('button', { name: 'What is Model win probability?' });
+        await trigger.focus();
+        const tip = page.getByRole('dialog', { name: 'Model win probability' });
+        await expect(tip).toBeVisible();
+        // Rendered outside any card, so an overflow/transform ancestor can't clip it.
+        expect(await tip.evaluate(el => el.closest('main') === null)).toBe(true);
+        await page.keyboard.press('Tab');
+        await expect(tip.getByRole('link', { name: /How we calculate it/ })).toBeFocused();
+        await page.keyboard.press('Tab');
+        await expect(tip).toBeHidden();
+        await expect(page.getByRole('button', { name: 'What is Market probability (de-vigged)?' })).toBeFocused();
+    });
+
     test('Dialog traps focus, is labelled, and closes on Esc', async ({ page }) => {
         await page.goto('/ui-kit');
         const open = page.getByRole('button', { name: 'Open dialog' });
@@ -95,6 +110,15 @@ test.describe('app shell', () => {
         await expect(nav.getByRole('link', { name: 'Teams' })).toHaveAttribute('aria-current', 'page');
     });
 
+    test('only the home page gets the dated slate title', async ({ page }) => {
+        await page.goto('/teams/EDM');
+        await expect(page).toHaveTitle(/Edmonton Oilers/);
+        await page.goto('/methodology');
+        await expect(page).toHaveTitle('How it works | Pony xG');
+        await page.goto('/teams');
+        await expect(page).not.toHaveTitle(/Pony xG \| Pony xG/);
+    });
+
     test('/nonexistent is a 404 with the nav visible', async ({ page }) => {
         const res = await page.goto('/nonexistent-page');
         expect(res?.status()).toBe(404);
@@ -140,17 +164,19 @@ test.describe('app shell', () => {
 
 test.describe('reduced motion', () => {
     test.use({ contextOptions: { reducedMotion: 'reduce' } });
-    test('no running animations after 1s', async ({ page }) => {
-        await page.goto('/methodology');
-        await page.waitForTimeout(1000);
-        const running = await page.evaluate(() =>
-            document
-                .getAnimations()
-                .filter(a => a.playState === 'running')
-                .map(a => `${(a as CSSAnimation).animationName ?? 'anim'} on ${(a.effect as KeyframeEffect | null)?.target?.tagName ?? '?'}`),
-        );
-        expect(running).toEqual([]);
-    });
+    for (const route of ['/', '/methodology']) {
+        test(`no running animations after 1s on ${route}`, async ({ page }) => {
+            await page.goto(route);
+            await page.waitForTimeout(1000);
+            const running = await page.evaluate(() =>
+                document
+                    .getAnimations()
+                    .filter(a => a.playState === 'running')
+                    .map(a => `${(a as CSSAnimation).animationName ?? 'anim'} on ${(a.effect as KeyframeEffect | null)?.target?.tagName ?? '?'}`),
+            );
+            expect(running).toEqual([]);
+        });
+    }
 });
 
 test.describe('mobile shell (390px)', () => {

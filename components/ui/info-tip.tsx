@@ -16,11 +16,24 @@ export interface InfoTipProps {
     className?: string;
 }
 
+const TABBABLE =
+    'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+/** Focus the next tabbable element after `from` in document order, skipping `skip` (the portalled tip). */
+function focusNextAfter(from: HTMLElement, skip: HTMLElement | null) {
+    const all = Array.from(document.querySelectorAll<HTMLElement>(TABBABLE)).filter(
+        el => (el === from || el.getClientRects().length > 0) && !(skip && skip.contains(el)),
+    );
+    const next = all[all.indexOf(from) + 1];
+    (next ?? from).focus();
+}
+
 /**
  * A glossary explainer. Opens on tap, click, Enter/Space, or keyboard focus;
  * closes on Esc (focus returns to the trigger), outside click or blur.
- * Content is rendered inline (no portal) so a "Learn more" link sits right
- * after the trigger in the tab order.
+ * The tip is portalled to <body> so a card's overflow or transform never
+ * clips it. Tab from the open trigger steps into the tip's "How we calculate
+ * it" link; Tab from there continues with whatever follows the trigger.
  */
 export function InfoTip({ term, children, showLabel = false, side = 'top', className }: InfoTipProps) {
     const entry: GlossaryEntry | undefined = GLOSSARY[term];
@@ -28,6 +41,9 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
     const pointerDown = React.useRef(false);
     const openedByFocus = React.useRef(false);
     const contentId = React.useId();
+    const triggerRef = React.useRef<HTMLButtonElement>(null);
+    const contentRef = React.useRef<HTMLDivElement>(null);
+    const linkRef = React.useRef<HTMLAnchorElement>(null);
 
     if (!entry) return <>{children}</>;
 
@@ -36,6 +52,7 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
     return (
         <Popover.Root open={open} onOpenChange={setOpen}>
             <Popover.Trigger
+                ref={triggerRef}
                 type="button"
                 aria-label={visible ? undefined : `What is ${entry.title}?`}
                 aria-describedby={open ? contentId : undefined}
@@ -69,42 +86,59 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
                         e.preventDefault();
                         openedByFocus.current = false;
                         setOpen(false);
+                    } else if (e.key === 'Tab' && !e.shiftKey && open && linkRef.current) {
+                        // The tip lives in a portal: its link is the next stop.
+                        e.preventDefault();
+                        linkRef.current.focus();
                     }
                 }}
             >
                 {visible ? <span className="underline decoration-dotted decoration-fg-3 underline-offset-[3px]">{visible}</span> : null}
                 <InfoGlyph />
             </Popover.Trigger>
-            <Popover.Content
-                id={contentId}
-                role="dialog"
-                aria-label={entry.title}
-                side={side}
-                align="center"
-                sideOffset={6}
-                collisionPadding={12}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-                onCloseAutoFocus={() => {
-                    openedByFocus.current = false;
-                }}
-                className={cn(
-                    'z-50 w-[min(18rem,calc(100vw-24px))] rounded-control border border-line-strong bg-surface-2 p-3 text-left shadow-card',
-                    'animate-pop-in focus:outline-none',
-                )}
-            >
-                <p className="text-body-sm font-semibold text-fg-1">{entry.title}</p>
-                <p className="mt-1 text-body-sm text-fg-2">{entry.short}</p>
-                {entry.detail ? <p className="mt-2 text-caption text-fg-3">{entry.detail}</p> : null}
-                {entry.anchor ? (
-                    <a
-                        href={`/methodology#${entry.anchor}`}
-                        className="mt-2 inline-flex min-h-6 items-center text-caption font-semibold text-brand hover:underline"
-                    >
-                        How we calculate it →
-                    </a>
-                ) : null}
-                <Popover.Arrow className="fill-surface-2" width={12} height={6} />
-            </Popover.Content>
+            <Popover.Portal>
+                <Popover.Content
+                    ref={contentRef}
+                    id={contentId}
+                    role="dialog"
+                    aria-label={entry.title}
+                    side={side}
+                    align="center"
+                    sideOffset={6}
+                    collisionPadding={12}
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    onCloseAutoFocus={() => {
+                        openedByFocus.current = false;
+                    }}
+                    className={cn(
+                        'z-[70] w-[min(18rem,calc(100vw-24px))] rounded-control border border-line-strong bg-surface-2 p-3 text-left shadow-card',
+                        'animate-pop-in focus:outline-none',
+                    )}
+                >
+                    <p className="text-body-sm font-semibold text-fg-1">{entry.title}</p>
+                    <p className="mt-1 text-body-sm text-fg-2">{entry.short}</p>
+                    {entry.detail ? <p className="mt-2 text-caption text-fg-3">{entry.detail}</p> : null}
+                    {entry.anchor ? (
+                        <a
+                            ref={linkRef}
+                            href={`/methodology#${entry.anchor}`}
+                            onKeyDown={(e) => {
+                                if (e.key !== 'Tab' || !triggerRef.current) return;
+                                e.preventDefault();
+                                const trigger = triggerRef.current;
+                                openedByFocus.current = false;
+                                setOpen(false);
+                                if (e.shiftKey) trigger.focus();
+                                else focusNextAfter(trigger, contentRef.current);
+                            }}
+                            className="mt-2 inline-flex min-h-6 items-center text-caption font-semibold text-brand hover:underline"
+                        >
+                            How we calculate it →
+                        </a>
+                    ) : null}
+                    <Popover.Arrow className="fill-surface-2" width={12} height={6} />
+                </Popover.Content>
+            </Popover.Portal>
         </Popover.Root>
     );
 }
