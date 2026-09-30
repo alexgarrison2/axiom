@@ -1,3 +1,5 @@
+import { isCoinFlip } from '@/lib/matchup/format';
+
 /** One graded pregame prediction, compacted for the browser. */
 export interface GradedGame {
     id: number;
@@ -42,7 +44,11 @@ export interface ExcludedGame {
 
 /** Record computed straight from the graded list (never stale). */
 export interface SeasonTally {
+    /** Graded games (Brier and log loss use all of them). */
     n: number;
+    /** Graded games with a lean: the pick record's games (coin flips left out). */
+    picks: number;
+    /** Right picks among `picks`. */
     correct: number;
     brier: number | null;
     logLoss: number | null;
@@ -70,8 +76,22 @@ export function winnerOf(g: GradedGame): string {
     return g.homeScore > g.awayScore ? g.home : g.away;
 }
 
+/**
+ * A forecast within 1 pt of 50 (the slate's isCoinFlip rule) has no lean: it is
+ * not a pick, so it is in neither the right nor the wrong column anywhere.
+ */
+export function isNoLean(g: GradedGame): boolean {
+    return isCoinFlip(g.homeProb);
+}
+
+/** A right pick. Always false for a no-lean game (see isNoLean). */
 export function isCorrect(g: GradedGame): boolean {
-    return pickOf(g) === winnerOf(g);
+    return !isNoLean(g) && pickOf(g) === winnerOf(g);
+}
+
+/** A wrong pick. Always false for a no-lean game. */
+export function isWrong(g: GradedGame): boolean {
+    return !isNoLean(g) && pickOf(g) !== winnerOf(g);
 }
 
 /** Probability (0–100) the model gave its pick. */

@@ -8,7 +8,8 @@ import { TEAM_CODES } from '@/components/ui/team-color';
 import { Crest } from '@/components/ui/crest';
 import { shortDate } from '@/components/views/format';
 import { cn } from '@/lib/utils';
-import { isCorrect, pickOf, pickProb, type ExcludedGame, type GradedGame } from './types';
+import { GlossLink } from '@/components/ui/gloss-link';
+import { isCorrect, isNoLean, isWrong, pickOf, pickProb, type ExcludedGame, type GradedGame } from './types';
 import type { GameTypeKey } from './report';
 
 const PAGE = 50;
@@ -16,6 +17,7 @@ const PAGE = 50;
 const MORE_BTN =
     'self-center rounded-control border border-line-strong px-4 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11';
 const ROW_LI = 'border-t border-line/60 bg-surface-1 first:border-t-0 xl:[&:nth-child(2)]:border-t-0';
+const STRIP = 'rounded-card border border-dashed border-line-strong px-3 py-2';
 const LIST_UL = 'panel grid items-start overflow-hidden xl:grid-cols-2 xl:gap-x-px xl:bg-line';
 const SELECT = 'h-8 rounded-control border border-line-strong bg-surface-1 px-2 text-base uppercase tracking-[0.08em] text-fg-1 md:text-caption coarse:h-11';
 
@@ -47,6 +49,7 @@ export function GameList({
     type,
     currentSeason,
     expected = 0,
+    expectedNoLean = 0,
     excluded = [],
 }: {
     season: string;
@@ -55,6 +58,8 @@ export function GameList({
     currentSeason?: string;
     /** Live graded picks the report counts for this view; sizes the loading placeholder so nothing shifts. */
     expected?: number;
+    /** Coin flips (no lean) the report counts for this view; reserves the no-lean strip while loading. */
+    expectedNoLean?: number;
     /** Finals deliberately left out of grading, with a reason. */
     excluded?: ExcludedGame[];
 }) {
@@ -98,22 +103,37 @@ export function GameList({
     const win = React.useMemo<[number, number]>(() => range ?? [0, Math.max(0, dates.length - 1)], [range, dates]);
     const retroCount = React.useMemo(() => (games?.rows ?? []).filter(g => g.retro && (type === 'all' || (type === 'regular' ? g.type === '02' : g.type === '03'))).length, [games, type]);
 
-    const rows = React.useMemo(() => {
+    const inWindow = React.useMemo(() => {
         const [a, b] = [dates[win[0]] ?? '', dates[win[1]] ?? '9999'];
-        return base.filter(g => {
-            if (g.date < a || g.date > b) return false;
-            if (team !== 'all' && g.home !== team && g.away !== team) return false;
-            if (result === 'hit' && !isCorrect(g)) return false;
-            if (result === 'miss' && isCorrect(g)) return false;
-            return true;
-        });
-    }, [base, dates, win, team, result]);
+        return base.filter(g => g.date >= a && g.date <= b && (team === 'all' || g.home === team || g.away === team));
+    }, [base, dates, win, team]);
+    // The pick list and its record leave out coin flips (isCoinFlip, the slate's rule); they get their own strip.
+    const rows = React.useMemo(
+        () => inWindow.filter(g => !isNoLean(g) && (result === 'all' || (result === 'hit' ? isCorrect(g) : isWrong(g)))),
+        [inWindow, result],
+    );
+    const noLean = React.useMemo(() => (result === 'all' ? inWindow.filter(isNoLean) : []), [inWindow, result]);
 
     const hits = rows.filter(isCorrect).length;
+    const legacyShown = !!currentSeason && rows.some(g => g.legacy && g.season >= currentSeason);
+    // Every row legacy: one LEGACY tag by the record instead of one per row.
+    const allLegacy = legacyShown && rows.every(g => g.legacy);
 
     const excludedShown = type === 'playoffs' ? [] : excluded;
     const excludedNote = excludedShown.length ? <ExcludedList games={excludedShown} /> : null;
-    if (loading) return <ListSkeleton rows={Math.min(PAGE, expected)} more={expected > PAGE} after={excludedNote} />;
+    if (loading)
+        return (
+            <ListSkeleton
+                rows={Math.min(PAGE, expected)}
+                more={expected > PAGE}
+                after={
+                    <>
+                        {expectedNoLean ? <StripPlaceholder /> : null}
+                        {excludedNote}
+                    </>
+                }
+            />
+        );
     if (games.failed) {
         return (
             <div className="flex flex-col gap-2">
@@ -205,7 +225,12 @@ export function GameList({
                         </span>
                     </div>
                 ) : null}
-                <p className="ml-auto text-caption font-bold text-fg-1" aria-live="polite">
+                {legacyShown ? (
+                    <GlossLink term="legacy" desc="Published by the previous site model" className="ml-auto">
+                        <span className="rounded-chip border border-line-strong px-1 text-micro text-fg-2">LEGACY</span>
+                    </GlossLink>
+                ) : null}
+                <p className={cn('text-caption font-bold text-fg-1', !legacyShown && 'ml-auto')} aria-live="polite">
                     {hits}-{rows.length - hits}
                     {rows.length ? <span className="ml-2 font-normal text-fg-2">{((hits / rows.length) * 100).toFixed(1)}%</span> : null}
                     <span className="ml-2 font-normal text-fg-3">n={rows.length}</span>
@@ -221,7 +246,7 @@ export function GameList({
                         <GameRowItem
                             key={g.id}
                             game={g}
-                            showLegacy={!!currentSeason && g.season >= currentSeason}
+                            showLegacy={!allLegacy && !!currentSeason && g.season >= currentSeason}
                             open={open === g.id}
                             onToggle={() => setOpen(o => (o === g.id ? null : g.id))}
                         />
@@ -233,6 +258,7 @@ export function GameList({
                     More · {(rows.length - shown).toLocaleString('en-US')}
                 </button>
             ) : null}
+            {noLean.length ? <NoLeanList games={noLean} /> : null}
             {excludedNote}
         </div>
     );
@@ -313,13 +339,13 @@ function ExcludedList({ games }: { games: ExcludedGame[] }) {
     const groups = new Map<string, ExcludedGame[]>();
     for (const g of games) groups.set(g.reason, [...(groups.get(g.reason) ?? []), g]);
     return (
-        <div className="flex flex-col gap-1.5 rounded-card border border-dashed border-line-strong px-3 py-2">
+        <div className={cn(STRIP, 'flex flex-col gap-1.5')}>
             {[...groups.entries()].map(([reason, list]) => (
                 <div key={reason} className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     <p className="label">
-                        <abbr title={reason} className="no-underline">
+                        <GlossLink term="no-pick" desc={reason}>
                             No pregame pick
-                        </abbr>{' '}
+                        </GlossLink>{' '}
                         · {list.length}
                     </p>
                     <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-fg-2">
@@ -334,6 +360,43 @@ function ExcludedList({ games }: { games: ExcludedGame[] }) {
                     </ul>
                 </div>
             ))}
+        </div>
+    );
+}
+
+/** Finals whose forecast sat within 1 pt of 50: graded for Brier and log loss, but not picks. */
+function NoLeanList({ games }: { games: GradedGame[] }) {
+    return (
+        <div data-testid="no-lean" className={STRIP}>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <p className="label">
+                    <GlossLink term="no-lean" desc="Forecast within 1 point of 50%, not graded as a pick">
+                        No lean
+                    </GlossLink>{' '}
+                    · {games.length}
+                </p>
+                <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-fg-2">
+                    {games.map(g => (
+                        <li key={g.id} className="flex items-center gap-1.5" title={`Pregame ${g.home} ${g.homeProb.toFixed(1)}%`}>
+                            <span className="text-fg-3">{shortDate(g.date)}</span>
+                            <Crest tri={g.away} size={16} className="drop-shadow-none" />
+                            {g.away} {g.awayScore}
+                            <span className="text-fg-3">@</span>
+                            <Crest tri={g.home} size={16} className="drop-shadow-none" />
+                            {g.home} {g.homeScore}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+}
+
+/** Reserves one strip row while the picks load, so nothing below moves. */
+function StripPlaceholder() {
+    return (
+        <div aria-hidden="true" className={cn(STRIP, 'invisible')}>
+            <p className="label min-h-6">No lean</p>
         </div>
     );
 }

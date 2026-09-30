@@ -268,6 +268,41 @@ export const GLOSSARY = {
         anchor: 'grading',
         aliases: ['Prev. model', 'previous model', 'old model'],
     },
+    'no-lean': {
+        label: 'No lean',
+        title: 'No lean (coin flip)',
+        short: 'A forecast within 1 point of 50%. Neither side is favoured, so it is not graded as a pick right or wrong; Brier and log loss still count it.',
+        anchor: 'grading',
+        aliases: ['coin flip', 'NO LEAN', "pick'em"],
+    },
+    'back-filled': {
+        label: 'BF',
+        title: 'Back-filled',
+        short: 'A forecast regenerated after the game, not one users saw before puck drop. Listed on request, never counted in the report card.',
+        anchor: 'grading',
+        aliases: ['back-filled out', 'retro', 'BF'],
+    },
+    'no-pick': {
+        label: 'No pregame pick',
+        title: 'No pregame pick',
+        short: 'A final with no forecast frozen before puck drop, so it is left out of grading entirely.',
+        anchor: 'grading',
+        aliases: ['not graded', 'NO PREGAME PICK'],
+    },
+    disclaimer: {
+        label: 'Info only',
+        title: 'For information only',
+        short: 'Nothing on this site is betting advice. Probabilities are estimates and can be wrong. 21+, 1-800-GAMBLER.',
+        anchor: 'edge',
+        aliases: ['INFO ONLY', 'responsible gambling', 'not advice'],
+    },
+    gate: {
+        label: 'Gate',
+        title: 'Bet gate',
+        short: 'Edges and stakes stay hidden until the model has beaten the market over a meaningful sample of live games. The Accuracy page shows whether the gate is open or closed.',
+        anchor: 'edge',
+        aliases: ['GATE CLOSED', 'GATE OPEN', 'NO BET', 'bet gate'],
+    },
     // ── Teams table columns ────────────────────────────────────────────────
     'points-pct': {
         label: 'P%',

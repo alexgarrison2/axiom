@@ -71,14 +71,32 @@ def _brier(y, p):
     return float(np.mean((np.asarray(p, float) - np.asarray(y, float)) ** 2)) if len(y) else None
 
 
+# A forecast within 1 pt of 50% has no lean (the site's isCoinFlip rule in
+# lib/matchup/format.ts), so it is never graded as a pick. Brier and log loss
+# still score it like any other game.
+COIN_BAND_PTS = 1.0
+
+
+def is_coin_flip(p):
+    """True for a home-win probability (0-1) within 1 pt of 50%, e.g. 0.503."""
+    return abs(round(100 * float(p), 6) - 50) < COIN_BAND_PTS
+
+
+def is_pick(r):
+    """A graded history row the model actually leaned on (not a coin flip)."""
+    return not is_coin_flip(r['homeWinProb'] / 100)
+
+
 def _acc(y, p):
-    """Share of games whose favourite won. A dead-even 50/50 price (e.g. a -110/-110
-    line) has no favourite, so it scores half a correct pick for any forecaster."""
+    """Share of games whose favourite won. A price within 1 pt of 50/50 (a -110/-110
+    line, or a 50.3% forecast) has no favourite, so it scores half a correct pick for
+    any forecaster: model, market and home rate alike."""
     if not len(y):
         return None
     p = np.asarray(p, dtype=float)
     y = np.asarray(y) == 1
-    hit = np.where(np.isclose(p, 0.5, atol=1e-9), 0.5, ((p > 0.5) == y).astype(float))
+    coin = np.array([is_coin_flip(x) for x in p], dtype=bool)
+    hit = np.where(coin, 0.5, ((p > 0.5) == y).astype(float))
     return float(np.mean(hit))
 
 
@@ -127,13 +145,16 @@ def call_row(r):
 
 
 def version_block(rows):
-    """n / accuracy / Brier / log loss for one model version's live picks."""
+    """n / accuracy / Brier / log loss for one model version's live picks. The pick record
+    (correct, n_picks, accuracy) leaves out coin flips; Brier and log loss use every game."""
     if not rows:
-        return {'n': 0, 'correct': 0, 'accuracy': None, 'brier': None, 'log_loss': None}
+        return {'n': 0, 'n_picks': 0, 'correct': 0, 'accuracy': None, 'brier': None, 'log_loss': None}
     y = np.array([1 if r['actualWinner'] == r['homeTeam'] else 0 for r in rows])
     p = np.array([r['homeWinProb'] / 100 for r in rows])
-    k = int(sum(1 for r in rows if r['isCorrect']))
-    return {'n': len(rows), 'correct': k, 'accuracy': k / len(rows), 'brier': _brier(y, p), 'log_loss': _ll(y, p)}
+    picks = [r for r in rows if is_pick(r)]
+    k = int(sum(1 for r in picks if r['isCorrect']))
+    return {'n': len(rows), 'n_picks': len(picks), 'correct': k, 'accuracy': k / len(picks) if picks else None,
+            'brier': _brier(y, p), 'log_loss': _ll(y, p)}
 
 
 def block(rows, home_rate, home_rate_source, closing):
@@ -142,7 +163,10 @@ def block(rows, home_rate, home_rate_source, closing):
     live = sorted(live, key=lambda r: (r['date'], r['gameId']))
     n = len(live)
     n_legacy = sum(1 for r in live if is_legacy(r))
+    picks = [r for r in live if is_pick(r)]
     out = {'n': n, 'n_retro_excluded': n_retro, 'n_legacy': n_legacy,
+           # The pick record leaves out coin flips (within 1 pt of 50); Brier and log loss keep them.
+           'n_picks': len(picks), 'n_no_lean': n - len(picks),
            # Split by model: 'current' = picks with a recorded modelVersion, 'legacy' = older site model.
            'by_model': {'current': version_block([r for r in live if not is_legacy(r)]),
                         'legacy': version_block([r for r in live if is_legacy(r)])}}
@@ -159,9 +183,9 @@ def block(rows, home_rate, home_rate_source, closing):
         return out
     y = np.array([1 if r['actualWinner'] == r['homeTeam'] else 0 for r in live])
     p = np.array([r['homeWinProb'] / 100 for r in live])
-    k = int(sum(1 for r in live if r['isCorrect']))
-    lo, hi = wilson(k, n)
-    out.update({'accuracy': k / n, 'accuracy_ci': [lo, hi], 'correct': k,
+    k = int(sum(1 for r in picks if r['isCorrect']))
+    lo, hi = wilson(k, len(picks))
+    out.update({'accuracy': k / len(picks) if picks else None, 'accuracy_ci': [lo, hi], 'correct': k,
                 'brier': _brier(y, p), 'log_loss': _ll(y, p),
                 'mean_pred_home': float(p.mean()), 'actual_home': float(y.mean()),
                 'first_date': live[0]['date'], 'last_date': live[-1]['date']})
@@ -200,9 +224,10 @@ def block(rows, home_rate, home_rate_source, closing):
     # tiers by favourite confidence
     conf = np.maximum(p, 1 - p)
     correct = np.array([r['isCorrect'] for r in live])
+    leaning = np.array([is_pick(r) for r in live], dtype=bool)
     tiers = []
     for a, b, lab in TIERS:
-        sel = (conf >= a) & (conf < b)
+        sel = (conf >= a) & (conf < b) & leaning
         c = int(correct[sel].sum()); t = int(sel.sum())
         tiers.append({'tier': lab, 'n': t, 'correct': c, 'accuracy': c / t if t else None,
                       'accuracy_ci': list(wilson(c, t)), 'mean_confidence': float(conf[sel].mean()) if t else None})

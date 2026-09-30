@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-09-30T18:18:46.957265+00:00",
+ "generated_at": "2026-09-30T20:53:05.035643+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -9,9 +9,12 @@
     "n": 421,
     "n_retro_excluded": 824,
     "n_legacy": 421,
+    "n_picks": 387,
+    "n_no_lean": 34,
     "by_model": {
      "current": {
       "n": 0,
+      "n_picks": 0,
       "correct": 0,
       "accuracy": null,
       "brier": null,
@@ -19,18 +22,19 @@
      },
      "legacy": {
       "n": 421,
-      "correct": 230,
-      "accuracy": 0.5463,
+      "n_picks": 387,
+      "correct": 218,
+      "accuracy": 0.5633,
       "brier": 0.2447,
       "log_loss": 0.6822
      }
     },
-    "accuracy": 0.5463,
+    "accuracy": 0.5633,
     "accuracy_ci": [
-     0.4986,
-     0.5932
+     0.5135,
+     0.6119
     ],
-    "correct": 230,
+    "correct": 218,
     "brier": 0.2447,
     "log_loss": 0.6822,
     "mean_pred_home": 0.5484,
@@ -52,10 +56,10 @@
       "devig": "power",
       "log_loss": 0.6745,
       "brier": 0.241,
-      "accuracy": 0.5561,
+      "accuracy": 0.5598,
       "model_log_loss_same_games": 0.6823,
       "model_brier_same_games": 0.2447,
-      "model_accuracy_same_games": 0.5476
+      "model_accuracy_same_games": 0.5598
      }
     },
     "reliability": [
@@ -143,14 +147,14 @@
     "tiers": [
      {
       "tier": "50-55",
-      "n": 154,
-      "correct": 77,
-      "accuracy": 0.5,
+      "n": 120,
+      "correct": 65,
+      "accuracy": 0.5417,
       "accuracy_ci": [
-       0.422,
-       0.578
+       0.4526,
+       0.6281
       ],
-      "mean_confidence": 0.5221
+      "mean_confidence": 0.5271
      },
      {
       "tier": "55-60",
@@ -2193,9 +2197,12 @@
     "n": 339,
     "n_retro_excluded": 824,
     "n_legacy": 339,
+    "n_picks": 315,
+    "n_no_lean": 24,
     "by_model": {
      "current": {
       "n": 0,
+      "n_picks": 0,
       "correct": 0,
       "accuracy": null,
       "brier": null,
@@ -2203,18 +2210,19 @@
      },
      "legacy": {
       "n": 339,
-      "correct": 183,
-      "accuracy": 0.5398,
+      "n_picks": 315,
+      "correct": 174,
+      "accuracy": 0.5524,
       "brier": 0.2451,
       "log_loss": 0.6831
      }
     },
-    "accuracy": 0.5398,
+    "accuracy": 0.5524,
     "accuracy_ci": [
-     0.4866,
-     0.5921
+     0.4972,
+     0.6063
     ],
-    "correct": 183,
+    "correct": 174,
     "brier": 0.2451,
     "log_loss": 0.6831,
     "mean_pred_home": 0.5519,
@@ -2236,10 +2244,10 @@
       "devig": "power",
       "log_loss": 0.6763,
       "brier": 0.2418,
-      "accuracy": 0.5564,
+      "accuracy": 0.5595,
       "model_log_loss_same_games": 0.6832,
       "model_brier_same_games": 0.2452,
-      "model_accuracy_same_games": 0.5412
+      "model_accuracy_same_games": 0.5503
      }
     },
     "reliability": [
@@ -2327,14 +2335,14 @@
     "tiers": [
      {
       "tier": "50-55",
-      "n": 111,
-      "correct": 52,
-      "accuracy": 0.4685,
+      "n": 87,
+      "correct": 43,
+      "accuracy": 0.4943,
       "accuracy_ci": [
-       0.3783,
-       0.5608
+       0.3917,
+       0.5973
       ],
-      "mean_confidence": 0.5224
+      "mean_confidence": 0.5274
      },
      {
       "tier": "55-60",
@@ -3885,9 +3893,12 @@
     "n": 82,
     "n_retro_excluded": 0,
     "n_legacy": 82,
+    "n_picks": 72,
+    "n_no_lean": 10,
     "by_model": {
      "current": {
       "n": 0,
+      "n_picks": 0,
       "correct": 0,
       "accuracy": null,
       "brier": null,
@@ -3895,18 +3906,19 @@
      },
      "legacy": {
       "n": 82,
-      "correct": 47,
-      "accuracy": 0.5732,
+      "n_picks": 72,
+      "correct": 44,
+      "accuracy": 0.6111,
       "brier": 0.2428,
       "log_loss": 0.6785
      }
     },
-    "accuracy": 0.5732,
+    "accuracy": 0.6111,
     "accuracy_ci": [
-     0.4652,
-     0.6746
+     0.4956,
+     0.7153
     ],
-    "correct": 47,
+    "correct": 44,
     "brier": 0.2428,
     "log_loss": 0.6785,
     "mean_pred_home": 0.5337,
@@ -3928,10 +3940,10 @@
       "devig": "power",
       "log_loss": 0.667,
       "brier": 0.2376,
-      "accuracy": 0.5549,
+      "accuracy": 0.561,
       "model_log_loss_same_games": 0.6785,
       "model_brier_same_games": 0.2428,
-      "model_accuracy_same_games": 0.5732
+      "model_accuracy_same_games": 0.5976
      }
     },
     "reliability": [
@@ -4019,14 +4031,14 @@
     "tiers": [
      {
       "tier": "50-55",
-      "n": 43,
-      "correct": 25,
-      "accuracy": 0.5814,
+      "n": 33,
+      "correct": 22,
+      "accuracy": 0.6667,
       "accuracy_ci": [
-       0.4333,
-       0.7162
+       0.4961,
+       0.8025
       ],
-      "mean_confidence": 0.5215
+      "mean_confidence": 0.5264
      },
      {
       "tier": "55-60",
@@ -4205,9 +4217,12 @@
     "n": 3,
     "n_retro_excluded": 0,
     "n_legacy": 3,
+    "n_picks": 2,
+    "n_no_lean": 1,
     "by_model": {
      "current": {
       "n": 0,
+      "n_picks": 0,
       "correct": 0,
       "accuracy": null,
       "brier": null,
@@ -4215,18 +4230,19 @@
      },
      "legacy": {
       "n": 3,
-      "correct": 2,
-      "accuracy": 0.6667,
+      "n_picks": 2,
+      "correct": 1,
+      "accuracy": 0.5,
       "brier": 0.2753,
       "log_loss": 0.7476
      }
     },
-    "accuracy": 0.6667,
+    "accuracy": 0.5,
     "accuracy_ci": [
-     0.2077,
-     0.9385
+     0.0945,
+     0.9055
     ],
-    "correct": 2,
+    "correct": 1,
     "brier": 0.2753,
     "log_loss": 0.7476,
     "mean_pred_home": 0.6577,
@@ -4251,7 +4267,7 @@
       "accuracy": 0.5,
       "model_log_loss_same_games": 0.7476,
       "model_brier_same_games": 0.2753,
-      "model_accuracy_same_games": 0.6667
+      "model_accuracy_same_games": 0.5
      }
     },
     "reliability": [
@@ -4339,14 +4355,14 @@
     "tiers": [
      {
       "tier": "50-55",
-      "n": 1,
-      "correct": 1,
-      "accuracy": 1.0,
+      "n": 0,
+      "correct": 0,
+      "accuracy": null,
       "accuracy_ci": [
-       0.2065,
-       1.0
+       null,
+       null
       ],
-      "mean_confidence": 0.503
+      "mean_confidence": null
      },
      {
       "tier": "55-60",
@@ -4418,9 +4434,12 @@
     "n": 3,
     "n_retro_excluded": 0,
     "n_legacy": 3,
+    "n_picks": 2,
+    "n_no_lean": 1,
     "by_model": {
      "current": {
       "n": 0,
+      "n_picks": 0,
       "correct": 0,
       "accuracy": null,
       "brier": null,
@@ -4428,18 +4447,19 @@
      },
      "legacy": {
       "n": 3,
-      "correct": 2,
-      "accuracy": 0.6667,
+      "n_picks": 2,
+      "correct": 1,
+      "accuracy": 0.5,
       "brier": 0.2753,
       "log_loss": 0.7476
      }
     },
-    "accuracy": 0.6667,
+    "accuracy": 0.5,
     "accuracy_ci": [
-     0.2077,
-     0.9385
+     0.0945,
+     0.9055
     ],
-    "correct": 2,
+    "correct": 1,
     "brier": 0.2753,
     "log_loss": 0.7476,
     "mean_pred_home": 0.6577,
@@ -4464,7 +4484,7 @@
       "accuracy": 0.5,
       "model_log_loss_same_games": 0.7476,
       "model_brier_same_games": 0.2753,
-      "model_accuracy_same_games": 0.6667
+      "model_accuracy_same_games": 0.5
      }
     },
     "reliability": [
@@ -4552,14 +4572,14 @@
     "tiers": [
      {
       "tier": "50-55",
-      "n": 1,
-      "correct": 1,
-      "accuracy": 1.0,
+      "n": 0,
+      "correct": 0,
+      "accuracy": null,
       "accuracy_ci": [
-       0.2065,
-       1.0
+       null,
+       null
       ],
-      "mean_confidence": 0.503
+      "mean_confidence": null
      },
      {
       "tier": "55-60",
@@ -4631,9 +4651,12 @@
     "n": 0,
     "n_retro_excluded": 0,
     "n_legacy": 0,
+    "n_picks": 0,
+    "n_no_lean": 0,
     "by_model": {
      "current": {
       "n": 0,
+      "n_picks": 0,
       "correct": 0,
       "accuracy": null,
       "brier": null,
@@ -4641,6 +4664,7 @@
      },
      "legacy": {
       "n": 0,
+      "n_picks": 0,
       "correct": 0,
       "accuracy": null,
       "brier": null,

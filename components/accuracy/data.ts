@@ -40,7 +40,11 @@ export function isPlaceholderOdds(home: unknown, away: unknown): boolean {
  * dropped.
  */
 export function loadGradedGames(): GradedGame[] {
-    const raw = readJson(path.join(process.cwd(), 'data', 'prediction_history.json'));
+    return parseGradedGames(readJson(path.join(process.cwd(), 'data', 'prediction_history.json')));
+}
+
+/** The graded list from parsed prediction_history.json rows (pure; see loadGradedGames). */
+export function parseGradedGames(raw: unknown): GradedGame[] {
     if (!Array.isArray(raw)) return [];
     const out: GradedGame[] = [];
     for (const r of raw as Obj[]) {

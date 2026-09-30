@@ -37,7 +37,8 @@ describe('model_report.json → report card', () => {
         const a = report.seasons['2025-26']!.all!;
         const both = combineBlocks([a, { ...a }])!;
         expect(both.n).toBe(a.n * 2);
-        expect(both.accuracy).toBeCloseTo(a.correct / a.n, 6);
+        expect(both.nPicks).toBe(a.nPicks * 2);
+        expect(both.accuracy).toBeCloseTo(a.correct / a.nPicks, 6);
         expect(both.logLoss).toBeCloseTo(a.logLoss!, 6);
     });
 
@@ -100,7 +101,9 @@ describe('stale report vs graded list', () => {
         const t = tallySeason(games, '2030-31', excluded);
         const staleReportN = 0;
         expect(t.n).toBeGreaterThan(staleReportN);
-        expect(`${t.correct}-${t.n - t.correct}`).toBe('2-1');
+        // The 50.3 forecast is a coin flip (no lean): not in the record, like the slate chip.
+        expect(`${t.correct}-${t.picks - t.correct}`).toBe('1-1');
+        expect(t.picks).toBe(2);
         expect(t.excluded).toHaveLength(1);
         expect(t.legacyN).toBe(3);
     });
@@ -137,7 +140,7 @@ describe('stale report vs graded list', () => {
 
     it('flags a report that lags the graded list, and only then', () => {
         const t = tallySeason(games, '2030-31');
-        expect(reportLags(0, t)).toBe(true); // stale report (n=0) vs 3 graded rows → show "Through 3 games: 2-1"
+        expect(reportLags(0, t)).toBe(true); // stale report (n=0) vs 3 graded rows → show "Through 3 games: 1-1"
         expect(reportLags(undefined, t)).toBe(true); // no report block at all
         expect(reportLags(3, t)).toBe(false); // report caught up → full report card
         expect(reportLags(0, tallySeason([], '2030-31'))).toBe(false); // 0 games → honest empty state
@@ -203,8 +206,8 @@ describe('fix round 3: verdicts, legacy labels, small samples', () => {
         const b = report.seasons['2026-27']?.all;
         if (b && b.n > 0 && b.nLegacy === b.n) expect(modelLabelOf(b, 'Pony xG')).toBe('Prev. model');
         const base = report.seasons['2025-26']!.all!;
-        const current = { n: 5, correct: 3, accuracy: 0.6, brier: 0.2, logLoss: 0.6 };
-        const none = { n: 0, correct: 0, accuracy: null, brier: null, logLoss: null };
+        const current = { n: 5, nPicks: 5, correct: 3, accuracy: 0.6, brier: 0.2, logLoss: 0.6 };
+        const none = { n: 0, nPicks: 0, correct: 0, accuracy: null, brier: null, logLoss: null };
         expect(modelLabelOf({ ...base, n: 5, nLegacy: 0, byModel: { current, legacy: none } }, 'x')).toBe('Pony xG');
         expect(modelLabelOf({ ...base, n: 7, nLegacy: 2, byModel: { current, legacy: { ...current, n: 2 } } }, 'x')).toBeNull();
     });

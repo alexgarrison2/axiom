@@ -1,4 +1,4 @@
-import { isCorrect, type ExcludedGame, type GradedGame, type SeasonTally } from './types';
+import { isCorrect, isNoLean, type ExcludedGame, type GradedGame, type SeasonTally } from './types';
 /**
  * Typed, trimmed view of public/data/model_report.json for /accuracy, plus an
  * n-weighted "All seasons" aggregate. Pure: runs on server, client and tests.
@@ -21,6 +21,8 @@ export interface Baseline {
 /** One model version's live picks. */
 export interface VersionStats {
     n: number;
+    /** Games with a lean (coin flips within 1 pt of 50 are not picks). */
+    nPicks: number;
     correct: number;
     accuracy: number | null;
     brier: number | null;
@@ -71,6 +73,10 @@ export interface ReportBlock {
     nRetro: number;
     /** Live picks from the previous site model (no model version recorded). */
     nLegacy: number;
+    /** Graded games with a lean: the pick record (correct / accuracy) leaves out coin flips. */
+    nPicks: number;
+    /** Coin flips (within 1 pt of 50): graded for Brier and log loss, not as picks. */
+    nNoLean: number;
     /** The same picks split by model: current = recorded model version, legacy = previous site model. */
     byModel: { current: VersionStats; legacy: VersionStats } | null;
     accuracy: number | null;
@@ -144,7 +150,8 @@ function parseCall(v: unknown): CallRow | null {
 
 function parseVersion(v: unknown): VersionStats {
     const o = isObj(v) ? v : {};
-    return { n: n(o.n) ?? 0, correct: n(o.correct) ?? 0, accuracy: n(o.accuracy), brier: n(o.brier), logLoss: n(o.log_loss) };
+    const total = n(o.n) ?? 0;
+    return { n: total, nPicks: n(o.n_picks) ?? total, correct: n(o.correct) ?? 0, accuracy: n(o.accuracy), brier: n(o.brier), logLoss: n(o.log_loss) };
 }
 
 /** Best calls and worst misses need a real lean: at least this confidence (%) on the pick. */
@@ -155,8 +162,12 @@ export function parseBlock(v: unknown): ReportBlock | null {
     const hr = isObj(v.baselines) ? (v.baselines as Obj).home_rate : null;
     const mk = isObj(v.baselines) ? (v.baselines as Obj).market : null;
     const bm = isObj(v.by_model) ? v.by_model : null;
+    const total = n(v.n) ?? 0;
+    const noLean = n(v.n_no_lean) ?? 0;
     return {
-        n: n(v.n) ?? 0,
+        n: total,
+        nPicks: n(v.n_picks) ?? total - noLean,
+        nNoLean: noLean,
         nRetro: n(v.n_retro_excluded) ?? 0,
         nLegacy: n(v.n_legacy) ?? 0,
         byModel: bm ? { current: parseVersion(bm.current), legacy: parseVersion(bm.legacy) } : null,
@@ -254,11 +265,13 @@ function combineBaseline(list: Baseline[]): Baseline {
 
 function combineVersion(list: VersionStats[]): VersionStats {
     const total = list.reduce((a, b) => a + b.n, 0);
+    const picks = list.reduce((a, b) => a + b.nPicks, 0);
     const correct = list.reduce((a, b) => a + b.correct, 0);
     return {
         n: total,
+        nPicks: picks,
         correct,
-        accuracy: total ? correct / total : null,
+        accuracy: picks ? correct / picks : null,
         brier: wavg(list.map(b => ({ w: b.n, v: b.brier }))),
         logLoss: wavg(list.map(b => ({ w: b.n, v: b.logLoss }))),
     };
@@ -270,6 +283,7 @@ export function combineBlocks(blocks: ReportBlock[]): ReportBlock | null {
     if (!bs.length) return null;
     if (bs.length === 1) return bs[0];
     const total = bs.reduce((a, b) => a + b.n, 0);
+    const picks = bs.reduce((a, b) => a + b.nPicks, 0);
     const correct = bs.reduce((a, b) => a + b.correct, 0);
     const dates = bs.flatMap(b => [b.firstDate, b.lastDate]).filter((d): d is string => !!d).sort();
     const bins = bs[0].reliability.length ? bs[0].reliability : bs.find(b => b.reliability.length)?.reliability ?? [];
@@ -278,11 +292,13 @@ export function combineBlocks(blocks: ReportBlock[]): ReportBlock | null {
         n: total,
         nRetro: bs.reduce((a, b) => a + b.nRetro, 0),
         nLegacy: bs.reduce((a, b) => a + b.nLegacy, 0),
+        nPicks: picks,
+        nNoLean: bs.reduce((a, b) => a + b.nNoLean, 0),
         byModel: bs.every(b => b.byModel)
             ? { current: combineVersion(bs.map(b => b.byModel!.current)), legacy: combineVersion(bs.map(b => b.byModel!.legacy)) }
             : null,
-        accuracy: total ? correct / total : null,
-        accuracyCi: wilson(correct, total),
+        accuracy: picks ? correct / picks : null,
+        accuracyCi: wilson(correct, picks),
         correct,
         brier: wavg(bs.map(b => ({ w: b.n, v: b.brier }))),
         logLoss: wavg(bs.map(b => ({ w: b.n, v: b.logLoss }))),
@@ -338,6 +354,7 @@ export function tallySeason(games: GradedGame[], season: string, excluded: Exclu
     const withMarket = rows.filter(g => g.marketProb != null);
     return {
         n: rows.length,
+        picks: rows.filter(g => !isNoLean(g)).length,
         correct: rows.filter(isCorrect).length,
         brier: mean(rows.map(g => g.brier).filter(Number.isFinite)),
         logLoss: mean(rows.map(g => g.logLoss).filter(Number.isFinite)),

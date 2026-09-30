@@ -5,6 +5,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { PageHeading } from '@/components/ui/page-heading';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { Crest } from '@/components/ui/crest';
+import { GlossLink } from '@/components/ui/gloss-link';
 import { shortDate } from '@/components/views/format';
 import { cn } from '@/lib/utils';
 import { teamTriFromName } from './names';
@@ -101,7 +102,14 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                         <p className="label">
                             Live picks · {shortDate(block.firstDate)}
                             {block.lastDate && block.lastDate !== block.firstDate ? `–${shortDate(block.lastDate)}` : ''}
-                            {block.nRetro ? ` · ${block.nRetro.toLocaleString('en-US')} back-filled out` : ''}
+                            {block.nRetro ? (
+                                <>
+                                    {' · '}
+                                    <GlossLink term="back-filled" desc="Regenerated after the game, never counted in the report card">
+                                        {block.nRetro.toLocaleString('en-US')} back-filled out
+                                    </GlossLink>
+                                </>
+                            ) : null}
                         </p>
                     ) : null}
                 </div>
@@ -124,7 +132,8 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                     seasons={seasons}
                     type={type}
                     currentSeason={currentSeason}
-                    expected={Math.max(block?.n ?? 0, tally?.n ?? 0)}
+                    expected={Math.max(block?.nPicks ?? 0, tally?.picks ?? 0)}
+                    expectedNoLean={Math.max(block?.nNoLean ?? 0, tally ? tally.n - tally.picks : 0)}
                     excluded={season === 'all' ? [] : (tallies[season]?.[type]?.excluded ?? [])}
                 />
             </section>
@@ -170,7 +179,7 @@ function EmptyState({ season, currentSeason, type, prior, onPrior }: { season: s
 
 /** The report file lags the graded list: show the running record from the graded rows. */
 function ThroughSummary({ tally: t }: { tally: SeasonTally }) {
-    const record = `${t.correct}-${t.n - t.correct}`;
+    const record = `${t.correct}-${t.picks - t.correct}`;
     const verdict: Verdict =
         t.n >= SIGNAL_N && t.marketN >= SIGNAL_N && t.modelLogLossSame != null && t.marketLogLoss != null
             ? { tooEarly: false, vsMarket: { word: compareLogLoss(t.modelLogLossSame, t.marketLogLoss), model: t.modelLogLossSame, other: t.marketLogLoss, n: t.marketN }, vsHome: null }
@@ -179,9 +188,10 @@ function ThroughSummary({ tally: t }: { tally: SeasonTally }) {
         <div role="status" className="flex flex-col gap-2">
             <VerdictRow verdict={verdict} />
             <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-                <BigNum label="Picks right" value={pct1(t.n ? t.correct / t.n : null)} sub={record} />
+                <BigNum label="Picks right" value={pct1(t.picks ? t.correct / t.picks : null)} sub={record} />
                 <BigNum
                     label="Log loss"
+                    term="log-loss"
                     value={dec4(t.logLoss)}
                     delta={
                         t.marketN && t.modelLogLossSame != null && t.marketLogLoss != null
@@ -190,7 +200,7 @@ function ThroughSummary({ tally: t }: { tally: SeasonTally }) {
                     }
                     sub={t.marketN ? `MKT ${dec4(t.marketLogLoss)}` : 'no mkt prices'}
                 />
-                <BigNum label="Brier" value={dec4(t.brier)} sub="COIN 0.2500" />
+                <BigNum label="Brier" term="brier" value={dec4(t.brier)} sub="COIN 0.2500" />
                 <BigNum
                     label="Graded"
                     value={t.n.toLocaleString('en-US')}
@@ -214,14 +224,20 @@ interface BigDelta {
 }
 
 /** A report-card number: label, big display value, delta vs the market (from SIGNAL_N games), tiny sub line. */
-function BigNum({ label, value, delta: raw, sub }: { label: string; value: string; delta?: BigDelta | null; sub?: string }) {
+function BigNum({ label, term, value, delta: raw, sub }: { label: string; term?: string; value: string; delta?: BigDelta | null; sub?: string }) {
     const delta = raw && raw.n >= SIGNAL_N ? raw : null;
     const shown = delta ? deltaText(delta.value, delta.digits, delta.unit ? ` ${delta.unit}` : '', delta.unit ? 100 : 1) : null;
     const same = shown?.same ?? true;
     const good = delta ? (delta.better === 'higher' ? delta.value > 0 : delta.value < 0) : false;
     return (
         <div className="panel flex min-w-0 flex-col gap-1 px-3 py-2.5 md:px-4 md:py-3">
-            <span className="label">{label}</span>
+            {term ? (
+                <GlossLink term={term} className="label self-start">
+                    {label}
+                </GlossLink>
+            ) : (
+                <span className="label">{label}</span>
+            )}
             <span className="font-display text-[30px] font-bold leading-none text-fg-1 md:text-[40px]">{value}</span>
             <span className="flex flex-wrap items-baseline gap-x-2 text-micro">
                 {delta && shown ? (
@@ -242,7 +258,7 @@ function ReportCard({ block: b, seasonWord, modelLabel: fallbackLabel }: { block
     const sameLL = m.modelLogLossSame ?? (m.n === b.n ? b.logLoss : null);
     const sameAcc = m.modelAccuracySame ?? (m.n === b.n ? b.accuracy : null);
     const sameBrier = m.modelBrierSame ?? (m.n === b.n ? b.brier : null);
-    const record = `${b.correct}-${b.n - b.correct}`;
+    const record = `${b.correct}-${b.nPicks - b.correct}`;
     const modelLabel = modelLabelOf(b, fallbackLabel);
     return (
         <div className="flex flex-col gap-3">
@@ -256,12 +272,14 @@ function ReportCard({ block: b, seasonWord, modelLabel: fallbackLabel }: { block
                 />
                 <BigNum
                     label="Log loss"
+                    term="log-loss"
                     value={dec4(b.logLoss)}
                     delta={sameLL != null && m.logLoss != null && m.n ? { value: sameLL - m.logLoss, better: 'lower', digits: 4, n: m.n } : null}
                     sub="COIN 0.6931"
                 />
                 <BigNum
                     label="Brier"
+                    term="brier"
                     value={dec4(b.brier)}
                     delta={sameBrier != null && m.brier != null && m.n ? { value: sameBrier - m.brier, better: 'lower', digits: 4, n: m.n } : null}
                     sub="COIN 0.2500"
@@ -378,10 +396,18 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
                             Acc
                         </th>
                         <th scope="col" className="text-right">
-                            Brier ↓
+                            <GlossLink term="brier" desc="lower is better">
+                                Brier
+                            </GlossLink>
+                            <span aria-hidden="true"> ↓</span>
                         </th>
                         <th scope="col" className="text-right">
-                            LL ↓
+                            <GlossLink term="log-loss" desc="lower is better">
+                                <abbr title="Log loss" className="no-underline">
+                                    LL
+                                </abbr>
+                            </GlossLink>
+                            <span aria-hidden="true"> ↓</span>
                         </th>
                     </tr>
                 </thead>

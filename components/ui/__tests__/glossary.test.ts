@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GLOSSARY, GLOSSARY_TERMS, isGlossaryTerm } from '../../../lib/glossary';
+import { GLOSSARY, GLOSSARY_ANCHORS, GLOSSARY_TERMS, isGlossaryTerm } from '../../../lib/glossary';
 
 const ROOT = resolve(__dirname, '../../..');
 
@@ -26,7 +26,23 @@ function infoTipTerms(): { term: string; file: string }[] {
     return found;
 }
 
+/** Every glossary id linked from code: <GlossLink term="…">, glossaryHref('…') and termHref-style "#term-…" strings. */
+function linkedTermIds(): { id: string; file: string }[] {
+    const found: { id: string; file: string }[] = [];
+    const res = [/<GlossLink\b[^>]*?\bterm="([^"]+)"/g, /glossaryHref\(\s*'([^']+)'\s*\)/g, /\/methodology#term-([a-z0-9-]+)/g];
+    for (const file of [...walk(join(ROOT, 'app')), ...walk(join(ROOT, 'components')), ...walk(join(ROOT, 'lib'))]) {
+        const src = readFileSync(file, 'utf8');
+        for (const re of res) for (const m of src.matchAll(re)) found.push({ id: m[1], file: file.slice(ROOT.length + 1) });
+    }
+    return found;
+}
+
 describe('glossary', () => {
+    it('every linked #term-… anchor is rendered on /methodology', () => {
+        const missing = linkedTermIds().filter(t => !GLOSSARY_ANCHORS.includes(`term-${t.id}`));
+        expect(missing).toEqual([]);
+    });
+
     it('every InfoTip term exists in lib/glossary.ts', () => {
         const missing = infoTipTerms().filter(t => !isGlossaryTerm(t.term));
         expect(missing).toEqual([]);

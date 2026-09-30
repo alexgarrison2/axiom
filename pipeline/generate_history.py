@@ -75,6 +75,13 @@ def _round(x, n):
     return None if x is None or (isinstance(x, float) and math.isnan(x)) else round(float(x), n)
 
 
+def is_lean(home_pct) -> bool:
+    """False for a forecast within 1 pt of 50% (the site's coin-flip rule, lib/matchup/format.ts
+    isCoinFlip): no side was favoured, so the row is not graded as a pick. Brier and log loss
+    still count it."""
+    return abs(round(float(home_pct), 6) - 50) >= 1
+
+
 def load_results() -> pd.DataFrame:
     """Completed NHL games from the gamestats archive + current season (home rows)."""
     g = F.load_gamestats(SCRIPT_DIR)
@@ -130,6 +137,7 @@ def row_from_snapshot(snap, res) -> dict:
         'homeWinProb': round(100 * p, 1),
         'predictedWinner': pred, 'actualWinner': actual,
         'isCorrect': pred == actual,
+        'isLean': is_lean(round(100 * p, 1)),
         'brierScore': round((p - y) ** 2, 4),
         'logLoss': round(-(y * math.log(pc) + (1 - y) * math.log(1 - pc)), 4),
         'retro': False,
@@ -163,6 +171,7 @@ def row_from_retro(old: dict, res) -> dict:
         'homeWinProb': old['homeWinProb'],
         'predictedWinner': pred, 'actualWinner': actual,
         'isCorrect': pred == actual,
+        'isLean': is_lean(old['homeWinProb']),
         'brierScore': round((p - y) ** 2, 4),
         'logLoss': round(-(y * math.log(pc) + (1 - y) * math.log(1 - pc)), 4),
         'retro': True,

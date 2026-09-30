@@ -25,6 +25,16 @@ const CARD_ANCHORS = [
     'term-rest',
     'term-projected-goals',
     'term-dfo',
+    // fix4: /accuracy labels, the card's lean flag and the Odds tab link here.
+    'term-no-lean',
+    'term-no-pick',
+    'term-back-filled',
+    'term-disclaimer',
+    'term-gate',
+    'term-brier',
+    'term-log-loss',
+    'term-fair-odds',
+    'term-edge',
 ];
 
 async function renderPage(): Promise<string> {

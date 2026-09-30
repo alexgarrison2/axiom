@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 import { KpiTile } from '@/components/ui/kpi-tile';
-import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { Crest } from '@/components/ui/crest';
 import { shortDate } from '@/components/views/format';
+import { GlossLink } from '@/components/ui/gloss-link';
 import { cn } from '@/lib/utils';
 import { UnitsChart } from './charts';
 import { cumulativeUnits, fmtAmerican, gradePending, parseLedgerBets, teamFirstScore, tidyReason } from './ledger-data';
@@ -156,13 +156,10 @@ export function Ledger({
                 {title}
                 <p role="status" className={cn('label inline-flex items-center gap-2', gateOpen ? 'text-pos' : 'text-warn')}>
                     <span aria-hidden="true" className={cn('inline-block h-1.5 w-1.5 rounded-full', gateOpen ? 'bg-pos' : 'bg-warn')} />
-                    <abbr title={gateWhy || undefined} className="no-underline">
+                    <GlossLink href="/methodology#edge" desc={gateWhy || undefined}>
                         {gateOpen ? 'Gate open' : 'Gate closed'}
-                    </abbr>
+                    </GlossLink>
                 </p>
-                <Link href="/methodology#edge" className="label text-brand hover:underline">
-                    Why<span className="sr-only"> the bet gate is {gateOpen ? 'open' : 'closed'}</span> →
-                </Link>
             </div>
 
             {!summary || summary.nGraded === 0 ? (
@@ -270,12 +267,9 @@ export function Ledger({
                                                                 {b.side === 'home' ? 'vs' : '@'} {opp}
                                                             </span>
                                                             {b.legacy && currentSeason && b.season >= currentSeason ? (
-                                                                <abbr
-                                                                    title="Published by the previous site model"
-                                                                    className="rounded-chip border border-line-strong px-1 text-micro font-normal text-fg-2 no-underline"
-                                                                >
-                                                                    LEGACY
-                                                                </abbr>
+                                                                <GlossLink term="legacy" desc="Published by the previous site model" className="font-normal">
+                                                                    <span className="rounded-chip border border-line-strong px-1 text-micro text-fg-2">LEGACY</span>
+                                                                </GlossLink>
                                                             ) : null}
                                                         </span>
                                                     </td>
@@ -323,9 +317,12 @@ export function Ledger({
             ) : null}
 
             <p className="label">
-                <abbr title={[ledger.disclaimer, ledger.unit, ledger.source ? `Source: ${ledger.source}` : null].filter(Boolean).join(' · ') || undefined} className="no-underline">
+                <GlossLink
+                    term="disclaimer"
+                    desc={[ledger.disclaimer, ledger.unit, ledger.source ? `Source: ${ledger.source}` : null].filter(Boolean).join(' · ') || undefined}
+                >
                     Info only
-                </abbr>{' '}
+                </GlossLink>{' '}
                 · 21+ · 1-800-GAMBLER
             </p>
         </div>

@@ -12,8 +12,8 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
 import { bothOpeners } from '@/lib/matchup/pills';
 import { hasPrediction } from '@/lib/matchup/edge';
-import { easternDate, isCoinFlip, railHeading, railLabel, weekdayDate } from '@/lib/matchup/format';
-import { isFinalState, slateTitle, type ArchiveSlate } from '@/lib/matchup/archive';
+import { easternDate, railHeading, railLabel, weekdayDate } from '@/lib/matchup/format';
+import { slateRecord, slateTitle, type ArchiveSlate } from '@/lib/matchup/archive';
 import { WinBarLegend } from '@/components/ui/win-bar';
 import { READING_HREF } from '@/lib/matchup/glossary-links';
 import { cn } from '@/lib/utils';
@@ -133,10 +133,9 @@ export default function PredictionsViewer({
     const next = date ? chips.map(([d]) => d).find(d => d > date && dates.includes(d)) : null;
     const nextCount = next ? predictions.filter(p => p.date === next).length : 0;
     const headDate = date ?? today;
-    const finals = offFile ? offFile.games.filter(g => isFinalState(g.state)) : [];
     // Coin flips (within 1 pt of 50) show NO LEAN and are not the model's picks.
-    const graded = finals.filter(g => g.pick?.correct != null && !isCoinFlip(g.pick.pct));
-    const right = graded.filter(g => g.pick?.correct).length;
+    const record = slateRecord(offFile?.games ?? []);
+    const right = record.right;
     const legend = !offFile && slate.some(p => hasPrediction(p));
 
     return (
@@ -177,11 +176,11 @@ export default function PredictionsViewer({
                     </ul>
                 </nav>
                 <div className="order-2 ml-auto flex items-center gap-4 md:order-3">
-                    {graded.length ? (
+                    {record.graded ? (
                         <span className="text-micro uppercase tracking-wide text-fg-3">
                             Picks{' '}
                             <b className="font-bold tabular-nums text-fg-1">
-                                {right}-{graded.length - right}
+                                {right}-{record.graded - right}
                             </b>
                         </span>
                     ) : null}

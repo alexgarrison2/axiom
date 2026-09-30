@@ -44,3 +44,42 @@ def test_best_calls_need_a_real_lean():
     assert [c['gameId'] for c in b['best_calls']] == [2]
     assert [c['gameId'] for c in b['worst_misses']] == [4]
     assert b['best_calls'][0]['legacy'] is True
+
+
+def test_coin_flip_forecast_is_not_a_hit():
+    """0.503 is within 1 pt of 50 (isCoinFlip): no lean, so never counted as a hit."""
+    assert MR.is_coin_flip(0.503) and MR.is_coin_flip(0.492) and MR.is_coin_flip(0.5)
+    assert not MR.is_coin_flip(0.51) and not MR.is_coin_flip(0.49) and not MR.is_coin_flip(0.715)
+    # Half credit for any forecaster inside the band, same as an exact pick'em.
+    assert MR._acc([1], [0.503]) == 0.5
+    assert MR._acc([0], [0.497]) == 0.5
+    assert MR._acc([1], [0.51]) == 1.0
+    # Opening night 2026-09-29: NYR@BOS at 50.3 (BOS won) is no lean, so the record is 1-1.
+    rows = [_row(1, 50.3, True, market=50.0), _row(2, 71.9, False, market=74.2), _row(3, 75.1, True, market=71.7)]
+    b = MR.block(rows, 0.536, 'test', {})
+    assert b['n'] == 3 and b['n_picks'] == 2 and b['n_no_lean'] == 1
+    assert b['correct'] == 1
+    assert b['accuracy'] == 0.5
+    assert b['by_model']['legacy']['correct'] == 1 and b['by_model']['legacy']['n_picks'] == 2
+    assert b['by_model']['legacy']['accuracy'] == 0.5
+    assert b['tiers'][0]['n'] == 0  # the 50.3 forecast is not in the 50-55 tier's record
+    # Model and market on the same games: both give the coin flip half credit.
+    assert b['baselines']['market']['accuracy'] == 0.5
+    assert b['baselines']['market']['model_accuracy_same_games'] == 0.5
+
+
+def test_coin_flip_band_leaves_brier_and_log_loss_alone():
+    rows = [_row(1, 50.3, True, market=50.0), _row(2, 71.9, False, market=74.2), _row(3, 75.1, True, market=71.7)]
+    b = MR.block(rows, 0.536, 'test', {})
+    p = [0.503, 0.719, 0.751]
+    y = [1, 0, 1]
+    assert abs(b['brier'] - sum((pi - yi) ** 2 for pi, yi in zip(p, y)) / 3) < 1e-12
+    assert abs(b['log_loss'] - MR._ll(y, p)) < 1e-12
+
+
+def test_history_flags_coin_flips_as_no_lean():
+    import generate_history as GH
+    assert GH.is_lean(50.3) is False
+    assert GH.is_lean(49.1) is False
+    assert GH.is_lean(51.0) is True
+    assert GH.is_lean(48.9) is True

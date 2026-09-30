@@ -5,6 +5,7 @@
  */
 import type { GameState } from '../../types/prediction';
 import { TEAM_NAMES } from '../../components/ui/team-color';
+import { isCoinFlip } from './format';
 
 export interface ArchiveSide {
     tri: string;
@@ -112,8 +113,8 @@ export function pickFromHistory(h: HistoryRow, homeTri: string, awayTri: string)
     const raw = homePick ? h.homeWinProb : 100 - h.homeWinProb;
     return {
         tri: homePick ? homeTri : awayTri,
-        // 50.3 stays 50.3: a rounded "50%" pick reads as no pick at all.
-        pct: Math.round(raw) === 50 ? Math.round(raw * 10) / 10 : Math.round(raw),
+        // A coin flip keeps its decimal (50.3, 50.8) so isCoinFlip still sees it: rounding 50.8 up to 51 would grade it as a pick.
+        pct: isCoinFlip(raw) ? Math.round(raw * 10) / 10 : Math.round(raw),
         correct: typeof h.isCorrect === 'boolean' ? h.isCorrect : null,
     };
 }
@@ -176,6 +177,16 @@ function sortArchive(games: ArchiveGame[]): ArchiveGame[] {
 
 export function isFinalState(s: GameState): boolean {
     return s === 'OFF' || s === 'FINAL';
+}
+
+/**
+ * The slate header's pick record for one day: graded finals only, and coin
+ * flips (isCoinFlip, within 1 pt of 50) left out because they carry no lean.
+ * /accuracy and model_report.py apply the same rule, so the three agree.
+ */
+export function slateRecord(games: ArchiveGame[]): { right: number; graded: number } {
+    const graded = games.filter(g => isFinalState(g.state) && g.pick?.correct != null && !isCoinFlip(g.pick.pct));
+    return { right: graded.filter(g => g.pick?.correct).length, graded: graded.length };
 }
 
 /** "FINAL", "FINAL/OT", "FINAL/SO". */
