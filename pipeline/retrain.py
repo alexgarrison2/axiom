@@ -524,6 +524,23 @@ def roster_prior_backtest(M, cols, out_path=os.path.join(OUT_DIR, 'roster_prior_
 
 # ─── Promotion ────────────────────────────────────────────────────────────────
 
+def carry_legacy_baselines(cand_meta, cur_meta):
+    """--no-legacy runs skip the (slow) legacy XGB walk-forward.  Its fold scores
+    are fixed per test season, so keep the current meta's values instead of
+    dropping the evidence (the candidate-specific same-games score is not copied)."""
+    cur = {f['test_season']: f for f in (cur_meta or {}).get('cv_results', [])}
+    for f in cand_meta.get('cv_results', []):
+        c = cur.get(f['test_season'])
+        if not c or 'legacy_xgb_same_games' in f:
+            continue
+        if 'legacy_xgb' in c:
+            f['legacy_xgb'] = c['legacy_xgb']
+        if 'legacy_xgb_same_games' in c:
+            f['legacy_xgb_same_games'] = {k: v for k, v in c['legacy_xgb_same_games'].items()
+                                          if k != 'new_model_log_loss'}
+            f['legacy_xgb_same_games']['carried_from'] = cur_meta.get('model_version')
+
+
 def promotion_checks(cand_meta, cur_meta):
     checks, ok = [], True
     cur = {f['test_season']: f for f in (cur_meta or {}).get('cv_results', [])}
@@ -586,6 +603,7 @@ def main(argv=None):
                                M=M, xg_source=xg_source)
     if selection:
         meta['feature_selection'] = selection
+    carry_legacy_baselines(meta, cur_meta)
     ok, checks = promotion_checks(meta, cur_meta)
     promoted = bool(ok and not args.dry_run)
     if promoted:

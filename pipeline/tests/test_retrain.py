@@ -97,3 +97,12 @@ def test_no_hand_waved_constants_in_model_code():
             continue
         text = open(p).read().lower()
         assert 'common sense' not in text and 'per user request' not in text and 'user request' not in text, name
+
+
+def test_no_legacy_retrain_keeps_legacy_baselines(meta):
+    import copy
+    cand = {'cv_results': [{k: v for k, v in f.items() if not k.startswith('legacy')} for f in meta['cv_results']]}
+    R.carry_legacy_baselines(cand, copy.deepcopy(meta))
+    for f, c in zip(cand['cv_results'], meta['cv_results']):
+        assert f['legacy_xgb_same_games']['log_loss'] == c['legacy_xgb_same_games']['log_loss']
+        assert 'new_model_log_loss' not in f['legacy_xgb_same_games']
