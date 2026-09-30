@@ -74,7 +74,8 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | `preseason_prior` | bool | no | `True` while either team has fewer than 10 regular-season GP (the model is running mostly on priors). |
 | `side_model_win_pct` | float % | no | Model-only win probability, before the market blend. |
 | `side_win_pct` | float % | no | **Published** win probability: the model blended with the de-vigged market (`market.py`). Home + away = 100. |
-| `side_model_odds` | string | no | Fair American odds of the published probability (`-125`, `+105`). |
+| `side_model_odds` | string | no | Fair American odds of the **model-only** probability `side_model_win_pct` (`-125`, `+105`). Before fix1-G1 this held the published line; rows frozen before then are relabelled on read. |
+| `side_blend_odds` | string | no | Fair American odds of the **published** probability `side_win_pct` (the blend). Both lines are computed from the rounded percentages and agree with them to within 1 cent (validate_outputs `fair_odds`). |
 | `side_vegas_odds` | int | yes | Market moneyline (American) at prediction time. Empty without a line. |
 | `side_vegas_win_pct` | float % | yes | De-vigged market probability (power method). Home + away = 100.0 ± 0.1. |
 | `blend_weight` | float | yes | Model weight in the logit blend (0-1). It ramps up from 0.2 over the first 20 GP. Empty without odds. |

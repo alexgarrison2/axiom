@@ -23,9 +23,13 @@ describe('model_report.json → report card', () => {
         expect(b!.reliability).toHaveLength(10);
     });
 
-    it('has an empty current season on opening night rather than last season', () => {
-        const cur = report.seasons['2026-27']?.all;
-        if (cur) expect(cur.n).toBe(0);
+    it('counts only this season’s graded live games (never last season’s), whatever the date', () => {
+        const cur = report.currentSeason ? report.seasons[report.currentSeason]?.all : undefined;
+        if (!cur || !report.currentSeason) return;
+        const history = read('data', 'prediction_history.json') as { season?: string; retro?: boolean }[];
+        const graded = history.filter(r => r.season === report.currentSeason && !r.retro).length;
+        expect(cur.n).toBe(graded);
+        if (cur.n === 0) expect(cur.logLoss).toBeNull();
     });
 
     it('combines seasons n-weighted', () => {

@@ -336,10 +336,48 @@ def round_floats(x, nd=4):
     return x
 
 
+def _graded_changed_at():
+    try:
+        with open(HISTORY_META_PATH) as f:
+            return json.load(f).get('graded_changed_at')
+    except Exception:
+        return None
+
+
+def write_if_changed(path, obj, **dump_kw):
+    """Write ``obj`` unless only its generated_at differs from the file on disk
+    (an hourly run with nothing new must not produce a data commit).  The file is
+    still rewritten when its generated_at predates the last change to the graded
+    record, so validate_outputs 'reports' always sees it as current."""
+    try:
+        with open(path) as f:
+            old = json.load(f)
+    except Exception:
+        old = None
+    if isinstance(old, dict):
+        same = {k: v for k, v in old.items() if k != 'generated_at'} == \
+            json.loads(json.dumps({k: v for k, v in obj.items() if k != 'generated_at'}, default=float))
+        changed_at = _graded_changed_at()
+        fresh = True
+        if changed_at:
+            try:
+                fresh = pd.Timestamp(old.get('generated_at')) >= pd.Timestamp(changed_at)
+            except (TypeError, ValueError):
+                fresh = False
+        if same and fresh:
+            obj['generated_at'] = old.get('generated_at')
+            return False
+    tmp = path + '.tmp'
+    with open(tmp, 'w') as f:
+        json.dump(obj, f, **dump_kw)
+    os.replace(tmp, path)
+    return True
+
+
 def write_report(path=OUT_PATH, **kw):
     rep = round_floats(build_report(**kw))
-    with open(path, 'w') as f:
-        json.dump(rep, f, indent=1, default=float)
+    if not write_if_changed(path, rep, indent=1, default=float):
+        print("[model_report] unchanged except generated_at - not rewritten")
     s = rep['seasons']
     for k, v in s.items():
         a = v['all']

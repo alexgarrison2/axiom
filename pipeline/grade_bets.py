@@ -194,10 +194,10 @@ def build_ledger(allow_fetch=True, now=None):
 
 
 def write_ledger(path=OUT_PATH, **kw):
-    from model_report import round_floats
+    from model_report import round_floats, write_if_changed
     led = round_floats(build_ledger(**kw))
-    with open(path, 'w') as f:
-        json.dump(led, f, indent=1)
+    if not write_if_changed(path, led, indent=1):
+        print("[bet_ledger] unchanged except generated_at - not rewritten")
     for s, v in led['seasons'].items():
         sm = v['summary']
         print(f"[bet_ledger] {s}: {sm['n_bets']} bets, record {sm['record']}, profit {sm['units_profit']}u, "

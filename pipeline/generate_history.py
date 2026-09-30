@@ -316,6 +316,9 @@ def write_meta(rows, not_graded, path=META_PATH, now=None):
         'newest_graded': ({'gameId': newest['gameId'], 'date': newest['date']} if newest else None),
         'not_graded': not_graded,
     }
+    if prev and {k: v for k, v in prev.items() if k != 'generated_at'} == \
+            json.loads(json.dumps({k: v for k, v in meta.items() if k != 'generated_at'})):
+        return prev   # nothing changed: no rewrite, no data commit
     with open(path, 'w') as f:
         json.dump(meta, f, indent=1)
     return meta
