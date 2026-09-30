@@ -5,6 +5,7 @@ import type { Side, SideData } from '@/types/prediction';
 import { fmtSv, goalieSeasonLine, lastName } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
 import styles from './slate.module.css';
+import { GoalieGlyph } from './GoalieGlyph';
 
 export type GoalieTone = 'conf' | 'likely' | 'proj';
 
@@ -38,7 +39,7 @@ function Star({ on, team, onToggle, home }: { on: boolean; team: string; onToggl
                 'absolute top-0 z-20 inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors coarse:h-9 coarse:w-9',
                 home ? '-right-1.5 coarse:-right-3' : '-left-1.5 coarse:-left-3',
                 '-mt-1.5 coarse:-mt-3',
-                on ? 'text-warn' : 'text-fg-disabled hover:text-fg-2 focus-visible:text-fg-2',
+                on ? 'text-warn' : 'text-fg-3 hover:text-fg-1 focus-visible:text-fg-1',
             )}
         >
             <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3 w-3">
@@ -136,6 +137,7 @@ export function TeamSide({
                 )}
                 title={s.goalie ? `${s.goalie} · ${st.label}${src ? ` (${src})` : ''}` : undefined}
             >
+                {s.goalie ? <GoalieGlyph tone={st.tone} /> : null}
                 {s.goalie ? lastName(s.goalie) : s.team.commonName}
                 <span className="sr-only">{s.goalie ? `, ${s.team.commonName} goalie, ${st.label.toLowerCase()} starter` : ', starter not announced'}</span>
             </span>

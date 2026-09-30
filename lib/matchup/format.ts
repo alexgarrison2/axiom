@@ -66,6 +66,42 @@ export function gsaxWindow(seasons: string[], playedThisSeason: boolean): string
     return span.length > 1 ? `${span[0]} to ${span[span.length - 1]}` : (span[0] ?? 'prior seasons');
 }
 
+/** A pregame % (either side) within 1 pt of 50: no lean either way, so never graded as a pick. */
+export function isCoinFlip(pct: number | null | undefined): boolean {
+    return typeof pct === 'number' && Number.isFinite(pct) && Math.abs(pct - 50) < 1;
+}
+
+/** Short tag for a rating window: "2024-25 to 2025-26" → "24-26", "2025-26" → "25-26". */
+export function windowTag(window: string | null | undefined): string | null {
+    if (!window) return null;
+    const years = [...window.matchAll(/(\d{4})-(\d{2})/g)];
+    if (!years.length) return null;
+    const first = years[0][1].slice(2);
+    const last = years[years.length - 1][2];
+    return `${first}-${last}`;
+}
+
+/** The site-wide small-sample gate: current-season games below which a value gets no good/bad colour. */
+export const SMALL_SAMPLE_GP = 5;
+
+/**
+ * Headline tone of a regressed GSAx/gm rating: green / red only once the
+ * goalie has a real sample this season; before that it is neutral and tagged
+ * with the seasons it rests on.
+ */
+export function gsaxHeadline(v: number, curGp: number | null | undefined): { tone: 'pos' | 'neg' | 'neutral'; prior: boolean } {
+    const prior = (curGp ?? 0) < SMALL_SAMPLE_GP;
+    if (prior || Math.abs(v) <= 0.05) return { tone: 'neutral', prior };
+    return { tone: v > 0 ? 'pos' : 'neg', prior };
+}
+
+/** Compact age for tight captions: "12h ago" → "12H", "just now" → "NOW". */
+export function shortAge(iso: string | null | undefined, now: Date): string | null {
+    const a = relAge(iso, now);
+    if (!a) return null;
+    return a === 'just now' ? 'now' : a.replace(/\s*ago$/, '');
+}
+
 /** Clock time without zone: "5:12 PM". */
 export function fmtClock(iso: string, timeZone?: string): string {
     const d = new Date(iso);

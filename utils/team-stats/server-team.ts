@@ -9,7 +9,7 @@ import { SEASON_ID } from '../../lib/season';
 import { leaguesSummary } from './league-summary';
 import { leagueAverages } from './chart-metrics';
 import { goalieKey } from './filter';
-import { gsaxOf, packGames } from './game-row';
+import { goalieStartsGsax, packGames } from './game-row';
 import { gameTypeOf, prevSeasonId, seasonLabel } from './season';
 import { leagueStandings, loadPredictionRows, loadProjections, ratingsSeason, readPublicJson } from './server';
 import { teamMeta } from './teams';
@@ -290,10 +290,9 @@ function impactBuilder() {
 /** A goalie's regular-season line; starts (GSAx, last five) count for any club, so a newcomer's season is complete. */
 function goalieSeason(pid: string, name: string, rows: PlayerRow[], leagueGames: GameRow[]): GoalieSeason | null {
     const mine = rows.filter(r => String(r.player_id) === pid && gameTypeOf(r.game_id) === 2 && toiSec(r.toi) > 0);
-    const key = goalieKey(name);
-    const starts = leagueGames.filter(g => g.type === 2 && g.starter && goalieKey(g.starter) === key);
+    const { starts, gsax } = goalieStartsGsax(leagueGames, name);
     if (mine.length === 0 && starts.length === 0) return null;
-    const s: GoalieSeason = { gp: mine.length, gs: starts.length, w: 0, l: 0, ot: 0, sa: 0, sv: 0, ga: 0, toi: 0, gsax: null, last5: [] };
+    const s: GoalieSeason = { gp: mine.length, gs: starts.length, w: 0, l: 0, ot: 0, sa: 0, sv: 0, ga: 0, toi: 0, gsax, last5: [] };
     for (const r of mine) {
         if (r.decision === 'W') s.w++;
         else if (r.decision === 'L') s.l++;
@@ -303,7 +302,6 @@ function goalieSeason(pid: string, name: string, rows: PlayerRow[], leagueGames:
         s.ga += n(r.goals_against);
         s.toi += toiSec(r.toi);
     }
-    if (starts.length) s.gsax = r2(starts.reduce((acc, g) => acc + gsaxOf(g), 0));
     s.last5 = starts.slice(0, 5).map(g => ({ date: g.date, opp: g.opp, home: g.home, result: g.result, ga: g.ga, sa: g.sa }));
     return s;
 }

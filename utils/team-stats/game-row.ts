@@ -1,4 +1,5 @@
 import { gameTypeOf, seasonOfGameId } from './season';
+import { goalieKey } from './filter';
 import type { GameRow, PackedGames, PeriodSplits, Quad, ResultCode } from './types';
 
 const RESULTS = new Set<ResultCode>(['RW', 'OTW', 'SOW', 'RL', 'OTL', 'SOL']);
@@ -216,4 +217,16 @@ export function unpackGames(packed: PackedGames): GameRow[] {
 export function gsaxOf(g: Pick<GameRow, 'xga' | 'xgane' | 'ga' | 'enga'>): number {
     const xg = Number.isFinite(g.xgane) ? g.xgane : g.xga;
     return xg - (g.ga - g.enga);
+}
+
+/**
+ * A goalie's regular-season starts (any club) and their summed GSAx, rounded
+ * to 2 dp; gsax is null before his first start. The team page's goalie lines
+ * and the matchup card both read this, so the two always agree.
+ */
+export function goalieStartsGsax(games: GameRow[], name: string): { starts: GameRow[]; gs: number; gsax: number | null } {
+    const key = goalieKey(name);
+    const starts = games.filter(g => g.type === 2 && g.starter && goalieKey(g.starter) === key);
+    const gsax = starts.length ? Math.round(starts.reduce((acc, g) => acc + gsaxOf(g), 0) * 100) / 100 : null;
+    return { starts, gs: starts.length, gsax };
 }

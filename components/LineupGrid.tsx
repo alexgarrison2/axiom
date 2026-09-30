@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { InjuryView, LineImpact, LineupPlayerView, SideDetails, TeamRef } from '@/types/prediction';
 import { fmtSigned, relAge } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
@@ -47,7 +48,12 @@ function Player({ pl }: { pl: LineupPlayerView | undefined }) {
 }
 
 function LineCell({ imp }: { imp: LineImpact | null | undefined }) {
-    if (!imp) return <span className="block text-right text-micro text-fg-3">—</span>;
+    if (!imp)
+        return (
+            <span title="unrated" className="block text-right text-micro text-fg-3">
+                —<span className="sr-only"> unrated</span>
+            </span>
+        );
     return (
         <span className={cn('flex flex-col items-end leading-tight tabular-nums', lineTone(imp.pct))} title={`${ord(imp.rank)} of ${imp.outOf}`}>
             <span className="text-caption font-bold">{fmtSigned(imp.total, 1)}</span>
@@ -114,7 +120,7 @@ function OutRow({ items }: { items: InjuryView[] }) {
  * player's impact, line ranks, the lineup source age and injuries.
  * Presentational: the data comes from /api/matchup-details.
  */
-export default function LineupGrid({ team, d, now }: { team: TeamRef; d: SideDetails; now: Date }) {
+export default function LineupGrid({ team, d, now, seasonTag }: { team: TeamRef; d: SideDetails; now: Date; seasonTag?: ReactNode }) {
     const hasLines = FWD.some(k => d.lines[k]?.length) || DEF.some(k => d.lines[k]?.length);
     const age = relAge(d.lineupUpdatedAt, now);
     return (
@@ -132,6 +138,7 @@ export default function LineupGrid({ team, d, now }: { team: TeamRef; d: SideDet
                             {d.grade.rank != null ? ` · ${d.grade.rank}/${d.grade.outOf}` : ''}
                         </span>
                     ) : null}
+                    {seasonTag}
                     {hasLines && age ? <span title={d.lineupSource ? `${d.lineupSource} via DailyFaceoff` : 'DailyFaceoff'}>· {age}</span> : null}
                 </span>
             </div>

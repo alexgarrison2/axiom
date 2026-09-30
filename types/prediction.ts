@@ -183,8 +183,9 @@ export interface GoalieView {
     gsaxPerGame: number | null;
     /** Season window of the regressed GSAx rating ("2024-25 to 2026-27"). */
     gsaxSeason: string | null;
-    /** Raw GSAx this season (total) and games it covers; null before his first game. */
+    /** GSAx per start this season (empty-net goals excluded, as on the team page); null before his first start. */
     gsaxCur?: number | null;
+    /** Starts behind gsaxCur. */
     gsaxCurGp?: number;
     /** Injury tag when the goalie is on IR / out ("IR", "Dec 30"). */
     injury?: { status: string; returnLabel: string | null } | null;
@@ -205,6 +206,8 @@ export interface SideDetails {
 export interface MatchupDetails {
     home: SideDetails;
     away: SideDetails;
+    /** Season id the lineup impact values describe ("20252026" until this season's ratings are rebuilt). */
+    impactSeason?: string | null;
 }
 
 export interface MatchupDetailsPayload {

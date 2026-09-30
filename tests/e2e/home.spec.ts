@@ -140,7 +140,10 @@ test.describe('home slate', () => {
 
     test('goalie stat lines from last season carry a 25-26 tag', async ({ page }) => {
         await page.goto('/');
-        for (const line of await page.locator('article h2 [class*="gstat"] > span:first-child').all()) {
+        // The h2 is the matchup name only, so the goalie lines sit beside it, not inside it.
+        const lines = await page.locator('article [class*="gstat"] > span:first-child:has(.sr-only)').all();
+        expect(lines.length).toBeGreaterThan(0);
+        for (const line of lines) {
             const sr = (await line.locator('.sr-only').textContent()) ?? '';
             if (/25-26 season/.test(sr)) await expect(line).toContainText('25-26');
             else expect(sr).toMatch(/^This season/);
@@ -195,6 +198,63 @@ test.describe('home slate', () => {
         }
         await card.getByRole('button', { name: 'Collapse' }).click();
         await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    test('Collapse hands keyboard focus back to the card toggle, without smooth scroll under reduced motion', async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.goto('/');
+        await settle(page);
+        const behaviours: string[] = [];
+        await page.exposeFunction('__scrollBehaviour', (b: string) => behaviours.push(b));
+        await page.evaluate(() => {
+            const orig = Element.prototype.scrollIntoView;
+            Element.prototype.scrollIntoView = function (arg?: boolean | ScrollIntoViewOptions) {
+                (window as unknown as { __scrollBehaviour: (b: string) => void }).__scrollBehaviour(typeof arg === 'object' ? String(arg.behavior ?? 'auto') : 'auto');
+                return orig.call(this, arg);
+            };
+        });
+        const cardsOnPage = page.locator('article[id]');
+        const n = Math.min(await cardsOnPage.count(), 3);
+        const names = new Set<string>();
+        for (let i = 0; i < n; i++) {
+            const card = cardsOnPage.nth(i);
+            const toggle = card.locator('h2 button[aria-expanded]');
+            await toggle.focus();
+            await page.keyboard.press('Enter');
+            await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+            const collapse = card.getByRole('button', { name: /^Collapse / });
+            const name = (await collapse.getAttribute('aria-label')) ?? '';
+            expect(name).not.toContain('@');
+            names.add(name);
+            await collapse.focus();
+            await page.keyboard.press('Enter');
+            await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+            expect(await toggle.evaluate(el => el === document.activeElement)).toBe(true);
+        }
+        expect(names.size).toBe(n);
+        expect(behaviours.length).toBeGreaterThan(0);
+        expect(behaviours).not.toContain('smooth');
+    });
+
+    test('the legend opens Reading a card, and a Why-tab chip opens its glossary entry', async ({ page }) => {
+        await page.goto('/');
+        const legend = page.locator('a[href="/methodology#reading"]').first();
+        if (await legend.count()) {
+            await legend.click();
+            await expect(page).toHaveURL(/\/methodology#reading$/);
+            await expect(page.locator('#reading')).toBeInViewport();
+            await page.goBack();
+        }
+        const card = page.locator('article[id]').first();
+        await card.locator('h2 button[aria-expanded]').click();
+        await card.getByRole('radio', { name: 'Why' }).click();
+        // Anchors G3 is still adding (term-opener, term-wt, term-lean) are skipped here.
+        const chip = card.locator('[role="region"] a[href^="/methodology#term-"]:not([href$="-opener"]):not([href$="-wt"]):not([href$="-lean"])').first();
+        await expect(chip).toBeVisible();
+        const href = (await chip.getAttribute('href')) ?? '';
+        await chip.click();
+        await expect(page).toHaveURL(new RegExp(`${href.replace(/[#/]/g, '\\$&')}$`));
+        await expect(page.locator(`[id="${href.split('#')[1]}"]`)).toBeInViewport();
     });
 
     test('Odds tab: the line-move dialog shows moneyline and total movement with zoned times (mocked API)', async ({ page }) => {
@@ -266,7 +326,7 @@ test.describe('game lifecycle', () => {
         await expect(card).toContainText(/FINAL · OT/i);
         await expect(card).toContainText('1-0');
         await expect(card).toContainText(/Model pick (right|wrong)/);
-        await expect(card.locator('[role="img"][aria-label^="Pregame win probability"]')).toHaveClass(/opacity-\[\.55\]/);
+        await expect(card.locator('[role="img"][aria-label^="Pregame win probability"]')).toHaveAttribute('data-dimmed', 'true');
         await expect(card).not.toContainText('Edge');
         expect(await card.innerText()).not.toMatch(/\b\d+(\.\d)?u\b/);
     });
@@ -373,6 +433,19 @@ test.describe('favourites', () => {
         await page.reload();
         await expect(page.locator('article').first()).toHaveAttribute('id', ids[ids.length - 1]);
         await expect(page.getByRole('heading', { name: /Your team/ })).toBeVisible();
+    });
+
+    test('a long YOUR TEAMS strip scrolls inside itself at 390px, spells out Playoffs, no page overflow', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/');
+        const tris = await page.locator('article [data-tri]').allTextContents();
+        await page.evaluate(t => localStorage.setItem('ponyxg:favorites', JSON.stringify(t)), [...new Set(tris)]);
+        await page.reload();
+        const strip = page.locator('section[aria-labelledby="your-team"]');
+        await expect(strip).toBeVisible();
+        expect(await strip.evaluate(el => el.scrollWidth)).toBeLessThanOrEqual(390);
+        expect(await strip.innerText()).not.toMatch(/\bPO\b/);
+        expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
     });
 
     test('renders normally when localStorage throws', async ({ page }) => {

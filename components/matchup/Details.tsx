@@ -68,7 +68,7 @@ export default function Details({ p, phase, implication, onCollapse }: DetailsPr
             <button
                 type="button"
                 onClick={onCollapse}
-                aria-label="Collapse"
+                aria-label={`Collapse ${game}`}
                 className="mx-auto inline-flex h-7 w-12 items-center justify-center rounded-control text-fg-3 transition-colors hover:bg-surface-2 hover:text-fg-1 coarse:h-11"
             >
                 <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4">

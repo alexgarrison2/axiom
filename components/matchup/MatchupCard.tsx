@@ -7,8 +7,8 @@ import type { GameImplication } from '@/utils/implications';
 import { WinBar } from '@/components/ui/win-bar';
 import { clashSafePair } from '@/components/ui/team-color';
 import { cardAnchor, finalLabel, hasScore, modelCorrect, phaseOf, type LiveGame, type Phase } from '@/lib/matchup/lifecycle';
-import { forecastPair, gatedEdge, hasMarket, modelLean } from '@/lib/matchup/edge';
-import { finalSentence, fmtOdds } from '@/lib/matchup/format';
+import { forecastPair, gatedEdge, hasMarket, hasPrediction, modelLean } from '@/lib/matchup/edge';
+import { finalSentence, fmtOdds, isCoinFlip } from '@/lib/matchup/format';
 import { situationChip } from '@/lib/matchup/pills';
 import { cn } from '@/lib/utils';
 import { StatusLine } from './StatusLine';
@@ -35,9 +35,21 @@ export interface MatchupCardProps {
     seriesScore?: { away: number; home: number } | null;
 }
 
+/** A final whose pregame forecast sat within 1 pt of 50: no lean, never graded. */
+export function coinFlipFinal(p: Prediction, phase: Phase): boolean {
+    return phase === 'final' && hasPrediction(p) && isCoinFlip(p.home.winPct);
+}
+
 /** Centre of the footer: the result flag on finals, else the gated edge or the model lean. */
 function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame | null }) {
     if (phase === 'final') {
+        if (coinFlipFinal(p, phase)) {
+            return (
+                <span className="text-caption font-bold uppercase tracking-chip text-fg-3" title={`Pregame ${p.home.team.triCode} ${p.home.winPct?.toFixed(1)}%`}>
+                    No lean
+                </span>
+            );
+        }
         const ok = modelCorrect(p, live);
         if (ok == null) return null;
         return (
@@ -46,6 +58,13 @@ function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame 
                 <span className="sr-only">{ok ? 'Model pick right' : 'Model pick wrong'}</span>
             </span>
         );
+    }
+    if (phase === 'live') {
+        return hasMarket(p) ? (
+            <span title="Pregame odds" className="inline-flex items-center rounded-[3px] border border-mute px-1 text-micro font-medium leading-[14px] text-fg-3">
+                Pre<span className="sr-only">game odds</span>
+            </span>
+        ) : null;
     }
     if (phase !== 'pre') return null;
     const edge = gatedEdge(p);
@@ -73,8 +92,10 @@ function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame 
 export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFavorite, highlighted, seriesScore }: MatchupCardProps) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLElement>(null);
+    const toggleRef = useRef<HTMLButtonElement>(null);
     const uid = useId();
     const titleId = `${uid}-title`;
+    const resultId = `${uid}-result`;
     const detailsId = `${uid}-details`;
     const phase = phaseOf(p, live);
     const started = phase !== 'pre';
@@ -91,9 +112,12 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
     const awayLost = phase === 'final' && scored && live.away.score < live.home.score;
     const homeLost = phase === 'final' && scored && live.home.score < live.away.score;
 
+    // The Collapse button unmounts with the panel: hand focus back to the card toggle.
     const collapse = useCallback(() => {
         setOpen(false);
-        requestAnimationFrame(() => ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+        toggleRef.current?.focus({ preventScroll: true });
+        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        requestAnimationFrame(() => ref.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' }));
     }, []);
 
     let finalText: string | null = null;
@@ -110,7 +134,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
         <article
             ref={ref}
             id={anchor}
-            aria-labelledby={titleId}
+            aria-labelledby={finalText ? `${titleId} ${resultId}` : titleId}
             data-phase={phase}
             className={cn(
                 'panel team-wash panel-hover scroll-mt-[calc(var(--appbar-h)+12px)] transition-[box-shadow,border-color] duration-300 [container-type:inline-size]',
@@ -135,35 +159,41 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                     </div>
                 </div>
 
-                {/* Teams: the h2 holds the expand toggle; its hit area stretches over the card summary. */}
-                <h2 className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 font-mono cq-sm:gap-2">
+                {/* Teams. The h2 is the matchup name only: it holds the expand toggle, whose hit area stretches over the card summary. */}
+                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 font-mono cq-sm:gap-2">
                     <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!scored} favorite={favorites.includes(a)} onFavorite={() => onFavorite(a)} />
-                    <button
-                        type="button"
-                        aria-expanded={open}
-                        aria-controls={detailsId}
-                        onClick={() => setOpen(o => !o)}
-                        className="min-h-6 min-w-4 rounded-control px-0.5 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
-                    >
-                        <span id={titleId} className="sr-only">
-                            {title}
-                            {finalText ? `. ${finalText}` : ''}
+                    {finalText ? (
+                        <span id={resultId} className="sr-only">
+                            {finalText}
                         </span>
-                        {scored ? (
-                            <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
-                                <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
-                                <span className="text-[0.7em] text-fg-disabled">-</span>
-                                <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
+                    ) : null}
+                    <h2 className="flex justify-center">
+                        <button
+                            ref={toggleRef}
+                            type="button"
+                            aria-expanded={open}
+                            aria-controls={detailsId}
+                            onClick={() => setOpen(o => !o)}
+                            className="min-h-6 min-w-4 rounded-control px-0.5 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
+                        >
+                            <span id={titleId} className="sr-only">
+                                {title}
                             </span>
-                        ) : (
-                            <span aria-hidden="true" className="text-body font-medium text-fg-disabled">
-                                @
-                            </span>
-                        )}
-                        <span className="sr-only">{open ? ', hide details' : ', show details'}</span>
-                    </button>
+                            {scored ? (
+                                <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
+                                    <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
+                                    <span className="text-[0.7em] text-fg-disabled">-</span>
+                                    <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
+                                </span>
+                            ) : (
+                                // Drawn by CSS so the heading's text (and any name built from it) never holds "@".
+                                <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
+                            )}
+                            <span className="sr-only">{open ? ', hide details' : ', show details'}</span>
+                        </button>
+                    </h2>
                     <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!scored} favorite={favorites.includes(h)} onFavorite={() => onFavorite(h)} />
-                </h2>
+                </div>
 
                 {forecast ? (
                     <WinBar
@@ -176,6 +206,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                         homeColor={colors.home}
                         size="lg"
                         dimmed={started}
+                        digits={coinFlipFinal(p, phase) ? 1 : 0}
                         label={started ? 'Pregame win probability' : 'Our forecast win probability'}
                         className="pointer-events-none"
                     />
@@ -185,11 +216,15 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                     </div>
                 )}
 
+                {/* Footer: tricode + book odds under each end of the bar, the flag in the middle. */}
                 <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-                    <span className="text-body font-bold tabular-nums text-fg-2 cq-md:text-[15px]">
+                    <span className="flex min-w-0 items-baseline gap-1.5 text-body font-bold tabular-nums text-fg-2 cq-md:text-[15px]">
+                        <span data-tri className="text-micro font-medium tracking-wide text-fg-3">
+                            {a}
+                        </span>
                         {hasMarket(p) ? (
                             <>
-                                <span className="sr-only">{a} moneyline </span>
+                                <span className="sr-only"> moneyline </span>
                                 {fmtOdds(p.away.marketOdds)}
                             </>
                         ) : null}
@@ -197,13 +232,16 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                     <span className="text-center">
                         <Flag p={p} phase={phase} live={live} />
                     </span>
-                    <span className="text-right text-body font-bold tabular-nums text-fg-2 cq-md:text-[15px]">
+                    <span className="flex min-w-0 items-baseline justify-end gap-1.5 text-body font-bold tabular-nums text-fg-2 cq-md:text-[15px]">
                         {hasMarket(p) ? (
                             <>
                                 <span className="sr-only">{h} moneyline </span>
                                 {fmtOdds(p.home.marketOdds)}
                             </>
                         ) : null}
+                        <span data-tri aria-hidden={hasMarket(p) || undefined} className="text-micro font-medium tracking-wide text-fg-3">
+                            {h}
+                        </span>
                     </span>
                 </div>
             </div>

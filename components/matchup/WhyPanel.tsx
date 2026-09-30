@@ -7,17 +7,31 @@ import { modelWeight, pickForm } from '@/lib/matchup/edge';
 import RecentGamesList from '@/components/RecentGamesList';
 import { WhyThisPick } from './WhyThisPick';
 import { ContextChips } from './ContextChips';
+import { termHref } from '@/lib/matchup/glossary-links';
 import { DetailsLoading, type DetailsState } from './DetailsLoading';
 import { cn } from '@/lib/utils';
 
-/** Dense stat tile: label, Chakra value, tiny sub. */
-function Tile({ label, value, sub, empty }: { label: string; value: string; sub?: string; empty?: boolean }) {
-    return (
-        <div className="tile flex min-w-0 flex-col gap-0.5 px-2.5 py-2 cq-sm:px-3">
+/** Dense stat tile: label, Chakra value, tiny sub. With `term` the tile opens its glossary entry. */
+function Tile({ label, value, sub, subTitle, empty, term }: { label: string; value: string; sub?: string; subTitle?: string; empty?: boolean; term?: string }) {
+    const href = term ? termHref(term) : null;
+    const body = (
+        <>
             <span className="label truncate">{label}</span>
             <span className={cn('truncate font-display text-[17px] font-bold leading-6 tabular-nums cq-sm:text-[22px]', empty ? 'text-fg-3' : 'text-fg-1')}>{value}</span>
-            {sub ? <span className="truncate text-micro tracking-wide text-fg-3">{sub}</span> : null}
-        </div>
+            {sub ? (
+                <span className="truncate text-micro tracking-wide text-fg-3" title={subTitle}>
+                    {sub}
+                </span>
+            ) : null}
+        </>
+    );
+    const cls = 'tile flex min-w-0 flex-col gap-0.5 px-2.5 py-2 cq-sm:px-3';
+    return href ? (
+        <a href={href} title={subTitle} className={cn(cls, 'transition-colors hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand')}>
+            {body}
+        </a>
+    ) : (
+        <div className={cls}>{body}</div>
     );
 }
 
@@ -68,18 +82,22 @@ export function WhyPanel({ p, phase, state, implication }: { p: Prediction; phas
     const w = modelWeight(p);
     const anyPicksIn = (picks: PickSummaries) => sides.some(s => (picks[s.team.triCode]?.pickedWin.length ?? 0) + (picks[s.team.triCode]?.pickedLose.length ?? 0) > 0);
     const rest = (d: number | null) => (d == null ? '—' : `${d}d`);
+    const wtTitle = w != null ? `model ×${w.toFixed(2)} · market ×${(1 - w).toFixed(2)}` : undefined;
     return (
         <div className="flex flex-col gap-3.5">
             <div className="grid grid-cols-3 gap-2">
-                <Tile label="Rest" value={`${rest(a.restDays)} · ${rest(h.restDays)}`} sub={`${a.team.triCode} · ${h.team.triCode}`} empty={a.restDays == null && h.restDays == null} />
+                <Tile label="Rest" term="rest" value={`${rest(a.restDays)} · ${rest(h.restDays)}`} sub={`${a.team.triCode} · ${h.team.triCode}`} empty={a.restDays == null && h.restDays == null} />
                 <Tile
                     label="Proj G"
+                    term="proj-g"
                     value={a.xg != null && h.xg != null ? `${a.xg.toFixed(1)} · ${h.xg.toFixed(1)}` : '—'}
                     sub={`${a.team.triCode} · ${h.team.triCode}`}
                     empty={a.xg == null || h.xg == null}
                 />
                 <Tile
                     label={p.confidenceGrade ? 'Conf' : 'Model wt'}
+                    term={p.confidenceGrade ? 'conf' : 'wt'}
+                    subTitle={wtTitle}
                     value={p.confidenceGrade ?? (w != null ? `${Math.round(w * 100)}%` : '—')}
                     sub={p.confidenceGrade && w != null && w < 0.999 ? `Wt ${Math.round(w * 100)}%` : undefined}
                     empty={!p.confidenceGrade && w == null}
@@ -98,7 +116,7 @@ export function WhyPanel({ p, phase, state, implication }: { p: Prediction; phas
                             <RecentGamesList team={h.team} gp={h.gp} games={d.home.recent} starter={h.goalie} />
                         </div>
                         {anyPicksIn(d.picks) ? (
-                            <section aria-label="Model pick record this season" className="flex flex-col gap-1">
+                            <section className="flex flex-col gap-1">
                                 <h3 className="label">Our picks</h3>
                                 <div className="grid grid-cols-[3rem_auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 text-caption">
                                     {sides.map(s => (

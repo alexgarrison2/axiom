@@ -119,7 +119,7 @@ export const RUNTIME_TRACE_REQUIREMENTS = {
         'public/data/gamestats.csv', 'public/data/nhl_teams.csv', ...STAMP_FILES],
     '/api/matchup-details': ['data/predictions_detailed.csv', 'data/prediction_history.json',
         'public/data/team_goalies.json', 'public/data/goalie_season_lines.json', 'public/data/goalie_ratings.json',
-        'public/data/injuries.json', 'public/data/player_impact.json', 'public/data/team_lineups.json'],
+        'public/data/injuries.json', 'public/data/player_impact.json', 'public/data/team_lineups.json', 'public/data/gamestats.csv'],
     '/api/odds-history': ['public/data/SiteHistory/*.csv'],
     '/opengraph-image': ['data/predictions_detailed.csv'],
 };
