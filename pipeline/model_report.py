@@ -44,6 +44,8 @@ HISTORY_META_PATH = os.path.join(ROOT, 'data', 'prediction_history_meta.json')
 META_PATH = os.path.join(SCRIPT_DIR, 'game_model_meta.json')
 ODDS_CLOSING_PATH = os.path.join(ROOT, 'public', 'data', 'odds_closing.json')
 SCHEMA_VERSION = 1
+# Best calls / worst misses need a real lean: at least 55% on the pick.
+CALL_MIN_CONF = 0.55
 TIERS = [(0.50, 0.55, '50-55'), (0.55, 0.60, '55-60'), (0.60, 0.65, '60-65'), (0.65, 1.01, '65+')]
 ROLLING_WINDOW = 100
 CURRENT_MODEL_FAMILY = 'logit-elo'
@@ -70,7 +72,19 @@ def _brier(y, p):
 
 
 def _acc(y, p):
-    return float(np.mean((np.asarray(p) > 0.5) == (np.asarray(y) == 1))) if len(y) else None
+    """Share of games whose favourite won. A dead-even 50/50 price (e.g. a -110/-110
+    line) has no favourite, so it scores half a correct pick for any forecaster."""
+    if not len(y):
+        return None
+    p = np.asarray(p, dtype=float)
+    y = np.asarray(y) == 1
+    hit = np.where(np.isclose(p, 0.5, atol=1e-9), 0.5, ((p > 0.5) == y).astype(float))
+    return float(np.mean(hit))
+
+
+def is_legacy(r):
+    """Published by an older site model (no modelVersion recorded in the snapshot)."""
+    return not r.get('modelVersion')
 
 
 def load_closing():
@@ -109,7 +123,17 @@ def call_row(r):
     return {'gameId': r['gameId'], 'date': r['date'], 'homeTeam': r['homeTeam'], 'awayTeam': r['awayTeam'],
             'pick': r['predictedWinner'], 'confidence': round(100 * conf, 1),
             'homeScore': r['homeScore'], 'awayScore': r['awayScore'], 'decision': r.get('decision'),
-            'correct': bool(r['isCorrect'])}
+            'correct': bool(r['isCorrect']), 'legacy': is_legacy(r)}
+
+
+def version_block(rows):
+    """n / accuracy / Brier / log loss for one model version's live picks."""
+    if not rows:
+        return {'n': 0, 'correct': 0, 'accuracy': None, 'brier': None, 'log_loss': None}
+    y = np.array([1 if r['actualWinner'] == r['homeTeam'] else 0 for r in rows])
+    p = np.array([r['homeWinProb'] / 100 for r in rows])
+    k = int(sum(1 for r in rows if r['isCorrect']))
+    return {'n': len(rows), 'correct': k, 'accuracy': k / len(rows), 'brier': _brier(y, p), 'log_loss': _ll(y, p)}
 
 
 def block(rows, home_rate, home_rate_source, closing):
@@ -117,13 +141,18 @@ def block(rows, home_rate, home_rate_source, closing):
     n_retro = len(rows) - len(live)
     live = sorted(live, key=lambda r: (r['date'], r['gameId']))
     n = len(live)
-    out = {'n': n, 'n_retro_excluded': n_retro}
+    n_legacy = sum(1 for r in live if is_legacy(r))
+    out = {'n': n, 'n_retro_excluded': n_retro, 'n_legacy': n_legacy,
+           # Split by model: 'current' = picks with a recorded modelVersion, 'legacy' = older site model.
+           'by_model': {'current': version_block([r for r in live if not is_legacy(r)]),
+                        'legacy': version_block([r for r in live if is_legacy(r)])}}
     if n == 0:
         out.update({'accuracy': None, 'accuracy_ci': [None, None], 'brier': None, 'log_loss': None,
                     'baselines': {'home_rate': {'rate': home_rate, 'source': home_rate_source, 'n': 0,
                                                 'log_loss': None, 'brier': None, 'accuracy': None},
                                   'market': {'n': 0, 'source': None, 'log_loss': None, 'brier': None,
                                              'accuracy': None, 'model_log_loss_same_games': None,
+                                             'model_brier_same_games': None,
                                              'model_accuracy_same_games': None}},
                     'reliability': [], 'tiers': [], 'rolling': [], 'best_calls': [], 'worst_misses': [],
                     'first_date': None, 'last_date': None})
@@ -158,6 +187,7 @@ def block(rows, home_rate, home_rate_source, closing):
                    'brier': _brier(y[m], q[m]) if m.any() else None,
                    'accuracy': _acc(y[m], q[m]) if m.any() else None,
                    'model_log_loss_same_games': _ll(y[m], p[m]) if m.any() else None,
+                   'model_brier_same_games': _brier(y[m], p[m]) if m.any() else None,
                    'model_accuracy_same_games': _acc(y[m], p[m]) if m.any() else None},
     }
     # reliability (10 equal-width bins of the home-win probability)
@@ -187,8 +217,9 @@ def block(rows, home_rate, home_rate_source, closing):
                      'market': _ll(ym[i - ROLLING_WINDOW:i], qm[i - ROLLING_WINDOW:i])})
     out['rolling'] = roll
     order = np.argsort(-conf)
-    out['best_calls'] = [call_row(live[i]) for i in order if live[i]['isCorrect']][:5]
-    out['worst_misses'] = [call_row(live[i]) for i in order if not live[i]['isCorrect']][:5]
+    lean = conf >= CALL_MIN_CONF - 1e-9
+    out['best_calls'] = [call_row(live[i]) for i in order if lean[i] and live[i]['isCorrect']][:5]
+    out['worst_misses'] = [call_row(live[i]) for i in order if lean[i] and not live[i]['isCorrect']][:5]
     return out
 
 

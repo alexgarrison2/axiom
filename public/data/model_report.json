@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-09-30T14:12:27.452810+00:00",
+ "generated_at": "2026-09-30T18:12:38.972330+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -8,6 +8,23 @@
    "all": {
     "n": 421,
     "n_retro_excluded": 824,
+    "n_legacy": 421,
+    "by_model": {
+     "current": {
+      "n": 0,
+      "correct": 0,
+      "accuracy": null,
+      "brier": null,
+      "log_loss": null
+     },
+     "legacy": {
+      "n": 421,
+      "correct": 230,
+      "accuracy": 0.5463,
+      "brier": 0.2447,
+      "log_loss": 0.6822
+     }
+    },
     "accuracy": 0.5463,
     "accuracy_ci": [
      0.4986,
@@ -35,9 +52,10 @@
       "devig": "power",
       "log_loss": 0.6745,
       "brier": 0.241,
-      "accuracy": 0.5512,
+      "accuracy": 0.5561,
       "model_log_loss_same_games": 0.6823,
-      "model_accuracy_same_games": 0.5488
+      "model_brier_same_games": 0.2447,
+      "model_accuracy_same_games": 0.5476
      }
     },
     "reliability": [
@@ -2047,7 +2065,8 @@
       "homeScore": 1,
       "awayScore": 4,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025021090,
@@ -2059,7 +2078,8 @@
       "homeScore": 2,
       "awayScore": 6,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025021106,
@@ -2071,7 +2091,8 @@
       "homeScore": 5,
       "awayScore": 2,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025021304,
@@ -2083,7 +2104,8 @@
       "homeScore": 3,
       "awayScore": 1,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025021200,
@@ -2095,7 +2117,8 @@
       "homeScore": 3,
       "awayScore": 1,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      }
     ],
     "worst_misses": [
@@ -2109,7 +2132,8 @@
       "homeScore": 4,
       "awayScore": 1,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025021010,
@@ -2121,7 +2145,8 @@
       "homeScore": 3,
       "awayScore": 2,
       "decision": "OT",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025021037,
@@ -2133,7 +2158,8 @@
       "homeScore": 2,
       "awayScore": 3,
       "decision": "OT",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025020997,
@@ -2145,7 +2171,8 @@
       "homeScore": 3,
       "awayScore": 4,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025021066,
@@ -2157,13 +2184,31 @@
       "homeScore": 3,
       "awayScore": 6,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      }
     ]
    },
    "regular": {
     "n": 339,
     "n_retro_excluded": 824,
+    "n_legacy": 339,
+    "by_model": {
+     "current": {
+      "n": 0,
+      "correct": 0,
+      "accuracy": null,
+      "brier": null,
+      "log_loss": null
+     },
+     "legacy": {
+      "n": 339,
+      "correct": 183,
+      "accuracy": 0.5398,
+      "brier": 0.2451,
+      "log_loss": 0.6831
+     }
+    },
     "accuracy": 0.5398,
     "accuracy_ci": [
      0.4866,
@@ -2191,9 +2236,10 @@
       "devig": "power",
       "log_loss": 0.6763,
       "brier": 0.2418,
-      "accuracy": 0.5488,
+      "accuracy": 0.5564,
       "model_log_loss_same_games": 0.6832,
-      "model_accuracy_same_games": 0.5427
+      "model_brier_same_games": 0.2452,
+      "model_accuracy_same_games": 0.5412
      }
     },
     "reliability": [
@@ -3711,7 +3757,8 @@
       "homeScore": 1,
       "awayScore": 4,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025021090,
@@ -3723,7 +3770,8 @@
       "homeScore": 2,
       "awayScore": 6,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025021106,
@@ -3735,7 +3783,8 @@
       "homeScore": 5,
       "awayScore": 2,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025021304,
@@ -3747,7 +3796,8 @@
       "homeScore": 3,
       "awayScore": 1,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025021200,
@@ -3759,7 +3809,8 @@
       "homeScore": 3,
       "awayScore": 1,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      }
     ],
     "worst_misses": [
@@ -3773,7 +3824,8 @@
       "homeScore": 4,
       "awayScore": 1,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025021010,
@@ -3785,7 +3837,8 @@
       "homeScore": 3,
       "awayScore": 2,
       "decision": "OT",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025021037,
@@ -3797,7 +3850,8 @@
       "homeScore": 2,
       "awayScore": 3,
       "decision": "OT",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025020997,
@@ -3809,7 +3863,8 @@
       "homeScore": 3,
       "awayScore": 4,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025021066,
@@ -3821,13 +3876,31 @@
       "homeScore": 3,
       "awayScore": 6,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      }
     ]
    },
    "playoffs": {
     "n": 82,
     "n_retro_excluded": 0,
+    "n_legacy": 82,
+    "by_model": {
+     "current": {
+      "n": 0,
+      "correct": 0,
+      "accuracy": null,
+      "brier": null,
+      "log_loss": null
+     },
+     "legacy": {
+      "n": 82,
+      "correct": 47,
+      "accuracy": 0.5732,
+      "brier": 0.2428,
+      "log_loss": 0.6785
+     }
+    },
     "accuracy": 0.5732,
     "accuracy_ci": [
      0.4652,
@@ -3855,8 +3928,9 @@
       "devig": "power",
       "log_loss": 0.667,
       "brier": 0.2376,
-      "accuracy": 0.561,
+      "accuracy": 0.5549,
       "model_log_loss_same_games": 0.6785,
+      "model_brier_same_games": 0.2428,
       "model_accuracy_same_games": 0.5732
      }
     },
@@ -4000,7 +4074,8 @@
       "homeScore": 6,
       "awayScore": 1,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025030221,
@@ -4012,7 +4087,8 @@
       "homeScore": 3,
       "awayScore": 0,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025030231,
@@ -4024,7 +4100,8 @@
       "homeScore": 9,
       "awayScore": 6,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025030131,
@@ -4036,7 +4113,8 @@
       "homeScore": 2,
       "awayScore": 0,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      },
      {
       "gameId": 2025030171,
@@ -4048,7 +4126,8 @@
       "homeScore": 4,
       "awayScore": 2,
       "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      }
     ],
     "worst_misses": [
@@ -4062,7 +4141,8 @@
       "homeScore": 2,
       "awayScore": 6,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025030115,
@@ -4074,7 +4154,8 @@
       "homeScore": 1,
       "awayScore": 2,
       "decision": "OT",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025030112,
@@ -4086,7 +4167,8 @@
       "homeScore": 2,
       "awayScore": 4,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025030212,
@@ -4098,7 +4180,8 @@
       "homeScore": 1,
       "awayScore": 5,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      },
      {
       "gameId": 2025030233,
@@ -4110,7 +4193,8 @@
       "homeScore": 5,
       "awayScore": 1,
       "decision": "REG",
-      "correct": false
+      "correct": false,
+      "legacy": true
      }
     ]
    },
@@ -4120,6 +4204,23 @@
    "all": {
     "n": 3,
     "n_retro_excluded": 0,
+    "n_legacy": 3,
+    "by_model": {
+     "current": {
+      "n": 0,
+      "correct": 0,
+      "accuracy": null,
+      "brier": null,
+      "log_loss": null
+     },
+     "legacy": {
+      "n": 3,
+      "correct": 2,
+      "accuracy": 0.6667,
+      "brier": 0.2753,
+      "log_loss": 0.7476
+     }
+    },
     "accuracy": 0.6667,
     "accuracy_ci": [
      0.2077,
@@ -4147,8 +4248,9 @@
       "devig": "power",
       "log_loss": 0.7932,
       "brier": 0.2936,
-      "accuracy": 0.3333,
+      "accuracy": 0.5,
       "model_log_loss_same_games": 0.7476,
+      "model_brier_same_games": 0.2753,
       "model_accuracy_same_games": 0.6667
      }
     },
@@ -4292,19 +4394,8 @@
       "homeScore": 5,
       "awayScore": 2,
       "decision": "REG",
-      "correct": true
-     },
-     {
-      "gameId": 2026020003,
-      "date": "2026-09-29",
-      "homeTeam": "Bruins",
-      "awayTeam": "Rangers",
-      "pick": "Bruins",
-      "confidence": 50.3,
-      "homeScore": 3,
-      "awayScore": 0,
-      "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      }
     ],
     "worst_misses": [
@@ -4318,13 +4409,31 @@
       "homeScore": 5,
       "awayScore": 6,
       "decision": "OT",
-      "correct": false
+      "correct": false,
+      "legacy": true
      }
     ]
    },
    "regular": {
     "n": 3,
     "n_retro_excluded": 0,
+    "n_legacy": 3,
+    "by_model": {
+     "current": {
+      "n": 0,
+      "correct": 0,
+      "accuracy": null,
+      "brier": null,
+      "log_loss": null
+     },
+     "legacy": {
+      "n": 3,
+      "correct": 2,
+      "accuracy": 0.6667,
+      "brier": 0.2753,
+      "log_loss": 0.7476
+     }
+    },
     "accuracy": 0.6667,
     "accuracy_ci": [
      0.2077,
@@ -4352,8 +4461,9 @@
       "devig": "power",
       "log_loss": 0.7932,
       "brier": 0.2936,
-      "accuracy": 0.3333,
+      "accuracy": 0.5,
       "model_log_loss_same_games": 0.7476,
+      "model_brier_same_games": 0.2753,
       "model_accuracy_same_games": 0.6667
      }
     },
@@ -4497,19 +4607,8 @@
       "homeScore": 5,
       "awayScore": 2,
       "decision": "REG",
-      "correct": true
-     },
-     {
-      "gameId": 2026020003,
-      "date": "2026-09-29",
-      "homeTeam": "Bruins",
-      "awayTeam": "Rangers",
-      "pick": "Bruins",
-      "confidence": 50.3,
-      "homeScore": 3,
-      "awayScore": 0,
-      "decision": "REG",
-      "correct": true
+      "correct": true,
+      "legacy": true
      }
     ],
     "worst_misses": [
@@ -4523,13 +4622,31 @@
       "homeScore": 5,
       "awayScore": 6,
       "decision": "OT",
-      "correct": false
+      "correct": false,
+      "legacy": true
      }
     ]
    },
    "playoffs": {
     "n": 0,
     "n_retro_excluded": 0,
+    "n_legacy": 0,
+    "by_model": {
+     "current": {
+      "n": 0,
+      "correct": 0,
+      "accuracy": null,
+      "brier": null,
+      "log_loss": null
+     },
+     "legacy": {
+      "n": 0,
+      "correct": 0,
+      "accuracy": null,
+      "brier": null,
+      "log_loss": null
+     }
+    },
     "accuracy": null,
     "accuracy_ci": [
      null,
@@ -4553,6 +4670,7 @@
       "brier": null,
       "accuracy": null,
       "model_log_loss_same_games": null,
+      "model_brier_same_games": null,
       "model_accuracy_same_games": null
      }
     },
