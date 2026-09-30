@@ -37,6 +37,27 @@ export interface GameRef {
     home: string;
     away: string;
     startUtc: string | null;
+    /** When each team's previous game ended (ISO UTC), if known. Older items are not filed under this game. */
+    prevEndUtc?: Partial<Record<string, string | null>>;
+    /** Full team names by tricode (for "references the opponent"). */
+    names?: Partial<Record<string, string>>;
+}
+
+/** Is the card's newest update about this game (posted after the team's last game, or naming the opponent)? */
+export function isForGame(card: NewsCard, g: GameRef): boolean {
+    const prevEnd = g.prevEndUtc?.[card.team];
+    if (!prevEnd) return true;
+    const newest = card.updates[0];
+    if (!newest) return false;
+    const at = newest.at;
+    const fresh = /^\d{4}-\d{2}-\d{2}$/.test(at)
+        ? at > new Date(prevEnd).toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+        : Date.parse(at) >= Date.parse(prevEnd);
+    if (fresh) return true;
+    const opp = card.team === g.home ? g.away : g.home;
+    const oppName = g.names?.[opp];
+    const text = newest.text;
+    return new RegExp(`\\b${opp}\\b`).test(text) || (!!oppName && text.toLowerCase().includes(oppName.toLowerCase()));
 }
 
 export interface NewsGroup {
@@ -103,7 +124,7 @@ export function groupByGames(cards: NewsCard[], games: GameRef[]): NewsGroup[] {
     const groups: NewsGroup[] = [];
     const sorted = [...games].sort((a, b) => (a.startUtc ?? '').localeCompare(b.startUtc ?? '') || a.away.localeCompare(b.away));
     for (const g of sorted) {
-        const list = cards.filter(c => c.team === g.away || c.team === g.home);
+        const list = cards.filter(c => !used.has(c.id) && (c.team === g.away || c.team === g.home) && isForGame(c, g));
         list.forEach(c => used.add(c.id));
         groups.push({ key: `game-${g.id}`, title: `${g.away} @ ${g.home}`, game: g, cards: list });
     }

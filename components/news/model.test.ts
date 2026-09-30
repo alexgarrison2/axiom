@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fixture from './__fixtures__/player_news_opening.json';
-import { buildCards, classify, groupByGames, matchesFilter, type RawNewsItem } from './model';
+import { buildCards, classify, groupByGames, matchesFilter, type GameRef, type RawNewsItem } from './model';
 import { etLabel } from './feed';
 import { contrastRatio } from '../ui/color';
 
@@ -49,5 +49,28 @@ describe('news cards', () => {
 
     it('timestamps use --text-2, ≥4.5:1 on card surfaces', () => {
         for (const bg of ['#0b0f16', '#111723']) expect(contrastRatio('#a9b4c2', bg)).toBeGreaterThanOrEqual(4.5);
+    });
+});
+
+describe('groupByGames skips stale game-specific items', () => {
+    it('files a goalie note from before the previous game under the rest of the league', () => {
+        const cards = buildCards({
+            TOR: [
+                { player: 'Sergei Bobrovsky', news: "Bobrovsky is scheduled to start Toronto's season opener vs. Montreal on Tuesday.", category: 'Goalie', timestamp: '2026-09-29T15:00:00Z' },
+                { player: 'Anthony Stolarz', news: 'Stolarz is projected to start against the Islanders.', category: 'Goalie', timestamp: '2026-09-30T14:00:00Z' },
+            ],
+        });
+        const game: GameRef = {
+            id: 1,
+            home: 'TOR',
+            away: 'NYI',
+            startUtc: '2026-09-30T23:00:00Z',
+            prevEndUtc: { TOR: '2026-09-30T01:30:00Z', NYI: null },
+            names: { NYI: 'Islanders', TOR: 'Maple Leafs' },
+        };
+        const groups = groupByGames(cards, [game]);
+        const tonight = groups.find(g => g.game)!;
+        expect(tonight.cards.map(c => c.player)).toEqual(['Anthony Stolarz']);
+        expect(groups.find(g => !g.game)!.cards.map(c => c.player)).toContain('Sergei Bobrovsky');
     });
 });
