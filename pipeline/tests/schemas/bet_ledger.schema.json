@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pony-xg/bet_ledger.schema.json",
+  "title": "public/data/bet_ledger.json (pipeline/grade_bets.py)",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "unit", "disclaimer", "source", "join", "gate", "seasons"],
+  "properties": {
+    "schema_version": {"type": "integer", "enum": [1]},
+    "generated_at": {"type": "string"},
+    "unit": {"type": "string"},
+    "disclaimer": {"type": "string"},
+    "source": {"type": "string"},
+    "clv_note": {"type": ["string", "null"]},
+    "join": {
+      "type": "object",
+      "required": ["bets_on_finished_games", "graded", "join_rate"],
+      "properties": {
+        "bets_on_finished_games": {"type": "integer", "minimum": 0},
+        "graded": {"type": "integer", "minimum": 0},
+        "join_rate": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+      }
+    },
+    "gate": {"type": "object", "required": ["open", "reasons"],
+             "properties": {"open": {"type": "boolean"}, "reasons": {"type": "array", "items": {"type": "string"}}}},
+    "seasons": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["summary", "bets"],
+        "properties": {
+          "summary": {
+            "type": "object",
+            "required": ["n_bets", "n_graded", "n_pending", "record", "wins", "losses", "units_staked",
+                         "units_profit", "roi", "roi_ci", "clv_mean", "clv_n", "by_ev_bucket", "by_stake"],
+            "properties": {
+              "n_bets": {"type": "integer", "minimum": 0},
+              "record": {"type": "string", "pattern": "^\\d+-\\d+$"},
+              "roi": {"type": ["number", "null"]},
+              "roi_ci": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": ["number", "null"]}},
+              "by_ev_bucket": {"type": "array", "items": {"type": "object", "required": ["bucket", "n", "record"]}},
+              "by_stake": {"type": "array", "items": {"type": "object", "required": ["bucket", "n", "record"]}}
+            }
+          },
+          "bets": {"type": "array", "items": {"$ref": "#/$defs/bet"}}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "bet": {
+      "type": "object",
+      "required": ["gameId", "season", "gameType", "date", "startUtc", "snapshotUtc", "team", "opponent", "side",
+                   "stake_units", "price", "decimal_price", "ev_at_bet", "ev_bucket", "model_prob", "result",
+                   "profit_units", "final", "decision", "closing_price", "clv"],
+      "properties": {
+        "gameId": {"type": "integer"},
+        "gameType": {"type": "string", "enum": ["02", "03"]},
+        "side": {"type": "string", "enum": ["home", "away"]},
+        "stake_units": {"type": "number", "exclusiveMinimum": 0},
+        "decimal_price": {"type": "number", "exclusiveMinimum": 1},
+        "ev_at_bet": {"type": ["number", "null"]},
+        "model_prob": {"type": "number", "minimum": 0, "maximum": 1},
+        "result": {"type": "string", "enum": ["win", "loss", "pending"]},
+        "decision": {"type": ["string", "null"], "enum": ["REG", "OT", "SO", null]},
+        "clv": {"type": ["number", "null"]}
+      }
+    }
+  }
+}
