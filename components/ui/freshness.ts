@@ -4,12 +4,15 @@
  *
  * The pipeline (.github/workflows/update_data.yml) runs hourly on the hour
  * from 12:00 to 02:00 UTC ("pregame window": late morning → late evening ET)
- * and not at all 03:00–11:59 UTC. The badge turns red only when a scheduled
- * run was actually missed:
- *   - in the pregame window: the data is older than the run slot from ≥2h ago
- *     (i.e. >2h behind schedule, allowing for GitHub cron delays);
- *   - otherwise: older than 26h (the overnight gap is expected).
- * So at 09:00 UTC with the last run at 02:00 UTC the badge is not red.
+ * and not at all 03:00–11:59 UTC. Four tiers:
+ *   - fresh / ok (calm, green dot): on schedule;
+ *   - late (amber): a pregame-window slot was missed (the data is older than
+ *     the run slot from ≥2h ago, allowing for GitHub cron delays) but the
+ *     data is at most 6h old, or it is not a game day;
+ *   - stale (red): a missed slot and older than 6h on a game day, a puck drop
+ *     has passed with no run in the 3h before it (pregame goalies/lineups
+ *     missing), or older than 26h at any time (the overnight gap is expected).
+ * So at 09:00 UTC with the last run at 02:00 UTC the badge is calm.
  */
 
 /** UTC hours with a scheduled run. */
@@ -25,8 +28,26 @@ export const MAX_AGE_MS = 26 * HOUR;
 const SLOT_TOLERANCE_MS = 15 * MIN;
 /** "Fresh" (green dot) while younger than this. */
 export const FRESH_MS = 75 * MIN;
+/** A missed slot stays amber up to this age on a game day; past it, red. */
+export const LATE_MAX_MS = 6 * HOUR;
+/** Pregame data counts as missing when no run landed this long before a puck drop. */
+export const PREGAME_MS = 3 * HOUR;
+/** A game "in play" for the puck-drop check: from puck drop until about the final horn. */
+const GAME_SPAN_MS = 4 * HOUR;
+/** A start within this distance of `now` makes it a game day. */
+const GAME_DAY_MS = 18 * HOUR;
 
-export type FreshnessState = 'fresh' | 'ok' | 'stale' | 'unknown';
+export type FreshnessState = 'fresh' | 'ok' | 'late' | 'stale' | 'unknown';
+/** Badge colour tier: calm (dim text + green dot), amber, red. */
+export type FreshnessTone = 'ok' | 'amber' | 'stale' | 'unknown';
+
+export interface FreshnessOptions {
+    /**
+     * Scheduled puck drops around `now` (any order). Omitted → assume a game
+     * day with no known puck drop (the conservative default).
+     */
+    starts?: readonly Date[] | null;
+}
 
 export function inPregameWindow(now: Date): boolean {
     return (RUN_HOURS_UTC as readonly number[]).includes(now.getUTCHours());
@@ -42,15 +63,29 @@ export function lastSlotAtOrBefore(t: Date): Date {
     return d;
 }
 
-export function freshnessState(generatedAt: Date | null, now: Date): FreshnessState {
+export function freshnessState(generatedAt: Date | null, now: Date, opts: FreshnessOptions = {}): FreshnessState {
     if (!generatedAt || Number.isNaN(generatedAt.getTime())) return 'unknown';
-    const age = now.getTime() - generatedAt.getTime();
+    const t = generatedAt.getTime();
+    const nowMs = now.getTime();
+    const age = nowMs - t;
     if (age > MAX_AGE_MS) return 'stale';
+
+    const starts = opts.starts?.map(d => d.getTime()).filter(ms => Number.isFinite(ms)) ?? null;
+    const gameDay = starts === null || starts.some(ms => Math.abs(ms - nowMs) <= GAME_DAY_MS);
+    // A game is under way but the last run landed well before its puck drop.
+    if (starts?.some(ms => nowMs >= ms && nowMs < ms + GAME_SPAN_MS && t < ms - PREGAME_MS)) return 'stale';
+
     if (inPregameWindow(now)) {
-        const due = lastSlotAtOrBefore(new Date(now.getTime() - IN_WINDOW_GRACE_MS));
-        if (generatedAt.getTime() < due.getTime() - SLOT_TOLERANCE_MS) return 'stale';
+        const due = lastSlotAtOrBefore(new Date(nowMs - IN_WINDOW_GRACE_MS));
+        if (t < due.getTime() - SLOT_TOLERANCE_MS) return gameDay && age > LATE_MAX_MS ? 'stale' : 'late';
     }
     return age <= FRESH_MS ? 'fresh' : 'ok';
+}
+
+export function freshnessTone(state: FreshnessState): FreshnessTone {
+    if (state === 'fresh' || state === 'ok') return 'ok';
+    if (state === 'late') return 'amber';
+    return state;
 }
 
 export function relativeAge(generatedAt: Date, now: Date): string {
