@@ -1,368 +1,321 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import * as React from 'react';
+import { FilterChip } from '@/components/ui/filter-chip';
+import { InfoTip } from '@/components/ui/info-tip';
+import { Input } from '@/components/ui/input';
+import { ScrollRegion } from '@/components/ui/scroll-region';
+import { SortHeader } from '@/components/ui/sort-header';
+import { TEAM_CODES } from '@/components/ui/team-color';
+import { TeamLogo } from '@/components/views/TeamLogo';
+import { plural } from '@/components/views/format';
+import { cn } from '@/lib/utils';
+import { compactSkaters, filterSkaters, sortSkaters, type Skater, type SkaterFilter, type SortKey } from './players/model';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-interface SkaterData {
-    id: string;       // player ID (JSON key), injected on load
-    name: string;
-    team: string;
-    position: string;
-    is_forward: boolean;
-    games_played: number;
-    goals: number;
-    assists: number;
-    points: number;
-    sog_per_game: number;
-    toi_per_game_all: number;
-    impact_ev_off: number;
-    impact_ev_def: number;
-    impact_pp: number;
-    impact_pk: number;
-    impact_score: number;
-    // RAPM (Regularized Adjusted Plus-Minus)
-    rapm_net: number;
-    // Per-60 rates
-    ind_xg_per60: number;
-    ev_xgf_per60: number;
-    // legacy fallback
-    xgaa_per_game?: number;
+const PAGE = 50;
+
+type ColumnSet = 'overview' | 'scoring' | 'impact' | 'rates';
+
+interface Column {
+    key: SortKey;
+    label: string;
+    title: string;
+    sets: ColumnSet[];
+    render: (p: Skater) => React.ReactNode;
 }
 
-type SortKey = keyof Pick<SkaterData,
-    'games_played' | 'goals' | 'assists' | 'points' | 'sog_per_game' |
-    'toi_per_game_all' | 'impact_ev_off' | 'impact_ev_def' |
-    'impact_pp' | 'impact_pk' | 'impact_score' |
-    'rapm_net' | 'ind_xg_per60' | 'ev_xgf_per60'>;
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function impactColor(z: number): string {
-    if (z >= 1.5)  return '#3b82f6';   // blue   – elite
-    if (z >= 0.5)  return '#38bdf8';   // sky    – above avg
-    if (z >= -0.5) return '#6b7280';   // gray   – average
-    if (z >= -1.5) return '#f97316';   // orange – below avg
-    return '#ef4444';                   // red    – bottom tier
-}
-
-function fmtZ(z: number | undefined): string {
-    if (z === undefined || z === null) return '—';
-    const sign = z >= 0 ? '+' : '';
-    return `${sign}${z.toFixed(2)}`;
-}
-
-function fmtRate(v: number | undefined): string {
-    if (v === undefined || v === null) return '—';
-    return v.toFixed(2);
-}
-
-function rapmColor(v: number): string {
-    if (v >= 0.3)   return '#3b82f6';   // blue   – elite
-    if (v >= 0.1)   return '#38bdf8';   // sky    – above avg
-    if (v >= -0.1)  return '#6b7280';   // gray   – average
-    if (v >= -0.3)  return '#f97316';   // orange – below avg
-    return '#ef4444';                    // red    – bottom tier
-}
-
-function per60Color(v: number, avg: number): string {
-    const diff = v - avg;
-    if (diff >= 0.5)  return '#3b82f6';
-    if (diff >= 0.15) return '#38bdf8';
-    if (diff >= -0.15) return '#6b7280';
-    if (diff >= -0.5) return '#f97316';
-    return '#ef4444';
-}
-
-function fmtToi(min: number | undefined): string {
+const z = (v: number | null) => {
+    if (v == null) return '—';
+    const r = Number(v.toFixed(2));
+    return r === 0 ? '0.00' : `${r > 0 ? '+' : '−'}${Math.abs(r).toFixed(2)}`;
+};
+const dec = (v: number | null, d = 2) => (v == null ? '—' : v.toFixed(d));
+const toi = (min: number | null) => {
     if (!min) return '—';
     const m = Math.floor(min);
-    const s = Math.round((min - m) * 60);
-    return `${m}:${String(s).padStart(2, '0')}`;
+    return `${m}:${String(Math.round((min - m) * 60)).padStart(2, '0')}`;
+};
+
+/** Signed value tone: contrast-safe on every surface (average stays --text-2). */
+function tone(v: number | null, strong = 0.5): string {
+    if (v == null) return 'text-fg-3';
+    if (v >= strong) return 'text-brand';
+    if (v <= -strong) return 'text-neg';
+    return 'text-fg-2';
 }
 
-// ── NHL logo URL helper ───────────────────────────────────────────────────────
-function logoUrl(tri: string): string {
-    return `/logos/${tri}.svg`;
-}
-
-// ── Column definition ─────────────────────────────────────────────────────────
-const COLUMNS: { key: SortKey; label: string; title: string; group?: string }[] = [
-    { key: 'games_played',     label: 'GP',      title: 'Games Played' },
-    { key: 'goals',            label: 'G',       title: 'Goals' },
-    { key: 'assists',          label: 'A',       title: 'Assists' },
-    { key: 'points',           label: 'PTS',     title: 'Points' },
-    { key: 'sog_per_game',     label: 'SOG/G',   title: 'Shots on Goal per Game' },
-    { key: 'toi_per_game_all', label: 'TOI/GP',  title: 'Time on Ice per Game (all situations)' },
-    { key: 'ind_xg_per60',     label: 'ixG/60',  title: 'Individual Expected Goals per 60 minutes — personal scoring threat rate', group: 'rate' },
-    { key: 'ev_xgf_per60',     label: 'oixGF/60', title: 'On-Ice xG For per 60 min — team xGF rate when this player is on ice at 5v5', group: 'rate' },
-    { key: 'rapm_net',         label: 'RAPM',    title: 'RAPM: isolated net player value per 60 min via ridge regression on shift data. Controls for linemates and opponents. Bayesian-regressed by sample size.', group: 'rapm' },
-    { key: 'impact_ev_off',    label: 'EV OFF',  title: 'EV Offense z-score: blend of individual xG/60 + on-ice xGF impact above avg × TOI.', group: 'impact' },
-    { key: 'impact_ev_def',    label: 'EV DEF',  title: 'EV Defense z-score: xGA saved above position-avg × EV TOI per game. Positive = suppresses more goals than average.', group: 'impact' },
-    { key: 'impact_pp',        label: 'PP',      title: 'Power Play impact z-score', group: 'impact' },
-    { key: 'impact_pk',        label: 'PK',      title: 'Penalty Kill impact z-score', group: 'impact' },
-    { key: 'impact_score',     label: 'IMPACT',  title: 'Composite position-weighted impact score (z-score)', group: 'impact' },
+const COLUMNS: Column[] = [
+    { key: 'pts', label: 'PTS', title: 'Points', sets: ['overview', 'scoring'], render: p => <span className="font-semibold text-fg-1">{p.pts}</span> },
+    { key: 'gp', label: 'GP', title: 'Games played', sets: ['scoring'], render: p => p.gp },
+    { key: 'g', label: 'G', title: 'Goals', sets: ['scoring'], render: p => p.g },
+    { key: 'a', label: 'A', title: 'Assists', sets: ['scoring'], render: p => p.a },
+    { key: 'toiPg', label: 'TOI', title: 'Time on ice per game', sets: ['scoring'], render: p => toi(p.toiPg) },
+    { key: 'sogPg', label: 'SOG/GP', title: 'Shots on goal per game', sets: ['rates'], render: p => dec(p.sogPg) },
+    { key: 'evOff', label: 'EV Off', title: 'Even-strength offence (z-score)', sets: ['impact'], render: p => <span className={tone(p.evOff)}>{z(p.evOff)}</span> },
+    { key: 'evDef', label: 'EV Def', title: 'Even-strength defence (z-score)', sets: ['impact'], render: p => <span className={tone(p.evDef)}>{z(p.evDef)}</span> },
+    { key: 'pp', label: 'PP', title: 'Power-play impact (z-score)', sets: ['impact'], render: p => <span className={tone(p.pp)}>{z(p.pp)}</span> },
+    { key: 'pk', label: 'PK', title: 'Penalty-kill impact (z-score)', sets: ['impact'], render: p => <span className={tone(p.pk)}>{z(p.pk)}</span> },
+    { key: 'rapm', label: 'RAPM', title: 'Isolated net impact per 60 (ridge regression)', sets: ['rates'], render: p => <span className={tone(p.rapm, 0.1)}>{z(p.rapm)}</span> },
+    { key: 'ixg60', label: 'ixG/60', title: 'Individual expected goals per 60', sets: ['rates'], render: p => dec(p.ixg60) },
+    { key: 'oixgf60', label: 'oixGF/60', title: 'On-ice expected goals for per 60 at 5v5', sets: ['rates'], render: p => dec(p.oixgf60) },
 ];
 
-const IMPACT_KEYS: SortKey[] = ['impact_ev_off', 'impact_ev_def', 'impact_pp', 'impact_pk', 'impact_score'];
-const RAPM_KEYS: SortKey[] = ['rapm_net'];
-const RATE_KEYS: SortKey[] = ['ind_xg_per60', 'ev_xgf_per60'];
+const SET_LABELS: Record<ColumnSet, string> = { overview: 'Impact + points', scoring: 'Scoring', impact: 'Impact split', rates: 'Rates' };
 
-// ── Component ─────────────────────────────────────────────────────────────────
-export default function SkaterStatsTable() {
-    const [data,    setData]    = useState<Record<string, SkaterData> | null>(null);
-    const [bioData, setBioData] = useState<Record<string, { isRookie?: boolean }>>({});
-    const [loading, setLoading] = useState(true);
-    const [posFilter, setPosFilter] = useState<'All' | 'F' | 'D'>('All');
-    const [teamFilter, setTeamFilter] = useState<string>('All');
-    const [rookieOnly, setRookieOnly] = useState(false);
-    const [sortKey, setSortKey] = useState<SortKey>('impact_score');
-    const [sortAsc, setSortAsc] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+export interface SkaterStatsTableProps {
+    /**
+     * Server-rendered first page for the default view (impact, 20+ GP), so the
+     * table paints without shipping every skater in the HTML.
+     */
+    preview?: { rows: Skater[]; total: number };
+    /** URL of the full compact list (fetched after first paint). Without it, /data files are compacted in the browser. */
+    src?: string;
+    ratingsLabel?: string;
+}
 
-    useEffect(() => {
-        Promise.all([
-            fetch('/data/player_impact.json').then(r => r.json()),
-            fetch('/data/player_bio.json').then(r => r.json()).catch(() => ({})),
-        ]).then(([impactData, bio]) => {
-            Object.entries(impactData as Record<string, SkaterData>).forEach(([id, p]) => { p.id = id; });
-            setData(impactData);
-            setBioData(bio || {});
-            setLoading(false);
-        }).catch(() => setLoading(false));
-    }, []);
+export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterStatsTableProps) {
+    const [players, setPlayers] = React.useState<Skater[] | null>(null);
+    const [filter, setFilter] = React.useState<SkaterFilter>({ q: '', team: 'all', pos: 'all', minGp: 20, rookies: false, includeOffRoster: false });
+    const [sort, setSort] = React.useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'impact', dir: 'desc' });
+    const [page, setPage] = React.useState(0);
+    const [set, setSet] = React.useState<ColumnSet>('overview');
+    const ids = { search: React.useId(), team: React.useId(), gp: React.useId(), cols: React.useId() };
+    const tableTop = React.useRef<HTMLDivElement>(null);
 
-    const allTeams = useMemo(() => {
-        if (!data) return [];
-        const teams = [...new Set(Object.values(data).map(p => p.team))].sort();
-        return teams;
-    }, [data]);
+    React.useEffect(() => {
+        let alive = true;
+        const load = src
+            ? fetch(src).then(r => r.json() as Promise<Skater[]>)
+            : Promise.all([fetch('/data/player_impact.json').then(r => r.json()), fetch('/data/player_bio.json').then(r => r.json()).catch(() => ({}))]).then(
+                  ([impact, bio]) => compactSkaters(impact, bio),
+              );
+        load.then(list => alive && setPlayers(list)).catch(() => alive && setPlayers(preview?.rows ?? []));
+        return () => {
+            alive = false;
+        };
+    }, [src, preview]);
 
-    const sorted = useMemo(() => {
-        if (!data) return [];
-        let rows = Object.values(data);
+    const rows = React.useMemo(() => sortSkaters(filterSkaters(players ?? preview?.rows ?? [], filter), sort.key, sort.dir), [players, preview, filter, sort]);
+    const total = players ? rows.length : preview?.total ?? rows.length;
+    const pages = Math.max(1, Math.ceil(rows.length / PAGE));
+    const current = Math.min(page, pages - 1);
+    const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
 
-        // Position filter
-        if (posFilter === 'F') rows = rows.filter(p => p.is_forward);
-        if (posFilter === 'D') rows = rows.filter(p => !p.is_forward);
-
-        // Team filter
-        if (teamFilter !== 'All') rows = rows.filter(p => p.team === teamFilter);
-
-        // Rookie filter
-        if (rookieOnly) rows = rows.filter(p => bioData[p.id]?.isRookie === true);
-
-        // Search
-        if (searchQuery.trim()) {
-            const q = searchQuery.toLowerCase().trim();
-            rows = rows.filter(p => p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q));
-        }
-
-        // Sort
-        rows.sort((a, b) => {
-            const av = (a[sortKey] as number) ?? -999;
-            const bv = (b[sortKey] as number) ?? -999;
-            return sortAsc ? av - bv : bv - av;
-        });
-
-        return rows;
-    }, [data, posFilter, teamFilter, rookieOnly, sortKey, sortAsc, searchQuery, bioData]);
-
-    const handleSort = (key: SortKey) => {
-        if (key === sortKey) {
-            setSortAsc(prev => !prev);
-        } else {
-            setSortKey(key);
-            setSortAsc(false);
-        }
+    const update = (patch: Partial<SkaterFilter>) => {
+        setFilter(f => ({ ...f, ...patch }));
+        setPage(0);
     };
-
-    const SortIcon = ({ col }: { col: SortKey }) => {
-        if (col !== sortKey) return <span className="opacity-20">↕</span>;
-        return <span className="text-cyan-400">{sortAsc ? '↑' : '↓'}</span>;
+    const onSort = (key: SortKey) => {
+        setSort(s => (s.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: key === 'name' ? 'asc' : 'desc' }));
+        setPage(0);
     };
+    const goPage = (p: number) => {
+        setPage(p);
+        tableTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    const colClass = (c: Column) => (c.sets.includes(set) ? 'table-cell' : 'hidden md:table-cell');
 
-    if (loading) return (
-        <div className="flex justify-center items-center py-24">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-400" />
-        </div>
-    );
-
-    if (!data) return (
-        <div className="text-center text-neutral-500 py-16 text-sm">
-            Player impact data unavailable. Run <code className="text-cyan-400">player_impact.py</code> to generate it.
-        </div>
-    );
+    const list = players ?? preview?.rows;
+    if (!list) return <div aria-busy="true" className="h-96 rounded-card border border-line bg-surface-1/60" />;
+    if (!list.length) return <p className="text-body-sm text-fg-3">Player ratings are unavailable right now.</p>;
 
     return (
-        <div className="w-full max-w-[1800px] mx-auto px-2 md:px-4 pb-24">
-            {/* Header */}
-            <div className="mb-4 text-center">
-                <h2 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 mb-1">
-                    Skater Impact Rankings
-                </h2>
-                <p className="text-neutral-400 text-xs md:text-sm">
-                    Position-weighted z-scores. Fwd: 50% EV Off · 20% EV Def · 20% PP · 10% PK.
-                    Def: 25% EV Off · 40% EV Def · 15% PP · 20% PK.
-                    <span className="text-neutral-500"> EV Off = individual xG/60 + on-ice xGF impact (inspired by O Rating).
-                    RAPM = isolated player value via ridge regression on shift data (controls for linemates/opponents).</span>
-                </p>
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-wrap items-center gap-2 mb-4 justify-center">
-                {/* Position filter */}
-                <div className="flex gap-1 bg-white/5 p-1 rounded-xl border border-white/8">
-                    {(['All', 'F', 'D'] as const).map(p => (
-                        <button
-                            key={p}
-                            onClick={() => setPosFilter(p)}
-                            className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                                posFilter === p ? 'bg-white/15 text-white' : 'text-neutral-500 hover:text-neutral-300'
-                            }`}
+        <div className="flex flex-col gap-4">
+            <div className="sticky top-appbar z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
+                <div className="flex items-end gap-2">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1 md:max-w-md">
+                        <label htmlFor={ids.search} className="sr-only">
+                            Search players
+                        </label>
+                        <Input id={ids.search} type="search" placeholder="Search players" value={filter.q} onChange={e => update({ q: e.target.value })} />
+                    </div>
+                    <div className="flex flex-col gap-1 md:hidden">
+                        <label htmlFor={ids.cols} className="sr-only">
+                            Columns
+                        </label>
+                        <select
+                            id={ids.cols}
+                            value={set}
+                            onChange={e => setSet(e.target.value as ColumnSet)}
+                            className="h-10 rounded-control border border-line-strong bg-surface-1 px-2 text-base text-fg-1"
                         >
-                            {p === 'All' ? 'All Pos' : p === 'F' ? 'Forwards' : 'Defense'}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Rookie filter */}
-                <button
-                    onClick={() => setRookieOnly(prev => !prev)}
-                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all ${
-                        rookieOnly
-                            ? 'bg-[#D9FF82]/15 border-[#D9FF82]/40 text-[#D9FF82]'
-                            : 'bg-white/5 border-white/10 text-neutral-500 hover:text-neutral-300'
-                    }`}
-                >
-                    🌱 Rookies
-                </button>
-
-                {/* Team filter */}
-                <select
-                    value={teamFilter}
-                    onChange={e => setTeamFilter(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-300 focus:outline-none focus:border-cyan-400/50"
-                >
-                    <option value="All">All Teams</option>
-                    {allTeams.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-
-                {/* Search */}
-                <input
-                    type="text"
-                    placeholder="Search player…"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-cyan-400/50 w-36"
-                />
-
-                <span className="text-neutral-600 text-[10px] font-mono ml-auto">{sorted.length} players</span>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto rounded-xl border border-white/10">
-                <table className="w-full text-xs border-collapse">
-                    <thead>
-                        <tr className="bg-white/5 border-b border-white/10">
-                            <th className="text-left py-2 px-3 text-[9px] font-bold text-neutral-500 uppercase tracking-widest whitespace-nowrap sticky left-0 bg-[#0a0a0a] z-10">#</th>
-                            <th className="text-left py-2 px-2 text-[9px] font-bold text-neutral-500 uppercase tracking-widest whitespace-nowrap sticky left-6 bg-[#0a0a0a] z-10 min-w-[8rem]">Player</th>
-                            <th className="text-center py-2 px-2 text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Pos</th>
-                            {COLUMNS.map(col => (
-                                <th
-                                    key={col.key}
-                                    title={col.title}
-                                    onClick={() => handleSort(col.key)}
-                                    className={`text-center py-2 px-2 text-[9px] font-bold uppercase tracking-widest whitespace-nowrap cursor-pointer select-none transition-colors hover:text-white
-                                        ${IMPACT_KEYS.includes(col.key) ? 'text-cyan-600' : ''}
-                                        ${RAPM_KEYS.includes(col.key) ? 'text-purple-500' : ''}
-                                        ${RATE_KEYS.includes(col.key) ? 'text-emerald-600' : ''}
-                                        ${!col.group ? 'text-neutral-500' : ''}
-                                        ${col.key === sortKey ? 'text-white' : ''}
-                                        ${col.key === 'impact_score' ? 'border-l border-cyan-400/30' : ''}
-                                        ${col.key === 'rapm_net' ? 'border-l border-purple-400/30' : ''}
-                                        ${col.key === 'ind_xg_per60' ? 'border-l border-emerald-400/30' : ''}`}
-                                >
-                                    {col.label} <SortIcon col={col.key} />
-                                </th>
+                            {(Object.keys(SET_LABELS) as ColumnSet[]).map(k => (
+                                <option key={k} value={k}>
+                                    {SET_LABELS[k]}
+                                </option>
                             ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {sorted.map((player, idx) => {
-                            const imp = player.impact_score;
-                            const rowBg = idx % 2 === 0 ? 'bg-white/[0.02]' : '';
-                            return (
-                                <tr key={player.id} className={`${rowBg} border-b border-white/5 hover:bg-white/5 transition-colors`}>
-                                    {/* Rank */}
-                                    <td className={`py-0 px-3 text-[9px] text-neutral-600 font-mono sticky left-0 z-10 ${rowBg || 'bg-[#050505]'}`}>
-                                        {idx + 1}
-                                    </td>
-                                    {/* Player name + team logo */}
-                                    <td className={`py-0 px-2 sticky left-6 z-10 ${rowBg || 'bg-[#050505]'}`}>
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <img
-                                                src={logoUrl(player.team)}
-                                                alt={player.team}
-                                                className="w-8 h-8 object-contain shrink-0 opacity-80"
-                                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                            />
-                                            <span className={`font-semibold truncate text-[11px] ${bioData[player.id]?.isRookie ? 'text-[#D9FF82]' : 'text-neutral-200'}`}>{player.name}</span>
-                                        </div>
-                                    </td>
-                                    {/* Position */}
-                                    <td className="py-0 px-2 text-center">
-                                        <span className="text-[9px] font-mono text-neutral-500">{player.position}</span>
-                                    </td>
-                                    {/* GP */}
-                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-400">{player.games_played}</td>
-                                    {/* G */}
-                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-300">{player.goals ?? '—'}</td>
-                                    {/* A */}
-                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-300">{player.assists ?? '—'}</td>
-                                    {/* PTS */}
-                                    <td className="py-0 px-2 text-center font-mono text-[11px] font-bold text-white">{player.points ?? '—'}</td>
-                                    {/* SOG/G */}
-                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-400">{player.sog_per_game?.toFixed(1) ?? '—'}</td>
-                                    {/* TOI/GP */}
-                                    <td className="py-0 px-2 text-center font-mono text-[11px] text-neutral-400">{fmtToi(player.toi_per_game_all)}</td>
-                                    {/* Per-60 rates */}
-                                    <td className="py-0 px-2 text-center font-mono text-[11px] border-l border-emerald-400/15"
-                                        style={{ color: per60Color(player.ind_xg_per60 ?? 0, player.is_forward ? 0.75 : 0.25) }}>
-                                        {fmtRate(player.ind_xg_per60)}
-                                    </td>
-                                    <td className="py-0 px-2 text-center font-mono text-[11px]"
-                                        style={{ color: per60Color(player.ev_xgf_per60 ?? 0, 2.5) }}>
-                                        {fmtRate(player.ev_xgf_per60)}
-                                    </td>
-                                    {/* RAPM */}
-                                    <td className="py-0 px-2 text-center font-mono text-[11px] font-bold border-l border-purple-400/15"
-                                        style={{ color: rapmColor(player.rapm_net) }}>
-                                        {fmtZ(player.rapm_net)}
-                                    </td>
-                                    {/* Impact components */}
-                                    {(['impact_ev_off', 'impact_ev_def', 'impact_pp', 'impact_pk'] as SortKey[]).map(k => {
-                                        const v = player[k] as number;
-                                        return (
-                                            <td key={k} className="py-0 px-2 text-center font-mono text-[11px]"
-                                                style={{ color: impactColor(v) }}>
-                                                {fmtZ(v)}
-                                            </td>
-                                        );
-                                    })}
-                                    {/* Total IMPACT */}
-                                    <td className="py-0 px-2 text-center border-l border-cyan-400/20">
-                                        <span
-                                            className="font-black text-[12px] font-mono tabular-nums"
-                                            style={{ color: impactColor(imp) }}
-                                        >
-                                            {fmtZ(imp)}
-                                        </span>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                        </select>
+                    </div>
+                </div>
+                <div role="group" aria-label="Filters" className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 scrollbar-hide md:mx-0 md:flex-wrap md:px-0">
+                    {(['all', 'F', 'D'] as const).map(p => (
+                        <FilterChip key={p} selected={filter.pos === p} onSelectedChange={() => update({ pos: p })}>
+                            {p === 'all' ? 'All skaters' : p === 'F' ? 'Forwards' : 'Defense'}
+                        </FilterChip>
+                    ))}
+                    <FilterChip selected={filter.rookies} onSelectedChange={v => update({ rookies: v })}>
+                        Rookies
+                    </FilterChip>
+                    <label htmlFor={ids.team} className="sr-only">
+                        Team
+                    </label>
+                    <select
+                        id={ids.team}
+                        value={filter.team}
+                        onChange={e => update({ team: e.target.value })}
+                        className={cn(
+                            'h-9 shrink-0 rounded-full border px-3 text-base font-semibold md:text-body-sm coarse:h-11',
+                            filter.team !== 'all' ? 'border-transparent bg-surface-3 text-fg-1 shadow-[inset_0_0_0_1px_rgb(var(--brand-rgb))]' : 'border-line bg-surface-1 text-fg-2',
+                        )}
+                    >
+                        <option value="all">All teams</option>
+                        {TEAM_CODES.map(t => (
+                            <option key={t} value={t}>
+                                {t}
+                            </option>
+                        ))}
+                    </select>
+                    <label htmlFor={ids.gp} className="sr-only">
+                        Minimum games played
+                    </label>
+                    <select
+                        id={ids.gp}
+                        value={filter.minGp}
+                        onChange={e => update({ minGp: Number(e.target.value) })}
+                        className="h-9 shrink-0 rounded-full border border-line bg-surface-1 px-3 text-base font-semibold text-fg-2 md:text-body-sm coarse:h-11"
+                    >
+                        {[1, 10, 20, 40, 60].map(n => (
+                            <option key={n} value={n}>
+                                {n === 1 ? 'Any GP' : `${n}+ GP`}
+                            </option>
+                        ))}
+                    </select>
+                    <FilterChip selected={filter.includeOffRoster} onSelectedChange={v => update({ includeOffRoster: v })}>
+                        Unsigned too
+                    </FilterChip>
+                </div>
             </div>
+
+            <div ref={tableTop} className="flex scroll-mt-[calc(var(--appbar-h)+120px)] flex-wrap items-center justify-between gap-2 text-body-sm text-fg-2">
+                <p aria-live="polite">
+                    {plural(total, 'skater')}
+                    {total > PAGE ? ` · ${current * PAGE + 1}–${Math.min(total, current * PAGE + PAGE)} shown` : ''}
+                </p>
+                {ratingsLabel ? <p className="text-caption text-fg-3">Counting stats and ratings: {ratingsLabel}</p> : null}
+            </div>
+
+            {rows.length === 0 ? (
+                <p className="hud-panel p-5 text-body-sm text-fg-2">No skaters match. Try fewer filters or a lower games-played minimum.</p>
+            ) : (
+                <ScrollRegion label="Skater ratings table" className="rounded-card border border-line bg-surface-1">
+                    <table className="w-full min-w-full text-body-sm md:min-w-[1100px]">
+                        <caption className="sr-only">Skaters sorted by {sort.key === 'impact' ? 'impact' : sort.key}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}</caption>
+                        <thead className="bg-surface-2">
+                            <tr>
+                                <SortHeader
+                                    direction={sort.key === 'name' ? sort.dir : null}
+                                    onSort={() => onSort('name')}
+                                    className="sticky left-0 z-10 w-[9rem] min-w-[9rem] bg-surface-2 md:w-60"
+                                >
+                                    Player
+                                </SortHeader>
+                                <SortHeader direction={sort.key === 'impact' ? sort.dir : null} onSort={() => onSort('impact')} className="min-w-[8.5rem]">
+                                    Impact
+                                </SortHeader>
+                                {COLUMNS.map(c => (
+                                    <SortHeader key={c.key} align="right" title={c.title} direction={sort.key === c.key ? sort.dir : null} onSort={() => onSort(c.key)} className={colClass(c)}>
+                                        {c.label}
+                                    </SortHeader>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-line tabular-nums">
+                            {visible.map((p, i) => (
+                                <tr key={p.id} className="hover:bg-surface-2/50">
+                                    <th scope="row" className="sticky left-0 z-10 w-[9rem] min-w-[9rem] bg-surface-1 px-2 py-1.5 text-left font-normal md:w-60">
+                                        <span className="flex items-center gap-2">
+                                            <span className="hidden w-6 shrink-0 text-right text-caption text-fg-3 md:inline">{current * PAGE + i + 1}</span>
+                                            <TeamLogo tri={p.team} size={20} />
+                                            <span className="min-w-0">
+                                                <span className="block truncate font-semibold text-fg-1">
+                                                    <span className="md:hidden">{shortName(p.name)}</span>
+                                                    <span className="hidden md:inline">{p.name}</span>
+                                                </span>
+                                                <span className="block truncate text-micro text-fg-3">
+                                                    {p.team} · {p.pos}
+                                                    {p.rookie ? ' · R' : ''}
+                                                    {p.prevTeam ? <span className="text-warn"> · from {p.prevTeam}</span> : null}
+                                                    {!p.onRoster ? ' · unsigned' : ''}
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </th>
+                                    <td className="px-2 py-1.5">
+                                        <ImpactBar value={p.impact} />
+                                    </td>
+                                    {COLUMNS.map(c => (
+                                        <td key={c.key} className={cn('px-2 py-1.5 text-right text-fg-2', colClass(c))}>
+                                            {c.render(p)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </ScrollRegion>
+            )}
+
+            {pages > 1 ? (
+                <nav aria-label="Pages" className="flex items-center justify-center gap-2">
+                    <button
+                        type="button"
+                        disabled={current === 0}
+                        onClick={() => goPage(current - 1)}
+                        className="min-h-10 rounded-control border border-line-strong px-4 text-body-sm font-semibold text-fg-1 transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:text-fg-disabled coarse:min-h-11"
+                    >
+                        ← Previous
+                    </button>
+                    <span className="px-2 text-body-sm tabular-nums text-fg-2">
+                        Page {current + 1} of {pages}
+                    </span>
+                    <button
+                        type="button"
+                        disabled={current >= pages - 1}
+                        onClick={() => goPage(current + 1)}
+                        className="min-h-10 rounded-control border border-line-strong px-4 text-body-sm font-semibold text-fg-1 transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:text-fg-disabled coarse:min-h-11"
+                    >
+                        Next →
+                    </button>
+                </nav>
+            ) : null}
+            <p className="flex items-center gap-1 text-caption text-fg-3">
+                Impact is a z-score: 0 is an average skater at his position, +1 is about one standard deviation better. <InfoTip term="player-impact" />
+            </p>
         </div>
+    );
+}
+
+function shortName(name: string): string {
+    const parts = name.split(' ');
+    return parts.length > 1 ? `${parts[0][0]}. ${parts.slice(1).join(' ')}` : name;
+}
+
+/** Diverging bar around 0 (±2.5 z shown), value to the right. */
+function ImpactBar({ value }: { value: number | null }) {
+    if (value == null) return <span className="text-fg-3">—</span>;
+    const clamped = Math.max(-2.5, Math.min(2.5, value));
+    const half = (Math.abs(clamped) / 2.5) * 50;
+    const pos = value >= 0;
+    return (
+        <span className="flex items-center gap-2">
+            <span aria-hidden="true" className="relative h-2.5 w-16 shrink-0 rounded-full bg-fg-3/15 md:w-24">
+                <span className="absolute inset-y-0 left-1/2 w-px bg-fg-3/60" />
+                <span
+                    className={cn('absolute inset-y-0 rounded-full', pos ? 'bg-brand/80' : 'bg-neg/80')}
+                    style={pos ? { left: '50%', width: `${half}%` } : { right: '50%', width: `${half}%` }}
+                />
+            </span>
+            <span className={cn('w-11 text-right font-bold', tone(value))}>{z(value)}</span>
+        </span>
     );
 }

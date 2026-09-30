@@ -118,7 +118,10 @@ const nextConfig: NextConfig = {
     "/*": NEVER_READ_AT_RUNTIME,
     // Only /api/odds-history reads SiteHistory; these routes trace it because
     // they join paths under public/data dynamically.
-    "/playoffs": ["public/data/SiteHistory/**", "public/data/*.csv"],
+    // /playoffs/[season] is force-static (built once from
+    // public/data/playoffs/<year>/summary.json) and /playoffs only redirects;
+    // neither optimises images, so the sharp binaries are dead weight.
+    "/playoffs": ["public/data/SiteHistory/**", "public/data/*.csv", "node_modules/@img/**", "node_modules/sharp/**"],
     "/api/teams/**": ["public/data/SiteHistory/**"],
   },
   outputFileTracingIncludes: {

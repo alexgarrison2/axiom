@@ -60,8 +60,6 @@ const SCALE = W / RINK_W;
 const sx = (x: number) => (x + RINK_W / 2) * SCALE;
 const sy = (y: number) => (RINK_H / 2 - y) * SCALE;
 
-/** Corner radius in px (28 ft NHL) */
-const CORNER_R = 28 * SCALE;
 
 /** Rounded-rectangle clip path for rink outline */
 const rinkPath = `
@@ -161,8 +159,6 @@ function GoalCrease({ side }: { side: 'left' | 'right' }) {
   // Trapezoid (NHL 2005): 11 ft from post at goal line, 22 ft from post at boards
   const trapGoalLineY = 11 * SCALE;
   const trapBoardY = 22 * SCALE;
-  const boardY = sy(-42.5);
-  const boardY2 = sy(42.5);
 
   return (
     <g>

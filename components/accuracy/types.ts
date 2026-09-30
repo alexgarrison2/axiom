@@ -1,0 +1,99 @@
+/** One graded pregame prediction, compacted for the browser. */
+export interface GradedGame {
+    id: number;
+    /** Local game date, YYYY-MM-DD. */
+    date: string;
+    /** "2025-26" */
+    season: string;
+    type: '02' | '03';
+    home: string;
+    away: string;
+    homeScore: number;
+    awayScore: number;
+    decision: 'REG' | 'OT' | 'SO';
+    /** Published model home-win probability, 0–100. */
+    homeProb: number;
+    /** De-vigged market home-win probability at the snapshot, 0–100. */
+    marketProb: number | null;
+    homeXg: number | null;
+    awayXg: number | null;
+    brier: number;
+    logLoss: number;
+    /** Back-filled after the fact (not what users saw). */
+    retro: boolean;
+    /** When the frozen pregame snapshot was taken (UTC ISO). */
+    snapshotUtc: string | null;
+}
+
+export function pickOf(g: GradedGame): string {
+    return g.homeProb >= 50 ? g.home : g.away;
+}
+
+export function winnerOf(g: GradedGame): string {
+    return g.homeScore > g.awayScore ? g.home : g.away;
+}
+
+export function isCorrect(g: GradedGame): boolean {
+    return pickOf(g) === winnerOf(g);
+}
+
+/** Probability (0–100) the model gave its pick. */
+export function pickProb(g: GradedGame): number {
+    return g.homeProb >= 50 ? g.homeProb : 100 - g.homeProb;
+}
+
+export interface LedgerBet {
+    gameId: number;
+    season: string;
+    type: string;
+    date: string;
+    team: string;
+    opponent: string;
+    side: 'home' | 'away';
+    stake: number;
+    price: number;
+    evAtBet: number | null;
+    evBucket: string;
+    stakeBucket: string;
+    modelProb: number | null;
+    result: 'win' | 'loss' | 'push' | 'pending' | string;
+    profit: number;
+    final: string | null;
+    decision: string | null;
+    clv: number | null;
+}
+
+export interface LedgerBucket {
+    bucket: string;
+    n: number;
+    record: string;
+    unitsStaked: number | null;
+    unitsProfit: number;
+    roi: number | null;
+}
+
+export interface LedgerSummary {
+    nBets: number;
+    nGraded: number;
+    nPending: number;
+    record: string;
+    unitsStaked: number;
+    unitsProfit: number;
+    roi: number | null;
+    roiCi: [number, number] | null;
+    clvMean: number | null;
+    clvN: number;
+    byEv: LedgerBucket[];
+    byStake: LedgerBucket[];
+}
+
+export interface LedgerData {
+    unit: string | null;
+    disclaimer: string | null;
+    clvNote: string | null;
+    source: string | null;
+    gate: { open: boolean; reasons: string[] } | null;
+    /** season label → summary */
+    seasons: Record<string, LedgerSummary>;
+    generatedAt: string | null;
+}
