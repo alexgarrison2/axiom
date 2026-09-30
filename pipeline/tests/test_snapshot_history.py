@@ -87,3 +87,34 @@ def test_legacy_file_gets_ids_backfilled_and_separators_dropped(tmp_path):
     rows = list(csv.DictReader(text.splitlines()))
     assert [r['nhl_game_id'] for r in rows] == ['2026020010', '2026020010']
     assert [r['home_Odds'] for r in rows] == ['-125', '-140']
+
+
+def test_totals_are_snapshotted_and_a_total_move_adds_a_point(tmp_path):
+    """fix2-I2: the line-move modal shows the over/under too."""
+    pred = tmp_path / 'pred.csv'
+    hist = tmp_path / 'SiteHistory'
+    a = ('2026020010', '2026-10-01-Flyers-Devils', '2026-10-01T23:00:00Z')
+    cols = COLS + ['total_line', 'total_over', 'total_under']
+
+    def write(line, over, under):
+        with open(pred, 'w', newline='') as f:
+            w = csv.DictWriter(f, fieldnames=cols)
+            w.writeheader()
+            w.writerow(dict(_game(*a, -130), total_line=line, total_over=over, total_under=under))
+
+    write('6.0', '-117', '-103')
+    SP.snapshot(str(pred), str(hist), dt.datetime(2026, 10, 1, 17, 0, tzinfo=UTC))
+    write('5.5', '-130', '110')                      # moneyline unchanged, total moved
+    SP.snapshot(str(pred), str(hist), dt.datetime(2026, 10, 1, 18, 0, tzinfo=UTC))
+    write('5.5', '-130', '110')                      # nothing moved
+    SP.snapshot(str(pred), str(hist), dt.datetime(2026, 10, 1, 19, 0, tzinfo=UTC))
+
+    rows = list(csv.DictReader((hist / '2026-10-01.csv').read_text().splitlines()))
+    assert [(r['total_line'], r['total_over'], r['total_under']) for r in rows] == \
+        [('6', '-117', '-103'), ('5.5', '-130', '+110')]
+    assert [r['home_Odds'] for r in rows] == ['-130', '-130']
+
+
+def test_format_total_rejects_nonsense():
+    assert SP.format_total('6.0') == '6' and SP.format_total('5.5') == '5.5'
+    assert SP.format_total('') == '' and SP.format_total('nan') == '' and SP.format_total('55') == ''

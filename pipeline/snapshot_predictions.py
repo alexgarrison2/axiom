@@ -106,7 +106,20 @@ FIELDNAMES = [
     'timestamp_utc', 'model_version', 'home_model%', 'home_market%',
     # 10-digit NHL gameId, so /api/odds-history can find a game's rows by id.
     'nhl_game_id',
+    # Game total (over/under line and prices) for the line-move history.
+    'total_line', 'total_over', 'total_under',
 ]
+
+
+def format_total(val_str):
+    """'6.0' -> '6', '5.5' -> '5.5'; blank for anything that is not a sane total."""
+    try:
+        v = float(val_str)
+    except (TypeError, ValueError):
+        return ''
+    if not 3 <= v <= 12:
+        return ''
+    return f"{v:g}"
 
 
 def _is_pregame(row, now_utc):
@@ -188,6 +201,9 @@ def snapshot(predictions_path=None, history_dir=None, now_utc=None):
                 'home_model%': format_pct(row.get('home_model_win_pct', '')),
                 'home_market%': format_pct(row.get('home_vegas_win_pct', '')),
                 'nhl_game_id': row.get('nhl_game_id', ''),
+                'total_line': format_total(row.get('total_line', '')),
+                'total_over': format_odds(row.get('total_over', '')),
+                'total_under': format_odds(row.get('total_under', '')),
                 'awayteam': row.get('away_team', ''),
                 'hometeam': row.get('home_team', ''),
 

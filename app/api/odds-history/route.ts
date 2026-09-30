@@ -4,7 +4,7 @@ import path from 'node:path';
 import Papa from 'papaparse';
 
 /**
- * Moneyline movement for one game from the frozen pregame snapshots in
+ * Moneyline (and, where snapshotted, game total) movement for one game from the frozen pregame snapshots in
  * public/data/SiteHistory/<date>.csv.
  *
  *   GET /api/odds-history?gameId=2026020008&date=2026-09-30
@@ -24,6 +24,18 @@ export interface OddsEntry {
     homeDir: 'up' | 'down' | null;
     isOpen: boolean;
     isLatest: boolean;
+    /** Game total at this snapshot (older snapshots have none). */
+    total?: OddsTotal | null;
+    /** 'up' = the total line went up, 'down' = it came down, null = same line. */
+    totalDir?: 'up' | 'down' | null;
+}
+
+export interface OddsTotal {
+    /** Over/under goals line, e.g. "6" or "5.5". */
+    line: string;
+    /** American prices, e.g. "-117". */
+    over: string;
+    under: string;
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -36,6 +48,15 @@ const bad = (msg: string) => NextResponse.json({ error: msg }, { status: 400 });
 function oddsNum(odds: string): number {
     return parseInt((odds ?? '').replace(/[^-\d]/g, ''), 10) || 0;
 }
+
+function totalOf(row: Record<string, string>): OddsTotal | null {
+    const line = (row.total_line ?? '').trim();
+    const n = Number(line);
+    if (!line || !Number.isFinite(n) || n < 3 || n > 12) return null;
+    return { line: String(n), over: (row.total_over ?? '').trim(), under: (row.total_under ?? '').trim() };
+}
+
+const totalKey = (t: OddsTotal | null) => (t ? `${t.line}|${t.over}|${t.under}` : '');
 
 function dir(curr: string, prev: string): 'up' | 'down' | null {
     const c = oddsNum(curr);
@@ -73,16 +94,19 @@ export async function GET(request: NextRequest) {
     });
     if (rows.length === 0) return NextResponse.json({ entries: [] }, { headers });
 
-    // Drop consecutive identical odds pairs, then keep the opening line and the last 6 moves.
+    // Drop consecutive identical snapshots (same moneyline and same total),
+    // then keep the opening line and the last 6 moves.
     const deduped: typeof rows = [];
     for (const row of rows) {
         const prev = deduped[deduped.length - 1];
-        if (!prev || row.away_Odds !== prev.away_Odds || row.home_Odds !== prev.home_Odds) deduped.push(row);
+        if (!prev || row.away_Odds !== prev.away_Odds || row.home_Odds !== prev.home_Odds || totalKey(totalOf(row)) !== totalKey(totalOf(prev))) deduped.push(row);
     }
     const selected = [deduped[0], ...deduped.slice(1).slice(-6)];
 
     const entries: OddsEntry[] = selected.map((row, i) => {
         const prev = i === 0 ? null : selected[i - 1];
+        const total = totalOf(row);
+        const prevTotal = prev ? totalOf(prev) : null;
         return {
             timestamp: row.timestamp_utc || row.timestamp,
             awayOdds: row.away_Odds,
@@ -91,6 +115,8 @@ export async function GET(request: NextRequest) {
             homeDir: prev ? dir(row.home_Odds, prev.home_Odds) : null,
             isOpen: i === 0,
             isLatest: i === selected.length - 1 && i > 0,
+            total,
+            totalDir: total && prevTotal ? (Number(total.line) > Number(prevTotal.line) ? 'up' : Number(total.line) < Number(prevTotal.line) ? 'down' : null) : null,
         };
     });
 

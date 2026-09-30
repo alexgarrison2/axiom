@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog } from '@/components/ui/dialog';
-import type { OddsEntry } from '@/app/api/odds-history/route';
+import type { OddsEntry, OddsTotal } from '@/app/api/odds-history/route';
 import type { TeamRef } from '@/types/prediction';
 import { fmtOdds } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
@@ -44,17 +44,50 @@ function moveSentence(tri: string, from: string, to: string): string {
     return `${tri} ${verb} from ${fmtOdds(from) ?? from} to ${fmtOdds(to) ?? to}`;
 }
 
+/** "Total came down from 6 to 5.5" / "Total unchanged at 6.5". */
+export function totalSentence(from: OddsTotal | null | undefined, to: OddsTotal | null | undefined): string | null {
+    if (!to) return null;
+    if (!from || Number(from.line) === Number(to.line)) {
+        const priced = from && (from.over !== to.over || from.under !== to.under) ? `, over ${fmtOdds(from.over) ?? from.over} → ${fmtOdds(to.over) ?? to.over}` : '';
+        return `Total unchanged at ${to.line}${priced}`;
+    }
+    return `Total ${Number(to.line) > Number(from.line) ? 'went up' : 'came down'} from ${from.line} to ${to.line}`;
+}
+
+function TotalCell({ t, dir }: { t: OddsTotal | null | undefined; dir: 'up' | 'down' | null | undefined }) {
+    if (!t) return <span className="text-fg-3">—</span>;
+    return (
+        <span className="inline-flex flex-col items-end leading-tight">
+            <span className="font-semibold text-fg-1">
+                {dir ? <span className={cn('mr-1 text-micro font-semibold', dir === 'up' ? 'text-warn' : 'text-fg-2')}>{dir === 'up' ? 'up' : 'down'}</span> : null}
+                {t.line}
+            </span>
+            <span className="flex flex-wrap justify-end gap-x-2 text-micro text-fg-2">
+                <span className="whitespace-nowrap">
+                    <abbr title="Over" className="no-underline">O</abbr> {fmtOdds(t.over) ?? t.over}
+                </span>
+                <span className="whitespace-nowrap">
+                    <abbr title="Under" className="no-underline">U</abbr> {fmtOdds(t.under) ?? t.under}
+                </span>
+            </span>
+        </span>
+    );
+}
+
 /**
- * "Line move": how the moneyline moved from the opening snapshot to the
+ * "Line move": how the moneyline (and the game total, when snapshotted) moved from the opening snapshot to the
  * latest, in an accessible dialog. Shown only when there are 2+ points.
  */
 export default function OddsHistoryModal({ entries, away, home, started = false }: { entries: OddsEntry[]; away: TeamRef; home: TeamRef; started?: boolean }) {
     const first = entries[0];
     const last = entries[entries.length - 1];
+    const hasTotals = entries.some(e => e.total);
+    const firstTotal = entries.find(e => e.total)?.total;
+    const totals = totalSentence(firstTotal, last.total);
     return (
         <Dialog
             title="Line move"
-            description={`${away.commonName} at ${home.commonName} · moneyline from our first snapshot to the ${started ? 'close' : 'latest'}`}
+            description={`${away.commonName} at ${home.commonName} · ${hasTotals ? 'moneyline and total' : 'moneyline'} from our first snapshot to the ${started ? 'close' : 'latest'}`}
             size="md"
             trigger={
                 <button
@@ -73,6 +106,7 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
         >
             <p className="mb-3 text-body-sm text-fg-1">
                 {moveSentence(away.triCode, first.awayOdds, last.awayOdds)} · {moveSentence(home.triCode, first.homeOdds, last.homeOdds)}.
+                {totals ? <span className="block">{totals}.</span> : null}
                 <span className="block text-caption text-fg-3">Shortened means the market now rates the team more likely to win; drifted means less likely.</span>
             </p>
             <table className="w-full text-body-sm">
@@ -87,6 +121,11 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                         <th scope="col" className="pb-2 text-right font-semibold">
                             {home.triCode}
                         </th>
+                        {hasTotals ? (
+                            <th scope="col" className="pb-2 pr-1 text-right font-semibold">
+                                Total
+                            </th>
+                        ) : null}
                     </tr>
                 </thead>
                 <tbody>
@@ -100,14 +139,19 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                             <td className="py-1.5 text-right tabular-nums text-fg-1">
                                 <Move dir={e.awayDir} /> {fmtOdds(e.awayOdds) ?? e.awayOdds}
                             </td>
-                            <td className="py-1.5 pr-1 text-right tabular-nums text-fg-1">
+                            <td className={cn('py-1.5 text-right tabular-nums text-fg-1', !hasTotals && 'pr-1')}>
                                 <Move dir={e.homeDir} /> {fmtOdds(e.homeOdds) ?? e.homeOdds}
                             </td>
+                            {hasTotals ? (
+                                <td className="py-1.5 pl-2 pr-1 text-right tabular-nums">
+                                    <TotalCell t={e.total} dir={e.totalDir} />
+                                </td>
+                            ) : null}
                         </tr>
                     ))}
                 </tbody>
             </table>
-            <p className="mt-3 text-caption text-fg-3">From our pregame snapshots. “First seen” is our first capture, not necessarily the book’s opening line; the last six changes are shown.</p>
+            <p className="mt-3 text-caption text-fg-3">From our pregame snapshots. “First seen” is our first capture, not necessarily the book’s opening line; the last six changes are shown. Times are in your time zone.</p>
         </Dialog>
     );
 }

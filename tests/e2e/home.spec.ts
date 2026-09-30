@@ -174,6 +174,48 @@ test.describe('home slate', () => {
         await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     });
 
+    test('Odds tab: the line-move dialog shows moneyline and total movement with zoned times (mocked API)', async ({ page }) => {
+        const entries = [
+            { timestamp: '2026-09-30T12:42:49Z', awayOdds: '+110', homeOdds: '-130', awayDir: null, homeDir: null, isOpen: true, isLatest: false, total: { line: '6', over: '-117', under: '-103' }, totalDir: null },
+            { timestamp: '2026-09-30T14:39:17Z', awayOdds: '+112', homeOdds: '-133', awayDir: 'up', homeDir: 'down', isOpen: false, isLatest: false, total: { line: '6', over: '-110', under: '-110' }, totalDir: null },
+            { timestamp: '2026-09-30T19:05:00Z', awayOdds: '+120', homeOdds: '-142', awayDir: 'up', homeDir: 'down', isOpen: false, isLatest: true, total: { line: '5.5', over: '-130', under: '+110' }, totalDir: 'down' },
+        ];
+        let hits = 0;
+        await page.route('**/api/odds-history?**', route => {
+            hits++;
+            return route.fulfill({ json: { entries } });
+        });
+        await page.goto('/');
+        await settle(page);
+        const card = page.locator('article').filter({ hasText: 'Market' }).first();
+        test.skip((await card.count()) === 0, 'no game with a market on this slate');
+        await card.locator('h2 button[aria-expanded]').click();
+        await card.getByRole('radio', { name: 'Odds' }).click();
+        const trigger = card.getByRole('button', { name: /Line move/ });
+        await expect(trigger).toBeVisible();
+        expect(hits).toBeGreaterThan(0);
+        await trigger.click();
+        const dialog = page.getByRole('dialog', { name: 'Line move' });
+        await expect(dialog).toBeVisible();
+        await expect(dialog).toContainText('moneyline and total');
+        await expect(dialog).toContainText('Total came down from 6 to 5.5');
+        await expect(dialog.getByRole('columnheader', { name: 'Total' })).toBeVisible();
+        const rows = dialog.locator('tbody tr');
+        await expect(rows).toHaveCount(3);
+        // First seen / Latest labels, and every time carries a zone (the test runs in America/New_York).
+        await expect(rows.first()).toContainText('First seen');
+        await expect(rows.last()).toContainText(/Latest|Close/);
+        for (const r of await rows.all()) await expect(r.locator('th')).toContainText(/\d{1,2}:\d{2} [AP]M E[DS]T/);
+        await expect(rows.last()).toContainText('5.5');
+        await expect(rows.last()).toContainText(/O\s*[−-]130/);
+        await expect(rows.last()).toContainText('down');
+        const axe = await blockingAxeViolations(page);
+        expect(axe, formatAxe(axe)).toEqual([]);
+        await page.keyboard.press('Escape');
+        await expect(dialog).toBeHidden();
+        await expect(trigger).toBeFocused();
+    });
+
     test('has no serious or critical axe violations, collapsed and expanded', async ({ page }) => {
         await page.goto('/');
         await settle(page);
