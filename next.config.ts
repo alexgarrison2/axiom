@@ -124,6 +124,16 @@ const nextConfig: NextConfig = {
     ),
   },
 
+  /*
+   * public/logos/{TRI}.svg ARE the NHL dark-surface variants (byte-identical
+   * to assets.nhle.com/logos/nhl/svg/{TRI}_dark.svg before SVGO). The explicit
+   * /logos/{TRI}_dark.svg name is served from the same file instead of a
+   * duplicate copy; use it wherever the old *_light.svg CDN URLs appeared.
+   */
+  async rewrites() {
+    return [{ source: "/logos/:team([A-Z]{3})_dark.svg", destination: "/logos/:team.svg" }];
+  },
+
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
