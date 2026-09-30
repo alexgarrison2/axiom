@@ -464,11 +464,14 @@ function XgFlow({ game, shots, awayColor, homeColor, isSeries }: { game: Playoff
         <div className="flex flex-col gap-2">
             <p className="text-center text-body-sm text-fg-2">
                 Cumulative expected goals:{' '}
-                <span className="font-bold tabular-nums" style={{ color: awayColor }}>
+                {/* Team colour marks the swatch, never the text (contrast). */}
+                <span className="inline-flex items-center gap-1.5 font-bold tabular-nums text-fg-1">
+                    <span aria-hidden="true" className="inline-block h-1 w-4 rounded-full" style={{ backgroundColor: awayColor }} />
                     {game.awayTriCode} {fmt(totals[game.awayTriCode] ?? 0)}
                 </span>{' '}
                 ·{' '}
-                <span className="font-bold tabular-nums" style={{ color: homeColor }}>
+                <span className="inline-flex items-center gap-1.5 font-bold tabular-nums text-fg-1">
+                    <span aria-hidden="true" className="inline-block h-1 w-4 rounded-full" style={{ backgroundColor: homeColor }} />
                     {game.homeTriCode} {fmt(totals[game.homeTriCode] ?? 0)}
                 </span>
             </p>
