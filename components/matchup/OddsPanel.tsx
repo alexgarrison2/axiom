@@ -7,7 +7,7 @@ import type { OddsEntry } from '@/app/api/odds-history/route';
 import type { Phase } from '@/lib/matchup/lifecycle';
 import { InfoTip } from '@/components/ui/info-tip';
 import { loadJson } from '@/lib/client-data';
-import { fmtClock, fmtOdds, sourceLabel } from '@/lib/matchup/format';
+import { fmtOdds, fmtTime, sourceLabel } from '@/lib/matchup/format';
 import { gatedEdge, hasMarket, marketPair } from '@/lib/matchup/edge';
 import { useHydrated } from './GameTime';
 
@@ -54,7 +54,7 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
     }
 
     const src = sourceLabel(p.marketSource);
-    const at = p.marketFetchedAt ? fmtClock(p.marketFetchedAt, hydrated ? undefined : 'America/New_York') : null;
+    const at = p.marketFetchedAt ? fmtTime(p.marketFetchedAt, hydrated ? undefined : 'America/New_York') : null;
     const a = p.away.team.triCode;
     const h = p.home.team.triCode;
 

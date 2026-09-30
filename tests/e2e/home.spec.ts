@@ -152,7 +152,7 @@ test.describe('home slate', () => {
         await page.setViewportSize({ width: 390, height: 844 });
         await page.goto('/');
         await page.locator('article h2 button[aria-expanded]').first().click();
-        await expect(page.getByRole('heading', { name: /^Why the .+ (is|are) favored$/ }).first()).toBeVisible();
+        await expect(page.getByRole('heading', { name: /^Why (the .+ (is|are) favored|it's a coin flip)$/ }).first()).toBeVisible();
         expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
     });
 

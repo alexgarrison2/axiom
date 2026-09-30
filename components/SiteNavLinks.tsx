@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { IntentLink } from './IntentLink';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS, isActive } from './nav-items';
@@ -17,7 +17,7 @@ export function SiteNavLinks({ showPlayoffs }: { showPlayoffs: boolean }) {
                     const active = isActive(item.href, pathname);
                     return (
                         <li key={item.key}>
-                            <Link
+                            <IntentLink
                                 href={item.href}
                                 aria-current={active ? 'page' : undefined}
                                 className={cn(
@@ -34,7 +34,7 @@ export function SiteNavLinks({ showPlayoffs }: { showPlayoffs: boolean }) {
                                         active ? 'bg-brand opacity-100 shadow-[0_0_10px_rgb(var(--brand-rgb)/0.8)]' : 'opacity-0',
                                     )}
                                 />
-                            </Link>
+                            </IntentLink>
                         </li>
                     );
                 })}

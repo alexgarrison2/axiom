@@ -7,6 +7,9 @@ import type { LiveGame } from '../lifecycle';
 import type { Prediction } from '../../../types/prediction';
 import { byTeams, fixture, withOverrides } from './fixtures';
 import { compactForClient } from '../parse';
+import { WhyThisPick } from '../../../components/matchup/WhyThisPick';
+import { gsaxTag } from '../format';
+import type { GameDetails } from '../../client-data';
 
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
 
@@ -165,5 +168,33 @@ describe('playoff goalie line (Goalies tab)', () => {
         expect(t).toContain('25-26 31-18-4');
         const nyiTor = fixture('opening_night').find(p => p.away.team.triCode === 'NYI')!;
         expect(goalies(nyiTor)).toContain('Season debut');
+    });
+});
+
+describe('review fixes', () => {
+    it("calls a forecast that rounds to 50-50 a coin flip, not 'favored'", () => {
+        const p = withOverrides(byTeams(fixture('opening_night'), 'PIT', 'PHI'), {
+            breakdown: [
+                { factor: 'home_ice', label: 'Home ice', wp_delta_pts: 0.6 },
+                { factor: 'rest', label: 'Rest', wp_delta_pts: -0.2 },
+            ],
+        });
+        const t = text(render(<WhyThisPick p={p} />).container);
+        expect(t).toContain("Why it's a coin flip");
+        expect(t).not.toContain('favored');
+        cleanup();
+        const clear = withOverrides(p, { breakdown: [{ factor: 'home_ice', label: 'Home ice', wp_delta_pts: 6 }] });
+        expect(text(render(<WhyThisPick p={clear} />).container)).toContain(`Why the ${p.home.team.commonName} are favored`);
+    });
+
+    it("tags the starter's GSAx by the games the rating holds, not the goalie's line", () => {
+        const p = withOverrides(byTeams(fixture('opening_night'), 'PIT', 'PHI'), {}, { home: { gsax: -0.12, goalieCurGp: 1 } });
+        const goalie = { name: p.home.goalie ?? 'X', starter: true, cur: null, prev: null, gsaxPerGame: -0.12, gsaxSeason: gsaxTag(0) };
+        const side = { goalies: [goalie] } as unknown as GameDetails['home'];
+        const data = { home: side, away: { goalies: [] } } as unknown as GameDetails;
+        const t = text(render(<GoaliesPanel p={p} state={{ status: 'ready', data }} />).container);
+        expect(t).toMatch(/GSAx\/gm\s*\(25-26\)/);
+        expect(t).not.toMatch(/GSAx\/gm\s*\(26-27/);
+        expect(gsaxTag(3)).toBe('26-27 · 3 GP');
     });
 });

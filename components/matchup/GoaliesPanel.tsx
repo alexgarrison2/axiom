@@ -28,7 +28,7 @@ function SeasonLines({ cur, prev, curText, prevText }: { cur?: Line; prev?: Line
     );
 }
 
-function StarterCard({ s, opp, now }: { s: SideData; opp: string; now: Date }) {
+function StarterCard({ s, opp, now, gsaxTag }: { s: SideData; opp: string; now: Date; gsaxTag: string | null }) {
     const st = goalieStatus(s.goalieStatus);
     const at = relAge(s.goalieStatusAt, now);
     return (
@@ -49,7 +49,7 @@ function StarterCard({ s, opp, now }: { s: SideData; opp: string; now: Date }) {
             {s.gsax != null ? (
                 <span className="flex items-center gap-1 text-caption tabular-nums text-fg-2">
                     <span className={cn('font-semibold', s.gsax > 0.05 ? 'text-pos' : s.gsax < -0.05 ? 'text-neg' : 'text-fg-1')}>{fmtSigned(s.gsax)}</span> GSAx/gm
-                    <span className="text-fg-3">({(s.goalieCurGp ?? 0) > 0 ? CUR_TAG : PREV_TAG})</span>
+                    {gsaxTag ? <span className="text-fg-3">({gsaxTag})</span> : null}
                     <InfoTip term="gsax" />
                 </span>
             ) : null}
@@ -91,10 +91,14 @@ export function GoaliesPanel({ p, state }: { p: Prediction; state: DetailsState 
             {(['away', 'home'] as const).map(side => {
                 const s = p[side];
                 const opp = p[side === 'home' ? 'away' : 'home'].team.triCode;
+                // The rating's season tag comes with the details payload (it knows how many
+                // of this season's games the regressed rating has absorbed).
+                const rated = state.status === 'ready' ? state.data?.[side].goalies.find(g => g.starter)?.gsaxSeason : undefined;
+                const tag = rated ?? (state.status === 'loading' ? null : (s.goalieCurGp ?? 0) > 0 ? CUR_TAG : PREV_TAG);
                 return (
                     <section key={side} aria-label={`${s.team.commonName} goalies`} className="flex flex-col gap-2">
                         <h3 className="hud-label">{s.team.triCode} goalies</h3>
-                        <StarterCard s={s} opp={opp} now={now} />
+                        <StarterCard s={s} opp={opp} now={now} gsaxTag={tag} />
                         <DetailsLoading state={state}>
                             {d => {
                                 const others = d[side].goalies.filter(g => !g.starter);

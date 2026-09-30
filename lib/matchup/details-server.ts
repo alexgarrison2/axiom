@@ -4,7 +4,7 @@ import path from 'node:path';
 import Papa from 'papaparse';
 import { json, parseRecent, str, type RawRow } from './parse';
 import { buildIndex, leagueContext, lineupView, type DfoLineup, type ImpactData } from './lineup-impact';
-import { CUR_TAG, PREV_TAG, disambiguate, shortDate } from './format';
+import { disambiguate, gsaxTag, shortDate } from './format';
 import type { GoalieView, InjuryView, MatchupDetails, MatchupDetailsPayload, PickSummaries, SideDetails } from '../../types/prediction';
 import { SEASON_START_DATE } from '../season';
 import { TEAM_CODES, TEAM_NAMES } from '../../components/ui/team-color';
@@ -140,8 +140,10 @@ export function getMatchupDetails(): MatchupDetailsPayload {
         const r = ratings[name];
         const g = r?.gsax_per_game;
         const gsax = typeof g === 'number' && Number.isFinite(g) ? Math.round(g * 100) / 100 : null;
-        const curGp = l?.cur?.gp ?? r?.games_played ?? 0;
-        return { name, starter, cur: l?.cur ?? null, prev: l?.prev ?? null, gsaxPerGame: gsax, gsaxSeason: gsax == null ? null : curGp > 0 ? CUR_TAG : PREV_TAG };
+        // The rate is a regressed multi-season rating: tag it by the games the
+        // rating has actually absorbed this season, not by the goalie's line.
+        const ratedGp = typeof r?.games_played === 'number' && r.games_played > 0 ? r.games_played : 0;
+        return { name, starter, cur: l?.cur ?? null, prev: l?.prev ?? null, gsaxPerGame: gsax, gsaxSeason: gsax == null ? null : gsaxTag(ratedGp) };
     };
 
     const games: Record<string, MatchupDetails> = {};

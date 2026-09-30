@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { IntentLink } from './IntentLink';
 import { usePathname } from 'next/navigation';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { BookOpen, Ellipsis, ListOrdered, Newspaper, Shield, Target, Trophy, Users } from 'lucide-react';
@@ -57,11 +57,11 @@ export function MobileTabBar({ showPlayoffs }: { showPlayoffs: boolean }) {
                     const active = isActive(item.href, pathname);
                     return (
                         <li key={item.key} className="flex flex-1">
-                            <Link href={item.href} aria-current={active ? 'page' : undefined} className={tabClass(active)}>
+                            <IntentLink href={item.href} aria-current={active ? 'page' : undefined} className={tabClass(active)}>
                                 <span aria-hidden="true" className={cn('absolute inset-x-5 top-0 h-0.5 rounded-b-full', active ? 'bg-brand' : 'bg-transparent')} />
                                 <Icon aria-hidden="true" className="h-5 w-5" />
                                 <span>{item.short ?? item.label}</span>
-                            </Link>
+                            </IntentLink>
                         </li>
                     );
                 })}
@@ -89,7 +89,7 @@ export function MobileTabBar({ showPlayoffs }: { showPlayoffs: boolean }) {
                                         const active = isActive(item.href, pathname);
                                         return (
                                             <li key={item.key}>
-                                                <Link
+                                                <IntentLink
                                                     href={item.href}
                                                     aria-current={active ? 'page' : undefined}
                                                     onClick={() => setMoreOpen(false)}
@@ -110,7 +110,7 @@ export function MobileTabBar({ showPlayoffs }: { showPlayoffs: boolean }) {
                                                         <span className={cn('block text-body font-semibold', active ? 'text-brand' : 'text-fg-1')}>{item.label}</span>
                                                         <span className="block truncate text-caption text-fg-3">{item.description}</span>
                                                     </span>
-                                                </Link>
+                                                </IntentLink>
                                             </li>
                                         );
                                     })}

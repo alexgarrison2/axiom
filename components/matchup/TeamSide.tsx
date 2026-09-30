@@ -80,7 +80,7 @@ export function TeamSide({
                 </span>
                 <span className={cn('flex max-w-full items-center gap-1.5 text-caption text-fg-2', home && 'justify-end')}>
                     {score == null ? (
-                        <span className="tabular-nums">{s.record ?? (s.gp === 0 ? '0-0-0' : '')}</span>
+                        <span className="shrink-0 whitespace-nowrap tabular-nums">{s.record ?? (s.gp === 0 ? '0-0-0' : '')}</span>
                     ) : null}
                     {s.goalie ? (
                         <span className="inline-flex min-w-0 items-center gap-1" title={`${s.goalie} · ${st.label}${s.goalieStatusSource ? ` (${s.goalieStatusSource})` : ''}`}>

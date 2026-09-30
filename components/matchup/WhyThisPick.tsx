@@ -25,12 +25,14 @@ export function WhyThisPick({ p }: { p: Prediction }) {
     const fav = homeFinal >= 50 ? h : a;
     const favPct = homeFinal >= 50 ? homeFinal : 100 - homeFinal;
     const mid = axisPos(w, 50);
+    // A 50.4% "favourite" displays as 50-50: don't call it favored.
+    const even = Math.round(favPct) <= 50;
 
     return (
         <section aria-labelledby={`why-${p.id}`} className="flex flex-col gap-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 id={`why-${p.id}`} className="text-body font-bold text-fg-1">
-                    Why the {fav.commonName} are favored
+                    {even ? `Why it's a coin flip` : `Why the ${fav.commonName} are favored`}
                 </h3>
                 {p.confidenceGrade ? (
                     <span className="inline-flex items-center gap-0.5">
@@ -43,7 +45,7 @@ export function WhyThisPick({ p }: { p: Prediction }) {
             </div>
             {p.pickSummary ? <p className="text-body-sm text-fg-2">{p.pickSummary}</p> : null}
 
-            <ol className="flex flex-col gap-1" aria-label={`From a coin flip to ${fav.triCode} ${favPct.toFixed(1)}%`}>
+            <ol className="flex flex-col gap-1" aria-label={even ? 'From a coin flip, factor by factor' : `From a coin flip to ${fav.triCode} ${favPct.toFixed(1)}%`}>
                 <li className="grid grid-cols-[6.5rem_minmax(0,1fr)_3.25rem] items-center gap-2 text-caption">
                     <span className="text-fg-2">Coin flip</span>
                     <span aria-hidden="true" className="relative h-4">
@@ -88,7 +90,7 @@ export function WhyThisPick({ p }: { p: Prediction }) {
                         <span className="absolute inset-y-[-2px] w-0.5 rounded bg-fg-1" style={{ left: `${axisPos(w, homeFinal)}%` }} />
                     </span>
                     <span className="text-right font-bold tabular-nums text-fg-1">
-                        {fav.triCode} {favPct.toFixed(0)}%
+                        {even ? '50-50' : `${fav.triCode} ${favPct.toFixed(0)}%`}
                     </span>
                 </li>
             </ol>

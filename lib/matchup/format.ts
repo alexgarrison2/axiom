@@ -45,6 +45,14 @@ export function fmtTime(iso: string, timeZone?: string, locale = 'en-US'): strin
     }).format(d);
 }
 
+/**
+ * Season tag for a regressed GSAx/gm rating: "25-26" while the rating holds no
+ * games from this season, then "26-27 · 3 GP" so a tiny sample reads as one.
+ */
+export function gsaxTag(ratedGp: number): string {
+    return ratedGp > 0 ? `${CUR_TAG} · ${ratedGp} GP` : PREV_TAG;
+}
+
 /** Clock time without zone: "5:12 PM". */
 export function fmtClock(iso: string, timeZone?: string): string {
     const d = new Date(iso);
