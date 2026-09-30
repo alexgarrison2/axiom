@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import * as Popover from '@radix-ui/react-popover';
 import { ChevronDown, Search } from 'lucide-react';
+import { Crest } from '@/components/ui/crest';
 import { cn } from '@/lib/utils';
 import { ALL_TEAMS, DIVISIONS, DIVISION_LABEL } from '@/utils/team-stats/teams';
 
@@ -46,15 +47,14 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
         <Popover.Root open={open} onOpenChange={onOpenChange}>
             <Popover.Trigger
                 className={cn(
-                    'inline-flex min-h-9 items-center gap-1.5 rounded-control border border-line bg-surface-1 px-2.5 text-body-sm font-semibold text-fg-1 transition-colors hover:bg-surface-2 coarse:min-h-11',
+                    'inline-flex min-h-8 items-center gap-1.5 rounded-full border border-line px-3 text-micro font-medium uppercase tracking-chip text-fg-3 transition-colors hover:border-line-strong hover:text-fg-1 coarse:min-h-11',
+                    open && 'border-brand/60 text-brand',
                     className,
                 )}
                 aria-label={`Switch team (current: ${cur?.name ?? current})`}
             >
-                {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
-                <img src={`/logos/${current}.svg`} alt="" width={20} height={20} className="h-5 w-5 object-contain" decoding="async" />
-                <span>Switch team</span>
-                <ChevronDown aria-hidden="true" className={cn('h-4 w-4 text-fg-2 transition-transform', open && 'rotate-180')} />
+                <span>Switch</span>
+                <ChevronDown aria-hidden="true" className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
             </Popover.Trigger>
             <Popover.Portal>
                 <Popover.Content
@@ -73,28 +73,28 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
                         'md:w-[720px] md:max-h-[min(80vh,640px,var(--radix-popover-content-available-height))]',
                     )}
                 >
-                    <div className="flex items-center gap-2 border-b border-line px-4 py-2">
+                    <div className="flex items-center gap-2 border-b border-line px-3 py-1">
                         <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-fg-3" />
                         <input
                             type="search"
                             value={q}
                             onChange={e => setQ(e.target.value)}
-                            placeholder="Search teams"
+                            placeholder="SEARCH"
                             aria-label="Search teams"
-                            className="min-h-11 w-full bg-transparent text-base text-fg-1 outline-none placeholder:text-fg-3"
+                            className="min-h-10 w-full bg-transparent text-base text-fg-1 outline-none placeholder:tracking-label placeholder:text-fg-3 coarse:min-h-11"
                         />
-                        <Popover.Close className="inline-flex h-9 min-w-9 items-center justify-center rounded-control text-body-sm font-semibold text-fg-2 hover:bg-surface-2 hover:text-fg-1 coarse:h-11 coarse:min-w-11">
+                        <Popover.Close className="inline-flex h-8 min-w-8 items-center justify-center rounded-control px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:h-11 coarse:min-w-11">
                             Close
                         </Popover.Close>
                     </div>
-                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-3 md:grid-cols-4">
                             {DIVISIONS.map(div => {
-                                const teams = ALL_TEAMS.filter(t => t.division === div && matches(t)).sort((a, b) => a.common.localeCompare(b.common));
+                                const teams = ALL_TEAMS.filter(t => t.division === div && matches(t)).sort((a, b) => a.tri.localeCompare(b.tri));
                                 if (!teams.length) return null;
                                 return (
                                     <div key={div}>
-                                        <p className="hud-label mb-1 px-2">{DIVISION_LABEL[div]}</p>
+                                        <p className="label mb-1 px-2">{DIVISION_LABEL[div]}</p>
                                         <ul>
                                             {teams.map(t => (
                                                 <li key={t.tri}>
@@ -103,13 +103,13 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
                                                         onClick={() => setOpen(false)}
                                                         aria-current={t.tri === current ? 'page' : undefined}
                                                         className={cn(
-                                                            'flex min-h-10 items-center gap-2 rounded-control px-2 text-body-sm transition-colors hover:bg-surface-2 coarse:min-h-11',
-                                                            t.tri === current ? 'bg-surface-3 font-semibold text-fg-1 shadow-[inset_0_0_0_1px_rgb(var(--brand-rgb))]' : 'text-fg-2 hover:text-fg-1',
+                                                            'flex min-h-8 items-center gap-2 rounded-control px-2 text-caption transition-colors hover:bg-surface-2 coarse:min-h-11',
+                                                            t.tri === current ? 'bg-surface-3 text-brand' : 'text-fg-2 hover:text-fg-1',
                                                         )}
                                                     >
-                                                        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
-                                                        <img src={`/logos/${t.tri}.svg`} alt="" width={22} height={22} className="h-5 w-5 object-contain" loading="lazy" decoding="async" />
-                                                        {t.common}
+                                                        <Crest tri={t.tri} size={20} className="drop-shadow-none" />
+                                                        <span className="font-bold text-fg-1">{t.tri}</span>
+                                                        <span className="truncate text-fg-3">{t.common}</span>
                                                     </Link>
                                                 </li>
                                             ))}
@@ -118,7 +118,7 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
                                 );
                             })}
                         </div>
-                        {ALL_TEAMS.every(t => !matches(t)) ? <p className="px-2 py-6 text-center text-body-sm text-fg-2">No team matches “{q}”.</p> : null}
+                        {ALL_TEAMS.every(t => !matches(t)) ? <p className="label px-2 py-6 text-center">No match</p> : null}
                     </div>
                 </Popover.Content>
             </Popover.Portal>

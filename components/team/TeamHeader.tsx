@@ -1,12 +1,15 @@
 import * as React from 'react';
 import Link from 'next/link';
-import { InfoTip } from '@/components/ui/info-tip';
+import { Crest } from '@/components/ui/crest';
+import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
+import { WinBar } from '@/components/ui/win-bar';
 import { cn } from '@/lib/utils';
 import { recordString } from '@/utils/team-stats/calculate';
-import { ordinal, shortDate } from '@/utils/team-stats/format';
+import { injuryCode, ordinal, shortDate } from '@/utils/team-stats/format';
 import { DIVISION_LABEL } from '@/utils/team-stats/teams';
 import type { GoalieLine, KpiSet, TeamHero } from '@/utils/team-stats/team-types';
 import type { TeamMeta, TeamStat } from '@/utils/team-stats/types';
+import { GOALIE_NAME, goalieState, goalieStatLine } from './goalie-line';
 import { LocalTime } from './LocalTime';
 
 interface TeamHeaderProps {
@@ -22,240 +25,178 @@ interface TeamHeaderProps {
     goalies: GoalieLine[];
 }
 
-const pctText = (v: number | null | undefined, d = 1) => (v == null || !Number.isFinite(v) ? '—' : `${v.toFixed(d)}%`);
+type KpiKey = 'xgf_pct' | 'gf_pg' | 'ga_pg' | 'pp_pct' | 'pk_pct';
+const KPIS: { key: KpiKey; label: string; fmt: (v: number) => string }[] = [
+    { key: 'xgf_pct', label: 'xGF%', fmt: v => v.toFixed(1) },
+    { key: 'gf_pg', label: 'GF/GP', fmt: v => v.toFixed(2) },
+    { key: 'ga_pg', label: 'GA/GP', fmt: v => v.toFixed(2) },
+    { key: 'pp_pct', label: 'PP%', fmt: v => v.toFixed(1) },
+    { key: 'pk_pct', label: 'PK%', fmt: v => v.toFixed(1) },
+];
+
+const SMALL_SAMPLE = 5;
+
+const lastName = (n: string) => n.split(' ').slice(-1)[0];
 
 /**
- * The team page hero: identity and record first, then tonight's (or the next)
- * game with the model's number, KPI tiles with league ranks and sample size,
- * playoff odds, the goalie tandem and who is hurt. Server-rendered so it is
- * the page's first (LCP) content.
+ * The team page hero: big crest on a team-colour wash, the name, the record as
+ * a scoreboard number, the next game as a mini matchup (win bar + goalies),
+ * five KPI tiles with league rank, then goalies / injuries / moves as dense
+ * lists. Server-rendered: this is the page's LCP content.
  */
 export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabel, prevStanding, prevKpis, hero, goalies }: TeamHeaderProps) {
     const gp = standing?.gp ?? 0;
     const divRank = standing?.divRank && gp > 0 ? standing.divRank : null;
-    const showPrev = gp === 0 && prevStanding;
-    const tiles: { label: string; tip?: React.ComponentProps<typeof InfoTip>['term']; value: string; rank?: number; sub: string; prev?: string }[] = [
-        {
-            label: 'xGF%',
-            tip: 'xg',
-            value: kpis ? pctText(kpis.xgf_pct) : '—',
-            rank: kpis?.ranked ? kpis.ranks.xgf_pct : undefined,
-            sub: kpis ? `${gp} GP` : 'No games yet',
-            prev: prevKpis ? `${pctText(prevKpis.xgf_pct)} (#${prevKpis.ranks.xgf_pct})` : undefined,
-        },
-        {
-            label: 'Goals for / GP',
-            value: kpis ? kpis.gf_pg.toFixed(2) : '—',
-            rank: kpis?.ranked ? kpis.ranks.gf_pg : undefined,
-            sub: kpis ? `${gp} GP` : 'No games yet',
-            prev: prevKpis ? `${prevKpis.gf_pg.toFixed(2)} (#${prevKpis.ranks.gf_pg})` : undefined,
-        },
-        {
-            label: 'Goals against / GP',
-            value: kpis ? kpis.ga_pg.toFixed(2) : '—',
-            rank: kpis?.ranked ? kpis.ranks.ga_pg : undefined,
-            sub: kpis ? `${gp} GP` : 'No games yet',
-            prev: prevKpis ? `${prevKpis.ga_pg.toFixed(2)} (#${prevKpis.ranks.ga_pg})` : undefined,
-        },
-        {
-            label: 'Power play',
-            tip: 'pp-pk',
-            value: kpis ? pctText(kpis.pp_pct) : '—',
-            rank: kpis?.ranked ? kpis.ranks.pp_pct : undefined,
-            sub: kpis ? `${kpis.pp_opps} chances` : 'No games yet',
-            prev: prevKpis ? `${pctText(prevKpis.pp_pct)} (#${prevKpis.ranks.pp_pct})` : undefined,
-        },
-        {
-            label: 'Penalty kill',
-            tip: 'pp-pk',
-            value: kpis ? pctText(kpis.pk_pct) : '—',
-            rank: kpis?.ranked ? kpis.ranks.pk_pct : undefined,
-            sub: kpis ? `${kpis.pk_opps} times shorthanded` : 'No games yet',
-            prev: prevKpis ? `${pctText(prevKpis.pk_pct)} (#${prevKpis.ranks.pk_pct})` : undefined,
-        },
-    ];
-    const small = gp > 0 && gp < 5;
+    const prevTag = shortSeasonTag(prevLabel);
+    const small = gp > 0 && gp < SMALL_SAMPLE;
     const tandem = goalies
         .map(g => ({ g, starts: g.current?.gs ?? 0, lastStarts: g.last?.gs ?? 0 }))
-        .sort((a, b) => b.starts - a.starts || b.lastStarts - a.lastStarts);
+        .sort((a, b) => b.starts - a.starts || b.lastStarts - a.lastStarts)
+        .map(t => t.g);
+    const division = DIVISION_LABEL[team.division];
 
     return (
-        <section aria-labelledby="team-title" className="relative isolate overflow-hidden rounded-card border border-line bg-surface-1 shadow-card">
-            {/* team-colour wash */}
-            <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 -z-10"
-                style={{
-                    background: `radial-gradient(120% 90% at 0% 0%, ${team.color}38 0%, transparent 55%), radial-gradient(80% 70% at 100% 0%, ${team.color}14 0%, transparent 60%)`,
-                }}
-            />
-            <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 -z-10 h-56 w-56 opacity-[0.07] md:h-80 md:w-80">
-                {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image is a client component and ships ~6KB of JS for no optimisation */}
-                <img src={`/logos/${team.tri}.svg`} alt="" className="absolute inset-0 h-full w-full object-contain" decoding="async" />
-            </div>
-
-            <div className="grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,380px)] md:gap-6 md:p-6">
+        <section
+            aria-labelledby="team-title"
+            className="panel team-wash overflow-hidden"
+            style={{ '--ac': team.color, '--hc': 'transparent' } as React.CSSProperties}
+        >
+            <div className="flex flex-col gap-3 p-card md:flex-row md:items-stretch md:gap-5">
                 {/* identity + record */}
-                <div className="min-w-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image is a client component and ships ~6KB of JS for no optimisation */}
-                        <img src={`/logos/${team.tri}.svg`} alt="" width={64} height={64} fetchPriority="high" className="h-12 w-12 shrink-0 object-contain md:h-16 md:w-16" />
-                        <div className="min-w-0">
-                            <h1 id="team-title" className="truncate text-h2 font-black tracking-tight text-fg-1 md:text-display">
-                                {team.name}
-                            </h1>
-                            <p className="text-body-sm text-fg-2">
-                                {DIVISION_LABEL[team.division]} Division · {team.conference} Conference
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="mt-4 flex flex-wrap items-end gap-x-6 gap-y-2">
-                        <div>
-                            <p className="hud-label">{seasonLabel} record</p>
-                            <p className="text-hero font-black tabular-nums text-fg-1">
+                <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-5">
+                    <Crest tri={team.tri} size={96} priority className="h-16 w-16 md:h-24 md:w-24" />
+                    <div className="min-w-0">
+                        <h1 id="team-title" className="truncate font-display text-[24px] font-bold uppercase leading-none tracking-[0.01em] text-fg-1 md:text-[34px]">
+                            {team.name}
+                        </h1>
+                        <p className="label mt-1.5">
+                            {division} · {team.conference}
+                        </p>
+                        <div className="mt-2 flex flex-wrap items-end gap-x-5 gap-y-1">
+                            <p className="num-score text-[30px] leading-none text-fg-1 md:text-[40px]">
                                 {standing ? recordString(standing) : '0-0-0'}
+                                <span className="sr-only"> {seasonLabel} record</span>
                             </p>
+                            <HeroStat value={standing?.points ?? 0} label="PTS" />
+                            {divRank ? <HeroStat value={ordinal(divRank)} label={division.slice(0, 3)} /> : null}
+                            {hero.playoffOdds ? <HeroStat value={`${hero.playoffOdds.pct.toFixed(0)}%`} label="Playoffs" tone="text-brand" /> : null}
                         </div>
-                        <div className="pb-1">
-                            <p className="text-title font-bold tabular-nums text-fg-1">
-                                {standing?.points ?? 0} <span className="text-body-sm font-semibold text-fg-2">PTS</span>
+                        {gp === 0 && prevStanding ? (
+                            <p className="mt-1.5 flex items-center gap-1.5 text-micro uppercase tracking-wide text-fg-3">
+                                <SeasonTag>{prevTag}</SeasonTag>
+                                <span className="text-fg-2">{recordString(prevStanding)}</span>
+                                <span>{prevStanding.points} PTS</span>
+                                {prevStanding.divRank ? <span>{ordinal(prevStanding.divRank)}</span> : null}
                             </p>
-                            <p className="text-caption text-fg-2">
-                                {divRank ? `${ordinal(divRank)} in the ${DIVISION_LABEL[team.division]}` : gp === 0 ? 'Season opener ahead' : ''}
-                                {gp > 0 ? ` · ${gp} GP` : ''}
-                            </p>
-                        </div>
-                        {hero.playoffOdds ? (
-                            <div className="pb-1">
-                                <p className="flex items-center gap-1 text-caption text-fg-2">
-                                    Playoff odds <InfoTip term="playoff-odds" />
-                                </p>
-                                <p className="text-title font-bold tabular-nums text-brand">{hero.playoffOdds.pct.toFixed(0)}%</p>
-                            </div>
                         ) : null}
                     </div>
-                    {showPrev ? (
-                        <p className="mt-2 text-caption text-fg-3">
-                            <span className="mr-1 rounded-[3px] bg-fg-3/15 px-1 font-mono text-micro font-semibold text-fg-2">{prevLabel}</span>
-                            Last season {recordString(prevStanding!)}, {prevStanding!.points} PTS
-                            {prevStanding!.divRank ? `, ${ordinal(prevStanding!.divRank)} in the division` : ''}.
-                        </p>
-                    ) : null}
-                    {small ? (
-                        <p className="mt-2 inline-flex items-center gap-1 rounded-chip border border-dashed border-warn/50 px-2 py-0.5 text-caption text-fg-2">
-                            Through {gp} {gp === 1 ? 'game' : 'games'}: small samples <InfoTip term="small-sample" />
-                        </p>
-                    ) : null}
                 </div>
 
-                {/* next game */}
-                <NextGameCard team={team} hero={hero} />
+                <NextGame team={team} hero={hero} />
             </div>
 
             {/* KPI tiles */}
-            <div className="grid grid-cols-2 gap-px border-t border-line bg-line sm:grid-cols-3 lg:grid-cols-5">
-                {tiles.map(t => (
-                    <div key={t.label} className="flex min-w-0 flex-col gap-0.5 bg-surface-1 px-4 py-3">
-                        <p className="flex min-h-6 items-center gap-1 text-caption text-fg-2 coarse:min-h-11">
-                            {t.label}
-                            {t.tip ? <InfoTip term={t.tip} /> : null}
-                        </p>
-                        <p className={cn('text-title font-bold tabular-nums', t.value === '—' ? 'text-fg-3' : 'text-fg-1')}>
-                            {t.value}
-                            {t.rank ? <span className="ml-1.5 text-caption font-semibold text-fg-2">#{t.rank}</span> : null}
-                        </p>
-                        {t.rank ? <RankBar rank={t.rank} /> : null}
-                        <p className="text-micro text-fg-3">
-                            {t.sub}
-                            {small ? ' · small sample' : ''}
-                        </p>
-                        {gp === 0 && t.prev ? (
-                            <p className="text-micro text-fg-3">
-                                <span className="font-mono font-semibold text-fg-2">{prevLabel}</span> {t.prev}
-                            </p>
-                        ) : null}
-                    </div>
-                ))}
-                {/* odd count filler on 2-col phones */}
-                <div aria-hidden="true" className="bg-surface-1 sm:hidden" />
-            </div>
+            <dl className="grid grid-cols-5 gap-1.5 px-card pb-card md:gap-2">
+                {KPIS.map(k => {
+                    const cur = kpis && gp > 0 ? kpis[k.key] : null;
+                    const prev = gp === 0 && prevKpis ? prevKpis[k.key] : null;
+                    const rank = cur != null ? (kpis?.ranked ? kpis.ranks[k.key] : null) : prev != null ? prevKpis!.ranks[k.key] : null;
+                    return (
+                        <div key={k.key} className={cn('tile min-w-0 bg-bg/40 px-2 py-1.5 md:px-3 md:py-2', small && 'border-dashed border-warn/45')}>
+                            <dt className="flex items-center gap-1 truncate text-micro font-medium uppercase tracking-[0.1em] text-fg-3 md:tracking-label">
+                                {k.label}
+                                {prev != null ? <SeasonTag className="hidden md:inline-flex">{prevTag}</SeasonTag> : null}
+                            </dt>
+                            <dd className={cn('font-display text-[17px] font-bold leading-6 tabular-nums md:text-[22px] md:leading-7', cur != null ? 'text-fg-1' : 'text-fg-3')}>
+                                {cur != null ? k.fmt(cur) : prev != null ? k.fmt(prev) : '—'}
+                                {prev != null ? <span className="sr-only"> ({prevLabel})</span> : null}
+                            </dd>
+                            <dd className="truncate text-micro tabular-nums text-fg-3">
+                                {small ? (
+                                    <span className="text-warn">
+                                        {gp} GP<span className="sr-only"> (small sample)</span>
+                                    </span>
+                                ) : rank ? (
+                                    <>
+                                        #{rank}
+                                        {prev != null ? <span className="md:hidden"> {prevTag}</span> : null}
+                                    </>
+                                ) : (
+                                    ' '
+                                )}
+                            </dd>
+                        </div>
+                    );
+                })}
+            </dl>
 
-            {/* goalies · injuries · roster moves */}
-            <div className="grid gap-4 border-t border-line p-4 md:grid-cols-3 md:p-6">
-                <div>
-                    <h2 className="hud-label mb-2">Goalies</h2>
-                    <ul className="space-y-1.5">
-                        {tandem.length === 0 ? <li className="text-body-sm text-fg-3">No goalies listed.</li> : null}
-                        {tandem.map(({ g }) => (
-                            <li key={g.id} className="flex items-baseline justify-between gap-2 text-body-sm">
-                                <span className="truncate text-fg-1">
-                                    {g.name}
-                                    {g.injury ? <span className="ml-1 text-caption text-neg">({g.injury.status})</span> : null}
-                                </span>
-                                <span className="shrink-0 text-caption tabular-nums text-fg-2">
-                                    {g.current && g.current.gs > 0
-                                        ? `${g.current.gs} GS`
-                                        : g.last && g.last.gp > 0
-                                          ? `${prevLabel}: ${g.last.gp} GP`
-                                          : 'No NHL games last season'}
-                                </span>
-                            </li>
-                        ))}
+            {/* goalies · injuries · moves */}
+            <div className="grid gap-x-6 gap-y-3 border-t border-line p-card sm:grid-cols-2 lg:grid-cols-3">
+                <div className="min-w-0">
+                    <h2 className="label mb-1.5">Goalies</h2>
+                    {tandem.length === 0 ? <p className="text-caption text-fg-3">—</p> : null}
+                    <ul className="flex flex-col gap-1">
+                        {tandem.map(g => {
+                            const line = goalieStatLine(g.current, g.last);
+                            const state = g.next ? goalieState(g.next.status) : null;
+                            return (
+                                <li key={g.id} className="min-w-0">
+                                    <p className="flex items-baseline gap-2">
+                                        <span className={cn('truncate font-display text-[15px] font-semibold uppercase leading-5', state ? GOALIE_NAME[state] : 'text-fg-2')}>{g.name}</span>
+                                        {g.number != null ? <span className="text-micro text-fg-3">#{g.number}</span> : null}
+                                        {g.injury ? <span className="text-micro font-bold text-neg">{injuryCode(g.injury.status)}</span> : null}
+                                        {g.next ? <span className="sr-only"> next start {g.next.status}</span> : null}
+                                    </p>
+                                    <p className="flex items-center gap-1.5 text-micro text-fg-3">
+                                        {line ? (
+                                            <>
+                                                <span className="tabular-nums">{line.text}</span>
+                                                {line.prior ? <SeasonTag>{prevTag}</SeasonTag> : null}
+                                            </>
+                                        ) : (
+                                            <span>0 GP</span>
+                                        )}
+                                    </p>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
-                <div>
-                    <h2 className="hud-label mb-2">Injuries</h2>
+
+                <div className="min-w-0">
+                    <h2 className="label mb-1.5">
+                        Injuries {hero.injuries.length ? <span className="text-fg-2">{hero.injuries.length}</span> : null}
+                    </h2>
                     {hero.injuries.length === 0 ? (
-                        <p className="text-body-sm text-fg-3">None reported.</p>
+                        <p className="text-caption text-fg-3">—</p>
                     ) : (
-                        <ul className="space-y-1.5">
+                        <ul className="flex flex-wrap gap-x-3 gap-y-1 sm:flex-col sm:flex-nowrap sm:gap-0">
                             {hero.injuries.slice(0, 6).map(i => (
-                                <li key={i.name} className="flex items-baseline justify-between gap-2 text-body-sm">
-                                    <span className="truncate text-fg-1">
-                                        {i.name} <span className="text-caption text-fg-3">{i.pos}</span>
+                                <li key={i.name} className="flex items-baseline gap-1.5 text-caption sm:h-5 sm:items-center sm:justify-between sm:gap-2">
+                                    <span className="min-w-0 truncate text-fg-1">
+                                        <span className="sm:hidden">{lastName(i.name)}</span>
+                                        <span className="hidden sm:inline">{i.name}</span> <span className="text-fg-3">{i.pos}</span>
                                     </span>
-                                    <span className="shrink-0 text-caption text-fg-2">
-                                        {i.status}
-                                        {i.returnDate ? ` · ~${shortDate(i.returnDate)}` : ''}
+                                    <span className="shrink-0 text-micro uppercase tabular-nums">
+                                        <span className="font-bold text-neg">{injuryCode(i.status)}</span>
+                                        {i.returnDate ? <span className="ml-1.5 text-fg-3">{shortDate(i.returnDate)}</span> : null}
                                     </span>
                                 </li>
                             ))}
-                            {hero.injuries.length > 6 ? <li className="text-caption text-fg-3">+{hero.injuries.length - 6} more</li> : null}
+                            {hero.injuries.length > 6 ? <li className="text-micro text-fg-3">+{hero.injuries.length - 6}</li> : null}
                         </ul>
                     )}
                 </div>
-                <div>
-                    <h2 className="hud-label mb-2">Offseason moves</h2>
+
+                <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+                    <h2 className="label mb-1.5">Moves</h2>
                     {hero.rosterChanges && (hero.rosterChanges.added.length || hero.rosterChanges.lost.length) ? (
-                        <dl className="space-y-1.5 text-body-sm">
-                            <div>
-                                <dt className="inline font-semibold text-pos">In </dt>
-                                <dd className="inline text-fg-1">
-                                    {hero.rosterChanges.added.length
-                                        ? hero.rosterChanges.added
-                                              .slice(0, 6)
-                                              .map(p => `${p.name}${p.from ? ` (${p.from})` : ''}`)
-                                              .join(', ')
-                                        : 'None'}
-                                    {hero.rosterChanges.added.length > 6 ? ` +${hero.rosterChanges.added.length - 6}` : ''}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt className="inline font-semibold text-neg">Out </dt>
-                                <dd className="inline text-fg-1">
-                                    {hero.rosterChanges.lost.length
-                                        ? hero.rosterChanges.lost
-                                              .slice(0, 6)
-                                              .map(p => `${p.name}${p.to ? ` (${p.to})` : ''}`)
-                                              .join(', ')
-                                        : 'None'}
-                                    {hero.rosterChanges.lost.length > 6 ? ` +${hero.rosterChanges.lost.length - 6}` : ''}
-                                </dd>
-                            </div>
+                        <dl className="flex flex-col gap-1.5 text-caption">
+                            <MoveRow tone="text-pos" label="In" people={hero.rosterChanges.added.map(p => ({ name: p.name, team: p.from }))} />
+                            <MoveRow tone="text-neg" label="Out" people={hero.rosterChanges.lost.map(p => ({ name: p.name, team: p.to }))} />
                         </dl>
                     ) : (
-                        <p className="text-body-sm text-fg-3">No roster changes recorded.</p>
+                        <p className="text-caption text-fg-3">—</p>
                     )}
                 </div>
             </div>
@@ -263,73 +204,89 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
     );
 }
 
-function RankBar({ rank, of = 32 }: { rank: number; of?: number }) {
-    const pct = Math.max(6, (1 - (rank - 1) / (of - 1)) * 100);
+function HeroStat({ value, label, tone = 'text-fg-1' }: { value: React.ReactNode; label: string; tone?: string }) {
     return (
-        <span aria-hidden="true" className="mt-0.5 block h-1 w-full max-w-[120px] overflow-hidden rounded-full bg-fg-3/20">
-            <span className="block h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
-        </span>
+        <p className="flex flex-col leading-none">
+            <span className={cn('font-display text-[20px] font-bold tabular-nums md:text-[22px]', tone)}>{value}</span>
+            <span className="label mt-1">{label}</span>
+        </p>
     );
 }
 
-function NextGameCard({ team, hero }: { team: TeamMeta; hero: TeamHero }) {
+function MoveRow({ label, tone, people }: { label: string; tone: string; people: { name: string; team: string | null }[] }) {
+    return (
+        <div className="flex gap-2">
+            <dt className={cn('w-7 shrink-0 text-micro font-bold uppercase leading-4 tracking-wide', tone)}>{label}</dt>
+            <dd className="min-w-0 leading-4 text-fg-1">
+                {people.length === 0 ? (
+                    <span className="text-fg-3">—</span>
+                ) : (
+                    people.slice(0, 8).map((p, i) => (
+                        <span key={`${p.name}-${i}`} className="mr-2.5 inline-block whitespace-nowrap">
+                            {lastName(p.name)}
+                            {p.team ? <span className="ml-1 text-micro text-fg-3">{p.team}</span> : null}
+                        </span>
+                    ))
+                )}
+                {people.length > 8 ? <span className="text-micro text-fg-3">+{people.length - 8}</span> : null}
+            </dd>
+        </div>
+    );
+}
+
+/** The next game as a mini matchup: time, both crests with the named goalies, the forecast bar. */
+function NextGame({ team, hero }: { team: TeamMeta; hero: TeamHero }) {
     const g = hero.nextGame;
     if (!g) {
         return (
-            <div className="flex flex-col justify-center rounded-control border border-line bg-surface-2/60 p-4">
-                <p className="hud-label">Next game</p>
-                <p className="mt-1 text-body-sm text-fg-2">No upcoming game in the schedule feed.</p>
+            <div className="tile flex min-w-0 items-center justify-between bg-bg/40 md:w-[380px] md:self-start">
+                <span className="label">Next</span>
+                <span className="text-caption text-fg-3">—</span>
             </div>
         );
     }
-    const pct = g.modelWinPct;
+    const away = g.home ? g.opp : team.tri;
+    const home = g.home ? team.tri : g.opp;
+    const awayG = g.home ? g.oppGoalie : g.goalie;
+    const homeG = g.home ? g.goalie : g.oppGoalie;
+    const p = g.modelWinPct == null ? null : g.modelWinPct / 100;
+    const pAway = p == null ? null : g.home ? 1 - p : p;
     return (
-        <div className="flex flex-col gap-3 rounded-control border border-line-strong bg-surface-2/70 p-4 backdrop-blur-sm">
-            <div className="flex items-center justify-between gap-2">
-                <p className="hud-label text-brand">Next game</p>
-                {g.tv ? <span className="text-micro text-fg-3">{g.tv}</span> : null}
-            </div>
-            <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image is a client component and ships ~6KB of JS for no optimisation */}
-                <img src={`/logos/${g.opp}.svg`} alt="" width={40} height={40} decoding="async" className="h-10 w-10 shrink-0 object-contain" />
-                <div className="min-w-0">
-                    <p className="text-title font-bold text-fg-1">
-                        {g.home ? 'vs' : '@'} {g.opp}
-                    </p>
-                    <p className="text-caption text-fg-2">
-                        {g.startTimeUTC ? <LocalTime utc={g.startTimeUTC} /> : shortDate(g.date)}
-                    </p>
-                </div>
-                <div className="ml-auto text-right">
-                    <p className="text-micro text-fg-3">Forecast</p>
-                    <p className={cn('text-title font-black tabular-nums', pct == null ? 'text-fg-3' : pct >= 50 ? 'text-pos' : 'text-fg-1')}>
-                        {pct == null ? '—' : `${pct.toFixed(0)}%`}
-                    </p>
-                </div>
-            </div>
-            {pct != null ? (
-                <div aria-hidden="true" className="flex h-1.5 overflow-hidden rounded-full bg-fg-3/20">
-                    <span className="block h-full" style={{ width: `${pct}%`, background: team.color }} />
-                </div>
-            ) : null}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-caption">
-                <span className="text-fg-2">
-                    Goalie:{' '}
-                    {g.goalie ? (
-                        <>
-                            <span className="text-fg-1">{g.goalie.name}</span>{' '}
-                            <span className={cn(g.goalie.status.toLowerCase().includes('confirm') && !g.goalie.status.toLowerCase().includes('un') ? 'text-pos' : 'text-warn')}>
-                                ({g.goalie.status})
-                            </span>
-                        </>
-                    ) : (
-                        <span className="text-fg-3">not announced</span>
-                    )}
+        <Link
+            href={g.href}
+            className="tile panel-hover flex min-w-0 flex-col gap-2 bg-bg/40 transition-colors hover:border-line-strong md:w-[380px] md:self-start"
+            aria-label={`Next game: ${g.home ? 'vs' : 'at'} ${g.opp}`}
+        >
+            <span className="flex items-center justify-between gap-2">
+                <span className="label text-brand">Next</span>
+                <span className="flex items-center gap-2 text-micro uppercase tracking-[0.14em] text-fg-1">
+                    {g.startTimeUTC ? <LocalTime utc={g.startTimeUTC} /> : shortDate(g.date)}
+                    {g.tv ? <span className="rounded-chip border border-line px-1.5 text-fg-3">{g.tv}</span> : null}
                 </span>
-                <Link href={g.href} className="inline-flex min-h-9 items-center gap-1 rounded-control px-2 font-semibold text-brand hover:underline coarse:min-h-11">
-                    Matchup <span aria-hidden="true">→</span>
-                </Link>
-            </div>
-        </div>
+            </span>
+            <span className="grid grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto] items-center gap-2">
+                <Crest tri={away} size={36} />
+                <GoalieName side={awayG} tri={away} />
+                <span className="text-micro text-fg-3">@</span>
+                <GoalieName side={homeG} tri={home} right />
+                <Crest tri={home} size={36} />
+            </span>
+            {pAway != null ? <WinBar away={away} home={home} pAway={pAway} size="sm" label="Forecast" /> : null}
+        </Link>
+    );
+}
+
+function GoalieName({ side, tri, right }: { side: { name: string; status: string } | null; tri: string; right?: boolean }) {
+    return (
+        <span className={cn('min-w-0 truncate font-display text-[14px] font-semibold uppercase', right && 'text-right')}>
+            {side ? (
+                <span className={GOALIE_NAME[goalieState(side.status)]}>
+                    {lastName(side.name)}
+                    <span className="sr-only"> ({side.status})</span>
+                </span>
+            ) : (
+                <span className="text-fg-3">{tri}</span>
+            )}
+        </span>
     );
 }

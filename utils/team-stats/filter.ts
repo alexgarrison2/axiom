@@ -9,20 +9,20 @@ export type TableView = 'all' | 'today' | 'tomorrow' | 'bracket';
 
 /** Per-game numeric range filters (min/max), applied before aggregating. */
 export const RANGE_FILTERS = [
-    { key: 'gf', label: 'Goals for', step: 1, get: (g: GameRow) => g.gf },
-    { key: 'ga', label: 'Goals against', step: 1, get: (g: GameRow) => g.ga },
-    { key: 'sf', label: 'Shots for', step: 1, get: (g: GameRow) => g.sf },
-    { key: 'sa', label: 'Shots against', step: 1, get: (g: GameRow) => g.sa },
-    { key: 'sd', label: 'Shot differential', step: 1, get: (g: GameRow) => g.sf - g.sa },
-    { key: 'hdf', label: 'High-danger for', step: 1, get: (g: GameRow) => g.hdf },
-    { key: 'hda', label: 'High-danger against', step: 1, get: (g: GameRow) => g.hda },
-    { key: 'cf', label: 'Shot attempts for', step: 1, get: (g: GameRow) => g.cf },
-    { key: 'ca', label: 'Shot attempts against', step: 1, get: (g: GameRow) => g.ca },
-    { key: 'cd', label: 'Attempt differential', step: 1, get: (g: GameRow) => g.cf - g.ca },
-    { key: 'xgd', label: 'xG differential', step: 0.1, get: (g: GameRow) => g.xgf - g.xga },
-    { key: 'ppo', label: 'Power plays', step: 1, get: (g: GameRow) => g.ppo },
-    { key: 'pko', label: 'Times shorthanded', step: 1, get: (g: GameRow) => g.pko },
-    { key: 'svp', label: 'Save % (0–1)', step: 0.001, get: (g: GameRow) => (g.sa > 0 ? g.saves / g.sa : 0) },
+    { key: 'gf', label: 'GF', title: 'Goals for', step: 1, get: (g: GameRow) => g.gf },
+    { key: 'ga', label: 'GA', title: 'Goals against', step: 1, get: (g: GameRow) => g.ga },
+    { key: 'sf', label: 'SF', title: 'Shots for', step: 1, get: (g: GameRow) => g.sf },
+    { key: 'sa', label: 'SA', title: 'Shots against', step: 1, get: (g: GameRow) => g.sa },
+    { key: 'sd', label: 'SΔ', title: 'Shot differential', step: 1, get: (g: GameRow) => g.sf - g.sa },
+    { key: 'hdf', label: 'HDF', title: 'High-danger for', step: 1, get: (g: GameRow) => g.hdf },
+    { key: 'hda', label: 'HDA', title: 'High-danger against', step: 1, get: (g: GameRow) => g.hda },
+    { key: 'cf', label: 'CF', title: 'Shot attempts for', step: 1, get: (g: GameRow) => g.cf },
+    { key: 'ca', label: 'CA', title: 'Shot attempts against', step: 1, get: (g: GameRow) => g.ca },
+    { key: 'cd', label: 'CΔ', title: 'Attempt differential', step: 1, get: (g: GameRow) => g.cf - g.ca },
+    { key: 'xgd', label: 'xGΔ', title: 'xG differential', step: 0.1, get: (g: GameRow) => g.xgf - g.xga },
+    { key: 'ppo', label: 'PPO', title: 'Power plays', step: 1, get: (g: GameRow) => g.ppo },
+    { key: 'pko', label: 'TSH', title: 'Times shorthanded', step: 1, get: (g: GameRow) => g.pko },
+    { key: 'svp', label: 'SV% (0-1)', title: 'Save percentage (0 to 1)', step: 0.001, get: (g: GameRow) => (g.sa > 0 ? g.saves / g.sa : 0) },
 ] as const;
 
 export type RangeKey = (typeof RANGE_FILTERS)[number]['key'];

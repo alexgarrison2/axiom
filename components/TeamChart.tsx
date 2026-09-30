@@ -21,7 +21,8 @@ type Loc = 'All' | 'Home' | 'Away';
 type Mode = 'cumulative' | 'rolling';
 
 const COMPARE_COLOR = 'rgb(var(--info-rgb))';
-const selectCls = 'min-h-9 w-full rounded-control border border-line bg-surface-2 px-2 text-base text-fg-1 md:text-body-sm coarse:min-h-11';
+const selectCls = 'min-h-8 w-full rounded-control border border-line bg-well px-2 text-base text-fg-1 md:text-caption coarse:min-h-11';
+const TICK = { fill: 'rgb(var(--text-3-rgb))', fontSize: 11, fontFamily: 'var(--font-body)' };
 
 function series(games: GameRow[], metric: string, loc: Loc, mode: Mode, win: number) {
     const chrono = [...games].reverse();
@@ -93,15 +94,20 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
     const last = [...data].reverse().find(d => d.v != null);
 
     if (games.length < 2) {
-        return <p className="rounded-control border border-dashed border-line-strong p-6 text-center text-body-sm text-fg-2">Charts need at least two {seasonLabel} games.</p>;
+        return (
+            <p className="panel p-card text-center">
+                <span className="label">2+ GP</span>
+                <span className="sr-only"> needed for {seasonLabel} charts</span>
+            </p>
+        );
     }
 
     return (
-        <div className="hud-panel flex flex-col gap-4 p-3 md:p-5">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto]">
-                <label className="flex flex-col gap-1">
-                    <span className="hud-label flex items-center gap-2">
-                        Metric <span aria-hidden="true" className="inline-block h-0.5 w-5 rounded" style={{ background: primaryColor }} />
+        <div className="panel flex flex-col gap-3 p-card">
+            <div className="flex flex-wrap items-end gap-2">
+                <label className="flex min-w-[10rem] flex-1 flex-col gap-1 sm:max-w-[15rem]">
+                    <span className="label flex items-center gap-2">
+                        Metric <span aria-hidden="true" className="inline-block h-0.5 w-4 rounded" style={{ background: primaryColor }} />
                     </span>
                     <select className={selectCls} value={metric} onChange={e => setMetric(e.target.value)}>
                         {CHART_METRICS.map(m => (
@@ -111,11 +117,11 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                         ))}
                     </select>
                 </label>
-                <label className="flex flex-col gap-1">
-                    <span className="hud-label flex items-center gap-2">
-                        Compare <span aria-hidden="true" className="inline-block h-0.5 w-5 rounded border-t-2 border-dashed" style={{ borderColor: COMPARE_COLOR }} />
+                <label className="flex min-w-[10rem] flex-1 flex-col gap-1 sm:max-w-[15rem]">
+                    <span className="label flex items-center gap-2">
+                        Vs <span aria-hidden="true" className="inline-block w-4 border-t-2 border-dashed" style={{ borderColor: COMPARE_COLOR }} />
                     </span>
-                    <select className={selectCls} value={metric2} onChange={e => setMetric2(e.target.value)}>
+                    <select className={selectCls} value={metric2} onChange={e => setMetric2(e.target.value)} aria-label="Vs (compare with)">
                         <option value="none">None</option>
                         {CHART_METRICS.map(m => (
                             <option key={m.value} value={m.value}>
@@ -124,46 +130,42 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                         ))}
                     </select>
                 </label>
-                <div className="flex flex-col gap-1">
-                    <span className="hud-label">Games</span>
-                    <Segmented label="Home or away games" size="sm" value={loc} onChange={setLoc} options={(['All', 'Home', 'Away'] as Loc[]).map(v => ({ value: v, label: v }))} />
-                </div>
-                <div className="flex flex-col gap-1">
-                    <span className="hud-label">Mode</span>
-                    <Segmented
-                        label="Cumulative or rolling"
-                        size="sm"
-                        value={mode}
-                        onChange={setMode}
-                        options={[
-                            { value: 'cumulative', label: 'Season' },
-                            { value: 'rolling', label: `Rolling ${win}` },
-                        ]}
-                    />
-                </div>
+                <Segmented label="Home or away games" size="sm" value={loc} onChange={setLoc} options={(['All', 'Home', 'Away'] as Loc[]).map(v => ({ value: v, label: v }))} />
+                <Segmented
+                    label="Cumulative or rolling"
+                    size="sm"
+                    value={mode}
+                    onChange={setMode}
+                    options={[
+                        { value: 'cumulative', label: 'Season' },
+                        { value: 'rolling', label: `Roll ${win}` },
+                    ]}
+                />
+                {mode === 'rolling' ? (
+                    <label className="flex min-h-8 items-center gap-2 text-micro uppercase tracking-label text-fg-3">
+                        Window
+                        <input type="range" min={3} max={25} value={win} onChange={e => setWin(Number(e.target.value))} className="w-32 accent-[rgb(var(--brand-rgb))]" aria-valuetext={`${win} games`} />
+                        <span className="w-6 tabular-nums text-fg-1">{win}</span>
+                    </label>
+                ) : null}
             </div>
-            {mode === 'rolling' ? (
-                <label className="flex items-center gap-3 text-caption text-fg-2">
-                    Window
-                    <input type="range" min={3} max={25} value={win} onChange={e => setWin(Number(e.target.value))} className="w-48 accent-[rgb(var(--brand-rgb))]" aria-valuetext={`${win} games`} />
-                    <span className="tabular-nums text-fg-1">{win} games</span>
-                </label>
-            ) : null}
 
             <figure className="m-0">
-                <figcaption className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                    <span className="text-body-sm text-fg-2">
-                        {teamName} · {m1.label} · {seasonLabel}
-                        {loc !== 'All' ? ` · ${loc.toLowerCase()} games` : ''}
+                <figcaption className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+                    <span className="flex items-center gap-2 text-micro font-medium uppercase tracking-label text-fg-3">
+                        <span className="text-fg-1">{m1.label}</span>
+                        <span>{seasonLabel}</span>
+                        {loc !== 'All' ? <span>{loc}</span> : null}
+                        <span className="sr-only">{teamName}</span>
                     </span>
                     {last?.v != null ? (
-                        <span className="text-title font-bold tabular-nums" style={{ color: primaryColor }}>
+                        <span className="font-display text-[26px] font-bold leading-none tabular-nums" style={{ color: primaryColor }}>
                             {m1.format(last.v)}
                             {m1.suffix}
                         </span>
                     ) : null}
                 </figcaption>
-                <div className="h-[280px] w-full md:h-[440px]">
+                <div className="h-[280px] w-full md:h-[420px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={data} margin={{ top: 12, right: 8, left: -12, bottom: 0 }}>
                             <defs>
@@ -172,17 +174,17 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                                     <stop offset="100%" stopColor={primaryColor} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+                            <CartesianGrid stroke="var(--line)" vertical={false} />
                             <XAxis
                                 dataKey="i"
-                                tick={{ fill: 'rgb(169 180 194)', fontSize: 12 }}
+                                tick={TICK}
                                 tickLine={false}
                                 axisLine={false}
                                 interval="preserveStartEnd"
                                 minTickGap={24}
                             />
                             <YAxis
-                                tick={{ fill: 'rgb(169 180 194)', fontSize: 12 }}
+                                tick={TICK}
                                 tickLine={false}
                                 axisLine={false}
                                 domain={domain}
@@ -190,17 +192,17 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                                 width={52}
                                 tickFormatter={(v: number) => m1.format(v)}
                             />
-                            <Tooltip content={<ChartTip m1={m1} m2={m2} color={primaryColor} />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeDasharray: '4 4' }} />
+                            <Tooltip content={<ChartTip m1={m1} m2={m2} color={primaryColor} />} cursor={{ stroke: 'var(--line-strong)', strokeDasharray: '4 4' }} />
                             {Number.isFinite(avg) ? (
                                 <ReferenceLine
                                     y={avg}
-                                    stroke="rgba(255,255,255,0.35)"
+                                    stroke="rgb(var(--text-3-rgb))"
                                     strokeDasharray="6 4"
-                                    label={{ value: `League avg ${m1.format(avg)}${m1.suffix}`, position: 'insideTopRight', fill: 'rgb(169 180 194)', fontSize: 11 }}
+                                    label={{ value: `LG ${m1.format(avg)}${m1.suffix}`, position: 'insideTopRight', fill: 'rgb(var(--text-3-rgb))', fontSize: 11, fontFamily: 'var(--font-body)' }}
                                 />
                             ) : null}
-                            {m1.signed ? <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" /> : null}
-                            <Area type="monotone" dataKey="v" stroke={primaryColor} strokeWidth={2.5} fill="url(#team-area)" connectNulls isAnimationActive={false} activeDot={{ r: 5, strokeWidth: 0, fill: '#fff' }} />
+                            {m1.signed ? <ReferenceLine y={0} stroke="var(--line-strong)" /> : null}
+                            <Area type="monotone" dataKey="v" stroke={primaryColor} strokeWidth={2} fill="url(#team-area)" style={{ filter: `drop-shadow(0 0 6px ${primaryColor})` }} connectNulls isAnimationActive={false} activeDot={{ r: 5, strokeWidth: 0, fill: '#fff' }} />
                             {m2 ? <Area type="monotone" dataKey="v2" stroke={COMPARE_COLOR} strokeWidth={2} strokeDasharray="5 4" fill="none" connectNulls isAnimationActive={false} /> : null}
                         </AreaChart>
                     </ResponsiveContainer>
@@ -223,9 +225,9 @@ function ChartTip({ active, payload, m1, m2, color }: TipProps) {
     const d = payload[0].payload;
     const g = d.g;
     return (
-        <div className="min-w-[200px] rounded-control border border-line-strong bg-surface-2 p-3 text-caption shadow-card">
-            <p className="text-fg-2">
-                Game {d.i} · {shortDate(g.date)} · {g.home ? 'vs' : '@'} {g.opp} · {g.gf}–{g.ga}
+        <div className="min-w-[180px] rounded-control border border-line-strong bg-bg/95 px-2.5 py-2 font-mono text-caption">
+            <p className="text-micro uppercase tracking-wide text-fg-3">
+                GP {d.i} · {shortDate(g.date)} · {g.home ? 'vs' : '@'} {g.opp} · <span className="text-fg-1">{g.gf}–{g.ga}</span>
             </p>
             <p className="mt-1 flex justify-between gap-4 font-semibold">
                 <span style={{ color }}>{m1.label}</span>
