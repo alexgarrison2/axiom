@@ -317,7 +317,8 @@ export function buildLeaguePayload(season: string): LeaguePayload {
     if (isCurrent && maxGp === 0) {
         const up = readPublicJson<UpcomingGame[]>('upcoming_games.json') ?? [];
         const dates = up.filter(g => (g.gameType ?? 2) === 2 && g.gameDate).map(g => g.gameDate!).sort();
-        seasonStartsOn = dates[0] ?? null;
+        const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+        seasonStartsOn = dates[0] && dates[0] > today ? dates[0] : null;
     }
     const rs = isCurrent ? ratingsSeason() : null;
     return {

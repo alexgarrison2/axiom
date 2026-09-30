@@ -1,22 +1,33 @@
-import TeamsTable from '@/components/TeamsTable';
-import Header from '@/components/Header';
+import type { Metadata } from 'next';
+import { PageHeading } from '@/components/ui/page-heading';
+import TeamsTable from '@/components/teams-table/TeamsTable';
+import { SEASON_ID } from '@/lib/season';
+import { buildLeaguePayload } from '@/utils/team-stats/server';
+import { seasonLabel } from '@/utils/team-stats/season';
 
-export const metadata = {
-    title: 'Team Stats',
-    description: 'Advanced NHL team statistics including xG, PP/PK performance, and more.',
+export const dynamic = 'force-static';
+
+export const metadata: Metadata = {
+    title: 'Teams: standings and team stats',
+    description: `Every NHL team's ${seasonLabel(SEASON_ID)} record, goals, special teams, shots, expected goals and ratings in one sortable table, with last season one tap away.`,
+    alternates: { canonical: '/teams' },
 };
 
+/**
+ * The league table. Rendered at build time (each pipeline run redeploys):
+ * the default view is in the HTML, filters recompute in the browser.
+ */
 export default function TeamsPage() {
+    const payload = buildLeaguePayload(SEASON_ID);
     return (
-        <main className="min-h-screen bg-black text-white px-3 font-sans relative selection:bg-emerald-500/30">
-            {/* Background Ambient Glow */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
-
-            <div className="relative z-10">
-                <Header compact />
-
-                <TeamsTable />
-            </div>
+        <main className="mx-auto w-full max-w-[1800px] px-4 pb-tabbar pt-5 md:px-6 md:pb-12 md:pt-8">
+            <PageHeading
+                eyebrow="League table"
+                title="Teams"
+                description="Standings and team stats for all 32 clubs. Tap a column to sort, or a team to open its page."
+                className="mb-5"
+            />
+            <TeamsTable initial={payload} />
         </main>
     );
 }

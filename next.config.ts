@@ -135,7 +135,16 @@ const nextConfig: NextConfig = {
    * duplicate copy; use it wherever the old *_light.svg CDN URLs appeared.
    */
   async rewrites() {
-    return [{ source: "/logos/:team([A-Z]{3})_dark.svg", destination: "/logos/:team.svg" }];
+    return [
+      { source: "/logos/:team([A-Z]{3})_dark.svg", destination: "/logos/:team.svg" },
+      // Team stats are prerendered per season at /api/teams/{TRI}/stats/{seasonId};
+      // keep the ?season= query form working without a dynamic function.
+      {
+        source: "/api/teams/:abbr/stats",
+        has: [{ type: "query", key: "season", value: "(?<season>\\d{8})" }],
+        destination: "/api/teams/:abbr/stats/:season",
+      },
+    ];
   },
 
   async headers() {
