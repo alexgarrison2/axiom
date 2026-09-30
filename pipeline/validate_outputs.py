@@ -28,6 +28,14 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
   gamestats      every gamestats row is game type 02/03 and belongs to the
                  season its file is named for (the data/ and public/data/
                  mirrors must be this season)
+  reports        model_report.json / bet_ledger.json are not older than the
+                 graded record, report n per season == graded live games, and
+                 no ledger bet is pending on a graded game
+  graded         every final with a pregame SiteHistory snapshot is graded; every
+                 other clean-start-season final is listed in not_graded
+  fair_odds      *_model_odds / *_blend_odds are the fair lines of the model-only
+                 and published % (within 1 cent)
+  goal_splits    current-season goals_ev + goals_pp + goals_sh + en_goals == goals_for
 
 ``--freshness`` instead only checks that manifest.generated_at is under 26 h
 old during the season (the daily freshness workflow).
@@ -432,6 +440,161 @@ def check_gamestats(ctx):
     return errs
 
 
+HISTORY_FILE = os.path.join(DATA_DIR, "prediction_history.json")
+HISTORY_META_FILE = os.path.join(DATA_DIR, "prediction_history_meta.json")
+REPORT_FILE = os.path.join(PUBLIC_DATA_DIR, "model_report.json")
+LEDGER_FILE = os.path.join(PUBLIC_DATA_DIR, "bet_ledger.json")
+EARLIEST_FINAL_HOURS = 2.0   # no NHL game is final less than 2 h after puck drop
+
+
+def _history_season(r):
+    if r.get("season"):
+        return r["season"]
+    y = int(str(r["gameId"])[:4])
+    return f"{y}-{str(y + 1)[2:]}"
+
+
+def check_reports(ctx):
+    """model_report.json and bet_ledger.json are rebuilt after the graded record:
+    (a) neither is older than the last change to prediction_history (meta
+    graded_changed_at, else the newest graded start + 2 h); (b) each season's
+    live-game count equals prediction_history's; (c) no ledger bet is 'pending'
+    on a game that is already graded (final)."""
+    hist = _json(ctx.get("history_file", HISTORY_FILE))
+    if not isinstance(hist, list):
+        return ["data/prediction_history.json missing or not a list"]
+    rep = _json(ctx.get("report_file", REPORT_FILE))
+    led = _json(ctx.get("ledger_file", LEDGER_FILE))
+    meta = _json(ctx.get("history_meta_file", HISTORY_META_FILE), {}) or {}
+    errs = []
+    if not isinstance(rep, dict):
+        errs.append("public/data/model_report.json missing or not JSON")
+    if not isinstance(led, dict):
+        errs.append("public/data/bet_ledger.json missing or not JSON")
+    if errs:
+        return errs
+    ref = _dt(meta.get("graded_changed_at"))
+    ref_what = f"prediction_history changed at {meta.get('graded_changed_at')}"
+    if ref is None:
+        starts = [_dt(r.get("startUtc")) for r in hist if not r.get("retro")]
+        starts = [s for s in starts if s]
+        if starts:
+            from datetime import timedelta
+            ref = max(starts) + timedelta(hours=EARLIEST_FINAL_HOURS)
+            ref_what = f"newest graded game final no earlier than {ref.isoformat()}"
+    for name, obj in (("model_report.json", rep), ("bet_ledger.json", led)):
+        gen = _dt(obj.get("generated_at"))
+        if gen is None:
+            errs.append(f"{name}: generated_at {obj.get('generated_at')!r} is not a timestamp")
+        elif ref is not None and gen < ref:
+            errs.append(f"{name}: generated_at {obj.get('generated_at')} is older than the graded record "
+                        f"({ref_what}); rerun model_report.py / grade_bets.py")
+    live = {}
+    for r in hist:
+        if not r.get("retro"):
+            s = _history_season(r)
+            live[s] = live.get(s, 0) + 1
+    seasons = rep.get("seasons") or {}
+    for s in sorted(set(live) | {rep.get("current_season")} - {None}):
+        n = ((seasons.get(s) or {}).get("all") or {}).get("n")
+        if n != live.get(s, 0):
+            errs.append(f"model_report.json seasons[{s}].all.n = {n} but prediction_history has "
+                        f"{live.get(s, 0)} graded live games")
+    final_ids = {int(r["gameId"]) for r in hist if r.get("gameId") is not None}
+    for s, v in (led.get("seasons") or {}).items():
+        for b in (v or {}).get("bets") or []:
+            if b.get("result") == "pending" and int(b.get("gameId") or 0) in final_ids:
+                errs.append(f"bet_ledger.json {s}: bet on {b.get('team')} ({b.get('gameId')}) is pending "
+                            f"but the game is graded in prediction_history")
+    return errs
+
+
+def check_graded(ctx):
+    """Every final (current-season gamestats) game with a pregame SiteHistory
+    snapshot is graded in prediction_history, and every final of a clean-start
+    season is either graded or listed in prediction_history_meta.not_graded."""
+    import site_history as S
+    from season import read_season_csv
+    hist = _json(ctx.get("history_file", HISTORY_FILE))
+    if not isinstance(hist, list):
+        return ["data/prediction_history.json missing or not a list"]
+    graded = {int(r["gameId"]) for r in hist if r.get("gameId") is not None}
+    meta = _json(ctx.get("history_meta_file", HISTORY_META_FILE), {}) or {}
+    listed = {int(g["gameId"]): g.get("reason") for g in meta.get("not_graded") or [] if g.get("gameId")}
+    gs = ctx["gamestats"] if "gamestats" in ctx else read_season_csv("gamestats")
+    if gs is None or len(gs) == 0:
+        return []
+    finals = sorted({int(str(g).split(".")[0]) for g in gs["game_id"]
+                     if str(g).split(".")[0][4:6] in ("02", "03")})
+    sh = ctx.get("site_history")
+    if sh is None:
+        sh, _ = S.load_keyed_site_history(allow_fetch=False)
+    pre = set()
+    if len(sh):
+        p = S.pregame(sh)
+        pre = {int(x) for x in p["game_id"].dropna()}
+    errs = []
+    for gid in finals:
+        if gid in graded:
+            continue
+        if gid in pre and listed.get(gid) != "snapshot_after_start":
+            errs.append(f"{gid}: final with a pregame SiteHistory snapshot but not in prediction_history")
+        elif gid not in listed:
+            errs.append(f"{gid}: final but neither graded nor listed in prediction_history_meta.not_graded")
+    return errs
+
+
+def check_fair_odds(ctx):
+    """predictions_detailed.csv: *_model_odds is the fair American line of the
+    model-only %, *_blend_odds the fair line of the published (blended) %,
+    to within 1 cent (1 point of American odds)."""
+    def fair(p):
+        if abs(p - 0.5) < 1e-12:
+            return 100.0
+        return -(p / (1 - p)) * 100 if p > 0.5 else ((1 - p) / p) * 100
+
+    errs = []
+    for path in PRED_FILES:
+        if not os.path.exists(path):
+            continue
+        name = os.path.relpath(path, REPO_ROOT)
+        rows = _rows(path)
+        if not rows or "home_model_odds" not in rows[0]:
+            continue
+        pairs = [("home_model_odds", "home_model_win_pct"), ("away_model_odds", "away_model_win_pct"),
+                 ("home_blend_odds", "home_win_pct"), ("away_blend_odds", "away_win_pct")]
+        for r in rows:
+            for oc, pc in pairs:
+                if oc not in r or pc not in r or _blank(r[oc]) or _blank(r[pc]):
+                    continue
+                o, p = _num(str(r[oc]).replace("+", "")), _num(str(r[pc]).replace("%", ""))
+                if o is None or p is None or not 0 < p < 100:
+                    continue
+                want = fair(p / 100)
+                if abs(o - want) > 1.0 + 1e-9:
+                    errs.append(f"{name} {r.get('game_id')}: {oc} {o:+.0f} is not the fair line of "
+                                f"{pc} {p} ({want:+.0f})")
+        if "home_blend_odds" not in rows[0]:
+            errs.append(f"{name}: missing home_blend_odds / away_blend_odds columns")
+    return errs
+
+
+def check_gamestats_goals(ctx):
+    """Current-season gamestats: goals_ev + goals_pp + goals_sh + en_goals == goals_for."""
+    from season import read_season_csv
+    gs = ctx["gamestats"] if "gamestats" in ctx else read_season_csv("gamestats")
+    need = ("goals_ev", "goals_pp", "goals_sh", "goals_for")
+    if gs is None or len(gs) == 0 or any(c not in gs.columns for c in need):
+        return []
+    en = gs["en_goals"] if "en_goals" in gs.columns else 0
+    tot = gs["goals_ev"].fillna(0) + gs["goals_pp"].fillna(0) + gs["goals_sh"].fillna(0) + en
+    # Shootout winners get +1 goals_for with no shot; allow that one goal.
+    so = gs["result"].isin(["SOW"]) if "result" in gs.columns else False
+    bad = gs[(tot != gs["goals_for"]) & ~((tot + 1 == gs["goals_for"]) & so)]
+    return [f"{r.game_id} {r.team}: ev+pp+sh+en = {int(t)} but goals_for = {int(r.goals_for)}"
+            for r, t in zip(bad.itertuples(index=False), tot[bad.index])]
+
+
 FRESHNESS_MAX_HOURS = 26
 
 
@@ -466,6 +629,10 @@ CHECKS = {
     "season_ids": check_season_ids,
     "odds": check_odds,
     "gamestats": check_gamestats,
+    "reports": check_reports,
+    "graded": check_graded,
+    "fair_odds": check_fair_odds,
+    "goal_splits": check_gamestats_goals,
 }
 
 

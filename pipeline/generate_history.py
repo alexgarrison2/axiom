@@ -20,14 +20,22 @@ Rules
   A2 'no_pregame_prediction') are excluded.
 * Only completed games are written; a live snapshot waits in SiteHistory
   until the result is scraped.
+* Every completed game of a clean-start season that is NOT graded is listed
+  with a reason in data/prediction_history_meta.json ('not_graded'), so the
+  site can say "Not graded: no pregame prediction" instead of silently
+  dropping it.  The meta file also records when the graded set last changed
+  (``graded_changed_at``); validate_outputs.py uses it to catch a
+  model_report.json / bet_ledger.json that was not rebuilt afterwards.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
 import sys
+from datetime import datetime, timezone
 
 import numpy as np
 import pandas as pd
@@ -42,6 +50,7 @@ import market  # noqa: E402
 import site_history as S  # noqa: E402
 
 HISTORY_PATH = os.path.join(ROOT, 'data', 'prediction_history.json')
+META_PATH = os.path.join(ROOT, 'data', 'prediction_history_meta.json')
 ARCHIVE_DIR = os.path.join(ROOT, 'data', 'archive')
 NON_NHL_ARCHIVE = os.path.join(ARCHIVE_DIR, 'prediction_history_non_nhl.json')
 PREDICTIONS_CSV = os.path.join(ROOT, 'data', 'predictions_detailed.csv')
@@ -50,6 +59,11 @@ TEAMS_CSV = os.path.join(SCRIPT_DIR, 'nhl_teams.csv')
 CLEAN_START = {'20262027': '2026-09-29'}
 # Predicted after puck drop on opening night (live odds, 2025-26 context).
 EXCLUDED_GAME_IDS = {2026020001, 2026020002}
+
+NOT_GRADED_REASONS = {
+    'snapshot_after_start': 'Not graded: the prediction was first published after puck drop',
+    'no_snapshot': 'Not graded: no pregame prediction was saved for this game',
+}
 
 
 def season_label(game_id) -> str:
@@ -211,13 +225,18 @@ def generate_history(allow_fetch=True, write=True, verbose=True):
         rows[gid] = row_from_retro(old, by_id[gid])
 
     out = sorted(rows.values(), key=lambda r: (r['date'], r['gameId']))
+    not_graded = not_graded_games(by_id, rows, sh, excluded)
     if verbose:
         live = sum(1 for r in out if not r['retro'])
         print(f"[history] {len(out)} rows: {live} live snapshots, {len(out) - live} retro; "
-              f"{len(non_nhl)} non-NHL archived; {len(unmatched)} unmatched kept in archive")
+              f"{len(non_nhl)} non-NHL archived; {len(unmatched)} unmatched kept in archive; "
+              f"{len(not_graded)} final(s) not graded")
+        for g in not_graded:
+            print(f"  not graded: {g['gameId']} {g['awayTeam']}@{g['homeTeam']} {g['date']} ({g['reason']})")
     if write:
         with open(HISTORY_PATH, 'w') as f:
             json.dump(out, f, indent=2)
+        write_meta(out, not_graded)
         if non_nhl or unmatched:
             os.makedirs(ARCHIVE_DIR, exist_ok=True)
             prev = []
@@ -233,6 +252,73 @@ def generate_history(allow_fetch=True, write=True, verbose=True):
             with open(NON_NHL_ARCHIVE, 'w') as f:
                 json.dump(prev, f, indent=2)
     return out
+
+
+def not_graded_games(by_id, rows, sh, excluded) -> list:
+    """Completed games of a clean-start season that have no graded row, with the reason."""
+    seen = {}
+    if len(sh) and 'game_id' in sh.columns:
+        for r in sh[sh['game_id'].notna()][['game_id', 'snapshot_utc', 'start_ts']].itertuples(index=False):
+            pre = pd.notna(r.snapshot_utc) and pd.notna(r.start_ts) and r.snapshot_utc < r.start_ts
+            gid = int(r.game_id)
+            seen[gid] = seen.get(gid, False) or bool(pre)
+    out = []
+    for gid, res in by_id.items():
+        if gid in rows or str(gid)[4:6] not in F.NHL_GAME_TYPES:
+            continue
+        sid = f"{str(gid)[:4]}{int(str(gid)[:4]) + 1}"
+        if sid not in CLEAN_START or res['date'] < CLEAN_START[sid]:
+            continue
+        if gid in excluded or (gid in seen and not seen[gid]):
+            reason = 'snapshot_after_start'
+        else:
+            reason = 'no_snapshot'
+        out.append({'gameId': int(gid), 'season': season_label(gid), 'gameType': str(gid)[4:6],
+                    'date': res['date'], 'homeTeam': res['home'], 'awayTeam': res['away'],
+                    'homeScore': int(res['home_score']), 'awayScore': int(res['away_score']),
+                    'decision': res['decision'], 'reason': reason, 'label': NOT_GRADED_REASONS[reason]})
+    return sorted(out, key=lambda r: (r['date'], r['gameId']))
+
+
+def graded_fingerprint(rows) -> str:
+    key = [(r['gameId'], r['homeWinProb'], r['homeScore'], r['awayScore'], bool(r.get('retro'))) for r in rows]
+    return hashlib.md5(json.dumps(sorted(key)).encode()).hexdigest()
+
+
+def read_meta(path=META_PATH) -> dict:
+    try:
+        with open(path) as f:
+            m = json.load(f)
+        return m if isinstance(m, dict) else {}
+    except Exception:
+        return {}
+
+
+def write_meta(rows, not_graded, path=META_PATH, now=None):
+    """data/prediction_history_meta.json: counts, when the graded set last changed, and
+    the finals that are not graded (with reasons)."""
+    now = (now or datetime.now(timezone.utc)).isoformat().replace('+00:00', 'Z')
+    prev = read_meta(path)
+    fp = graded_fingerprint(rows)
+    changed_at = prev.get('graded_changed_at') if prev.get('fingerprint') == fp else None
+    graded = {}
+    for r in rows:
+        b = graded.setdefault(r['season'], {'live': 0, 'retro': 0})
+        b['retro' if r.get('retro') else 'live'] += 1
+    live = [r for r in rows if not r.get('retro')]
+    newest = max(live, key=lambda r: (r['date'], r['gameId'])) if live else None
+    meta = {
+        'schema_version': 1,
+        'generated_at': now,
+        'graded_changed_at': changed_at or now,
+        'fingerprint': fp,
+        'graded': dict(sorted(graded.items())),
+        'newest_graded': ({'gameId': newest['gameId'], 'date': newest['date']} if newest else None),
+        'not_graded': not_graded,
+    }
+    with open(path, 'w') as f:
+        json.dump(meta, f, indent=1)
+    return meta
 
 
 if __name__ == '__main__':

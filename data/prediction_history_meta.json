@@ -1,0 +1,48 @@
+{
+ "schema_version": 1,
+ "generated_at": "2026-09-30T14:11:16.005696Z",
+ "graded_changed_at": "2026-09-30T14:11:16.005696Z",
+ "fingerprint": "73e76adcaafd493e6ffe6f43f062a8f0",
+ "graded": {
+  "2025-26": {
+   "live": 421,
+   "retro": 824
+  },
+  "2026-27": {
+   "live": 3,
+   "retro": 0
+  }
+ },
+ "newest_graded": {
+  "gameId": 2026020005,
+  "date": "2026-09-29"
+ },
+ "not_graded": [
+  {
+   "gameId": 2026020001,
+   "season": "2026-27",
+   "gameType": "02",
+   "date": "2026-09-29",
+   "homeTeam": "Hurricanes",
+   "awayTeam": "Panthers",
+   "homeScore": 0,
+   "awayScore": 1,
+   "decision": "OT",
+   "reason": "snapshot_after_start",
+   "label": "Not graded: the prediction was first published after puck drop"
+  },
+  {
+   "gameId": 2026020002,
+   "season": "2026-27",
+   "gameType": "02",
+   "date": "2026-09-29",
+   "homeTeam": "Maple Leafs",
+   "awayTeam": "Canadiens",
+   "homeScore": 2,
+   "awayScore": 3,
+   "decision": "REG",
+   "reason": "snapshot_after_start",
+   "label": "Not graded: the prediction was first published after puck drop"
+  }
+ ]
+}

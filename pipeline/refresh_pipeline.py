@@ -511,6 +511,29 @@ def post_predict_stages(r, phase):
         r.run("implications", stage_implications, title="Playoff implications")
 
 
+def stage_model_report():
+    import model_report
+    importlib.reload(model_report)
+    rep = model_report.write_report()
+    cur = (rep.get("seasons") or {}).get(rep.get("current_season")) or {}
+    return {"status": "ok", "rows_written": int((cur.get("all") or {}).get("n") or 0)}
+
+
+def stage_bet_ledger():
+    import grade_bets
+    importlib.reload(grade_bets)
+    led = grade_bets.write_ledger()
+    return {"status": "ok", "rows_written": sum(len(v.get("bets") or []) for v in (led.get("seasons") or {}).values())}
+
+
+def grading_stages(r):
+    """model_report.json and bet_ledger.json are derived from prediction_history.json
+    and SiteHistory, so they are rebuilt on every run right after the graded record
+    (validate_outputs.py 'reports' fails when they fall behind it)."""
+    r.run("model_report", stage_model_report, required=True, title="Model report card")
+    r.run("bet_ledger", stage_bet_ledger, required=True, title="Graded bet ledger")
+
+
 def run_lite(r, phase):
     print("Running Lite Update...")
     r.run("rollover_check", stage_rollover)
@@ -520,6 +543,9 @@ def run_lite(r, phase):
     print("Running Predictions...")
     r.run("predict", stage_predict, required=True, title="Running Predictions")
     post_predict_stages(r, phase)
+    # Cheap: re-grade so the report and ledger pick up this run's snapshot and any final.
+    r.run("prediction_history", _call, "generate_history", "generate_history", required=True)
+    grading_stages(r)
     print("Final Sync...")
     r.run("final_sync", stage_final_sync, required=True)
 
@@ -554,6 +580,7 @@ def run_full(r, phase, rescore_all=False):
     r.run("predict", stage_predict, required=True, title="Running Predictions")
     print("Generating Prediction History...")
     r.run("prediction_history", _call, "generate_history", "generate_history", required=True)
+    grading_stages(r)
     if phase["in_season"]:
         r.run("season_simulator", _call, "season_simulator", "full_simulation_loop", title="Playoff odds")
     else:

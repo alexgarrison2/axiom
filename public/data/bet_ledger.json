@@ -1,13 +1,13 @@
 {
  "schema_version": 1,
- "generated_at": "2026-09-30T04:40:03.376955+00:00",
+ "generated_at": "2026-09-30T14:11:59.482195+00:00",
  "unit": "1 unit = 1% of bankroll ($5 in the SiteHistory snapshots)",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Bet sizes are hidden while the model has not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId; results from NHL final scores",
- "clv_note": "Closing prices are recorded from 2026-27 on (odds_closing.json); earlier bets have no CLV.",
+ "clv_note": null,
  "join": {
-  "bets_on_finished_games": 265,
-  "graded": 265,
+  "bets_on_finished_games": 266,
+  "graded": 266,
   "join_rate": 1.0
  },
  "gate": {
@@ -6743,22 +6743,89 @@
   "2026-27": {
    "summary": {
     "n_bets": 1,
-    "n_graded": 0,
-    "n_pending": 1,
-    "record": "0-0",
-    "wins": 0,
+    "n_graded": 1,
+    "n_pending": 0,
+    "record": "1-0",
+    "wins": 1,
     "losses": 0,
-    "units_staked": 0.0,
-    "units_profit": 0.0,
-    "roi": null,
+    "units_staked": 0.4,
+    "units_profit": 0.1455,
+    "roi": 0.3636,
     "roi_ci": [
-     null,
-     null
+     0.3636,
+     0.3636
     ],
-    "clv_mean": null,
-    "clv_n": 0,
-    "by_ev_bucket": [],
-    "by_stake": []
+    "clv_mean": -0.0408,
+    "clv_n": 1,
+    "by_ev_bucket": [
+     {
+      "bucket": "<0%",
+      "n": 0,
+      "record": "0-0",
+      "units_profit": 0.0,
+      "roi": null
+     },
+     {
+      "bucket": "0-5%",
+      "n": 1,
+      "record": "1-0",
+      "units_staked": 0.4,
+      "units_profit": 0.1455,
+      "roi": 0.3636
+     },
+     {
+      "bucket": "5-10%",
+      "n": 0,
+      "record": "0-0",
+      "units_profit": 0.0,
+      "roi": null
+     },
+     {
+      "bucket": "10-20%",
+      "n": 0,
+      "record": "0-0",
+      "units_profit": 0.0,
+      "roi": null
+     },
+     {
+      "bucket": "20%+",
+      "n": 0,
+      "record": "0-0",
+      "units_profit": 0.0,
+      "roi": null
+     }
+    ],
+    "by_stake": [
+     {
+      "bucket": "<=0.5u",
+      "n": 1,
+      "record": "1-0",
+      "units_staked": 0.4,
+      "units_profit": 0.1455,
+      "roi": 0.3636
+     },
+     {
+      "bucket": "0.6-1u",
+      "n": 0,
+      "record": "0-0",
+      "units_profit": 0.0,
+      "roi": null
+     },
+     {
+      "bucket": "1.1-2u",
+      "n": 0,
+      "record": "0-0",
+      "units_profit": 0.0,
+      "roi": null
+     },
+     {
+      "bucket": "2u+",
+      "n": 0,
+      "record": "0-0",
+      "units_profit": 0.0,
+      "roi": null
+     }
+    ]
    },
    "bets": [
     {
@@ -6778,12 +6845,12 @@
      "ev_bucket": "0-5%",
      "stake_bucket": "<=0.5u",
      "model_prob": 0.751,
-     "result": "pending",
-     "profit_units": 0.0,
-     "final": null,
-     "decision": null,
-     "closing_price": null,
-     "clv": null,
+     "result": "win",
+     "profit_units": 0.1455,
+     "final": "2-5",
+     "decision": "REG",
+     "closing_price": -258.0,
+     "clv": -0.0408,
      "model_version": null
     }
    ]

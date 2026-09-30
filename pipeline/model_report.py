@@ -40,6 +40,7 @@ import market  # noqa: E402
 
 HISTORY_PATH = os.path.join(ROOT, 'data', 'prediction_history.json')
 OUT_PATH = os.path.join(ROOT, 'public', 'data', 'model_report.json')
+HISTORY_META_PATH = os.path.join(ROOT, 'data', 'prediction_history_meta.json')
 META_PATH = os.path.join(SCRIPT_DIR, 'game_model_meta.json')
 ODDS_CLOSING_PATH = os.path.join(ROOT, 'public', 'data', 'odds_closing.json')
 SCHEMA_VERSION = 1
@@ -213,6 +214,33 @@ def rolling_gate_stats(rows, closing, family=CURRENT_MODEL_FAMILY, window=market
             'model_log_loss': _ll(y, p), 'market_log_loss': _ll(y, q)}
 
 
+def clarify_gate_reasons(reasons, rolling, n_graded_season, season_label):
+    """market.site_gate counts only games predicted by the CURRENT model family; say so,
+    so 'Only 0 live games' does not read as a contradiction next to N graded games."""
+    n = (rolling or {}).get('n', 0) or 0
+    out = []
+    for r in reasons:
+        if r.startswith('Only ') and 'live games with odds' in r:
+            fam = (rolling or {}).get('model_family') or CURRENT_MODEL_FAMILY
+            r = (f"Only {n} graded game{'s' if n != 1 else ''} with market odds were predicted by the current "
+                 f"model ({fam}) so far ({n_graded_season} graded in {season_label} in all); "
+                 f"need {market.ROLLING_N} to compare it with the market.")
+        out.append(r)
+    return out
+
+
+def load_not_graded():
+    """Finals generate_history.py left ungraded, with the reason (prediction_history_meta.json)."""
+    try:
+        with open(HISTORY_META_PATH) as f:
+            items = json.load(f).get('not_graded') or []
+    except Exception:
+        return []
+    keep = ('gameId', 'date', 'homeTeam', 'awayTeam', 'homeScore', 'awayScore', 'decision', 'reason', 'label',
+            'season', 'gameType')
+    return [{k: g.get(k) for k in keep} for g in items if isinstance(g, dict)]
+
+
 def season_of_row(r):
     return r.get('season') or (lambda y: f"{y}-{str(y + 1)[2:]}")(int(str(r['gameId'])[:4]))
 
@@ -230,6 +258,7 @@ def build_report(history=None, now=None):
               'notes': ('Headline numbers use live pregame snapshots only. Retro (back-filled) rows are '
                         'counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).'),
               'seasons': {}}
+    not_graded = load_not_graded()
     for s in seasons:
         rows = [r for r in history if season_of_row(r) == s]
         start_year = int(s[:4])
@@ -238,6 +267,8 @@ def build_report(history=None, now=None):
             'all': block(rows, rate, src, closing),
             'regular': block([r for r in rows if r.get('gameType', '02') == '02'], rate, src, closing),
             'playoffs': block([r for r in rows if r.get('gameType') == '03'], rate, src, closing),
+            # Completed games that are deliberately not graded (e.g. predicted after puck drop).
+            'not_graded': [g for g in not_graded if g.get('season') == s],
         }
     # gate
     bt = None
@@ -253,6 +284,8 @@ def build_report(history=None, now=None):
     rolling = rolling_gate_stats(history, closing)
     state = {'backtest': bt, 'rolling': rolling}
     ok, reasons = market.site_gate(state)
+    n_cur = sum(1 for r in history if season_of_row(r) == SEASON_LABEL and not r.get('retro'))
+    reasons = clarify_gate_reasons(reasons, rolling, n_cur, SEASON_LABEL)
     report['gate'] = {
         'open': ok,
         'status': 'open' if ok else 'closed',
