@@ -92,11 +92,19 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                 <NextGame team={team} hero={hero} />
             </div>
 
-            {/* KPI tiles. A tiny sample gets one muted "n GP" notch on the row, not a warning on every tile. */}
+            {/* KPI tiles. A tiny sample, or last season's row before the opener, gets one muted notch on the row, not a tag on every tile. */}
             <div className="relative px-card pb-card">
-                {small ? (
-                    <span data-small-sample="" className="absolute right-card top-0 z-[1] -translate-y-1/2 rounded-[3px] border border-mute bg-bg px-1 text-micro font-medium leading-[14px] tabular-nums text-fg-3">
-                        {gp} GP<span className="sr-only"> so far, small sample</span>
+                {small || (gp === 0 && prevKpis) ? (
+                    <span data-small-sample={small ? '' : undefined} className="absolute right-card top-0 z-[1] flex -translate-y-1/2">
+                        <SeasonTag className="bg-bg tabular-nums">
+                            {small ? (
+                                <>
+                                    {gp} GP<span className="sr-only"> so far, small sample</span>
+                                </>
+                            ) : (
+                                prevTag
+                            )}
+                        </SeasonTag>
                     </span>
                 ) : null}
                 <dl className="grid grid-cols-5 gap-1.5 md:gap-2">
@@ -108,7 +116,6 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                             <div key={k.key} className="tile min-w-0 bg-bg/40 px-2 py-1.5 md:px-3 md:py-2">
                                 <dt className="flex items-center gap-1 truncate text-micro font-medium uppercase tracking-[0.1em] text-fg-3 md:tracking-label">
                                     {k.label}
-                                    {prev != null ? <SeasonTag className="hidden md:inline-flex">{prevTag}</SeasonTag> : null}
                                 </dt>
                                 <dd className={cn('font-display text-[17px] font-bold leading-6 tabular-nums md:text-[22px] md:leading-7', cur != null ? 'text-fg-1' : 'text-fg-3')}>
                                     {cur != null ? k.fmt(cur) : prev != null ? k.fmt(prev) : '—'}
@@ -117,7 +124,6 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                                 {rank ? (
                                     <dd className="truncate text-micro tabular-nums text-fg-3">
                                         #{rank}
-                                        {prev != null ? <span className="md:hidden"> {prevTag}</span> : null}
                                     </dd>
                                 ) : null}
                             </div>

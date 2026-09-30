@@ -186,7 +186,7 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
             ) : null}
 
             <TabsContent value="games" className="mt-0 flex flex-col gap-2">
-                <p className="flex items-center gap-2 text-micro font-medium uppercase tracking-label text-fg-3">
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-micro font-medium uppercase tracking-label text-fg-3 [&>span]:whitespace-nowrap">
                     <span className="text-fg-1">
                         {label} {filters.scope === 'playoffs' ? 'playoffs' : 'regular season'}
                     </span>
@@ -197,14 +197,12 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
                         <span className="text-fg-1">{filtered.length}</span>/{filters.scope === 'playoffs' ? games.length - regularCount : regularCount} GP
                     </span>
                     {gsax ? (
-                        <>
-                            <span aria-hidden="true" className="text-fg-disabled">
+                        <span>
+                            <span aria-hidden="true" className="mr-2 text-fg-disabled">
                                 ·
                             </span>
-                            <span>
-                                GSAx <span className="text-fg-1">{gsax}</span>
-                            </span>
-                        </>
+                            GSAx <span className="text-fg-1">{gsax}</span>
+                        </span>
                     ) : null}
                 </p>
 

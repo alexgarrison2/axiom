@@ -231,7 +231,12 @@ function SkaterCard({
                         {s.isNew ? (
                             <span className="font-bold text-brand">
                                 New{s.from ? ` ${s.from}` : ''}
-                                {s.impact ? <span className="ml-1 font-normal text-fg-2">{sgn(s.impact.score.v)}</span> : null}
+                                {s.impact ? (
+                                    <span className="ml-1 font-normal text-fg-2" title={`${ratingsLabel} impact${s.from ? ` with ${s.from}` : ''}`}>
+                                        {sgn(s.impact.score.v)}
+                                        <span className="sr-only"> ({ratingsLabel} impact)</span>
+                                    </span>
+                                ) : null}
                             </span>
                         ) : null}
                         {s.injury ? (

@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ teamAbbr:
     if (!team) return { title: 'Team' };
     return {
         title: `${team.name} stats and predictions`,
-        description: `${team.name} (${tri}) record, next game with the model's win probability, game log, expected goals, goalies and skater impact on Pony xG.`,
+        description: `${team.name} (${tri}) record, next-game win forecast, game log, expected goals, goalies and skater impact on Pony xG.`,
         alternates: { canonical: `/teams/${tri}` },
     };
 }
