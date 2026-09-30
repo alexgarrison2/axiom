@@ -118,10 +118,12 @@ function GameGroup({ group: g }: { group: FeedGroup }) {
                 ) : g.startLabel ? (
                     <span className="label">{g.startLabel}</span>
                 ) : null}
-                <span className={cn('label', g.cards.length ? 'text-fg-2' : 'text-fg-3')}>
-                    <span className="sr-only">News items: </span>
-                    {g.cards.length}
-                </span>
+                {g.cards.length ? (
+                    <span className="label rounded-chip border border-line-strong px-1.5 text-fg-2">
+                        <span className="sr-only">News items: </span>
+                        {g.cards.length}
+                    </span>
+                ) : null}
                 <Link
                     href={`/#${game.away.toLowerCase()}-${game.home.toLowerCase()}`}
                     className="label ml-auto inline-flex min-h-8 items-center text-brand hover:underline coarse:min-h-11"

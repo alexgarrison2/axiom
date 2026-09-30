@@ -35,6 +35,10 @@ const TYPE_OPTIONS: { value: GameTypeKey; label: string }[] = [
 const pct1 = (v: number | null | undefined) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
 const dec3 = (v: number | null | undefined) => (v == null ? '—' : v.toFixed(3));
 const dec4 = (v: number | null | undefined) => (v == null ? '—' : v.toFixed(4));
+/** Below this many graded games a better/worse vs the market is noise: no green/red, no "best" marker. */
+const SIGNAL_N = 100;
+/** Calibration and confidence tiers need at least this many games to show anything but noise. */
+const CHART_N = 30;
 
 export function AccuracyView({ report, ledger, seasons, currentSeason, tallies = {}, finals = {} }: AccuracyViewProps) {
     const [season, setSeason] = React.useState<string>(currentSeason);
@@ -96,7 +100,8 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                     </h2>
                     {!empty && !stale && block ? (
                         <p className="label">
-                            Live picks · {shortDate(block.firstDate)}–{shortDate(block.lastDate)}
+                            Live picks · {shortDate(block.firstDate)}
+                            {block.lastDate && block.lastDate !== block.firstDate ? `–${shortDate(block.lastDate)}` : ''}
                             {block.nRetro ? ` · ${block.nRetro.toLocaleString('en-US')} back-filled out` : ''}
                         </p>
                     ) : null}
@@ -168,7 +173,7 @@ function ThroughSummary({ tally: t }: { tally: SeasonTally }) {
                     value={dec4(t.logLoss)}
                     delta={
                         t.marketN && t.modelLogLossSame != null && t.marketLogLoss != null
-                            ? { value: t.modelLogLossSame - t.marketLogLoss, better: 'lower', text: signed(t.modelLogLossSame - t.marketLogLoss, 4) }
+                            ? { value: t.modelLogLossSame - t.marketLogLoss, better: 'lower', text: signed(t.modelLogLossSame - t.marketLogLoss, 4), n: t.marketN }
                             : null
                     }
                     sub={t.marketN ? `mkt ${dec4(t.marketLogLoss)} · n=${t.marketN}` : 'no mkt prices'}
@@ -189,22 +194,25 @@ interface BigDelta {
     value: number;
     better: 'higher' | 'lower';
     text: string;
+    /** Games behind the comparison; under SIGNAL_N the delta stays neutral. */
+    n: number;
 }
 
 /** A report-card number: label, big display value, delta vs the market, tiny sub line. */
 function BigNum({ label, value, delta, sub }: { label: string; value: string; delta?: BigDelta | null; sub?: string }) {
     const good = delta ? (delta.better === 'higher' ? delta.value > 0 : delta.value < 0) : false;
     const same = delta ? Math.abs(delta.value) < 1e-9 : true;
+    const neutral = same || !delta || delta.n < SIGNAL_N;
     return (
         <div className="panel flex min-w-0 flex-col gap-1 px-3 py-2.5 md:px-4 md:py-3">
             <span className="label">{label}</span>
             <span className="font-display text-[30px] font-bold leading-none text-fg-1 md:text-[40px]">{value}</span>
             <span className="flex flex-wrap items-baseline gap-x-2 text-micro">
                 {delta ? (
-                    <span className={cn('font-bold', same ? 'text-fg-2' : good ? 'text-pos' : 'text-neg')}>
+                    <span className={cn('font-bold', neutral ? 'text-fg-2' : good ? 'text-pos' : 'text-neg')}>
                         {delta.text}
                         <span className="ml-1 font-medium uppercase tracking-[0.12em] text-fg-3">vs mkt</span>
-                        <span className="sr-only">{same ? ' (same)' : good ? ' (better)' : ' (worse)'}</span>
+                        <span className="sr-only">{same ? ' (same)' : good ? ' (better' : ' (worse'}{same ? '' : neutral ? ', small sample)' : ')'}</span>
                     </span>
                 ) : null}
                 {sub ? <span className="text-fg-3">{sub}</span> : null}
@@ -224,19 +232,19 @@ function ReportCard({ block: b, seasonWord, modelLabel }: { block: ReportBlock; 
                 <BigNum
                     label="Picks right"
                     value={pct1(b.accuracy)}
-                    delta={sameAcc != null && m.accuracy != null && m.n ? { value: sameAcc - m.accuracy, better: 'higher', text: `${signed((sameAcc - m.accuracy) * 100, 1)} pts` } : null}
+                    delta={sameAcc != null && m.accuracy != null && m.n ? { value: sameAcc - m.accuracy, better: 'higher', text: `${signed((sameAcc - m.accuracy) * 100, 1)} pts`, n: m.n } : null}
                     sub={`${record}${b.accuracyCi ? ` · CI ${(b.accuracyCi[0] * 100).toFixed(0)}–${(b.accuracyCi[1] * 100).toFixed(0)}` : ''}`}
                 />
                 <BigNum
                     label="Log loss"
                     value={dec4(b.logLoss)}
-                    delta={sameLL != null && m.logLoss != null && m.n ? { value: sameLL - m.logLoss, better: 'lower', text: signed(sameLL - m.logLoss, 4) } : null}
+                    delta={sameLL != null && m.logLoss != null && m.n ? { value: sameLL - m.logLoss, better: 'lower', text: signed(sameLL - m.logLoss, 4), n: m.n } : null}
                     sub="flip 0.6931"
                 />
                 <BigNum
                     label="Brier"
                     value={dec4(b.brier)}
-                    delta={b.brier != null && m.brier != null && m.n ? { value: b.brier - m.brier, better: 'lower', text: signed(b.brier - m.brier, 4) } : null}
+                    delta={b.brier != null && m.brier != null && m.n ? { value: b.brier - m.brier, better: 'lower', text: signed(b.brier - m.brier, 4), n: m.n } : null}
                     sub="flip 0.2500"
                 />
                 <BigNum label="Graded" value={b.n.toLocaleString('en-US')} sub={m.n ? `${m.n.toLocaleString('en-US')} w/ mkt` : 'no mkt prices'} />
@@ -245,28 +253,47 @@ function ReportCard({ block: b, seasonWord, modelLabel }: { block: ReportBlock; 
             <div className="grid items-start gap-3 lg:grid-cols-2">
                 <div className="flex min-w-0 flex-col gap-3">
                     <BaselineTable block={b} seasonWord={seasonWord} modelLabel={modelLabel} />
-                    <Panel title="By confidence">{b.tiers.length ? <TierBars tiers={b.tiers} /> : <p className="label">n too small</p>}</Panel>
-                </div>
-                <div className="flex min-w-0 flex-col gap-3">
-                    <Panel title="Calibration">
-                        {b.reliability.some(r => r.n > 0) ? <ReliabilityChart bins={b.reliability} /> : <p className="label">n too small</p>}
-                    </Panel>
-                    {b.rolling.length > 1 ? (
-                        <Panel title="Rolling log loss">
-                            <RollingChart points={b.rolling} />
+                    {b.n >= CHART_N && b.tiers.length ? (
+                        <Panel title="By confidence">
+                            <TierBars tiers={b.tiers} />
                         </Panel>
                     ) : null}
                 </div>
+                {b.n >= CHART_N ? (
+                    <div className="flex min-w-0 flex-col gap-3">
+                        {b.reliability.some(r => r.n > 0) ? (
+                            <Panel title="Calibration">
+                                <ReliabilityChart bins={b.reliability} />
+                            </Panel>
+                        ) : null}
+                        {b.rolling.length > 1 ? (
+                            <Panel title="Rolling log loss">
+                                <RollingChart points={b.rolling} />
+                            </Panel>
+                        ) : null}
+                    </div>
+                ) : (
+                    <div className="grid min-w-0 content-start gap-3">
+                        <Panel title="Best calls">
+                            <CallList rows={b.bestCalls} />
+                        </Panel>
+                        <Panel title="Worst misses">
+                            <CallList rows={b.worstMisses} />
+                        </Panel>
+                    </div>
+                )}
             </div>
 
-            <div className="grid items-start gap-3 lg:grid-cols-2">
-                <Panel title="Best calls">
-                    <CallList rows={b.bestCalls} />
-                </Panel>
-                <Panel title="Worst misses">
-                    <CallList rows={b.worstMisses} />
-                </Panel>
-            </div>
+            {b.n >= CHART_N ? (
+                <div className="grid items-start gap-3 lg:grid-cols-2">
+                    <Panel title="Best calls">
+                        <CallList rows={b.bestCalls} />
+                    </Panel>
+                    <Panel title="Worst misses">
+                        <CallList rows={b.worstMisses} />
+                    </Panel>
+                </div>
+            ) : null}
         </div>
     );
 }
@@ -298,7 +325,8 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
         note: b.homeRate.rate != null ? `${(b.homeRate.rate * 100).toFixed(1)}%` : undefined,
     });
     rows.push({ label: 'Coin flip', n: null, acc: null, brier: 0.25, ll: Math.LN2 });
-    const bestLL = Math.min(...rows.map(r => r.ll ?? Infinity));
+    // Mark the best log loss only once the sample can tell the rows apart.
+    const bestLL = b.n >= SIGNAL_N ? Math.min(...rows.map(r => r.ll ?? Infinity)) : NaN;
     return (
         <ScrollRegion label={`Model versus baselines, ${seasonWord}`} className="panel">
             <table className="table-dense min-w-[340px]">
