@@ -5,7 +5,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { cn } from '@/lib/utils';
 import { SEASON_ID } from '@/lib/season';
-import { mmss, shortDate } from '@/utils/team-stats/format';
+import { injuryCode, mmss, shortDate } from '@/utils/team-stats/format';
 import type { Pctl, SeasonLine, SkaterCardData } from '@/utils/team-stats/team-types';
 
 interface SkaterGridProps {
@@ -126,7 +126,7 @@ export default function SkaterGrid(props: SkaterGridProps) {
                 <span aria-hidden="true" className="ml-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-micro uppercase tracking-wide text-fg-3">
                     <Swatch className="bg-fg-1/80" label="GP" />
                     <Swatch className="bg-warn/80" label="Out" />
-                    <Swatch className="bg-magenta/80" label="Other" />
+                    <Swatch className="bg-brand/60" label="Other" />
                     {ratingsPrior ? (
                         <span className="inline-flex items-center gap-1">
                             Rtg <SeasonTag>{ratingsTag}</SeasonTag>
@@ -225,15 +225,16 @@ function SkaterCard({
                         {s.number != null ? <span>#{s.number}</span> : null}
                         {s.age ? <span>{s.age}Y</span> : null}
                         {s.isNew ? (
-                            <span className="font-bold text-magenta">
+                            <span className="font-bold text-brand">
                                 New{s.from ? ` ${s.from}` : ''}
                                 {s.impact ? <span className="ml-1 font-normal text-fg-2">{sgn(s.impact.score.v)}</span> : null}
                             </span>
                         ) : null}
                         {s.injury ? (
-                            <span className="font-bold text-neg">
-                                {s.injury.status}
+                            <span className="font-bold text-neg" title={s.injury.status}>
+                                {injuryCode(s.injury.status)}
                                 {s.injury.returnDate ? ` ${shortDate(s.injury.returnDate)}` : ''}
+                                <span className="sr-only"> ({s.injury.status})</span>
                             </span>
                         ) : null}
                     </p>
@@ -308,7 +309,7 @@ function Availability({ avail, total, label }: { avail: string; total: number; l
                 {slots.map((c, i) => (
                     <span
                         key={i}
-                        className={cn('h-1 flex-1 rounded-[1px]', c === '1' ? 'bg-fg-1/80' : c === '0' ? 'bg-warn/80' : c === 'o' ? 'bg-magenta/80' : 'bg-line')}
+                        className={cn('h-1 flex-1 rounded-[1px]', c === '1' ? 'bg-fg-1/80' : c === '0' ? 'bg-warn/80' : c === 'o' ? 'bg-brand/60' : 'bg-line')}
                     />
                 ))}
             </div>

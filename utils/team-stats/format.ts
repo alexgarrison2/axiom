@@ -50,3 +50,13 @@ export function localTime(utc: string): string {
     if (!Number.isFinite(t)) return '';
     return new Date(t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
+
+/** "Injured Reserve" → "IR", "Day-To-Day" → "DTD" etc.; anything else uppercased as-is. */
+export function injuryCode(status: string): string {
+    const s = status.toLowerCase();
+    if (s.includes('long') && s.includes('reserve')) return 'LTIR';
+    if (s.includes('reserve')) return 'IR';
+    if (s.includes('day')) return 'DTD';
+    if (s.includes('suspen')) return 'SUSP';
+    return status.toUpperCase();
+}

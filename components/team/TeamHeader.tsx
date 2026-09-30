@@ -5,7 +5,7 @@ import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { WinBar } from '@/components/ui/win-bar';
 import { cn } from '@/lib/utils';
 import { recordString } from '@/utils/team-stats/calculate';
-import { ordinal, shortDate } from '@/utils/team-stats/format';
+import { injuryCode, ordinal, shortDate } from '@/utils/team-stats/format';
 import { DIVISION_LABEL } from '@/utils/team-stats/teams';
 import type { GoalieLine, KpiSet, TeamHero } from '@/utils/team-stats/team-types';
 import type { TeamMeta, TeamStat } from '@/utils/team-stats/types';
@@ -35,16 +35,6 @@ const KPIS: { key: KpiKey; label: string; fmt: (v: number) => string }[] = [
 ];
 
 const SMALL_SAMPLE = 5;
-
-/** "Injured Reserve" → "IR" etc.; anything else uppercased as-is. */
-function injuryCode(status: string): string {
-    const s = status.toLowerCase();
-    if (s.includes('long') && s.includes('reserve')) return 'LTIR';
-    if (s.includes('reserve')) return 'IR';
-    if (s.includes('day')) return 'DTD';
-    if (s.includes('suspen')) return 'SUSP';
-    return status.toUpperCase();
-}
 
 const lastName = (n: string) => n.split(' ').slice(-1)[0];
 
@@ -249,7 +239,7 @@ function NextGame({ team, hero }: { team: TeamMeta; hero: TeamHero }) {
     const g = hero.nextGame;
     if (!g) {
         return (
-            <div className="tile flex min-w-0 items-center justify-between bg-bg/40 md:w-[380px]">
+            <div className="tile flex min-w-0 items-center justify-between bg-bg/40 md:w-[380px] md:self-start">
                 <span className="label">Next</span>
                 <span className="text-caption text-fg-3">—</span>
             </div>
@@ -264,7 +254,7 @@ function NextGame({ team, hero }: { team: TeamMeta; hero: TeamHero }) {
     return (
         <Link
             href={g.href}
-            className="tile panel-hover flex min-w-0 flex-col gap-2 bg-bg/40 transition-colors hover:border-line-strong md:w-[380px]"
+            className="tile panel-hover flex min-w-0 flex-col gap-2 bg-bg/40 transition-colors hover:border-line-strong md:w-[380px] md:self-start"
             aria-label={`Next game: ${g.home ? 'vs' : 'at'} ${g.opp}`}
         >
             <span className="flex items-center justify-between gap-2">

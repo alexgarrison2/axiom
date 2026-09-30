@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { cn } from '@/lib/utils';
-import { shortDate, signed } from '@/utils/team-stats/format';
+import { injuryCode, shortDate, signed } from '@/utils/team-stats/format';
 import type { GoalieLine, GoalieSeason } from '@/utils/team-stats/team-types';
 import { GOALIE_NAME, gaa, goalieState, svPct } from './goalie-line';
 
@@ -35,8 +35,9 @@ export default function GoaliesPanel({ goalies, currentLabel, prevLabel }: Goali
                                     {g.number != null ? <span>#{g.number}</span> : null}
                                     {g.isNew ? <span className="font-bold text-brand">New</span> : null}
                                     {g.injury ? (
-                                        <span className="font-bold text-neg">
-                                            {g.injury.status}
+                                        <span className="font-bold text-neg" title={g.injury.status}>
+                                            {injuryCode(g.injury.status)}
+                                            <span className="sr-only"> ({g.injury.status})</span>
                                             {g.injury.returnDate ? ` · ${shortDate(g.injury.returnDate)}` : ''}
                                         </span>
                                     ) : null}
@@ -50,13 +51,7 @@ export default function GoaliesPanel({ goalies, currentLabel, prevLabel }: Goali
                             </div>
                             <div className="shrink-0 text-right">
                                 <p className="label">GSAx/gm</p>
-                                {g.rating ? (
-                                    <p className={cn('font-display text-[22px] font-bold leading-7 tabular-nums', g.rating.gsaxPerGame >= 0 ? 'text-pos' : 'text-neg')}>
-                                        {signed(g.rating.gsaxPerGame, 2)}
-                                    </p>
-                                ) : (
-                                    <p className="font-display text-[22px] font-bold leading-7 text-fg-3">—</p>
-                                )}
+                                <Rating rating={g.rating} currentLabel={currentLabel} />
                             </div>
                         </header>
 
@@ -108,6 +103,26 @@ export default function GoaliesPanel({ goalies, currentLabel, prevLabel }: Goali
                 );
             })}
         </div>
+    );
+}
+
+/**
+ * The blended model rating. When it rests only on earlier seasons (no start
+ * this season yet) it carries the muted tag of the latest season it draws on;
+ * a zero rating stays neutral rather than green.
+ */
+function Rating({ rating, currentLabel }: { rating: GoalieLine['rating']; currentLabel: string }) {
+    if (!rating) return <p className="font-display text-[22px] font-bold leading-7 text-fg-3">—</p>;
+    const end = rating.label.split(' to ').pop() ?? rating.label;
+    const priorTag = end !== currentLabel ? shortSeasonTag(end) : undefined;
+    const v = rating.gsaxPerGame;
+    const tone = Math.abs(v) < 0.005 ? 'text-fg-1' : v > 0 ? 'text-pos' : 'text-neg';
+    return (
+        <p className="flex items-center justify-end gap-1.5" title={rating.label}>
+            {priorTag ? <SeasonTag>{priorTag}</SeasonTag> : null}
+            <span className={cn('font-display text-[22px] font-bold leading-7 tabular-nums', priorTag && 'opacity-80', tone)}>{signed(v, 2)}</span>
+            <span className="sr-only"> ({rating.label})</span>
+        </p>
     );
 }
 
