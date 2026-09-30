@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { PageHeading } from '@/components/ui/page-heading';
+import { PRIOR_SEASON_TAG } from '@/components/ui/stat-chip';
+import { WinBarLegend } from '@/components/ui/win-bar';
 import Kit from './Kit';
 
 export const metadata: Metadata = {
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
 export default function UiKitPage() {
     return (
         <main className="mx-auto max-w-[1180px] px-4 pb-10 pt-5 md:px-5 md:pt-7">
-            <PageHeading title="UI kit" className="mb-6" />
+            <PageHeading title="UI kit" tag={PRIOR_SEASON_TAG} actions={<WinBarLegend className="ml-auto" />} className="mb-6" />
             <Kit />
         </main>
     );

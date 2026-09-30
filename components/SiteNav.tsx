@@ -34,7 +34,7 @@ export default function SiteNav() {
     return (
         <>
             <header className="sticky top-0 z-40 border-b border-line bg-bg/[.82] pt-[env(safe-area-inset-top)] backdrop-blur-[10px]">
-                <div className="mx-auto flex h-appbar max-w-[1400px] items-center gap-6 px-4 md:gap-8 md:px-6">
+                <div className="mx-auto flex h-appbar max-w-[1400px] items-center gap-6 px-4 md:gap-5 md:px-6 lg:gap-8">
                     <Link
                         href="/"
                         aria-label="Pony xG home"

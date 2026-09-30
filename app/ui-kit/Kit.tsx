@@ -10,13 +10,16 @@ import { FilterChip } from '@/components/ui/filter-chip';
 import { FilterSheet } from '@/components/ui/filter-sheet';
 import { FreshnessBadge } from '@/components/ui/freshness-badge';
 import { InfoTip } from '@/components/ui/info-tip';
+import { Input } from '@/components/ui/input';
 import { KpiTile } from '@/components/ui/kpi-tile';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { Segmented } from '@/components/ui/segmented';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import { SortHeader, type SortDirection } from '@/components/ui/sort-header';
 import { SeasonTag, StatChip } from '@/components/ui/stat-chip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { WinBar, WinBarLegend, marketProbFromOdds } from '@/components/ui/win-bar';
+import { WinBar, marketProbFromOdds } from '@/components/ui/win-bar';
 import { TEAM_CODES, TEAM_PALETTE, clashSafePair, teamTextColor } from '@/components/ui/team-color';
 
 function Block({ id, title, children, wide }: { id: string; title: string; children: React.ReactNode; wide?: boolean }) {
@@ -96,6 +99,8 @@ export default function Kit() {
     const rows = [...ROWS].sort((a, b) => (sort.dir === 'asc' ? a[sort.key] - b[sort.key] : b[sort.key] - a[sort.key]));
     const toggleSort = (key: 'pts' | 'xgf') => setSort(s => ({ key, dir: s.key === key && s.dir === 'desc' ? 'asc' : 'desc' }));
     const nyiTor = clashSafePair('NYI', 'TOR');
+    const [season, setSeason] = React.useState('2026-27');
+    const [minGp, setMinGp] = React.useState(5);
 
     return (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -133,10 +138,7 @@ export default function Kit() {
             </Block>
 
             <Block id="kit-winbar" title="WinBar" wide>
-                <div className="flex justify-end">
-                    <WinBarLegend />
-                </div>
-                <div className="mt-4 grid gap-x-6 gap-y-7 md:grid-cols-2">
+                <div className="grid gap-x-6 gap-y-7 md:grid-cols-2">
                     <div>
                         <p className="label mb-2">lg · market + model</p>
                         <WinBar away="NYI" home="TOR" pAway={0.48} market={marketProbFromOdds(112, -133)} model={0.61} />
@@ -352,6 +354,40 @@ export default function Kit() {
                     <span className="font-display text-[18px] font-bold text-pos opacity-75">Likely</span>
                     <span className="font-display text-[18px] font-bold text-fg-2">Projected</span>
                 </div>
+            </Block>
+
+            <Block id="kit-inputs" title="Select · Input · Slider">
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <Select value={season} onValueChange={setSeason}>
+                        <SelectTrigger aria-label="Season">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="2026-27">2026-27</SelectItem>
+                            <SelectItem value="2025-26">2025-26</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Input type="search" aria-label="Search players" placeholder="Search" />
+                </div>
+                <div className="mt-5 flex items-center gap-3">
+                    <span className="label shrink-0">Min GP</span>
+                    <Slider aria-label="Minimum games played" min={0} max={20} step={1} value={[minGp]} onValueChange={v => setMinGp(v[0] ?? 0)} />
+                    <span className="w-6 shrink-0 text-right text-caption font-bold tabular-nums">{minGp}</span>
+                </div>
+            </Block>
+
+            <Block id="kit-heading" title="PageHeading">
+                <p className="text-caption text-fg-2">
+                    <span className="font-bold text-fg-1">&lt;PageHeading title tag actions /&gt;</span> · top of this page
+                </p>
+                <Api
+                    rows={[
+                        ['title', 'ReactNode', 'Page name only'],
+                        ['tag', 'ReactNode', 'Muted tag, e.g. 25-26'],
+                        ['actions', 'ReactNode', 'Rail: chips, legend'],
+                        ['visuallyHidden', 'boolean', 'sr-only h1'],
+                    ]}
+                />
             </Block>
 
             <Block id="kit-teams" title="Team colours">

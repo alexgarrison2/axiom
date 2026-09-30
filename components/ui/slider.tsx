@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
->(({ className, ...props }, ref) => {
+>(({ className, "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, ...props }, ref) => {
   const initialValue = Array.isArray(props.value) ? props.value : (Array.isArray(props.defaultValue) ? props.defaultValue : [0])
 
   return (
@@ -26,6 +26,9 @@ const Slider = React.forwardRef<
       {initialValue.map((_, i) => (
         <SliderPrimitive.Thumb
           key={i}
+          // The thumbs carry role="slider", so they need the accessible name.
+          aria-label={ariaLabel && initialValue.length > 1 ? `${ariaLabel} ${i === 0 ? "start" : "end"}` : ariaLabel}
+          aria-labelledby={ariaLabelledby}
           className="block h-4 w-4 rounded-full border-2 border-brand bg-bg shadow-[0_0_10px_rgb(var(--brand-rgb)/0.5)] transition-colors coarse:h-7 coarse:w-7 disabled:pointer-events-none disabled:opacity-50"
         />
       ))}

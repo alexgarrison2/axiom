@@ -11,8 +11,10 @@ export function SiteNavLinks({ showPlayoffs }: { showPlayoffs: boolean }) {
     const items = NAV_ITEMS.filter(i => !i.playoffsOnly || showPlayoffs || isActive(i.href, pathname));
 
     return (
-        <nav aria-label="Main" className="hidden min-w-0 md:block">
-            <ul className="flex items-center gap-5 lg:gap-7">
+        // Scrolls sideways rather than running into the freshness badge when a
+        // seventh item (Playoffs) joins at tablet widths; p-1 keeps focus rings unclipped.
+        <nav aria-label="Main" className="hidden min-w-0 overflow-x-auto scrollbar-hide md:block">
+            <ul className="flex items-center gap-4 p-1 lg:gap-7">
                 {items.map(item => {
                     const active = isActive(item.href, pathname);
                     return (
@@ -21,7 +23,7 @@ export function SiteNavLinks({ showPlayoffs }: { showPlayoffs: boolean }) {
                                 href={item.href}
                                 aria-current={active ? 'page' : undefined}
                                 className={cn(
-                                    'relative flex h-11 items-center whitespace-nowrap text-caption font-medium uppercase tracking-label transition-colors',
+                                    'relative flex h-11 items-center whitespace-nowrap text-caption font-medium uppercase tracking-[0.12em] transition-colors lg:tracking-label',
                                     active ? 'text-fg-1' : 'text-fg-3 hover:text-fg-1',
                                 )}
                             >

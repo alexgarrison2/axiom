@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import FullLogoAnimated from '@/components/FullLogoAnimated';
+import { DeferredFullLogo } from '@/components/brand/DeferredFullLogo';
 import { Crest } from '@/components/ui/crest';
 import { TEAM_CODES } from '@/components/ui/team-color';
 
@@ -14,7 +14,7 @@ export default function NotFound() {
     return (
         <main className="mx-auto max-w-[1100px] px-4 pb-12 pt-10 md:px-6 md:pt-14">
             <div className="mx-auto max-w-[280px]" aria-hidden="true">
-                <FullLogoAnimated idPrefix="nf-logo" />
+                <DeferredFullLogo idPrefix="nf-logo" minWidth={0} />
             </div>
             <div className="mt-8 text-center">
                 <p className="label text-warn">404</p>
