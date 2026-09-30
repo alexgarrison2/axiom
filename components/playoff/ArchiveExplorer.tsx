@@ -254,7 +254,7 @@ function GameRow({ game: g, open, onOpen, controls }: { game: ArchiveGame; open:
     return (
         <li className={cn('flex min-h-8 flex-wrap items-center gap-x-3 border-t border-line/60 px-3 text-caption first:border-t-0 even:bg-line/35', open && '!bg-brand/[0.06]')}>
             <span className="w-7 font-bold text-fg-1">G{g.n}</span>
-            <span className="w-24 text-fg-3">{fmtGameDate(g.date)}</span>
+            <span className="hidden w-24 text-fg-3 sm:inline">{fmtGameDate(g.date)}</span>
             <span className="flex items-center gap-1.5 tabular-nums">
                 <Crest tri={g.away} size={16} className="drop-shadow-none" />
                 <span className={cn(!homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>

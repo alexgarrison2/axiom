@@ -144,7 +144,7 @@ function Section({ id, index, title, children }: { id: string; index: number; ti
 /** A legend row: the visual on the left, what it means on the right. */
 function Key({ sample, children }: { sample: React.ReactNode; children: React.ReactNode }) {
     return (
-        <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-baseline gap-3 border-t border-line/60 py-2 first:border-t-0 sm:grid-cols-[9rem_minmax(0,1fr)]">
+        <div className="grid grid-cols-[6rem_minmax(0,1fr)] items-baseline gap-3 border-t border-line/60 py-2 first:border-t-0 sm:grid-cols-[9rem_minmax(0,1fr)]">
             <dt className="flex min-h-5 items-center">{sample}</dt>
             <dd>{children}</dd>
         </div>
@@ -173,13 +173,13 @@ export default function MethodologyPage() {
                 <h1 className="heading-page">Methodology</h1>
 
                 <div className="mt-5 grid gap-6 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-10">
-                    <nav aria-label="On this page" className="lg:sticky lg:top-[calc(var(--appbar-h)+20px)] lg:self-start">
-                        <ol className="flex flex-wrap gap-1.5 lg:flex-col lg:gap-0">
+                    <nav aria-label="On this page" className="min-w-0 lg:sticky lg:top-[calc(var(--appbar-h)+20px)] lg:self-start">
+                        <ol className="edge-fade-right -mx-4 flex gap-1.5 overflow-x-auto px-4 scrollbar-hide lg:mx-0 lg:flex-col lg:gap-0 lg:overflow-visible lg:px-0 lg:[-webkit-mask-image:none] lg:[mask-image:none]">
                             {SECTIONS.map((s, n) => (
-                                <li key={s.id}>
+                                <li key={s.id} className="shrink-0">
                                     <a
                                         href={`#${s.id}`}
-                                        className="group inline-flex min-h-8 items-center gap-2 rounded-chip border border-line px-2 text-micro font-medium uppercase tracking-[0.12em] text-fg-2 hover:text-brand coarse:min-h-11 lg:border-0 lg:px-0"
+                                        className="group inline-flex min-h-8 items-center gap-2 whitespace-nowrap rounded-chip border border-line px-2 text-micro font-medium uppercase tracking-[0.12em] text-fg-2 hover:text-brand coarse:min-h-11 lg:border-0 lg:px-0"
                                     >
                                         <span aria-hidden="true" className="hidden text-fg-3 group-hover:text-brand lg:inline">
                                             {String(n + 1).padStart(2, '0')}
