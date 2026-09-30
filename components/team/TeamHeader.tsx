@@ -9,7 +9,7 @@ import { injuryCode, ordinal, shortDate } from '@/utils/team-stats/format';
 import { DIVISION_LABEL } from '@/utils/team-stats/teams';
 import type { GoalieLine, KpiSet, TeamHero } from '@/utils/team-stats/team-types';
 import type { TeamMeta, TeamStat } from '@/utils/team-stats/types';
-import { GOALIE_NAME, goalieState, goalieStatLine } from './goalie-line';
+import { GOALIE_NAME, goalieOut, goalieState, goalieStatLine, orderGoalies } from './goalie-line';
 import { LocalTime } from './LocalTime';
 
 interface TeamHeaderProps {
@@ -49,10 +49,7 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
     const divRank = standing?.divRank && gp > 0 ? standing.divRank : null;
     const prevTag = shortSeasonTag(prevLabel);
     const small = gp > 0 && gp < SMALL_SAMPLE;
-    const tandem = goalies
-        .map(g => ({ g, starts: g.current?.gs ?? 0, lastStarts: g.last?.gs ?? 0 }))
-        .sort((a, b) => b.starts - a.starts || b.lastStarts - a.lastStarts)
-        .map(t => t.g);
+    const tandem = orderGoalies(goalies);
     const division = DIVISION_LABEL[team.division];
 
     return (
@@ -66,7 +63,7 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                 <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-5">
                     <Crest tri={team.tri} size={96} priority className="h-16 w-16 md:h-24 md:w-24" />
                     <div className="min-w-0">
-                        <h1 id="team-title" className="truncate font-display text-[24px] font-bold uppercase leading-none tracking-[0.01em] text-fg-1 md:text-[34px]">
+                        <h1 id="team-title" className="text-balance break-words font-display text-[22px] font-bold uppercase leading-[1.05] tracking-[0.01em] text-fg-1 min-[400px]:text-[24px] md:text-[34px] md:leading-none">
                             {team.name}
                         </h1>
                         <p className="label mt-1.5">
@@ -95,40 +92,39 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                 <NextGame team={team} hero={hero} />
             </div>
 
-            {/* KPI tiles */}
-            <dl className="grid grid-cols-5 gap-1.5 px-card pb-card md:gap-2">
-                {KPIS.map(k => {
-                    const cur = kpis && gp > 0 ? kpis[k.key] : null;
-                    const prev = gp === 0 && prevKpis ? prevKpis[k.key] : null;
-                    const rank = cur != null ? (kpis?.ranked ? kpis.ranks[k.key] : null) : prev != null ? prevKpis!.ranks[k.key] : null;
-                    return (
-                        <div key={k.key} className={cn('tile min-w-0 bg-bg/40 px-2 py-1.5 md:px-3 md:py-2', small && 'border-dashed border-warn/45')}>
-                            <dt className="flex items-center gap-1 truncate text-micro font-medium uppercase tracking-[0.1em] text-fg-3 md:tracking-label">
-                                {k.label}
-                                {prev != null ? <SeasonTag className="hidden md:inline-flex">{prevTag}</SeasonTag> : null}
-                            </dt>
-                            <dd className={cn('font-display text-[17px] font-bold leading-6 tabular-nums md:text-[22px] md:leading-7', cur != null ? 'text-fg-1' : 'text-fg-3')}>
-                                {cur != null ? k.fmt(cur) : prev != null ? k.fmt(prev) : '—'}
-                                {prev != null ? <span className="sr-only"> ({prevLabel})</span> : null}
-                            </dd>
-                            <dd className="truncate text-micro tabular-nums text-fg-3">
-                                {small ? (
-                                    <span className="text-warn">
-                                        {gp} GP<span className="sr-only"> (small sample)</span>
-                                    </span>
-                                ) : rank ? (
-                                    <>
+            {/* KPI tiles. A tiny sample gets one muted "n GP" notch on the row, not a warning on every tile. */}
+            <div className="relative px-card pb-card">
+                {small ? (
+                    <span data-small-sample="" className="absolute right-card top-0 z-[1] -translate-y-1/2 rounded-[3px] border border-mute bg-bg px-1 text-micro font-medium leading-[14px] tabular-nums text-fg-3">
+                        {gp} GP<span className="sr-only"> so far, small sample</span>
+                    </span>
+                ) : null}
+                <dl className="grid grid-cols-5 gap-1.5 md:gap-2">
+                    {KPIS.map(k => {
+                        const cur = kpis && gp > 0 ? kpis[k.key] : null;
+                        const prev = gp === 0 && prevKpis ? prevKpis[k.key] : null;
+                        const rank = cur != null ? (kpis?.ranked ? kpis.ranks[k.key] : null) : prev != null ? prevKpis!.ranks[k.key] : null;
+                        return (
+                            <div key={k.key} className="tile min-w-0 bg-bg/40 px-2 py-1.5 md:px-3 md:py-2">
+                                <dt className="flex items-center gap-1 truncate text-micro font-medium uppercase tracking-[0.1em] text-fg-3 md:tracking-label">
+                                    {k.label}
+                                    {prev != null ? <SeasonTag className="hidden md:inline-flex">{prevTag}</SeasonTag> : null}
+                                </dt>
+                                <dd className={cn('font-display text-[17px] font-bold leading-6 tabular-nums md:text-[22px] md:leading-7', cur != null ? 'text-fg-1' : 'text-fg-3')}>
+                                    {cur != null ? k.fmt(cur) : prev != null ? k.fmt(prev) : '—'}
+                                    {prev != null ? <span className="sr-only"> ({prevLabel})</span> : null}
+                                </dd>
+                                {rank ? (
+                                    <dd className="truncate text-micro tabular-nums text-fg-3">
                                         #{rank}
                                         {prev != null ? <span className="md:hidden"> {prevTag}</span> : null}
-                                    </>
-                                ) : (
-                                    ' '
-                                )}
-                            </dd>
-                        </div>
-                    );
-                })}
-            </dl>
+                                    </dd>
+                                ) : null}
+                            </div>
+                        );
+                    })}
+                </dl>
+            </div>
 
             {/* goalies · injuries · moves */}
             <div className="grid gap-x-6 gap-y-3 border-t border-line p-card sm:grid-cols-2 lg:grid-cols-3">
@@ -142,7 +138,7 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                             return (
                                 <li key={g.id} className="min-w-0">
                                     <p className="flex items-baseline gap-2">
-                                        <span className={cn('truncate font-display text-[15px] font-semibold uppercase leading-5', state ? GOALIE_NAME[state] : 'text-fg-2')}>{g.name}</span>
+                                        <span className={cn('truncate font-display text-[15px] font-semibold uppercase leading-5', goalieOut(g) ? 'text-fg-3' : state ? GOALIE_NAME[state] : 'text-fg-2')}>{g.name}</span>
                                         {g.number != null ? <span className="text-micro text-fg-3">#{g.number}</span> : null}
                                         {g.injury ? <span className="text-micro font-bold text-neg">{injuryCode(g.injury.status)}</span> : null}
                                         {g.next ? <span className="sr-only"> next start {g.next.status}</span> : null}

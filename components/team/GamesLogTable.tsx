@@ -14,6 +14,8 @@ import { flags, gameGsax, resultLabel, resultTone, score, stat, totals } from '.
 
 interface GamesLogTableProps {
     games: GameRow[];
+    /** Summary tiles; off when they would repeat the hero (unfiltered current season). */
+    showSummary?: boolean;
     period: PeriodFilter;
     seasonLabel: string;
     teamColor: string;
@@ -111,7 +113,7 @@ function Flags({ g }: { g: GameRow }) {
  * md up a dense table with one sticky column, a header that follows the page,
  * sortable header buttons and a disclosure per row that loads the boxscore.
  */
-export default function GamesLogTable({ games, period, seasonLabel, teamColor, loadBoxscores }: GamesLogTableProps) {
+export default function GamesLogTable({ games, showSummary = true, period, seasonLabel, teamColor, loadBoxscores }: GamesLogTableProps) {
     const [sort, setSort] = React.useState<{ key: string; dir: SortDir } | null>(null);
     const [open, setOpen] = React.useState<Set<string>>(new Set());
     const [box, setBox] = React.useState<Boxscores | null>(null);
@@ -165,17 +167,19 @@ export default function GamesLogTable({ games, period, seasonLabel, teamColor, l
 
     return (
         <div className="flex flex-col gap-2">
-            <dl className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-                {summary.map(([k, v, sub]) => (
-                    <div key={k} className="tile min-w-0 px-2.5 py-1.5">
-                        <dt className="label">{k}</dt>
-                        <dd className="flex items-baseline gap-1.5 truncate font-display text-[18px] font-bold leading-6 tabular-nums text-fg-1">
-                            {v}
-                            {sub ? <span className="font-mono text-micro font-medium text-fg-3">{sub}</span> : null}
-                        </dd>
-                    </div>
-                ))}
-            </dl>
+            {showSummary ? (
+                <dl className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                    {summary.map(([k, v, sub]) => (
+                        <div key={k} className="tile min-w-0 px-2.5 py-1.5">
+                            <dt className="label">{k}</dt>
+                            <dd className="flex items-baseline gap-1.5 truncate font-display text-[18px] font-bold leading-6 tabular-nums text-fg-1">
+                                {v}
+                                {sub ? <span className="font-mono text-micro font-medium text-fg-3">{sub}</span> : null}
+                            </dd>
+                        </div>
+                    ))}
+                </dl>
+            ) : null}
 
             {games.length === 0 ? (
                 <p className="panel p-card text-center">
