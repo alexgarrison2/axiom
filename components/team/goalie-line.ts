@@ -1,5 +1,5 @@
 import { pct3 } from '@/utils/team-stats/format';
-import type { GoalieSeason } from '@/utils/team-stats/team-types';
+import type { GoalieLine, GoalieSeason } from '@/utils/team-stats/team-types';
 
 export type GoalieState = 'confirmed' | 'likely' | 'projected';
 
@@ -32,4 +32,23 @@ export function goalieStatLine(current: GoalieSeason | null, last: GoalieSeason 
     if (current && current.gp > 0) return { text: seasonLine(current), prior: false };
     if (last && last.gp > 0) return { text: seasonLine(last), prior: true };
     return null;
+}
+
+/** Out beyond day-to-day (IR / LTIR / suspended). */
+export function goalieOut(g: Pick<GoalieLine, 'injury'>): boolean {
+    return !!g.injury && !g.injury.status.toLowerCase().includes('day');
+}
+
+/**
+ * Depth-chart order: the named starter for the next game, then this
+ * season's games played, then the model rating; goalies who are out go last.
+ */
+export function orderGoalies<T extends GoalieLine>(goalies: T[]): T[] {
+    const key = (g: T) => [goalieOut(g) ? 1 : 0, g.next ? 0 : 1, -(g.current?.gp ?? 0), -(g.rating?.gsaxPerGame ?? -99), -(g.last?.gs ?? 0)];
+    return [...goalies].sort((a, b) => {
+        const ka = key(a);
+        const kb = key(b);
+        for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] - kb[i];
+        return a.name.localeCompare(b.name);
+    });
 }
