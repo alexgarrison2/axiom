@@ -1,1414 +1,308 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { PlayerBoxscoreRow, GameLog, TeamLineup, LineupPlayer } from '@/types';
-import { TEAM_COLORS } from '@/utils/team-colors';
-import { SEASON_ID, SEASON_GAMES } from '@/lib/season';
-
-/* ═══════════════════════════════════════════════════════
-   Types
-═══════════════════════════════════════════════════════ */
-
-interface PIPlayer {
-    name: string;
-    team: string;
-    position: string;
-    is_forward: boolean;
-    games_played: number;
-    ev_toi_per_game: number;
-    pp_toi_per_game: number;
-    pk_toi_per_game: number;
-    relative_xgf_pct: number;
-    onice_xgf_pct: number;
-    ev_xgf_per60: number;
-    ev_xga_per60: number;
-    ev_net_per60: number;
-    ind_xg_per60: number;
-    pp_xgf_per60: number;
-    pk_xga_per60: number;
-    penalty_diff_per60: number;
-    game_score: number;
-    // Legacy: xG above league-average at same position, per game
-    xgaa_per_game: number;
-    xgaa_ev_off: number;
-    xgaa_ev_def: number;
-    xgaa_pp: number;
-    xgaa_pk: number;
-    // New: position-weighted z-score impact system
-    impact_score: number;
-    impact_ev_off: number;
-    impact_ev_def: number;
-    impact_pp: number;
-    impact_pk: number;
-    total_sog: number;
-    total_shot_attempts: number;
-}
-
-type PIDict = Record<string, PIPlayer>;
-type PoolDict = Record<string, number[]>;
-
-interface PlayerBio {
-    age: number | null;
-    height: string | null;  // e.g. "6'1\""
-    weight: number | null;  // pounds
-    shoots: string | null;  // "L" | "R"
-}
-type BioDict = Record<string, PlayerBio>;
-
-interface ContractInfo {
-    cap_hit: number;        // annual cap hit in dollars
-    status: 'UFA' | 'RFA'; // free agency type
-    year: number | null;    // year they become UFA/RFA, null = this off-season
-}
-type ContractDict = Record<string, ContractInfo>;
-
-// Metadata for one team game (passed to availability strip)
-interface TeamGameSlot {
-    gid: string;
-    date: string;       // "2025-10-14"
-    gameNum: number;    // 1 = season opener
-    homeAway: string;   // "Home" | "Away"
-    opponent: string;   // common name e.g. "Jets"
-    result: string;     // "W", "W (OT)", "OTL", "L"
-    gf: number;
-    ga: number;
-}
-
-interface AggPlayer {
-    id: string;
-    pi: PIPlayer;
-    jerseyNum: number;
-    // Season totals (from boxscores for this team)
-    g: number;
-    a: number;
-    pts: number;
-    shots: number;
-    gp: number;
-    total_toi_sec: number;
-    // Derived
-    sh_pct: number;
-    sog_pg: number;
-    toi_pg_str: string;
-    gs_pg: number;
-    ixg_share_pct: number;   // player's EV iXG as % of team total EV iXG
-    played_toi: Map<string, number>; // game_id → toi seconds (>0 means played)
-    other_team_dates: Map<string, string>; // date → tricode (games played for another team)
-    bio: PlayerBio | null;
-    contract: ContractInfo | null;
-    isAcquired: boolean;     // true if player was acquired mid-season (pi.team ≠ current team)
-    acquiredFrom: string;    // old team tricode (e.g. 'VGK')
-}
-
-/* ═══════════════════════════════════════════════════════
-   Pure helpers
-═══════════════════════════════════════════════════════ */
-
-/**
- * Format a dollar cap hit for compact display.
- * $10,000,000 → "$10M"    |  $10,100,000 → "$10.1M"
- * $10,150,000 → "$10.15M" |  $10,125,000 → "$10.125M"
- * $975,000    → "$975K"   |  $975,652    → "$975.7K"
- */
-function fmtCapHit(dollars: number): string {
-    if (dollars >= 1_000_000) {
-        const m = dollars / 1_000_000;
-        // Check how many decimals we need
-        const thousands = dollars % 1_000_000;
-        if (thousands === 0) return `$${Math.round(m)}M`;
-        const hundredK = thousands % 100_000;
-        if (hundredK === 0) return `$${m.toFixed(1)}M`;
-        const tenK = thousands % 10_000;
-        if (tenK === 0) return `$${m.toFixed(2)}M`;
-        return `$${m.toFixed(3)}M`;
-    }
-    if (dollars >= 1_000) {
-        const k = dollars / 1_000;
-        if (dollars % 1_000 === 0) return `$${Math.round(k)}K`;
-        return `$${k.toFixed(1)}K`;
-    }
-    return `$${dollars}`;
-}
-
-function parseToi(s: string): number {
-    if (!s) return 0;
-    const [m = '0', ss = '0'] = s.split(':');
-    return parseInt(m) * 60 + parseInt(ss);
-}
-
-function fmtToi(sec: number): string {
-    const m = Math.floor(sec / 60);
-    const s = Math.round(sec % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-function pctile(val: number, pool: number[], hiGood = true): number {
-    if (!pool.length) return 50;
-    const below = pool.filter(x => x < val).length;
-    const raw = (below / pool.length) * 100;
-    return hiGood ? raw : 100 - raw;
-}
-
-function pctColor(p: number): string {
-    // Red (#BD0000) → Grey (#D2D2D2) → Blue (#1084FE)
-    const t = Math.max(0, Math.min(100, p)) / 100;
-    let r, g, b;
-    if (t <= 0.5) {
-        const s = t * 2;
-        r = Math.round(189 + (210 - 189) * s);
-        g = Math.round(0 + (210 - 0) * s);
-        b = Math.round(0 + (210 - 0) * s);
-    } else {
-        const s = (t - 0.5) * 2;
-        r = Math.round(210 + (16 - 210) * s);
-        g = Math.round(210 + (132 - 210) * s);
-        b = Math.round(210 + (254 - 210) * s);
-    }
-    return `rgb(${r},${g},${b})`;
-}
-
-/* ═══════════════════════════════════════════════════════
-   Position accent colours
-═══════════════════════════════════════════════════════ */
-
-function posAccent(pos: string): { text: string; bg: string } {
-    switch (pos.toUpperCase()) {
-        case 'C': return { text: '#38bdf8', bg: 'rgba(56,189,248,0.13)' }; // sky
-        case 'LW': return { text: '#34d399', bg: 'rgba(52,211,153,0.13)' }; // emerald
-        case 'RW': return { text: '#fb923c', bg: 'rgba(251,146,60,0.13)' }; // orange
-        case 'D': return { text: '#a78bfa', bg: 'rgba(167,139,250,0.13)' }; // violet
-        default: return { text: '#94a3b8', bg: 'rgba(148,163,184,0.13)' };
-    }
-}
-
-/* ═══════════════════════════════════════════════════════
-   StatCell — clean top-border indicator style
-═══════════════════════════════════════════════════════ */
-
-function StatCell({ val, label, pct, blank, color }: {
-    val?: string; label?: string; pct?: number; blank?: boolean; color?: string;
-}) {
-    if (blank) return <div className="px-2 py-[5px]" />;
-    const c = color ?? pctColor(pct ?? 50);
-    return (
-        <div className="grid grid-cols-2 items-baseline px-2 py-[5px]">
-            <span className="text-right text-[13px] font-bold tabular-nums leading-none pr-1" style={{ color: c }}>
-                {val}
-            </span>
-            <span className="text-left text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-none whitespace-nowrap">
-                {label}
-            </span>
-        </div>
-    );
-}
-
-/* ═══════════════════════════════════════════════════════
-   AvailStrip — full-season availability indicator
-   • white  = player played
-   • orange = team played, player did not
-   • dark   = future game
-   Hover each bar for date / game# / opponent tooltip
-═══════════════════════════════════════════════════════ */
-
-function fmtShortDate(s: string): string {
-    // "2025-10-14" → "Oct 14"
-    const d = new Date(s + 'T12:00:00');
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-interface TooltipState {
-    slot: TeamGameSlot;
-    played: boolean;
-    otherTeam: string | null; // tricode if played for another team that day
-    x: number;
-    y: number;
-}
-
-function AvailTooltip({ tt }: { tt: TooltipState }) {
-    if (typeof document === 'undefined') return null;
-    const W = 190;
-    const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
-    const left = Math.max(8, Math.min(tt.x - W / 2, vw - W - 8));
-    const top = tt.y > 70 ? tt.y - 58 : tt.y + 14;
-    const loc = tt.slot.homeAway === 'Home' ? 'vs' : '@';
-    const resultColor = tt.slot.result.startsWith('W') ? '#4ade80'
-        : tt.slot.result === 'OTL' || tt.slot.result === 'SOL' ? '#fb923c'
-            : '#f87171';
-
-    return createPortal(
-        <div
-            style={{ position: 'fixed', left, top, width: W, zIndex: 9999, pointerEvents: 'none' }}
-            className="bg-zinc-950 border border-white/15 rounded-lg px-2.5 py-2 shadow-xl text-[11px] leading-snug"
-        >
-            <div className="flex items-center justify-between gap-2 mb-1">
-                <span className="text-zinc-400 font-mono font-medium">Game {tt.slot.gameNum}</span>
-                <span className="text-zinc-500">{fmtShortDate(tt.slot.date)}</span>
-            </div>
-            <div className="text-white font-semibold mb-1">
-                <span className="text-zinc-500 mr-1">{loc}</span>
-                {tt.slot.opponent}
-            </div>
-            <div className="flex items-center gap-1.5">
-                <span style={{ color: tt.played ? '#4ade80' : tt.otherTeam ? '#a78bfa' : '#fb923c' }}>
-                    {tt.played ? '✓ Played' : tt.otherTeam ? `⇄ ${tt.otherTeam}` : '✗ Missed'}
-                </span>
-                {tt.slot.result && (
-                    <>
-                        <span className="text-zinc-600">·</span>
-                        <span style={{ color: resultColor }}>{tt.slot.result}</span>
-                        <span className="text-zinc-400">{tt.slot.gf}–{tt.slot.ga}</span>
-                    </>
-                )}
-            </div>
-        </div>,
-        document.body
-    );
-}
-
-function AvailStrip({ teamGames, playedToi, otherTeamDates }: {
-    teamGames: TeamGameSlot[];
-    playedToi: Map<string, number>;
-    otherTeamDates: Map<string, string>; // date → tricode
-}) {
-    const [tt, setTt] = useState<TooltipState | null>(null);
-
-    // One slot per regular-season game: played games + future placeholders
-    const slots: (TeamGameSlot | null)[] = [
-        ...teamGames,
-        ...Array.from({ length: Math.max(0, SEASON_GAMES - teamGames.length) }, () => null),
-    ];
-
-    const half = Math.ceil(slots.length / 2);
-    const rows = [slots.slice(0, half), slots.slice(half)];
-
-    const barStyle = (slot: TeamGameSlot | null, played: boolean, otherTeam: string | null) => {
-        if (!slot) return { bg: '#27272a', op: 0.5 };
-        if (played) return { bg: '#d4d4d8', op: 0.88 };
-        if (otherTeam) return { bg: '#a78bfa', op: 0.75 }; // purple = active, just on another team
-        return { bg: '#fb923c', op: 0.70 };
-    };
-
-    return (
-        <div className="flex flex-col gap-[2px] w-full">
-            {rows.map((row, ri) => (
-                <div key={ri} style={{ display: 'flex', width: '100%', gap: 1 }}>
-                    {row.map((slot, ci) => {
-                        const played = slot ? (playedToi.get(slot.gid) ?? 0) > 0 : false;
-                        const otherTeam = (!played && slot) ? (otherTeamDates.get(slot.date) ?? null) : null;
-                        const { bg, op } = barStyle(slot, played, otherTeam);
-                        return (
-                            <div
-                                key={ci}
-                                style={{ flex: 1, height: 6, borderRadius: 2, backgroundColor: bg, opacity: op }}
-                                onMouseEnter={e => slot && setTt({ slot, played, otherTeam, x: e.clientX, y: e.clientY })}
-                                onMouseMove={e => slot && setTt(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null)}
-                                onMouseLeave={() => setTt(null)}
-                            />
-                        );
-                    })}
-                </div>
-            ))}
-            {tt && <AvailTooltip tt={tt} />}
-        </div>
-    );
-}
-
-/* ═══════════════════════════════════════════════════════
-   Ordinal suffix helper (1st, 2nd, 3rd, 4th…)
-═══════════════════════════════════════════════════════ */
-
-function ordinalSuffix(n: number): string {
-    const abs = Math.abs(Math.round(n));
-    const mod100 = abs % 100;
-    if (mod100 >= 11 && mod100 <= 13) return 'th';
-    switch (abs % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-    }
-}
-
-/* ═══════════════════════════════════════════════════════
-   iXG% colour helper (player share of team EV iXG)
-   Thresholds loosely: top quarterbacks ~15%+, role players ~2-5%
-═══════════════════════════════════════════════════ */
-
-function ixgShareColor(pct: number): string {
-    return pctColor(pct);
-}
-
-/* TOI ratio colour  (grey → yellow → bright blue):
-   ratio = player_toi / team_total_toi (0.0 to ~0.45)
-   e.g. 36% for a top-line 15-min EV player on a ~42-min team
-   ~20% = average player, 35%+ = elite usage              */
-function toiRatioColor(ratio: number): string {
-    if (ratio >= 0.35) return '#38bdf8'; // sky-400  (elite usage, top line)
-    if (ratio >= 0.25) return '#60a5fa'; // blue-400 (2nd-line calibre)
-    if (ratio >= 0.15) return '#fbbf24'; // amber-400 (avg / 3rd line)
-    if (ratio >= 0.08) return '#d97706'; // amber-600 (limited role)
-    return '#52525b';                    // zinc-600  (rarely plays)
-}
-
-/* ═══════════════════════════════════════════════════════
-   StubSkaterCard — shown for lineup players with no piData yet
-═══════════════════════════════════════════════════════ */
-
-// Map DailyFaceoff position codes → MoneyPuck-style display position
-function dfoPosToPiPos(pos: string): string {
-    const p = pos.toLowerCase();
-    if (p === 'lw' || p === 'l') return 'L';
-    if (p === 'rw' || p === 'r') return 'R';
-    if (p === 'c') return 'C';
-    return 'D'; // ld, rd, d
-}
-
-function StubSkaterCard({ name, pos, jerseyNum, team }: {
-    name: string;
-    pos: string;
-    jerseyNum: number;
-    team: string;
-}) {
-    const piPos = dfoPosToPiPos(pos);
-    const posC = posAccent(piPos);
-    const lastName = name.split(' ').at(-1) ?? name;
-    void lastName;
-
-    return (
-        <div
-            className="flex flex-col rounded-xl overflow-hidden border border-white/[0.04] opacity-50"
-            style={{ background: '#111113' }}
-        >
-            {/* Top section */}
-            <div
-                className="relative flex flex-row items-stretch overflow-hidden shrink-0"
-                style={{ background: '#0d0d0f', minHeight: 92 }}
-            >
-                {/* Dim top-edge line */}
-                <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-20 bg-white/5" />
-
-                {/* Identity */}
-                <div className="flex flex-col justify-center gap-[5px] min-w-0 flex-1 z-10 pt-4 pb-2 px-3">
-                    <span className="text-[20px] font-black text-zinc-400 leading-none tracking-tight truncate">
-                        {name}
-                    </span>
-                    <div className="flex items-center gap-2">
-                        <span
-                            className="shrink-0 text-[8px] font-black px-[7px] py-[3px] rounded-md uppercase tracking-wider leading-none"
-                            style={{ color: posC.text, background: posC.bg, opacity: 0.6 }}
-                        >
-                            {piPos}
-                        </span>
-                        {jerseyNum > 0 && (
-                            <span className="text-[11px] font-mono text-zinc-600 leading-none">#{jerseyNum}</span>
-                        )}
-                    </div>
-                </div>
-
-                {/* Impact box — greyed out 0.00 */}
-                <div className="flex flex-col items-end justify-start gap-[4px] pr-2.5 pl-1 shrink-0 z-10 pt-2 pb-1">
-                    <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest leading-none">Impact</span>
-                    <div
-                        className="flex items-center justify-center rounded-md px-2 py-1"
-                        style={{ background: '#27272a', minWidth: 52 }}
-                    >
-                        <span className="text-[19px] font-black tabular-nums leading-none text-zinc-600">0.00</span>
-                    </div>
-                    <span className="text-[10px] font-bold leading-none tabular-nums text-zinc-700">—</span>
-                </div>
-            </div>
-
-            {/* Body */}
-            <div className="px-3 pt-1.5 pb-3 flex flex-col gap-2">
-                {/* Counting stats — all dashes */}
-                <div className="grid grid-cols-6 gap-0.5 text-center">
-                    {(['GP', 'G', 'A', 'Pts', 'SOG', 'TOI'] as string[]).map(l => (
-                        <div key={l} className="flex flex-col items-center gap-[2px]">
-                            <span className="text-[16px] font-bold text-zinc-700 tabular-nums leading-none">—</span>
-                            <span className="text-[7.5px] text-zinc-700 uppercase tracking-wider leading-none">{l}</span>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="h-px" style={{ background: 'rgba(255,255,255,0.03)' }} />
-
-                {/* "No data" notice */}
-                <div className="flex items-center justify-center py-2">
-                    <span className="text-[9px] font-medium text-zinc-700 uppercase tracking-widest">
-                        Awaiting MoneyPuck data
-                    </span>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-/* ═══════════════════════════════════════════════════════
-   SkaterCard
-═══════════════════════════════════════════════════════ */
-
-interface TeamToiAvgs {
-    ev: number; // seconds
-    pp: number; // seconds (among PP-qualified players only)
-    pk: number; // seconds (among PK-qualified players only)
-}
-
-interface SkaterCardProps {
-    player: AggPlayer;
-    teamGames: TeamGameSlot[];
-    pool: PoolDict;
-    teamToiAvgs: TeamToiAvgs;
-    /** Short suffix shown when two teammates share the same full name, e.g. "F" or "D" */
-    disambig?: string;
-}
-
-function SkaterCard({ player, teamGames, pool, teamToiAvgs, disambig }: SkaterCardProps) {
-    const { pi } = player;
-
-    // Percentile helper
-    const pr = (val: number, key: string, hi = true) =>
-        pctile(val, pool[key] ?? [], hi);
-
-    // Impact (using new z-score system)
-    const gsPct = pr(player.gs_pg, 'gs_pg');
-    const impC = pctColor(gsPct);
-    const gsSign = player.gs_pg >= 0 ? '+' : '';
-    const pRank = Math.round(gsPct);
-    const [impMouse, setImpMouse] = useState<{ x: number; y: number } | null>(null);
-
-    // Relative xGF
-    const relVal = pi.relative_xgf_pct * 100;
-    const relStr = (relVal >= 0 ? '+' : '') + relVal.toFixed(1);
-
-    // Position accent
-    const posC = posAccent(pi.position);
-
-    // Headshot — season-specific transparent-bg PNG from NHL CDN
-    const headshot = `https://assets.nhle.com/mugs/nhl/${SEASON_ID}/${pi.team}/${player.id}.png`;
-
-    // Advanced stat grid — new column order
-    // Col 1: xGF/60 | xGA/60 | xG%
-    // Col 2: PP xGF% (if qualified) | PK xGA% (if qualified) | Pen±
-    // Col 3: iXG/60 | Rel% | iXG%
-    const ppQualified = pi.pp_toi_per_game >= 60; // >= 1 min avg PP TOI
-    const pkQualified = pi.pk_toi_per_game >= 60; // >= 1 min avg PK TOI
-
-    const ppPct = ppQualified ? Math.round(pr(pi.pp_xgf_per60, 'pp_xgf_per60_qual')) : 0;
-    const pkPct = pkQualified ? Math.round(pr(pi.pk_xga_per60, 'pk_xga_per60_qual', false)) : 0;
-
-    // iXG%: this player's share of their team's total EV individual xG
-    // Percentile rank among all team skaters (higher = bigger contributor)
-    const ixgShareTeamArr = [player.ixg_share_pct]; // placeholder — color by value threshold
-    const ixgShareC = ixgShareColor(
-        player.ixg_share_pct >= 14 ? 95 :
-            player.ixg_share_pct >= 11 ? 85 :
-                player.ixg_share_pct >= 8 ? 75 :
-                    player.ixg_share_pct >= 5 ? 60 :
-                        player.ixg_share_pct >= 3 ? 48 :
-                            player.ixg_share_pct >= 1.5 ? 32 : 18
-    );
-    void ixgShareTeamArr; // suppress unused warning
-
-    return (
-        <div
-            className="flex flex-col rounded-xl overflow-hidden border border-white/[0.07] hover:border-white/[0.13] transition-all duration-150 group"
-            style={{ background: '#111113' }}
-        >
-            {/* ══════════════════════════════════════════════
-                SECTION 1 — headshot + identity + Impact
-            ══════════════════════════════════════════════ */}
-            <div
-                className="relative flex flex-row items-stretch overflow-hidden shrink-0"
-                style={{ background: '#0d0d0f', minHeight: 92 }}
-            >
-                {/* Coloured top-edge line — purple for acquired players, team colour otherwise */}
-                <div
-                    className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-20"
-                    style={{ background: `linear-gradient(90deg, ${player.isAcquired ? '#a78bfa' : (TEAM_COLORS[pi.team] ?? impC)}, transparent 70%)` }}
-                />
-
-                {/* ── LEFT: Headshot column ── */}
-                <div className="relative shrink-0 z-0" style={{ width: 90 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={headshot}
-                        alt=""
-                        aria-hidden
-                        loading="lazy"
-                        className="absolute bottom-0 left-0 h-[135%] w-auto select-none pointer-events-none"
-                        style={{ objectFit: 'contain', objectPosition: 'left bottom', opacity: 0.95 }}
-                        onError={e => { (e.target as HTMLImageElement).style.opacity = '0'; }}
-                    />
-                    {/* Bottom fade */}
-                    <div
-                        className="absolute inset-x-0 bottom-0 h-6 pointer-events-none"
-                        style={{ background: 'linear-gradient(to top, #0d0d0f 0%, transparent 100%)' }}
-                    />
-                </div>
-
-                {/* ── MIDDLE: Identity block — overlaps headshot by 23px ── */}
-                <div
-                    className="flex flex-col justify-center gap-[5px] min-w-0 flex-1 z-10 pt-4 pb-2 pr-2"
-                    style={{ marginLeft: -23 }}
-                >
-                    {/* Name (+ position disambiguator for same-name teammates) */}
-                    <div className="flex items-baseline gap-1.5 min-w-0">
-                        <span className="text-[20px] font-black text-white leading-none tracking-tight truncate drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                            {pi.name}
-                        </span>
-                        {disambig && (
-                            <span className="shrink-0 text-[10px] font-bold text-zinc-500 leading-none">
-                                ({disambig})
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Position badge + Jersey # + Bio (same row) */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span
-                            className="shrink-0 text-[8px] font-black px-[7px] py-[3px] rounded-md uppercase tracking-wider leading-none"
-                            style={{ color: posC.text, background: posC.bg }}
-                        >
-                            {pi.position}
-                        </span>
-                        <span className="text-[11px] font-mono text-zinc-400 leading-none">
-                            {player.jerseyNum > 0 ? `#${player.jerseyNum}` : ''}
-                        </span>
-                        {player.bio?.age !== null && player.bio?.age !== undefined && (
-                            <span className="text-[11px] font-medium leading-none tabular-nums" style={{ color: '#929292' }}>
-                                {player.bio.age}yo
-                            </span>
-                        )}
-                        {player.bio?.shoots && (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
-                                src={`/stick-${player.bio.shoots.toLowerCase()}.png`}
-                                alt={player.bio.shoots === 'L' ? 'Shoots Left' : 'Shoots Right'}
-                                width={12}
-                                height={12}
-                                className="shrink-0 select-none"
-                                style={{ opacity: 0.75 }}
-                                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                        )}
-                        {player.bio?.height && (
-                            <span className="text-[11px] font-medium leading-none" style={{ color: '#929292' }}>
-                                {player.bio.height}
-                            </span>
-                        )}
-                        {player.bio?.weight !== null && player.bio?.weight !== undefined && (
-                            <span className="text-[11px] font-medium leading-none tabular-nums" style={{ color: '#929292' }}>
-                                {player.bio.weight}lb
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* ── RIGHT: Impact box ── */}
-                <div
-                    className="flex flex-col items-end justify-start gap-[4px] pr-2.5 pl-1 shrink-0 z-10 pt-2 pb-1 cursor-default"
-                    onMouseEnter={(e) => setImpMouse({ x: e.clientX, y: e.clientY })}
-                    onMouseMove={(e) => setImpMouse({ x: e.clientX, y: e.clientY })}
-                    onMouseLeave={() => setImpMouse(null)}
-                >
-                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest leading-none">
-                        Impact
-                    </span>
-                    <div
-                        className="flex items-center justify-center rounded-md px-2 py-1"
-                        style={{ background: impC, minWidth: 52 }}
-                    >
-                        <span className="text-[19px] font-black tabular-nums leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
-                            {gsSign}{player.gs_pg.toFixed(2)}
-                        </span>
-                    </div>
-                    <span className="text-[10px] font-bold leading-none tabular-nums" style={{ color: impC }}>
-                        {pRank}{ordinalSuffix(pRank)}%
-                    </span>
-                </div>
-                {/* xGAA breakdown tooltip */}
-                {impMouse && typeof document !== 'undefined' && createPortal(
-                    (() => {
-                        const W = 200;
-                        const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
-                        const left = Math.max(8, Math.min(impMouse.x - W / 2, vw - W - 8));
-                        const top = impMouse.y > 80 ? impMouse.y - 112 : impMouse.y + 14;
-                        const fmt = (v: number) => (v >= 0 ? '+' : '') + v.toFixed(2);
-                        const rows: [string, number][] = [
-                            ['EV Off', pi.impact_ev_off ?? 0],
-                            ['EV Def', pi.impact_ev_def ?? 0],
-                            ...(pi.impact_pp ? [['PP', pi.impact_pp] as [string, number]] : []),
-                            ...(pi.impact_pk ? [['PK', pi.impact_pk] as [string, number]] : []),
-                        ];
-                        return (
-                            <div
-                                style={{ position: 'fixed', left, top, width: W, zIndex: 9999, pointerEvents: 'none' }}
-                                className="bg-zinc-950 border border-white/15 rounded-lg px-3 py-2 shadow-xl text-[11px]"
-                            >
-                                <div className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">
-                                    Impact z-scores
-                                </div>
-                                {rows.map(([label, val]) => (
-                                    <div key={label} className="flex justify-between gap-3 leading-snug">
-                                        <span className="text-zinc-400">{label}</span>
-                                        <span className="tabular-nums font-bold" style={{ color: val >= 0 ? '#4ade80' : '#f87171' }}>{fmt(val)}</span>
-                                    </div>
-                                ))}
-                                <div className="border-t border-white/10 mt-1.5 pt-1.5 flex justify-between gap-3">
-                                    <span className="text-zinc-300 font-bold">Total</span>
-                                    <span className="tabular-nums font-black" style={{ color: impC }}>{fmt(player.gs_pg)}</span>
-                                </div>
-                            </div>
-                        );
-                    })(),
-                    document.body
-                )}
-            </div>
-
-            {/* ══════════════════════════════════════════════
-                ACQUIRED BADGE — shown when player was traded to this team
-                and MoneyPuck hasn't updated their team yet.
-                Purple matches the availability strip's "other team" colour.
-            ══════════════════════════════════════════════ */}
-            {player.isAcquired && (
-                <div className="flex items-center gap-2 px-3 pt-1.5 pb-0">
-                    <span
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-[3px] text-[10px] font-black uppercase tracking-wider leading-none"
-                        style={{ background: 'rgba(167,139,250,0.18)', color: '#a78bfa' }}
-                    >
-                        ⇄ {player.acquiredFrom}
-                    </span>
-                    <span className="text-[9px] font-medium text-zinc-600 uppercase tracking-wider">
-                        Acquired · prior team stats
-                    </span>
-                </div>
-            )}
-
-            {/* ══════════════════════════════════════════════
-                CONTRACT INFO (cap hit + UFA/RFA badge)
-            ══════════════════════════════════════════════ */}
-            {player.contract && (
-                <div className="flex items-center gap-2 px-3 pt-1.5 pb-0">
-                    <span
-                        className="inline-flex items-center rounded-md px-2 py-[3px] text-[11px] font-bold leading-none"
-                        style={{ background: 'rgba(255,255,255,0.07)', color: '#e4e4e7' }}
-                    >
-                        {fmtCapHit(player.contract.cap_hit)}
-                    </span>
-                    <span
-                        className="inline-flex items-center rounded-md px-2 py-[3px] text-[10px] font-black uppercase tracking-wider leading-none"
-                        style={{
-                            background: player.contract.status === 'UFA'
-                                ? 'rgba(239,68,68,0.25)' : 'rgba(56,189,248,0.20)',
-                            color: player.contract.status === 'UFA'
-                                ? '#f87171' : '#7dd3fc',
-                        }}
-                    >
-                        {player.contract.year
-                            ? `${player.contract.year}`
-                            : player.contract.status}
-                    </span>
-                </div>
-            )}
-
-            {/* ══════════════════════════════════════════════
-                BODY
-            ══════════════════════════════════════════════ */}
-            <div className="px-3 pt-1.5 pb-3 flex flex-col gap-2">
-
-                {/* ── Standard counting stats ── */}
-                <div className="grid grid-cols-6 gap-0.5 text-center">
-                    {(
-                        [
-                            [player.gp, 'GP'],
-                            [player.g, 'G'],
-                            [player.a, 'A'],
-                            [player.pts, 'Pts'],
-                            [player.sog_pg.toFixed(1), 'SOG'],
-                            [player.toi_pg_str, 'TOI'],
-                        ] as [string | number, string][]
-                    ).map(([v, l]) => (
-                        <div key={l} className="flex flex-col items-center gap-[2px]">
-                            <span className="text-[16px] font-bold text-white tabular-nums leading-none">{v}</span>
-                            <span className="text-[7.5px] text-zinc-500 uppercase tracking-wider leading-none">{l}</span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* ── Divider ── */}
-                <div className="h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.05) 70%, transparent)' }} />
-
-                {/* ── Advanced stat grid (3 rows × 3 cols) ── */}
-                <div className="flex flex-col" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    {[
-                        [
-                            { val: pi.ev_xgf_per60.toFixed(2), label: 'xGF/60', pct: pr(pi.ev_xgf_per60, 'ev_xgf_per60') },
-                            ppQualified ? { val: `${ppPct}%`, label: 'PP xGF', pct: ppPct } : null,
-                            { val: pi.ind_xg_per60.toFixed(2), label: 'iXG/60', pct: pr(pi.ind_xg_per60, 'ind_xg_per60') },
-                        ],
-                        [
-                            { val: pi.ev_xga_per60.toFixed(2), label: 'xGA/60', pct: pr(pi.ev_xga_per60, 'ev_xga_per60', false) },
-                            pkQualified ? { val: `${pkPct}%`, label: 'PK xGA', pct: pkPct } : null,
-                            { val: relStr, label: 'Rel%', pct: pr(pi.relative_xgf_pct, 'relative_xgf_pct') },
-                        ],
-                        [
-                            { val: (pi.onice_xgf_pct * 100).toFixed(1) + '%', label: 'xG%', pct: pr(pi.onice_xgf_pct, 'onice_xgf_pct') },
-                            { val: (pi.penalty_diff_per60 >= 0 ? '+' : '') + pi.penalty_diff_per60.toFixed(2), label: 'Pen±', pct: pr(pi.penalty_diff_per60, 'penalty_diff_per60') },
-                            { val: player.ixg_share_pct.toFixed(1) + '%', label: 'iXG%', color: ixgShareC },
-                        ],
-                    ].map((row, ri) => (
-                        <div key={ri} className="grid grid-cols-3" style={ri > 0 ? { borderTop: '1px solid rgba(255,255,255,0.05)' } : undefined}>
-                            {row.map((cell, ci) => (
-                                <div key={ci} style={ci > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.05)' } : undefined}>
-                                    {cell ? <StatCell val={cell.val} label={cell.label} pct={cell.pct} color={(cell as { color?: string }).color} /> : <StatCell blank />}
-                                </div>
-                            ))}
-                        </div>
-                    ))}
-                </div>
-
-                {/* ── TOI breakdown ── */}
-                <div className="flex items-center justify-between px-1">
-                    {[
-                        { label: 'EV', toi: pi.ev_toi_per_game, avg: teamToiAvgs.ev },
-                        { label: 'PP', toi: pi.pp_toi_per_game, avg: teamToiAvgs.pp },
-                        { label: 'PK', toi: pi.pk_toi_per_game, avg: teamToiAvgs.pk },
-                    ].map(({ label, toi, avg }) => {
-                        const ratio = avg > 0 ? toi / avg : 0;
-                        const pct = Math.round(ratio * 100);
-                        return (
-                            <div key={label} className="flex items-baseline gap-1">
-                                <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest leading-none">{label}</span>
-                                <span className="text-[12px] font-mono font-bold text-zinc-200 leading-none tabular-nums">{fmtToi(toi)}</span>
-                                <span className="text-[9px] text-zinc-500 tabular-nums leading-none">{pct}%</span>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* ── Availability strip ── */}
-                <AvailStrip teamGames={teamGames} playedToi={player.played_toi} otherTeamDates={player.other_team_dates} />
-            </div>
-        </div>
-    );
-}
-
-/* ═══════════════════════════════════════════════════════
-   SkaterGrid — main exported component
-═══════════════════════════════════════════════════════ */
+import * as React from 'react';
+import { Segmented } from '@/components/ui/segmented';
+import { InfoTip } from '@/components/ui/info-tip';
+import { cn } from '@/lib/utils';
+import { SEASON_ID } from '@/lib/season';
+import { mmss, shortDate } from '@/utils/team-stats/format';
+import type { Pctl, SeasonLine, SkaterCardData } from '@/utils/team-stats/team-types';
 
 interface SkaterGridProps {
-    playerStats: PlayerBoxscoreRow[];
-    games: GameLog[];
-    teamAbbr: string;
-    lineup?: TeamLineup;
+    skaters: SkaterCardData[];
+    lineup: Record<string, string[]> | null;
+    team: string;
+    teamColor: string;
+    currentLabel: string;
+    prevLabel: string;
+    ratingsLabel: string;
+    currentSeasonGames: number;
+    prevSeasonGames: number;
 }
 
-export default function SkaterGrid({ playerStats, games, teamAbbr, lineup }: SkaterGridProps) {
-    const [piData, setPiData] = useState<PIDict | null>(null);
-    const [bioData, setBioData] = useState<BioDict | null>(null);
-    const [contractData, setContractData] = useState<ContractDict | null>(null);
-    const [posFilter, setPosFilter] = useState<'all' | 'f' | 'd'>('all');
-    const [sortBy, setSortBy] = useState<'impact' | 'pts' | 'toi' | 'lineup'>('lineup');
+type Which = 'current' | 'last';
+type SortBy = 'lineup' | 'impact' | 'pts' | 'toi';
 
-    // Load league-wide player impact data
-    useEffect(() => {
-        fetch('/data/player_impact.json')
-            .then(r => r.json())
-            .then(setPiData)
-            .catch(console.error);
-    }, []);
+const NEG: [number, number, number] = [255, 110, 128];
+const MID: [number, number, number] = [169, 180, 194];
+const POS: [number, number, number] = [92, 240, 160];
+function pctColor(p: number) {
+    const t = Math.max(0, Math.min(100, p)) / 100;
+    const [a, b, u] = t < 0.5 ? [NEG, MID, t * 2] : [MID, POS, (t - 0.5) * 2];
+    const c = a.map((x, i) => Math.round(x + (b[i] - x) * u));
+    return `rgb(${c[0]} ${c[1]} ${c[2]})`;
+}
 
-    // Load player bio data (age, height, weight, shoots)
-    useEffect(() => {
-        fetch('/data/player_bio.json')
-            .then(r => r.json())
-            .then(setBioData)
-            .catch(console.error);
-    }, []);
+const LINE_LABEL: Record<string, string> = { f1: 'Line 1', f2: 'Line 2', f3: 'Line 3', f4: 'Line 4', d1: 'Pair 1', d2: 'Pair 2', d3: 'Pair 3' };
+const POS_LABEL: Record<string, string> = { C: 'C', L: 'LW', R: 'RW', D: 'D' };
 
-    // Load contract data (cap hit, UFA/RFA status)
-    useEffect(() => {
-        fetch('/data/contracts.json')
-            .then(r => r.json())
-            .then(setContractData)
-            .catch(console.error);
-    }, []);
+/**
+ * Current-roster skater cards. Counting stats come from one season's NHL
+ * boxscores (This season / Last season toggle, always labelled); ratings come
+ * from the player model, labelled with the season they describe. Players new
+ * to the club are tagged and their ratings (earned elsewhere) are shown as —.
+ */
+export default function SkaterGrid(props: SkaterGridProps) {
+    const { skaters, lineup, currentLabel, prevLabel, ratingsLabel } = props;
+    const anyCurrent = skaters.some(s => (s.current?.gp ?? 0) > 0);
+    const [which, setWhich] = React.useState<Which>(anyCurrent ? 'current' : 'last');
+    const [sortBy, setSortBy] = React.useState<SortBy>(lineup ? 'lineup' : 'impact');
+    const [pos, setPos] = React.useState<'all' | 'f' | 'd'>('all');
+    const seasonGames = which === 'current' ? props.currentSeasonGames : props.prevSeasonGames;
+    const label = which === 'current' ? currentLabel : prevLabel;
 
-    // Chronologically ordered game slots (for the availability strip + tooltip)
-    const teamGames = useMemo<TeamGameSlot[]>(
-        () =>
-            [...games]
-                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                .map(g => ({
-                    gid: g.game_id,
-                    date: g.date,
-                    gameNum: g.game_number,
-                    homeAway: g.home_away,
-                    opponent: g.opponent,
-                    result: g.result,
-                    gf: g.gf,
-                    ga: g.ga,
-                })),
-        [games]
+    const line = (s: SkaterCardData) => (which === 'current' ? s.current : s.last);
+    const sorted = React.useMemo(() => {
+        const list = skaters.filter(s => pos === 'all' || (pos === 'd' ? s.pos === 'D' : s.pos !== 'D'));
+        const key = (s: SkaterCardData) => {
+            if (sortBy === 'pts') return line(s)?.pts ?? -1;
+            if (sortBy === 'toi') return line(s)?.toi ?? -1;
+            return s.isNew ? -99 : (s.impact?.score.v ?? -99);
+        };
+        return [...list].sort((a, b) => key(b) - key(a) || a.name.localeCompare(b.name));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [skaters, sortBy, pos, which]);
+
+    const byId = new Map(skaters.map(s => [s.id, s]));
+    const inLineup = new Set(lineup ? Object.values(lineup).flat() : []);
+
+    const card = (s: SkaterCardData, slot?: string) => (
+        <SkaterCard key={s.id} s={s} line={line(s)} seasonLabel={label} ratingsLabel={ratingsLabel} team={props.team} teamColor={props.teamColor} seasonGames={seasonGames} slot={slot} />
     );
-
-    // Aggregate per-player boxscore totals for this team
-    const boxMap = useMemo(() => {
-        const m = new Map<string, {
-            g: number; a: number; pts: number; shots: number;
-            toi_sec: number; gp: number; jerseyNum: number;
-            played_toi: Map<string, number>; // game_id → toi seconds
-            other_team_dates: Map<string, string>; // date → tricode
-        }>();
-        for (const row of playerStats) {
-            if (Number(row.is_goalie)) continue;
-            const id = String(row.player_id);
-            if (!m.has(id)) {
-                m.set(id, { g: 0, a: 0, pts: 0, shots: 0, toi_sec: 0, gp: 0, jerseyNum: 0, played_toi: new Map(), other_team_dates: new Map() });
-            }
-            const acc = m.get(id)!;
-            const toiSec = parseToi(row.toi);
-            const rowTeam = String(row.team ?? '').toUpperCase();
-
-            if (rowTeam === teamAbbr.toUpperCase()) {
-                // This team's game — count toward totals
-                acc.g += Number(row.goals) || 0;
-                acc.a += Number(row.assists) || 0;
-                acc.pts += Number(row.points) || 0;
-                acc.shots += Number(row.shots) || 0;
-                acc.toi_sec += toiSec;
-                acc.gp++;
-                acc.jerseyNum = Number(row.number) || acc.jerseyNum;
-                // Only count as "played" if TOI > 0
-                const gid = String(row.game_id);
-                acc.played_toi.set(gid, (acc.played_toi.get(gid) ?? 0) + toiSec);
-            } else if (toiSec > 0) {
-                // Different team — count toward season totals (combined stats for traded players)
-                acc.g += Number(row.goals) || 0;
-                acc.a += Number(row.assists) || 0;
-                acc.pts += Number(row.points) || 0;
-                acc.shots += Number(row.shots) || 0;
-                acc.toi_sec += toiSec;
-                acc.gp++;
-                // Record date so availability strip can show it
-                acc.other_team_dates.set(String(row.date), rowTeam);
-            }
-        }
-        return m;
-    }, [playerStats]);
-
-    // Build league-wide percentile pools, split by position group
-    const pools = useMemo(() => {
-        if (!piData) return null;
-
-        const fwds = Object.values(piData).filter(p => p.is_forward && p.games_played >= 5);
-        const defs = Object.values(piData).filter(p => !p.is_forward && p.position !== 'G' && p.games_played >= 5);
-
-        const nums = (arr: PIPlayer[], k: keyof PIPlayer) => arr.map(p => Number(p[k]));
-
-        const build = (arr: PIPlayer[]): PoolDict => ({
-            ev_xgf_per60: nums(arr, 'ev_xgf_per60'),
-            ev_xga_per60: nums(arr, 'ev_xga_per60'),
-            onice_xgf_pct: nums(arr, 'onice_xgf_pct'),
-            ind_xg_per60: nums(arr, 'ind_xg_per60'),
-            pp_xgf_per60: nums(arr, 'pp_xgf_per60'),
-            pk_xga_per60: nums(arr, 'pk_xga_per60'),
-            penalty_diff_per60: nums(arr, 'penalty_diff_per60'),
-            ev_net_per60: nums(arr, 'ev_net_per60'),
-            relative_xgf_pct: nums(arr, 'relative_xgf_pct'),
-            ev_toi_per_game: nums(arr, 'ev_toi_per_game'),
-            gs_pg: arr.map(p => p.impact_score ?? p.xgaa_per_game ?? 0),
-            // PP/PK percentiles among qualified players only (>= 60s avg TOI)
-            pp_xgf_per60_qual: arr.filter(p => p.pp_toi_per_game >= 60).map(p => p.pp_xgf_per60),
-            pk_xga_per60_qual: arr.filter(p => p.pk_toi_per_game >= 60).map(p => p.pk_xga_per60),
-        });
-
-        return { fwd: build(fwds), def: build(defs) };
-    }, [piData]);
-
-    // Enrich: join player_impact with boxscore aggregates
-    const allPlayers = useMemo<AggPlayer[]>(() => {
-        if (!piData) return [];
-        // bioData may still be loading — fall back to null gracefully
-
-        // First pass: compute team total EV iXG for the iXG% metric
-        // Only include players whose piData says they're on this team (current roster context)
-        const teamTotalIxg = Object.entries(piData)
-            .filter(([, pi]) => pi.team === teamAbbr && pi.position !== 'G' && pi.games_played >= 5)
-            .reduce((sum, [, pi]) => {
-                const playerIxg = pi.ind_xg_per60 * (pi.ev_toi_per_game / 3600) * pi.games_played;
-                return sum + playerIxg;
-            }, 0);
-
-        // Find players who have boxscore rows FOR this team but piData still shows old team.
-        // These are recently acquired/traded players that MoneyPuck hasn't updated yet.
-        const acquiredIds = new Set<string>();
-        for (const [id, bs] of boxMap) {
-            if (bs.gp > 0) {
-                const pi = piData[id];
-                if (pi && pi.team !== teamAbbr && pi.position !== 'G' && pi.games_played >= 5) {
-                    acquiredIds.add(id);
-                }
-            }
-        }
-
-        const result: AggPlayer[] = [];
-        for (const [id, pi] of Object.entries(piData)) {
-            const isAcquired = acquiredIds.has(id);
-            if (pi.team !== teamAbbr && !isAcquired) continue;
-            if (pi.position === 'G') continue;
-            if (pi.games_played < 5) continue;
-
-            const bs = boxMap.get(id);
-            const gp = bs?.gp ?? pi.games_played;
-            const g = bs?.g ?? 0;
-            const a = bs?.a ?? 0;
-            const pts = bs?.pts ?? 0;
-            const shots = bs?.shots ?? 0; // kept for sh_pct; note: CSV shots column is unreliable
-            // Total TOI seconds (for sort-by-TOI); fallback to player_impact sum
-            const total_toi_sec = bs
-                ? bs.toi_sec
-                : (pi.ev_toi_per_game + pi.pp_toi_per_game + pi.pk_toi_per_game) * pi.games_played;
-
-            // Use MoneyPuck season totals for SOG (player_stats CSV shots field is always 0)
-            const sog_season = pi.total_sog ?? 0;
-            const sog_pg = pi.games_played > 0 ? sog_season / pi.games_played : 0;
-
-            const sh_pct = sog_season > 0 ? (g / sog_season) * 100 : 0;
-            const toi_pg_str = gp > 0
-                ? fmtToi(total_toi_sec / gp)
-                : fmtToi(pi.ev_toi_per_game + pi.pp_toi_per_game + pi.pk_toi_per_game);
-            const gs_pg = pi.impact_score ?? pi.xgaa_per_game ?? 0;
-
-            // iXG%: this player's share of team total EV individual expected goals
-            const playerIxg = pi.ind_xg_per60 * (pi.ev_toi_per_game / 3600) * pi.games_played;
-            const ixg_share_pct = teamTotalIxg > 0 ? (playerIxg / teamTotalIxg) * 100 : 0;
-
-            result.push({
-                id, pi,
-                jerseyNum: bs?.jerseyNum ?? 0,
-                g, a, pts, shots, gp,
-                total_toi_sec, sh_pct, sog_pg,
-                toi_pg_str, gs_pg, ixg_share_pct,
-                played_toi: bs?.played_toi ?? new Map(),
-                other_team_dates: bs?.other_team_dates ?? new Map(),
-                bio: bioData?.[id] ?? null,
-                contract: contractData?.[id] ?? null,
-                isAcquired,
-                acquiredFrom: isAcquired ? pi.team : '',
-            });
-        }
-        return result;
-    }, [piData, boxMap, teamAbbr, bioData, contractData]);
-
-    // Apply filter + sort (cheap op — separate from heavy enrichment)
-    // In 'lineup' mode the flat grid is not shown, but we still compute for the fallback.
-    const players = useMemo(() => {
-        const filtered = allPlayers.filter(p => {
-            if (sortBy === 'lineup') return true; // no pos filter in lineup mode
-            if (posFilter === 'f') return p.pi.is_forward;
-            if (posFilter === 'd') return !p.pi.is_forward;
-            return true;
-        });
-        return filtered.sort((a, b) => {
-            if (sortBy === 'pts') return b.pts - a.pts;
-            if (sortBy === 'toi') return b.total_toi_sec - a.total_toi_sec;
-            return b.gs_pg - a.gs_pg; // 'impact' default (and 'lineup' fallback)
-        });
-    }, [allPlayers, posFilter, sortBy]);
-
-    // Team TOI totals per game — denominator for the player's TOI share pills.
-    // Formula: sum(player_toi × gp) / (teamGP × skaters_on_ice)
-    //   EV & PP: 5 skaters on ice  →  divide by 5
-    //   PK:      4 skaters on ice  →  divide by 4
-    // Result is the team's total per-game 5v5/PP/PK minutes (~42 min EV).
-    const teamToiAvgs = useMemo<TeamToiAvgs>(() => {
-        if (!piData) return { ev: 0, pp: 0, pk: 0 };
-        const team = Object.values(piData).filter(
-            p => p.team === teamAbbr && p.position !== 'G' && p.games_played >= 5
-        );
-        const teamGP = Math.max(...team.map(p => p.games_played), 1);
-        const wsum = (k: keyof PIPlayer) =>
-            team.reduce((s, p) => s + Number(p[k]) * p.games_played, 0);
-        return {
-            ev: wsum('ev_toi_per_game') / (teamGP * 5),
-            pp: wsum('pp_toi_per_game') / (teamGP * 5),
-            pk: wsum('pk_toi_per_game') / (teamGP * 4),
-        };
-    }, [piData, teamAbbr]);
-
-    // Build player lookup maps for lineup mode.
-    // Matching priority: NHL player ID → full name → position-aware last-name fallback.
-    // Normalization strips diacritics + lowercases to bridge gaps like
-    // "Bäck"→"Back" and "Alexander"→"Alex" (dailyfaceoff name shortening).
-    // The byLastFwd / byLastDef split handles rosters like VAN where two players
-    // share the same last name and even the same first name (both "Elias Pettersson")
-    // but play different positions.
-    const playerNameMaps = useMemo(() => {
-        const norm = (s: string) =>
-            s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-        const byFull = new Map<string, AggPlayer>();
-        // All players per normalized name — handles duplicate full names (e.g. two "Elias Pettersson")
-        const byFullAll = new Map<string, AggPlayer[]>();
-        const byLast = new Map<string, AggPlayer>(); // fallback — first wins
-        const byLastFwd = new Map<string, AggPlayer>(); // last name → first forward
-        const byLastDef = new Map<string, AggPlayer>(); // last name → first defender
-        const byId = new Map<number, AggPlayer>(); // NHL API player ID (synthetic lineup)
-        for (const p of allPlayers) {
-            const full = norm(p.pi.name);
-            byFull.set(full, p);
-            const existing = byFullAll.get(full) ?? [];
-            existing.push(p);
-            byFullAll.set(full, existing);
-            const last = full.split(' ').at(-1) ?? full;
-            if (!byLast.has(last)) byLast.set(last, p);
-            if (p.pi.is_forward) {
-                if (!byLastFwd.has(last)) byLastFwd.set(last, p);
-            } else {
-                if (!byLastDef.has(last)) byLastDef.set(last, p);
-            }
-            const numId = Number(p.id);
-            if (!isNaN(numId)) byId.set(numId, p);
-        }
-        return { byFull, byFullAll, byLast, byLastFwd, byLastDef, byId, norm };
-    }, [allPlayers]);
-
-    // Detect players on this team whose full name is shared by someone else.
-    // Used to show a "(F)" / "(D)" disambiguator on their card.
-    // Covers VAN (two "Elias Pettersson"), and any similar future cases.
-    const duplicateNames = useMemo(() => {
-        const counts = new Map<string, number>();
-        for (const p of allPlayers) counts.set(p.pi.name, (counts.get(p.pi.name) ?? 0) + 1);
-        return new Set(
-            Array.from(counts.entries()).filter(([, n]) => n > 1).map(([name]) => name)
-        );
-    }, [allPlayers]);
-
-    // When no real lineup is available (e.g. DailyFaceoff hasn't posted yet),
-    // build a synthetic TOI-based grouping so the F1/F2/F3/F4/D1/D2/D3 layout
-    // is always shown instead of falling back to a flat grid.
-    const syntheticLineup = useMemo<TeamLineup | null>(() => {
-        if (lineup || allPlayers.length === 0) return null;
-        const fwds = [...allPlayers]
-            .filter(p => p.pi.is_forward)
-            .sort((a, b) => b.pi.ev_toi_per_game - a.pi.ev_toi_per_game);
-        const defs = [...allPlayers]
-            .filter(p => !p.pi.is_forward)
-            .sort((a, b) => b.pi.ev_toi_per_game - a.pi.ev_toi_per_game);
-        const toLp = (p: AggPlayer): LineupPlayer => ({
-            id: Number(p.id),
-            name: p.pi.name,
-            number: p.jerseyNum || null,
-            pos: p.pi.position.toLowerCase(),
-        });
-        return {
-            f1: fwds.slice(0, 3).map(toLp),
-            f2: fwds.slice(3, 6).map(toLp),
-            f3: fwds.slice(6, 9).map(toLp),
-            f4: fwds.slice(9, 12).map(toLp),
-            d1: defs.slice(0, 2).map(toLp),
-            d2: defs.slice(2, 4).map(toLp),
-            d3: defs.slice(4, 6).map(toLp),
-        };
-    }, [allPlayers, lineup]);
-
-    /* ── Render ─────────────────────────────────────── */
-
-    if (!piData || !pools) {
-        return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="h-72 rounded-xl bg-zinc-900/50 animate-pulse" />
-                ))}
-            </div>
-        );
-    }
-
-    // Effective sort mode: fall back to 'impact' only if neither real nor synthetic lineup is available
-    const activeLineupData = lineup ?? syntheticLineup;
-    const effectiveSortBy = sortBy === 'lineup' && !activeLineupData ? 'impact' : sortBy;
 
     return (
         <div className="flex flex-col gap-4">
-
-            {/* ── Controls + Legend ── */}
             <div className="flex flex-wrap items-center gap-2">
+                <Segmented
+                    label="Counting stats season"
+                    value={which}
+                    onChange={setWhich}
+                    options={[
+                        { value: 'current', label: `This season (${currentLabel})` },
+                        { value: 'last', label: `Last season (${prevLabel})` },
+                    ]}
+                />
+                <Segmented
+                    label="Order"
+                    size="sm"
+                    value={sortBy}
+                    onChange={setSortBy}
+                    options={[
+                        ...(lineup ? [{ value: 'lineup' as const, label: 'Lineup' }] : []),
+                        { value: 'impact', label: 'Impact' },
+                        { value: 'pts', label: 'Points' },
+                        { value: 'toi', label: 'Ice time' },
+                    ]}
+                />
+                {sortBy !== 'lineup' ? (
+                    <Segmented
+                        label="Position"
+                        size="sm"
+                        value={pos}
+                        onChange={setPos}
+                        options={[
+                            { value: 'all', label: 'All' },
+                            { value: 'f', label: 'Forwards' },
+                            { value: 'd', label: 'Defence' },
+                        ]}
+                    />
+                ) : null}
+            </div>
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-fg-2">
+                <span>
+                    GP, goals, assists, shots and TOI: <span className="font-mono font-semibold text-fg-1">{label}</span> regular season (NHL boxscores).
+                </span>
+                <span className="inline-flex items-center gap-1">
+                    <span className="rounded-[3px] bg-fg-3/15 px-1 font-mono text-micro font-semibold text-fg-2">Ratings: {ratingsLabel}</span>
+                    <InfoTip term="player-impact" />
+                </span>
+                <span className="inline-flex items-center gap-2">
+                    <Swatch className="bg-fg-1/80" /> played <Swatch className="bg-warn/80" /> missed <Swatch className="bg-playoff/80" /> other team <Swatch className="bg-fg-3/30" /> not with team / to play
+                </span>
+            </p>
 
-                {/* Position filter — hidden in lineup mode */}
-                {effectiveSortBy !== 'lineup' && (
-                    <div className="flex items-center bg-zinc-900/80 border border-white/[0.08] rounded-lg p-0.5">
-                        {(['all', 'f', 'd'] as const).map(pos => (
-                            <button
-                                key={pos}
-                                onClick={() => setPosFilter(pos)}
-                                className={`px-3 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${posFilter === pos
-                                    ? 'bg-white/15 text-white'
-                                    : 'text-zinc-500 hover:text-zinc-300'
-                                    }`}
-                            >
-                                {pos === 'all' ? 'All' : pos === 'f' ? 'Fwd' : 'Def'}
-                            </button>
-                        ))}
-                    </div>
-                )}
+            {which === 'current' && !anyCurrent ? (
+                <p role="status" className="rounded-control border border-dashed border-line-strong px-4 py-3 text-body-sm text-fg-2">
+                    No {currentLabel} games in the boxscores yet: counting stats read 0.{' '}
+                    <button type="button" onClick={() => setWhich('last')} className="font-semibold text-brand hover:underline">
+                        Show {prevLabel}
+                    </button>
+                </p>
+            ) : null}
 
-                {/* Sort order */}
-                <div className="flex items-center bg-zinc-900/80 border border-white/[0.08] rounded-lg p-0.5">
-                    {([
-                        ['impact', 'Impact'],
-                        ['pts', 'Points'],
-                        ['toi', 'TOI'],
-                        ['lineup', 'Lineup'],
-                    ] as [string, string][]).map(([val, label]) => (
-                        <button
-                            key={val}
-                            onClick={() => setSortBy(val as typeof sortBy)}
-                            className={`px-3 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${sortBy === val
-                                ? 'bg-white/15 text-white'
-                                : 'text-zinc-500 hover:text-zinc-300'
-                                }`}
-                        >
-                            {label}
-                        </button>
-                    ))}
+            {sortBy === 'lineup' && lineup ? (
+                <div className="flex flex-col gap-5">
+                    {Object.entries(lineup).map(([slot, ids]) =>
+                        ids.length ? (
+                            <section key={slot} aria-label={LINE_LABEL[slot] ?? slot}>
+                                <h3 className="hud-label mb-2 flex items-center gap-2">
+                                    {LINE_LABEL[slot] ?? slot}
+                                    <span aria-hidden="true" className="h-px flex-1 bg-line" />
+                                </h3>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                    {ids.map(id => byId.get(id)).filter((s): s is SkaterCardData => !!s).map(s => card(s, slot))}
+                                </div>
+                            </section>
+                        ) : null,
+                    )}
+                    {skaters.some(s => !inLineup.has(s.id)) ? (
+                        <section aria-label="Rest of the roster">
+                            <h3 className="hud-label mb-2 flex items-center gap-2">
+                                Rest of the roster
+                                <span aria-hidden="true" className="h-px flex-1 bg-line" />
+                            </h3>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {sorted.filter(s => !inLineup.has(s.id)).map(s => card(s))}
+                            </div>
+                        </section>
+                    ) : null}
                 </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{sorted.map(s => card(s))}</div>
+            )}
+        </div>
+    );
+}
 
+function Swatch({ className }: { className: string }) {
+    return <span aria-hidden="true" className={cn('inline-block h-1.5 w-3 rounded-sm', className)} />;
+}
+
+function SkaterCard({
+    s, line, seasonLabel, ratingsLabel, team, teamColor, seasonGames, slot,
+}: {
+    s: SkaterCardData;
+    line: SeasonLine | null;
+    seasonLabel: string;
+    ratingsLabel: string;
+    team: string;
+    teamColor: string;
+    seasonGames: number;
+    slot?: string;
+}) {
+    const imp = s.isNew ? null : s.impact;
+    const [imgOk, setImgOk] = React.useState(true);
+    const stats: [string, React.ReactNode][] = [
+        ['GP', line?.gp ?? 0],
+        ['G', line?.g ?? 0],
+        ['A', line?.a ?? 0],
+        ['PTS', line?.pts ?? 0],
+        ['SOG', line?.sog ?? 0],
+        ['TOI', line && line.gp ? mmss(line.toi) : '—'],
+    ];
+    return (
+        <article aria-labelledby={`sk-${s.id}`} className="relative flex flex-col overflow-hidden rounded-card border border-line bg-surface-1 shadow-card">
+            <div aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5" style={{ background: `linear-gradient(90deg, ${s.isNew ? 'rgb(var(--playoff-rgb))' : teamColor}, transparent 75%)` }} />
+            <div className="flex items-stretch gap-2 px-3 pt-3">
+                <div className="relative -mb-1 h-16 w-14 shrink-0 overflow-hidden">
+                    {imgOk ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                            src={`https://assets.nhle.com/mugs/nhl/${SEASON_ID}/${team}/${s.id}.png`}
+                            alt=""
+                            loading="lazy"
+                            width={56}
+                            height={64}
+                            onError={() => setImgOk(false)}
+                            className="absolute bottom-0 left-0 h-[120%] w-auto max-w-none object-contain"
+                        />
+                    ) : (
+                        <span className="flex h-full w-full items-end justify-center text-title font-black text-fg-3">{s.number ?? ''}</span>
+                    )}
+                </div>
+                <div className="min-w-0 flex-1 py-0.5">
+                    <h4 id={`sk-${s.id}`} className="truncate text-title font-bold leading-tight text-fg-1">
+                        {s.name}
+                    </h4>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-fg-2">
+                        <span className="rounded-chip bg-surface-3 px-1.5 py-0.5 font-semibold text-fg-1">{POS_LABEL[s.pos] ?? s.pos}</span>
+                        {s.number != null ? <span className="tabular-nums">#{s.number}</span> : null}
+                        {s.age ? <span>{s.age}y</span> : null}
+                        {s.shoots ? <span>shoots {s.shoots}</span> : null}
+                        {s.isNew ? (
+                            <span className="rounded-chip bg-playoff/15 px-1.5 py-0.5 font-semibold text-playoff">
+                                New{s.from ? ` · from ${s.from}` : ''}
+                            </span>
+                        ) : null}
+                        {s.injury ? <span className="rounded-chip bg-neg/15 px-1.5 py-0.5 font-semibold text-neg">{s.injury.status}{s.injury.returnDate ? ` · ~${shortDate(s.injury.returnDate)}` : ''}</span> : null}
+                    </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end">
+                    <span className="text-micro text-fg-3">Impact</span>
+                    <span
+                        className="mt-0.5 min-w-[3.5rem] rounded-control px-2 py-1 text-center text-title font-black tabular-nums"
+                        style={imp ? { color: pctColor(imp.score.p), background: 'rgb(var(--surface-3-rgb))' } : undefined}
+                    >
+                        {imp ? `${imp.score.v >= 0 ? '+' : '−'}${Math.abs(imp.score.v).toFixed(2)}` : '—'}
+                    </span>
+                    <span className="mt-0.5 text-micro tabular-nums text-fg-3">{imp ? `${imp.score.p}th pct` : s.isNew ? 'not yet rated here' : 'unrated'}</span>
+                </div>
             </div>
 
-            {/* Availability strip legend (shown once, above grid) */}
-            <div className="flex items-center gap-4 text-[8px] text-zinc-500">
-                <span className="uppercase tracking-wider text-zinc-600 font-medium">Availability:</span>
-                {[
-                    { bg: '#d4d4d8', op: 0.88, label: 'Played' },
-                    { bg: '#fb923c', op: 0.7, label: 'Missed' },
-                    { bg: '#a78bfa', op: 0.75, label: 'Other team' },
-                    { bg: '#27272a', op: 0.5, label: 'Future game' },
-                ].map(({ bg, op, label }) => (
-                    <div key={label} className="flex items-center gap-1.5">
-                        <div
-                            className="rounded-sm"
-                            style={{ width: 14, height: 6, backgroundColor: bg, opacity: op }}
-                        />
-                        <span>{label}</span>
+            <dl className="mt-3 grid grid-cols-6 border-y border-line text-center">
+                {stats.map(([k, v]) => (
+                    <div key={k} className="py-2">
+                        <dt className="text-micro text-fg-3">{k}</dt>
+                        <dd className="text-body font-semibold tabular-nums text-fg-1">{v}</dd>
                     </div>
                 ))}
+            </dl>
+            <p className="px-3 pt-1.5 text-micro text-fg-3">
+                <span className="font-mono">{seasonLabel}</span> totals{slot ? ` · ${LINE_LABEL[slot]}` : ''}
+            </p>
+
+            <div className="grid grid-cols-3 gap-px px-3 pt-2">
+                <Metric label="xGF/60" m={imp?.xgf60} />
+                <Metric label="xGA/60" m={imp?.xga60} />
+                <Metric label="xG%" m={imp?.xgPct} fmt={v => `${(v * 100).toFixed(1)}%`} />
+                <Metric label="iXG/60" m={imp?.ixg60} />
+                <Metric label="Rel xG%" m={imp?.rel} fmt={v => `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(1)}`} />
+                <Metric label="Pen ±/60" m={imp?.pen} fmt={v => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)}`} />
             </div>
+            <p className="px-3 pb-1 pt-1 text-micro text-fg-3">
+                Ratings: <span className="font-mono">{ratingsLabel}</span>
+                {s.isNew && s.impact ? ` · with ${s.impact.team ?? 'previous team'}: ${s.impact.score.v >= 0 ? '+' : '−'}${Math.abs(s.impact.score.v).toFixed(2)}` : ''}
+                {imp ? ` · EV ${mmss(imp.evToi)} · PP ${mmss(imp.ppToi)} · PK ${mmss(imp.pkToi)}` : ''}
+            </p>
 
-            {/* ── LINEUP VIEW ── */}
-            {effectiveSortBy === 'lineup' && activeLineupData ? (() => {
-                const { byFull, byFullAll, byLast, byLastFwd, byLastDef, byId, norm } = playerNameMaps;
-                const isSynthetic = !lineup; // true when using TOI-estimated grouping
+            <Availability avail={line?.avail ?? ''} total={seasonGames} label={seasonLabel} />
+        </article>
+    );
+}
 
-                // Four-pass fuzzy lookup:
-                //  1. NHL player ID (works perfectly for synthetic lineups;
-                //     DailyFaceoff uses its own IDs so this is a no-op for real lineups)
-                //  2. Normalized full name — position-aware when multiple players share a
-                //     name (e.g. two "Elias Pettersson" on VAN: one C, one D)
-                //  3. Position-aware last-name fallback — prefers fwd/def pool matching
-                //     the slot position.
-                //  4. Fuzzy last-name fallback (edit distance ≤ 2) — handles data where
-                //     a special character was corrupted/dropped rather than transliterated
-                //     (e.g. "Lafrenire" in impact data instead of "Lafreniere").
-                const editDist = (a: string, b: string): number => {
-                    if (a === b) return 0;
-                    if (Math.abs(a.length - b.length) > 3) return 999;
-                    const m = a.length, n = b.length;
-                    const prev = Array.from({ length: n + 1 }, (_, j) => j);
-                    const curr = new Array<number>(n + 1);
-                    for (let i = 1; i <= m; i++) {
-                        curr[0] = i;
-                        for (let j = 1; j <= n; j++) {
-                            curr[j] = a[i - 1] === b[j - 1]
-                                ? prev[j - 1]
-                                : 1 + Math.min(prev[j], curr[j - 1], prev[j - 1]);
-                        }
-                        prev.splice(0, n + 1, ...curr);
-                    }
-                    return prev[n];
-                };
+function Metric({ label, m, fmt = v => v.toFixed(2) }: { label: string; m?: Pctl; fmt?: (v: number) => string }) {
+    return (
+        <div className="flex items-baseline justify-between gap-1 rounded-chip px-1.5 py-1">
+            <span className="text-micro text-fg-3">{label}</span>
+            <span className="text-caption font-semibold tabular-nums" style={m ? { color: pctColor(m.p) } : undefined}>
+                {m ? fmt(m.v) : <span className="text-fg-3">—</span>}
+            </span>
+        </div>
+    );
+}
 
-                const findPlayer = (lpName: string, lpId?: number | null, lpPos?: string): AggPlayer | undefined => {
-                    // 1. ID match
-                    if (lpId) {
-                        const hit = byId.get(lpId);
-                        if (hit) return hit;
-                    }
-                    const n = norm(lpName);
-                    const pos = lpPos?.toLowerCase() ?? '';
-                    const isFwd = ['lw', 'l', 'rw', 'r', 'c'].includes(pos);
-                    const isDef = ['ld', 'rd', 'd'].includes(pos);
-
-                    // 2. Full name match — position-aware for duplicate names
-                    const fullCandidates = byFullAll.get(n);
-                    if (fullCandidates?.length) {
-                        if (fullCandidates.length === 1) return fullCandidates[0];
-                        // Multiple players share the same normalized name — pick by position
-                        if (isFwd) {
-                            const hit = fullCandidates.find(p => p.pi.is_forward);
-                            if (hit) return hit;
-                        }
-                        if (isDef) {
-                            const hit = fullCandidates.find(p => !p.pi.is_forward);
-                            if (hit) return hit;
-                        }
-                        return fullCandidates[0];
-                    }
-
-                    // 3. Position-aware last-name fallback
-                    const last = n.split(' ').at(-1) ?? n;
-                    if (isFwd) {
-                        const hit = byLastFwd.get(last) ?? byLastDef.get(last) ?? byLast.get(last);
-                        if (hit) return hit;
-                    } else if (isDef) {
-                        const hit = byLastDef.get(last) ?? byLastFwd.get(last) ?? byLast.get(last);
-                        if (hit) return hit;
-                    } else {
-                        const hit = byLast.get(last);
-                        if (hit) return hit;
-                    }
-
-                    // 4. Fuzzy last-name fallback — catches data corruption like
-                    //    "Lafrenire" (impact) vs "Lafreniere" (lineup) where a special
-                    //    character was dropped instead of transliterated.
-                    const nFirst = n.split(' ')[0] ?? '';
-                    let bestHit: AggPlayer | undefined;
-                    let bestDist = 3; // max edit distance threshold
-                    for (const [key, player] of byFull) {
-                        const keyParts = key.split(' ');
-                        const keyLast = keyParts.at(-1) ?? key;
-                        const d = editDist(last, keyLast);
-                        if (d > 0 && d < bestDist) {
-                            // Guard against false positives with first-name similarity check
-                            const keyFirst = keyParts[0] ?? '';
-                            if (editDist(nFirst, keyFirst) <= 1) {
-                                bestDist = d;
-                                bestHit = player;
-                            }
-                        }
-                    }
-                    return bestHit;
-                };
-
-                // Track matched player IDs (by piData id) for Others exclusion
-                const matchedIds = new Set(
-                    ['f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3'].flatMap(k =>
-                        (activeLineupData[k] || []).map(lp => findPlayer(lp.name, lp.id, lp.pos)?.id).filter(Boolean)
-                    )
-                );
-
-                // Section label + cards row
-                const LineSection = ({ label, lineKey }: { label: string; lineKey: string }) => {
-                    const lineupPlayers = activeLineupData[lineKey] || [];
-                    if (lineupPlayers.length === 0) return null;
-                    return (
-                        <div>
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 shrink-0 flex items-center gap-1.5">
-                                    {label}
-                                    {isSynthetic && (
-                                        <span className="text-[8px] font-medium text-zinc-700 normal-case tracking-normal lowercase">(est.)</span>
-                                    )}
-                                </span>
-                                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                                {lineupPlayers.map(lp => {
-                                    const p = findPlayer(lp.name, lp.id, lp.pos);
-                                    if (p) {
-                                        return (
-                                            <SkaterCard
-                                                key={p.id}
-                                                player={p}
-                                                teamGames={teamGames}
-                                                pool={p.pi.is_forward ? pools.fwd : pools.def}
-                                                teamToiAvgs={teamToiAvgs}
-                                                disambig={duplicateNames.has(p.pi.name) ? (p.pi.is_forward ? 'F' : 'D') : undefined}
-                                            />
-                                        );
-                                    }
-                                    // Player not yet in piData — show greyed-out stub
-                                    return (
-                                        <StubSkaterCard
-                                            key={lp.name}
-                                            name={lp.name}
-                                            pos={lp.pos}
-                                            jerseyNum={lp.number ?? 0}
-                                            team={teamAbbr}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    );
-                };
-
-                const others = allPlayers.filter(p => !matchedIds.has(p.id));
-
-                return (
-                    <div className="flex flex-col gap-6">
-                        {/* Synthetic lineup notice */}
-                        {isSynthetic && (
-                            <p className="text-[9px] text-zinc-600 -mb-2">
-                                Lines estimated by EV TOI · Real lineup data unavailable
-                            </p>
+function Availability({ avail, total, label }: { avail: string; total: number; label: string }) {
+    const played = avail.split('').filter(c => c === '1').length;
+    const missed = avail.split('').filter(c => c === '0').length;
+    const other = avail.split('').filter(c => c === 'o').length;
+    const slots = [...avail.split(''), ...Array.from({ length: Math.max(0, total - avail.length) }, () => '-')];
+    return (
+        <div className="px-3 pb-3 pt-2">
+            <div aria-hidden="true" className="flex gap-px">
+                {slots.map((c, i) => (
+                    <span
+                        key={i}
+                        className={cn(
+                            'h-1.5 flex-1 rounded-[1px]',
+                            c === '1' ? 'bg-fg-1/80' : c === '0' ? 'bg-warn/80' : c === 'o' ? 'bg-playoff/80' : 'bg-fg-3/25',
                         )}
-                        {/* Forward lines */}
-                        {['f1', 'f2', 'f3', 'f4'].map((key, i) => (
-                            <LineSection key={key} label={`F${i + 1}`} lineKey={key} />
-                        ))}
-                        {/* Defence pairs */}
-                        {['d1', 'd2', 'd3'].map((key, i) => (
-                            <LineSection key={key} label={`D${i + 1}`} lineKey={key} />
-                        ))}
-                        {/* Others: qualified players not in any lineup group */}
-                        {others.length > 0 && (
-                            <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 shrink-0">
-                                        Others
-                                    </span>
-                                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                                    {others.map(p => (
-                                        <SkaterCard
-                                            key={p.id}
-                                            player={p}
-                                            teamGames={teamGames}
-                                            pool={p.pi.is_forward ? pools.fwd : pools.def}
-                                            teamToiAvgs={teamToiAvgs}
-                                            disambig={duplicateNames.has(p.pi.name) ? (p.pi.is_forward ? 'F' : 'D') : undefined}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                );
-            })() : (
-                /* ── FLAT GRID (Impact / Points / TOI sort) ── */
-                <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                        {players.map(p => (
-                            <SkaterCard
-                                key={p.id}
-                                player={p}
-                                teamGames={teamGames}
-                                pool={p.pi.is_forward ? pools.fwd : pools.def}
-                                teamToiAvgs={teamToiAvgs}
-                                disambig={duplicateNames.has(p.pi.name) ? (p.pi.is_forward ? 'F' : 'D') : undefined}
-                            />
-                        ))}
-                    </div>
-                    {players.length === 0 && (
-                        <div className="text-center text-zinc-500 font-mono text-sm py-16">
-                            No qualifying skaters found.
-                        </div>
-                    )}
-                </>
-            )}
-
+                    />
+                ))}
+            </div>
+            <p className="sr-only">
+                {label}: played {played} of the team&apos;s {avail.length} games{other ? `, ${other} for another team` : ''}
+                {missed ? `, missed ${missed}` : ''}.
+            </p>
         </div>
     );
 }

@@ -1,361 +1,72 @@
-"use client";
-
-import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import TeamChart from '@/components/TeamChart';
-import { useTeamData } from '@/hooks/useTeamData';
+import Link from 'next/link';
+import { notFound, permanentRedirect } from 'next/navigation';
 import TeamHeader from '@/components/team/TeamHeader';
-import FilterControls, { GameFilters } from '@/components/team/FilterControls';
-import GamesLogTable from '@/components/team/GamesLogTable';
-import SkaterGrid from '@/components/team/SkaterGrid';
-// import { TeamInfo } from '@/types';
-import { motion } from 'framer-motion';
-import { SEASON_GAMES } from '@/lib/season';
+import TeamPageClient from '@/components/team/TeamPageClient';
+import TeamSelector from '@/components/TeamSelector';
+import { SEASON_ID } from '@/lib/season';
+import { leagueStandings } from '@/utils/team-stats/server';
+import { buildTeamHero, buildTeamPayload } from '@/utils/team-stats/server-team';
+import { leaguesSummary } from '@/utils/team-stats/league-summary';
+import { prevSeasonId, seasonLabel, TEAM_SEASONS } from '@/utils/team-stats/season';
+import { isTeamTricode, TEAM_TRICODES } from '@/utils/team-stats/teams';
 
-export default function TeamDetailPage() {
-    const params = useParams();
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const pathname = usePathname();
-    const teamAbbr = (params.teamAbbr as string).toUpperCase();
+/*
+ * Team pages are generated at build time for the 32 clubs (every pipeline run
+ * redeploys). Other tricodes 404 with the site nav; lowercase ones redirect.
+ */
+export const dynamicParams = true;
 
-    const { data, loading, error } = useTeamData(teamAbbr);
+export function generateStaticParams() {
+    return TEAM_TRICODES.map(teamAbbr => ({ teamAbbr }));
+}
 
-    const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
+export default async function TeamPage({ params }: { params: Promise<{ teamAbbr: string }> }) {
+    const { teamAbbr } = await params;
+    const tri = teamAbbr.toUpperCase();
+    if (!isTeamTricode(tri)) notFound();
+    if (tri !== teamAbbr) permanentRedirect(`/teams/${tri}`);
 
-    // Initialize activeTab
-    const activeTab = searchParams.get('tab') as 'games' | 'charts' | 'skaters' | 'goalies' || 'games';
-
-    const handleTabChange = (val: string) => {
-        const newParams = new URLSearchParams(searchParams.toString());
-        newParams.set('tab', val);
-        router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
-    };
-
-    // Filters
-    const [filters, setFilters] = useState<GameFilters>({
-        goalie: 'All',
-        loc: 'All',
-        period: 'All',
-        last: 'All',
-        result: 'All',
-        ppg: 'All',
-        ppga: 'All',
-        scoringFirst: 'All',
-        opponent: 'All',
-        minGf: '', maxGf: '',
-        minGa: '', maxGa: '',
-        minSf: '', maxSf: '',
-        minSa: '', maxSa: '',
-        minHdf: '', maxHdf: '',
-        minHda: '', maxHda: '',
-        minPpOpps: '', maxPpOpps: '',
-        minPkOpps: '', maxPkOpps: '',
-        minSvPct: '', maxSvPct: '',
-        minShotDiff: '', maxShotDiff: '',
-        minXgDiff: '', maxXgDiff: '',
-        minCf: '', maxCf: '',
-        minCa: '', maxCa: '',
-        minCorsiDiff: '', maxCorsiDiff: '',
-    });
-
-    const [teamLogos, setTeamLogos] = useState<Record<string, string>>({});
-    const [allTeamsList, setAllTeamsList] = useState<{ TeamName: string; CommonName: string; TeamTricode: string; HexColor1: string; HexColor2: string; TeamLogoURL: string }[]>([]);
-
-    useEffect(() => {
-        const fetchTeams = async () => {
-            try {
-                const Papa = (await import('papaparse')).default;
-                const res = await fetch('/data/nhl_teams.csv');
-                const text = await res.text();
-                const parsed = Papa.parse(text, { header: true, skipEmptyLines: true }).data as Record<string, string>[];
-
-                // Map spaced CSV keys → PascalCase keys expected by TeamSelector
-                const mapped = parsed.map(t => ({
-                    TeamName: t['Team Name'] || '',
-                    CommonName: t['Common Name'] || '',
-                    TeamTricode: t['Team Tricode'] || '',
-                    HexColor1: t['Hex Color 1'] || '',
-                    HexColor2: t['Hex Color 2'] || '',
-                    TeamLogoURL: t['Team Logo URL'] || '',
-                }));
-                setAllTeamsList(mapped);
-
-                const logos: Record<string, string> = {};
-                mapped.forEach((t) => {
-                    if (t.CommonName && t.TeamTricode) logos[t.CommonName.trim()] = `/logos/${t.TeamTricode}.svg`;
-                });
-                setTeamLogos(logos);
-            } catch (e) { console.error(e); }
-        };
-        fetchTeams();
-    }, []);
-
-    // -- Derived Data --
-    const games = data?.games || [];
-    const teamInfo = data?.teamInfo;
-    const playerStats = data?.playerStats || [];
-
-    const isAllTeams = teamAbbr === 'ALL';
-
-    const uniqueGoalies = useMemo(() => {
-        if (isAllTeams) return [];
-        const set = new Set(games.map(g => g.starting_goalie).filter(Boolean));
-        return Array.from(set).sort();
-    }, [games, isAllTeams]);
-
-    const uniqueOpponents = useMemo(() => {
-        if (isAllTeams) return [];
-        const set = new Set(games.map(g => g.opponent).filter(Boolean));
-        return Array.from(set).sort();
-    }, [games, isAllTeams]);
-
-    const filteredGames = useMemo(() => {
-        let out = [...games];
-        if (filters.goalie !== 'All') out = out.filter(g => g.starting_goalie === filters.goalie);
-        if (filters.opponent !== 'All') out = out.filter(g => g.opponent === filters.opponent);
-        // Goals For/Against
-        if (filters.minGf !== '') { const v = parseInt(filters.minGf); if (!isNaN(v)) out = out.filter(g => g.gf >= v); }
-        if (filters.maxGf !== '') { const v = parseInt(filters.maxGf); if (!isNaN(v)) out = out.filter(g => g.gf <= v); }
-        if (filters.minGa !== '') { const v = parseInt(filters.minGa); if (!isNaN(v)) out = out.filter(g => g.ga >= v); }
-        if (filters.maxGa !== '') { const v = parseInt(filters.maxGa); if (!isNaN(v)) out = out.filter(g => g.ga <= v); }
-        if (filters.loc !== 'All') out = out.filter(g => filters.loc === 'Home' ? g.home_away === 'Home' : g.home_away === 'Away');
-        if (filters.result !== 'All') {
-            out = out.filter(g => {
-                if (filters.result === 'W') return g.result.startsWith('W');
-                if (filters.result === 'L') return g.result === 'L' || g.result === 'OTL' || g.result === 'SOL';
-                return true;
-            });
-        }
-        if (filters.ppg !== 'All') {
-            out = out.filter(g => filters.ppg === 'Yes' ? g.pp_goals >= 1 : g.pp_goals < 1);
-        }
-        if (filters.ppga !== 'All') {
-            out = out.filter(g => filters.ppga === 'Yes' ? g.pp_goals_against >= 1 : g.pp_goals_against < 1);
-        }
-        if (filters.scoringFirst !== 'All') {
-            out = out.filter(g => {
-                const raw = g.raw?.scored_first;
-                const scoredFirst = raw === '1' || raw === 1 || raw === true;
-                return filters.scoringFirst === 'Yes' ? scoredFirst : !scoredFirst;
-            });
-        }
-        // Shots For/Against
-        if (filters.minSf !== '') { const v = parseInt(filters.minSf); if (!isNaN(v)) out = out.filter(g => g.sf >= v); }
-        if (filters.maxSf !== '') { const v = parseInt(filters.maxSf); if (!isNaN(v)) out = out.filter(g => g.sf <= v); }
-        if (filters.minSa !== '') { const v = parseInt(filters.minSa); if (!isNaN(v)) out = out.filter(g => g.sa >= v); }
-        if (filters.maxSa !== '') { const v = parseInt(filters.maxSa); if (!isNaN(v)) out = out.filter(g => g.sa <= v); }
-        // Shot Differential
-        if (filters.minShotDiff !== '') { const v = parseInt(filters.minShotDiff); if (!isNaN(v)) out = out.filter(g => (g.sf - g.sa) >= v); }
-        if (filters.maxShotDiff !== '') { const v = parseInt(filters.maxShotDiff); if (!isNaN(v)) out = out.filter(g => (g.sf - g.sa) <= v); }
-        // High Danger For/Against
-        if (filters.minHdf !== '') { const v = parseInt(filters.minHdf); if (!isNaN(v)) out = out.filter(g => g.hdf >= v); }
-        if (filters.maxHdf !== '') { const v = parseInt(filters.maxHdf); if (!isNaN(v)) out = out.filter(g => g.hdf <= v); }
-        if (filters.minHda !== '') { const v = parseInt(filters.minHda); if (!isNaN(v)) out = out.filter(g => g.hda >= v); }
-        if (filters.maxHda !== '') { const v = parseInt(filters.maxHda); if (!isNaN(v)) out = out.filter(g => g.hda <= v); }
-        // Corsi For/Against
-        if (filters.minCf !== '') { const v = parseInt(filters.minCf); if (!isNaN(v)) out = out.filter(g => g.cf >= v); }
-        if (filters.maxCf !== '') { const v = parseInt(filters.maxCf); if (!isNaN(v)) out = out.filter(g => g.cf <= v); }
-        if (filters.minCa !== '') { const v = parseInt(filters.minCa); if (!isNaN(v)) out = out.filter(g => g.ca >= v); }
-        if (filters.maxCa !== '') { const v = parseInt(filters.maxCa); if (!isNaN(v)) out = out.filter(g => g.ca <= v); }
-        // Corsi Diff
-        if (filters.minCorsiDiff !== '') { const v = parseInt(filters.minCorsiDiff); if (!isNaN(v)) out = out.filter(g => (g.cf - g.ca) >= v); }
-        if (filters.maxCorsiDiff !== '') { const v = parseInt(filters.maxCorsiDiff); if (!isNaN(v)) out = out.filter(g => (g.cf - g.ca) <= v); }
-        // xG Differential
-        if (filters.minXgDiff !== '') { const v = parseFloat(filters.minXgDiff); if (!isNaN(v)) out = out.filter(g => (g.xgf - g.xga) >= v); }
-        if (filters.maxXgDiff !== '') { const v = parseFloat(filters.maxXgDiff); if (!isNaN(v)) out = out.filter(g => (g.xgf - g.xga) <= v); }
-        // PP / PK Opps
-        if (filters.minPpOpps !== '') { const v = parseInt(filters.minPpOpps); if (!isNaN(v)) out = out.filter(g => g.pp_opps >= v); }
-        if (filters.maxPpOpps !== '') { const v = parseInt(filters.maxPpOpps); if (!isNaN(v)) out = out.filter(g => g.pp_opps <= v); }
-        if (filters.minPkOpps !== '') { const v = parseInt(filters.minPkOpps); if (!isNaN(v)) out = out.filter(g => g.pk_opps >= v); }
-        if (filters.maxPkOpps !== '') { const v = parseInt(filters.maxPkOpps); if (!isNaN(v)) out = out.filter(g => g.pk_opps <= v); }
-        // Save %
-        if (filters.minSvPct !== '') { const v = parseFloat(filters.minSvPct); if (!isNaN(v)) out = out.filter(g => g.sv_pct >= v); }
-        if (filters.maxSvPct !== '') { const v = parseFloat(filters.maxSvPct); if (!isNaN(v)) out = out.filter(g => g.sv_pct <= v); }
-        return out;
-    }, [games, filters]);
-
-    const displayedGames = useMemo(() => {
-        let out = [...filteredGames];
-        if (filters.last === 'Reg') {
-            out = out.filter(g => g.game_number <= SEASON_GAMES);
-        } else if (filters.last === 'Playoffs') {
-            out = out.filter(g => g.game_number > SEASON_GAMES);
-        } else if (filters.last !== 'All') {
-            const n = parseInt(filters.last);
-            if (!isNaN(n)) out = out.slice(0, n);
-        }
-        return out;
-    }, [filteredGames, filters.last]);
-
-
-    // -- Skeleton Loader --
-    if (loading) return (
-        <main className="min-h-screen bg-black text-white font-sans pb-20 overflow-x-hidden">
-            {/* Shimmer keyframes */}
-            <style>{`
-                @keyframes shimmer {
-                    0% { background-position: -400px 0; }
-                    100% { background-position: 400px 0; }
-                }
-                .skeleton-shimmer {
-                    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
-                    background-size: 800px 100%;
-                    animation: shimmer 1.8s ease-in-out infinite;
-                }
-            `}</style>
-
-            {/* Skeleton Header - Team Logo & Name */}
-            <div className="flex flex-col items-center justify-center pt-16 pb-8 px-4">
-                <div className="w-24 h-24 rounded-full skeleton-shimmer mb-4" />
-                <div className="h-6 w-48 rounded-lg skeleton-shimmer mb-2" />
-                <div className="h-4 w-32 rounded-lg skeleton-shimmer" />
-            </div>
-
-            {/* Skeleton Tab Bar */}
-            <div className="w-full px-4 md:px-8 pt-4">
-                <div className="flex gap-2 border-b border-white/5 pb-2 mb-6">
-                    {['Games', 'Charts', 'Skaters', 'Goalies'].map((tab) => (
-                        <div key={tab} className="h-8 w-20 rounded-md skeleton-shimmer" />
-                    ))}
-                </div>
-
-                {/* Skeleton Filter Bar */}
-                <div className="flex gap-3 mb-6">
-                    {[80, 60, 70, 50].map((w, i) => (
-                        <div key={i} className="h-8 rounded-md skeleton-shimmer" style={{ width: `${w}px` }} />
-                    ))}
-                </div>
-
-                {/* Skeleton Table Header */}
-                <div className="h-10 w-full rounded-lg skeleton-shimmer mb-2" />
-
-                {/* Skeleton Table Rows */}
-                {Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-4 py-2 border-b border-white/5">
-                        <div className="w-8 h-8 rounded-full skeleton-shimmer shrink-0" />
-                        <div className="h-4 rounded skeleton-shimmer" style={{ width: `${60 + (i % 3) * 20}%` }} />
-                    </div>
-                ))}
-            </div>
-        </main>
-    );
-
-    // -- Error State --
-    if (error) return (
-        <main className="min-h-screen bg-black text-white font-sans flex flex-col items-center justify-center gap-6">
-            <div className="p-6 rounded-full bg-red-500/10 border border-red-500/20">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="15" y1="9" x2="9" y2="15" />
-                    <line x1="9" y1="9" x2="15" y2="15" />
-                </svg>
-            </div>
-            <div className="text-center">
-                <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-widest">Data Unavailable</h3>
-                <p className="text-neutral-500 font-mono text-sm mb-4">{error}</p>
-                <button
-                    onClick={() => window.location.reload()}
-                    className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-sm font-bold tracking-wider transition-all"
-                >
-                    RETRY
-                </button>
-            </div>
-        </main>
-    );
-
-    if (!teamInfo) return <div className="min-h-screen bg-black text-white p-10">Team Not Found</div>;
-
-    const primaryColor = teamInfo.HexColor1;
+    const payload = await buildTeamPayload(tri, SEASON_ID);
+    const hero = buildTeamHero(tri);
+    const prev = prevSeasonId(SEASON_ID);
+    const prevRows = leagueStandings(prev).rows;
+    const prevStanding = prevRows.find(r => r.tri === tri) ?? null;
+    const prevKpis = leaguesSummary(prevRows).kpis(tri);
 
     return (
-        <main className="min-h-screen bg-black text-white font-sans pb-20 overflow-x-hidden selection:bg-white/20">
+        <main className="mx-auto w-full max-w-[1800px] px-4 pb-tabbar pt-3 md:px-6 md:pb-12 md:pt-5">
+            <nav aria-label="Breadcrumb" className="mb-3 flex items-center justify-between gap-3">
+                <ol className="flex min-w-0 items-center gap-1.5 text-body-sm">
+                    <li>
+                        <Link href="/teams" className="inline-flex min-h-9 items-center rounded-control px-1 font-semibold text-fg-2 hover:text-fg-1 coarse:min-h-11">
+                            Teams
+                        </Link>
+                    </li>
+                    <li aria-hidden="true" className="text-fg-3">
+                        /
+                    </li>
+                    <li aria-current="page" className="truncate font-semibold text-fg-1">
+                        {payload.team.common}
+                    </li>
+                </ol>
+                <TeamSelector current={tri} />
+            </nav>
 
-            <TeamHeader teamInfo={teamInfo} allTeamsList={allTeamsList} />
+            <TeamHeader
+                team={payload.team}
+                seasonLabel={payload.seasonLabel}
+                standing={payload.standing}
+                kpis={payload.kpis}
+                prevLabel={seasonLabel(prev)}
+                prevStanding={prevStanding}
+                prevKpis={prevKpis}
+                hero={hero}
+                goalies={payload.goalies}
+            />
 
-            {/* Main Content Area */}
-            <motion.div
-                className="w-full px-4 md:px-8 relative z-10 pt-4"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-            >
-
-                <Tabs value={activeTab} onValueChange={(val) => handleTabChange(val)} className="w-full">
-                    {/* Tabs */}
-                    <div className="sticky top-0 bg-black/95 backdrop-blur-xl pt-4 pb-2 z-40 border-b border-border/10 mb-6">
-                        <TabsList className="bg-muted/20">
-                            <TabsTrigger value="games">Games</TabsTrigger>
-                            <TabsTrigger value="charts">Charts</TabsTrigger>
-                            <TabsTrigger value="skaters">Skaters</TabsTrigger>
-                            <TabsTrigger value="goalies">Goalies</TabsTrigger>
-                        </TabsList>
-                    </div>
-
-                    <TabsContent value="games" className="m-0 focus-visible:outline-none">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.4 }}
-                        >
-                            <FilterControls
-                                filters={filters}
-                                setFilters={setFilters}
-                                uniqueGoalies={uniqueGoalies}
-                                uniqueOpponents={uniqueOpponents}
-                            />
-                            <GamesLogTable
-                                games={displayedGames}
-                                filters={filters}
-                                expandedGameId={expandedGameId}
-                                setExpandedGameId={setExpandedGameId}
-                                teamAbbr={teamAbbr}
-                                playerStats={playerStats}
-                                teamLogos={teamLogos}
-                                primaryColor={primaryColor}
-                            />
-                        </motion.div>
-                    </TabsContent>
-
-                    <TabsContent value="charts" className="m-0 focus-visible:outline-none">
-                        <motion.div
-                            className="w-full"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            <TeamChart games={displayedGames} leagueGames={data?.leagueGames} primaryColor={primaryColor} teamName={teamInfo.TeamName} teamLogoUrl={teamInfo.TeamLogoURL} />
-                        </motion.div>
-                    </TabsContent>
-
-                    <TabsContent value="skaters" className="m-0 focus-visible:outline-none">
-                        <motion.div
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4 }}
-                        >
-                            <SkaterGrid
-                                playerStats={playerStats.filter(p => !p.is_goalie)}
-                                games={games}
-                                teamAbbr={teamAbbr}
-                                lineup={data?.lineup}
-                            />
-                        </motion.div>
-                    </TabsContent>
-
-                    <TabsContent value="goalies" className="m-0 focus-visible:outline-none">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5 }}
-                            className="p-8 text-center text-muted-foreground font-mono"
-                        >
-                            Goalie stats coming soon...
-                        </motion.div>
-                    </TabsContent>
-                </Tabs>
-            </motion.div>
+            <div className="mt-6">
+                <TeamPageClient initial={payload} seasons={[...TEAM_SEASONS]} />
+            </div>
         </main>
     );
 }

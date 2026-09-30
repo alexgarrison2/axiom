@@ -14,7 +14,7 @@ import { leagueStandings, loadPredictionRows, loadProjections, ratingsSeason, re
 import { teamMeta } from './teams';
 import type { GameRow } from './types';
 import type {
-    BoxRow, GoalieLine, GoalieSeason, NextGame, Pctl, SeasonLine, SkaterCardData, SkaterImpact, TeamHero, TeamPayload,
+    Boxscores, GoalieLine, GoalieSeason, NextGame, Pctl, SeasonLine, SkaterCardData, SkaterImpact, TeamHero, TeamPayload,
 } from './team-types';
 
 const PUBLIC_DATA = path.join(process.cwd(), 'public', 'data');
@@ -192,7 +192,12 @@ function seasonLine(pid: string, rows: PlayerRow[], teamGames: GameRow[], tri: s
         else otherDates.add(String(r.date).slice(0, 10));
     }
     const regular = teamGames.filter(x => x.type === 2).slice().reverse();
-    const avail = regular.map(x => (withTeam.has(x.id) ? '1' : otherDates.has(x.date) ? 'o' : '0')).join('');
+    const marks: string[] = regular.map(x => (withTeam.has(x.id) ? '1' : otherDates.has(x.date) ? 'o' : '0'));
+    // Before a player's first game here he was not with the team (signing,
+    // call-up, trade): mark those games '-' rather than "missed".
+    const first = marks.indexOf('1');
+    for (let i = 0; i < (first < 0 ? marks.length : first); i++) if (marks[i] === '0') marks[i] = '-';
+    const avail = marks.join('');
     return { gp: mine.length, g, a, pts, sog, toi: mine.length ? Math.round(toi / mine.length) : 0, avail };
 }
 
@@ -482,7 +487,7 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
         .map(p => {
             const r = ratingByKey.get(goalieKey(p.name));
             const seasons = Object.keys(r?.games_by_season ?? {}).sort();
-            const label = r && (r.games_played ?? 0) > 0 ? seasonLabel(SEASON_ID) : seasons.length ? `${seasons[0]}–${seasons[seasons.length - 1].slice(-2)} blend` : 'prior seasons';
+            const label = r && (r.games_played ?? 0) > 0 ? seasonLabel(SEASON_ID) : seasons.length > 1 ? `${seasons[0]} to ${seasons[seasons.length - 1]}` : seasons[0] ?? 'prior seasons';
             const nextStatus = next?.goalie && goalieKey(next.goalie.name) === goalieKey(p.name) ? { date: next.date, status: next.goalie.status, opp: next.opp } : null;
             return {
                 id: p.id,
@@ -497,17 +502,18 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
             };
         });
 
-    let boxscores: Record<string, BoxRow[]> | undefined;
+    let boxscores: Boxscores | undefined;
     if (opts.boxscores) {
-        boxscores = {};
+        boxscores = { players: {}, games: {} };
         const rows = season === curSeason ? curRows : season === lastSeason ? lastRows : loadPlayerStats(season);
         for (const r of rows) {
             if (r.team !== tri) continue;
-            const gid = String(r.game_id);
-            (boxscores[gid] ??= []).push([
-                String(r.player_id), r.name, n(r.number), r.position, n(r.goals), n(r.assists), n(r.points), n(r.plus_minus),
-                r.toi, n(r.shots), n(r.hits), n(r.blocked_shots), n(r.pim), n(r.is_goalie) ? 1 : 0,
-                n(r.shots_against), n(r.saves), n(r.goals_against),
+            const pid = String(r.player_id);
+            boxscores.players[pid] ??= [r.name, n(r.number), r.position];
+            const goalie = n(r.is_goalie) ? 1 : 0;
+            if (goalie && toiSec(r.toi) === 0) continue;
+            (boxscores.games[String(r.game_id)] ??= []).push([
+                pid, n(r.goals), n(r.assists), n(r.points), n(r.plus_minus), r.toi, n(r.shots), goalie, n(r.shots_against), n(r.saves),
             ]);
         }
     }

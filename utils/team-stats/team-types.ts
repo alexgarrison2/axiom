@@ -10,7 +10,8 @@ export interface SeasonLine {
     toi: number;
     /**
      * One char per team regular-season game, oldest first:
-     * '1' played for this team, 'o' played for another team that day, '0' missed.
+     * '1' played for this team, 'o' played for another team that day,
+     * '0' missed, '-' not with the team yet.
      */
     avail: string;
 }
@@ -144,10 +145,16 @@ export interface TeamPayload {
     goalies: GoalieLine[];
     rosterSource: 'nhl' | 'fallback';
     ratingsSeasonLabel: string;
-    /** gameId → player rows (API payload only; omitted from the page). */
-    boxscores?: Record<string, BoxRow[]>;
+    /** Per-game player rows (API payload only; omitted from the page). */
+    boxscores?: Boxscores;
     generatedAt: string;
 }
 
-/** [player_id, name, number, pos, g, a, pts, plusMinus, toi, shots, hits, blocks, pim, isGoalie, sa, sv, ga] */
-export type BoxRow = [string, string, number, string, number, number, number, number, string, number, number, number, number, 0 | 1, number, number, number];
+/** [player_id, g, a, pts, plusMinus, toi, shots, isGoalie, shotsAgainst, saves] */
+export type BoxRow = [string, number, number, number, number, string, number, 0 | 1, number, number];
+
+export interface Boxscores {
+    /** player_id → [name, number, position] */
+    players: Record<string, [string, number, string]>;
+    games: Record<string, BoxRow[]>;
+}
