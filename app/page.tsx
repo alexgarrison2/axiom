@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getImplications, getPickSummaries, getPlayoffOdds, getPlayoffSeries, getPredictions } from '@/utils/data';
 import PredictionsViewer from '@/components/PredictionsViewer';
 import { defaultDate } from '@/lib/matchup/lifecycle';
+import { compactForClient } from '@/lib/matchup/parse';
 import { homeTitle } from '@/components/ui/slate-date';
 import { easternDate } from '@/lib/matchup/format';
 
@@ -23,9 +24,9 @@ export default async function Home() {
     const dates = [...new Set(predictions.map(p => p.date))].sort();
 
     return (
-        <main className="mx-auto w-full max-w-[1400px] px-4 pb-tabbar pt-3 md:px-6 md:pb-10 md:pt-4">
+        <main className="mx-auto w-full max-w-[1400px] px-4 pb-tabbar pt-3 md:px-6 md:pb-10">
             <PredictionsViewer
-                predictions={predictions}
+                predictions={predictions.map(compactForClient)}
                 picks={picks}
                 implications={implications}
                 playoffOdds={playoffOdds}

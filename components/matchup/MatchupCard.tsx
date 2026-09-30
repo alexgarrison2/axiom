@@ -7,7 +7,7 @@ import type { GameImplication } from '@/utils/implications';
 import { WinBar } from '@/components/ui/win-bar';
 import { clashSafePair } from '@/components/ui/team-color';
 import { cardAnchor, finalLabel, hasScore, phaseOf, type LiveGame } from '@/lib/matchup/lifecycle';
-import { hasPrediction, modelPair, onPriors } from '@/lib/matchup/edge';
+import { hasPrediction, modelPair } from '@/lib/matchup/edge';
 import { finalSentence } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
 import { StatusLine } from './StatusLine';
@@ -66,6 +66,7 @@ export function MatchupCard({ p, live, implication, picks, playoffOdds, favorite
     const favColor = fav ? (fav === a ? colors.away : colors.home) : null;
     const anchor = cardAnchor(p);
     const title = `${p.away.team.commonName} @ ${p.home.team.commonName}`;
+    const model = modelPair(p);
 
     const collapse = useCallback(() => {
         setOpen(false);
@@ -96,7 +97,7 @@ export function MatchupCard({ p, live, implication, picks, playoffOdds, favorite
                 ...(favColor && !highlighted ? { borderColor: `${favColor}99` } : {}),
             }}
         >
-            <div className="relative flex flex-col gap-3 px-4 pb-4 pt-3 cq-md:px-5">
+            <div className="relative flex flex-col gap-2.5 px-4 pb-3.5 pt-3 cq-md:gap-3 cq-md:px-5 cq-md:pb-4">
                 {/* Meta row */}
                 <div className="flex min-h-7 items-center justify-between gap-2">
                     <StatusLine p={p} phase={phase} live={live} />
@@ -133,7 +134,7 @@ export function MatchupCard({ p, live, implication, picks, playoffOdds, favorite
                                 <span className={cn(phase === 'final' && live.home.score < live.away.score && 'text-fg-3')}>{live.home.score}</span>
                             </span>
                         ) : (
-                            <span aria-hidden="true" className="font-mono text-caption font-semibold text-fg-3">
+                            <span aria-hidden="true" className="text-body font-semibold text-fg-3">
                                 @
                             </span>
                         )}
@@ -145,9 +146,9 @@ export function MatchupCard({ p, live, implication, picks, playoffOdds, favorite
                 {finalText ? <p className="-mt-1 text-center text-body-sm font-semibold text-fg-1">{finalText}</p> : null}
 
                 {/* Win probability */}
-                {hasPrediction(p) ? (
+                {model ? (
                     <div className={cn(started && 'opacity-50 saturate-50')}>
-                        <WinBar away={a} home={h} pAway={(p.away.winPct ?? 50) / 100} awayColor={colors.away} homeColor={colors.home} size={started ? 'sm' : 'md'} />
+                        <WinBar away={a} home={h} pAway={model.away / 100} awayColor={colors.away} homeColor={colors.home} size={started ? 'sm' : 'md'} />
                     </div>
                 ) : null}
 
@@ -156,12 +157,6 @@ export function MatchupCard({ p, live, implication, picks, playoffOdds, favorite
                 ) : (
                     <>
                         <ProjectionRow p={p} />
-                        {hasPrediction(p) && onPriors(p) ? (
-                            <p className="-mt-1 flex items-center gap-1.5 text-caption text-fg-2" title="Either team has fewer than 10 games: the model still leans on preseason ratings and gives the market more weight.">
-                                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full border border-warn" />
-                                Early season · model on priors
-                            </p>
-                        ) : null}
                         {!hasPrediction(p) ? <p className="text-caption text-fg-2">No prediction for this game yet.</p> : null}
                     </>
                 )}

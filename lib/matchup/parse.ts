@@ -128,8 +128,8 @@ export function parseRow(row: RawRow, tvNetwork?: string | null): Prediction | n
     const status = (str(row.prediction_status) ?? 'pregame') as PredictionStatus;
     const bs = str(row.bet_side);
     const breakdown = json<WpFactor[]>(row.home_wp_breakdown, []).filter(
-        f => f && typeof f.label === 'string' && Number.isFinite(Number(f.wp_delta_pts)),
-    ).map(f => ({ factor: String(f.factor), label: f.label, wp_delta_pts: Number(f.wp_delta_pts) }));
+        f => f && typeof f.factor === 'string' && Number.isFinite(Number(f.wp_delta_pts)),
+    ).map(f => ({ factor: String(f.factor), label: typeof f.label === 'string' ? f.label : undefined, wp_delta_pts: Number(f.wp_delta_pts) }));
 
     return {
         id,
@@ -188,4 +188,20 @@ export function recordFromRecent(gp: number, games: RecentGame[]): string | null
         else l++;
     }
     return `${w}-${l}-${o}`;
+}
+
+const KNOWN_FACTORS = new Set(['home_ice', 'strength_5v5', 'special_teams', 'goaltending', 'rest', 'lineup', 'market']);
+
+/**
+ * Shrink a Prediction for the page payload: drop null / false / empty
+ * fields (the client reads them as absent) and the labels of factors the
+ * waterfall already names. Keeps the home HTML inside its 40KB gzip budget
+ * on a full two-day slate.
+ */
+export function compactForClient(p: Prediction): Prediction {
+    const slim = {
+        ...p,
+        breakdown: p.breakdown.map(f => (KNOWN_FACTORS.has(f.factor) ? { factor: f.factor, wp_delta_pts: f.wp_delta_pts } : f)),
+    };
+    return JSON.parse(JSON.stringify(slim, (_k, v) => (v === null || v === false || v === '' ? undefined : v))) as Prediction;
 }

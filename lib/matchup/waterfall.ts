@@ -40,7 +40,7 @@ export function buildWaterfall(breakdown: WpFactor[], start = 50): Waterfall | n
     const steps: WaterfallStep[] = breakdown.map(f => {
         const from = run;
         run = run + f.wp_delta_pts;
-        return { factor: f.factor, label: LABELS[f.factor] ?? f.label, delta: f.wp_delta_pts, from, to: run };
+        return { factor: f.factor, label: LABELS[f.factor] ?? f.label ?? f.factor, delta: f.wp_delta_pts, from, to: run };
     });
     const values = [start, ...steps.map(s => s.to)];
     const lo = Math.min(...values);

@@ -109,7 +109,7 @@ export default function PredictionsViewer({ predictions, picks, implications, pl
     const headingDate = date ? weekdayDate(date) : weekdayDate(today);
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
             <PageHeading visuallyHidden title={`NHL predictions for ${headingDate}`} />
             <Suspense fallback={null}>
                 <DateParam onDate={fromUrl} />

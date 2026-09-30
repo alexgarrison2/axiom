@@ -6,6 +6,7 @@ import { GoaliesPanel } from '../../../components/matchup/GoaliesPanel';
 import type { LiveGame } from '../lifecycle';
 import type { Prediction } from '../../../types/prediction';
 import { byTeams, fixture, withOverrides } from './fixtures';
+import { compactForClient } from '../parse';
 
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
 
@@ -52,6 +53,15 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
         expect(t).toContain('Market');
         expect(t).not.toMatch(/\d(\.\d)?u\b/);
         expect(t).not.toContain('Edge');
+    });
+
+    it('renders the compacted page payload exactly like the full row', () => {
+        for (const p of [...opening, ...fixture('week3'), ...fixture('playoffs')]) {
+            const full = text(card(p));
+            cleanup();
+            expect(text(card(compactForClient(p)))).toBe(full);
+            cleanup();
+        }
     });
 
     it('shows "Season opener" for 0-GP teams', () => {

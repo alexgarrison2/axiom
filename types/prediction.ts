@@ -21,7 +21,8 @@ export interface TeamRef {
 
 export interface WpFactor {
     factor: string;
-    label: string;
+    /** Omitted in the page payload for factors the UI already names. */
+    label?: string;
     /** Win-probability points toward the HOME team. */
     wp_delta_pts: number;
 }
