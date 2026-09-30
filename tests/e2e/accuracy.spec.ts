@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { blockingAxeViolations, formatAxe, settle } from './quality';
 
 /**
  * /accuracy honesty rules (fix round 3, G3).
@@ -48,6 +49,69 @@ test.describe('/accuracy', () => {
         const brier = reportCard(page).locator('table tbody tr td:nth-child(4)');
         const texts = await brier.allTextContents();
         expect(texts.filter(t => t.trim() === '—')).toEqual([]);
+    });
+
+    test('opening night: a coin flip is NO LEAN and the record matches the slate chip (fix4 F4-1)', async ({ page }) => {
+        const history = JSON.parse(readFileSync(join(process.cwd(), 'data/prediction_history.json'), 'utf8')) as { date: string; homeWinProb: number; retro?: boolean }[];
+        test.skip(!history.some(h => h.date === '2026-09-29' && !h.retro && Math.abs(h.homeWinProb - 50) < 1), 'needs the opening-night coin flip');
+        await page.goto('/?date=2026-09-29');
+        const chip = page.getByText(/^Picks\s*\d+-\d+$/i).first();
+        await expect(chip).toBeVisible();
+        const slate = ((await chip.textContent()) ?? '').match(/(\d+-\d+)/)![1];
+        await page.goto('/accuracy');
+        const card = reportCard(page);
+        const picksRight = card.locator('div.panel').filter({ hasText: /^Picks right/i }).first();
+        await expect(picksRight).toContainText(slate);
+        if (curN === 3) {
+            expect(slate).toBe('1-1');
+            await expect(picksRight).toContainText('50.0%');
+        }
+        const picks = page.locator('section[aria-labelledby="every-pick"]');
+        const noLean = picks.getByTestId('no-lean');
+        await expect(noLean).toContainText(/No lean/i);
+        await expect(noLean).toContainText(/NYR 0\s*@\s*BOS 3/);
+        // NYR@BOS is not a ✓ row in the pick list.
+        await expect(picks.locator('li button[aria-expanded]').filter({ hasText: /NYR 0/ })).toHaveCount(0);
+    });
+
+    test('GATE CLOSED, INFO ONLY, LEGACY and NO LEAN open their /methodology entries by tap or keyboard (fix4 F4-2)', async ({ page }, info) => {
+        await page.goto('/accuracy');
+        await settle(page);
+        const targets: [RegExp, RegExp][] = [
+            [/^Gate (closed|open)/i, /\/methodology#edge$/],
+            [/^Info only/i, /\/methodology#term-disclaimer$/],
+            [/^LEGACY/, /\/methodology#term-legacy$/],
+            [/^No lean/i, /\/methodology#term-no-lean$/],
+            [/^Log loss/i, /\/methodology#term-log-loss$/],
+        ];
+        for (const [name, url] of targets) {
+            const link = page.getByRole('link', { name }).first();
+            if (!(await link.count())) continue;
+            const href = (await link.getAttribute('href')) ?? '';
+            expect(href).toMatch(url);
+            const box = (await link.boundingBox())!;
+            expect(box.height).toBeGreaterThanOrEqual(24);
+            if (info.project.name === 'mobile') await link.tap();
+            else {
+                await link.focus();
+                await page.keyboard.press('Enter');
+            }
+            await expect(page).toHaveURL(url);
+            await expect(page.locator(`[id="${href.split('#')[1]}"]`)).toBeInViewport();
+            await page.goBack();
+            await settle(page, 300);
+        }
+        // Visible copy stays terse: every link's visible text is 1-4 words.
+        const visible = await page.locator('main a[data-gloss]').evaluateAll(els =>
+            els.map(e => {
+                const c = e.cloneNode(true) as HTMLElement;
+                c.querySelectorAll('.sr-only').forEach(n => n.remove());
+                return (c.textContent ?? '').trim();
+            }),
+        );
+        for (const t of visible) expect(t.split(/\s+/).length, t).toBeLessThanOrEqual(4);
+        const axe = await blockingAxeViolations(page);
+        expect(axe, formatAxe(axe)).toEqual([]);
     });
 
     test('no layout shift when the picks load (desktop)', async ({ page }, info) => {

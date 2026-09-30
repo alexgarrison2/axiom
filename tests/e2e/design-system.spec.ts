@@ -29,6 +29,24 @@ test.describe('primitives (/ui-kit)', () => {
         expect(await axeSerious(page, 'main')).toEqual([]);
     });
 
+    test('hydrates without errors and names every props region uniquely (fix4 F4-9)', async ({ page, request }) => {
+        const problems: string[] = [];
+        page.on('pageerror', e => problems.push(`pageerror: ${e.message}`));
+        page.on('console', m => {
+            if (m.type() === 'error') problems.push(m.text());
+        });
+        // The server HTML carries no clock-dependent badge text, so it can never differ from the client's first render.
+        const html = await (await request.get('/ui-kit')).text();
+        expect(html).not.toMatch(/title="Updated \d/);
+        await page.goto('/ui-kit');
+        await page.waitForLoadState('networkidle').catch(() => undefined);
+        await expect(page.locator('#kit-dialog')).toContainText(/Updated 4m/i);
+        expect(problems).toEqual([]);
+        const labels = await page.locator('[role="region"][aria-label]').evaluateAll(els => els.map(e => e.getAttribute('aria-label')));
+        expect(labels).toContain('WinBar props');
+        expect(new Set(labels).size).toBe(labels.length);
+    });
+
     test('StatChip prior always shows its season tag', async ({ page }) => {
         await page.goto('/ui-kit');
         const prior = page.locator('#kit-chips [data-state="prior"]');

@@ -8,6 +8,7 @@ import { loadExcludedGames, loadGradedGames, tallySeason } from '@/components/ac
 import { reportLags } from '@/components/accuracy/report';
 import { tidyReason } from '@/components/accuracy/ledger-data';
 import { WinBar, WinBarLegend } from '@/components/ui/win-bar';
+import { HashScroll } from '@/components/ui/hash-scroll';
 import { SeasonTag, StatChip } from '@/components/ui/stat-chip';
 import { parseReport, type MarketBacktest, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
 
@@ -226,6 +227,7 @@ export default function MethodologyPage() {
 
     return (
         <main className="pb-tabbar">
+            <HashScroll />
             <div className="page py-5 md:py-7">
                 <h1 className="heading-page">Methodology</h1>
 

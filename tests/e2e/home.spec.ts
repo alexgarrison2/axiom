@@ -299,6 +299,107 @@ test.describe('home slate', () => {
         await expect(trigger).toBeFocused();
     });
 
+    test('lean flag, B2B chip, FAIR and NO BET open the glossary; tapping them never toggles the card (fix4 F4-3)', async ({ page }, info) => {
+        const tap = async (l: ReturnType<Page['locator']>) => (info.project.name === 'mobile' ? l.tap() : l.click());
+        for (const date of ['', '2026-10-01']) {
+            await page.goto(date ? `/?date=${date}` : '/');
+            await settle(page, 300);
+            for (const [sel, href] of [
+                ['a[data-lean]', '/methodology#term-lean'],
+                ['a[data-chip="b2b"]', '/methodology#term-b2b'],
+            ] as const) {
+                const link = page.locator(`article ${sel}`).first();
+                if (!(await link.count())) continue;
+                await expect(link).toHaveAttribute('href', href);
+                expect(await link.evaluate(a => !!a.closest('button') || a.getAttribute('aria-hidden') === 'true')).toBe(false);
+                const box = (await link.boundingBox())!;
+                expect(box.height).toBeGreaterThanOrEqual(24);
+                // First with navigation blocked: the tap reaches the link, not the card toggle under it.
+                const card = link.locator('xpath=ancestor::article');
+                const toggle = card.locator('h2 button[aria-expanded]');
+                await link.evaluate(a => a.addEventListener('click', e => e.preventDefault(), { once: true }));
+                await tap(link);
+                await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+                await tap(link);
+                await expect(page).toHaveURL(new RegExp(`${href.replace(/[#/]/g, '\\$&')}$`));
+                await expect(page.locator(`[id="${href.split('#')[1]}"]`)).toBeInViewport();
+                await page.goBack();
+                await settle(page, 300);
+            }
+            // Tapping the bar still expands the card.
+            const first = page.locator('article[id]').first();
+            const bar = (await first.locator('[role="img"][aria-label*="win probability"]').first().boundingBox())!;
+            if (info.project.name === 'mobile') await page.touchscreen.tap(bar.x + bar.width / 2, bar.y + bar.height / 2);
+            else await page.mouse.click(bar.x + bar.width / 2, bar.y + bar.height / 2);
+            await expect(first.locator('h2 button[aria-expanded]')).toHaveAttribute('aria-expanded', 'true');
+        }
+        // Odds tab: FAIR → fair odds, NO BET → the edge section.
+        const card = page.locator('article').filter({ has: page.locator('[role="img"][aria-label*="Market:"]') }).first();
+        test.skip((await card.count()) === 0, 'no priced game');
+        const toggle = card.locator('h2 button[aria-expanded]');
+        if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+        await card.getByRole('radio', { name: 'Odds' }).click();
+        const fair = card.getByRole('link', { name: /^Fair/ });
+        await expect(fair).toHaveAttribute('href', '/methodology#term-fair-odds');
+        const noBet = card.getByRole('link', { name: /^No bet/i });
+        if (await noBet.count()) await expect(noBet).toHaveAttribute('href', '/methodology#edge');
+        await tap(fair);
+        await expect(page).toHaveURL(/\/methodology#term-fair-odds$/);
+        await expect(page.locator('#term-fair-odds')).toBeInViewport();
+    });
+
+    test('expanded cards never scroll sideways: 10 expand/collapse cycles on every tab (fix4 F4-5)', async ({ page }, info) => {
+        test.skip(info.project.name !== 'desktop', '1440px check');
+        test.setTimeout(180_000);
+        await page.goto('/');
+        await settle(page, 300);
+        const arts = page.locator('article[id]');
+        const n = await arts.count();
+        for (let i = 0; i < n; i++) {
+            const art = arts.nth(i);
+            const toggle = art.locator('h2 button[aria-expanded]');
+            for (let k = 0; k < 10; k++) {
+                await toggle.click();
+                await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+                for (const tab of ['Goalies', 'Lines', 'Odds', 'Why']) {
+                    const radio = art.getByRole('radio', { name: tab });
+                    if (!(await radio.count())) continue;
+                    await radio.click();
+                    await page.waitForTimeout(40);
+                    const m = await art.evaluate(el => ({ left: el.scrollLeft, sw: el.scrollWidth, cw: el.clientWidth }));
+                    expect(m.left, `${i} ${tab} #${k}`).toBe(0);
+                    expect(m.sw, `${i} ${tab} #${k}`).toBeLessThanOrEqual(m.cw + 1);
+                }
+                await toggle.click();
+                await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+                expect(await art.evaluate(el => el.scrollLeft)).toBe(0);
+            }
+        }
+    });
+
+    test('goalie names keep their surname next to IR chips (fix4 F4-6)', async ({ page }) => {
+        await page.goto('/?date=2026-10-01');
+        await settle(page, 300);
+        const games = page.locator('article[id]').filter({ hasText: /EDM|FLA/ });
+        const n = await games.count();
+        test.skip(n === 0, 'EDM / FLA not on 2026-10-01');
+        for (let i = 0; i < n; i++) {
+            const art = games.nth(i);
+            await art.locator('h2 button[aria-expanded]').click();
+            await art.getByRole('radio', { name: 'Goalies' }).click();
+            await page.waitForTimeout(400);
+            const names = await art.locator('[data-goalie-name]').evaluateAll(els =>
+                els.map(e => ({ text: (e.textContent ?? '').trim(), w: e.getBoundingClientRect().width, full: e.scrollWidth <= e.clientWidth + 1 })),
+            );
+            expect(names.length).toBeGreaterThan(0);
+            for (const nm of names) {
+                expect(nm.w, nm.text).toBeGreaterThanOrEqual(40);
+                // Either the whole surname fits, or at least 7 characters show before the ellipsis.
+                if (!nm.full) expect(nm.w, nm.text).toBeGreaterThanOrEqual(56);
+            }
+        }
+    });
+
     test('has no serious or critical axe violations, collapsed and expanded', async ({ page }) => {
         await page.goto('/');
         await settle(page);
