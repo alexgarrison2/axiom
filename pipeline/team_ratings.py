@@ -224,6 +224,17 @@ def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_fil
             'games_played': games_played
         }
         
+    # --- Roster changes since last season (C9 display: players added / lost) ---
+    if save_files:
+        try:
+            changes = roster_changes()
+        except Exception as e:  # network or data problem: ratings still ship
+            print(f"  [WARN] roster changes unavailable: {e}")
+            changes = {}
+        for team, ch in changes.items():
+            if team in team_ratings:
+                team_ratings[team]['roster_changes'] = ch
+
     # --- Goalie Ratings (C6): the game model's own goalie state ---
     goalie_ratings = compute_goalie_ratings(df)
     print(f"  Goalie ratings: {len(goalie_ratings)} goalies, "
@@ -259,6 +270,135 @@ def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_fil
             print("No games this season yet - team_stats_extended.json left unchanged")
 
     return team_ratings, goalie_ratings, league_xg_for, league_xg_5v5
+
+
+ROSTER_URL = 'https://api-web.nhle.com/v1/roster/{abbr}/{season_id}'
+ROSTER_MIN_GP_LOST = 10
+
+
+def _prev_player_stats():
+    """Last season's per-game skater rows (player_stats CSV, public/data or pipeline)."""
+    name = season_file('player_stats', PREV_START_YEAR)
+    for p in (os.path.join(PUBLIC_DATA_DIR, name), os.path.join(SCRIPT_DIR, name)):
+        if os.path.exists(p):
+            return pd.read_csv(p, low_memory=False)
+    return None
+
+
+def fetch_rosters(season_id, cache_dir=os.path.join(SCRIPT_DIR, 'cache'), max_age_h=20):
+    """{abbr: [{id, name, pos}]} from the NHL roster endpoint, cached for a day."""
+    import time
+    import requests
+    os.makedirs(cache_dir, exist_ok=True)
+    path = os.path.join(cache_dir, f'rosters_{season_id}.json')
+    if os.path.exists(path) and time.time() - os.path.getmtime(path) < max_age_h * 3600:
+        with open(path) as f:
+            return json.load(f)
+    teams = pd.read_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
+    out = {}
+    for abbr in teams['Team Tricode']:
+        r = requests.get(ROSTER_URL.format(abbr=abbr, season_id=season_id), timeout=20)
+        if r.status_code != 200:
+            continue
+        d = r.json()
+        out[abbr] = [{'id': int(p['id']),
+                      'name': f"{p['firstName']['default']} {p['lastName']['default']}",
+                      'pos': p.get('positionCode')}
+                     for grp in ('forwards', 'defensemen', 'goalies') for p in d.get(grp, [])]
+    if len(out) >= 30:
+        with open(path, 'w') as f:
+            json.dump(out, f)
+    return out
+
+
+PLAYER_URL = 'https://api-web.nhle.com/v1/player/{pid}/landing'
+
+
+def fetch_current_teams(ids, season_id, cache_dir=os.path.join(SCRIPT_DIR, 'cache'), max_age_h=20):
+    """{player_id: current team abbrev or None} from the player landing
+    endpoint (players on IR/LTIR are missing from the roster endpoint)."""
+    import time
+    import requests
+    path = os.path.join(cache_dir, f'current_teams_{season_id}.json')
+    cache = {}
+    if os.path.exists(path) and time.time() - os.path.getmtime(path) < max_age_h * 3600:
+        with open(path) as f:
+            cache = {int(k): v for k, v in json.load(f).items()}
+    for pid in ids:
+        if pid in cache:
+            continue
+        for attempt in range(4):
+            try:
+                r = requests.get(PLAYER_URL.format(pid=pid), timeout=20)
+            except Exception:
+                break
+            if r.status_code == 429:           # rate limited: back off, never cache a failure
+                time.sleep(2 * (attempt + 1))
+                continue
+            if r.status_code == 200:
+                d = r.json()
+                cache[pid] = d.get('currentTeamAbbrev') if d.get('isActive', True) else None
+            break
+        time.sleep(0.25)
+    os.makedirs(cache_dir, exist_ok=True)
+    with open(path, 'w') as f:
+        json.dump({str(k): v for k, v in cache.items()}, f)
+    return cache
+
+
+def roster_changes(rosters=None, prev=None, current_teams=None):
+    """{Common Name: {'season', 'added': [...], 'lost': [...]}} comparing each
+    team's current NHL roster with the skaters/goalies who played for it last
+    season.  Lost = 10+ GP there last season and now with another team
+    ('to': abbrev) or with none ('to': None: unsigned or retired); players
+    still under the team's control but off the active roster are not lost."""
+    from season import SEASON_ID
+    rosters = fetch_rosters(SEASON_ID) if rosters is None else rosters
+    prev = _prev_player_stats() if prev is None else prev
+    if not rosters or prev is None or prev.empty:
+        return {}
+    teams = pd.read_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
+    abbr_to_name = dict(zip(teams['Team Tricode'], teams['Common Name']))
+    prev = prev[prev['game_id'].astype(str).str[4:6] == '02'].copy()
+    prev['points'] = pd.to_numeric(prev['points'], errors='coerce').fillna(0)
+    by = prev.groupby(['player_id', 'team']).agg(gp=('game_id', 'nunique'), points=('points', 'sum'),
+                                                 last=('game_id', 'max'), name=('name', 'last'),
+                                                 pos=('position', 'last')).reset_index()
+    last_team = by.sort_values('last').groupby('player_id').tail(1).set_index('player_id')['team'].to_dict()
+    now_team = {p['id']: abbr for abbr, ps in rosters.items() for p in ps}
+    candidates = {int(pid) for pid, t in by[by['gp'] >= ROSTER_MIN_GP_LOST][['player_id', 'team']].values
+                  if int(pid) not in now_team}
+    cur = fetch_current_teams(sorted(candidates), SEASON_ID) if current_teams is None else current_teams
+    out = {}
+    for abbr, ps in rosters.items():
+        ids = {p['id'] for p in ps}
+        added = []
+        for p in ps:
+            if last_team.get(p['id']) == abbr:
+                continue
+            row = by[(by['player_id'] == p['id'])]
+            added.append({'id': p['id'], 'name': p['name'], 'pos': p['pos'],
+                          'from': last_team.get(p['id']),
+                          'prev_gp': int(row['gp'].sum()), 'prev_points': int(row['points'].sum())})
+        mine = by[(by['team'] == abbr) & (by['gp'] >= ROSTER_MIN_GP_LOST)]
+        lost, unverified = [], 0
+        for r in mine.itertuples(index=False):
+            pid = int(r.player_id)
+            if pid in ids:
+                continue
+            if pid not in now_team and pid not in cur:
+                unverified += 1   # current team could not be confirmed: do not call him lost
+                continue
+            to = now_team.get(pid) or cur.get(pid)
+            if to == abbr:        # still his team (injured reserve, AHL assignment)
+                continue
+            lost.append({'id': pid, 'name': r.name, 'pos': r.pos, 'to': to,
+                         'prev_gp': int(r.gp), 'prev_points': int(r.points)})
+        key = lambda x: -x['prev_points']
+        out[abbr_to_name.get(abbr, abbr)] = {'season': SEASON_LABEL, 'source': 'NHL roster API vs last season',
+                                             'added': sorted(added, key=key), 'lost': sorted(lost, key=key),
+                                             'lost_unverified': unverified}
+    return out
 
 
 def compute_goalie_ratings(current_df=None, season=START_YEAR, pipeline_dir=SCRIPT_DIR):

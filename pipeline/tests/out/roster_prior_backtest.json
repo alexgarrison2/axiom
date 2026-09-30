@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-09-30T04:57:08.280016+00:00",
+  "method": "roster value = sum over the top-18 opening skaters (events in the first 5 games) of last-season individual raw xG per game, minus the same for last season's closing roster; replacement value (10th pct) for players without a prior season; the difference enters as d_roster, fading to 0 by 30 GP. Walk-forward (train < S), games where either team has <= 15 GP.",
+  "caveat": "offense-only value (shot-level data has no historical shifts for RAPM); the opening roster uses games 1-5, a slight look-ahead for games 2-5 lineups (not results)",
+  "folds": {
+    "2024": {
+      "n_early": 250,
+      "base_log_loss": 0.6753848326297591,
+      "with_roster_log_loss": 0.6736367947201485,
+      "improvement": 0.0017480379096106446
+    },
+    "2025": {
+      "n_early": 248,
+      "base_log_loss": 0.6917125393071012,
+      "with_roster_log_loss": 0.693704788119021,
+      "improvement": -0.001992248811919839
+    }
+  },
+  "rule": "ship only if early-season log loss improves by >= 0.002 in both 2024 and 2025",
+  "enabled": false,
+  "decision": "disabled: improvement below 0.002 in at least one season"
+}

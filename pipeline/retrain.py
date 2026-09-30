@@ -16,6 +16,10 @@ Weekly and at season rollover (the workflow owned by B calls
      - its latest-fold calibration slope is within [0.9, 1.1].
    The decision and every check are written to tests/out/retrain_last.json.
 
+``--roster-prior`` backtests the roster-aware preseason prior (C9) on the
+first 15 GP of 2024 and 2025 (tests/out/roster_prior_backtest.json); it
+ships only with >= 0.002 early-season log-loss gain in both seasons.
+
 ``--ablate`` re-runs the feature ablations (drop-one for live features,
 add-one for candidates such as travel / time zones / 3-in-4) and
 ``--fit-constants`` refits the goal-model and schedule constants with standard
@@ -415,6 +419,109 @@ def fit_constants(M, cols, ablation_report=None):
     return report
 
 
+# ─── Roster-aware preseason prior (C9) ───────────────────────────────────────
+
+ROSTER_TOP = 18
+ROSTER_DECAY_GP = 30          # the roster term fades out over a team's first 30 GP
+
+
+def player_values(pipeline_dir=SCRIPT_DIR):
+    """Per (player, season): individual raw xG per game with an event, all
+    situations, NHL games only (a free, shot-level offensive value)."""
+    import shooting_talent as ST
+    from season import season_file, START_YEAR
+    files = [os.path.join(pipeline_dir, 'nhl_historical_shots.csv')] + \
+        [os.path.join(pipeline_dir, season_file('shots', y)) for y in (START_YEAR - 1, START_YEAR)]
+    parts = []
+    for f in dict.fromkeys(files):
+        if not os.path.exists(f):
+            continue
+        d = pd.read_csv(f, low_memory=False)
+        if d.empty:
+            continue
+        d = d[d['game_id'].astype(str).str[4:6].isin(F.NHL_GAME_TYPES)]
+        d = d.assign(xg_raw=ST._raw_xg(d, pipeline_dir))
+        parts.append(d[['game_id', 'team_id', 'player_id', 'xg_raw', 'strength_state']])
+    sh = pd.concat(parts, ignore_index=True).drop_duplicates()
+    sh = sh[sh['strength_state'] != 'EmptyNet']
+    sh['season'] = sh['game_id'].map(F.season_of)
+    sh['player_id'] = pd.to_numeric(sh['player_id'], errors='coerce')
+    sh = sh.dropna(subset=['player_id'])
+    sh['player_id'] = sh['player_id'].astype(int)
+    per = sh.groupby(['player_id', 'season']).agg(ixg=('xg_raw', 'sum'), gp=('game_id', 'nunique')).reset_index()
+    per['value'] = per['ixg'] / per['gp']
+    return sh, per
+
+
+def roster_deltas(sh, per, team_ids, first_games=5, last_games=20):
+    """{(season, team): change in summed prior-season value between the team's
+    opening roster (skaters with an event in its first ``first_games``) and
+    its roster at the end of last season (last ``last_games``), top 18 each.
+    Players without a prior season get a replacement value."""
+    val = {(r.player_id, r.season): r.value for r in per.itertuples(index=False)}
+    repl = {s: float(g.loc[g['gp'] >= 20, 'value'].quantile(0.1)) for s, g in per.groupby('season')}
+    g_order = sh[['game_id', 'team_id', 'season']].drop_duplicates().sort_values('game_id')
+    out = {}
+    for (season, tid), g in g_order.groupby(['season', 'team_id']):
+        prev = g_order[(g_order['season'] == season - 1) & (g_order['team_id'] == tid)]
+        if prev.empty:
+            continue
+        open_ids = sh[sh['game_id'].isin(g['game_id'].head(first_games)) & (sh['team_id'] == tid)]
+        end_ids = sh[sh['game_id'].isin(prev['game_id'].tail(last_games)) & (sh['team_id'] == tid)]
+
+        def top(x):
+            return x.groupby('player_id')['game_id'].nunique().sort_values(ascending=False).head(ROSTER_TOP).index
+
+        def total(ids):
+            return float(sum(val.get((p, season - 1), repl.get(season - 1, 0.0)) for p in ids))
+        new_r, old_r = top(open_ids), top(end_ids)
+        out[(int(season), team_ids.get(int(tid)))] = {
+            'delta': total(new_r) - total(old_r),
+            'added': [int(p) for p in new_r if p not in set(old_r)],
+            'lost': [int(p) for p in old_r if p not in set(new_r)],
+        }
+    return out
+
+
+def roster_prior_backtest(M, cols, out_path=os.path.join(OUT_DIR, 'roster_prior_backtest.json')):
+    sh, per = player_values()
+    team_ids = F.load_team_ids()
+    deltas = roster_deltas(sh, per, team_ids)
+    M = M.copy()
+
+    def d(season, team):
+        r = deltas.get((int(season), F.franchise(team))) or deltas.get((int(season), team))
+        return r['delta'] if r else 0.0
+    fade_h = np.clip(1 - M['h_gp'] / ROSTER_DECAY_GP, 0, 1)
+    fade_a = np.clip(1 - M['a_gp'] / ROSTER_DECAY_GP, 0, 1)
+    M['d_roster'] = [d(s, h) * fh - d(s, a) * fa for s, h, a, fh, fa in
+                     zip(M['season'], M['home'], M['away'], fade_h, fade_a)]
+    base_f, base_oos = walk(M, cols)
+    new_f, new_oos = walk(M, cols + ['d_roster'])
+    res = {}
+    for S in (2024, 2025):
+        a = base_oos[(base_oos['season'] == S) & base_oos['early']]
+        b = new_oos[(new_oos['season'] == S) & new_oos['early']]
+        la = float(_ll_vec(a['home_win'], a['p_model']).mean())
+        lb = float(_ll_vec(b['home_win'], b['p_model']).mean())
+        res[str(S)] = {'n_early': int(len(a)), 'base_log_loss': la, 'with_roster_log_loss': lb, 'improvement': la - lb}
+    ship = all(v['improvement'] >= 0.002 for v in res.values())
+    rep = {'generated_at': _now().isoformat(),
+           'method': ('roster value = sum over the top-18 opening skaters (events in the first 5 games) of '
+                      'last-season individual raw xG per game, minus the same for last season\'s closing '
+                      'roster; replacement value (10th pct) for players without a prior season; the '
+                      'difference enters as d_roster, fading to 0 by 30 GP. Walk-forward (train < S), '
+                      'games where either team has <= 15 GP.'),
+           'caveat': ('offense-only value (shot-level data has no historical shifts for RAPM); the opening '
+                      'roster uses games 1-5, a slight look-ahead for games 2-5 lineups (not results)'),
+           'folds': res, 'rule': 'ship only if early-season log loss improves by >= 0.002 in both 2024 and 2025',
+           'enabled': ship,
+           'decision': 'enabled' if ship else 'disabled: improvement below 0.002 in at least one season'}
+    _write(out_path, rep)
+    print(f"[roster prior] {res} -> {rep['decision']}")
+    return rep
+
+
 # ─── Promotion ────────────────────────────────────────────────────────────────
 
 def promotion_checks(cand_meta, cur_meta):
@@ -449,6 +556,7 @@ def main(argv=None):
     ap.add_argument('--fit-constants', action='store_true', help='refit constants into scoring_coefficients.json')
     ap.add_argument('--no-legacy', action='store_true', help='skip the legacy XGB baseline')
     ap.add_argument('--strict', action='store_true', help='exit 1 when the gates fail (CI)')
+    ap.add_argument('--roster-prior', action='store_true', help='backtest the roster-aware preseason prior (C9)')
     args = ap.parse_args(argv)
 
     with open(T.META_PATH) as f:
@@ -457,6 +565,8 @@ def main(argv=None):
     M, xg_source = T.build_matrix()
     print(f"[retrain] {len(M)} games, live features {cols}")
 
+    if args.roster_prior:
+        roster_prior_backtest(M, cols)
     abl = None
     if args.ablate:
         abl = ablation(M, cols)

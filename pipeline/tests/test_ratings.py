@@ -114,3 +114,33 @@ def test_apply_shooting_talent_keeps_xg_raw():
     out = ST.apply_shooting_talent(df.copy(), {2026: {1: 1.3}})
     assert list(out['xG']) == [0.2, 0.1] and list(out['xg_raw']) == [0.2, 0.1]
     assert list(ST.talent_multipliers(out, {2026: {1: 1.3}})) == [1.3, 1.0]
+
+
+def test_roster_changes_added_and_lost_without_network():
+    prev = pd.DataFrame([
+        # player 1: 20 GP for CAR last season, now on TOR's roster -> lost to TOR, added by TOR
+        *[{'game_id': 2025020000 + i, 'player_id': 1, 'team': 'CAR', 'name': 'A. One', 'position': 'C', 'points': 1}
+          for i in range(20)],
+        # player 2: 30 GP for CAR, on IR (not on any roster) but still CAR -> not lost
+        *[{'game_id': 2025020100 + i, 'player_id': 2, 'team': 'CAR', 'name': 'B. Two', 'position': 'D', 'points': 0}
+          for i in range(30)],
+        # player 3: 15 GP for CAR, unsigned -> lost to None
+        *[{'game_id': 2025020200 + i, 'player_id': 3, 'team': 'CAR', 'name': 'C. Three', 'position': 'W', 'points': 0}
+          for i in range(15)],
+    ])
+    rosters = {'CAR': [{'id': 9, 'name': 'Rookie Nine', 'pos': 'C'}], 'TOR': [{'id': 1, 'name': 'A One', 'pos': 'C'}]}
+    ch = TR.roster_changes(rosters=rosters, prev=prev, current_teams={2: 'CAR', 3: None})
+    car = ch['Hurricanes']
+    assert [p['name'] for p in car['added']] == ['Rookie Nine']
+    assert {(p['id'], p['to']) for p in car['lost']} == {(1, 'TOR'), (3, None)}
+    assert ch['Maple Leafs']['added'][0]['from'] == 'CAR'
+
+
+def test_roster_prior_backtest_recorded():
+    import json
+    p = os.path.join(PIPELINE_DIR, 'tests', 'out', 'roster_prior_backtest.json')
+    with open(p) as f:
+        rep = json.load(f)
+    assert set(rep['folds']) == {'2024', '2025'}
+    ship = all(v['improvement'] >= 0.002 for v in rep['folds'].values())
+    assert rep['enabled'] is ship
