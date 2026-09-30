@@ -2,85 +2,289 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+ * Pony xG — "Neon Rink HUD" design tokens
+ *
+ * One hue, one meaning:
+ *   cyan   (--brand)   brand + interactive (links, focus, selected)
+ *   green  (--pos)     positive / edge / confirmed
+ *   red    (--neg)     negative / loss
+ *   amber  (--warn)    caution / likely / small sample
+ *   blue   (--info)    neutral information
+ *   violet (--playoff) postseason content only
+ * Staleness / prior-season data uses the --stale treatment (tertiary text +
+ * dashed outline), never a signal colour.
+ *
+ * Every colour has an `-rgb` channel triplet so Tailwind opacity modifiers
+ * work (e.g. bg-brand/10). Text roles are contrast-checked in
+ * components/ui/__tests__/tokens.test.ts (≥4.5:1 on every surface).
+ * ========================================================================== */
 @layer base {
   :root {
-    --background: 220 15% 10%;
-    /* Deep Slate */
-    --foreground: 0 0% 98%;
-    --card: 220 15% 12%;
-    --card-foreground: 0 0% 98%;
-    --popover: 220 15% 12%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 38 92% 50%;
-    /* Electric Amber */
-    --primary-foreground: 0 0% 0%;
-    --secondary: 220 15% 16%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 220 15% 16%;
-    --muted-foreground: 220 10% 65%;
-    --accent: 20 100% 50%;
-    /* Signal Orange */
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: 38 92% 50%;
-    --radius: 0.25rem;
-    /* Sharper corners for industrial feel */
+    color-scheme: dark;
 
-    /* Noise Texture (Subtle Grain) */
-    --bg-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    /* Surfaces (black ice) */
+    --bg: #05070b;
+    --bg-rgb: 5 7 11;
+    --surface-1: #0b0f16;
+    --surface-1-rgb: 11 15 22;
+    --surface-2: #111723;
+    --surface-2-rgb: 17 23 35;
+    --surface-3: #151c2b;
+    --surface-3-rgb: 21 28 43;
+    --line: rgba(255, 255, 255, 0.08);
+    --line-strong: rgba(255, 255, 255, 0.16);
+
+    /* Brand */
+    --brand: #22e6f5;
+    --brand-rgb: 34 230 245;
+    --brand-glow: rgba(34, 230, 245, 0.35);
+    --brand-ink: #05070b; /* text on a solid brand fill */
+
+    /* Signals */
+    --pos: #3cff8f;
+    --pos-rgb: 60 255 143;
+    --neg: #ff4d6a;
+    --neg-rgb: 255 77 106;
+    --warn: #ffc53d;
+    --warn-rgb: 255 197 61;
+    --info: #5aa9ff;
+    --info-rgb: 90 169 255;
+    --playoff: #b98cff;
+    --playoff-rgb: 185 140 255;
+
+    /* Text roles */
+    --text-1: #f5f7fa; /* primary: data, headings */
+    --text-1-rgb: 245 247 250;
+    --text-2: #a9b4c2; /* secondary: labels, supporting copy */
+    --text-2-rgb: 169 180 194;
+    --text-3: #7c8796; /* tertiary: captions, units (≥4.5:1 on surface-2) */
+    --text-3-rgb: 124 135 150;
+    --text-disabled: #4a5361; /* non-essential only — never on data */
+
+    /* Staleness / small-sample treatment */
+    --stale: var(--text-3);
+    --stale-border: rgba(124, 135, 150, 0.6);
+    --stale-bg: rgba(124, 135, 150, 0.06);
+
+    /* Radii */
+    --r-chip: 6px;
+    --r-control: 10px;
+    --r-card: 20px;
+
+    /* Elevation: glow is reserved for a real edge / focus */
+    --glow-brand: 0 0 24px rgba(34, 230, 245, 0.28);
+    --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+
+    /* Layout */
+    --appbar-h: 56px;
+    --tabbar-h: 56px;
+
+    /* ---- shadcn/ui compatibility (components/ui/* + legacy classes) ---- */
+    --background: var(--bg-rgb);
+    --foreground: var(--text-1-rgb);
+    --radius: var(--r-control);
+
+    /* Subtle film grain (static, painted once) */
+    --bg-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+
+  @media (min-width: 768px) {
+    :root {
+      --appbar-h: 60px;
+    }
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--line);
+  }
+
+  html {
+    background-color: var(--bg);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--appbar-h) + 12px);
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply font-sans antialiased;
+    background-color: var(--bg);
+    color: var(--text-1);
+    font-size: 15px;
+    line-height: 22px;
+    /* Numbers line up in every table and card */
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    overflow-x: hidden;
+    min-height: 100dvh;
   }
-}
 
-@layer base {
-
-  html,
-  body {
-    @apply text-white bg-background antialiased overflow-x-auto font-sans;
+  /* Ice glow + grain, fixed behind content. A fixed pseudo-element is
+     composited once (unlike background-attachment: fixed, which repaints on
+     every scroll frame). */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     background-image:
       var(--bg-noise),
-      radial-gradient(circle at 50% 0%, rgba(255, 184, 0, 0.08) 0%, transparent 60%),
-      /* Amber Glow Top */
-      radial-gradient(circle at 10% 90%, rgba(30, 41, 59, 0.5) 0%, transparent 50%);
-    /* Dark Slate Bottom */
-    background-attachment: fixed;
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(34, 230, 245, 0.09) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 100% 110%, rgba(90, 169, 255, 0.05) 0%, transparent 60%);
   }
 
-  /* Global HUD typography enforcement */
   h1,
   h2,
   h3,
-  h4,
-  th,
+  h4 {
+    font-family: var(--font-fira-sans), system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
   .font-mono {
-    font-family: var(--font-fira-code), monospace;
-    letter-spacing: -0.02em;
+    font-family: var(--font-fira-code), ui-monospace, monospace;
+  }
+
+  ::selection {
+    background: rgba(34, 230, 245, 0.28);
+    color: var(--text-1);
+  }
+
+  /* One focus style everywhere: 2px brand ring, offset so it clears fills. */
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Legacy "focus:outline-none" overrides on inputs no longer remove the
+     indicator for keyboard users. */
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  button:focus-visible,
+  a:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--brand) !important;
+    outline-offset: 2px;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-3);
+    opacity: 1;
+  }
+
+  /* --------------------------------------------------------------------
+   * Type floor. The scale bottoms out at `micro` (11px). Legacy arbitrary
+   * sizes below that (text-[7px] … text-[10px]) are lifted to 11px until
+   * the owning components migrate to the token scale; ESLint flags new ones.
+   * ------------------------------------------------------------------ */
+  .text-\[7px\],
+  .text-\[7\.5px\],
+  .text-\[8px\],
+  .text-\[8\.5px\],
+  .text-\[9px\],
+  .text-\[9\.5px\],
+  .text-\[10px\] {
+    font-size: 11px !important;
+    line-height: 14px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Reduced motion: honour the OS setting everywhere (CSS keyframes,
+ * transitions, smooth scrolling). Framer Motion is covered by
+ * <MotionConfig reducedMotion="user"> in components/ui/motion-provider.tsx.
+ * ------------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .flame-spinner,
+  .high-ev-spinner {
+    animation: none !important;
+  }
+}
+
+@layer components {
+  /* HUD panel: the default card surface. */
+  .hud-panel {
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Uppercase micro label (Fira Code) — the only place mono is used for text. */
+  .hud-label {
+    font-family: var(--font-fira-code), ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  /* Stale / prior-season value treatment. */
+  .is-stale {
+    color: var(--stale);
+    border-style: dashed;
+    border-color: var(--stale-border);
+    background-color: var(--stale-bg);
+  }
+
+  /* Horizontal scroller with edge fades (see components/ui/scroll-region.tsx). */
+  .edge-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+  }
+  .edge-fade-right {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent 100%);
+    mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent 100%);
+  }
+  .edge-fade-left {
+    -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 32px), transparent 100%);
+    mask-image: linear-gradient(to left, #000 calc(100% - 32px), transparent 100%);
+  }
+
+  .pb-tabbar {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px);
+  }
+  @media (min-width: 768px) {
+    .pb-tabbar {
+      padding-bottom: 0;
+    }
   }
 }
 
 @layer utilities {
+  /* ---- Legacy utilities kept for components not yet migrated ---- */
   .glass-panel {
     background-color: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--line-strong);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
   }
 
   .glass-panel-hover {
-    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 150ms ease, border-color 150ms ease;
   }
 
   .glass-panel-hover:hover {
@@ -88,42 +292,40 @@
     border-color: rgba(255, 255, 255, 0.2);
   }
 
-  /* Premium Glass Effect */
   .glass-premium {
-    background: rgba(23, 23, 23, 0.6);
+    background: rgba(17, 23, 35, 0.72);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--line);
     box-shadow:
       0 4px 6px -1px rgba(0, 0, 0, 0.1),
       0 2px 4px -1px rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
   .text-glow-blue {
-    text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+    text-shadow: 0 0 10px rgba(34, 230, 245, 0.45);
   }
 
   .text-glow-green {
-    text-shadow: 0 0 10px rgba(10, 255, 0, 0.5);
+    text-shadow: 0 0 10px rgba(60, 255, 143, 0.4);
   }
 
   .text-glow-amber {
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    text-shadow: 0 0 10px rgba(255, 197, 61, 0.4);
   }
 
   .text-glow-purple {
-    text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+    text-shadow: 0 0 10px rgba(185, 140, 255, 0.45);
   }
 
   .text-gradient {
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-image: linear-gradient(to right, #fff, #94a3b8);
+    background-image: linear-gradient(to right, var(--text-1), var(--text-2));
   }
 
-  /* Scrollbar Hide Utility */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -143,14 +345,14 @@
     }
   }
 
+  /* Runs twice, then rests (no perpetual motion). */
   .animate-shine-flow {
-    background: linear-gradient(90deg, #22d3ee, #ffffff, #22d3ee);
-    /* cyan-400, white, cyan-400 */
+    background: linear-gradient(90deg, var(--brand), #ffffff, var(--brand));
     background-size: 200% auto;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: shine-flow 3s linear infinite;
+    animation: shine-flow 3s linear 2;
   }
 
   @keyframes spin {
@@ -163,15 +365,10 @@
     }
   }
 
-  /* -----------------------------------------------------------------------
-   * Flame glow — playoff implication cards (high-stakes, not good/bad)
-   * Colors: deep ember → orange → amber → back. Reads as "fire/energy",
-   * not as a red warning — intentionally distinct from the cyan EV glow.
-   * ----------------------------------------------------------------------- */
+  /* Playoff-implication border (legacy; replaced by the matchup rebuild). */
   .flame-border-mask {
     position: absolute;
     inset: 0;
-    /* border-radius set via Tailwind class at usage site */
     padding: 1px;
     opacity: 0.45;
     -webkit-mask:
@@ -193,29 +390,25 @@
     left: 50%;
     width: 200%;
     height: 200%;
-    /* Muted ember palette — peak toned down to orange-600, no amber tip */
-    background: conic-gradient(
-      from 0deg,
-      #431407 0deg,        /* orange-950 — darkest ember */
-      #7c2d12 60deg,       /* orange-900 */
-      #9a3412 110deg,      /* orange-800 */
-      #c2410c 150deg,      /* orange-700 */
-      #ea580c 175deg,      /* orange-600 — peak */
-      #c2410c 200deg,      /* orange-700 */
-      #9a3412 240deg,      /* orange-800 */
-      #7c2d12 300deg,      /* orange-900 */
-      #431407 360deg       /* orange-950 */
-    );
-    animation: spin 12s linear infinite;
+    background: conic-gradient(from 0deg,
+        #431407 0deg,
+        #7c2d12 60deg,
+        #9a3412 110deg,
+        #c2410c 150deg,
+        #ea580c 175deg,
+        #c2410c 200deg,
+        #9a3412 240deg,
+        #7c2d12 300deg,
+        #431407 360deg);
+    /* One slow sweep, then rest. */
+    animation: spin 12s linear 1 both;
   }
 
   .high-ev-border-mask {
     position: absolute;
     inset: 0;
     border-radius: 1.5rem;
-    /* rounded-3xl */
     padding: 2px;
-    /* Border width reduced for finer look */
     -webkit-mask:
       linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
@@ -223,11 +416,9 @@
       linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
     -webkit-mask-composite: destination-out;
-    /* Changed from xor */
     mask-composite: exclude;
     pointer-events: none;
     z-index: 20;
-    /* Lower z-index to be safe, though pointer-events: none handles clicks */
   }
 
   .high-ev-spinner {
@@ -239,18 +430,19 @@
     background: conic-gradient(from 0deg,
         transparent 0deg,
         #0891b2 90deg,
-        /* cyan-600 */
-        #22d3ee 180deg,
-        /* cyan-400 */
+        var(--brand) 180deg,
         #ffffff 225deg,
-        /* white highlight */
-        #22d3ee 270deg,
-        /* cyan-400 */
+        var(--brand) 270deg,
         #0891b2 300deg,
-        /* cyan-600 */
         transparent 360deg);
-    animation: spin 8s linear infinite;
-    /* Faster spin */
+    animation: spin 8s linear 1 both;
+  }
+
+  /* Perpetual Tailwind animations stop after two cycles. */
+  .animate-ping,
+  .animate-pulse,
+  .animate-bounce {
+    animation-iteration-count: 2;
   }
 }
 
@@ -262,5 +454,108 @@
 
   100% {
     background-color: transparent;
+  }
+}
+
+/* LED wordmark: dots light up once on first paint (components/ui/brand-mark.tsx). */
+@keyframes led-on {
+  0% {
+    opacity: 0.12;
+  }
+  60% {
+    opacity: 1;
+    filter: brightness(1.6);
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes goal-light {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  20%,
+  60% {
+    opacity: 1;
+  }
+  40%,
+  80% {
+    opacity: 0.45;
+  }
+}
+
+/* Full logo intro (components/FullLogoAnimated.tsx) */
+@keyframes wordmark-reveal {
+  from {
+    clip-path: inset(-10% 100% -10% 0);
+    opacity: 0.2;
+  }
+  to {
+    clip-path: inset(-10% 0 -10% 0);
+    opacity: 1;
+  }
+}
+
+@keyframes puck-shot {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(292px) rotate(-900deg);
+    opacity: 0;
+  }
+}
+
+/* Win bar: fill from 50/50 to the model split (end state = the element's own width). */
+@keyframes winbar-fill {
+  from {
+    width: 50%;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-left {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
