@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-09-30T18:12:38.972330+00:00",
+ "generated_at": "2026-09-30T18:18:46.957265+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -4754,6 +4754,8 @@
    "blend_walk_forward": 0.6706,
    "coin_flip": 0.6931
   },
+  "first_game": "2026-03-06",
+  "last_game": "2026-06-15",
   "blend_weight": 0.7377,
   "rule": {
    "label": "blended EV >= 3% (the live rule)",

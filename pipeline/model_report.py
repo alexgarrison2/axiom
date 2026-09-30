@@ -308,6 +308,8 @@ def build_report(history=None, now=None):
             btj = json.load(f)
         bt = btj.get('gate_evidence')
         bt_summary = {'n_games': btj['sample']['n_games'], 'log_loss': btj['log_loss'],
+                      'first_game': str(btj['sample'].get('first_game') or '')[:10] or None,
+                      'last_game': str(btj['sample'].get('last_game') or '')[:10] or None,
                       'blend_weight': btj['blend_weight']['live_value'],
                       'rule': btj['betting_replay']['rule']}
     except Exception:

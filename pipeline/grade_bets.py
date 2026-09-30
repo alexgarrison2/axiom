@@ -191,7 +191,8 @@ def build_ledger(allow_fetch=True, now=None):
         'generated_at': now.isoformat(),
         'unit': '1 unit = 1% of bankroll ($5 in the SiteHistory snapshots)',
         'disclaimer': ('For information and entertainment only. Past results do not predict future results. '
-                       'Bet sizes are hidden while the model has not proven an edge over the market.'),
+                       'New bet suggestions are hidden while the model has not proven an edge over the market; '
+                       'graded bets keep their stakes.'),
         'source': 'last pregame SiteHistory snapshot per NHL gameId; results from NHL final scores',
         'clv_note': (None if closing else
                      'Closing prices are recorded from 2026-27 on (odds_closing.json); earlier bets have no CLV.'),
