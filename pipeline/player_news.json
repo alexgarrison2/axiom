@@ -1,6 +1,13 @@
 {
     "COL": [
         {
+            "player": "Mackenzie Blackwood",
+            "news": "Blackwood will start Colorado's season opener vs. Los Angeles on Wednesday.",
+            "category": "Goalie Start",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T16:26:53.843Z"
+        },
+        {
             "player": "Zachary L'Heureux",
             "news": "L'Heureux (lower-body) will miss Colorado's season opener vs. Los Angeles and is considere day-to-day. ",
             "category": "Injury",
@@ -16,8 +23,38 @@
         }
     ],
     "CGY": [],
-    "ANA": [],
-    "DAL": [],
+    "ANA": [
+        {
+            "player": "Troy Terry",
+            "news": "Terry (hip) has been placed to LTIR. ",
+            "category": "Injury",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T15:48:52.623Z"
+        },
+        {
+            "player": "Drew Helleson",
+            "news": "Helleson (lower-body) has been placed on IR. ",
+            "category": "Injury",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T15:48:09.920Z"
+        }
+    ],
+    "DAL": [
+        {
+            "player": "Casey DeSmith",
+            "news": "2-year, $5,000,000 contract with the Dallas Stars. Expires 2029 (UFA).",
+            "category": "Signing",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T23:59:00.000Z"
+        },
+        {
+            "player": "Matt Duchene",
+            "news": "Duchene (upper-body) is doubtful for Dallas' season opener vs. St. Louis on Friday. ",
+            "category": "Injury",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T17:36:34.634Z"
+        }
+    ],
     "PHI": [
         {
             "player": "Dan Vladar",
@@ -71,7 +108,22 @@
             "timestamp": "2026-09-29T18:03:55.556Z"
         }
     ],
-    "OTT": [],
+    "OTT": [
+        {
+            "player": "Andre Burakovsky",
+            "news": "Burakovsky (upper-body) is not expected to play in Ottawa's upcoming game this weekend. ",
+            "category": "Injury",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T16:44:48.371Z"
+        },
+        {
+            "player": "Jake Sanderson",
+            "news": "Sanderson (undisclosed) skated on Wednesday and is hopeful to return on Saturday vs. Toronto. ",
+            "category": "Injury",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T16:42:50.881Z"
+        }
+    ],
     "WPG": [],
     "VGK": [
         {
@@ -91,9 +143,32 @@
             "timestamp": "2026-09-29T18:43:29.660Z"
         }
     ],
-    "PIT": [],
+    "PIT": [
+        {
+            "player": "Arturs Silovs",
+            "news": "Silovs will start Pittsburgh's season opener in Philadelphia on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T16:19:00.802Z"
+        }
+    ],
     "TBL": [],
-    "BUF": [],
+    "BUF": [
+        {
+            "player": "Mattias Samuelsson",
+            "news": "Samuelsson (lower-body) has a chance to play in Buffalo's season opener vs. Columbus on Thursday. ",
+            "category": "Injury",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T15:52:30.572Z"
+        },
+        {
+            "player": "Olen Zellweger",
+            "news": "Zellweger (concussion) will be out for Buffalo's season opener vs. Columbus on Thursday and is considered day-to-day. ",
+            "category": "Injury",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T15:51:45.242Z"
+        }
+    ],
     "LAK": [],
     "CBJ": [
         {
@@ -149,6 +224,20 @@
     ],
     "TOR": [
         {
+            "player": "Bo Groulx",
+            "news": "Groulx will make his season debut on Wednesday vs. the Islanders. ",
+            "category": "Line Change",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T15:33:04.675Z"
+        },
+        {
+            "player": "Anthony Stolarz",
+            "news": "Stolarz will start vs. the Islanders on Wednesday. ",
+            "category": "Goalie Start",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T15:32:31.871Z"
+        },
+        {
             "player": "Sergei Bobrovsky",
             "news": "Bobrovsky is scheduled to start Toronto's season opener vs. Montreal on Tuesday. ",
             "category": "Goalie Start",
@@ -164,7 +253,15 @@
         }
     ],
     "NYI": [],
-    "NJD": [],
+    "NJD": [
+        {
+            "player": "Connor Brown",
+            "news": "Brown (lower-body) will miss New Jersey's first two games of the season. ",
+            "category": "Injury",
+            "date": "2026-09-30",
+            "timestamp": "2026-09-30T17:29:14.895Z"
+        }
+    ],
     "FLA": [
         {
             "player": "Jacob Markstrom",
