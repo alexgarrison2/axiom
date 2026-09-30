@@ -123,10 +123,10 @@ function GroupTable({ group, showProjections, domain }: { group: Group; showProj
                             <span className="sr-only">Rank</span>#
                         </th>
                         <th scope="col" className="px-2 py-2 font-semibold">Team</th>
-                        <th scope="col" className="hidden w-10 px-1 py-2 text-right font-semibold sm:table-cell">
+                        <th scope="col" className={cn('w-10 px-1 py-2 text-right font-semibold', showProjections && 'hidden sm:table-cell')}>
                             <abbr title="Games played" className="no-underline">GP</abbr>
                         </th>
-                        <th scope="col" className="hidden w-[5.5rem] px-2 py-2 text-right font-semibold md:table-cell">W-L-OT</th>
+                        <th scope="col" className={cn('w-[5.5rem] px-2 py-2 text-right font-semibold', showProjections && 'hidden md:table-cell')}>W-L-OT</th>
                         <th scope="col" className="w-11 px-2 py-2 text-right font-semibold">
                             <abbr title="Points" className="no-underline">PTS</abbr>
                         </th>
@@ -210,8 +210,8 @@ function Row({
                     </span>
                 </Link>
             </th>
-            <td className="hidden px-1 py-2 text-right tabular-nums text-fg-2 sm:table-cell">{r.gp}</td>
-            <td className="hidden px-2 py-2 text-right tabular-nums text-fg-2 md:table-cell">
+            <td className={cn('px-1 py-2 text-right tabular-nums text-fg-2', showProjections && 'hidden sm:table-cell')}>{r.gp}</td>
+            <td className={cn('px-2 py-2 text-right tabular-nums text-fg-2', showProjections && 'hidden md:table-cell')}>
                 {r.w}-{r.l}-{r.otl}
             </td>
             <td className="px-2 py-2 text-right font-bold tabular-nums text-fg-1">{r.pts}</td>
