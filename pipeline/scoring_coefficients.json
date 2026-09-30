@@ -259,5 +259,12 @@
     "se": 0.0054,
     "fit": "Poisson deviance of game totals, 2022-2024"
   },
-  "_notes": "fitted_constants and the ot_/total_/market_ keys are written by retrain.py / market.py with standard errors and ablations (tests/out/constants_fit.json). xg_5v5_coeff, pp_opp_val, pk_opp_cost, b2b_cost_*, 3in4_cost_*, home_ice_* are read only by the legacy Poisson path in predict_games.py and go away when it switches to ml_predict + market (A10)."
+  "_notes": "fitted_constants and the ot_/total_/market_ keys are written by retrain.py / market.py with standard errors and ablations (tests/out/constants_fit.json). xg_5v5_coeff, pp_opp_val, pk_opp_cost, b2b_cost_*, 3in4_cost_*, home_ice_* are read only by the legacy Poisson path in predict_games.py and go away when it switches to ml_predict + market (A10).",
+  "lineup_weight": {
+    "value": 0.0,
+    "fit": "lineup_adjust.py --backtest (tests/out/lineup_backtest.json)",
+    "held_out_delta": 0.0029387773699036716,
+    "n_games": 989,
+    "fitted_at": "2026-09-30T04:50:51.399477+00:00"
+  }
 }
