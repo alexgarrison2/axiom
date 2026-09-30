@@ -552,10 +552,71 @@
   }
 }
 
-/* Win bar: fill from 50/50 to the model split (end state = the element's own width). */
-@keyframes winbar-fill {
+/* --------------------------------------------------------------------------
+ * Win bar (components/ui/win-bar.tsx). Everything animates with transforms
+ * or a registered custom property, so nothing moves in layout (CLS 0) and the
+ * server HTML already paints the final split: the animation only adds the
+ * 50/50 -> split motion on top. prefers-reduced-motion keeps the end state.
+ * ------------------------------------------------------------------------ */
+@property --wb-n {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+/* Tweened percentage: the digits are a CSS counter driven by --wb-n. */
+.wb-num {
+  --wb-n: var(--wb-to);
+  counter-reset: wb var(--wb-n);
+}
+.wb-num::after {
+  content: counter(wb) "%";
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wb-anim .wb-fill {
+    animation: wb-grow 750ms cubic-bezier(0.2, 0.85, 0.25, 1) 80ms both;
+  }
+  .wb-anim .wb-split {
+    animation: wb-slide 750ms cubic-bezier(0.2, 0.85, 0.25, 1) 80ms both;
+  }
+  .wb-anim .wb-num {
+    animation: wb-count 750ms cubic-bezier(0.2, 0.85, 0.25, 1) 80ms both;
+  }
+  .wb-anim .wb-sheen {
+    animation: wb-sheen 700ms ease-out 650ms both;
+  }
+}
+
+/* The away fill is drawn at its final width; start it scaled to exactly 50%. */
+@keyframes wb-grow {
   from {
-    width: 50%;
+    transform: scaleX(var(--wb-s0, 1));
+  }
+}
+/* The split-line layer spans the bar, so translateX(%) is a bar percentage. */
+@keyframes wb-slide {
+  from {
+    transform: translateX(50%);
+  }
+}
+@keyframes wb-count {
+  from {
+    --wb-n: 50;
+  }
+}
+/* One light sweep across the bar once it has settled. */
+@keyframes wb-sheen {
+  from {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  to {
+    transform: translateX(420%);
+    opacity: 0;
   }
 }
 

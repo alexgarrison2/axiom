@@ -27,10 +27,13 @@ export interface WinBarProps {
     size?: 'sm' | 'md' | 'lg';
     /** Play the 50/50 → model split fill on first paint (CSS only; off under reduced motion). */
     animate?: boolean;
+    /** Name of the probability for screen readers ("Model win probability"). */
+    label?: string;
     className?: string;
 }
 
-const pct = (p: number) => `${(p * 100).toFixed(0)}%`;
+const pctN = (p: number) => Number((p * 100).toFixed(0));
+const pct = (p: number) => `${pctN(p)}%`;
 
 /** Pick bar colours: explicit overrides get the same ΔE clash check as the team palette. */
 export function resolveBarColors(p: Pick<WinBarProps, 'away' | 'home' | 'awayColor' | 'homeColor' | 'awayColor2' | 'homeColor2'>) {
@@ -47,59 +50,99 @@ export function resolveBarColors(p: Pick<WinBarProps, 'away' | 'home' | 'awayCol
     return { away, home };
 }
 
-const heights = { sm: 'h-6 text-caption', md: 'h-8 text-body-sm', lg: 'h-10 text-body' };
+/**
+ * Per size: bar height, type, padding, the fill width (container query on the
+ * label box) from which the tricode also fits next to the %, and the share of
+ * the bar (0–100) below which the % moves outside, under the bar.
+ */
+const SIZES = {
+    sm: { bar: 'h-6', code: 'hidden text-micro font-semibold [@container(min-width:3.75rem)]:inline', num: 'text-body-sm font-bold', pad: 'px-2', numMin: 12 },
+    md: { bar: 'h-9', code: 'hidden text-body-sm font-semibold [@container(min-width:4.75rem)]:inline', num: 'text-title font-extrabold', pad: 'px-3', numMin: 17 },
+    lg: { bar: 'h-11', code: 'hidden text-body font-semibold [@container(min-width:6.25rem)]:inline', num: 'text-h2 font-black', pad: 'px-3.5', numMin: 20 },
+} as const;
+
+/** The side's percentage: SSR paints the final number; `.wb-num` counts 50 → n on first paint. */
+function Num({ n, className }: { n: number; className: string }) {
+    return (
+        <span className={cn('tabular-nums tracking-tight', className)}>
+            <span aria-hidden="true" className="wb-num" style={{ '--wb-to': n } as React.CSSProperties} />
+            {/* Plain-text copy for find-in-page and innerText; the bar itself is role=img. */}
+            <span className="sr-only">{n}%</span>
+        </span>
+    );
+}
 
 /**
- * Model win-probability bar: away on the left, home on the right, a 2px ice
- * separator at the split, readable labels inside each fill, and an optional
+ * Win-probability bar: away on the left, home on the right, a 2px ice
+ * separator at the split, bold numbers inside each fill, and an optional
  * labelled market band underneath.
+ *
+ * The final split is in the server HTML. On first paint the fill grows from
+ * 50/50 and the numbers count up (transform + a registered CSS property, so
+ * no layout shift and no hydration dependency); reduced motion shows the end
+ * state immediately. See the "Win bar" block in app/globals.css.
  */
-export function WinBar({ away, home, pAway, marketBand, size = 'md', animate = true, className, ...colors }: WinBarProps) {
+export function WinBar({ away, home, pAway, marketBand, size = 'md', animate = true, label = 'Model win probability', className, ...colors }: WinBarProps) {
     const p = Math.min(1, Math.max(0, Number.isFinite(pAway) ? pAway : 0.5));
     const { away: ac, home: hc } = resolveBarColors({ away, home, ...colors });
     const awayInk = readableTextOn(ac);
     const homeInk = readableTextOn(hc);
     const awayW = p * 100;
     const homeW = 100 - awayW;
+    const awayN = pctN(p);
+    const homeN = pctN(1 - p);
+    const sz = SIZES[size];
     const band = marketBand && marketBand.hi > marketBand.lo ? marketBand : null;
     const bandLabel = band?.label ?? 'Market range';
     const summary =
-        `Model win probability: ${away} ${pct(p)}, ${home} ${pct(1 - p)}.` +
+        `${label}: ${away} ${awayN}%, ${home} ${homeN}%.` +
         (band ? ` ${bandLabel} for ${away}: ${pct(band.lo)} to ${pct(band.hi)}.` : '');
+    // Start scale that makes the final-width fill look exactly 50% wide.
+    const s0 = awayW >= 1 ? 50 / awayW : 1;
 
     return (
         <div className={cn('w-full', className)}>
-            <div role="img" aria-label={summary} className={cn('relative flex w-full overflow-hidden rounded-control font-semibold', heights[size])}>
-                <div
-                    className={cn('relative flex min-w-0 items-center justify-start pl-2.5', animate && 'motion-safe:animate-[winbar-fill_700ms_cubic-bezier(0.2,0.8,0.2,1)_both]')}
-                    style={{ width: `${awayW}%`, backgroundColor: ac, color: awayInk }}
-                >
-                    {awayW >= 14 ? (
-                        <span className="truncate">
-                            <span className="font-medium">{away}</span> <span className="font-bold tabular-nums">{pct(p)}</span>
-                        </span>
-                    ) : null}
-                </div>
-                <div className="flex min-w-0 flex-1 items-center justify-end pr-2.5" style={{ backgroundColor: hc, color: homeInk }}>
-                    {homeW >= 14 ? (
-                        <span className="truncate">
-                            <span className="font-bold tabular-nums">{pct(1 - p)}</span> <span className="font-medium">{home}</span>
-                        </span>
-                    ) : null}
-                </div>
-                {/* 2px ice separator at the split */}
+            <div
+                role="img"
+                aria-label={summary}
+                className={cn('relative isolate w-full overflow-hidden rounded-control shadow-[inset_0_0_0_1px_rgb(255_255_255/0.06)]', sz.bar, animate && 'wb-anim')}
+                style={{ backgroundColor: hc }}
+            >
+                {/* Away fill, drawn at its final width and scaled from 50% on first paint. */}
                 <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-bg"
-                    style={{ left: `${awayW}%` }}
+                    className="wb-fill absolute inset-y-0 left-0 origin-left"
+                    style={{ width: `${awayW}%`, backgroundColor: ac, '--wb-s0': s0 } as React.CSSProperties}
                 />
+                {/* 2px ice separator; the layer spans the bar so translateX(%) is a bar percentage. */}
+                <span aria-hidden="true" className="wb-split pointer-events-none absolute inset-0" style={{ transform: `translateX(${awayW}%)` }}>
+                    <span className="absolute inset-y-0 -left-px w-0.5 bg-bg" />
+                </span>
+                {/* One-shot sheen after the fill settles (invisible at rest). */}
+                <span
+                    aria-hidden="true"
+                    className="wb-sheen pointer-events-none absolute inset-y-0 left-0 w-1/5 -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0"
+                />
+
+                {awayW >= sz.numMin ? (
+                    <span className={cn('absolute inset-y-0 left-0 flex items-center gap-1.5 overflow-hidden whitespace-nowrap [container-type:inline-size]', sz.pad)} style={{ width: `${awayW}%`, color: awayInk }}>
+                        <span className={sz.code}>{away}</span>
+                        <Num n={awayN} className={sz.num} />
+                    </span>
+                ) : null}
+                {homeW >= sz.numMin ? (
+                    <span className={cn('absolute inset-y-0 right-0 flex items-center justify-end gap-1.5 overflow-hidden whitespace-nowrap [container-type:inline-size]', sz.pad)} style={{ width: `${homeW}%`, color: homeInk }}>
+                        <Num n={homeN} className={sz.num} />
+                        <span className={sz.code}>{home}</span>
+                    </span>
+                ) : null}
             </div>
 
             {/* Labels for slivers too thin to hold text */}
-            {awayW < 14 || homeW < 14 ? (
+            {awayW < sz.numMin || homeW < sz.numMin ? (
                 <div aria-hidden="true" className="mt-1 flex justify-between text-caption font-semibold text-fg-2">
-                    <span>{awayW < 14 ? `${away} ${pct(p)}` : ''}</span>
-                    <span>{homeW < 14 ? `${pct(1 - p)} ${home}` : ''}</span>
+                    <span>{awayW < sz.numMin ? `${away} ${awayN}%` : ''}</span>
+                    <span>{homeW < sz.numMin ? `${homeN}% ${home}` : ''}</span>
                 </div>
             ) : null}
 

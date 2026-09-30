@@ -42,9 +42,11 @@ function Star({ on, team, onToggle }: { on: boolean; team: string; onToggle: () 
 }
 
 /**
- * One team in the card header: a 24px logo that links to the team page, the
- * name, this season's record and the projected starter with a status dot.
- * `score` switches the record line for a live/final score.
+ * One team in the card header: the crest (36px on a narrow card, 52px from
+ * the cq-md container width) on a soft team-colour glow, linking to the team
+ * page; the name, this season's record and the projected starter with a
+ * status dot. Narrow cards stack the crest above the name so long names like
+ * "Maple Leafs" never truncate. `score` swaps the record line for a score.
  */
 export function TeamSide({
     side,
@@ -53,6 +55,7 @@ export function TeamSide({
     faded,
     favorite,
     onFavorite,
+    color,
 }: {
     side: Side;
     s: SideData;
@@ -60,20 +63,38 @@ export function TeamSide({
     faded?: boolean;
     favorite: boolean;
     onFavorite: () => void;
+    /** Team colour for the crest glow (hex). */
+    color?: string;
 }) {
     const home = side === 'home';
     const st = goalieStatus(s.goalieStatus);
     return (
-        <div className={cn('flex min-w-0 items-center gap-2.5', home && 'flex-row-reverse text-right')}>
+        <div className={cn('flex min-w-0 flex-col gap-1.5 cq-md:flex-row cq-md:items-center cq-md:gap-3.5', home ? 'items-end text-right cq-md:flex-row-reverse' : 'items-start')}>
             <a
                 href={`/teams/${s.team.triCode}`}
                 aria-label={`${s.team.name} team page`}
-                className="relative z-10 -m-1.5 shrink-0 rounded-control p-1.5 transition-transform hover:scale-105 coarse:-m-2.5 coarse:p-2.5"
+                className="group/crest relative z-10 -m-1 shrink-0 rounded-full p-1 coarse:-m-1 coarse:p-1"
             >
+                {/* Team-colour glow behind the crest: lifts dark crests (LAK, CHI) off the card. */}
+                <span
+                    aria-hidden="true"
+                    className={cn('pointer-events-none absolute inset-0 rounded-full transition-opacity duration-300 group-hover/crest:opacity-100', faded ? 'opacity-30' : 'opacity-80')}
+                    style={{ background: `radial-gradient(closest-side, ${color ?? '#7dd3fc'}66, ${color ?? '#7dd3fc'}1f 60%, transparent)` }}
+                />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={s.team.logoUrl} alt="" width={32} height={32} decoding="async" className="h-6 w-6 object-contain cq-md:h-8 cq-md:w-8" />
+                <img
+                    src={s.team.logoUrl}
+                    alt=""
+                    width={52}
+                    height={52}
+                    decoding="async"
+                    className={cn(
+                        'relative h-9 w-9 object-contain drop-shadow-[0_2px_3px_rgb(0_0_0/0.55)] transition-transform duration-300 ease-out group-hover/crest:-translate-y-0.5 group-hover/crest:scale-105 motion-reduce:transition-none cq-md:h-[52px] cq-md:w-[52px]',
+                        faded && 'opacity-60 grayscale-[35%]',
+                    )}
+                />
             </a>
-            <div className={cn('flex min-w-0 flex-col', home && 'items-end')}>
+            <div className={cn('flex min-w-0 max-w-full flex-col', home && 'items-end')}>
                 <span className={cn('flex max-w-full items-center gap-1', home && 'flex-row-reverse')}>
                     <span className={cn('truncate text-body font-bold leading-tight text-fg-1 cq-md:text-title', faded && 'text-fg-2')}>{s.team.commonName}</span>
                     <Star on={favorite} team={s.team.commonName} onToggle={onFavorite} />

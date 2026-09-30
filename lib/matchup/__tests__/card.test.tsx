@@ -134,7 +134,29 @@ describe('lifecycle states on the card (E1)', () => {
             home: { score: 1, sog: 8 },
         });
         expect(text(el)).toContain('No pregame prediction');
-        expect(el.querySelector('[role="img"][aria-label^="Model win probability"]')).toBeNull();
+        expect(el.querySelector('[role="img"][aria-label*="win probability"]')).toBeNull();
+    });
+
+    it('pregame win bar: SSR paints the final split and numbers (animation is CSS-only)', () => {
+        const p = byTeams(opening, 'PIT', 'PHI');
+        const el = card(p);
+        const bar = el.querySelector<HTMLElement>('[role="img"][aria-label^="Our forecast win probability"]');
+        expect(bar).not.toBeNull();
+        const m = bar!.getAttribute('aria-label')!.match(/PIT (\d+)%, PHI (\d+)%/);
+        expect(m).not.toBeNull();
+        const [awayN, homeN] = [Number(m![1]), Number(m![2])];
+        expect(awayN + homeN).toBe(100);
+        // Final width in the markup; the fill only scales from 50% on first paint.
+        const fill = bar!.querySelector<HTMLElement>('.wb-fill')!;
+        expect(fill.style.width).toBe(`${awayN}%`);
+        expect(bar!.className).toContain('wb-anim');
+        // Tween targets are the final numbers, and plain text carries them too.
+        const targets = [...bar!.querySelectorAll<HTMLElement>('.wb-num')].map(n => n.style.getPropertyValue('--wb-to'));
+        expect(targets).toEqual([String(awayN), String(homeN)]);
+        expect(bar!.textContent).toContain(`${awayN}%`);
+        expect(bar!.textContent).toContain(`${homeN}%`);
+        // Nothing is hidden with opacity for the server render.
+        expect(bar!.outerHTML).not.toMatch(/opacity:\s*0/);
     });
 
     it('shows the edge chip with units only when the gate is open', () => {

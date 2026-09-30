@@ -115,7 +115,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
 
                 {/* Teams: the h2 holds the expand toggle; its hit area stretches over the card summary. */}
                 <h2 className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-                    <TeamSide side="away" s={p.away} score={scored ? live.away.score : null} faded={phase === 'final' && scored && live.away.score < live.home.score} favorite={favorites.includes(a)} onFavorite={() => onFavorite(a)} />
+                    <TeamSide side="away" s={p.away} color={colors.away} score={scored ? live.away.score : null} faded={phase === 'final' && scored && live.away.score < live.home.score} favorite={favorites.includes(a)} onFavorite={() => onFavorite(a)} />
                     <button
                         type="button"
                         aria-expanded={open}
@@ -133,19 +133,19 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                                 <span className={cn(phase === 'final' && live.home.score < live.away.score && 'text-fg-3')}>{live.home.score}</span>
                             </span>
                         ) : (
-                            <span aria-hidden="true" className="text-body font-semibold text-fg-3">
+                            <span aria-hidden="true" className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-2/70 text-caption font-bold text-fg-2 cq-md:h-8 cq-md:w-8">
                                 @
                             </span>
                         )}
                         <span className="sr-only">{open ? ', hide details' : ', show details'}</span>
                     </button>
-                    <TeamSide side="home" s={p.home} score={scored ? live.home.score : null} faded={phase === 'final' && scored && live.home.score < live.away.score} favorite={favorites.includes(h)} onFavorite={() => onFavorite(h)} />
+                    <TeamSide side="home" s={p.home} color={colors.home} score={scored ? live.home.score : null} faded={phase === 'final' && scored && live.home.score < live.away.score} favorite={favorites.includes(h)} onFavorite={() => onFavorite(h)} />
                 </h2>
 
                 {finalText ? <p className="-mt-1 text-center text-body-sm font-semibold text-fg-1">{finalText}</p> : null}
 
                 {/* Win probability */}
-                {model && !started ? <WinBar away={a} home={h} pAway={model.away / 100} awayColor={colors.away} homeColor={colors.home} size="md" className="pointer-events-none" /> : null}
+                {model && !started ? <WinBar away={a} home={h} pAway={model.away / 100} awayColor={colors.away} homeColor={colors.home} size="md" label="Our forecast win probability" className="pointer-events-none" /> : null}
                 {model && started ? (
                     // Once the puck drops the pregame split becomes a thin, muted ribbon; the numbers are in the line below.
                     <div aria-hidden="true" className="flex h-1.5 overflow-hidden rounded-full opacity-60">
