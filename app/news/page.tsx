@@ -91,7 +91,7 @@ export default function NewsPage() {
                     description="Starting goalies, injuries and lineup changes, grouped under the games they affect. Repeat reports on the same player are folded into one card."
                 />
                 <NewsFeed groups={groups} dayLabel={dayLabel} />
-                <p className="text-caption text-fg-3">Source: DailyFaceoff. Times are Eastern.</p>
+                <p className="text-caption text-fg-3">Source: DailyFaceoff. Times are in your time zone.</p>
             </div>
         </main>
     );
