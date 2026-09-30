@@ -348,7 +348,7 @@ class TeamState:
 
 @dataclass
 class GoalieSeason:
-    xga: float = 0.0      # normalised non-EN xG faced
+    xga: float = 0.0      # RAW non-EN xG faced (normalised at read time, see season_factor)
     ga: float = 0.0       # non-EN goals allowed
     gp: int = 0
 
@@ -365,6 +365,7 @@ class FeatureState:
     league_games: int = 0
     prev_league_gpg: float = 6.1
     n_updates: int = 0
+    season_totals: dict = field(default_factory=dict)   # season -> [non-EN goals, raw non-EN xG]
 
     # --- season handling ---------------------------------------------------
     def _team(self, name) -> TeamState:
@@ -436,29 +437,54 @@ class FeatureState:
         return None
 
 
-    def goalie_rating(self, name, season=None) -> tuple[float, float, int]:
-        """(regressed GSAx/game, weighted GP evidence, current-season GP)."""
+    def season_factor(self, season) -> float:
+        """xG -> goals normalisation for a season.  The season in progress uses
+        the shrunk to-date factor (no future games); a finished season uses its
+        exact factor, so league GSAx sums to zero within every past season."""
+        if season == self.season:
+            return self.norm_factor()
+        g, x = self.season_totals.get(season, (0.0, 0.0))
+        return g / x if x > 0 else 1.0
+
+    def goalie_breakdown(self, name, season=None) -> dict | None:
+        """Components of a goalie's rating (GSAx per game, normalised within season).
+
+        cur_rate / prior_rate: GSAx per game this season / weighted prior seasons
+        w_cur = gp_cur / (gp_cur + GOALIE_CUR_PRIOR_GP) blends them; the blend is
+        shrunk toward 0 by ev / (ev + GOALIE_SHRINK_GP), ev = weighted GP."""
         season = self.season if season is None else season
-        name = self.resolve_goalie(name)
-        if name is None:
-            return 0.0, 0.0, 0
-        by = self.goalies[name]
+        key = self.resolve_goalie(name)
+        if key is None:
+            return None
+        by = self.goalies[key]
         cur = by.get(season, GoalieSeason())
-        cur_rate = (cur.xga - cur.ga) / cur.gp if cur.gp else 0.0
+        cur_gsax = cur.xga * self.season_factor(season) - cur.ga
+        cur_rate = cur_gsax / cur.gp if cur.gp else 0.0
         p_gsax = p_gp = 0.0
         for k, w in enumerate(GOALIE_SEASON_DECAY, start=1):
             s = by.get(season - k)
             if s and s.gp:
-                p_gsax += w * (s.xga - s.ga)
+                p_gsax += w * (s.xga * self.season_factor(season - k) - s.ga)
                 p_gp += w * s.gp
         prior_rate = p_gsax / p_gp if p_gp else 0.0
         if p_gp == 0:
-            raw = cur_rate
+            w_cur, raw = 1.0, cur_rate
         else:
             w_cur = cur.gp / (cur.gp + GOALIE_CUR_PRIOR_GP)
             raw = w_cur * cur_rate + (1 - w_cur) * prior_rate
         ev = cur.gp + p_gp
-        return raw * ev / (ev + GOALIE_SHRINK_GP), ev, cur.gp
+        shrink = ev / (ev + GOALIE_SHRINK_GP)
+        return {'name': key, 'season': season, 'rating': raw * shrink, 'raw': raw, 'shrink': shrink,
+                'evidence_gp': ev, 'gp_cur': cur.gp, 'gsax_cur': cur_gsax, 'cur_rate': cur_rate,
+                'prior_rate': prior_rate, 'prior_gp_weighted': p_gp, 'w_cur': w_cur,
+                'gp_by_season': {int(k): v.gp for k, v in by.items()}}
+
+    def goalie_rating(self, name, season=None) -> tuple[float, float, int]:
+        """(regressed GSAx/game, weighted GP evidence, current-season GP)."""
+        b = self.goalie_breakdown(name, season)
+        if b is None:
+            return 0.0, 0.0, 0
+        return b['rating'], b['evidence_gp'], b['gp_cur']
 
     # --- update ---------------------------------------------------------------
     def update(self, day: pd.DataFrame):
@@ -474,8 +500,8 @@ class FeatureState:
             return
         for season in sorted({int(h.season) for h, _ in pairs}):
             self.ensure_season_for_date(None, season=season)
-        # Normalisation factor for this day's goalie updates uses the state
-        # BEFORE the day (consistent with what pregame features saw).
+        # Normalisation factor for this day's special-teams updates uses the
+        # state BEFORE the day (consistent with what pregame features saw).
         norm = self.norm_factor()
         for h, a in pairs:
             self._update_game(h, a, norm)
@@ -484,6 +510,7 @@ class FeatureState:
             for r in (h, a):
                 self.season_goals += float(r.ga_noen) if not pd.isna(r.ga_noen) else 0.0
                 self.season_xg += float(r.rxga_all) if not pd.isna(r.rxga_all) else 0.0
+        self.season_totals[self.season] = [self.season_goals, self.season_xg]
         self.n_updates += 1
 
     def _update_game(self, h, a, norm):
@@ -541,7 +568,7 @@ class FeatureState:
             t.last_date = pd.Timestamp(row.game_date)
             t.last_venue = _arena(h.team)
 
-        # Goalies (starter credited; EN excluded; xG normalised in-season)
+        # Goalies (starter credited; EN excluded; raw xG, normalised at read time)
         season = int(h.season)
         for row in (h, a):
             gname = row.starting_goalie
@@ -550,7 +577,7 @@ class FeatureState:
             gs = self.goalies.setdefault(gname, {}).setdefault(season, GoalieSeason())
             xga = 0.0 if pd.isna(row.rxga_all) else float(row.rxga_all)
             ga = 0.0 if pd.isna(row.ga_noen) else float(row.ga_noen)
-            gs.xga += norm * xga
+            gs.xga += xga
             gs.ga += ga
             gs.gp += 1
 

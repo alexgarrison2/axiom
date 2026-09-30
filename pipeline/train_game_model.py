@@ -155,7 +155,7 @@ def tune_C(train: pd.DataFrame, cols, grid=C_GRID, default=DEFAULT_C):
     Every season v in ``train`` that has an earlier season is a validation
     season (fit on seasons < v).  Per-game log losses are pooled and the
     one-standard-error rule picks the MOST regularised C whose pooled log loss
-    is within one SE of the best (Breiman et al.), which keeps probabilities
+    is within one paired SE of the best (Breiman et al.), which keeps probabilities
     from being overconfident when a season's signal is weaker than usual.
     With no validation season available the prior default C is used."""
     seasons = sorted(train['season'].unique())
@@ -178,9 +178,12 @@ def tune_C(train: pd.DataFrame, cols, grid=C_GRID, default=DEFAULT_C):
         return default, {}
     means = {C: float(v.mean()) for C, v in per_c.items()}
     best = min(means, key=means.get)
-    se = float(per_c[best].std(ddof=1) / np.sqrt(len(per_c[best])))
-    chosen = min(C for C in per_c if means[C] <= means[best] + se)
-    return chosen, {**means, 'best': best, 'se': se}
+    # Paired SE: the same games are scored under every C, so the noise that
+    # matters is in the per-game DIFFERENCE from the best C, not in the loss
+    # itself (whose SE, ~0.004, would make the rule pick an underfit model).
+    se_diff = {C: float((v - per_c[best]).std(ddof=1) / np.sqrt(len(v))) for C, v in per_c.items()}
+    chosen = min(C for C in per_c if means[C] - means[best] <= se_diff[C])
+    return chosen, {**means, 'best': best, 'se_paired': se_diff}
 
 
 def walk_forward(M: pd.DataFrame, cols, test_seasons=TEST_SEASONS, C=None):
