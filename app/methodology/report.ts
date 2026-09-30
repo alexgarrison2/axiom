@@ -15,6 +15,10 @@ export interface MetricRow {
     brier?: number;
     logLoss?: number;
     isModel?: boolean;
+    /** Model row: live picks from the previous site model (no model version recorded). */
+    legacyN?: number;
+    /** Market row: the model's log loss on the market's games. */
+    modelLogLossSame?: number;
 }
 
 export interface SeasonSummary {
@@ -35,6 +39,18 @@ export interface WalkForwardRow {
     homeRateLogLoss?: number;
     /** Log loss of the previous (legacy) model on the same games. */
     legacyLogLoss?: number;
+    /** Log loss of the de-vigged market on the same games (when the backtest had prices). */
+    marketLogLoss?: number;
+}
+
+/** Out-of-sample games with real market prices (pipeline market backtest). */
+export interface MarketBacktest {
+    n?: number;
+    first?: string;
+    last?: string;
+    modelLogLoss?: number;
+    marketLogLoss?: number;
+    prevLogLoss?: number;
 }
 
 export interface ModelInfo {
@@ -46,6 +62,7 @@ export interface ModelInfo {
     trainedAt?: string;
     gate?: { open?: boolean; reason?: string; reasons?: string[] };
     walkForward?: WalkForwardRow[];
+    marketBacktest?: MarketBacktest;
     earlySeasonLogLoss?: number;
     notes?: string;
 }
@@ -87,7 +104,7 @@ const BASELINE_LABELS: Record<string, string> = {
 };
 
 function metricRow(label: string, o: Obj, isModel = false): MetricRow {
-    return {
+    const row: MetricRow = {
         label,
         isModel,
         n: num(o, 'n', 'games', 'n_games', 'count'),
@@ -95,6 +112,11 @@ function metricRow(label: string, o: Obj, isModel = false): MetricRow {
         brier: num(o, 'brier', 'brier_score'),
         logLoss: num(o, 'log_loss', 'logloss', 'logLoss'),
     };
+    const legacyN = num(o, 'n_legacy');
+    if (isModel && legacyN != null) row.legacyN = legacyN;
+    const same = num(o, 'model_log_loss_same_games');
+    if (!isModel && same != null) row.modelLogLossSame = same;
+    return row;
 }
 
 function summarize(season: string, block: Obj, gameType?: string): SeasonSummary | null {
@@ -152,8 +174,21 @@ export function parseReport(raw: unknown): { model: ModelInfo; seasons: SeasonSu
                 logLoss: num(w, 'log_loss', 'logloss'),
                 homeRateLogLoss: num(w, 'home_rate_log_loss'),
                 legacyLogLoss: num(w, 'legacy_xgb_log_loss', 'legacy_log_loss', 'current_log_loss'),
+                marketLogLoss: num(w, 'market_log_loss'),
             }))
             .filter(w => w.season && w.logLoss != null);
+    }
+    const bt = isObj(raw.market_backtest) ? raw.market_backtest : null;
+    if (bt && isObj(bt.log_loss)) {
+        const ll = bt.log_loss;
+        model.marketBacktest = {
+            n: num(bt, 'n_games', 'n'),
+            first: str(bt.first_game),
+            last: str(bt.last_game),
+            modelLogLoss: num(ll, 'new_model'),
+            marketLogLoss: num(ll, 'market_power_devig', 'market'),
+            prevLogLoss: num(ll, 'site_model_as_shown'),
+        };
     }
     const gate = isObj(raw.gate) ? raw.gate : isObj(raw.gate_status) ? raw.gate_status : null;
     if (gate) {

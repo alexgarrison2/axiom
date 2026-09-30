@@ -23,6 +23,12 @@ export interface GlossaryEntry {
     anchor?: string;
     /** Other names users might search for. */
     aliases?: string[];
+    /**
+     * Extra ids this entry answers to on /methodology (without the "term-"
+     * prefix), for chips whose label differs from the entry key, e.g. B2B →
+     * the rest entry. Every id resolves to #term-<id>.
+     */
+    anchors?: string[];
 }
 
 export const GLOSSARY = {
@@ -53,8 +59,8 @@ export const GLOSSARY = {
     edge: {
         label: 'Edge',
         title: 'Edge / expected value (EV)',
-        short: 'How much better the model thinks a bet is than the market price. Positive edge means the model rates the team higher than the odds do.',
-        detail: 'EV = model probability × decimal odds − 1. Edges and stakes stay hidden until the model has proven it can beat the market over a meaningful sample of live games (the edge gate); the Accuracy page shows the gate’s status.',
+        short: 'Expected profit per unit staked at the book’s price. Positive means our forecast rates the team higher than the odds do.',
+        detail: 'EV = forecast probability × decimal odds − 1, using the published (market-blended) forecast, not the model-only number. Edges and stakes stay hidden until the model has proven it can beat the market over a meaningful sample of live games (the bet gate); the Accuracy page shows the gate’s status.',
         anchor: 'edge',
         aliases: ['EV', 'expected value', '+EV'],
     },
@@ -83,26 +89,27 @@ export const GLOSSARY = {
         aliases: ['DFO', 'Daily Faceoff', 'lines', 'starting goalies'],
     },
     'after-n': {
-        label: 'After N games',
-        title: 'After N games',
-        short: 'How many games this season a number is based on, e.g. "after 1 game". Fewer games means more noise.',
-        detail: 'Shown instead of a bare n= so small samples are obvious. Once a team has played enough games the label goes away.',
+        label: 'n=',
+        title: 'Sample size (n=)',
+        short: 'How many games this season a number is based on, e.g. "L1 0-1-0 n=1". Fewer games means more noise.',
+        detail: 'Small samples also get a dashed outline. Once a team has played enough games the n= and the outline go away.',
         anchor: 'early-season',
-        aliases: ['n=', 'games played', 'GP'],
+        aliases: ['After N games', 'games played', 'GP', 'sample size'],
+        anchors: ['n'],
     },
     units: {
         label: 'Units',
         title: 'Suggested stake (units)',
-        short: 'A suggested bet size in units, where 1 unit is your standard stake. Shown only when the edge gate is open.',
-        detail: 'Sized with a fractional Kelly formula and capped. Every suggestion is recorded in the public bet ledger on the Accuracy page.',
+        short: 'A suggested bet size in units, where 1 unit (1u) = 1% of bankroll. New suggestions show only when the bet gate is open.',
+        detail: 'Sized with quarter-Kelly and capped at 5u. Every suggestion is recorded in the public bet ledger on the Accuracy page, with its stake and result.',
         anchor: 'edge',
         aliases: ['u', 'stake', 'kelly'],
     },
     'projected-goals': {
         label: 'Proj. goals',
         title: 'Projected goals (xG)',
-        short: 'How many goals the model expects each team to score tonight.',
-        detail: 'Expected goals (xG) weigh every shot by how often shots like it go in, based on location, type and situation. Projected goals combine each team’s xG for and against with goaltending and special teams.',
+        short: 'How many goals each team is expected to score tonight, including the expected overtime goal.',
+        detail: 'Derived from the published forecast: the goal totals are backed out of the win probability, so the team projected to score more is always the favourite.',
         anchor: 'the-model',
         aliases: ['xG', 'expected goals', 'projected xG'],
     },
@@ -152,7 +159,8 @@ export const GLOSSARY = {
         short: 'How strongly the model favours one side: the further the win probability is from 50%, the higher the grade.',
         detail: 'Grades group picks into tiers (50–55%, 55–60%, 60–65%, 65%+). The Accuracy page shows how each tier has actually performed.',
         anchor: 'grading',
-        aliases: ['confidence grade', 'tier'],
+        aliases: ['confidence grade', 'tier', 'CONF'],
+        anchors: ['conf'],
     },
     rest: {
         label: 'Rest / B2B',
@@ -161,6 +169,7 @@ export const GLOSSARY = {
         detail: 'Also flags compressed stretches such as 3 games in 4 nights (3in4). Computed from the full schedule, including tomorrow’s games.',
         anchor: 'context',
         aliases: ['B2B', 'back-to-back', 'rest days', '3in4', '4in6', 'fatigue'],
+        anchors: ['b2b'],
     },
     'result-codes': {
         label: 'W / L / OTL / SOL',
@@ -217,10 +226,47 @@ export const GLOSSARY = {
     'player-impact': {
         label: 'Impact',
         title: 'Player impact rating',
-        short: 'A player’s estimated contribution to his team’s goal differential per 60 minutes, relative to an average player.',
-        detail: 'Blends even-strength offence and defence with power-play and penalty-kill value, using a ridge-regression (RAPM-style) model that separates a player from his linemates.',
+        short: 'How far above or below an average player at his position a skater rates, in standard deviations. 0 is average; +1 is one standard deviation better.',
+        detail: 'Impact = weighted sum of four z-scores within forwards or defence: forwards 0.50 EV OFF + 0.20 EV DEF + 0.20 PP + 0.10 PK; defence 0.25 / 0.40 / 0.15 / 0.20. EV OFF blends individual xG/60, points/60, on-ice xGF, slot attempts and RAPM offence; EV DEF blends on-ice xGA saved and RAPM defence. Not goals per 60.',
         anchor: 'players',
-        aliases: ['impact', 'RAPM'],
+        aliases: ['impact', 'RAPM', 'EV OFF', 'EV DEF'],
+    },
+    lean: {
+        label: '◆ Lean',
+        title: 'Model lean flag',
+        short: 'Shown when the model on its own disagrees with the market by 8+ points: "◆ 61 NYI" means the model alone gives NYI 61%.',
+        detail: 'The bar’s fill stays the published forecast; the flag only marks a big model-market gap. It is not a bet signal while the bet gate is closed.',
+        anchor: 'reading',
+        aliases: ['model lean', '◆', 'diamond'],
+    },
+    opener: {
+        label: 'Opener',
+        title: 'Season opener',
+        short: 'The team has not played a game yet this season, so form, home/road and special-teams chips have nothing to show.',
+        anchor: 'early-season',
+        aliases: ['first game', 'OPENER', 'Opener · both'],
+    },
+    wt: {
+        label: 'Wt',
+        title: 'Model weight in the forecast',
+        short: 'How much of the published forecast comes from the model; the market carries the rest. "Wt 20%" = model ×0.20, market ×0.80.',
+        detail: 'The why-bars show model factors after this scaling, so a factor worth 7 points inside the model moves the forecast about 1.5 at Wt 20%. The weight grows as teams play more games.',
+        anchor: 'market',
+        aliases: ['weight', 'model weight', 'blend weight'],
+    },
+    po: {
+        label: 'PO',
+        title: 'Playoff',
+        short: 'PO% is a team’s chance to make the playoffs across the season simulations. A PO chip on a graded pick marks a playoff game.',
+        anchor: 'standings',
+        aliases: ['PO%', 'playoff game'],
+    },
+    legacy: {
+        label: 'LEGACY',
+        title: 'Previous site model',
+        short: 'A pick or bet published by the previous site model, before the current model went live. Graded, but not counted toward the bet gate.',
+        anchor: 'grading',
+        aliases: ['Prev. model', 'previous model', 'old model'],
     },
     // ── Teams table columns ────────────────────────────────────────────────
     'points-pct': {
@@ -307,4 +353,17 @@ export function isGlossaryTerm(term: string): term is GlossaryTerm {
 
 export function getGlossaryEntry(term: string): GlossaryEntry | undefined {
     return isGlossaryTerm(term) ? GLOSSARY[term] : undefined;
+}
+
+/** Every id a glossary entry answers to (its key plus any extra anchors). */
+export function glossaryIds(term: GlossaryTerm): string[] {
+    return [term, ...((GLOSSARY[term] as GlossaryEntry).anchors ?? [])];
+}
+
+/** Every #term-… anchor rendered on /methodology. */
+export const GLOSSARY_ANCHORS: string[] = GLOSSARY_TERMS.flatMap(t => glossaryIds(t).map(id => `term-${id}`));
+
+/** Link to a term on /methodology, e.g. glossaryHref('b2b') → "/methodology#term-b2b". */
+export function glossaryHref(id: string): string {
+    return `/methodology#term-${id}`;
 }

@@ -9,7 +9,7 @@ import { reportLags } from '@/components/accuracy/report';
 import { tidyReason } from '@/components/accuracy/ledger-data';
 import { WinBar, WinBarLegend } from '@/components/ui/win-bar';
 import { SeasonTag, StatChip } from '@/components/ui/stat-chip';
-import { parseReport, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
+import { parseReport, type MarketBacktest, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
 
 export const revalidate = 3600;
 
@@ -44,13 +44,29 @@ const SECTIONS = [
     { id: 'glossary', label: 'Glossary' },
 ];
 
+/** "2026-03-06" → "2025-26" (seasons roll over on July 1). */
+function seasonOfDate(d: string): string | undefined {
+    const m = d.match(/^(\d{4})-(\d{2})/);
+    if (!m) return undefined;
+    const start = Number(m[2]) >= 7 ? Number(m[1]) : Number(m[1]) - 1;
+    return `${start}-${String(start + 1).slice(2)}`;
+}
+
 const fmt = (v: number | undefined, digits: number, pct = false) =>
     v == null ? '—' : pct ? `${(v * (v <= 1 ? 100 : 1)).toFixed(1)}%` : v.toFixed(digits);
 
+/** Below this many graded games a better/worse call is noise (the /accuracy rule): no badge. */
+const SIGNAL_N = 100;
+
 function MetricsTable({ summary }: { summary: SeasonSummary }) {
     const model = summary.rows.find(r => r.isModel);
-    const better = (r: MetricRow, k: 'brier' | 'logLoss') =>
-        !r.isModel && model?.[k] != null && r[k] != null ? (model[k]! < r[k]! ? 'model' : model[k]! > r[k]! ? 'baseline' : 'tie') : null;
+    // Compare on the same games: the market row carries the model's log loss on its games.
+    const better = (r: MetricRow) => {
+        const mine = r.modelLogLossSame ?? model?.logLoss;
+        if (r.isModel || mine == null || r.logLoss == null || (model?.n ?? 0) < SIGNAL_N || (r.n ?? model?.n ?? 0) < SIGNAL_N) return null;
+        const d = Math.round(mine * 1e4) - Math.round(r.logLoss * 1e4);
+        return d < 0 ? 'model' : d > 0 ? 'baseline' : 'tie';
+    };
     return (
         <div className="panel overflow-x-auto" role="region" aria-label={`${summary.season} validation metrics`} tabIndex={0}>
             <table className="table-dense min-w-[520px]">
@@ -68,7 +84,7 @@ function MetricsTable({ summary }: { summary: SeasonSummary }) {
                 </thead>
                 <tbody>
                     {summary.rows.map(r => {
-                        const b = better(r, 'logLoss');
+                        const b = better(r);
                         return (
                             <tr key={r.label}>
                                 <th scope="row" className={`text-left font-semibold ${r.isModel ? 'text-brand' : 'text-fg-1'}`}>
@@ -91,7 +107,26 @@ function MetricsTable({ summary }: { summary: SeasonSummary }) {
     );
 }
 
-function WalkForwardTable({ rows }: { rows: WalkForwardRow[] }) {
+function WalkForwardTable({ rows: wf, market }: { rows: WalkForwardRow[]; market?: MarketBacktest }) {
+    // Full-season folds have no market prices; the market backtest adds the games that do.
+    const btSeason = market?.first ? seasonOfDate(market.first) : undefined;
+    const rows: (WalkForwardRow & { key: string; label: string; mkt?: boolean })[] = [
+        ...wf.map(r => ({ ...r, key: r.season, label: r.season })),
+        ...(market?.modelLogLoss != null && market.marketLogLoss != null
+            ? [
+                  {
+                      key: 'mkt',
+                      label: `${btSeason ?? ''} · MKT`.replace(/^ · /, ''),
+                      season: btSeason ?? '',
+                      n: market.n,
+                      logLoss: market.modelLogLoss,
+                      legacyLogLoss: market.prevLogLoss,
+                      marketLogLoss: market.marketLogLoss,
+                      mkt: true,
+                  },
+              ]
+            : []),
+    ];
     const hasLegacy = rows.some(r => r.legacyLogLoss != null);
     const hasHome = rows.some(r => r.homeRateLogLoss != null);
     return (
@@ -106,19 +141,32 @@ function WalkForwardTable({ rows }: { rows: WalkForwardRow[] }) {
                         <th scope="col" className="text-right">Log loss ↓</th>
                         {hasLegacy ? <th scope="col" className="text-right">Prev. model</th> : null}
                         {hasHome ? <th scope="col" className="text-right">Home rate</th> : null}
+                        <th scope="col" className="text-right">
+                            Market
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map(r => (
-                        <tr key={r.season}>
+                        <tr key={r.key}>
                             <th scope="row" className="text-left font-semibold text-fg-1">
-                                {r.season}
+                                {r.mkt ? (
+                                    <abbr
+                                        title={`Games with a real pregame market price${market?.first && market.last ? `, ${market.first} to ${market.last}` : ''}; model trained only on earlier games`}
+                                        className="no-underline"
+                                    >
+                                        {r.label}
+                                    </abbr>
+                                ) : (
+                                    r.label
+                                )}
                             </th>
                             <td className="text-right text-fg-2">{r.n?.toLocaleString() ?? '—'}</td>
                             <td className="text-right text-fg-1">{fmt(r.accuracy, 1, true)}</td>
                             <td className="text-right font-bold text-brand">{fmt(r.logLoss, 4)}</td>
                             {hasLegacy ? <td className="text-right text-fg-2">{fmt(r.legacyLogLoss, 4)}</td> : null}
                             {hasHome ? <td className="text-right text-fg-2">{fmt(r.homeRateLogLoss, 4)}</td> : null}
+                            <td className="text-right text-fg-2">{fmt(r.marketLogLoss, 4)}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -156,15 +204,24 @@ export default function MethodologyPage() {
     const prior = `${SEASON_START_YEAR - 1}-${String(SEASON_START_YEAR).slice(2)}`;
     const current = `${SEASON_START_YEAR}-${String(SEASON_START_YEAR + 1).slice(2)}`;
     // Past seasons were graded on the site model of the day, not the current one.
-    const priorRaw = seasons.find(s => s.season === prior);
-    const priorSummary = priorRaw
-        ? { ...priorRaw, rows: priorRaw.rows.map(r => (r.isModel ? { ...r, label: r.label.replace('Pony xG model', 'Previous site model (live)') } : r)) }
-        : undefined;
+    // A season's model row is named for the model that made its picks: every pick from
+    // the previous site model (or any past season) reads "Previous site model (live)".
+    const labelled = (s: SeasonSummary | undefined, past: boolean): SeasonSummary | undefined =>
+        s && {
+            ...s,
+            rows: s.rows.map(r =>
+                r.isModel && (past || (r.n != null && r.n > 0 && (r.legacyN ?? 0) >= r.n)) ? { ...r, label: r.label.replace('Pony xG model', 'Previous site model (live)') } : r,
+            ),
+        };
+    const priorSummary = labelled(
+        seasons.find(s => s.season === prior),
+        true,
+    );
     const graded = loadGradedGames();
     const tally = tallySeason(graded, current, loadExcludedGames(current, graded));
     const reportN = seasons.find(s => s.season === current)?.rows.find(r => r.isModel)?.n ?? 0;
     // Same count as /accuracy: a report that lags the graded list (or has no games yet) is not shown as the current record.
-    const currentSummary = reportN === 0 || reportLags(reportN, tally) ? undefined : seasons.find(s => s.season === current);
+    const currentSummary = reportN === 0 || reportLags(reportN, tally) ? undefined : labelled(seasons.find(s => s.season === current), false);
     let i = 0;
 
     return (
@@ -259,9 +316,10 @@ export default function MethodologyPage() {
                                 scored — a steadier signal of team quality than goals, which bounce around with luck and goaltending.
                             </p>
                             <p>
-                                For tonight&apos;s games, the model combines each team&apos;s xG for and against (recent and season-long, regressed toward
-                                league average), the starting goalies&apos; goals saved above expected, special teams, rest and travel, and home ice. It
-                                produces projected goals for each side and a win probability that includes overtime and the shootout.
+                                For tonight&apos;s games, the model combines each team&apos;s xG share (5-on-5 and all situations, regressed toward league
+                                average), Elo rating, points percentage, the starting goalies&apos; goals saved above expected, rest and back-to-backs, and
+                                home ice. It produces a win probability that includes overtime and the shootout. Projected goals are derived from the
+                                published forecast, not a separate goal model.
                             </p>
                             {model.name || model.description ? (
                                 <p className="panel px-3 py-2 text-caption">
@@ -294,10 +352,14 @@ export default function MethodologyPage() {
 
                         <Section id="edge" index={++i} title="Edges & bets">
                             <p>
-                                <strong>Edge</strong> is how much better the model rates a side than its price. Edges are only highlighted, and{' '}
-                                <strong>units</strong> only suggested, when the model has shown over a meaningful sample that its disagreements with the
-                                market carry real information. Until that <strong>bet gate</strong> opens, edges and stakes are hidden; the ledger on the
-                                Accuracy page still grades every stake the site ever suggested.
+                                <strong>Edge</strong> (EV) is the expected profit per unit staked: <strong>EV = forecast probability × decimal odds − 1</strong>,
+                                using the published, market-blended forecast. Edges are only highlighted, and <strong>units</strong> only suggested, when the
+                                model has shown over a meaningful sample that its disagreements with the market carry real information. Until that{' '}
+                                <strong>bet gate</strong> opens, new edges and stakes are hidden; the ledger on the Accuracy page still grades every stake the
+                                site ever suggested.
+                            </p>
+                            <p>
+                                <strong>1 unit (1u) = 1% of bankroll.</strong> Stakes are quarter-Kelly, capped at 5u.
                             </p>
                             {model.gate ? (
                                 <div className="panel px-3 py-2 text-caption">
@@ -394,8 +456,11 @@ export default function MethodologyPage() {
                                         scored on every game of that season (regular season and playoffs)
                                         {model.walkForward.some(w => w.legacyLogLoss != null) ? ', next to the model it replaced' : ''}.
                                         {model.earlySeasonLogLoss != null ? ` In the first weeks of those seasons its log loss was ${model.earlySeasonLogLoss.toFixed(4)}.` : ''}
+                                        {model.marketBacktest?.marketLogLoss != null
+                                            ? ' Full seasons have no stored market prices; the MKT row compares the model with the de-vigged market on the games that do.'
+                                            : ''}
                                     </p>
-                                    <WalkForwardTable rows={model.walkForward} />
+                                    <WalkForwardTable rows={model.walkForward} market={model.marketBacktest} />
                                 </>
                             ) : null}
                             {model.notes ? <p>{model.notes}</p> : null}
@@ -426,9 +491,11 @@ export default function MethodologyPage() {
 
                         <Section id="players" index={++i} title="Players & standings">
                             <p>
-                                <strong>Player impact</strong> estimates each skater&apos;s contribution to goal differential per 60 minutes relative to an
-                                average player, separating him from his linemates with a ridge-regression (RAPM-style) model. Ratings rebuild once the league
-                                has played enough games; until then last season&apos;s ratings show with a season tag, with teams updated for offseason moves.
+                                <strong>Player impact</strong> is measured in standard deviations from the average player at the same position (0 =
+                                average). Each skater gets four z-scores — even-strength offence, even-strength defence, power play and penalty kill —
+                                built from on-ice and individual xG rates and a ridge-regression (RAPM-style) estimate that separates him from his
+                                linemates. Impact weights them 50/20/20/10 for forwards and 25/40/15/20 for defence. Ratings rebuild once the league has
+                                played enough games; until then last season&apos;s ratings show with a season tag, with teams updated for offseason moves.
                             </p>
                             <p id="standings" className="scroll-mt-[calc(var(--appbar-h)+16px)]">
                                 <strong>Playoff odds</strong> come from simulating the rest of the season thousands of times with the same game model. On
@@ -499,10 +566,17 @@ export default function MethodologyPage() {
                             </h2>
                             <dl className="mt-3 grid gap-x-6 sm:grid-cols-2">
                                 {GLOSSARY_TERMS.map(key => {
-                                    const e = GLOSSARY[key] as { label: string; title: string; short: string; detail?: string };
+                                    const e = GLOSSARY[key] as { label: string; title: string; short: string; detail?: string; anchors?: string[] };
                                     return (
-                                        <div key={key} id={`term-${key}`} className="scroll-mt-[calc(var(--appbar-h)+16px)] border-t border-line/60 py-2">
+                                        <div
+                                            key={key}
+                                            id={`term-${key}`}
+                                            className="scroll-mt-[calc(var(--appbar-h)+16px)] border-t border-line/60 py-2 target:pl-2 target:shadow-[inset_2px_0_0_var(--brand)] has-[:target]:pl-2 has-[:target]:shadow-[inset_2px_0_0_var(--brand)]"
+                                        >
                                             <dt className="flex items-baseline justify-between gap-3">
+                                                {e.anchors?.map(a => (
+                                                    <span key={a} id={`term-${a}`} aria-hidden="true" className="w-0 scroll-mt-[calc(var(--appbar-h)+24px)]" />
+                                                ))}
                                                 <span className="font-display text-body font-semibold text-fg-1">{e.label}</span>
                                                 {e.title !== e.label ? <span className="text-right text-micro uppercase tracking-[0.1em] text-fg-3">{e.title}</span> : null}
                                             </dt>
