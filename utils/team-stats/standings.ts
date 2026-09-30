@@ -1,6 +1,9 @@
 import { isWin } from './game-row';
 import { CONFERENCE_OF, DIVISION_OF, DIVISIONS } from './teams';
 import type { Division, GameRow, TeamStat } from './types';
+import { compareOfficial, type OfficialStandingKeys } from './official-order';
+
+export { compareOfficial, type OfficialStandingKeys };
 
 const INITIAL: Record<Division, string> = { Atlantic: 'A', Metro: 'M', Central: 'C', Pacific: 'P' };
 
@@ -19,11 +22,21 @@ export interface Bracket {
     matchups: [string, string][]; // [higher seed, lower seed] tricodes
 }
 
+/** Map a TeamStat onto the official keys. */
+export const officialKeysOf = (t: Pick<TeamStat, 'points' | 'gp' | 'rw' | 'row' | 'wins' | 'goal_diff' | 'gf'>): OfficialStandingKeys => ({
+    pts: t.points,
+    gp: t.gp,
+    rw: t.rw,
+    row: t.row,
+    w: t.wins,
+    gd: t.goal_diff,
+    gf: t.gf,
+});
+
 /**
- * Official NHL order: points → regulation wins → regulation + OT wins →
- * head-to-head points (pairwise) → conference points → goal differential.
- * `standings` must be regular-season rows; `games` the same season's
- * regular-season games (for the head-to-head and conference tiebreaks).
+ * Official NHL order (see compareOfficial), with head-to-head points and
+ * conference points as late fallbacks. `games` are the same season's
+ * regular-season games.
  */
 export function makeComparator(games: GameRow[]) {
     const h2h = new Map<string, number>();
@@ -37,16 +50,14 @@ export function makeComparator(games: GameRow[]) {
         if (d1 && d2 && CONFERENCE_OF[d1] === CONFERENCE_OF[d2]) conf.set(g.tri, (conf.get(g.tri) ?? 0) + pts);
     }
     return (a: TeamStat, b: TeamStat) => {
-        if (b.points !== a.points) return b.points - a.points;
-        if (b.rw !== a.rw) return b.rw - a.rw;
-        if (b.row !== a.row) return b.row - a.row;
+        const off = compareOfficial(officialKeysOf(a), officialKeysOf(b));
+        if (off) return off;
         const ah = h2h.get(`${a.tri}|${b.tri}`) ?? 0;
         const bh = h2h.get(`${b.tri}|${a.tri}`) ?? 0;
         if (ah !== bh) return bh - ah;
         const ac = conf.get(a.tri) ?? 0;
         const bc = conf.get(b.tri) ?? 0;
         if (ac !== bc) return bc - ac;
-        if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
         return a.tri.localeCompare(b.tri);
     };
 }

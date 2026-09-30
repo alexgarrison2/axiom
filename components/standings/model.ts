@@ -3,6 +3,8 @@
  * runs on the server, the client and in vitest.
  */
 
+import { compareOfficial } from '@/utils/team-stats/official-order';
+
 export type Conference = 'East' | 'West';
 export type Division = 'Atlantic' | 'Metropolitan' | 'Central' | 'Pacific';
 
@@ -54,6 +56,10 @@ export interface StandingsRow {
     pts: number;
     rw: number;
     row: number;
+    /** Goal differential (standings convention). */
+    gd?: number;
+    /** Goals for (standings convention). */
+    gf?: number;
     proj: TeamProjection | null;
     /** Playoff % change vs the previous daily snapshot (points), or null. */
     delta24: number | null;
@@ -191,19 +197,19 @@ export function trendFor(history: HistoryPoint[] | undefined, current: number | 
 /* ── Standings order and seeding ──────────────────────────────────────── */
 
 /**
- * NHL order: points, then fewer games played (points %), regulation wins,
- * regulation + OT wins, wins. Early in the season, when those all tie, the
- * model's projected points break the tie.
+ * Official NHL order (shared with /teams via compareOfficial): points, P%,
+ * fewer GP, RW, ROW, W, goal differential, goals for. Only when all of those
+ * tie do the model's projected points break the tie.
  */
 export function compareStandings(a: StandingsRow, b: StandingsRow): number {
-    if (b.pts !== a.pts) return b.pts - a.pts;
-    const pa = a.gp ? a.pts / a.gp : 0;
-    const pb = b.gp ? b.pts / b.gp : 0;
-    if (pb !== pa) return pb - pa;
-    if (b.rw !== a.rw) return b.rw - a.rw;
-    if (b.row !== a.row) return b.row - a.row;
-    if (b.w !== a.w) return b.w - a.w;
-    return (b.proj?.avgPoints ?? 0) - (a.proj?.avgPoints ?? 0) || a.tri.localeCompare(b.tri);
+    return (
+        compareOfficial(
+            { pts: a.pts, gp: a.gp, rw: a.rw, row: a.row, w: a.w, gd: a.gd ?? 0, gf: a.gf ?? 0 },
+            { pts: b.pts, gp: b.gp, rw: b.rw, row: b.row, w: b.w, gd: b.gd ?? 0, gf: b.gf ?? 0 },
+        ) ||
+        (b.proj?.avgPoints ?? 0) - (a.proj?.avgPoints ?? 0) ||
+        a.tri.localeCompare(b.tri)
+    );
 }
 
 /** Order by the model's projected finish (for the projected bracket). */

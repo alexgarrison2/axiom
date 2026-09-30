@@ -18,7 +18,7 @@ import {
 import { signed, slateDate } from '@/utils/team-stats/format';
 import { unpackGames } from '@/utils/team-stats/game-row';
 import { seasonLabel, TEAM_SEASONS, seasonGames } from '@/utils/team-stats/season';
-import { computeStandings } from '@/utils/team-stats/standings';
+import { compareOfficial, computeStandings, officialKeysOf } from '@/utils/team-stats/standings';
 import { DIVISION_OF, DIVISIONS, DIVISION_LABEL, TEAM_TRICODES } from '@/utils/team-stats/teams';
 import type { Division, GameRow, LeaguePayload, Matchup, PackedGames, PeriodFilter, TeamStat } from '@/utils/team-stats/types';
 import { COLUMN_BY_KEY, SECTIONS, SECTION_KEYS, columnValue, heatColor, type StatColumn } from './columns';
@@ -223,7 +223,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const ranges = React.useMemo(() => {
         const out = new Map<string, [number, number]>();
         if (!model) return out;
-        const played = model.league.filter(r => r.gp > 0);
+        const played = model.league.filter(r => r.gp >= HEAT_MIN_GP);
         for (const { col } of columns) {
             const vals = played.map(r => columnValue(col, r, payload?.ratings ?? null)).filter(Number.isFinite);
             if (vals.length > 1) out.set(col.key, [Math.min(...vals), Math.max(...vals)]);
@@ -236,7 +236,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         if (model.paired) return model.rows;
         const col = COLUMN_BY_KEY.get(sort.key);
         const order = [...payload!.standings]
-            .sort((a, b) => b.points - a.points || b.pt_pct - a.pt_pct || b.rw - a.rw || a.tri.localeCompare(b.tri))
+            .sort((a, b) => compareOfficial(officialKeysOf(a), officialKeysOf(b)) || a.tri.localeCompare(b.tri))
             .map(r => r.tri);
         const pos = new Map(order.map((t, i) => [t, i]));
         const val = (r: TeamRow) => {
@@ -376,6 +376,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                             {viewNote ? <> · {viewNote}</> : null}
                             {section === 'ratings' && payload.ratingsSeasonLabel ? <> · Ratings: {payload.ratingsSeasonLabel}</> : null}
                             {pending ? <span className="ml-2 text-brand">Updating…</span> : null}
+                            <span className="whitespace-nowrap font-semibold text-brand md:hidden"> · Swipe for more →</span>
                         </caption>
                         <colgroup>
                             <col style={{ width: 'var(--team-col)' }} />
@@ -452,7 +453,9 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
 const colWidth = (c: StatColumn) => (c.tip ? 84 : c.label.length > 5 ? 76 : 64);
 
 /** Record counts read 0 (not —) before a team's first game. */
-const COUNTING = new Set(['gp', 'wins', 'losses', 'otl', 'points', 'rw']);
+const COUNTING = new Set(['gp', 'wins', 'losses', 'otl', 'points', 'rw', 'ranking']);
+/** Heat colouring starts once a team has this many games. */
+const HEAT_MIN_GP = 5;
 
 const HEAD_BASE = 'relative bg-surface-2 border-b border-line [transform:translateY(var(--thead-y))] will-change-transform';
 const STICKY_HEAD = 'sticky bg-surface-2 border-b border-r border-line [transform:translateY(var(--thead-y))] shadow-[4px_0_8px_-6px_rgba(0,0,0,0.8)]';
@@ -557,7 +560,8 @@ function Row({
                 const blank = row.gp === 0 && !col.rating && !counting ? true : period !== 'All' && col.fullGameOnly;
                 const v = blank ? NaN : columnValue(col, row, payload.ratings);
                 const r = ranges.get(col.key);
-                const color = r && row.gp > 0 ? heatColor(v, r[0], r[1], col.better) : undefined;
+                // No heat on counting stats, and none until a team has 5+ games (1-GP percentages are noise).
+                const color = r && !counting && row.gp >= HEAT_MIN_GP ? heatColor(v, r[0], r[1], col.better) : undefined;
                 return (
                     <td key={col.key} className={cn(base, 'text-fg-1')} style={color ? { color } : undefined}>
                         {Number.isFinite(v) ? col.format(v) : <span className="text-fg-3">—</span>}
@@ -573,7 +577,7 @@ function Legend({ payload }: { payload: LeaguePayload }) {
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-caption text-fg-3">
             <span className="inline-flex items-center gap-2">
                 <span aria-hidden="true" className="h-2 w-16 rounded-full bg-[linear-gradient(90deg,rgb(255_110_128),rgb(201_209_219),rgb(92_240_160))]" />
-                Colour compares each team with the league under the current filters (red worse, green better).
+                Colour compares each team with the league under the current filters (red worse, green better), from 5 games played. Counting stats are never coloured.
             </span>
             {payload.clinch ? (
                 <span className="inline-flex items-center gap-1">

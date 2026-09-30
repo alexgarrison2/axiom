@@ -158,7 +158,7 @@ export const SECTIONS: Section[] = [
     {
         key: 'overview',
         label: 'Overview',
-        groups: [G('Record', ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct']), G('Form', ['goal_diff', 'xgf_pct', 'pp_pct', 'pk_pct'])],
+        groups: [G('Record', ['points', 'pt_pct', 'gp', 'ranking', 'wins', 'losses', 'otl']), G('Form', ['goal_diff', 'xgf_pct', 'pp_pct', 'pk_pct'])],
     },
     { key: 'record', label: 'Record', groups: [RECORD] },
     { key: 'goals', label: 'Goals', groups: [RECORD_MIN(), GOALS] },

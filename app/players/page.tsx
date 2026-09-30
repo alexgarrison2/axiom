@@ -35,7 +35,7 @@ export default function PlayersPage() {
         <main className="pb-tabbar">
             <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
                 <PageHeading
-                    eyebrow={`${label(SEASON_START_YEAR)} season · skaters`}
+                    eyebrow={`${ratingsSeason} ratings · skaters`}
                     title="Players"
                     description="Who moves the needle: each skater's impact on goals for and against, adjusted for linemates and opponents, next to his scoring."
                     actions={
@@ -46,8 +46,8 @@ export default function PlayersPage() {
                                     : 'is-stale inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-caption font-semibold'
                             }
                         >
-                            <span className="rounded-[3px] bg-fg-3/15 px-1 font-mono text-micro text-fg-2">{ratingsSeason.slice(2)}</span>
-                            Ratings: {ratingsSeason}
+                            <span className="shrink-0 whitespace-nowrap rounded-[3px] bg-fg-3/15 px-1 font-mono text-micro text-fg-2">{ratingsSeason.slice(2)}</span>
+                            <span className="whitespace-nowrap">Ratings: {ratingsSeason}</span>
                             {ratingsCurrent ? '' : ` · refresh after ~${PLAYER_MODEL_MIN_GAMES} league games${leagueGames ? ` (${leagueGames} played)` : ''}`}
                         </span>
                     }

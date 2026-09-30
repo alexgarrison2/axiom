@@ -4,6 +4,7 @@ import {
     CONFERENCE_OF_DIVISION,
     DIVISION_OF,
     compareProjected,
+    compareStandings,
     distPercentile,
     likelyMatchups,
     parseProjectionHistory,
@@ -140,5 +141,30 @@ describe('series odds', () => {
         const p = seriesOdds(AVERAGE_STRENGTH, AVERAGE_STRENGTH);
         expect(p).toBeGreaterThan(0.5); // home ice
         expect(p).toBeLessThan(0.6);
+    });
+});
+
+describe('compareStandings (official order shared with /teams)', () => {
+    const base = rowsFrom(fixture);
+    const row = (tri: string, o: Partial<StandingsRow>): StandingsRow => ({ ...base.find(r => r.tri === tri)!, ...o });
+
+    it('breaks a points/RW tie on goal differential before projections', () => {
+        const bos = row('BOS', { gp: 1, w: 1, pts: 2, rw: 1, row: 1, gd: 3, gf: 5 });
+        const mtl = row('MTL', { gp: 1, w: 1, pts: 2, rw: 1, row: 1, gd: 1, gf: 4, proj: { ...(base[0].proj!), avgPoints: 200 } });
+        expect([mtl, bos].sort(compareStandings).map(r => r.tri)).toEqual(['BOS', 'MTL']);
+    });
+
+    it('ranks an 0-1-0 team below every team that has not played', () => {
+        const chi = row('CHI', { gp: 1, l: 1, gd: -2, gf: 1 });
+        const dal = row('DAL', {});
+        const wpg = row('WPG', {});
+        const sorted = [chi, dal, wpg].sort(compareStandings).map(r => r.tri);
+        expect(sorted[sorted.length - 1]).toBe('CHI');
+    });
+
+    it('uses goals for after goal differential', () => {
+        const a = row('CAR', { gp: 1, w: 1, pts: 2, rw: 1, row: 1, gd: 2, gf: 5 });
+        const b = row('WSH', { gp: 1, w: 1, pts: 2, rw: 1, row: 1, gd: 2, gf: 3 });
+        expect([b, a].sort(compareStandings)[0].tri).toBe('CAR');
     });
 });
