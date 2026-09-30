@@ -336,6 +336,46 @@ def test_game_numbers_ascend_and_playoffs_count_separately():
     assert all(g["gameType"] == "02" for g in reg["games"]) and reg["games"][0]["gameNumber"] == "G82"
 
 
+def _archive_games(tri_filter="CAR"):
+    """CAR's 2025-26 games from the committed season archive, normalized
+    like club-schedule games (the A5 acceptance case: the 6/14 Cup-final
+    game must be the newest and highest-numbered, not 'G1')."""
+    import pandas as pd
+    path = os.path.join(PIPELINE, "nhl_season_2025_2026_gamestats.csv")
+    if not os.path.exists(path):
+        pytest.skip("2025-26 archive not present")
+    teams = pd.read_csv(os.path.join(PIPELINE, "nhl_teams.csv"))
+    tri = dict(zip(teams["Common Name"], teams["Team Tricode"]))
+    gs = pd.read_csv(path, usecols=["game_id", "game_date", "team", "opponent", "home_away", "result",
+                                    "goals_for", "goals_ag"])
+    rows = gs[(gs["team"].map(tri) == tri_filter)]
+    out = []
+    for r in rows.itertuples():
+        me, opp = tri_filter, tri[r.opponent]
+        home = r.home_away == "Home"
+        period = "SO" if str(r.result).startswith("SO") else ("OT" if str(r.result).startswith("OT") else "REG")
+        out.append({"id": int(r.game_id), "date": str(r.game_date)[:10], "start_utc": f"{str(r.game_date)[:10]}T23:00:00Z",
+                    "type": int(str(r.game_id)[4:6]), "state": "OFF",
+                    "home": me if home else opp, "away": opp if home else me,
+                    "home_score": int(r.goals_for if home else r.goals_ag),
+                    "away_score": int(r.goals_ag if home else r.goals_for), "last_period": period})
+    return out
+
+
+def test_car_2025_26_archive_numbers_ascend():
+    games = _archive_games("CAR")
+    po = SC.last_n(games, "CAR", "2026-06-20", game_type="03")
+    newest = po["games"][0]
+    assert newest["gameDate"] == "2026-06-14" and newest["gameNumber"] == "PO G19"
+    nums = [int(g["gameNumber"].split("G")[-1]) for g in po["games"]]
+    assert nums == sorted(nums, reverse=True)
+    ot_loss = [g for g in po["games"] if g["gameDate"] == "2026-06-06"][0]
+    assert ot_loss["result"] == "L-OT"
+    assert po["record"].endswith("-0")                       # no loser point in the playoffs
+    rs = SC.last_n(games, "CAR", "2026-06-20", game_type="02")
+    assert rs["games"][0]["gameNumber"] == "G82" and all(g["gameType"] == "02" for g in rs["games"])
+
+
 def test_playoff_overtime_loss_is_a_loss():
     g1 = game(2026030111, "2027-04-20", "23:00", 3, "OFF", "CAR", "NYR", 2, 3, "OT")
     assert SC.result_for(g1, "CAR") == ("L", "L-OT")

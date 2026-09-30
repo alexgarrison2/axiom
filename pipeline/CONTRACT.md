@@ -141,7 +141,7 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 |---|---|---|---|
 | `side_starter` | string | yes | Legacy display `Name (Status)`. |
 | `side_goalie_confirmed` | string | yes | Projected starter (DailyFaceoff, then ESPN probable, then the first roster goalie). |
-| `side_goalie_status` | enum | no | `Confirmed`, `Likely`, `Unconfirmed` or `Probable (ESPN)`. News only upgrades to `Confirmed` when a "Goalie Start" item is dated on the game date or names the opponent. |
+| `side_goalie_status` | enum | no | `Confirmed`, `Likely`, `Unconfirmed` or `Probable (ESPN)`. News only upgrades to `Confirmed` when a "Goalie Start" item is dated on the game date or names the opponent (whole word: nickname, full name, city or tricode), and never from an item published before the team's previous game started or naming a different weekday (so a home-and-home blurb does not confirm the rematch). |
 | `side_goalie_status_source` | enum | yes | `DFO`, `ESPN probable` or `news`. Never empty for `Confirmed`. |
 | `side_goalie_status_at` | ISO-8601 UTC | yes | Time of that source item (DFO news time, the news timestamp, or when the pipeline first saw the status). Never empty for `Confirmed`. |
 | `side_goalie_stats` | string | yes | Deprecated alias of `side_goalie_stats_cur`. |
