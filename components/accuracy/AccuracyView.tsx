@@ -12,7 +12,7 @@ import { combineBlocks, type AccuracyReport, type CallRow, type GameTypeKey, typ
 import { ReliabilityChart, RollingChart, TierBars } from './charts';
 import { GameList } from './GameList';
 import { Ledger } from './Ledger';
-import type { LedgerData } from './types';
+import type { BetFinal, LedgerData, SeasonTally } from './types';
 
 export interface AccuracyViewProps {
     report: AccuracyReport;
@@ -20,6 +20,10 @@ export interface AccuracyViewProps {
     /** Season labels with data, newest first, e.g. ["2026-27", "2025-26"]. */
     seasons: string[];
     currentSeason: string;
+    /** Record straight from the graded list, per season (reconciles a stale report). */
+    tallies?: Record<string, SeasonTally>;
+    /** Finals for ledger bets still listed as pending. */
+    finals?: Record<number, BetFinal>;
 }
 
 const TYPE_OPTIONS: { value: GameTypeKey; label: string }[] = [
@@ -31,7 +35,7 @@ const TYPE_OPTIONS: { value: GameTypeKey; label: string }[] = [
 const pct1 = (v: number | null | undefined) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
 const dec4 = (v: number | null | undefined) => (v == null ? '—' : v.toFixed(4));
 
-export function AccuracyView({ report, ledger, seasons, currentSeason }: AccuracyViewProps) {
+export function AccuracyView({ report, ledger, seasons, currentSeason, tallies = {}, finals = {} }: AccuracyViewProps) {
     const [season, setSeason] = React.useState<string>(currentSeason);
     const [type, setType] = React.useState<GameTypeKey>('all');
 
@@ -63,7 +67,10 @@ export function AccuracyView({ report, ledger, seasons, currentSeason }: Accurac
     }, [report, season, seasons, type]);
 
     const seasonOptions = [...seasons.map(s => ({ value: s, label: s })), { value: 'all', label: 'All' }];
-    const empty = !block || block.n === 0;
+    const tally = season !== 'all' && type !== 'playoffs' ? tallies[season] : undefined;
+    // The report file can lag the graded list by a refresh; never let it say "no games" over graded rows.
+    const stale = !!tally && tally.n > (block?.n ?? 0);
+    const empty = !stale && (!block || block.n === 0);
     const priorSeason = seasons.find(s => s !== currentSeason && (report.seasons[s]?.all?.n ?? 0) > 0);
     const seasonWord = season === 'all' ? 'all seasons' : season;
 
@@ -87,10 +94,12 @@ export function AccuracyView({ report, ledger, seasons, currentSeason }: Accurac
                     ) : null}
                 </div>
 
-                {empty ? (
+                {stale && tally ? (
+                    <ThroughSummary tally={tally} season={season} />
+                ) : empty ? (
                     <EmptyState season={season} currentSeason={currentSeason} type={type} prior={priorSeason} onPrior={() => priorSeason && selectSeason(priorSeason)} />
                 ) : (
-                    <ReportCard block={block!} seasonWord={seasonWord} />
+                    <ReportCard block={block!} seasonWord={seasonWord} modelLabel={season !== 'all' && season < currentSeason ? 'Previous site model (live)' : 'Pony xG model'} />
                 )}
             </section>
 
@@ -98,14 +107,14 @@ export function AccuracyView({ report, ledger, seasons, currentSeason }: Accurac
                 <h2 id="every-pick" className="text-h2 font-black tracking-tight text-fg-1">
                     Every pick
                 </h2>
-                <GameList season={season} seasons={seasons} type={type} />
+                <GameList season={season} seasons={seasons} type={type} currentSeason={currentSeason} excluded={season === 'all' ? [] : (tallies[season]?.excluded ?? [])} />
             </section>
 
             <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-4">
                 <h2 id="ledger-title" className="text-h2 font-black tracking-tight text-fg-1">
                     Bet ledger
                 </h2>
-                <Ledger ledger={ledger} gate={report.gate} season={season} seasons={seasons} />
+                <Ledger ledger={ledger} gate={report.gate} season={season} seasons={seasons} finals={finals} />
             </section>
         </div>
     );
@@ -137,7 +146,44 @@ function EmptyState({ season, currentSeason, type, prior, onPrior }: { season: s
     );
 }
 
-function ReportCard({ block: b, seasonWord }: { block: ReportBlock; seasonWord: string }) {
+function ThroughSummary({ tally: t, season }: { tally: SeasonTally; season: string }) {
+    const record = `${t.correct}-${t.n - t.correct}`;
+    return (
+        <div role="status" className="flex flex-col gap-4">
+            <p className="text-title font-bold text-fg-1">
+                Through {plural(t.n, 'game')}: <span className="tabular-nums">{record}</span>
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <KpiTile label="Picks right" info={<InfoTip term="confidence" />} value={pct1(t.n ? t.correct / t.n : null)} sub={`${record} · n=${t.n}`} />
+                <KpiTile
+                    label="Log loss"
+                    info={<InfoTip term="log-loss" />}
+                    value={dec4(t.logLoss)}
+                    sub={t.marketN ? `Same ${plural(t.marketN, 'game')}: model ${dec4(t.modelLogLossSame)} · market ${dec4(t.marketLogLoss)}` : 'No market prices yet'}
+                />
+                <KpiTile label="Brier score" info={<InfoTip term="brier" />} value={dec4(t.brier)} sub="coin flip 0.2500" />
+                <KpiTile
+                    label="Games graded"
+                    value={t.n.toLocaleString('en-US')}
+                    sub={
+                        <>
+                            {t.marketN ? `${t.marketN} with a real market price` : 'No market prices recorded'}
+                            {t.placeholderN ? ` · ${t.placeholderN} placeholder line excluded from market` : ''}
+                            {t.excluded.length ? ` · ${t.excluded.length} not graded` : ''}
+                        </>
+                    }
+                />
+            </div>
+            <p className="max-w-3xl text-body-sm text-fg-2">
+                Tiny sample, so read these as a starting line, not a verdict. The full {season} report (calibration, confidence tiers, baselines)
+                updates after the nightly refresh.
+                {t.legacyN ? ` ${t.legacyN === t.n ? 'All' : t.legacyN} of these picks came from the previous (legacy) site model.` : ''}
+            </p>
+        </div>
+    );
+}
+
+function ReportCard({ block: b, seasonWord, modelLabel }: { block: ReportBlock; seasonWord: string; modelLabel: string }) {
     const m = b.market;
     const sameLL = m.modelLogLossSame ?? b.logLoss;
     const sameAcc = m.modelAccuracySame ?? b.accuracy;
@@ -187,7 +233,7 @@ function ReportCard({ block: b, seasonWord }: { block: ReportBlock; seasonWord: 
                 />
             </div>
 
-            <BaselineTable block={b} seasonWord={seasonWord} />
+            <BaselineTable block={b} seasonWord={seasonWord} modelLabel={modelLabel} />
 
             <div className="grid gap-4 lg:grid-cols-2">
                 <Panel title="Calibration" info={<InfoTip term="calibration" />}>
@@ -226,13 +272,13 @@ function Panel({ title, info, children }: { title: string; info?: React.ReactNod
     );
 }
 
-function BaselineTable({ block: b, seasonWord }: { block: ReportBlock; seasonWord: string }) {
+function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBlock; seasonWord: string; modelLabel: string }) {
     const m = b.market;
     const rows: { label: string; n: number | null; acc: number | null; brier: number | null; ll: number | null; model?: boolean; note?: string }[] = [
-        { label: 'Pony xG model', n: b.n, acc: b.accuracy, brier: b.brier, ll: b.logLoss, model: true },
+        { label: modelLabel, n: b.n, acc: b.accuracy, brier: b.brier, ll: b.logLoss, model: true },
     ];
     if (m.n) {
-        rows.push({ label: 'Pony xG model, same games', n: m.n, acc: m.modelAccuracySame ?? null, brier: null, ll: m.modelLogLossSame ?? null, model: true, note: 'games with a market price' });
+        rows.push({ label: `${modelLabel}, same games`, n: m.n, acc: m.modelAccuracySame ?? null, brier: null, ll: m.modelLogLossSame ?? null, model: true, note: 'games with a market price' });
         rows.push({ label: 'Betting market (de-vigged)', n: m.n, acc: m.accuracy, brier: m.brier, ll: m.logLoss });
     }
     rows.push({

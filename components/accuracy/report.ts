@@ -1,3 +1,4 @@
+import { isCorrect, type ExcludedGame, type GradedGame, type SeasonTally } from './types';
 /**
  * Typed, trimmed view of public/data/model_report.json for /accuracy, plus an
  * n-weighted "All seasons" aggregate. Pure: runs on server, client and tests.
@@ -279,3 +280,25 @@ export function combineBlocks(blocks: ReportBlock[]): ReportBlock | null {
 export function seasonLabelOf(seasonId: string): string {
     return `${seasonId.slice(0, 4)}-${seasonId.slice(6, 8)}`;
 }
+
+const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+const ll = (p: number, won: boolean) => -Math.log(Math.min(1 - 1e-6, Math.max(1e-6, won ? p : 1 - p)));
+
+/** The season record straight from the graded list (live picks only). */
+export function tallySeason(games: GradedGame[], season: string, excluded: ExcludedGame[] = []): SeasonTally {
+    const rows = games.filter(g => g.season === season && !g.retro);
+    const withMarket = rows.filter(g => g.marketProb != null);
+    return {
+        n: rows.length,
+        correct: rows.filter(isCorrect).length,
+        brier: mean(rows.map(g => g.brier).filter(Number.isFinite)),
+        logLoss: mean(rows.map(g => g.logLoss).filter(Number.isFinite)),
+        marketN: withMarket.length,
+        marketLogLoss: mean(withMarket.map(g => ll(g.marketProb! / 100, g.homeScore > g.awayScore))),
+        modelLogLossSame: mean(withMarket.map(g => ll(g.homeProb / 100, g.homeScore > g.awayScore))),
+        legacyN: rows.filter(g => g.legacy).length,
+        placeholderN: rows.filter(g => g.placeholderOdds).length,
+        excluded,
+    };
+}
+

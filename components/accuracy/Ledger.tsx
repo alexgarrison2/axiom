@@ -9,10 +9,10 @@ import { TeamLogo } from '@/components/views/TeamLogo';
 import { plural, shortDate } from '@/components/views/format';
 import { cn } from '@/lib/utils';
 import { UnitsChart } from './charts';
-import { cumulativeUnits, fmtAmerican, parseLedgerBets, teamFirstScore } from './ledger-data';
+import { cumulativeUnits, fmtAmerican, gradePending, parseLedgerBets, teamFirstScore, tidyReason } from './ledger-data';
 import { teamTriFromName } from './names';
 import type { GateInfo } from './report';
-import type { LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
+import type { BetFinal, LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
 
 const PAGE = 25;
 
@@ -76,7 +76,20 @@ function combine(list: LedgerSummary[]): LedgerSummary | null {
     };
 }
 
-export function Ledger({ ledger, gate, season, seasons }: { ledger: LedgerData; gate: GateInfo | null; season: string; seasons: string[] }) {
+export function Ledger({
+    ledger,
+    gate,
+    season,
+    seasons,
+    finals = {},
+}: {
+    ledger: LedgerData;
+    gate: GateInfo | null;
+    season: string;
+    seasons: string[];
+    /** Finals for bets the ledger file still lists as pending. */
+    finals?: Record<number, BetFinal>;
+}) {
     const labels = React.useMemo(() => (season === 'all' ? seasons : [season]), [season, seasons]);
     const summary = combine(labels.map(l => ledger.seasons[l]).filter((s): s is LedgerSummary => !!s));
     const [bets, setBets] = React.useState<LedgerBet[] | null>(null);
@@ -109,7 +122,7 @@ export function Ledger({ ledger, gate, season, seasons }: { ledger: LedgerData; 
 
     React.useEffect(() => setShown(PAGE), [season, query]);
 
-    const inSeason = React.useMemo(() => (bets ?? []).filter(b => labels.includes(b.season)), [bets, labels]);
+    const inSeason = React.useMemo(() => (bets ?? []).filter(b => labels.includes(b.season)).map(b => gradePending(b, finals[b.gameId])), [bets, labels, finals]);
     const curve = React.useMemo(() => cumulativeUnits(inSeason), [inSeason]);
     const filtered = React.useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -121,7 +134,7 @@ export function Ledger({ ledger, gate, season, seasons }: { ledger: LedgerData; 
     }, [inSeason, query]);
 
     const gateOpen = gate?.open ?? ledger.gate?.open ?? false;
-    const reasons = gate?.reasons?.length ? gate.reasons : (ledger.gate?.reasons ?? []);
+    const reasons = (gate?.reasons?.length ? gate.reasons : (ledger.gate?.reasons ?? [])).map(tidyReason);
 
     return (
         <div ref={ref} className="flex flex-col gap-5">
@@ -136,7 +149,7 @@ export function Ledger({ ledger, gate, season, seasons }: { ledger: LedgerData; 
                     {gateOpen ? 'Bet gate open: suggested stakes are shown' : 'Bet gate closed: no stakes are suggested'}
                     <InfoTip term="units" />
                 </p>
-                {gate?.summary ? <p className="text-body-sm text-fg-2">{gate.summary}</p> : null}
+                {gate?.summary ? <p className="text-body-sm text-fg-2">{tidyReason(gate.summary)}</p> : null}
                 {reasons.length ? (
                     <ul className="list-disc pl-5 text-body-sm text-fg-2">
                         {reasons.map(r => (
@@ -281,7 +294,9 @@ export function Ledger({ ledger, gate, season, seasons }: { ledger: LedgerData; 
                                                         </td>
                                                         <td className="px-3 py-2 text-right text-fg-2">{fmtAmerican(b.price)}</td>
                                                         <td className="px-3 py-2 text-right text-fg-2">{b.evAtBet != null ? pctSigned(b.evAtBet, 0) : '—'}</td>
-                                                        <td className="px-3 py-2 text-right text-fg-2">{b.stake.toFixed(1)}u</td>
+                                                        <td className="px-3 py-2 text-right text-fg-2">
+                                                            {gateOpen ? `${b.stake.toFixed(1)}u` : <span aria-label="hidden while the gate is closed">—</span>}
+                                                        </td>
                                                         <td className="px-3 py-2">
                                                             <span
                                                                 className={cn(

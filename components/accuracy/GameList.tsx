@@ -7,7 +7,7 @@ import { TEAM_CODES } from '@/components/ui/team-color';
 import { TeamLogo } from '@/components/views/TeamLogo';
 import { plural, shortDate } from '@/components/views/format';
 import { cn } from '@/lib/utils';
-import { isCorrect, pickOf, pickProb, type GradedGame } from './types';
+import { isCorrect, pickOf, pickProb, type ExcludedGame, type GradedGame } from './types';
 import type { GameTypeKey } from './report';
 
 const PAGE = 50;
@@ -25,7 +25,20 @@ function loadSeason(label: string): Promise<GradedGame[]> {
 
 type ResultFilter = 'all' | 'hit' | 'miss';
 
-export function GameList({ season, seasons, type }: { season: string; seasons: string[]; type: GameTypeKey }) {
+export function GameList({
+    season,
+    seasons,
+    type,
+    currentSeason,
+    excluded = [],
+}: {
+    season: string;
+    seasons: string[];
+    type: GameTypeKey;
+    currentSeason?: string;
+    /** Finals deliberately left out of grading, with a reason. */
+    excluded?: ExcludedGame[];
+}) {
     const [games, setGames] = React.useState<{ key: string; rows: GradedGame[] } | null>(null);
     const [team, setTeam] = React.useState('all');
     const [result, setResult] = React.useState<ResultFilter>('all');
@@ -80,8 +93,15 @@ export function GameList({ season, seasons, type }: { season: string; seasons: s
     if (loading) {
         return <div aria-busy="true" className="h-40 rounded-card border border-line bg-surface-1/60" />;
     }
+    const excludedShown = type === 'playoffs' ? [] : excluded;
+    const excludedNote = excludedShown.length ? <ExcludedList games={excludedShown} /> : null;
     if (!base.length && !retroCount) {
-        return <p className="text-body-sm text-fg-3">No graded games for this selection yet.</p>;
+        return (
+            <div className="flex flex-col gap-3">
+                <p className="text-body-sm text-fg-3">No graded games for this selection yet.</p>
+                {excludedNote}
+            </div>
+        );
     }
 
     return (
@@ -179,7 +199,13 @@ export function GameList({ season, seasons, type }: { season: string; seasons: s
             ) : (
                 <ul className="flex flex-col gap-1.5">
                     {rows.slice(0, shown).map(g => (
-                        <GameRowItem key={g.id} game={g} open={open === g.id} onToggle={() => setOpen(o => (o === g.id ? null : g.id))} />
+                        <GameRowItem
+                            key={g.id}
+                            game={g}
+                            showLegacy={!!currentSeason && g.season >= currentSeason}
+                            open={open === g.id}
+                            onToggle={() => setOpen(o => (o === g.id ? null : g.id))}
+                        />
                     ))}
                 </ul>
             )}
@@ -192,11 +218,12 @@ export function GameList({ season, seasons, type }: { season: string; seasons: s
                     Show more ({Math.min(PAGE, rows.length - shown)} of {(rows.length - shown).toLocaleString('en-US')} left)
                 </button>
             ) : null}
+            {excludedNote}
         </div>
     );
 }
 
-function GameRowItem({ game: g, open, onToggle }: { game: GradedGame; open: boolean; onToggle: () => void }) {
+function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame; open: boolean; onToggle: () => void; showLegacy?: boolean }) {
     const pick = pickOf(g);
     const ok = isCorrect(g);
     const homeWon = g.homeScore > g.awayScore;
@@ -221,6 +248,11 @@ function GameRowItem({ game: g, open, onToggle }: { game: GradedGame; open: bool
                     {g.decision !== 'REG' ? <span className="rounded-chip bg-surface-3 px-1 text-micro font-semibold text-fg-2">{g.decision}</span> : null}
                     {g.type === '03' ? <span className="rounded-chip bg-playoff/15 px-1 text-micro font-semibold text-playoff">PO</span> : null}
                     {g.retro ? <span className="rounded-chip border border-dashed border-warn/60 px-1 text-micro font-semibold text-warn">Back-filled</span> : null}
+                    {showLegacy && g.legacy ? (
+                        <span title="Published by the previous site model, before the current model went live" className="rounded-chip border border-line-strong px-1 text-micro font-semibold text-fg-2">
+                            Legacy model
+                        </span>
+                    ) : null}
                     <span className="w-full text-caption text-fg-3 sm:hidden">{shortDate(g.date)}</span>
                 </span>
                 <span className="col-start-2 row-start-2 flex items-center gap-1.5 text-body-sm sm:col-start-auto sm:row-start-auto">
@@ -248,7 +280,10 @@ function GameRowItem({ game: g, open, onToggle }: { game: GradedGame; open: bool
             {open ? (
                 <dl id={detailId} className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line px-3 py-3 text-body-sm sm:grid-cols-4">
                     <Detail label={`Model ${g.home} win`} value={`${g.homeProb.toFixed(1)}%`} />
-                    <Detail label={`Market ${g.home} win`} value={g.marketProb != null ? `${g.marketProb.toFixed(1)}%` : '—'} />
+                    <Detail
+                        label={`Market ${g.home} win`}
+                        value={g.placeholderOdds ? 'Placeholder −110/−110 (not counted)' : g.marketProb != null ? `${g.marketProb.toFixed(1)}%` : '—'}
+                    />
                     <Detail label="Projected goals" value={g.homeXg != null && g.awayXg != null ? `${g.away} ${g.awayXg.toFixed(2)} · ${g.home} ${g.homeXg.toFixed(2)}` : '—'} />
                     <Detail label="Brier · log loss" value={`${Number.isFinite(g.brier) ? g.brier.toFixed(3) : '—'} · ${Number.isFinite(g.logLoss) ? g.logLoss.toFixed(3) : '—'}`} />
                     <Detail
@@ -261,6 +296,33 @@ function GameRowItem({ game: g, open, onToggle }: { game: GradedGame; open: bool
                 <div id={detailId} hidden />
             )}
         </li>
+    );
+}
+
+function ExcludedList({ games }: { games: ExcludedGame[] }) {
+    const groups = new Map<string, ExcludedGame[]>();
+    for (const g of games) groups.set(g.reason, [...(groups.get(g.reason) ?? []), g]);
+    return (
+        <div className="flex flex-col gap-2 rounded-card border border-dashed border-line-strong p-4">
+            {[...groups.entries()].map(([reason, list]) => (
+                <div key={reason} className="flex flex-col gap-1.5">
+                    <p className="text-body-sm font-semibold text-fg-1">
+                        Not graded: {reason.charAt(0).toLowerCase() + reason.slice(1)} ({plural(list.length, 'game')})
+                    </p>
+                    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-body-sm tabular-nums text-fg-2">
+                        {list.map(g => (
+                            <li key={g.id} className="flex items-center gap-1.5">
+                                <span className="text-fg-3">{shortDate(g.date)}</span>
+                                <TeamLogo tri={g.away} size={16} />
+                                {g.away} @ {g.home}
+                                <TeamLogo tri={g.home} size={16} />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ))}
+            <p className="text-caption text-fg-3">We only grade picks frozen before puck drop, so these games are left out rather than graded after the fact.</p>
+        </div>
     );
 }
 

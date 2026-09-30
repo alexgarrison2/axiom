@@ -5,6 +5,7 @@ import Link from 'next/link';
 import FullLogoAnimated from '@/components/FullLogoAnimated';
 import { GLOSSARY, GLOSSARY_TERMS } from '@/lib/glossary';
 import { SEASON_GAMES, SEASON_START_YEAR } from '@/lib/season';
+import { loadExcludedGames, loadGradedGames, tallySeason } from '@/components/accuracy/data';
 import { parseReport, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
 
 export const revalidate = 3600;
@@ -141,7 +142,11 @@ export default function MethodologyPage() {
     const prior = `${SEASON_START_YEAR - 1}-${String(SEASON_START_YEAR).slice(2)}`;
     const current = `${SEASON_START_YEAR}-${String(SEASON_START_YEAR + 1).slice(2)}`;
     const priorSummary = seasons.find(s => s.season === prior);
-    const currentSummary = seasons.find(s => s.season === current);
+    const graded = loadGradedGames();
+    const tally = tallySeason(graded, current, loadExcludedGames(current, graded));
+    const reportN = seasons.find(s => s.season === current)?.rows.find(r => r.isModel)?.n ?? 0;
+    // Same count as /accuracy: a report that lags the graded list is not shown as the current record.
+    const currentSummary = tally.n > (reportN ?? 0) ? undefined : seasons.find(s => s.season === current);
     let i = 0;
 
     return (
@@ -209,10 +214,13 @@ export default function MethodologyPage() {
 
                     <Section id="market" index={++i} title="Model vs market">
                         <p>
-                            Each card shows <strong className="text-fg-1">Model %</strong> next to <strong className="text-fg-1">Market %</strong>.
-                            Market % comes from the moneyline odds with the bookmaker&apos;s margin (the &ldquo;vig&rdquo;, about 4%) removed, so
-                            the two sides add up to 100%. <strong className="text-fg-1">Fair odds</strong> (formerly &ldquo;xOdds&rdquo;) is the
-                            moneyline that matches the model&apos;s probability exactly.
+                            Each card shows <strong className="text-fg-1">Our forecast</strong> next to <strong className="text-fg-1">Market %</strong>.
+                            Market % comes from the moneyline odds with the bookmaker&apos;s margin (the &ldquo;vig&rdquo;, about 4%) removed by
+                            the power method, so the two sides add up to 100%. The published forecast is the model blended with that de-vigged
+                            market: early in the season the market carries <strong className="text-fg-1">80%</strong> of the weight and the model
+                            20%, and the model&apos;s share grows as teams play more games. <strong className="text-fg-1">Model only</strong> shows
+                            the unblended model, so you can see where it disagrees. <strong className="text-fg-1">Fair odds</strong> (formerly
+                            &ldquo;xOdds&rdquo;) is the moneyline that matches the published forecast exactly.
                         </p>
                         <p>
                             The betting market is a very good forecaster. We treat it as the benchmark to beat, not as noise — and we say so when
@@ -224,7 +232,7 @@ export default function MethodologyPage() {
                         <p>
                             <strong className="text-fg-1">Edge</strong> is how much better the model rates a side than its price. Edges are only
                             highlighted, and <strong className="text-fg-1">units</strong> only suggested, when the model has shown over a meaningful
-                            sample that its disagreements with the market carry real information. Until then, edges are shown as informational.
+                            sample that its disagreements with the market carry real information. Until that gate opens, edges and stakes are hidden.
                         </p>
                         {model.gate ? (
                             <p className="rounded-control border border-line bg-surface-1 p-4 text-body-sm">
@@ -319,15 +327,19 @@ export default function MethodologyPage() {
                             </>
                         ) : (
                             <p>
-                                <span className="text-fg-1">{current}:</span> no games graded yet — the first results post after tonight&apos;s
-                                games go final.
+                                <span className="text-fg-1">{current}:</span>{' '}
+                                {tally.n
+                                    ? `through ${tally.n} ${tally.n === 1 ? 'game' : 'games'}: ${tally.correct}-${tally.n - tally.correct}. The full report updates after the nightly refresh.`
+                                    : 'no games graded yet. The first results post after the first games go final.'}
+                                {tally.excluded.length ? ` ${tally.excluded.length} ${tally.excluded.length === 1 ? 'game was' : 'games were'} not graded (no pregame snapshot before puck drop).` : ''}{' '}
+                                See the <Link href="/accuracy" className="font-semibold text-brand underline underline-offset-4">Accuracy page</Link>.
                             </p>
                         )}
                         {model.walkForward?.length ? (
                             <>
                                 <p>
                                     <span className="text-fg-1">Walk-forward backtest.</span> For each season below, the model was trained only on
-                                    the seasons before it, then scored on every game of that season
+                                    the seasons before it, then scored on every game of that season (regular season and playoffs)
                                     {model.walkForward.some(w => w.legacyLogLoss != null) ? ', next to the model it replaced' : ''}.
                                     {model.earlySeasonLogLoss != null
                                         ? ` In the first weeks of those seasons its log loss was ${model.earlySeasonLogLoss.toFixed(4)}.`
@@ -356,7 +368,7 @@ export default function MethodologyPage() {
 
                     <Section id="context" index={++i} title="Context chips">
                         <p>
-                            Chips under each game add context the model uses or that fans ask about: recent form (L10), head-to-head this season,
+                            Chips under each game add context the model uses or that fans ask about: recent form (L7, or L1–L6 early in the season, labelled &ldquo;after N games&rdquo;), head-to-head this season,
                             power play and penalty kill, and rest (back-to-backs and compressed stretches). They follow the same sample rules as
                             above — this season first, clearly labelled prior-season values otherwise.
                         </p>
