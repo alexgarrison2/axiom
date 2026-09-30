@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import type { PickSummaries, Prediction } from '@/types/prediction';
+import type { Prediction } from '@/types/prediction';
 import { biggestGames, findImplication, type GameImplicationsData } from '@/utils/implications';
 import { PageHeading } from '@/components/ui/page-heading';
 import { MatchupCard } from '@/components/matchup/MatchupCard';
@@ -17,7 +17,6 @@ import styles from '@/components/matchup/slate.module.css';
 
 export interface PredictionsViewerProps {
     predictions: Prediction[];
-    picks: PickSummaries;
     implications: GameImplicationsData | null;
     playoffOdds: Record<string, number>;
     /** Eastern slate date when the page was rendered. */
@@ -41,7 +40,7 @@ function DateParam({ onDate }: { onDate: (d: string) => void }) {
     return null;
 }
 
-export default function PredictionsViewer({ predictions, picks, implications, playoffOdds, today: serverToday, initialDate, series }: PredictionsViewerProps) {
+export default function PredictionsViewer({ predictions, implications, playoffOdds, today: serverToday, initialDate, series }: PredictionsViewerProps) {
     const router = useRouter();
     // The page may have been rendered on an earlier day: "today" is re-derived in the browser.
     const today = useSyncExternalStore(noopSubscribe, easternDate, () => serverToday);
@@ -167,7 +166,6 @@ export default function PredictionsViewer({ predictions, picks, implications, pl
                                 p={p}
                                 live={live[p.id] ?? null}
                                 implication={findImplication(implications, p.home.team.triCode, p.away.team.triCode)}
-                                picks={picks}
                                 playoffOdds={playoffOdds}
                                 favorites={favorites}
                                 onFavorite={toggle}

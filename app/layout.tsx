@@ -3,7 +3,6 @@ import { Fira_Code, Fira_Sans } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/components/SiteNav";
 import Footer from "@/components/Footer";
-import { MotionProvider } from "@/components/ui/motion-provider";
 
 // Four preloaded weights (regular, semibold, bold, black). font-medium falls
 // back to 400 and font-extrabold is mapped to 900 in tailwind.config.js.
@@ -75,13 +74,13 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <MotionProvider>
-          <SiteNav />
-          <div id="content" tabIndex={-1} className="outline-none">
-            {children}
-          </div>
-          <Footer />
-        </MotionProvider>
+        {/* No framer-motion provider: nothing on the site animates with it any
+            more (the home slate used to), and it cost ~21KB of JS on every page. */}
+        <SiteNav />
+        <div id="content" tabIndex={-1} className="outline-none">
+          {children}
+        </div>
+        <Footer />
       </body>
     </html>
   );

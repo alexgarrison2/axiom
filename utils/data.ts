@@ -2,12 +2,11 @@ import 'server-only';
 import fs from 'node:fs';
 import path from 'node:path';
 import Papa from 'papaparse';
-import { SEASON_ID, SEASON_START_DATE } from '@/lib/season';
-import { TEAM_NAMES, TEAM_CODES } from '@/components/ui/team-color';
+import { SEASON_ID } from '@/lib/season';
 import { parseRow, parseRecent, recordFromRecent, str, type RawRow } from '@/lib/matchup/parse';
-import type { PickSummaries, Prediction } from '@/types/prediction';
+import type { Prediction } from '@/types/prediction';
 
-export type { Prediction, PickSummaries } from '@/types/prediction';
+export type { Prediction } from '@/types/prediction';
 
 /** DailyFaceoff news item (predictions side_news, player_news.json). */
 export interface PlayerNewsItem {
@@ -25,7 +24,6 @@ export interface PlayerNewsItem {
  */
 const READ = {
     predictions: () => fs.readFileSync(path.join(process.cwd(), 'data', 'predictions_detailed.csv'), 'utf8'),
-    history: () => fs.readFileSync(path.join(process.cwd(), 'data', 'prediction_history.json'), 'utf8'),
     upcoming: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'upcoming_games.json'), 'utf8'),
     projections: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'season_projections.json'), 'utf8'),
     series: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'playoff_series.json'), 'utf8'),
@@ -111,43 +109,6 @@ export async function getPredictions(): Promise<Prediction[]> {
     const nhl = preds.length ? await nhlRecords() : null;
     if (nhl) for (const p of preds) for (const s of ['home', 'away'] as const) p[s].record = nhl[p[s].team.triCode] ?? p[s].record;
     return preds;
-}
-
-interface RawHistory {
-    date: string;
-    season?: string;
-    homeTeam: string;
-    awayTeam: string;
-    predictedWinner: string;
-    isCorrect: boolean;
-    retro?: boolean;
-}
-
-const TRI_BY_SHORT = new Map(TEAM_CODES.map(t => [TEAM_NAMES[t].short, t]));
-
-/**
- * Pick form per team: this season's graded picks, newest last, the last 10
- * where the model picked the team to win and to lose. Replaces shipping the
- * whole prediction history (460KB) to the browser.
- */
-export async function getPickSummaries(teams?: string[]): Promise<PickSummaries> {
-    const hist = readJson<RawHistory[]>('history') ?? [];
-    const want = teams ? new Set(teams) : null;
-    const out: PickSummaries = {};
-    const rows = hist.filter(h => h && h.date >= SEASON_START_DATE && !h.retro).sort((a, b) => a.date.localeCompare(b.date));
-    for (const h of rows) {
-        for (const name of [h.homeTeam, h.awayTeam]) {
-            const tri = TRI_BY_SHORT.get(name);
-            if (!tri || (want && !want.has(tri))) continue;
-            const s = (out[tri] ??= { pickedWin: [], pickedLose: [] });
-            (h.predictedWinner === name ? s.pickedWin : s.pickedLose).push(!!h.isCorrect);
-        }
-    }
-    for (const s of Object.values(out)) {
-        s.pickedWin = s.pickedWin.slice(-10);
-        s.pickedLose = s.pickedLose.slice(-10);
-    }
-    return out;
 }
 
 /** Playoff % per team from season_projections.json, only when it is this season's. */

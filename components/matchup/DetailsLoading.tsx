@@ -1,11 +1,11 @@
 'use client';
 
-import type { MatchupDetails } from '@/types/prediction';
+import type { GameDetails } from '@/lib/client-data';
 
-export type DetailsState = { status: 'loading' } | { status: 'ready'; data: MatchupDetails | null } | { status: 'error' };
+export type DetailsState = { status: 'loading' } | { status: 'ready'; data: GameDetails | null } | { status: 'error' };
 
 /** Loading / error states for a details tab that needs /api/matchup-details. */
-export function DetailsLoading({ state, children }: { state: DetailsState; children: (d: MatchupDetails) => React.ReactNode }) {
+export function DetailsLoading({ state, children }: { state: DetailsState; children: (d: GameDetails) => React.ReactNode }) {
     if (state.status === 'loading') {
         return (
             <div aria-busy="true" className="flex flex-col gap-2 py-2">

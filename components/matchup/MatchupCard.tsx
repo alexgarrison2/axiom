@@ -2,7 +2,7 @@
 
 import { useCallback, useId, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import type { PickSummaries, Prediction } from '@/types/prediction';
+import type { Prediction } from '@/types/prediction';
 import type { GameImplication } from '@/utils/implications';
 import { WinBar } from '@/components/ui/win-bar';
 import { clashSafePair } from '@/components/ui/team-color';
@@ -29,7 +29,6 @@ export interface MatchupCardProps {
     p: Prediction;
     live: LiveGame | null;
     implication: GameImplication | null;
-    picks: PickSummaries;
     playoffOdds: Record<string, number>;
     favorites: string[];
     onFavorite: (tri: string) => void;
@@ -50,7 +49,7 @@ function PregameLine({ p }: { p: Prediction }) {
     );
 }
 
-export function MatchupCard({ p, live, implication, picks, playoffOdds, favorites, onFavorite, highlighted, seriesScore }: MatchupCardProps) {
+export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFavorite, highlighted, seriesScore }: MatchupCardProps) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLElement>(null);
     const uid = useId();
@@ -165,7 +164,7 @@ export function MatchupCard({ p, live, implication, picks, playoffOdds, favorite
             </div>
 
             <div id={detailsId} hidden={!open}>
-                {open ? <Details p={p} phase={phase} implication={implication} picks={picks} playoffOdds={playoffOdds} onCollapse={collapse} /> : null}
+                {open ? <Details p={p} phase={phase} implication={implication} playoffOdds={playoffOdds} onCollapse={collapse} /> : null}
             </div>
         </article>
     );

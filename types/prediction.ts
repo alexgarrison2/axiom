@@ -200,6 +200,8 @@ export interface MatchupDetails {
 export interface MatchupDetailsPayload {
     generatedAt: string;
     games: Record<string, MatchupDetails>;
+    /** This season's graded picks per team on the slate. */
+    picks: PickSummaries;
 }
 
 /** Server-computed, current season, last 10 graded picks per team. */

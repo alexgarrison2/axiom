@@ -5,7 +5,9 @@ import Papa from 'papaparse';
 import { json, parseRecent, str, type RawRow } from './parse';
 import { buildIndex, leagueContext, lineupView, type DfoLineup, type ImpactData } from './lineup-impact';
 import { CUR_TAG, PREV_TAG, disambiguate, shortDate } from './format';
-import type { GoalieView, InjuryView, MatchupDetails, MatchupDetailsPayload, SideDetails } from '../../types/prediction';
+import type { GoalieView, InjuryView, MatchupDetails, MatchupDetailsPayload, PickSummaries, SideDetails } from '../../types/prediction';
+import { SEASON_START_DATE } from '../season';
+import { TEAM_CODES, TEAM_NAMES } from '../../components/ui/team-color';
 
 /*
  * Server loader for /api/matchup-details: lineups with impact values,
@@ -21,6 +23,7 @@ const READ = {
     injuries: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'injuries.json'), 'utf8'),
     impact: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'player_impact.json'), 'utf8'),
     lineups: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'team_lineups.json'), 'utf8'),
+    history: () => fs.readFileSync(path.join(process.cwd(), 'data', 'prediction_history.json'), 'utf8'),
 } as const;
 
 function readJson<T>(k: keyof typeof READ): T | null {
@@ -82,6 +85,43 @@ export function injuriesFor(all: Injury[], team: string, lineupNames: Set<string
         .slice(0, 8);
 }
 
+interface RawHistory {
+    date: string;
+    season?: string;
+    homeTeam: string;
+    awayTeam: string;
+    predictedWinner: string;
+    isCorrect: boolean;
+    retro?: boolean;
+}
+
+const TRI_BY_SHORT = new Map(TEAM_CODES.map(t => [TEAM_NAMES[t].short, t]));
+
+/**
+ * Pick form per team: this season's graded picks, newest last, the last 10
+ * where the model picked the team to win and to lose. Replaces shipping the
+ * whole prediction history (460KB) to the browser.
+ */
+export function pickSummaries(hist: RawHistory[], teams?: string[]): PickSummaries {
+    const want = teams ? new Set(teams) : null;
+    const out: PickSummaries = {};
+    const rows = hist.filter(h => h && h.date >= SEASON_START_DATE && !h.retro).sort((a, b) => a.date.localeCompare(b.date));
+    for (const h of rows) {
+        for (const name of [h.homeTeam, h.awayTeam]) {
+            const tri = TRI_BY_SHORT.get(name);
+            if (!tri || (want && !want.has(tri))) continue;
+            const s = (out[tri] ??= { pickedWin: [], pickedLose: [] });
+            (h.predictedWinner === name ? s.pickedWin : s.pickedLose).push(!!h.isCorrect);
+        }
+    }
+    for (const s of Object.values(out)) {
+        s.pickedWin = s.pickedWin.slice(-10);
+        s.pickedLose = s.pickedLose.slice(-10);
+    }
+    return out;
+}
+
+
 export function getMatchupDetails(): MatchupDetailsPayload {
     let rows: RawRow[] = [];
     try {
@@ -132,5 +172,6 @@ export function getMatchupDetails(): MatchupDetailsPayload {
         };
         games[id] = { home: sideDetails('home'), away: sideDetails('away') };
     }
-    return { generatedAt: new Date().toISOString(), games };
+    const teams = [...new Set(rows.flatMap(r => [str(r.home_abbrev), str(r.away_abbrev)]).filter((t): t is string => !!t))];
+    return { generatedAt: new Date().toISOString(), games, picks: pickSummaries(readJson<RawHistory[]>('history') ?? [], teams) };
 }

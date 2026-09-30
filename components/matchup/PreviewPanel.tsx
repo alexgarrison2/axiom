@@ -55,10 +55,10 @@ function Implications({ p, imp }: { p: Prediction; imp: GameImplication }) {
 }
 
 /** First tab: why the model leans the way it does, then recent form and the pick record. */
-export function PreviewPanel({ p, phase, state, implication, picks }: { p: Prediction; phase: Phase; state: DetailsState; implication: GameImplication | null; picks: PickSummaries; playoffOdds: Record<string, number> }) {
+export function PreviewPanel({ p, phase, state, implication }: { p: Prediction; phase: Phase; state: DetailsState; implication: GameImplication | null; playoffOdds: Record<string, number> }) {
     const prior = priorSeriesNote(p);
     const sides = [p.away, p.home];
-    const anyPicks = sides.some(s => (picks[s.team.triCode]?.pickedWin.length ?? 0) + (picks[s.team.triCode]?.pickedLose.length ?? 0) > 0);
+    const anyPicksIn = (picks: PickSummaries) => sides.some(s => (picks[s.team.triCode]?.pickedWin.length ?? 0) + (picks[s.team.triCode]?.pickedLose.length ?? 0) > 0);
     return (
         <div className="flex flex-col gap-4 py-1">
             {p.breakdown.length ? <WhyThisPick p={p} /> : phase === 'pre' ? <p className="text-body-sm text-fg-2">No model breakdown for this game.</p> : null}
@@ -72,15 +72,15 @@ export function PreviewPanel({ p, phase, state, implication, picks }: { p: Predi
                             <RecentGamesList team={p.away.team} gp={p.away.gp} games={d.away.recent} starter={p.away.goalie} />
                             <RecentGamesList team={p.home.team} gp={p.home.gp} games={d.home.recent} starter={p.home.goalie} />
                         </div>
-                        {anyPicks ? (
+                        {anyPicksIn(d.picks) ? (
                             <section aria-label="Model pick record this season" className="flex flex-col gap-2">
                                 <h3 className="hud-label">Our picks this season</h3>
                                 <div className="grid grid-cols-1 gap-3 cq-sm:grid-cols-2">
                                     {sides.map(s => (
                                         <div key={s.team.triCode} className="flex flex-col gap-1 rounded-control border border-line px-3 py-2">
                                             <span className="text-caption font-bold text-fg-1">{s.team.triCode}</span>
-                                            <PickForm label="Picked to win" entries={picks[s.team.triCode]?.pickedWin ?? []} />
-                                            <PickForm label="Picked to lose" entries={picks[s.team.triCode]?.pickedLose ?? []} />
+                                            <PickForm label="Picked to win" entries={d.picks[s.team.triCode]?.pickedWin ?? []} />
+                                            <PickForm label="Picked to lose" entries={d.picks[s.team.triCode]?.pickedLose ?? []} />
                                         </div>
                                     ))}
                                 </div>

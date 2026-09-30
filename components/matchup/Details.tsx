@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useState } from 'react';
-import type { PickSummaries, Prediction } from '@/types/prediction';
+import type { Prediction } from '@/types/prediction';
 import type { DetailsState } from './DetailsLoading';
 import type { GameImplication } from '@/utils/implications';
 import type { Phase } from '@/lib/matchup/lifecycle';
@@ -18,7 +18,6 @@ export interface DetailsProps {
     p: Prediction;
     phase: Phase;
     implication: GameImplication | null;
-    picks: PickSummaries;
     playoffOdds: Record<string, number>;
     onCollapse: () => void;
 }
@@ -28,7 +27,7 @@ export interface DetailsProps {
  * (lineups, goalies, injuries, recent games, news) comes from one memoized
  * request shared by every card.
  */
-export default function Details({ p, phase, implication, picks, playoffOdds, onCollapse }: DetailsProps) {
+export default function Details({ p, phase, implication, playoffOdds, onCollapse }: DetailsProps) {
     const [tab, setTab] = useState<Tab>('preview');
     const [state, setState] = useState<DetailsState>({ status: 'loading' });
     const panelId = useId();
@@ -55,7 +54,7 @@ export default function Details({ p, phase, implication, picks, playoffOdds, onC
         <div className="flex flex-col gap-3 border-t border-line bg-bg/30 px-4 pb-3 pt-3 cq-md:px-5">
             <Segmented label={`${p.away.team.commonName} at ${p.home.team.commonName} details`} options={tabs} value={tab} onChange={setTab} size="sm" block />
             <div id={panelId} role="region" aria-label={tabs.find(t => t.value === tab)?.label} className="max-h-[600px] overflow-y-auto overscroll-contain [scrollbar-width:thin]">
-                {tab === 'preview' ? <PreviewPanel p={p} phase={phase} state={state} implication={implication} picks={picks} playoffOdds={playoffOdds} /> : null}
+                {tab === 'preview' ? <PreviewPanel p={p} phase={phase} state={state} implication={implication} playoffOdds={playoffOdds} /> : null}
                 {tab === 'goalies' ? <GoaliesPanel p={p} state={state} /> : null}
                 {tab === 'lineups' ? <LineupsPanel p={p} state={state} /> : null}
                 {tab === 'odds' ? <OddsPanel p={p} phase={phase} /> : null}

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getImplications, getPickSummaries, getPlayoffOdds, getPlayoffSeries, getPredictions } from '@/utils/data';
+import { getImplications, getPlayoffOdds, getPlayoffSeries, getPredictions } from '@/utils/data';
 import PredictionsViewer from '@/components/PredictionsViewer';
 import { defaultDate } from '@/lib/matchup/lifecycle';
 import { compactForClient } from '@/lib/matchup/parse';
@@ -18,7 +18,7 @@ export function generateMetadata(): Metadata {
 export default async function Home() {
     const predictions = await getPredictions();
     const teams = [...new Set(predictions.flatMap(p => [p.home.team.triCode, p.away.team.triCode]))];
-    const [picks, allOdds, implications, series] = await Promise.all([getPickSummaries(teams), getPlayoffOdds(), getImplications(), getPlayoffSeries(predictions)]);
+    const [allOdds, implications, series] = await Promise.all([getPlayoffOdds(), getImplications(), getPlayoffSeries(predictions)]);
     const playoffOdds = Object.fromEntries(teams.filter(t => allOdds[t] != null).map(t => [t, allOdds[t]]));
     const today = easternDate();
     const dates = [...new Set(predictions.map(p => p.date))].sort();
@@ -27,7 +27,6 @@ export default async function Home() {
         <main className="mx-auto w-full max-w-[1400px] px-4 pb-tabbar pt-3 md:px-6 md:pb-10">
             <PredictionsViewer
                 predictions={predictions.map(compactForClient)}
-                picks={picks}
                 implications={implications}
                 playoffOdds={playoffOdds}
                 today={today}

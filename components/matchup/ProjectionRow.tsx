@@ -1,4 +1,4 @@
-import { InfoTip } from '@/components/ui/info-tip';
+import { LazyInfoTip } from './LazyInfoTip';
 import type { Prediction } from '@/types/prediction';
 import { fmtOdds } from '@/lib/matchup/format';
 import { gatedEdge, hasMarket, marketPair, modelPair, onPriors } from '@/lib/matchup/edge';
@@ -74,7 +74,7 @@ export function ProjectionRow({ p }: { p: Prediction }) {
                 {edge?.units != null ? (
                     <span className="inline-flex items-center gap-1 font-semibold text-fg-1">
                         {edge.units.toFixed(1)}u
-                        <InfoTip term="units" />
+                        <LazyInfoTip term="units" label="What is Suggested stake (units)?" />
                         <a href="/accuracy#ledger" className="font-semibold text-brand hover:underline">
                             Bet ledger
                         </a>
@@ -88,7 +88,7 @@ export function ProjectionRow({ p }: { p: Prediction }) {
                 ) : null}
                 {!priced ? <span>No market line yet · model only</span> : null}
                 <span className="ml-auto inline-flex items-center">
-                    <InfoTip term="market-pct" className="-my-1 text-fg-3 coarse:-my-3.5 coarse:-mr-3" />
+                    <LazyInfoTip term="market-pct" label="What is Market probability (de-vigged)?" className="-my-1 text-fg-3 coarse:-my-3.5 coarse:-mr-3" />
                 </span>
             </p>
         </div>

@@ -5,7 +5,7 @@
  * Each URL is requested at most once per page load, however many cards ask
  * for it (and a failed request can be retried).
  */
-import type { MatchupDetails, MatchupDetailsPayload } from '../types/prediction';
+import type { MatchupDetails, MatchupDetailsPayload, PickSummaries } from '../types/prediction';
 
 const cache = new Map<string, Promise<unknown>>();
 
@@ -27,9 +27,13 @@ export function loadMatchupDetails(): Promise<MatchupDetailsPayload> {
     return loadJson<MatchupDetailsPayload>('/api/matchup-details');
 }
 
-export async function loadGameDetails(gameId: string): Promise<MatchupDetails | null> {
+export type GameDetails = MatchupDetails & { picks: PickSummaries };
+
+/** One game's details plus the slate's pick record. */
+export async function loadGameDetails(gameId: string): Promise<GameDetails | null> {
     const d = await loadMatchupDetails();
-    return d.games[gameId] ?? null;
+    const g = d.games[gameId];
+    return g ? { ...g, picks: d.picks ?? {} } : null;
 }
 
 /** Test hook: forget every cached request. */

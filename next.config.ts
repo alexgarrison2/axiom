@@ -67,7 +67,19 @@ const NEVER_READ_AT_RUNTIME = [
   ".playwright-cli/**",
   "DailyImages/**",
   "SocialImages/**",
+  // sharp/libvips (~28MB) was traced into every page function. No route
+  // calls sharp: next/image optimisation runs in the platform's image
+  // service (and `next start` loads sharp from node_modules directly).
+  "node_modules/@img/**",
+  "node_modules/sharp/**",
+  // next/og's renderer (~3.2MB) is traced into every page function; only the
+  // opengraph-image routes use it, and they get it back via an include below.
+  "node_modules/next/dist/compiled/@vercel/og/**",
 ];
+
+// Added back for the OG image routes (includes win over excludes; the key also
+// matches /teams/[teamAbbr]/opengraph-image).
+const OG_RUNTIME = ["node_modules/next/dist/compiled/@vercel/og/**"];
 
 /*
  * ── Security headers ───────────────────────────────────────────────────────
@@ -125,6 +137,7 @@ const nextConfig: NextConfig = {
     "/api/teams/**": ["public/data/SiteHistory/**"],
   },
   outputFileTracingIncludes: {
+    "/opengraph-image": OG_RUNTIME,
     "/api/odds-history": ["public/data/SiteHistory/*.csv"],
     "/playoffs": PLAYOFFS_RAW_CSVS.filter((f) =>
       sourceMentions(PLAYOFFS_PAGE, path.basename(f)),

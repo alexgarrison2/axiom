@@ -14,7 +14,7 @@ afterEach(cleanup);
 
 function card(p: Prediction, live: LiveGame | null = null) {
     const { container } = render(
-        <MatchupCard p={p} live={live} implication={null} picks={{}} playoffOdds={{}} favorites={[]} onFavorite={() => {}} />,
+        <MatchupCard p={p} live={live} implication={null} playoffOdds={{}} favorites={[]} onFavorite={() => {}} />,
     );
     return container;
 }
