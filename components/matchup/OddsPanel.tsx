@@ -54,7 +54,10 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
     }
 
     const src = sourceLabel(p.marketSource);
-    const at = p.marketFetchedAt ? fmtTime(p.marketFetchedAt, hydrated ? undefined : 'America/New_York') : null;
+    const atTime = p.marketFetchedAt ? fmtTime(p.marketFetchedAt, hydrated ? undefined : 'America/New_York') : null;
+    const fetched = p.marketFetchedAt ? new Date(p.marketFetchedAt) : null;
+    const notToday = hydrated && fetched && !Number.isNaN(fetched.getTime()) && fetched.toDateString() !== new Date().toDateString();
+    const at = atTime && notToday && fetched ? `${fetched.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${atTime}` : atTime;
     const a = p.away.team.triCode;
     const h = p.home.team.triCode;
 

@@ -3,25 +3,45 @@
 import { Dialog } from '@/components/ui/dialog';
 import type { OddsEntry } from '@/app/api/odds-history/route';
 import type { TeamRef } from '@/types/prediction';
-import { fmtClock, fmtOdds } from '@/lib/matchup/format';
+import { fmtOdds } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
 
 /** Snapshot time: ISO UTC → viewer's clock; legacy "HH:MM" (US Central) → "6:22 PM CT". */
 function when(ts: string): string {
-    if (/^\d{4}-\d{2}-\d{2}T/.test(ts)) return fmtClock(ts);
+    if (/^\d{4}-\d{2}-\d{2}T/.test(ts)) {
+        const d = new Date(ts);
+        if (Number.isNaN(d.getTime())) return ts;
+        const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+        const sameDay = d.toDateString() === new Date().toDateString();
+        return sameDay ? time : `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${time}`;
+    }
     const m = ts.match(/^(\d{1,2}):(\d{2})/);
     if (!m) return ts;
     const h = Number(m[1]);
     return `${h % 12 || 12}:${m[2]} ${h < 12 ? 'AM' : 'PM'} CT`;
 }
 
-function Arrow({ dir }: { dir: 'up' | 'down' | null }) {
+/** 'up' = longer odds (the team drifted), 'down' = shorter odds (the team shortened). */
+function Move({ dir }: { dir: 'up' | 'down' | null }) {
     if (!dir) return null;
-    return (
-        <span aria-label={dir === 'up' ? 'longer odds' : 'shorter odds'} className={cn('text-micro', dir === 'up' ? 'text-pos' : 'text-neg')}>
-            {dir === 'up' ? '▲' : '▼'}
-        </span>
-    );
+    return <span className={cn('mr-1 text-micro font-semibold', dir === 'up' ? 'text-fg-2' : 'text-warn')}>{dir === 'up' ? 'drifted' : 'shortened'}</span>;
+}
+
+const toNum = (o: string) => {
+    const n = Number(String(o).replace('−', '-'));
+    return Number.isFinite(n) ? n : null;
+};
+
+/** Implied chance (with vig) from an American line, for comparing two prices. */
+const implied = (n: number) => (n < 0 ? -n / (-n + 100) : 100 / (n + 100));
+
+/** "COL shortened from −215 to −205" or "No move". */
+function moveSentence(tri: string, from: string, to: string): string {
+    const a = toNum(from);
+    const b = toNum(to);
+    if (a == null || b == null || a === b) return `${tri} unchanged at ${fmtOdds(to) ?? to}`;
+    const verb = implied(b) > implied(a) ? 'shortened' : 'drifted';
+    return `${tri} ${verb} from ${fmtOdds(from) ?? from} to ${fmtOdds(to) ?? to}`;
 }
 
 /**
@@ -34,7 +54,7 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
     return (
         <Dialog
             title="Line move"
-            description={`${away.commonName} @ ${home.commonName} · moneyline from open to ${started ? 'close' : 'latest'}`}
+            description={`${away.commonName} at ${home.commonName} · moneyline from our first snapshot to the ${started ? 'close' : 'latest'}`}
             size="md"
             trigger={
                 <button
@@ -51,6 +71,10 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                 </button>
             }
         >
+            <p className="mb-3 text-body-sm text-fg-1">
+                {moveSentence(away.triCode, first.awayOdds, last.awayOdds)} · {moveSentence(home.triCode, first.homeOdds, last.homeOdds)}.
+                <span className="block text-caption text-fg-3">Shortened means the market now rates the team more likely to win; drifted means less likely.</span>
+            </p>
             <table className="w-full text-body-sm">
                 <thead>
                     <tr className="text-micro uppercase tracking-wider text-fg-3">
@@ -69,21 +93,21 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                     {entries.map((e, i) => (
                         <tr key={i} className={cn('border-t border-line', (e.isOpen || e.isLatest) && 'bg-surface-2/60')}>
                             <th scope="row" className="py-1.5 pl-1 text-left text-caption font-normal text-fg-2">
-                                {e.isOpen ? <span className="mr-1.5 rounded-chip bg-fg-3/15 px-1 text-micro font-bold uppercase text-fg-1">Open</span> : null}
+                                {e.isOpen ? <span className="mr-1.5 rounded-chip bg-fg-3/15 px-1 text-micro font-bold uppercase text-fg-1">First seen</span> : null}
                                 {e.isLatest ? <span className="mr-1.5 rounded-chip bg-brand/15 px-1 text-micro font-bold uppercase text-brand">{started ? 'Close' : 'Latest'}</span> : null}
                                 {when(e.timestamp)}
                             </th>
                             <td className="py-1.5 text-right tabular-nums text-fg-1">
-                                <Arrow dir={e.awayDir} /> {fmtOdds(e.awayOdds) ?? e.awayOdds}
+                                <Move dir={e.awayDir} /> {fmtOdds(e.awayOdds) ?? e.awayOdds}
                             </td>
                             <td className="py-1.5 pr-1 text-right tabular-nums text-fg-1">
-                                <Arrow dir={e.homeDir} /> {fmtOdds(e.homeOdds) ?? e.homeOdds}
+                                <Move dir={e.homeDir} /> {fmtOdds(e.homeOdds) ?? e.homeOdds}
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-            <p className="mt-3 text-caption text-fg-3">From our pregame snapshots. The opening line and the last six changes are shown.</p>
+            <p className="mt-3 text-caption text-fg-3">From our pregame snapshots. “First seen” is our first capture, not necessarily the book’s opening line; the last six changes are shown.</p>
         </Dialog>
     );
 }
