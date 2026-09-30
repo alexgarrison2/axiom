@@ -28,7 +28,11 @@ test.describe('/teams', () => {
         await expect(caption).toBeVisible();
         await expect(page.locator('body')).not.toContainText('Olympics');
         // No team can have more regular-season games than the schedule allows.
-        const gp = await page.locator('tbody tr td:nth-child(3)').allInnerTexts();
+        const heads = (await page.locator('thead th').first().locator('xpath=..').locator('th').allTextContents()).map(t => t.trim().split(/\s|,/)[0]);
+        const gpCol = heads.indexOf('GP') + 1; // nth-child is 1-based and counts the team <th>
+        expect(gpCol).toBeGreaterThan(1);
+        const gp = await page.locator(`tbody tr > :nth-child(${gpCol})`).allInnerTexts();
+        expect(gp.length).toBeGreaterThan(0);
         for (const v of gp) expect(Number(v) || 0).toBeLessThanOrEqual(84);
     });
 
@@ -36,11 +40,15 @@ test.describe('/teams', () => {
         await page.goto('/teams?season=20252026');
         await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
         const car = page.locator('tbody tr', { has: page.locator('a[href="/teams/CAR"]') });
-        await expect(car.locator('td').nth(1)).toHaveText('82');
-        await expect(car.locator('td').nth(2)).toHaveText('53');
-        await expect(car.locator('td').nth(3)).toHaveText('22');
-        await expect(car.locator('td').nth(4)).toHaveText('7');
-        await expect(car.locator('td').nth(5)).toHaveText('113');
+        // Read cells by column header, so a column reorder (fix1-G5: PTS, P%, GP, Rank, W, L, OT) can't break this.
+        const heads = (await page.locator('thead th').allTextContents()).map(t => t.trim().split(/\s|,/)[0]);
+        const cell = (abbr: string) => car.locator('td').nth(heads.indexOf(abbr) - 1); // first column is the team <th>
+        expect(heads.slice(0, 8)).toEqual(['Team', 'PTS', 'P%', 'GP', 'Rank', 'W', 'L', 'OT']);
+        await expect(cell('GP')).toHaveText('82');
+        await expect(cell('W')).toHaveText('53');
+        await expect(cell('L')).toHaveText('22');
+        await expect(cell('OT')).toHaveText('7');
+        await expect(cell('PTS')).toHaveText('113');
     });
 
     test('a shared ?season= link is prerendered, not swapped in after hydration', async ({ request }) => {

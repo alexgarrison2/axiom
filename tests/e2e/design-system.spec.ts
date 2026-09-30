@@ -38,10 +38,10 @@ test.describe('primitives (/ui-kit)', () => {
 
     test('InfoTip opens on keyboard Enter and closes on Esc', async ({ page }) => {
         await page.goto('/ui-kit');
-        const trigger = page.getByRole('button', { name: 'What is Model win probability?' });
+        const trigger = page.getByRole('button', { name: 'What is Our forecast (published win probability)?' });
         await trigger.focus();
         await page.keyboard.press('Enter');
-        const tip = page.getByRole('dialog', { name: 'Model win probability' });
+        const tip = page.getByRole('dialog', { name: 'Our forecast (published win probability)' });
         await expect(tip).toBeVisible();
         await page.keyboard.press('Escape');
         await expect(tip).toBeHidden();
@@ -50,9 +50,9 @@ test.describe('primitives (/ui-kit)', () => {
 
     test('InfoTip is portalled; Tab steps into its link, then past the trigger', async ({ page }) => {
         await page.goto('/ui-kit');
-        const trigger = page.getByRole('button', { name: 'What is Model win probability?' });
+        const trigger = page.getByRole('button', { name: 'What is Our forecast (published win probability)?' });
         await trigger.focus();
-        const tip = page.getByRole('dialog', { name: 'Model win probability' });
+        const tip = page.getByRole('dialog', { name: 'Our forecast (published win probability)' });
         await expect(tip).toBeVisible();
         // Rendered outside any card, so an overflow/transform ancestor can't clip it.
         expect(await tip.evaluate(el => el.closest('main') === null)).toBe(true);
