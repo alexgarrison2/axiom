@@ -1,7 +1,6 @@
 import 'server-only';
-import fs from 'node:fs';
-import path from 'node:path';
 import { SEASON_ID } from '@/lib/season';
+import { readPublicJson } from '@/components/views/read-data';
 import { TEAM_CODES, TEAM_NAMES } from '@/components/ui/team-color';
 import {
     CONFERENCE_OF_DIVISION,
@@ -29,13 +28,7 @@ export interface StandingsPageData {
     strengths: Record<string, TeamStrength>;
 }
 
-function readJson(rel: string): unknown {
-    try {
-        return JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', 'data', rel), 'utf8'));
-    } catch {
-        return null;
-    }
-}
+const readJson = readPublicJson;
 
 interface NhlStandingsTeam {
     teamAbbrev?: { default?: string };

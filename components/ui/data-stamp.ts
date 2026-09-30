@@ -12,9 +12,19 @@ export interface DataStamp {
     mode?: string;
 }
 
+// Literal paths: a path.join(process.cwd(), variable) here made Turbopack
+// trace the whole project into every function (this runs in the root layout).
+const READERS: Record<string, () => string> = {
+    'public/data/manifest.json': () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'manifest.json'), 'utf8'),
+    'data/last_updated.json': () => fs.readFileSync(path.join(process.cwd(), 'data', 'last_updated.json'), 'utf8'),
+    'public/data/last_updated.json': () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'last_updated.json'), 'utf8'),
+};
+
 function readJson(rel: string): Record<string, unknown> | null {
+    const read = READERS[rel];
+    if (!read) return null;
     try {
-        return JSON.parse(fs.readFileSync(path.join(process.cwd(), rel), 'utf8'));
+        return JSON.parse(read());
     } catch {
         return null;
     }

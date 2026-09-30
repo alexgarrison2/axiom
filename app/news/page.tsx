@@ -1,6 +1,5 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import type { Metadata } from 'next';
+import { readPublicJson } from '@/components/views/read-data';
 import { PageHeading } from '@/components/ui/page-heading';
 import { NewsFeed } from '@/components/news/NewsFeed';
 import { toFeedGroups } from '@/components/news/feed';
@@ -15,13 +14,7 @@ export const metadata: Metadata = {
     alternates: { canonical: '/news' },
 };
 
-function readJson(file: string): unknown {
-    try {
-        return JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', 'data', file), 'utf8'));
-    } catch {
-        return null;
-    }
-}
+const readJson = readPublicJson;
 
 /** Today's date in New York (the NHL's slate day). */
 function todayEt(now = new Date()): string {

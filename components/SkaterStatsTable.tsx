@@ -63,13 +63,18 @@ const COLUMNS: Column[] = [
 const SET_LABELS: Record<ColumnSet, string> = { overview: 'Impact + points', scoring: 'Scoring', impact: 'Impact split', rates: 'Rates' };
 
 export interface SkaterStatsTableProps {
-    /** Compact rows from the server; when omitted they are fetched from /data. */
-    players?: Skater[];
+    /**
+     * Server-rendered first page for the default view (impact, 20+ GP), so the
+     * table paints without shipping every skater in the HTML.
+     */
+    preview?: { rows: Skater[]; total: number };
+    /** URL of the full compact list (fetched after first paint). Without it, /data files are compacted in the browser. */
+    src?: string;
     ratingsLabel?: string;
 }
 
-export default function SkaterStatsTable({ players: initial, ratingsLabel }: SkaterStatsTableProps) {
-    const [players, setPlayers] = React.useState<Skater[] | null>(initial ?? null);
+export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterStatsTableProps) {
+    const [players, setPlayers] = React.useState<Skater[] | null>(null);
     const [filter, setFilter] = React.useState<SkaterFilter>({ q: '', team: 'all', pos: 'all', minGp: 20, rookies: false, includeOffRoster: false });
     const [sort, setSort] = React.useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'impact', dir: 'desc' });
     const [page, setPage] = React.useState(0);
@@ -78,13 +83,20 @@ export default function SkaterStatsTable({ players: initial, ratingsLabel }: Ska
     const tableTop = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
-        if (initial) return;
-        Promise.all([fetch('/data/player_impact.json').then(r => r.json()), fetch('/data/player_bio.json').then(r => r.json()).catch(() => ({}))])
-            .then(([impact, bio]) => setPlayers(compactSkaters(impact, bio)))
-            .catch(() => setPlayers([]));
-    }, [initial]);
+        let alive = true;
+        const load = src
+            ? fetch(src).then(r => r.json() as Promise<Skater[]>)
+            : Promise.all([fetch('/data/player_impact.json').then(r => r.json()), fetch('/data/player_bio.json').then(r => r.json()).catch(() => ({}))]).then(
+                  ([impact, bio]) => compactSkaters(impact, bio),
+              );
+        load.then(list => alive && setPlayers(list)).catch(() => alive && setPlayers(preview?.rows ?? []));
+        return () => {
+            alive = false;
+        };
+    }, [src, preview]);
 
-    const rows = React.useMemo(() => sortSkaters(filterSkaters(players ?? [], filter), sort.key, sort.dir), [players, filter, sort]);
+    const rows = React.useMemo(() => sortSkaters(filterSkaters(players ?? preview?.rows ?? [], filter), sort.key, sort.dir), [players, preview, filter, sort]);
+    const total = players ? rows.length : preview?.total ?? rows.length;
     const pages = Math.max(1, Math.ceil(rows.length / PAGE));
     const current = Math.min(page, pages - 1);
     const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
@@ -103,8 +115,9 @@ export default function SkaterStatsTable({ players: initial, ratingsLabel }: Ska
     };
     const colClass = (c: Column) => (c.sets.includes(set) ? 'table-cell' : 'hidden md:table-cell');
 
-    if (!players) return <div aria-busy="true" className="h-96 rounded-card border border-line bg-surface-1/60" />;
-    if (!players.length) return <p className="text-body-sm text-fg-3">Player ratings are unavailable right now.</p>;
+    const list = players ?? preview?.rows;
+    if (!list) return <div aria-busy="true" className="h-96 rounded-card border border-line bg-surface-1/60" />;
+    if (!list.length) return <p className="text-body-sm text-fg-3">Player ratings are unavailable right now.</p>;
 
     return (
         <div className="flex flex-col gap-4">
@@ -185,8 +198,8 @@ export default function SkaterStatsTable({ players: initial, ratingsLabel }: Ska
 
             <div ref={tableTop} className="flex scroll-mt-[calc(var(--appbar-h)+120px)] flex-wrap items-center justify-between gap-2 text-body-sm text-fg-2">
                 <p aria-live="polite">
-                    {plural(rows.length, 'skater')}
-                    {rows.length > PAGE ? ` · ${current * PAGE + 1}–${Math.min(rows.length, current * PAGE + PAGE)} shown` : ''}
+                    {plural(total, 'skater')}
+                    {total > PAGE ? ` · ${current * PAGE + 1}–${Math.min(total, current * PAGE + PAGE)} shown` : ''}
                 </p>
                 {ratingsLabel ? <p className="text-caption text-fg-3">Counting stats and ratings: {ratingsLabel}</p> : null}
             </div>

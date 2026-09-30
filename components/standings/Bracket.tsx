@@ -233,12 +233,12 @@ function TeamLine({
             className={cn(
                 'group flex min-h-11 w-full items-center gap-2 px-2.5 text-left transition-colors',
                 picked ? 'bg-brand/10 shadow-[inset_3px_0_0_rgb(var(--brand-rgb))]' : 'hover:bg-surface-2',
-                eliminated && 'opacity-55',
+                eliminated && 'bg-bg/40',
             )}
         >
-            <TeamLogo tri={seed.tri} size={24} />
+            <TeamLogo tri={seed.tri} size={24} className={cn(eliminated && 'opacity-40 grayscale')} />
             <span className="w-7 shrink-0 font-mono text-micro text-fg-3">{seed.label}</span>
-            <span className={cn('min-w-0 flex-1 truncate font-semibold', picked ? 'text-fg-1' : 'text-fg-1', eliminated && 'line-through decoration-fg-3')}>
+            <span className={cn('min-w-0 flex-1 truncate font-semibold', eliminated ? 'text-fg-3 line-through decoration-fg-3' : 'text-fg-1')}>
                 {seed.tri}
             </span>
             {picked ? (
@@ -247,7 +247,7 @@ function TeamLine({
                 </svg>
             ) : null}
             {p != null ? (
-                <span className="shrink-0 text-body-sm font-bold tabular-nums" style={{ color: pctTone(p * 100) }}>
+                <span className={cn('shrink-0 text-body-sm font-bold tabular-nums', eliminated && 'text-fg-3')} style={eliminated ? undefined : { color: pctTone(p * 100) }}>
                     {fmtProb(p)}
                 </span>
             ) : null}

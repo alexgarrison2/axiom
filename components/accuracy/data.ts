@@ -6,20 +6,21 @@ import { parseAccuracyReport, type AccuracyReport } from './report';
 import { parseLedger } from './ledger-data';
 import type { GradedGame, LedgerData } from './types';
 
-function readJson(...rel: string[]): unknown {
+// Literal, statically scoped paths so the tracer includes only these files.
+function readJson(file: string): unknown {
     try {
-        return JSON.parse(fs.readFileSync(path.join(process.cwd(), ...rel), 'utf8'));
+        return JSON.parse(fs.readFileSync(file, 'utf8'));
     } catch {
         return null;
     }
 }
 
 export function loadReport(): AccuracyReport {
-    return parseAccuracyReport(readJson('public', 'data', 'model_report.json'));
+    return parseAccuracyReport(readJson(path.join(process.cwd(), 'public', 'data', 'model_report.json')));
 }
 
 export function loadLedger(): LedgerData {
-    return parseLedger(readJson('public', 'data', 'bet_ledger.json'));
+    return parseLedger(readJson(path.join(process.cwd(), 'public', 'data', 'bet_ledger.json')));
 }
 
 const teamTri = teamTriFromName;
@@ -33,7 +34,7 @@ const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFi
  * dropped.
  */
 export function loadGradedGames(): GradedGame[] {
-    const raw = readJson('data', 'prediction_history.json');
+    const raw = readJson(path.join(process.cwd(), 'data', 'prediction_history.json'));
     if (!Array.isArray(raw)) return [];
     const out: GradedGame[] = [];
     for (const r of raw as Obj[]) {

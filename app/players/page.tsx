@@ -1,9 +1,8 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import type { Metadata } from 'next';
+import { readPublicJson } from '@/components/views/read-data';
 import { PageHeading } from '@/components/ui/page-heading';
 import SkaterStatsTable from '@/components/SkaterStatsTable';
-import { compactSkaters } from '@/components/players/model';
+import { compactSkaters, filterSkaters, sortSkaters } from '@/components/players/model';
 import { SEASON_START_YEAR } from '@/lib/season';
 
 export const revalidate = 3600;
@@ -20,16 +19,13 @@ export const metadata: Metadata = {
     alternates: { canonical: '/players' },
 };
 
-function readJson(file: string): unknown {
-    try {
-        return JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', 'data', file), 'utf8'));
-    } catch {
-        return null;
-    }
-}
+const readJson = readPublicJson;
 
 export default function PlayersPage() {
-    const players = compactSkaters(readJson('player_impact.json'), readJson('player_bio.json'));
+    const all = compactSkaters(readJson('player_impact.json'), readJson('player_bio.json'));
+    // Same default view as the client table: impact, 20+ GP, rostered players.
+    const defaults = sortSkaters(filterSkaters(all, { q: '', team: 'all', pos: 'all', minGp: 20, rookies: false, includeOffRoster: false }), 'impact', 'desc');
+    const preview = { rows: defaults.slice(0, 50), total: defaults.length };
     const manifest = readJson('manifest.json') as { games_played_current_season?: number } | null;
     const leagueGames = typeof manifest?.games_played_current_season === 'number' ? manifest.games_played_current_season : 0;
     const ratingsCurrent = leagueGames >= PLAYER_MODEL_MIN_GAMES;
@@ -56,7 +52,7 @@ export default function PlayersPage() {
                         </span>
                     }
                 />
-                <SkaterStatsTable players={players} ratingsLabel={ratingsCurrent ? `${ratingsSeason} season` : `${ratingsSeason} season (teams updated for offseason moves)`} />
+                <SkaterStatsTable preview={preview} src="/players/skaters" ratingsLabel={ratingsCurrent ? `${ratingsSeason} season` : `${ratingsSeason} season (teams updated for offseason moves)`} />
             </div>
         </main>
     );
