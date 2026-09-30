@@ -91,6 +91,11 @@ export function slateHeading(date: string, today: string): string {
     });
 }
 
+/** Document title for a slate day: "NHL predictions for Thu, Oct 1 | Pony xG". */
+export function slateTitle(date: string, today: string): string {
+    return `NHL predictions for ${slateHeading(date, today)} | Pony xG`;
+}
+
 const BY_SHORT = new Map(Object.entries(TEAM_NAMES).map(([tri, t]) => [t.short.toLowerCase(), tri]));
 
 export function triFromName(name: string | null | undefined): string | null {

@@ -4,10 +4,12 @@ import path from 'node:path';
 import Papa from 'papaparse';
 import { json, parseRecent, str, type RawRow } from './parse';
 import { buildIndex, leagueContext, lineupView, type DfoLineup, type ImpactData } from './lineup-impact';
-import { disambiguate, gsaxWindow, shortDate } from './format';
+import { disambiguate, gsaxWindow, isCoinFlip, shortDate } from './format';
 import type { GoalieView, InjuryView, MatchupDetails, MatchupDetailsPayload, PickSummaries, SideDetails } from '../../types/prediction';
-import { SEASON_START_DATE } from '../season';
+import { SEASON_ID, SEASON_START_DATE } from '../season';
 import { TEAM_CODES, TEAM_NAMES } from '../../components/ui/team-color';
+import { loadSeasonGames, ratingsSeason } from '../../utils/team-stats/server';
+import { goalieStartsGsax } from '../../utils/team-stats/game-row';
 
 /*
  * Server loader for /api/matchup-details: lineups with impact values,
@@ -88,8 +90,11 @@ export function injuriesFor(all: Injury[], team: string, lineupNames: Set<string
 interface RawHistory {
     date: string;
     season?: string;
+    /** null on picks made before the versioned model (legacy). */
+    modelVersion?: string | null;
     homeTeam: string;
     awayTeam: string;
+    homeWinProb?: number | null;
     predictedWinner: string;
     isCorrect: boolean;
     retro?: boolean;
@@ -100,12 +105,15 @@ const TRI_BY_SHORT = new Map(TEAM_CODES.map(t => [TEAM_NAMES[t].short, t]));
 /**
  * Pick form per team: this season's graded picks, newest last, the last 10
  * where the model picked the team to win and to lose. Replaces shipping the
- * whole prediction history (460KB) to the browser.
+ * whole prediction history (460KB) to the browser. Legacy picks (no model
+ * version) and coin flips (within 1 pt of 50) are not the model's calls.
  */
 export function pickSummaries(hist: RawHistory[], teams?: string[]): PickSummaries {
     const want = teams ? new Set(teams) : null;
     const out: PickSummaries = {};
-    const rows = hist.filter(h => h && h.date >= SEASON_START_DATE && !h.retro).sort((a, b) => a.date.localeCompare(b.date));
+    const rows = hist
+        .filter(h => h && h.date >= SEASON_START_DATE && !h.retro && !!h.modelVersion && !isCoinFlip(h.homeWinProb))
+        .sort((a, b) => a.date.localeCompare(b.date));
     for (const h of rows) {
         for (const name of [h.homeTeam, h.awayTeam]) {
             const tri = TRI_BY_SHORT.get(name);
@@ -139,6 +147,15 @@ export function getMatchupDetails(): MatchupDetailsPayload {
     const injuries = readJson<Injury[]>('injuries') ?? [];
     const goalieInjuries = new Map(injuries.filter(i => i && (i.position ?? '').toUpperCase() === 'G' && i.status && OUT_STATUSES.test(i.status)).map(i => [fold(i.name), i]));
     const ctx = leagueContext(buildIndex(readJson<ImpactData>('impact') ?? {}), readJson<Record<string, DfoLineup>>('lineups') ?? {});
+    // player_impact.json describes last season until enough games are in (the team pages use the same rule).
+    const impactSeason = ratingsSeason();
+    // This season's starts per goalie, from the same rows and function as the team page's goalie lines.
+    let seasonGames: ReturnType<typeof loadSeasonGames> = [];
+    try {
+        seasonGames = loadSeasonGames(SEASON_ID);
+    } catch {
+        seasonGames = [];
+    }
 
     const goalieView = (name: string, starter: boolean): GoalieView => {
         const key = fold(name);
@@ -147,7 +164,7 @@ export function getMatchupDetails(): MatchupDetailsPayload {
         const g = r?.gsax_per_game;
         const gsax = typeof g === 'number' && Number.isFinite(g) ? Math.round(g * 100) / 100 : null;
         const ratedGp = typeof r?.games_played === 'number' && r.games_played > 0 ? r.games_played : 0;
-        const tot = r?.gsax_total;
+        const cur = goalieStartsGsax(seasonGames, name);
         const inj = goalieInjuries.get(key);
         return {
             name,
@@ -156,8 +173,9 @@ export function getMatchupDetails(): MatchupDetailsPayload {
             prev: l?.prev ?? null,
             gsaxPerGame: gsax,
             gsaxSeason: gsax == null ? null : gsaxWindow(Object.keys(r?.games_by_season ?? {}), ratedGp > 0),
-            gsaxCur: ratedGp > 0 && typeof tot === 'number' && Number.isFinite(tot) ? Math.round(tot * 100) / 100 : null,
-            gsaxCurGp: ratedGp,
+            // Per start, as the team page's GSAx/GS column shows it.
+            gsaxCur: cur.gsax != null && cur.gs > 0 ? Number((cur.gsax / cur.gs).toFixed(2)) : null,
+            gsaxCurGp: cur.gs,
             injury: inj
                 ? {
                       status: statusShort(inj.status ?? ''),
@@ -193,7 +211,7 @@ export function getMatchupDetails(): MatchupDetailsPayload {
                 news: Array.isArray(news) ? news.filter(n => n && typeof n.news === 'string') : [],
             };
         };
-        games[id] = { home: sideDetails('home'), away: sideDetails('away') };
+        games[id] = { home: sideDetails('home'), away: sideDetails('away'), impactSeason };
     }
     const teams = [...new Set(rows.flatMap(r => [str(r.home_abbrev), str(r.away_abbrev)]).filter((t): t is string => !!t))];
     return { generatedAt: new Date().toISOString(), games, picks: pickSummaries(readJson<RawHistory[]>('history') ?? [], teams) };

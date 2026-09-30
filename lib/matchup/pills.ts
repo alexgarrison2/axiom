@@ -8,7 +8,7 @@
  * teams open), and the fatigue chips are always evaluated first-hand.
  */
 import type { Prediction, Side, SideData } from '../../types/prediction';
-import { PREV_TAG } from './format';
+import { PREV_TAG, SMALL_SAMPLE_GP } from './format';
 
 export type PillTone = 'neutral' | 'pos' | 'neg' | 'warn' | 'info';
 export type PillState = 'current' | 'small' | 'prior';
@@ -28,7 +28,7 @@ export interface Pill {
 }
 
 /** Sample below which a current-season record is flagged as small (dashed + n=). */
-export const SMALL_SAMPLE_GP = 5;
+export { SMALL_SAMPLE_GP };
 /** Only extreme special-teams ranks are worth a chip. */
 const TOP = 5;
 const BOTTOM = 28;
