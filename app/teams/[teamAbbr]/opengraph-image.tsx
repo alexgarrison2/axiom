@@ -80,7 +80,7 @@ export default async function Image({ params }: { params: Promise<{ teamAbbr: st
                 </div>
                 <div style={{ display: 'flex', marginTop: 'auto', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <div style={{ fontSize: 30, color: '#a9b4c2', display: 'flex' }}>
-                        {next ? `Next: ${next.home ? 'vs' : '@'} ${next.opp} · ${next.date}${next.modelWinPct != null ? ` · model ${next.modelWinPct.toFixed(0)}%` : ''}` : ''}
+                        {next ? `Next: ${next.home ? 'vs' : '@'} ${next.opp} · ${next.date}${next.modelWinPct != null ? ` · forecast ${next.modelWinPct.toFixed(0)}%` : ''}` : ''}
                     </div>
                     <div style={{ fontSize: 34, fontWeight: 800, color: '#22e6f5' }}>pony xG</div>
                 </div>
