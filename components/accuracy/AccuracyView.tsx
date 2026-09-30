@@ -427,12 +427,17 @@ function VerdictRow({ verdict: v }: { verdict: Verdict }) {
         </span>
     );
     return (
-        <p data-testid="accuracy-verdict" className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-caption uppercase tracking-[0.14em]">
+        <p data-testid="accuracy-verdict" className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-caption uppercase tracking-[0.14em]">
             {v.tooEarly ? (
                 <span className="font-bold text-fg-2">Too early</span>
             ) : (
                 <>
                     {v.vsMarket ? part('Vs market', v.vsMarket) : null}
+                    {v.vsMarket && v.vsHome ? (
+                        <span aria-hidden="true" className="text-fg-3">
+                            ·
+                        </span>
+                    ) : null}
                     {v.vsHome ? part('Vs home', v.vsHome) : null}
                 </>
             )}

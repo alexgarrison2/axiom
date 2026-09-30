@@ -24,7 +24,7 @@ test.describe('/accuracy', () => {
         fail = false;
         await picks.getByRole('button', { name: /retry/i }).click();
         await expect(picks.getByRole('alert')).toHaveCount(0);
-        if (curN > 0) await expect(picks.locator('ul li').first()).toBeVisible();
+        if (curN > 0) await expect(picks.locator('li button[aria-expanded]').first()).toBeVisible();
     });
 
     test('small samples: no market delta, no verdict, no coloured ledger', async ({ page }) => {
