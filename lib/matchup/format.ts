@@ -4,6 +4,8 @@ import { SEASON_START_YEAR } from '../season';
 /** "25-26" (previous season) and "26-27" (current). */
 export const PREV_TAG = `${String(SEASON_START_YEAR - 1).slice(2)}-${String(SEASON_START_YEAR).slice(2)}`;
 export const CUR_TAG = `${String(SEASON_START_YEAR).slice(2)}-${String(SEASON_START_YEAR + 1).slice(2)}`;
+/** Full current-season label, "2026-27" (matches goalie_ratings games_by_season keys). */
+export const CUR_SEASON_LABEL = `${SEASON_START_YEAR}-${String(SEASON_START_YEAR + 1).slice(2)}`;
 
 /** American odds with an explicit sign: 105 → "+105", "-125" → "−125" (true minus). */
 export function fmtOdds(v: number | string | null | undefined): string | null {
@@ -51,6 +53,17 @@ export function fmtTime(iso: string, timeZone?: string, locale = 'en-US'): strin
  */
 export function gsaxTag(ratedGp: number): string {
     return ratedGp > 0 ? `${CUR_TAG} · ${ratedGp} GP` : PREV_TAG;
+}
+
+/**
+ * Season window a regressed GSAx/gm rating draws on, matching the team page:
+ * "2024-25 to 2026-27", or "2024-25" when only one season is in it.
+ */
+export function gsaxWindow(seasons: string[], playedThisSeason: boolean): string {
+    const all = new Set(seasons.filter(Boolean));
+    if (playedThisSeason) all.add(CUR_SEASON_LABEL);
+    const span = [...all].sort();
+    return span.length > 1 ? `${span[0]} to ${span[span.length - 1]}` : (span[0] ?? 'prior seasons');
 }
 
 /** Clock time without zone: "5:12 PM". */

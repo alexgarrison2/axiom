@@ -34,7 +34,7 @@ function Row({
                         term={term}
                         note={note}
                         label={`What is ${label}?`}
-                        className="relative z-10 -my-1 text-fg-3 coarse:-my-3.5"
+                        className="relative z-10 -my-0.5 text-fg-3 coarse:min-h-6 coarse:min-w-6"
                     />
                 ) : null}
             </span>
@@ -64,7 +64,7 @@ export function ProjectionRow({ p }: { p: Prediction }) {
 
     return (
         <div className="flex flex-col gap-1.5">
-            <div role="table" aria-label={`Forecast, model and market, ${a} at ${h}`} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline gap-x-3 gap-y-0.5 px-1">
+            <div role="table" aria-label={`Forecast, model and market, ${a} at ${h}`} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1 px-1">
                 <div role="row" className="sr-only">
                     <span role="columnheader">{a}</span>
                     <span role="columnheader">Measure</span>

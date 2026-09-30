@@ -115,7 +115,7 @@ export function WhyThisPick({ p }: { p: Prediction }) {
                     {100 - Math.round(p.blendWeight * 100)}%. Each bar shows points added toward one team.
                 </p>
             ) : null}
-            {p.confidenceNote ? <p className="text-caption text-fg-3">{p.confidenceNote}</p> : null}
+            {p.confidenceNote ? <p className="text-caption text-fg-3">{p.confidenceNote.replace(/model on preseason priors/g, 'model leans on preseason ratings')}</p> : null}
         </section>
     );
 }

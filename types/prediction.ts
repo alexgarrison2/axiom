@@ -176,8 +176,13 @@ export interface GoalieView {
     cur: { w: number; l: number; ot: number; svpct: number; gaa: number; gp: number } | null;
     prev: { w: number; l: number; ot: number; svpct: number; gaa: number; gp: number } | null;
     gsaxPerGame: number | null;
-    /** Season the GSAx rate mostly reflects ("25-26" before the goalie's debut). */
+    /** Season window of the regressed GSAx rating ("2024-25 to 2026-27"). */
     gsaxSeason: string | null;
+    /** Raw GSAx this season (total) and games it covers; null before his first game. */
+    gsaxCur?: number | null;
+    gsaxCurGp?: number;
+    /** Injury tag when the goalie is on IR / out ("IR", "Dec 30"). */
+    injury?: { status: string; returnLabel: string | null } | null;
 }
 
 export interface SideDetails {
