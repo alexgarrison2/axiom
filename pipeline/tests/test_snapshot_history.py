@@ -48,7 +48,8 @@ def test_two_runs_with_price_change_give_two_points(tmp_path):
     SP.snapshot(str(pred), str(hist), run3)                                                   # nothing changed
 
     text = (hist / '2026-10-01.csv').read_text()
-    assert ',,,,' not in text
+    # No blank separator rows (a line of bare commas); trailing blank columns are fine.
+    assert not any(line and set(line) <= {','} for line in text.splitlines())
     rows = list(csv.DictReader(text.splitlines()))
     by = {}
     for r in rows:

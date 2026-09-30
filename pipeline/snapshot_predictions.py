@@ -108,6 +108,9 @@ FIELDNAMES = [
     'nhl_game_id',
     # Game total (over/under line and prices) for the line-move history.
     'total_line', 'total_over', 'total_under',
+    # Where the moneyline came from (odds.json source, e.g. bovada,
+    # nhl_partner_draftkings), so the line move can tell a book switch from a move.
+    'market_source',
 ]
 
 
@@ -204,6 +207,7 @@ def snapshot(predictions_path=None, history_dir=None, now_utc=None):
                 'total_line': format_total(row.get('total_line', '')),
                 'total_over': format_odds(row.get('total_over', '')),
                 'total_under': format_odds(row.get('total_under', '')),
+                'market_source': (row.get('market_source') or '').strip(),
                 'awayteam': row.get('away_team', ''),
                 'hometeam': row.get('home_team', ''),
 

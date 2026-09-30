@@ -15,7 +15,7 @@ PRED_COLS = ['schema_version', 'nhl_game_id', 'game_id', 'game_date', 'start_tim
              'home_ev', 'away_ev', 'wager_recommendation', 'home_xg', 'away_xg', 'home_starter', 'away_starter',
              *TOTAL_COLS]
 # The exact header of public/data/SiteHistory/2026-09-30.csv before this fix.
-PRE_TOTALS_HEADER = [c for c in SP.FIELDNAMES if c not in TOTAL_COLS]
+PRE_TOTALS_HEADER = [c for c in SP.FIELDNAMES if c not in TOTAL_COLS and c != 'market_source']
 
 
 def _pred(path, games):

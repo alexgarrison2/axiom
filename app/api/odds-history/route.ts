@@ -28,6 +28,8 @@ export interface OddsEntry {
     total?: OddsTotal | null;
     /** 'up' = the total line went up, 'down' = it came down, null = same line. */
     totalDir?: 'up' | 'down' | null;
+    /** Market source id of this snapshot's prices (e.g. "bovada", "nhl_partner_draftkings"); null on older snapshots. */
+    source?: string | null;
 }
 
 export interface OddsTotal {
@@ -55,6 +57,12 @@ function totalOf(row: Record<string, string>): OddsTotal | null {
     if (!line || !Number.isFinite(n) || n < 3 || n > 12) return null;
     return { line: n.toFixed(1), over: (row.total_over ?? '').trim(), under: (row.total_under ?? '').trim() };
 }
+
+/** Snapshot market source id, lower-case, or null when the snapshot predates the column. */
+const sourceOf = (row: Record<string, string>): string | null => {
+    const s = (row.market_source ?? '').trim().toLowerCase();
+    return /^[a-z0-9_]{2,40}$/.test(s) ? s : null;
+};
 
 const totalKey = (t: OddsTotal | null) => (t ? `${t.line}|${t.over}|${t.under}` : '');
 
@@ -99,7 +107,14 @@ export async function GET(request: NextRequest) {
     const deduped: typeof rows = [];
     for (const row of rows) {
         const prev = deduped[deduped.length - 1];
-        if (!prev || row.away_Odds !== prev.away_Odds || row.home_Odds !== prev.home_Odds || totalKey(totalOf(row)) !== totalKey(totalOf(prev))) deduped.push(row);
+        if (
+            !prev ||
+            row.away_Odds !== prev.away_Odds ||
+            row.home_Odds !== prev.home_Odds ||
+            totalKey(totalOf(row)) !== totalKey(totalOf(prev)) ||
+            sourceOf(row) !== sourceOf(prev)
+        )
+            deduped.push(row);
     }
     const selected = [deduped[0], ...deduped.slice(1).slice(-6)];
 
@@ -116,6 +131,7 @@ export async function GET(request: NextRequest) {
             isOpen: i === 0,
             isLatest: i === selected.length - 1 && i > 0,
             total,
+            source: sourceOf(row),
             totalDir: total && prevTotal ? (Number(total.line) > Number(prevTotal.line) ? 'up' : Number(total.line) < Number(prevTotal.line) ? 'down' : null) : null,
         };
     });

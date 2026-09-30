@@ -3,7 +3,8 @@
 import { Dialog } from '@/components/ui/dialog';
 import type { OddsEntry, OddsTotal } from '@/app/api/odds-history/route';
 import type { TeamRef } from '@/types/prediction';
-import { fmtOdds } from '@/lib/matchup/format';
+import { fmtOdds, sourceLabel, sourceTag } from '@/lib/matchup/format';
+import { anyBookChange, bookChanged } from '@/lib/matchup/line-move';
 import { cn } from '@/lib/utils';
 
 /** Snapshot time: ISO UTC → viewer's clock, plus the day when it is not today; legacy "HH:MM" (US Central) → "6:22 PM CT". */
@@ -115,6 +116,51 @@ function MoveTile({ label, from, to, dir }: { label: string; from: string; to: s
     );
 }
 
+/** One snapshot: time, book tag, prices. A row whose book differs from the row above shows ⇄ and no ▲/▼. */
+function SnapshotRow({ e, switched, started, hasTotals }: { e: OddsEntry; switched: boolean; started: boolean; hasTotals: boolean }) {
+    const tag = sourceTag(e.source);
+    return (
+        <tr data-book={tag ?? undefined} data-book-change={switched || undefined}>
+            <th scope="row" className="text-left font-normal text-fg-2">
+                {/* Chip, day and clock wrap as whole pieces, so a dated row never pushes the Total column off a phone. */}
+                <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 py-1">
+                    {e.isOpen ? (
+                        <span title="First line we captured" className="rounded-chip border border-line px-1 text-micro font-bold uppercase tracking-wide text-fg-1">
+                            First
+                        </span>
+                    ) : null}
+                    {e.isLatest ? <span className="rounded-chip border border-brand/50 px-1 text-micro font-bold uppercase tracking-wide text-brand">{started ? 'Close' : 'Latest'}</span> : null}
+                    <When ts={e.timestamp} />
+                    {switched ? (
+                        <span title="Book changed" className="text-micro font-bold text-warn">
+                            <span aria-hidden="true">⇄</span>
+                            <span className="sr-only">book changed to</span>
+                        </span>
+                    ) : null}
+                    {tag ? (
+                        <abbr title={sourceLabel(e.source) ?? undefined} className="rounded-chip border border-line px-1 text-micro text-fg-2 no-underline">
+                            {tag}
+                        </abbr>
+                    ) : null}
+                </span>
+            </th>
+            <td className="text-right text-fg-1">
+                {switched ? null : <Arrow dir={e.awayDir === 'down' ? 'down' : e.awayDir === 'up' ? 'up' : null} className="mr-1" />}
+                {fmtOdds(e.awayOdds) ?? e.awayOdds}
+            </td>
+            <td className="text-right text-fg-1">
+                {switched ? null : <Arrow dir={e.homeDir === 'down' ? 'down' : e.homeDir === 'up' ? 'up' : null} className="mr-1" />}
+                {fmtOdds(e.homeOdds) ?? e.homeOdds}
+            </td>
+            {hasTotals ? (
+                <td className="py-1 text-right">
+                    <TotalCell t={e.total} dir={switched ? null : e.totalDir} />
+                </td>
+            ) : null}
+        </tr>
+    );
+}
+
 /**
  * Line move: the moneyline (and the game total, when snapshotted) from our
  * first snapshot to the latest, in an accessible dialog. Shown only with 2+ points.
@@ -125,6 +171,8 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
     const hasTotals = entries.some(e => e.total);
     const firstTotal = entries.find(e => e.total)?.total;
     const total = totalSummary(firstTotal, last.total);
+    // Across a book switch the open → latest difference is not a market move.
+    const crossBook = anyBookChange(entries);
     return (
         <Dialog
             title="Line move"
@@ -146,8 +194,8 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
             }
         >
             <div className={cn('mb-3 grid grid-cols-2 gap-2', total && 'sm:grid-cols-3')}>
-                <MoveTile label={away.triCode} from={first.awayOdds} to={last.awayOdds} dir={moveOf(first.awayOdds, last.awayOdds)} />
-                <MoveTile label={home.triCode} from={first.homeOdds} to={last.homeOdds} dir={moveOf(first.homeOdds, last.homeOdds)} />
+                <MoveTile label={away.triCode} from={first.awayOdds} to={last.awayOdds} dir={crossBook ? null : moveOf(first.awayOdds, last.awayOdds)} />
+                <MoveTile label={home.triCode} from={first.homeOdds} to={last.homeOdds} dir={crossBook ? null : moveOf(first.homeOdds, last.homeOdds)} />
                 {total ? (
                     <div className="tile col-span-2 flex min-w-0 items-baseline justify-between gap-0.5 px-3 py-2 sm:col-span-1 sm:flex-col sm:items-start sm:justify-start">
                         <span className="label">Total</span>
@@ -176,33 +224,7 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                 </thead>
                 <tbody>
                     {entries.map((e, i) => (
-                        <tr key={i}>
-                            <th scope="row" className="text-left font-normal text-fg-2">
-                                {/* Chip, day and clock wrap as whole pieces, so a dated row never pushes the Total column off a phone. */}
-                                <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 py-1">
-                                    {e.isOpen ? (
-                                        <span title="First line we captured" className="rounded-chip border border-line px-1 text-micro font-bold uppercase tracking-wide text-fg-1">
-                                            First
-                                        </span>
-                                    ) : null}
-                                    {e.isLatest ? <span className="rounded-chip border border-brand/50 px-1 text-micro font-bold uppercase tracking-wide text-brand">{started ? 'Close' : 'Latest'}</span> : null}
-                                    <When ts={e.timestamp} />
-                                </span>
-                            </th>
-                            <td className="text-right text-fg-1">
-                                <Arrow dir={e.awayDir === 'down' ? 'down' : e.awayDir === 'up' ? 'up' : null} className="mr-1" />
-                                {fmtOdds(e.awayOdds) ?? e.awayOdds}
-                            </td>
-                            <td className="text-right text-fg-1">
-                                <Arrow dir={e.homeDir === 'down' ? 'down' : e.homeDir === 'up' ? 'up' : null} className="mr-1" />
-                                {fmtOdds(e.homeOdds) ?? e.homeOdds}
-                            </td>
-                            {hasTotals ? (
-                                <td className="py-1 text-right">
-                                    <TotalCell t={e.total} dir={e.totalDir} />
-                                </td>
-                            ) : null}
-                        </tr>
+                        <SnapshotRow key={i} e={e} switched={bookChanged(entries[i - 1], e)} started={started} hasTotals={hasTotals} />
                     ))}
                 </tbody>
             </table>
