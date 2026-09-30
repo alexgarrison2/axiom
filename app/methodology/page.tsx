@@ -6,6 +6,7 @@ import FullLogoAnimated from '@/components/FullLogoAnimated';
 import { GLOSSARY, GLOSSARY_TERMS } from '@/lib/glossary';
 import { SEASON_GAMES, SEASON_START_YEAR } from '@/lib/season';
 import { loadExcludedGames, loadGradedGames, tallySeason } from '@/components/accuracy/data';
+import { tidyReason } from '@/components/accuracy/ledger-data';
 import { parseReport, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
 
 export const revalidate = 3600;
@@ -239,12 +240,12 @@ export default function MethodologyPage() {
                                 <span className={`mr-2 font-semibold ${model.gate.open ? 'text-pos' : 'text-warn'}`}>
                                     {model.gate.open ? 'Edge gate open.' : 'Edge gate closed.'}
                                 </span>
-                                {model.gate.reason}
+                                {model.gate.reason ? tidyReason(model.gate.reason) : null}
                                 {model.gate.reasons?.length ? (
                                     <span className="mt-2 block space-y-1 text-caption text-fg-3">
                                         {model.gate.reasons.map(r => (
                                             <span key={r} className="block">
-                                                · {r}
+                                                · {tidyReason(r)}
                                             </span>
                                         ))}
                                     </span>

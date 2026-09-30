@@ -86,7 +86,7 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                     <h2 id="report-card" className="text-h2 font-black tracking-tight text-fg-1">
                         Report card
                     </h2>
-                    {!empty && block ? (
+                    {!empty && !stale && block ? (
                         <p className="text-caption text-fg-3">
                             Live pregame picks only · {shortDate(block.firstDate)} – {shortDate(block.lastDate)}
                             {block.nRetro ? ` · ${plural(block.nRetro, 'back-filled game')} excluded` : ''}
@@ -151,7 +151,7 @@ function ThroughSummary({ tally: t, season }: { tally: SeasonTally; season: stri
     return (
         <div role="status" className="flex flex-col gap-4">
             <p className="text-title font-bold text-fg-1">
-                Through {plural(t.n, 'game')}: <span className="tabular-nums">{record}</span>
+                {`Through ${plural(t.n, 'game')}: ${record}`}
             </p>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <KpiTile label="Picks right" info={<InfoTip term="confidence" />} value={pct1(t.n ? t.correct / t.n : null)} sub={`${record} · n=${t.n}`} />
