@@ -1,5 +1,5 @@
 import { filterGames, type GameLevelFilters, type Location, type Scope, type TriState } from '@/utils/team-stats/filter';
-import { isLoss, isWin } from '@/utils/team-stats/game-row';
+import { gsaxOf, isLoss, isWin } from '@/utils/team-stats/game-row';
 import type { GameRow, PeriodFilter } from '@/utils/team-stats/types';
 
 export type Recent = 'All' | 5 | 10 | 15 | 20;
@@ -150,8 +150,13 @@ export function totals(games: GameRow[], period: PeriodFilter): Totals {
             t.ppga += g.ppga;
             t.pko += g.pko;
         }
-        t.gsax += stat(g, 'xga', period) - (stat(g, 'ga', period) - (period === 'All' ? g.enga : 0));
+        t.gsax += gameGsax(g, period);
     }
     t.pts = t.w * 2 + t.otl;
     return t;
+}
+
+/** GSAx for one game: full game excludes opponent empty-net xG; periods use the period split. */
+export function gameGsax(g: GameRow, period: PeriodFilter): number {
+    return period === 'All' ? gsaxOf(g) : stat(g, 'xga', period) - stat(g, 'ga', period);
 }

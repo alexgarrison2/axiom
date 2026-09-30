@@ -9,7 +9,7 @@ import { SEASON_ID } from '../../lib/season';
 import { leaguesSummary } from './league-summary';
 import { leagueAverages } from './chart-metrics';
 import { goalieKey } from './filter';
-import { packGames } from './game-row';
+import { gsaxOf, packGames } from './game-row';
 import { gameTypeOf, prevSeasonId, seasonLabel } from './season';
 import { leagueStandings, loadPredictionRows, loadProjections, ratingsSeason, readPublicJson } from './server';
 import { teamMeta } from './teams';
@@ -303,7 +303,7 @@ function goalieSeason(pid: string, name: string, rows: PlayerRow[], leagueGames:
         s.ga += n(r.goals_against);
         s.toi += toiSec(r.toi);
     }
-    if (starts.length) s.gsax = r2(starts.reduce((acc, g) => acc + g.xga - (g.ga - g.enga), 0));
+    if (starts.length) s.gsax = r2(starts.reduce((acc, g) => acc + gsaxOf(g), 0));
     s.last5 = starts.slice(0, 5).map(g => ({ date: g.date, opp: g.opp, home: g.home, result: g.result, ga: g.ga, sa: g.sa }));
     return s;
 }

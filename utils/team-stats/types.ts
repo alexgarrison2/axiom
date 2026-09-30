@@ -59,6 +59,8 @@ export interface GameRow {
     hda: number;
     xgf: number;
     xga: number;
+    /** xG against excluding empty-net shots (for GSAx); equals xga when the feed lacks it. */
+    xgane: number;
 
     ppg: number;
     ppga: number;
