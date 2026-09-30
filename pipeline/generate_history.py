@@ -1,342 +1,235 @@
-from season import season_file
-import pandas as pd
-import numpy as np
-from scipy.stats import poisson
+#!/usr/bin/env python3
+"""
+generate_history.py - the honest prediction record (data/prediction_history.json).
+
+Rules
+-----
+* One row per NHL game (game types 02/03 only), keyed by the 10-digit gameId.
+* A row's prediction comes from the LAST SiteHistory snapshot taken before
+  puck drop (startTimeUTC).  Those rows are ``retro: false`` and are the only
+  rows that count in headline stats.
+* Rows already in the file that have no pregame snapshot were back-filled
+  after the fact (2025-26 before 2026-03-05, a different formula with
+  hindsight goalies).  They are kept for reference, tagged ``retro: true``.
+* The official final is stored: shootout winners get the deciding goal
+  (2025-10-28 PIT@PHI is 3-2 PHI, decision 'SO'), plus decision REG/OT/SO.
+* Non-NHL rows (2026 Olympic tournament) are moved to
+  data/archive/prediction_history_non_nhl.json, never deleted.
+* 2026-27 starts clean on 2026-09-29: only live pregame snapshots, and games
+  predicted after puck drop (2026020001 FLA@CAR, 2026020002 MTL@TOR - see
+  A2 'no_pregame_prediction') are excluded.
+* Only completed games are written; a live snapshot waits in SiteHistory
+  until the result is scraped.
+"""
+
+from __future__ import annotations
+
 import json
-import csv
-import glob
-import datetime
+import math
 import os
-from team_ratings import calculate_ratings
-from predict_games import simulate_game
+import sys
 
-def generate_history():
-    print("Generating Prediction History (V3 Model)...")
-    
-    output_path = os.path.join('..', 'data', 'prediction_history.json')
-    
-    # 0. Load Existing History (to preserve predictions)
-    history_records = []
-    if os.path.exists(output_path):
-        try:
-            with open(output_path, 'r') as f:
-                history_records = json.load(f)
-            print(f"Loaded {len(history_records)} existing records from history.")
-        except Exception as e:
-            print(f"Warning: Could not load existing history: {e}")
-            history_records = []
+import numpy as np
+import pandas as pd
 
-    # Map for easy lookup: (date, home, away) -> record_index
-    lookup = {(r['date'], r['homeTeam'], r['awayTeam']): i for i, r in enumerate(history_records)}
-    
-    # 0.5 Load "Frozen" Predictions from SiteHistory CSVs (the true audit trail)
-    # Each SiteHistory/<date>.csv has timestamped runs; we take the LAST run per game
-    # as that's what users actually saw when the game started.
-    detailed_preds_lookup = {}
-    site_history_dir = os.path.join('..', 'public', 'data', 'SiteHistory')
-    if os.path.isdir(site_history_dir):
-        for csv_file in sorted(glob.glob(os.path.join(site_history_dir, '*.csv'))):
-            try:
-                with open(csv_file, 'r') as f:
-                    reader = csv.DictReader(f)
-                    # Track last run per game (highest run number = final prediction)
-                    game_last_run = {}  # gameid -> row dict
-                    for row in reader:
-                        gameid = row.get('gameid', '').strip()
-                        if not gameid:
-                            continue
-                        run = int(row.get('run', 0))
-                        if gameid not in game_last_run or run > game_last_run[gameid]['_run']:
-                            game_last_run[gameid] = {**row, '_run': run}
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(SCRIPT_DIR)
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
 
-                    for gameid, row in game_last_run.items():
-                        home_team = row.get('hometeam', '').strip()
-                        away_team = row.get('awayteam', '').strip()
-                        if not home_team or not away_team:
-                            continue
-                        # Extract date from gameid (format: 2026-03-24-Away-Home)
-                        date_str = gameid[:10]
-                        home_win_str = row.get('home_win%', '').replace('%', '').strip()
-                        home_xg_str = row.get('home_xG', '').strip()
-                        away_xg_str = row.get('away_xG', '').strip()
-                        if not home_win_str or not home_xg_str or not away_xg_str:
-                            continue
-                        k = (date_str, home_team, away_team)
-                        detailed_preds_lookup[k] = {
-                            'home_xg': float(home_xg_str),
-                            'away_xg': float(away_xg_str),
-                            'home_win_pct': float(home_win_str)
-                        }
-            except Exception as e:
-                print(f"Warning: Could not parse SiteHistory file {csv_file}: {e}")
-        print(f"Loaded {len(detailed_preds_lookup)} frozen predictions from SiteHistory CSVs")
-    else:
-        print(f"Warning: SiteHistory dir not found at {site_history_dir}")
+import features as F  # noqa: E402
+import market  # noqa: E402
+import site_history as S  # noqa: E402
 
-    # Also load from predictions_detailed.csv as fallback for today's games
-    # (SiteHistory may not have today's games yet if snapshot hasn't run)
-    detailed_csv_path = os.path.join('..', 'data', 'predictions_detailed.csv')
-    if os.path.exists(detailed_csv_path):
-        try:
-            df_det = pd.read_csv(detailed_csv_path)
-            fallback_count = 0
-            for _, row in df_det.iterrows():
-                d_str = str(row['game_date']).split(' ')[0]
-                k = (d_str, row['home_team'], row['away_team'])
-                if k not in detailed_preds_lookup:  # SiteHistory takes priority
-                    detailed_preds_lookup[k] = {
-                        'home_xg': float(row['home_xg']),
-                        'away_xg': float(row['away_xg']),
-                        'home_win_pct': float(row['home_win_pct'])
-                    }
-                    fallback_count += 1
-            if fallback_count:
-                print(f"Added {fallback_count} predictions from predictions_detailed.csv (fallback)")
-        except Exception as e:
-            print(f"Warning: Could not load detailed predictions CSV: {e}")
-    
-    # Load all game data
-    df = pd.read_csv(season_file("gamestats"))
-        
-    df['game_date'] = pd.to_datetime(df['game_date'])
-    df = df.sort_values('game_date')
-    
-    # Load Coefficients
+HISTORY_PATH = os.path.join(ROOT, 'data', 'prediction_history.json')
+ARCHIVE_DIR = os.path.join(ROOT, 'data', 'archive')
+NON_NHL_ARCHIVE = os.path.join(ARCHIVE_DIR, 'prediction_history_non_nhl.json')
+PREDICTIONS_CSV = os.path.join(ROOT, 'data', 'predictions_detailed.csv')
+TEAMS_CSV = os.path.join(SCRIPT_DIR, 'nhl_teams.csv')
+
+CLEAN_START = {'20262027': '2026-09-29'}
+# Predicted after puck drop on opening night (live odds, 2025-26 context).
+EXCLUDED_GAME_IDS = {2026020001, 2026020002}
+
+
+def season_label(game_id) -> str:
+    y = int(str(game_id)[:4])
+    return f"{y}-{str(y + 1)[2:]}"
+
+
+def _round(x, n):
+    return None if x is None or (isinstance(x, float) and math.isnan(x)) else round(float(x), n)
+
+
+def load_results() -> pd.DataFrame:
+    """Completed NHL games from the gamestats archive + current season (home rows)."""
+    g = F.load_gamestats(SCRIPT_DIR)
+    h = g[g['home_away'] == 'Home'].copy()
+    h['decision'] = np.where(h['result'].isin(['SOW', 'SOL']), 'SO',
+                             np.where(h['result'].isin(['OTW', 'OTL']), 'OT', 'REG'))
+    h['home_won'] = h['result'].isin(F.WIN_RESULTS)
+    hs = h['goals_for'].astype(int) + ((h['decision'] == 'SO') & h['home_won']).astype(int)
+    as_ = h['goals_ag'].astype(int) + ((h['decision'] == 'SO') & ~h['home_won']).astype(int)
+    h['home_score'], h['away_score'] = hs, as_
+    h['date'] = h['game_date'].dt.strftime('%Y-%m-%d')
+    return h[['game_id', 'date', 'team', 'opponent', 'home_score', 'away_score', 'decision',
+              'home_won', 'result']].rename(columns={'team': 'home', 'opponent': 'away'})
+
+
+def excluded_by_pipeline() -> set:
+    """Games predictions_detailed.csv marks as predicted after puck drop (A2)."""
+    ids = set(EXCLUDED_GAME_IDS)
     try:
-        with open('scoring_coefficients.json', 'r') as f:
-            coeffs = json.load(f)
-        ST_VAL_PP = coeffs.get('pp_opp_val', 0.18)
-        B2B_PENALTY = coeffs.get('b2b_cost', 0.26)
-        IN3_4_PENALTY = -0.10
-        HOME_ICE_VAL = coeffs.get('home_ice_advantage', 0.16)
-        STAR_PENALTY = 0.07
-    except:
-        ST_VAL_PP = 0.18
-        B2B_PENALTY = 0.26
-        IN3_4_PENALTY = -0.10
-        HOME_ICE_VAL = 0.16
-        STAR_PENALTY = 0.07
+        df = pd.read_csv(PREDICTIONS_CSV, dtype=str)
+        if 'prediction_status' in df.columns:
+            bad = df[df['prediction_status'] == 'no_pregame_prediction']
+            for col in ('nhl_game_id', 'game_id'):
+                if col in bad.columns:
+                    ids |= {int(x) for x in bad[col].dropna() if str(x).isdigit() and len(str(x)) == 10}
+    except Exception:
+        pass
+    return ids
 
-    # Start date (allow 3 weeks for data to accrue)
-    start_date = df['game_date'].min() + datetime.timedelta(days=21)
-    end_date = df['game_date'].max()
-    
-    current_date = start_date
-    
-    while current_date <= end_date:
-        date_str = current_date.strftime('%Y-%m-%d')
-        todays_games = df[df['game_date'] == current_date]
-        if todays_games.empty:
-            current_date += datetime.timedelta(days=1)
+
+def row_from_snapshot(snap, res) -> dict:
+    p = float(snap['p_home'])
+    home, away = res['home'], res['away']
+    pred = home if p > 0.5 else away
+    actual = home if res['home_won'] else away
+    y = 1.0 if res['home_won'] else 0.0
+    q = None
+    if not (pd.isna(snap['home_odds']) or pd.isna(snap['away_odds'])) and \
+            abs(snap['home_odds']) >= 100 and abs(snap['away_odds']) >= 100:
+        q = market.devig([snap['home_odds'], snap['away_odds']])[0]
+    pc = min(max(p, 1e-6), 1 - 1e-6)
+    return {
+        'gameId': int(res['game_id']),
+        'season': season_label(res['game_id']),
+        'gameType': str(res['game_id'])[4:6],
+        'date': res['date'],
+        'homeTeam': home, 'awayTeam': away,
+        'homeScore': int(res['home_score']), 'awayScore': int(res['away_score']),
+        'decision': res['decision'],
+        'homeXg': _round(snap['home_xg'], 2), 'awayXg': _round(snap['away_xg'], 2),
+        'homeWinProb': round(100 * p, 1),
+        'predictedWinner': pred, 'actualWinner': actual,
+        'isCorrect': pred == actual,
+        'brierScore': round((p - y) ** 2, 4),
+        'logLoss': round(-(y * math.log(pc) + (1 - y) * math.log(1 - pc)), 4),
+        'retro': False,
+        'source': 'live_snapshot',
+        'snapshotUtc': snap['snapshot_utc'].isoformat().replace('+00:00', 'Z'),
+        'startUtc': snap['start_ts'].isoformat().replace('+00:00', 'Z'),
+        'marketHomeProb': _round(100 * q, 1) if q is not None else None,
+        'homeOdds': _round(snap['home_odds'], 0), 'awayOdds': _round(snap['away_odds'], 0),
+        'modelVersion': snap['model_version'] if isinstance(snap.get('model_version'), str) else None,
+    }
+
+
+def row_from_retro(old: dict, res) -> dict:
+    p = float(old['homeWinProb']) / 100
+    home, away = res['home'], res['away']
+    pred = old.get('predictedWinner') or (home if p > 0.5 else away)
+    actual = home if res['home_won'] else away
+    y = 1.0 if res['home_won'] else 0.0
+    pc = min(max(p, 1e-6), 1 - 1e-6)
+    return {
+        'gameId': int(res['game_id']),
+        'season': season_label(res['game_id']),
+        'gameType': str(res['game_id'])[4:6],
+        'date': res['date'],
+        'homeTeam': home, 'awayTeam': away,
+        'homeScore': int(res['home_score']), 'awayScore': int(res['away_score']),
+        'decision': res['decision'],
+        'homeXg': old.get('homeXg'), 'awayXg': old.get('awayXg'),
+        'homeWinProb': old['homeWinProb'],
+        'predictedWinner': pred, 'actualWinner': actual,
+        'isCorrect': pred == actual,
+        'brierScore': round((p - y) ** 2, 4),
+        'logLoss': round(-(y * math.log(pc) + (1 - y) * math.log(1 - pc)), 4),
+        'retro': True,
+        'source': 'retro_backfill',
+        'snapshotUtc': None, 'startUtc': None,
+        'marketHomeProb': None, 'homeOdds': None, 'awayOdds': None,
+        'modelVersion': None,
+    }
+
+
+def generate_history(allow_fetch=True, write=True, verbose=True):
+    teams = set(pd.read_csv(TEAMS_CSV)['Common Name'])
+    results = load_results()
+    by_id = {int(r.game_id): r._asdict() for r in results.itertuples(index=False)}
+    by_key = {(r.date, r.home, r.away): int(r.game_id) for r in results.itertuples(index=False)}
+
+    existing = []
+    if os.path.exists(HISTORY_PATH):
+        with open(HISTORY_PATH) as f:
+            existing = json.load(f)
+
+    sh, _ = S.load_keyed_site_history(allow_fetch=allow_fetch)
+    snaps = S.last_pregame(sh) if len(sh) else pd.DataFrame()
+    excluded = excluded_by_pipeline()
+
+    rows, non_nhl, unmatched = {}, [], []
+    # 1) live snapshots
+    for snap in (snaps.to_dict('records') if len(snaps) else []):
+        gid = int(snap['game_id'])
+        if gid in excluded or gid not in by_id or pd.isna(snap['p_home']):
             continue
+        if str(gid)[4:6] not in F.NHL_GAME_TYPES:
+            continue
+        sid = f"{str(gid)[:4]}{int(str(gid)[:4]) + 1}"
+        if sid in CLEAN_START and by_id[gid]['date'] < CLEAN_START[sid]:
+            continue
+        rows[gid] = row_from_snapshot(snap, by_id[gid])
 
-        # Check if we need to run ratings (any new games today?)
-        need_ratings = False
-        for _, game in todays_games.iterrows():
-            if game['home_away'] != 'Home': continue
-            key = (date_str, game['team'], game['opponent'])
-            if key not in lookup:
-                need_ratings = True
-                break
-            else:
-                # Also need ratings if we plan to overwrite a bad record
-                idx_check = lookup[key]
-                has_xg = history_records[idx_check].get('homeXg', 0) + history_records[idx_check].get('awayXg', 0)
-                if has_xg > 12.0 or has_xg < 1.0:
-                    need_ratings = True
-                    break
-        
-        # 1. History (Games BEFORE today)
-        history_df = df[df['game_date'] < current_date]
-        
-        # 2. Calculate Ratings (skip if no new games today)
-        team_ratings, goalie_ratings, league_xg, league_xg_5v5 = {}, {}, 3.0, 2.5
-        if need_ratings:
-            try:
-                 print(f"DEBUG: Calling ratings with history_df size: {len(history_df)}")
-                 team_ratings, goalie_ratings, league_xg, league_xg_5v5 = calculate_ratings(history_df, save_files=False)
-                 
-                 # FIX: Recalculate League Avg from Ratings to ensure scale match (Same as predict_games.py)
-                 if team_ratings:
-                     print(f"DEBUG: Ratings Keys Sample: {list(team_ratings.keys())[:5]}")
-                     total_xg_rate = sum(r.get('xgf_5v5_rating', 0) for r in team_ratings.values())
-                     league_xg_5v5 = total_xg_rate / len(team_ratings)
-                     # Safeguard
-                     if league_xg_5v5 == 0: league_xg_5v5 = 2.5
-                     
-            except Exception as e:
-                 print(f"Error calling calculate_ratings for {date_str}: {e}")
-                 current_date += datetime.timedelta(days=1)
-                 continue
-        
-        # 3. Today's Games
-        for _, game in todays_games.iterrows():
-            if game['home_away'] != 'Home': continue
-            
-            overwrite_idx = None
-            home_team = game['team']
-            away_team = game['opponent']
-            key = (date_str, home_team, away_team)
-            
-            # Result Data
-            is_win = game['result'] in ['RW', 'OTW', 'SOW']
-            home_won = 1 if is_win else 0
-            try:
-                h_score = int(game['goals_for'])
-                a_score = int(game['goals_ag'])
-                game_finished = not pd.isna(game['result']) and game['result'] != ''
-            except:
-                h_score = 0
-                a_score = 0
-                game_finished = False
+    # 2) existing rows without a live snapshot -> retro (or archived if non-NHL)
+    for old in existing:
+        if old.get('homeTeam') not in teams or old.get('awayTeam') not in teams:
+            non_nhl.append(old)
+            continue
+        gid = old.get('gameId') or by_key.get((old.get('date'), old.get('homeTeam'), old.get('awayTeam')))
+        if gid is None:
+            unmatched.append(old)
+            continue
+        gid = int(gid)
+        if gid in rows or gid in excluded or gid not in by_id:
+            if gid not in rows and gid not in by_id:
+                unmatched.append(old)
+            continue
+        if old.get('retro') is False and old.get('source') == 'live_snapshot':
+            # a live row whose snapshot file disappeared: keep it as it was
+            rows[gid] = old
+            continue
+        sid = f"{str(gid)[:4]}{int(str(gid)[:4]) + 1}"
+        if sid in CLEAN_START:
+            continue   # the new season never gets retro rows
+        rows[gid] = row_from_retro(old, by_id[gid])
 
-            if key in lookup:
-                # UPDATE EXISTING RECORD
-                idx = lookup[key]
+    out = sorted(rows.values(), key=lambda r: (r['date'], r['gameId']))
+    if verbose:
+        live = sum(1 for r in out if not r['retro'])
+        print(f"[history] {len(out)} rows: {live} live snapshots, {len(out) - live} retro; "
+              f"{len(non_nhl)} non-NHL archived; {len(unmatched)} unmatched kept in archive")
+    if write:
+        with open(HISTORY_PATH, 'w') as f:
+            json.dump(out, f, indent=2)
+        if non_nhl or unmatched:
+            os.makedirs(ARCHIVE_DIR, exist_ok=True)
+            prev = []
+            if os.path.exists(NON_NHL_ARCHIVE):
+                with open(NON_NHL_ARCHIVE) as f:
+                    prev = json.load(f)
+            seen = {(r.get('date'), r.get('homeTeam'), r.get('awayTeam')) for r in prev}
+            for r in non_nhl + unmatched:
+                k = (r.get('date'), r.get('homeTeam'), r.get('awayTeam'))
+                if k not in seen:
+                    prev.append(r)
+                    seen.add(k)
+            with open(NON_NHL_ARCHIVE, 'w') as f:
+                json.dump(prev, f, indent=2)
+    return out
 
-                # SANITY CHECK: If existing history is garbage (Inflated Era), ignore it and regenerate
-                total_hist_xg = history_records[idx].get('homeXg', 0) + history_records[idx].get('awayXg', 0)
-                if total_hist_xg > 12.0 or total_hist_xg < 1.0:
-                    # Fall through to regeneration, but mark index for overwrite
-                    print(f"DEBUG: Invalidating bad record {date_str} {home_team} vs {away_team} (Total {total_hist_xg})")
-                    overwrite_idx = idx
-                else:
-                    # If SiteHistory has this game, correct the prediction to match
-                    # what was actually displayed (fixes re-simulation drift)
-                    frozen_pred = detailed_preds_lookup.get(key)
-                    if frozen_pred:
-                        total_frozen_xg = frozen_pred['home_xg'] + frozen_pred['away_xg']
-                        if 1.0 <= total_frozen_xg <= 12.0:
-                            old_prob = history_records[idx].get('homeWinProb', 0)
-                            new_prob = round(frozen_pred['home_win_pct'], 1)
-                            if abs(old_prob - new_prob) > 0.05:
-                                history_records[idx]['homeXg'] = round(frozen_pred['home_xg'], 2)
-                                history_records[idx]['awayXg'] = round(frozen_pred['away_xg'], 2)
-                                history_records[idx]['homeWinProb'] = new_prob
-                                new_winner = home_team if new_prob > 50 else away_team
-                                history_records[idx]['predictedWinner'] = new_winner
 
-                    if game_finished:
-                        actual_winner = home_team if is_win else away_team
-                        history_records[idx].update({
-                            'homeScore': h_score,
-                            'awayScore': a_score,
-                            'actualWinner': actual_winner,
-                            'isCorrect': (history_records[idx]['predictedWinner'] == actual_winner),
-                            'brierScore': round((history_records[idx]['homeWinProb']/100.0 - home_won) ** 2, 4)
-                        })
-                    continue
-
-            # NEW GAME - Perform Full Prediction
-            if home_team not in team_ratings or away_team not in team_ratings:
-                print(f"DEBUG: Skipping regen for {home_team} vs {away_team} - Ratings Missing (Overwrite: {overwrite_idx})")
-                continue
-            
-            # NEW GAME - Check if we have a "Freeze" record from predictions_detailed.csv
-            # This ensures History matches what the user actually saw on that day.
-            
-            # Load detailed predictions if not already loaded (Optimization: Load once outside loop would be better but for safety here)
-            # improved: Load once at top of file, but for now let's just assume we need to check existence.
-            # Actually, let's implement the lookup check here using a global or passed-in dict.
-            # checks: detailed_preds_lookup (to be added)
-            
-            # --- V3 LOGIC PREDICTION (or Load Existing) ---
-            
-            # Check if we have this prediction in strict history (Live prediction snapshot)
-            frozen_pred = detailed_preds_lookup.get(key)
-            
-            # Initialize vars to prevent UnboundLocalError
-            h_final_xg, a_final_xg = 0.0, 0.0
-            h_win_prob = 0.5
-            predicted_winner = home_team
-            
-            # SANITY CHECK: If frozen prediction is from the "Inflated Era" (Total xG > 12), ignore it.
-            if frozen_pred:
-                total_frozen_xg = frozen_pred['home_xg'] + frozen_pred['away_xg']
-                if total_frozen_xg > 12.0:
-                    # Value is garbage (e.g. 7.4 + 8.0 = 15.4), force recalculation using V3 logic
-                    frozen_pred = None
-            
-            if frozen_pred:
-                # Use the frozen values!
-                h_final_xg = frozen_pred['home_xg']
-                a_final_xg = frozen_pred['away_xg']
-                h_win_prob = frozen_pred['home_win_pct'] / 100.0
-                predicted_winner = home_team if h_win_prob > 0.5 else away_team
-            else:
-                # Fallback: Re-calculate (Backfill or Repair Bad History)
-                h_r = team_ratings[home_team]
-                a_r = team_ratings[away_team]
-                
-                # Robust Normalization: Use Strength Ratios * Fixed Constant
-                # This ensures that even if ratings are inflated (e.g. 8.0), the result is scaled to NHL norms (~2.45)
-                # Strength = Rating / LeagueAvg
-                TARGET_5V5_AVG = 2.45 
-                
-                h_strength = h_r['xgf_5v5_rating'] / league_xg_5v5
-                a_defense_strength = a_r['xga_5v5_rating'] / league_xg_5v5
-                
-                a_strength = a_r['xgf_5v5_rating'] / league_xg_5v5
-                h_defense_strength = h_r['xga_5v5_rating'] / league_xg_5v5
-                
-                h_5v5 = h_strength * a_defense_strength * TARGET_5V5_AVG
-                a_5v5 = a_strength * h_defense_strength * TARGET_5V5_AVG
-                
-                h_opps = (h_r['penalties_drawn_per_60'] + a_r['penalties_taken_per_60']) / 2
-                a_opps = (a_r['penalties_drawn_per_60'] + h_r['penalties_taken_per_60']) / 2
-                h_eff, a_eff = (h_r['pp_rating'] / 100.0) / 0.20, (a_r['pp_rating'] / 100.0) / 0.20
-                h_st_xg, a_st_xg = h_opps * ST_VAL_PP * h_eff, a_opps * ST_VAL_PP * a_eff
-                
-                def get_rest_days(team_name, curr_date):
-                    t_games = history_df[history_df['team'] == team_name].sort_values('game_date')
-                    return (curr_date - t_games.iloc[-1]['game_date']).days - 1 if not t_games.empty else 5
-                    
-                h_rest, a_rest = get_rest_days(home_team, current_date), get_rest_days(away_team, current_date)
-                
-                def is_3in4(team_name, curr_date):
-                    t_games = history_df[history_df['team'] == team_name].sort_values('game_date')
-                    return ((curr_date - t_games.iloc[-2]['game_date']).days + 1 <= 4) if len(t_games) >= 2 else False
-    
-                h_rest_pen = B2B_PENALTY if h_rest <= 0 else (abs(IN3_4_PENALTY) if is_3in4(home_team, current_date) else 0.0)
-                a_rest_pen = B2B_PENALTY if a_rest <= 0 else (abs(IN3_4_PENALTY) if is_3in4(away_team, current_date) else 0.0)
-                
-                h_final_xg, a_final_xg = h_5v5 + h_st_xg + HOME_ICE_VAL - h_rest_pen, a_5v5 + a_st_xg - a_rest_pen
-                h_goalie, a_goalie = game['starting_goalie'], game['starting_goalie_opp']
-                h_gsax = goalie_ratings.get(h_goalie, {'gsax_per_game': 0})['gsax_per_game'] if h_goalie in goalie_ratings else 0
-                a_gsax = goalie_ratings.get(a_goalie, {'gsax_per_game': 0})['gsax_per_game'] if a_goalie in goalie_ratings else 0
-                
-                # Clamp GSAx to prevent inflated stats from breaking prediction (+/- 1.0 max per game)
-                h_gsax = max(-1.0, min(1.0, h_gsax))
-                a_gsax = max(-1.0, min(1.0, a_gsax))
-                
-                h_final_xg, a_final_xg = max(0.1, h_final_xg - (a_gsax * 0.5)), max(0.1, a_final_xg - (h_gsax * 0.5))
-                h_prob, a_prob, tie_prob, home_ot_frac = simulate_game(h_final_xg, a_final_xg)
-                h_win_prob = h_prob + (tie_prob * home_ot_frac)
-                
-                predicted_winner = home_team if h_win_prob > 0.5 else away_team
-
-            actual_winner = home_team if is_win else away_team
-            
-            new_record = {
-                'date': date_str, 'homeTeam': home_team, 'awayTeam': away_team,
-                'homeScore': h_score if game_finished else 0, 'awayScore': a_score if game_finished else 0,
-                'homeXg': round(h_final_xg, 2), 'awayXg': round(a_final_xg, 2),
-                'homeWinProb': round(h_win_prob * 100, 1), 'predictedWinner': predicted_winner,
-                'actualWinner': actual_winner if game_finished else "", 'isCorrect': (predicted_winner == actual_winner) if game_finished else False,
-                'brierScore': round((h_win_prob - home_won) ** 2, 4) if game_finished else 0.0
-            }
-            
-            if overwrite_idx is not None:
-                history_records[overwrite_idx] = new_record
-            else:
-                history_records.append(new_record)
-                lookup[key] = len(history_records) - 1
-            
-        current_date += datetime.timedelta(days=1)
-        
-    with open(output_path, 'w') as f:
-        json.dump(history_records, f, indent=2)
-    print(f"Saved {len(history_records)} historical predictions to {output_path}")
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     generate_history()
