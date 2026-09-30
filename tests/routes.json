@@ -2,6 +2,8 @@
   "$comment": "Routes covered by the CI quality gate (tests/e2e/smoke.spec.ts and scripts/perf-budget.mjs). Add every new top-level page here.",
   "routes": [
     { "path": "/", "name": "home" },
+    { "path": "/?date=2026-09-29", "name": "home-past-day" },
+    { "path": "/?date=2026-10-01", "name": "home-next-day" },
     { "path": "/teams", "name": "teams" },
     { "path": "/teams/EDM", "name": "team-detail" },
     { "path": "/players", "name": "players" },

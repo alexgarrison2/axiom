@@ -176,24 +176,10 @@ const nextConfig: NextConfig = {
   },
 
   /*
-   * The old home-page tabs (/?tab=Teams …) are real routes now. Keep shared
-   * links working with a temporary redirect to the new page.
+   * The old home-page tabs (/?tab=Teams, /?tab=2026-10-01 …) are redirected
+   * by app/page.tsx (legacyTab): config redirects would carry ?tab= along and
+   * can't match case-insensitively.
    */
-  async redirects() {
-    const tabs: [string, string][] = [
-      ["[Tt]eams", "/teams"],
-      ["[Hh]istory", "/accuracy"],
-      ["[Ss]katers", "/players"],
-      ["[Bb]racket", "/standings"],
-      ["[Nn]ews", "/news"],
-    ];
-    return tabs.map(([value, destination]) => ({
-      source: "/",
-      has: [{ type: "query" as const, key: "tab", value }],
-      destination,
-      permanent: false,
-    }));
-  },
 
   async headers() {
     return [
