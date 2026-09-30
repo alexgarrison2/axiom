@@ -87,7 +87,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
     const anchor = cardAnchor(p);
     const title = `${p.away.team.commonName} at ${p.home.team.commonName}`;
     const forecast = forecastPair(p);
-    const chip = situationChip(p, seriesScore);
+    const chip = phase === 'pre' || seriesScore ? situationChip(p, seriesScore) : null;
     const awayLost = phase === 'final' && scored && live.away.score < live.home.score;
     const homeLost = phase === 'final' && scored && live.home.score < live.away.score;
 
@@ -137,7 +137,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
 
                 {/* Teams: the h2 holds the expand toggle; its hit area stretches over the card summary. */}
                 <h2 className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 font-mono cq-sm:gap-2">
-                    <TeamSide side="away" s={p.away} opp={h} faded={awayLost} favorite={favorites.includes(a)} onFavorite={() => onFavorite(a)} />
+                    <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!scored} favorite={favorites.includes(a)} onFavorite={() => onFavorite(a)} />
                     <button
                         type="button"
                         aria-expanded={open}
@@ -162,7 +162,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                         )}
                         <span className="sr-only">{open ? ', hide details' : ', show details'}</span>
                     </button>
-                    <TeamSide side="home" s={p.home} opp={a} faded={homeLost} favorite={favorites.includes(h)} onFavorite={() => onFavorite(h)} />
+                    <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!scored} favorite={favorites.includes(h)} onFavorite={() => onFavorite(h)} />
                 </h2>
 
                 {forecast ? (

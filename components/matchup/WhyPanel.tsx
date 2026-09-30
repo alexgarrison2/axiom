@@ -81,7 +81,7 @@ export function WhyPanel({ p, phase, state, implication }: { p: Prediction; phas
                 <Tile
                     label={p.confidenceGrade ? 'Conf' : 'Model wt'}
                     value={p.confidenceGrade ?? (w != null ? `${Math.round(w * 100)}%` : '—')}
-                    sub={p.confidenceGrade && w != null && w < 0.999 ? `Model wt ${Math.round(w * 100)}%` : undefined}
+                    sub={p.confidenceGrade && w != null && w < 0.999 ? `Wt ${Math.round(w * 100)}%` : undefined}
                     empty={!p.confidenceGrade && w == null}
                 />
             </div>
