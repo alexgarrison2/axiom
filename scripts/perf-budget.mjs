@@ -135,7 +135,7 @@ const globRe = (g) => new RegExp('^' + g.split('*').map((s) => s.replace(/[.+?^$
  * @param {string[]} traced
  * @param {(glob: string) => boolean} [exists]
  */
-export function missingTraceFiles(route, traced, exists = (_glob) => true) {
+export function missingTraceFiles(route, traced, exists = /** @type {(glob: string) => boolean} */ (() => true)) {
     const need = RUNTIME_TRACE_REQUIREMENTS[route] ?? [];
     const missing = [];
     const absent = [];
