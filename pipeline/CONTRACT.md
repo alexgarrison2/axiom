@@ -12,7 +12,7 @@ Fixtures for building and testing the frontend without a live refresh:
 |---|---|
 | `pipeline/fixtures/predictions_opening_night.csv` | Opening night (2026-09-29): every team at 0 GP, CAR (last season's Cup finalist) with no leaked playoff games, one FINAL game with a frozen pregame prediction, one LIVE game with `no_pregame_prediction`, a -110/-120 pick'em, TOR on a back-to-back the next day |
 | `pipeline/fixtures/predictions_week3.csv` | 2026-10-20: 7-9 GP per team, TBL at 3 GP (`L3`), a pair that met once and a pair that met twice, home/road records with 5+ games, a 6-game road trip, ranks still gated |
-| `pipeline/fixtures/predictions_playoffs.csv` | A first-round playoff game (`game_type` 03): career playoff goalie line and `PO G<n>` numbering |
+| `pipeline/fixtures/predictions_playoffs.csv` | A first-round playoff game (`game_type` 03): career playoff goalie line and `PO G<n>` numbering. Only each team's last 10 regular-season games are simulated, so `side_gp` reads 10 rather than a full season |
 
 Regenerate them with `cd pipeline && python3 fixtures/make_fixtures.py`.
 They are produced by the same row builder as the live file.
@@ -128,7 +128,7 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | `side_pk_opps` | int | yes | Times shorthanded this season. |
 | `side_pp_rank_prev` | int 1-32 | yes | Previous season's final PP rank. Filled only while `side_pp_rank` is empty. These match the gamecenter right-rail `ppPctgRank`. |
 | `side_pk_rank_prev` | int 1-32 | yes | Previous season's final PK rank, same rule. |
-| `side_rest_days` | int | no | Days off since the previous game (0 = back-to-back), from the full club schedule, including games not yet scraped. A season opener counts from the last preseason game. |
+| `side_rest_days` | int | no | Days off since the previous game (0 = back-to-back), from the full club schedule, including games not yet scraped. A season opener counts from the last preseason game. Empty only in the degraded case where the NHL club schedule could not be fetched and no cached copy exists (then `side_is_b2b` is `False`). |
 | `side_is_b2b` | bool | no | Played the previous day. |
 | `side_games_in_last_4` | int | no | Games (including tonight) in the 4 days ending tonight. `≥3` means 3-in-4. |
 | `side_games_in_last_6` | int | no | Same over 6 days. |
