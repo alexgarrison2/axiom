@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Segmented } from '@/components/ui/segmented';
 import { Slider } from '@/components/ui/slider';
+import { formatTime } from '@/lib/format/time';
 import { TEAM_CODES } from '@/components/ui/team-color';
 import { TeamLogo } from '@/components/views/TeamLogo';
 import { plural, shortDate } from '@/components/views/format';
@@ -288,7 +289,7 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
                     <Detail label="Brier · log loss" value={`${Number.isFinite(g.brier) ? g.brier.toFixed(3) : '—'} · ${Number.isFinite(g.logLoss) ? g.logLoss.toFixed(3) : '—'}`} />
                     <Detail
                         label="Source"
-                        value={g.retro ? 'Back-filled after the game (not shown live)' : g.snapshotUtc ? `Pregame snapshot ${new Date(g.snapshotUtc).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : 'Pregame snapshot'}
+                        value={g.retro ? 'Back-filled after the game (not shown live)' : g.snapshotUtc ? `Pregame snapshot ${formatTime(g.snapshotUtc, 'datetime') ?? ''}`.trim() : 'Pregame snapshot'}
                         wide
                     />
                 </dl>

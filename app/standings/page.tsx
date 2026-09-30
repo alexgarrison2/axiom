@@ -5,6 +5,8 @@ import { SEASON_GAMES, SEASON_START_YEAR } from '@/lib/season';
 import { loadStandingsPage } from '@/components/standings/data';
 import { StandingsTable } from '@/components/standings/StandingsTable';
 import { Bracket } from '@/components/standings/Bracket';
+import { LocalTime } from '@/components/ui/local-time';
+import { formatTimeET } from '@/lib/format/time';
 import { LikelyMatchups } from '@/components/standings/LikelyMatchups';
 import {
     compareProjected,
@@ -26,13 +28,6 @@ export const metadata: Metadata = {
     description: `${SEASON_LABEL} NHL standings with projected points, playoff, division and Stanley Cup odds from thousands of simulated seasons.`,
     alternates: { canonical: '/standings' },
 };
-
-function fmtWhen(iso: string | null): string | null {
-    if (!iso) return null;
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return null;
-    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York', timeZoneName: 'short' });
-}
 
 function seedingFor(rows: StandingsRow[], cmp: typeof compareStandings): Record<Conference, ConferenceSeeding> | null {
     const east = seedConference(rows, 'East', cmp);
@@ -61,7 +56,7 @@ export default async function StandingsPage() {
     const cmp = bracketIsLive ? compareStandings : compareProjected;
     const seeding = bracketIsLive || projectionsCurrent ? seedingFor(rows, cmp) : null;
     const leagueOrder = Object.fromEntries([...rows].sort(cmp).map((r, i) => [r.tri, i]));
-    const simulatedAt = fmtWhen(data.projectionsAt);
+    const simulatedAt = data.projectionsAt && formatTimeET(data.projectionsAt, 'datetime') ? data.projectionsAt : null;
     const gpNote = !Number.isFinite(minGp) ? null : minGp === 0 ? 'Some teams have not played yet' : `Every team has played at least ${minGp} of ${SEASON_GAMES}`;
 
     return (
@@ -77,7 +72,12 @@ export default async function StandingsPage() {
                     {projectionsCurrent ? (
                         <Pill>
                             {data.totalSims ? `${data.totalSims.toLocaleString('en-US')} simulated seasons` : 'Simulated seasons'}
-                            {simulatedAt ? ` · ${simulatedAt}` : ''}
+                            {simulatedAt ? (
+                                <>
+                                    {' · '}
+                                    <LocalTime iso={simulatedAt} style="datetime" />
+                                </>
+                            ) : null}
                         </Pill>
                     ) : null}
                     {gpNote ? <span className="text-fg-3">{gpNote}.</span> : null}
@@ -105,7 +105,7 @@ export default async function StandingsPage() {
                     {bracketIsLive ? (
                         <>
                             <div className="flex flex-col gap-1">
-                                <h2 id="bracket-heading" className="text-h2 font-black uppercase italic tracking-tight text-fg-1 md:text-display">
+                                <h2 id="bracket-heading" className="heading-section">
                                     If the playoffs started today
                                 </h2>
                                 <p className="text-body-sm text-fg-2">Seeded from the current standings (points, then points %, regulation wins and wins).</p>
@@ -116,7 +116,7 @@ export default async function StandingsPage() {
                         <>
                             <div className="flex flex-col gap-2">
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <h2 id="bracket-heading" className="text-h2 font-black uppercase italic tracking-tight text-fg-1 md:text-display">
+                                    <h2 id="bracket-heading" className="heading-section">
                                         Most likely first-round matchups
                                     </h2>
                                     <Pill>Projected</Pill>
@@ -130,7 +130,7 @@ export default async function StandingsPage() {
                             {seeding ? (
                                 <div className="flex flex-col gap-4 pt-2">
                                     <div className="flex flex-wrap items-center gap-3">
-                                        <h3 className="text-title font-black uppercase italic tracking-tight text-fg-1 md:text-h2">Projected bracket</h3>
+                                        <h3 className="heading-sub">Projected bracket</h3>
                                         <Pill>Projected</Pill>
                                     </div>
                                     <p className="-mt-2 max-w-3xl text-body-sm text-fg-2">Seeded by projected points, not by the current standings. Build your own path to the Cup.</p>
@@ -140,7 +140,7 @@ export default async function StandingsPage() {
                         </>
                     ) : (
                         <div className="flex flex-col gap-1">
-                            <h2 id="bracket-heading" className="text-h2 font-black uppercase italic tracking-tight text-fg-1">
+                            <h2 id="bracket-heading" className="heading-section">
                                 Playoff picture
                             </h2>
                             <p className="text-body-sm text-fg-2">

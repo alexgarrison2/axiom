@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getDataStamp } from '@/components/ui/data-stamp';
 import { SEASON_START_YEAR } from '@/lib/season';
+import { LocalTime } from '@/components/ui/local-time';
+import { formatTimeET } from '@/lib/format/time';
 
 const SOURCES = [
     { name: 'NHL', href: 'https://www.nhl.com' },
@@ -9,22 +11,10 @@ const SOURCES = [
     { name: 'ESPN', href: 'https://www.espn.com/nhl/' },
 ];
 
-function formatStamp(iso: string | null): string | null {
-    if (!iso) return null;
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return null;
-    return `${d.toLocaleString('en-US', {
-        timeZone: 'America/New_York',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-    })} ET`;
-}
-
 /** Site footer: data credits (MoneyPuck's terms require credit), data-as-of stamp, methodology links. */
 export default function Footer() {
-    const stamp = formatStamp(getDataStamp().generatedAt);
+    const stampIso = getDataStamp().generatedAt;
+    const stamp = stampIso && formatTimeET(stampIso, 'datetime') ? stampIso : null;
     const season = `${SEASON_START_YEAR}-${String(SEASON_START_YEAR + 1).slice(2)}`;
 
     return (
@@ -44,7 +34,7 @@ export default function Footer() {
                         .
                     </p>
                     <p className="text-caption text-fg-3">
-                        {stamp ? <>Data as of {stamp} · </> : null}
+                        {stamp ? <>Data as of <LocalTime iso={stamp} style="datetime" /> · </> : null}
                         {season} season · Probabilities are estimates, not betting advice. If you bet, bet responsibly (21+, 1-800-GAMBLER).
                     </p>
                 </div>
