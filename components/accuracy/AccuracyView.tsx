@@ -301,14 +301,14 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
     const bestLL = Math.min(...rows.map(r => r.ll ?? Infinity));
     return (
         <ScrollRegion label={`Model versus baselines, ${seasonWord}`} className="panel">
-            <table className="table-dense min-w-[440px]">
+            <table className="table-dense min-w-[340px]">
                 <caption className="sr-only">Model versus baselines for {seasonWord}. Lower Brier and log loss are better.</caption>
                 <thead>
                     <tr>
                         <th scope="col" className="text-left">
                             vs
                         </th>
-                        <th scope="col" className="text-right">
+                        <th scope="col" className="hidden text-right sm:table-cell">
                             n
                         </th>
                         <th scope="col" className="text-right">
@@ -329,7 +329,7 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
                                 <span className={r.model ? 'text-brand' : 'text-fg-1'}>{r.label}</span>
                                 {r.note ? <span className="ml-2 font-normal text-fg-3">{r.note}</span> : null}
                             </th>
-                            <td className="text-right text-fg-2">{r.n != null ? r.n.toLocaleString('en-US') : '—'}</td>
+                            <td className="hidden text-right text-fg-2 sm:table-cell">{r.n != null ? r.n.toLocaleString('en-US') : '—'}</td>
                             <td className="text-right text-fg-1">{pct1(r.acc)}</td>
                             <td className="text-right text-fg-1">{dec3(r.brier)}</td>
                             <td className="text-right text-fg-1">

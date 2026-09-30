@@ -173,12 +173,12 @@ export function archiveYear(seasonId: string): number | null {
     return /^\d{8}$/.test(seasonId) && Number(seasonId.slice(4)) === Number(seasonId.slice(0, 4)) + 1 ? Number(seasonId.slice(4)) : null;
 }
 
-/** 'Series final: MIN 4-2' / 'CAR leads 3-1' / 'Tied 2-2'. */
+/** 'MIN wins 4-2' / 'CAR leads 3-1' / 'Tied 2-2'. */
 export function seriesStatusText(s: ArchiveSeries): string {
     const hi = Math.max(s.topWins, s.bottomWins);
     const lo = Math.min(s.topWins, s.bottomWins);
-    if (s.winner) return `Series final: ${s.winner} ${hi}-${lo}`;
-    if (s.topWins === s.bottomWins) return s.topWins === 0 ? 'Series not started' : `Series tied ${hi}-${lo}`;
+    if (s.winner) return `${s.winner} wins ${hi}-${lo}`;
+    if (s.topWins === s.bottomWins) return s.topWins === 0 ? 'Not started' : `Tied ${hi}-${lo}`;
     const leader = s.topWins > s.bottomWins ? s.top.tri : s.bottom.tri;
     return `${leader} leads ${hi}-${lo}`;
 }
