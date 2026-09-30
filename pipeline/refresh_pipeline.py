@@ -493,6 +493,8 @@ def pregame_stages(r, phase, mode):
     r.run("clinch_status", _call, "fetch_clinch_status", title="Clinch indicators")
     r.run("player_boxscores", _call, "backfill_player_stats", title="Per-player boxscore stats")
     r.run("odds", _call, "fetch_odds", "fetch_odds", title="Pregame odds + closing lines")
+    # Goalie season lines move with every game, so the lite run refreshes them too.
+    r.run("goalie_stats", _call, "fetch_nhl_goalie_stats", "fetch_nhl_goalie_stats", title="Goalie season lines")
     if phase["playoffs"]:
         r.run("playoff_series", _call, "update_playoff_series", title="Playoff series")
     else:
@@ -548,7 +550,6 @@ def run_full(r, phase, rescore_all=False):
         r.skip("playoff_news", "not in the playoffs")
         r.skip("goalie_playoff_career", "not in the playoffs")
     pregame_stages(r, phase, "full")
-    r.run("goalie_stats", _call, "fetch_nhl_goalie_stats", "fetch_nhl_goalie_stats", title="Goalie season lines")
     print("Running Predictions...")
     r.run("predict", stage_predict, required=True, title="Running Predictions")
     print("Generating Prediction History...")

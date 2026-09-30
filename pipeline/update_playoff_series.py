@@ -1,114 +1,53 @@
-"""
-Update playoff_series.json with actual game results from the NHL API.
-Fetches scores for all completed games and updates series win counts.
+"""update_playoff_series.py - public/data/playoff_series.json from the NHL.
 
-Usage: python3 update_playoff_series.py
-Run from the pipeline/ directory (writes to ../public/data/playoff_series.json).
+    python3 update_playoff_series.py
+
+Exits immediately (logging 'no postseason games') unless playoff games
+(gameType 3) are on the schedule, so it costs about one request during the
+regular season.
+
+In the postseason the series list is derived from the NHL, not hand-built:
+/v1/playoff-series/carousel/{SEASON_ID} gives the series of every round and
+/v1/schedule/playoff-series/{SEASON_ID}/{letter} each series' games, scores,
+start times and national TV.  Series winner odds (Bovada) are merged in when
+available.  A playoff_series.json from an earlier season is archived to
+data/archive/playoff_series_<season>.json before it is replaced (never
+deleted).
+
+Series format (unchanged for the frontend, plus season_id and seriesLetter):
+  {seriesId: 'R1_E_A', season_id, seriesLetter, round, conference,
+   higherSeed: {triCode, seed, commonName}, lowerSeed: {...},
+   seriesScore: [higherSeedWins, lowerSeedWins],
+   games: [{gameNumber, gameId, date, startTimeUTC, startTimeCT,
+            homeTriCode, awayTriCode, tvNetwork, score: [home, away] | null,
+            status: 'final' | 'live' | 'scheduled'}],
+   status: 'complete' | 'active' | 'scheduled', seriesOdds?}
 """
+from __future__ import annotations
 
 import json
 import os
+import shutil
 import sys
-import datetime
-import subprocess
-import urllib.request
-import ssl
+import time
+from datetime import datetime
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "../public/data/playoff_series.json")
-SEASON = 20252026
-NHL_SEASON_YEAR = 2026  # second year of season
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
 
-# NHL playoff game IDs: 202503SS0G
-# SS = series code 11-18 (A-H in round 1), game = last digit(s)
-# higherSeed is always home for G1/G2/G5/G7, lowerSeed home for G3/G4/G6
-SERIES_CODE_MAP = {
-    "R1_E_ATL1vWC2": 11,   # BUF vs BOS
-    "R1_E_MET2vATL2": 12,  # TBL vs MTL
-    "R1_E_MET1vWC2": 13,   # CAR vs OTT
-    "R1_E_MET3vATL3": 14,  # PIT vs PHI
-    "R1_W_C1vWC2": 15,     # COL vs LAK
-    "R1_W_C2vP3": 16,      # DAL vs MIN
-    "R1_W_P1vWC1": 17,     # VGK vs UTA
-    "R1_W_P2vP4": 18,      # EDM vs ANA
-}
+from season import SEASON_ID  # noqa: E402
+
+DATA_FILE = os.path.join(SCRIPT_DIR, "..", "public", "data", "playoff_series.json")
+ARCHIVE_DIR = os.path.join(SCRIPT_DIR, "..", "data", "archive")
+CONFERENCE = {"E": "East", "W": "West"}
+NATIONAL_NETWORKS = {"ESPN": "ESPN", "ESPN2": "ESPN2", "ABC": "ABC", "TNT": "TNT", "TBS": "TBS", "MAX": "MAX",
+                     "truTV": "truTV", "SN": "SN", "CBC": "CBC", "TVAS": "TVAS", "NHL Network": "NHLN"}
 
 
 def fetch_json(url):
     from http_utils import get_json
     return get_json(url, ua="plain")
-
-
-def build_series_code_map_from_bracket():
-    """
-    Auto-detect series codes from the NHL bracket API rather than using a hardcoded map.
-    Returns dict: seriesId -> NHL series code (11-18, 21-24, etc.)
-    """
-    try:
-        data = fetch_json(f"https://api-web.nhle.com/v1/playoff-bracket/{NHL_SEASON_YEAR}")
-    except Exception as e:
-        print(f"  Warning: could not fetch bracket: {e}")
-        return {}
-
-    bracket_series = data.get("series", [])
-    # Build a map: (topSeedAbbrev, bottomSeedAbbrev) -> seriesLetter
-    bracket_map = {}
-    for s in bracket_series:
-        top = s.get("topSeedTeam", {}).get("abbrev", "")
-        bot = s.get("bottomSeedTeam", {}).get("abbrev", "")
-        letter = s.get("seriesLetter", "")
-        rnd = s.get("playoffRound", 1)
-        bracket_map[(top, bot)] = (letter, rnd, s)
-        bracket_map[(bot, top)] = (letter, rnd, s)
-    return bracket_map
-
-
-def letter_to_code(letter, rnd):
-    """Convert series letter + round to NHL game ID series code."""
-    # Round 1: A-H -> 11-18
-    # Round 2: A-D -> 21-24
-    # Round 3: A-B -> 31-32 (conference finals)
-    # Round 4: A   -> 41 (Stanley Cup Final)
-    base = rnd * 10
-    idx = ord(letter.upper()) - ord("A")
-    return base + idx + 1
-
-
-def fetch_game_results_for_date(date_str):
-    """Return list of completed playoff games for a given YYYY-MM-DD."""
-    url = f"https://api-web.nhle.com/v1/schedule/{date_str}"
-    try:
-        data = fetch_json(url)
-    except Exception as e:
-        print(f"  Warning: could not fetch {date_str}: {e}")
-        return []
-
-    results = []
-    for day in data.get("gameWeek", []):
-        if day.get("date") != date_str:
-            continue  # API returns full week; only process the requested date
-        for g in day.get("games", []):
-            if g.get("gameType") != 3:
-                continue
-            if g.get("gameState") not in ("OFF", "FINAL"):
-                continue
-            home = g.get("homeTeam", {})
-            away = g.get("awayTeam", {})
-            game_id = g.get("id", 0)
-            # Extract series code and game number from ID
-            # Format: YYYY 03 SS G  (last 3 digits = SSG, SS=2 digits, G=1 digit)
-            series_code = (game_id // 10) % 100
-            game_num = game_id % 10
-            results.append({
-                "gameId": game_id,
-                "seriesCode": series_code,
-                "gameNumber": game_num,
-                "homeTriCode": home.get("abbrev", ""),
-                "awayTriCode": away.get("abbrev", ""),
-                "homeScore": home.get("score"),
-                "awayScore": away.get("score"),
-                "date": date_str,
-            })
-    return results
 
 
 BOVADA_TEAM_MAP = {
@@ -167,246 +106,162 @@ def fetch_series_odds():
     return odds_map
 
 
-NETWORK_MAP = {
-    "ESPN": "ESPN", "ESPN2": "ESPN2", "ABC": "ABC",
-    "TNT": "TNT", "TBS": "TBS", "MAX": "MAX",
-    "SN": "SN", "TVAS": "TVAS", "NHL Network": "NHLN",
-}
+def _local_date(start_utc):
+    from zoneinfo import ZoneInfo
+    d = datetime.fromisoformat(start_utc.replace("Z", "+00:00"))
+    return d.astimezone(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
 
-def fetch_scheduled_game_times(series_list):
-    """
-    Fetch start times and TV networks for all future scheduled playoff games
-    from the NHL schedule API. Updates games in-place.
-    """
-    import datetime
-    today = datetime.date.today()
-    future_dates = set()
-    for s in series_list:
+
+def _central_clock(start_utc):
+    from zoneinfo import ZoneInfo
+    d = datetime.fromisoformat(start_utc.replace("Z", "+00:00")).astimezone(ZoneInfo("America/Chicago"))
+    return f"{d.hour % 12 or 12}:{d.minute:02d} {'AM' if d.hour < 12 else 'PM'}"
+
+
+def _national_tv(game):
+    for b in game.get("tvBroadcasts", []) or []:
+        if b.get("market") == "N" and b.get("countryCode") == "US":
+            return NATIONAL_NETWORKS.get(b.get("network"), b.get("network", ""))
+    return ""
+
+
+def _game_status(state):
+    if state in ("OFF", "FINAL"):
+        return "final"
+    if state in ("LIVE", "CRIT"):
+        return "live"
+    return "scheduled"
+
+
+def series_from_nhl(payload, season_id=SEASON_ID):
+    """One playoff_series.json entry from /schedule/playoff-series/{season}/{letter}."""
+    top, bot = payload["topSeedTeam"], payload["bottomSeedTeam"]
+    rnd = int(payload.get("round") or 1)
+    conf_abbr = (top.get("conference") or {}).get("abbrev", "")
+    conference = "Final" if rnd == 4 else CONFERENCE.get(conf_abbr, conf_abbr)
+    letter = payload.get("seriesLetter", "")
+    games = []
+    for g in payload.get("games", []) or []:
+        home, away = g.get("homeTeam") or {}, g.get("awayTeam") or {}
+        status = _game_status(g.get("gameState"))
+        has_score = status != "scheduled" and home.get("score") is not None
+        start = g.get("startTimeUTC", "")
+        entry = {
+            "gameNumber": int(g.get("gameNumber") or (int(g["id"]) % 10)),
+            "gameId": g.get("id"),
+            "date": _local_date(start) if start else "",
+            "startTimeUTC": start,
+            "startTimeCT": _central_clock(start) if start else "",
+            "homeTriCode": home.get("abbrev", ""),
+            "awayTriCode": away.get("abbrev", ""),
+            "tvNetwork": _national_tv(g),
+            "score": [home.get("score"), away.get("score")] if has_score else None,
+            "status": status,
+        }
+        if g.get("ifNecessary"):
+            entry["ifNecessary"] = True
+        games.append(entry)
+    games.sort(key=lambda x: x["gameNumber"])
+    tw, bw = int(top.get("seriesWins") or 0), int(bot.get("seriesWins") or 0)
+    need = int(payload.get("neededToWin") or 4)
+    if max(tw, bw) >= need:
+        status = "complete"
+    elif tw + bw or any(g["status"] != "scheduled" for g in games):
+        status = "active"
+    else:
+        status = "scheduled"
+    return {
+        "seriesId": f"R{rnd}_{conf_abbr or 'F'}_{letter}",
+        "season_id": str(season_id),
+        "seriesLetter": letter,
+        "round": rnd,
+        "conference": conference,
+        "higherSeed": {"triCode": top.get("abbrev", ""), "seed": str(top.get("seed", "")),
+                       "commonName": (top.get("name") or {}).get("default", "")},
+        "lowerSeed": {"triCode": bot.get("abbrev", ""), "seed": str(bot.get("seed", "")),
+                      "commonName": (bot.get("name") or {}).get("default", "")},
+        "seriesScore": [tw, bw],
+        "games": games,
+        "status": status,
+    }
+
+
+def build_series_list(season_id=SEASON_ID):
+    """Every series announced so far this postseason, in round/letter order."""
+    carousel = fetch_json(f"https://api-web.nhle.com/v1/playoff-series/carousel/{season_id}")
+    out = []
+    for rnd in carousel.get("rounds", []) or []:
+        for s in rnd.get("series", []) or []:
+            letter = s.get("seriesLetter")
+            if not letter or not (s.get("topSeed") or {}).get("abbrev"):
+                continue      # later-round slot not decided yet
+            payload = fetch_json(f"https://api-web.nhle.com/v1/schedule/playoff-series/{season_id}/{letter.lower()}")
+            out.append(series_from_nhl(payload, season_id))
+    return out
+
+
+def file_season(series_list):
+    """Season of an existing playoff_series.json (explicit, else from game dates)."""
+    for s in series_list or []:
+        if s.get("season_id"):
+            return str(s["season_id"])
         for g in s.get("games", []):
-            if g.get("status") != "final":
-                d = g.get("date", "")
-                if d:
-                    future_dates.add(d)
-
-    if not future_dates:
-        return
-
-    print(f"Fetching scheduled times for {len(future_dates)} future date(s): {sorted(future_dates)}")
-
-    # Build lookup: (homeTriCode, awayTriCode) -> game data
-    api_games = {}
-    for d in sorted(future_dates):
-        url = f"https://api-web.nhle.com/v1/schedule/{d}"
-        try:
-            data = fetch_json(url)
-        except Exception as e:
-            print(f"  Warning: could not fetch {d}: {e}")
-            continue
-        for day in data.get("gameWeek", []):
-            if day.get("date") != d:
-                continue
-            for g in day.get("games", []):
-                if g.get("gameType") != 3:
-                    continue
-                home = g.get("homeTeam", {}).get("abbrev", "")
-                away = g.get("awayTeam", {}).get("abbrev", "")
-                start_utc = g.get("startTimeUTC", "")
-                # Derive CT time
-                start_ct = ""
-                try:
-                    from datetime import datetime as dt
-                    import re
-                    utc_dt = dt.fromisoformat(start_utc.replace("Z", "+00:00"))
-                    # UTC to CT (CST=-6, CDT=-5; use CDT during April-Oct)
-                    offset_hours = -5  # CDT
-                    ct_dt = utc_dt.replace(tzinfo=None)
-                    from datetime import timedelta
-                    ct_dt = dt.fromisoformat(start_utc.replace("Z", "")).replace(tzinfo=None)
-                    import calendar
-                    ct_hour = ct_dt.hour - 5  # CDT offset
-                    if ct_hour < 0:
-                        ct_hour += 24
-                    ampm = "AM" if ct_hour < 12 else "PM"
-                    h12 = ct_hour % 12 or 12
-                    mins = ct_dt.minute
-                    start_ct = f"{h12}:{mins:02d} {ampm}"
-                except Exception:
-                    pass
-                # Extract TV broadcast
-                tv = ""
-                for broadcast in g.get("tvBroadcasts", []):
-                    if broadcast.get("market") in ("N", "U"):  # National/US
-                        raw = broadcast.get("network", "")
-                        tv = NETWORK_MAP.get(raw, raw)
-                        break
-                api_games[(home, away, d)] = {
-                    "startTimeUTC": start_utc,
-                    "startTimeCT": start_ct,
-                    "tvNetwork": tv,
-                }
-
-    # Apply to series games
-    updated = 0
-    for s in series_list:
-        for g in s.get("games", []):
-            if g.get("status") == "final":
-                continue
-            home = g.get("homeTriCode", "")
-            away = g.get("awayTriCode", "")
-            game_date = g.get("date", "")
-            if (home, away, game_date) in api_games:
-                info = api_games[(home, away, game_date)]
-                if info["startTimeUTC"]:
-                    g["startTimeUTC"] = info["startTimeUTC"]
-                if info["startTimeCT"]:
-                    g["startTimeCT"] = info["startTimeCT"]
-                else:
-                    g["startTimeCT"] = ""  # unknown → show TBD
-                if info["tvNetwork"]:
-                    g["tvNetwork"] = info["tvNetwork"]
-                updated += 1
-    print(f"  Updated start times for {updated} scheduled game(s).")
+            if g.get("date"):
+                y = int(g["date"][:4])
+                return f"{y - 1}{y}"
+    return None
 
 
-def get_all_playoff_dates(series_list):
-    """Collect all game dates from our local series data."""
-    dates = set()
-    today = datetime.date.today()
-    for s in series_list:
-        for g in s.get("games", []):
-            d = g.get("date", "")
-            if d and d <= today.isoformat():
-                dates.add(d)
-    return sorted(dates)
+def archive_previous(series_list, path=DATA_FILE, archive_dir=ARCHIVE_DIR):
+    season = file_season(series_list)
+    if not season or season == SEASON_ID:
+        return None
+    os.makedirs(archive_dir, exist_ok=True)
+    dst = os.path.join(archive_dir, f"playoff_series_{season}.json")
+    if not os.path.exists(dst):
+        shutil.copyfile(path, dst)
+        print(f"  Archived {season} playoff_series.json -> {os.path.relpath(dst, SCRIPT_DIR)}")
+    return dst
 
 
 def main():
-    with open(DATA_FILE) as f:
-        series_list = json.load(f)
+    t0 = time.time()
+    from season_context import postseason_games_exist
+    if not postseason_games_exist():
+        print(f"{SEASON_ID}: no postseason games on the schedule - nothing to update "
+              f"({time.time() - t0:.1f}s).")
+        return {"status": "skip", "reason": "no postseason games"}
 
-    # Regular season / offseason: every series is complete, so leave last
-    # postseason's file alone. Seed new series here when the next postseason starts.
-    if all(s.get("status") == "complete" for s in series_list):
-        print("No playoff series in progress — skipping.")
-        return
+    try:
+        with open(DATA_FILE) as f:
+            existing = json.load(f)
+    except (OSError, ValueError):
+        existing = []
+    archive_previous(existing)
+    series_list = build_series_list()
+    if not series_list:
+        print("  Carousel has no series yet - keeping the current file.")
+        return {"status": "skip", "reason": "no series announced"}
 
-    # Build a lookup: series_code -> series index in our list
-    # We need to match NHL's series codes to our seriesIds
-    # Strategy: match by team tri-codes
-    def make_team_key(s):
-        return frozenset([s["higherSeed"]["triCode"], s["lowerSeed"]["triCode"]])
-
-    series_by_teams = {make_team_key(s): i for i, s in enumerate(series_list)}
-
-    # Build NHL bracket series letter map
-    bracket_map = build_series_code_map_from_bracket()
-
-    # Map: NHL series_code -> index in our series_list
-    code_to_idx = {}
+    same_season = file_season(existing) == SEASON_ID
+    old_odds = {frozenset([s["higherSeed"]["triCode"], s["lowerSeed"]["triCode"]]): s.get("seriesOdds")
+                for s in existing if same_season and s.get("seriesOdds")}
+    odds = fetch_series_odds()
     for s in series_list:
-        ht = s["higherSeed"]["triCode"]
-        lt = s["lowerSeed"]["triCode"]
-        key = (ht, lt)
-        if key in bracket_map:
-            letter, rnd, _ = bracket_map[key]
-            code = letter_to_code(letter, rnd)
-            idx = series_list.index(s)
-            code_to_idx[code] = idx
+        key = frozenset([s["higherSeed"]["triCode"], s["lowerSeed"]["triCode"]])
+        if key in odds:
+            s["seriesOdds"] = odds[key]
+        elif old_odds.get(key):
+            s["seriesOdds"] = old_odds[key]
 
-    # Fetch all completed game dates
-    dates = get_all_playoff_dates(series_list)
-    print(f"Fetching results for {len(dates)} dates: {dates}")
-
-    # Gather all completed game results
-    all_results = []
-    for d in dates:
-        games = fetch_game_results_for_date(d)
-        if games:
-            print(f"  {d}: {len(games)} completed playoff game(s)")
-        all_results.extend(games)
-
-    # Reset all series scores and game results
-    for s in series_list:
-        s["seriesScore"] = [0, 0]
-        for g in s.get("games", []):
-            g["score"] = None
-            g["status"] = "scheduled"
-
-    # Apply results
-    applied = 0
-    for r in all_results:
-        code = r["seriesCode"]
-        if code not in code_to_idx:
-            print(f"  Unknown series code {code} for {r['awayTriCode']} @ {r['homeTriCode']}")
-            continue
-        idx = code_to_idx[code]
-        s = series_list[idx]
-        gnum = r["gameNumber"]
-
-        # Find the game slot
-        game_slot = next((g for g in s["games"] if g["gameNumber"] == gnum), None)
-        if game_slot is None:
-            print(f"  No game slot found for series {code} game {gnum}")
-            continue
-
-        home_score = r["homeScore"]
-        away_score = r["awayScore"]
-        # score stored as [homeScore, awayScore] tuple (matches TS interface [number,number])
-        game_slot["score"] = [home_score, away_score]
-        game_slot["status"] = "final"
-
-        # Update series score: seriesScore[0] = higherSeed wins, [1] = lowerSeed wins
-        higher = s["higherSeed"]["triCode"]
-        lower = s["lowerSeed"]["triCode"]
-        home_tri = r["homeTriCode"]
-
-        if home_score is not None and away_score is not None:
-            if home_score > away_score:
-                winner = home_tri
-            else:
-                winner = r["awayTriCode"]
-            if winner == higher:
-                s["seriesScore"][0] += 1
-            else:
-                s["seriesScore"][1] += 1
-
-        applied += 1
-
-    # Fetch start times and TV networks for scheduled games
-    fetch_scheduled_game_times(series_list)
-
-    # Fetch and update series odds
-    series_odds = fetch_series_odds()
-    odds_updated = 0
-    for s in series_list:
-        ht = s["higherSeed"]["triCode"]
-        lt = s["lowerSeed"]["triCode"]
-        key = frozenset([ht, lt])
-        if key in series_odds:
-            s["seriesOdds"] = series_odds[key]
-            odds_updated += 1
-    print(f"Updated series odds for {odds_updated} series.")
-
-    # Mark series status
-    for s in series_list:
-        wins = s["seriesScore"]
-        if max(wins) == 4:
-            s["status"] = "complete"
-        elif max(wins) > 0 or any(g.get("status") == "final" for g in s["games"]):
-            s["status"] = "active"
-        else:
-            s["status"] = "scheduled"
-
-    with open(DATA_FILE, "w") as f:
+    tmp = DATA_FILE + ".tmp"
+    with open(tmp, "w") as f:
         json.dump(series_list, f, indent=2)
-
-    print(f"\nUpdated {DATA_FILE}")
-    print(f"Applied {applied} game results.")
+    os.replace(tmp, DATA_FILE)
     for s in series_list:
-        h = s["higherSeed"]["triCode"]
-        l = s["lowerSeed"]["triCode"]
-        sc = s["seriesScore"]
-        print(f"  {h} {sc[0]} - {sc[1]} {l}  [{s.get('status','?')}]")
+        print(f"  {s['seriesId']}: {s['higherSeed']['triCode']} {s['seriesScore'][0]}-{s['seriesScore'][1]} "
+              f"{s['lowerSeed']['triCode']} [{s['status']}]")
+    return {"status": "ok", "rows_written": len(series_list)}
 
 
 if __name__ == "__main__":

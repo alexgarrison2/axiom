@@ -1,287 +1,160 @@
+"""game_implications.py - how much tonight's result moves each team's playoff odds.
+
+For every game on today's slate, four forced results (home regulation win,
+home OT/SO win, away OT/SO win, away regulation win) are simulated with the
+season_simulator engine.  All scenarios and the baseline share the same
+random numbers (common random numbers), so the differences come from the
+forced game rather than simulation noise, and the published "current" odds
+come from the same run as the scenarios.
+
+Guards
+------
+* The baseline projections (public/data/season_projections.json) must be
+  for this season (``season_id``); otherwise nothing is written except an
+  empty file saying why.  This stops last season's final table (every team
+  at 0% or 100%) from being shown next to this season's scenarios.
+* When the largest swing on the slate is under MIN_SWING_PTS (3 points of
+  playoff probability, typical for October) ``games`` is empty: the
+  "biggest games tonight" strip has nothing meaningful to show.
+
+Output (public/data/game_implications.json + pipeline copy):
+  {season_id, generated_at, baseline_generated_at, n_sims, max_swing_pts,
+   min_swing_pts, reason, games: [{game_id, date, home_abbrev, away_abbrev,
+   home_current_playoff_pct, away_current_playoff_pct, home_current_avg_pts,
+   away_current_avg_pts, swing_pts, scenarios: {home_reg_win: {...}, ...}}]}
 """
-game_implications.py
-====================
-Computes playoff-probability implications for each of today's upcoming games.
-
-For every game, runs 4 forced-outcome scenarios (home reg win, home OT win,
-away OT win, away reg win), each with N_SIMS Monte Carlo season simulations.
-
-Outputs public/data/game_implications.json consumed by the frontend MatchupCard.
-
-Run order: AFTER season_simulator.py (needs season_projections.json as baseline).
-"""
+from __future__ import annotations
 
 import json
 import os
-import sys
-import random
 import shutil
-import datetime
+import sys
 
-# Reuse helpers from season_simulator.py (same directory)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, SCRIPT_DIR)
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
 
-from season_simulator import (
-    fetch_current_standings,
-    fetch_remaining_schedule,
-    build_team_map,
-    determine_standings,
-    get_game_prob,
-    load_json,
-    load_csv,
-)
+from season import SEASON_ID, today_local  # noqa: E402
+from season_simulator import (  # noqa: E402
+    OUTCOMES, Engine, build_team_map, fetch_current_standings, fetch_remaining_schedule, load_csv,
+    load_json, make_probabilities)
 
-# Fewer sims than full season_simulator — directionally accurate, fast enough
-N_SIMS = 1500
-
-
-# ---------------------------------------------------------------------------
-# Core helpers
-# ---------------------------------------------------------------------------
-
-def simulate_season_forced(base_standings, schedule, ratings, team_map,
-                            forced_game_id, forced_outcome):
-    """
-    Like season_simulator.simulate_season() but forces a specific game's result.
-
-    forced_outcome one of:
-        'home_reg_win' — Home wins in regulation (Home +2pts, Away +0)
-        'home_otw'     — Home wins in OT          (Home +2pts, Away +1 OTL)
-        'away_otw'     — Away wins in OT          (Away +2pts, Home +1 OTL)
-        'away_reg_win' — Away wins in regulation  (Away +2pts, Home +0)
-    """
-    current = {k: v.copy() for k, v in base_standings.items()}
-    forced_id_str = str(forced_game_id)
-
-    for game in schedule:
-        h = game['home']
-        a = game['away']
-
-        if str(game.get('id', '')) == forced_id_str:
-            # Apply forced result
-            if forced_outcome == 'home_reg_win':
-                current[h]['pts'] += 2
-                current[h]['w']   += 1
-                current[h]['rw']  += 1
-                current[h]['row'] += 1
-                current[a]['l']   += 1
-            elif forced_outcome == 'away_reg_win':
-                current[a]['pts'] += 2
-                current[a]['w']   += 1
-                current[a]['rw']  += 1
-                current[a]['row'] += 1
-                current[h]['l']   += 1
-            elif forced_outcome == 'home_otw':
-                current[h]['pts'] += 2
-                current[h]['w']   += 1
-                current[h]['row'] += 1
-                current[a]['pts'] += 1
-                current[a]['otl'] += 1
-            elif forced_outcome == 'away_otw':
-                current[a]['pts'] += 2
-                current[a]['w']   += 1
-                current[a]['row'] += 1
-                current[h]['pts'] += 1
-                current[h]['otl'] += 1
-        else:
-            # Normal probabilistic simulation (mirrors season_simulator logic)
-            h_name = team_map.get(h)
-            a_name = team_map.get(a)
-            def_rating = {'xgf_rating': 3.0, 'xga_rating': 3.0}
-            h_r = ratings.get(h_name, def_rating)
-            a_r = ratings.get(a_name, def_rating)
-
-            p_h_reg, p_a_reg, p_ot, raw_h = get_game_prob(h_r, a_r)
-            r = random.random()
-
-            if r < p_h_reg:
-                current[h]['pts'] += 2
-                current[h]['w']   += 1
-                current[h]['rw']  += 1
-                current[h]['row'] += 1
-                current[a]['l']   += 1
-            elif r < (p_h_reg + p_a_reg):
-                current[a]['pts'] += 2
-                current[a]['w']   += 1
-                current[a]['rw']  += 1
-                current[a]['row'] += 1
-                current[h]['l']   += 1
-            else:
-                # OT — both get 1 pt, then decide winner
-                current[h]['pts'] += 1
-                current[a]['pts'] += 1
-                current[h]['otl'] += 1
-                current[a]['otl'] += 1
-                if random.random() < raw_h:
-                    current[h]['pts'] += 1
-                    current[h]['w']   += 1
-                    current[h]['row'] += 1
-                    current[h]['otl'] -= 1
-                else:
-                    current[a]['pts'] += 1
-                    current[a]['w']   += 1
-                    current[a]['row'] += 1
-                    current[a]['otl'] -= 1
-
-    return current
+N_SIMS = 2000
+MIN_SWING_PTS = 3.0
+PUBLIC_PATH = os.path.join(SCRIPT_DIR, "..", "public", "data", "game_implications.json")
+LOCAL_PATH = os.path.join(SCRIPT_DIR, "game_implications.json")
+PROJECTIONS_PATH = os.path.join(SCRIPT_DIR, "..", "public", "data", "season_projections.json")
 
 
-def get_playoff_teams(divs, east, west):
-    """Return set of tricodes for the 16 teams that made the playoffs."""
-    atl_top3 = divs.get('A', [])[:3]
-    met_top3 = divs.get('M', [])[:3]
-    top3_east = set(x[0] for x in atl_top3 + met_top3)
-    east_wc = [x for x in east if x[0] not in top3_east][:2]
-
-    cen_top3 = divs.get('C', [])[:3]
-    pac_top3 = divs.get('P', [])[:3]
-    top3_west = set(x[0] for x in cen_top3 + pac_top3)
-    west_wc = [x for x in west if x[0] not in top3_west][:2]
-
-    return set(
-        x[0] for x in atl_top3 + met_top3 + east_wc + cen_top3 + pac_top3 + west_wc
-    )
+def baseline_ok(projections):
+    """(ok, reason) for the season_projections baseline."""
+    if not projections:
+        return False, "season_projections.json missing"
+    sid = str(projections.get("season_id") or "")
+    if sid != SEASON_ID:
+        return False, f"season_projections.json is for season {sid or 'unknown'}, not {SEASON_ID}"
+    return True, ""
 
 
-def run_scenario_sims(base_standings, schedule, ratings, team_map,
-                       forced_game_id, forced_outcome, n_sims=N_SIMS):
-    """
-    Run n_sims simulations with a forced game result.
-    Returns (playoff_pcts_dict, avg_pts_dict) keyed by team tricode.
-    """
-    made_playoffs = {abbr: 0 for abbr in base_standings}
-    total_pts     = {abbr: 0 for abbr in base_standings}
-
-    for _ in range(n_sims):
-        final = simulate_season_forced(
-            base_standings, schedule, ratings, team_map,
-            forced_game_id, forced_outcome
-        )
-        divs, east, west = determine_standings(final)
-        playoff_teams = get_playoff_teams(divs, east, west)
-
-        for abbr in base_standings:
-            if abbr in playoff_teams:
-                made_playoffs[abbr] += 1
-            total_pts[abbr] += final[abbr]['pts']
-
-    playoff_pcts = {
-        abbr: round(made_playoffs[abbr] / n_sims * 100, 1)
-        for abbr in base_standings
-    }
-    avg_pts = {
-        abbr: round(total_pts[abbr] / n_sims, 1)
-        for abbr in base_standings
-    }
-    return playoff_pcts, avg_pts
+def game_swing(scen, home, away):
+    """Largest change in either team's playoff % between the best and worst result."""
+    sw = 0.0
+    for side in ("home", "away"):
+        vals = [s[f"{side}_playoff_pct"] for s in scen.values() if s.get(f"{side}_playoff_pct") is not None]
+        if vals:
+            sw = max(sw, max(vals) - min(vals))
+    return round(sw, 1)
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
-def compute_game_implications():
-    print(f"[game_implications] Starting — {N_SIMS} sims per scenario...")
-
-    # 1. Shared data (same fetches as season_simulator)
-    schedule          = fetch_remaining_schedule()
-    from paths import TEAM_RATINGS_FILE
-    team_ratings      = load_json(TEAM_RATINGS_FILE)   # public/data is the only ratings location
-    nhl_teams         = load_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
-    team_map          = build_team_map(nhl_teams)
-    current_standings = fetch_current_standings()
-
-    # 2. Baseline playoff %s from season_projections.json (already run by season_simulator)
-    proj_path = os.path.join(SCRIPT_DIR, '..', 'public', 'data', 'season_projections.json')
-    if not os.path.exists(proj_path):
-        print("[game_implications] WARN: season_projections.json not found — skipping.")
-        return
-
-    season_projs    = load_json(proj_path)
-    baseline_by_team = {t['team']: t for t in season_projs['teams']}
-
-    # 3. Today's games from upcoming_games.json
-    upcoming_path = os.path.join(SCRIPT_DIR, 'upcoming_games.json')
-    if not os.path.exists(upcoming_path):
-        print("[game_implications] WARN: upcoming_games.json not found — skipping.")
-        return
-
-    today   = datetime.date.today().isoformat()
-    upcoming = load_json(upcoming_path)
-    today_games = [g for g in upcoming if g.get('gameDate', '') == today]
-
-    if not today_games:
-        print(f"[game_implications] No games for {today} — writing empty output.")
-        _write_output({'generated_at': datetime.datetime.now().isoformat(), 'games': []})
-        return
-
-    # Build a set of IDs that appear in the remaining schedule
-    schedule_ids = {str(g['id']) for g in schedule if 'id' in g}
-
-    OUTCOMES = ['home_reg_win', 'home_otw', 'away_otw', 'away_reg_win']
-    game_results = []
-
+def implications(engine, today_games):
+    base = engine.playoff_pct()
+    out = []
     for game in today_games:
-        game_id      = str(game.get('id', ''))
-        home_abbrev  = game.get('homeTeamAbbrev', '')
-        away_abbrev  = game.get('awayTeamAbbrev', '')
-
-        print(f"  {away_abbrev} @ {home_abbrev}  (id={game_id})")
-
-        if game_id not in schedule_ids:
-            print(f"    WARN: id {game_id} not in remaining schedule — skipping.")
+        gid = str(game.get("id", ""))
+        h, a = game.get("homeTeamAbbrev", ""), game.get("awayTeamAbbrev", "")
+        if gid not in engine.game_pos:
+            print(f"  {a}@{h} ({gid}) is not in the remaining schedule - skipped")
             continue
-
-        home_baseline = baseline_by_team.get(home_abbrev, {})
-        away_baseline = baseline_by_team.get(away_abbrev, {})
-
-        scenarios = {}
+        scen = {}
         for outcome in OUTCOMES:
-            print(f"    → {outcome} ...", end=' ', flush=True)
-            pcts, pts = run_scenario_sims(
-                current_standings, schedule, team_ratings, team_map,
-                game_id, outcome
-            )
-            scenarios[outcome] = {
-                'home_playoff_pct': pcts.get(home_abbrev),
-                'away_playoff_pct': pcts.get(away_abbrev),
-                'home_avg_pts':     pts.get(home_abbrev),
-                'away_avg_pts':     pts.get(away_abbrev),
-            }
-            print("done")
-
-        game_results.append({
-            'game_id':                   int(game_id),
-            'date':                      game.get('gameDate', today),
-            'home_abbrev':               home_abbrev,
-            'away_abbrev':               away_abbrev,
-            'home_current_playoff_pct':  home_baseline.get('make_playoffs_pct'),
-            'away_current_playoff_pct':  away_baseline.get('make_playoffs_pct'),
-            'home_current_avg_pts':      home_baseline.get('avg_points'),
-            'away_current_avg_pts':      away_baseline.get('avg_points'),
-            'scenarios':                 scenarios,
+            r = engine.playoff_pct(forced=(gid, outcome))
+            scen[outcome] = {"home_playoff_pct": r[h][0], "away_playoff_pct": r[a][0],
+                             "home_avg_pts": r[h][1], "away_avg_pts": r[a][1]}
+        out.append({
+            "game_id": int(gid), "date": game.get("gameDate"), "home_abbrev": h, "away_abbrev": a,
+            "home_current_playoff_pct": base[h][0], "away_current_playoff_pct": base[a][0],
+            "home_current_avg_pts": base[h][1], "away_current_avg_pts": base[a][1],
+            "swing_pts": game_swing(scen, h, a), "scenarios": scen,
         })
-
-    output = {
-        'generated_at': datetime.datetime.now().isoformat(),
-        'games':        game_results,
-    }
-    _write_output(output)
-    print(f"[game_implications] Done — {len(game_results)} games written.")
+    return out
 
 
 def _write_output(output):
-    # Write to pipeline/ (local copy)
-    local_path = os.path.join(SCRIPT_DIR, 'game_implications.json')
-    with open(local_path, 'w') as f:
+    try:
+        with open(PUBLIC_PATH) as f:
+            old = json.load(f)
+    except (OSError, ValueError):
+        old = None
+    volatile = ("generated_at", "baseline_generated_at")
+    if isinstance(old, dict) and {k: v for k, v in old.items() if k not in volatile} == \
+            {k: v for k, v in output.items() if k not in volatile}:
+        print("  game_implications.json unchanged - not rewritten")
+        return
+    tmp = LOCAL_PATH + ".tmp"
+    with open(tmp, "w") as f:
         json.dump(output, f, indent=2)
+    os.replace(tmp, LOCAL_PATH)
+    shutil.copyfile(LOCAL_PATH, PUBLIC_PATH + ".tmp")
+    os.replace(PUBLIC_PATH + ".tmp", PUBLIC_PATH)
+    print(f"  Written -> {os.path.relpath(PUBLIC_PATH, SCRIPT_DIR)}")
 
-    # Copy to public/data/ for the Next.js frontend
-    public_path = os.path.join(SCRIPT_DIR, '..', 'public', 'data', 'game_implications.json')
-    shutil.copy2(local_path, public_path)
-    print(f"  Written → {public_path}")
+
+def compute_game_implications(n_sims=N_SIMS, now=None, engine=None, upcoming=None, projections=None):
+    from io_utils import utc_now_iso
+    print(f"[game_implications] {n_sims} sims per scenario...")
+    doc = {"season_id": SEASON_ID, "generated_at": utc_now_iso(), "baseline_generated_at": None,
+           "n_sims": n_sims, "min_swing_pts": MIN_SWING_PTS, "max_swing_pts": None, "reason": "", "games": []}
+    if projections is None:
+        try:
+            projections = load_json(PROJECTIONS_PATH)
+        except (OSError, ValueError):
+            projections = None
+    ok, why = baseline_ok(projections)
+    if not ok:
+        print(f"[game_implications] refusing baseline: {why}")
+        doc["reason"] = why
+        _write_output(doc)
+        return {"status": "skip", "reason": why}
+    doc["baseline_generated_at"] = projections.get("generated_at")
+
+    if upcoming is None:
+        try:
+            upcoming = load_json(os.path.join(SCRIPT_DIR, "upcoming_games.json"))
+        except (OSError, ValueError):
+            upcoming = []
+    today = today_local(now).isoformat()
+    today_games = [g for g in upcoming if g.get("gameDate") == today and int(g.get("gameType") or 2) == 2]
+    if not today_games:
+        doc["reason"] = f"no regular-season games on {today}"
+        _write_output(doc)
+        return {"status": "ok", "rows_written": 0, "reason": doc["reason"]}
+
+    if engine is None:
+        team_map = build_team_map(load_csv(os.path.join(SCRIPT_DIR, "nhl_teams.csv")))
+        engine = Engine(fetch_current_standings(now), fetch_remaining_schedule(now),
+                        make_probabilities(team_map), n_sims=n_sims)
+    games = implications(engine, today_games)
+    mx = max((g["swing_pts"] for g in games), default=0.0)
+    doc["max_swing_pts"] = mx
+    if mx < MIN_SWING_PTS:
+        doc["reason"] = f"largest swing {mx:.1f} pts < {MIN_SWING_PTS:.0f}"
+        print(f"[game_implications] {doc['reason']} - no games published")
+    else:
+        doc["games"] = sorted(games, key=lambda g: -g["swing_pts"])
+    _write_output(doc)
+    print(f"[game_implications] Done - {len(doc['games'])} games written (max swing {mx:.1f}).")
+    return {"status": "ok", "rows_written": len(doc["games"])}
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     compute_game_implications()

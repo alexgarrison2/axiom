@@ -124,7 +124,9 @@ jobs:
           add pipeline/data/season_projections.json public/data/season_projections.json \
               pipeline/game_implications.json public/data/game_implications.json \
               public/data/clinch_status.json public/data/playoff_series.json \
-              pipeline/goalie_playoff_career_stats.json public/data/goalie_playoff_career_stats.json
+              pipeline/goalie_playoff_career_stats.json public/data/goalie_playoff_career_stats.json \
+              public/data/season_projections_history.json public/data/goalie_season_lines.json \
+              pipeline/goalie_vs_opp_cache.json data/archive/playoff_series_*.json
 
           if git diff --cached --quiet; then
             echo "No data changes."

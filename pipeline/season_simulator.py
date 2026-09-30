@@ -1,710 +1,498 @@
-import json
+"""season_simulator.py - Monte Carlo standings and playoff odds.
+
+    python3 season_simulator.py        # writes public/data/season_projections.json
+
+Model
+-----
+* Game probabilities come from the live game model (ml_predict, the same
+  model that makes the daily picks) for every remaining regular-season game,
+  with rest days from the remaining schedule.  At 0 GP the model runs on its
+  regressed preseason priors (Elo carried over and regressed, xG shares
+  shrunk), which is what the rollover needs.  If the model is unavailable
+  the old ratings-ratio model (``get_game_prob``) is the fallback.
+* Regulation / overtime split from goal_model: the goal rates implied by
+  the win probability give P(home in regulation), P(tie after 60) and the
+  home share of OT/SO wins.
+* Strength uncertainty: each simulated season draws one logit offset per
+  team, N(0, sigma), with sigma = SIGMA0 * sqrt(SIGMA_GP / (SIGMA_GP + GP)),
+  so preseason projections are not over-confident (a fixed-strength
+  simulation gave several teams 0% / 100% in October).  SIGMA0 = 0.20 logit
+  (about +-5% per game) is an assumption, not fitted.
+* Playoffs: the NHL bracket (division top 3 + 2 wild cards per conference,
+  the better division winner plays the lower wild card), best-of-7 with
+  2-2-1-1-1 home ice for the team with more points.
+* Every simulation reuses the same random numbers for a given engine, so
+  forced-result scenarios (game_implications.py) differ only by the forced
+  game (common random numbers).
+
+Outputs
+-------
+public/data/season_projections.json (+ pipeline/data copy):
+  {season_id, generated_at, games_played, total_simulations, model,
+   teams: [{team, make_playoffs_pct, won_division_pct, won_conference_pct,
+            won_cup_pct, avg_points, point_dist, div_rank_dist,
+            round_exit_dist, r1_matchups}]}
+public/data/season_projections_history.json: one snapshot per day
+  {season_id, snapshots: [{date, generated_at, games_played,
+   teams: {TRI: {make_playoffs_pct, avg_points, won_cup_pct}}}]}
+"""
+from __future__ import annotations
+
 import csv
-import random
-import math
-import copy
-import urllib.request
-import ssl
-import os
-import sys
 import datetime
+import json
+import math
+import os
+import shutil
+import sys
 
-# Configuration
-SIMULATIONS = 5000
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+import numpy as np
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
 
-# --- Data Loading Helpers ---
+from season import SEASON_ID, today_local  # noqa: E402
+
+SIMULATIONS = 5000
+SIGMA0 = 0.20
+SIGMA_GP = 40
+SEED = 20262027
+DATA_DIR = os.path.join(SCRIPT_DIR, "data")
+PUBLIC_DATA = os.path.join(SCRIPT_DIR, "..", "public", "data")
+PROJECTIONS_FILE = os.path.join(PUBLIC_DATA, "season_projections.json")
+HISTORY_FILE = os.path.join(PUBLIC_DATA, "season_projections_history.json")
+
+
+# ── data loading ─────────────────────────────────────────────────────────────
 
 def load_json(path):
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         return json.load(f)
 
-def load_csv(path):
-    rows = []
-    with open(path, 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            rows.append(row)
-    return rows
 
-def fetch_current_standings():
-    """Fetches live standings from NHL API."""
-    print("Fetching current standings...")
-    url = "https://api-web.nhle.com/v1/standings/now"
-    from http_utils import get_json
-    data = get_json(url, ua="plain")
-    standings = {}
-    for team_data in data['standings']:
-        abbrev = team_data['teamAbbrev']['default']
-        # Extract tie-breaker info
-        # needed: Points, Regulation Wins, ROW, Wins (Total)
-        standings[abbrev] = {
-            'pts': team_data['points'],
-            'rw': team_data['regulationWins'],
-            'row': team_data['regulationPlusOtWins'],
-            'w': team_data['wins'],
-            'l': team_data['losses'],
-            'otl': team_data['otLosses'],
-            'gp': team_data['gamesPlayed'],
-            'conference': team_data['conferenceAbbrev'],
-            'division': team_data['divisionAbbrev']
-        }
-    return standings
+def load_csv(path):
+    with open(path, "r") as f:
+        return list(csv.DictReader(f))
+
 
 def build_team_map(teams_csv):
-    """Maps Abbrev -> Common Name (for rating lookup)."""
-    mapping = {}
-    for row in teams_csv:
-        mapping[row['Team Tricode']] = row['Common Name']
-    return mapping
+    """Tricode -> common name (the names the game model uses)."""
+    return {row["Team Tricode"]: row["Common Name"] for row in teams_csv}
 
-# --- Sim Logic ---
+
+def parse_standings(data):
+    out = {}
+    for t in data.get("standings", []) or []:
+        if str(t.get("seasonId")) != SEASON_ID:
+            continue
+        abbrev = t["teamAbbrev"]["default"]
+        out[abbrev] = {
+            "pts": t.get("points") or 0, "rw": t.get("regulationWins") or 0,
+            "row": t.get("regulationPlusOtWins") or 0, "w": t.get("wins") or 0, "l": t.get("losses") or 0,
+            "otl": t.get("otLosses") or 0, "gp": t.get("gamesPlayed") or 0,
+            "conference": t.get("conferenceAbbrev"), "division": t.get("divisionAbbrev"),
+        }
+    return out
+
+
+def fetch_current_standings(now=None):
+    """This season's standings (today's NHL date), {TRI: {...}}.
+
+    Raises when the API returns another season's table, so a stale '/now'
+    response around opening night can't seed the simulation."""
+    from http_utils import get_json
+    print("Fetching current standings...")
+    day = today_local(now).isoformat()
+    out = parse_standings(get_json(f"https://api-web.nhle.com/v1/standings/{day}", ua="plain"))
+    if len(out) < 32:
+        out = parse_standings(get_json("https://api-web.nhle.com/v1/standings/now", ua="plain"))
+    if len(out) < 32:
+        raise RuntimeError(f"standings for {SEASON_ID} have {len(out)} teams")
+    return out
+
+
+def fetch_remaining_schedule(now=None):
+    """Unplayed regular-season games of this season, [{id, date, home, away, gameState}]."""
+    from http_utils import get_json
+    today = today_local(now).isoformat()
+    season_end, current, loops, games = None, today, 0, []
+    print(f"Fetching remaining schedule from {today}...")
+    while (season_end is None or current <= season_end) and loops < 40:
+        try:
+            data = get_json(f"https://api-web.nhle.com/v1/schedule/{current}", ua="plain")
+        except Exception as e:
+            print(f"  [WARN] schedule fetch failed for {current}: {e}")
+            break
+        season_end = season_end or data.get("regularSeasonEndDate")
+        for week in data.get("gameWeek", []):
+            for g in week.get("games", []):
+                if g.get("gameType") != 2 or str(g.get("season", SEASON_ID)) != SEASON_ID:
+                    continue
+                if g.get("gameState") in ("OFF", "FINAL"):
+                    continue
+                games.append({"id": g["id"], "date": week["date"], "home": g["homeTeam"]["abbrev"],
+                              "away": g["awayTeam"]["abbrev"], "gameState": g.get("gameState", "FUT")})
+        nxt = data.get("nextStartDate")
+        loops += 1
+        if not nxt or nxt <= current:
+            break
+        current = nxt
+    seen, unique = set(), []
+    for g in sorted(games, key=lambda x: (x["date"], x["id"])):
+        if g["id"] not in seen:
+            seen.add(g["id"])
+            unique.append(g)
+    print(f"  {len(unique)} remaining games ({loops} API calls).")
+    return unique
+
+
+# ── game probabilities ───────────────────────────────────────────────────────
 
 def get_game_prob(home_rating, away_rating):
-    """
-    Returns probability of Home Win, Tie (OT), Away Win.
-    Using simple Poisson approximation or direct probability.
-    
-    Model:
-    Home xG = (Home Off + Away Def) / 2 * HomeAdv
-    Away xG = (Away Off + Home Def) / 2
-    """
-    # Simple Home Ice Advantage factor (approx +5% boost in goals)
-    HOME_ADV = 1.05 
-    
-    # We use xG/60 ratings from team_ratings.json
-    # Format: "xgf_rating", "xga_rating"
-    
-    h_xg = (home_rating['xgf_rating'] + away_rating['xga_rating']) / 2 * HOME_ADV
-    a_xg = (away_rating['xgf_rating'] + home_rating['xga_rating']) / 2
-    
-    # Simulate scores? Or just return win prob?
-    # For standings, we need to know if it went to OT (1 point each).
-    # Approximately 23% of NHL games go to OT.
-    # Win Prob formula (Bill James pythagorean or similar):
-    # P(Home) = h_xg^2 / (h_xg^2 + a_xg^2)
-    
-    p_home_win_reg = 0.0
-    p_away_win_reg = 0.0
-    p_ot = 0.23 # Flat rate approximation is safer than complex poisson for now
-    
-    # Base probability of home being better
-    total_xg = h_xg + a_xg
-    if total_xg == 0:
-        raw_prob_home = 0.5
-    else:
-        # A simple ratio model
-        raw_prob_home = h_xg / (h_xg + a_xg)
-        
-    # Distribute the non-OT probability
-    # If 23% go to OT, 77% end in Regulation
-    # P(Home Reg Win) = 0.77 * raw_prob_home
-    # P(Away Reg Win) = 0.77 * (1 - raw_prob_home)
-    
-    p_home_win_reg = 0.77 * raw_prob_home
-    p_away_win_reg = 0.77 * (1.0 - raw_prob_home)
-    
-    # OT Winner Probs (assume 50/50 split of OT games for simplicity, or slightly favored to home)
-    # P(Home OT Win) = 0.23 * raw_prob_home
-    
-    return p_home_win_reg, p_away_win_reg, p_ot, raw_prob_home
+    """Fallback ratings-ratio model: (p_home_reg, p_away_reg, p_ot, p_home_ot)."""
+    h_xg = (home_rating["xgf_rating"] + away_rating["xga_rating"]) / 2 * 1.05
+    a_xg = (away_rating["xgf_rating"] + home_rating["xga_rating"]) / 2
+    raw = h_xg / (h_xg + a_xg) if (h_xg + a_xg) else 0.5
+    return 0.77 * raw, 0.77 * (1 - raw), 0.23, raw
 
-def simulate_season(base_standings, schedule, ratings, team_map):
-    # Deep copy standings to mutate
-    # Optimized: Dict copy
-    current = {k: v.copy() for k, v in base_standings.items()}
-    
-    for game in schedule:
-        h_abbr = game['home']
-        a_abbr = game['away']
-        
-        h_name = team_map.get(h_abbr)
-        a_name = team_map.get(a_abbr)
-        
-        # If ratings missing, assume 50/50 (average)
-        # Using "Panthers" rating as dummy if missing is bad, better to have a default avg
-        def_rating = {'xgf_rating': 3.0, 'xga_rating': 3.0}
-        
-        h_r = ratings.get(h_name, def_rating)
-        a_r = ratings.get(a_name, def_rating)
-        
-        p_h_reg, p_a_reg, p_ot, raw_h = get_game_prob(h_r, a_r)
-        
-        r = random.random()
-        
-        if r < p_h_reg:
-            # Home Regulation Win
-            current[h_abbr]['pts'] += 2
-            current[h_abbr]['w'] += 1
-            current[h_abbr]['rw'] += 1
-            current[h_abbr]['row'] += 1
-            current[a_abbr]['l'] += 1
-        elif r < (p_h_reg + p_a_reg):
-            # Away Regulation Win
-            current[a_abbr]['pts'] += 2
-            current[a_abbr]['w'] += 1
-            current[a_abbr]['rw'] += 1
-            current[a_abbr]['row'] += 1
-            current[h_abbr]['l'] += 1
+
+def split_outcomes(p_home, total):
+    """(p_home_reg, p_away_reg, p_tie, p_home_ot) implied by P(home win) and
+    the expected total, via goal_model (same Poisson model as the site)."""
+    import goal_model
+    lh, la = goal_model.goal_rates(p_home, total)
+    ph, pt, pa, _ = goal_model.outcome_probs(lh, la)
+    q = (p_home - ph) / pt if pt > 0 else 0.5
+    q = min(max(q, 0.05), 0.95)
+    return p_home - pt * q, 1 - p_home - pt * (1 - q), pt, q
+
+
+def rest_days_by_game(schedule):
+    """{game_id: (home_rest, away_rest)} in days since the team's previous
+    remaining game (None for its first one)."""
+    last, out = {}, {}
+    for g in sorted(schedule, key=lambda x: (x["date"], x["id"])):
+        d = datetime.date.fromisoformat(g["date"])
+        rest = []
+        for t in (g["home"], g["away"]):
+            rest.append((d - last[t]).days if t in last else None)
+            last[t] = d
+        out[g["id"]] = tuple(rest)
+    return out
+
+
+class Probabilities:
+    """Game-level probabilities from the game model, with a ratings fallback."""
+
+    def __init__(self, team_map, ml=None, ratings=None):
+        self.team_map = team_map
+        self.ml = ml
+        self.ratings = ratings or {}
+        self.cache = {}
+        self.source = "game model (%s)" % getattr(ml, "model_version", "") if ml is not None else "ratings ratio"
+
+    def game(self, home, away, date, h_rest=None, a_rest=None):
+        key = (home, away, date, h_rest, a_rest)
+        if key in self.cache:
+            return self.cache[key]
+        if self.ml is not None:
+            d = self.ml.predict_detail(self.team_map.get(home, home), self.team_map.get(away, away), date,
+                                       h_rest_days=h_rest, a_rest_days=a_rest)
+            res = split_outcomes(float(d["home_win_prob"]), float(d["expected_total"]))
+            res = (res[0], res[1], res[2], res[3], float(d["home_win_prob"]))
         else:
-            # OT Match
-            # Both get 1 point guaranteed
-            current[h_abbr]['pts'] += 1
-            current[a_abbr]['pts'] += 1
-            current[h_abbr]['otl'] += 1 # Only loser gets OTL, need to decide winner
-            current[a_abbr]['otl'] += 1 # Temp, will fix winner below
-            
-            # Decide OT Winner
-            # Re-roll or use raw prob
-            r2 = random.random()
-            if r2 < raw_h:
-                # Home wins OT
-                current[h_abbr]['pts'] += 1 # 2nd point
-                current[h_abbr]['w'] += 1
-                current[h_abbr]['row'] += 1
-                current[h_abbr]['otl'] -= 1 # Correct logic: Winner doesn't get OTL
-                # Away keeps OTL, gets 1 pt (already added)
+            dflt = {"xgf_rating": 3.0, "xga_rating": 3.0}
+            ph, pa, pt, q = get_game_prob(self.ratings.get(self.team_map.get(home), dflt),
+                                          self.ratings.get(self.team_map.get(away), dflt))
+            res = (ph, pa, pt, q, ph + pt * q)
+        self.cache[key] = res
+        return res
+
+
+# ── engine ───────────────────────────────────────────────────────────────────
+
+OUTCOMES = ("home_reg_win", "home_otw", "away_otw", "away_reg_win")
+
+
+class Engine:
+    """Vectorised season simulation with common random numbers."""
+
+    def __init__(self, standings, schedule, probs, n_sims=SIMULATIONS, seed=SEED, sigma0=SIGMA0,
+                 playoff_date=None):
+        self.standings = standings
+        self.teams = sorted(standings)
+        self.idx = {t: i for i, t in enumerate(self.teams)}
+        self.schedule = [g for g in schedule if g["home"] in self.idx and g["away"] in self.idx]
+        self.probs = probs
+        self.n = n_sims
+        rng = np.random.default_rng(seed)
+        T, G = len(self.teams), len(self.schedule)
+        gp = np.array([standings[t]["gp"] for t in self.teams], dtype=float)
+        sigma = sigma0 * np.sqrt(SIGMA_GP / (SIGMA_GP + gp))
+        self.offset = rng.standard_normal((n_sims, T)) * sigma          # per-sim team strength
+        self.u1 = rng.random((n_sims, G))
+        self.u2 = rng.random((n_sims, G))
+        self.u_playoff = rng.random((n_sims, 15, 7))
+        rest = rest_days_by_game(self.schedule)
+        self.h = np.array([self.idx[g["home"]] for g in self.schedule], dtype=int)
+        self.a = np.array([self.idx[g["away"]] for g in self.schedule], dtype=int)
+        cols = [probs.game(g["home"], g["away"], g["date"], *rest[g["id"]]) for g in self.schedule]
+        arr = np.array(cols, dtype=float).reshape(G, 5) if G else np.zeros((0, 5))
+        self.p_tie, self.q, self.p = arr[:, 2], arr[:, 3], arr[:, 4]
+        self.game_pos = {str(g["id"]): j for j, g in enumerate(self.schedule)}
+        self.playoff_date = playoff_date or (self.schedule[-1]["date"] if self.schedule else today_local().isoformat())
+        self.base = {k: np.array([standings[t][k] for t in self.teams], dtype=float)
+                     for k in ("pts", "rw", "row", "w")}
+
+    # regular season -------------------------------------------------------
+    def season(self, forced=None):
+        """(pts, rw, row, w) arrays [n_sims, teams]; ``forced`` = (game_id, outcome)."""
+        pts = np.tile(self.base["pts"], (self.n, 1))
+        rw = np.tile(self.base["rw"], (self.n, 1))
+        row = np.tile(self.base["row"], (self.n, 1))
+        w = np.tile(self.base["w"], (self.n, 1))
+        fj = self.game_pos.get(str(forced[0])) if forced else None
+        sims = np.arange(self.n)
+        for j in range(len(self.schedule)):
+            h, a = self.h[j], self.a[j]
+            z = math.log(self.p[j] / (1 - self.p[j])) + self.offset[:, h] - self.offset[:, a]
+            p = 1 / (1 + np.exp(-z))
+            q = np.clip(self.q[j] + 0.5 * (p - self.p[j]), 0.05, 0.95)
+            p_hr = np.clip(p - self.p_tie[j] * q, 0, 1)
+            p_ar = np.clip(1 - p - self.p_tie[j] * (1 - q), 0, 1)
+            if fj == j:
+                o = OUTCOMES.index(forced[1])
+                home_reg = np.full(self.n, o == 0)
+                away_reg = np.full(self.n, o == 3)
+                ot = ~(home_reg | away_reg)
+                home_ot = np.full(self.n, o == 1)
             else:
-                # Away wins OT
-                current[a_abbr]['pts'] += 1
-                current[a_abbr]['w'] += 1
-                current[a_abbr]['row'] += 1
-                current[a_abbr]['otl'] -= 1
-                # Home keeps OTL
-                
-    return current
+                u = self.u1[:, j]
+                home_reg = u < p_hr
+                away_reg = (~home_reg) & (u < p_hr + p_ar)
+                ot = ~(home_reg | away_reg)
+                home_ot = ot & (self.u2[:, j] < q)
+            away_ot = ot & ~home_ot
+            hw, aw = home_reg | home_ot, away_reg | away_ot
+            pts[sims, h] += 2 * hw + away_ot
+            pts[sims, a] += 2 * aw + home_ot
+            rw[sims, h] += home_reg
+            rw[sims, a] += away_reg
+            row[sims, h] += hw
+            row[sims, a] += aw
+            w[sims, h] += hw
+            w[sims, a] += aw
+        return pts, rw, row, w
 
-def determine_standings(standings):
-    # Sort by PTS, RW, ROW, W
-    # We need to sort list of (abbr, data)
-    
-    def sort_key(item):
-        d = item[1]
-        return (d['pts'], d['rw'], d['row'], d['w'])
-        
-    # Group by Div/Conf
-    eastern = []
-    western = []
-    
-    divs = {'A': [], 'M': [], 'C': [], 'P': []} # Atlantic, Metro, Central, Pacific
-    
-    for abbr, stats in standings.items():
-        div = stats['division']
-        # Map div char to full if needed, but API usually gives 'A', 'M', 'C', 'P' or 'ATL', 'MET'
-        # Let's handle generic
-        first_char = div[0]
-        if first_char not in divs:
-            divs[first_char] = [] # Safety
-        divs[first_char].append((abbr, stats))
-        
-        if stats['conference'] == 'E':
-            eastern.append((abbr, stats))
-        else:
-            western.append((abbr, stats))
+    # standings / bracket --------------------------------------------------
+    def _order(self, members, s, key):
+        return sorted(members, key=lambda i: key[i], reverse=True)
 
-    # Sort Divisions
-    for k in divs:
-        divs[k].sort(key=sort_key, reverse=True)
-        
-    # Sort Conferences (for Wild Card)
-    eastern.sort(key=sort_key, reverse=True)
-    western.sort(key=sort_key, reverse=True)
-    
-    return divs, eastern, western
+    def standings_of(self, s, pts, rw, row, w):
+        key = {i: (pts[s, i], rw[s, i], row[s, i], w[s, i]) for i in range(len(self.teams))}
+        divs, confs = {}, {}
+        for t, i in self.idx.items():
+            st = self.standings[t]
+            divs.setdefault(st["division"], []).append(i)
+            confs.setdefault(st["conference"], []).append(i)
+        divs = {d: self._order(m, s, key) for d, m in divs.items()}
+        confs = {c: self._order(m, s, key) for c, m in confs.items()}
+        return divs, confs, key
 
-def determine_playoff_bracket(divs, eastern, western):
-    # NHL Format:
-    # Top 3 in each Div make it.
-    # Next 2 highest in Conference (Wild Cards) make it.
-    
-    # East
-    atl_top3 = divs.get('A', [])[:3]
-    met_top3 = divs.get('M', [])[:3]
-    
-    # Exclude top 3 from WC pool
-    top3_abbrs = set([x[0] for x in atl_top3] + [x[0] for x in met_top3])
-    east_wc = [x for x in eastern if x[0] not in top3_abbrs][:2]
-    
-    # West
-    cen_top3 = divs.get('C', [])[:3]
-    pac_top3 = divs.get('P', [])[:3]
-    
-    top3_abbrs_w = set([x[0] for x in cen_top3] + [x[0] for x in pac_top3])
-    west_wc = [x for x in western if x[0] not in top3_abbrs_w][:2]
-    
-    # Matchups
-    # Division Winner with Best Record plays WC 2
-    # Division Winner with 2nd Best Record plays WC 1
-    # Div #2 plays Div #3
-    
-    # Helper to get standings sort val
-    def get_sort_val(x):
-        return (x[1]['pts'], x[1]['rw'], x[1]['row'], x[1]['w'])
-        
-    # Bracket structure: List of Series
-    bracket = {'East': [], 'West': []}
-    
-    # --- EAST ---
-    atl_1 = atl_top3[0] if atl_top3 else None
-    met_1 = met_top3[0] if met_top3 else None
-    
-    # Compare Div Winners
-    if not atl_1 or not met_1: return None # Safety
-    
-    d1, d2 = (atl_1, met_1) if get_sort_val(atl_1) > get_sort_val(met_1) else (met_1, atl_1)
-    
-    # D1 plays WC2, D2 plays WC1
-    series1 = (d1, east_wc[1])
-    series2 = (d2, east_wc[0])
-    
-    # 2 vs 3
-    series3 = (atl_top3[1], atl_top3[2])
-    series4 = (met_top3[1], met_top3[2])
-    
-    bracket['East'] = [series1, series2, series3, series4]
-    
-    # --- WEST ---
-    cen_1 = cen_top3[0] if cen_top3 else None
-    pac_1 = pac_top3[0] if pac_top3 else None
-    
-    wd1, wd2 = (cen_1, pac_1) if get_sort_val(cen_1) > get_sort_val(pac_1) else (pac_1, cen_1)
-    
-    w_series1 = (wd1, west_wc[1])
-    w_series2 = (wd2, west_wc[0])
-    w_series3 = (cen_top3[1], cen_top3[2])
-    w_series4 = (pac_top3[1], pac_top3[2])
-    
-    bracket['West'] = [w_series1, w_series2, w_series3, w_series4]
-    
-    return bracket
+    def playoff_field(self, divs, confs, key):
+        """{conf: [(div_leader_bracket), ...]} -> list of 8 first-round pairs
+        (higher seed first) plus the set of playoff teams."""
+        pairs, field = [], set()
+        for conf, members in confs.items():
+            cdivs = [d for d, m in divs.items() if self.standings[self.teams[m[0]]]["conference"] == conf]
+            top3 = {d: divs[d][:3] for d in cdivs}
+            taken = {i for d in cdivs for i in top3[d]}
+            wc = [i for i in members if i not in taken][:2]
+            field |= taken | set(wc)
+            leaders = sorted(cdivs, key=lambda d: key[top3[d][0]], reverse=True)
+            for rank, d in enumerate(leaders):
+                opp = wc[1] if rank == 0 else wc[0]
+                pairs.append(((top3[d][0], opp), (top3[d][1], top3[d][2])))
+        return pairs, field
 
-def simulate_series(team1, team2, ratings, team_map):
-    # Best of 7
-    # Determine home field (Higher seed/points)
-    # Passed tuple is (Abbr, Stats)
-    
-    t1_abbr, t1_stats = team1
-    t2_abbr, t2_stats = team2
-    
-    # Higher points = Home Field
-    # Simple check on PTS
-    if t1_stats['pts'] >= t2_stats['pts']:
-        home, away = t1_abbr, t2_abbr
-    else:
-        home, away = t2_abbr, t1_abbr
-        
-    home_name = team_map.get(home)
-    away_name = team_map.get(away)
-    
-    def_rating = {'xgf_rating': 3.0, 'xga_rating': 3.0}
-    h_r = ratings.get(home_name, def_rating)
-    a_r = ratings.get(away_name, def_rating)
-    
-    p_h_reg, p_a_reg, p_ot, raw_h = get_game_prob(h_r, a_r)
-    # Win prob including OT
-    p_home_win = p_h_reg + (p_ot * raw_h)
-    
-    h_wins = 0
-    a_wins = 0
-    
-    while h_wins < 4 and a_wins < 4:
-        if random.random() < p_home_win:
-            h_wins += 1
-        else:
-            a_wins += 1
-            
-    return home if h_wins == 4 else away
-
-def run_playoffs(bracket, ratings, team_map):
-    # East Round 1
-    # Bracket structure is NOT perfect for standard flow, need to know WHO PLAYS WHO in R2.
-    # NHL Bracket is Fixed.
-    # Atl Bracket: (A1 vs WC) vs (A2 vs A3)
-    # Met Bracket: (M1 vs WC) vs (M2 vs M3)
-    # BUT wait... Wild Cards cross over.
-    # If A1 plays WC2 (who is actually a Metro team), they constitute the "Atlantic" bracket side?
-    # Correct Logic: 
-    # The winner of (Div1 vs WC) plays winner of (Div2 vs Div3).
-    # We need to identify which series corresponds to which division slot.
-    
-    # Re-logic Determine Bracket to be more structured
-    pass
-    # ... Refactor bracket structure inside simulation for simplicity
-    # Let's simplify:
-    # Just return the 8 series winners, then match them up.
-    # Actually, A1/WC plays A2/A3. 
-    # We need to know WHICH series is which.
-    
-    # Let's just assume standard bracket paths:
-    # winners of [East 1, 2, 3, 4] -> Semi [1v3, 2v4]? No.
-    # It's (D1 vs WC) vs (D2 vs D3).
-    
-    # We need to track the "Atlantic" and "Metro" brackets.
-    # In 'determine_playoff_bracket', we found D1 and D2.
-    # If D1 was Atlantic, then series1 is Atlantic Bracket side 1. 
-    # series3 is A2 vs A3.
-    # So Winner(Series1) plays Winner(Series3).
-    
-    # Let's do a quick hack: logic in 'determine' was:
-    # series1 = D1 vs WC2
-    # series2 = D2 vs WC1
-    # series3 = A2 vs A3
-    # series4 = M2 vs M3
-    
-    # If D1 is ATL, then ATL_Bracket = Winner(S1) vs Winner(S3).
-    # If D1 is MET, then MET_Bracket = Winner(S1) vs Winner(S4).
-    # ... this is getting complex due to crossover.
-    
-    # Correct Crossover Rule:
-    # If WC1 comes from Atlantic, and plays M1... they are in Metro bracket.
-    # The bracket is defined by the DIVISION LEADER.
-    # So:
-    # Bracket A: (Atl #1 vs WC) AND (Atl #2 vs Atl #3)
-    # Bracket M: (Met #1 vs WC) AND (Met #2 vs Met #3)
-    # The winners of these two sub-brackets meet in East Final.
-    
-    # Let's implement that flow.
-    return None
-
-def fetch_remaining_schedule():
-    """
-    Fetches all unplayed regular-season games (today onward) from the NHL API.
-    Walks week-by-week until the season end date, collecting only FUT/PRE games.
-    Falls back to the static remaining_schedule.json filtered to today+ if the
-    live fetch fails.
-    """
-    season_end = None  # filled from the first response (regularSeasonEndDate)
-
-    today = datetime.date.today().isoformat()
-    all_games = []
-    current_date = today
-    loops = 0
-
-    print(f"Fetching remaining schedule from {today}...")
-    while (season_end is None or current_date <= season_end) and loops < 40:
-        url = f"https://api-web.nhle.com/v1/schedule/{current_date}"
-        try:
-            from http_utils import get_json
-            data = get_json(url, ua="plain")
-            season_end = season_end or data.get('regularSeasonEndDate')
-
-            for week in data.get('gameWeek', []):
-                for game in week.get('games', []):
-                    if game.get('gameType') != 2:
-                        continue  # Regular season only
-                    state = game.get('gameState', 'FUT')
-                    if state in ('OFF', 'FINAL'):
-                        continue  # Already played
-                    all_games.append({
-                        'id': game['id'],
-                        'date': week['date'],
-                        'home': game['homeTeam']['abbrev'],
-                        'away': game['awayTeam']['abbrev'],
-                        'gameState': state,
-                    })
-
-            next_date = data.get('nextStartDate')
-            if not next_date or next_date <= current_date:
+    def series(self, s, hi, lo, key, slot):
+        """Best-of-7; the team with more points hosts games 1, 2, 5 and 7."""
+        home, away = (hi, lo) if key[hi] >= key[lo] else (lo, hi)
+        th, ta = self.teams[home], self.teams[away]
+        base = self.probs.game(th, ta, self.playoff_date)[4]
+        z = math.log(base / (1 - base)) + self.offset[s, home] - self.offset[s, away]
+        p_home_host = 1 / (1 + math.exp(-z))
+        base_r = self.probs.game(ta, th, self.playoff_date)[4]
+        zr = math.log(base_r / (1 - base_r)) + self.offset[s, away] - self.offset[s, home]
+        p_away_host = 1 / (1 + math.exp(-zr))
+        wins = [0, 0]
+        for gnum in range(7):
+            host_is_home = gnum in (0, 1, 4, 6)
+            p_home_wins = p_home_host if host_is_home else 1 - p_away_host
+            if self.u_playoff[s, slot, gnum] < p_home_wins:
+                wins[0] += 1
+            else:
+                wins[1] += 1
+            if max(wins) == 4:
                 break
-            current_date = next_date
-        except Exception as e:
-            print(f"  [WARN] Schedule fetch failed for {current_date}: {e}")
-            break
-        loops += 1
+        return (home, away) if wins[0] == 4 else (away, home)
 
-    # Deduplicate by game id
-    seen = set()
-    unique = []
-    for g in all_games:
-        if g['id'] not in seen:
-            seen.add(g['id'])
-            unique.append(g)
-
-    if unique:
-        print(f"  Fetched {len(unique)} remaining games ({loops} API calls).")
-        return unique
-
-    # Fallback: filter the static file to today+
-    print("  Live fetch returned 0 games — falling back to static remaining_schedule.json filtered to today+.")
-    static_path = os.path.join(DATA_DIR, 'remaining_schedule.json')
-    if os.path.exists(static_path):
-        all_static = load_json(static_path)
-        filtered = [g for g in all_static if g.get('date', '') >= today]
-        print(f"  Static fallback: {len(filtered)} games on/after {today} (was {len(all_static)} total).")
-        return filtered
-    return []
-
-
-def full_simulation_loop():
-    print(f"Starting {SIMULATIONS} simulations...")
-
-    # 1. Load Data
-    schedule = fetch_remaining_schedule()
-    from paths import TEAM_RATINGS_FILE
-    team_ratings = load_json(TEAM_RATINGS_FILE)   # public/data is the only ratings location
-    nhl_teams = load_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
-    
-    team_map = build_team_map(nhl_teams)
-    
-    current_standings = fetch_current_standings()
-    
-    # Results trackers
-    results = {
-        abbr: {
-            'made_playoffs': 0,
-            'won_division': 0,
-            'won_president': 0, # Not implementing yet
-            'won_conference': 0,
-            'won_cup': 0,
-            'sim_points': [] # To calc average points
+    def run(self, forced=None, playoffs=True):
+        pts, rw, row, w = self.season(forced)
+        T = len(self.teams)
+        res = {
+            "made": np.zeros(T), "div": np.zeros(T), "conf": np.zeros(T), "cup": np.zeros(T),
+            "pts": pts.sum(axis=0), "point_dist": [dict() for _ in range(T)],
+            "div_rank": [dict() for _ in range(T)],
+            "exit": [{"MISS": 0, "R1": 0, "R2": 0, "CF": 0, "F": 0, "CUP": 0} for _ in range(T)],
+            "r1": [dict() for _ in range(T)],
         }
-        for abbr in current_standings.keys()
-    }
-    
-    # Initialize rich data tracking
-    for abbr in results:
-        results[abbr].update({
-            'point_dist': {}, # { points: count }
-            'div_rank_dist': {}, # { rank: count }
-            'round_exit_dist': {'MISS': 0, 'R1': 0, 'R2': 0, 'CF': 0, 'F': 0, 'CUP': 0},
-            'r1_matchups': {} # { opponent: count }
-        })
-    
-    for i in range(SIMULATIONS):
-        if i % 100 == 0:
-            print(f"  Sim {i}/{SIMULATIONS}...")
-            
-        # Sim Season
-        final_standings = simulate_season(current_standings, schedule, team_ratings, team_map)
-        
-        # Determine Standings
-        divs, east, west = determine_standings(final_standings)
-        
-        # Update Points Tracking
-        for abbr, stats in final_standings.items():
-            results[abbr]['sim_points'].append(stats['pts'])
-            
-        # Division Winners (Top of each div list)
-        for d in divs:
-            if divs[d]:
-                results[divs[d][0][0]]['won_division'] += 1
-                
-            # Track Division Rank
-            for rank_idx, team_tuple in enumerate(divs[d]):
-                rank = rank_idx + 1
-                t_abbr = team_tuple[0]
-                if rank not in results[t_abbr]['div_rank_dist']:
-                    results[t_abbr]['div_rank_dist'][rank] = 0
-                results[t_abbr]['div_rank_dist'][rank] += 1
-                
-        # Update Points Histogram
-        for abbr, stats in final_standings.items():
-            pts = stats['pts']
-            if pts not in results[abbr]['point_dist']:
-                results[abbr]['point_dist'][pts] = 0
-            results[abbr]['point_dist'][pts] += 1
-                
-        # Playoffs
-        # Re-implement bracket logic inline here for clarity
-        
-        # --- EAST ---
-        atl_top3 = divs.get('A', [])[:3]
-        met_top3 = divs.get('M', [])[:3]
-        
-        # Wild Cards
-        top3_east = set([x[0] for x in atl_top3] + [x[0] for x in met_top3])
-        east_wc = [x for x in east if x[0] not in top3_east][:2] # WC1, WC2
-        
-        # Division winners
-        a1 = atl_top3[0]
-        m1 = met_top3[0]
-        
-        # Matchups
-        # Better record plays WC2
-        if (a1[1]['pts'], a1[1]['rw']) > (m1[1]['pts'], m1[1]['rw']):
-            # Atl #1 is better
-            match_a_semis_1 = (a1, east_wc[1]) # A1 vs WC2
-            match_m_semis_1 = (m1, east_wc[0]) # M1 vs WC1
-        else:
-            match_a_semis_1 = (a1, east_wc[0]) # A1 vs WC1 (Technically incorrect crossover if WC1 is Metro? No, plays lower seed)
-            # Rule: Best Div winner plays WC2. Other Div winner plays WC1.
-            # Does WC1 stay in own division? No. 
-            # "The division winner with the best record in each conference will be matched against the wild-card team with the lesser record."
-            # So Best(D1, D2) vs WC2. Other vs WC1.
-            # AND "The wild-card team with the lesser record will play in the division of the winner with the best record."
-            # So if A1 > M1, A1 plays WC2. This pair is now in "Atlantic Bracket".
-            match_a_semis_1 = (m1, east_wc[1]) # Typo in comment above, M1 is better? No logic below:
-            
-            # Logic: M1 is better.
-            match_m_semis_1 = (m1, east_wc[1]) # M1 vs WC2
-            match_a_semis_1 = (a1, east_wc[0]) # A1 vs WC1
-            
-        match_a_semis_2 = (atl_top3[1], atl_top3[2]) # A2 vs A3
-        match_m_semis_2 = (met_top3[1], met_top3[2]) # M2 vs M3
-        
-        # Track 'Made Playoffs'
-        all_playoff_teams = [x[0] for x in atl_top3 + met_top3 + east_wc]
-        # Same for west...
-        
-        # --- WEST ---
-        cen_top3 = divs.get('C', [])[:3]
-        pac_top3 = divs.get('P', [])[:3]
-        top3_west = set([x[0] for x in cen_top3] + [x[0] for x in pac_top3])
-        west_wc = [x for x in west if x[0] not in top3_west][:2]
-        
-        all_playoff_teams += [x[0] for x in cen_top3 + pac_top3 + west_wc]
-        
-        for t in all_playoff_teams:
-            results[t]['made_playoffs'] += 1
-            
-        # Track Missed Playoffs
-        for abbr in results:
-            if abbr not in all_playoff_teams:
-                results[abbr]['round_exit_dist']['MISS'] += 1
-            
-        # Helper to record R1 Matchup
-        def record_r1(t1, t2):
-            if t2[0] not in results[t1[0]]['r1_matchups']: results[t1[0]]['r1_matchups'][t2[0]] = 0
-            if t1[0] not in results[t2[0]]['r1_matchups']: results[t2[0]]['r1_matchups'][t1[0]] = 0
-            results[t1[0]]['r1_matchups'][t2[0]] += 1
-            results[t2[0]]['r1_matchups'][t1[0]] += 1
-            
-        # Record R1 Matchups
-        # A Semis 1
-        record_r1(match_a_semis_1[0], match_a_semis_1[1])
-        record_r1(match_a_semis_2[0], match_a_semis_2[1])
-        record_r1(match_m_semis_1[0], match_m_semis_1[1])
-        record_r1(match_m_semis_2[0], match_m_semis_2[1])
-        
-        # Sim Series - ROUND 1 (EAST)
-        winner_a_1 = simulate_series(match_a_semis_1[0], match_a_semis_1[1], team_ratings, team_map)
-        winner_a_2 = simulate_series(match_a_semis_2[0], match_a_semis_2[1], team_ratings, team_map)
-        
-        winner_m_1 = simulate_series(match_m_semis_1[0], match_m_semis_1[1], team_ratings, team_map)
-        winner_m_2 = simulate_series(match_m_semis_2[0], match_m_semis_2[1], team_ratings, team_map)
-        
-        # Need stats for next round sim, use valid lookup
-        def get_team_tuple(abbr):
-            return (abbr, final_standings[abbr])
-            
-        # ROUND 2 (Div Finals)
-        winner_atl_div = simulate_series(get_team_tuple(winner_a_1), get_team_tuple(winner_a_2), team_ratings, team_map)
-        winner_met_div = simulate_series(get_team_tuple(winner_m_1), get_team_tuple(winner_m_2), team_ratings, team_map)
-        
-        # WEST R1
-        c1 = cen_top3[0]
-        p1 = pac_top3[0]
-        
-        if (c1[1]['pts'], c1[1]['rw']) > (p1[1]['pts'], p1[1]['rw']):
-            match_c_semis_1 = (c1, west_wc[1])
-            match_p_semis_1 = (p1, west_wc[0])
-        else:
-            match_p_semis_1 = (p1, west_wc[1])
-            match_c_semis_1 = (c1, west_wc[0])
-            
-        match_c_semis_2 = (cen_top3[1], cen_top3[2])
-        match_p_semis_2 = (pac_top3[1], pac_top3[2])
-        
-        # Record West R1
-        record_r1(match_c_semis_1[0], match_c_semis_1[1])
-        record_r1(match_c_semis_2[0], match_c_semis_2[1])
-        record_r1(match_p_semis_1[0], match_p_semis_1[1])
-        record_r1(match_p_semis_2[0], match_p_semis_2[1])
-        
-        winner_c_1 = simulate_series(match_c_semis_1[0], match_c_semis_1[1], team_ratings, team_map)
-        winner_c_2 = simulate_series(match_c_semis_2[0], match_c_semis_2[1], team_ratings, team_map)
-        winner_p_1 = simulate_series(match_p_semis_1[0], match_p_semis_1[1], team_ratings, team_map)
-        winner_p_2 = simulate_series(match_p_semis_2[0], match_p_semis_2[1], team_ratings, team_map)
-        
-        # WEST R2
-        winner_cen_div = simulate_series(get_team_tuple(winner_c_1), get_team_tuple(winner_c_2), team_ratings, team_map)
-        winner_pac_div = simulate_series(get_team_tuple(winner_p_1), get_team_tuple(winner_p_2), team_ratings, team_map)
-        
-        # CONFERENCE FINALS
-        east_champ = simulate_series(get_team_tuple(winner_atl_div), get_team_tuple(winner_met_div), team_ratings, team_map)
-        west_champ = simulate_series(get_team_tuple(winner_cen_div), get_team_tuple(winner_pac_div), team_ratings, team_map)
-        
-        results[east_champ]['won_conference'] += 1
-        results[west_champ]['won_conference'] += 1
-        
-        # STANLEY CUP FINAL
-        cup_winner = simulate_series(get_team_tuple(east_champ), get_team_tuple(west_champ), team_ratings, team_map)
-        
-        results[cup_winner]['won_cup'] += 1
-        results[cup_winner]['round_exit_dist']['CUP'] += 1
-        
-        # Track Exits (Loser of each series gets exit logged)
-        # We need to know WHO lost key series to log them as R1, R2, CF, F exit.
-        
-        # Generic helper: Given winner, find loser from pair
-        def get_loser(pair, winner_abbr):
-            return pair[0][0] if pair[1][0] == winner_abbr else pair[1][0]
-            
-        # R1 Losers
-        results[get_loser(match_a_semis_1, winner_a_1)]['round_exit_dist']['R1'] += 1
-        results[get_loser(match_a_semis_2, winner_a_2)]['round_exit_dist']['R1'] += 1
-        results[get_loser(match_m_semis_1, winner_m_1)]['round_exit_dist']['R1'] += 1
-        results[get_loser(match_m_semis_2, winner_m_2)]['round_exit_dist']['R1'] += 1
-        
-        results[get_loser(match_c_semis_1, winner_c_1)]['round_exit_dist']['R1'] += 1
-        results[get_loser(match_c_semis_2, winner_c_2)]['round_exit_dist']['R1'] += 1
-        results[get_loser(match_p_semis_1, winner_p_1)]['round_exit_dist']['R1'] += 1
-        results[get_loser(match_p_semis_2, winner_p_2)]['round_exit_dist']['R1'] += 1
-        
-        # R2 Losers
-        # Need to reconstruct pairs from winners
-        # Atl Div Final: (winner_a_1) vs (winner_a_2) -> winner_atl_div
-        # Loser of this tuple is...
-        def get_loser_simple(t1, t2, winner):
-            return t2 if t1 == winner else t1
-            
-        results[get_loser_simple(winner_a_1, winner_a_2, winner_atl_div)]['round_exit_dist']['R2'] += 1
-        results[get_loser_simple(winner_m_1, winner_m_2, winner_met_div)]['round_exit_dist']['R2'] += 1
-        results[get_loser_simple(winner_c_1, winner_c_2, winner_cen_div)]['round_exit_dist']['R2'] += 1
-        results[get_loser_simple(winner_p_1, winner_p_2, winner_pac_div)]['round_exit_dist']['R2'] += 1
-        
-        # CF Losers
-        results[get_loser_simple(winner_atl_div, winner_met_div, east_champ)]['round_exit_dist']['CF'] += 1
-        results[get_loser_simple(winner_cen_div, winner_pac_div, west_champ)]['round_exit_dist']['CF'] += 1
-        
-        # Final Loser
-        results[get_loser_simple(east_champ, west_champ, cup_winner)]['round_exit_dist']['F'] += 1
-        
-    # PROCESS RESULTS
-    final_output = []
-    for abbr, data in results.items():
-        avg_pts = sum(data['sim_points']) / SIMULATIONS if data['sim_points'] else 0
-        final_output.append({
-            'team': abbr,
-            'make_playoffs_pct': round(data['made_playoffs'] / SIMULATIONS * 100, 1),
-            'won_division_pct': round(data['won_division'] / SIMULATIONS * 100, 1),
-            'won_conference_pct': round(data['won_conference'] / SIMULATIONS * 100, 1),
-            'won_cup_pct': round(data['won_cup'] / SIMULATIONS * 100, 1),
-            'avg_points': round(avg_pts, 1),
-            
-            # Rich Data
-            'point_dist': data['point_dist'],
-            'div_rank_dist': data['div_rank_dist'],
-            'round_exit_dist': data['round_exit_dist'],
-            'r1_matchups': data['r1_matchups']
-        })
-        
-    # Save
-    output_wrapper = {
-        'total_simulations': SIMULATIONS,
-        'teams': final_output
-    }
-    out_path = os.path.join(DATA_DIR, 'season_projections.json')
-    with open(out_path, 'w') as f:
-        json.dump(output_wrapper, f, indent=4)
+        for s in range(self.n):
+            divs, confs, key = self.standings_of(s, pts, rw, row, w)
+            for d, members in divs.items():
+                res["div"][members[0]] += 1
+                for r, i in enumerate(members):
+                    res["div_rank"][i][r + 1] = res["div_rank"][i].get(r + 1, 0) + 1
+            for i in range(T):
+                p = int(pts[s, i])
+                res["point_dist"][i][p] = res["point_dist"][i].get(p, 0) + 1
+            pairs, field = self.playoff_field(divs, confs, key)
+            for i in field:
+                res["made"][i] += 1
+            for i in range(T):
+                if i not in field:
+                    res["exit"][i]["MISS"] += 1
+            if not playoffs:
+                continue
+            slot = 0
+            finalists = []
+            for c in range(2):
+                semis = []
+                for (a1, b1), (a2, b2) in pairs[2 * c:2 * c + 2]:
+                    for x, y in ((a1, b1), (a2, b2)):
+                        ta, tb = self.teams[x], self.teams[y]
+                        res["r1"][x][tb] = res["r1"][x].get(tb, 0) + 1
+                        res["r1"][y][ta] = res["r1"][y].get(ta, 0) + 1
+                    w1, l1 = self.series(s, a1, b1, key, slot)
+                    w2, l2 = self.series(s, a2, b2, key, slot + 1)
+                    slot += 2
+                    res["exit"][l1]["R1"] += 1
+                    res["exit"][l2]["R1"] += 1
+                    wd, ld = self.series(s, w1, w2, key, slot)
+                    slot += 1
+                    res["exit"][ld]["R2"] += 1
+                    semis.append(wd)
+                wc_, lc = self.series(s, semis[0], semis[1], key, slot)
+                slot += 1
+                res["exit"][lc]["CF"] += 1
+                res["conf"][wc_] += 1
+                finalists.append(wc_)
+            champ, runner = self.series(s, finalists[0], finalists[1], key, 14)
+            res["cup"][champ] += 1
+            res["exit"][champ]["CUP"] += 1
+            res["exit"][runner]["F"] += 1
+        return res
 
-    # Also copy to public/data for the frontend
-    import shutil
-    public_path = os.path.join(SCRIPT_DIR, '..', 'public', 'data', 'season_projections.json')
-    shutil.copy2(out_path, public_path)
-        
-    print(f"Simulation complete. Results saved to {out_path}")
+    def playoff_pct(self, forced=None):
+        """{TRI: (playoff %, avg points)} without simulating the playoffs."""
+        r = self.run(forced, playoffs=False)
+        return {t: (round(100 * r["made"][i] / self.n, 1), round(float(r["pts"][i]) / self.n, 1))
+                for i, t in enumerate(self.teams)}
+
+
+# ── entry points ─────────────────────────────────────────────────────────────
+
+def make_probabilities(team_map):
+    try:
+        from ml_predict import MLPredictor
+        from season import read_season_csv
+        ml = MLPredictor(read_season_csv("gamestats"))
+        if ml.available:
+            return Probabilities(team_map, ml=ml)
+    except Exception as e:
+        print(f"[WARN] game model unavailable for the simulation ({e}); using ratings")
+    from paths import TEAM_RATINGS_FILE
+    return Probabilities(team_map, ratings=load_json(TEAM_RATINGS_FILE))
+
+
+def summarize(engine, res, now_iso):
+    n = engine.n
+    teams = []
+    for i, t in enumerate(engine.teams):
+        teams.append({
+            "team": t,
+            "make_playoffs_pct": round(100 * res["made"][i] / n, 1),
+            "won_division_pct": round(100 * res["div"][i] / n, 1),
+            "won_conference_pct": round(100 * res["conf"][i] / n, 1),
+            "won_cup_pct": round(100 * res["cup"][i] / n, 1),
+            "avg_points": round(float(res["pts"][i]) / n, 1),
+            "point_dist": {str(k): v for k, v in sorted(res["point_dist"][i].items())},
+            "div_rank_dist": {str(k): v for k, v in sorted(res["div_rank"][i].items())},
+            "round_exit_dist": res["exit"][i],
+            "r1_matchups": dict(sorted(res["r1"][i].items(), key=lambda kv: -kv[1])),
+        })
+    teams.sort(key=lambda x: (-x["make_playoffs_pct"], -x["avg_points"], x["team"]))
+    gp = int(sum(engine.standings[t]["gp"] for t in engine.teams) // 2)
+    return {
+        "season_id": SEASON_ID,
+        "generated_at": now_iso,
+        "games_played": gp,
+        "remaining_games": len(engine.schedule),
+        "total_simulations": n,
+        "model": {"probabilities": engine.probs.source, "strength_sigma0_logit": SIGMA0,
+                  "strength_sigma_gp_half": SIGMA_GP, "seed": SEED},
+        "teams": teams,
+    }
+
+
+def append_history(out, path=HISTORY_FILE, date=None):
+    """Keep one snapshot per NHL date (the latest run wins)."""
+    date = date or today_local().isoformat()
+    try:
+        hist = load_json(path)
+        if str(hist.get("season_id")) != SEASON_ID:
+            hist = None
+    except (OSError, ValueError):
+        hist = None
+    hist = hist or {"season_id": SEASON_ID, "snapshots": []}
+    snap = {"date": date, "generated_at": out["generated_at"], "games_played": out["games_played"],
+            "teams": {t["team"]: {"make_playoffs_pct": t["make_playoffs_pct"], "avg_points": t["avg_points"],
+                                  "won_cup_pct": t["won_cup_pct"]} for t in out["teams"]}}
+    hist["snapshots"] = [s for s in hist["snapshots"] if s.get("date") != date] + [snap]
+    hist["snapshots"].sort(key=lambda s: s["date"])
+    _write_json(path, hist, indent=1)
+    return hist
+
+
+def _write_json(path, data, indent=2):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=indent)
+    os.replace(tmp, path)
+
+
+def full_simulation_loop(n_sims=SIMULATIONS, now=None, standings=None, schedule=None, probs=None):
+    from io_utils import utc_now_iso
+    teams_csv = load_csv(os.path.join(SCRIPT_DIR, "nhl_teams.csv"))
+    team_map = build_team_map(teams_csv)
+    standings = standings or fetch_current_standings(now)
+    schedule = fetch_remaining_schedule(now) if schedule is None else schedule
+    probs = probs or make_probabilities(team_map)
+    print(f"Simulating {n_sims} seasons ({len(schedule)} remaining games, {probs.source})...")
+    engine = Engine(standings, schedule, probs, n_sims=n_sims)
+    res = engine.run()
+    out = summarize(engine, res, utc_now_iso())
+    os.makedirs(DATA_DIR, exist_ok=True)
+    local = os.path.join(DATA_DIR, "season_projections.json")
+    _write_json(local, out, indent=1)
+    shutil.copyfile(local, PROJECTIONS_FILE + ".tmp")
+    os.replace(PROJECTIONS_FILE + ".tmp", PROJECTIONS_FILE)
+    append_history(out)
+    top = ", ".join(f"{t['team']} {t['make_playoffs_pct']}%" for t in out["teams"][:5])
+    print(f"Simulation complete ({out['games_played']} GP played). Top playoff odds: {top}")
+    return {"status": "ok", "rows_written": len(out["teams"])}
+
 
 if __name__ == "__main__":
     full_simulation_loop()
