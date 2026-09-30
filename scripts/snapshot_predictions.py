@@ -4,14 +4,18 @@ import os
 import sys
 import psycopg2
 
-# Supabase Connection Details
-# These should be set in the environment variables for security
-DB_HOST = os.environ.get("DB_HOST", "aws-1-us-east-2.pooler.supabase.com")
-DB_NAME = os.environ.get("DB_NAME", "postgres")
-# Pooler requires user.project_ref format
-DB_USER = os.environ.get("DB_USER", "postgres.bmvxgdqfagpkqbagcdce")
-DB_PASSWORD = os.environ.get("DB_PASSWORD")
-DB_PORT = os.environ.get("DB_PORT", "6543") # Use 6543 for transaction pooler, 5432 for session
+# Supabase connection details come ONLY from the environment (GitHub secrets
+# DB_HOST / DB_USER / DB_PASSWORD, optionally DB_NAME / DB_PORT). Nothing
+# identifying the database is hardcoded here.
+def _env(name, default=None):
+    val = os.environ.get(name, "").strip()
+    return val or default
+
+DB_HOST = _env("DB_HOST")
+DB_NAME = _env("DB_NAME", "postgres")
+DB_USER = _env("DB_USER")  # pooler format: postgres.<project-ref>
+DB_PASSWORD = _env("DB_PASSWORD")
+DB_PORT = _env("DB_PORT", "6543")  # 6543 = transaction pooler, 5432 = session
 
 CSV_PATH = "public/data/predictions_detailed.csv"
 TABLE_NAME = "prediction_snapshots"
@@ -39,8 +43,9 @@ def clean_float(val):
     return float(val)
 
 def generate_and_execute_snapshot():
-    if not DB_PASSWORD:
-        print("Error: DB_PASSWORD environment variable is not set.")
+    missing = [n for n, v in (("DB_HOST", DB_HOST), ("DB_USER", DB_USER), ("DB_PASSWORD", DB_PASSWORD)) if not v]
+    if missing:
+        print(f"Error: missing environment variable(s): {', '.join(missing)}")
         sys.exit(1)
 
     today_str = datetime.datetime.now().strftime("%Y-%m-%d")

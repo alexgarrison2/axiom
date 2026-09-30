@@ -54,3 +54,8 @@ pipeline/nhl_season_*_pbp.csv
 
 # Large scraped historical data
 data/historical_pbp/*.csv
+
+# local databases / credential stores (never commit)
+*.db
+*.sqlite
+*.sqlite3
