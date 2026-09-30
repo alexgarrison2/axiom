@@ -1,61 +1,164 @@
 name: Update NHL Data
 
+# One job per hour during the NHL day.  pipeline/refresh_pipeline.py --mode auto
+# picks the mode: a full ingest once per morning (12:00-14:59 UTC, retried on the
+# next hour of that window if it fails, and as a catch-up after 36 h without a
+# successful full run), otherwise the pregame "lite" refresh.  The pipeline
+# records every stage in public/data/manifest.json and exits non-zero when a
+# required stage fails; validate_outputs.py then gates the commit.
+
 on:
   schedule:
-    # Note: GitHub Actions uses UTC time.
-    # CT is UTC-6 (Standard) or UTC-5 (DST). Assuming UTC-6 (Winter).
-    
-    # --- PEAK DAYS (Tue, Thu, Sat) ---
-    # Days: 2, 4, 6
-    
-    # 1. 06:30 - 09:30 AM CT (12:30 - 15:30 UTC): Hourly at min 0
-    - cron: '0 12-15 * * 2,4,6'
-    
-    # 2. 09:30 - 12:00 PM CT (15:30 - 18:00 UTC): Hourly at min 0
-    - cron: '0 15-17 * * 2,4,6'
-    
-    # 3. 12:00 - 07:00 PM CT (18:00 - 01:00 UTC): Hourly at min 0
-    - cron: '0 18-23 * * 2,4,6'
-    - cron: '0 0 * * 2,4,6'
+    # 12:00-23:00 and 00:00-03:00 UTC (7 am - 11 pm ET), every day of the week.
+    - cron: '0 12-23 * * *'
+    - cron: '0 0-3 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Pipeline mode (auto = full in the morning window, lite otherwise)'
+        type: choice
+        options: [auto, lite, full]
+        default: auto
 
-    # 4. 07:00 - 09:00 PM CT (01:00 - 03:00 UTC): Hourly at min 0
-    - cron: '0 1-2 * * 2,4,6'
-
-    # --- NON-PEAK DAYS (Sun, Mon, Wed, Fri) ---
-    # Days: 0, 1, 3, 5
-    # Run hourly all day (06:30 AM - 09:00 PM CT) -> (12:30 - 03:00 UTC)
-    - cron: '0 12-23 * * 0,1,3,5'
-    - cron: '0 0-2 * * 0,1,3,5'
-
-  workflow_dispatch: # Allow manual trigger
-
-# Prevent concurrent runs from racing on the git push step.
-# If a run is already in-progress, queue new runs rather than cancelling them.
+# Queue rather than cancel so two runs never race on the push.
 concurrency:
   group: update-nhl-data
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   update-data:
     runs-on: ubuntu-latest
+    # Backstop; the pipeline step itself is limited to 20 min (lite) / 30 min (full).
+    timeout-minutes: 40
     permissions:
-      contents: write
-    
+      contents: write   # push the data commit
+      issues: write     # open/update the "Data pipeline failing" issue
+    env:
+      PYTHONUNBUFFERED: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false   # the token is handed only to the push step
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.13'
-          cache: 'pip'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: requirements.txt
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: uv pip install --system -r requirements.txt
 
-      - name: Run Data Pipeline
+      - name: Pick mode
+        id: mode
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_MODE: ${{ inputs.mode }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ] && [ -n "$INPUT_MODE" ] && [ "$INPUT_MODE" != "auto" ]; then
+            mode="$INPUT_MODE"
+          else
+            mode=$(python pipeline/refresh_pipeline.py --mode auto --print-mode)
+          fi
+          case "$mode" in full|lite) ;; *) echo "bad mode '$mode'"; exit 1 ;; esac
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "Pipeline mode: $mode"
+
+      - name: Run data pipeline
+        timeout-minutes: ${{ steps.mode.outputs.mode == 'full' && 30 || 20 }}
+        env:
+          MODE: ${{ steps.mode.outputs.mode }}
+        run: python pipeline/refresh_pipeline.py --mode "$MODE"
+
+      - name: Validate outputs (data contract gate)
+        env:
+          # Comma-separated validate_outputs.py checks to downgrade to warnings
+          # (repository variable), e.g. while a known upstream fix is pending.
+          PONYXG_VALIDATE_ALLOW: ${{ vars.VALIDATE_ALLOW }}
+        run: python pipeline/validate_outputs.py
+
+      - name: Commit and push data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          add() { for f in "$@"; do [ -e "$f" ] && git add -- "$f"; done; return 0; }
+          # Predictions, history and freshness
+          add data/predictions_detailed.csv public/data/predictions_detailed.csv \
+              data/prediction_history.json data/last_updated.json public/data/last_updated.json \
+              public/data/manifest.json public/data/SiteHistory/*.csv
+          # Schedule, goalies, lineups, injuries, news
+          add pipeline/upcoming_games.json public/data/upcoming_games.json \
+              pipeline/dailyfaceoff_goalies.json public/data/dailyfaceoff_goalies.json \
+              public/data/team_goalies.json public/data/injuries.json \
+              pipeline/team_lineups.json public/data/team_lineups.json \
+              pipeline/player_news.json public/data/player_news.json public/data/playoff_player_news.json
+          # Odds (pregame lines + frozen closing lines)
+          add data/odds.json public/data/odds.json pipeline/odds.json public/data/odds_closing.json
+          # Season game data (current season file names come from pipeline/season.py)
+          add pipeline/nhl_season_*_gamestats.csv pipeline/nhl_season_*_shots.csv pipeline/nhl_season_*_shifts.csv \
+              pipeline/pending_failed.json data/gamestats.csv public/data/gamestats.csv \
+              public/data/nhl_season_*_player_stats.csv
+          # Ratings and team splits
+          add public/data/team_ratings.json public/data/goalie_ratings.json public/data/team_stats_extended.json \
+              pipeline/nhl_goalie_stats.json
+          # Player models, bios, contracts
+          add pipeline/player_impact.json public/data/player_impact.json \
+              pipeline/league_avg_impact.json public/data/league_avg_impact.json \
+              pipeline/player_name_lookup.json pipeline/team_lineup_baselines.json public/data/team_lineup_baselines.json \
+              public/data/player_bio.json public/data/contracts.json
+          # Season context
+          add pipeline/data/season_projections.json public/data/season_projections.json \
+              pipeline/game_implications.json public/data/game_implications.json \
+              public/data/clinch_status.json public/data/playoff_series.json \
+              pipeline/goalie_playoff_career_stats.json public/data/goalie_playoff_career_stats.json
+
+          if git diff --cached --quiet; then
+            echo "No data changes."
+            exit 0
+          fi
+          # Runs that only refreshed timestamps don't earn a commit (and a
+          # Vercel build), except as a heartbeat every 6 h so the freshness
+          # check and the site's "updated" stamp stay truthful.
+          if git diff --cached --quiet -- . ':(exclude)public/data/manifest.json' \
+               ':(exclude)public/data/last_updated.json' ':(exclude)data/last_updated.json'; then
+            age=$(git show HEAD:public/data/manifest.json 2>/dev/null | python -c "
+          import json, sys, datetime as d
+          try:
+              g = json.load(sys.stdin)['generated_at'].replace('Z', '+00:00')
+              print(int((d.datetime.now(d.timezone.utc) - d.datetime.fromisoformat(g)).total_seconds()))
+          except Exception:
+              print(10**9)")
+            if [ "${age:-1000000000}" -lt 21600 ]; then
+              echo "Only timestamps changed and the last heartbeat is < 6h old — not committing."
+              git reset -q
+              exit 0
+            fi
+            echo "Timestamp-only heartbeat commit."
+          fi
+
+          git commit -q -m "Auto-Update: Data Refresh [$(date -u +%Y-%m-%dT%H:%M:%SZ)] (${{ steps.mode.outputs.mode }})"
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          git -c "http.https://github.com/.extraheader=$auth" pull --rebase --autostash origin main
+          git -c "http.https://github.com/.extraheader=$auth" push origin HEAD:main
+          # Vercel's git integration deploys the push; vercel.json's ignoreCommand
+          # skips builds for commits that touch only pipeline-internal state.
+
+      - name: Sync predictions to Supabase
+        if: vars.SUPABASE_SYNC == '1' && steps.mode.outputs.mode == 'full'
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_NAME: ${{ secrets.DB_NAME }}
@@ -63,128 +166,53 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_PORT: ${{ secrets.DB_PORT }}
         run: |
-          cd pipeline
-          # Run full refresh in the morning (roughly between 12:00 and 14:00 UTC)
-          # Otherwise run a lite refresh
-          HOUR=$(date +%H)
-          if [ "$HOUR" -ge 12 ] && [ "$HOUR" -le 14 ]; then
-            echo "Running Full Refresh Pipeline..."
-            python refresh_pipeline.py
-            python snapshot_predictions.py
-            python season_simulator.py
-            # Fetch shift chart data for any new games (incremental — skips already-fetched)
-            python fetch_shifts.py
-            # Enrich PBP with on-ice player IDs (incremental)
-            python enrich_pbp.py
-            # Append yesterday's raw PBP events (incremental — skips already-fetched game IDs)
-            python update_raw_pbp.py
+          python scripts/snapshot_predictions.py
+          python scripts/sync_history_to_supabase.py
+
+      - name: Working tree after run
+        if: always()
+        run: git status --porcelain | head -40
+
+      - name: Open or update the failure issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          MODE: ${{ steps.mode.outputs.mode }}
+        run: |
+          title="Data pipeline failing"
+          summary=$(python - <<'PY'
+          import json
+          try:
+              m = json.load(open("public/data/manifest.json"))
+          except Exception as e:
+              print(f"(no manifest: {e})"); raise SystemExit
+          bad = [s for s in m.get("stages", []) if s.get("status") == "fail"]
+          print(f"season {m.get('season_id')} · mode {m.get('mode')} · generated {m.get('generated_at')}")
+          for s in bad:
+              print(f"- `{s['stage']}`{' (required)' if s.get('required') else ''}: {s.get('error') or s.get('reason') or 'failed'}")
+          for k, v in (m.get("stale") or {}).items():
+              print(f"- stale `{k}`: {v}")
+          PY
+          )
+          body=$(printf 'Run %s (%s mode) failed.\n\n%s\n' "$RUN_URL" "${MODE:-?}" "$summary")
+          num=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" \
+                  --json number,title --jq "map(select(.title == \"$title\")) | .[0].number // empty")
+          if [ -n "$num" ]; then
+            gh issue comment "$num" --repo "$GITHUB_REPOSITORY" --body "$body"
           else
-            echo "Running Lite Update..."
-            python fetch_upcoming.py
-
-            # Backfill player boxscore stats for any new games since last run
-            # Incremental: skips game_ids already in the CSV, so fast when no new games
-            python backfill_player_stats.py
-
-            # Fetch latest odds and sync (Fix for missing odds.json in Lite Update)
-            python fetch_odds.py
-            cp odds.json ../data/odds.json || echo "No odds.json to copy to data/"
-            cp odds.json ../public/data/odds.json || echo "No odds.json to copy to public/"
-
-            python predict_games.py
-            python snapshot_predictions.py
-            # Regenerate implications so they stay current as the day rolls over
-            python -c "import game_implications; game_implications.compute_game_implications()"
-            # Update playoff series results and series odds after each game
-            python update_playoff_series.py
-            # Keep goalie career playoff stats current during postseason
-            python fetch_goalie_playoff_career_stats.py
-            # season_simulator.py runs in Full Refresh only — playoff odds don't need hourly precision
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
           fi
 
-      - name: Commit and Push Changes
+      - name: Close the failure issue after a clean run
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          # Check if there are changes to the CSVs
-          if [ -n "$(git status --porcelain)" ]; then
-            git add requirements.txt || true
-            [ -f data/predictions_detailed.csv ] && git add data/predictions_detailed.csv
-            [ -f data/prediction_history.json ] && git add data/prediction_history.json
-            [ -f data/gamestats.csv ] && git add data/gamestats.csv
-            [ -f data/odds.json ] && git add data/odds.json
-            [ -f public/data/odds.json ] && git add public/data/odds.json
-            [ -f public/data/gamestats.csv ] && git add public/data/gamestats.csv
-            [ -f public/data/predictions_detailed.csv ] && git add public/data/predictions_detailed.csv
-            [ -f pipeline/upcoming_games.json ] && git add pipeline/upcoming_games.json
-            [ -f pipeline/dailyfaceoff_goalies.json ] && git add pipeline/dailyfaceoff_goalies.json
-            [ -f pipeline/player_news.json ] && git add pipeline/player_news.json
-            [ -f pipeline/team_lineups.json ] && git add pipeline/team_lineups.json
-            # Season files (current season name comes from pipeline/season.py)
-            git add pipeline/nhl_season_*_gamestats.csv 2>/dev/null || true
-            git add pipeline/nhl_season_*_shots.csv 2>/dev/null || true
-            git add pipeline/nhl_season_*_shifts.csv 2>/dev/null || true
-            git add pipeline/nhl_season_*_pbp.csv 2>/dev/null || true
-            git add data/historical_pbp/raw_pbp_*.csv 2>/dev/null || true
-            [ -f data/last_updated.json ] && git add data/last_updated.json
-            # Player-impact outputs (committed so lite runs can load them)
-            [ -f pipeline/player_impact.json ] && git add pipeline/player_impact.json
-            [ -f pipeline/league_avg_impact.json ] && git add pipeline/league_avg_impact.json
-            [ -f pipeline/player_name_lookup.json ] && git add pipeline/player_name_lookup.json
-            [ -f public/data/player_impact.json ] && git add public/data/player_impact.json
-            [ -f public/data/league_avg_impact.json ] && git add public/data/league_avg_impact.json
-            # Player boxscore stats (availability strip + counting stats in SkaterGrid)
-            git add public/data/nhl_season_*_player_stats.csv 2>/dev/null || true
-            # Player bio data (age, height, weight, shoots)
-            [ -f public/data/player_bio.json ] && git add public/data/player_bio.json
-            # Contract data (cap hit, UFA/RFA status) from PuckPedia
-            [ -f public/data/contracts.json ] && git add public/data/contracts.json
-            # Team lineups (for IMP distribution against real current pairings)
-            [ -f public/data/team_lineups.json ] && git add public/data/team_lineups.json
-            # Prediction history snapshots
-            git add public/data/SiteHistory/*.csv 2>/dev/null || true
-            # Season simulation projections
-            [ -f pipeline/data/season_projections.json ] && git add pipeline/data/season_projections.json
-            [ -f public/data/season_projections.json ] && git add public/data/season_projections.json
-            # Playoff implications (must be committed so Vercel serves today's games)
-            [ -f pipeline/game_implications.json ] && git add pipeline/game_implications.json
-            [ -f public/data/game_implications.json ] && git add public/data/game_implications.json
-            # Clinch/elimination status (fetched in full refresh via fetch_clinch_status.py)
-            [ -f public/data/clinch_status.json ] && git add public/data/clinch_status.json
-            # Team and goalie ratings (written by team_ratings.py in full refresh)
-            [ -f public/data/team_ratings.json ] && git add public/data/team_ratings.json
-            [ -f public/data/goalie_ratings.json ] && git add public/data/goalie_ratings.json
-            # Goalie season stats (W-L-OT, SV%, GAA) used on playoffs and matchup cards
-            [ -f pipeline/nhl_goalie_stats.json ] && git add pipeline/nhl_goalie_stats.json
-            # Goalie career playoff stats (W-L, SV%, GAA all-time postseason)
-            [ -f public/data/goalie_playoff_career_stats.json ] && git add public/data/goalie_playoff_career_stats.json
-            [ -f pipeline/goalie_playoff_career_stats.json ] && git add pipeline/goalie_playoff_career_stats.json
-            # Last-updated timestamp shown on site
-            [ -f public/data/last_updated.json ] && git add public/data/last_updated.json
-            # Playoff series results and odds (written by update_playoff_series.py)
-            [ -f public/data/playoff_series.json ] && git add public/data/playoff_series.json
-            # Upcoming games and player news (written by fetch_upcoming.py)
-            [ -f public/data/upcoming_games.json ] && git add public/data/upcoming_games.json
-            [ -f public/data/player_news.json ] && git add public/data/player_news.json
-            [ -f public/data/playoff_player_news.json ] && git add public/data/playoff_player_news.json
-            [ -f public/data/team_goalies.json ] && git add public/data/team_goalies.json
-
-            # Commit if changes exist
-            git commit -m "Auto-Update: Data Refresh [$(date)]" || echo "No changes to commit"
-
-            # Rebase onto latest remote state, then push
-            # --autostash handles any files the pipeline modified but didn't explicitly git add
-            git pull --rebase --autostash origin main
-            git push
-
-            # Trigger Vercel rebuild to serve updated data
-            if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
-              echo "Triggering Vercel rebuild..."
-              curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
-            else
-              echo "No Vercel deploy hook found in secrets."
-            fi
-          else
-            echo "No changes detected."
+          title="Data pipeline failing"
+          num=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" \
+                  --json number,title --jq "map(select(.title == \"$title\")) | .[0].number // empty")
+          if [ -n "$num" ]; then
+            gh issue close "$num" --repo "$GITHUB_REPOSITORY" --comment "Recovered in $RUN_URL"
           fi

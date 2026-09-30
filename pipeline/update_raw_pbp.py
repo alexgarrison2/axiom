@@ -22,7 +22,6 @@ from season import SEASON_ID
 import argparse
 import os
 import sys
-import ssl
 import json
 import time
 import urllib.request
@@ -39,7 +38,6 @@ BASE_URL  = "https://api-web.nhle.com/v1"
 SEASON    = int(SEASON_ID)
 DELAY     = 0.25   # seconds between API calls
 
-ssl._create_default_https_context = ssl._create_unverified_context
 
 # Expected column order — must match the existing CSV exactly so pd.concat aligns
 RAW_PBP_COLS = [
@@ -71,17 +69,12 @@ RAW_PBP_COLS = [
 
 # ── HTTP helper ────────────────────────────────────────────────────────────────
 def get_url(url: str):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    from http_utils import get_json, HttpError
     try:
-        with urllib.request.urlopen(req, timeout=15) as r:
-            return json.loads(r.read().decode())
-    except urllib.error.HTTPError as e:
-        if e.code == 404:
-            return None   # game not available yet (in-progress or future)
-        print(f"  HTTP {e.code}: {url}")
-        return None
-    except Exception as e:
-        print(f"  Error: {e} — {url}")
+        return get_json(url, ua="plain")
+    except HttpError as e:
+        if e.status != 404:   # 404 = game not available yet (in-progress or future)
+            print(f"  {e}")
         return None
 
 

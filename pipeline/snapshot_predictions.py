@@ -170,6 +170,22 @@ def snapshot():
                 if row.get('gameid'):  # skip blank separator rows
                     all_rows.append(row)
 
+    # An hourly run whose predictions and lines match the latest stored run
+    # for every game adds no information: skip it, so a no-change run leaves
+    # the file (and the repo) untouched instead of forcing a data commit.
+    same_keys = [k for k in fieldnames if k not in ('date', 'timestamp', 'run')]
+
+    def _norm(r):
+        return tuple(str(r.get(k, '')).replace('%', '').replace('+', '') for k in same_keys)
+
+    latest = {}
+    for row in all_rows:
+        if row.get('gameid') and int(row.get('run') or 0) >= int(latest.get(row['gameid'], {}).get('run') or 0):
+            latest[row['gameid']] = row
+    if all(r['gameid'] in latest and _norm(latest[r['gameid']]) == _norm(r) for r in rows_to_write):
+        print(f"[snapshot] {len(rows_to_write)} game(s) unchanged since the last run — not appended")
+        return
+
     all_rows.extend(rows_to_write)
 
     # Apply format to all rows (fixes runs from earlier today)

@@ -30,9 +30,6 @@ def get_schedule_context(team_abbrev, game_date_str):
     # To avoid N+1 API calls, we ideally fetch the whole season once.
     # But for now, let's fetch the relevant week(s) 
     
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
 
     url = f"https://api-web.nhle.com/v1/club-schedule/{team_abbrev}/week/now" 
     # Note: club-schedule/MIN/week/now gives current week. We might need previous weeks.

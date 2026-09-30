@@ -225,14 +225,9 @@ def fetch_l7_record(tri_code, starter_lookup=None, common_names=None):
         return "N/A", []
         
     url = f"https://api-web.nhle.com/v1/club-schedule-season/{tri_code}/{SEASON_ID}"
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, context=ctx) as response:
-            data = json.loads(response.read().decode())
+        from http_utils import get_json
+        data = get_json(url, ua="plain")
     except Exception as e:
         print(f"Error fetching L7 for {tri_code}: {e}")
         return "N/A", []
@@ -475,15 +470,8 @@ def fetch_team_rankings():
         url = "https://api.nhle.com/stats/rest/en/team/summary?isAggregate=false&isGame=false&sort=%5B%7B%22property%22:%22points%22,%22direction%22:%22DESC%22%7D,%7B%22property%22:%22wins%22,%22direction%22:%22DESC%22%7D,%7B%22property%22:%22teamId%22,%22direction%22:%22ASC%22%7D%5D&start=0&limit=50&factCayenneExp=gamesPlayed%3E=1&cayenneExp=gameTypeId=2%20and%20seasonId%3C=" + SEASON_ID + "%20and%20seasonId%3E=" + SEASON_ID
         
         
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        import ssl
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        
-        with urllib.request.urlopen(req, context=ctx) as response:
-            data = json.load(response)
-            
+        from http_utils import get_json
+        data = get_json(url, ua="plain")
         teams_data = data.get('data', [])
         
         # We need to rank them. The API returns a list, but sorted by points.
@@ -1811,7 +1799,8 @@ def predict():
         # Odds & EV
         # Construct unique matchup ID for specific game lookup
         matchup_id = f"{game_date}:{away_team}@{home_team}"
-        game_odds = odds_data.get(matchup_id, {})
+        # odds.json is keyed by NHL gameId (legacy files used matchup_id)
+        game_odds = odds_data.get(str(game.get('id')), {}) or odds_data.get(matchup_id, {})
         h_odds = game_odds.get(home_team)
         a_odds = game_odds.get(away_team)
         

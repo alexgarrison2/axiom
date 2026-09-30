@@ -32,14 +32,8 @@ def fetch_current_standings():
     """Fetches live standings from NHL API."""
     print("Fetching current standings...")
     url = "https://api-web.nhle.com/v1/standings/now"
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, context=ctx) as response:
-        data = json.load(response)
-        
+    from http_utils import get_json
+    data = get_json(url, ua="plain")
     standings = {}
     for team_data in data['standings']:
         abbrev = team_data['teamAbbrev']['default']
@@ -381,9 +375,6 @@ def fetch_remaining_schedule():
     live fetch fails.
     """
     season_end = None  # filled from the first response (regularSeasonEndDate)
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
 
     today = datetime.date.today().isoformat()
     all_games = []
@@ -394,9 +385,8 @@ def fetch_remaining_schedule():
     while (season_end is None or current_date <= season_end) and loops < 40:
         url = f"https://api-web.nhle.com/v1/schedule/{current_date}"
         try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
-                data = json.load(resp)
+            from http_utils import get_json
+            data = get_json(url, ua="plain")
             season_end = season_end or data.get('regularSeasonEndDate')
 
             for week in data.get('gameWeek', []):
@@ -451,7 +441,8 @@ def full_simulation_loop():
 
     # 1. Load Data
     schedule = fetch_remaining_schedule()
-    team_ratings = load_json(os.path.join(SCRIPT_DIR, 'team_ratings.json'))
+    from paths import TEAM_RATINGS_FILE
+    team_ratings = load_json(TEAM_RATINGS_FILE)   # public/data is the only ratings location
     nhl_teams = load_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
     
     team_map = build_team_map(nhl_teams)

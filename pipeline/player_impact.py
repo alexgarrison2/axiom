@@ -184,6 +184,8 @@ def calculate_player_impact(
     output_file: str = "player_impact.json",
     league_avg_file: str = "league_avg_impact.json",
     lookup_file: str = "player_name_lookup.json",
+    output_dir: str = None,
+    rosters: dict = None,
 ) -> tuple:
     """
     Compute per-player impact metrics from MoneyPuck skater data.
@@ -814,67 +816,172 @@ def calculate_player_impact(
 
     print(f"  Per-team baselines built for {len(team_lineup_baselines)} teams")
 
-    # ── Name lookup for DailyFaceoff matching ──
-    # DFO stores full player names. We build:
-    #   by_full_name: {normalized_full_name → playerId}
-    #   by_last_name: {normalized_last_name → [{pid, full_name, team}]}
-    name_to_pid   = {}
-    last_name_idx = {}   # last_name → list of {pid, full_name, team}
+    # ── Current-roster teams and official NHL display names ──
+    # MoneyPuck's team is where the player skated last season and its names
+    # drop diacritics ("Nathan Lgar").  Keyed on NHL playerId, re-point each
+    # player at his current NHL roster and take the NHL API spelling.
+    remap_to_rosters(player_impact, rosters)
 
-    for pid, data in player_impact.items():
-        norm = normalize_name(data['name'])
-        name_to_pid[norm] = pid
-
-        parts = norm.split()
-        if parts:
-            last = parts[-1]
-            last_name_idx.setdefault(last, []).append({
-                'pid': pid,
-                'full_name': norm,
-                'team': data['team'],
-            })
-
-    # ── Save outputs ──
-    public_data = os.path.join(script_dir, '..', 'public', 'data')
-
-    def _save(data, path):
-        with open(path, 'w') as f:
-            json.dump(data, f, indent=2)
-
-    # player_impact.json
-    local_impact = os.path.join(script_dir, output_file)
-    _save(player_impact, local_impact)
-    print(f"  ✓ {output_file} ({len(player_impact)} players)")
-
-    # league_avg_impact.json
-    local_avg = os.path.join(script_dir, league_avg_file)
-    _save(league_avgs, local_avg)
-    print(f"  ✓ {league_avg_file}")
-
-    # player_name_lookup.json
-    local_lookup = os.path.join(script_dir, lookup_file)
-    _save({'by_full_name': name_to_pid, 'by_last_name': last_name_idx}, local_lookup)
-    print(f"  ✓ {lookup_file} ({len(name_to_pid)} name entries)")
-
-    # team_lineup_baselines.json
-    baselines_file = 'team_lineup_baselines.json'
-    local_baselines = os.path.join(script_dir, baselines_file)
-    _save(team_lineup_baselines, local_baselines)
-    print(f"  ✓ {baselines_file} ({len(team_lineup_baselines)} teams)")
-
-    # Sync to public/data for optional frontend consumption
-    try:
-        if os.path.exists(public_data):
-            import shutil
-            shutil.copy(local_impact,    os.path.join(public_data, output_file))
-            shutil.copy(local_avg,       os.path.join(public_data, league_avg_file))
-            shutil.copy(local_baselines, os.path.join(public_data, baselines_file))
-            print(f"  ✓ Synced to public/data/")
-    except Exception as e:
-        print(f"  [WARN] public/data sync failed: {e}")
+    # ── Completeness guard, then write every output (or none) ──
+    ok = save_player_impact_outputs(
+        player_impact, league_avgs, team_lineup_baselines, output_dir or script_dir,
+        output_file=output_file, league_avg_file=league_avg_file, lookup_file=lookup_file)
+    if not ok:
+        print("=== Player Impact NOT written (completeness guard) ===\n")
+        raise PlayerImpactIncomplete(completeness_problem(player_impact) or "guard failed")
 
     print("=== Player Impact Calculation Complete ===\n")
     return player_impact, league_avgs
+
+
+# ── Completeness guard, roster remap and outputs ─────────────────────────────
+
+# A complete season file covers every team with ~900 skaters.  Anything
+# smaller is a partial download (e.g. the 2026-06-17 run that lost 15 teams to
+# MoneyPuck 429s) and must not replace the last good file.
+MIN_TEAMS = 32
+MIN_PLAYERS = 700
+
+
+class PlayerImpactIncomplete(RuntimeError):
+    """Raised when the completeness guard refuses to write player_impact.json."""
+
+
+def completeness_problem(player_impact: dict):
+    """Return a reason string if the profile set is incomplete, else None."""
+    teams = {d.get('team') for d in player_impact.values() if d.get('team')}
+    if len(teams) < MIN_TEAMS:
+        return f"only {len(teams)} teams (< {MIN_TEAMS})"
+    if len(player_impact) < MIN_PLAYERS:
+        return f"only {len(player_impact)} players (< {MIN_PLAYERS})"
+    return None
+
+
+def nhl_skater_names(season_ids=None) -> dict:
+    """{playerId(str): official NHL full name} from the stats API skater summary
+    (one request per season).  Covers players who are on no current roster."""
+    from http_utils import try_get_json
+    from season import SEASON_ID, PREV_SEASON_ID
+    names = {}
+    for sid in season_ids or (PREV_SEASON_ID, SEASON_ID):
+        url = ("https://api.nhle.com/stats/rest/en/skater/summary?isAggregate=false&isGame=false"
+               f"&limit=-1&cayenneExp=seasonId={sid}%20and%20gameTypeId=2")
+        for row in (try_get_json(url, ua="plain") or {}).get("data", []) or []:
+            if row.get("playerId") and row.get("skaterFullName"):
+                names[str(row["playerId"])] = row["skaterFullName"]
+    return names
+
+
+def remap_to_rosters(player_impact: dict, rosters: dict = None, stats_names: dict = None) -> dict:
+    """Point each player at his current NHL roster team and NHL display name.
+
+    Adds ``team_prev`` (the team the stats were earned with) and
+    ``on_roster`` (False when the player is on no current NHL roster —
+    unsigned, AHL, retired or injured-non-roster).  Players off every roster
+    keep ``team`` = team_prev so team totals stay complete; the frontend and
+    lineup code can filter on ``on_roster``.  Requires all 32 rosters;
+    otherwise nothing is changed.
+    """
+    try:
+        from fetch_player_bio import fetch_rosters, roster_index, NHL_TEAMS
+        rosters = rosters if rosters is not None else fetch_rosters()
+        if len(rosters) < len(NHL_TEAMS):
+            print(f"  [WARN] Roster remap skipped: only {len(rosters)}/{len(NHL_TEAMS)} rosters")
+            return {'moved': 0, 'renamed': 0, 'off_roster': None}
+        idx = roster_index(rosters)
+    except Exception as e:
+        print(f"  [WARN] Roster remap skipped: {e}")
+        return {'moved': 0, 'renamed': 0, 'off_roster': None}
+
+    moved = renamed = off = 0
+    for pid, d in player_impact.items():
+        d.setdefault('team_prev', d.get('team'))
+        r = idx.get(str(pid))
+        if r:
+            if r['team'] != d.get('team'):
+                moved += 1
+            d['team'] = r['team']
+            if r['name'] and r['name'] != d.get('name'):
+                renamed += 1
+                d['name'] = r['name']
+            d['on_roster'] = True
+        else:
+            d['team'] = d.get('team_prev') or d.get('team')
+            d['on_roster'] = False
+            off += 1
+            if stats_names is None:
+                stats_names = nhl_skater_names() if rosters else {}
+            nm = stats_names.get(str(pid))
+            if nm and nm != d.get('name'):
+                renamed += 1
+                d['name'] = nm
+    print(f"  Roster remap: {moved} players moved team, {renamed} names corrected, "
+          f"{off} not on a current roster")
+    return {'moved': moved, 'renamed': renamed, 'off_roster': off}
+
+
+def build_name_lookup(player_impact: dict) -> dict:
+    """{'by_full_name': {norm: pid}, 'by_last_name': {last: [{pid, full_name, team}]}}
+
+    On-roster players win full-name collisions so a departed namesake never
+    shadows the active player."""
+    name_to_pid, last_name_idx = {}, {}
+    ordered = sorted(player_impact.items(), key=lambda kv: bool(kv[1].get('on_roster', True)))
+    for pid, data in ordered:
+        norm = normalize_name(data['name'])
+        name_to_pid[norm] = pid
+        parts = norm.split()
+        if parts:
+            last_name_idx.setdefault(parts[-1], []).append({
+                'pid': pid, 'full_name': norm, 'team': data['team'],
+            })
+    return {'by_full_name': name_to_pid, 'by_last_name': last_name_idx}
+
+
+def save_player_impact_outputs(player_impact: dict, league_avgs: dict, team_lineup_baselines,
+                               script_dir: str, output_file: str = 'player_impact.json',
+                               league_avg_file: str = 'league_avg_impact.json',
+                               lookup_file: str = 'player_name_lookup.json') -> bool:
+    """Guarded write of player_impact.json (+ league averages, name lookup and
+    team baselines) to pipeline/ and public/data/.  Writes nothing unless the
+    set covers 32 teams and >= 700 players."""
+    from io_utils import atomic_write_json, mark_stale
+    problem = completeness_problem(player_impact)
+    if problem:
+        print(f"  [GUARD] player_impact.json not written: {problem} — keeping last good file")
+        mark_stale('player_impact.json', problem)
+        return False
+
+    public_data = os.path.join(script_dir, '..', 'public', 'data')
+    targets = [script_dir] + ([public_data] if os.path.isdir(public_data) else [])
+    for d in targets:
+        atomic_write_json(os.path.join(d, output_file), player_impact,
+                          label='player_impact.json', min_items=MIN_PLAYERS)
+        if league_avgs is not None:
+            atomic_write_json(os.path.join(d, league_avg_file), league_avgs, label=league_avg_file)
+        if team_lineup_baselines is not None:
+            atomic_write_json(os.path.join(d, 'team_lineup_baselines.json'), team_lineup_baselines,
+                              label='team_lineup_baselines.json')
+    atomic_write_json(os.path.join(script_dir, lookup_file), build_name_lookup(player_impact),
+                      label=lookup_file)
+    print(f"  ✓ {output_file} ({len(player_impact)} players, "
+          f"{len({d['team'] for d in player_impact.values()})} teams) → pipeline/ and public/data/")
+    return True
+
+
+def refresh_roster_teams(script_dir: str = None) -> dict:
+    """Daily job while the player model is frozen (< PLAYER_MODEL_MIN_GAMES):
+    re-point the committed player_impact.json at current rosters and NHL names
+    without recomputing any ratings."""
+    script_dir = script_dir or os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(script_dir, 'player_impact.json')
+    with open(path) as f:
+        player_impact = json.load(f)
+    stats = remap_to_rosters(player_impact)
+    if stats.get('off_roster') is None:
+        return {'status': 'skip', 'rows_written': 0, 'reason': 'rosters unavailable'}
+    ok = save_player_impact_outputs(player_impact, None, None, script_dir)
+    return {'status': 'ok' if ok else 'fail', 'rows_written': len(player_impact) if ok else 0, **stats}
 
 
 # ── Lookup helpers (used by predict_games.py) ─────────────────────────────────
@@ -1114,5 +1221,9 @@ def estimate_lineup_xg(
 
 
 if __name__ == "__main__":
+    import sys
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    calculate_player_impact()
+    if "--roster-only" in sys.argv:
+        print(refresh_roster_teams())
+    else:
+        calculate_player_impact()

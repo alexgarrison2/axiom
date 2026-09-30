@@ -3,7 +3,6 @@ import pandas as pd
 import urllib.request
 import json
 import time
-import ssl
 
 def fetch_player_handedness():
     print("Loading unique players from shots data...")
@@ -33,28 +32,19 @@ def fetch_player_handedness():
     missing_ids = [pid for pid in player_ids if str(pid) not in player_hand]
     print(f"Fetching metadata for {len(missing_ids)} missing players...")
     
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
+    from http_utils import get_json, HttpError
     
     count = 0
     for pid in missing_ids:
         # API endpoint: https://api-web.nhle.com/v1/player/{id}/landing
         url = f"https://api-web.nhle.com/v1/player/{pid}/landing"
         try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, context=ctx) as response:
-                if response.status == 200:
-                    data = json.load(response)
-                    hand = data.get('shootsCat', 'U')
-                    player_hand[str(pid)] = hand
-                    count += 1
-                    if count % 50 == 0:
-                        print(f"Fetching... {count}/{len(missing_ids)}")
-                else:
-                    print(f"Failed to fetch {pid}: {response.status}")
-                    player_hand[str(pid)] = 'U'
-        except Exception as e:
+            data = get_json(url, ua="plain")
+            player_hand[str(pid)] = data.get('shootsCat', 'U')
+            count += 1
+            if count % 50 == 0:
+                print(f"Fetching... {count}/{len(missing_ids)}")
+        except (HttpError, AttributeError) as e:
             # print(f"Error fetching {pid}: {e}")
             player_hand[str(pid)] = 'U'
             

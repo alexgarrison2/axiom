@@ -186,7 +186,8 @@ def compute_game_implications():
 
     # 1. Shared data (same fetches as season_simulator)
     schedule          = fetch_remaining_schedule()
-    team_ratings      = load_json(os.path.join(SCRIPT_DIR, 'team_ratings.json'))
+    from paths import TEAM_RATINGS_FILE
+    team_ratings      = load_json(TEAM_RATINGS_FILE)   # public/data is the only ratings location
     nhl_teams         = load_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
     team_map          = build_team_map(nhl_teams)
     current_standings = fetch_current_standings()
