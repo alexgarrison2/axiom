@@ -8,7 +8,7 @@ import type { Prediction } from '../../../types/prediction';
 import { byTeams, fixture, withOverrides } from './fixtures';
 import { compactForClient } from '../parse';
 import { WhyThisPick } from '../../../components/matchup/WhyThisPick';
-import { gsaxTag } from '../format';
+import { gsaxTag, gsaxWindow } from '../format';
 import type { GameDetails } from '../../client-data';
 
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
@@ -187,14 +187,27 @@ describe('review fixes', () => {
         expect(text(render(<WhyThisPick p={clear} />).container)).toContain(`Why the ${p.home.team.commonName} are favored`);
     });
 
-    it("tags the starter's GSAx by the games the rating holds, not the goalie's line", () => {
-        const p = withOverrides(byTeams(fixture('opening_night'), 'PIT', 'PHI'), {}, { home: { gsax: -0.12, goalieCurGp: 1 } });
-        const goalie = { name: p.home.goalie ?? 'X', starter: true, cur: null, prev: null, gsaxPerGame: -0.12, gsaxSeason: gsaxTag(0) };
-        const side = { goalies: [goalie] } as unknown as GameDetails['home'];
+    it("labels the starter's GSAx as a regressed rating with its season window, plus the raw current GSAx and IR tag", () => {
+        const p = withOverrides(byTeams(fixture('opening_night'), 'PIT', 'PHI'), {}, { home: { gsax: -0.08, goalieCurGp: 1 } });
+        const goalie = {
+            name: p.home.goalie ?? 'X',
+            starter: true,
+            cur: null,
+            prev: null,
+            gsaxPerGame: -0.08,
+            gsaxSeason: gsaxWindow(['2024-25', '2025-26'], true),
+            gsaxCur: 1.82,
+            gsaxCurGp: 1,
+            injury: null,
+        };
+        const backup = { name: 'Frederik Andersen', starter: false, cur: null, prev: null, gsaxPerGame: 0, gsaxSeason: gsaxWindow(['2024-25', '2025-26'], false), injury: { status: 'IR', returnLabel: 'Dec 30' } };
+        const side = { goalies: [goalie, backup] } as unknown as GameDetails['home'];
         const data = { home: side, away: { goalies: [] } } as unknown as GameDetails;
         const t = text(render(<GoaliesPanel p={p} state={{ status: 'ready', data }} />).container);
-        expect(t).toMatch(/GSAx\/gm\s*\(25-26\)/);
-        expect(t).not.toMatch(/GSAx\/gm\s*\(26-27/);
+        expect(t).toMatch(/Rating\s*−0\.08\s*GSAx\/gm\s*\(regressed, 2024-25 to 2026-27\)/);
+        expect(t).toMatch(/26-27:\s*\+1\.82 GSAx in 1 GP/);
+        expect(t).toMatch(/IR · ~Dec 30/);
+        expect(gsaxWindow(['2024-25'], false)).toBe('2024-25');
         expect(gsaxTag(3)).toBe('26-27 · 3 GP');
     });
 });

@@ -64,7 +64,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
     const fav = favorites.includes(a) ? a : favorites.includes(h) ? h : null;
     const favColor = fav ? (fav === a ? colors.away : colors.home) : null;
     const anchor = cardAnchor(p);
-    const title = `${p.away.team.commonName} @ ${p.home.team.commonName}`;
+    const title = `${p.away.team.commonName} at ${p.home.team.commonName}`;
     const model = modelPair(p);
 
     const collapse = useCallback(() => {
@@ -121,7 +121,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                         aria-expanded={open}
                         aria-controls={detailsId}
                         onClick={() => setOpen(o => !o)}
-                        className="rounded-control px-1 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
+                        className="min-h-6 min-w-6 rounded-control px-1 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
                     >
                         <span id={titleId} className="sr-only">
                             {title}
@@ -145,7 +145,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                 {finalText ? <p className="-mt-1 text-center text-body-sm font-semibold text-fg-1">{finalText}</p> : null}
 
                 {/* Win probability */}
-                {model && !started ? <WinBar away={a} home={h} pAway={model.away / 100} awayColor={colors.away} homeColor={colors.home} size="md" /> : null}
+                {model && !started ? <WinBar away={a} home={h} pAway={model.away / 100} awayColor={colors.away} homeColor={colors.home} size="md" className="pointer-events-none" /> : null}
                 {model && started ? (
                     // Once the puck drops the pregame split becomes a thin, muted ribbon; the numbers are in the line below.
                     <div aria-hidden="true" className="flex h-1.5 overflow-hidden rounded-full opacity-60">

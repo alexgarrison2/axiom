@@ -31,9 +31,37 @@ export function hasMarket(p: Prediction): boolean {
     return p.home.marketOdds != null && p.away.marketOdds != null && p.home.marketWinPct != null && p.away.marketWinPct != null;
 }
 
-/** Published (model blended with market) win % pair. */
-export function modelPair(p: Prediction): ProbPair | null {
+/** Published forecast (model blended with the de-vigged market) win % pair. */
+export function forecastPair(p: Prediction): ProbPair | null {
     return hasPrediction(p) ? displayPair(p.away.winPct, p.home.winPct) : null;
+}
+
+/**
+ * @deprecated Name kept for callers that want the headline number: this is the
+ * blended forecast, not the pure model. Use forecastPair / modelOnlyPair.
+ */
+export const modelPair = forecastPair;
+
+/** The pure game model's win % pair, before the market blend. */
+export function modelOnlyPair(p: Prediction): ProbPair | null {
+    if (!hasPrediction(p)) return null;
+    if (p.away.modelWinPct == null && p.home.modelWinPct == null) return null;
+    return displayPair(p.away.modelWinPct, p.home.modelWinPct);
+}
+
+/** Weight on the model in the published blend (0.2 = 20% model, 80% market), or null. */
+export function modelWeight(p: Prediction): number | null {
+    const w = p.blendWeight;
+    return w != null && w > 0 && w <= 1 ? w : null;
+}
+
+/** One-sentence blend disclosure for the forecast tip. */
+export function blendNote(p: Prediction): string | null {
+    const w = modelWeight(p);
+    if (w == null) return null;
+    if (w >= 0.999) return 'This forecast is the model alone (no market blend).';
+    const mw = Math.round(w * 100);
+    return `Our forecast is the model blended with the de-vigged market: model ${mw}%, market ${100 - mw}%${onPriors(p) ? ' while the season is young' : ''} (blend weight ${w.toFixed(2)}).`;
 }
 
 /** De-vigged market win % pair. */

@@ -10,14 +10,14 @@ import { cn } from '@/lib/utils';
  * a look-alike button, and the first tap/click/Enter loads the real
  * (Radix Popover) tip and opens it. Keeps ~17KB off the home page's first load.
  */
-export function LazyInfoTip({ term, label, className }: { term: GlossaryTerm; label: string; className?: string }) {
+export function LazyInfoTip({ term, label, className, note }: { term: GlossaryTerm; label: string; className?: string; note?: string }) {
     const [Tip, setTip] = useState<ComponentType<InfoTipProps> | null>(null);
     const ref = useRef<HTMLSpanElement>(null);
 
     if (Tip) {
         return (
             <span ref={ref} className="inline-flex">
-                <Tip term={term} className={className} />
+                <Tip term={term} className={className} note={note} />
             </span>
         );
     }

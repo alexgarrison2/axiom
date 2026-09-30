@@ -4,7 +4,7 @@ import path from 'node:path';
 import Papa from 'papaparse';
 import { json, parseRecent, str, type RawRow } from './parse';
 import { buildIndex, leagueContext, lineupView, type DfoLineup, type ImpactData } from './lineup-impact';
-import { disambiguate, gsaxTag, shortDate } from './format';
+import { disambiguate, gsaxWindow, shortDate } from './format';
 import type { GoalieView, InjuryView, MatchupDetails, MatchupDetailsPayload, PickSummaries, SideDetails } from '../../types/prediction';
 import { SEASON_START_DATE } from '../season';
 import { TEAM_CODES, TEAM_NAMES } from '../../components/ui/team-color';
@@ -130,20 +130,41 @@ export function getMatchupDetails(): MatchupDetailsPayload {
         rows = [];
     }
     const teamGoalies = readJson<Record<string, string[]>>('teamGoalies') ?? {};
-    const lines = readJson<{ goalies?: Record<string, { cur: GoalieLine | null; prev: GoalieLine | null }> }>('goalieLines')?.goalies ?? {};
-    const ratings = readJson<Record<string, { gsax_per_game?: number | null; games_played?: number }>>('goalieRatings') ?? {};
+    const fold = (n: string) => n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+    const byFold = <T,>(o: Record<string, T>) => new Map(Object.entries(o).map(([k, v]) => [fold(k), v]));
+    const lines = byFold(readJson<{ goalies?: Record<string, { cur: GoalieLine | null; prev: GoalieLine | null }> }>('goalieLines')?.goalies ?? {});
+    const ratings = byFold(
+        readJson<Record<string, { gsax_per_game?: number | null; games_played?: number; gsax_total?: number | null; games_by_season?: Record<string, number> }>>('goalieRatings') ?? {},
+    );
     const injuries = readJson<Injury[]>('injuries') ?? [];
+    const goalieInjuries = new Map(injuries.filter(i => i && (i.position ?? '').toUpperCase() === 'G' && i.status && OUT_STATUSES.test(i.status)).map(i => [fold(i.name), i]));
     const ctx = leagueContext(buildIndex(readJson<ImpactData>('impact') ?? {}), readJson<Record<string, DfoLineup>>('lineups') ?? {});
 
     const goalieView = (name: string, starter: boolean): GoalieView => {
-        const l = lines[name];
-        const r = ratings[name];
+        const key = fold(name);
+        const l = lines.get(key);
+        const r = ratings.get(key);
         const g = r?.gsax_per_game;
         const gsax = typeof g === 'number' && Number.isFinite(g) ? Math.round(g * 100) / 100 : null;
-        // The rate is a regressed multi-season rating: tag it by the games the
-        // rating has actually absorbed this season, not by the goalie's line.
         const ratedGp = typeof r?.games_played === 'number' && r.games_played > 0 ? r.games_played : 0;
-        return { name, starter, cur: l?.cur ?? null, prev: l?.prev ?? null, gsaxPerGame: gsax, gsaxSeason: gsax == null ? null : gsaxTag(ratedGp) };
+        const tot = r?.gsax_total;
+        const inj = goalieInjuries.get(key);
+        return {
+            name,
+            starter,
+            cur: l?.cur ?? null,
+            prev: l?.prev ?? null,
+            gsaxPerGame: gsax,
+            gsaxSeason: gsax == null ? null : gsaxWindow(Object.keys(r?.games_by_season ?? {}), ratedGp > 0),
+            gsaxCur: ratedGp > 0 && typeof tot === 'number' && Number.isFinite(tot) ? Math.round(tot * 100) / 100 : null,
+            gsaxCurGp: ratedGp,
+            injury: inj
+                ? {
+                      status: statusShort(inj.status ?? ''),
+                      returnLabel: inj.returnDate && /^\d{4}-\d{2}-\d{2}/.test(inj.returnDate) ? shortDate(inj.returnDate.slice(0, 10)) : null,
+                  }
+                : null,
+        };
     };
 
     const games: Record<string, MatchupDetails> = {};

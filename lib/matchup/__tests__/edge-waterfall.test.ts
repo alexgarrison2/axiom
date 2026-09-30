@@ -71,3 +71,21 @@ describe('why this pick (E5)', () => {
         expect(w.end).toBe(47);
     });
 });
+
+describe('forecast vs model-only pairs', () => {
+    it('forecastPair is the blended win %, modelOnlyPair the pure model, each summing to 100', async () => {
+        const { forecastPair, modelOnlyPair, blendNote } = await import('../edge');
+        const base = all.find(x => hasMarket(x) && forecastPair(x))!;
+        const p = {
+            ...base,
+            blendWeight: 0.2,
+            away: { ...base.away, winPct: 48.6, modelWinPct: 61.1 },
+            home: { ...base.home, winPct: 51.4, modelWinPct: 38.9 },
+        };
+        expect(forecastPair(p)).toEqual({ away: 49, home: 51 });
+        expect(modelOnlyPair(p)).toEqual({ away: 61, home: 39 });
+        expect(modelPair(p)).toEqual(forecastPair(p));
+        expect(blendNote(p)).toMatch(/model 20%, market 80%/);
+        expect(modelOnlyPair({ ...p, away: { ...p.away, modelWinPct: null }, home: { ...p.home, modelWinPct: null } })).toBeNull();
+    });
+});

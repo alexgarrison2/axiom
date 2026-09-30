@@ -301,7 +301,7 @@ function NextGameCard({ team, hero }: { team: TeamMeta; hero: TeamHero }) {
                     </p>
                 </div>
                 <div className="ml-auto text-right">
-                    <p className="text-micro text-fg-3">Model win</p>
+                    <p className="text-micro text-fg-3">Forecast</p>
                     <p className={cn('text-title font-black tabular-nums', pct == null ? 'text-fg-3' : pct >= 50 ? 'text-pos' : 'text-fg-1')}>
                         {pct == null ? '—' : `${pct.toFixed(0)}%`}
                     </p>

@@ -46,7 +46,7 @@ export function WhyThisPick({ p }: { p: Prediction }) {
             {p.pickSummary ? <p className="text-body-sm text-fg-2">{p.pickSummary}</p> : null}
 
             <ol className="flex flex-col gap-1" aria-label={even ? 'From a coin flip, factor by factor' : `From a coin flip to ${fav.triCode} ${favPct.toFixed(1)}%`}>
-                <li className="grid grid-cols-[6.5rem_minmax(0,1fr)_3.25rem] items-center gap-2 text-caption">
+                <li className="grid grid-cols-[6.5rem_minmax(0,1fr)_4.75rem] items-center gap-2 text-caption">
                     <span className="text-fg-2">Coin flip</span>
                     <span aria-hidden="true" className="relative h-4">
                         <span className="absolute inset-y-0 border-l border-dashed border-fg-3" style={{ left: `${mid}%` }} />
@@ -60,7 +60,7 @@ export function WhyThisPick({ p }: { p: Prediction }) {
                     const color = s.delta >= 0 ? colors.home : colors.away;
                     const tiny = Math.abs(s.delta) < 0.05;
                     return (
-                        <li key={s.factor} className="grid grid-cols-[6.5rem_minmax(0,1fr)_3.25rem] items-center gap-2 text-caption">
+                        <li key={s.factor} className="grid grid-cols-[6.5rem_minmax(0,1fr)_4.75rem] items-center gap-2 text-caption">
                             <span className="truncate text-fg-1">{s.label}</span>
                             <span aria-hidden="true" className="relative h-4">
                                 <span className="absolute inset-y-0 border-l border-dashed border-fg-3/60" style={{ left: `${mid}%` }} />
@@ -70,13 +70,19 @@ export function WhyThisPick({ p }: { p: Prediction }) {
                                 />
                             </span>
                             <span className="text-right font-semibold tabular-nums text-fg-1">
-                                {tiny ? '0.0' : `${s.delta > 0 ? '+' : '−'}${Math.abs(s.delta).toFixed(1)}`}
-                                <span className="sr-only"> points toward {toward.commonName}</span>
+                                {tiny ? (
+                                    '0.0'
+                                ) : (
+                                    <>
+                                        +{Math.abs(s.delta).toFixed(1)} <span className="font-normal text-fg-2">{toward.triCode}</span>
+                                        <span className="sr-only"> points toward the {toward.commonName}</span>
+                                    </>
+                                )}
                             </span>
                         </li>
                     );
                 })}
-                <li className="mt-0.5 grid grid-cols-[6.5rem_minmax(0,1fr)_3.25rem] items-center gap-2 border-t border-line pt-1.5 text-caption">
+                <li className="mt-0.5 grid grid-cols-[6.5rem_minmax(0,1fr)_4.75rem] items-center gap-2 border-t border-line pt-1.5 text-caption">
                     <span className="font-bold text-fg-1">Our forecast</span>
                     <span aria-hidden="true" className="relative h-5">
                         <span
@@ -94,7 +100,7 @@ export function WhyThisPick({ p }: { p: Prediction }) {
                     </span>
                 </li>
             </ol>
-            <div aria-hidden="true" className="grid grid-cols-[6.5rem_minmax(0,1fr)_3.25rem] gap-2 text-micro text-fg-3">
+            <div aria-hidden="true" className="grid grid-cols-[6.5rem_minmax(0,1fr)_4.75rem] gap-2 text-micro text-fg-3">
                 <span />
                 <span className="flex justify-between">
                     <span>← {a.triCode}</span>
@@ -102,7 +108,14 @@ export function WhyThisPick({ p }: { p: Prediction }) {
                 </span>
                 <span />
             </div>
-            {p.confidenceNote ? <p className="text-caption text-fg-3">{p.confidenceNote}</p> : null}
+            {p.blendWeight != null && p.blendWeight > 0 && p.blendWeight < 0.999 ? (
+                <p className="text-caption text-fg-2">
+                    Model factors are weighted {Math.round(p.blendWeight * 100)}%
+                    {p.preseasonPrior || p.home.gp < 10 || p.away.gp < 10 ? ' while the season is young' : ''}; the betting market carries the other{' '}
+                    {100 - Math.round(p.blendWeight * 100)}%. Each bar shows points added toward one team.
+                </p>
+            ) : null}
+            {p.confidenceNote ? <p className="text-caption text-fg-3">{p.confidenceNote.replace(/model on preseason priors/g, 'model leans on preseason ratings')}</p> : null}
         </section>
     );
 }
