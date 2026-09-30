@@ -1,167 +1,120 @@
 """
 fetch_moneypuck.py
 
-Downloads per-player statistics from MoneyPuck.com for all 32 NHL teams.
-MoneyPuck provides free CSV downloads with 100+ advanced metrics per player,
-updated nightly throughout the season.
+Downloads league-wide per-player statistics from MoneyPuck.com using the
+three bulk files listed on https://moneypuck.com/data.htm (data is free for
+non-commercial use and must be credited to MoneyPuck.com):
 
-Data includes:
-  - On-ice / off-ice xGF% (core player impact isolation metric)
-  - Individual expected goals (individual shooting threat)
-  - High-danger shot and goal metrics
-  - Power play and penalty kill contributions
-  - Penalty drawn / taken rates
-  - Game Score (all-in-one performance)
+  seasonSummary/{year}/regular/skaters.csv   all skaters, all situations
+  seasonSummary/{year}/regular/goalies.csv   all goalies
+  playerBios/allPlayersLookup.csv            playerId -> bio lookup
 
-Output files (written to pipeline/ directory):
-  moneypuck_skaters.csv  - All skaters, all situations (5on5, 5on4, 4on5, all)
-  moneypuck_goalies.csv  - All goalies
-  moneypuck_bios.csv     - Player ID -> name bio lookup
+That is at most 3 HTTP requests (plus up to 2 retries each on 429/5xx),
+replacing the old 64 per-team URLs that tripped MoneyPuck's rate limit after
+~21 teams.  MoneyPuck refreshes nightly, so a fetch within the last
+FETCH_MAX_AGE_HOURS is reused instead of downloading again.
 
-Source: https://moneypuck.com/data.htm
+Output files (pipeline/, untracked):
+  moneypuck_skaters.csv, moneypuck_goalies.csv, moneypuck_bios.csv
+
+A download that is missing teams or rows never overwrites the previous CSV;
+the stale flag is recorded in public/data/manifest.json instead.
 """
 
 from season import START_YEAR
-import urllib.request
-import ssl
-import pandas as pd
-import json
 import os
-import time
 from io import StringIO
 
-# ── Config ──────────────────────────────────────────────────────────────────
+import pandas as pd
 
-# Standard NHL tricodes (MoneyPuck uses same as official NHL API)
-NHL_TEAMS = [
-    'ANA', 'BOS', 'BUF', 'CAR', 'CBJ', 'CGY', 'CHI', 'COL',
-    'DAL', 'DET', 'EDM', 'FLA', 'LAK', 'MIN', 'MTL', 'NJD',
-    'NSH', 'NYI', 'NYR', 'OTT', 'PHI', 'PIT', 'SEA', 'SJS',
-    'STL', 'TBL', 'TOR', 'UTA', 'VAN', 'VGK', 'WPG', 'WSH',
-]
+from http_utils import get_text, HttpError
+from io_utils import atomic_write_csv, record_source, source_age_hours, mark_stale
 
-# Season start year: 2025 = 2025-26 season
 CURRENT_SEASON = START_YEAR
 
-SKATER_URL  = "https://www.moneypuck.com/moneypuck/playerData/seasonSummary/{year}/regular/teams/skaters/{team}.csv"
-GOALIE_URL  = "https://www.moneypuck.com/moneypuck/playerData/seasonSummary/{year}/regular/teams/goalies/{team}.csv"
-BIOS_URL    = "https://www.moneypuck.com/moneypuck/playerData/playerBios/allPlayersLookup.csv"
+BASE = "https://moneypuck.com/moneypuck/playerData"
+SKATERS_URL = BASE + "/seasonSummary/{year}/regular/skaters.csv"
+GOALIES_URL = BASE + "/seasonSummary/{year}/regular/goalies.csv"
+BIOS_URL = BASE + "/playerBios/allPlayersLookup.csv"
 
-DELAY_SECONDS = 0.25  # polite pause between requests
-
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
-def _ssl_ctx():
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    return ctx
+FETCH_MAX_AGE_HOURS = 20       # at most one download per day
+MIN_TEAMS = 32
+MIN_SKATER_PLAYERS = 700       # distinct skaters in a complete season file
+RETRIES = 3                    # 1 try + 2 retries with exponential backoff
 
 
-def _fetch_url(url, timeout=20):
-    """Fetch a URL and return raw content string, or None on failure."""
+def _csv(url):
+    text = get_text(url, retries=RETRIES, backoff=2.0, timeout=30)
+    return pd.read_csv(StringIO(text))
+
+
+def _skater_check(df):
+    if df.empty or "team" not in df.columns:
+        return "empty or missing team column"
+    teams = df["team"].nunique()
+    players = df["playerId"].nunique() if "playerId" in df.columns else 0
+    if teams < MIN_TEAMS:
+        return f"only {teams} teams"
+    if players < MIN_SKATER_PLAYERS:
+        return f"only {players} players"
+    return None
+
+
+def fetch_moneypuck(season=CURRENT_SEASON, output_dir=None, force=False):
+    """Fetch MoneyPuck bulk files. Returns a status dict:
+    {'status': 'ok'|'skip'|'fail', 'rows_written': int, 'requests': int, 'reason': str}"""
+    output_dir = output_dir or os.path.dirname(os.path.abspath(__file__))
+    sk_path = os.path.join(output_dir, "moneypuck_skaters.csv")
+    gk_path = os.path.join(output_dir, "moneypuck_goalies.csv")
+    bio_path = os.path.join(output_dir, "moneypuck_bios.csv")
+
+    age = source_age_hours("moneypuck")
+    if not force and age is not None and age < FETCH_MAX_AGE_HOURS and os.path.exists(sk_path):
+        print(f"MoneyPuck fetched {age:.1f}h ago — reusing {os.path.basename(sk_path)}")
+        return {"status": "skip", "rows_written": 0, "requests": 0, "reason": "fresh"}
+
+    print("=== Fetching MoneyPuck bulk player data ===")
+    import http_utils
+    n0 = len(http_utils.REQUEST_LOG)
+    rows = 0
+
     try:
-        req = urllib.request.Request(
-            url,
-            headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'},
-        )
-        with urllib.request.urlopen(req, context=_ssl_ctx(), timeout=timeout) as resp:
-            return resp.read().decode('utf-8')
-    except Exception as e:
-        print(f"    [WARN] fetch failed {url}: {e}")
-        return None
+        skaters = _csv(SKATERS_URL.format(year=season))
+    except (HttpError, ValueError) as e:
+        mark_stale("moneypuck_skaters.csv", f"download failed: {e}")
+        print(f"  [FAIL] skaters.csv: {e} — keeping previous file")
+        return {"status": "fail", "rows_written": 0,
+                "requests": len(http_utils.REQUEST_LOG) - n0, "reason": str(e)}
 
+    if not atomic_write_csv(sk_path, skaters, validator=_skater_check, label="moneypuck_skaters.csv"):
+        return {"status": "fail", "rows_written": 0,
+                "requests": len(http_utils.REQUEST_LOG) - n0, "reason": _skater_check(skaters)}
+    rows += len(skaters)
+    print(f"  ✓ moneypuck_skaters.csv: {len(skaters)} rows, {skaters['team'].nunique()} teams, "
+          f"{skaters['playerId'].nunique()} players")
 
-def _csv_from_url(url):
-    """Fetch URL and parse as CSV DataFrame. Returns None on failure."""
-    content = _fetch_url(url)
-    if not content:
-        return None
     try:
-        return pd.read_csv(StringIO(content))
-    except Exception as e:
-        print(f"    [WARN] CSV parse error: {e}")
-        return None
+        goalies = _csv(GOALIES_URL.format(year=season))
+        if atomic_write_csv(gk_path, goalies, min_rows=60, label="moneypuck_goalies.csv"):
+            rows += len(goalies)
+            print(f"  ✓ moneypuck_goalies.csv: {len(goalies)} rows")
+    except (HttpError, ValueError) as e:
+        print(f"  [WARN] goalies.csv: {e}")
 
-# ── Core fetch ────────────────────────────────────────────────────────────────
+    try:
+        bios = _csv(BIOS_URL)
+        if atomic_write_csv(bio_path, bios, min_rows=1000, label="moneypuck_bios.csv"):
+            print(f"  ✓ moneypuck_bios.csv: {len(bios)} rows")
+    except (HttpError, ValueError) as e:
+        print(f"  [WARN] player bios: {e}")
 
-def fetch_moneypuck(season=CURRENT_SEASON, output_dir=None):
-    """
-    Fetch MoneyPuck player data for all 32 NHL teams and save CSVs.
-
-    Args:
-        season: Season start year (e.g., 2025 for 2025-26)
-        output_dir: Directory to write files (defaults to current directory)
-
-    Returns:
-        (skaters_df, goalies_df) DataFrames (possibly empty on failure)
-    """
-    if output_dir is None:
-        output_dir = os.path.dirname(os.path.abspath(__file__))
-
-    print("=== Fetching MoneyPuck Player Data ===")
-    skater_frames = []
-    goalie_frames = []
-
-    for i, team in enumerate(NHL_TEAMS, 1):
-        prefix = f"  [{i:2d}/32] {team}"
-
-        # --- Skaters ---
-        sk_url = SKATER_URL.format(year=season, team=team)
-        sk_df = _csv_from_url(sk_url)
-        if sk_df is not None and not sk_df.empty:
-            sk_df['team_abbrev'] = team
-            skater_frames.append(sk_df)
-            print(f"{prefix}  skaters={len(sk_df)}", end='')
-        else:
-            print(f"{prefix}  (no skaters)", end='')
-        time.sleep(DELAY_SECONDS)
-
-        # --- Goalies ---
-        gk_url = GOALIE_URL.format(year=season, team=team)
-        gk_df = _csv_from_url(gk_url)
-        if gk_df is not None and not gk_df.empty:
-            gk_df['team_abbrev'] = team
-            goalie_frames.append(gk_df)
-            print(f"  goalies={len(gk_df)}", end='')
-        time.sleep(DELAY_SECONDS)
-        print()
-
-    # ── Combine & save skaters ──
-    if skater_frames:
-        skaters = pd.concat(skater_frames, ignore_index=True)
-        out = os.path.join(output_dir, 'moneypuck_skaters.csv')
-        skaters.to_csv(out, index=False)
-        cols = len(skaters.columns)
-        situations = skaters['situation'].value_counts().to_dict() if 'situation' in skaters.columns else {}
-        print(f"\n  ✓ moneypuck_skaters.csv: {len(skaters)} rows, {cols} cols  situations={situations}")
-    else:
-        print("\n  [WARN] No skater data fetched — moneypuck_skaters.csv NOT written")
-        skaters = pd.DataFrame()
-
-    # ── Combine & save goalies ──
-    if goalie_frames:
-        goalies = pd.concat(goalie_frames, ignore_index=True)
-        out = os.path.join(output_dir, 'moneypuck_goalies.csv')
-        goalies.to_csv(out, index=False)
-        print(f"  ✓ moneypuck_goalies.csv: {len(goalies)} rows, {len(goalies.columns)} cols")
-    else:
-        goalies = pd.DataFrame()
-
-    # ── Player bios ──
-    print("  Fetching player bios...")
-    bios = _csv_from_url(BIOS_URL)
-    if bios is not None and not bios.empty:
-        out = os.path.join(output_dir, 'moneypuck_bios.csv')
-        bios.to_csv(out, index=False)
-        print(f"  ✓ moneypuck_bios.csv: {len(bios)} rows")
-    else:
-        print("  [WARN] Player bios not fetched")
-
-    print("=== MoneyPuck Fetch Complete ===\n")
-    return skaters, goalies
+    n_req = len(http_utils.REQUEST_LOG) - n0
+    record_source("moneypuck", season=season, requests=n_req)
+    print(f"=== MoneyPuck fetch complete ({n_req} requests) ===\n")
+    return {"status": "ok", "rows_written": rows, "requests": n_req, "reason": ""}
 
 
 if __name__ == "__main__":
+    import sys
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    fetch_moneypuck()
+    fetch_moneypuck(force="--force" in sys.argv)
