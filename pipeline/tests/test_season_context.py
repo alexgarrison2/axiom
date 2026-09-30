@@ -542,3 +542,15 @@ def test_breakdown_reconciles_with_displayed_numbers(name):
         # xG favourite == win % favourite
         assert (float(r["home_xg"]) >= float(r["away_xg"])) == (float(r["home_win_pct"]) >= 50) or \
             abs(float(r["home_win_pct"]) - 50) < 0.3
+
+
+def test_snapshot_keeps_ev_as_percent_and_adds_model_columns():
+    import snapshot_predictions as SP
+    v2 = {"schema_version": "2", "home_ev": "-0.0457", "away_ev": "0.0163"}
+    assert SP.format_ev(SP.ev_pct(v2, "home")) == "-4.57"
+    assert SP.format_ev(SP.ev_pct(v2, "away")) == "+1.63"
+    v1 = {"home_ev": "20.45"}
+    assert SP.format_ev(SP.ev_pct(v1, "home")) == "+20.45"
+    src = open(os.path.join(PIPELINE, "snapshot_predictions.py")).read()
+    for col in ("timestamp_utc", "model_version", "home_model%", "home_market%", "no_pregame_prediction"):
+        assert col in src
