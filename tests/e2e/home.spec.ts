@@ -114,6 +114,7 @@ test.describe('home slate', () => {
 
     test('collapsed cards show both tricodes, Model % and Market %', async ({ page }) => {
         await page.goto('/');
+        await settle(page);
         for (const card of await page.locator('article').all()) {
             const text = await card.innerText();
             const tris = text.match(/\b[A-Z]{3}\b/g) ?? [];
