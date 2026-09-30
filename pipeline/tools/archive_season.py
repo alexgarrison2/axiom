@@ -6,17 +6,22 @@ last season once season.py points at the new season.
 The season file is authoritative: any rows for that season already in the
 historical file (e.g. a partial mid-season snapshot) are replaced.
 
-Usage (from pipeline/): python archive_season.py [start_year]
+Usage (from pipeline/): python tools/archive_season.py [start_year]
 Defaults to the previous season. Safe to re-run.
 """
 import os
 import sys
 
+# Lives in pipeline/tools/: resolve imports and data files against pipeline/.
+_PIPELINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _PIPELINE not in sys.path:
+    sys.path.insert(0, _PIPELINE)
+
 import pandas as pd
 
 from season import PREV_START_YEAR, season_file, season_of_game_id
 
-PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
+PIPELINE_DIR = _PIPELINE
 
 
 def archive(kind, start_year):

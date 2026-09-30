@@ -5,7 +5,7 @@ from the NHL API to derive empirical playoff coefficients.
 Outputs: playoff_historical.csv — one row per team per game with
          all metrics needed to compare playoff vs regular season.
 
-Usage: python scrape_playoff_history.py
+Usage (from pipeline/): python tools/scrape_playoff_history.py
 """
 
 import urllib.request
@@ -18,7 +18,12 @@ import sys
 from datetime import datetime, timedelta
 
 BASE_URL = "https://api-web.nhle.com/v1"
-ssl._create_default_https_context = ssl._create_unverified_context
+# Verified TLS (certifi's CA bundle when available).
+try:
+    import certifi
+    _SSL_CTX = ssl.create_default_context(cafile=certifi.where())
+except ImportError:
+    _SSL_CTX = ssl.create_default_context()
 
 # Playoff windows (conservative — covers full playoff period each season)
 SEASONS = [
@@ -28,7 +33,7 @@ SEASONS = [
     {"season": "20242025", "start": "2025-04-19", "end": "2025-06-30"},
 ]
 
-OUTPUT_FILE = "playoff_historical.csv"
+OUTPUT_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "playoff_historical.csv")
 
 
 def get_url(url, retries=3):
@@ -36,7 +41,7 @@ def get_url(url, retries=3):
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     for attempt in range(retries):
         try:
-            with urllib.request.urlopen(req, timeout=15) as response:
+            with urllib.request.urlopen(req, timeout=15, context=_SSL_CTX) as response:
                 return json.loads(response.read().decode())
         except Exception as e:
             if attempt < retries - 1:

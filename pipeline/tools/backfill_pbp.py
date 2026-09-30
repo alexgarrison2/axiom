@@ -5,21 +5,26 @@ One-time (and safe-to-rerun) backfill of raw PBP events for all games that are
 present in the gamestats CSV but missing from the PBP CSV.
 
 Run from the pipeline/ directory:
-    python backfill_pbp.py
+    python tools/backfill_pbp.py
 
 After this script completes, run:
     python enrich_pbp.py          # adds home_on1-6 / away_on1-6 from shifts
     python calc_pbp_impact.py     # regenerates pbp_metrics.json
 """
 
-from season import season_file
 import os
 import sys
 import time
 import pandas as pd
 
+# Lives in pipeline/tools/: resolve imports and data files against pipeline/.
+_PIPELINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _PIPELINE not in sys.path:
+    sys.path.insert(0, _PIPELINE)
 # Ensure we're in the pipeline directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(_PIPELINE)
+
+from season import season_file
 
 from nhl_scraper_poc import get_pbp, extract_pbp_rows
 

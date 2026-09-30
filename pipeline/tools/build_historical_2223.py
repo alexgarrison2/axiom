@@ -16,7 +16,7 @@ Approach:
 
 Run from the project root:
   cd /path/to/nhl-predictions-app
-  python3 pipeline/build_historical_2223.py
+  python3 pipeline/tools/build_historical_2223.py
 """
 
 import os
@@ -26,7 +26,7 @@ import pickle
 import pandas as pd
 
 # ── Path setup ─────────────────────────────────────────────────────────────────
-_PIPELINE = os.path.dirname(os.path.abspath(__file__))
+_PIPELINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # tools/ -> pipeline/
 _ROOT = os.path.dirname(_PIPELINE)
 sys.path.insert(0, _PIPELINE)
 

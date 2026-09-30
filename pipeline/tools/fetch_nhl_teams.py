@@ -1,12 +1,15 @@
+import os
 import urllib.request
 import json
 import csv
 import ssl
 
-# Bypass SSL verification
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
+# Verified TLS (certifi's CA bundle when available).
+try:
+    import certifi
+    ctx = ssl.create_default_context(cafile=certifi.where())
+except ImportError:
+    ctx = ssl.create_default_context()
 
 # Hardcoded data for Arena and Colors
 team_data_extras = {
@@ -387,7 +390,9 @@ if __name__ == "__main__":
         "Hex Color 1", "Hex Color 2", "Hex Color 3"
     ]
     
-    with open('nhl_teams.csv', 'w', newline='', encoding='utf-8') as f:
+    # Writes pipeline/nhl_teams.csv; copy it to data/ and public/data/ so all three stay identical.
+    out_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'nhl_teams.csv')
+    with open(out_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(teams)

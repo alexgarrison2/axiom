@@ -8,7 +8,7 @@ Evaluates on held-out seasons using walk-forward validation:
   - Output log loss, Brier score, accuracy, and calibration analysis
 
 Usage:
-    python3 pipeline/backtest_model.py
+    python3 pipeline/tools/backtest_model.py
 """
 
 import os
@@ -32,7 +32,11 @@ from sklearn.metrics import log_loss, brier_score_loss, accuracy_score
 from sklearn.calibration import CalibratedClassifierCV
 from scipy.stats import poisson
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Lives in pipeline/tools/: resolve imports and data files against pipeline/.
+_PIPELINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _PIPELINE not in sys.path:
+    sys.path.insert(0, _PIPELINE)
+SCRIPT_DIR = _PIPELINE
 
 # Import feature engineering from training pipeline
 from train_game_model import (
