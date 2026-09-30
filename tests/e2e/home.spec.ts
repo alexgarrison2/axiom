@@ -73,13 +73,15 @@ test.describe('home slate', () => {
         expect(html).not.toContain('"history"');
     });
 
-    test('has one h1, date tabs labelled Today/Tomorrow, and no tab bar', async ({ page }) => {
+    test('has one h1 (the date), mono day chips with game counts, one legend, and no tab bar', async ({ page }) => {
         await page.goto('/');
         await expect(page.locator('h1')).toHaveCount(1);
+        await expect(page.locator('h1')).toContainText(/(Mon|Tue|Wed|Thu|Fri|Sat|Sun) · \w{3} \d/i);
         const tabs = page.getByRole('navigation', { name: 'Game day' }).getByRole('link');
         await expect(tabs.first()).toBeVisible();
         const labels = await tabs.allInnerTexts();
-        expect(labels.join(' ')).toMatch(/Today|Tomorrow|\w{3}, \w{3} \d/);
+        for (const l of labels) expect(l).toMatch(/^(TONIGHT|YESTERDAY|MON|TUE|WED|THU|FRI|SAT|SUN|[A-Z]{3} \d{1,2})\s+\d+$/);
+        await expect(page.getByText('Market', { exact: true })).toHaveCount(1);
         for (const gone of ['HISTORY', 'BRACKET', 'SKATERS']) await expect(page.getByRole('button', { name: gone, exact: true })).toHaveCount(0);
     });
 
@@ -112,26 +114,44 @@ test.describe('home slate', () => {
         }
     });
 
-    test('collapsed cards show both tricodes, Our forecast, Model only and Market %', async ({ page }) => {
+    test('collapsed cards: both tricodes, win bar with market tick, labels and numbers only', async ({ page }) => {
         await page.goto('/');
         await settle(page);
         for (const card of await page.locator('article').all()) {
             const text = await card.innerText();
             const tris = text.match(/\b[A-Z]{3}\b/g) ?? [];
             expect(new Set(tris).size).toBeGreaterThanOrEqual(2);
-            if (/Market/.test(text)) {
-                expect(text).toContain('Our forecast');
-                expect(text).toContain('Model only');
+            const bar = card.locator('[role="img"][aria-label*="win probability"]');
+            if (await bar.count()) {
+                const label = (await bar.getAttribute('aria-label')) ?? '';
+                if (/[+−-]\d{3}/.test(text)) expect(label).toMatch(/Market: [A-Z]{3} \d+%/);
             }
-            expect(text).not.toMatch(/\bGAS\b|\(L7\)|#16\b/);
+            // No sentences and no info icons on a collapsed card.
+            const visibleText = await card.evaluate(el => {
+                const c = el.cloneNode(true) as HTMLElement;
+                c.querySelectorAll('.sr-only').forEach(n => n.remove());
+                return (c.textContent ?? '').replace(/\s+/g, ' ');
+            });
+            expect(visibleText).not.toMatch(/[A-Za-z]{3,}(\s+[A-Za-z]{2,}){4,}/);
+            expect(await card.getByRole('button', { name: /^What (is|does)/ }).count()).toBe(0);
+            expect(text).not.toMatch(/\bGAS\b|\(L7\)|#16\b|Our forecast|Model only/);
+        }
+    });
+
+    test('goalie stat lines from last season carry a 25-26 tag', async ({ page }) => {
+        await page.goto('/');
+        for (const line of await page.locator('article h2 [class*="gstat"] > span:first-child').all()) {
+            const sr = (await line.locator('.sr-only').textContent()) ?? '';
+            if (/25-26 season/.test(sr)) await expect(line).toContainText('25-26');
+            else expect(sr).toMatch(/^This season/);
         }
     });
 
     test('never shows units while the edge gate is closed', async ({ page }) => {
         await page.goto('/');
-        const note = page.getByText("No bets: model hasn't beaten the market yet");
-        if (await note.count()) {
-            for (const card of await page.locator('article').all()) expect(await card.innerText()).not.toMatch(/\b\d+(\.\d)?u\b/);
+        for (const card of await page.locator('article').all()) {
+            const text = await card.innerText();
+            if (!/EDGE/i.test(text)) expect(text).not.toMatch(/\b\d+(\.\d)?u\b/);
         }
     });
 
@@ -144,8 +164,8 @@ test.describe('home slate', () => {
         const toggles = page.locator('article h2 button[aria-expanded]');
         const n = await toggles.count();
         for (let i = 0; i < n; i++) await toggles.nth(i).click();
-        await expect(page.getByRole('radio', { name: 'Lineups' }).first()).toBeVisible();
-        await page.getByRole('radio', { name: 'Lineups' }).first().click();
+        await expect(page.getByRole('radio', { name: 'Lines' }).first()).toBeVisible();
+        await page.getByRole('radio', { name: 'Lines' }).first().click();
         await settle(page);
         expect(urls.filter(u => u.includes('player_impact.json'))).toHaveLength(0);
         expect(urls.filter(u => u.includes('/api/matchup-details')).length).toBeLessThanOrEqual(1);
@@ -154,8 +174,11 @@ test.describe('home slate', () => {
     test('the why-this-pick waterfall fits a 390px phone', async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
         await page.goto('/');
-        await page.locator('article h2 button[aria-expanded]').first().click();
-        await expect(page.getByRole('heading', { name: /^Why (the .+ (is|are) favored|it's a coin flip)$/ }).first()).toBeVisible();
+        const card = page.locator('article').first();
+        await card.locator('h2 button[aria-expanded]').click();
+        await card.getByRole('radio', { name: 'Why' }).click();
+        await expect(card.getByRole('heading', { name: /^Why: / })).toHaveCount(1);
+        await expect(card.locator('[class*="whyFill"]').first()).toBeVisible();
         expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
     });
 
@@ -164,7 +187,7 @@ test.describe('home slate', () => {
         const card = page.locator('article').first();
         const toggle = card.locator('h2 button[aria-expanded]');
         await toggle.click();
-        await card.getByRole('radio', { name: 'Lineups' }).click();
+        await card.getByRole('radio', { name: 'Lines' }).click();
         const player = card.locator('[role="table"] [role="cell"] span.truncate').first();
         if (await player.count()) {
             await player.click();
@@ -187,7 +210,7 @@ test.describe('home slate', () => {
         });
         await page.goto('/');
         await settle(page);
-        const card = page.locator('article').filter({ hasText: 'Market' }).first();
+        const card = page.locator('article').filter({ has: page.locator('[role="img"][aria-label*="Market:"]') }).first();
         test.skip((await card.count()) === 0, 'no game with a market on this slate');
         await card.locator('h2 button[aria-expanded]').click();
         await card.getByRole('radio', { name: 'Odds' }).click();
@@ -198,12 +221,12 @@ test.describe('home slate', () => {
         const dialog = page.getByRole('dialog', { name: 'Line move' });
         await expect(dialog).toBeVisible();
         await expect(dialog).toContainText('moneyline and total');
-        await expect(dialog).toContainText('Total came down from 6 to 5.5');
+        await expect(dialog).toContainText('6 → 5.5');
         await expect(dialog.getByRole('columnheader', { name: 'Total' })).toBeVisible();
         const rows = dialog.locator('tbody tr');
         await expect(rows).toHaveCount(3);
         // First seen / Latest labels, and every time carries a zone (the test runs in America/New_York).
-        await expect(rows.first()).toContainText('First seen');
+        await expect(rows.first()).toContainText('First');
         await expect(rows.last()).toContainText(/Latest|Close/);
         for (const r of await rows.all()) await expect(r.locator('th')).toContainText(/\d{1,2}:\d{2} [AP]M E[DS]T/);
         await expect(rows.last()).toContainText('5.5');
@@ -240,9 +263,10 @@ test.describe('game lifecycle', () => {
         );
         await page.reload();
         const card = page.locator(`article#${first.anchor}`);
-        await expect(card).toContainText('FINAL/OT');
+        await expect(card).toContainText(/FINAL · OT/i);
         await expect(card).toContainText('1-0');
-        await expect(card).toContainText(/Model [✓✗]/);
+        await expect(card).toContainText(/Model pick (right|wrong)/);
+        await expect(card.locator('[role="img"][aria-label^="Pregame win probability"]')).toHaveClass(/opacity-\[\.55\]/);
         await expect(card).not.toContainText('Edge');
         expect(await card.innerText()).not.toMatch(/\b\d+(\.\d)?u\b/);
     });
@@ -258,7 +282,8 @@ test.describe('game lifecycle', () => {
         await page.reload();
         const card = page.locator(`article#${first.anchor}`);
         await expect(card).toContainText('P2 12:41');
-        await expect(card).toContainText(/Pregame [A-Z]{3} \d+%/);
+        await expect(card.locator('.live-dot')).toHaveCount(1);
+        await expect(card.locator('[role="img"][aria-label^="Pregame win probability"]')).toHaveCount(1);
         await expect(card).not.toContainText('Edge');
         const axe = await blockingAxeViolations(page);
         expect(axe, formatAxe(axe)).toEqual([]);
@@ -304,7 +329,8 @@ test.describe('URL state and routes', () => {
 
     test('an off day shows the next game day', async ({ page }) => {
         await page.goto('/?date=2030-01-01');
-        await expect(page.getByText('No games on Jan 1')).toBeVisible();
+        await expect(page.getByText('No games', { exact: true })).toBeVisible();
+        await expect(page.getByText('Jan 1', { exact: true })).toBeVisible();
     });
 
     test('legacy ?tab= links redirect to the new routes', async ({ request }) => {

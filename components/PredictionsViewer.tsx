@@ -11,9 +11,10 @@ import { useLiveScores } from '@/hooks/useLiveScores';
 import { useFavorites } from '@/hooks/useFavorites';
 import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
 import { bothOpeners } from '@/lib/matchup/pills';
-import { gateClosedSiteWide, slateGateReason } from '@/lib/matchup/edge';
-import { dayLabel, easternDate, shortDate, weekdayDate } from '@/lib/matchup/format';
-import { isFinalState, slateHeading, type ArchiveSlate } from '@/lib/matchup/archive';
+import { hasPrediction } from '@/lib/matchup/edge';
+import { easternDate, railHeading, railLabel, shortDate, weekdayDate } from '@/lib/matchup/format';
+import { isFinalState, type ArchiveSlate } from '@/lib/matchup/archive';
+import { WinBarLegend } from '@/components/ui/win-bar';
 import { cn } from '@/lib/utils';
 import styles from '@/components/matchup/slate.module.css';
 
@@ -36,13 +37,6 @@ export interface PredictionsViewerProps {
 }
 
 const noopSubscribe = () => () => {};
-
-/** Heading word for a slate day relative to today. */
-function dayWord(d: string, today: string): string {
-    const l = dayLabel(d, today);
-    if (l === 'Today') return 'Tonight';
-    return l === 'Tomorrow' || l === 'Yesterday' ? l : d < today ? 'Results' : 'Upcoming';
-}
 
 export default function PredictionsViewer({
     predictions,
@@ -74,8 +68,6 @@ export default function PredictionsViewer({
     }, [predictions, date]);
     const live = useLiveScores(date, dayGames);
     const slate = useMemo(() => sortSlate(dayGames, live, favorites), [dayGames, live, favorites]);
-    const gateClosed = gateClosedSiteWide(dayGames);
-    const gateReason = slateGateReason(dayGames);
     const swings = useMemo(() => (date ? biggestGames(implications, date) : []), [implications, date]);
     const offFile = archive && archive.date === date ? archive : null;
 
@@ -135,44 +127,21 @@ export default function PredictionsViewer({
     const next = date ? chips.map(([d]) => d).find(d => d > date && dates.includes(d)) : null;
     const nextCount = next ? predictions.filter(p => p.date === next).length : 0;
     const headDate = date ?? today;
-    const count = offFile ? offFile.games.length : slate.length;
     const finals = offFile ? offFile.games.filter(g => isFinalState(g.state)) : [];
     const graded = finals.filter(g => g.pick?.correct != null);
     const right = graded.filter(g => g.pick?.correct).length;
-    const upcomingOnly = offFile && offFile.games.length > 0 && !finals.length && offFile.games.every(g => g.state === 'FUT' || g.state === 'PRE');
-
-    let meta: string;
-    if (offFile) {
-        if (!offFile.games.length) meta = offFile.scheduleKnown ? 'No games' : 'Schedule unavailable';
-        else if (upcomingOnly) meta = `${count} game${count === 1 ? '' : 's'} scheduled · predictions post the morning of`;
-        else meta = `${count} game${count === 1 ? '' : 's'}${graded.length ? ` · model ${right}-${graded.length - right} on graded picks` : ''}`;
-    } else {
-        meta = count ? `${count} game${count === 1 ? '' : 's'}` : 'No games';
-    }
+    const legend = !offFile && slate.some(p => hasPrediction(p));
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Page header: what the site is, and which night this is. */}
-            <header className="flex flex-col gap-1">
-                <p className="hud-label text-brand">
-                    {dayWord(headDate, today)} <span aria-hidden="true">·</span> <span className="text-fg-2">{meta}</span>
-                </p>
-                <h1 className="text-h2 font-black tracking-tight text-fg-1 md:text-display">
+            {/* Date rail: heading · day chips · legend. Phones: heading + legend, chips on their own row. */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 md:gap-x-5">
+                <h1 className="heading-page order-1 whitespace-nowrap">
                     <span className="sr-only">NHL predictions for </span>
-                    {slateHeading(headDate, today)}
+                    {railHeading(headDate, today)}
                 </h1>
-                <p className="max-w-3xl text-body-sm text-fg-2 md:text-body">
-                    Free NHL win probabilities from an expected-goals model, checked against the betting market.{' '}
-                    <a href="/methodology" className="whitespace-nowrap font-semibold text-brand hover:underline">
-                        How it works <span aria-hidden="true">→</span>
-                    </a>
-                </p>
-            </header>
-
-            {/* Slate bar: day switcher + slate notes */}
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                <nav aria-label="Game day" className="-mx-1 max-w-full overflow-x-auto px-1 [scrollbar-width:none]">
-                    <ul className="flex items-center gap-1">
+                <nav aria-label="Game day" className="order-3 -mx-1 w-[calc(100%+0.5rem)] min-w-0 overflow-x-auto px-1 py-1 scrollbar-hide md:order-2 md:w-auto">
+                    <ul className="flex items-center gap-2">
                         {chips.map(([d, n]) => {
                             const on = d === date;
                             return (
@@ -186,27 +155,31 @@ export default function PredictionsViewer({
                                             if (!on) pick(d);
                                         }}
                                         className={cn(
-                                            'flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-body-sm font-semibold transition-colors coarse:min-h-11',
-                                            on ? 'border-brand/60 bg-brand/10 text-fg-1 shadow-[inset_0_0_0_1px_rgb(var(--brand-rgb)/0.25)]' : 'border-line text-fg-2 hover:border-line-strong hover:text-fg-1',
+                                            'flex min-h-8 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-caption font-medium uppercase tracking-[0.1em] transition-colors coarse:min-h-10 md:gap-2 md:px-3.5 md:tracking-chip',
+                                            on
+                                                ? 'border-brand/60 text-brand shadow-[inset_0_0_12px_rgba(41,231,255,.12),0_0_16px_rgba(41,231,255,.18)]'
+                                                : 'border-line text-fg-3 hover:border-line-strong hover:text-fg-1',
                                         )}
                                     >
-                                        {dayLabel(d, today)}
-                                        <span className={cn('text-caption tabular-nums', on ? 'text-brand' : 'text-fg-3')}>{n}</span>
+                                        {railLabel(d, today)}
+                                        <b className={cn('font-bold tabular-nums', on ? 'text-brand' : 'text-fg-3')}>{n}</b>
                                     </a>
                                 </li>
                             );
                         })}
                     </ul>
                 </nav>
-                {gateClosed && !offFile ? (
-                    <p className="text-caption text-fg-2" title={gateReason ?? undefined}>
-                        Picks only, no bets: our model hasn&apos;t beaten the market yet (see{' '}
-                        <a href="/accuracy" className="font-semibold text-brand hover:underline">
-                            Accuracy
-                        </a>
-                        )
-                    </p>
-                ) : null}
+                <div className="order-2 ml-auto flex items-center gap-4 md:order-3">
+                    {graded.length ? (
+                        <span className="text-micro uppercase tracking-wide text-fg-3">
+                            Picks{' '}
+                            <b className="font-bold tabular-nums text-fg-1">
+                                {right}-{graded.length - right}
+                            </b>
+                        </span>
+                    ) : null}
+                    {legend ? <WinBarLegend className="gap-3 md:gap-4" /> : null}
+                </div>
             </div>
 
             <div className={cn('flex flex-col gap-4 transition-opacity', pending && 'opacity-60')} aria-busy={pending || undefined}>
@@ -214,7 +187,7 @@ export default function PredictionsViewer({
                 {offFile ? null : <BiggestGames swings={swings} byId={byId} onJump={jump} />}
 
                 {offFile && offFile.games.length ? (
-                    <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label={`Games, ${weekdayDate(headDate)}`}>
+                    <ul className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 md:gap-4" aria-label={`Games, ${weekdayDate(headDate)}`}>
                         {offFile.games.map((g, i) => (
                             <li key={g.id} className={styles.rise} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
                                 <ArchiveCard g={g} />
@@ -222,7 +195,7 @@ export default function PredictionsViewer({
                         ))}
                     </ul>
                 ) : slate.length ? (
-                    <ul className="grid grid-cols-1 gap-4 xl:grid-cols-2" aria-label={`Games, ${weekdayDate(headDate)}`}>
+                    <ul className="grid grid-cols-1 items-start gap-3 lg:grid-cols-2 lg:gap-4" aria-label={`Games, ${weekdayDate(headDate)}`}>
                         {slate.map((p, i) => (
                             <li key={p.id} className={styles.rise} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
                                 <MatchupCard
@@ -239,11 +212,9 @@ export default function PredictionsViewer({
                         ))}
                     </ul>
                 ) : (
-                    <div className="flex flex-col items-center gap-2 rounded-card border border-dashed border-line-strong px-6 py-12 text-center">
-                        <p className="text-title font-bold text-fg-1">
-                            {!date ? 'No games scheduled' : offFile && !offFile.scheduleKnown ? `No predictions for ${shortDate(date)}` : `No games on ${shortDate(date)}`}
-                        </p>
-                        {offFile && !offFile.scheduleKnown ? <p className="text-body-sm text-fg-2">We couldn&apos;t reach the NHL schedule. Try again in a minute.</p> : null}
+                    <div className="panel flex flex-col items-center gap-2 border-dashed px-6 py-10 text-center">
+                        <p className="heading-section">{offFile && !offFile.scheduleKnown ? 'Schedule unavailable' : 'No games'}</p>
+                        {date ? <p className="label">{shortDate(date)}</p> : null}
                         {next ? (
                             <a
                                 href={`/?date=${next}`}
@@ -251,13 +222,11 @@ export default function PredictionsViewer({
                                     e.preventDefault();
                                     pick(next);
                                 }}
-                                className="text-body font-semibold text-brand hover:underline"
+                                className="mt-1 inline-flex min-h-8 items-center gap-2 rounded-full border border-line px-3.5 text-caption font-medium uppercase tracking-chip text-brand hover:border-brand/60"
                             >
-                                Next: {shortDate(next)} ({nextCount} game{nextCount === 1 ? '' : 's'}) →
+                                Next · {weekdayDate(next)} · {nextCount} <span aria-hidden="true">→</span>
                             </a>
-                        ) : (
-                            <p className="text-body-sm text-fg-2">New predictions appear here each morning.</p>
-                        )}
+                        ) : null}
                     </div>
                 )}
             </div>

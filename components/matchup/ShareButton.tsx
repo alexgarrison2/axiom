@@ -33,9 +33,9 @@ export function ShareButton({ p, title, anchor }: { p: Prediction; title: string
                 onClick={share}
                 aria-label={`Share ${title}`}
                 title="Share this game"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-control text-fg-3 transition-colors hover:bg-surface-2 hover:text-fg-1 coarse:h-11 coarse:w-11 coarse:-my-1.5"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-control text-fg-3 transition-colors hover:bg-surface-2 hover:text-fg-1 coarse:-my-2 coarse:h-11 coarse:w-11"
             >
-                <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4">
+                <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3.5 w-3.5">
                     <path d="M8 10V2.5M5 5l3-3 3 3M3.5 8.5v4.5h9V8.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
             </button>

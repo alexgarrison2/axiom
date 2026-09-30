@@ -12,7 +12,7 @@ export interface Jump {
     (date: string, anchor: string): void;
 }
 
-/** "Your team": each followed team's next game, win %, record and playoff odds. */
+/** "Your team": each followed team's next game, win % and playoff odds, as one-line chips. */
 export function YourTeamStrip({
     favorites,
     predictions,
@@ -41,14 +41,13 @@ export function YourTeamStrip({
     if (!items.length) return null;
 
     return (
-        <section aria-labelledby="your-team" className="flex flex-col gap-2">
-            <h2 id="your-team" className="hud-label text-fg-2">
+        <section aria-labelledby="your-team" className="flex items-center gap-3">
+            <h2 id="your-team" className="label shrink-0">
                 Your team{items.length > 1 ? 's' : ''}
             </h2>
-            <ul className="flex snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+            <ul className="flex min-w-0 snap-x gap-2 overflow-x-auto scrollbar-hide">
                 {items.map(({ tri, g }) => {
                     const side = g.home.team.triCode === tri ? 'home' : 'away';
-                    const me = g[side];
                     const opp = g[side === 'home' ? 'away' : 'home'];
                     const m = modelPair(g);
                     const lv = live[g.id];
@@ -59,30 +58,32 @@ export function YourTeamStrip({
                             <button
                                 type="button"
                                 onClick={() => onJump(g.date, cardAnchor(g))}
-                                className="flex min-h-11 min-w-[16rem] items-center gap-3 rounded-control border bg-surface-1 px-3 py-2 text-left transition-colors hover:bg-surface-2"
+                                className="flex min-h-9 items-center gap-2 whitespace-nowrap rounded-full border px-3 text-caption transition-colors hover:bg-surface-2 coarse:min-h-11"
                                 style={{ borderColor: `${teamColor(tri)}80` }}
                             >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={me.team.logoUrl} alt="" width={28} height={28} className="h-7 w-7" />
-                                <span className="flex min-w-0 flex-col">
-                                    <span className="text-body-sm font-bold text-fg-1">
-                                        {me.team.commonName} {side === 'home' ? 'vs' : '@'} {opp.team.triCode}
-                                        {me.record ? <span className="ml-1.5 font-normal tabular-nums text-fg-2">{me.record}</span> : null}
-                                    </span>
-                                    <span className="text-caption text-fg-2">
-                                        {ph === 'live' ? (
-                                            <span className="font-semibold text-neg">Live {hasScore(lv) ? `${lv.away.score}-${lv.home.score}` : ''}</span>
-                                        ) : ph === 'final' ? (
-                                            <span>Final {hasScore(lv) ? `${lv.away.score}-${lv.home.score}` : ''}</span>
-                                        ) : (
-                                            <>
-                                                {dayLabel(g.date, today)} · <GameTime iso={g.startTimeUtc} />
-                                            </>
-                                        )}
-                                        {m && ph === 'pre' ? <span className="font-semibold text-fg-1"> · {side === 'home' ? m.home : m.away}% to win</span> : null}
-                                        {odds != null ? <span> · Playoffs {odds.toFixed(0)}%</span> : null}
-                                    </span>
+                                <img src={`/logos/${tri}.svg`} alt="" width={20} height={20} className="h-5 w-5" />
+                                <span className="font-bold text-fg-1">
+                                    {tri} {side === 'home' ? 'vs' : '@'} {opp.team.triCode}
                                 </span>
+                                <span className="uppercase tracking-wide text-fg-3">
+                                    {ph === 'live' ? (
+                                        <span className="font-bold text-pos">Live {hasScore(lv) ? `${lv.away.score}-${lv.home.score}` : ''}</span>
+                                    ) : ph === 'final' ? (
+                                        <span>Final {hasScore(lv) ? `${lv.away.score}-${lv.home.score}` : ''}</span>
+                                    ) : (
+                                        <>
+                                            {g.date === today ? '' : `${dayLabel(g.date, today)} · `}
+                                            <GameTime iso={g.startTimeUtc} />
+                                        </>
+                                    )}
+                                </span>
+                                {m && ph === 'pre' ? <span className="font-bold tabular-nums text-fg-1">{side === 'home' ? m.home : m.away}%</span> : null}
+                                {odds != null ? (
+                                    <span className="tabular-nums text-fg-3">
+                                        PO <span className="text-fg-1">{odds.toFixed(0)}%</span>
+                                    </span>
+                                ) : null}
                             </button>
                         </li>
                     );
@@ -92,15 +93,15 @@ export function YourTeamStrip({
     );
 }
 
-/** "Biggest games tonight": only when some team's playoff odds swing ≥3 pts on the result. */
+/** Playoff stakes: only when some team's playoff odds swing ≥3 pts on the result. */
 export function BiggestGames({ swings, byId, onJump }: { swings: GameSwing[]; byId: Map<string, Prediction>; onJump: Jump }) {
     if (!swings.length) return null;
     return (
-        <section aria-labelledby="biggest-games" className="flex flex-col gap-2">
-            <h2 id="biggest-games" className="hud-label text-fg-2">
-                Biggest games tonight · playoff odds at stake
+        <section aria-labelledby="biggest-games" className="flex items-center gap-3">
+            <h2 id="biggest-games" className="label shrink-0">
+                Stakes
             </h2>
-            <ol className="flex snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+            <ol className="flex min-w-0 snap-x gap-2 overflow-x-auto scrollbar-hide">
                 {swings.map(s => {
                     const p = byId.get(String(s.gameId));
                     const t = [s.home, s.away].filter(Boolean).sort((x, y) => (y?.swing ?? 0) - (x?.swing ?? 0))[0];
@@ -110,13 +111,13 @@ export function BiggestGames({ swings, byId, onJump }: { swings: GameSwing[]; by
                             <button
                                 type="button"
                                 onClick={() => onJump(p.date, cardAnchor(p))}
-                                className="flex min-h-11 flex-col rounded-control border border-line bg-surface-1 px-3 py-2 text-left transition-colors hover:border-line-strong hover:bg-surface-2"
+                                className="flex min-h-9 items-center gap-2 whitespace-nowrap rounded-full border border-line px-3 text-caption transition-colors hover:border-line-strong hover:bg-surface-2 coarse:min-h-11"
                             >
-                                <span className="text-body-sm font-bold text-fg-1">
+                                <span className="font-bold text-fg-1">
                                     {p.away.team.triCode} @ {p.home.team.triCode}
                                 </span>
-                                <span className="text-caption tabular-nums text-fg-2">
-                                    {t.tri} {t.base.toFixed(0)}% → <span className="text-pos">{t.win.toFixed(0)}% W</span> / <span className="text-neg">{t.lose.toFixed(0)}% L</span>
+                                <span className="tabular-nums text-fg-3">
+                                    {t.tri} {t.base.toFixed(0)}% <span className="text-pos">W {t.win.toFixed(0)}</span> <span className="text-neg">L {t.lose.toFixed(0)}</span>
                                 </span>
                             </button>
                         </li>

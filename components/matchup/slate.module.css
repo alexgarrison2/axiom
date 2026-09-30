@@ -18,3 +18,140 @@
     animation: none;
   }
 }
+
+/* ---- Matchup card: one team side --------------------------------------
+   Phone card (<30rem): crest, name and stat lines stacked on the outer edge.
+   Mid card: crest + name on one row, the stat lines under both.
+   Wide card (≥34rem): the crest spans the name and stat lines. */
+.side {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "crest"
+    "name"
+    "stats";
+  justify-items: start;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 2px;
+}
+.side.home {
+  justify-items: end;
+}
+.crestSlot {
+  grid-area: crest;
+  position: relative;
+  margin-bottom: 4px;
+}
+.crest {
+  width: 60px;
+  height: 60px;
+}
+.name {
+  grid-area: name;
+  min-width: 0;
+  max-width: 100%;
+}
+.home .name {
+  text-align: right;
+}
+.stats {
+  grid-area: stats;
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex-direction: column;
+}
+
+@container (min-width: 30rem) {
+  .side {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "crest name"
+      "stats stats";
+    justify-items: stretch;
+  }
+  .side.home {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name crest"
+      "stats stats";
+  }
+  .crestSlot {
+    margin-bottom: 0;
+  }
+  .crest {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@container (min-width: 34rem) {
+  .side {
+    grid-template-rows: 1fr auto auto 1fr;
+    grid-template-areas:
+      "crest ."
+      "crest name"
+      "crest stats"
+      "crest .";
+    column-gap: 14px;
+    row-gap: 2px;
+  }
+  .side.home {
+    grid-template-areas:
+      ". crest"
+      "name crest"
+      "stats crest"
+      ". crest";
+  }
+  .crest {
+    width: 88px;
+    height: 88px;
+  }
+}
+
+/* Tiny goalie stat lines (brief: 10-11px mono, dim; the site floor is 11px). */
+.gstat {
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: -0.02em;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The muted "25-26" season tag inside a stat line. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--mute);
+  border-radius: 3px;
+  padding: 0 1px;
+  font-size: 11px;
+  line-height: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+/* Diverging why-bar: grows out from the centre line. */
+.why {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+.why::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: var(--mute);
+}
+.whyFill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+}

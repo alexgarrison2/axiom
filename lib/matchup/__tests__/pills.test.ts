@@ -13,9 +13,9 @@ describe('getTeamPills (E2)', () => {
             const both = isOpener(p.home) && isOpener(p.away);
             for (const side of ['home', 'away'] as const) {
                 if (!isOpener(p[side])) continue;
-                expect(texts(getTeamPills(p, side))).toEqual(both ? [] : ['Season opener']);
+                expect(texts(getTeamPills(p, side))).toEqual(both ? [] : ['Opener']);
             }
-            expect(getGamePills(p).map(pillText).includes('Season opener · both teams')).toBe(both);
+            expect(getGamePills(p).map(pillText).includes('Opener · both')).toBe(both);
         }
     });
 
@@ -27,17 +27,17 @@ describe('getTeamPills (E2)', () => {
             home: { ...base.home, gp: 0, isB2b: false, restDays: 4, gamesInLast4: 1 },
         };
         const away = texts(getTeamPills(p, 'away'));
-        expect(away).toContain('Back-to-back');
-        expect(away).not.toContain('Season opener');
-        expect(texts(getTeamPills(p, 'home'))).toEqual(['Season opener']);
-        expect(getGamePills(p).map(pillText)).not.toContain('Season opener · both teams');
+        expect(away).toContain('B2B');
+        expect(away).not.toContain('Opener');
+        expect(texts(getTeamPills(p, 'home'))).toEqual(['Opener']);
+        expect(getGamePills(p).map(pillText)).not.toContain('Opener · both');
     });
 
     it('drops the opener chip entirely when the whole slate is openers', () => {
         for (const p of opening) {
             const q = { ...p, slateAllOpeners: true };
             const all = [...getTeamPills(q, 'home'), ...getTeamPills(q, 'away'), ...getGamePills(q)].map(pillText).join(' | ');
-            expect(all).not.toContain('Season opener');
+            expect(all).not.toContain('Opener');
         }
     });
 
@@ -94,13 +94,13 @@ describe('getTeamPills (E2)', () => {
 
     it('uses rest columns for fatigue (no GAS)', () => {
         const p = { ...week3[0], away: { ...week3[0].away, isB2b: true } };
-        expect(texts(getTeamPills(p, 'away'))).toContain('Back-to-back');
+        expect(texts(getTeamPills(p, 'away'))).toContain('B2B');
     });
 
     it('labels head-to-head "this season" from the second meeting, prior season before that', () => {
         const met1 = byTeams(week3, 'NYI', 'TOR');
         expect(met1.h2hGp).toBe(1);
-        expect(pillText(getGamePills(met1)[0])).toBe('H2H this season NYI 1-0-0');
+        expect(pillText(getGamePills(met1)[0])).toBe('H2H NYI 1-0-0');
         const never = byTeams(week3, 'TBL', 'LAK');
         expect(getGamePills(never)).toEqual([]);
         expect(priorSeriesNote(never)).toBe('25-26 season series: TBL 1-1-0 vs LAK');

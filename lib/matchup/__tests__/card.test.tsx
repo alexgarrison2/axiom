@@ -3,12 +3,14 @@ import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MatchupCard } from '../../../components/matchup/MatchupCard';
 import { GoaliesPanel } from '../../../components/matchup/GoaliesPanel';
+import { ArchiveCard } from '../../../components/matchup/ArchiveCard';
 import type { LiveGame } from '../lifecycle';
 import type { Prediction } from '../../../types/prediction';
 import { byTeams, fixture, withOverrides } from './fixtures';
 import { compactForClient } from '../parse';
 import { WhyThisPick } from '../../../components/matchup/WhyThisPick';
-import { gsaxTag, gsaxWindow } from '../format';
+import { goalieSeasonLine, gsaxTag, gsaxWindow, parseGoalieLine, railHeading, railLabel } from '../format';
+import { modelLean } from '../edge';
 import type { GameDetails } from '../../client-data';
 
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
@@ -23,6 +25,25 @@ function card(p: Prediction, live: LiveGame | null = null) {
 }
 
 const text = (el: HTMLElement) => el.textContent ?? '';
+
+/** Visible text only (drops .sr-only copies), with spaces between elements. */
+function visible(el: HTMLElement): string {
+    const c = el.cloneNode(true) as HTMLElement;
+    c.querySelectorAll('.sr-only').forEach(n => n.remove());
+    return (c.innerHTML.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim());
+}
+
+const final = (p: Prediction, away: number, home: number, last: string | null = null): LiveGame => ({
+    id: p.id,
+    state: 'OFF',
+    period: last === 'OT' ? 4 : 3,
+    periodType: last ?? 'REG',
+    clock: '00:00',
+    intermission: false,
+    lastPeriodType: last,
+    away: { score: away, sog: 20 },
+    home: { score: home, sog: 15 },
+});
 
 describe('matchup card on the opening-night fixture (E2/E3)', () => {
     const opening = fixture('opening_night');
@@ -39,6 +60,33 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
         }
     });
 
+    it("tags every goalie season line from last season 25-26 (0 GP this season)", () => {
+        for (const p of opening) {
+            const el = card(p);
+            for (const side of ['away', 'home'] as const) {
+                const s = p[side];
+                if (!s.goalie) continue;
+                const prev = parseGoalieLine(s.goaliePrev);
+                expect(s.goalieCurGp ?? 0).toBe(0);
+                if (!prev) continue;
+                const line = [...el.querySelectorAll<HTMLElement>('[class*="gstat"] > span')].find(n => text(n).includes(prev.record));
+                expect(line, `${s.team.triCode} ${prev.record}`).toBeTruthy();
+                expect(visible(line!)).toContain('25-26');
+                expect(text(line!)).toContain('25-26 season');
+            }
+            cleanup();
+        }
+    });
+
+    it("shows this season's goalie line, untagged, once he has played", () => {
+        const p = withOverrides(byTeams(opening, 'PIT', 'PHI'), {}, { away: { goalieCur: '(1-0-0) | .950 | 1.00', goalieCurGp: 1 } });
+        const line = goalieSeasonLine(p.away)!;
+        expect(line).toEqual({ tag: null, record: '1-0-0', sv: '.950', gaa: '1.00' });
+        const t = text(card(p));
+        expect(t).toContain('This season: 1-0-0');
+        expect(goalieSeasonLine({ goalieCur: '(1-0-0) | .950 | 1.00', goalieCurGp: 0, goaliePrev: '(19-12-8) | .888 | 3.07' })?.tag).toBe('25-26');
+    });
+
     it('puts both tricodes in the collapsed card and an expand toggle in the h2', () => {
         const p = byTeams(opening, 'EDM', 'VAN');
         const el = card(p);
@@ -50,12 +98,23 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
         expect(el.querySelector('article')?.getAttribute('aria-labelledby')).toBeTruthy();
     });
 
-    it('shows Model % and Market % on a card with odds, and no units while the gate is closed', () => {
-        const t = text(card(byTeams(opening, 'PIT', 'PHI')));
-        expect(t).toContain('Model');
-        expect(t).toContain('Market');
-        expect(t).not.toMatch(/\d(\.\d)?u\b/);
-        expect(t).not.toContain('Edge');
+    it('draws the market tick and model diamond, shows book odds, and no units while the gate is closed', () => {
+        const p = byTeams(opening, 'PIT', 'PHI');
+        const el = card(p);
+        const bar = el.querySelector('[role="img"]')!;
+        expect(bar.getAttribute('aria-label')).toMatch(/Market: PIT \d+%\. Model: PIT \d+%\./);
+        expect(text(el)).toContain('−');
+        expect(text(el)).not.toMatch(/\d(\.\d)?u\b/);
+        expect(text(el)).not.toContain('Edge');
+    });
+
+    it('has no sentence-length copy on a collapsed card', () => {
+        for (const p of [...opening, ...fixture('week3'), ...fixture('playoffs')]) {
+            const v = visible(card(p));
+            expect(v, p.legacyId).not.toMatch(/[A-Za-z]{3,}(\s+[A-Za-z]{2,}){4,}/);
+            expect(v).not.toMatch(/Our forecast|Model only|Early season|leans on|No market line/);
+            cleanup();
+        }
     });
 
     it('renders the compacted page payload exactly like the full row', () => {
@@ -67,8 +126,21 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
         }
     });
 
-    it('shows "Season opener" for 0-GP teams', () => {
-        expect(text(card(byTeams(opening, 'CHI', 'VGK')))).toContain('Season opener');
+    it('shows one Opener chip for 0-GP teams', () => {
+        const el = card(byTeams(opening, 'CHI', 'VGK'));
+        expect(visible(el)).toMatch(/\bOpener\b/);
+        expect(el.querySelectorAll('[title^="Season opener"]').length).toBe(1);
+    });
+
+    it('flags a big model lean with the magenta diamond copy', () => {
+        const p = byTeams(opening, 'CHI', 'VGK');
+        const lean = modelLean(p)!;
+        expect(lean.tri).toBe('VGK');
+        expect(lean.pct).toBe(64);
+        expect(visible(card(p))).toContain('◆ 64 VGK');
+        cleanup();
+        expect(modelLean(byTeams(opening, 'EDM', 'VAN'))).toBeNull();
+        expect(visible(card(byTeams(opening, 'EDM', 'VAN')))).not.toContain('◆');
     });
 });
 
@@ -76,51 +148,42 @@ describe('lifecycle states on the card (E1)', () => {
     const opening = fixture('opening_night');
     const flaCar = byTeams(opening, 'FLA', 'CAR');
 
-    it('FINAL 1-0 OT: FINAL/OT, 1-0, Model ✗, no EV or units', () => {
-        const t = text(
-            card(flaCar, {
-                id: flaCar.id,
-                state: 'OFF',
-                period: 4,
-                periodType: 'OT',
-                clock: '00:05',
-                intermission: false,
-                lastPeriodType: 'OT',
-                away: { score: 1, sog: 20 },
-                home: { score: 0, sog: 15 },
-            }),
-        );
-        expect(t).toContain('FINAL/OT');
+    it('FINAL 1-0 OT: FINAL · OT, 1-0, ✕ Pick, dimmed bar, no EV or units', () => {
+        const el = card(flaCar, final(flaCar, 1, 0, 'OT'));
+        const t = text(el);
+        expect(t).toContain('FINAL · OT');
         expect(t).toContain('1-0');
-        expect(t).toContain('Model ✗');
+        expect(t).toContain('Model pick wrong');
+        expect(visible(el)).toContain('✕ Pick');
+        expect(el.querySelector('[role="img"]')?.className).toContain('opacity-[.55]');
         expect(t).not.toContain('EV');
         expect(t).not.toMatch(/\d(\.\d)?u\b/);
         expect(t).not.toContain('Edge');
     });
 
-    it('LIVE: period and clock, pregame % dimmed, no edge or units', () => {
+    it('LIVE: green clock with a live dot, pregame bar dimmed, no edge or units', () => {
         const gated = withOverrides(flaCar, { evGated: true, betSide: 'home', units: 1.5, gameState: 'LIVE' }, { home: { ev: 0.05 } });
-        const t = text(
-            card(gated, {
-                id: flaCar.id,
-                state: 'LIVE',
-                period: 2,
-                periodType: 'REG',
-                clock: '12:41',
-                intermission: false,
-                lastPeriodType: null,
-                away: { score: 1, sog: 14 },
-                home: { score: 1, sog: 9 },
-            }),
-        );
+        const el = card(gated, {
+            id: flaCar.id,
+            state: 'LIVE',
+            period: 2,
+            periodType: 'REG',
+            clock: '12:41',
+            intermission: false,
+            lastPeriodType: null,
+            away: { score: 1, sog: 14 },
+            home: { score: 1, sog: 9 },
+        });
+        const t = text(el);
         expect(t).toContain('P2 12:41');
         expect(t).toContain('SOG 14–9');
-        expect(t).toMatch(/Pregame FLA \d+% · CAR \d+%/);
+        expect(el.querySelector('.live-dot')).not.toBeNull();
+        expect(el.querySelector('[role="img"]')?.getAttribute('aria-label')).toMatch(/^Pregame win probability: FLA \d+%, CAR \d+%/);
         expect(t).not.toContain('Edge');
         expect(t).not.toContain('1.5u');
     });
 
-    it('no_pregame_prediction: says so, no win bar', () => {
+    it('no_pregame_prediction: says No pick, no win bar', () => {
         const mtlTor = byTeams(opening, 'MTL', 'TOR');
         const el = card(mtlTor, {
             id: mtlTor.id,
@@ -133,7 +196,7 @@ describe('lifecycle states on the card (E1)', () => {
             away: { score: 2, sog: 10 },
             home: { score: 1, sog: 8 },
         });
-        expect(text(el)).toContain('No pregame prediction');
+        expect(text(el)).toContain('No pick');
         expect(el.querySelector('[role="img"][aria-label*="win probability"]')).toBeNull();
     });
 
@@ -146,20 +209,17 @@ describe('lifecycle states on the card (E1)', () => {
         expect(m).not.toBeNull();
         const [awayN, homeN] = [Number(m![1]), Number(m![2])];
         expect(awayN + homeN).toBe(100);
-        // Final width in the markup; the fill only scales from 50% on first paint.
         const fill = bar!.querySelector<HTMLElement>('.wb-fill')!;
         expect(fill.style.width).toBe(`${awayN}%`);
         expect(bar!.className).toContain('wb-anim');
-        // Tween targets are the final numbers, and plain text carries them too.
         const targets = [...bar!.querySelectorAll<HTMLElement>('.wb-num')].map(n => n.style.getPropertyValue('--wb-to'));
         expect(targets).toEqual([String(awayN), String(homeN)]);
         expect(bar!.textContent).toContain(`${awayN}%`);
         expect(bar!.textContent).toContain(`${homeN}%`);
-        // Nothing is hidden with opacity for the server render.
         expect(bar!.outerHTML).not.toMatch(/opacity:\s*0/);
     });
 
-    it('shows the edge chip with units only when the gate is open', () => {
+    it('shows the edge flag with units only when the gate is open', () => {
         const p = byTeams(opening, 'PIT', 'PHI');
         const open = withOverrides(p, { evGated: true, betSide: 'away', units: 0.8 }, { away: { ev: 0.041 } });
         const t = text(card(open));
@@ -168,33 +228,56 @@ describe('lifecycle states on the card (E1)', () => {
     });
 });
 
-describe('playoff goalie line (Goalies tab)', () => {
+describe('archive card', () => {
+    it('shows the score, FINAL and the graded pick flag', () => {
+        const { container } = render(
+            <ArchiveCard
+                g={{
+                    id: '1',
+                    date: '2026-09-29',
+                    startTimeUtc: '2026-09-29T23:00:00Z',
+                    state: 'OFF',
+                    lastPeriodType: 'OT',
+                    away: { tri: 'VAN', name: 'Canucks', score: 6 },
+                    home: { tri: 'EDM', name: 'Oilers', score: 5 },
+                    pick: { tri: 'EDM', pct: 73, correct: false },
+                }}
+            />,
+        );
+        const v = visible(container);
+        expect(v).toContain('FINAL · OT');
+        expect(v).toMatch(/6 - 5/);
+        expect(v).toContain('✕ Pick EDM 73');
+        expect(text(container)).toContain('Model pick wrong');
+    });
+});
+
+describe('Goalies tab', () => {
     const goalies = (p: Prediction) => text(render(<GoaliesPanel p={p} state={{ status: 'ready', data: null }} />).container);
 
-    it('appears for a playoff game', () => {
+    it('shows the career playoff line for a playoff game only', () => {
         const [po] = fixture('playoffs');
-        expect(goalies(po)).toContain('Career playoffs 61-50 · .907 · 2.71');
-    });
-
-    it('never appears for a regular-season game', () => {
+        expect(goalies(po)).toMatch(/Career PO\s*61-50 \.907 2\.71/);
+        cleanup();
         for (const p of [...fixture('week3'), ...fixture('opening_night')]) {
-            expect(goalies(p)).not.toContain('Career playoffs');
+            expect(goalies(p)).not.toContain('Career PO');
             cleanup();
         }
     });
 
-    it("shows this season's line first and last season's muted, or Season debut", () => {
+    it("shows this season's line first and last season's tagged, or 0 GP", () => {
         const [po] = fixture('playoffs');
         const t = goalies(po);
-        expect(t).toContain('26-27 1-0-0');
-        expect(t).toContain('25-26 31-18-4');
+        expect(t).toMatch(/26-27\s*1-0-0/);
+        expect(t).toMatch(/25-26\s*31-18-4/);
+        cleanup();
         const nyiTor = fixture('opening_night').find(p => p.away.team.triCode === 'NYI')!;
-        expect(goalies(nyiTor)).toContain('Season debut');
+        expect(goalies(nyiTor)).toMatch(/26-27\s*0 GP/);
     });
 });
 
 describe('review fixes', () => {
-    it("calls a forecast that rounds to 50-50 a coin flip, not 'favored'", () => {
+    it("calls a forecast that rounds to 50-50 a coin flip, not a favourite", () => {
         const p = withOverrides(byTeams(fixture('opening_night'), 'PIT', 'PHI'), {
             breakdown: [
                 { factor: 'home_ice', label: 'Home ice', wp_delta_pts: 0.6 },
@@ -202,11 +285,25 @@ describe('review fixes', () => {
             ],
         });
         const t = text(render(<WhyThisPick p={p} />).container);
-        expect(t).toContain("Why it's a coin flip");
-        expect(t).not.toContain('favored');
+        expect(t).toContain('Why: coin flip');
+        expect(t).toContain('50-50');
         cleanup();
         const clear = withOverrides(p, { breakdown: [{ factor: 'home_ice', label: 'Home ice', wp_delta_pts: 6 }] });
-        expect(text(render(<WhyThisPick p={clear} />).container)).toContain(`Why the ${p.home.team.commonName} are favored`);
+        expect(text(render(<WhyThisPick p={clear} />).container)).toContain('Why: PHI 56%');
+    });
+
+    it('draws why-bars from the centre toward the team each factor helps', () => {
+        const p = withOverrides(byTeams(fixture('opening_night'), 'PIT', 'PHI'), {
+            breakdown: [
+                { factor: 'goaltending', wp_delta_pts: -3 },
+                { factor: 'home_ice', wp_delta_pts: 2 },
+            ],
+        });
+        const { container } = render(<WhyThisPick p={p} />);
+        const fills = [...container.querySelectorAll<HTMLElement>('[class*="whyFill"]')];
+        expect(fills[0].style.right).toBe('50%');
+        expect(fills[1].style.left).toBe('50%');
+        expect(parseFloat(fills[0].style.width)).toBeGreaterThan(parseFloat(fills[1].style.width));
     });
 
     it("labels the starter's GSAx as a regressed rating with its season window, plus the raw current GSAx and IR tag", () => {
@@ -226,10 +323,21 @@ describe('review fixes', () => {
         const side = { goalies: [goalie, backup] } as unknown as GameDetails['home'];
         const data = { home: side, away: { goalies: [] } } as unknown as GameDetails;
         const t = text(render(<GoaliesPanel p={p} state={{ status: 'ready', data }} />).container);
-        expect(t).toMatch(/Rating\s*−0\.08\s*GSAx\/gm\s*\(regressed, 2024-25 to 2026-27\)/);
-        expect(t).toMatch(/26-27:\s*\+1\.82 GSAx in 1 GP/);
+        expect(t).toMatch(/−0\.08\s*GSAx\/gm rating \(regressed, 2024-25 to 2026-27\)/);
+        expect(t).toMatch(/GSAx 26-27\s*\+1\.82 · 1 GP/);
         expect(t).toMatch(/IR · ~Dec 30/);
         expect(gsaxWindow(['2024-25'], false)).toBe('2024-25');
         expect(gsaxTag(3)).toBe('26-27 · 3 GP');
+    });
+});
+
+describe('slate rail labels', () => {
+    it('names days relative to today', () => {
+        expect(railLabel('2026-09-30', '2026-09-30')).toBe('Tonight');
+        expect(railLabel('2026-09-29', '2026-09-30')).toBe('Yesterday');
+        expect(railLabel('2026-10-01', '2026-09-30')).toBe('Thu');
+        expect(railLabel('2026-10-09', '2026-09-30')).toBe('Oct 9');
+        expect(railHeading('2026-09-30', '2026-09-30')).toBe('Wed · Sep 30');
+        expect(railHeading('2025-04-02', '2026-09-30')).toBe('Wed · Apr 2 2025');
     });
 });

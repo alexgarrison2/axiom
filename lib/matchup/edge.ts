@@ -122,3 +122,31 @@ export function pickForm(entries: boolean[]): { w: number; l: number; pct: numbe
     const l = entries.length - w;
     return { w, l, pct: entries.length >= 3 ? Math.round((w / entries.length) * 100) : null };
 }
+
+/** Points between the raw model and the de-vigged market before the card flags a lean. */
+export const LEAN_MIN_PTS = 8;
+
+export interface Lean {
+    side: Side;
+    tri: string;
+    /** The raw model's win % for that side (rounded). */
+    pct: number;
+    /** Model minus market for that side, in points. */
+    gap: number;
+}
+
+/**
+ * The model lean ("◆ 61 NYI"): the raw model (before the market blend)
+ * disagrees with the de-vigged market by LEAN_MIN_PTS or more. Names the
+ * side the model rates higher than the market does.
+ */
+export function modelLean(p: Prediction, minPts = LEAN_MIN_PTS): Lean | null {
+    if (!hasPrediction(p) || !hasMarket(p)) return null;
+    const m = p.away.modelWinPct;
+    const k = p.away.marketWinPct;
+    if (m == null || k == null) return null;
+    const gap = m - k;
+    if (Math.abs(gap) < minPts) return null;
+    const side: Side = gap > 0 ? 'away' : 'home';
+    return { side, tri: p[side].team.triCode, pct: Math.round(side === 'away' ? m : 100 - m), gap: Math.round(Math.abs(gap) * 10) / 10 };
+}

@@ -7,12 +7,12 @@ import type { GameImplication } from '@/utils/implications';
 import type { Phase } from '@/lib/matchup/lifecycle';
 import { Segmented } from '@/components/ui/segmented';
 import { loadGameDetails } from '@/lib/client-data';
-import { PreviewPanel } from './PreviewPanel';
+import { WhyPanel } from './WhyPanel';
 import { GoaliesPanel } from './GoaliesPanel';
 import { LineupsPanel } from './LineupsPanel';
 import { OddsPanel } from './OddsPanel';
 
-type Tab = 'preview' | 'goalies' | 'lineups' | 'odds';
+type Tab = 'goalies' | 'lines' | 'odds' | 'why';
 
 export interface DetailsProps {
     p: Prediction;
@@ -22,15 +22,23 @@ export interface DetailsProps {
     onCollapse: () => void;
 }
 
+const TABS: { value: Tab; label: string }[] = [
+    { value: 'goalies', label: 'Goalies' },
+    { value: 'lines', label: 'Lines' },
+    { value: 'odds', label: 'Odds' },
+    { value: 'why', label: 'Why' },
+];
+
 /**
  * Expanded card body, mounted only while the card is open. Heavy data
  * (lineups, goalies, injuries, recent games, news) comes from one memoized
  * request shared by every card.
  */
-export default function Details({ p, phase, implication, playoffOdds, onCollapse }: DetailsProps) {
-    const [tab, setTab] = useState<Tab>('preview');
+export default function Details({ p, phase, implication, onCollapse }: DetailsProps) {
+    const [tab, setTab] = useState<Tab>('goalies');
     const [state, setState] = useState<DetailsState>({ status: 'loading' });
     const panelId = useId();
+    const game = `${p.away.team.commonName} at ${p.home.team.commonName}`;
 
     useEffect(() => {
         let live = true;
@@ -43,31 +51,29 @@ export default function Details({ p, phase, implication, playoffOdds, onCollapse
         };
     }, [p.id]);
 
-    const tabs: { value: Tab; label: string }[] = [
-        { value: 'preview', label: 'Preview' },
-        { value: 'goalies', label: 'Goalies' },
-        { value: 'lineups', label: 'Lineups' },
-        { value: 'odds', label: 'Odds' },
-    ];
-
     return (
-        <div className="flex flex-col gap-3 border-t border-line bg-bg/30 px-4 pb-3 pt-3 cq-md:px-5">
-            <Segmented label={`${p.away.team.commonName} at ${p.home.team.commonName} details`} options={tabs} value={tab} onChange={setTab} size="sm" block />
-            <div id={panelId} role="region" aria-label={`${tabs.find(t => t.value === tab)?.label ?? 'Details'}: ${p.away.team.commonName} at ${p.home.team.commonName}`} className="max-h-[600px] overflow-y-auto overscroll-contain [scrollbar-width:thin]">
-                {tab === 'preview' ? <PreviewPanel p={p} phase={phase} state={state} implication={implication} playoffOdds={playoffOdds} /> : null}
+        <div className="relative flex flex-col gap-3 border-t border-dashed border-line px-3 pb-2 pt-3 cq-md:px-4">
+            <Segmented label={`${game} details`} options={TABS} value={tab} onChange={setTab} size="sm" />
+            <div
+                id={panelId}
+                role="region"
+                aria-label={`${TABS.find(t => t.value === tab)?.label ?? 'Details'}: ${game}`}
+                className="max-h-[640px] overflow-y-auto overscroll-contain [scrollbar-width:thin]"
+            >
                 {tab === 'goalies' ? <GoaliesPanel p={p} state={state} /> : null}
-                {tab === 'lineups' ? <LineupsPanel p={p} state={state} /> : null}
+                {tab === 'lines' ? <LineupsPanel p={p} state={state} /> : null}
                 {tab === 'odds' ? <OddsPanel p={p} phase={phase} /> : null}
+                {tab === 'why' ? <WhyPanel p={p} phase={phase} state={state} implication={implication} /> : null}
             </div>
             <button
                 type="button"
                 onClick={onCollapse}
-                className="mx-auto inline-flex min-h-9 items-center gap-1.5 rounded-control px-3 text-caption font-semibold text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg-1 coarse:min-h-11"
+                aria-label="Collapse"
+                className="mx-auto inline-flex h-7 w-12 items-center justify-center rounded-control text-fg-3 transition-colors hover:bg-surface-2 hover:text-fg-1 coarse:h-11"
             >
-                <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3.5 w-3.5">
+                <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4">
                     <path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Collapse
             </button>
         </div>
     );

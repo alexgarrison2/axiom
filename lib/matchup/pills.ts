@@ -102,14 +102,14 @@ function seasonText(p: Prediction): string {
 function fatiguePills(s: SideData, side: Side): Pill[] {
     const pills: Pill[] = [];
     if (s.isB2b) {
-        pills.push({ key: 'b2b', label: 'Back-to-back', tone: 'warn', state: 'current', title: 'Played yesterday (0 days of rest)' });
+        pills.push({ key: 'b2b', label: 'B2B', tone: 'warn', state: 'current', title: 'Played yesterday (0 days of rest)' });
     } else if ((s.gamesInLast4 ?? 0) >= 3) {
         pills.push({ key: '3in4', label: '3 in 4', tone: 'warn', state: 'current', title: 'Third game in four days' });
     }
     if (side === 'away' && (s.roadTripGameN ?? 0) >= 4) {
         pills.push({
             key: 'trip',
-            label: 'Road trip',
+            label: 'Trip',
             value: `G${s.roadTripGameN}`,
             tone: 'neutral',
             state: 'current',
@@ -134,7 +134,7 @@ export function getTeamPills(p: Prediction, side: Side): Pill[] {
         return [
             {
                 key: 'opener',
-                label: 'Season opener',
+                label: 'Opener',
                 tone: 'info',
                 state: 'current',
                 title: `First game of the ${seasonText(p)} regular season for the ${s.team.commonName}. Form, home/road and special-teams chips appear once games are played.`,
@@ -198,7 +198,7 @@ export function getGamePills(p: Prediction): Pill[] {
     if (bothOpeners(p) && !p.slateAllOpeners) {
         pills.push({
             key: 'opener',
-            label: 'Season opener · both teams',
+            label: 'Opener · both',
             tone: 'info',
             state: 'current',
             title: `First game of the ${seasonText(p)} regular season for both the ${p.away.team.commonName} and the ${p.home.team.commonName}. Form, home/road and special-teams chips appear once games are played.`,
@@ -210,7 +210,7 @@ export function getGamePills(p: Prediction): Pill[] {
         const prev = p.away.h2hPrev ? ` Last season (${PREV_TAG}): ${p.away.team.triCode} ${p.away.h2hPrev}.` : '';
         pills.push({
             key: 'h2h',
-            label: 'H2H this season',
+            label: 'H2H',
             value: `${p.away.team.triCode} ${p.away.h2hRecord}`,
             tone: 'neutral',
             state: p.h2hGp < 2 ? 'small' : 'current',
@@ -227,7 +227,56 @@ export function priorSeriesNote(p: Prediction): string | null {
     return `${PREV_TAG} season series: ${p.away.team.triCode} ${p.away.h2hPrev} vs ${p.home.team.triCode}`;
 }
 
+/** Last season's series as a tagged chip ({ tag: "25-26", text: "NYI 2-1-1" }) before the teams meet this season. */
+export function priorSeries(p: Prediction): { tag: string; text: string } | null {
+    if (p.h2hGp >= 1 || !p.away.h2hPrev) return null;
+    return { tag: PREV_TAG, text: `${p.away.team.triCode} ${p.away.h2hPrev}` };
+}
+
 /** Visible text of a pill, as rendered by <StatChip> (for tests and aria). */
 export function pillText(pill: Pill): string {
     return [pill.state === 'prior' ? pill.seasonTag : null, pill.label, pill.value].filter(Boolean).join(' ');
+}
+
+/** The one situational chip on a collapsed card (top-right). */
+export interface CardChip {
+    /** 1-3 short uppercase words, e.g. "B2B NYI". */
+    label: string;
+    /** Screen-reader / tooltip wording. */
+    title: string;
+}
+
+/**
+ * At most one chip per card, by priority: playoff series score, back-to-back,
+ * 3 games in 4 nights, a long road trip (game 4+), then a season opener
+ * (dropped when the whole slate is openers). Everything else lives in the
+ * expanded panel.
+ */
+export function situationChip(p: Prediction, series?: { away: number; home: number } | null): CardChip | null {
+    const a = p.away.team.triCode;
+    const h = p.home.team.triCode;
+    if (series) {
+        const lead = series.away === series.home ? null : series.away > series.home ? a : h;
+        const hi = Math.max(series.away, series.home);
+        const lo = Math.min(series.away, series.home);
+        return lead
+            ? { label: `${lead} ${hi}-${lo}`, title: `Series: ${lead} leads ${hi}-${lo}` }
+            : { label: `Tied ${hi}-${lo}`, title: `Series tied ${hi}-${lo}` };
+    }
+    const who = (f: (s: SideData) => boolean): string | null => {
+        const aa = f(p.away);
+        const hh = f(p.home);
+        return aa && hh ? 'Both' : aa ? a : hh ? h : null;
+    };
+    const b2b = who(s => s.isB2b);
+    if (b2b) return { label: `B2B ${b2b}`, title: `Back-to-back: ${b2b === 'Both' ? 'both teams' : b2b} played yesterday` };
+    const three = who(s => !s.isB2b && (s.gamesInLast4 ?? 0) >= 3);
+    if (three) return { label: `3in4 ${three}`, title: `Third game in four nights: ${three === 'Both' ? 'both teams' : three}` };
+    const trip = p.away.roadTripGameN ?? 0;
+    if (trip >= 4) return { label: `Trip G${trip}`, title: `${a}: game ${trip} of a road trip` };
+    if (!p.slateAllOpeners) {
+        const op = who(isOpener);
+        if (op) return { label: op === 'Both' ? 'Opener' : `Opener ${op}`, title: `Season opener for ${op === 'Both' ? 'both teams' : op}` };
+    }
+    return null;
 }

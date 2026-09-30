@@ -1,19 +1,26 @@
 import type { Prediction } from '@/types/prediction';
-import { InfoTip } from '@/components/ui/info-tip';
 import { clashSafePair } from '@/components/ui/team-color';
-import { axisPos, waterfallFor } from '@/lib/matchup/waterfall';
+import { waterfallFor } from '@/lib/matchup/waterfall';
 import { cn } from '@/lib/utils';
+import styles from './slate.module.css';
 
-const GRADE_TONE: Record<string, string> = {
-    A: 'border-pos/40 bg-pos/10 text-pos',
-    B: 'border-info/40 bg-info/10 text-info',
-    C: 'border-line-strong bg-surface-2 text-fg-1',
+/** 1-2 word factor labels. */
+const SHORT: Record<string, string> = {
+    home_ice: 'Home ice',
+    strength_5v5: '5v5',
+    special_teams: 'PP / PK',
+    goaltending: 'Goalies',
+    rest: 'Rest',
+    lineup: 'Lineups',
+    market: 'Market',
 };
 
+const ROW = 'grid grid-cols-[5.5rem_minmax(0,1fr)_4.25rem] items-center gap-2.5';
+
 /**
- * "Why this pick": a horizontal waterfall from a coin flip (50%) through
- * each factor to the published win %. Bars to the right push toward the
- * home team, to the left toward the away team.
+ * Why-bars: each factor's push in win-probability points, diverging from a
+ * centre line toward the team it helps (away left, home right, team colours),
+ * then the net forecast.
  */
 export function WhyThisPick({ p }: { p: Prediction }) {
     const w = waterfallFor(p);
@@ -21,86 +28,39 @@ export function WhyThisPick({ p }: { p: Prediction }) {
     const a = p.away.team;
     const h = p.home.team;
     const colors = clashSafePair(a.triCode, h.triCode);
-    const homeFinal = w.end;
-    const fav = homeFinal >= 50 ? h : a;
-    const favPct = homeFinal >= 50 ? homeFinal : 100 - homeFinal;
-    const mid = axisPos(w, 50);
-    // A 50.4% "favourite" displays as 50-50: don't call it favored.
+    const net = w.end - 50;
+    const max = Math.max(...w.steps.map(s => Math.abs(s.delta)), Math.abs(net), 1);
+    const homeFav = w.end >= 50;
+    const fav = homeFav ? h : a;
+    const favPct = homeFav ? w.end : 100 - w.end;
     const even = Math.round(favPct) <= 50;
 
-    return (
-        <section aria-labelledby={`why-${p.id}`} className="flex flex-col gap-2.5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 id={`why-${p.id}`} className="text-body font-bold text-fg-1">
-                    {even ? `Why it's a coin flip` : `Why the ${fav.commonName} are favored`}
-                </h3>
-                {p.confidenceGrade ? (
-                    <span className="inline-flex items-center gap-0.5">
-                        <span className={cn('inline-flex items-center gap-1 rounded-chip border px-2 py-0.5 text-caption font-bold', GRADE_TONE[p.confidenceGrade] ?? GRADE_TONE.C)}>
-                            Confidence {p.confidenceGrade}
-                        </span>
-                        <InfoTip term="confidence" />
-                    </span>
+    const bar = (delta: number, strong = false) => {
+        const width = (Math.abs(delta) / max) * 50;
+        const color = delta >= 0 ? colors.home : colors.away;
+        return (
+            <span aria-hidden="true" className={styles.why} style={strong ? { height: 10 } : undefined}>
+                {Math.abs(delta) >= 0.05 ? (
+                    <span
+                        className={styles.whyFill}
+                        style={{
+                            ...(delta >= 0 ? { left: '50%' } : { right: '50%' }),
+                            width: `${Math.max(width, 1.5)}%`,
+                            backgroundColor: color,
+                            boxShadow: `0 0 10px -2px ${color}`,
+                        }}
+                    />
                 ) : null}
-            </div>
-            {p.pickSummary ? <p className="text-body-sm text-fg-2">{p.pickSummary}</p> : null}
+            </span>
+        );
+    };
 
-            <ol className="flex flex-col gap-1" aria-label={even ? 'From a coin flip, factor by factor' : `From a coin flip to ${fav.triCode} ${favPct.toFixed(1)}%`}>
-                <li className="grid grid-cols-[6.5rem_minmax(0,1fr)_4.75rem] items-center gap-2 text-caption">
-                    <span className="text-fg-2">Coin flip</span>
-                    <span aria-hidden="true" className="relative h-4">
-                        <span className="absolute inset-y-0 border-l border-dashed border-fg-3" style={{ left: `${mid}%` }} />
-                    </span>
-                    <span className="text-right font-semibold tabular-nums text-fg-2">50%</span>
-                </li>
-                {w.steps.map(s => {
-                    const lo = axisPos(w, Math.min(s.from, s.to));
-                    const hi = axisPos(w, Math.max(s.from, s.to));
-                    const toward = s.delta >= 0 ? h : a;
-                    const color = s.delta >= 0 ? colors.home : colors.away;
-                    const tiny = Math.abs(s.delta) < 0.05;
-                    return (
-                        <li key={s.factor} className="grid grid-cols-[6.5rem_minmax(0,1fr)_4.75rem] items-center gap-2 text-caption">
-                            <span className="truncate text-fg-1">{s.label}</span>
-                            <span aria-hidden="true" className="relative h-4">
-                                <span className="absolute inset-y-0 border-l border-dashed border-fg-3/60" style={{ left: `${mid}%` }} />
-                                <span
-                                    className="absolute inset-y-0.5 rounded-sm"
-                                    style={{ left: `${lo}%`, width: `${Math.max(hi - lo, tiny ? 0 : 0.8)}%`, backgroundColor: color }}
-                                />
-                            </span>
-                            <span className="text-right font-semibold tabular-nums text-fg-1">
-                                {tiny ? (
-                                    '0.0'
-                                ) : (
-                                    <>
-                                        +{Math.abs(s.delta).toFixed(1)} <span className="font-normal text-fg-2">{toward.triCode}</span>
-                                        <span className="sr-only"> points toward the {toward.commonName}</span>
-                                    </>
-                                )}
-                            </span>
-                        </li>
-                    );
-                })}
-                <li className="mt-0.5 grid grid-cols-[6.5rem_minmax(0,1fr)_4.75rem] items-center gap-2 border-t border-line pt-1.5 text-caption">
-                    <span className="font-bold text-fg-1">Our forecast</span>
-                    <span aria-hidden="true" className="relative h-5">
-                        <span
-                            className="absolute inset-y-0 rounded-sm"
-                            style={{
-                                left: `${Math.min(mid, axisPos(w, homeFinal))}%`,
-                                width: `${Math.abs(axisPos(w, homeFinal) - mid)}%`,
-                                backgroundColor: homeFinal >= 50 ? colors.home : colors.away,
-                            }}
-                        />
-                        <span className="absolute inset-y-[-2px] w-0.5 rounded bg-fg-1" style={{ left: `${axisPos(w, homeFinal)}%` }} />
-                    </span>
-                    <span className="text-right font-bold tabular-nums text-fg-1">
-                        {even ? '50-50' : `${fav.triCode} ${favPct.toFixed(0)}%`}
-                    </span>
-                </li>
-            </ol>
-            <div aria-hidden="true" className="grid grid-cols-[6.5rem_minmax(0,1fr)_4.75rem] gap-2 text-micro text-fg-3">
+    return (
+        <section aria-labelledby={`why-${p.id}`} className="flex flex-col gap-1.5">
+            <h3 id={`why-${p.id}`} className="sr-only">
+                {even ? 'Why: coin flip' : `Why: ${fav.triCode} ${favPct.toFixed(0)}%`}
+            </h3>
+            <div aria-hidden="true" className={cn(ROW, 'text-micro uppercase tracking-wide text-fg-3')}>
                 <span />
                 <span className="flex justify-between">
                     <span>← {a.triCode}</span>
@@ -108,14 +68,33 @@ export function WhyThisPick({ p }: { p: Prediction }) {
                 </span>
                 <span />
             </div>
-            {p.blendWeight != null && p.blendWeight > 0 && p.blendWeight < 0.999 ? (
-                <p className="text-caption text-fg-2">
-                    Model factors are weighted {Math.round(p.blendWeight * 100)}%
-                    {p.preseasonPrior || p.home.gp < 10 || p.away.gp < 10 ? ' while the season is young' : ''}; the betting market carries the other{' '}
-                    {100 - Math.round(p.blendWeight * 100)}%. Each bar shows points added toward one team.
-                </p>
-            ) : null}
-            {p.confidenceNote ? <p className="text-caption text-fg-3">{p.confidenceNote.replace(/model on preseason priors/g, 'model leans on preseason ratings')}</p> : null}
+            <ol className="flex flex-col gap-1.5">
+                {w.steps.map(s => {
+                    const toward = s.delta >= 0 ? h : a;
+                    const tiny = Math.abs(s.delta) < 0.05;
+                    return (
+                        <li key={s.factor} className={cn(ROW, 'text-caption')}>
+                            <span className="truncate text-micro uppercase tracking-wide text-fg-2">{SHORT[s.factor] ?? s.label}</span>
+                            {bar(s.delta)}
+                            <span className="text-right tabular-nums text-fg-1">
+                                {tiny ? (
+                                    <span className="text-fg-3">0.0</span>
+                                ) : (
+                                    <>
+                                        +{Math.abs(s.delta).toFixed(1)} <span className="text-fg-3">{toward.triCode}</span>
+                                        <span className="sr-only"> points toward the {toward.commonName}</span>
+                                    </>
+                                )}
+                            </span>
+                        </li>
+                    );
+                })}
+                <li className={cn(ROW, 'mt-0.5 border-t border-line pt-2 text-caption')}>
+                    <span className="text-micro font-bold uppercase tracking-wide text-fg-1">Net</span>
+                    {bar(net, true)}
+                    <span className="text-right font-bold tabular-nums text-fg-1">{even ? '50-50' : `${fav.triCode} ${favPct.toFixed(0)}`}</span>
+                </li>
+            </ol>
         </section>
     );
 }

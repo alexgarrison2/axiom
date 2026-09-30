@@ -5,10 +5,10 @@ import dynamic from 'next/dynamic';
 import type { Prediction } from '@/types/prediction';
 import type { OddsEntry } from '@/app/api/odds-history/route';
 import type { Phase } from '@/lib/matchup/lifecycle';
-import { InfoTip } from '@/components/ui/info-tip';
 import { loadJson } from '@/lib/client-data';
 import { fmtOdds, fmtTime, sourceLabel } from '@/lib/matchup/format';
-import { gatedEdge, hasMarket, marketPair } from '@/lib/matchup/edge';
+import { forecastPair, gatedEdge, hasMarket, marketPair, modelOnlyPair } from '@/lib/matchup/edge';
+import { cn } from '@/lib/utils';
 import { useHydrated } from './GameTime';
 
 const OddsHistoryModal = dynamic(() => import('@/components/OddsHistoryModal'));
@@ -18,25 +18,31 @@ export function oddsHistoryUrl(p: Prediction): string {
     return `/api/odds-history?${q.toString()}`;
 }
 
-function Row({ label, away, mid, home }: { label: React.ReactNode; away: React.ReactNode; mid?: React.ReactNode; home: React.ReactNode }) {
+/** Butterfly row: away value · label · home value. */
+function Row({ label, away, home, strong, tone }: { label: React.ReactNode; away: React.ReactNode; home: React.ReactNode; strong?: boolean; tone?: string }) {
+    const v = cn('py-1 tabular-nums', strong ? 'font-bold text-fg-1' : 'text-fg-1', tone);
     return (
-        <tr className="border-t border-line">
-            <th scope="row" className="py-1.5 pr-2 text-left text-caption font-semibold text-fg-2">
+        <tr className="border-t border-line first:border-t-0">
+            <td className={cn(v, 'text-left')}>{away ?? '—'}</td>
+            <th scope="row" className="px-2 py-1 text-center text-micro font-medium uppercase tracking-wide text-fg-3">
                 {label}
             </th>
-            <td className="py-1.5 text-right tabular-nums text-fg-1">{away ?? '—'}</td>
-            <td className="px-2 py-1.5 text-center text-caption tabular-nums text-fg-2">{mid ?? ''}</td>
-            <td className="py-1.5 text-right tabular-nums text-fg-1">{home ?? '—'}</td>
+            <td className={cn(v, 'text-right')}>{home ?? '—'}</td>
         </tr>
     );
 }
 
-/** Every market we have for the game, its source and fetch time, and the line move since open. */
+const pct = (v: number | undefined) => (v == null ? null : `${v}%`);
+
+/** Model vs market, every line we have for the game, its source and time, and the line move. */
 export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
     const hydrated = useHydrated();
     const [history, setHistory] = useState<OddsEntry[] | null>(null);
     const market = marketPair(p);
+    const forecast = forecastPair(p);
+    const pure = modelOnlyPair(p);
     const edge = phase === 'pre' ? gatedEdge(p) : null;
+    const priced = hasMarket(p);
 
     useEffect(() => {
         let live = true;
@@ -49,10 +55,6 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
         };
     }, [p]);
 
-    if (!hasMarket(p) && !p.totalLine) {
-        return <p className="py-4 text-center text-body-sm text-fg-2">No market odds for this game yet.</p>;
-    }
-
     const src = sourceLabel(p.marketSource);
     const atTime = p.marketFetchedAt ? fmtTime(p.marketFetchedAt, hydrated ? undefined : 'America/New_York') : null;
     const fetched = p.marketFetchedAt ? new Date(p.marketFetchedAt) : null;
@@ -62,71 +64,64 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
     const h = p.home.team.triCode;
 
     return (
-        <div className="flex flex-col gap-3 py-1">
-            <table className="w-full text-body-sm">
-                <caption className="pb-1 text-left text-caption text-fg-2">
-                    {[src, at].filter(Boolean).join(' · ') || 'Market odds'}
-                    {phase !== 'pre' ? ' · pregame line' : ''}
+        <div className="flex flex-col gap-2.5">
+            <table className="w-full text-caption">
+                <caption className="sr-only">
+                    {a} at {h}: forecast, model and market
                 </caption>
                 <thead>
-                    <tr className="text-micro uppercase tracking-wider text-fg-3">
-                        <th scope="col" className="pb-1 text-left font-semibold">
-                            Market
-                        </th>
-                        <th scope="col" className="pb-1 text-right font-semibold">
+                    <tr className="text-micro uppercase tracking-label text-fg-3">
+                        <th scope="col" className="pb-1 text-left font-bold text-fg-1">
                             {a}
                         </th>
-                        <th scope="col" className="pb-1 text-center font-semibold">
-                            <span className="sr-only">Line</span>
+                        <th scope="col" className="pb-1 text-center font-medium">
+                            {[src, at].filter(Boolean).join(' · ') || (priced ? 'Market' : 'No line')}
+                            {phase !== 'pre' && priced ? ' · pregame' : ''}
                         </th>
-                        <th scope="col" className="pb-1 text-right font-semibold">
+                        <th scope="col" className="pb-1 text-right font-bold text-fg-1">
                             {h}
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    {hasMarket(p) ? <Row label="Moneyline" away={fmtOdds(p.away.marketOdds)} home={fmtOdds(p.home.marketOdds)} /> : null}
-                    {market ? (
-                        <Row
-                            label={
-                                <span className="inline-flex items-center gap-0.5">
-                                    No-vig %<InfoTip term="market-pct" />
-                                </span>
-                            }
-                            away={`${market.away}%`}
-                            home={`${market.home}%`}
-                        />
-                    ) : null}
-                    <Row label="Fair (forecast)" away={fmtOdds(p.away.fairOdds)} home={fmtOdds(p.home.fairOdds)} />
+                    {forecast ? <Row label="Forecast" away={pct(forecast.away)} home={pct(forecast.home)} strong /> : null}
+                    {pure ? <Row label="Model" away={pct(pure.away)} home={pct(pure.home)} tone="text-magenta" /> : null}
+                    {market ? <Row label="Market" away={pct(market.away)} home={pct(market.home)} /> : null}
+                    {priced ? <Row label="Book ML" away={fmtOdds(p.away.marketOdds)} home={fmtOdds(p.home.marketOdds)} strong /> : null}
+                    {forecast ? <Row label="Fair" away={fmtOdds(p.away.fairOdds)} home={fmtOdds(p.home.fairOdds)} /> : null}
                     {p.away.puckline != null && p.home.puckline != null ? (
                         <Row label="Puck line" away={`${p.away.pucklineSpread ?? ''} ${fmtOdds(p.away.puckline)}`} home={`${p.home.pucklineSpread ?? ''} ${fmtOdds(p.home.puckline)}`} />
                     ) : null}
-                    {p.away.firstPeriodMl != null && p.home.firstPeriodMl != null ? (
-                        <Row label="1st period" away={fmtOdds(p.away.firstPeriodMl)} home={fmtOdds(p.home.firstPeriodMl)} />
-                    ) : null}
+                    {p.away.firstPeriodMl != null && p.home.firstPeriodMl != null ? <Row label="1st per" away={fmtOdds(p.away.firstPeriodMl)} home={fmtOdds(p.home.firstPeriodMl)} /> : null}
                     {p.away.threeWay != null && p.home.threeWay != null ? (
-                        <Row label="Regulation 3-way" away={fmtOdds(p.away.threeWay)} mid={p.threeWayTie != null ? `Tie ${fmtOdds(p.threeWayTie)}` : null} home={fmtOdds(p.home.threeWay)} />
+                        <Row label={p.threeWayTie != null ? `3-way · tie ${fmtOdds(p.threeWayTie)}` : '3-way'} away={fmtOdds(p.away.threeWay)} home={fmtOdds(p.home.threeWay)} />
                     ) : null}
                     {p.totalLine ? (
                         <Row
-                            label={`Total ${p.totalLine}`}
+                            label={`Total ${p.totalLine}${p.expectedTotal != null ? ` · mdl ${p.expectedTotal.toFixed(1)}` : ''}`}
                             away={p.totalOver != null ? `O ${fmtOdds(p.totalOver)}` : null}
-                            mid={p.expectedTotal != null ? `Model ${p.expectedTotal.toFixed(1)}` : null}
                             home={p.totalUnder != null ? `U ${fmtOdds(p.totalUnder)}` : null}
                         />
                     ) : null}
+                    {p.away.xg != null && p.home.xg != null ? <Row label="Proj goals" away={p.away.xg.toFixed(2)} home={p.home.xg.toFixed(2)} /> : null}
                 </tbody>
             </table>
-            {p.totalLine ? <p className="-mt-1 text-micro text-fg-3">Total row: Over price left, Under price right.</p> : null}
 
-            {phase === 'pre' && !edge && hasMarket(p) ? (
-                <p className="flex items-center gap-1 text-caption text-fg-2">
-                    No bet on this game{p.gateReason ? ' · the edge gate is closed' : ''}.
-                    <InfoTip term="edge" />
-                </p>
-            ) : null}
-
-            {history && history.length > 1 ? <OddsHistoryModal entries={history} away={p.away.team} home={p.home.team} started={phase !== 'pre'} /> : null}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                {edge ? (
+                    <span className="rounded-chip border border-pos/40 px-2 py-0.5 text-micro font-bold uppercase tracking-chip text-pos">
+                        Edge +{edge.evPct.toFixed(1)}% {edge.tri}
+                        {edge.units != null ? ` · ${edge.units.toFixed(1)}u` : ''}
+                    </span>
+                ) : phase === 'pre' && priced ? (
+                    <span className="label" title={p.gateReason ?? undefined}>
+                        No bet
+                    </span>
+                ) : (
+                    <span />
+                )}
+                {history && history.length > 1 ? <OddsHistoryModal entries={history} away={p.away.team} home={p.home.team} started={phase !== 'pre'} /> : null}
+            </div>
         </div>
     );
 }

@@ -164,8 +164,62 @@ export function parseGoalieLine(line: string | null | undefined): { record: stri
     return { record: parts[0].replace(/[()]/g, ''), sv: parts[1], gaa: parts[2] };
 }
 
-/** "Panthers win 1-0 in OT" style sentence for a final. */
+/** "Panthers win 1-0 in OT" style sentence for a final (screen-reader text). */
 export function finalSentence(winner: string, hi: number, lo: number, periodType: string | null): string {
     const tail = periodType === 'OT' ? ' in OT' : periodType === 'SO' ? ' in a shootout' : '';
     return `${winner} win ${hi}-${lo}${tail}`;
+}
+
+export interface GoalieStatLine {
+    /** null = this season; PREV_TAG ("25-26") when the line is last season's. */
+    tag: string | null;
+    record: string;
+    sv: string;
+    gaa: string;
+}
+
+/**
+ * The tiny season line under a goalie's name: this season once he has played
+ * (goalie_cur_gp ≥ 1), else last season's line tagged "25-26" so it never
+ * reads as current. null when neither exists.
+ */
+export function goalieSeasonLine(s: { goalieCur?: string | null; goaliePrev?: string | null; goalieCurGp?: number | null }): GoalieStatLine | null {
+    const cur = (s.goalieCurGp ?? 0) >= 1 ? parseGoalieLine(s.goalieCur) : null;
+    if (cur) return { tag: null, ...cur };
+    const prev = parseGoalieLine(s.goaliePrev);
+    return prev ? { tag: PREV_TAG, ...prev } : null;
+}
+
+/** ".917" from 0.917 ("1.000" stays). */
+export function fmtSv(v: number): string {
+    return v.toFixed(3).replace(/^0/, '');
+}
+
+/** Header words for a final: "FINAL/OT" → "FINAL · OT". */
+export function finalWords(label: string): string {
+    return label.replace('/', ' · ');
+}
+
+const utc = (ymd: string) => {
+    const [y, m, d] = ymd.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d));
+};
+
+/** Rail chip word for a slate day: Tonight, Yesterday, Thu (within a week), else Oct 9. */
+export function railLabel(ymd: string, today: string): string {
+    if (ymd === today) return 'Tonight';
+    if (ymd === addDays(today, -1)) return 'Yesterday';
+    const dt = utc(ymd);
+    const days = Math.round((dt.getTime() - utc(today).getTime()) / 86_400_000);
+    if (Math.abs(days) < 7) return dt.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
+    return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+/** Page heading for the slate: "Wed · Sep 30" (rendered uppercase; year added when far from today). */
+export function railHeading(ymd: string, today: string): string {
+    const dt = utc(ymd);
+    const far = Math.abs(dt.getTime() - utc(today).getTime()) > 150 * 86_400_000;
+    const wd = dt.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
+    const md = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+    return `${wd} · ${md}${far ? ` ${dt.getUTCFullYear()}` : ''}`;
 }
