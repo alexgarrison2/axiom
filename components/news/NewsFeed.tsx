@@ -30,6 +30,26 @@ const KIND_STYLE: Record<NewsKind, string> = {
     other: 'bg-fg-3/15 text-fg-2',
 };
 
+/** The server label (ET) on first paint; the viewer's own zone once hydrated. */
+function LocalStamp({ at, fallback, timeOnly = false, className }: { at: string; fallback: string; timeOnly?: boolean; className?: string }) {
+    const [text, setText] = React.useState(fallback);
+    React.useEffect(() => {
+        if (!at || /^\d{4}-\d{2}-\d{2}$/.test(at)) return;
+        const d = new Date(at);
+        if (Number.isNaN(d.getTime())) return;
+        setText(
+            timeOnly
+                ? d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
+                : d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }),
+        );
+    }, [at, timeOnly]);
+    return (
+        <time dateTime={at} className={className} suppressHydrationWarning>
+            {text}
+        </time>
+    );
+}
+
 const KIND_GLYPH: Record<NewsKind, string> = { goalie: '◎', injury: '✚', returning: '↩', lineup: '≡', transaction: '⇄', other: '•' };
 
 export function NewsFeed({ groups, dayLabel }: { groups: FeedGroup[]; dayLabel: string | null }) {
@@ -74,7 +94,7 @@ export function NewsFeed({ groups, dayLabel }: { groups: FeedGroup[]; dayLabel: 
                                         </span>
                                     ) : null}
                                 </h2>
-                                {g.startLabel ? <span className="text-body-sm text-fg-2">{g.startLabel}</span> : null}
+                                {g.startLabel && g.game?.startUtc ? <LocalStamp at={g.game.startUtc} fallback={g.startLabel} timeOnly className="text-body-sm text-fg-2" /> : null}
                                 {g.game ? (
                                     <Link
                                         href={`/#${g.game.away.toLowerCase()}-${g.game.home.toLowerCase()}`}
@@ -143,9 +163,7 @@ function NewsCardView({ card }: { card: FeedGroup['cards'][number] }) {
             </header>
             <p className="text-body-sm text-fg-1">{latest.text}</p>
             {latest.at ? (
-                <time dateTime={latest.at} className="text-caption text-fg-2">
-                    {latest.label}
-                </time>
+                <LocalStamp at={latest.at} fallback={latest.label} className="text-caption text-fg-2" />
             ) : null}
             {older.length ? (
                 <ol aria-label="Earlier updates" className="mt-1 flex flex-col gap-2 border-l border-line-strong pl-3">
@@ -153,9 +171,7 @@ function NewsCardView({ card }: { card: FeedGroup['cards'][number] }) {
                         <li key={i} className="relative text-caption text-fg-2">
                             <span aria-hidden="true" className="absolute -left-[17px] top-1 h-2 w-2 rounded-full bg-fg-3" />
                             {u.at ? (
-                                <time dateTime={u.at} className="block text-fg-2">
-                                    {u.label}
-                                </time>
+                                <LocalStamp at={u.at} fallback={u.label} className="block text-fg-2" />
                             ) : null}
                             <span className="text-fg-2">{u.text}</span>
                         </li>
