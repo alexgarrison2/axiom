@@ -135,11 +135,11 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                 </button>
             }
         >
-            <div className={cn('mb-3 grid gap-2', total ? 'grid-cols-3' : 'grid-cols-2')}>
+            <div className={cn('mb-3 grid grid-cols-2 gap-2', total && 'sm:grid-cols-3')}>
                 <MoveTile label={away.triCode} from={first.awayOdds} to={last.awayOdds} dir={moveOf(first.awayOdds, last.awayOdds)} />
                 <MoveTile label={home.triCode} from={first.homeOdds} to={last.homeOdds} dir={moveOf(first.homeOdds, last.homeOdds)} />
                 {total ? (
-                    <div className="tile flex min-w-0 flex-col gap-0.5 px-3 py-2">
+                    <div className="tile col-span-2 flex min-w-0 items-baseline justify-between gap-0.5 px-3 py-2 sm:col-span-1 sm:flex-col sm:items-start sm:justify-start">
                         <span className="label">Total</span>
                         <span className="font-display text-title font-bold tabular-nums text-fg-1">{total}</span>
                     </div>
