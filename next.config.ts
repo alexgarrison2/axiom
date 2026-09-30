@@ -215,8 +215,11 @@ const nextConfig: NextConfig = {
       // The home page renders per request (it reads ?date=) but holds nothing
       // per viewer (favourites live in localStorage, live scores are polled
       // client-side). The CDN keys on the full URL, so every ?date= slate is
-      // its own entry; each pipeline run redeploys and purges it.
-      { source: "/", headers: homeCacheHeaders },
+      // its own entry; each pipeline run redeploys and purges it. RSC
+      // (client-navigation) requests keep Next's own no-store headers: they
+      // share the URL with the HTML (Next answers a bare one with a 307 to
+      // ?_rsc=), so a shared cache must never hold them under the page's key.
+      { source: "/", missing: [{ type: "header", key: "rsc" }], headers: homeCacheHeaders },
     ];
   },
 };

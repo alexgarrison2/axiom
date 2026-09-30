@@ -75,7 +75,11 @@ export function ProjectionRow({ p }: { p: Prediction }) {
                     <Row
                         label="Model only"
                         term="model-pct"
-                        note="The game model on its own, before it is blended with the betting market."
+                        note={
+                            market && market.away === pure.away
+                                ? 'The game model on its own, before it is blended with the betting market. Here it lands on the market\u2019s number by coincidence: it is built only from team, goalie and schedule factors and never reads the price.'
+                                : 'The game model on its own, before it is blended with the betting market.'
+                        }
                         away={`${pure.away}%`}
                         home={`${pure.home}%`}
                     />

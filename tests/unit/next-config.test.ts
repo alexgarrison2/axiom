@@ -55,6 +55,12 @@ describe('next.config home caching', () => {
         expect(h['Cache-Control']).toContain('stale-while-revalidate');
         expect(h['CDN-Cache-Control']).toBe('max-age=300, stale-while-revalidate=600');
     });
+
+    it('never marks RSC requests to / as publicly cacheable', async () => {
+        const rules = ((await nextConfig.headers?.()) ?? []).filter((r) => r.source === '/');
+        expect(rules.length).toBeGreaterThan(0);
+        for (const r of rules) expect(r.missing).toEqual(expect.arrayContaining([{ type: 'header', key: 'rsc' }]));
+    });
 });
 
 describe('next.config function tracing', () => {
