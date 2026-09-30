@@ -3,8 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import Papa from 'papaparse';
 import PlayoffHub from '@/components/playoff/PlayoffHub';
-import NavBar from '@/components/NavBar';
-import { getPredictions } from '@/utils/data';
 import type { GamePrediction, RecentGame, TeamLineup } from '@/utils/data';
 
 export const revalidate = 0;
@@ -1119,14 +1117,10 @@ export default async function NewPage() {
 
   await enrichGameAnalysesWithBoxscore(gameAnalyses);
 
-  const predictions = await getPredictions();
-  const navDates = Array.from(new Set(predictions.map(p => p.date))).sort().slice(-2);
-
   return (
     <main className="min-h-screen bg-black text-white font-sans relative overflow-x-hidden selection:bg-emerald-500/30">
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
-      <div className="relative z-10 h-screen flex flex-col">
-        <NavBar activePage="playoffs" dates={navDates} />
+      <div className="relative z-10 h-[calc(100dvh-var(--appbar-h))] flex flex-col">
         <div className="flex-1 min-h-0">
         <PlayoffHub
           series={series}

@@ -11,7 +11,6 @@ import LogoDisplay from './LogoDisplay';
 import RecentGamesList from './RecentGamesList';
 import PlayerNewsList from './PlayerNewsList';
 import LineupGrid from './LineupGrid';
-import { useAdmin } from './AdminProvider';
 import OddsHistoryModal from './OddsHistoryModal';
 import { SEASON_START_DATE } from '@/lib/season';
 
@@ -127,7 +126,6 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ prediction, isSocial = false,
     const [isDesktopExpanded, setIsDesktopExpanded] = useState(defaultExpanded); // New state for desktop
     // Fixed-position tooltip for HOME/ROAD location pill
     const [locationTooltip, setLocationTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
-    const { isAdmin } = useAdmin();
 
 
     const toggleExpand = () => {
