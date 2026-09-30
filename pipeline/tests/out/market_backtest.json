@@ -1,0 +1,129 @@
+{
+  "generated_at": "2026-09-30T01:23:10.696833+00:00",
+  "sample": {
+    "source": "public/data/SiteHistory, last snapshot before puck drop per NHL gameId",
+    "n_games": 410,
+    "first_game": "2026-03-06 00:00:00+00:00",
+    "last_game": "2026-06-15 00:00:00+00:00",
+    "n_dropped_no_model_prediction": 0,
+    "mean_overround": 0.040463662586982085,
+    "model_trained_through": "2026-03-04",
+    "model_C": 0.003,
+    "goalies": "projected starters from the snapshot (last-name match), else the most frequent recent starter"
+  },
+  "log_loss": {
+    "market_power_devig": 0.6744100818130186,
+    "market_proportional_devig": 0.6741474081852113,
+    "site_model_as_shown": 0.6822813195609106,
+    "new_model": 0.6689771595723669,
+    "blend_walk_forward": 0.670591309703993,
+    "coin_flip": 0.6931471805599453
+  },
+  "brier": {
+    "market": 0.24095426923584784,
+    "new_model": 0.23840375149129478,
+    "blend_walk_forward": 0.23912283026606757,
+    "site_model": 0.24474099512195124
+  },
+  "accuracy": {
+    "market_favourite": 0.551219512195122,
+    "new_model": 0.5536585365853659,
+    "blend": 0.551219512195122,
+    "site_model": 0.5487804878048781
+  },
+  "blend_weight": {
+    "walk_forward_prior": 0.2,
+    "prior_games": 200,
+    "walk_forward_mean": 0.548069705549286,
+    "walk_forward_last": 0.7238423645320197,
+    "in_sample_best": 1.0,
+    "live_value": 0.7377049180327869,
+    "fixed_weight_sweep_new_model": {
+      "0.0": 0.6744100818130186,
+      "0.1": 0.673387942724316,
+      "0.2": 0.672471243712146,
+      "0.3": 0.6716605502568103,
+      "0.4": 0.6709563179518737,
+      "0.5": 0.6703588871897804,
+      "0.6": 0.6698684788363607,
+      "0.7": 0.66948519103383,
+      "0.8": 0.6692089972419281,
+      "0.9": 0.6690397455901107,
+      "1.0": 0.6689771595723669
+    },
+    "fixed_weight_sweep_site_model": {
+      "0.0": 0.6744100818130186,
+      "0.1": 0.6743541958087128,
+      "0.2": 0.6744829715587283,
+      "0.3": 0.6747978011295307,
+      "0.4": 0.6752998662608436,
+      "0.5": 0.6759901266292987,
+      "0.6": 0.6768693098087315,
+      "0.7": 0.6779379032859668,
+      "0.8": 0.6791961488451382,
+      "0.9": 0.6806440395624698,
+      "1.0": 0.6822813195609106
+    }
+  },
+  "betting_replay": {
+    "method": "bet at the first pregame snapshot price with the blended probability; result from the official final; CLV = closing (last pregame) de-vigged probability x bet decimal price - 1; flat 1 unit per bet; ROI CI = 5000 bootstrap",
+    "rule": {
+      "label": "blended EV >= 3% (the live rule)",
+      "n": 64,
+      "win_rate": 0.59375,
+      "units": 8.955313657838424,
+      "roi": 0.13992677590372538,
+      "roi_ci_low": -0.09511630973856673,
+      "roi_ci_high": 0.37884625300781494,
+      "clv_mean": -0.05196813222692894,
+      "clv_positive_share": 0.21875
+    },
+    "all_positive_blend_ev": {
+      "label": "blended EV > 0",
+      "n": 149,
+      "win_rate": 0.5838926174496645,
+      "units": 20.027618928119573,
+      "roi": 0.1344135498531515,
+      "roi_ci_low": -0.0290762466264052,
+      "roi_ci_high": 0.29561615735542657,
+      "clv_mean": -0.04498490294235582,
+      "clv_positive_share": 0.16778523489932887
+    },
+    "old_site_rule": {
+      "label": "site model EV > 0 (what the site did)",
+      "n": 292,
+      "win_rate": 0.4726027397260274,
+      "units": -6.840729385833698,
+      "roi": -0.023427155430937322,
+      "roi_ci_low": -0.1481010431648056,
+      "roi_ci_high": 0.10553258843246378,
+      "clv_mean": -0.05064811763571697,
+      "clv_positive_share": 0.136986301369863
+    },
+    "old_site_rule_5pct": {
+      "label": "site model EV > 5%",
+      "n": 185,
+      "win_rate": 0.4648648648648649,
+      "units": 2.5185568800679676,
+      "roi": 0.013613820973340365,
+      "roi_ci_low": -0.15428326000981968,
+      "roi_ci_high": 0.17707317390075616,
+      "clv_mean": -0.05865506938756299,
+      "clv_positive_share": 0.12972972972972974
+    }
+  },
+  "gate_evidence": {
+    "n": 64,
+    "roi": 0.13992677590372538,
+    "roi_ci_low": -0.09511630973856673,
+    "roi_ci_high": 0.37884625300781494,
+    "clv_mean": -0.05196813222692894
+  },
+  "gate": {
+    "open": false,
+    "reasons": [
+      "Backtest ROI 95% CI lower bound -9.5% is not above -2%.",
+      "Backtest closing-line value -5.20% is not positive."
+    ]
+  }
+}

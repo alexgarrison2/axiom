@@ -655,19 +655,24 @@ def build_state(games: pd.DataFrame, before_date=None) -> FeatureState:
     return st
 
 
-def build_training_matrix(games: pd.DataFrame) -> pd.DataFrame:
-    """One row per completed game with pregame features (state BEFORE the date)."""
+def build_training_matrix(games: pd.DataFrame, goalie_overrides: dict | None = None) -> pd.DataFrame:
+    """One row per completed game with pregame features (state BEFORE the date).
+
+    ``goalie_overrides`` {game_id: (home_goalie, away_goalie)} replaces the
+    actual starters (hindsight) with the starters projected before the game,
+    for honest replays of live predictions."""
     st = FeatureState()
     rows = []
+    goalie_overrides = goalie_overrides or {}
     for date, pairs in paired_days(games):
         for h, a in pairs:
-            f = st.pregame(h.team, h.opponent, date, h.starting_goalie, a.starting_goalie,
-                           season=int(h.season))
+            hg, ag = goalie_overrides.get(h.game_id, (h.starting_goalie, a.starting_goalie))
+            f = st.pregame(h.team, h.opponent, date, hg, ag, season=int(h.season))
             f.update({
                 'game_id': h.game_id, 'game_date': date, 'season': int(h.season),
                 'game_type': game_type_of(h.game_id),
                 'home': h.team, 'away': h.opponent,
-                'h_goalie': h.starting_goalie, 'a_goalie': a.starting_goalie,
+                'h_goalie': hg, 'a_goalie': ag,
                 'home_win': 1 if h.result in WIN_RESULTS else 0,
                 'home_goals': h.goals_for, 'away_goals': h.goals_ag,
                 'decision': ('SO' if h.result in ('SOW', 'SOL') else
@@ -677,6 +682,25 @@ def build_training_matrix(games: pd.DataFrame) -> pd.DataFrame:
             rows.append(f)
         st.update_pairs(pairs)
     return pd.DataFrame(rows)
+
+
+def project_goalie(games: pd.DataFrame, team, raw, before_date, lookback=10):
+    """Full goalie name for a projected starter string such as 'Greaves (C)',
+    'John Gibson (Confirmed)' or empty.  Uses the team's starters before the
+    date: a last-name match first, else the most frequent recent starter."""
+    import re
+    g = games[(games['team'] == team) & (games['game_date'] < pd.Timestamp(before_date))]
+    starters = g.sort_values('game_date')['starting_goalie'].dropna()
+    name = re.sub(r'\s*\(.*\)\s*$', '', str(raw)).strip() if isinstance(raw, str) else ''
+    if name:
+        if ' ' in name and not re.match(r'^[A-Z]\.', name):
+            return name
+        last = _norm_name(name).split()[-1]
+        hits = [s for s in reversed(starters.tolist()) if _norm_name(s).split()[-1:] == [last]]
+        if hits:
+            return hits[0]
+    recent = starters.tail(lookback)
+    return recent.mode().iloc[-1] if len(recent) else None
 
 
 def build_pregame_features(games: pd.DataFrame, home, away, game_date, h_goalie=None, a_goalie=None,
