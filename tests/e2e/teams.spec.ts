@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Teams table and team pages (workstream F).
+ * Teams table and team pages (workstream F, Neon Arcade redesign R3).
  * PLAYWRIGHT_BASE_URL=http://localhost:3100 npx playwright test tests/e2e/teams.spec.ts
  */
 
@@ -55,7 +55,7 @@ test.describe('/teams', () => {
         const html = (await (await request.get('/teams?season=20252026')).text()).replace(/<!-- -->/g, '');
         const caption = html.match(/<caption[^>]*>(.*?)<\/caption>/)?.[1].replace(/<[^>]+>/g, '') ?? '';
         expect(caption).toContain('2025-26 regular season');
-        expect(caption).toContain('through 82 games');
+        expect(caption).toContain('82 GP');
     });
 
     test('no clinch or elimination codes before they belong to this season', async ({ page }) => {
@@ -125,7 +125,7 @@ test.describe('/teams/[abbr]', () => {
         const summary = page.getByRole('tabpanel');
         await expect(summary).toContainText('41-30-11');
         await expect(summary).toContainText('93');
-        await expect(summary).toContainText('82 of 82 games');
+        await expect(summary).toContainText('82/82 GP');
     });
 
     test('skaters come from the current roster with season-consistent lines', async ({ request }) => {
@@ -151,7 +151,7 @@ test.describe('/teams/[abbr]', () => {
         await expand.focus();
         await page.keyboard.press('Enter');
         await expect(expand).toHaveAttribute('aria-expanded', 'true');
-        await expect(page.getByText(/Skater boxscore|No player boxscore/).first()).toBeAttached();
+        await expect(page.getByText(/Skater boxscore|No boxscore/).first()).toBeAttached();
     });
 
     test('goalies tab lists roster goalies with season-labelled lines', async ({ page }) => {
@@ -208,5 +208,38 @@ test.describe('/teams/[abbr]', () => {
         expect((await ok.body()).length).toBeLessThanOrEqual(200_000);
         const all = await request.get('/api/teams/ALL/stats');
         expect(all.status()).toBe(400);
+    });
+});
+
+test.describe('copy budget (redesign brief)', () => {
+    for (const path of ['/teams', '/teams/EDM', '/teams/EDM?tab=goalies', '/teams/EDM?tab=skaters']) {
+        test(`${path}: no info icons, no sentence-length helper text`, async ({ page }) => {
+            await page.goto(path);
+            await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+            if (path.includes('tab=skaters')) await expect(page.getByRole('article').first()).toBeVisible();
+            // No scattered glossary info buttons.
+            await expect(page.locator('main button[aria-label^="What is"]')).toHaveCount(0);
+            // Every visible text run in <main> stays label-sized: no run of 9+ words (a sentence).
+            const long = await page.evaluate(() => {
+                const out: string[] = [];
+                const walker = document.createTreeWalker(document.querySelector('main')!, NodeFilter.SHOW_TEXT);
+                for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+                    const el = n.parentElement!;
+                    if (el.closest('.sr-only, option, script, style, [role="dialog"]')) continue;
+                    if (!el.getClientRects().length) continue;
+                    const t = (n.textContent ?? '').trim();
+                    if (t.split(/\s+/).filter(w => /[A-Za-z]{2,}/.test(w)).length >= 9) out.push(t);
+                }
+                return out;
+            });
+            expect(long).toEqual([]);
+        });
+    }
+
+    test('/teams: prior-season view is tagged, current season is not', async ({ page }) => {
+        await page.goto('/teams');
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText('Teams');
+        await page.goto('/teams?season=20252026');
+        await expect(page.getByRole('heading', { level: 1 })).toContainText('25-26');
     });
 });

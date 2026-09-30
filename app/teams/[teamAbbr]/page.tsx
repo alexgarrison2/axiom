@@ -36,19 +36,19 @@ export default async function TeamPage({ params }: { params: Promise<{ teamAbbr:
     const prevKpis = leaguesSummary(prevRows).kpis(tri);
 
     return (
-        <main className="mx-auto w-full max-w-[1800px] px-4 pb-tabbar pt-3 md:px-6 md:pb-12 md:pt-5">
-            <nav aria-label="Breadcrumb" className="mb-3 flex items-center justify-between gap-3">
-                <ol className="flex min-w-0 items-center gap-1.5 text-body-sm">
+        <main className="mx-auto w-full max-w-[1800px] px-4 pb-tabbar pt-2 md:px-6 md:pb-10 md:pt-4">
+            <nav aria-label="Breadcrumb" className="mb-2 flex items-center justify-between gap-3">
+                <ol className="flex min-w-0 items-center gap-1.5 text-micro font-medium uppercase tracking-label">
                     <li>
-                        <Link href="/teams" className="inline-flex min-h-9 items-center rounded-control px-1 font-semibold text-fg-2 hover:text-fg-1 coarse:min-h-11">
+                        <Link href="/teams" className="inline-flex min-h-8 items-center text-fg-3 hover:text-brand coarse:min-h-11">
                             Teams
                         </Link>
                     </li>
-                    <li aria-hidden="true" className="text-fg-3">
+                    <li aria-hidden="true" className="text-fg-disabled">
                         /
                     </li>
-                    <li aria-current="page" className="truncate font-semibold text-fg-1">
-                        {payload.team.common}
+                    <li aria-current="page" className="truncate text-fg-1">
+                        {payload.team.tri}
                     </li>
                 </ol>
                 <TeamSelector current={tri} />
@@ -66,7 +66,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamAbbr:
                 goalies={payload.goalies}
             />
 
-            <div className="mt-6">
+            <div className="mt-4">
                 <TeamPageClient initial={payload} seasons={[...TEAM_SEASONS]} />
             </div>
         </main>

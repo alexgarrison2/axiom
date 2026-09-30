@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 import { FilterChip } from '@/components/ui/filter-chip';
-import { InfoTip } from '@/components/ui/info-tip';
 import { Input } from '@/components/ui/input';
 import { ScrollRegion } from '@/components/ui/scroll-region';
+import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { SortHeader } from '@/components/ui/sort-header';
 import { TEAM_CODES } from '@/components/ui/team-color';
 import { TeamLogo } from '@/components/views/TeamLogo';
-import { plural } from '@/components/views/format';
 import { cn } from '@/lib/utils';
+import { CELL_BG } from '@/components/teams-table/table-style';
 import { compactSkaters, filterSkaters, sortSkaters, type Skater, type SkaterFilter, type SortKey } from './players/model';
 
 const PAGE = 50;
@@ -60,7 +60,7 @@ const COLUMNS: Column[] = [
     { key: 'oixgf60', label: 'oixGF/60', title: 'On-ice expected goals for per 60 at 5v5', sets: ['rates'], render: p => dec(p.oixgf60) },
 ];
 
-const SET_LABELS: Record<ColumnSet, string> = { overview: 'Impact + points', scoring: 'Scoring', impact: 'Impact split', rates: 'Rates' };
+const SET_LABELS: Record<ColumnSet, string> = { overview: 'Overview', scoring: 'Scoring', impact: 'Impact', rates: 'Rates' };
 
 export interface SkaterStatsTableProps {
     /**
@@ -117,17 +117,17 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
 
     const list = players ?? preview?.rows;
     if (!list) return <div aria-busy="true" className="h-96 rounded-card border border-line bg-surface-1/60" />;
-    if (!list.length) return <p className="text-body-sm text-fg-3">Player ratings are unavailable right now.</p>;
+    if (!list.length) return <p className="panel label p-card">No ratings</p>;
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="sticky top-appbar z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
+            <div className="sticky top-appbar z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:flex-row md:items-center md:px-6">
                 <div className="flex items-end gap-2">
                     <div className="flex min-w-0 flex-1 flex-col gap-1 md:max-w-md">
                         <label htmlFor={ids.search} className="sr-only">
                             Search players
                         </label>
-                        <Input id={ids.search} type="search" placeholder="Search players" value={filter.q} onChange={e => update({ q: e.target.value })} />
+                        <Input id={ids.search} type="search" placeholder="SEARCH" value={filter.q} onChange={e => update({ q: e.target.value })} className="placeholder:tracking-label" />
                     </div>
                     <div className="flex flex-col gap-1 md:hidden">
                         <label htmlFor={ids.cols} className="sr-only">
@@ -137,7 +137,7 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
                             id={ids.cols}
                             value={set}
                             onChange={e => setSet(e.target.value as ColumnSet)}
-                            className="h-10 rounded-control border border-line-strong bg-surface-1 px-2 text-base text-fg-1"
+                            className="h-10 rounded-control border border-line bg-well px-2 text-base uppercase text-fg-1"
                         >
                             {(Object.keys(SET_LABELS) as ColumnSet[]).map(k => (
                                 <option key={k} value={k}>
@@ -150,7 +150,7 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
                 <div role="group" aria-label="Filters" className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 scrollbar-hide md:mx-0 md:flex-wrap md:px-0">
                     {(['all', 'F', 'D'] as const).map(p => (
                         <FilterChip key={p} selected={filter.pos === p} onSelectedChange={() => update({ pos: p })}>
-                            {p === 'all' ? 'All skaters' : p === 'F' ? 'Forwards' : 'Defense'}
+                            {p === 'all' ? 'All' : p}
                         </FilterChip>
                     ))}
                     <FilterChip selected={filter.rookies} onSelectedChange={v => update({ rookies: v })}>
@@ -164,11 +164,11 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
                         value={filter.team}
                         onChange={e => update({ team: e.target.value })}
                         className={cn(
-                            'h-9 shrink-0 rounded-full border px-3 text-base font-semibold md:text-body-sm coarse:h-11',
-                            filter.team !== 'all' ? 'border-transparent bg-surface-3 text-fg-1 shadow-[inset_0_0_0_1px_rgb(var(--brand-rgb))]' : 'border-line bg-surface-1 text-fg-2',
+                            'h-[34px] shrink-0 rounded-full border bg-transparent px-3 text-base font-medium uppercase tracking-chip md:text-caption coarse:h-11',
+                            filter.team !== 'all' ? 'border-brand/60 text-brand' : 'border-line text-fg-3',
                         )}
                     >
-                        <option value="all">All teams</option>
+                        <option value="all">Team</option>
                         {TEAM_CODES.map(t => (
                             <option key={t} value={t}>
                                 {t}
@@ -182,7 +182,7 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
                         id={ids.gp}
                         value={filter.minGp}
                         onChange={e => update({ minGp: Number(e.target.value) })}
-                        className="h-9 shrink-0 rounded-full border border-line bg-surface-1 px-3 text-base font-semibold text-fg-2 md:text-body-sm coarse:h-11"
+                        className="h-[34px] shrink-0 rounded-full border border-line bg-transparent px-3 text-base font-medium uppercase tracking-chip text-fg-3 md:text-caption coarse:h-11"
                     >
                         {[1, 10, 20, 40, 60].map(n => (
                             <option key={n} value={n}>
@@ -191,70 +191,76 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
                         ))}
                     </select>
                     <FilterChip selected={filter.includeOffRoster} onSelectedChange={v => update({ includeOffRoster: v })}>
-                        Unsigned too
+                        Unsigned
                     </FilterChip>
                 </div>
             </div>
 
-            <div ref={tableTop} className="flex scroll-mt-[calc(var(--appbar-h)+120px)] flex-wrap items-center justify-between gap-2 text-body-sm text-fg-2">
+            <div ref={tableTop} className="flex scroll-mt-[calc(var(--appbar-h)+120px)] flex-wrap items-center gap-2 text-micro font-medium uppercase tracking-label text-fg-3">
                 <p aria-live="polite">
-                    {plural(total, 'skater')}
-                    {total > PAGE ? ` · ${current * PAGE + 1}–${Math.min(total, current * PAGE + PAGE)} shown` : ''}
+                    <span className="text-fg-1">{total}</span> {total === 1 ? 'skater' : 'skaters'}
+                    {total > PAGE ? ` · ${current * PAGE + 1}–${Math.min(total, current * PAGE + PAGE)}` : ''}
                 </p>
-                {ratingsLabel ? <p className="text-caption text-fg-3">Counting stats and ratings: {ratingsLabel}</p> : null}
+                {ratingsLabel ? (
+                    <p className="flex items-center gap-1">
+                        <SeasonTag>{shortSeasonTag(ratingsLabel.match(/\d{4}-\d{2,4}/)?.[0] ?? ratingsLabel)}</SeasonTag>
+                        <span className="sr-only">Counting stats and ratings: {ratingsLabel}</span>
+                    </p>
+                ) : null}
             </div>
 
             {rows.length === 0 ? (
-                <p className="hud-panel p-5 text-body-sm text-fg-2">No skaters match. Try fewer filters or a lower games-played minimum.</p>
+                <p className="panel label p-card">No matches</p>
             ) : (
                 <ScrollRegion label="Skater ratings table" className="scroll-mt-filterbar rounded-card border border-line bg-surface-1">
-                    <table className="w-full min-w-full text-body-sm md:min-w-[1100px]">
+                    <table className="w-full min-w-full font-mono text-caption tabular-nums md:min-w-[1100px]">
                         <caption className="sr-only">Skaters sorted by {sort.key === 'impact' ? 'impact' : sort.key}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}</caption>
-                        <thead className="scroll-mt-filterbar bg-surface-2">
+                        <thead className="scroll-mt-filterbar bg-bg">
                             <tr>
                                 <SortHeader
                                     direction={sort.key === 'name' ? sort.dir : null}
                                     onSort={() => onSort('name')}
-                                    className="sticky left-0 z-10 w-[9rem] min-w-[9rem] bg-surface-2 md:w-60"
+                                    className="sticky left-0 z-10 w-[9rem] min-w-[9rem] border-b border-line bg-bg md:w-60"
                                 >
                                     Player
                                 </SortHeader>
-                                <SortHeader direction={sort.key === 'impact' ? sort.dir : null} onSort={() => onSort('impact')} className="min-w-[8.5rem]">
+                                <SortHeader direction={sort.key === 'impact' ? sort.dir : null} onSort={() => onSort('impact')} className="min-w-[8.5rem] border-b border-line">
                                     Impact
                                 </SortHeader>
                                 {COLUMNS.map(c => (
-                                    <SortHeader key={c.key} align="right" title={c.title} direction={sort.key === c.key ? sort.dir : null} onSort={() => onSort(c.key)} className={colClass(c)}>
+                                    <SortHeader key={c.key} align="right" title={c.title} direction={sort.key === c.key ? sort.dir : null} onSort={() => onSort(c.key)} className={cn('border-b border-line', colClass(c))}>
                                         {c.label}
                                     </SortHeader>
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-line tabular-nums">
+                        <tbody>
                             {visible.map((p, i) => (
-                                <tr key={p.id} className="hover:bg-surface-2/50">
-                                    <th scope="row" className="sticky left-0 z-10 w-[9rem] min-w-[9rem] bg-surface-1 px-2 py-1.5 text-left font-normal md:w-60">
+                                <tr key={p.id} className="group">
+                                    <th scope="row" className={cn(CELL_BG, 'sticky left-0 z-10 h-8 w-[9rem] min-w-[9rem] border-b border-line px-2 text-left font-normal md:w-60')}>
                                         <span className="flex items-center gap-2">
-                                            <span className="hidden w-6 shrink-0 text-right text-caption text-fg-3 md:inline">{current * PAGE + i + 1}</span>
-                                            <TeamLogo tri={p.team} size={20} />
-                                            <span className="min-w-0">
-                                                <span className="block truncate font-semibold text-fg-1">
+                                            <span className="hidden w-6 shrink-0 text-right text-micro text-fg-3 md:inline">{current * PAGE + i + 1}</span>
+                                            <TeamLogo tri={p.team} size={18} />
+                                            <span className="flex min-w-0 items-baseline gap-2">
+                                                <span className="truncate font-bold text-fg-1">
                                                     <span className="md:hidden">{shortName(p.name)}</span>
                                                     <span className="hidden md:inline">{p.name}</span>
                                                 </span>
-                                                <span className="block truncate text-micro text-fg-3">
-                                                    {p.team} · {p.pos}
-                                                    {p.rookie ? ' · R' : ''}
-                                                    {p.prevTeam ? <span className="text-warn"> · from {p.prevTeam}</span> : null}
-                                                    {!p.onRoster ? ' · unsigned' : ''}
+                                                <span className="shrink-0 text-micro uppercase text-fg-3">
+                                                    <span className="hidden md:inline">{p.team} </span>
+                                                    {p.pos}
+                                                    {p.rookie ? ' R' : ''}
+                                                    {p.prevTeam ? <span className="text-warn"> {p.prevTeam}</span> : null}
+                                                    {!p.onRoster ? ' FA' : ''}
                                                 </span>
                                             </span>
                                         </span>
                                     </th>
-                                    <td className="px-2 py-1.5">
+                                    <td className={cn(CELL_BG, 'h-8 border-b border-line px-2')}>
                                         <ImpactBar value={p.impact} />
                                     </td>
                                     {COLUMNS.map(c => (
-                                        <td key={c.key} className={cn('px-2 py-1.5 text-right text-fg-2', colClass(c))}>
+                                        <td key={c.key} className={cn(CELL_BG, 'h-8 border-b border-line px-2 text-right text-fg-2', colClass(c))}>
                                             {c.render(p)}
                                         </td>
                                     ))}
@@ -271,26 +277,24 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
                         type="button"
                         disabled={current === 0}
                         onClick={() => goPage(current - 1)}
-                        className="min-h-10 rounded-control border border-line-strong px-4 text-body-sm font-semibold text-fg-1 transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:text-fg-disabled coarse:min-h-11"
+                        className="min-h-[34px] rounded-full border border-line px-3.5 text-micro font-medium uppercase tracking-chip text-fg-2 transition-colors hover:border-line-strong hover:text-fg-1 disabled:cursor-not-allowed disabled:text-fg-disabled coarse:min-h-11"
                     >
-                        ← Previous
+                        ← Prev
                     </button>
-                    <span className="px-2 text-body-sm tabular-nums text-fg-2">
-                        Page {current + 1} of {pages}
+                    <span className="px-2 text-micro uppercase tracking-label tabular-nums text-fg-3">
+                        <span className="text-fg-1">{current + 1}</span>/{pages}
+                        <span className="sr-only"> pages</span>
                     </span>
                     <button
                         type="button"
                         disabled={current >= pages - 1}
                         onClick={() => goPage(current + 1)}
-                        className="min-h-10 rounded-control border border-line-strong px-4 text-body-sm font-semibold text-fg-1 transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:text-fg-disabled coarse:min-h-11"
+                        className="min-h-[34px] rounded-full border border-line px-3.5 text-micro font-medium uppercase tracking-chip text-fg-2 transition-colors hover:border-line-strong hover:text-fg-1 disabled:cursor-not-allowed disabled:text-fg-disabled coarse:min-h-11"
                     >
                         Next →
                     </button>
                 </nav>
             ) : null}
-            <p className="flex items-center gap-1 text-caption text-fg-3">
-                Impact is a z-score: 0 is an average skater at his position, +1 is about one standard deviation better. <InfoTip term="player-impact" />
-            </p>
         </div>
     );
 }
@@ -308,7 +312,7 @@ function ImpactBar({ value }: { value: number | null }) {
     const pos = value >= 0;
     return (
         <span className="flex items-center gap-2">
-            <span aria-hidden="true" className="relative h-2.5 w-16 shrink-0 rounded-full bg-fg-3/15 md:w-24">
+            <span aria-hidden="true" className="relative h-2 w-16 shrink-0 rounded-full bg-line md:w-24">
                 <span className="absolute inset-y-0 left-1/2 w-px bg-fg-3/60" />
                 <span
                     className={cn('absolute inset-y-0 rounded-full', pos ? 'bg-brand/80' : 'bg-neg/80')}

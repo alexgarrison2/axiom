@@ -15,22 +15,22 @@ import { DEFAULT_GAME_FILTERS, applyGameFilters, countGameFilters, type TeamGame
 
 const TeamChart = dynamic(() => import('@/components/TeamChart'), {
     ssr: false,
-    loading: () => <div className="hud-panel h-[360px] animate-pulse md:h-[520px]" role="status" aria-label="Loading chart" />,
+    loading: () => <div className="panel h-[340px] animate-pulse md:h-[480px]" role="status" aria-label="Loading chart" />,
 });
 const SkaterGrid = dynamic(() => import('./SkaterGrid'), {
     ssr: false,
     loading: () => (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" role="status" aria-label="Loading skaters">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" role="status" aria-label="Loading skaters">
             {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-72 animate-pulse rounded-card bg-surface-1" />
+                <div key={i} className="h-44 animate-pulse rounded-card bg-surface-1" />
             ))}
         </div>
     ),
 });
 
 // Only needed once the sheet opens / the tab is picked.
-const FilterControls = dynamic(() => import('./FilterControls'), { loading: () => <p className="py-4 text-body-sm text-fg-2">Loading filters…</p> });
-const GoaliesPanel = dynamic(() => import('./GoaliesPanel'), { loading: () => <div className="hud-panel h-64 animate-pulse" role="status" aria-label="Loading goalies" /> });
+const FilterControls = dynamic(() => import('./FilterControls'), { loading: () => <p className="label py-4">Loading</p> });
+const GoaliesPanel = dynamic(() => import('./GoaliesPanel'), { loading: () => <div className="panel h-64 animate-pulse" role="status" aria-label="Loading goalies" /> });
 
 const TABS = ['games', 'charts', 'skaters', 'goalies'] as const;
 type Tab = (typeof TABS)[number];
@@ -83,7 +83,7 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
         let live = true;
         fetchJsonCached<TeamPayload>(teamUrl(tri, season))
             .then(p => live && setPayloads(prev => ({ ...prev, [season]: p })))
-            .catch(() => live && setError(`Could not load ${seasonLabel(season)}.`));
+            .catch(() => live && setError(`${seasonLabel(season)} unavailable`));
         return () => {
             live = false;
         };
@@ -124,9 +124,9 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
                 setTab(v as Tab);
                 writeUrl('tab', v === 'games' ? null : v);
             }}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-2.5"
         >
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
                 <TabsList aria-label="Team sections">
                     <TabsTrigger value="games">Games</TabsTrigger>
                     <TabsTrigger value="charts">Charts</TabsTrigger>
@@ -134,55 +134,71 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
                     <TabsTrigger value="goalies">Goalies</TabsTrigger>
                 </TabsList>
                 {tab === 'games' || tab === 'charts' ? (
-                    <Segmented label="Season" value={season} onChange={changeSeason} options={seasons.map(s => ({ value: s, label: seasonLabel(s) }))} />
+                    <Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={seasons.map(s => ({ value: s, label: seasonLabel(s) }))} />
+                ) : null}
+                {tab === 'games' ? (
+                    <>
+                        <FilterChip selected={filters.recent === 10} onSelectedChange={on => setFilters(f => ({ ...f, recent: on ? 10 : 'All' }))}>
+                            L10
+                        </FilterChip>
+                        <FilterChip selected={filters.location === 'Home'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Home' : 'All' }))}>
+                            Home
+                        </FilterChip>
+                        <FilterChip selected={filters.location === 'Away'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Away' : 'All' }))}>
+                            Away
+                        </FilterChip>
+                        <FilterSheet
+                            activeCount={active}
+                            title="Filters"
+                            onReset={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })}
+                            applyLabel={`${filtered.length} GP`}
+                        >
+                            <FilterControls filters={filters} setFilters={setFilters} goalies={goalieNames} opponents={opponents} hasPlayoffs={hasPlayoffs} />
+                        </FilterSheet>
+                        {active > 0 ? (
+                            <button
+                                type="button"
+                                onClick={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })}
+                                className="min-h-[34px] px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:min-h-11"
+                            >
+                                Clear
+                            </button>
+                        ) : null}
+                    </>
                 ) : null}
             </div>
             {error ? (
-                <p role="alert" className="text-body-sm text-neg">
+                <p role="alert" className="text-micro uppercase tracking-label text-neg">
                     {error}
                 </p>
             ) : null}
 
-            <TabsContent value="games" className="mt-0 flex flex-col gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                    <FilterChip selected={filters.recent === 10} onSelectedChange={on => setFilters(f => ({ ...f, recent: on ? 10 : 'All' }))}>
-                        Last 10
-                    </FilterChip>
-                    <FilterChip selected={filters.location === 'Home'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Home' : 'All' }))}>
-                        Home
-                    </FilterChip>
-                    <FilterChip selected={filters.location === 'Away'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Away' : 'All' }))}>
-                        Away
-                    </FilterChip>
-                    <FilterSheet
-                        activeCount={active}
-                        title="Filter games"
-                        description={`${initial.team.common} · ${label}`}
-                        onReset={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })}
-                        applyLabel={`Show ${filtered.length} ${filtered.length === 1 ? 'game' : 'games'}`}
-                    >
-                        <FilterControls filters={filters} setFilters={setFilters} goalies={goalieNames} opponents={opponents} hasPlayoffs={hasPlayoffs} />
-                    </FilterSheet>
-                    {active > 0 ? (
-                        <button type="button" onClick={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })} className="min-h-9 px-2 text-body-sm font-semibold text-fg-2 hover:text-fg-1 hover:underline coarse:min-h-11">
-                            Clear filters
-                        </button>
-                    ) : null}
-                    <span className="ml-auto text-caption text-fg-2">
-                        <span className="font-mono font-semibold text-fg-1">{label}</span> {filters.scope === 'playoffs' ? 'playoffs' : 'regular season'} · {filtered.length} of {filters.scope === 'playoffs' ? games.length - regularCount : regularCount} games
+            <TabsContent value="games" className="mt-0 flex flex-col gap-2">
+                <p className="flex items-center gap-2 text-micro font-medium uppercase tracking-label text-fg-3">
+                    <span className="text-fg-1">
+                        {label} {filters.scope === 'playoffs' ? 'playoffs' : 'regular season'}
                     </span>
-                </div>
+                    <span aria-hidden="true" className="text-fg-disabled">
+                        ·
+                    </span>
+                    <span>
+                        <span className="text-fg-1">{filtered.length}</span>/{filters.scope === 'playoffs' ? games.length - regularCount : regularCount} GP
+                    </span>
+                </p>
 
                 {!payload ? (
-                    <div className="hud-panel h-64 animate-pulse" role="status" aria-label="Loading games" />
+                    <div className="panel h-64 animate-pulse" role="status" aria-label="Loading games" />
                 ) : games.length === 0 && payload.isCurrent ? (
-                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-brand/30 bg-brand/[0.06] px-4 py-3" role="status">
-                        <p className="text-body-sm text-fg-1">
-                            No {label} games yet. <span className="text-fg-2">The log fills in the morning after each game.</span>
-                        </p>
+                    <div className="panel flex items-center justify-between gap-3 p-card" role="status">
+                        <span className="label">No games</span>
                         {prev ? (
-                            <button type="button" onClick={() => changeSeason(prev)} className="inline-flex min-h-9 items-center gap-1 rounded-control border border-line-strong bg-surface-2 px-3 text-body-sm font-semibold text-fg-1 hover:bg-surface-3 coarse:min-h-11">
-                                View {seasonLabel(prev)} game log <span aria-hidden="true">→</span>
+                            <button
+                                type="button"
+                                onClick={() => changeSeason(prev)}
+                                aria-label={`Show the ${seasonLabel(prev)} game log`}
+                                className="inline-flex min-h-[34px] items-center gap-1.5 rounded-full border border-line px-3.5 text-micro font-medium uppercase tracking-chip text-fg-2 hover:border-line-strong hover:text-fg-1 coarse:min-h-11"
+                            >
+                                {seasonLabel(prev)} <span aria-hidden="true">→</span>
                             </button>
                         ) : null}
                     </div>
