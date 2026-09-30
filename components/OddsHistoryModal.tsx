@@ -28,13 +28,13 @@ function Arrow({ dir }: { dir: 'up' | 'down' | null }) {
  * "Line move": how the moneyline moved from the opening snapshot to the
  * latest, in an accessible dialog. Shown only when there are 2+ points.
  */
-export default function OddsHistoryModal({ entries, away, home }: { entries: OddsEntry[]; away: TeamRef; home: TeamRef }) {
+export default function OddsHistoryModal({ entries, away, home, started = false }: { entries: OddsEntry[]; away: TeamRef; home: TeamRef; started?: boolean }) {
     const first = entries[0];
     const last = entries[entries.length - 1];
     return (
         <Dialog
             title="Line move"
-            description={`${away.commonName} @ ${home.commonName} · moneyline from open to latest`}
+            description={`${away.commonName} @ ${home.commonName} · moneyline from open to ${started ? 'close' : 'latest'}`}
             size="md"
             trigger={
                 <button
@@ -70,7 +70,7 @@ export default function OddsHistoryModal({ entries, away, home }: { entries: Odd
                         <tr key={i} className={cn('border-t border-line', (e.isOpen || e.isLatest) && 'bg-surface-2/60')}>
                             <th scope="row" className="py-1.5 pl-1 text-left text-caption font-normal text-fg-2">
                                 {e.isOpen ? <span className="mr-1.5 rounded-chip bg-fg-3/15 px-1 text-micro font-bold uppercase text-fg-1">Open</span> : null}
-                                {e.isLatest ? <span className="mr-1.5 rounded-chip bg-brand/15 px-1 text-micro font-bold uppercase text-brand">Latest</span> : null}
+                                {e.isLatest ? <span className="mr-1.5 rounded-chip bg-brand/15 px-1 text-micro font-bold uppercase text-brand">{started ? 'Close' : 'Latest'}</span> : null}
                                 {when(e.timestamp)}
                             </th>
                             <td className="py-1.5 text-right tabular-nums text-fg-1">

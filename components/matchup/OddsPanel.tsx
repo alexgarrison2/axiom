@@ -123,7 +123,7 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
                 </p>
             ) : null}
 
-            {history && history.length > 1 ? <OddsHistoryModal entries={history} away={p.away.team} home={p.home.team} /> : null}
+            {history && history.length > 1 ? <OddsHistoryModal entries={history} away={p.away.team} home={p.home.team} started={phase !== 'pre'} /> : null}
         </div>
     );
 }

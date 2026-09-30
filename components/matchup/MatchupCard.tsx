@@ -145,9 +145,13 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                 {finalText ? <p className="-mt-1 text-center text-body-sm font-semibold text-fg-1">{finalText}</p> : null}
 
                 {/* Win probability */}
-                {model ? (
-                    <div className={cn(started && 'opacity-50 saturate-50')}>
-                        <WinBar away={a} home={h} pAway={model.away / 100} awayColor={colors.away} homeColor={colors.home} size={started ? 'sm' : 'md'} />
+                {model && !started ? <WinBar away={a} home={h} pAway={model.away / 100} awayColor={colors.away} homeColor={colors.home} size="md" /> : null}
+                {model && started ? (
+                    // Once the puck drops the pregame split becomes a thin, muted ribbon; the numbers are in the line below.
+                    <div aria-hidden="true" className="flex h-1.5 overflow-hidden rounded-full opacity-60">
+                        <span style={{ width: `${model.away}%`, backgroundColor: colors.away }} />
+                        <span className="w-0.5 bg-bg" />
+                        <span className="flex-1" style={{ backgroundColor: colors.home }} />
                     </div>
                 ) : null}
 

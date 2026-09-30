@@ -24,7 +24,7 @@ export default async function Home() {
     const dates = [...new Set(predictions.map(p => p.date))].sort();
 
     return (
-        <main className="mx-auto w-full max-w-[1400px] px-4 pb-tabbar pt-3 md:px-6 md:pb-10">
+        <main className="mx-auto w-full max-w-[1400px] px-4 pb-tabbar pt-3 md:px-6 md:pb-10 md:pt-2">
             <PredictionsViewer
                 predictions={predictions.map(compactForClient)}
                 implications={implications}

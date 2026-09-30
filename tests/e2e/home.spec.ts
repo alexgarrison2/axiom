@@ -214,6 +214,8 @@ test.describe('game lifecycle', () => {
         await expect(card).toContainText('P2 12:41');
         await expect(card).toContainText(/Pregame [A-Z]{3} \d+%/);
         await expect(card).not.toContainText('Edge');
+        const axe = await blockingAxeViolations(page);
+        expect(axe, formatAxe(axe)).toEqual([]);
     });
 
     test('polling stops once every game is final and the tab is hidden', async ({ page }) => {
