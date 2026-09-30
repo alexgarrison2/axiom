@@ -3,12 +3,16 @@
 import { IntentLink } from './IntentLink';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { NAV_ITEMS, isActive } from './nav-items';
+import { EXTRA_LINKS, NAV_ITEMS, isActive, type NavItem } from './nav-items';
 
 /** Desktop (md+) section links with aria-current and one brand active style. */
 export function SiteNavLinks({ showPlayoffs }: { showPlayoffs: boolean }) {
     const pathname = usePathname();
-    const items = NAV_ITEMS.filter(i => !i.playoffsOnly || showPlayoffs || isActive(i.href, pathname));
+    // "How it works" joins the main row from lg up (it lives in More on mobile).
+    const items: (NavItem & { wide?: boolean })[] = [
+        ...NAV_ITEMS.filter(i => !i.playoffsOnly || showPlayoffs || isActive(i.href, pathname)),
+        ...EXTRA_LINKS.map(l => ({ ...l, wide: true })),
+    ];
 
     return (
         <nav aria-label="Main" className="hidden min-w-0 md:block">
@@ -16,7 +20,7 @@ export function SiteNavLinks({ showPlayoffs }: { showPlayoffs: boolean }) {
                 {items.map(item => {
                     const active = isActive(item.href, pathname);
                     return (
-                        <li key={item.key}>
+                        <li key={item.key} className={cn(item.wide && !active && 'hidden lg:block')}>
                             <IntentLink
                                 href={item.href}
                                 aria-current={active ? 'page' : undefined}

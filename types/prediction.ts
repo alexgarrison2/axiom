@@ -106,6 +106,11 @@ export interface Prediction {
     /** Legacy SiteHistory key "YYYY-MM-DD-Away-Home". */
     legacyId: string;
     seasonId: string;
+    /**
+     * Set by the slate (never parsed): every game on this day is a season
+     * opener for both teams, so the opener chip carries no information.
+     */
+    slateAllOpeners?: boolean;
     gameType: string; // "02" / "03"
     date: string; // NHL (Eastern) game date
     startTimeUtc: string;
