@@ -72,8 +72,12 @@ export function freshnessState(generatedAt: Date | null, now: Date, opts: Freshn
 
     const starts = opts.starts?.map(d => d.getTime()).filter(ms => Number.isFinite(ms)) ?? null;
     const gameDay = starts === null || starts.some(ms => Math.abs(ms - nowMs) <= GAME_DAY_MS);
-    // A game is under way but the last run landed well before its puck drop.
-    if (starts?.some(ms => nowMs >= ms && nowMs < ms + GAME_SPAN_MS && t < ms - PREGAME_MS)) return 'stale';
+    // A game is under way but the last run landed well before its puck drop,
+    // though a run was scheduled in the pregame hours (a morning puck drop in
+    // Europe, before the first slot of the day, doesn't count).
+    const pregameMissed = (ms: number) =>
+        nowMs >= ms && nowMs < ms + GAME_SPAN_MS && t < ms - PREGAME_MS && ms - lastSlotAtOrBefore(new Date(ms)).getTime() <= PREGAME_MS;
+    if (starts?.some(pregameMissed)) return 'stale';
 
     if (inPregameWindow(now)) {
         const due = lastSlotAtOrBefore(new Date(nowMs - IN_WINDOW_GRACE_MS));

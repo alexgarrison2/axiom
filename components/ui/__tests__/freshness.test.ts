@@ -52,6 +52,12 @@ describe('freshness badge rules', () => {
         expect(freshnessTone(freshnessState(utc('2026-09-30T21:05:00'), utc('2026-09-30T23:45:00'), { starts }))).not.toBe('stale');
     });
 
+    it('does not flag a morning puck drop that has no run slot in the 3h before it', () => {
+        // Global Series game at 10:00 UTC; the last slot before it is 02:00 UTC.
+        const starts = [utc('2026-11-14T10:00:00')];
+        expect(freshnessState(utc('2026-11-14T02:05:00'), utc('2026-11-14T11:00:00'), { starts })).not.toBe('stale');
+    });
+
     it('is fine in the window when runs are on schedule', () => {
         expect(freshnessState(utc('2026-09-30T21:04:00'), utc('2026-09-30T21:40:00'))).toBe('fresh');
         expect(freshnessState(utc('2026-09-30T20:04:00'), utc('2026-09-30T21:50:00'))).toBe('ok');
