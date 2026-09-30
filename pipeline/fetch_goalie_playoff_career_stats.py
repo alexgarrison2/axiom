@@ -25,9 +25,8 @@ def fetch_all_pages(url_base: str) -> list[dict]:
     batch = 100
     while True:
         url = f"{url_base}&limit={batch}&start={start}"
-        req = urllib.request.Request(url, headers=HEADERS)
-        with urllib.request.urlopen(req, timeout=20) as r:
-            d = json.load(r)
+        from http_utils import get_json
+        d = get_json(url, timeout=20, ua=HEADERS['User-Agent'])
         page = d.get('data', [])
         if not page:
             break

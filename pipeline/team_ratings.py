@@ -323,23 +323,15 @@ def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_fil
     if save_files:
         team_ratings_path = os.path.join(PUBLIC_DATA_DIR, 'team_ratings.json')
         goalie_ratings_path = os.path.join(PUBLIC_DATA_DIR, 'goalie_ratings.json')
-        # Also save to pipeline dir so predict_games.py reads current data
-        pipeline_tr_path = os.path.join(SCRIPT_DIR, 'team_ratings.json')
-        pipeline_gr_path = os.path.join(SCRIPT_DIR, 'goalie_ratings.json')
-
+        # public/data/ is the only ratings location (paths.RATINGS_DIR); the
+        # old pipeline/ copies were never committed by CI and went stale.
         with open(team_ratings_path, 'w') as f:
             json.dump(team_ratings, f, indent=4)
         print(f"Saved team_ratings.json to {team_ratings_path}")
-        with open(pipeline_tr_path, 'w') as f:
-            json.dump(team_ratings, f, indent=4)
-        print(f"Saved team_ratings.json to {pipeline_tr_path}")
 
         with open(goalie_ratings_path, 'w') as f:
             json.dump(goalie_ratings, f, indent=4)
         print(f"Saved goalie_ratings.json to {goalie_ratings_path}")
-        with open(pipeline_gr_path, 'w') as f:
-            json.dump(goalie_ratings, f, indent=4)
-        print(f"Saved goalie_ratings.json to {pipeline_gr_path}")
 
         # Compute and save team_stats_extended.json (splits by time/location/starter)
         _save_extended_stats(df, PUBLIC_DATA_DIR)

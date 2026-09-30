@@ -36,7 +36,8 @@ class MLPredictor:
 
         # Load goalie ratings from file if not passed
         if not self.goalie_ratings:
-            gr_path = os.path.join(SCRIPT_DIR, 'goalie_ratings.json')
+            from paths import GOALIE_RATINGS_FILE
+            gr_path = GOALIE_RATINGS_FILE   # public/data is the only ratings location
             if os.path.exists(gr_path):
                 with open(gr_path, 'r') as f:
                     self.goalie_ratings = json.load(f)

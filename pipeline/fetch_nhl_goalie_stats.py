@@ -2,7 +2,6 @@ from season import SEASON_ID
 import json
 import urllib.request
 import urllib.parse
-import ssl
 
 def fetch_nhl_goalie_stats():
     """
@@ -30,18 +29,8 @@ def fetch_nhl_goalie_stats():
         query_string = urllib.parse.urlencode(params)
         full_url = f"{url}?{query_string}"
         
-        # Add User-Agent header
-        req = urllib.request.Request(full_url)
-        req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36')
-        
-        # SSL Context helper
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-
-        with urllib.request.urlopen(req, context=ctx) as response:
-            data = json.loads(response.read().decode('utf-8'))
-        
+        from http_utils import get_json
+        data = get_json(full_url, ua="plain")
         goalies = data.get('data', [])
         print(f"Found {len(goalies)} goalies.")
         

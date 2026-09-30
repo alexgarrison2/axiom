@@ -127,7 +127,10 @@ def request_bytes(url: str, *, timeout: float = DEFAULT_TIMEOUT, retries: int = 
             if not quiet:
                 print(f"    [http] {e.code} for {url} — retry {attempt}/{retries - 1} in {wait:.1f}s")
             time.sleep(wait + random.uniform(0, 0.25))
-        except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError, ssl.SSLError) as e:
+        except (UnicodeError, ValueError) as e:  # malformed URL — retrying won't help
+            raise HttpError(url, "badurl", str(e)[:120])
+        except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError, ssl.SSLError,
+                OSError) as e:
             if fault is None:
                 REQUEST_LOG.append((url, "neterr"))
             last_status, last_msg = None, str(getattr(e, "reason", e))

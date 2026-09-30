@@ -34,10 +34,8 @@ SERIES_CODE_MAP = {
 
 
 def fetch_json(url):
-    ctx = ssl.create_default_context()
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
-        return json.loads(resp.read().decode())
+    from http_utils import get_json
+    return get_json(url, ua="plain")
 
 
 def build_series_code_map_from_bracket():
@@ -131,13 +129,10 @@ def fetch_series_odds():
     """Fetch live series winner odds from Bovada. Returns dict: (triA, triB) -> {triA: odds, triB: odds}."""
     url = "https://www.bovada.lv/services/sports/event/v2/events/A/description/hockey/nhl-playoff-series-betting"
     try:
-        result = subprocess.run(
-            ["curl", "-s", "--max-time", "15", "-H", "User-Agent: Mozilla/5.0", url],
-            capture_output=True, text=True, timeout=20
-        )
-        if result.returncode != 0 or not result.stdout:
+        from http_utils import try_get_json
+        data = try_get_json(url, retries=2)
+        if not data:
             return {}
-        data = json.loads(result.stdout)
         events = data[0].get("events", []) if isinstance(data, list) else data.get("events", [])
     except Exception as e:
         print(f"  Warning: could not fetch series odds: {e}")

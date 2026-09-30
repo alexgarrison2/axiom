@@ -26,23 +26,16 @@ Run: python3 pipeline/fetch_clinch_status.py
 import urllib.request
 import json
 import os
-import ssl
 
 BASE_URL = "https://api-web.nhle.com/v1"
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT_FILE = os.path.join(_ROOT, "public", "data", "clinch_status.json")
 
-ssl._create_default_https_context = ssl._create_unverified_context
 
 
 def get_url(url: str):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            return json.loads(r.read().decode())
-    except Exception as e:
-        print(f"  Error fetching {url}: {e}")
-        return None
+    from http_utils import try_get_json
+    return try_get_json(url, ua="plain")
 
 
 def main():

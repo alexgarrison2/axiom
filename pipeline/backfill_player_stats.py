@@ -3,7 +3,6 @@ import urllib.request
 import json
 import csv
 import os
-import ssl
 from datetime import datetime
 import time
 import pandas as pd
@@ -14,18 +13,12 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # axiom roo
 OUTPUT_FILENAME = os.path.join(_ROOT, "public", "data", season_file("player_stats"))
 GAME_STATS_FILE = os.path.join(_ROOT, "pipeline", season_file("gamestats"))
 
-# Create unverified context for SSL to avoid cert errors
-ssl._create_default_https_context = ssl._create_unverified_context
 
 def get_url(url):
     """Helper to fetch URL with proper headers and error handling."""
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    try:
-        with urllib.request.urlopen(req, timeout=10) as response:
-            return json.loads(response.read().decode())
-    except Exception as e:
-        print(f"  Error fetching {url}: {e}")
-        return None
+    from http_utils import try_get_json
+    return try_get_json(url, ua="plain")
+
 
 def get_boxscore(game_id):
     """Fetch boxscore for a specific game ID."""

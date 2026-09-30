@@ -1,29 +1,15 @@
 import urllib.request
 import json
-import ssl
 import time
 from datetime import datetime
 
-# Bypass SSL context
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
 
 # Cache for rosters to avoid repeated API calls per run
 ROSTER_CACHE = {}
 
 def make_request(url):
-    req = urllib.request.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-    try:
-        with urllib.request.urlopen(req, context=ctx) as response:
-            return json.loads(response.read().decode())
-    except urllib.error.HTTPError as e:
-        print(f"HTTP Error {e.code} fetching {url}")
-        return None
-    except Exception as e:
-        print(f"Error fetching {url}: {e}")
-        return None
+    from http_utils import try_get_json
+    return try_get_json(url)
 
 # Mapping for robustness
 TRICODE_MAP = {
