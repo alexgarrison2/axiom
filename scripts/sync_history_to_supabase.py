@@ -19,7 +19,7 @@ DB_USER = _env("DB_USER")  # pooler format: postgres.<project-ref>
 DB_PASSWORD = _env("DB_PASSWORD")
 DB_PORT = _env("DB_PORT", "6543")
 
-HISTORY_PATH = "public/data/prediction_history.json"
+HISTORY_PATH = "data/prediction_history.json"  # canonical copy written by pipeline/generate_history.py
 
 def prob_to_odds(prob_pct):
     """Convert Probability % (0-100) to US Odds (Int)"""
