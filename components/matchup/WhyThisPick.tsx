@@ -1,6 +1,7 @@
 import type { Prediction } from '@/types/prediction';
 import { clashSafePair } from '@/components/ui/team-color';
 import { waterfallFor } from '@/lib/matchup/waterfall';
+import { displayPair } from '@/lib/matchup/edge';
 import { cn } from '@/lib/utils';
 import styles from './slate.module.css';
 
@@ -30,10 +31,12 @@ export function WhyThisPick({ p }: { p: Prediction }) {
     const colors = clashSafePair(a.triCode, h.triCode);
     const net = w.end - 50;
     const max = Math.max(...w.steps.map(s => Math.abs(s.delta)), Math.abs(net), 1);
-    const homeFav = w.end >= 50;
+    // Rounded exactly like the win bar and the Odds tab (displayPair: 51.5 → CBJ 51, not 52).
+    const pair = displayPair(100 - w.end, w.end)!;
+    const homeFav = pair.home >= pair.away;
     const fav = homeFav ? h : a;
-    const favPct = homeFav ? w.end : 100 - w.end;
-    const even = Math.round(favPct) <= 50;
+    const favPct = homeFav ? pair.home : pair.away;
+    const even = favPct <= 50;
 
     const bar = (delta: number, strong = false) => {
         const width = (Math.abs(delta) / max) * 50;
@@ -58,7 +61,7 @@ export function WhyThisPick({ p }: { p: Prediction }) {
     return (
         <section aria-labelledby={`why-${p.id}`} className="flex flex-col gap-1.5">
             <h3 id={`why-${p.id}`} className="sr-only">
-                {even ? 'Why: coin flip' : `Why: ${fav.triCode} ${favPct.toFixed(0)}%`}
+                {even ? 'Why: coin flip' : `Why: ${fav.triCode} ${favPct}%`}
             </h3>
             <div aria-hidden="true" className={cn(ROW, 'text-micro uppercase tracking-wide text-fg-3')}>
                 <span />
@@ -92,7 +95,7 @@ export function WhyThisPick({ p }: { p: Prediction }) {
                 <li className={cn(ROW, 'mt-0.5 border-t border-line pt-2 text-caption')}>
                     <span className="text-micro font-bold uppercase tracking-wide text-fg-1">Net</span>
                     {bar(net, true)}
-                    <span className="text-right font-bold tabular-nums text-fg-1">{even ? '50-50' : `${fav.triCode} ${favPct.toFixed(0)}`}</span>
+                    <span className="text-right font-bold tabular-nums text-fg-1">{even ? '50-50' : `${fav.triCode} ${favPct}`}</span>
                 </li>
             </ol>
         </section>

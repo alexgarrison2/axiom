@@ -9,6 +9,7 @@ import { loadJson } from '@/lib/client-data';
 import { fmtOdds, fmtTime, sourceLabel } from '@/lib/matchup/format';
 import { forecastPair, gatedEdge, hasMarket, marketPair, modelOnlyPair } from '@/lib/matchup/edge';
 import { cn } from '@/lib/utils';
+import { GlossLink } from '@/components/ui/gloss-link';
 import { useHydrated } from './GameTime';
 
 const OddsHistoryModal = dynamic(() => import('@/components/OddsHistoryModal'));
@@ -84,11 +85,11 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {forecast ? <Row label="Forecast" away={pct(forecast.away)} home={pct(forecast.home)} strong /> : null}
-                    {pure ? <Row label="Model" away={pct(pure.away)} home={pct(pure.home)} tone="text-magenta" /> : null}
-                    {market ? <Row label="Market" away={pct(market.away)} home={pct(market.home)} /> : null}
+                    {forecast ? <Row label={<GlossLink term="model-pct">Forecast</GlossLink>} away={pct(forecast.away)} home={pct(forecast.home)} strong /> : null}
+                    {pure ? <Row label={<GlossLink term="model-only">Model</GlossLink>} away={pct(pure.away)} home={pct(pure.home)} tone="text-magenta" /> : null}
+                    {market ? <Row label={<GlossLink term="market-pct">Market</GlossLink>} away={pct(market.away)} home={pct(market.home)} /> : null}
                     {priced ? <Row label="Book ML" away={fmtOdds(p.away.marketOdds)} home={fmtOdds(p.home.marketOdds)} strong /> : null}
-                    {forecast ? <Row label="Fair" away={fmtOdds(p.away.fairOdds)} home={fmtOdds(p.home.fairOdds)} /> : null}
+                    {forecast ? <Row label={<GlossLink term="fair-odds">Fair</GlossLink>} away={fmtOdds(p.away.fairOdds)} home={fmtOdds(p.home.fairOdds)} /> : null}
                     {p.away.puckline != null && p.home.puckline != null ? (
                         <Row label="Puck line" away={`${p.away.pucklineSpread ?? ''} ${fmtOdds(p.away.puckline)}`} home={`${p.home.pucklineSpread ?? ''} ${fmtOdds(p.home.puckline)}`} />
                     ) : null}
@@ -103,7 +104,7 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
                             home={p.totalUnder != null ? `U ${fmtOdds(p.totalUnder)}` : null}
                         />
                     ) : null}
-                    {p.away.xg != null && p.home.xg != null ? <Row label="Proj goals" away={p.away.xg.toFixed(2)} home={p.home.xg.toFixed(2)} /> : null}
+                    {p.away.xg != null && p.home.xg != null ? <Row label={<GlossLink term="projected-goals">Proj goals</GlossLink>} away={p.away.xg.toFixed(2)} home={p.home.xg.toFixed(2)} /> : null}
                 </tbody>
             </table>
 
@@ -114,9 +115,9 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
                         {edge.units != null ? ` · ${edge.units.toFixed(1)}u` : ''}
                     </span>
                 ) : phase === 'pre' && priced ? (
-                    <span className="label" title={p.gateReason ?? undefined}>
+                    <GlossLink href="/methodology#edge" desc={p.gateReason ?? undefined} className="label">
                         No bet
-                    </span>
+                    </GlossLink>
                 ) : (
                     <span />
                 )}

@@ -54,9 +54,10 @@ function StarterTile({ s, opp, now, view }: { s: SideData; opp: string; now: Dat
     const tag = head?.prior ? (windowTag(window) ?? PREV_TAG) : null;
     return (
         <div className="tile flex min-w-0 flex-col gap-2">
-            <div className="flex items-start justify-between gap-2">
-                <span className="flex min-w-0 flex-col">
-                    <span className={cn('truncate font-display text-title font-bold uppercase tracking-[0.02em]', s.goalie ? GOALIE_TONE[st.tone] : 'text-fg-2')}>
+            {/* The injury chip wraps under the name rather than squeezing it (never under 7 characters). */}
+            <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
+                <span className="flex min-w-[7ch] max-w-full flex-col">
+                    <span data-goalie-name className={cn('truncate font-display text-title font-bold uppercase tracking-[0.02em]', s.goalie ? GOALIE_TONE[st.tone] : 'text-fg-2')}>
                         {s.goalie ? <GoalieGlyph tone={st.tone} /> : null}
                         {s.goalie ? lastName(s.goalie) : 'TBD'}
                     </span>
@@ -110,12 +111,15 @@ function Backup({ g }: { g: GoalieView }) {
     const prev = lineText(g.prev);
     const tag = (g.cur?.gp ?? 0) < SMALL_SAMPLE_GP ? windowTag(g.gsaxSeason) : null;
     return (
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-2 border-t border-line pt-1.5 text-caption">
-            <span className="flex min-w-0 items-center gap-1.5">
-                <span className="truncate font-display font-bold uppercase text-fg-2">{lastName(g.name)}</span>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 border-t border-line pt-1.5 text-caption">
+            {/* Name first: the IR chip and the stat lines wrap to the next line before the name loses a letter. */}
+            <span className="flex min-w-0 max-w-full flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                <span data-goalie-name className="min-w-[7ch] max-w-full shrink-0 truncate font-display font-bold uppercase text-fg-2">
+                    {lastName(g.name)}
+                </span>
                 <InjuryTag injury={g.injury} />
             </span>
-            <span className="flex flex-col items-end tabular-nums">
+            <span className="ml-auto flex flex-col items-end tabular-nums">
                 {cur ? (
                     <span className="text-fg-1">
                         <span className="text-micro text-fg-3">{CUR_TAG}</span> {cur}

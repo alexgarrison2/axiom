@@ -34,9 +34,9 @@ function Block({ id, title, children, wide }: { id: string; title: string; child
 }
 
 /** A props table: name · type · note (2-4 words). */
-function Api({ rows }: { rows: [string, string, string][] }) {
+function Api({ rows, of }: { rows: [string, string, string][]; of: string }) {
     return (
-        <ScrollRegion label="Props" className="mt-5">
+        <ScrollRegion label={`${of} props`} className="mt-5">
             <table className="table-dense min-w-[520px]">
                 <thead>
                     <tr>
@@ -88,9 +88,15 @@ const ROWS = [
     { team: 'VAN', gp: 1, pts: 0, xgf: 45.9 },
 ];
 
-const STAMP = new Date(Date.now() - 4 * 60_000).toISOString();
+/** A demo "updated 4 minutes ago" stamp, set after mount so the server and client render the same badge. */
+function useDemoStamp(): string | null {
+    const [stamp, setStamp] = React.useState<string | null>(null);
+    React.useEffect(() => setStamp(new Date(Date.now() - 4 * 60_000).toISOString()), []);
+    return stamp;
+}
 
 export default function Kit() {
+    const stamp = useDemoStamp();
     const [day, setDay] = React.useState<'yesterday' | 'tonight' | 'thu'>('tonight');
     const [view, setView] = React.useState<'division' | 'wildcard' | 'league'>('division');
     const [chips, setChips] = React.useState({ home: true, away: false });
@@ -165,6 +171,7 @@ export default function Kit() {
                     </div>
                 </div>
                 <Api
+                    of="WinBar"
                     rows={[
                         ['away / home', 'string', 'Tricodes'],
                         ['pAway', 'number 0–1', 'Fill split (forecast)'],
@@ -345,7 +352,7 @@ export default function Kit() {
                     <Dialog title="Odds movement" description="How the moneyline moved since it opened." trigger={<Button variant="outline">Open dialog</Button>}>
                         <p className="text-caption text-fg-3">—</p>
                     </Dialog>
-                    <FreshnessBadge generatedAt={STAMP} />
+                    <FreshnessBadge generatedAt={stamp} />
                     <span className="inline-flex items-center gap-2 text-caption font-bold tracking-[0.14em] text-pos">
                         <span aria-hidden="true" className="live-dot" />
                         2ND 14:22
@@ -381,6 +388,7 @@ export default function Kit() {
                     <span className="font-bold text-fg-1">&lt;PageHeading title tag actions /&gt;</span> · top of this page
                 </p>
                 <Api
+                    of="PageHeading"
                     rows={[
                         ['title', 'ReactNode', 'Page name only'],
                         ['tag', 'ReactNode', 'Muted tag, e.g. 25-26'],

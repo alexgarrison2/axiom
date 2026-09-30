@@ -158,15 +158,71 @@ const SOURCES: Record<string, string> = {
     draftkings: 'DraftKings via NHL',
     dk: 'DraftKings via NHL',
     nhl: 'DraftKings via NHL',
+    nhl_partner_draftkings: 'DraftKings via NHL',
+    espn_draftkings: 'DraftKings via ESPN',
     fanduel: 'FanDuel',
     espn: 'ESPN BET',
     oddsapi: 'The Odds API',
     the_odds_api: 'The Odds API',
 };
 
+/** Book names for ids the table above does not list. */
+const BOOKS: Record<string, string> = {
+    draftkings: 'DraftKings',
+    fanduel: 'FanDuel',
+    bovada: 'Bovada',
+    betmgm: 'BetMGM',
+    caesars: 'Caesars',
+    pointsbet: 'PointsBet',
+    betrivers: 'BetRivers',
+    espnbet: 'ESPN BET',
+    pinnacle: 'Pinnacle',
+};
+
+/** Feed prefixes that say how a price reached us, not whose price it is. */
+const FEED_PREFIX = /^(?:nhl_partner|nhl|espn|oddsapi|the_odds_api|odds_api)[_\-\s]+/;
+
+/**
+ * Human book name for a market source id ("nhl_partner_draftkings" →
+ * "DraftKings via NHL"). Unknown ids lose feed prefixes and underscores and
+ * are title-cased; anything that still looks like an identifier is hidden (null).
+ */
 export function sourceLabel(src: string | null | undefined): string | null {
-    if (!src) return null;
-    return SOURCES[src.toLowerCase()] ?? src.charAt(0).toUpperCase() + src.slice(1);
+    if (!src || !src.trim()) return null;
+    const key = src.trim().toLowerCase();
+    if (SOURCES[key]) return SOURCES[key];
+    const words = key.replace(FEED_PREFIX, '').split(/[_\-\s]+/).filter(Boolean);
+    if (!words.length) return null;
+    const out = words.map(w => BOOKS[w] ?? w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return /^[A-Za-z][A-Za-z0-9 .&']{0,23}$/.test(out) && !/\d{3,}/.test(out) ? out : null;
+}
+
+const TAGS: Record<string, string> = {
+    bovada: 'BOV',
+    draftkings: 'DK',
+    fanduel: 'FD',
+    betmgm: 'MGM',
+    caesars: 'CZR',
+    pointsbet: 'PB',
+    betrivers: 'BR',
+    espnbet: 'ESPN',
+    pinnacle: 'PIN',
+};
+
+/**
+ * Terse tag for the book behind a source id, ignoring the feed it came
+ * through: "bovada" → "BOV"; "nhl_partner_draftkings", "espn_draftkings" and
+ * "nhl" → "DK". Null when unknown and unreadable.
+ */
+export function sourceTag(src: string | null | undefined): string | null {
+    if (!src || !src.trim()) return null;
+    const key = src.trim().toLowerCase();
+    if (key === 'dk' || key === 'nhl') return 'DK';
+    if (key === 'espn') return 'ESPN';
+    const bare = key.replace(FEED_PREFIX, '').replace(/[_\-\s]+/g, '');
+    if (TAGS[bare]) return TAGS[bare];
+    const label = sourceLabel(src);
+    return label ? label.replace(/[^A-Za-z0-9]/g, '').slice(0, 4).toUpperCase() : null;
 }
 
 /** "Brady Tkachuk" → "Tkachuk" (or "B. Tkachuk" with `initial`). */

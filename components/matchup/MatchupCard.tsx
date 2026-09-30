@@ -10,6 +10,7 @@ import { cardAnchor, finalLabel, hasScore, modelCorrect, phaseOf, type LiveGame,
 import { forecastPair, gatedEdge, hasMarket, hasPrediction, modelLean } from '@/lib/matchup/edge';
 import { finalSentence, fmtOdds, isCoinFlip } from '@/lib/matchup/format';
 import { situationChip } from '@/lib/matchup/pills';
+import { glossaryHref } from '@/lib/glossary';
 import { cn } from '@/lib/utils';
 import { StatusLine } from './StatusLine';
 import { TeamSide, washVars } from './TeamSide';
@@ -40,14 +41,26 @@ export function coinFlipFinal(p: Prediction, phase: Phase): boolean {
     return phase === 'final' && hasPrediction(p) && isCoinFlip(p.home.winPct);
 }
 
+/**
+ * A glossary link drawn over the card's expand toggle (whose hit area covers
+ * the whole summary): positioned above it, never nested in it, 24px tall.
+ */
+const CHIP = 'rounded-chip border border-warn/45 px-2 py-0.5 text-micro font-bold uppercase tracking-chip text-warn';
+const OVER_TOGGLE =
+    'relative z-10 inline-flex min-h-6 items-center rounded-chip px-1 transition-[filter] hover:brightness-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand';
+
 /** Centre of the footer: the result flag on finals, else the gated edge or the model lean. */
 function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame | null }) {
     if (phase === 'final') {
         if (coinFlipFinal(p, phase)) {
             return (
-                <span className="text-caption font-bold uppercase tracking-chip text-fg-3" title={`Pregame ${p.home.team.triCode} ${p.home.winPct?.toFixed(1)}%`}>
+                <a
+                    href={glossaryHref('no-lean')}
+                    className={cn(OVER_TOGGLE, 'text-caption font-bold uppercase tracking-chip text-fg-3')}
+                    title={`Pregame ${p.home.team.triCode} ${p.home.winPct?.toFixed(1)}%`}
+                >
                     No lean
-                </span>
+                </a>
             );
         }
         const ok = modelCorrect(p, live);
@@ -79,10 +92,17 @@ function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame 
     const lean = modelLean(p);
     if (lean) {
         return (
-            <span className="glow-magenta text-caption font-bold uppercase tracking-[0.12em]" title={`Model ${lean.pct}% ${lean.tri}, ${lean.gap.toFixed(1)} pts off the market`}>
+            <a
+                href={glossaryHref('lean')}
+                data-lean
+                className={cn(OVER_TOGGLE, 'glow-magenta text-caption font-bold uppercase tracking-[0.12em]')}
+                title={`Model ${lean.pct}% ${lean.tri}, ${lean.gap.toFixed(1)} pts off the market`}
+            >
                 <span aria-hidden="true">◆ {lean.pct} {lean.tri}</span>
-                <span className="sr-only">Model lean: {lean.tri} {lean.pct}%</span>
-            </span>
+                <span className="sr-only">
+                    Model lean: {lean.tri} {lean.pct}%, {lean.gap.toFixed(1)} points off the market
+                </span>
+            </a>
         );
     }
     if (!hasMarket(p) && forecastPair(p)) return <span className="label text-fg-3">No line</span>;
@@ -117,7 +137,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
         setOpen(false);
         toggleRef.current?.focus({ preventScroll: true });
         const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-        requestAnimationFrame(() => ref.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' }));
+        requestAnimationFrame(() => ref.current?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduce ? 'auto' : 'smooth' }));
     }, []);
 
     let finalText: string | null = null;
@@ -147,10 +167,19 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                     <StatusLine p={p} phase={phase} live={live} />
                     <div className="flex shrink-0 items-center gap-1">
                         {chip ? (
-                            <span title={chip.title} className="rounded-chip border border-warn/45 px-2 py-0.5 text-micro font-bold uppercase tracking-chip text-warn">
-                                <span aria-hidden="true">{chip.label}</span>
-                                <span className="sr-only">{chip.title}</span>
-                            </span>
+                            chip.term ? (
+                                <a href={glossaryHref(chip.term)} data-chip={chip.term} title={chip.title} className={cn(OVER_TOGGLE, 'px-0')}>
+                                    <span aria-hidden="true" className={CHIP}>
+                                        {chip.label}
+                                    </span>
+                                    <span className="sr-only">{chip.title}</span>
+                                </a>
+                            ) : (
+                                <span title={chip.title} className={CHIP}>
+                                    <span aria-hidden="true">{chip.label}</span>
+                                    <span className="sr-only">{chip.title}</span>
+                                </span>
+                            )
                         ) : null}
                         <ShareButton p={p} title={title} anchor={anchor} />
                         <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-3 transition-transform', open && 'rotate-180')}>

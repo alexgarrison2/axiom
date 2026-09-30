@@ -244,6 +244,8 @@ export interface CardChip {
     label: string;
     /** Screen-reader / tooltip wording. */
     title: string;
+    /** Glossary id the chip opens (/methodology#term-<id>); series chips have none. */
+    term?: string;
 }
 
 /**
@@ -268,11 +270,11 @@ export function situationChip(p: Prediction, series?: { away: number; home: numb
         return aa && hh ? 'Both' : aa ? a : hh ? h : null;
     };
     const b2b = who(s => s.isB2b);
-    if (b2b) return { label: `B2B ${b2b}`, title: `Back-to-back: ${b2b === 'Both' ? 'both teams' : b2b} played yesterday` };
+    if (b2b) return { label: `B2B ${b2b}`, title: `Back-to-back: ${b2b === 'Both' ? 'both teams' : b2b} played yesterday`, term: 'b2b' };
     const three = who(s => !s.isB2b && (s.gamesInLast4 ?? 0) >= 3);
-    if (three) return { label: `3in4 ${three}`, title: `Third game in four nights: ${three === 'Both' ? 'both teams' : three}` };
+    if (three) return { label: `3in4 ${three}`, title: `Third game in four nights: ${three === 'Both' ? 'both teams' : three}`, term: 'rest' };
     const trip = p.away.roadTripGameN ?? 0;
-    if (trip >= 4) return { label: `Trip G${trip}`, title: `${a}: game ${trip} of a road trip` };
+    if (trip >= 4) return { label: `Trip G${trip}`, title: `${a}: game ${trip} of a road trip`, term: 'rest' };
     // Season openers stay in the expanded panel: in opening week they would tag most of the slate.
     return null;
 }
