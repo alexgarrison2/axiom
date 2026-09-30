@@ -14,9 +14,7 @@ Run modes:
 """
 
 from season import season_file, SEASON_ID
-import urllib.request
 import json
-import ssl
 import csv
 import os
 import sys
@@ -26,7 +24,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-ssl._create_default_https_context = ssl._create_unverified_context
+from http_utils import get_text, HttpError
 
 # ── Config ──────────────────────────────────────────────────────────────────
 SHIFTS_API = "https://api.nhle.com/stats/rest/en/shiftcharts?cayenneExp=gameId={game_id}"
@@ -59,17 +57,11 @@ def time_to_seconds(t: str) -> int:
 
 
 def get_url(url: str, encoding: str = "utf-8"):
-    """Fetch URL with retries. Returns (text, None) or (None, error)."""
-    for attempt in range(MAX_RETRIES):
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=15) as r:
-                return r.read().decode(encoding), None
-        except Exception as e:
-            if attempt < MAX_RETRIES - 1:
-                time.sleep(1.5 * (attempt + 1))
-            else:
-                return None, str(e)
+    """Fetch URL with retries (TLS-verified). Returns (text, None) or (None, error)."""
+    try:
+        return get_text(url, encoding=encoding, retries=MAX_RETRIES, backoff=1.5, ua="plain", quiet=True), None
+    except HttpError as e:
+        return None, str(e)
 
 
 def get_json(url: str):
@@ -322,14 +314,17 @@ def append_rows(shifts_file: str, rows: list[dict]):
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
-def main():
-    full_mode = "--full" in sys.argv
+def main(argv=None):
+    """Fetch shifts for games not yet in the shifts CSV. Never exits the
+    interpreter; returns {'status': 'ok'|'skip'|'fail', 'rows_written': int}."""
+    argv = list(sys.argv[1:] if argv is None and __name__ == "__main__" else (argv or []))
+    full_mode = "--full" in argv
     print(f"fetch_shifts.py — {'Full' if full_mode else 'Incremental'} — "
           f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     if not os.path.exists(GAMESTATS_FILE):
-        print(f"✗ {GAMESTATS_FILE} not found. Run from the pipeline/ directory.")
-        sys.exit(1)
+        print(f"[SKIP] {GAMESTATS_FILE} not found — no games scraped yet this season.")
+        return {"status": "skip", "rows_written": 0, "reason": "no season gamestats"}
 
     all_game_ids = get_all_game_ids(GAMESTATS_FILE)
     existing_ids = set() if full_mode else load_existing_game_ids(SHIFTS_FILE)
@@ -339,7 +334,7 @@ def main():
 
     if not todo:
         print("  ✓ Shifts up to date.")
-        return
+        return {"status": "skip", "rows_written": 0, "reason": "up to date"}
 
     if full_mode and os.path.exists(SHIFTS_FILE):
         os.remove(SHIFTS_FILE)
@@ -387,9 +382,12 @@ def main():
 
     print(f"\n✓ Done. REST: {rest_ok} | HTML fallback: {html_ok} | Failed: {failed}")
     if os.path.exists(SHIFTS_FILE):
-        df = pd.read_csv(SHIFTS_FILE)
+        df = pd.read_csv(SHIFTS_FILE, usecols=["game_id"])
         print(f"  Shifts file: {len(df):,} rows across {df['game_id'].nunique()} games.")
+    return {"status": "ok" if (rest_ok + html_ok) or not failed else "fail",
+            "rows_written": rest_ok + html_ok, "failed": failed}
 
 
 if __name__ == "__main__":
-    main()
+    res = main()
+    sys.exit(1 if res.get("status") == "fail" else 0)

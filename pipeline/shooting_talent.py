@@ -76,9 +76,19 @@ def compute_shooting_talent(pipeline_dir=None):
     frames = []
     for f in shot_files:
         if os.path.exists(f):
-            df = pd.read_csv(f, usecols=['game_id', 'player_id', 'is_goal',
-                                          'xG', 'strength_state'],
-                             low_memory=False)
+            # Talent must be measured against the raw model output (xg_raw),
+            # not the already talent-adjusted xG, or factors feed back on
+            # themselves run after run.  Files without xg_raw (the frozen
+            # historical file) fall back to their stored xG.
+            header = pd.read_csv(f, nrows=0).columns
+            cols = ['game_id', 'player_id', 'is_goal', 'xG', 'strength_state']
+            if 'xg_raw' in header:
+                cols.append('xg_raw')
+            df = pd.read_csv(f, usecols=cols, low_memory=False)
+            if 'xg_raw' in df.columns:
+                df['xG'] = pd.to_numeric(df['xg_raw'], errors='coerce').fillna(
+                    pd.to_numeric(df['xG'], errors='coerce'))
+                df = df.drop(columns=['xg_raw'])
             frames.append(df)
             print(f"  Loaded {len(df):,} shots from {os.path.basename(f)}")
         else:

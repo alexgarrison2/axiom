@@ -115,24 +115,26 @@ def resolve_home_away(pbp_game: pd.DataFrame, name_to_id: dict) -> tuple[int, in
     return int(home_id), int(away_id)
 
 
-def main():
-    full_mode   = "--full" in sys.argv
+def main(argv=None):
+    """Enrich PBP rows with on-ice player ids. Never exits the interpreter;
+    returns {'status': 'ok'|'skip'|'fail', 'rows_written': int, 'reason': str}."""
+    argv = list(sys.argv[1:] if argv is None and __name__ == "__main__" else (argv or []))
+    full_mode   = "--full" in argv
     single_game = None
-    if "--game" in sys.argv:
-        idx = sys.argv.index("--game")
-        single_game = int(sys.argv[idx + 1])
+    if "--game" in argv:
+        idx = argv.index("--game")
+        single_game = int(argv[idx + 1])
 
     print(f"enrich_pbp.py — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     mode_label = ("single game " + str(single_game)) if single_game else ("full" if full_mode else "incremental")
     print(f"Mode: {mode_label}")
 
-    for f in [PBP_FILE, SHIFTS_FILE]:
-        if not os.path.exists(f):
-            if f == PBP_FILE:
-                print(f"[SKIP] {f} not found — nothing to enrich.")
-                sys.exit(0)
-            print(f"✗ {f} not found. Run from the pipeline/ directory.")
-            sys.exit(1)
+    if not os.path.exists(PBP_FILE):
+        print(f"[SKIP] {PBP_FILE} not found — nothing to enrich.")
+        return {"status": "skip", "rows_written": 0, "reason": f"{PBP_FILE} not found"}
+    if not os.path.exists(SHIFTS_FILE):
+        print(f"[SKIP] {SHIFTS_FILE} not found — shifts must be fetched first.")
+        return {"status": "skip", "rows_written": 0, "reason": f"{SHIFTS_FILE} not found"}
 
     # Load name → team_id lookup
     name_to_id = build_name_to_id(TEAMS_FILE)
@@ -146,10 +148,11 @@ def main():
     shifts = pd.read_csv(SHIFTS_FILE)
     print(f"  Shifts rows: {len(shifts):,}")
 
-    # Add on-ice columns if missing
+    # Add on-ice columns if missing; player ids are nullable integers
     for col in ON_ICE_COLS:
         if col not in pbp.columns:
             pbp[col] = pd.NA
+        pbp[col] = pd.to_numeric(pbp[col], errors="coerce").astype("Int64")
 
     shift_game_ids = set(shifts["game_id"].unique())
     all_pbp_game_ids = pbp["game_id"].unique()
@@ -166,7 +169,7 @@ def main():
     print(f"  Games to enrich: {len(to_process)}")
     if not to_process:
         print("  ✓ PBP already fully enriched — nothing to do.")
-        return
+        return {"status": "skip", "rows_written": 0, "reason": "up to date"}
 
     processed, skipped = 0, 0
     for i, game_id in enumerate(to_process, 1):
@@ -198,13 +201,16 @@ def main():
 
     print(f"\n✓ Enriched {processed} games ({skipped} skipped — no shifts or team match).")
     print("  Saving PBP file...")
-    pbp.to_csv(PBP_FILE, index=False)
+    from io_utils import atomic_write_csv
+    atomic_write_csv(PBP_FILE, pbp, min_rows=1, label=os.path.basename(PBP_FILE))
 
     enriched_rows = pbp["home_on1"].notna().sum()
     enriched_games = pbp[pbp["home_on1"].notna()]["game_id"].nunique()
     print(f"  On-ice coverage: {enriched_rows:,} rows / {enriched_games} games "
           f"({100 * enriched_rows / len(pbp):.1f}%)")
+    return {"status": "ok", "rows_written": int(processed), "reason": ""}
 
 
 if __name__ == "__main__":
-    main()
+    res = main()
+    sys.exit(1 if res.get("status") == "fail" else 0)

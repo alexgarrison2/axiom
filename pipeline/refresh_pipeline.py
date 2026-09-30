@@ -1,663 +1,664 @@
-from season import season_file, read_season_csv, PLAYER_MODEL_MIN_GAMES
-import pandas as pd
-import pickle
-import json
-import time
-import xgboost as xgb
-from xg_model import preprocess_data
-from team_ratings import calculate_ratings
-from predict_games import predict
-from shooting_talent import compute_shooting_talent, load_shooting_talent, apply_shooting_talent
-from dotenv import load_dotenv
+"""
+refresh_pipeline.py — orchestrates the data pipeline.
+
+    python refresh_pipeline.py --mode full   # daily ingest: scrape finals, rescore new shots,
+                                             # ratings, player models, predictions, sims
+    python refresh_pipeline.py --mode lite   # pregame hourly: schedule/goalies, injuries,
+                                             # odds, predictions
+
+Every stage is run through StageRunner, which records {stage, status
+(ok/skip/fail), rows_written, seconds, required} and never lets a stage end
+the interpreter (legacy ``sys.exit`` inside a stage is caught as a failure).
+At the end the run summary is written to public/data/manifest.json:
+
+    {schema_version, season_id, season_label, generated_at (UTC ISO), mode,
+     games_played_current_season, phase{...}, stages[], stale{file: reason},
+     sources{name: {fetched_at, ...}}, last_full_run, last_lite_run}
+
+The process exits non-zero if any *required* stage failed.  For testing the
+alerting path, PONYXG_FORCE_FAIL=<stage>[,<stage>] makes those stages raise.
+"""
 import os
+import sys
 
-# Load environment variables (for local runs)
-load_dotenv()
+os.environ.setdefault("PYTHONUNBUFFERED", "1")
+try:
+    sys.stdout.reconfigure(line_buffering=True)
+except Exception:
+    pass
 
-# Force the working directory to be the directory of this script (pipeline/)
-# This ensures that all relative paths (like ../public/data) work correctly
-# regardless of where the command is executed from.
-if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+import argparse
+import hashlib
+import importlib
+import shutil
+import time
+import traceback
+from datetime import datetime, timedelta, timezone
 
-def refresh_pipeline():
-    print("--- Starting Full Pipeline Refresh ---")
+PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
+if PIPELINE_DIR not in sys.path:
+    sys.path.insert(0, PIPELINE_DIR)
 
-    # -1. Prune Recent Data (Force Re-scrape for Special Teams fix)
-    # We remove games >= 2026-01-13 so they get re-processed with H-Ref data
-    print("Pruning recent gamestats to force re-scrape...")
-    gamestats_file = season_file("gamestats")
-    try:
-        df = pd.read_csv(gamestats_file)
-        # Convert date
-    #     if 'game_date' in df.columns:
-    #         df['game_date'] = pd.to_datetime(df['game_date'])
-    #         original_len = len(df)
-    #         # Prune
-    #         df = df[df['game_date'] < "2026-01-13"]
-    #         pruned_len = len(df)
-    #         if pruned_len < original_len:
-    #             df.to_csv(gamestats_file, index=False)
-    #             print(f"Pruned {original_len - pruned_len} rows from {gamestats_file}.")
-    except FileNotFoundError:
-        pass
-        
-    # 0a. Fetch H-Ref Stats (Special Teams Source of Truth)
-    print("Fetching H-Ref Stats...")
-    import fetch_href_stats
-    fetch_href_stats.main()
-    
-    # 0c. Fetch Latest Game Data (and Shots)
-    print("Fetching missing game data...")
-    import nhl_scraper_poc
-    nhl_scraper_poc.main()
+import pandas as pd
 
-    # 0d. Backfill per-player boxscore stats (goals/assists/TOI per game)
-    # Used by SkaterGrid availability strip and standard stat rows.
-    # Incremental: skips game_ids already present in the CSV.
-    print("Backfilling player boxscore stats...")
-    try:
-        import backfill_player_stats
-        backfill_player_stats.main()
-    except Exception as e:
-        print(f"[WARN] Player stats backfill failed: {e}")
+from season import (SEASON_ID, SEASON_LABEL, START_YEAR, season_file, read_season_csv,
+                    PLAYER_MODEL_MIN_GAMES, game_type_of, today_local)
+from io_utils import (utc_now_iso, load_manifest, update_manifest, record_source, source_age_hours,
+                      mark_stale, clear_stale, atomic_write_csv, read_json)
+from paths import PUBLIC_DATA_DIR, DATA_DIR, TEAM_RATINGS_FILE
 
-    # 0e. Refresh player bio data (age, height, weight, shoots) from NHL roster API
-    # Runs once per day to keep ages current; very fast (~32 requests, one per team).
-    print("Refreshing player bio data...")
-    try:
-        import fetch_player_bio
-        fetch_player_bio.main()
-    except Exception as e:
-        print(f"[WARN] Player bio fetch failed: {e}")
+XG_DECIMALS = 4
+EN_XG = 0.52                 # empirical empty-net conversion rate
+NORM_PRIOR_GOALS = 1000      # shrink league normalisation toward 1.0 early in a season
+RATINGS_MAX_AGE_HOURS = 36
+IMPLICATIONS_MIN_GP = 20
+HIGH_DANGER_BINS = {'D2_W3_In', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1'}
 
-    # 0e2. Fetch official clinch/elimination status from NHL Standings API.
-    # Very fast (1 request). Updates clinch_status.json with p/z/y/x/e indicators.
-    print("Fetching clinch/elimination status...")
-    try:
-        import fetch_clinch_status
-        fetch_clinch_status.main()
-    except Exception as e:
-        print(f"[WARN] Clinch status fetch failed: {e}")
 
-    # 0f. Fetch contract data (cap hit, UFA/RFA status) from PuckPedia
-    # Only re-fetches if contracts.json is older than 7 days — contract data
-    # rarely changes and PuckPedia blocks frequent scrapers.
-    _contracts_file = os.path.join('..', 'public', 'data', 'contracts.json')
-    _contracts_age_days = 999
-    if os.path.exists(_contracts_file):
-        _contracts_age_days = (time.time() - os.path.getmtime(_contracts_file)) / 86400
-    if _contracts_age_days >= 7:
-        print(f"Fetching contract data from PuckPedia (last updated {_contracts_age_days:.1f} days ago)...")
+# ── Stage runner ─────────────────────────────────────────────────────────────
+
+class StageRunner:
+    def __init__(self, mode):
+        self.mode = mode
+        self.stages = []
+        self.started_at = utc_now_iso()
+        self.t0 = time.time()
+        self.force_fail = {s.strip() for s in os.environ.get("PONYXG_FORCE_FAIL", "").split(",") if s.strip()}
+
+    def run(self, name, fn, *args, required=False, title=None, **kwargs):
+        print(f"\n=== [{name}] {title or ''} ===", flush=True)
+        t = time.time()
+        status, rows, err, extra, res = "ok", 0, None, {}, None
         try:
-            import fetch_contracts
-            fetch_contracts.main()
-        except Exception as e:
-            print(f"[WARN] Contract data fetch failed: {e}")
-    else:
-        print(f"Skipping contract fetch — data is {_contracts_age_days:.1f} days old (threshold: 7 days).")
+            if name in self.force_fail:
+                raise RuntimeError(f"forced failure (PONYXG_FORCE_FAIL={name})")
+            res = fn(*args, **kwargs)
+            if isinstance(res, dict):
+                status = res.get("status", "ok")
+                rows = int(res.get("rows_written") or 0)
+                if res.get("reason"):
+                    extra["reason"] = str(res["reason"])[:300]
+            elif isinstance(res, bool):
+                status = "ok" if res else "fail"
+            elif isinstance(res, int):
+                rows = res
+        except KeyboardInterrupt:
+            raise
+        except BaseException as e:           # includes SystemExit from legacy scripts
+            status, err = "fail", f"{type(e).__name__}: {e}"
+            traceback.print_exc()
+        rec = {"stage": name, "status": status, "rows_written": rows,
+               "seconds": round(time.time() - t, 1), "required": required}
+        if err:
+            rec["error"] = err[:500]
+        rec.update(extra)
+        self.stages.append(rec)
+        print(f"[STAGE] {name}: {status} rows={rows} {rec['seconds']}s"
+              + (f" — {err}" if err else (f" — {extra['reason']}" if extra.get('reason') else "")), flush=True)
+        return res
 
-    # 1. Load the new Model
-    print("Loading XGBoost model...")
-    with open('xg_model_xgb.pkl', 'rb') as f:
-        model = pickle.load(f)
+    def skip(self, name, reason, required=False):
+        self.stages.append({"stage": name, "status": "skip", "rows_written": 0, "seconds": 0.0,
+                            "required": required, "reason": reason})
+        print(f"[STAGE] {name}: skip — {reason}", flush=True)
 
-    # 1b. Compute Shooting Talent Factors
-    # Uses existing xG values on disk (from previous scoring) to compute
-    # per-player goals/xG ratios with Bayesian shrinkage.
-    # Talent factors are then applied AFTER re-scoring shots below.
-    print("\n--- Computing Shooting Talent Factors ---")
+    def failed_required(self):
+        return [s for s in self.stages if s["required"] and s["status"] == "fail"]
+
+    def summary(self):
+        print("\n--- Stage summary ---")
+        for s in self.stages:
+            flag = "!" if s["status"] == "fail" else " "
+            print(f"{flag} {s['stage']:<26} {s['status']:<5} rows={s['rows_written']:<7} "
+                  f"{s['seconds']:>7.1f}s{'  (required)' if s['required'] else ''}"
+                  + (f"  {s.get('error') or s.get('reason') or ''}" if s["status"] != "ok" else ""))
+        print(f"  total {time.time() - self.t0:.1f}s")
+
+
+def _call(module, func="main", *args, **kwargs):
+    mod = importlib.import_module(module)
+    return getattr(mod, func)(*args, **kwargs)
+
+
+# ── Season phase ─────────────────────────────────────────────────────────────
+
+def season_phase():
+    """What part of the season we are in, from the schedule and scraped games."""
+    upcoming = read_json(os.path.join(PIPELINE_DIR, "upcoming_games.json"), []) or []
+    gs = read_season_csv("gamestats")
+    reg = gs[gs["game_id"].astype(str).str[4:6] == "02"] if not gs.empty else gs
+    counts = reg.groupby("team").size() if not reg.empty else pd.Series(dtype=int)
+    min_gp = int(counts.min()) if len(counts) >= 32 else 0
+    last_date = str(gs["game_date"].max()) if not gs.empty else None
+    today = today_local()
+    recent = bool(last_date and (today - datetime.fromisoformat(last_date).date()).days <= 7)
+    playoff_upcoming = any(game_type_of(g.get("id")) == "03" for g in upcoming)
+    playoff_recent = (not gs.empty and (gs["game_id"].astype(str).str[4:6] == "03").any() and recent)
+    return {
+        "in_season": bool(upcoming) or recent,
+        "playoffs": bool(playoff_upcoming or playoff_recent),
+        "games_played": int(gs["game_id"].nunique()) if not gs.empty else 0,
+        "min_team_gp": min_gp,
+        "last_game_date": last_date,
+        "upcoming_games": len(upcoming),
+    }
+
+
+# ── Stages ───────────────────────────────────────────────────────────────────
+
+def stage_rollover():
+    """Run the season rollover (pipeline/rollover.py, owned by the season-
+    context workstream) once per season.  Tracked by manifest.rollover_season_id."""
+    m = load_manifest()
+    if m.get("rollover_season_id") == SEASON_ID:
+        return {"status": "skip", "reason": f"already rolled over to {SEASON_ID}"}
+    if not os.path.exists(os.path.join(PIPELINE_DIR, "rollover.py")):
+        return {"status": "skip", "reason": "rollover.py not present"}
+    import rollover
+    fn = getattr(rollover, "run", None) or getattr(rollover, "main")
     try:
+        res = fn(old_season_id=m.get("season_id"), new_season_id=SEASON_ID)
+    except TypeError:
+        res = fn()
+    update_manifest(lambda mm: mm.__setitem__("rollover_season_id", SEASON_ID))
+    return res if isinstance(res, dict) else {"status": "ok"}
+
+
+def stage_scrape():
+    import scrape_games
+    return scrape_games.main([])
+
+
+def stage_special_teams():
+    import scrape_games
+    return scrape_games.patch_special_teams(season_file("gamestats"), season_id=SEASON_ID)
+
+
+def model_hash(path=os.path.join(PIPELINE_DIR, "xg_model_xgb.pkl")):
+    with open(path, "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+
+def stage_rescore_xg(state, rescore_all=False):
+    """Idempotent xG for this season's shots.
+
+    xg_raw   = model output (EN override applied), scored only for rows that
+               don't have it yet, or for every row when the model file changes.
+    xG       = xg_raw x shooting talent x league normalisation, recomputed
+               deterministically from xg_raw each run.
+    Both are rounded to 4 decimals and the file is only rewritten when a value
+    actually changes, so a run with no new games produces a zero-line diff.
+    nhl_historical_shots.csv is never touched here.
+    """
+    path = season_file("shots")
+    if not os.path.exists(path):
+        state["xg_agg"] = None
+        return {"status": "skip", "reason": "no shots this season yet"}
+    df = pd.read_csv(path, low_memory=False, float_precision="round_trip")
+    if df.empty:
+        state["xg_agg"] = None
+        return {"status": "skip", "reason": "no shots this season yet"}
+    before = df.copy()
+
+    mh = model_hash()
+    prev_hash = ((load_manifest().get("sources") or {}).get("xg_model") or {}).get("hash")
+    if "xg_raw" not in df.columns:
+        df["xg_raw"] = float("nan")
+    need = df["xg_raw"].isna()
+    if rescore_all or (prev_hash and prev_hash != mh):
+        print(f"  Model hash changed ({prev_hash} -> {mh}) — rescoring every shot")
+        need[:] = True
+    n_scored = int(need.sum())
+    if n_scored:
+        import pickle
+        from xg_model import preprocess_data
+        with open(os.path.join(PIPELINE_DIR, "xg_model_xgb.pkl"), "rb") as f:
+            model = pickle.load(f)
+        sub = df[need]
+        X, _ = preprocess_data(sub)
+        if len(X) != len(sub):
+            raise ValueError(f"preprocess_data returned {len(X)} rows for {len(sub)} shots")
+        probs = model.predict_proba(X)[:, 1]
+        mean_new = float(probs.mean())
+        print(f"  Scored {n_scored} shots; mean raw xG {mean_new:.4f} (expected ~0.07)")
+        if mean_new > 0.15:
+            raise ValueError(f"ABORT: mean xG {mean_new:.4f} — model/library mismatch?")
+        df.loc[need, "xg_raw"] = probs
+        if "strength_state" in df.columns:
+            df.loc[need & (df["strength_state"] == "EmptyNet"), "xg_raw"] = EN_XG
+    df["xg_raw"] = df["xg_raw"].astype(float).round(XG_DECIMALS)
+
+    # Persist xg_raw first: shooting talent is computed from xg_raw on disk.
+    if n_scored:
+        atomic_write_csv(path, df, min_rows=len(before), label="season shots")
+    try:
+        from shooting_talent import compute_shooting_talent
         talent_map = compute_shooting_talent()
     except Exception as e:
         print(f"  [WARN] Shooting talent computation failed: {e}")
         talent_map = {}
 
-    # 2. Re-Score Shots (Historical & Current)
-    shot_files = [
-        "nhl_historical_shots.csv",
-        season_file("shots")
-    ]
-    
-    all_game_xg = []
-    
-    for filename in shot_files:
-        print(f"Processing {filename}...")
-        try:
-            df = pd.read_csv(filename)
-            if df.empty:
-                print(f"Skipping {filename} (no shots yet)")
+    adj = df["xg_raw"].astype(float).copy()
+    if talent_map and "player_id" in df.columns:
+        adj = adj * df["player_id"].map(talent_map).fillna(1.0)
+    if "is_goal" in df.columns:
+        tot_xg, tot_g = float(adj.sum()), float(pd.to_numeric(df["is_goal"], errors="coerce").fillna(0).sum())
+        if tot_xg > 0 and tot_g > 0:
+            factor = (tot_g + NORM_PRIOR_GOALS) / (tot_xg + NORM_PRIOR_GOALS)
+            adj = adj * factor
+            print(f"  League normalization factor {factor:.4f} (xG {tot_xg:.0f} vs {tot_g:.0f} goals)")
+    df["xG"] = adj.round(XG_DECIMALS)
+    df["xG_flurry_adj"] = df["xG"]
+
+    cols = ["xg_raw", "xG", "xG_flurry_adj"]
+    changed = any(c not in before.columns for c in cols) or not all(
+        before[c].astype(float).round(XG_DECIMALS).fillna(-1).equals(df[c].astype(float).fillna(-1)) for c in cols)
+    if changed:
+        atomic_write_csv(path, df, min_rows=len(before), label="season shots")
+        print(f"  Updated {path} (xg_raw + adjusted xG)")
+    else:
+        print(f"  {path}: xG unchanged — not rewritten")
+    record_source("xg_model", hash=mh)
+
+    agg = df.groupby(["game_id", "team_id"])["xG"].sum().rename("xG_sum").reset_index()
+    if "strength_state" in df.columns:
+        for label, st in (("xG_5v5_sum", "5v5"), ("xG_pp_sum", "5v4")):
+            part = df[df["strength_state"] == st].groupby(["game_id", "team_id"])["xG"].sum().rename(label)
+            agg = agg.merge(part.reset_index(), on=["game_id", "team_id"], how="left")
+    agg = agg.fillna(0.0)
+    state["xg_agg"] = agg
+    state["shots_df"] = df
+    return {"status": "ok", "rows_written": n_scored if changed else 0, "reason": f"{n_scored} new shots scored"}
+
+
+def hd_period_table(shots, tid_to_name):
+    """Per (game_id, team): HD attempts for/against (+ per period) and per-period xG for/against."""
+    from scrape_games import assign_bin
+    s = shots.copy()
+    s["_hd"] = [int(assign_bin(x if pd.notna(x) else None, y if pd.notna(y) else None) in HIGH_DANGER_BINS)
+                for x, y in zip(s["x"], s["y"])]
+    s["_p"] = s["period"].apply(lambda p: {1: "1P", 2: "2P", 3: "3P"}.get(int(p), "OT") if pd.notna(p) else "OT")
+    s["team"] = s["team_id"].astype(int).map(tid_to_name)
+    s["_xG"] = pd.to_numeric(s["xG"], errors="coerce").fillna(0.0)
+    g = s.groupby(["game_id", "team"])
+    base = g["_hd"].sum().rename("hdf").to_frame()
+    hdp = s.pivot_table(index=["game_id", "team"], columns="_p", values="_hd", aggfunc="sum", fill_value=0)
+    xgp = s.pivot_table(index=["game_id", "team"], columns="_p", values="_xG", aggfunc="sum", fill_value=0.0)
+    for p in ("1P", "2P", "3P", "OT"):
+        base[f"hdf_{p}"] = hdp[p] if p in hdp.columns else 0
+        base[f"xg_for_{p}"] = (xgp[p] if p in xgp.columns else 0.0)
+    base = base.fillna(0).reset_index()
+    # against = the other team in the same game
+    opp = base.rename(columns={c: c.replace("hdf", "hda").replace("xg_for", "xg_ag") for c in base.columns
+                               if c.startswith(("hdf", "xg_for"))}).rename(columns={"team": "opponent"})
+    pairs = base[["game_id", "team"]].merge(base[["game_id", "team"]].rename(columns={"team": "opponent"}),
+                                           on="game_id")
+    pairs = pairs[pairs["team"] != pairs["opponent"]]
+    out = base.merge(pairs, on=["game_id", "team"], how="left").merge(opp, on=["game_id", "opponent"], how="left")
+    return out.drop(columns=["opponent"]).fillna(0)
+
+
+def stage_update_gamestats(state):
+    """Write the aggregated xG and HD/per-period columns into this season's gamestats."""
+    path = season_file("gamestats")
+    agg = state.get("xg_agg")
+    if not os.path.exists(path) or agg is None:
+        return {"status": "skip", "reason": "no gamestats/shots this season yet"}
+    gs = pd.read_csv(path, low_memory=False, float_precision="round_trip")
+    before = gs.copy()
+    teams = pd.read_csv(os.path.join(PIPELINE_DIR, "nhl_teams.csv"))
+    tid_to_name = dict(zip(teams["NHL Team ID"].astype(int), teams["Common Name"]))
+    a = agg.copy()
+    a["team"] = a["team_id"].astype(int).map(tid_to_name)
+    a = a.dropna(subset=["team"]).set_index(["game_id", "team"])
+
+    key_t = list(zip(gs["game_id"].astype("int64"), gs["team"]))
+    key_o = list(zip(gs["game_id"].astype("int64"), gs["opponent"]))
+
+    def pick(col, keys, fallback):
+        vals = a[col].reindex(keys).values if col in a.columns else [float("nan")] * len(keys)
+        out = pd.Series(vals, index=gs.index)
+        return out.where(out.notna(), fallback).astype(float).round(XG_DECIMALS)
+
+    gs["xG_for"] = pick("xG_sum", key_t, gs.get("xG_for"))
+    gs["xG_against"] = pick("xG_sum", key_o, gs.get("xG_against"))
+    gs["xG_for_5v5"] = pick("xG_5v5_sum", key_t, gs.get("xG_for_5v5"))
+    gs["xG_against_5v5"] = pick("xG_5v5_sum", key_o, gs.get("xG_against_5v5"))
+    gs["xG_pp_for"] = pick("xG_pp_sum", key_t, gs.get("xG_pp_for", 0.0))
+    gs["xG_pp_against"] = pick("xG_pp_sum", key_o, gs.get("xG_pp_against", 0.0))
+
+    hd = hd_period_table(state["shots_df"], tid_to_name).set_index(["game_id", "team"])
+    for col in hd.columns:
+        vals = hd[col].reindex(key_t).values
+        cur = gs[col] if col in gs.columns else pd.Series([None] * len(gs), index=gs.index)
+        new = pd.Series(vals, index=gs.index).where(pd.notna(vals), cur)
+        gs[col] = new.round(XG_DECIMALS) if col.startswith("xg_") else new
+    print(f"  Patched xG totals and HD/per-period columns for {len(gs)} team-games")
+
+    changed = not before.reindex(columns=gs.columns).astype(str).equals(gs.astype(str))
+    if changed:
+        atomic_write_csv(path, gs, min_rows=len(before), label="gamestats")
+    return {"status": "ok", "rows_written": len(gs) if changed else 0}
+
+
+def _md5(path):
+    if not os.path.exists(path):
+        return None
+    with open(path, "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+
+def stage_sync_gamestats():
+    """public/data/gamestats.csv and data/gamestats.csv mirror this season's
+    gamestats whenever it changes (lite and full runs)."""
+    src = os.path.join(PIPELINE_DIR, season_file("gamestats"))
+    mirrors = (os.path.join(PUBLIC_DATA_DIR, "gamestats.csv"), os.path.join(DATA_DIR, "gamestats.csv"))
+    if not os.path.exists(src):
+        # New season, nothing scraped yet: the mirrors must not keep serving
+        # last season's games as if they were this season's.
+        n = 0
+        for dst in mirrors:
+            if not os.path.exists(dst):
                 continue
+            with open(dst, encoding="utf-8") as f:
+                header, first = f.readline(), f.readline()
+            if first and not first.startswith(str(START_YEAR)):
+                tmp = dst + ".tmp"
+                with open(tmp, "w", encoding="utf-8") as f:
+                    f.write(header)
+                os.replace(tmp, dst)
+                n += 1
+                print(f"  {os.path.relpath(dst, PIPELINE_DIR)} held another season's games — reset to header only")
+        return {"status": "ok" if n else "skip", "rows_written": 0,
+                "reason": "no games scraped this season yet" + (f"; reset {n} mirror(s)" if n else "")}
+    h = _md5(src)
+    n = 0
+    for dst in mirrors:
+        if os.path.isdir(os.path.dirname(dst)) and _md5(dst) != h:
+            tmp = dst + ".tmp"
+            shutil.copyfile(src, tmp)
+            os.replace(tmp, dst)
+            n += 1
+            print(f"  Synced {season_file('gamestats')} -> {os.path.relpath(dst, PIPELINE_DIR)}")
+    return {"status": "ok" if n else "skip", "rows_written": n, "reason": "" if n else "already in sync"}
 
-            # Preprocess to get features (Bins, Off-Wing, Handedness)
-            # This uses the logic we updated in xg_model.py
-            # Note: preprocess_data returns X, y. We just need to ensure it applies to the whole df.
-            # We assume df has 'player_id', 'x', 'y' etc.
-            
-            # We need to temporarily suppress print in preprocess_data or just ignore it
-            X, _ = preprocess_data(df)
-            
-            # Predict
-            probs = model.predict_proba(X)[:, 1]
-            
-            # Update data
-            df['xG'] = probs
-            
-            # ── Empty Net Override ─────────────────────────────────────────
-            # The xG model has no concept of empty net — it assigns ~0.09 xG
-            # to EN shots that actually convert at ~52%. Override with the
-            # empirical EN goal rate so GSAx isn't distorted.
-            EN_XG = 0.52
-            if 'strength_state' in df.columns:
-                en_mask = df['strength_state'] == 'EmptyNet'
-                n_en = en_mask.sum()
-                if n_en > 0:
-                    df.loc[en_mask, 'xG'] = EN_XG
-                    print(f"  Empty net override: {n_en} shots → xG={EN_XG}")
-            # ──────────────────────────────────────────────────────────────
 
-            # Validation guard: catch silently wrong predictions (e.g. from sklearn version mismatch)
-            mean_xg = df['xG'].mean()
-            print(f"  Mean xG per shot: {mean_xg:.4f} (expected ~0.07)")
-            if mean_xg > 0.15:
-                raise ValueError(
-                    f"ABORT: Mean xG per shot is {mean_xg:.4f} (expected ~0.07). "
-                    f"Model may be producing invalid predictions due to library version mismatch. "
-                    f"Check that scikit-learn and xgboost versions match the model pickle."
-                )
+def stage_team_ratings():
+    from team_ratings import calculate_ratings
+    calculate_ratings(gamestats_file=season_file("gamestats"))
+    age_min = (time.time() - os.path.getmtime(TEAM_RATINGS_FILE)) / 60
+    if age_min > 5:
+        raise RuntimeError(f"team_ratings.json was not updated (age={age_min:.1f}m)")
+    record_source("team_ratings", generated_at=utc_now_iso())
+    return {"status": "ok", "rows_written": len(read_json(TEAM_RATINGS_FILE, {}) or {})}
 
-            # ── Shooting Talent Adjustment ─────────────────────────────────
-            # Multiply each shot's xG by the shooter's talent factor.
-            # Elite finishers (Panarin, Thompson) get boosted; poor finishers
-            # get reduced. Unknown players default to 1.0 (no change).
-            if talent_map and 'player_id' in df.columns:
-                apply_shooting_talent(df, talent_map)
 
-            # ── League-wide Normalization ─────────────────────────────────
-            # Scale all xG so total xG = total goals for this file.
-            # Seasonal conversion rates vary from the training mean (~7.1%),
-            # so without normalization GSAx drifts positive or negative
-            # league-wide. Standard practice (MoneyPuck, Evolving Hockey).
-            # NORM_PRIOR_GOALS shrinks the factor toward 1.0 so a file with
-            # only a few days of games (season start) isn't normalized on noise.
-            NORM_PRIOR_GOALS = 1000
-            if 'is_goal' in df.columns:
-                total_xg = df['xG'].sum()
-                total_goals = df['is_goal'].sum()
-                if total_xg > 0 and total_goals > 0:
-                    norm_factor = (total_goals + NORM_PRIOR_GOALS) / (total_xg + NORM_PRIOR_GOALS)
-                    df['xG'] *= norm_factor
-                    print(f"  League normalization: factor={norm_factor:.4f} "
-                          f"(xG {total_xg:.0f} → {total_goals} goals)")
+def stage_ratings_freshness(phase):
+    """Lite runs must not predict from ratings that stopped updating."""
+    age = source_age_hours("team_ratings")
+    if age is None:
+        return {"status": "skip", "reason": "ratings generation time not recorded yet (first full run pending)"}
+    if phase.get("in_season") and phase.get("games_played", 0) > 0 and age > RATINGS_MAX_AGE_HOURS:
+        mark_stale("team_ratings.json", f"generated {age:.0f}h ago")
+        raise RuntimeError(f"team_ratings.json generated {age:.0f}h ago (> {RATINGS_MAX_AGE_HOURS}h in season)")
+    clear_stale("team_ratings.json")
+    return {"status": "ok", "reason": f"{age:.1f}h old"}
 
-            # xG_flurry_adj kept as a column for downstream compatibility,
-            # but set equal to xG (no flurry discount — see 3.1 investigation:
-            # rebound/scramble shots score at or above model predictions,
-            # so discounting them was destroying calibration).
-            df['xG_flurry_adj'] = df['xG']
-            # ──────────────────────────────────────────────────────────────
 
-            # Save back to CSV (includes both xG and xG_flurry_adj)
-            df.to_csv(filename, index=False)
-            print(f"Updated {filename} with new xG values.")
-            
-            # Aggregate for GameStats — use flurry-adjusted xG for team totals
-            # We need game_id, team_id, xG
-            # Group by game_id, team_id, strength_state
-            # We want both Total xG and 5v5 xG
-            print(f"Aggregating xG from {filename}...")
-            
-            # Total xG (flurry-adjusted)
-            agg_total = df.groupby(['game_id', 'team_id'])['xG_flurry_adj'].sum().reset_index()
-            agg_total.columns = ['game_id', 'team_id', 'xG_sum']
-            
-            # 5v5 xG (flurry-adjusted)
-            if 'strength_state' in df.columns:
-                agg_5v5 = df[df['strength_state'] == '5v5'].groupby(['game_id', 'team_id'])['xG_flurry_adj'].sum().reset_index()
-                agg_5v5.columns = ['game_id', 'team_id', 'xG_5v5_sum']
-                agg = pd.merge(agg_total, agg_5v5, on=['game_id', 'team_id'], how='left').fillna(0)
-                # 5v4 (Power Play) xG — used for xG-based PP/PK rates in team_ratings
-                agg_pp = df[df['strength_state'] == '5v4'].groupby(['game_id', 'team_id'])['xG_flurry_adj'].sum().reset_index()
-                agg_pp.columns = ['game_id', 'team_id', 'xG_pp_sum']
-                agg = pd.merge(agg, agg_pp, on=['game_id', 'team_id'], how='left').fillna(0)
-            else:
-                agg = agg_total
-                agg['xG_5v5_sum'] = agg['xG_sum'] * 0.8 # Fallback if strength missing
-                agg['xG_pp_sum'] = 0.0
-
-            all_game_xg.append(agg)
-            
-        except FileNotFoundError:
-            print(f"Skipping {filename} (not found)")
-            
-    # 2b. Compute per-game and per-period HD + per-period xG from shots CSV.
-    # Runs after xG scoring so per-period xG is always in sync with the model.
-    # Covers both new games (where scraper may not have had API coords yet)
-    # and all historical games.
-    print("Computing HD and per-period xG/HD from shots CSV...")
-    HIGH_DANGER_BINS = {'D2_W3_In', 'D2_W2', 'D1_W2_In', 'D3_W1', 'D2_W1', 'D1_W1'}  # D3_W2 removed
-    try:
-        from nhl_scraper_poc import assign_bin
-        shots_hd_file = season_file("shots")
-        shots_hd = pd.read_csv(shots_hd_file)
-
-        teams_csv = pd.read_csv("nhl_teams.csv")
-        tid_to_name = dict(zip(teams_csv['NHL Team ID'].astype(int), teams_csv['Common Name']))
-
-        shots_hd['_bin'] = shots_hd.apply(
-            lambda r: assign_bin(r['x'] if pd.notna(r['x']) else None,
-                                 r['y'] if pd.notna(r['y']) else None), axis=1)
-        shots_hd['_hd'] = shots_hd['_bin'].isin(HIGH_DANGER_BINS).astype(int)
-        shots_hd['_period_key'] = shots_hd['period'].apply(lambda p: min(int(p), 4) if pd.notna(p) else 4)
-        shots_hd['_xG'] = pd.to_numeric(shots_hd['xG'], errors='coerce').fillna(0.0)
-        shots_hd['team_name'] = shots_hd['team_id'].astype(int).map(tid_to_name)
-
-        # --- Compute per-game HD + per-period xG/HD aggregates ---
-        hd_game = {}   # (game_id, team_name) -> {hdf, hda, hdf_1..4, hda_1..4, xg_1..4}
-        for (gid, tname), grp in shots_hd.groupby(['game_id', 'team_name']):
-            key = (int(gid), tname)
-            entry = {'hdf': 0, 'hda': 0,
-                     'hdf_1P': 0, 'hdf_2P': 0, 'hdf_3P': 0, 'hdf_OT': 0,
-                     'hda_1P': 0, 'hda_2P': 0, 'hda_3P': 0, 'hda_OT': 0,
-                     'xg_for_1P': 0.0, 'xg_for_2P': 0.0, 'xg_for_3P': 0.0, 'xg_for_OT': 0.0}
-            hd_rows = grp[grp['_hd'] == 1]
-            entry['hdf'] = int(len(hd_rows))
-            for p in [1, 2, 3, 4]:
-                suffix = {1: '1P', 2: '2P', 3: '3P', 4: 'OT'}[p]
-                p_hd = hd_rows[hd_rows['_period_key'] == p]
-                p_all = grp[grp['_period_key'] == p]
-                entry[f'hdf_{suffix}'] = int(len(p_hd))
-                entry[f'xg_for_{suffix}'] = float(p_all['_xG'].sum())
-            hd_game[key] = entry
-
-        # Fill hda from opponent's hdf for same game
-        # Build game_id -> list of team names
-        game_teams = {}
-        for (gid, tname) in hd_game:
-            game_teams.setdefault(gid, []).append(tname)
-        for (gid, tname), entry in hd_game.items():
-            opps = [t for t in game_teams.get(gid, []) if t != tname]
-            if opps:
-                opp_entry = hd_game.get((gid, opps[0]), {})
-                entry['hda'] = opp_entry.get('hdf', 0)
-                for p in ['1P', '2P', '3P', 'OT']:
-                    entry[f'hda_{p}'] = opp_entry.get(f'hdf_{p}', 0)
-
-        print(f"  Computed HD stats for {len(hd_game)} team-game pairs.")
-
-        # Also compute xg_ag per period
-        xg_ag_game = {}  # (game_id, team_name) -> {xg_ag_1P..OT}
-        for (gid, tname), opps in game_teams.items():
-            for t in opps:
-                opp_xg = hd_game.get((gid, t), {})
-                xg_ag_game[(gid, tname)] = {
-                    'xg_ag_1P': opp_xg.get('xg_for_1P', 0.0),
-                    'xg_ag_2P': opp_xg.get('xg_for_2P', 0.0),
-                    'xg_ag_3P': opp_xg.get('xg_for_3P', 0.0),
-                    'xg_ag_OT': opp_xg.get('xg_for_OT', 0.0),
-                }
-
-    except Exception as e:
-        print(f"[WARN] HD/per-period xG computation failed: {e}")
-        hd_game = {}
-        xg_ag_game = {}
-
-    # 3. Update GameStats CSV
-    # We load the existing gamestats, and UPDATE the xG_for / xG_against columns
-    # We do NOT want to lose other stats (goals, hits, etc)
-    print("Updating GameStats...")
-    gamestats_file = season_file("gamestats")
-    try:
-        df_stats = pd.read_csv(gamestats_file)
-        
-        # Concatenate our recalculated xG sums
-        if all_game_xg:
-            df_new_xg = pd.concat(all_game_xg)
-            
-            # We have (game_id, team_id) -> xG_sum, xG_5v5_sum
-            teams_df = pd.read_csv("nhl_teams.csv")
-            id_to_name = dict(zip(teams_df['NHL Team ID'], teams_df['Common Name']))
-            
-            df_new_xg['team'] = df_new_xg['team_id'].map(id_to_name)
-            
-            # Ensure types match
-            df_new_xg['game_id'] = df_new_xg['game_id'].astype(int)
-            df_stats['game_id'] = df_stats['game_id'].astype(int)
-            
-            # Create lookups
-            xg_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_sum']))
-            xg_5v5_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_5v5_sum']))
-            xg_pp_lookup = dict(zip(zip(df_new_xg['game_id'], df_new_xg['team']), df_new_xg['xG_pp_sum']))
-            
-            # Apply to df_stats
-            def update_xg_for(row):
-                key = (row['game_id'], row['team'])
-                val = xg_lookup.get(key, -1.0) # Use -1 to detect failure
-                if val == -1.0:
-                    return row['xG_for']
-                return val
-            
-            # Reset other updators to likely use the new value logic or just same pattern
-            def update_xg_against(row):
-                 key = (row['game_id'], row['opponent'])
-                 return xg_lookup.get(key, row['xG_against'])
-
-            def update_xg_5v5_for(row):
-                 key = (row['game_id'], row['team'])
-                 return xg_5v5_lookup.get(key, row['xG_for_5v5'])
-
-            def update_xg_5v5_against(row):
-                 key = (row['game_id'], row['opponent'])
-                 return xg_5v5_lookup.get(key, row['xG_against_5v5'])
-                
-            def update_xg_pp_for(row):
-                key = (row['game_id'], row['team'])
-                return xg_pp_lookup.get(key, row.get('xG_pp_for', 0))
-
-            def update_xg_pp_against(row):
-                key = (row['game_id'], row['opponent'])
-                return xg_pp_lookup.get(key, row.get('xG_pp_against', 0))
-
-            df_stats['xG_for'] = df_stats.apply(update_xg_for, axis=1)
-            df_stats['xG_against'] = df_stats.apply(update_xg_against, axis=1)
-            df_stats['xG_for_5v5'] = df_stats.apply(update_xg_5v5_for, axis=1)
-            df_stats['xG_against_5v5'] = df_stats.apply(update_xg_5v5_against, axis=1)
-            df_stats['xG_pp_for'] = df_stats.apply(update_xg_pp_for, axis=1)
-            df_stats['xG_pp_against'] = df_stats.apply(update_xg_pp_against, axis=1)
-
-            # Patch HD, per-period HD, and per-period xG from shots CSV
-            if hd_game:
-                hd_cols = ['hdf', 'hda',
-                           'hdf_1P', 'hdf_2P', 'hdf_3P', 'hdf_OT',
-                           'hda_1P', 'hda_2P', 'hda_3P', 'hda_OT',
-                           'xg_for_1P', 'xg_for_2P', 'xg_for_3P', 'xg_for_OT']
-                xg_ag_cols = ['xg_ag_1P', 'xg_ag_2P', 'xg_ag_3P', 'xg_ag_OT']
-                for col in hd_cols + xg_ag_cols:
-                    if col not in df_stats.columns:
-                        df_stats[col] = None
-
-                def patch_hd(row):
-                    key = (int(row['game_id']), row['team'])
-                    entry = hd_game.get(key)
-                    if entry:
-                        for col in hd_cols:
-                            row[col] = entry.get(col, row.get(col))
-                    xg_ag_entry = xg_ag_game.get(key)
-                    if xg_ag_entry:
-                        for col in xg_ag_cols:
-                            row[col] = xg_ag_entry.get(col, row.get(col))
-                    return row
-
-                df_stats = df_stats.apply(patch_hd, axis=1)
-                print(f"  Patched HD + per-period xG/HD into gamestats.")
-
-            df_stats.to_csv(gamestats_file, index=False)
-            print(f"Updated {gamestats_file} with aggregated total and 5v5 xG.")
-            
-            # Sync to app data folders
-            try:
-                # Sync to public/data (for Frontend) - MUST be named gamestats.csv
-                df_stats.to_csv('../public/data/gamestats.csv', index=False)
-                print(f"Synced {gamestats_file} to ../public/data/gamestats.csv")
-                
-                # Sync to data/ (as backup/legacy)
-                df_stats.to_csv('../data/gamestats.csv', index=False) 
-                print(f"Synced {gamestats_file} to ../data/gamestats.csv")
-                
-                # Remove the incorrectly named file if it exists (cleanup)
-                wrong_file = f'../public/data/{gamestats_file}'
-                if os.path.exists(wrong_file):
-                    os.remove(wrong_file)
-                    print(f"Removed incorrectly named file: {wrong_file}")
-                    
-            except Exception as e:
-                print(f"Warning: Could not sync gamestats file to app folders: {e}")
-            
-    except FileNotFoundError:
-        print("GameStats file not found.")
-
-    # 4. Regenerate Ratings
-    print("Regenerating Team & Goalie Ratings...")
-    calculate_ratings(gamestats_file=gamestats_file)
-    # Verify the file was actually written fresh — catch silent failures.
-    import time as _time
-    _tr_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public', 'data', 'team_ratings.json')
-    _age = (_time.time() - os.path.getmtime(_tr_path)) / 60  # minutes
-    if _age > 5:
-        raise RuntimeError(f"team_ratings.json was not updated (age={_age:.1f}m). Aborting pipeline.")
-    print(f"team_ratings.json verified fresh ({_age:.1f}m old).")
-
-    # Player models (MoneyPuck impact, PBP HD metrics, RAPM) are rebuilt only
-    # once the season has enough games; before that a few games of noise would
-    # overwrite last season's committed ratings (player_impact.json etc.),
-    # which predictions keep using in the meantime.
-    season_games = read_season_csv("gamestats")
-    n_season_games = season_games['game_id'].nunique() if 'game_id' in season_games else 0
-    rebuild_player_models = n_season_games >= PLAYER_MODEL_MIN_GAMES
-    if not rebuild_player_models:
-        print(f"Skipping player model rebuild: {n_season_games} games this season "
-              f"(< {PLAYER_MODEL_MIN_GAMES}); keeping last season's player ratings.")
-
-    if rebuild_player_models:
-        # 4b. Fetch MoneyPuck player-level data & compute impact scores
-        # This runs after team ratings so the pipeline has fresh season context.
-        # MoneyPuck updates nightly; we fetch once per full pipeline run (~12-14 UTC).
-        print("Fetching MoneyPuck player-level data...")
+def stage_player_models(state, n_games):
+    """MoneyPuck + PBP + RAPM + player impact once the season has enough games;
+    until then only re-point the committed profiles at current rosters."""
+    import player_impact
+    if n_games < PLAYER_MODEL_MIN_GAMES:
+        print(f"  {n_games} games this season (< {PLAYER_MODEL_MIN_GAMES}); keeping last season's "
+              "player ratings, refreshing roster teams only")
+        return player_impact.refresh_roster_teams()
+    mp = _call("fetch_moneypuck", "fetch_moneypuck")
+    if mp.get("status") == "fail" and not os.path.exists(os.path.join(PIPELINE_DIR, "moneypuck_skaters.csv")):
+        return {"status": "fail", "reason": "MoneyPuck unavailable and no cached skaters.csv"}
+    for mod, fn in (("calc_pbp_impact", "run_pbp_impact"), ("calc_rapm", "run_rapm")):
         try:
-            import fetch_moneypuck
-            fetch_moneypuck.fetch_moneypuck()
+            _call(mod, fn)
         except Exception as e:
-            print(f"[WARN] MoneyPuck fetch failed (predictions will use team ratings only): {e}")
+            print(f"  [WARN] {mod} failed (impact scores fall back): {e}")
+    pi, _ = player_impact.calculate_player_impact()
+    return {"status": "ok", "rows_written": len(pi)}
 
-    # 4c. Fetch shifts for any games not yet in the shifts CSV, then enrich the
-    #     raw PBP with on-ice player IDs.  Both steps are incremental — they
-    #     skip games already processed — so they're safe to run every cycle.
-    #     Must run BEFORE calc_pbp_impact which reads the enriched PBP.
-    print("Fetching missing shift data...")
-    try:
-        import fetch_shifts
-        fetch_shifts.main()
-    except (Exception, SystemExit) as e:  # main() sys.exit()s when there's nothing to fetch
-        print(f"[WARN] fetch_shifts failed: {e}")
 
-    print("Enriching PBP with on-ice player IDs (enrich_pbp)...")
-    try:
-        import enrich_pbp
-        enrich_pbp.main()
-    except (Exception, SystemExit) as e:  # main() sys.exit()s when there's no PBP yet
-        print(f"[WARN] enrich_pbp failed: {e}")
+def stage_lineups_all():
+    """Overnight all-32-teams DailyFaceoff lineup refresh (also yields cap data)."""
+    import fetch_dailyfaceoff
+    teams = pd.read_csv(os.path.join(PIPELINE_DIR, "nhl_teams.csv"))
+    lst = [{"triCode": r["Team Tricode"], "teamName": r["Team Name"]} for _, r in teams.iterrows()]
+    merged = fetch_dailyfaceoff.fetch_lineups(lst, force_all=True)
+    return {"status": "ok" if len(fetch_dailyfaceoff.CAP_DATA) >= 30 else "fail",
+            "rows_written": len(fetch_dailyfaceoff.CAP_DATA), "reason": f"{len(merged)} teams stored"}
 
-    if rebuild_player_models:
-        # 4d. Compute PBP-derived HD metrics (must run AFTER enrich_pbp so that
-        #     home_on1-6/away_on1-6 are populated, and BEFORE player_impact).
-        print("Computing PBP-derived HD metrics (calc_pbp_impact)...")
-        try:
-            import calc_pbp_impact
-            calc_pbp_impact.run_pbp_impact()
-        except Exception as e:
-            print(f"[WARN] PBP HD metrics failed (impact scores will use MoneyPuck only): {e}")
 
-        # 4e. RAPM player isolation (must run AFTER shifts data is fresh,
-        #     and BEFORE player_impact which merges RAPM as an additional signal).
-        print("Computing RAPM player ratings (calc_rapm)...")
-        try:
-            import calc_rapm
-            rapm_results = calc_rapm.run_rapm()
-            print(f"  RAPM scores computed: {len(rapm_results)} players")
-        except Exception as e:
-            print(f"[WARN] RAPM computation failed (impact scores will use MoneyPuck + PBP only): {e}")
+def stage_contracts():
+    import fetch_contracts
+    return fetch_contracts.main()
 
-        print("Computing player impact scores...")
-        try:
-            import player_impact
-            pi, la = player_impact.calculate_player_impact()
-            print(f"  Player impact profiles built: {len(pi)} players")
-        except Exception as e:
-            print(f"[WARN] Player impact calculation failed: {e}")
 
-    # 4f. Fetch today's player news (overwrites) and accumulate playoff news
-    print("Fetching player news...")
-    try:
-        import fetch_dailyfaceoff
-        fetch_dailyfaceoff.fetch_player_news()
-        fetch_dailyfaceoff.fetch_playoff_player_news()
-    except Exception as e:
-        print(f"[WARN] Player news fetch failed: {e}")
+def stage_raw_pbp():
+    """Incremental raw PBP archive (data/historical_pbp/raw_pbp_<season>.csv)."""
+    import update_raw_pbp
+    update_raw_pbp.main(days_back=3)
+    return {"status": "ok"}
 
-    # 4g. Fetch @DFOFantasy tweets and merge into playoff news
-    print("Fetching @DFOFantasy tweets...")
-    try:
-        import fetch_dfo_tweets
-        fetch_dfo_tweets.fetch_dfo_tweets()
-    except Exception as e:
-        print(f"[WARN] DFO tweet fetch failed: {e}")
 
-    # 5. Fetch Latest Schedule, Goalies, and Odds
-    print("Fetching latest Schedule & Goalies...")
+def stage_upcoming():
     import fetch_upcoming
-    fetch_upcoming.fetch_schedule()
-    
-    print("Fetching official goalie stats...")
-    import fetch_nhl_goalie_stats
-    fetch_nhl_goalie_stats.fetch_nhl_goalie_stats()
+    res = fetch_upcoming.fetch_schedule()
+    return {k: v for k, v in res.items() if k != "games"}
 
-    print("Fetching goalie career playoff stats...")
-    try:
-        import fetch_goalie_playoff_career_stats
-        fetch_goalie_playoff_career_stats.main()
-    except Exception as e:
-        print(f"[WARN] Goalie playoff career stats fetch failed: {e}")
-    
-    print("Fetching latest Odds...")
-    import fetch_odds
-    fetch_odds.fetch_odds()
 
-    print("Updating playoff series results...")
-    try:
-        import update_playoff_series
-        update_playoff_series.main()
-    except Exception as e:
-        print(f"[WARN] Playoff series update failed: {e}")
-    
-    # 6. Predict Games
-    print("Running Predictions...")
+def stage_predict():
+    from predict_games import predict
     predict()
+    return {"status": "ok", "rows_written": len(read_json(os.path.join(PIPELINE_DIR, "upcoming_games.json"), []) or [])}
 
-    # 7. Generate History
-    print("Generating Prediction History...")
-    import generate_history
-    generate_history.generate_history()
 
-    # 7b. Run Season Simulator (Monte Carlo playoff projections)
-    # Fetches remaining schedule live from NHL API so projections are never stale.
-    print("Running Season Simulator (playoff projections)...")
-    try:
-        import season_simulator
-        season_simulator.full_simulation_loop()
-    except Exception as e:
-        print(f"[WARN] Season simulator failed: {e}")
+def stage_implications():
+    import game_implications
+    importlib.reload(game_implications)
+    game_implications.compute_game_implications()
 
-    # 7c. Compute per-game playoff implications (delta sims for today's matchups)
-    # Must run AFTER season_simulator so season_projections.json exists as baseline.
-    # Retries up to 3x with 60s backoff — NHL API calls can fail transiently.
-    print("Computing game playoff implications...")
-    _impl_success = False
-    for _attempt in range(1, 4):
-        try:
-            import game_implications
-            import importlib
-            importlib.reload(game_implications)   # ensure fresh state on retry
-            game_implications.compute_game_implications()
-            _impl_success = True
-            break
-        except Exception as e:
-            print(f"[WARN] Game implications attempt {_attempt}/3 failed: {e}")
-            if _attempt < 3:
-                print(f"  Retrying in 60s...")
-                time.sleep(60)
-    if not _impl_success:
-        print("[ERROR] Game implications failed after 3 attempts — implications will be stale.")
 
-    # 8. Final Sync of History and others
+def stage_final_sync():
+    n = 0
+    pairs = [
+        (os.path.join(PUBLIC_DATA_DIR, "last_updated.json"), os.path.join(DATA_DIR, "last_updated.json")),
+        (os.path.join(PIPELINE_DIR, "upcoming_games.json"), os.path.join(PUBLIC_DATA_DIR, "upcoming_games.json")),
+        (os.path.join(PIPELINE_DIR, "team_lineups.json"), os.path.join(PUBLIC_DATA_DIR, "team_lineups.json")),
+        (os.path.join(PIPELINE_DIR, "odds.json"), os.path.join(PUBLIC_DATA_DIR, "odds.json")),
+        (os.path.join(PIPELINE_DIR, "odds.json"), os.path.join(DATA_DIR, "odds.json")),
+    ]
+    for src, dst in pairs:
+        if os.path.exists(src) and _md5(src) != _md5(dst):
+            shutil.copyfile(src, dst + ".tmp")
+            os.replace(dst + ".tmp", dst)
+            n += 1
+            print(f"  Synced {os.path.relpath(src, PIPELINE_DIR)} -> {os.path.relpath(dst, PIPELINE_DIR)}")
+    return {"status": "ok", "rows_written": n}
+
+
+# ── Modes ────────────────────────────────────────────────────────────────────
+
+def pregame_stages(r, phase, mode):
+    """Stages shared by lite and full runs: schedule, availability, odds."""
+    r.run("upcoming_games", stage_upcoming, required=True, title="Schedule, goalies, team_goalies")
+    phase.update(season_phase())
+    r.run("injuries", _call, "fetch_injuries", "fetch_injuries", title="ESPN injury report")
+    r.run("clinch_status", _call, "fetch_clinch_status", title="Clinch indicators")
+    r.run("player_boxscores", _call, "backfill_player_stats", title="Per-player boxscore stats")
+    r.run("odds", _call, "fetch_odds", "fetch_odds", title="Pregame odds + closing lines")
+    if phase["playoffs"]:
+        r.run("playoff_series", _call, "update_playoff_series", title="Playoff series")
+    else:
+        r.skip("playoff_series", "not in the playoffs")
+
+
+def post_predict_stages(r, phase):
+    r.run("snapshot", _call, "snapshot_predictions", "snapshot", title="SiteHistory snapshot")
+    if phase["playoffs"]:
+        r.skip("implications", "playoffs in progress (series odds replace implications)")
+    elif phase["min_team_gp"] < IMPLICATIONS_MIN_GP:
+        r.skip("implications", f"min team GP {phase['min_team_gp']} < {IMPLICATIONS_MIN_GP}")
+    else:
+        r.run("implications", stage_implications, title="Playoff implications")
+
+
+def run_lite(r, phase):
+    print("Running Lite Update...")
+    r.run("rollover_check", stage_rollover)
+    pregame_stages(r, phase, "lite")
+    r.run("sync_gamestats", stage_sync_gamestats)
+    r.run("ratings_freshness", stage_ratings_freshness, phase, required=True)
+    print("Running Predictions...")
+    r.run("predict", stage_predict, required=True, title="Running Predictions")
+    post_predict_stages(r, phase)
     print("Final Sync...")
-    import shutil
+    r.run("final_sync", stage_final_sync, required=True)
+
+
+def run_full(r, phase, rescore_all=False):
+    print("--- Starting Full Pipeline Refresh ---")
+    state = {}
+    r.run("rollover_check", stage_rollover)
+    r.run("scrape_games", stage_scrape, required=True, title="Scrape completed games")
+    r.run("special_teams", stage_special_teams, title="Official PP/PK counts")
+    r.run("rosters_bio_goalies", _call, "fetch_player_bio", title="Rosters, bios, team_goalies")
+    r.run("xg_rescore", stage_rescore_xg, state, rescore_all, required=True, title="Idempotent xG")
+    r.run("gamestats_update", stage_update_gamestats, state, required=True, title="xG + HD into gamestats")
+    r.run("sync_gamestats", stage_sync_gamestats, required=True)
+    r.run("team_ratings", stage_team_ratings, required=True, title="Team & goalie ratings")
+    phase.update(season_phase())
+    r.run("shifts", _call, "fetch_shifts", "main", [], title="Shift charts")
+    r.run("enrich_pbp", _call, "enrich_pbp", "main", [], title="On-ice players for PBP")
+    r.run("raw_pbp", stage_raw_pbp, title="Append raw PBP to data/historical_pbp")
+    r.run("player_models", stage_player_models, state, phase["games_played"], title="Player impact")
+    r.run("lineups_all", stage_lineups_all, title="DailyFaceoff lineups (all 32 teams)")
+    r.run("contracts", stage_contracts, title="Contracts (weekly by stored fetched_at)")
+    r.run("player_news", _call, "fetch_dailyfaceoff", "fetch_player_news", title="Player news")
+    if phase["playoffs"]:
+        r.run("playoff_news", _call, "fetch_dailyfaceoff", "fetch_playoff_player_news")
+        r.run("goalie_playoff_career", _call, "fetch_goalie_playoff_career_stats")
+    else:
+        r.skip("playoff_news", "not in the playoffs")
+        r.skip("goalie_playoff_career", "not in the playoffs")
+    pregame_stages(r, phase, "full")
+    r.run("goalie_stats", _call, "fetch_nhl_goalie_stats", "fetch_nhl_goalie_stats", title="Goalie season lines")
+    print("Running Predictions...")
+    r.run("predict", stage_predict, required=True, title="Running Predictions")
+    print("Generating Prediction History...")
+    r.run("prediction_history", _call, "generate_history", "generate_history", required=True)
+    if phase["in_season"]:
+        r.run("season_simulator", _call, "season_simulator", "full_simulation_loop", title="Playoff odds")
+    else:
+        r.skip("season_simulator", "offseason")
+    post_predict_stages(r, phase)
+    print("Final Sync...")
+    r.run("final_sync", stage_final_sync, required=True)
+
+
+def write_manifest(r, mode, phase):
+    finished = utc_now_iso()
+    failed = r.failed_required()
+
+    def mut(m):
+        m["schema_version"] = 1
+        m["season_id"] = SEASON_ID
+        m["season_label"] = SEASON_LABEL
+        m["generated_at"] = finished
+        m["mode"] = mode
+        m["games_played_current_season"] = int(phase.get("games_played", 0))
+        m["phase"] = phase
+        m["stages"] = r.stages
+        m["ok"] = not failed
+        m["run"] = {"started_at": r.started_at, "finished_at": finished,
+                    "seconds": round(time.time() - r.t0, 1),
+                    "github_run_id": os.environ.get("GITHUB_RUN_ID")}
+        m[f"last_{mode}_attempt"] = finished
+        if not failed:
+            m[f"last_{mode}_run"] = finished      # auto mode keys off successful full runs
+        m.setdefault("stale", {})
+        m.setdefault("sources", {})
+    update_manifest(mut)
+    print(f"Wrote manifest.json ({mode}, {len(r.stages)} stages, "
+          f"{'OK' if not failed else str(len(failed)) + ' required stage(s) failed'})")
+
+
+FULL_WINDOW_UTC = range(12, 15)   # 12:00-14:59 UTC (7-10 am ET): last night's games are final
+FULL_MIN_INTERVAL_HOURS = 20       # one successful full run per morning window
+FULL_CATCH_UP_HOURS = 36           # outside the window, force a full run if none succeeded for this long
+
+
+def auto_mode(now=None):
+    """'full' once per morning window (retrying on later hours of the window
+    if the first attempt failed), and as a catch-up when the last successful
+    full run is older than FULL_CATCH_UP_HOURS; otherwise 'lite'."""
+    now = now or datetime.now(timezone.utc)
+    last = load_manifest().get("last_full_run")
     try:
-        # History (already generated into ../data/ by generate_history.py)
-        src_history = '../data/prediction_history.json'
-        if os.path.exists(src_history):
-            shutil.copy(src_history, '../public/data/prediction_history.json')
-            print("Synced prediction_history.json to public/data/")
-        
-        # Last Updated
-        # Last Updated - Source from public/data (where predict_games.py wrote it)
-        src_last_updated = '../public/data/last_updated.json'
-        if os.path.exists(src_last_updated):
-            shutil.copy(src_last_updated, '../data/last_updated.json')
-            print(f"Synced {src_last_updated} to ../data/")
-        elif os.path.exists('last_updated.json'):
-             # Fallback if public/data one missing but local one exists
-            shutil.copy('last_updated.json', '../data/last_updated.json')
-            shutil.copy('last_updated.json', '../public/data/last_updated.json')
-            print("Synced local last_updated.json to data dirs")
-        
-        # Additional syncs from pipeline to public/data
-        if os.path.exists("upcoming_games.json"):
-            shutil.copy("upcoming_games.json", "../public/data/upcoming_games.json")
-            print("Synced upcoming_games.json to public/data")
+        age = (now - datetime.fromisoformat(last.replace("Z", "+00:00"))).total_seconds() / 3600
+    except (AttributeError, TypeError, ValueError):
+        age = float("inf")
+    if now.hour in FULL_WINDOW_UTC and age >= FULL_MIN_INTERVAL_HOURS:
+        return "full"
+    if age >= FULL_CATCH_UP_HOURS:
+        return "full"
+    return "lite"
 
-        if os.path.exists("team_lineups.json"):
-            shutil.copy("team_lineups.json", "../public/data/team_lineups.json")
-            print("Synced team_lineups.json to public/data")
 
-        # Note: the season player_stats CSV is written directly to
-        # public/data/ by backfill_player_stats.py (step 0d above). No copy needed.
-        
-        # Sync Odds
-        if os.path.exists('odds.json'):
-            shutil.copy('odds.json', '../public/data/odds.json')
-            shutil.copy('odds.json', '../data/odds.json')
-            print("Synced odds.json to public/data/ and data/")
-            
-        print("Data synced to public/data/")
-            
-    except Exception as e:
-        print(f"Warning: Final sync failed: {e}")
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="pony xG data pipeline")
+    parser.add_argument("--mode", choices=("full", "lite", "auto"), default="full")
+    parser.add_argument("--print-mode", action="store_true",
+                        help="Print the mode that --mode auto would pick and exit")
+    parser.add_argument("--rescore-all", action="store_true", help="Rescore every season shot (model changed)")
+    args = parser.parse_args(argv)
+    if args.print_mode:
+        print(auto_mode() if args.mode == "auto" else args.mode)
+        return 0
+    if args.mode == "auto":
+        args.mode = auto_mode()
+        print(f"--mode auto -> {args.mode}")
+    os.chdir(PIPELINE_DIR)
 
-    # 9. Upload to Supabase (Snapshot)
-    print("Uploading to Supabase...")
-    import subprocess
-    import sys
+    r = StageRunner(args.mode)
+    phase = {}
     try:
-        # We need to run from root dir because the script expects "public/data/..." paths
-        # Current file is in pipeline/, so root is one level up.
-        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        snap_script = os.path.join(root_dir, "scripts", "snapshot_predictions.py")
-        
-        if os.path.exists(snap_script):
-            # Pass current env vars (important for DB_PASSWORD)
-            result = subprocess.run([sys.executable, snap_script], cwd=root_dir, env=os.environ.copy())
-            if result.returncode != 0:
-                print(f"Warning: Supabase script exited with code {result.returncode}")
-        else:
-            print(f"Warning: Could not find {snap_script}")
-            
+        phase.update(season_phase())
     except Exception as e:
-        print(f"Warning: Supabase upload failed to start: {e}")
+        print(f"[WARN] could not determine season phase: {e}")
+        phase.update({"in_season": True, "playoffs": False, "games_played": 0, "min_team_gp": 0})
+    print(f"Season {SEASON_LABEL} ({SEASON_ID}) — phase: {phase}")
 
-    # 10. Upload Full History to Supabase (Predictions Table)
-    print("Syncing History to Supabase 'predictions' table...")
+    if args.mode == "lite":
+        run_lite(r, phase)
+    else:
+        run_full(r, phase, rescore_all=args.rescore_all)
+
+    r.summary()
     try:
-        sync_script = os.path.join(root_dir, "scripts", "sync_history_to_supabase.py")
-        if os.path.exists(sync_script):
-            result = subprocess.run([sys.executable, sync_script], cwd=root_dir, env=os.environ.copy())
-            if result.returncode != 0:
-                print(f"Warning: History sync script exited with code {result.returncode}")
-        else:
-            print(f"Warning: Could not find {sync_script}")
+        write_manifest(r, args.mode, phase)
     except Exception as e:
-         print(f"Warning: History sync failed to start: {e}")
-
+        print(f"[ERROR] could not write manifest.json: {e}")
+        return 1
+    failed = r.failed_required()
+    if failed:
+        print(f"[FAIL] required stage(s) failed: {', '.join(s['stage'] for s in failed)}")
+        print("--- Pipeline Refresh Finished With Errors ---")
+        return 1
     print("--- Pipeline Refresh Complete ---")
+    return 0
+
+
+def refresh_pipeline():
+    """Backwards-compatible entry point (full refresh)."""
+    return main(["--mode", "full"])
+
 
 if __name__ == "__main__":
-    refresh_pipeline()
+    sys.exit(main())
