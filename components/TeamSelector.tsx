@@ -1,260 +1,127 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo } from 'react';
+import * as React from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Search, X } from 'lucide-react';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-
-import { TeamInfo } from '@/types';
+import * as Popover from '@radix-ui/react-popover';
+import { ChevronDown, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { ALL_TEAMS, DIVISIONS, DIVISION_LABEL } from '@/utils/team-stats/teams';
 
 interface TeamSelectorProps {
-    teams: TeamInfo[];
-    currentTeam?: {
-        CommonName: string;
-        TeamTricode: string;
-        TeamLogoURL: string;
-        HexColor1: string;
-    } | null;
+    /** Tricode of the team being viewed. */
+    current: string;
+    className?: string;
 }
 
-const DIVISIONS: Record<string, string[]> = {
-    "Atlantic": ["BOS", "BUF", "DET", "FLA", "MTL", "OTT", "TBL", "TOR"],
-    "Metropolitan": ["CAR", "CBJ", "NJD", "NYI", "NYR", "PHI", "PIT", "WSH"],
-    "Central": ["CHI", "COL", "DAL", "MIN", "NSH", "STL", "UTA", "WPG"],
-    "Pacific": ["ANA", "CGY", "EDM", "LAK", "SJS", "SEA", "VAN", "VGK"]
-};
+/**
+ * Team switcher: a Radix popover (aria-expanded on the trigger, Esc closes and
+ * returns focus). On phones the panel is the viewport width minus 12px a side
+ * and collision padding keeps it on-screen; the search box is 16px so iOS
+ * does not zoom.
+ */
+export default function TeamSelector({ current, className }: TeamSelectorProps) {
+    const [open, setOpen] = React.useState(false);
+    const [q, setQ] = React.useState('');
+    const [suffix, setSuffix] = React.useState('');
+    const cur = ALL_TEAMS.find(t => t.tri === current);
 
-// Flatten for quick lookup
-const TEAM_TO_DIVISION: Record<string, string> = {};
-Object.entries(DIVISIONS).forEach(([div, teams]) => {
-    teams.forEach(t => TEAM_TO_DIVISION[t] = div);
-});
-
-export default function TeamSelector({ teams, currentTeam }: TeamSelectorProps) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [search, setSearch] = useState("");
-    const searchParams = useSearchParams();
-    const currentTab = searchParams.get('tab') || 'games';
-    const teamHref = (tricode: string) => `/teams/${tricode}?tab=${currentTab}`;
-
-    // Enrich teams with Division
-    const enrichedTeams = useMemo(() => {
-        if (!teams) return [];
-        return teams
-            .filter(t => t.CommonName)
-            .map(t => ({
-                ...t,
-                division: TEAM_TO_DIVISION[t.TeamTricode] || 'Unknown'
-            }));
-    }, [teams]);
-
-    const filteredTeams = useMemo(() => {
-        if (!search) return enrichedTeams;
-        const q = search.toLowerCase();
-        return enrichedTeams.filter(t =>
-            t.CommonName.toLowerCase().includes(q) ||
-            t.TeamName.toLowerCase().includes(q) ||
-            t.TeamTricode.toLowerCase().includes(q)
-        );
-    }, [enrichedTeams, search]);
-
-    const groupedTeams = useMemo(() => {
-        const groups: Record<string, TeamInfo[]> = {};
-        filteredTeams.forEach(t => {
-            const div = t.division;
-            if (!groups[div]) groups[div] = [];
-            groups[div].push(t);
-        });
-        return groups;
-    }, [filteredTeams]);
-
-    // Color Overrides (Shared logic from page, ideally in a util)
-    const getColor = (t: TeamInfo) => {
-        const tricode = t.TeamTricode;
-        const overrides: Record<string, string> = {
-            'EDM': '#FF4C00',
-            'LAK': '#C0C0C0',
-            'UTA': '#69B3E7',
-        };
-        if (overrides[tricode]) return overrides[tricode];
-
-        const c1 = t.HexColor1 || '#FFF';
-        // If black, use secondary
-        if (c1.toLowerCase().includes('#000000') || c1.toLowerCase() === 'black') {
-            return t.HexColor2 || '#FFF';
+    const onOpenChange = (o: boolean) => {
+        setOpen(o);
+        if (o) {
+            setQ('');
+            try {
+                const tab = new URLSearchParams(window.location.search).get('tab');
+                setSuffix(tab ? `?tab=${encodeURIComponent(tab)}` : '');
+            } catch {
+                setSuffix('');
+            }
         }
-        return c1;
     };
 
+    const query = q.trim().toLowerCase();
+    const matches = (t: (typeof ALL_TEAMS)[number]) =>
+        !query || t.name.toLowerCase().includes(query) || t.common.toLowerCase().includes(query) || t.tri.toLowerCase().includes(query);
+
     return (
-        <div className="relative z-50">
-            {/* Trigger Button */}
-            <div className="flex items-center gap-2">
-                <Button
-                    variant="ghost"
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="flex items-center gap-3 px-3 py-6 hover:bg-white/5 border border-transparent hover:border-white/10 transition-all rounded-xl group"
-                >
-                    {currentTeam ? (
-                        <>
-                            <div className="relative">
-                                <motion.img
-                                    layoutId={`team-logo-${currentTeam.TeamTricode}`}
-                                    src={currentTeam.TeamTricode === 'ALL'
-                                        ? '/logos/NHL.svg'
-                                        : `/logos/${currentTeam.TeamTricode}.svg`}
-                                    alt={currentTeam.CommonName}
-                                    className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300 relative z-10"
-                                />
-                                <div
-                                    className="absolute inset-0 blur-lg opacity-40 rounded-full"
-                                    style={{ backgroundColor: currentTeam.HexColor1 }}
-                                ></div>
-                            </div>
-                            <div className="flex flex-col items-start">
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-0.5">Selected Team</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xl font-bold font-mono tracking-tighter text-white group-hover:text-primary transition-colors">
-                                        {currentTeam.CommonName.toUpperCase()}
-                                    </span>
-                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                                </div>
-                            </div>
-                        </>
-                    ) : (
-                        <span className="text-white font-bold">Select Team</span>
-                    )}
-                </Button>
-            </div>
-
-            {/* Mega Menu / Drawer */}
-            <AnimatePresence>
-                {isOpen && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-                        />
-
-                        {/* Menu */}
-                        <motion.div
-                            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                            transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}
-                            className="absolute top-full left-0 mt-4 w-[90vw] md:w-[800px] max-h-[80vh] overflow-y-auto bg-[#0f1115] border border-white/10 rounded-2xl shadow-2xl p-6 z-50 grid gap-6"
-                        >
-                            {/* Search Header */}
-                            <div className="flex items-center gap-4 border-b border-white/5 pb-4 sticky top-0 bg-[#0f1115] z-10">
-                                <Search className="w-5 h-5 text-gray-500" />
-                                <Input
-                                    placeholder="Search teams..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    autoFocus
-                                    className="bg-transparent border-none text-lg font-mono placeholder:text-gray-600 focus-visible:ring-0 px-0 h-auto"
-                                />
-                                <Button size="icon" variant="ghost" onClick={() => setIsOpen(false)} className="hover:bg-white/10 rounded-full">
-                                    <X className="w-5 h-5 text-gray-400" />
-                                </Button>
-                            </div>
-
-                            {/* All Teams Option */}
-                            <div className="border-b border-white/5 pb-4">
-                                <Link
-                                    href={teamHref('ALL')}
-                                    onClick={() => setIsOpen(false)}
-                                    className={`flex items-center gap-3 p-2 rounded-lg transition-all group/item ${currentTeam?.TeamTricode === 'ALL' ? 'bg-white/10' : 'hover:bg-white/5'}`}
-                                >
-                                    <motion.img
-                                        layoutId="team-logo-ALL"
-                                        src="/logos/NHL.svg"
-                                        alt="All Teams"
-                                        className="w-6 h-6 object-contain opacity-70 group-hover/item:opacity-100 transition-opacity"
-                                    />
-                                    <span
-                                        className={`text-sm font-bold font-mono transition-colors ${currentTeam?.TeamTricode === 'ALL' ? 'text-white' : 'text-gray-400 group-hover/item:text-white'}`}
-                                        style={currentTeam?.TeamTricode === 'ALL' ? { color: '#fff', textShadow: '0 0 10px rgba(255,255,255,0.4)' } : {}}
-                                    >
-                                        All Teams
-                                    </span>
-                                </Link>
-                            </div>
-
-                            {/* Grid by Division */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                                {Object.keys(DIVISIONS).map(division => {
-                                    // Only show division if it has filtered teams
-                                    const teamsInDiv = groupedTeams[division] || [];
-                                    if (teamsInDiv.length === 0) return null;
-
-                                    return (
-                                        <div key={division} className="flex flex-col gap-4">
-                                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest border-l-2 border-white/10 pl-3">{division}</h3>
-                                            <div className="flex flex-col gap-1">
-                                                {teamsInDiv
-                                                    .sort((a, b) => a.CommonName.localeCompare(b.CommonName))
-                                                    .map(t => {
-                                                        const isSelected = currentTeam?.TeamTricode === t.TeamTricode;
-                                                        const glow = getColor(t);
-
-                                                        return (
-                                                            <Link
-                                                                href={teamHref(t.TeamTricode)}
-                                                                key={t.TeamTricode}
-                                                                onClick={() => setIsOpen(false)}
-                                                                className={`flex items-center gap-3 p-2 rounded-lg transition-all group/item ${isSelected ? 'bg-white/10' : 'hover:bg-white/5'}`}
-                                                            >
-                                                                <motion.img
-                                                                    layoutId={`team-logo-${t.TeamTricode}`}
-                                                                    src={t.TeamLogoURL}
-                                                                    alt={t.CommonName}
-                                                                    className="w-6 h-6 object-contain opacity-70 group-hover/item:opacity-100 transition-opacity"
-                                                                />
-                                                                <span
-                                                                    className={`text-sm font-bold font-mono transition-colors ${isSelected ? 'text-white' : 'text-gray-400 group-hover/item:text-white'}`}
-                                                                    style={isSelected ? { color: glow, textShadow: `0 0 10px ${glow}40` } : {}}
-                                                                >
-                                                                    {t.CommonName}
-                                                                </span>
-                                                            </Link>
-                                                        )
-                                                    })}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-
-                            {/* Fallback for 'Unknown' Division (e.g. older teams if csv has them) */}
-                            {groupedTeams['Unknown'] && groupedTeams['Unknown'].length > 0 && (
-                                <div>
-                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Other</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {groupedTeams['Unknown'].map(t => (
-                                            <Link
-                                                href={teamHref(t.TeamTricode)}
-                                                key={t.TeamTricode}
-                                                className="text-xs text-gray-400 hover:text-white"
-                                            >
-                                                {t.CommonName}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                        </motion.div>
-                    </>
+        <Popover.Root open={open} onOpenChange={onOpenChange}>
+            <Popover.Trigger
+                className={cn(
+                    'inline-flex min-h-9 items-center gap-1.5 rounded-control border border-line bg-surface-1 px-2.5 text-body-sm font-semibold text-fg-1 transition-colors hover:bg-surface-2 coarse:min-h-11',
+                    className,
                 )}
-            </AnimatePresence>
-        </div>
+                aria-label={`Switch team (current: ${cur?.name ?? current})`}
+            >
+                {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
+                <img src={`/logos/${current}.svg`} alt="" width={20} height={20} className="h-5 w-5 object-contain" decoding="async" />
+                <span>Switch team</span>
+                <ChevronDown aria-hidden="true" className={cn('h-4 w-4 text-fg-2 transition-transform', open && 'rotate-180')} />
+            </Popover.Trigger>
+            <Popover.Portal>
+                <Popover.Content
+                    align="end"
+                    sideOffset={8}
+                    collisionPadding={12}
+                    aria-label="Choose a team"
+                    onOpenAutoFocus={e => {
+                        e.preventDefault();
+                        (e.currentTarget as HTMLElement | null)?.querySelector<HTMLInputElement>('input')?.focus();
+                    }}
+                    className={cn(
+                        'z-[70] flex flex-col overflow-hidden rounded-card border border-line-strong bg-surface-1 shadow-card animate-pop-in focus:outline-none',
+                        // phones: full width minus 12px each side (collisionPadding keeps it on-screen)
+                        'w-[calc(100vw-24px)] max-h-[min(calc(100dvh-6rem),var(--radix-popover-content-available-height))]',
+                        'md:w-[720px] md:max-h-[min(80vh,640px,var(--radix-popover-content-available-height))]',
+                    )}
+                >
+                    <div className="flex items-center gap-2 border-b border-line px-4 py-2">
+                        <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-fg-3" />
+                        <input
+                            type="search"
+                            value={q}
+                            onChange={e => setQ(e.target.value)}
+                            placeholder="Search teams"
+                            aria-label="Search teams"
+                            className="min-h-11 w-full bg-transparent text-base text-fg-1 outline-none placeholder:text-fg-3"
+                        />
+                        <Popover.Close className="inline-flex h-9 min-w-9 items-center justify-center rounded-control text-body-sm font-semibold text-fg-2 hover:bg-surface-2 hover:text-fg-1 coarse:h-11 coarse:min-w-11">
+                            Close
+                        </Popover.Close>
+                    </div>
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+                            {DIVISIONS.map(div => {
+                                const teams = ALL_TEAMS.filter(t => t.division === div && matches(t)).sort((a, b) => a.common.localeCompare(b.common));
+                                if (!teams.length) return null;
+                                return (
+                                    <div key={div}>
+                                        <p className="hud-label mb-1 px-2">{DIVISION_LABEL[div]}</p>
+                                        <ul>
+                                            {teams.map(t => (
+                                                <li key={t.tri}>
+                                                    <Link
+                                                        href={`/teams/${t.tri}${suffix}`}
+                                                        onClick={() => setOpen(false)}
+                                                        aria-current={t.tri === current ? 'page' : undefined}
+                                                        className={cn(
+                                                            'flex min-h-10 items-center gap-2 rounded-control px-2 text-body-sm transition-colors hover:bg-surface-2 coarse:min-h-11',
+                                                            t.tri === current ? 'bg-surface-3 font-semibold text-fg-1 shadow-[inset_0_0_0_1px_rgb(var(--brand-rgb))]' : 'text-fg-2 hover:text-fg-1',
+                                                        )}
+                                                    >
+                                                        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
+                                                        <img src={`/logos/${t.tri}.svg`} alt="" width={22} height={22} className="h-5 w-5 object-contain" loading="lazy" decoding="async" />
+                                                        {t.common}
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        {ALL_TEAMS.every(t => !matches(t)) ? <p className="px-2 py-6 text-center text-body-sm text-fg-2">No team matches “{q}”.</p> : null}
+                    </div>
+                </Popover.Content>
+            </Popover.Portal>
+        </Popover.Root>
     );
 }

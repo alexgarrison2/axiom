@@ -1,52 +1,30 @@
-import { useState, useEffect } from 'react';
-import { TeamStatsResponse } from '@/types';
+'use client';
 
-export function useTeamData(teamAbbr: string) {
-    const [data, setData] = useState<TeamStatsResponse | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+import { useEffect, useState } from 'react';
+import { SEASON_ID } from '@/lib/season';
+import { fetchJsonCached, teamUrl } from '@/utils/team-stats/client-cache';
+import type { TeamPayload } from '@/utils/team-stats/team-types';
+
+/**
+ * One team's season payload from the static team API, cached per session so
+ * tab switches and route re-entry never refetch. Team pages get their current
+ * season server-side and only call this for other seasons.
+ */
+export function useTeamData(teamAbbr: string, season: string = SEASON_ID) {
+    const [state, setState] = useState<{ key: string; data: TeamPayload | null; error: string | null }>({ key: '', data: null, error: null });
+    const key = `${teamAbbr}|${season}`;
 
     useEffect(() => {
         if (!teamAbbr) return;
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-        let isActive = true;
-
-        const fetchData = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const res = await fetch(`/api/teams/${teamAbbr}/stats`, { signal: controller.signal });
-                if (!res.ok) {
-                    throw new Error('Failed to fetch team data');
-                }
-                const jsonData = await res.json();
-                if (!isActive) return;
-                setData(jsonData);
-            } catch (err) {
-                if (!isActive) return;
-                if ((err as Error).name === 'AbortError') {
-                    setError('Request timed out. Please try again.');
-                } else {
-                    setError((err as Error).message);
-                }
-            } finally {
-                clearTimeout(timeoutId);
-                if (isActive) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        fetchData();
-
+        let live = true;
+        fetchJsonCached<TeamPayload>(teamUrl(teamAbbr.toUpperCase(), season))
+            .then(data => live && setState({ key, data, error: null }))
+            .catch((e: Error) => live && setState({ key, data: null, error: e.message || 'Failed to load team data' }));
         return () => {
-            isActive = false;
-            clearTimeout(timeoutId);
-            controller.abort();
+            live = false;
         };
-    }, [teamAbbr]);
+    }, [teamAbbr, season, key]);
 
-    return { data, loading, error };
+    const current = state.key === key;
+    return { data: current ? state.data : null, loading: !current, error: current ? state.error : null };
 }

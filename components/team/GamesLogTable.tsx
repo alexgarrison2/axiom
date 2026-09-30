@@ -1,647 +1,377 @@
-import React, { useMemo, useState } from 'react';
-import { GameLog, PlayerBoxscoreRow } from '@/types';
-import GameBoxscore from '@/components/GameBoxscore';
+'use client';
+
+import * as React from 'react';
+import { ScrollRegion } from '@/components/ui/scroll-region';
+import { cn } from '@/lib/utils';
+import { mmss, pct3, shortDate, signed } from '@/utils/team-stats/format';
+import type { Boxscores, BoxRow } from '@/utils/team-stats/team-types';
+import type { GameRow, PeriodFilter } from '@/utils/team-stats/types';
+import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
+import { useStickyHeader } from '@/components/teams-table/useStickyHeader';
+import { flags, resultLabel, resultTone, score, stat, totals } from './game-log-model';
 
 interface GamesLogTableProps {
-    games: GameLog[];
-    filters: {
-        goalie: string;
-        loc: string;
-        period: string;
-        last: string;
-        result: string;
-    };
-    expandedGameId: string | null;
-    setExpandedGameId: (id: string | null) => void;
-    teamAbbr: string;
-    playerStats: PlayerBoxscoreRow[];
-    teamLogos: Record<string, string>;
-    primaryColor: string;
+    games: GameRow[];
+    period: PeriodFilter;
+    seasonLabel: string;
+    teamColor: string;
+    /** Loads per-game player rows on demand (boxscore expansion). */
+    loadBoxscores: () => Promise<Boxscores | undefined>;
 }
 
-const GamesLogTable: React.FC<GamesLogTableProps> = ({
-    games,
-    filters,
-    expandedGameId,
-    setExpandedGameId,
-    teamAbbr,
-    playerStats,
-    teamLogos,
-    primaryColor
-}) => {
-    const isAllTeams = teamAbbr === 'ALL';
-
-    // ── Sort State ──────────────────────────────────────────────────────────
-    const [sortKey, setSortKey] = useState<string | null>(null);
-    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-
-    const handleSort = (key: string) => {
-        if (sortKey === key) {
-            setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortKey(key);
-            setSortDir('desc');
-        }
-    };
-
-    // ── Period Stat Helpers ─────────────────────────────────────────────────
-    const getStat = (game: GameLog, stat: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga' | 'hdf' | 'hda') => {
-        if (filters.period === 'All') {
-            return game[stat];
-        }
-
-        const suffix = filters.period === '1st' ? '_1P' :
-            filters.period === '2nd' ? '_2P' :
-                filters.period === '3rd' ? '_3P' : '_OT';
-
-        if (stat === 'xgf') return parseFloat((game.raw?.['xg_for' + suffix] as string) || '0');
-        if (stat === 'xga') return parseFloat((game.raw?.['xg_ag' + suffix] as string) || '0');
-
-        let prefix = '';
-        if (stat === 'gf') prefix = 'goals_for';
-        if (stat === 'ga') prefix = 'goals_ag';
-        if (stat === 'sf') prefix = 'sog_for';
-        if (stat === 'sa') prefix = 'sog_ag';
-        if (stat === 'cf') prefix = 'attempts_for';
-        if (stat === 'ca') prefix = 'attempts_ag';
-        if (stat === 'hdf') prefix = 'hdf';
-        if (stat === 'hda') prefix = 'hda';
-
-        return parseInt((game.raw?.[prefix + suffix] as string) || '0');
-    };
-
-    const getTimeStat = (game: GameLog, stat: 'time_leading' | 'time_trailing' | 'time_tied') => {
-        if (filters.period === 'All') return game[stat] || 0;
-        const suffix = filters.period === '1st' ? '_1P' :
-            filters.period === '2nd' ? '_2P' :
-                filters.period === '3rd' ? '_3P' : '_OT';
-        const raw = game.raw?.[stat + suffix];
-        return raw !== undefined ? parseInt(raw as string) || 0 : game[stat] || 0;
-    };
-
-    const getControlScore = (game: GameLog) => {
-        if (filters.period === 'All') return game.control_score || 1.0;
-        const suffix = filters.period === '1st' ? '_1P' :
-            filters.period === '2nd' ? '_2P' :
-                filters.period === '3rd' ? '_3P' : '_OT';
-        const raw = game.raw?.['control_score' + suffix];
-        return raw !== undefined ? parseFloat(raw as string) || 1.0 : game.control_score || 1.0;
-    };
-
-    const formatTime = (seconds: number) => {
-        const m = Math.floor(seconds / 60);
-        const s = Math.floor(seconds % 60);
-        return `${m}:${s.toString().padStart(2, '0')}`;
-    };
-
-    const getGradientColor = (value: number, min: number, mid: number, max: number) => {
-        const val = Math.max(min, Math.min(max, value));
-        let r, g, b;
-        if (val < mid) {
-            const ratio = (val - min) / (mid - min);
-            r = Math.round(248 + (156 - 248) * ratio);
-            g = Math.round(113 + (163 - 113) * ratio);
-            b = Math.round(113 + (175 - 113) * ratio);
-        } else {
-            const ratio = (val - mid) / (max - mid);
-            r = Math.round(156 + (96 - 156) * ratio);
-            g = Math.round(163 + (165 - 163) * ratio);
-            b = Math.round(175 + (250 - 175) * ratio);
-        }
-        return `rgb(${r}, ${g}, ${b})`;
-    };
-
-    // ── Sort Value ──────────────────────────────────────────────────────────
-    const getSortValue = (game: GameLog, key: string): number | string => {
-        switch (key) {
-            case '#': return game.game_number;
-            case 'Date': return game.date;
-            case 'TM': return (game.raw?.team as string) || '';
-            case 'Loc': return game.home_away;
-            case 'Opp': return game.opponent;
-            case 'Starter': return game.starting_goalie || '';
-            case 'Opp Strt': return game.opponent_starter || '';
-            case 'Res': {
-                const rc = game.result_code?.toUpperCase() || '';
-                if (['RW', 'OTW', 'SOW', 'W'].includes(rc)) return 0;
-                if (['OTL', 'SOL'].includes(rc)) return 1;
-                return 2;
-            }
-            case 'GF': return (getStat(game, 'gf') as number) || 0;
-            case 'GA': return (getStat(game, 'ga') as number) || 0;
-            case 'GΔ': return ((getStat(game, 'gf') as number) || 0) - ((getStat(game, 'ga') as number) || 0);
-            case 'PP': return game.pp_opps > 0 ? game.pp_goals / game.pp_opps : 0;
-            case 'PK': return game.pk_opps > 0 ? 1 - (game.pp_goals_against / game.pk_opps) : 1;
-            case 'SF': return (getStat(game, 'sf') as number) || 0;
-            case 'SA': return (getStat(game, 'sa') as number) || 0;
-            case 'SΔ': return ((getStat(game, 'sf') as number) || 0) - ((getStat(game, 'sa') as number) || 0);
-            case 'CF': return (getStat(game, 'cf') as number) || 0;
-            case 'CA': return (getStat(game, 'ca') as number) || 0;
-            case 'CΔ': return ((getStat(game, 'cf') as number) || 0) - ((getStat(game, 'ca') as number) || 0);
-            case 'HDF': return (getStat(game, 'hdf') as number) || 0;
-            case 'HDA': return (getStat(game, 'hda') as number) || 0;
-            case 'HDΔ': return ((getStat(game, 'hdf') as number) || 0) - ((getStat(game, 'hda') as number) || 0);
-            case 'SH%': {
-                const sf = (getStat(game, 'sf') as number) || 0;
-                const gf = (getStat(game, 'gf') as number) || 0;
-                return sf > 0 ? gf / sf : 0;
-            }
-            case 'SV%': {
-                const sa = (getStat(game, 'sa') as number) || 0;
-                const ga = (getStat(game, 'ga') as number) || 0;
-                const adj = sa - (filters.period === 'All' ? game.en_ga : 0);
-                return adj > 0 ? (sa - ga) / adj : 0;
-            }
-            case 'GSAx': {
-                const xga = (getStat(game, 'xga') as number) || 0;
-                const ga = (getStat(game, 'ga') as number) || 0;
-                return xga - (ga - (filters.period === 'All' ? game.en_ga : 0));
-            }
-            case 'xGF': return (getStat(game, 'xgf') as number) || 0;
-            case 'xGA': return (getStat(game, 'xga') as number) || 0;
-            case 'xGΔ': return ((getStat(game, 'xgf') as number) || 0) - ((getStat(game, 'xga') as number) || 0);
-            case 'T↑': return getTimeStat(game, 'time_leading');
-            case 'T↓': return getTimeStat(game, 'time_trailing');
-            case 'T=': return getTimeStat(game, 'time_tied');
-            case 'Control': return getControlScore(game);
-            case 'EN GF': return game.en_gf;
-            case 'EN Att': return game.en_att;
-            case 'OTML': return game.otml === 'Yes' ? 1 : 0;
-            case 'EN GA': return game.en_ga;
-            case 'EN Att Ag': return game.en_att_ag;
-            case 'NLW': {
-                const rc = game.result_code?.toUpperCase() || '';
-                return (['RW', 'OTW', 'SOW', 'W'].includes(rc) && (game.time_leading || 0) === 0) ? 1 : 0;
-            }
-            case 'NTW': {
-                const rc = game.result_code?.toUpperCase() || '';
-                return (['RW', 'OTW', 'SOW', 'W'].includes(rc) && (game.time_trailing || 0) === 0) ? 1 : 0;
-            }
-            case 'NTL': {
-                const rc = game.result_code?.toUpperCase() || '';
-                return (['RL', 'L', 'OTL', 'SOL'].includes(rc) && (game.time_trailing || 0) === 0) ? 1 : 0;
-            }
-            case 'BL': return parseInt(game.raw?.['blownlead_1'] as string || '0') || 0;
-            case 'CW': return parseInt(game.raw?.['comeback_1'] as string || '0') || 0;
-            default: return 0;
-        }
-    };
-
-    // ── Sorted Games (display order only; totals use original `games`) ───────
-    const sortedGames = useMemo(() => {
-        if (!sortKey) return games;
-        const dir = sortDir === 'asc' ? 1 : -1;
-        return [...games].sort((a, b) => {
-            const va = getSortValue(a, sortKey);
-            const vb = getSortValue(b, sortKey);
-            if (typeof va === 'string' && typeof vb === 'string') {
-                return dir * va.localeCompare(vb);
-            }
-            return dir * ((va as number) - (vb as number));
-        });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [games, sortKey, sortDir, filters.period]);
-
-    // ── Totals ──────────────────────────────────────────────────────────────
-    const totals = useMemo(() => {
-        if (games.length === 0) return null;
-
-        const count = games.length;
-        let w = 0, l = 0, otl = 0;
-
-        games.forEach(g => {
-            const res = g.result_code ? g.result_code.toUpperCase().trim() : '';
-            if (['RW', 'OTW', 'SOW', 'W'].includes(res)) w++;
-            else if (['RL', 'L'].includes(res)) l++;
-            else if (['OTL', 'SOL'].includes(res)) otl++;
-        });
-
-        const pts = (w * 2) + otl;
-        const pt_pct = count > 0 ? (pts / (count * 2)).toFixed(3).replace(/^0+/, '') : '.000';
-        const record = `${w}-${l}-${otl} ${pts}pts (${pt_pct}) ${count} GP`;
-
-        const sum = (key: 'gf' | 'ga' | 'sf' | 'sa' | 'cf' | 'ca' | 'xgf' | 'xga' | 'hdf' | 'hda') => games.reduce((acc, g) => acc + (getStat(g, key) as number), 0);
-
-        const gf = sum('gf'); const ga = sum('ga');
-        const sf = sum('sf'); const sa = sum('sa');
-        const cf = sum('cf'); const ca = sum('ca');
-        const hdf = sum('hdf'); const hda = sum('hda');
-        const xgf = sum('xgf'); const xga = sum('xga');
-
-        const isAll = filters.period === 'All';
-        const pSuffix = filters.period === '1st' ? '_1P' :
-            filters.period === '2nd' ? '_2P' :
-                filters.period === '3rd' ? '_3P' : '_OT';
-        const gsax = games.reduce((acc, g) => {
-            const _xga = (getStat(g, 'xga') as number) || 0;
-            const _ga = (getStat(g, 'ga') as number) || 0;
-            const _en_ga = isAll ? (g.en_ga || 0) : 0;
-            return acc + (_xga - (_ga - _en_ga));
-        }, 0);
-
-        const en_gf = games.reduce((acc, g) => acc + g.en_gf, 0);
-        const en_att = games.reduce((acc, g) => acc + g.en_att, 0);
-        const en_ga = games.reduce((acc, g) => acc + g.en_ga, 0);
-        const en_att_ag = games.reduce((acc, g) => acc + g.en_att_ag, 0);
-
-        const getTimeVal = (g: GameLog, stat: 'time_leading' | 'time_trailing' | 'time_tied') => {
-            if (isAll) return g[stat] || 0;
-            const raw = g.raw?.[stat + pSuffix];
-            return raw !== undefined ? parseInt(raw as string) || 0 : g[stat] || 0;
-        };
-        const getCtrl = (g: GameLog) => {
-            if (isAll) return g.control_score || 1;
-            const raw = g.raw?.['control_score' + pSuffix];
-            return raw !== undefined ? parseFloat(raw as string) || 1 : g.control_score || 1;
-        };
-
-        const time_leading_avg = games.reduce((acc, g) => acc + getTimeVal(g, 'time_leading'), 0) / count;
-        const time_trailing_avg = games.reduce((acc, g) => acc + getTimeVal(g, 'time_trailing'), 0) / count;
-        const time_tied_avg = games.reduce((acc, g) => acc + getTimeVal(g, 'time_tied'), 0) / count;
-        const control_score_avg = games.reduce((acc, g) => acc + getCtrl(g), 0) / count;
-
-        const nlw = games.filter(g => {
-            const res = g.result_code?.toUpperCase() || '';
-            return ['RW', 'OTW', 'SOW', 'W'].includes(res) && (g.time_leading || 0) === 0;
-        }).length;
-        const ntw = games.filter(g => {
-            const res = g.result_code?.toUpperCase() || '';
-            return ['RW', 'OTW', 'SOW', 'W'].includes(res) && (g.time_trailing || 0) === 0;
-        }).length;
-        const ntl = games.filter(g => {
-            const res = g.result_code?.toUpperCase() || '';
-            return ['RL', 'L', 'OTL', 'SOL'].includes(res) && (g.time_trailing || 0) === 0;
-        }).length;
-
-        const pp_goals = games.reduce((acc, g) => acc + g.pp_goals, 0);
-        const pp_opps = games.reduce((acc, g) => acc + g.pp_opps, 0);
-        const pk_goals_ag = games.reduce((acc, g) => acc + g.pp_goals_against, 0);
-        const pk_opps = games.reduce((acc, g) => acc + g.pk_opps, 0);
-
-        const total_saves = games.reduce((acc, g) => acc + (getStat(g, 'sa') as number) - (getStat(g, 'ga') as number), 0);
-        const adjusted_sa = sa - (filters.period === 'All' ? en_ga : 0);
-        const tot_sv_pct = adjusted_sa > 0 ? (total_saves / adjusted_sa) : 0;
-
-        return {
-            record,
-            gf: (gf / count).toFixed(1), ga: (ga / count).toFixed(1), gd: gf - ga,
-            sf: (sf / count).toFixed(1), sa: (sa / count).toFixed(1), sd: (sf - sa),
-            cf: (cf / count).toFixed(1), ca: (ca / count).toFixed(1), cd: (cf - ca),
-            hdf: (hdf / count).toFixed(1), hda: (hda / count).toFixed(1), hdd: (hdf - hda),
-            xgf: (xgf / count).toFixed(2), xga: (xga / count).toFixed(2), xgd: (xgf - xga).toFixed(2),
-            gsax: gsax.toFixed(2),
-            nlw, ntw, ntl,
-            bl: games.reduce((acc, g) => acc + (parseInt(g.raw?.['blownlead_1'] as string || '0') || 0), 0),
-            bl_3p: games.filter(g => {
-                const res = g.result_code?.toUpperCase() || '';
-                const isLoss = ['RL', 'L', 'OTL', 'SOL'].includes(res);
-                const gf2p = (parseInt(g.raw?.['goals_for_1P'] as string || '0') || 0) + (parseInt(g.raw?.['goals_for_2P'] as string || '0') || 0);
-                const ga2p = (parseInt(g.raw?.['goals_ag_1P'] as string || '0') || 0) + (parseInt(g.raw?.['goals_ag_2P'] as string || '0') || 0);
-                return isLoss && gf2p > ga2p;
-            }).length,
-            cw: games.reduce((acc, g) => acc + (parseInt(g.raw?.['comeback_1'] as string || '0') || 0), 0),
-            cw_3p: games.filter(g => {
-                const res = g.result_code?.toUpperCase() || '';
-                const isWin = ['RW', 'OTW', 'SOW', 'W'].includes(res);
-                const gf2p = (parseInt(g.raw?.['goals_for_1P'] as string || '0') || 0) + (parseInt(g.raw?.['goals_for_2P'] as string || '0') || 0);
-                const ga2p = (parseInt(g.raw?.['goals_ag_1P'] as string || '0') || 0) + (parseInt(g.raw?.['goals_ag_2P'] as string || '0') || 0);
-                return isWin && gf2p < ga2p;
-            }).length,
-            en_gf, en_att, en_ga, en_att_ag,
-            time_leading_avg, time_trailing_avg, time_tied_avg, control_score_avg,
-            pp_goals, pp_opps, pk_goals_ag, pk_opps,
-            pp_pct: pp_opps > 0 ? (pp_goals / pp_opps * 100).toFixed(1) : '0.0',
-            pk_pct: pk_opps > 0 ? (100 - (pk_goals_ag / pk_opps * 100)).toFixed(1) : '0.0',
-            sh_pct: sf > 0 ? (gf / sf * 100).toFixed(1) : '0.0',
-            sv_pct: tot_sv_pct.toFixed(3).replace(/^0+/, '')
-        };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [games, filters.period]);
-
-    // ── Sortable Header Helper ──────────────────────────────────────────────
-    const SortTh = ({ colKey, children, className, title }: { colKey: string; children: React.ReactNode; className?: string; title?: string }) => {
-        const isActive = sortKey === colKey;
-        return (
-            <th
-                onClick={() => handleSort(colKey)}
-                title={title}
-                className={`p-1 cursor-pointer select-none hover:text-white transition-colors group ${isActive ? 'text-white' : ''} ${className || ''}`}
-            >
-                <span className="inline-flex items-center gap-0.5 whitespace-nowrap">
-                    {children}
-                    <span className={`text-[8px] leading-none ${isActive ? 'text-white' : 'text-gray-700 group-hover:text-gray-500'}`}>
-                        {isActive ? (sortDir === 'asc' ? '▲' : '▼') : '▲▼'}
-                    </span>
-                </span>
-            </th>
-        );
-    };
-
-    // ── Sticky left positions (px) after adding TM column ──────────────────
-    // #: left-0 (0), Date: left-8 (32px), TM: left-32 (128px), Loc: left-44 (176px), Opp: left-52 (208px)
-    const stickyBg = 'bg-gray-900';
-    const stickyBgRow = 'bg-[#09090b]';
-    const stickyBgTotals = 'bg-[#1c1c1c]';
-
-    return (
-        <div className="overflow-x-auto border border-gray-800 rounded-lg bg-gray-900/50">
-            <table className="w-full text-xs text-left whitespace-nowrap border-collapse">
-                <thead className="bg-gray-900/80 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-700">
-                    <tr>
-                        <SortTh colKey="#" className={`sticky left-0 ${stickyBg} z-30 min-w-[2rem] w-8 text-center text-gray-500`}>#</SortTh>
-                        <SortTh colKey="Date" className={`sticky left-8 ${stickyBg} z-30 min-w-[6rem] w-24 text-center border-r border-gray-700`}>Date</SortTh>
-                        <SortTh colKey="TM" className={`sticky left-32 ${stickyBg} z-30 min-w-[3rem] w-12 text-center border-r border-gray-700`}>TM</SortTh>
-                        <SortTh colKey="Loc" className={`sticky left-44 ${stickyBg} z-30 min-w-[2rem] w-8 text-center border-r border-gray-700`}>Loc</SortTh>
-                        <SortTh colKey="Opp" className={`sticky left-52 ${stickyBg} z-30 min-w-[3rem] w-12 text-center border-r border-gray-700`}>Opp</SortTh>
-                        <SortTh colKey="Starter">Starter</SortTh>
-                        <SortTh colKey="Opp Strt">Opp Strt</SortTh>
-                        <SortTh colKey="Res" className="text-center">Res</SortTh>
-                        <SortTh colKey="GF" className="text-center">GF</SortTh>
-                        <SortTh colKey="GA" className="text-center">GA</SortTh>
-                        <SortTh colKey="GΔ" className="text-center">GΔ</SortTh>
-                        {filters.period === 'All' && (
-                            <>
-                                <SortTh colKey="PP" className="text-center text-blue-300">Powerplay</SortTh>
-                                <SortTh colKey="PK" className="text-center text-red-300">Penalty Kill</SortTh>
-                            </>
-                        )}
-                        <SortTh colKey="SF" className="text-center">SF</SortTh>
-                        <SortTh colKey="SA" className="text-center">SA</SortTh>
-                        <SortTh colKey="SΔ" className="text-center">SΔ</SortTh>
-                        <SortTh colKey="CF" className="text-center">CF</SortTh>
-                        <SortTh colKey="CA" className="text-center">CA</SortTh>
-                        <SortTh colKey="CΔ" className="text-center">CΔ</SortTh>
-                        <SortTh colKey="HDF" className="text-center">HDF</SortTh>
-                        <SortTh colKey="HDA" className="text-center">HDA</SortTh>
-                        <SortTh colKey="HDΔ" className="text-center">HDΔ</SortTh>
-                        <SortTh colKey="SH%" className="text-center border-l border-gray-700">SH%</SortTh>
-                        <SortTh colKey="SV%" className="text-center">SV%</SortTh>
-                        <SortTh colKey="GSAx" className="text-center">GSAx</SortTh>
-                        <SortTh colKey="xGF" className="text-center">xGF</SortTh>
-                        <SortTh colKey="xGA" className="text-center">xGA</SortTh>
-                        <SortTh colKey="xGΔ" className="text-center">xGΔ</SortTh>
-                        <SortTh colKey="T↑" className="text-center border-l border-gray-700">T↑/G</SortTh>
-                        <SortTh colKey="T↓" className="text-center">T↓/G</SortTh>
-                        <SortTh colKey="T=" className="text-center border-r border-gray-700">T=/G</SortTh>
-                        <SortTh colKey="Control" className="text-center border-r border-gray-700">Control</SortTh>
-                        <SortTh colKey="EN GF" className="text-center">EN GF</SortTh>
-                        <SortTh colKey="EN Att" className="text-center">EN Att</SortTh>
-                        <SortTh colKey="OTML" className="text-center">OTML</SortTh>
-                        <SortTh colKey="EN GA" className="text-center">EN GA</SortTh>
-                        <SortTh colKey="EN Att Ag" className="text-center">EN Att Ag</SortTh>
-                        {filters.period === 'All' && (
-                            <>
-                                <SortTh colKey="NLW" className="text-center border-l border-gray-700 text-purple-300" title="No-Lead Wins: won with 0:00 time leading">NLW</SortTh>
-                                <SortTh colKey="NTW" className="text-center text-teal-300" title="No-Trail Wins: won with 0:00 time trailing">NTW</SortTh>
-                                <SortTh colKey="NTL" className="text-center text-orange-300" title="No-Trail Losses: lost with 0:00 time trailing">NTL</SortTh>
-                                <SortTh colKey="BL" className="text-center border-l border-gray-700 text-red-300" title="Blown Lead: had a lead and lost (3P = was leading after 2 periods)">BL</SortTh>
-                                <SortTh colKey="CW" className="text-center text-emerald-300" title="Comeback Win: trailed and won (3P = was trailing after 2 periods)">CW</SortTh>
-                            </>
-                        )}
-                    </tr>
-                    {totals && (
-                        <tr className="bg-white/10 font-bold border-b border-white/20 text-white">
-                            <td className={`p-1 sticky left-0 ${stickyBgTotals} z-30 border-r border-gray-800 text-center min-w-[2rem] w-8`}></td>
-                            <td className={`p-1 sticky left-8 ${stickyBgTotals} z-30 border-r border-gray-700 text-center min-w-[6rem] w-24`}>TOTALS</td>
-                            <td className={`p-1 sticky left-32 ${stickyBgTotals} z-30 border-r border-gray-800 text-center min-w-[3rem] w-12`}></td>
-                            <td className={`p-1 sticky left-44 ${stickyBgTotals} z-30 border-r border-gray-800 text-center min-w-[2rem] w-8`}></td>
-                            <td className={`p-1 sticky left-52 ${stickyBgTotals} z-30 border-r border-gray-800 text-center min-w-[3rem] w-12`}></td>
-                            <td colSpan={3} className="p-1 text-center text-gray-400 text-[10px] tracking-wider uppercase">{totals.record}</td>
-                            <td className="p-1 text-center text-white">{totals.gf}</td>
-                            <td className="p-1 text-center text-white">{totals.ga}</td>
-                            <td className={`p-1 text-center ${totals.gd > 0 ? 'text-green-400' : totals.gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.gd > 0 ? '+' : ''}{totals.gd}</td>
-                            {filters.period === 'All' && (
-                                <>
-                                    <td className="p-1 text-center text-blue-300">{totals.pp_goals} / {totals.pp_opps} ({totals.pp_pct}%)</td>
-                                    <td className="p-1 text-center text-red-300">{totals.pk_goals_ag} / {totals.pk_opps} ({totals.pk_pct}%)</td>
-                                </>
-                            )}
-                            <td className="p-1 text-center text-gray-300">{totals.sf}</td>
-                            <td className="p-1 text-center text-gray-300">{totals.sa}</td>
-                            <td className={`p-1 text-center ${totals.sd > 0 ? 'text-green-400' : totals.sd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.sd > 0 ? '+' : ''}{totals.sd}</td>
-                            <td className="p-1 text-center text-gray-300">{totals.cf}</td>
-                            <td className="p-1 text-center text-gray-300">{totals.ca}</td>
-                            <td className={`p-1 text-center ${totals.cd > 0 ? 'text-green-400' : totals.cd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.cd > 0 ? '+' : ''}{totals.cd}</td>
-                            <td className="p-1 text-center text-orange-200">{totals.hdf}</td>
-                            <td className="p-1 text-center text-orange-200">{totals.hda}</td>
-                            <td className={`p-1 text-center ${totals.hdd > 0 ? 'text-green-400' : totals.hdd < 0 ? 'text-red-400' : 'text-gray-500'}`}>{totals.hdd > 0 ? '+' : ''}{totals.hdd}</td>
-                            <td className="p-1 text-center border-l border-gray-800" style={{ color: getGradientColor(parseFloat(totals.sh_pct), 0, 10, 20) }}>{totals.sh_pct}%</td>
-                            <td className="p-1 text-center" style={{ color: getGradientColor(parseFloat(totals.sv_pct), 0.800, 0.885, 0.945) }}>{totals.sv_pct}</td>
-                            <td className={`p-1 text-center ${parseFloat(totals.gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{parseFloat(totals.gsax) > 0 ? '+' : ''}{totals.gsax}</td>
-                            <td className="p-1 text-center text-gray-300">{totals.xgf}</td>
-                            <td className="p-1 text-center text-gray-300">{totals.xga}</td>
-                            <td className={`p-1 text-center ${parseFloat(totals.xgd) > 0 ? 'text-green-400' : parseFloat(totals.xgd) < 0 ? 'text-red-400' : 'text-gray-500'}`}>{parseFloat(totals.xgd) > 0 ? '+' : ''}{totals.xgd}</td>
-                            <td className="p-1 text-center border-l border-gray-700" style={{ color: getGradientColor(totals.time_leading_avg, 0, 1500, 3000) }}>{formatTime(totals.time_leading_avg)}</td>
-                            <td className="p-1 text-center" style={{ color: getGradientColor(3000 - totals.time_trailing_avg, 0, 1500, 3000) }}>{formatTime(totals.time_trailing_avg)}</td>
-                            <td className="p-1 text-center border-r border-gray-700" style={{ color: getGradientColor(totals.time_tied_avg, 0, 600, 2000) }}>{formatTime(totals.time_tied_avg)}</td>
-                            <td className="p-1 text-center border-r border-gray-700" style={{ color: getGradientColor(totals.control_score_avg, 0.7, 1.0, 1.3) }}>{totals.control_score_avg.toFixed(3)}</td>
-                            <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_gf : '-'}</td>
-                            <td className="p-1 text-center text-gray-500">{totals.en_att > 0 ? totals.en_att : '-'}</td>
-                            <td></td>
-                            <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_ga : '-'}</td>
-                            <td className="p-1 text-center text-gray-500">{totals.en_att_ag > 0 ? totals.en_att_ag : '-'}</td>
-                            {filters.period === 'All' && (
-                                <>
-                                    <td className="p-1 text-center border-l border-gray-700 text-purple-300 font-bold">{totals.nlw}</td>
-                                    <td className="p-1 text-center text-teal-300 font-bold">{totals.ntw}</td>
-                                    <td className="p-1 text-center text-orange-300 font-bold">{totals.ntl}</td>
-                                    <td className="p-1 text-center border-l border-gray-700 text-red-300 font-bold">{totals.bl}<span className="text-gray-500 text-[9px] ml-0.5">({totals.bl_3p})</span></td>
-                                    <td className="p-1 text-center text-emerald-300 font-bold">{totals.cw}<span className="text-gray-500 text-[9px] ml-0.5">({totals.cw_3p})</span></td>
-                                </>
-                            )}
-                        </tr>
-                    )}
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                    {games.length === 0 ?
-                        <tr><td colSpan={50} className="p-4 text-center text-gray-500">No games played.</td></tr>
-                        : sortedGames.map((game, idx) => {
-                            const isExpanded = expandedGameId === game.game_id;
-
-                            const gf = getStat(game, 'gf');
-                            const ga = getStat(game, 'ga');
-                            const sf = getStat(game, 'sf');
-                            const sa = getStat(game, 'sa');
-                            const cf = getStat(game, 'cf');
-                            const ca = getStat(game, 'ca');
-                            const hdf = getStat(game, 'hdf');
-                            const hda = getStat(game, 'hda');
-
-                            const _gf = typeof gf === 'number' ? gf : 0;
-                            const _ga = typeof ga === 'number' ? ga : 0;
-                            const _sf = typeof sf === 'number' ? sf : 0;
-                            const _sa = typeof sa === 'number' ? sa : 0;
-                            const _cf = typeof cf === 'number' ? cf : 0;
-                            const _ca = typeof ca === 'number' ? ca : 0;
-                            const _hdf = typeof hdf === 'number' ? hdf : 0;
-                            const _hda = typeof hda === 'number' ? hda : 0;
-
-                            const gd = _gf - _ga;
-                            const sd = _sf - _sa;
-                            const cd = _cf - _ca;
-                            const hdd = _hdf - _hda;
-
-                            const _xgf = (getStat(game, 'xgf') as number) || 0;
-                            const _xga = (getStat(game, 'xga') as number) || 0;
-                            const xgd = _xgf - _xga;
-
-                            const sh_pct = _sf > 0 ? (_gf / _sf * 100).toFixed(1) : "0.0";
-                            const adjusted_sa = _sa > 0 ? _sa - (filters.period === 'All' ? game.en_ga : 0) : 0;
-                            const sv_pct_val = adjusted_sa > 0 ? ((_sa - _ga) / adjusted_sa).toFixed(3).replace(/^0+/, '') : ".000";
-                            const gsax = (_xga - (_ga - (filters.period === 'All' ? game.en_ga : 0))).toFixed(2);
-
-                            const opponentName = game.opponent.trim();
-                            const oppLogoUrl = teamLogos ? (teamLogos[opponentName] || teamLogos[opponentName.split(' ').pop() || ''] || '') : '';
-
-                            // TM column: team logo for this game's team
-                            const teamCommonName = (game.raw?.team as string) || '';
-                            const tmLogoUrl = teamLogos ? (teamLogos[teamCommonName] || '') : '';
-
-                            return (
-                                <React.Fragment key={`${game.game_id}-${teamCommonName}`}>
-                                    <tr
-                                        onClick={() => setExpandedGameId(isExpanded ? null : game.game_id)}
-                                        className={`cursor-pointer transition-colors hover:bg-white/5 ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'} ${isExpanded ? 'bg-white/10' : ''}`}
-                                    >
-                                        {/* Sticky: # */}
-                                        <td className={`p-1 sticky left-0 ${stickyBgRow} border-r border-gray-800 z-20 text-center font-mono text-gray-500 text-[10px] min-w-[2rem] w-8`}>{game.game_number}</td>
-                                        {/* Sticky: Date */}
-                                        <td className={`p-1 sticky left-8 ${stickyBgRow} border-r border-gray-700 z-20 font-mono text-gray-300 min-w-[6rem] w-24 text-center text-[11px]`}>{game.date}</td>
-                                        {/* Sticky: TM */}
-                                        <td className={`px-1 py-0 sticky left-32 ${stickyBgRow} border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center`}>
-                                            <div className="w-6 h-6 relative mx-auto" title={teamCommonName}>
-                                                {tmLogoUrl
-                                                    ? <img src={tmLogoUrl} alt={teamCommonName} className="w-6 h-6 object-contain" />
-                                                    : <span className="text-[9px] text-gray-500">{teamCommonName.substring(0, 3)}</span>
-                                                }
-                                            </div>
-                                        </td>
-                                        {/* Sticky: Loc */}
-                                        <td className={`p-1 sticky left-44 ${stickyBgRow} border-r border-gray-700 z-20 text-center font-bold text-[10px] min-w-[2rem] w-8 ${game.home_away === 'Home' ? 'text-gray-500' : 'text-blue-400'}`}>
-                                            {game.home_away === 'Home' ? 'vs' : '@'}
-                                        </td>
-                                        {/* Sticky: Opp */}
-                                        <td className={`px-1 py-0 sticky left-52 ${stickyBgRow} border-r border-gray-700 z-20 justify-center min-w-[3rem] w-12 text-center`}>
-                                            <div className="w-6 h-6 relative mx-auto" title={game.opponent}>
-                                                {oppLogoUrl ? <img src={oppLogoUrl} alt={game.opponent} className="w-6 h-6 object-contain" /> : <span className='text-[9px]'>{game.opponent.substring(0, 3)}</span>}
-                                            </div>
-                                        </td>
-                                        <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.starting_goalie}>
-                                            {game.starting_goalie ? game.starting_goalie.split(' ').pop() : '-'}
-                                        </td>
-                                        <td className="p-1 text-gray-400 text-[10px] truncate max-w-[80px]" title={game.opponent_starter}>
-                                            {game.opponent_starter ? game.opponent_starter.split(' ').pop() : '-'}
-                                        </td>
-                                        <td className="p-1 text-center">
-                                            <span className={`px-1 py-0.5 rounded text-[10px] font-black ${game.result_code.includes('W') ? 'bg-green-900/40 text-green-400 border border-green-500/20' :
-                                                game.result_code.includes('OTL') || game.result_code.includes('SOL') ? 'bg-orange-900/40 text-orange-400 border border-orange-500/20' :
-                                                    'bg-red-900/40 text-red-400 border border-red-500/20'
-                                                }`}>
-                                                {game.result}
-                                            </span>
-                                        </td>
-                                        <td className="p-1 text-center font-mono text-white">{gf}</td>
-                                        <td className="p-1 text-center font-mono text-white">{ga}</td>
-                                        <td className={`p-1 text-center font-bold font-mono ${gd > 0 ? 'text-green-400' : gd < 0 ? 'text-red-400' : 'text-gray-500'}`}>
-                                            {gd > 0 ? '+' : ''}{gd}
-                                        </td>
-                                        {filters.period === 'All' && (
-                                            <>
-                                                <td className="p-1 text-center font-mono text-blue-300">
-                                                    {game.pp_goals} / {game.pp_opps}
-                                                </td>
-                                                <td className="p-1 text-center font-mono text-red-300">
-                                                    {game.pp_goals_against} / {game.pk_opps}
-                                                </td>
-                                            </>
-                                        )}
-                                        <td className="p-1 text-center font-mono text-gray-300">{sf}</td>
-                                        <td className="p-1 text-center font-mono text-gray-300">{sa}</td>
-                                        <td className={`p-1 text-center font-mono ${sd > 0 ? 'text-green-400/70' : sd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
-                                            {sd > 0 ? '+' : ''}{sd}
-                                        </td>
-                                        <td className="p-1 text-center font-mono text-gray-300">{cf}</td>
-                                        <td className="p-1 text-center font-mono text-gray-300">{ca}</td>
-                                        <td className={`p-1 text-center font-mono ${cd > 0 ? 'text-green-400/70' : cd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
-                                            {cd > 0 ? '+' : ''}{cd}
-                                        </td>
-                                        <td className="p-1 text-center font-mono text-orange-200">{_hdf}</td>
-                                        <td className="p-1 text-center font-mono text-orange-200">{_hda}</td>
-                                        <td className={`p-1 text-center font-mono ${hdd > 0 ? 'text-green-400/70' : hdd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
-                                            {hdd > 0 ? '+' : ''}{hdd}
-                                        </td>
-                                        <td className="p-1 text-center font-mono border-l border-gray-800" style={{ color: getGradientColor(parseFloat(sh_pct), 0, 10, 20) }}>{sh_pct}%</td>
-                                        <td className="p-1 text-center font-mono" style={{ color: getGradientColor(parseFloat(sv_pct_val), 0.800, 0.885, 0.945) }}>{sv_pct_val}</td>
-                                        <td className={`p-1 text-center font-mono font-bold ${parseFloat(gsax) > 0 ? 'text-green-400' : 'text-red-400'}`}>{gsax}</td>
-                                        <td className="p-1 text-center font-mono text-gray-300">{_xgf.toFixed(2)}</td>
-                                        <td className="p-1 text-center font-mono text-gray-300">{_xga.toFixed(2)}</td>
-                                        <td className={`p-1 text-center font-mono ${xgd > 0 ? 'text-green-400/70' : xgd < 0 ? 'text-red-400/70' : 'text-gray-500'}`}>
-                                            {xgd > 0 ? '+' : ''}{xgd.toFixed(2)}
-                                        </td>
-                                        <td className="p-1 text-center font-mono border-l border-gray-800" style={{ color: getGradientColor(getTimeStat(game, 'time_leading'), 0, 1500, 3000) }}>{formatTime(getTimeStat(game, 'time_leading'))}</td>
-                                        <td className="p-1 text-center font-mono" style={{ color: getGradientColor(3000 - getTimeStat(game, 'time_trailing'), 0, 1500, 3000) }}>{formatTime(getTimeStat(game, 'time_trailing'))}</td>
-                                        <td className="p-1 text-center font-mono border-r border-gray-800" style={{ color: getGradientColor(getTimeStat(game, 'time_tied'), 0, 600, 2000) }}>{formatTime(getTimeStat(game, 'time_tied'))}</td>
-                                        <td className="p-1 text-center font-mono border-r border-gray-800" style={{ color: getGradientColor(getControlScore(game), 0.7, 1.0, 1.3) }}>{getControlScore(game).toFixed(3)}</td>
-                                        <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_gf : '-'}</td>
-                                        <td className="p-1 text-center font-mono text-gray-500">{game.en_att > 0 ? game.en_att : '-'}</td>
-                                        <td className={`p-1 text-center font-mono ${game.otml === 'Yes' ? 'text-red-400 font-bold' : 'text-gray-500'}`}>{game.otml}</td>
-                                        <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_ga : '-'}</td>
-                                        <td className="p-1 text-center font-mono text-gray-500">{game.en_att_ag > 0 ? game.en_att_ag : '-'}</td>
-                                        {filters.period === 'All' && (() => {
-                                            const res = game.result_code?.toUpperCase() || '';
-                                            const isWin = ['RW', 'OTW', 'SOW', 'W'].includes(res);
-                                            const isLoss = ['RL', 'L', 'OTL', 'SOL'].includes(res);
-                                            const isNLW = isWin && (game.time_leading || 0) === 0;
-                                            const isNTW = isWin && (game.time_trailing || 0) === 0;
-                                            const isNTL = isLoss && (game.time_trailing || 0) === 0;
-                                            const isBL = parseInt(game.raw?.['blownlead_1'] as string || '0') === 1;
-                                            const gf2p = (parseInt(game.raw?.['goals_for_1P'] as string || '0') || 0) + (parseInt(game.raw?.['goals_for_2P'] as string || '0') || 0);
-                                            const ga2p = (parseInt(game.raw?.['goals_ag_1P'] as string || '0') || 0) + (parseInt(game.raw?.['goals_ag_2P'] as string || '0') || 0);
-                                            const isBL3P = isLoss && gf2p > ga2p;
-                                            const isCW = parseInt(game.raw?.['comeback_1'] as string || '0') === 1;
-                                            const isCW3P = isWin && gf2p < ga2p;
-                                            return (
-                                                <>
-                                                    <td className="p-1 text-center border-l border-gray-700">
-                                                        {isNLW ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-purple-900/40 text-purple-300 border border-purple-500/30">NLW</span> : <span className="text-gray-700">—</span>}
-                                                    </td>
-                                                    <td className="p-1 text-center">
-                                                        {isNTW ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-teal-900/40 text-teal-300 border border-teal-500/30">NTW</span> : <span className="text-gray-700">—</span>}
-                                                    </td>
-                                                    <td className="p-1 text-center">
-                                                        {isNTL ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-orange-900/40 text-orange-300 border border-orange-500/30">NTL</span> : <span className="text-gray-700">—</span>}
-                                                    </td>
-                                                    <td className="p-1 text-center border-l border-gray-700">
-                                                        {isBL ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-red-900/40 text-red-300 border border-red-500/30">{isBL3P ? 'BL(3P)' : 'BL'}</span> : <span className="text-gray-700">—</span>}
-                                                    </td>
-                                                    <td className="p-1 text-center">
-                                                        {isCW ? <span className="px-1 py-0.5 rounded text-[10px] font-black bg-emerald-900/40 text-emerald-300 border border-emerald-500/30">{isCW3P ? 'CW(3P)' : 'CW'}</span> : <span className="text-gray-700">—</span>}
-                                                    </td>
-                                                </>
-                                            );
-                                        })()}
-                                    </tr>
-                                    {isExpanded && !isAllTeams && (
-                                        <tr>
-                                            <td colSpan={50} className="p-0 border-b border-gray-800 bg-gray-900/50">
-                                                <div className="p-4 border-l-4" style={{ borderColor: primaryColor }}>
-                                                    <GameBoxscore
-                                                        gameId={String(game.game_id)}
-                                                        teamAbbr={teamAbbr}
-                                                        playerStats={playerStats.filter(p => String(p.game_id) === String(game.game_id))}
-                                                    />
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </React.Fragment>
-                            );
-                        })
-                    }
-                </tbody>
-            </table>
-        </div>
-    );
+const TONE: Record<string, string> = {
+    win: 'bg-pos/15 text-pos',
+    otl: 'bg-warn/15 text-warn',
+    loss: 'bg-neg/15 text-neg',
 };
 
-export default GamesLogTable;
+interface Col {
+    key: string;
+    label: string;
+    title: string;
+    width: number;
+    value: (g: GameRow, p: PeriodFilter) => number;
+    render: (g: GameRow, p: PeriodFilter) => React.ReactNode;
+    fullGame?: boolean;
+    tone?: (g: GameRow, p: PeriodFilter) => string | undefined;
+}
+
+const diffTone = (v: number) => (v > 0 ? 'text-pos' : v < 0 ? 'text-neg' : 'text-fg-2');
+
+const COLS: Col[] = [
+    { key: 'res', label: 'Res', title: 'Result', width: 64, value: g => (resultTone(g) === 'win' ? 2 : resultTone(g) === 'otl' ? 1 : 0), render: g => <ResultChip g={g} /> },
+    { key: 'score', label: 'Score', title: 'Goals for – against', width: 64, value: (g, p) => score(g, p)[0] - score(g, p)[1], render: (g, p) => score(g, p).join('–') },
+    { key: 'starter', label: 'Goalie', title: 'Starting goalie', width: 108, value: () => 0, render: g => lastName(g.starter) },
+    { key: 'oppStarter', label: 'Opp G', title: "Opponent's starting goalie", width: 108, value: () => 0, render: g => lastName(g.oppStarter) },
+    { key: 'pp', label: 'PP', title: 'Power-play goals / opportunities', width: 64, fullGame: true, value: g => (g.ppo ? g.ppg / g.ppo : -1), render: g => `${g.ppg}/${g.ppo}` },
+    { key: 'pk', label: 'PK', title: 'Power-play goals allowed / times shorthanded', width: 64, fullGame: true, value: g => (g.pko ? 1 - g.ppga / g.pko : 2), render: g => `${g.ppga}/${g.pko}` },
+    { key: 'sf', label: 'SF', title: 'Shots for', width: 52, value: (g, p) => stat(g, 'sf', p), render: (g, p) => stat(g, 'sf', p) },
+    { key: 'sa', label: 'SA', title: 'Shots against', width: 52, value: (g, p) => stat(g, 'sa', p), render: (g, p) => stat(g, 'sa', p) },
+    { key: 'sd', label: 'SΔ', title: 'Shot differential', width: 56, value: (g, p) => stat(g, 'sf', p) - stat(g, 'sa', p), render: (g, p) => signed(stat(g, 'sf', p) - stat(g, 'sa', p)), tone: (g, p) => diffTone(stat(g, 'sf', p) - stat(g, 'sa', p)) },
+    { key: 'cf', label: 'CF', title: 'Shot attempts for', width: 52, value: (g, p) => stat(g, 'cf', p), render: (g, p) => stat(g, 'cf', p) },
+    { key: 'ca', label: 'CA', title: 'Shot attempts against', width: 52, value: (g, p) => stat(g, 'ca', p), render: (g, p) => stat(g, 'ca', p) },
+    { key: 'hdf', label: 'HDF', title: 'High-danger chances for', width: 52, value: (g, p) => stat(g, 'hdf', p), render: (g, p) => stat(g, 'hdf', p) },
+    { key: 'hda', label: 'HDA', title: 'High-danger chances against', width: 52, value: (g, p) => stat(g, 'hda', p), render: (g, p) => stat(g, 'hda', p) },
+    { key: 'xgf', label: 'xGF', title: 'Expected goals for', width: 56, value: (g, p) => stat(g, 'xgf', p), render: (g, p) => stat(g, 'xgf', p).toFixed(2) },
+    { key: 'xga', label: 'xGA', title: 'Expected goals against', width: 56, value: (g, p) => stat(g, 'xga', p), render: (g, p) => stat(g, 'xga', p).toFixed(2) },
+    { key: 'xgd', label: 'xGΔ', title: 'Expected-goal differential', width: 60, value: (g, p) => stat(g, 'xgf', p) - stat(g, 'xga', p), render: (g, p) => signed(stat(g, 'xgf', p) - stat(g, 'xga', p), 2), tone: (g, p) => diffTone(stat(g, 'xgf', p) - stat(g, 'xga', p)) },
+    {
+        key: 'sv', label: 'Sv%', title: 'Save percentage', width: 60,
+        value: (g, p) => { const sa = stat(g, 'sa', p) - (p === 'All' ? g.enga : 0); return sa > 0 ? (stat(g, 'sa', p) - stat(g, 'ga', p)) / sa : 0; },
+        render: (g, p) => { const sa = stat(g, 'sa', p) - (p === 'All' ? g.enga : 0); return sa > 0 ? pct3((stat(g, 'sa', p) - stat(g, 'ga', p)) / sa) : '—'; },
+    },
+    {
+        key: 'gsax', label: 'GSAx', title: 'Goals saved above expected', width: 60,
+        value: (g, p) => stat(g, 'xga', p) - (stat(g, 'ga', p) - (p === 'All' ? g.enga : 0)),
+        render: (g, p) => signed(stat(g, 'xga', p) - (stat(g, 'ga', p) - (p === 'All' ? g.enga : 0)), 2),
+        tone: (g, p) => diffTone(stat(g, 'xga', p) - (stat(g, 'ga', p) - (p === 'All' ? g.enga : 0))),
+    },
+    { key: 'tl', label: 'T↑', title: 'Time leading', width: 60, value: (g, p) => stat(g, 'tl', p), render: (g, p) => mmss(stat(g, 'tl', p)) },
+    { key: 'tt', label: 'T↓', title: 'Time trailing', width: 60, value: (g, p) => stat(g, 'tt', p), render: (g, p) => mmss(stat(g, 'tt', p)) },
+    { key: 'ctrl', label: 'Ctrl', title: 'Game-control score', width: 60, value: (g, p) => stat(g, 'ctrl', p), render: (g, p) => stat(g, 'ctrl', p).toFixed(3) },
+    { key: 'en', label: 'EN', title: 'Empty-net goals for / attempts', width: 56, fullGame: true, value: g => g.engf, render: g => (g.enatt ? `${g.engf}/${g.enatt}` : '—') },
+    { key: 'flags', label: 'Story', title: 'Blown leads, comebacks and lead-state results', width: 120, value: () => 0, render: g => <Flags g={g} /> },
+];
+
+function lastName(n: string) {
+    return n ? n.split(' ').slice(-1)[0] : '—';
+}
+
+function ResultChip({ g }: { g: GameRow }) {
+    return <span className={cn('inline-flex min-w-9 justify-center rounded-chip px-1.5 py-0.5 text-caption font-bold', TONE[resultTone(g)])}>{resultLabel(g)}</span>;
+}
+
+function Flags({ g }: { g: GameRow }) {
+    const f = flags(g);
+    const items = [
+        f.cw && (f.cw3p ? 'Comeback (3P)' : 'Comeback'),
+        f.bl && (f.bl3p ? 'Blown lead (3P)' : 'Blown lead'),
+        f.ntw && 'Never trailed',
+        f.nlw && 'Never led',
+    ].filter(Boolean) as string[];
+    if (!items.length) return <span className="text-fg-3">—</span>;
+    return <span className="text-caption text-fg-2">{items.join(' · ')}</span>;
+}
+
+/**
+ * The team game log: card rows on phones (date, opponent, result, score, xG
+ * bar), a full table from md up with one sticky column, a header that
+ * follows the page, sortable header buttons and a disclosure button per
+ * row that loads that game's boxscore.
+ */
+export default function GamesLogTable({ games, period, seasonLabel, teamColor, loadBoxscores }: GamesLogTableProps) {
+    const [sort, setSort] = React.useState<{ key: string; dir: SortDir } | null>(null);
+    const [open, setOpen] = React.useState<Set<string>>(new Set());
+    const [box, setBox] = React.useState<Boxscores | null>(null);
+    const [boxState, setBoxState] = React.useState<'idle' | 'loading' | 'error'>('idle');
+    const tableRef = React.useRef<HTMLTableElement>(null);
+
+    const sorted = React.useMemo(() => {
+        if (!sort) return games;
+        const col = COLS.find(c => c.key === sort.key);
+        const val = (g: GameRow) => (sort.key === 'date' ? g.date : col ? col.value(g, period) : 0);
+        return [...games].sort((a, b) => {
+            const va = val(a);
+            const vb = val(b);
+            const c = typeof va === 'string' ? va.localeCompare(vb as string) : (va as number) - (vb as number);
+            return sort.dir === 'asc' ? c : -c;
+        });
+    }, [games, sort, period]);
+
+    const t = React.useMemo(() => totals(games, period), [games, period]);
+    useStickyHeader(tableRef, [sorted.length, period]);
+
+    const toggle = (id: string) => {
+        setOpen(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+        if (!box && boxState !== 'loading') {
+            setBoxState('loading');
+            loadBoxscores()
+                .then(b => {
+                    setBox(b ?? { players: {}, games: {} });
+                    setBoxState('idle');
+                })
+                .catch(() => setBoxState('error'));
+        }
+    };
+    const onSort = (key: string) => setSort(s => (s?.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: 'desc' }));
+    const cols = COLS.filter(c => !(period !== 'All' && c.fullGame));
+
+    const xgPct = t.xgf + t.xga > 0 ? (t.xgf / (t.xgf + t.xga)) * 100 : null;
+
+    return (
+        <div className="flex flex-col gap-3">
+            {/* summary of the filtered games */}
+            <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-control border border-line bg-line text-center sm:grid-cols-6">
+                {[
+                    ['Record', `${t.w}-${t.l}-${t.otl}`],
+                    ['Points', `${t.pts} · ${t.gp ? pct3(t.pts / (t.gp * 2)) : '—'}`],
+                    ['Goals', t.gp ? `${(t.gf / t.gp).toFixed(2)}–${(t.ga / t.gp).toFixed(2)}` : '—'],
+                    ['xGF%', xgPct == null ? '—' : `${xgPct.toFixed(1)}%`],
+                    ['PP / PK', period === 'All' && t.gp ? `${t.ppo ? ((t.ppg / t.ppo) * 100).toFixed(1) : '—'}% / ${t.pko ? (100 - (t.ppga / t.pko) * 100).toFixed(1) : '—'}%` : '—'],
+                    ['GSAx', t.gp ? signed(t.gsax, 1) : '—'],
+                ].map(([k, v]) => (
+                    <div key={k} className="bg-surface-1 px-2 py-2">
+                        <dt className="text-micro text-fg-3">{k}</dt>
+                        <dd className="text-body-sm font-semibold tabular-nums text-fg-1">{v}</dd>
+                    </div>
+                ))}
+            </dl>
+
+            {games.length === 0 ? (
+                <p className="rounded-control border border-dashed border-line-strong p-6 text-center text-body-sm text-fg-2">No {seasonLabel} games match these filters.</p>
+            ) : (
+                <>
+                    {/* phones: card rows */}
+                    <ol className="flex flex-col gap-1.5 md:hidden" aria-label={`${seasonLabel} games`}>
+                        {sorted.map(g => {
+                            const [gf, ga] = score(g, period);
+                            const xf = stat(g, 'xgf', period);
+                            const xa = stat(g, 'xga', period);
+                            const share = xf + xa > 0 ? (xf / (xf + xa)) * 100 : 50;
+                            const isOpen = open.has(g.id);
+                            return (
+                                <li key={g.id} className="overflow-hidden rounded-control border border-line bg-surface-1">
+                                    <button
+                                        type="button"
+                                        aria-expanded={isOpen}
+                                        aria-controls={`box-m-${g.id}`}
+                                        onClick={() => toggle(g.id)}
+                                        className="grid min-h-14 w-full grid-cols-[52px_28px_minmax(0,1fr)_auto_auto] items-center gap-2 px-3 py-2 text-left hover:bg-surface-2"
+                                    >
+                                        <span className="text-caption tabular-nums text-fg-2">{shortDate(g.date)}</span>
+                                        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
+                                        <img src={`/logos/${g.opp}.svg`} alt="" width={28} height={28} className="h-7 w-7 object-contain" loading="lazy" decoding="async" />
+                                        <span className="min-w-0">
+                                            <span className="block text-body-sm font-semibold text-fg-1">
+                                                {g.home ? 'vs' : '@'} {g.opp}
+                                            </span>
+                                            <span className="mt-1 flex h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-fg-3/25" aria-hidden="true">
+                                                <span className="h-full" style={{ width: `${share}%`, background: teamColor }} />
+                                            </span>
+                                            <span className="sr-only">
+                                                Expected goals {xf.toFixed(1)} to {xa.toFixed(1)}
+                                            </span>
+                                        </span>
+                                        <ResultChip g={g} />
+                                        <span className="w-10 text-right text-body-sm font-semibold tabular-nums text-fg-1">
+                                            {gf}–{ga}
+                                        </span>
+                                    </button>
+                                    {isOpen ? (
+                                        <div id={`box-m-${g.id}`} className="border-t border-line bg-surface-2/50 p-3">
+                                            <MiniStats g={g} period={period} />
+                                            <Boxscore rows={box?.games[g.id]} players={box?.players} state={boxState} />
+                                        </div>
+                                    ) : null}
+                                </li>
+                            );
+                        })}
+                    </ol>
+
+                    {/* md+: full table */}
+                    <ScrollRegion label={`${seasonLabel} game log table`} className="hidden rounded-card border border-line bg-surface-1 md:block">
+                        <table
+                            ref={tableRef}
+                            className="table-fixed border-separate border-spacing-0 text-body-sm"
+                            style={{ width: 172 + cols.reduce((w, c) => w + c.width, 0), minWidth: '100%' }}
+                        >
+                            <caption className="sr-only">{seasonLabel} game log. Use the buttons in the first column to show a game’s boxscore.</caption>
+                            <colgroup>
+                                <col style={{ width: 172 }} />
+                                {cols.map(c => (
+                                    <col key={c.key} style={{ width: c.width }} />
+                                ))}
+                            </colgroup>
+                            <thead className="[--thead-y:0px]">
+                                <tr>
+                                    <HeaderCell
+                                        label="Game"
+                                        title="Date and opponent"
+                                        align="left"
+                                        direction={sort?.key === 'date' ? sort.dir : null}
+                                        onSort={() => onSort('date')}
+                                        className={cn(HEAD, 'sticky left-0 z-[4] border-r shadow-[4px_0_8px_-6px_rgba(0,0,0,0.8)]')}
+                                    />
+                                    {cols.map(c => (
+                                        <HeaderCell
+                                            key={c.key}
+                                            label={c.label}
+                                            title={c.title}
+                                            direction={c.key === 'starter' || c.key === 'oppStarter' || c.key === 'flags' ? undefined : sort?.key === c.key ? sort.dir : null}
+                                            onSort={c.key === 'starter' || c.key === 'oppStarter' || c.key === 'flags' ? undefined : () => onSort(c.key)}
+                                            className={cn(HEAD, 'relative z-[3]')}
+                                        />
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sorted.map((g, i) => {
+                                    const isOpen = open.has(g.id);
+                                    const zebra = i % 2 ? 'bg-surface-2/40' : '';
+                                    return (
+                                        <React.Fragment key={g.id}>
+                                            <tr className="group">
+                                                <th scope="row" className="sticky left-0 z-[2] border-b border-r border-line bg-surface-1 p-0 text-left font-normal shadow-[4px_0_8px_-6px_rgba(0,0,0,0.8)] group-hover:bg-surface-2">
+                                                    <button
+                                                        type="button"
+                                                        aria-expanded={isOpen}
+                                                        aria-controls={`box-${g.id}`}
+                                                        onClick={() => toggle(g.id)}
+                                                        className="flex min-h-10 w-full items-center gap-2 px-2 text-left"
+                                                    >
+                                                        <svg aria-hidden="true" viewBox="0 0 12 12" className={cn('h-3 w-3 shrink-0 text-fg-3 transition-transform', isOpen && 'rotate-90')}>
+                                                            <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                                                        </svg>
+                                                        <span className="w-12 shrink-0 text-caption tabular-nums text-fg-2">{shortDate(g.date)}</span>
+                                                        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
+                                                        <img src={`/logos/${g.opp}.svg`} alt="" width={22} height={22} className="h-5 w-5 shrink-0 object-contain" loading="lazy" decoding="async" />
+                                                        <span className="whitespace-nowrap font-semibold text-fg-1">
+                                                            {g.home ? 'vs' : '@'} {g.opp}
+                                                        </span>
+                                                        <span className="sr-only">, show boxscore</span>
+                                                    </button>
+                                                </th>
+                                                {cols.map(c => (
+                                                    <td key={c.key} className={cn('border-b border-line px-1.5 py-1 text-center tabular-nums text-fg-1 group-hover:bg-surface-2', zebra, c.tone?.(g, period), c.key === 'starter' || c.key === 'oppStarter' ? 'truncate text-left text-fg-2' : '')}>
+                                                        {c.render(g, period)}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                            {isOpen ? (
+                                                <tr>
+                                                    <td id={`box-${g.id}`} colSpan={cols.length + 1} className="border-b border-line bg-surface-2/50 p-0">
+                                                        <div className="sticky left-0 max-w-[min(100vw-4rem,1100px)] p-4" style={{ borderLeft: `3px solid ${teamColor}` }}>
+                                                            <Boxscore rows={box?.games[g.id]} players={box?.players} state={boxState} />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ) : null}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </ScrollRegion>
+                </>
+            )}
+        </div>
+    );
+}
+
+const HEAD = 'bg-surface-2 border-b border-line [transform:translateY(var(--thead-y))]';
+
+function MiniStats({ g, period }: { g: GameRow; period: PeriodFilter }) {
+    const items: [string, React.ReactNode][] = [
+        ['Shots', `${stat(g, 'sf', period)}–${stat(g, 'sa', period)}`],
+        ['xG', `${stat(g, 'xgf', period).toFixed(2)}–${stat(g, 'xga', period).toFixed(2)}`],
+        ['High danger', `${stat(g, 'hdf', period)}–${stat(g, 'hda', period)}`],
+        ['PP / PK', period === 'All' ? `${g.ppg}/${g.ppo} · ${g.ppga}/${g.pko}` : '—'],
+        ['Goalies', `${lastName(g.starter)} vs ${lastName(g.oppStarter)}`],
+    ];
+    return (
+        <dl className="mb-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-caption">
+            {items.map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-2">
+                    <dt className="text-fg-3">{k}</dt>
+                    <dd className="tabular-nums text-fg-1">{v}</dd>
+                </div>
+            ))}
+        </dl>
+    );
+}
+
+function Boxscore({ rows, players, state }: { rows: BoxRow[] | undefined; players?: Boxscores['players']; state: 'idle' | 'loading' | 'error' }) {
+    if (state === 'loading' && !rows) return <p className="text-caption text-fg-2">Loading boxscore…</p>;
+    if (state === 'error') return <p className="text-caption text-neg">Could not load the boxscore.</p>;
+    if (!rows || rows.length === 0) return <p className="text-caption text-fg-3">No player boxscore for this game.</p>;
+    const who = (id: string) => players?.[id] ?? [id, 0, ''];
+    const skaters = rows.filter(r => r[7] === 0).sort((a, b) => b[3] - a[3] || b[1] - a[1]);
+    const goalies = rows.filter(r => r[7] === 1);
+    return (
+        <div className="flex flex-col gap-3">
+            {goalies.length ? (
+                <p className="text-caption text-fg-2">
+                    {goalies.map(r => `${who(r[0])[0]} ${r[9]}/${r[8]} saves (${r[5]})`).join(' · ')}
+                </p>
+            ) : null}
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-[420px] text-caption">
+                    <caption className="sr-only">Skater boxscore</caption>
+                    <thead className="text-fg-3">
+                        <tr>
+                            {['Player', 'G', 'A', 'P', '+/−', 'SOG', 'TOI'].map(h => (
+                                <th key={h} scope="col" className={cn('px-2 py-1 font-semibold', h === 'Player' ? 'text-left' : 'text-right')}>
+                                    {h}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {skaters.map(r => {
+                            const [name, num] = who(r[0]);
+                            return (
+                                <tr key={r[0]} className="border-t border-line">
+                                    <th scope="row" className="px-2 py-1 text-left font-normal text-fg-1">
+                                        {num ? <span className="mr-1 text-fg-3">#{num}</span> : null}
+                                        {name}
+                                    </th>
+                                    <td className="px-2 py-1 text-right tabular-nums">{r[1]}</td>
+                                    <td className="px-2 py-1 text-right tabular-nums">{r[2]}</td>
+                                    <td className="px-2 py-1 text-right font-semibold tabular-nums">{r[3]}</td>
+                                    <td className={cn('px-2 py-1 text-right tabular-nums', diffTone(r[4]))}>{signed(r[4])}</td>
+                                    <td className="px-2 py-1 text-right tabular-nums">{r[6]}</td>
+                                    <td className="px-2 py-1 text-right tabular-nums text-fg-2">{r[5]}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}

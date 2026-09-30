@@ -1,22 +1,17 @@
-import TeamsTable from '@/components/TeamsTable';
-import Header from '@/components/Header';
+import type { Metadata } from 'next';
+import { SEASON_ID } from '@/lib/season';
+import { seasonLabel } from '@/utils/team-stats/season';
+import TeamsView from './TeamsView';
 
-export const metadata = {
-    title: 'Team Stats',
-    description: 'Advanced NHL team statistics including xG, PP/PK performance, and more.',
+export const dynamic = 'force-static';
+
+export const metadata: Metadata = {
+    title: 'Teams: standings and team stats',
+    description: `Every NHL team's ${seasonLabel(SEASON_ID)} record, goals, special teams, shots, expected goals and ratings in one sortable table, with last season one tap away.`,
+    alternates: { canonical: '/teams' },
 };
 
+/** The league table, this season. /teams?season=… is rewritten to /teams/season/[season]. */
 export default function TeamsPage() {
-    return (
-        <main className="min-h-screen bg-black text-white px-3 font-sans relative selection:bg-emerald-500/30">
-            {/* Background Ambient Glow */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
-
-            <div className="relative z-10">
-                <Header compact />
-
-                <TeamsTable />
-            </div>
-        </main>
-    );
+    return <TeamsView season={SEASON_ID} />;
 }
