@@ -1,253 +1,187 @@
 """
-Shooting Talent Adjustment (Phase 3B)
+Shooting talent - a SEPARATE, leak-free finishing feature (C6).
 
-Computes per-player shooting talent factors — how much a player over/under-
-performs their xG — using Bayesian shrinkage.
+What changed
+------------
+The old version multiplied every shot's xG by the shooter's goals/xG ratio
+over the current and last two seasons.  That leaked outcomes into the model
+inputs: a 2022-23 shot carried the player's 2025-26 finishing, this season's
+goals raised this season's xG, and goalie GSAx absorbed shooter variance.
 
-MoneyPuck considers this their biggest competitive edge.  A wrist shot from
-Ovechkin's office is not the same as a wrist shot from a 4th liner, even if
-the raw spatial xG is identical.
+Now:
+* The shot model's raw output is kept in ``xg_raw`` and ``xG`` is NOT
+  multiplied.  The game model, backtests and goalie ratings use raw xG.
+* Talent is estimated per (player, season S) from seasons S-1, S-2, S-3 only
+  (weights 0.5 / 0.3 / 0.2), never from the season it is applied to, using raw
+  xG, measured against each season's league 5v5 goals/xG so the average
+  multiplier is ~1.  It is written to shooting_talent.json;
+  ``talent_multipliers`` gives the per-shot factor (talent xG = xg_raw x
+  multiplier) for display or as a candidate feature.
 
-Approach
---------
-1. Aggregate goals vs xG across multiple seasons (weighted: 50/30/20)
-2. Apply Bayesian shrinkage: small samples regress toward 1.0 (league avg)
-3. Output a lookup: player_id -> talent_multiplier
+Bayesian shrinkage (conjugate gamma-Poisson):
+    multiplier = (weighted goals + PRIOR_XG) / (weighted league-scaled xG + PRIOR_XG)
+clipped to [TALENT_FLOOR, TALENT_CEILING].
 
-The multiplier is applied to each shot's xG after the base model scores it.
-A multiplier of 1.15 means the player converts 15% more goals than expected.
-A multiplier of 0.85 means the player underperforms their shot quality by 15%.
-
-Bayesian formula (conjugate beta-binomial):
-    shrunk_ratio = (goals + prior_xG * league_ratio) / (xG + prior_xG)
-
-Where prior_xG controls shrinkage strength:
-    - Low xG player (call-up): heavily regressed toward 1.0
-    - High xG player (star):   talent dominates, near raw ratio
+refresh_pipeline.py keeps calling:
+    talent = compute_shooting_talent()
+    apply_shooting_talent(shots_df, talent)
 """
 
-from season import season_file, START_YEAR
+from __future__ import annotations
+
 import json
 import os
-import sys
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
-# ── Configuration ──────────────────────────────────────────────────────────
-PRIOR_XG = 40.0       # Bayesian prior strength (~40 xG worth of league-avg data)
-                       # At 40 xG (~550 shots), the prior contributes ~50% weight
-                       # A full season top-liner generates ~15-20 xG at 5v5
-LEAGUE_RATIO = 1.0     # League-average goals/xG (by definition ~1.0)
-TALENT_FLOOR = 0.75    # Don't let anyone be <75% of their xG (extreme shrinkage floor)
-TALENT_CEILING = 1.35  # Don't let anyone exceed 135% (prevents small-sample explosions)
+from season import START_YEAR, season_file
 
-# Season weighting for multi-season aggregation
-SEASON_WEIGHTS = {
-    START_YEAR: 0.50,      # Current season
-    START_YEAR - 1: 0.30,  # Last season
-    START_YEAR - 2: 0.20,  # Two seasons ago
-}
-
-# Strength states to include (EV play is where talent is most stable/repeatable)
-TALENT_STRENGTH_STATES = ['5v5']
+PRIOR_XG = 40.0          # ~550 5v5 shots of league-average finishing
+TALENT_FLOOR = 0.75
+TALENT_CEILING = 1.35
+PRIOR_SEASON_WEIGHTS = (0.50, 0.30, 0.20)   # seasons S-1, S-2, S-3
+TALENT_STRENGTH_STATES = ('5v5',)
+NHL_GAME_TYPES = ('02', '03')
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUT_NAME = 'shooting_talent.json'
 
 
 def extract_season(game_id):
-    """Extract season year from NHL game_id (e.g., 2024020567 -> 2024)."""
+    """Season start year from an NHL game id (2024020567 -> 2024)."""
     return int(str(game_id)[:4])
 
 
-def compute_shooting_talent(pipeline_dir=None):
-    """
-    Compute per-player shooting talent factors from shot-level data.
+def _raw_xg(shots: pd.DataFrame, pipeline_dir) -> pd.Series:
+    """Raw shot-model xG: the ``xg_raw`` column when present, else re-score
+    (the on-disk ``xG`` of old files is talent-adjusted and normalised)."""
+    if 'xg_raw' in shots.columns and shots['xg_raw'].notna().any():
+        return pd.to_numeric(shots['xg_raw'], errors='coerce')
+    import features as F
+    return F._score_raw_xg(shots, pipeline_dir)
 
-    Returns dict: {player_id: talent_multiplier}
-    Also saves to shooting_talent.json.
-    """
-    if pipeline_dir is None:
-        pipeline_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # ── Load all shot data ─────────────────────────────────────────────
-    shot_files = [
-        os.path.join(pipeline_dir, "nhl_historical_shots.csv"),
-        os.path.join(pipeline_dir, season_file("shots")),
-    ]
+def talent_table(shots: pd.DataFrame, target_seasons, xg_col='xg_raw') -> pd.DataFrame:
+    """Rows (player_id, season, goals_w, xg_w, talent_mult) for each target
+    season, using ONLY the three seasons before it."""
+    s = shots[shots['strength_state'].isin(TALENT_STRENGTH_STATES)].copy()
+    s['season'] = s['game_id'].map(extract_season)
+    s['is_goal'] = pd.to_numeric(s['is_goal'], errors='coerce').fillna(0)
+    s[xg_col] = pd.to_numeric(s[xg_col], errors='coerce').fillna(0)
+    s['player_id'] = pd.to_numeric(s['player_id'], errors='coerce')
+    s = s.dropna(subset=['player_id'])
+    per = s.groupby(['player_id', 'season']).agg(goals=('is_goal', 'sum'), xg=(xg_col, 'sum')).reset_index()
+    # expected goals at that season's league finishing rate (so league average = 1.0)
+    lg = s.groupby('season').agg(g=('is_goal', 'sum'), x=(xg_col, 'sum'))
+    per['xg'] = per['xg'] * per['season'].map((lg['g'] / lg['x']).where(lg['x'] > 0, 1.0))
+    out = []
+    for S in target_seasons:
+        parts = []
+        for k, w in enumerate(PRIOR_SEASON_WEIGHTS, start=1):
+            p = per[per['season'] == S - k]
+            if len(p):
+                parts.append(p.assign(goals=p['goals'] * w, xg=p['xg'] * w))
+        if not parts:
+            continue
+        agg = pd.concat(parts).groupby('player_id')[['goals', 'xg']].sum().reset_index()
+        agg['talent_mult'] = ((agg['goals'] + PRIOR_XG) / (agg['xg'] + PRIOR_XG)).clip(TALENT_FLOOR, TALENT_CEILING)
+        agg['season'] = S
+        out.append(agg)
+    if not out:
+        return pd.DataFrame(columns=['player_id', 'season', 'goals', 'xg', 'talent_mult'])
+    t = pd.concat(out, ignore_index=True)
+    t['player_id'] = t['player_id'].astype(int)
+    return t
 
+
+def compute_shooting_talent(pipeline_dir=None, current_season=START_YEAR):
+    """Per-season talent maps {season: {player_id: multiplier}} for every
+    season in the shot files (each from prior seasons only).  Saves
+    shooting_talent.json and returns the nested dict."""
+    pipeline_dir = pipeline_dir or SCRIPT_DIR
+    files = [os.path.join(pipeline_dir, 'nhl_historical_shots.csv')]
+    for sy in (current_season - 1, current_season):
+        files.append(os.path.join(pipeline_dir, season_file('shots', sy)))
     frames = []
-    for f in shot_files:
-        if os.path.exists(f):
-            df = pd.read_csv(f, usecols=['game_id', 'player_id', 'is_goal',
-                                          'xG', 'strength_state'],
-                             low_memory=False)
-            frames.append(df)
-            print(f"  Loaded {len(df):,} shots from {os.path.basename(f)}")
-        else:
-            print(f"  Warning: {os.path.basename(f)} not found, skipping")
-
+    for f in dict.fromkeys(files):
+        if not os.path.exists(f):
+            continue
+        df = pd.read_csv(f, low_memory=False)
+        if df.empty:
+            continue
+        df = df[df['game_id'].astype(str).str[4:6].isin(NHL_GAME_TYPES)]
+        df = df.assign(xg_raw=_raw_xg(df, pipeline_dir))
+        frames.append(df[['game_id', 'player_id', 'is_goal', 'xg_raw', 'strength_state']])
+        print(f"  Loaded {len(df):,} shots from {os.path.basename(f)}")
     if not frames:
-        print("  No shot data found — returning empty talent map")
+        print("  No shot data found - empty talent map")
         return {}
-
-    all_shots = pd.concat(frames, ignore_index=True)
-
-    # Filter to EV strength states (5v5 is where talent signal is cleanest)
-    all_shots = all_shots[all_shots['strength_state'].isin(TALENT_STRENGTH_STATES)]
-    print(f"  5v5 shots: {len(all_shots):,}")
-
-    # Extract season and validate
-    all_shots['season'] = all_shots['game_id'].apply(extract_season)
-    valid_seasons = set(SEASON_WEIGHTS.keys())
-    all_shots = all_shots[all_shots['season'].isin(valid_seasons)]
-
-    # Ensure numeric types
-    all_shots['is_goal'] = pd.to_numeric(all_shots['is_goal'], errors='coerce').fillna(0)
-    all_shots['xG'] = pd.to_numeric(all_shots['xG'], errors='coerce').fillna(0)
-    all_shots['player_id'] = pd.to_numeric(all_shots['player_id'], errors='coerce')
-    all_shots = all_shots.dropna(subset=['player_id'])
-    all_shots['player_id'] = all_shots['player_id'].astype(int)
-
-    # ── Per-season aggregation ─────────────────────────────────────────
-    # Aggregate goals and xG per player per season
-    season_agg = all_shots.groupby(['player_id', 'season']).agg(
-        goals=('is_goal', 'sum'),
-        xG=('xG', 'sum'),
-        shots=('is_goal', 'count'),
-    ).reset_index()
-
-    # ── Multi-season weighted aggregation ──────────────────────────────
-    # Apply season weights: more recent seasons matter more
-    season_agg['weight'] = season_agg['season'].map(SEASON_WEIGHTS)
-    season_agg['w_goals'] = season_agg['goals'] * season_agg['weight']
-    season_agg['w_xG'] = season_agg['xG'] * season_agg['weight']
-    season_agg['w_shots'] = season_agg['shots'] * season_agg['weight']
-
-    player_agg = season_agg.groupby('player_id').agg(
-        goals=('w_goals', 'sum'),
-        xG=('w_xG', 'sum'),
-        shots=('w_shots', 'sum'),
-        n_seasons=('season', 'nunique'),
-    ).reset_index()
-
-    # ── Bayesian shrinkage ─────────────────────────────────────────────
-    # shrunk_ratio = (weighted_goals + PRIOR_XG * 1.0) / (weighted_xG + PRIOR_XG)
-    # This pulls everyone toward 1.0, with more pull for small-sample players
-    player_agg['raw_ratio'] = player_agg['goals'] / player_agg['xG'].clip(lower=0.1)
-    player_agg['shrunk_ratio'] = (
-        (player_agg['goals'] + PRIOR_XG * LEAGUE_RATIO) /
-        (player_agg['xG'] + PRIOR_XG)
-    )
-
-    # Apply floor/ceiling
-    player_agg['talent_mult'] = player_agg['shrunk_ratio'].clip(
-        lower=TALENT_FLOOR, upper=TALENT_CEILING
-    )
-
-    # ── Diagnostics ────────────────────────────────────────────────────
-    n_players = len(player_agg)
-    has_signal = player_agg[player_agg['xG'] > 5.0]  # >5 weighted xG = meaningful
-    print(f"  Players computed: {n_players}")
-    print(f"  Players with meaningful signal (>5 weighted xG): {len(has_signal)}")
-    if len(has_signal) > 0:
-        print(f"  Talent multiplier range (meaningful): "
-              f"{has_signal['talent_mult'].min():.3f} — {has_signal['talent_mult'].max():.3f}")
-        print(f"  Talent multiplier mean: {has_signal['talent_mult'].mean():.3f}")
-        print(f"  Talent multiplier std:  {has_signal['talent_mult'].std():.3f}")
-
-        # Top overperformers
-        top = has_signal.nlargest(5, 'talent_mult')
-        print(f"\n  Top 5 overperformers (shrunk):")
-        for _, row in top.iterrows():
-            print(f"    Player {int(row['player_id'])}: "
-                  f"raw={row['raw_ratio']:.2f} → shrunk={row['talent_mult']:.3f} "
-                  f"(goals={row['goals']:.1f}, xG={row['xG']:.1f})")
-
-        # Top underperformers
-        bottom = has_signal.nsmallest(5, 'talent_mult')
-        print(f"\n  Top 5 underperformers (shrunk):")
-        for _, row in bottom.iterrows():
-            print(f"    Player {int(row['player_id'])}: "
-                  f"raw={row['raw_ratio']:.2f} → shrunk={row['talent_mult']:.3f} "
-                  f"(goals={row['goals']:.1f}, xG={row['xG']:.1f})")
-
-    # ── Build output dict ──────────────────────────────────────────────
-    talent_map = dict(zip(
-        player_agg['player_id'].astype(int),
-        player_agg['talent_mult'].round(4)
-    ))
-
-    # Save to JSON
-    out_path = os.path.join(pipeline_dir, "shooting_talent.json")
-    # JSON keys must be strings
-    talent_json = {str(k): v for k, v in talent_map.items()}
-    with open(out_path, 'w') as f:
-        json.dump(talent_json, f, indent=2)
-    print(f"\n  Saved {len(talent_map)} talent factors to {os.path.basename(out_path)}")
-
-    return talent_map
+    shots = pd.concat(frames, ignore_index=True).drop_duplicates()
+    seasons = sorted(set(shots['game_id'].map(extract_season)) | {current_season})
+    t = talent_table(shots, seasons)
+    talent = {int(S): dict(zip(g['player_id'].astype(int), g['talent_mult'].round(4)))
+              for S, g in t.groupby('season')}
+    cur = t[(t['season'] == current_season) & (t['xg'] > 5)]
+    if len(cur):
+        print(f"  {current_season}: {len(cur)} players with >5 weighted xG; multiplier "
+              f"{cur['talent_mult'].min():.3f}-{cur['talent_mult'].max():.3f} (mean {cur['talent_mult'].mean():.3f})")
+    payload = {
+        'method': ('multiplier = (weighted goals + %g) / (weighted raw xG + %g) over 5v5 shots of seasons '
+                   'S-1..S-3 (weights %s); never uses season S itself' % (PRIOR_XG, PRIOR_XG, list(PRIOR_SEASON_WEIGHTS))),
+        'current_season': current_season,
+        'by_season': {str(S): {str(k): v for k, v in m.items()} for S, m in talent.items()},
+    }
+    with open(os.path.join(pipeline_dir, OUT_NAME), 'w') as f:
+        json.dump(payload, f)
+    print(f"  Saved talent factors for seasons {sorted(talent)} to {OUT_NAME}")
+    return talent
 
 
 def load_shooting_talent(pipeline_dir=None):
-    """Load pre-computed shooting talent factors from JSON."""
-    if pipeline_dir is None:
-        pipeline_dir = os.path.dirname(os.path.abspath(__file__))
-
-    path = os.path.join(pipeline_dir, "shooting_talent.json")
+    """{season: {player_id: multiplier}}.  A legacy flat file (one map) is
+    treated as the current season's map."""
+    path = os.path.join(pipeline_dir or SCRIPT_DIR, OUT_NAME)
     if not os.path.exists(path):
-        print("  shooting_talent.json not found — no talent adjustment applied")
         return {}
-
     with open(path) as f:
-        talent_json = json.load(f)
+        data = json.load(f)
+    if isinstance(data, dict) and 'by_season' in data:
+        return {int(S): {int(k): v for k, v in m.items()} for S, m in data['by_season'].items()}
+    return {START_YEAR: {int(k): v for k, v in data.items()}}
 
-    # Convert string keys back to int
-    return {int(k): v for k, v in talent_json.items()}
+
+def talent_multipliers(shots_df, talent_map) -> pd.Series:
+    """Per-shot multiplier from the shooter's PRIOR-seasons talent for the
+    shot's season (1.0 when unknown).  ``xg_raw * multiplier`` is the
+    talent-adjusted xG, available as a separate feature / display value."""
+    if not talent_map:
+        return pd.Series(1.0, index=shots_df.index)
+    if not isinstance(next(iter(talent_map.values())), dict):
+        talent_map = {START_YEAR: talent_map}          # legacy flat map
+    season = shots_df['game_id'].map(extract_season)
+    pid = pd.to_numeric(shots_df['player_id'], errors='coerce')
+    mult = pd.Series(1.0, index=shots_df.index)
+    for S, m in talent_map.items():
+        sel = season == int(S)
+        if sel.any():
+            mult[sel] = pid[sel].map(m).fillna(1.0)
+    return mult
 
 
 def apply_shooting_talent(shots_df, talent_map):
-    """
-    Apply shooting talent multiplier to a shots DataFrame in-place.
-
-    Modifies both 'xG' and 'xG_flurry_adj' columns.
-    Players not in the talent_map get 1.0 (no adjustment).
-
-    Parameters
-    ----------
-    shots_df : pd.DataFrame
-        Must have 'player_id' and 'xG' columns. Optionally 'xG_flurry_adj'.
-    talent_map : dict
-        {player_id: talent_multiplier}
-
-    Returns
-    -------
-    pd.DataFrame (same object, modified in place)
-    """
-    if not talent_map:
-        return shots_df
-
-    # Map player_id to talent multiplier (default 1.0 for unknown players)
-    multipliers = shots_df['player_id'].map(talent_map).fillna(1.0)
-
-    # Apply to raw xG
-    shots_df['xG'] = shots_df['xG'] * multipliers
-
-    # Apply to flurry-adjusted xG if it exists
-    if 'xG_flurry_adj' in shots_df.columns:
-        shots_df['xG_flurry_adj'] = shots_df['xG_flurry_adj'] * multipliers
-
-    # Cap individual shot xG at 1.0 (can't exceed certainty)
-    shots_df['xG'] = shots_df['xG'].clip(upper=1.0)
-    if 'xG_flurry_adj' in shots_df.columns:
-        shots_df['xG_flurry_adj'] = shots_df['xG_flurry_adj'].clip(upper=1.0)
-
-    n_adjusted = (multipliers != 1.0).sum()
-    avg_mult = multipliers[multipliers != 1.0].mean() if n_adjusted > 0 else 1.0
-    print(f"  Shooting talent: {n_adjusted}/{len(shots_df)} shots adjusted "
-          f"(avg multiplier={avg_mult:.3f})")
-
+    """Record the shot model's raw output in ``xg_raw`` and leave ``xG``
+    unchanged: no finishing outcome is multiplied into model inputs any more.
+    The talent itself stays available through ``talent_multipliers`` and
+    shooting_talent.json.  Modifies and returns ``shots_df``."""
+    shots_df['xg_raw'] = pd.to_numeric(shots_df['xG'], errors='coerce')
+    mult = talent_multipliers(shots_df, talent_map)
+    n = int((mult != 1.0).sum())
+    print(f"  Shooting talent: xG kept raw (xg_raw); {n}/{len(shots_df)} shots have a prior-season "
+          f"talent multiplier (separate feature, not applied)")
     return shots_df
 
 
-if __name__ == "__main__":
-    print("Computing shooting talent factors...")
-    talent = compute_shooting_talent()
-    print(f"\nDone. {len(talent)} player talent factors computed.")
+if __name__ == '__main__':
+    print('Computing shooting talent factors (prior seasons only)...')
+    t = compute_shooting_talent()
+    print(f"Done: {sum(len(m) for m in t.values())} player-season factors.")

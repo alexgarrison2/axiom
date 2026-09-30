@@ -1,0 +1,268 @@
+{
+  "generated_at": "2026-09-30T04:47:35.168744+00:00",
+  "base_features": [
+    "d_xg_share",
+    "d_xg_share_all",
+    "d_elo",
+    "d_goalie_gsax",
+    "d_pts_pct",
+    "h_b2b",
+    "a_b2b",
+    "d_rest"
+  ],
+  "base_fold_log_loss": {
+    "2023": 0.6590777245212592,
+    "2024": 0.6653669716293886,
+    "2025": 0.6792766987125499
+  },
+  "dev_seasons": [
+    2023,
+    2024
+  ],
+  "holdout_season": 2025,
+  "rule": "changes need evidence: drop a live feature only when removing it lowers dev log loss by more than one paired SE; add a candidate only when it lowers dev log loss by more than one paired SE. The promotion gates then check every fold incl. the hold-out.",
+  "results": [
+    {
+      "name": "d_xg_share",
+      "kind": "drop",
+      "features": [
+        "d_xg_share"
+      ],
+      "fold_log_loss": {
+        "2023": 0.6589387358767491,
+        "2024": 0.6644098000296179,
+        "2025": 0.6803046715748674
+      },
+      "dev_delta": -0.0005177712333947167,
+      "dev_se": 0.000481389725060602,
+      "n_dev": 2605,
+      "holdout_delta": 0.0010279728623174467,
+      "holdout_se": 0.0006461123782108654,
+      "n_holdout": 1394,
+      "decision": "drop (removal lowers dev log loss by > 1 SE)",
+      "kept": false
+    },
+    {
+      "name": "d_xg_share_all",
+      "kind": "drop",
+      "features": [
+        "d_xg_share_all"
+      ],
+      "fold_log_loss": {
+        "2023": 0.661432924082582,
+        "2024": 0.6660573526882306,
+        "2025": 0.6802536224551363
+      },
+      "dev_delta": 0.0015844620895408867,
+      "dev_se": 0.0005427863535936572,
+      "n_dev": 2605,
+      "holdout_delta": 0.0009769237425864585,
+      "holdout_se": 0.0007870900862201806,
+      "n_holdout": 1394,
+      "decision": "keep",
+      "kept": true
+    },
+    {
+      "name": "d_elo",
+      "kind": "drop",
+      "features": [
+        "d_elo"
+      ],
+      "fold_log_loss": {
+        "2023": 0.6599467789358714,
+        "2024": 0.6652622246767084,
+        "2025": 0.6789254944263339
+      },
+      "dev_delta": 0.00041822737086758357,
+      "dev_se": 0.0006066659329927897,
+      "n_dev": 2605,
+      "holdout_delta": -0.00035120428621603073,
+      "holdout_se": 0.0007651570158231978,
+      "n_holdout": 1394,
+      "decision": "keep",
+      "kept": true
+    },
+    {
+      "name": "d_goalie_gsax",
+      "kind": "drop",
+      "features": [
+        "d_goalie_gsax"
+      ],
+      "fold_log_loss": {
+        "2023": 0.658292499861223,
+        "2024": 0.6656673028038967,
+        "2025": 0.6794358238936223
+      },
+      "dev_delta": -0.0002826602314525679,
+      "dev_se": 0.00037829140910797954,
+      "n_dev": 2605,
+      "holdout_delta": 0.00015912518107247272,
+      "holdout_se": 0.00043979215635852345,
+      "n_holdout": 1394,
+      "decision": "keep",
+      "kept": true
+    },
+    {
+      "name": "d_pts_pct",
+      "kind": "drop",
+      "features": [
+        "d_pts_pct"
+      ],
+      "fold_log_loss": {
+        "2023": 0.658290418701258,
+        "2024": 0.6639790549593201,
+        "2025": 0.6799152532678772
+      },
+      "dev_delta": -0.0010653621290918718,
+      "dev_se": 0.0006623369322011141,
+      "n_dev": 2605,
+      "holdout_delta": 0.0006385545553272837,
+      "holdout_se": 0.0007322852432861931,
+      "n_holdout": 1394,
+      "decision": "drop (removal lowers dev log loss by > 1 SE)",
+      "kept": false
+    },
+    {
+      "name": "h_b2b",
+      "kind": "drop",
+      "features": [
+        "h_b2b"
+      ],
+      "fold_log_loss": {
+        "2023": 0.6592928191494222,
+        "2024": 0.6646394042026993,
+        "2025": 0.6811925999565113
+      },
+      "dev_delta": -0.00022131628859402579,
+      "dev_se": 0.0012246599898198365,
+      "n_dev": 2605,
+      "holdout_delta": 0.0019159012439614411,
+      "holdout_se": 0.0017291498201596474,
+      "n_holdout": 1394,
+      "decision": "keep",
+      "kept": true
+    },
+    {
+      "name": "a_b2b",
+      "kind": "drop",
+      "features": [
+        "a_b2b"
+      ],
+      "fold_log_loss": {
+        "2023": 0.6592680819734067,
+        "2024": 0.6642533534147183,
+        "2025": 0.68446885848782
+      },
+      "dev_delta": -0.00041332571644462653,
+      "dev_se": 0.001204842410186295,
+      "n_dev": 2605,
+      "holdout_delta": 0.005192159775270099,
+      "holdout_se": 0.0018279421975418446,
+      "n_holdout": 1394,
+      "decision": "keep",
+      "kept": true
+    },
+    {
+      "name": "d_rest",
+      "kind": "drop",
+      "features": [
+        "d_rest"
+      ],
+      "fold_log_loss": {
+        "2023": 0.6591485600582807,
+        "2024": 0.6644793713479484,
+        "2025": 0.6829796480575245
+      },
+      "dev_delta": -0.0003728779359401186,
+      "dev_se": 0.0011435038910049108,
+      "n_dev": 2605,
+      "holdout_delta": 0.0037029493449746383,
+      "holdout_se": 0.001741450415422709,
+      "n_holdout": 1394,
+      "decision": "keep",
+      "kept": true
+    },
+    {
+      "name": "travel_km",
+      "kind": "add",
+      "features": [
+        "d_travel_km"
+      ],
+      "fold_log_loss": {
+        "2023": 0.6600047751534344,
+        "2024": 0.6651583674014546,
+        "2025": 0.6795046148670297
+      },
+      "dev_delta": 0.0004012925664201708,
+      "dev_se": 0.0002521968599848778,
+      "n_dev": 2605,
+      "holdout_delta": 0.00022791615447992567,
+      "holdout_se": 0.0003734686562891647,
+      "n_holdout": 1394,
+      "decision": "reject (dev gain not > 1 SE)",
+      "kept": false
+    },
+    {
+      "name": "time_zone_shift",
+      "kind": "add",
+      "features": [
+        "h_tz_shift",
+        "a_tz_shift"
+      ],
+      "fold_log_loss": {
+        "2023": 0.6636601923029168,
+        "2024": 0.6655729701107831,
+        "2025": 0.6792558542709929
+      },
+      "dev_delta": 0.0025563556986951063,
+      "dev_se": 0.0008169765008164198,
+      "n_dev": 2605,
+      "holdout_delta": -2.0844441556994973e-05,
+      "holdout_se": 0.0001509553741948081,
+      "n_holdout": 1394,
+      "decision": "reject (dev gain not > 1 SE)",
+      "kept": false
+    },
+    {
+      "name": "three_in_four",
+      "kind": "add",
+      "features": [
+        "h_3in4",
+        "a_3in4"
+      ],
+      "fold_log_loss": {
+        "2023": 0.6587259016263017,
+        "2024": 0.6641799456363482,
+        "2025": 0.6812062362681347
+      },
+      "dev_delta": -0.0007384850585996959,
+      "dev_se": 0.0003402718246302354,
+      "n_dev": 2605,
+      "holdout_delta": 0.0019295375555848338,
+      "holdout_se": 0.0013796415560094809,
+      "n_holdout": 1394,
+      "decision": "add",
+      "kept": true
+    },
+    {
+      "name": "special_teams_xg",
+      "kind": "add",
+      "features": [
+        "d_st"
+      ],
+      "fold_log_loss": {
+        "2023": 0.6590777245212592,
+        "2024": 0.6653669716293885,
+        "2025": 0.6792766987125498
+      },
+      "dev_delta": 3.3668951610513386e-18,
+      "dev_se": 1.8773378509922138e-18,
+      "n_dev": 2605,
+      "holdout_delta": -6.968760018271248e-19,
+      "holdout_se": 3.176395601600306e-18,
+      "n_holdout": 1394,
+      "decision": "reject (dev gain not > 1 SE)",
+      "kept": false
+    }
+  ]
+}

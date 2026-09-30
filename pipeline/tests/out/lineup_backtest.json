@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-09-30T04:50:51.399477+00:00",
+  "season": "2025-26",
+  "method": "monthly walk-forward RAPM (net xG/60, ridge, alpha by 5-fold CV at the first cutoff) on raw xG; tonight = dressed skaters, baseline = 18 most-used over the previous 20 games; base = walk-forward game-model probability; weight fitted on one half, tested on the other",
+  "cutoffs": [
+    "2025-12-01",
+    "2026-01-01",
+    "2026-02-01",
+    "2026-03-01",
+    "2026-04-01"
+  ],
+  "ridge_alpha": 200,
+  "games_scored": 989,
+  "games_eligible": 989,
+  "coverage_gate": ">= 14 of 18 skaters rated on both sides",
+  "x_sd": 0.680370403877131,
+  "x_mean_abs": 0.48851181684022205,
+  "weights": {
+    "half_1": -0.04999999999999993,
+    "half_2": 0.20000000000000018,
+    "all": 0.0
+  },
+  "held_out": {
+    "base_log_loss": 0.6760340493458479,
+    "with_lineup_log_loss": 0.6789728267157515,
+    "delta": 0.0029387773699036716,
+    "delta_se": 0.0018284273873426207,
+    "half_1_trained_tested_on_2": {
+      "base": 0.668735644806941,
+      "with": 0.6694267463331738
+    },
+    "half_2_trained_tested_on_1": {
+      "base": 0.6833472279830117,
+      "with": 0.688538231147687
+    }
+  },
+  "decision": "lineup term does not improve held-out log loss in both halves: weight = 0",
+  "lineup_weight": 0.0
+}

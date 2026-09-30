@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pony-xg/model_report.schema.json",
+  "title": "public/data/model_report.json (pipeline/model_report.py)",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "current_season", "seasons", "gate", "model"],
+  "properties": {
+    "schema_version": {"type": "integer", "enum": [1]},
+    "generated_at": {"type": "string"},
+    "current_season": {"type": "string", "pattern": "^\\d{4}-\\d{2}$"},
+    "notes": {"type": "string"},
+    "seasons": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["all", "regular", "playoffs"],
+        "properties": {
+          "all": {"$ref": "#/$defs/block"},
+          "regular": {"$ref": "#/$defs/block"},
+          "playoffs": {"$ref": "#/$defs/block"}
+        }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "required": ["open", "status", "summary", "reasons", "reason", "rule"],
+      "properties": {
+        "open": {"type": "boolean"},
+        "status": {"type": "string", "enum": ["open", "closed"]},
+        "summary": {"type": "string"},
+        "reason": {"type": "string"},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "backtest": {"type": ["object", "null"]},
+        "rolling": {"type": ["object", "null"]},
+        "rule": {
+          "type": "object",
+          "required": ["min_ev", "kelly_fraction", "min_team_gp", "rolling_window", "roi_ci_floor"],
+          "properties": {
+            "min_ev": {"type": "number", "minimum": 0, "maximum": 1},
+            "kelly_fraction": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        }
+      }
+    },
+    "market_backtest": {"type": ["object", "null"]},
+    "model": {
+      "type": ["object", "null"],
+      "properties": {
+        "version": {"type": ["string", "null"]},
+        "features": {"type": ["array", "null"], "items": {"type": "string"}},
+        "walk_forward": {"type": "array", "items": {"type": "object", "required": ["test_season", "n", "log_loss"]}}
+      }
+    }
+  },
+  "$defs": {
+    "prob": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "block": {
+      "type": "object",
+      "required": ["n", "n_retro_excluded", "accuracy", "accuracy_ci", "brier", "log_loss", "baselines",
+                   "reliability", "tiers", "rolling", "best_calls", "worst_misses"],
+      "properties": {
+        "n": {"type": "integer", "minimum": 0},
+        "n_retro_excluded": {"type": "integer", "minimum": 0},
+        "accuracy": {"$ref": "#/$defs/prob"},
+        "accuracy_ci": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/$defs/prob"}},
+        "brier": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "log_loss": {"type": ["number", "null"], "minimum": 0},
+        "baselines": {
+          "type": "object",
+          "required": ["home_rate", "market"],
+          "properties": {
+            "home_rate": {"type": "object", "required": ["rate", "source", "n", "log_loss", "brier", "accuracy"],
+                          "properties": {"rate": {"type": "number", "minimum": 0, "maximum": 1}}},
+            "market": {"type": "object", "required": ["n", "source", "log_loss", "brier", "accuracy",
+                                                        "model_log_loss_same_games", "model_accuracy_same_games"]}
+          }
+        },
+        "reliability": {"type": "array", "items": {"type": "object", "required": ["bin", "lo", "hi", "n", "mean_pred", "actual"]}},
+        "tiers": {"type": "array", "items": {"type": "object", "required": ["tier", "n", "correct", "accuracy"]}},
+        "rolling": {"type": "array", "items": {"type": "object", "required": ["i", "date", "model", "market"]}},
+        "best_calls": {"type": "array", "maxItems": 5, "items": {"$ref": "#/$defs/call"}},
+        "worst_misses": {"type": "array", "maxItems": 5, "items": {"$ref": "#/$defs/call"}}
+      }
+    },
+    "call": {
+      "type": "object",
+      "required": ["gameId", "date", "homeTeam", "awayTeam", "pick", "confidence", "homeScore", "awayScore", "correct"],
+      "properties": {"gameId": {"type": "integer"}, "correct": {"type": "boolean"}}
+    }
+  }
+}

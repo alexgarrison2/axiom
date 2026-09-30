@@ -1,4 +1,22 @@
-from season import season_file, PREV_START_YEAR, season_of_game_id
+"""
+team_ratings.py - team power ratings and goalie ratings for the site.
+
+Team xG ratings: 50% recent form + 50% season average regressed toward last
+season's regressed rating (PRIOR_KEEP), NHL game types 02/03 only.
+
+Special teams (C6): the displayed PP% / PK% are REGRESSED rates,
+    (goals + ST_PRIOR_OPPS * league rate) / (opportunities + ST_PRIOR_OPPS),
+so one 1-for-2 night reads ~21%, not 50%.  The raw season rate and the
+opportunity counts are published next to it (pp_pct_actual, pp_opportunities).
+
+Goalie ratings (C6) come from the same FeatureState the game model uses
+(features.py): shot-level raw xG with empty-net shots removed, normalised
+within each season so league GSAx is zero, the current season blended with
+the prior two by w_cur = gp_cur / (gp_cur + 30), shrunk by weighted GP, and
+only NHL regular-season / playoff games.  gsax_per_game is a per-game rate for
+the season named in ``season``.
+"""
+from season import season_file, PREV_START_YEAR, season_of_game_id, START_YEAR, SEASON_LABEL
 import pandas as pd
 import json
 import os
@@ -16,6 +34,37 @@ REGRESSION_GAMES = 10
 # season (the rest regresses to league mean for roster turnover).
 PRIOR_KEEP = 0.5
 XG_COLS = ['xG_for', 'xG_against', 'xG_for_5v5', 'xG_against_5v5']
+NHL_GAME_TYPES = ('02', '03')
+# Special teams: regress PP% / PK% toward the league rate with this many
+# opportunities (~20 games of power plays).
+ST_PRIOR_OPPS = 60
+DEFAULT_LEAGUE_PP = 0.20
+
+
+def nhl_games_only(df):
+    """Drop All-Star (04), PWHL showcase (12) and 4 Nations (19/20) rows."""
+    if df is None or df.empty or 'game_id' not in df.columns:
+        return df
+    return df[df['game_id'].astype(str).str[4:6].isin(NHL_GAME_TYPES)].copy()
+
+
+def league_pp_rate(df, prior_df=None):
+    """League PP conversion this season, blended with last season's (prior
+    worth 32 * ST_PRIOR_OPPS opportunities)."""
+    def totals(d):
+        if d is None or d.empty or 'pp_goals' not in d.columns:
+            return 0.0, 0.0
+        return (float(pd.to_numeric(d['pp_goals'], errors='coerce').fillna(0).sum()),
+                float(pd.to_numeric(d['pp_opportunities'], errors='coerce').fillna(0).sum()))
+    g, o = totals(df)
+    pg, po = totals(prior_df)
+    prior_rate = pg / po if po > 0 else DEFAULT_LEAGUE_PP
+    k = 32 * ST_PRIOR_OPPS
+    return (g + k * prior_rate) / (o + k)
+
+
+def regressed_rate(successes, opps, league_rate, k=ST_PRIOR_OPPS):
+    return (successes + k * league_rate) / (opps + k)
 
 
 def load_prior_season_games():
@@ -70,7 +119,9 @@ def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_fil
         else:
             raise FileNotFoundError(gamestats_file)
 
+    df = nhl_games_only(df)
     prior_league, priors = team_priors(prior_df) if prior_df is not None else (None, {})
+    league_pp = league_pp_rate(df, prior_df)
 
     # --- Team Ratings ---
     # Teams with no games yet this season are rated from their prior alone.
@@ -122,70 +173,17 @@ def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_fil
             xga_5v5_rating = xga_rating * 0.8
 
         
-        # Special Teams Ratings
-        # PP% = PP Goals / PP Opps
-        # PK% = 1 - (PP Goals Against / PK Opps)
-        
-        # Season Totals
-        pp_goals = team_games['pp_goals'].sum()
-        pp_opps = team_games['pp_opportunities'].sum()
-        pp_pct = pp_goals / pp_opps if pp_opps > 0 else 0.20 # League Avg approx 20%
-        # New: Penalties Taken/Drawn per game (Volume)
-        # Regressed toward ~3/game with REGRESSION_GAMES of weight (stable early season)
+        # Special teams: regressed rates for display (C6), raw rates alongside.
+        num = lambda c: float(pd.to_numeric(team_games[c], errors='coerce').fillna(0).sum()) if c in team_games else 0.0
+        pp_goals, pp_opps = num('pp_goals'), num('pp_opportunities')
+        pk_goals_ag, pk_opps = num('pp_goals_against'), num('pk_opportunities')
+        pp_rating = 100 * regressed_rate(pp_goals, pp_opps, league_pp)
+        pk_rating = 100 * (1 - regressed_rate(pk_goals_ag, pk_opps, league_pp))
+        pp_pct_actual = 100 * pp_goals / pp_opps if pp_opps > 0 else None
+        pk_pct_actual = 100 * (1 - pk_goals_ag / pk_opps) if pk_opps > 0 else None
+        # Penalties drawn / taken per game, regressed toward ~3 with REGRESSION_GAMES of weight
         penalties_drawn_per_game = (pp_opps + REGRESSION_GAMES * 3.0) / (games_played + REGRESSION_GAMES)
-        
-        pk_goals_ag = team_games['pp_goals_against'].sum()
-        pk_opps = team_games['pk_opportunities'].sum()
-        pk_pct = 1 - (pk_goals_ag / pk_opps) if pk_opps > 0 else 0.80 # League Avg approx 80%
         penalties_taken_per_game = (pk_opps + REGRESSION_GAMES * 3.0) / (games_played + REGRESSION_GAMES)
-        
-        # Weighted Special Teams Ratings (User Request: 40% L10, 50% L20, 10% Season)
-        
-        # Helper to calc efficiency safely
-        def calc_eff(goals, opps, default=0.0):
-             return goals / opps if opps > 0 else default
-
-        # 1. Season (10%)
-        # already calculated: pp_goals, pp_opps, pk_goals_ag, pk_opps
-        season_pp_pct = calc_eff(pp_goals, pp_opps, 0.20)
-        season_pk_pct = 1 - calc_eff(pk_goals_ag, pk_opps, 0.20)
-        
-        # 2. Last 20 Games (50%)
-        l20_games = team_games.tail(20)
-        l20_pp_goals = l20_games['pp_goals'].sum()
-        l20_pp_opps = l20_games['pp_opportunities'].sum()
-        l20_pp_pct = calc_eff(l20_pp_goals, l20_pp_opps, season_pp_pct)
-        
-        l20_pk_ga = l20_games['pp_goals_against'].sum()
-        l20_pk_opps = l20_games['pk_opportunities'].sum()
-        l20_pk_pct = 1 - calc_eff(l20_pk_ga, l20_pk_opps, 1 - season_pk_pct)
-        
-        # 3. Last 10 Games (40%)
-        l10_games = team_games.tail(10)
-        l10_pp_goals = l10_games['pp_goals'].sum()
-        l10_pp_opps = l10_games['pp_opportunities'].sum()
-        l10_pp_pct = calc_eff(l10_pp_goals, l10_pp_opps, season_pp_pct)
-        
-        l10_pk_ga = l10_games['pp_goals_against'].sum()
-        l10_pk_opps = l10_games['pk_opportunities'].sum()
-        l10_pk_pct = 1 - calc_eff(l10_pk_ga, l10_pk_opps, 1 - season_pk_pct)
-        
-        # Weighted Average
-        # pp_rating = (l10 * 0.4) + (l20 * 0.5) + (season * 0.1)
-        # Note: If < 10 games, use season for all. If < 20 games, use season for L20.
-        
-        w_l10 = 0.4
-        w_l20 = 0.5
-        w_sea = 0.1
-        
-        # Use Season Totals for Public Display consistency
-        # User expects these to match H-Ref / Official Stats
-        pp_rating = season_pp_pct * 100
-        pk_rating = season_pk_pct * 100
-        
-        # Store weighted for potentially internal use (optional)
-        # pp_rating_weighted = (season_pp_pct * 0.1) + (l20_pp_pct * 0.5) + (l10_pp_pct * 0.4)
-        # pk_rating_weighted = (season_pk_pct * 0.1) + (l20_pk_pct * 0.5) + (l10_pk_pct * 0.4)
 
         # xG-based PP/PK rates (per opportunity)
         # More stable than goal-based PP%/PK% — same xG philosophy used throughout the model.
@@ -210,6 +208,15 @@ def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_fil
             'xga_5v5_rating': xga_5v5_rating,
             'pp_rating': pp_rating,
             'pk_rating': pk_rating,
+            'pp_pct_actual': pp_pct_actual,
+            'pk_pct_actual': pk_pct_actual,
+            'pp_goals': int(pp_goals),
+            'pp_opportunities': int(pp_opps),
+            'pk_goals_against': int(pk_goals_ag),
+            'pk_opportunities': int(pk_opps),
+            'league_pp_pct': 100 * league_pp,
+            'st_prior_opps': ST_PRIOR_OPPS,
+            'season': SEASON_LABEL,
             'pp_xgf_per_opp': round(pp_xgf_per_opp, 4),
             'pk_xga_per_opp': round(pk_xga_per_opp, 4),
             'penalties_drawn_per_60': penalties_drawn_per_game,
@@ -217,108 +224,22 @@ def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_fil
             'games_played': games_played
         }
         
-    # --- Goalie Ratings (Multi-Season with Bayesian Regression) ---
-    #
-    # Phase 2B improvements:
-    #   1. Multi-season GSAx: weight current (50%) + prior (30%) + 2yr ago (20%)
-    #   2. Bayesian regression: heavier shrinkage for goalies with fewer starts
-    #   3. Output includes per-season breakdown for ML model consumption
+    # --- Roster changes since last season (C9 display: players added / lost) ---
+    if save_files:
+        try:
+            changes = roster_changes()
+        except Exception as e:  # network or data problem: ratings still ship
+            print(f"  [WARN] roster changes unavailable: {e}")
+            changes = {}
+        for team, ch in changes.items():
+            if team in team_ratings:
+                team_ratings[team]['roster_changes'] = ch
 
-    # Load historical gamestats for prior seasons
-    hist_path = os.path.join(SCRIPT_DIR, 'nhl_historical_gamestats.csv')
-    hist_df = None
-    if os.path.exists(hist_path):
-        hist_df = pd.read_csv(hist_path, low_memory=False)
-        hist_df['game_date'] = pd.to_datetime(hist_df['game_date'])
-
-    # Combine current + historical, deduplicate
-    df['game_date'] = pd.to_datetime(df['game_date'])
-    if hist_df is not None:
-        all_games_df = pd.concat([hist_df, df], ignore_index=True)
-        all_games_df = all_games_df.drop_duplicates(subset=['game_id', 'team'], keep='last')
-    else:
-        all_games_df = df.copy()
-
-    # Season start year from the game id (2026020001 -> 2026)
-    all_games_df['season'] = all_games_df['game_id'].map(season_of_game_id)
-    current_season = all_games_df['season'].max()
-
-    # Compute per-goalie, per-season GSAx
-    goalie_season_stats = {}  # {goalie: {season: {xga, ga, games}}}
-
-    for _, row in all_games_df.iterrows():
-        goalie = row['starting_goalie']
-        if pd.isna(goalie):
-            continue
-        season = row['season']
-        xga = pd.to_numeric(row.get('xG_against', 0), errors='coerce') or 0
-        ga = pd.to_numeric(row.get('goals_ag', 0), errors='coerce') or 0
-
-        if goalie not in goalie_season_stats:
-            goalie_season_stats[goalie] = {}
-        if season not in goalie_season_stats[goalie]:
-            goalie_season_stats[goalie][season] = {'xga': 0, 'ga': 0, 'games': 0}
-
-        goalie_season_stats[goalie][season]['xga'] += xga
-        goalie_season_stats[goalie][season]['ga'] += ga
-        goalie_season_stats[goalie][season]['games'] += 1
-
-    # Multi-season weighting & Bayesian regression
-    SEASON_WEIGHTS = {0: 0.50, 1: 0.30, 2: 0.20}  # current, prior, 2yr ago
-    BAYESIAN_PRIOR_STRENGTH = 20  # equivalent games of "average goalie" prior
-    # A goalie with 20 GP gets 50% shrinkage; 40 GP gets 33%; 60 GP gets 25%
-
-    goalie_ratings = {}
-
-    for goalie, seasons_data in goalie_season_stats.items():
-        # Compute weighted multi-season GSAx/game
-        weighted_gsax_sum = 0.0
-        weight_sum = 0.0
-        total_games_all = 0
-        current_season_games = 0
-        current_season_gsax = 0.0
-
-        for offset, weight in SEASON_WEIGHTS.items():
-            s = current_season - offset
-            if s in seasons_data:
-                stats = seasons_data[s]
-                gsax = stats['xga'] - stats['ga']
-                gp = stats['games']
-                if gp > 0:
-                    gsax_pg = gsax / gp
-                    weighted_gsax_sum += gsax_pg * weight
-                    weight_sum += weight
-                    total_games_all += gp
-                    if offset == 0:
-                        current_season_games = gp
-                        current_season_gsax = gsax
-
-        if weight_sum == 0 or total_games_all < 1:
-            continue
-
-        # Normalize weights to sum to 1 (handles missing seasons)
-        raw_gsax_per_game = weighted_gsax_sum / weight_sum
-
-        # Bayesian regression toward 0 (league-average goalie)
-        # More regression for fewer current-season starts
-        # Uses current season GP as the evidence strength, but never less than
-        # 30% of multi-season GP so early-season starts don't erase past seasons
-        evidence_games = max(current_season_games, total_games_all * 0.3)
-        regressed_gsax_per_game = (raw_gsax_per_game * evidence_games) / (evidence_games + BAYESIAN_PRIOR_STRENGTH)
-
-        goalie_ratings[goalie] = {
-            'gsax_per_game': regressed_gsax_per_game,
-            'gsax_per_game_raw': raw_gsax_per_game,
-            'gsax_total': current_season_gsax,
-            'games_played': current_season_games,
-            'games_played_all': total_games_all,
-            'seasons_tracked': len([s for s in seasons_data if seasons_data[s]['games'] > 0]),
-            'regression_factor': round(evidence_games / (evidence_games + BAYESIAN_PRIOR_STRENGTH), 3),
-        }
-
+    # --- Goalie Ratings (C6): the game model's own goalie state ---
+    goalie_ratings = compute_goalie_ratings(df)
     print(f"  Goalie ratings: {len(goalie_ratings)} goalies, "
           f"{sum(1 for g in goalie_ratings.values() if g['seasons_tracked'] > 1)} multi-season")
-        
+
     # Save to JSON
     if save_files:
         team_ratings_path = os.path.join(PUBLIC_DATA_DIR, 'team_ratings.json')
@@ -341,10 +262,198 @@ def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_fil
             json.dump(goalie_ratings, f, indent=4)
         print(f"Saved goalie_ratings.json to {pipeline_gr_path}")
 
-        # Compute and save team_stats_extended.json (splits by time/location/starter)
-        _save_extended_stats(df, PUBLIC_DATA_DIR)
+        # Compute and save team_stats_extended.json (splits by time/location/starter).
+        # Before the season's first game there is nothing to split: keep the file.
+        if len(df):
+            _save_extended_stats(df, PUBLIC_DATA_DIR)
+        else:
+            print("No games this season yet - team_stats_extended.json left unchanged")
 
     return team_ratings, goalie_ratings, league_xg_for, league_xg_5v5
+
+
+ROSTER_URL = 'https://api-web.nhle.com/v1/roster/{abbr}/{season_id}'
+ROSTER_MIN_GP_LOST = 10
+
+
+def _prev_player_stats():
+    """Last season's per-game skater rows (player_stats CSV, public/data or pipeline)."""
+    name = season_file('player_stats', PREV_START_YEAR)
+    for p in (os.path.join(PUBLIC_DATA_DIR, name), os.path.join(SCRIPT_DIR, name)):
+        if os.path.exists(p):
+            return pd.read_csv(p, low_memory=False)
+    return None
+
+
+def fetch_rosters(season_id, cache_dir=os.path.join(SCRIPT_DIR, 'cache'), max_age_h=20):
+    """{abbr: [{id, name, pos}]} from the NHL roster endpoint, cached for a day."""
+    import time
+    import requests
+    os.makedirs(cache_dir, exist_ok=True)
+    path = os.path.join(cache_dir, f'rosters_{season_id}.json')
+    if os.path.exists(path) and time.time() - os.path.getmtime(path) < max_age_h * 3600:
+        with open(path) as f:
+            return json.load(f)
+    teams = pd.read_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
+    out = {}
+    failures = 0
+    for abbr in teams['Team Tricode']:
+        if failures >= 3:          # API down: stop hammering it, fall back below
+            break
+        try:
+            r = requests.get(ROSTER_URL.format(abbr=abbr, season_id=season_id), timeout=20)
+        except Exception:
+            failures += 1
+            continue
+        if r.status_code != 200:
+            failures += r.status_code >= 500
+            continue
+        failures = 0
+        d = r.json()
+        out[abbr] = [{'id': int(p['id']),
+                      'name': f"{p['firstName']['default']} {p['lastName']['default']}",
+                      'pos': p.get('positionCode')}
+                     for grp in ('forwards', 'defensemen', 'goalies') for p in d.get(grp, [])]
+    if len(out) >= 30:
+        with open(path, 'w') as f:
+            json.dump(out, f)
+    elif os.path.exists(path):     # partial fetch: a stale complete cache beats a partial one
+        with open(path) as f:
+            return json.load(f)
+    return out
+
+
+PLAYER_URL = 'https://api-web.nhle.com/v1/player/{pid}/landing'
+
+
+def fetch_current_teams(ids, season_id, cache_dir=os.path.join(SCRIPT_DIR, 'cache'), max_age_h=20):
+    """{player_id: current team abbrev or None} from the player landing
+    endpoint (players on IR/LTIR are missing from the roster endpoint)."""
+    import time
+    import requests
+    path = os.path.join(cache_dir, f'current_teams_{season_id}.json')
+    cache = {}
+    if os.path.exists(path) and time.time() - os.path.getmtime(path) < max_age_h * 3600:
+        with open(path) as f:
+            cache = {int(k): v for k, v in json.load(f).items()}
+    consecutive_failures = 0
+    for pid in ids:
+        if pid in cache:
+            continue
+        if consecutive_failures >= 5:      # API unreachable: leave the rest unverified (not 'lost')
+            print(f"  [WARN] player landing lookups failing - {sum(1 for i in ids if i not in cache)} "
+                  "players left unverified")
+            break
+        ok = False
+        for attempt in range(4):
+            try:
+                r = requests.get(PLAYER_URL.format(pid=pid), timeout=10)
+            except Exception:
+                break
+            if r.status_code == 429:           # rate limited: back off, never cache a failure
+                time.sleep(2 * (attempt + 1))
+                continue
+            if r.status_code == 200:
+                d = r.json()
+                cache[pid] = d.get('currentTeamAbbrev') if d.get('isActive', True) else None
+                ok = True
+            elif r.status_code == 404:
+                ok = True                      # the API answered; this player simply has no page
+            break
+        consecutive_failures = 0 if ok else consecutive_failures + 1
+        time.sleep(0.25)
+    os.makedirs(cache_dir, exist_ok=True)
+    with open(path, 'w') as f:
+        json.dump({str(k): v for k, v in cache.items()}, f)
+    return cache
+
+
+def roster_changes(rosters=None, prev=None, current_teams=None):
+    """{Common Name: {'season', 'added': [...], 'lost': [...]}} comparing each
+    team's current NHL roster with the skaters/goalies who played for it last
+    season.  Lost = 10+ GP there last season and now with another team
+    ('to': abbrev) or with none ('to': None: unsigned or retired); players
+    still under the team's control but off the active roster are not lost."""
+    from season import SEASON_ID
+    rosters = fetch_rosters(SEASON_ID) if rosters is None else rosters
+    prev = _prev_player_stats() if prev is None else prev
+    if not rosters or prev is None or prev.empty:
+        return {}
+    teams = pd.read_csv(os.path.join(SCRIPT_DIR, 'nhl_teams.csv'))
+    abbr_to_name = dict(zip(teams['Team Tricode'], teams['Common Name']))
+    prev = prev[prev['game_id'].astype(str).str[4:6] == '02'].copy()
+    prev['points'] = pd.to_numeric(prev['points'], errors='coerce').fillna(0)
+    by = prev.groupby(['player_id', 'team']).agg(gp=('game_id', 'nunique'), points=('points', 'sum'),
+                                                 last=('game_id', 'max'), name=('name', 'last'),
+                                                 pos=('position', 'last')).reset_index()
+    last_team = by.sort_values('last').groupby('player_id').tail(1).set_index('player_id')['team'].to_dict()
+    now_team = {p['id']: abbr for abbr, ps in rosters.items() for p in ps}
+    candidates = {int(pid) for pid, t in by[by['gp'] >= ROSTER_MIN_GP_LOST][['player_id', 'team']].values
+                  if int(pid) not in now_team}
+    cur = fetch_current_teams(sorted(candidates), SEASON_ID) if current_teams is None else current_teams
+    out = {}
+    for abbr, ps in rosters.items():
+        ids = {p['id'] for p in ps}
+        added = []
+        for p in ps:
+            if last_team.get(p['id']) == abbr:
+                continue
+            row = by[(by['player_id'] == p['id'])]
+            added.append({'id': p['id'], 'name': p['name'], 'pos': p['pos'],
+                          'from': last_team.get(p['id']),
+                          'prev_gp': int(row['gp'].sum()), 'prev_points': int(row['points'].sum())})
+        mine = by[(by['team'] == abbr) & (by['gp'] >= ROSTER_MIN_GP_LOST)]
+        lost, unverified = [], 0
+        for r in mine.itertuples(index=False):
+            pid = int(r.player_id)
+            if pid in ids:
+                continue
+            if pid not in now_team and pid not in cur:
+                unverified += 1   # current team could not be confirmed: do not call him lost
+                continue
+            to = now_team.get(pid) or cur.get(pid)
+            if to == abbr:        # still his team (injured reserve, AHL assignment)
+                continue
+            lost.append({'id': pid, 'name': r.name, 'pos': r.pos, 'to': to,
+                         'prev_gp': int(r.gp), 'prev_points': int(r.points)})
+        key = lambda x: -x['prev_points']
+        out[abbr_to_name.get(abbr, abbr)] = {'season': SEASON_LABEL, 'source': 'NHL roster API vs last season',
+                                             'added': sorted(added, key=key), 'lost': sorted(lost, key=key),
+                                             'lost_unverified': unverified}
+    return out
+
+
+def compute_goalie_ratings(current_df=None, season=START_YEAR, pipeline_dir=SCRIPT_DIR):
+    """{goalie: rating row} for everyone who started in ``season`` or the two
+    before it, from features.FeatureState (same numbers the model uses)."""
+    import features as F
+    cur = current_df if current_df is not None and len(current_df) else None
+    games, _ = F.load_feature_games(pipeline_dir, current_df=cur)
+    st = F.build_state(games)
+    st.ensure_season_for_date(None, season=season)
+    label = f"{season}-{str(season + 1)[2:]}"
+    out = {}
+    for name, by in st.goalies.items():
+        recent = {s: v for s, v in by.items() if season - 2 <= s <= season and v.gp > 0}
+        if not recent:
+            continue
+        b = st.goalie_breakdown(name, season)
+        out[name] = {
+            'season': label,
+            'gsax_per_game': b['rating'],
+            'gsax_per_game_raw': b['raw'],
+            'gsax_per_game_season': b['cur_rate'] if b['gp_cur'] else None,
+            'gsax_per_game_prior': b['prior_rate'] if b['prior_gp_weighted'] else None,
+            'gsax_total': b['gsax_cur'],
+            'games_played': b['gp_cur'],
+            'games_played_all': int(sum(v.gp for v in recent.values())),
+            'games_by_season': {f"{s}-{str(s + 1)[2:]}": v.gp for s, v in sorted(recent.items())},
+            'seasons_tracked': len(recent),
+            'evidence_gp': b['evidence_gp'],
+            'w_current': b['w_cur'],
+            'regression_factor': round(b['shrink'], 3),
+        }
+    return out
 
 
 def _save_extended_stats(df, public_data_dir):

@@ -1,573 +1,351 @@
 #!/usr/bin/env python3
 """
-train_game_model.py — Train an ML model to predict NHL game outcomes.
+train_game_model.py - regularised logistic game model with an Elo prior (v5).
 
-Features are computed as EWMA rolling averages AS OF GAME DATE (no future leakage).
-The model learns which factors actually predict wins from data.
+Replaces the 24-feature XGBoost model (v4), which a 6-feature logistic
+regression beat in every walk-forward fold.  Features come from the shared
+``features.py`` builder (the same code the live predictor uses):
 
-v3 Changes:
-  - Feature pruning: 62 → 22 features (remove noise, keep signal)
-  - Prior-season carryover: EWMA carries across seasons naturally (no reset)
-  - Goalie GSAx bug fix: per-row home_away lookup instead of group-level
-  - Calibration: sigmoid (Platt scaling) instead of isotonic (less overfit)
+    d_xg_share, d_xg_share_all  5v5 / all-situations xG-share EWMAs, regressed
+                                50% toward the mean at each season boundary
+    d_elo                       goals + xG Elo, 50% offseason regression
+    d_goalie_gsax               starters' regressed GSAx/game (in-season xG
+                                normalisation, empty net excluded)
+    d_pts_pct                   shrunk points%  (pts/2 + 10) / (GP + 20)
+    h_b2b, a_b2b, d_rest        schedule
+    intercept                   the fitted home-ice advantage
+
+Evaluation is season-level walk-forward: for each test season S the model is
+trained on seasons < S only, with the L2 strength C chosen on an inner split
+(train < S-1, validate S-1).  Reported per fold: log loss, Brier, accuracy,
+mean predicted vs actual home win, calibration slope, early-season log loss
+(either team <= 15 GP), plus two baselines: the home-rate constant and the
+legacy XGB model (legacy_xgb.py) on the same games.
 
 Usage:
-    python3 pipeline/train_game_model.py
+    python3 train_game_model.py            # walk-forward + fit + save
+    python3 train_game_model.py --no-save  # evaluate only
+    python3 train_game_model.py --no-legacy  # skip the (slow) XGB baseline
 
 Output:
-    pipeline/game_model.pkl      — trained model (calibrated)
-    pipeline/game_model_meta.json — feature names, training stats, validation metrics
+    game_model.pkl, game_model_meta.json   (only when saving)
+    cache/walkforward_oos.csv              out-of-sample predictions per game
 """
 
-from season import season_file
-import os
-import sys
+from __future__ import annotations
+
+import argparse
 import json
+import os
 import pickle
+import sys
 import warnings
+from datetime import datetime, timezone
+
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import brier_score_loss, log_loss
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 warnings.filterwarnings('ignore')
 
-try:
-    from xgboost import XGBClassifier
-    USE_XGB = True
-    print("[MODEL] Using XGBoost")
-except ImportError:
-    from sklearn.ensemble import GradientBoostingClassifier
-    USE_XGB = False
-    print("[MODEL] XGBoost not available, using sklearn GradientBoosting")
-
-from sklearn.metrics import log_loss, brier_score_loss, accuracy_score
-from sklearn.calibration import CalibratedClassifierCV
-from scipy.stats import poisson
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# ─── Configuration ───────────────────────────────────────────────────────────
-EWMA_HALFLIFE = 12     # Games — heavier recency weighting
-MIN_GAMES = 5          # Minimum games before making reliable predictions (reduced from 10 — carryover helps early season)
-GOALIE_PRIOR_STRENGTH = 20  # Bayesian prior for goalie GSAx regression
-
-# ─── Data Loading ────────────────────────────────────────────────────────────
-
-def load_all_games():
-    """Load and combine historical + current season game data, deduplicated."""
-    hist_path = os.path.join(SCRIPT_DIR, 'nhl_historical_gamestats.csv')
-    curr_path = os.path.join(SCRIPT_DIR, season_file("gamestats"))
-
-    dfs = []
-    if os.path.exists(hist_path):
-        dfs.append(pd.read_csv(hist_path, low_memory=False))
-        print(f"[DATA] Historical: {len(dfs[-1])} rows")
-    if os.path.exists(curr_path):
-        dfs.append(pd.read_csv(curr_path, low_memory=False))
-        print(f"[DATA] Current season: {len(dfs[-1])} rows")
-
-    if not dfs:
-        raise FileNotFoundError("No game data found")
-
-    df = pd.concat(dfs, ignore_index=True)
-
-    # Deduplicate — keep latest version of each (game_id, team) pair
-    df = df.drop_duplicates(subset=['game_id', 'team'], keep='last')
-
-    df['game_date'] = pd.to_datetime(df['game_date'])
-    df['is_win'] = df['result'].isin(['RW', 'OTW', 'SOW']).astype(int)
-
-    # Derive season from game_date (season starts in October)
-    df['season'] = df['game_date'].apply(
-        lambda d: d.year if d.month >= 9 else d.year - 1
-    )
-
-    print(f"[DATA] Total: {len(df)} rows, {df['game_id'].nunique()} unique games")
-    print(f"[DATA] Seasons: {sorted(df['season'].unique())}")
-    return df
-
-
-# ─── Feature Engineering ─────────────────────────────────────────────────────
-
-def ewma_col(series, halflife):
-    """EWMA with exponential weighting — recent games matter more."""
-    return series.ewm(halflife=halflife, min_periods=1).mean()
-
-
-def compute_goalie_rolling_gsax(df):
-    """
-    Compute rolling GSAx per goalie across all their starts.
-    Returns a dict: game_id → home_away → {gsax_pg, goalie_gp, goalie_name}
-    Uses Bayesian regression: GSAx is shrunk toward 0 based on games played.
-    """
-    df = df.sort_values('game_date').copy()
-    for col in ['xG_against', 'goals_ag']:
-        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-
-    goalie_game_gsax = {}
-    goalie_cum = {}  # goalie → {'gsax': float, 'gp': int}
-
-    for _, row in df.iterrows():
-        goalie = row.get('starting_goalie')
-        if pd.isna(goalie):
-            continue
-        game_id = row['game_id']
-
-        if goalie not in goalie_cum:
-            goalie_cum[goalie] = {'gsax': 0.0, 'gp': 0}
-
-        # PRE-GAME feature: use cumulative stats BEFORE this game
-        cum = goalie_cum[goalie]
-        if cum['gp'] > 0:
-            raw_gsax_pg = cum['gsax'] / cum['gp']
-            regressed = (raw_gsax_pg * cum['gp']) / (cum['gp'] + GOALIE_PRIOR_STRENGTH)
-        else:
-            regressed = 0.0
-
-        if game_id not in goalie_game_gsax:
-            goalie_game_gsax[game_id] = {}
-        ha = row.get('home_away', '')
-        goalie_game_gsax[game_id][ha] = {
-            'gsax_pg': regressed,
-            'goalie_gp': cum['gp'],
-            'goalie_name': goalie,
-        }
-
-        # UPDATE cumulative AFTER recording the pre-game feature
-        game_gsax = row['xG_against'] - row['goals_ag']
-        cum['gsax'] += game_gsax
-        cum['gp'] += 1
-
-    return goalie_game_gsax
-
-
-def compute_team_features(df):
-    """
-    Compute pre-game features per team using EWMA on prior games.
-
-    v3: NO season boundary reset — EWMA carries across seasons naturally.
-    This provides prior-season carryover for early-season predictions.
-    With halflife=12, after 12 new-season games the prior has 50% weight,
-    after 24 games only 25% — a smooth transition.
-    """
-    df = df.sort_values(['team', 'game_date']).copy()
-
-    # Ensure numeric columns
-    numeric_cols = ['xG_for_5v5', 'xG_against_5v5', 'xG_for', 'xG_against',
-                    'goals_for', 'goals_ag',
-                    'pp_goals', 'pp_opportunities', 'pp_goals_against', 'pk_opportunities',
-                    'is_win']
-
-    for col in numeric_cols:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-
-    # Pre-compute rolling goalie GSAx for all games
-    print("[FEATURES] Computing rolling goalie GSAx...")
-    goalie_game_gsax = compute_goalie_rolling_gsax(df)
-
-    # Derive season for per-season PP/PK and season_win_rate
-    df['season'] = df['game_date'].apply(
-        lambda d: d.year if d.month >= 9 else d.year - 1
-    )
-
-    result_dfs = []
-
-    # Group by TEAM ONLY (no season reset) — enables prior-season carryover
-    for team, grp in df.groupby('team'):
-        grp = grp.sort_values('game_date').copy()
-
-        if len(grp) < 3:
-            continue
-
-        # ── EWMA features with shift(1) to prevent future leakage ──
-
-        # Core 5v5 xG rates (the gold standard of team quality)
-        grp['f_xgf_5v5'] = ewma_col(grp['xG_for_5v5'].shift(1), EWMA_HALFLIFE)
-        grp['f_xga_5v5'] = ewma_col(grp['xG_against_5v5'].shift(1), EWMA_HALFLIFE)
-
-        # Season win rate (expanding mean WITHIN each season — resets each year)
-        grp['f_season_win_rate'] = grp.groupby('season')['is_win'].apply(
-            lambda s: s.shift(1).expanding().mean()
-        ).reset_index(level=0, drop=True)
-
-        # PP/PK efficiency — cumulative within season (resets each year)
-        for season_val, sgrp_idx in grp.groupby('season').groups.items():
-            sgrp = grp.loc[sgrp_idx]
-            pp_goals_cum = sgrp['pp_goals'].shift(1).cumsum()
-            pp_opps_cum = sgrp['pp_opportunities'].shift(1).cumsum()
-            grp.loc[sgrp_idx, 'f_pp_pct'] = np.where(pp_opps_cum > 0, pp_goals_cum / pp_opps_cum, 0.20)
-
-            pk_ga_cum = sgrp['pp_goals_against'].shift(1).cumsum()
-            pk_opps_cum = sgrp['pk_opportunities'].shift(1).cumsum()
-            grp.loc[sgrp_idx, 'f_pk_pct'] = np.where(pk_opps_cum > 0, 1.0 - (pk_ga_cum / pk_opps_cum), 0.80)
-
-        # Rest days
-        grp['f_rest_days'] = grp['game_date'].diff().dt.days.fillna(3).clip(0, 7)
-
-        # Games played within season (resets each year — proxy for sample size)
-        grp['f_games_played'] = grp.groupby('season').cumcount() + 1
-
-        # ── Goalie GSAx — per-row home_away lookup (BUG FIX from v2) ──
-        gsax_vals = []
-        goalie_gp_vals = []
-        for _, row in grp.iterrows():
-            ha = row.get('home_away', '')
-            game_data = goalie_game_gsax.get(row['game_id'], {}).get(ha, {})
-            gsax_vals.append(game_data.get('gsax_pg', 0.0))
-            goalie_gp_vals.append(game_data.get('goalie_gp', 0))
-        grp['f_goalie_gsax'] = gsax_vals
-        grp['f_goalie_gp'] = goalie_gp_vals
-
-        result_dfs.append(grp)
-
-    return pd.concat(result_dfs, ignore_index=True)
-
-
-def _poisson_ot_prob(h_xgf, a_xgf):
-    """
-    Compute home OT win probability using data-driven OT/SO model.
-
-    Based on 5 seasons of NHL data (2021-2026, 1,424 OT+SO games):
-      - 70% of OT games end in 3v3 (team quality matters)
-      - 30% go to shootout (coin flip — 50.1% home win rate)
-      - 3v3: competing exponential blended with 53.6% historical base rate
-    """
-    OT_3V3_WEIGHT = 0.70
-    SO_WEIGHT = 0.30
-    HIST_HOME_OT_RATE = 0.536
-    SO_HOME_RATE = 0.50
-    EXPONENTIAL_WEIGHT = 0.60
-
-    if (h_xgf + a_xgf) > 0:
-        raw_exp = h_xgf / (h_xgf + a_xgf)
-    else:
-        raw_exp = 0.5
-
-    home_3v3 = EXPONENTIAL_WEIGHT * raw_exp + (1 - EXPONENTIAL_WEIGHT) * HIST_HOME_OT_RATE
-    return OT_3V3_WEIGHT * home_3v3 + SO_WEIGHT * SO_HOME_RATE
-
-
-def _poisson_home_win_prob(h_xgf, a_xgf, n_max=10):
-    """Full Poisson + OT model home win probability."""
-    prob_home_reg = 0.0
-    prob_away_reg = 0.0
-    prob_tie = 0.0
-
-    for h in range(n_max + 1):
-        for a in range(n_max + 1):
-            p = poisson.pmf(h, h_xgf) * poisson.pmf(a, a_xgf)
-            if h > a:
-                prob_home_reg += p
-            elif a > h:
-                prob_away_reg += p
-            else:
-                prob_tie += p
-
-    ot_frac = _poisson_ot_prob(h_xgf, a_xgf)
-    ot_frac = min(0.62, max(0.38, ot_frac))
-    return prob_home_reg + prob_tie * ot_frac
-
-
-def build_game_matrix(df_feat):
-    """Build one row per game from home-team perspective with matchup features.
-
-    v4: 24 features (was 22). Added Poisson-derived win probability and
-    estimated tie probability as features so the ML model can learn OT dynamics.
-    """
-
-    home = df_feat[df_feat['home_away'] == 'Home'].copy()
-    away = df_feat[df_feat['home_away'] == 'Away'].copy()
-
-    # Merge on game_id
-    merged = home.merge(away, on='game_id', suffixes=('_h', '_a'))
-    print(f"[FEATURES] Merged: {len(merged)} games")
-
-    features = pd.DataFrame()
-    features['game_id'] = merged['game_id']
-    features['game_date'] = merged['game_date_h']
-    features['season'] = merged['season_h']
-
-    # ── Per-team features (9 each × 2 sides = 18) ──
-    team_feat_keys = [
-        'f_xgf_5v5', 'f_xga_5v5',           # 5v5 xG (offensive + defensive quality)
-        'f_pp_pct', 'f_pk_pct',               # Special teams (repeatable, high-impact)
-        'f_goalie_gsax', 'f_goalie_gp',        # Goalie quality (Bayesian-regressed)
-        'f_rest_days',                         # Rest advantage
-        'f_season_win_rate',                   # Overall team quality
-        'f_games_played',                      # Sample size / early-season proxy
-    ]
-
-    for col in team_feat_keys:
-        features[f'h_{col}'] = merged[f'{col}_h'].astype(float)
-        features[f'a_{col}'] = merged[f'{col}_a'].astype(float)
-
-    # ── Differential features (3) ──
-    # xG net differential: THE single best predictor of team quality gap
-    features['d_xg_net'] = (features['h_f_xgf_5v5'] - features['h_f_xga_5v5']) - \
-                            (features['a_f_xgf_5v5'] - features['a_f_xga_5v5'])
-    # Rest differential
-    features['d_rest'] = features['h_f_rest_days'] - features['a_f_rest_days']
-    # Goalie quality differential
-    features['d_goalie_gsax'] = features['h_f_goalie_gsax'] - features['a_f_goalie_gsax']
-
-    # ── Matchup interaction (1) ──
-    # (home offense × away defense) / (away offense × home defense)
-    matchup_h = features['h_f_xgf_5v5'] * features['a_f_xga_5v5']
-    matchup_a = features['a_f_xgf_5v5'] * features['h_f_xga_5v5']
-    features['matchup_ratio'] = matchup_h / matchup_a.replace(0, 1)
-
-    # ── Poisson-derived OT features (2) ──
-    # Pre-computed Poisson win probability — gives the ML model a strong
-    # analytical prior to learn from, especially for OT-likely close games
-    features['poisson_home_wp'] = features.apply(
-        lambda r: _poisson_home_win_prob(
-            max(0.5, r['h_f_xgf_5v5']),
-            max(0.5, r['a_f_xgf_5v5'])
-        ), axis=1
-    )
-    # Estimated tie probability — tells the model how likely OT is for this matchup
-    # (close xG matchups → high tie prob → OT dynamics matter more)
-    features['poisson_tie_prob'] = features.apply(
-        lambda r: sum(
-            poisson.pmf(g, max(0.5, r['h_f_xgf_5v5'])) *
-            poisson.pmf(g, max(0.5, r['a_f_xgf_5v5']))
-            for g in range(11)
-        ), axis=1
-    )
-
-    # ── Target ──
-    features['home_win'] = merged['is_win_h'].astype(int)
-
-    # Select feature columns (everything except metadata and target)
-    meta_cols = ['game_id', 'game_date', 'season', 'home_win']
-    feature_cols = [c for c in features.columns if c not in meta_cols]
-
-    # Drop rows with NaN (early-season games)
-    before = len(features)
-    features = features.dropna(subset=feature_cols)
-    print(f"[FEATURES] Dropped {before - len(features)} rows, kept {len(features)} games")
-    print(f"[FEATURES] {len(feature_cols)} features: {feature_cols}")
-
-    return features, feature_cols
-
-
-# ─── Model Training ──────────────────────────────────────────────────────────
-
-def train_model(features, feature_cols):
-    """Train with time-series CV — train on older seasons, test on newer."""
-
-    features = features.sort_values('game_date').reset_index(drop=True)
-    X = features[feature_cols].values
-    y = features['home_win'].values
-    seasons = features['season'].values
-
-    unique_seasons = sorted(features['season'].unique())
-    print(f"[CV] Seasons available: {unique_seasons}")
-
-    cv_results = []
-
-    # Walk-forward validation: for each season, train on all prior seasons + test on that season
-    for i, test_season in enumerate(unique_seasons):
-        if i == 0:
-            continue  # Need at least 1 season to train on
-
-        train_mask = features['season'] < test_season
-        test_mask = features['season'] == test_season
-
-        X_train, y_train = X[train_mask], y[train_mask]
-        X_test, y_test = X[test_mask], y[test_mask]
-
-        if len(X_train) < 100 or len(X_test) < 100:
-            continue
-
-        # Train + calibrate on training data
-        raw_model = _make_model()
-        raw_model.fit(X_train, y_train)
-
-        # Calibrate with Platt scaling (sigmoid) — less overfit than isotonic
-        cal_model = CalibratedClassifierCV(raw_model, cv=5, method='sigmoid')
-        cal_model.fit(X_train, y_train)
-
-        y_proba = cal_model.predict_proba(X_test)[:, 1]
-        y_pred = (y_proba >= 0.5).astype(int)
-
-        ll = log_loss(y_test, y_proba)
-        bs = brier_score_loss(y_test, y_proba)
-        acc = accuracy_score(y_test, y_pred)
-        home_rate = y_test.mean()
-
-        # Also evaluate uncalibrated for comparison
-        y_proba_raw = raw_model.predict_proba(X_test)[:, 1]
-        ll_raw = log_loss(y_test, y_proba_raw)
-
-        cv_results.append({
-            'test_season': int(test_season),
-            'train_size': int(len(X_train)),
-            'test_size': int(len(X_test)),
-            'log_loss': float(ll),
-            'log_loss_raw': float(ll_raw),
-            'brier_score': float(bs),
-            'accuracy': float(acc),
-            'home_win_rate': float(home_rate)
-        })
-
-        print(f"  Season {test_season}-{test_season+1}: "
-              f"LL={ll:.4f} (raw={ll_raw:.4f}) BS={bs:.4f} Acc={acc:.1%} "
-              f"(train={len(X_train)}, test={len(X_test)}, home_wr={home_rate:.1%})")
-
-    # Chronological 75/25 holdout split
-    n = len(X)
-    split_idx = int(n * 0.75)
-
-    X_train_final, y_train_final = X[:split_idx], y[:split_idx]
-    X_val, y_val = X[split_idx:], y[split_idx:]
-
-    model_check = _make_model()
-    model_check.fit(X_train_final, y_train_final)
-
-    cal_check = CalibratedClassifierCV(model_check, cv=5, method='sigmoid')
-    cal_check.fit(X_train_final, y_train_final)
-
-    y_proba_val = cal_check.predict_proba(X_val)[:, 1]
-
-    holdout_ll = log_loss(y_val, y_proba_val)
-    holdout_acc = accuracy_score(y_val, (y_proba_val >= 0.5).astype(int))
-    holdout_bs = brier_score_loss(y_val, y_proba_val)
-
-    # Also raw for comparison
-    y_proba_val_raw = model_check.predict_proba(X_val)[:, 1]
-    holdout_ll_raw = log_loss(y_val, y_proba_val_raw)
-
-    print(f"\n  Holdout (75/25 split): LL={holdout_ll:.4f} (raw={holdout_ll_raw:.4f}) "
-          f"BS={holdout_bs:.4f} Acc={holdout_acc:.1%}")
-
-    # Train final model on ALL data
-    print(f"\n[TRAIN] Training final model on all {len(X)} games...")
-    final_model = _make_model()
-    final_model.fit(X, y)
-
-    # Calibrate with Platt scaling
-    print("[TRAIN] Platt scaling calibration (sigmoid, 5-fold)...")
-    cal_model = CalibratedClassifierCV(final_model, cv=5, method='sigmoid')
-    cal_model.fit(X, y)
-
-    # Feature importance
-    importances = final_model.feature_importances_
-    ranking = sorted(zip(feature_cols, importances.tolist()), key=lambda x: x[1], reverse=True)
-
-    print("\n[IMPORTANCE] Feature ranking:")
-    for feat, imp in ranking:
-        bar = '█' * int(imp * 100)
-        print(f"  {feat:30s} {imp:.4f} {bar}")
-
-    # Summary
-    if cv_results:
-        avg_ll = np.mean([r['log_loss'] for r in cv_results])
-        avg_bs = np.mean([r['brier_score'] for r in cv_results])
-        avg_acc = np.mean([r['accuracy'] for r in cv_results])
-    else:
-        avg_ll, avg_bs, avg_acc = holdout_ll, holdout_bs, holdout_acc
-
-    print(f"\n{'='*60}")
-    print(f"[RESULTS] Cross-Validation Averages:")
-    print(f"  Log Loss:    {avg_ll:.4f}")
-    print(f"  Brier Score: {avg_bs:.4f}")
-    print(f"  Accuracy:    {avg_acc:.1%}")
-    print(f"  Holdout LL:  {holdout_ll:.4f}")
-    print(f"{'='*60}")
-
-    return cal_model, final_model, cv_results, ranking, {
-        'holdout_log_loss': holdout_ll,
-        'holdout_accuracy': holdout_acc,
-        'holdout_brier': holdout_bs
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+
+import features as F  # noqa: E402
+
+MODEL_FAMILY = 'logit-elo'
+MODEL_GENERATION = 5
+C_GRID = (0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0)
+DEFAULT_C = 0.01         # prior choice when no validation season exists
+TEST_SEASONS = (2023, 2024, 2025)
+BURN_IN_GP = 20          # first season in the data has no prior: skip its first 20 GP
+EARLY_GP = 15            # "early season" = either team's game number <= 15
+
+MODEL_PATH = os.path.join(SCRIPT_DIR, 'game_model.pkl')
+META_PATH = os.path.join(SCRIPT_DIR, 'game_model_meta.json')
+OOS_PATH = os.path.join(F.CACHE_DIR, 'walkforward_oos.csv')
+
+
+# ─── Data ─────────────────────────────────────────────────────────────────────
+
+def build_matrix(current_df=None, use_raw_xg=True):
+    games, xg_source = F.load_feature_games(current_df=current_df, use_raw_xg=use_raw_xg)
+    M = F.build_training_matrix(games)
+    M['early'] = (M['team_game_number_h'] <= EARLY_GP) | (M['team_game_number_a'] <= EARLY_GP)
+    first = M['season'].min()
+    M['burn_in'] = (M['season'] == first) & ((M['h_gp'] < BURN_IN_GP) | (M['a_gp'] < BURN_IN_GP))
+    return M, xg_source
+
+
+# ─── Metrics ──────────────────────────────────────────────────────────────────
+
+def _clip(p):
+    return np.clip(np.asarray(p, dtype=float), 1e-6, 1 - 1e-6)
+
+
+def calibration_slope(y, p):
+    """Slope/intercept of a logistic recalibration of y on logit(p).
+    1.0 / 0.0 = perfectly calibrated; < 1 = overconfident."""
+    p = _clip(p)
+    z = np.log(p / (1 - p)).reshape(-1, 1)
+    lr = LogisticRegression(C=1e6).fit(z, y)
+    return float(lr.coef_[0][0]), float(lr.intercept_[0])
+
+
+def reliability(y, p, bins=10):
+    """10 equal-width bins on [0,1] of home-win probability: n, mean p, actual rate."""
+    y = np.asarray(y, dtype=float)
+    p = np.asarray(p, dtype=float)
+    edges = np.linspace(0, 1, bins + 1)
+    idx = np.clip(np.digitize(p, edges) - 1, 0, bins - 1)
+    out = []
+    for b in range(bins):
+        m = idx == b
+        out.append({'bin': b, 'lo': float(edges[b]), 'hi': float(edges[b + 1]), 'n': int(m.sum()),
+                    'mean_pred': float(p[m].mean()) if m.any() else None,
+                    'actual': float(y[m].mean()) if m.any() else None})
+    return out
+
+
+def reliability_ols_slope(y, p, bins=10):
+    """Weighted OLS slope of actual rate on mean prediction over populated bins."""
+    rows = [r for r in reliability(y, p, bins) if r['n'] > 0]
+    if len(rows) < 2:
+        return None
+    x = np.array([r['mean_pred'] for r in rows]); a = np.array([r['actual'] for r in rows])
+    w = np.array([r['n'] for r in rows], dtype=float)
+    xm, am = np.average(x, weights=w), np.average(a, weights=w)
+    return float(np.sum(w * (x - xm) * (a - am)) / np.sum(w * (x - xm) ** 2))
+
+
+def metrics(y, p):
+    y = np.asarray(y, dtype=int)
+    p = np.asarray(p, dtype=float)
+    if len(y) == 0:
+        return {'n': 0}
+    slope, icpt = calibration_slope(y, p) if len(set(y)) > 1 else (None, None)
+    return {
+        'n': int(len(y)),
+        'log_loss': float(log_loss(y, _clip(p), labels=[0, 1])),
+        'brier': float(brier_score_loss(y, p)),
+        'accuracy': float(np.mean((p >= 0.5) == (y == 1))),
+        'mean_pred_home': float(p.mean()),
+        'actual_home': float(y.mean()),
+        'calibration_slope': slope,
+        'calibration_intercept': icpt,
+        'reliability_slope': reliability_ols_slope(y, p),
     }
 
 
-def _make_model():
-    """Create a fresh model instance."""
-    if USE_XGB:
-        return XGBClassifier(
-            n_estimators=300,
-            max_depth=3,
-            learning_rate=0.03,
-            subsample=0.75,
-            colsample_bytree=0.80,    # Slightly higher — fewer features now
-            min_child_weight=10,
-            reg_alpha=0.5,
-            reg_lambda=2.0,
-            gamma=0.1,
-            random_state=42,
-            eval_metric='logloss',
-            verbosity=0
-        )
-    else:
-        return GradientBoostingClassifier(
-            n_estimators=300,
-            max_depth=3,
-            learning_rate=0.03,
-            subsample=0.75,
-            min_samples_leaf=15,
-            random_state=42
-        )
+# ─── Model ────────────────────────────────────────────────────────────────────
+
+def fit_logit(train: pd.DataFrame, cols, C):
+    m = make_pipeline(StandardScaler(), LogisticRegression(C=C, max_iter=1000))
+    m.fit(train[cols].values, train['home_win'].values)
+    return m
 
 
-# ─── Save ────────────────────────────────────────────────────────────────────
+def tune_C(train: pd.DataFrame, cols, grid=C_GRID, default=DEFAULT_C):
+    """Nested walk-forward choice of the L2 strength C using only ``train``.
 
-def save_model(cal_model, raw_model, feature_cols, cv_results, ranking, holdout):
-    model_path = os.path.join(SCRIPT_DIR, 'game_model.pkl')
-    meta_path = os.path.join(SCRIPT_DIR, 'game_model_meta.json')
-    raw_path = os.path.join(SCRIPT_DIR, 'game_model_raw.pkl')
+    Every season v in ``train`` that has an earlier season is a validation
+    season (fit on seasons < v).  Per-game log losses are pooled and the
+    one-standard-error rule picks the MOST regularised C whose pooled log loss
+    is within one paired SE of the best (Breiman et al.), which keeps probabilities
+    from being overconfident when a season's signal is weaker than usual.
+    With no validation season available the prior default C is used."""
+    seasons = sorted(train['season'].unique())
+    val_seasons = seasons[1:]
+    if not val_seasons:
+        return default, {}
+    per_c = {}
+    for C in grid:
+        losses = []
+        for v in val_seasons:
+            tr, va = train[train['season'] < v], train[train['season'] == v]
+            if len(tr) < 200 or len(va) == 0:
+                continue
+            p = _clip(fit_logit(tr, cols, C).predict_proba(va[cols].values)[:, 1])
+            yv = va['home_win'].values
+            losses.append(-(yv * np.log(p) + (1 - yv) * np.log(1 - p)))
+        if losses:
+            per_c[C] = np.concatenate(losses)
+    if not per_c:
+        return default, {}
+    means = {C: float(v.mean()) for C, v in per_c.items()}
+    best = min(means, key=means.get)
+    # Paired SE: the same games are scored under every C, so the noise that
+    # matters is in the per-game DIFFERENCE from the best C, not in the loss
+    # itself (whose SE, ~0.004, would make the rule pick an underfit model).
+    se_diff = {C: float((v - per_c[best]).std(ddof=1) / np.sqrt(len(v))) for C, v in per_c.items()}
+    chosen = min(C for C in per_c if means[C] - means[best] <= se_diff[C])
+    return chosen, {**means, 'best': best, 'se_paired': se_diff}
 
-    with open(model_path, 'wb') as f:
-        pickle.dump(cal_model, f)
-    with open(raw_path, 'wb') as f:
-        pickle.dump(raw_model, f)
+
+def walk_forward(M: pd.DataFrame, cols, test_seasons=TEST_SEASONS, C=None):
+    folds, oos = [], []
+    usable = M[~M['burn_in']]
+    for S in test_seasons:
+        tr, te = usable[usable['season'] < S], M[M['season'] == S]
+        if len(tr) < 200 or len(te) < 100:
+            continue
+        c_used, c_scores = (C, {}) if C is not None else tune_C(tr, cols)
+        model = fit_logit(tr, cols, c_used)
+        p = model.predict_proba(te[cols].values)[:, 1]
+        y = te['home_win'].values
+        home_const = float(tr['home_win'].mean())
+        e = te['early'].values
+        fold = {'test_season': int(S), 'C': c_used, 'train_n': int(len(tr)),
+                **metrics(y, p),
+                'early': metrics(y[e], p[e]),
+                'home_rate_baseline': {'rate': home_const,
+                                       'log_loss': float(log_loss(y, np.full(len(y), home_const), labels=[0, 1])),
+                                       'early_log_loss': float(log_loss(y[e], np.full(e.sum(), home_const), labels=[0, 1])) if e.any() else None},
+                'inner_C_scores': {str(k): v for k, v in c_scores.items()}}
+        folds.append(fold)
+        oos.append(pd.DataFrame({'game_id': te['game_id'].values, 'game_date': te['game_date'].values,
+                                 'season': S, 'home': te['home'].values, 'away': te['away'].values,
+                                 'home_win': y, 'p_model': p, 'early': e,
+                                 'home_goals': te['home_goals'].values, 'away_goals': te['away_goals'].values,
+                                 'decision': te['decision'].values, 'league_gpg': te['league_gpg'].values,
+                                 'game_type': te['game_type'].values}))
+    oos_df = pd.concat(oos, ignore_index=True) if oos else pd.DataFrame()
+    return folds, oos_df
+
+
+def pooled_early(oos: pd.DataFrame):
+    e = oos[oos['early']]
+    return metrics(e['home_win'].values, e['p_model'].values) if len(e) else {'n': 0}
+
+
+def explain_coefficients(model, cols):
+    """Raw-scale coefficients and the implied home-ice logit at equal teams."""
+    sc, lr = model.named_steps['standardscaler'], model.named_steps['logisticregression']
+    beta = lr.coef_[0] / sc.scale_
+    home_logit = float(lr.intercept_[0] - np.sum(lr.coef_[0] * sc.mean_ / sc.scale_))
+    return {c: float(b) for c, b in zip(cols, beta)}, home_logit
+
+
+# ─── Main ─────────────────────────────────────────────────────────────────────
+
+def model_version(training_date: datetime) -> str:
+    return f"{MODEL_FAMILY}-v{MODEL_GENERATION}-{training_date.strftime('%Y%m%d')}"
+
+
+def feature_params():
+    keys = ['XG_HALFLIFE', 'OFFSEASON_KEEP', 'PTS_PRIOR_GAMES', 'ELO_K', 'ELO_KX', 'ELO_HFA',
+            'ELO_OFFSEASON_REGRESSION', 'GOALIE_CUR_PRIOR_GP', 'GOALIE_SHRINK_GP', 'GOALIE_SEASON_DECAY',
+            'XG_NORM_PRIOR_GOALS', 'REST_CAP']
+    return {k: getattr(F, k) for k in keys}
+
+
+def train(cols=None, save=True, legacy=True, verbose=True, M=None, xg_source=None):
+    cols = list(cols or F.FEATURE_COLUMNS)
+    if M is None:
+        M, xg_source = build_matrix()
+    folds, oos = walk_forward(M, cols)
+    early = pooled_early(oos)
+
+    legacy_folds = None
+    if legacy:
+        try:
+            import contextlib
+            import io
+            import legacy_xgb
+            cwd = os.getcwd()
+            os.chdir(SCRIPT_DIR)
+            try:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    legacy_folds, legacy_oos = legacy_xgb.walk_forward()
+            finally:
+                os.chdir(cwd)
+            if len(legacy_oos):
+                oos = oos.merge(legacy_oos[['game_id', 'p_legacy']], on='game_id', how='left')
+                for f in folds:
+                    sub = oos[(oos['season'] == f['test_season']) & oos['p_legacy'].notna()]
+                    f['legacy_xgb_same_games'] = {
+                        'n': int(len(sub)),
+                        'log_loss': float(log_loss(sub['home_win'], _clip(sub['p_legacy']), labels=[0, 1])),
+                        'new_model_log_loss': float(log_loss(sub['home_win'], _clip(sub['p_model']), labels=[0, 1])),
+                    }
+                    lf = next((x for x in legacy_folds if x['test_season'] == f['test_season']), None)
+                    if lf:
+                        f['legacy_xgb'] = lf
+                    e = sub[sub['early']]
+                    if len(e):
+                        f['legacy_xgb_same_games']['early_log_loss'] = float(
+                            log_loss(e['home_win'], _clip(e['p_legacy']), labels=[0, 1]))
+        except Exception as ex:  # legacy baseline is informative only
+            print(f"[TRAIN] legacy XGB baseline failed: {ex}")
+
+    # Final model: C tuned on the most recent season, fit on everything usable.
+    usable = M[~M['burn_in']]
+    C_final, C_scores = tune_C(usable, cols)
+    final = fit_logit(usable, cols, C_final)
+    betas, home_logit = explain_coefficients(final, cols)
+    now = datetime.now(timezone.utc)
+
+    if verbose:
+        print(f"[TRAIN] xG source: {xg_source}; {len(M)} games; features {cols}")
+        for f in folds:
+            lg = f.get('legacy_xgb_same_games', {})
+            print(f"  {f['test_season']}: LL {f['log_loss']:.4f} (home-rate {f['home_rate_baseline']['log_loss']:.4f}"
+                  f"{', legacy XGB %.4f' % lg['log_loss'] if lg else ''}) Brier {f['brier']:.4f} acc {f['accuracy']:.3f} "
+                  f"mean {f['mean_pred_home']:.3f} vs {f['actual_home']:.3f} slope {f['calibration_slope']:.2f} "
+                  f"early LL {f['early'].get('log_loss', float('nan')):.4f} (n={f['early']['n']}) C={f['C']}")
+        print(f"  early pooled: LL {early.get('log_loss', float('nan')):.4f} n={early['n']}")
+        print(f"  final C={C_final}; home-ice logit {home_logit:.3f} (p={1 / (1 + np.exp(-home_logit)):.3f}); betas {betas}")
 
     meta = {
-        'feature_columns': feature_cols,
-        'training_date': datetime.now().isoformat(),
-        'ewma_halflife': EWMA_HALFLIFE,
-        'min_games': MIN_GAMES,
-        'cv_results': cv_results,
-        'holdout': holdout,
-        'avg_log_loss': float(np.mean([r['log_loss'] for r in cv_results])) if cv_results else holdout['holdout_log_loss'],
-        'avg_accuracy': float(np.mean([r['accuracy'] for r in cv_results])) if cv_results else holdout['holdout_accuracy'],
-        'feature_importance': [{'feature': f, 'importance': float(i)} for f, i in ranking],
-        'model_type': 'XGBoost' if USE_XGB else 'GradientBoosting',
-        'calibration': 'sigmoid_5fold'
+        'model_version': model_version(now),
+        'model_type': 'logistic_regression_l2',
+        'training_date': now.isoformat(),
+        'training_seasons': sorted(int(s) for s in usable['season'].unique()),
+        'n_train': int(len(usable)),
+        'feature_columns': cols,
+        'feature_params': feature_params(),
+        'xg_source': xg_source,
+        'game_types': list(F.NHL_GAME_TYPES),
+        'C': C_final,
+        'C_scores_latest_season': {str(k): v for k, v in C_scores.items()},
+        'coefficients_raw': betas,
+        'home_ice_logit': home_logit,
+        'home_ice_prob_equal_teams': float(1 / (1 + np.exp(-home_logit))),
+        'cv_results': folds,
+        'early_season_pooled': early,
+        'avg_log_loss': float(np.mean([f['log_loss'] for f in folds])) if folds else None,
+        'avg_accuracy': float(np.mean([f['accuracy'] for f in folds])) if folds else None,
+        'evaluation': ('season-level walk-forward: train on seasons < S, C tuned on S-1; '
+                       'early = either team game number <= %d' % EARLY_GP),
     }
+    if len(oos):
+        os.makedirs(F.CACHE_DIR, exist_ok=True)
+        oos.to_csv(OOS_PATH, index=False)
+    if save:
+        save_model(final, meta)
+    return final, meta, oos
 
+
+def save_model(model, meta, model_path=MODEL_PATH, meta_path=META_PATH):
+    payload = {'kind': 'logit-v5', 'model': model, 'feature_columns': meta['feature_columns'],
+               'model_version': meta['model_version']}
+    with open(model_path, 'wb') as f:
+        pickle.dump(payload, f)
     with open(meta_path, 'w') as f:
         json.dump(meta, f, indent=2, default=str)
+    print(f"[SAVE] {model_path}\n[SAVE] {meta_path}")
 
-    print(f"\n[SAVE] Model → {model_path}")
-    print(f"[SAVE] Meta  → {meta_path}")
-
-
-# ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
-    print("=" * 60)
-    print("NHL Game Outcome Model — Training Pipeline v3")
-    print("  Feature pruning (62→22), prior-season carryover,")
-    print("  goalie lookup fix, Platt calibration")
-    print("=" * 60)
-
-    df = load_all_games()
-
-    print("\n[FEATURES] Computing EWMA pre-game features (cross-season carryover)...")
-    df_feat = compute_team_features(df)
-
-    print("\n[FEATURES] Building game-level matchup matrix...")
-    features, feature_cols = build_game_matrix(df_feat)
-
-    print(f"\n[TRAIN] Training model with {len(feature_cols)} features...")
-    print(f"[TRAIN] Walk-forward cross-validation by season:\n")
-    cal_model, raw_model, cv_results, ranking, holdout = train_model(features, feature_cols)
-
-    save_model(cal_model, raw_model, feature_cols, cv_results, ranking, holdout)
-    print("\n✅ Training complete!")
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--no-save', action='store_true')
+    ap.add_argument('--no-legacy', action='store_true')
+    args = ap.parse_args()
+    train(save=not args.no_save, legacy=not args.no_legacy)
 
 
 if __name__ == '__main__':

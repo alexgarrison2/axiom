@@ -1,0 +1,90 @@
+{
+  "generated_at": "2026-09-30T04:48:05.512489+00:00",
+  "candidate_version": "logit-elo-v5-20260930",
+  "current_version": "logit-elo-v5-20260930",
+  "features": [
+    "d_xg_share",
+    "d_xg_share_all",
+    "d_elo",
+    "d_goalie_gsax",
+    "d_pts_pct",
+    "h_b2b",
+    "a_b2b",
+    "d_rest"
+  ],
+  "gates_passed": true,
+  "promoted": true,
+  "dry_run": false,
+  "checks": [
+    {
+      "check": "2023 fold log loss <= current + 0.0005",
+      "candidate": 0.6590777245212592,
+      "current": 0.6590777245212592,
+      "passed": true
+    },
+    {
+      "check": "2023 beats home-rate by >= 0.01",
+      "gain": 0.03196831029929914,
+      "passed": true
+    },
+    {
+      "check": "2024 fold log loss <= current + 0.0005",
+      "candidate": 0.6653669716293886,
+      "current": 0.6653669716293886,
+      "passed": true
+    },
+    {
+      "check": "2024 beats home-rate by >= 0.01",
+      "gain": 0.021375995999855846,
+      "passed": true
+    },
+    {
+      "check": "2025 fold log loss <= current + 0.0005",
+      "candidate": 0.6792766987125499,
+      "current": 0.6792766987125499,
+      "passed": true
+    },
+    {
+      "check": "2025 beats home-rate by >= 0.01",
+      "gain": 0.01422296903659348,
+      "passed": true
+    },
+    {
+      "check": "2025 calibration slope in [0.9, 1.1]",
+      "slope": 0.91917433370924,
+      "passed": true
+    }
+  ],
+  "candidate_folds": [
+    {
+      "test_season": 2023,
+      "n": 1399,
+      "log_loss": 0.6590777245212592,
+      "brier": 0.2336922303348667,
+      "accuracy": 0.6011436740528949,
+      "calibration_slope": 1.0053079794426183,
+      "mean_pred_home": 0.5200009274521876,
+      "actual_home": 0.5368120085775554
+    },
+    {
+      "test_season": 2024,
+      "n": 1206,
+      "log_loss": 0.6653669716293886,
+      "brier": 0.23663132139658763,
+      "accuracy": 0.5812603648424544,
+      "calibration_slope": 1.0916214142135148,
+      "mean_pred_home": 0.5302517148114171,
+      "actual_home": 0.5688225538971807
+    },
+    {
+      "test_season": 2025,
+      "n": 1394,
+      "log_loss": 0.6792766987125499,
+      "brier": 0.2432953500680533,
+      "accuracy": 0.539454806312769,
+      "calibration_slope": 0.91917433370924,
+      "mean_pred_home": 0.542824616582906,
+      "actual_home": 0.5193687230989957
+    }
+  ]
+}

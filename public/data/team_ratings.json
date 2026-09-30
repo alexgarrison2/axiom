@@ -1,482 +1,4746 @@
 {
-    "Panthers": {
-        "xgf_rating": 3.1153521096129726,
-        "xga_rating": 3.226728620039996,
-        "xgf_rolling": 3.128743482614051,
-        "xga_rolling": 3.363998554316838,
-        "xgf_5v5_rating": 2.1162164584994256,
-        "xga_5v5_rating": 2.26332771346715,
-        "pp_rating": 19.622641509433965,
-        "pk_rating": 80.52434456928839,
-        "pp_xgf_per_opp": 0.1752,
-        "pk_xga_per_opp": 0.1365,
-        "penalties_drawn_per_60": 3.231707317073171,
-        "penalties_taken_per_60": 3.2560975609756095,
-        "games_played": 82
+    "Avalanche": {
+        "xgf_rating": 3.389702322643511,
+        "xga_rating": 2.869658880607693,
+        "xgf_rolling": 3.389702322643511,
+        "xga_rolling": 2.869658880607693,
+        "xgf_5v5_rating": 2.4199738826736916,
+        "xga_5v5_rating": 2.0192090754308936,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8475768,
+                    "name": "Jaden Schwartz",
+                    "pos": "L",
+                    "from": "SEA",
+                    "prev_gp": 50,
+                    "prev_points": 26
+                },
+                {
+                    "id": 8482768,
+                    "name": "Fedor Svechkov",
+                    "pos": "C",
+                    "from": "NSH",
+                    "prev_gp": 70,
+                    "prev_points": 17
+                },
+                {
+                    "id": 8478454,
+                    "name": "Noah Juulsen",
+                    "pos": "D",
+                    "from": "PHI",
+                    "prev_gp": 52,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8482742,
+                    "name": "Zachary L'Heureux",
+                    "pos": "L",
+                    "from": "NSH",
+                    "prev_gp": 25,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8486171,
+                    "name": "T.J. Hughes",
+                    "pos": "R",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8477501,
+                    "name": "V. Nichushkin",
+                    "pos": "R",
+                    "to": "CBJ",
+                    "prev_gp": 72,
+                    "prev_points": 49
+                },
+                {
+                    "id": 8480835,
+                    "name": "J. Drury",
+                    "pos": "C",
+                    "to": "NSH",
+                    "prev_gp": 82,
+                    "prev_points": 27
+                },
+                {
+                    "id": 8478109,
+                    "name": "V. Olofsson",
+                    "pos": "L",
+                    "to": "VGK",
+                    "prev_gp": 60,
+                    "prev_points": 25
+                },
+                {
+                    "id": 8479525,
+                    "name": "R. Colton",
+                    "pos": "C",
+                    "to": "NSH",
+                    "prev_gp": 73,
+                    "prev_points": 24
+                },
+                {
+                    "id": 8479398,
+                    "name": "S. Girard",
+                    "pos": "D",
+                    "to": "PIT",
+                    "prev_gp": 40,
+                    "prev_points": 12
+                },
+                {
+                    "id": 8481641,
+                    "name": "J. Kiviranta",
+                    "pos": "L",
+                    "to": "DAL",
+                    "prev_gp": 51,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8482470,
+                    "name": "I. Solovyov",
+                    "pos": "D",
+                    "to": "PIT",
+                    "prev_gp": 16,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8483565,
+                    "name": "N. Blankenburg",
+                    "pos": "D",
+                    "to": "TOR",
+                    "prev_gp": 12,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8482072,
+                    "name": "J. Ahcan",
+                    "pos": "D",
+                    "to": "NSH",
+                    "prev_gp": 11,
+                    "prev_points": 2
+                }
+            ],
+            "lost_unverified": 0
+        }
     },
     "Blackhawks": {
-        "xgf_rating": 2.6375015861315463,
-        "xga_rating": 3.3120946463811576,
-        "xgf_rolling": 2.6358882236198076,
-        "xga_rolling": 3.371465893770896,
-        "xgf_5v5_rating": 1.8880303172458017,
-        "xga_5v5_rating": 2.548414722880173,
-        "pp_rating": 16.877637130801688,
-        "pk_rating": 83.40425531914893,
-        "pp_xgf_per_opp": 0.1347,
-        "pk_xga_per_opp": 0.1776,
-        "penalties_drawn_per_60": 2.8902439024390243,
-        "penalties_taken_per_60": 2.8658536585365852,
-        "games_played": 82
-    },
-    "Rangers": {
-        "xgf_rating": 2.8549326063235583,
-        "xga_rating": 3.157201378692359,
-        "xgf_rolling": 2.9169171607685906,
-        "xga_rolling": 3.1516334478182095,
-        "xgf_5v5_rating": 1.9826088279502696,
-        "xga_5v5_rating": 2.0753678938706246,
-        "pp_rating": 25.853658536585368,
-        "pk_rating": 79.59183673469387,
-        "pp_xgf_per_opp": 0.1876,
-        "pk_xga_per_opp": 0.1769,
-        "penalties_drawn_per_60": 2.5,
-        "penalties_taken_per_60": 2.9878048780487805,
-        "games_played": 82
-    },
-    "Penguins": {
-        "xgf_rating": 3.2144864983590384,
-        "xga_rating": 3.0405555005305738,
-        "xgf_rolling": 3.1749475099048077,
-        "xga_rolling": 3.0209192336016844,
-        "xgf_5v5_rating": 2.3139210876031764,
-        "xga_5v5_rating": 2.0898157802660475,
-        "pp_rating": 23.983739837398375,
-        "pk_rating": 81.27490039840637,
-        "pp_xgf_per_opp": 0.176,
-        "pk_xga_per_opp": 0.145,
-        "penalties_drawn_per_60": 2.7954545454545454,
-        "penalties_taken_per_60": 2.852272727272727,
-        "games_played": 88
-    },
-    "Kings": {
-        "xgf_rating": 2.9293443346884827,
-        "xga_rating": 2.9272716859965504,
-        "xgf_rolling": 2.908396902015081,
-        "xga_rolling": 2.9612785074201917,
-        "xgf_5v5_rating": 2.1036732469408266,
-        "xga_5v5_rating": 2.034133138069258,
-        "pp_rating": 17.22689075630252,
-        "pk_rating": 75.6,
-        "pp_xgf_per_opp": 0.1479,
-        "pk_xga_per_opp": 0.1494,
-        "penalties_drawn_per_60": 2.7674418604651163,
-        "penalties_taken_per_60": 2.9069767441860463,
-        "games_played": 86
-    },
-    "Avalanche": {
-        "xgf_rating": 3.493917785203212,
-        "xga_rating": 2.8659339455307635,
-        "xgf_rolling": 3.3793798838172684,
-        "xga_rolling": 2.9904310609909066,
-        "xgf_5v5_rating": 2.455946069584872,
-        "xga_5v5_rating": 1.8583409419308414,
-        "pp_rating": 17.627118644067796,
-        "pk_rating": 83.7037037037037,
-        "pp_xgf_per_opp": 0.1689,
-        "pk_xga_per_opp": 0.1525,
-        "penalties_drawn_per_60": 3.1052631578947367,
-        "penalties_taken_per_60": 2.8421052631578947,
-        "games_played": 95
-    },
-    "Maple Leafs": {
-        "xgf_rating": 2.7570437717333682,
-        "xga_rating": 3.8069191013656773,
-        "xgf_rolling": 2.5990119569408425,
-        "xga_rolling": 4.148097917291135,
-        "xgf_5v5_rating": 1.9695881398063495,
-        "xga_5v5_rating": 2.5651108319435534,
-        "pp_rating": 21.649484536082475,
-        "pk_rating": 80.80357142857143,
-        "pp_xgf_per_opp": 0.1731,
-        "pk_xga_per_opp": 0.208,
-        "penalties_drawn_per_60": 2.3658536585365852,
-        "penalties_taken_per_60": 2.731707317073171,
-        "games_played": 82
-    },
-    "Canadiens": {
-        "xgf_rating": 2.9615854944594195,
-        "xga_rating": 3.469057739047231,
-        "xgf_rolling": 2.7450791491832107,
-        "xga_rolling": 3.7103089647248564,
-        "xgf_5v5_rating": 2.0095913016152007,
-        "xga_5v5_rating": 2.3980243557618435,
-        "pp_rating": 24.149659863945576,
-        "pk_rating": 77.70700636942675,
-        "pp_xgf_per_opp": 0.1727,
-        "pk_xga_per_opp": 0.1887,
-        "penalties_drawn_per_60": 2.910891089108911,
-        "penalties_taken_per_60": 3.108910891089109,
-        "games_played": 101
-    },
-    "Capitals": {
-        "xgf_rating": 3.1733261611274326,
-        "xga_rating": 3.1867819654356455,
-        "xgf_rolling": 3.1201611667709854,
-        "xga_rolling": 3.1858555054521274,
-        "xgf_5v5_rating": 2.180050466214716,
-        "xga_5v5_rating": 2.253523741399218,
-        "pp_rating": 17.99163179916318,
-        "pk_rating": 80.0,
-        "pp_xgf_per_opp": 0.1665,
-        "pk_xga_per_opp": 0.1795,
-        "penalties_drawn_per_60": 2.9146341463414633,
-        "penalties_taken_per_60": 3.048780487804878,
-        "games_played": 82
-    },
-    "Bruins": {
-        "xgf_rating": 2.9645282597230853,
-        "xga_rating": 3.4013397304345343,
-        "xgf_rolling": 2.9139475202748613,
-        "xga_rolling": 3.530449300076006,
-        "xgf_5v5_rating": 2.0905315120333876,
-        "xga_5v5_rating": 2.239844429812328,
-        "pp_rating": 22.61904761904762,
-        "pk_rating": 78.11447811447812,
-        "pp_xgf_per_opp": 0.1726,
-        "pk_xga_per_opp": 0.1676,
-        "penalties_drawn_per_60": 2.8636363636363638,
-        "penalties_taken_per_60": 3.375,
-        "games_played": 88
-    },
-    "Oilers": {
-        "xgf_rating": 3.10743146579678,
-        "xga_rating": 3.0657623962209994,
-        "xgf_rolling": 2.995650924830373,
-        "xga_rolling": 3.0524177781115767,
-        "xgf_5v5_rating": 2.2512961476438784,
-        "xga_5v5_rating": 2.1544323890096324,
-        "pp_rating": 30.508474576271187,
-        "pk_rating": 76.06837606837607,
-        "pp_xgf_per_opp": 0.1953,
-        "pk_xga_per_opp": 0.183,
-        "penalties_drawn_per_60": 2.6818181818181817,
-        "penalties_taken_per_60": 2.659090909090909,
-        "games_played": 88
-    },
-    "Flames": {
-        "xgf_rating": 2.7071592925927117,
-        "xga_rating": 3.342039375391878,
-        "xgf_rolling": 2.612662938232636,
-        "xga_rolling": 3.4827445490616675,
-        "xgf_5v5_rating": 1.9387294077022434,
-        "xga_5v5_rating": 2.3978272448806033,
-        "pp_rating": 16.299559471365637,
-        "pk_rating": 80.24691358024691,
-        "pp_xgf_per_opp": 0.1419,
-        "pk_xga_per_opp": 0.1667,
-        "penalties_drawn_per_60": 2.768292682926829,
-        "penalties_taken_per_60": 2.9634146341463414,
-        "games_played": 82
-    },
-    "Golden Knights": {
-        "xgf_rating": 3.24188098872018,
-        "xga_rating": 2.855931856103588,
-        "xgf_rolling": 3.306366294636339,
-        "xga_rolling": 2.917303891212402,
-        "xgf_5v5_rating": 2.1852476338878954,
-        "xga_5v5_rating": 1.998789398360949,
-        "pp_rating": 24.398625429553263,
-        "pk_rating": 80.3921568627451,
-        "pp_xgf_per_opp": 0.1941,
-        "pk_xga_per_opp": 0.1561,
-        "penalties_drawn_per_60": 2.798076923076923,
-        "penalties_taken_per_60": 2.451923076923077,
-        "games_played": 104
-    },
-    "Sabres": {
-        "xgf_rating": 3.4223668185209366,
-        "xga_rating": 3.098019569865996,
-        "xgf_rolling": 3.5633484733678156,
-        "xga_rolling": 3.1044565038516114,
-        "xgf_5v5_rating": 2.3598083434283277,
-        "xga_5v5_rating": 2.119410385511417,
-        "pp_rating": 20.209059233449477,
-        "pk_rating": 80.66914498141264,
-        "pp_xgf_per_opp": 0.1755,
-        "pk_xga_per_opp": 0.1723,
-        "penalties_drawn_per_60": 3.0210526315789474,
-        "penalties_taken_per_60": 2.831578947368421,
-        "games_played": 95
-    },
-    "Red Wings": {
-        "xgf_rating": 2.9263086010494637,
-        "xga_rating": 3.206991391811492,
-        "xgf_rolling": 2.842492053724638,
-        "xga_rolling": 3.2903575948240955,
-        "xgf_5v5_rating": 1.9956376971759013,
-        "xga_5v5_rating": 2.3618881790024795,
-        "pp_rating": 22.857142857142858,
-        "pk_rating": 76.66666666666666,
-        "pp_xgf_per_opp": 0.1902,
-        "pk_xga_per_opp": 0.1751,
-        "penalties_drawn_per_60": 2.9878048780487805,
-        "penalties_taken_per_60": 2.5609756097560976,
-        "games_played": 82
-    },
-    "Lightning": {
-        "xgf_rating": 3.1700369388036855,
-        "xga_rating": 2.8502348069529155,
-        "xgf_rolling": 3.0349780252240994,
-        "xga_rolling": 2.8136912934670595,
-        "xgf_5v5_rating": 2.189674770968092,
-        "xga_5v5_rating": 1.9079123041466686,
-        "pp_rating": 20.973782771535582,
-        "pk_rating": 82.01438848920863,
-        "pp_xgf_per_opp": 0.1764,
-        "pk_xga_per_opp": 0.16,
+        "xgf_rating": 2.8291815475802085,
+        "xga_rating": 3.1734009221657473,
+        "xgf_rolling": 2.8291815475802085,
+        "xga_rolling": 3.1734009221657473,
+        "xgf_5v5_rating": 2.0145590256426096,
+        "xga_5v5_rating": 2.2892408336336683,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
         "penalties_drawn_per_60": 3.0,
-        "penalties_taken_per_60": 3.1235955056179776,
-        "games_played": 89
-    },
-    "Senators": {
-        "xgf_rating": 3.28748290030983,
-        "xga_rating": 3.0276551326134795,
-        "xgf_rolling": 3.3764367081366413,
-        "xga_rolling": 3.3058896900824,
-        "xgf_5v5_rating": 2.251153545553212,
-        "xga_5v5_rating": 1.9770673585010878,
-        "pp_rating": 23.021582733812952,
-        "pk_rating": 76.49402390438247,
-        "pp_xgf_per_opp": 0.1626,
-        "pk_xga_per_opp": 0.1366,
-        "penalties_drawn_per_60": 3.2325581395348837,
-        "penalties_taken_per_60": 2.9186046511627906,
-        "games_played": 86
-    },
-    "Flyers": {
-        "xgf_rating": 2.8669039466554245,
-        "xga_rating": 2.9336054843121913,
-        "xgf_rolling": 2.766421472416972,
-        "xga_rolling": 2.9995962328330488,
-        "xgf_5v5_rating": 1.9308083749368845,
-        "xga_5v5_rating": 2.0131780229513754,
-        "pp_rating": 14.814814814814813,
-        "pk_rating": 78.36879432624113,
-        "pp_xgf_per_opp": 0.1693,
-        "pk_xga_per_opp": 0.1661,
-        "penalties_drawn_per_60": 2.9347826086956523,
-        "penalties_taken_per_60": 3.0652173913043477,
-        "games_played": 92
-    },
-    "Islanders": {
-        "xgf_rating": 3.0899836832563343,
-        "xga_rating": 3.3482506211299565,
-        "xgf_rolling": 3.1441600207709457,
-        "xga_rolling": 3.380199716001174,
-        "xgf_5v5_rating": 2.178030215837332,
-        "xga_5v5_rating": 2.2831571306203244,
-        "pp_rating": 16.59751037344398,
-        "pk_rating": 80.56872037914692,
-        "pp_xgf_per_opp": 0.1522,
-        "pk_xga_per_opp": 0.1951,
-        "penalties_drawn_per_60": 2.9390243902439024,
-        "penalties_taken_per_60": 2.573170731707317,
-        "games_played": 82
-    },
-    "Hurricanes": {
-        "xgf_rating": 3.621412367202725,
-        "xga_rating": 2.73673400077725,
-        "xgf_rolling": 3.636370383072472,
-        "xga_rolling": 2.713700359519077,
-        "xgf_5v5_rating": 2.48934934145187,
-        "xga_5v5_rating": 1.9395552535729084,
-        "pp_rating": 23.322683706070286,
-        "pk_rating": 82.88590604026845,
-        "pp_xgf_per_opp": 0.168,
-        "pk_xga_per_opp": 0.143,
-        "penalties_drawn_per_60": 3.099009900990099,
-        "penalties_taken_per_60": 2.9504950495049505,
-        "games_played": 101
-    },
-    "Devils": {
-        "xgf_rating": 3.0784293043977615,
-        "xga_rating": 3.1167822413228485,
-        "xgf_rolling": 3.142341466658888,
-        "xga_rolling": 3.171875898528521,
-        "xgf_5v5_rating": 2.158318886668363,
-        "xga_5v5_rating": 2.3451580189362553,
-        "pp_rating": 21.951219512195124,
-        "pk_rating": 78.81773399014779,
-        "pp_xgf_per_opp": 0.1879,
-        "pk_xga_per_opp": 0.1645,
-        "penalties_drawn_per_60": 2.5,
-        "penalties_taken_per_60": 2.475609756097561,
-        "games_played": 82
-    },
-    "Blues": {
-        "xgf_rating": 3.0081284071723173,
-        "xga_rating": 2.934669979337363,
-        "xgf_rolling": 3.1450960870255567,
-        "xga_rolling": 2.9357436106274615,
-        "xgf_5v5_rating": 2.202312884175905,
-        "xga_5v5_rating": 2.1018756412710764,
-        "pp_rating": 17.75700934579439,
-        "pk_rating": 76.25570776255708,
-        "pp_xgf_per_opp": 0.1372,
-        "pk_xga_per_opp": 0.171,
-        "penalties_drawn_per_60": 2.6097560975609757,
-        "penalties_taken_per_60": 2.6707317073170733,
-        "games_played": 82
-    },
-    "Wild": {
-        "xgf_rating": 3.1026117022572786,
-        "xga_rating": 3.149783322633079,
-        "xgf_rolling": 3.076015343518819,
-        "xga_rolling": 3.273902868488712,
-        "xgf_5v5_rating": 2.0685783117470393,
-        "xga_5v5_rating": 2.188022070249491,
-        "pp_rating": 24.573378839590443,
-        "pk_rating": 76.32653061224491,
-        "pp_xgf_per_opp": 0.1606,
-        "pk_xga_per_opp": 0.1845,
-        "penalties_drawn_per_60": 3.150537634408602,
-        "penalties_taken_per_60": 2.6344086021505375,
-        "games_played": 93
-    },
-    "Predators": {
-        "xgf_rating": 2.9545198645724655,
-        "xga_rating": 3.2983241667794383,
-        "xgf_rolling": 2.983182883137604,
-        "xga_rolling": 3.3201826119614144,
-        "xgf_5v5_rating": 2.0234157540564808,
-        "xga_5v5_rating": 2.3822747551971184,
-        "pp_rating": 23.404255319148938,
-        "pk_rating": 81.70731707317074,
-        "pp_xgf_per_opp": 0.1618,
-        "pk_xga_per_opp": 0.1642,
-        "penalties_drawn_per_60": 2.8658536585365852,
         "penalties_taken_per_60": 3.0,
-        "games_played": 82
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8474141,
+                    "name": "Patrick Kane",
+                    "pos": "R",
+                    "from": "DET",
+                    "prev_gp": 67,
+                    "prev_points": 57
+                },
+                {
+                    "id": 8481524,
+                    "name": "Bowen Byram",
+                    "pos": "D",
+                    "from": "BUF",
+                    "prev_gp": 82,
+                    "prev_points": 42
+                },
+                {
+                    "id": 8474013,
+                    "name": "Ian Cole",
+                    "pos": "D",
+                    "from": "UTA",
+                    "prev_gp": 82,
+                    "prev_points": 23
+                },
+                {
+                    "id": 8482062,
+                    "name": "Cole Smith",
+                    "pos": "R",
+                    "from": "VGK",
+                    "prev_gp": 63,
+                    "prev_points": 12
+                },
+                {
+                    "id": 8478413,
+                    "name": "Jordan Greenway",
+                    "pos": "L",
+                    "from": "BUF",
+                    "prev_gp": 40,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8484390,
+                    "name": "Roman Kantserov",
+                    "pos": "R",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8481624,
+                    "name": "I. Mikheyev",
+                    "pos": "R",
+                    "to": "TBL",
+                    "prev_gp": 77,
+                    "prev_points": 36
+                },
+                {
+                    "id": 8477444,
+                    "name": "A. Burakovsky",
+                    "pos": "L",
+                    "to": "OTT",
+                    "prev_gp": 75,
+                    "prev_points": 33
+                },
+                {
+                    "id": 8481806,
+                    "name": "L. Crevier",
+                    "pos": "D",
+                    "to": "BUF",
+                    "prev_gp": 78,
+                    "prev_points": 25
+                },
+                {
+                    "id": 8476473,
+                    "name": "C. Murphy",
+                    "pos": "D",
+                    "to": "EDM",
+                    "prev_gp": 60,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8477450,
+                    "name": "J. Dickinson",
+                    "pos": "C",
+                    "to": "EDM",
+                    "prev_gp": 47,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8476891,
+                    "name": "M. Grzelcyk",
+                    "pos": "D",
+                    "to": "BUF",
+                    "prev_gp": 69,
+                    "prev_points": 12
+                },
+                {
+                    "id": 8473422,
+                    "name": "N. Foligno",
+                    "pos": "L",
+                    "to": "MIN",
+                    "prev_gp": 37,
+                    "prev_points": 11
+                },
+                {
+                    "id": 8482703,
+                    "name": "C. Dach",
+                    "pos": "C",
+                    "to": "EDM",
+                    "prev_gp": 53,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8478043,
+                    "name": "S. Lafferty",
+                    "pos": "C",
+                    "to": "FLA",
+                    "prev_gp": 29,
+                    "prev_points": 2
+                }
+            ],
+            "lost_unverified": 0
+        }
     },
     "Blue Jackets": {
-        "xgf_rating": 3.126312200201412,
-        "xga_rating": 2.9834667878699217,
-        "xgf_rolling": 3.099601346465279,
-        "xga_rolling": 2.8990515004459443,
-        "xgf_5v5_rating": 2.3149150994758187,
-        "xga_5v5_rating": 2.0684471969478464,
-        "pp_rating": 19.09547738693467,
-        "pk_rating": 76.01809954751131,
-        "pp_xgf_per_opp": 0.1647,
-        "pk_xga_per_opp": 0.1964,
-        "penalties_drawn_per_60": 2.426829268292683,
-        "penalties_taken_per_60": 2.6951219512195124,
-        "games_played": 82
-    },
-    "Jets": {
-        "xgf_rating": 2.840559702496277,
-        "xga_rating": 3.1294380693756363,
-        "xgf_rolling": 2.757276378814243,
-        "xga_rolling": 3.21447213972601,
-        "xgf_5v5_rating": 1.9992242083082663,
-        "xga_5v5_rating": 2.297127965284189,
-        "pp_rating": 18.91891891891892,
-        "pk_rating": 77.5330396475771,
-        "pp_xgf_per_opp": 0.1669,
-        "pk_xga_per_opp": 0.1533,
-        "penalties_drawn_per_60": 2.707317073170732,
-        "penalties_taken_per_60": 2.768292682926829,
-        "games_played": 82
-    },
-    "Stars": {
-        "xgf_rating": 3.0252825105831613,
-        "xga_rating": 2.824697038256259,
-        "xgf_rolling": 2.9497072097594326,
-        "xga_rolling": 2.8353302123278143,
-        "xgf_5v5_rating": 2.048466979970109,
-        "xga_5v5_rating": 1.8686368134713227,
-        "pp_rating": 30.566037735849054,
-        "pk_rating": 80.22388059701493,
-        "pp_xgf_per_opp": 0.1952,
-        "pk_xga_per_opp": 0.1581,
-        "penalties_drawn_per_60": 3.0113636363636362,
-        "penalties_taken_per_60": 3.0454545454545454,
-        "games_played": 88
-    },
-    "Mammoth": {
-        "xgf_rating": 3.142725971197212,
-        "xga_rating": 3.0955291154445344,
-        "xgf_rolling": 3.136809352039016,
-        "xga_rolling": 3.2048537971576736,
-        "xgf_5v5_rating": 2.2788089191945464,
-        "xga_5v5_rating": 2.136761403969887,
-        "pp_rating": 19.421487603305785,
-        "pk_rating": 78.03030303030303,
-        "pp_xgf_per_opp": 0.1703,
-        "pk_xga_per_opp": 0.1672,
-        "penalties_drawn_per_60": 2.75,
+        "xgf_rating": 3.1174714603062563,
+        "xga_rating": 3.0697094478964067,
+        "xgf_rolling": 3.1174714603062563,
+        "xga_rolling": 3.0697094478964067,
+        "xgf_5v5_rating": 2.2481415086477767,
+        "xga_5v5_rating": 2.1489354079806215,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
         "penalties_taken_per_60": 3.0,
-        "games_played": 88
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8482720,
+                    "name": "Matthew Knies",
+                    "pos": "L",
+                    "from": "TOR",
+                    "prev_gp": 79,
+                    "prev_points": 66
+                },
+                {
+                    "id": 8477501,
+                    "name": "Valeri Nichushkin",
+                    "pos": "R",
+                    "from": "COL",
+                    "prev_gp": 72,
+                    "prev_points": 49
+                },
+                {
+                    "id": 8482126,
+                    "name": "Emil Andrae",
+                    "pos": "D",
+                    "from": "PHI",
+                    "prev_gp": 61,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8477369,
+                    "name": "Carson Soucy",
+                    "pos": "D",
+                    "from": "NYI",
+                    "prev_gp": 76,
+                    "prev_points": 12
+                },
+                {
+                    "id": 8479066,
+                    "name": "Ryan Lomberg",
+                    "pos": "L",
+                    "from": "CGY",
+                    "prev_gp": 57,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8475660,
+                    "name": "Cam Talbot",
+                    "pos": "G",
+                    "from": "DET",
+                    "prev_gp": 81,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8480893,
+                    "name": "K. Marchenko",
+                    "pos": "R",
+                    "to": "TOR",
+                    "prev_gp": 76,
+                    "prev_points": 67
+                },
+                {
+                    "id": 8476432,
+                    "name": "B. Jenner",
+                    "pos": "C",
+                    "to": "WSH",
+                    "prev_gp": 67,
+                    "prev_points": 38
+                },
+                {
+                    "id": 8478975,
+                    "name": "M. Marchment",
+                    "pos": "L",
+                    "to": "SJS",
+                    "prev_gp": 39,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8477425,
+                    "name": "M. Wood",
+                    "pos": "L",
+                    "to": "TOR",
+                    "prev_gp": 54,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8476867,
+                    "name": "B. Gaunce",
+                    "pos": "C",
+                    "to": "BOS",
+                    "prev_gp": 25,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8482475,
+                    "name": "E. Chinakhov",
+                    "pos": "R",
+                    "to": "PIT",
+                    "prev_gp": 29,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8479944,
+                    "name": "Z. Aston-Reese",
+                    "pos": "L",
+                    "to": "PHI",
+                    "prev_gp": 27,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8474090,
+                    "name": "B. Smith",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 15,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8481178,
+                    "name": "E. Zamula",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 20,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8478007,
+                    "name": "E. Merzlikins",
+                    "pos": "G",
+                    "to": "TOR",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Blues": {
+        "xgf_rating": 2.9593535697641897,
+        "xga_rating": 2.994378430172685,
+        "xgf_rolling": 2.9593535697641897,
+        "xga_rolling": 2.994378430172685,
+        "xgf_5v5_rating": 2.1485437361267863,
+        "xga_5v5_rating": 2.1056957822424387,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8481580,
+                    "name": "Connor McMichael",
+                    "pos": "L",
+                    "from": "WSH",
+                    "prev_gp": 78,
+                    "prev_points": 46
+                },
+                {
+                    "id": 8482745,
+                    "name": "Mason McTavish",
+                    "pos": "C",
+                    "from": "ANA",
+                    "prev_gp": 75,
+                    "prev_points": 41
+                },
+                {
+                    "id": 8477527,
+                    "name": "Ross Johnston",
+                    "pos": "L",
+                    "from": "ANA",
+                    "prev_gp": 62,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8482111,
+                    "name": "Justin Barron",
+                    "pos": "D",
+                    "from": "NSH",
+                    "prev_gp": 52,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8478443,
+                    "name": "Brandon Carlo",
+                    "pos": "D",
+                    "from": "TOR",
+                    "prev_gp": 55,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8482784,
+                    "name": "Zach Dean",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8479346,
+                    "name": "Dillon Dube",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8484790,
+                    "name": "Adam Jiricek",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8479385,
+                    "name": "J. Kyrou",
+                    "pos": "R",
+                    "to": "WSH",
+                    "prev_gp": 72,
+                    "prev_points": 46
+                },
+                {
+                    "id": 8475753,
+                    "name": "J. Faulk",
+                    "pos": "D",
+                    "to": "DET",
+                    "prev_gp": 61,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8475170,
+                    "name": "B. Schenn",
+                    "pos": "C",
+                    "to": "NYI",
+                    "prev_gp": 61,
+                    "prev_points": 28
+                },
+                {
+                    "id": 8478472,
+                    "name": "M. Joseph",
+                    "pos": "R",
+                    "to": "EDM",
+                    "prev_gp": 39,
+                    "prev_points": 11
+                },
+                {
+                    "id": 8475760,
+                    "name": "N. Bjugstad",
+                    "pos": "C",
+                    "to": "NJD",
+                    "prev_gp": 35,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8477952,
+                    "name": "R. Fabbri",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 15,
+                    "prev_points": 4
+                },
+                {
+                    "id": 8482516,
+                    "name": "M. Kessel",
+                    "pos": "D",
+                    "to": "NYI",
+                    "prev_gp": 29,
+                    "prev_points": 3
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Bruins": {
+        "xgf_rating": 3.048366041306969,
+        "xga_rating": 3.163490084110335,
+        "xgf_rolling": 3.048366041306969,
+        "xga_rolling": 3.163490084110335,
+        "xgf_5v5_rating": 2.1292755170273843,
+        "xga_5v5_rating": 2.178994797214122,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8482175,
+                    "name": "JJ Peterka",
+                    "pos": "R",
+                    "from": "UTA",
+                    "prev_gp": 82,
+                    "prev_points": 47
+                },
+                {
+                    "id": 8478840,
+                    "name": "Will Borgen",
+                    "pos": "D",
+                    "from": "NYR",
+                    "prev_gp": 75,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8477365,
+                    "name": "Connor Clifton",
+                    "pos": "D",
+                    "from": "PIT",
+                    "prev_gp": 50,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8483017,
+                    "name": "Frederic Brunet",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8478042,
+                    "name": "V. Arvidsson",
+                    "pos": "L",
+                    "to": "DET",
+                    "prev_gp": 69,
+                    "prev_points": 54
+                },
+                {
+                    "id": 8479369,
+                    "name": "A. Peeke",
+                    "pos": "D",
+                    "to": "UTA",
+                    "prev_gp": 77,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8476914,
+                    "name": "J. Korpisalo",
+                    "pos": "G",
+                    "to": "NYR",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8479705,
+                    "name": "J. Viel",
+                    "pos": "L",
+                    "to": "TBL",
+                    "prev_gp": 10,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Canadiens": {
+        "xgf_rating": 3.1751695411625844,
+        "xga_rating": 3.1371294678812984,
+        "xgf_rolling": 3.1751695411625844,
+        "xga_rolling": 3.1371294678812984,
+        "xgf_5v5_rating": 2.1776394546716933,
+        "xga_5v5_rating": 2.1720490439505706,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8475184,
+                    "name": "Chris Kreider",
+                    "pos": "L",
+                    "from": "ANA",
+                    "prev_gp": 75,
+                    "prev_points": 50
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8475848,
+                    "name": "B. Gallagher",
+                    "pos": "R",
+                    "to": "VAN",
+                    "prev_gp": 77,
+                    "prev_points": 23
+                },
+                {
+                    "id": 8478104,
+                    "name": "S. Blais",
+                    "pos": "L",
+                    "to": "OTT",
+                    "prev_gp": 13,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8480813,
+                    "name": "J. Veleno",
+                    "pos": "C",
+                    "to": "NYR",
+                    "prev_gp": 61,
+                    "prev_points": 5
+                }
+            ],
+            "lost_unverified": 0
+        }
     },
     "Canucks": {
-        "xgf_rating": 2.5361682688790594,
-        "xga_rating": 3.5513986325928446,
-        "xgf_rolling": 2.3418455055379974,
-        "xga_rolling": 3.5678845461793403,
-        "xgf_5v5_rating": 1.800433592748733,
-        "xga_5v5_rating": 2.687883821980592,
-        "pp_rating": 22.07792207792208,
-        "pk_rating": 71.36563876651982,
-        "pp_xgf_per_opp": 0.1571,
-        "pk_xga_per_opp": 0.1692,
-        "penalties_drawn_per_60": 2.817073170731707,
-        "penalties_taken_per_60": 2.768292682926829,
-        "games_played": 82
-    },
-    "Sharks": {
-        "xgf_rating": 2.793104017470755,
-        "xga_rating": 3.062393632506069,
-        "xgf_rolling": 2.7445000962893507,
-        "xga_rolling": 2.979243246201871,
-        "xgf_5v5_rating": 2.086019031909843,
-        "xga_5v5_rating": 2.146425430475823,
-        "pp_rating": 21.176470588235293,
-        "pk_rating": 76.42276422764228,
-        "pp_xgf_per_opp": 0.152,
-        "pk_xga_per_opp": 0.1821,
-        "penalties_drawn_per_60": 3.1097560975609757,
+        "xgf_rating": 2.8804413017818487,
+        "xga_rating": 3.3317022480277805,
+        "xgf_rolling": 2.8804413017818487,
+        "xga_rolling": 3.3317022480277805,
+        "xgf_5v5_rating": 2.023296515619305,
+        "xga_5v5_rating": 2.3806888591660496,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
         "penalties_taken_per_60": 3.0,
-        "games_played": 82
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8475848,
+                    "name": "Brendan Gallagher",
+                    "pos": "R",
+                    "from": "MTL",
+                    "prev_gp": 77,
+                    "prev_points": 23
+                },
+                {
+                    "id": 8481032,
+                    "name": "Paul Cotter",
+                    "pos": "L",
+                    "from": "NJD",
+                    "prev_gp": 79,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8476467,
+                    "name": "Jamie Oleksiak",
+                    "pos": "D",
+                    "from": "SEA",
+                    "prev_gp": 78,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8474568,
+                    "name": "Luke Schenn",
+                    "pos": "D",
+                    "from": "BUF",
+                    "prev_gp": 50,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8478465,
+                    "name": "Guillaume Brisebois",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482447,
+                    "name": "Leevi Meril\u00e4inen",
+                    "pos": "G",
+                    "from": "OTT",
+                    "prev_gp": 46,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8475169,
+                    "name": "E. Kane",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 71,
+                    "prev_points": 31
+                },
+                {
+                    "id": 8478856,
+                    "name": "C. Garland",
+                    "pos": "R",
+                    "to": "CBJ",
+                    "prev_gp": 50,
+                    "prev_points": 26
+                },
+                {
+                    "id": 8480748,
+                    "name": "K. Sherwood",
+                    "pos": "L",
+                    "to": "SJS",
+                    "prev_gp": 44,
+                    "prev_points": 23
+                },
+                {
+                    "id": 8480800,
+                    "name": "Q. Hughes",
+                    "pos": "D",
+                    "to": "MIN",
+                    "prev_gp": 26,
+                    "prev_points": 23
+                },
+                {
+                    "id": 8477969,
+                    "name": "M. Pettersson",
+                    "pos": "D",
+                    "to": "NYR",
+                    "prev_gp": 82,
+                    "prev_points": 18
+                },
+                {
+                    "id": 8476927,
+                    "name": "T. Blueger",
+                    "pos": "C",
+                    "to": "TOR",
+                    "prev_gp": 35,
+                    "prev_points": 17
+                },
+                {
+                    "id": 8474574,
+                    "name": "T. Myers",
+                    "pos": "D",
+                    "to": "DAL",
+                    "prev_gp": 57,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8480058,
+                    "name": "P. Joseph",
+                    "pos": "D",
+                    "to": "CAR",
+                    "prev_gp": 31,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8480144,
+                    "name": "D. Kampf",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 38,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8481535,
+                    "name": "N. Hoglander",
+                    "pos": "L",
+                    "to": "NSH",
+                    "prev_gp": 38,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8480876,
+                    "name": "C. Douglas",
+                    "pos": "C",
+                    "to": "SEA",
+                    "prev_gp": 14,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8482117,
+                    "name": "L. Reichel",
+                    "pos": "L",
+                    "to": "BOS",
+                    "prev_gp": 14,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8480238,
+                    "name": "J. Patera",
+                    "pos": "G",
+                    "to": "BOS",
+                    "prev_gp": 16,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
     },
-    "Kraken": {
-        "xgf_rating": 2.5705530864722848,
-        "xga_rating": 3.373756685909536,
-        "xgf_rolling": 2.4247723949946796,
-        "xga_rolling": 3.545733395727249,
-        "xgf_5v5_rating": 1.9441663686937973,
-        "xga_5v5_rating": 2.430140900962856,
-        "pp_rating": 19.457013574660635,
-        "pk_rating": 71.83098591549295,
-        "pp_xgf_per_opp": 0.1511,
-        "pk_xga_per_opp": 0.1777,
-        "penalties_drawn_per_60": 2.6951219512195124,
-        "penalties_taken_per_60": 2.597560975609756,
-        "games_played": 82
+    "Capitals": {
+        "xgf_rating": 3.158685273368835,
+        "xga_rating": 3.1369291077227746,
+        "xgf_rolling": 3.158685273368835,
+        "xga_rolling": 3.1369291077227746,
+        "xgf_5v5_rating": 2.201860746766653,
+        "xga_5v5_rating": 2.189766846900609,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8477949,
+                    "name": "Alex Tuch",
+                    "pos": "R",
+                    "from": "BUF",
+                    "prev_gp": 79,
+                    "prev_points": 66
+                },
+                {
+                    "id": 8479385,
+                    "name": "Jordan Kyrou",
+                    "pos": "R",
+                    "from": "STL",
+                    "prev_gp": 72,
+                    "prev_points": 46
+                },
+                {
+                    "id": 8476432,
+                    "name": "Boone Jenner",
+                    "pos": "C",
+                    "from": "CBJ",
+                    "prev_gp": 67,
+                    "prev_points": 38
+                },
+                {
+                    "id": 8479576,
+                    "name": "Vincent Desharnais",
+                    "pos": "D",
+                    "from": "SJS",
+                    "prev_gp": 53,
+                    "prev_points": 7
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8474590,
+                    "name": "J. Carlson",
+                    "pos": "D",
+                    "to": "TBL",
+                    "prev_gp": 55,
+                    "prev_points": 46
+                },
+                {
+                    "id": 8481580,
+                    "name": "C. McMichael",
+                    "pos": "L",
+                    "to": "STL",
+                    "prev_gp": 78,
+                    "prev_points": 46
+                },
+                {
+                    "id": 8475343,
+                    "name": "N. Dowd",
+                    "pos": "C",
+                    "to": "VGK",
+                    "prev_gp": 55,
+                    "prev_points": 16
+                },
+                {
+                    "id": 8482148,
+                    "name": "H. Lapierre",
+                    "pos": "C",
+                    "to": "PIT",
+                    "prev_gp": 74,
+                    "prev_points": 16
+                },
+                {
+                    "id": 8477845,
+                    "name": "T. van Riemsdyk",
+                    "pos": "D",
+                    "to": "PIT",
+                    "prev_gp": 68,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8479520,
+                    "name": "B. Duhaime",
+                    "pos": "L",
+                    "to": "TOR",
+                    "prev_gp": 82,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8477947,
+                    "name": "S. Milano",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 31,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8480990,
+                    "name": "D. Chisholm",
+                    "pos": "D",
+                    "to": "NJD",
+                    "prev_gp": 26,
+                    "prev_points": 7
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Devils": {
+        "xgf_rating": 3.0397730219789167,
+        "xga_rating": 3.066235050407026,
+        "xgf_rolling": 3.0397730219789167,
+        "xga_rolling": 3.066235050407026,
+        "xgf_5v5_rating": 2.12233419515026,
+        "xga_5v5_rating": 2.2182675221612502,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8477511,
+                    "name": "Anthony Mantha",
+                    "pos": "R",
+                    "from": "PIT",
+                    "prev_gp": 81,
+                    "prev_points": 64
+                },
+                {
+                    "id": 8482146,
+                    "name": "Luke Evangelista",
+                    "pos": "R",
+                    "from": "NSH",
+                    "prev_gp": 81,
+                    "prev_points": 56
+                },
+                {
+                    "id": 8478542,
+                    "name": "Evan Rodrigues",
+                    "pos": "C",
+                    "from": "FLA",
+                    "prev_gp": 69,
+                    "prev_points": 31
+                },
+                {
+                    "id": 8480003,
+                    "name": "Jesper Boqvist",
+                    "pos": "C",
+                    "from": "FLA",
+                    "prev_gp": 73,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8480990,
+                    "name": "Declan Chisholm",
+                    "pos": "D",
+                    "from": "WSH",
+                    "prev_gp": 26,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8483695,
+                    "name": "Amadeus Lombardi",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482465,
+                    "name": "R\u00e9mi Poirier",
+                    "pos": "G",
+                    "from": "DAL",
+                    "prev_gp": 1,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8483495,
+                    "name": "S. Nemec",
+                    "pos": "D",
+                    "to": "CGY",
+                    "prev_gp": 68,
+                    "prev_points": 26
+                },
+                {
+                    "id": 8481032,
+                    "name": "P. Cotter",
+                    "pos": "L",
+                    "to": "VAN",
+                    "prev_gp": 79,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8476292,
+                    "name": "O. Palat",
+                    "pos": "L",
+                    "to": "NYI",
+                    "prev_gp": 51,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8476822,
+                    "name": "L. Glendening",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 52,
+                    "prev_points": 4
+                },
+                {
+                    "id": 8478841,
+                    "name": "C. White",
+                    "pos": "D",
+                    "to": "CBJ",
+                    "prev_gp": 23,
+                    "prev_points": 4
+                },
+                {
+                    "id": 8477996,
+                    "name": "J. Lammikko",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 24,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8479395,
+                    "name": "D. Cholowski",
+                    "pos": "D",
+                    "to": "NYR",
+                    "prev_gp": 17,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8483531,
+                    "name": "B. Halonen",
+                    "pos": "L",
+                    "to": "BOS",
+                    "prev_gp": 15,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8484958,
+                    "name": "M. Tsyplakov",
+                    "pos": "R",
+                    "to": "CGY",
+                    "prev_gp": 22,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8474149,
+                    "name": "E. Dadonov",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 24,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8474593,
+                    "name": "J. Markstrom",
+                    "pos": "G",
+                    "to": "FLA",
+                    "prev_gp": 74,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
     },
     "Ducks": {
-        "xgf_rating": 3.185099488204529,
-        "xga_rating": 3.204374444223716,
-        "xgf_rolling": 3.1400040884986473,
-        "xga_rolling": 3.1418727191763227,
-        "xgf_5v5_rating": 2.2114515956135765,
-        "xga_5v5_rating": 2.228634220804719,
-        "pp_rating": 20.74829931972789,
-        "pk_rating": 75.35211267605634,
-        "pp_xgf_per_opp": 0.1612,
-        "pk_xga_per_opp": 0.171,
-        "penalties_drawn_per_60": 3.127659574468085,
-        "penalties_taken_per_60": 3.021276595744681,
-        "games_played": 94
+        "xgf_rating": 3.1777299044447256,
+        "xga_rating": 3.19816406177496,
+        "xgf_rolling": 3.1777299044447256,
+        "xga_rolling": 3.19816406177496,
+        "xgf_5v5_rating": 2.2412014523293884,
+        "xga_5v5_rating": 2.230320648408008,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8478421,
+                    "name": "A.J. Greer",
+                    "pos": "L",
+                    "from": "FLA",
+                    "prev_gp": 78,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8475324,
+                    "name": "Nick Jensen",
+                    "pos": "D",
+                    "from": "OTT",
+                    "prev_gp": 61,
+                    "prev_points": 17
+                },
+                {
+                    "id": 8482408,
+                    "name": "Jeff Malott",
+                    "pos": "L",
+                    "from": "LAK",
+                    "prev_gp": 58,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8484262,
+                    "name": "Travis Mitchell",
+                    "pos": "D",
+                    "from": "NYI",
+                    "prev_gp": 9,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8481538,
+                    "name": "Judd Caulfield",
+                    "pos": "R",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482081,
+                    "name": "Sean Farrell",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8480468,
+                    "name": "James Hamblin",
+                    "pos": "L",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8486052,
+                    "name": "Nikita Klepov",
+                    "pos": "R",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8483479,
+                    "name": "Cruz Lucius",
+                    "pos": "R",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8485400,
+                    "name": "Roger McQueen",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8486072,
+                    "name": "Marcus Nordmark",
+                    "pos": "L",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8481461,
+                    "name": "Corey Schueneman",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8484859,
+                    "name": "Stian Solberg",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8480808,
+                    "name": "Jett Woo",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8476316,
+                    "name": "Laurent Brossoit",
+                    "pos": "G",
+                    "from": "SJS",
+                    "prev_gp": 6,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8475184,
+                    "name": "C. Kreider",
+                    "pos": "L",
+                    "to": "MTL",
+                    "prev_gp": 75,
+                    "prev_points": 50
+                },
+                {
+                    "id": 8482745,
+                    "name": "M. McTavish",
+                    "pos": "C",
+                    "to": "STL",
+                    "prev_gp": 75,
+                    "prev_points": 41
+                },
+                {
+                    "id": 8476885,
+                    "name": "J. Trouba",
+                    "pos": "D",
+                    "to": "SJS",
+                    "prev_gp": 81,
+                    "prev_points": 35
+                },
+                {
+                    "id": 8482803,
+                    "name": "O. Zellweger",
+                    "pos": "D",
+                    "to": "BUF",
+                    "prev_gp": 76,
+                    "prev_points": 22
+                },
+                {
+                    "id": 8474590,
+                    "name": "J. Carlson",
+                    "pos": "D",
+                    "to": "TBL",
+                    "prev_gp": 16,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8477527,
+                    "name": "R. Johnston",
+                    "pos": "L",
+                    "to": "STL",
+                    "prev_gp": 62,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8475462,
+                    "name": "R. Gudas",
+                    "pos": "D",
+                    "to": "FLA",
+                    "prev_gp": 56,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8479705,
+                    "name": "J. Viel",
+                    "pos": "L",
+                    "to": "TBL",
+                    "prev_gp": 35,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8476458,
+                    "name": "R. Strome",
+                    "pos": "C",
+                    "to": "CGY",
+                    "prev_gp": 33,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8478424,
+                    "name": "J. Harkins",
+                    "pos": "C",
+                    "to": "TBL",
+                    "prev_gp": 44,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8475852,
+                    "name": "P. Mrazek",
+                    "pos": "G",
+                    "to": null,
+                    "prev_gp": 33,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Flames": {
+        "xgf_rating": 2.920362914924563,
+        "xga_rating": 3.144572835892708,
+        "xgf_rolling": 2.920362914924563,
+        "xga_rolling": 3.144572835892708,
+        "xgf_5v5_rating": 2.066257496116424,
+        "xga_5v5_rating": 2.208195700363544,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8483495,
+                    "name": "Simon Nemec",
+                    "pos": "D",
+                    "from": "NJD",
+                    "prev_gp": 68,
+                    "prev_points": 26
+                },
+                {
+                    "id": 8478136,
+                    "name": "Jake Middleton",
+                    "pos": "D",
+                    "from": "MIN",
+                    "prev_gp": 75,
+                    "prev_points": 16
+                },
+                {
+                    "id": 8484958,
+                    "name": "Maxim Tsyplakov",
+                    "pos": "R",
+                    "from": "NJD",
+                    "prev_gp": 49,
+                    "prev_points": 4
+                },
+                {
+                    "id": 8484154,
+                    "name": "Jonathan Castagna",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8475172,
+                    "name": "N. Kadri",
+                    "pos": "C",
+                    "to": "COL",
+                    "prev_gp": 61,
+                    "prev_points": 41
+                },
+                {
+                    "id": 8476399,
+                    "name": "B. Coleman",
+                    "pos": "L",
+                    "to": "MIN",
+                    "prev_gp": 69,
+                    "prev_points": 35
+                },
+                {
+                    "id": 8478397,
+                    "name": "R. Andersson",
+                    "pos": "D",
+                    "to": "VGK",
+                    "prev_gp": 48,
+                    "prev_points": 30
+                },
+                {
+                    "id": 8477346,
+                    "name": "M. Weegar",
+                    "pos": "D",
+                    "to": "UTA",
+                    "prev_gp": 60,
+                    "prev_points": 21
+                },
+                {
+                    "id": 8476874,
+                    "name": "O. M\u00e4\u00e4tt\u00e4",
+                    "pos": "D",
+                    "to": "MIN",
+                    "prev_gp": 21,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8479066,
+                    "name": "R. Lomberg",
+                    "pos": "L",
+                    "to": "CBJ",
+                    "prev_gp": 57,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8478109,
+                    "name": "V. Olofsson",
+                    "pos": "L",
+                    "to": "VGK",
+                    "prev_gp": 18,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8481556,
+                    "name": "J. Beecher",
+                    "pos": "C",
+                    "to": "FLA",
+                    "prev_gp": 29,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8477993,
+                    "name": "J. Kirkland",
+                    "pos": "C",
+                    "to": "MIN",
+                    "prev_gp": 20,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8479402,
+                    "name": "J. Bean",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 16,
+                    "prev_points": 2
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Flyers": {
+        "xgf_rating": 3.0364093923592783,
+        "xga_rating": 2.9408171156571146,
+        "xgf_rolling": 3.0364093923592783,
+        "xga_rolling": 2.9408171156571146,
+        "xgf_5v5_rating": 2.0912494925519827,
+        "xga_5v5_rating": 2.0523334645570417,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8478569,
+                    "name": "Noel Acciari",
+                    "pos": "C",
+                    "from": "PIT",
+                    "prev_gp": 67,
+                    "prev_points": 25
+                },
+                {
+                    "id": 8481122,
+                    "name": "Simon Benoit",
+                    "pos": "D",
+                    "from": "TOR",
+                    "prev_gp": 73,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8479361,
+                    "name": "Joseph Woll",
+                    "pos": "G",
+                    "from": "TOR",
+                    "prev_gp": 60,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8481553,
+                    "name": "B. Brink",
+                    "pos": "R",
+                    "to": "MIN",
+                    "prev_gp": 55,
+                    "prev_points": 26
+                },
+                {
+                    "id": 8482126,
+                    "name": "E. Andrae",
+                    "pos": "D",
+                    "to": "CBJ",
+                    "prev_gp": 61,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8478454,
+                    "name": "N. Juulsen",
+                    "pos": "D",
+                    "to": "COL",
+                    "prev_gp": 52,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8479022,
+                    "name": "R. Abols",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 42,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8476822,
+                    "name": "L. Glendening",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 18,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8477903,
+                    "name": "G. Hathaway",
+                    "pos": "R",
+                    "to": "FLA",
+                    "prev_gp": 66,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8475235,
+                    "name": "N. Deslauriers",
+                    "pos": "L",
+                    "to": "CAR",
+                    "prev_gp": 24,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8481178,
+                    "name": "E. Zamula",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 13,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8481035,
+                    "name": "S. Ersson",
+                    "pos": "G",
+                    "to": "OTT",
+                    "prev_gp": 75,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Golden Knights": {
+        "xgf_rating": 3.1101212807311223,
+        "xga_rating": 2.9017383159802375,
+        "xgf_rolling": 3.1101212807311223,
+        "xga_rolling": 2.9017383159802375,
+        "xgf_5v5_rating": 2.193352845706902,
+        "xga_5v5_rating": 2.0500968637048924,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8478109,
+                    "name": "Victor Olofsson",
+                    "pos": "L",
+                    "from": "CGY",
+                    "prev_gp": 78,
+                    "prev_points": 31
+                },
+                {
+                    "id": 8478450,
+                    "name": "Parker Wotherspoon",
+                    "pos": "D",
+                    "from": "PIT",
+                    "prev_gp": 80,
+                    "prev_points": 30
+                },
+                {
+                    "id": 8483553,
+                    "name": "Marc Gatcomb",
+                    "pos": "C",
+                    "from": "NYI",
+                    "prev_gp": 49,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8484803,
+                    "name": "Trevor Connelly",
+                    "pos": "L",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8481604,
+                    "name": "P. Dorofeyev",
+                    "pos": "R",
+                    "to": "NYR",
+                    "prev_gp": 82,
+                    "prev_points": 64
+                },
+                {
+                    "id": 8475191,
+                    "name": "R. Smith",
+                    "pos": "R",
+                    "to": null,
+                    "prev_gp": 69,
+                    "prev_points": 26
+                },
+                {
+                    "id": 8478434,
+                    "name": "K. Kolesar",
+                    "pos": "R",
+                    "to": "DET",
+                    "prev_gp": 82,
+                    "prev_points": 17
+                },
+                {
+                    "id": 8481527,
+                    "name": "K. Korczak",
+                    "pos": "D",
+                    "to": "PIT",
+                    "prev_gp": 78,
+                    "prev_points": 16
+                },
+                {
+                    "id": 8477018,
+                    "name": "B. Hutton",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 55,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8476925,
+                    "name": "C. Sissons",
+                    "pos": "C",
+                    "to": "TOR",
+                    "prev_gp": 66,
+                    "prev_points": 11
+                },
+                {
+                    "id": 8476438,
+                    "name": "B. Saad",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 49,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8480727,
+                    "name": "Z. Whitecloud",
+                    "pos": "D",
+                    "to": "CGY",
+                    "prev_gp": 47,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8481133,
+                    "name": "C. Reinhardt",
+                    "pos": "L",
+                    "to": "FLA",
+                    "prev_gp": 44,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8482062,
+                    "name": "C. Smith",
+                    "pos": "R",
+                    "to": "CHI",
+                    "prev_gp": 21,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8481033,
+                    "name": "A. Schmid",
+                    "pos": "G",
+                    "to": "FLA",
+                    "prev_gp": 75,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Hurricanes": {
+        "xgf_rating": 3.3484833124657136,
+        "xga_rating": 2.9119799899342063,
+        "xgf_rolling": 3.3484833124657136,
+        "xga_rolling": 2.9119799899342063,
+        "xgf_5v5_rating": 2.3706051711970964,
+        "xga_5v5_rating": 2.0599867584254437,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8480051,
+                    "name": "Cayden Primeau",
+                    "pos": "G",
+                    "from": "TOR",
+                    "prev_gp": 14,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8475883,
+                    "name": "F. Andersen",
+                    "pos": "G",
+                    "to": "EDM",
+                    "prev_gp": 74,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Islanders": {
+        "xgf_rating": 3.051716306928113,
+        "xga_rating": 3.209066700876683,
+        "xgf_rolling": 3.051716306928113,
+        "xga_rolling": 3.209066700876683,
+        "xgf_5v5_rating": 2.1183095799575433,
+        "xga_5v5_rating": 2.235976922506662,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8481711,
+                    "name": "Matias Maccelli",
+                    "pos": "L",
+                    "from": "TOR",
+                    "prev_gp": 71,
+                    "prev_points": 39
+                },
+                {
+                    "id": 8479378,
+                    "name": "Logan Stanley",
+                    "pos": "D",
+                    "from": "BUF",
+                    "prev_gp": 76,
+                    "prev_points": 26
+                },
+                {
+                    "id": 8482516,
+                    "name": "Matthew Kessel",
+                    "pos": "D",
+                    "from": "STL",
+                    "prev_gp": 29,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8473575,
+                    "name": "Semyon Varlamov",
+                    "pos": "G",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8475314,
+                    "name": "A. Lee",
+                    "pos": "L",
+                    "to": "UTA",
+                    "prev_gp": 82,
+                    "prev_points": 42
+                },
+                {
+                    "id": 8477494,
+                    "name": "J. Drouin",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 55,
+                    "prev_points": 21
+                },
+                {
+                    "id": 8485702,
+                    "name": "M. Shabanov",
+                    "pos": "R",
+                    "to": "MIN",
+                    "prev_gp": 44,
+                    "prev_points": 18
+                },
+                {
+                    "id": 8483553,
+                    "name": "M. Gatcomb",
+                    "pos": "C",
+                    "to": "VGK",
+                    "prev_gp": 49,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8477369,
+                    "name": "C. Soucy",
+                    "pos": "D",
+                    "to": "CBJ",
+                    "prev_gp": 30,
+                    "prev_points": 4
+                },
+                {
+                    "id": 8480871,
+                    "name": "A. Boqvist",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 28,
+                    "prev_points": 4
+                },
+                {
+                    "id": 8484958,
+                    "name": "M. Tsyplakov",
+                    "pos": "R",
+                    "to": "CGY",
+                    "prev_gp": 27,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8479496,
+                    "name": "D. Rittich",
+                    "pos": "G",
+                    "to": "NJD",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Jets": {
+        "xgf_rating": 2.988907054490101,
+        "xga_rating": 3.0565388197457084,
+        "xgf_rolling": 2.988907054490101,
+        "xga_rolling": 3.0565388197457084,
+        "xgf_5v5_rating": 2.081437683661788,
+        "xga_5v5_rating": 2.1756820977768427,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8479983,
+                    "name": "Mario Ferraro",
+                    "pos": "D",
+                    "from": "SJS",
+                    "prev_gp": 82,
+                    "prev_points": 23
+                },
+                {
+                    "id": 8481030,
+                    "name": "Jack St. Ivany",
+                    "pos": "D",
+                    "from": "PIT",
+                    "prev_gp": 20,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8486025,
+                    "name": "Viggo Bj\u00f6rck",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482459,
+                    "name": "Tyrel Bauer",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8479973,
+                    "name": "Stuart Skinner",
+                    "pos": "G",
+                    "from": "PIT",
+                    "prev_gp": 81,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8483532,
+                    "name": "Clay Stevenson",
+                    "pos": "G",
+                    "from": "WSH",
+                    "prev_gp": 8,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8473604,
+                    "name": "J. Toews",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 82,
+                    "prev_points": 29
+                },
+                {
+                    "id": 8479378,
+                    "name": "L. Stanley",
+                    "pos": "D",
+                    "to": "NYI",
+                    "prev_gp": 59,
+                    "prev_points": 21
+                },
+                {
+                    "id": 8476871,
+                    "name": "T. Pearson",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 52,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8474679,
+                    "name": "G. Nyquist",
+                    "pos": "R",
+                    "to": null,
+                    "prev_gp": 51,
+                    "prev_points": 12
+                },
+                {
+                    "id": 8474568,
+                    "name": "L. Schenn",
+                    "pos": "D",
+                    "to": "VAN",
+                    "prev_gp": 46,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8480196,
+                    "name": "J. Bryson",
+                    "pos": "D",
+                    "to": "DET",
+                    "prev_gp": 15,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8476525,
+                    "name": "C. Miller",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 18,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8477480,
+                    "name": "E. Comrie",
+                    "pos": "G",
+                    "to": "SJS",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Kings": {
+        "xgf_rating": 3.024132206807375,
+        "xga_rating": 2.9548441994135617,
+        "xgf_rolling": 3.024132206807375,
+        "xga_rolling": 2.9548441994135617,
+        "xgf_5v5_rating": 2.1275968247728416,
+        "xga_5v5_rating": 2.060781080716339,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8475692,
+                    "name": "Mats Zuccarello",
+                    "pos": "R",
+                    "from": "MIN",
+                    "prev_gp": 59,
+                    "prev_points": 54
+                },
+                {
+                    "id": 8475287,
+                    "name": "Erik Haula",
+                    "pos": "L",
+                    "from": "NSH",
+                    "prev_gp": 81,
+                    "prev_points": 38
+                },
+                {
+                    "id": 8470621,
+                    "name": "Corey Perry",
+                    "pos": "R",
+                    "from": "TBL",
+                    "prev_gp": 72,
+                    "prev_points": 37
+                },
+                {
+                    "id": 8476979,
+                    "name": "Erik Gustafsson",
+                    "pos": "D",
+                    "from": "DET",
+                    "prev_gp": 2,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8471685,
+                    "name": "A. Kopitar",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 67,
+                    "prev_points": 38
+                },
+                {
+                    "id": 8483808,
+                    "name": "A. Kuzmenko",
+                    "pos": "L",
+                    "to": "PIT",
+                    "prev_gp": 52,
+                    "prev_points": 25
+                },
+                {
+                    "id": 8477998,
+                    "name": "W. Foegele",
+                    "pos": "L",
+                    "to": "OTT",
+                    "prev_gp": 47,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8482408,
+                    "name": "J. Malott",
+                    "pos": "L",
+                    "to": "ANA",
+                    "prev_gp": 58,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8476479,
+                    "name": "P. Danault",
+                    "pos": "C",
+                    "to": "MTL",
+                    "prev_gp": 30,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8478472,
+                    "name": "M. Joseph",
+                    "pos": "R",
+                    "to": "EDM",
+                    "prev_gp": 12,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8479421,
+                    "name": "J. Moverare",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 15,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Kraken": {
+        "xgf_rating": 2.872499427435133,
+        "xga_rating": 3.1448229044415834,
+        "xgf_rolling": 2.872499427435133,
+        "xga_rolling": 3.1448229044415834,
+        "xgf_5v5_rating": 2.038826570402791,
+        "xga_5v5_rating": 2.22593579481843,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8482713,
+                    "name": "Mackie Samoskevich",
+                    "pos": "R",
+                    "from": "FLA",
+                    "prev_gp": 77,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8480876,
+                    "name": "Curtis Douglas",
+                    "pos": "C",
+                    "from": "VAN",
+                    "prev_gp": 43,
+                    "prev_points": 4
+                },
+                {
+                    "id": 8485383,
+                    "name": "Jake O'Brien",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482866,
+                    "name": "Ville Ottavainen",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8480009,
+                    "name": "E. Tolvanen",
+                    "pos": "R",
+                    "to": "NYR",
+                    "prev_gp": 78,
+                    "prev_points": 36
+                },
+                {
+                    "id": 8475768,
+                    "name": "J. Schwartz",
+                    "pos": "L",
+                    "to": "COL",
+                    "prev_gp": 50,
+                    "prev_points": 26
+                },
+                {
+                    "id": 8476467,
+                    "name": "J. Oleksiak",
+                    "pos": "D",
+                    "to": "VAN",
+                    "prev_gp": 78,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8478975,
+                    "name": "M. Marchment",
+                    "pos": "L",
+                    "to": "SJS",
+                    "prev_gp": 29,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8481789,
+                    "name": "T. Kartye",
+                    "pos": "L",
+                    "to": "NYR",
+                    "prev_gp": 40,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8476899,
+                    "name": "M. Murray",
+                    "pos": "G",
+                    "to": null,
+                    "prev_gp": 16,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Lightning": {
+        "xgf_rating": 3.2203489259339326,
+        "xga_rating": 2.980713929721224,
+        "xgf_rolling": 3.2203489259339326,
+        "xga_rolling": 2.980713929721224,
+        "xgf_5v5_rating": 2.234159566618967,
+        "xga_5v5_rating": 2.064237016955373,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8474590,
+                    "name": "John Carlson",
+                    "pos": "D",
+                    "from": "ANA",
+                    "prev_gp": 71,
+                    "prev_points": 60
+                },
+                {
+                    "id": 8481624,
+                    "name": "Ilya Mikheyev",
+                    "pos": "R",
+                    "from": "CHI",
+                    "prev_gp": 77,
+                    "prev_points": 36
+                },
+                {
+                    "id": 8479705,
+                    "name": "Jeffrey Viel",
+                    "pos": "L",
+                    "from": "ANA",
+                    "prev_gp": 45,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8478424,
+                    "name": "Jansen Harkins",
+                    "pos": "C",
+                    "from": "ANA",
+                    "prev_gp": 44,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8483710,
+                    "name": "Dennis Hildeby",
+                    "pos": "G",
+                    "from": "TOR",
+                    "prev_gp": 38,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8478178,
+                    "name": "D. Raddysh",
+                    "pos": "D",
+                    "to": "TOR",
+                    "prev_gp": 73,
+                    "prev_points": 70
+                },
+                {
+                    "id": 8477416,
+                    "name": "O. Bjorkstrand",
+                    "pos": "R",
+                    "to": "NYR",
+                    "prev_gp": 80,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8477426,
+                    "name": "N. Paul",
+                    "pos": "L",
+                    "to": "TOR",
+                    "prev_gp": 51,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8470621,
+                    "name": "C. Perry",
+                    "pos": "R",
+                    "to": "LAK",
+                    "prev_gp": 22,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8482090,
+                    "name": "J. Finley",
+                    "pos": "C",
+                    "to": "STL",
+                    "prev_gp": 22,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8483398,
+                    "name": "D. Carlile",
+                    "pos": "D",
+                    "to": "PIT",
+                    "prev_gp": 42,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8480876,
+                    "name": "C. Douglas",
+                    "pos": "C",
+                    "to": "SEA",
+                    "prev_gp": 29,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8482070,
+                    "name": "M. Chaffee",
+                    "pos": "R",
+                    "to": "NYI",
+                    "prev_gp": 11,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8477992,
+                    "name": "J. Johansson",
+                    "pos": "G",
+                    "to": "OTT",
+                    "prev_gp": 79,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Mammoth": {
+        "xgf_rating": 3.126786829768729,
+        "xga_rating": 3.0134523688473402,
+        "xgf_rolling": 3.126786829768729,
+        "xga_rolling": 3.0134523688473402,
+        "xgf_5v5_rating": 2.2286297290647665,
+        "xga_5v5_rating": 2.109062489864103,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8476389,
+                    "name": "Vincent Trocheck",
+                    "pos": "C",
+                    "from": "NYR",
+                    "prev_gp": 67,
+                    "prev_points": 53
+                },
+                {
+                    "id": 8475314,
+                    "name": "Anders Lee",
+                    "pos": "L",
+                    "from": "NYI",
+                    "prev_gp": 82,
+                    "prev_points": 42
+                },
+                {
+                    "id": 8479369,
+                    "name": "Andrew Peeke",
+                    "pos": "D",
+                    "from": "BOS",
+                    "prev_gp": 77,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8482657,
+                    "name": "Sebastian Cossa",
+                    "pos": "G",
+                    "from": "DET",
+                    "prev_gp": 1,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8482175,
+                    "name": "J. Peterka",
+                    "pos": "R",
+                    "to": "BOS",
+                    "prev_gp": 82,
+                    "prev_points": 47
+                },
+                {
+                    "id": 8480434,
+                    "name": "S. Durzi",
+                    "pos": "D",
+                    "to": "NYR",
+                    "prev_gp": 60,
+                    "prev_points": 27
+                },
+                {
+                    "id": 8474013,
+                    "name": "I. Cole",
+                    "pos": "D",
+                    "to": "CHI",
+                    "prev_gp": 82,
+                    "prev_points": 23
+                },
+                {
+                    "id": 8477021,
+                    "name": "A. Kerfoot",
+                    "pos": "C",
+                    "to": "NSH",
+                    "prev_gp": 34,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8476874,
+                    "name": "O. M\u00e4\u00e4tt\u00e4",
+                    "pos": "D",
+                    "to": "MIN",
+                    "prev_gp": 22,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8477970,
+                    "name": "V. Vanecek",
+                    "pos": "G",
+                    "to": "NYI",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Maple Leafs": {
+        "xgf_rating": 2.983988734685087,
+        "xga_rating": 3.2928981999297084,
+        "xgf_rolling": 2.983988734685087,
+        "xga_rolling": 3.2928981999297084,
+        "xgf_5v5_rating": 2.1035472356583904,
+        "xga_5v5_rating": 2.2987732101137603,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8478178,
+                    "name": "Darren Raddysh",
+                    "pos": "D",
+                    "from": "TBL",
+                    "prev_gp": 73,
+                    "prev_points": 70
+                },
+                {
+                    "id": 8480893,
+                    "name": "Kirill Marchenko",
+                    "pos": "R",
+                    "from": "CBJ",
+                    "prev_gp": 76,
+                    "prev_points": 67
+                },
+                {
+                    "id": 8478458,
+                    "name": "Jack Roslovic",
+                    "pos": "C",
+                    "from": "EDM",
+                    "prev_gp": 69,
+                    "prev_points": 36
+                },
+                {
+                    "id": 8483565,
+                    "name": "Nick Blankenburg",
+                    "pos": "D",
+                    "from": "COL",
+                    "prev_gp": 61,
+                    "prev_points": 24
+                },
+                {
+                    "id": 8476927,
+                    "name": "Teddy Blueger",
+                    "pos": "C",
+                    "from": "VAN",
+                    "prev_gp": 35,
+                    "prev_points": 17
+                },
+                {
+                    "id": 8477426,
+                    "name": "Nick Paul",
+                    "pos": "L",
+                    "from": "TBL",
+                    "prev_gp": 51,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8476925,
+                    "name": "Colton Sissons",
+                    "pos": "C",
+                    "from": "VGK",
+                    "prev_gp": 66,
+                    "prev_points": 11
+                },
+                {
+                    "id": 8479520,
+                    "name": "Brandon Duhaime",
+                    "pos": "L",
+                    "from": "WSH",
+                    "prev_gp": 82,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8479772,
+                    "name": "Zack MacEwen",
+                    "pos": "R",
+                    "from": "NJD",
+                    "prev_gp": 3,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8486067,
+                    "name": "Gavin McKenna",
+                    "pos": "L",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8475683,
+                    "name": "Sergei Bobrovsky",
+                    "pos": "G",
+                    "from": "FLA",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8482720,
+                    "name": "M. Knies",
+                    "pos": "L",
+                    "to": "CBJ",
+                    "prev_gp": 79,
+                    "prev_points": 66
+                },
+                {
+                    "id": 8481711,
+                    "name": "M. Maccelli",
+                    "pos": "L",
+                    "to": "NYI",
+                    "prev_gp": 71,
+                    "prev_points": 39
+                },
+                {
+                    "id": 8481582,
+                    "name": "N. Robertson",
+                    "pos": "L",
+                    "to": "PIT",
+                    "prev_gp": 78,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8482259,
+                    "name": "B. McMann",
+                    "pos": "C",
+                    "to": "SEA",
+                    "prev_gp": 60,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8478462,
+                    "name": "N. Roy",
+                    "pos": "C",
+                    "to": "COL",
+                    "prev_gp": 59,
+                    "prev_points": 20
+                },
+                {
+                    "id": 8478904,
+                    "name": "S. Lorentz",
+                    "pos": "C",
+                    "to": "CBJ",
+                    "prev_gp": 71,
+                    "prev_points": 18
+                },
+                {
+                    "id": 8476872,
+                    "name": "S. Laughton",
+                    "pos": "C",
+                    "to": "LAK",
+                    "prev_gp": 43,
+                    "prev_points": 12
+                },
+                {
+                    "id": 8475714,
+                    "name": "C. Jarnkrok",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 56,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8478443,
+                    "name": "B. Carlo",
+                    "pos": "D",
+                    "to": "STL",
+                    "prev_gp": 55,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8481122,
+                    "name": "S. Benoit",
+                    "pos": "D",
+                    "to": "PHI",
+                    "prev_gp": 73,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8479361,
+                    "name": "J. Woll",
+                    "pos": "G",
+                    "to": "PHI",
+                    "prev_gp": 60,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8480051,
+                    "name": "C. Primeau",
+                    "pos": "G",
+                    "to": "CAR",
+                    "prev_gp": 14,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8483710,
+                    "name": "D. Hildeby",
+                    "pos": "G",
+                    "to": "TBL",
+                    "prev_gp": 38,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Oilers": {
+        "xgf_rating": 3.1728161998872255,
+        "xga_rating": 3.0717192111304663,
+        "xgf_rolling": 3.1728161998872255,
+        "xga_rolling": 3.0717192111304663,
+        "xgf_5v5_rating": 2.25165725535474,
+        "xga_5v5_rating": 2.1871022763628574,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8478854,
+                    "name": "Ryan Shea",
+                    "pos": "D",
+                    "from": "PIT",
+                    "prev_gp": 80,
+                    "prev_points": 35
+                },
+                {
+                    "id": 8482166,
+                    "name": "Shakir Mukhamadullin",
+                    "pos": "D",
+                    "from": "SJS",
+                    "prev_gp": 50,
+                    "prev_points": 12
+                },
+                {
+                    "id": 8478472,
+                    "name": "Mathieu Joseph",
+                    "pos": "R",
+                    "from": "LAK",
+                    "prev_gp": 51,
+                    "prev_points": 11
+                },
+                {
+                    "id": 8480029,
+                    "name": "Alex Formenton",
+                    "pos": "L",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8486161,
+                    "name": "Owen Michaels",
+                    "pos": "R",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8475883,
+                    "name": "Frederik Andersen",
+                    "pos": "G",
+                    "from": "CAR",
+                    "prev_gp": 74,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482221,
+                    "name": "Devon Levi",
+                    "pos": "G",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8478458,
+                    "name": "J. Roslovic",
+                    "pos": "C",
+                    "to": "TOR",
+                    "prev_gp": 69,
+                    "prev_points": 36
+                },
+                {
+                    "id": 8477498,
+                    "name": "D. Nurse",
+                    "pos": "D",
+                    "to": "SJS",
+                    "prev_gp": 82,
+                    "prev_points": 24
+                },
+                {
+                    "id": 8474641,
+                    "name": "A. Henrique",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 65,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8478233,
+                    "name": "A. Mangiapane",
+                    "pos": "L",
+                    "to": "CHI",
+                    "prev_gp": 52,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8477508,
+                    "name": "C. Lazar",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 45,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8485493,
+                    "name": "D. Tomasek",
+                    "pos": "R",
+                    "to": null,
+                    "prev_gp": 22,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8481491,
+                    "name": "N. Philp",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 15,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8476967,
+                    "name": "B. Kulak",
+                    "pos": "D",
+                    "to": "COL",
+                    "prev_gp": 31,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8475717,
+                    "name": "C. Pickard",
+                    "pos": "G",
+                    "to": "MIN",
+                    "prev_gp": 48,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8478971,
+                    "name": "C. Ingram",
+                    "pos": "G",
+                    "to": null,
+                    "prev_gp": 45,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8479973,
+                    "name": "S. Skinner",
+                    "pos": "G",
+                    "to": "WPG",
+                    "prev_gp": 31,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Panthers": {
+        "xgf_rating": 3.0888267457089404,
+        "xga_rating": 3.0818134001108666,
+        "xgf_rolling": 3.0888267457089404,
+        "xga_rolling": 3.0818134001108666,
+        "xgf_5v5_rating": 2.1222362024354458,
+        "xga_5v5_rating": 2.13068141970287,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8480801,
+                    "name": "Brady Tkachuk",
+                    "pos": "L",
+                    "from": "OTT",
+                    "prev_gp": 60,
+                    "prev_points": 59
+                },
+                {
+                    "id": 8474189,
+                    "name": "Lars Eller",
+                    "pos": "C",
+                    "from": "OTT",
+                    "prev_gp": 68,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8475462,
+                    "name": "Radko Gudas",
+                    "pos": "D",
+                    "from": "ANA",
+                    "prev_gp": 56,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8477903,
+                    "name": "Garnet Hathaway",
+                    "pos": "R",
+                    "from": "PHI",
+                    "prev_gp": 66,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8477493,
+                    "name": "Aleksander Barkov",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8478147,
+                    "name": "Bokondji Imama",
+                    "pos": "L",
+                    "from": "PIT",
+                    "prev_gp": 2,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8474593,
+                    "name": "Jacob Markstrom",
+                    "pos": "G",
+                    "from": "NJD",
+                    "prev_gp": 74,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8481033,
+                    "name": "Akira Schmid",
+                    "pos": "G",
+                    "from": "VGK",
+                    "prev_gp": 75,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8478421,
+                    "name": "A. Greer",
+                    "pos": "L",
+                    "to": "ANA",
+                    "prev_gp": 78,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8482713,
+                    "name": "M. Samoskevich",
+                    "pos": "R",
+                    "to": "SEA",
+                    "prev_gp": 77,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8478542,
+                    "name": "E. Rodrigues",
+                    "pos": "C",
+                    "to": "NJD",
+                    "prev_gp": 69,
+                    "prev_points": 31
+                },
+                {
+                    "id": 8480003,
+                    "name": "J. Boqvist",
+                    "pos": "C",
+                    "to": "NJD",
+                    "prev_gp": 73,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8479316,
+                    "name": "L. Kunin",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 62,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8479393,
+                    "name": "N. Gregor",
+                    "pos": "L",
+                    "to": "WPG",
+                    "prev_gp": 37,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8473507,
+                    "name": "J. Petry",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 58,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8476994,
+                    "name": "V. Hinostroza",
+                    "pos": "C",
+                    "to": "COL",
+                    "prev_gp": 17,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8482107,
+                    "name": "M. Benning",
+                    "pos": "D",
+                    "to": "CGY",
+                    "prev_gp": 18,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8477931,
+                    "name": "T. Nosek",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 21,
+                    "prev_points": 4
+                },
+                {
+                    "id": 8481518,
+                    "name": "N. Foote",
+                    "pos": "L",
+                    "to": "PHI",
+                    "prev_gp": 12,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8475683,
+                    "name": "S. Bobrovsky",
+                    "pos": "G",
+                    "to": "TOR",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8480021,
+                    "name": "J. Studnicka",
+                    "pos": "C",
+                    "to": "PHI",
+                    "prev_gp": 19,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8480193,
+                    "name": "D. Tarasov",
+                    "pos": "G",
+                    "to": "DET",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Penguins": {
+        "xgf_rating": 3.185092900239206,
+        "xga_rating": 3.0770455127319423,
+        "xgf_rolling": 3.185092900239206,
+        "xga_rolling": 3.0770455127319423,
+        "xgf_5v5_rating": 2.2694453494005717,
+        "xga_5v5_rating": 2.171263851774782,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8481582,
+                    "name": "Nick Robertson",
+                    "pos": "L",
+                    "from": "TOR",
+                    "prev_gp": 78,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8483808,
+                    "name": "Andrei Kuzmenko",
+                    "pos": "L",
+                    "from": "LAK",
+                    "prev_gp": 52,
+                    "prev_points": 25
+                },
+                {
+                    "id": 8482148,
+                    "name": "Hendrix Lapierre",
+                    "pos": "C",
+                    "from": "WSH",
+                    "prev_gp": 74,
+                    "prev_points": 16
+                },
+                {
+                    "id": 8481527,
+                    "name": "Kaedan Korczak",
+                    "pos": "D",
+                    "from": "VGK",
+                    "prev_gp": 78,
+                    "prev_points": 16
+                },
+                {
+                    "id": 8477845,
+                    "name": "Trevor van Riemsdyk",
+                    "pos": "D",
+                    "from": "WSH",
+                    "prev_gp": 68,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8483398,
+                    "name": "Declan Carlile",
+                    "pos": "D",
+                    "from": "TBL",
+                    "prev_gp": 42,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8481019,
+                    "name": "David Gustafsson",
+                    "pos": "C",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8477511,
+                    "name": "A. Mantha",
+                    "pos": "R",
+                    "to": "NJD",
+                    "prev_gp": 81,
+                    "prev_points": 64
+                },
+                {
+                    "id": 8478854,
+                    "name": "R. Shea",
+                    "pos": "D",
+                    "to": "EDM",
+                    "prev_gp": 80,
+                    "prev_points": 35
+                },
+                {
+                    "id": 8478450,
+                    "name": "P. Wotherspoon",
+                    "pos": "D",
+                    "to": "VGK",
+                    "prev_gp": 80,
+                    "prev_points": 30
+                },
+                {
+                    "id": 8478569,
+                    "name": "N. Acciari",
+                    "pos": "C",
+                    "to": "PHI",
+                    "prev_gp": 67,
+                    "prev_points": 25
+                },
+                {
+                    "id": 8475763,
+                    "name": "K. Hayes",
+                    "pos": "R",
+                    "to": null,
+                    "prev_gp": 28,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8476967,
+                    "name": "B. Kulak",
+                    "pos": "D",
+                    "to": "COL",
+                    "prev_gp": 25,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8481030,
+                    "name": "J. St. Ivany",
+                    "pos": "D",
+                    "to": "WPG",
+                    "prev_gp": 20,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8477365,
+                    "name": "C. Clifton",
+                    "pos": "D",
+                    "to": "BOS",
+                    "prev_gp": 50,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8476856,
+                    "name": "M. Dumba",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 11,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8478046,
+                    "name": "D. Heinen",
+                    "pos": "L",
+                    "to": "CBJ",
+                    "prev_gp": 13,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8479533,
+                    "name": "J. Koppanen",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 13,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8477465,
+                    "name": "T. Jarry",
+                    "pos": "G",
+                    "to": "EDM",
+                    "prev_gp": 22,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8479973,
+                    "name": "S. Skinner",
+                    "pos": "G",
+                    "to": "WPG",
+                    "prev_gp": 50,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Predators": {
+        "xgf_rating": 2.9900367582966227,
+        "xga_rating": 3.186719786066698,
+        "xgf_rolling": 2.9900367582966227,
+        "xga_rolling": 3.186719786066698,
+        "xgf_5v5_rating": 2.0810509871517224,
+        "xga_5v5_rating": 2.2220501024542174,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8482145,
+                    "name": "Mavrik Bourque",
+                    "pos": "C",
+                    "from": "DAL",
+                    "prev_gp": 82,
+                    "prev_points": 41
+                },
+                {
+                    "id": 8480835,
+                    "name": "Jack Drury",
+                    "pos": "C",
+                    "from": "COL",
+                    "prev_gp": 82,
+                    "prev_points": 27
+                },
+                {
+                    "id": 8479525,
+                    "name": "Ross Colton",
+                    "pos": "C",
+                    "from": "COL",
+                    "prev_gp": 73,
+                    "prev_points": 24
+                },
+                {
+                    "id": 8477021,
+                    "name": "Alexander Kerfoot",
+                    "pos": "C",
+                    "from": "UTA",
+                    "prev_gp": 34,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8480950,
+                    "name": "Ilya Lyubushkin",
+                    "pos": "D",
+                    "from": "DAL",
+                    "prev_gp": 53,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8481726,
+                    "name": "Adam Edstrom",
+                    "pos": "C",
+                    "from": "NYR",
+                    "prev_gp": 35,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8481535,
+                    "name": "Nils Hoglander",
+                    "pos": "L",
+                    "from": "VAN",
+                    "prev_gp": 38,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8482072,
+                    "name": "Jack Ahcan",
+                    "pos": "D",
+                    "from": "COL",
+                    "prev_gp": 11,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8482806,
+                    "name": "William Trudeau",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8482146,
+                    "name": "L. Evangelista",
+                    "pos": "R",
+                    "to": "NJD",
+                    "prev_gp": 81,
+                    "prev_points": 56
+                },
+                {
+                    "id": 8475287,
+                    "name": "E. Haula",
+                    "pos": "L",
+                    "to": "LAK",
+                    "prev_gp": 81,
+                    "prev_points": 38
+                },
+                {
+                    "id": 8478047,
+                    "name": "M. Bunting",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 61,
+                    "prev_points": 31
+                },
+                {
+                    "id": 8483565,
+                    "name": "N. Blankenburg",
+                    "pos": "D",
+                    "to": "TOR",
+                    "prev_gp": 49,
+                    "prev_points": 21
+                },
+                {
+                    "id": 8482768,
+                    "name": "F. Svechkov",
+                    "pos": "C",
+                    "to": "COL",
+                    "prev_gp": 70,
+                    "prev_points": 17
+                },
+                {
+                    "id": 8477446,
+                    "name": "M. McCarron",
+                    "pos": "C",
+                    "to": "MIN",
+                    "prev_gp": 59,
+                    "prev_points": 12
+                },
+                {
+                    "id": 8482062,
+                    "name": "C. Smith",
+                    "pos": "R",
+                    "to": "CHI",
+                    "prev_gp": 42,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8481056,
+                    "name": "S. Stastney",
+                    "pos": "D",
+                    "to": "EDM",
+                    "prev_gp": 30,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8482111,
+                    "name": "J. Barron",
+                    "pos": "D",
+                    "to": "STL",
+                    "prev_gp": 52,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8482742,
+                    "name": "Z. L'Heureux",
+                    "pos": "L",
+                    "to": "COL",
+                    "prev_gp": 25,
+                    "prev_points": 5
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Rangers": {
+        "xgf_rating": 2.9154781664682705,
+        "xga_rating": 3.1229388720005535,
+        "xgf_rolling": 2.9154781664682705,
+        "xga_rolling": 3.1229388720005535,
+        "xgf_5v5_rating": 2.038835694360986,
+        "xga_5v5_rating": 2.1351309674228913,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8481604,
+                    "name": "Pavel Dorofeyev",
+                    "pos": "R",
+                    "from": "VGK",
+                    "prev_gp": 82,
+                    "prev_points": 64
+                },
+                {
+                    "id": 8480009,
+                    "name": "Eeli Tolvanen",
+                    "pos": "R",
+                    "from": "SEA",
+                    "prev_gp": 78,
+                    "prev_points": 36
+                },
+                {
+                    "id": 8477416,
+                    "name": "Oliver Bjorkstrand",
+                    "pos": "R",
+                    "from": "TBL",
+                    "prev_gp": 80,
+                    "prev_points": 32
+                },
+                {
+                    "id": 8480434,
+                    "name": "Sean Durzi",
+                    "pos": "D",
+                    "from": "UTA",
+                    "prev_gp": 60,
+                    "prev_points": 27
+                },
+                {
+                    "id": 8477969,
+                    "name": "Marcus Pettersson",
+                    "pos": "D",
+                    "from": "VAN",
+                    "prev_gp": 82,
+                    "prev_points": 18
+                },
+                {
+                    "id": 8480813,
+                    "name": "Joseph Veleno",
+                    "pos": "C",
+                    "from": "MTL",
+                    "prev_gp": 61,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8485957,
+                    "name": "Alberts Smits",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8476914,
+                    "name": "Joonas Korpisalo",
+                    "pos": "G",
+                    "from": "BOS",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8478550,
+                    "name": "A. Panarin",
+                    "pos": "L",
+                    "to": "LAK",
+                    "prev_gp": 52,
+                    "prev_points": 57
+                },
+                {
+                    "id": 8476389,
+                    "name": "V. Trocheck",
+                    "pos": "C",
+                    "to": "UTA",
+                    "prev_gp": 67,
+                    "prev_points": 53
+                },
+                {
+                    "id": 8477839,
+                    "name": "C. Sheary",
+                    "pos": "L",
+                    "to": "BUF",
+                    "prev_gp": 62,
+                    "prev_points": 18
+                },
+                {
+                    "id": 8477380,
+                    "name": "J. Brodzinski",
+                    "pos": "C",
+                    "to": "WSH",
+                    "prev_gp": 55,
+                    "prev_points": 16
+                },
+                {
+                    "id": 8478840,
+                    "name": "W. Borgen",
+                    "pos": "D",
+                    "to": "BOS",
+                    "prev_gp": 75,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8475842,
+                    "name": "S. Carrick",
+                    "pos": "C",
+                    "to": "BUF",
+                    "prev_gp": 60,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8477369,
+                    "name": "C. Soucy",
+                    "pos": "D",
+                    "to": "CBJ",
+                    "prev_gp": 46,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8481726,
+                    "name": "A. Edstrom",
+                    "pos": "C",
+                    "to": "NSH",
+                    "prev_gp": 35,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8482747,
+                    "name": "B. Othmann",
+                    "pos": "L",
+                    "to": "CGY",
+                    "prev_gp": 17,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8471734,
+                    "name": "J. Quick",
+                    "pos": "G",
+                    "to": null,
+                    "prev_gp": 68,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482132,
+                    "name": "B. Berard",
+                    "pos": "L",
+                    "to": "MTL",
+                    "prev_gp": 13,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Red Wings": {
+        "xgf_rating": 3.03730922060004,
+        "xga_rating": 3.1009799749845715,
+        "xgf_rolling": 3.03730922060004,
+        "xga_rolling": 3.1009799749845715,
+        "xgf_5v5_rating": 2.087141457004442,
+        "xga_5v5_rating": 2.211195165349489,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8478042,
+                    "name": "Viktor Arvidsson",
+                    "pos": "L",
+                    "from": "BOS",
+                    "prev_gp": 69,
+                    "prev_points": 54
+                },
+                {
+                    "id": 8478434,
+                    "name": "Keegan Kolesar",
+                    "pos": "R",
+                    "from": "VGK",
+                    "prev_gp": 82,
+                    "prev_points": 17
+                },
+                {
+                    "id": 8483679,
+                    "name": "Anton Johansson",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482171,
+                    "name": "William Wallinder",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8480193,
+                    "name": "Daniil Tarasov",
+                    "pos": "G",
+                    "from": "FLA",
+                    "prev_gp": 82,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8474141,
+                    "name": "P. Kane",
+                    "pos": "R",
+                    "to": "CHI",
+                    "prev_gp": 67,
+                    "prev_points": 57
+                },
+                {
+                    "id": 8474037,
+                    "name": "J. van Riemsdyk",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 72,
+                    "prev_points": 31
+                },
+                {
+                    "id": 8481013,
+                    "name": "J. Berggren",
+                    "pos": "R",
+                    "to": "STL",
+                    "prev_gp": 15,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8474102,
+                    "name": "D. Perron",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 16,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8481725,
+                    "name": "E. Soderblom",
+                    "pos": "L",
+                    "to": "PIT",
+                    "prev_gp": 39,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8474612,
+                    "name": "T. Hamonic",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 26,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8475660,
+                    "name": "C. Talbot",
+                    "pos": "G",
+                    "to": "CBJ",
+                    "prev_gp": 81,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Sabres": {
+        "xgf_rating": 3.1633875398796114,
+        "xga_rating": 3.0750039987689544,
+        "xgf_rolling": 3.1633875398796114,
+        "xga_rolling": 3.0750039987689544,
+        "xgf_5v5_rating": 2.2178328465983532,
+        "xga_5v5_rating": 2.149047803293244,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8481806,
+                    "name": "Louis Crevier",
+                    "pos": "D",
+                    "from": "CHI",
+                    "prev_gp": 78,
+                    "prev_points": 25
+                },
+                {
+                    "id": 8482803,
+                    "name": "Olen Zellweger",
+                    "pos": "D",
+                    "from": "ANA",
+                    "prev_gp": 76,
+                    "prev_points": 22
+                },
+                {
+                    "id": 8477839,
+                    "name": "Conor Sheary",
+                    "pos": "L",
+                    "from": "NYR",
+                    "prev_gp": 62,
+                    "prev_points": 18
+                },
+                {
+                    "id": 8476891,
+                    "name": "Matt Grzelcyk",
+                    "pos": "D",
+                    "from": "CHI",
+                    "prev_gp": 69,
+                    "prev_points": 12
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8477949,
+                    "name": "A. Tuch",
+                    "pos": "R",
+                    "to": "WSH",
+                    "prev_gp": 79,
+                    "prev_points": 66
+                },
+                {
+                    "id": 8481524,
+                    "name": "B. Byram",
+                    "pos": "D",
+                    "to": "CHI",
+                    "prev_gp": 82,
+                    "prev_points": 42
+                },
+                {
+                    "id": 8482765,
+                    "name": "I. Rosen",
+                    "pos": "R",
+                    "to": "WPG",
+                    "prev_gp": 16,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8478413,
+                    "name": "J. Greenway",
+                    "pos": "L",
+                    "to": "CHI",
+                    "prev_gp": 40,
+                    "prev_points": 6
+                },
+                {
+                    "id": 8479378,
+                    "name": "L. Stanley",
+                    "pos": "D",
+                    "to": "NYI",
+                    "prev_gp": 17,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8480196,
+                    "name": "J. Bryson",
+                    "pos": "D",
+                    "to": "DET",
+                    "prev_gp": 35,
+                    "prev_points": 5
+                },
+                {
+                    "id": 8482623,
+                    "name": "J. Dunne",
+                    "pos": "C",
+                    "to": "WSH",
+                    "prev_gp": 34,
+                    "prev_points": 4
+                },
+                {
+                    "id": 8480891,
+                    "name": "M. Kesselring",
+                    "pos": "D",
+                    "to": "SJS",
+                    "prev_gp": 34,
+                    "prev_points": 2
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Senators": {
+        "xgf_rating": 3.15239687707781,
+        "xga_rating": 2.843370383922266,
+        "xgf_rolling": 3.15239687707781,
+        "xga_rolling": 2.843370383922266,
+        "xgf_5v5_rating": 2.193594544803525,
+        "xga_5v5_rating": 1.9670039505912533,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8482667,
+                    "name": "William Eklund",
+                    "pos": "L",
+                    "from": "SJS",
+                    "prev_gp": 78,
+                    "prev_points": 53
+                },
+                {
+                    "id": 8477444,
+                    "name": "Andre Burakovsky",
+                    "pos": "L",
+                    "from": "CHI",
+                    "prev_gp": 75,
+                    "prev_points": 33
+                },
+                {
+                    "id": 8481035,
+                    "name": "Samuel Ersson",
+                    "pos": "G",
+                    "from": "PHI",
+                    "prev_gp": 75,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8480801,
+                    "name": "B. Tkachuk",
+                    "pos": "L",
+                    "to": "FLA",
+                    "prev_gp": 60,
+                    "prev_points": 59
+                },
+                {
+                    "id": 8474102,
+                    "name": "D. Perron",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 49,
+                    "prev_points": 25
+                },
+                {
+                    "id": 8475324,
+                    "name": "N. Jensen",
+                    "pos": "D",
+                    "to": "ANA",
+                    "prev_gp": 61,
+                    "prev_points": 17
+                },
+                {
+                    "id": 8474189,
+                    "name": "L. Eller",
+                    "pos": "C",
+                    "to": "FLA",
+                    "prev_gp": 68,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8481575,
+                    "name": "L. Thomson",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 11,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8473503,
+                    "name": "J. Reimer",
+                    "pos": "G",
+                    "to": null,
+                    "prev_gp": 36,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482411,
+                    "name": "H. Shepard",
+                    "pos": "G",
+                    "to": null,
+                    "prev_gp": 12,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482447,
+                    "name": "L. Meril\u00e4inen",
+                    "pos": "G",
+                    "to": "VAN",
+                    "prev_gp": 46,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Sharks": {
+        "xgf_rating": 2.942831273682748,
+        "xga_rating": 3.1132759040153446,
+        "xgf_rolling": 2.942831273682748,
+        "xga_rolling": 3.1132759040153446,
+        "xgf_5v5_rating": 2.0768472982144965,
+        "xga_5v5_rating": 2.1747155958473154,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8478975,
+                    "name": "Mason Marchment",
+                    "pos": "L",
+                    "from": "CBJ",
+                    "prev_gp": 68,
+                    "prev_points": 45
+                },
+                {
+                    "id": 8476885,
+                    "name": "Jacob Trouba",
+                    "pos": "D",
+                    "from": "ANA",
+                    "prev_gp": 81,
+                    "prev_points": 35
+                },
+                {
+                    "id": 8477498,
+                    "name": "Darnell Nurse",
+                    "pos": "D",
+                    "from": "EDM",
+                    "prev_gp": 82,
+                    "prev_points": 24
+                },
+                {
+                    "id": 8480891,
+                    "name": "Michael Kesselring",
+                    "pos": "D",
+                    "from": "BUF",
+                    "prev_gp": 34,
+                    "prev_points": 2
+                },
+                {
+                    "id": 8479718,
+                    "name": "Alex Barr\u00e9-Boulet",
+                    "pos": "C",
+                    "from": "COL",
+                    "prev_gp": 2,
+                    "prev_points": 1
+                },
+                {
+                    "id": 8481517,
+                    "name": "Brett Leason",
+                    "pos": "R",
+                    "from": "WSH",
+                    "prev_gp": 6,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8486103,
+                    "name": "Ivar Stenberg",
+                    "pos": "L",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8482700,
+                    "name": "Nolan Allan",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8482667,
+                    "name": "W. Eklund",
+                    "pos": "L",
+                    "to": "OTT",
+                    "prev_gp": 78,
+                    "prev_points": 53
+                },
+                {
+                    "id": 8475906,
+                    "name": "J. Klingberg",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 56,
+                    "prev_points": 27
+                },
+                {
+                    "id": 8479983,
+                    "name": "M. Ferraro",
+                    "pos": "D",
+                    "to": "WPG",
+                    "prev_gp": 82,
+                    "prev_points": 23
+                },
+                {
+                    "id": 8480798,
+                    "name": "P. Kurashev",
+                    "pos": "C",
+                    "to": null,
+                    "prev_gp": 43,
+                    "prev_points": 20
+                },
+                {
+                    "id": 8475784,
+                    "name": "J. Skinner",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 32,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8482166,
+                    "name": "S. Mukhamadullin",
+                    "pos": "D",
+                    "to": "EDM",
+                    "prev_gp": 50,
+                    "prev_points": 12
+                },
+                {
+                    "id": 8480043,
+                    "name": "T. Liljegren",
+                    "pos": "D",
+                    "to": "WSH",
+                    "prev_gp": 43,
+                    "prev_points": 11
+                },
+                {
+                    "id": 8483630,
+                    "name": "P. Regenda",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 24,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8475181,
+                    "name": "N. Leddy",
+                    "pos": "D",
+                    "to": null,
+                    "prev_gp": 32,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8479576,
+                    "name": "V. Desharnais",
+                    "pos": "D",
+                    "to": "WSH",
+                    "prev_gp": 53,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8471817,
+                    "name": "R. Reaves",
+                    "pos": "R",
+                    "to": null,
+                    "prev_gp": 50,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8482861,
+                    "name": "V. Iorio",
+                    "pos": "D",
+                    "to": "NYR",
+                    "prev_gp": 21,
+                    "prev_points": 3
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Stars": {
+        "xgf_rating": 3.0924799147016353,
+        "xga_rating": 2.924675735416549,
+        "xgf_rolling": 3.0924799147016353,
+        "xga_rolling": 2.924675735416549,
+        "xgf_5v5_rating": 2.1194625230491595,
+        "xga_5v5_rating": 2.0499190580535043,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8481641,
+                    "name": "Joel Kiviranta",
+                    "pos": "L",
+                    "from": "COL",
+                    "prev_gp": 51,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8477335,
+                    "name": "Kyle Burroughs",
+                    "pos": "D",
+                    "from": null,
+                    "prev_gp": 0,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8482145,
+                    "name": "M. Bourque",
+                    "pos": "C",
+                    "to": "NSH",
+                    "prev_gp": 82,
+                    "prev_points": 41
+                },
+                {
+                    "id": 8475755,
+                    "name": "A. Petrovic",
+                    "pos": "D",
+                    "to": "FLA",
+                    "prev_gp": 54,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8480950,
+                    "name": "I. Lyubushkin",
+                    "pos": "D",
+                    "to": "NSH",
+                    "prev_gp": 53,
+                    "prev_points": 9
+                },
+                {
+                    "id": 8477454,
+                    "name": "A. Erne",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 45,
+                    "prev_points": 8
+                },
+                {
+                    "id": 8479414,
+                    "name": "N. Bastian",
+                    "pos": "R",
+                    "to": "FLA",
+                    "prev_gp": 36,
+                    "prev_points": 7
+                },
+                {
+                    "id": 8481609,
+                    "name": "V. Kolyachonok",
+                    "pos": "D",
+                    "to": "NJD",
+                    "prev_gp": 11,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8478047,
+                    "name": "M. Bunting",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 13,
+                    "prev_points": 2
+                }
+            ],
+            "lost_unverified": 0
+        }
+    },
+    "Wild": {
+        "xgf_rating": 3.1151298559431577,
+        "xga_rating": 3.025629962997466,
+        "xgf_rolling": 3.1151298559431577,
+        "xga_rolling": 3.025629962997466,
+        "xgf_5v5_rating": 2.1884711935766945,
+        "xga_5v5_rating": 2.1550331745720905,
+        "pp_rating": 21.360653542252578,
+        "pk_rating": 78.63934645774742,
+        "pp_pct_actual": null,
+        "pk_pct_actual": null,
+        "pp_goals": 0,
+        "pp_opportunities": 0,
+        "pk_goals_against": 0,
+        "pk_opportunities": 0,
+        "league_pp_pct": 21.360653542252578,
+        "st_prior_opps": 60,
+        "season": "2026-27",
+        "pp_xgf_per_opp": 0.18,
+        "pk_xga_per_opp": 0.18,
+        "penalties_drawn_per_60": 3.0,
+        "penalties_taken_per_60": 3.0,
+        "games_played": 0,
+        "roster_changes": {
+            "season": "2026-27",
+            "source": "NHL roster API vs last season",
+            "added": [
+                {
+                    "id": 8476399,
+                    "name": "Blake Coleman",
+                    "pos": "L",
+                    "from": "CGY",
+                    "prev_gp": 69,
+                    "prev_points": 35
+                },
+                {
+                    "id": 8485702,
+                    "name": "Maxim Shabanov",
+                    "pos": "R",
+                    "from": "NYI",
+                    "prev_gp": 44,
+                    "prev_points": 18
+                },
+                {
+                    "id": 8476874,
+                    "name": "Olli Maatta",
+                    "pos": "D",
+                    "from": "CGY",
+                    "prev_gp": 43,
+                    "prev_points": 15
+                },
+                {
+                    "id": 8475717,
+                    "name": "Calvin Pickard",
+                    "pos": "G",
+                    "from": "EDM",
+                    "prev_gp": 48,
+                    "prev_points": 0
+                }
+            ],
+            "lost": [
+                {
+                    "id": 8475692,
+                    "name": "M. Zuccarello",
+                    "pos": "R",
+                    "to": "LAK",
+                    "prev_gp": 59,
+                    "prev_points": 54
+                },
+                {
+                    "id": 8475149,
+                    "name": "M. Johansson",
+                    "pos": "L",
+                    "to": null,
+                    "prev_gp": 75,
+                    "prev_points": 49
+                },
+                {
+                    "id": 8475765,
+                    "name": "V. Tarasenko",
+                    "pos": "R",
+                    "to": null,
+                    "prev_gp": 75,
+                    "prev_points": 47
+                },
+                {
+                    "id": 8478136,
+                    "name": "J. Middleton",
+                    "pos": "D",
+                    "to": "CGY",
+                    "prev_gp": 75,
+                    "prev_points": 16
+                },
+                {
+                    "id": 8484798,
+                    "name": "Z. Buium",
+                    "pos": "D",
+                    "to": "VAN",
+                    "prev_gp": 31,
+                    "prev_points": 14
+                },
+                {
+                    "id": 8482079,
+                    "name": "M. Rossi",
+                    "pos": "C",
+                    "to": "VAN",
+                    "prev_gp": 17,
+                    "prev_points": 13
+                },
+                {
+                    "id": 8476994,
+                    "name": "V. Hinostroza",
+                    "pos": "C",
+                    "to": "COL",
+                    "prev_gp": 48,
+                    "prev_points": 10
+                },
+                {
+                    "id": 8480259,
+                    "name": "B. Jones",
+                    "pos": "C",
+                    "to": "CGY",
+                    "prev_gp": 28,
+                    "prev_points": 3
+                },
+                {
+                    "id": 8483460,
+                    "name": "D.Jiricek",
+                    "pos": "D",
+                    "to": "PHI",
+                    "prev_gp": 25,
+                    "prev_points": 0
+                },
+                {
+                    "id": 8483499,
+                    "name": "L. Ohgren",
+                    "pos": "L",
+                    "to": "VAN",
+                    "prev_gp": 18,
+                    "prev_points": 0
+                }
+            ],
+            "lost_unverified": 0
+        }
     }
 }
