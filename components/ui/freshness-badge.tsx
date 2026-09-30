@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
 import { freshnessState, relativeAge, type FreshnessState } from './freshness';
+import { ET_ZONE, formatTime } from '../../lib/format/time';
 
 const dot: Record<FreshnessState, string> = {
     fresh: 'bg-pos',
@@ -18,8 +19,9 @@ const label: Record<FreshnessState, string> = {
     unknown: 'Data freshness unknown',
 };
 
-function clock(d: Date) {
-    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+/** Tooltip clock with zone: Eastern on the server and first paint, the viewer's zone after mount. */
+function clock(d: Date, hydrated: boolean) {
+    return formatTime(d, 'datetime', hydrated ? undefined : ET_ZONE) ?? '';
 }
 
 /**
@@ -40,7 +42,7 @@ export function FreshnessBadge({ generatedAt, compact = false, className }: { ge
     const at = generatedAt ? new Date(generatedAt) : null;
     const state: FreshnessState = now ? freshnessState(at, now) : 'unknown';
     const rel = now && at ? relativeAge(at, now) : null;
-    const title = at ? `Data updated ${clock(at)}` : 'Data update time unknown';
+    const title = at ? `Data updated ${clock(at, now !== null)}` : 'Data update time unknown';
 
     return (
         <span
