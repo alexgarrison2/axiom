@@ -82,6 +82,7 @@ export function parseLedgerBets(raw: unknown): LedgerBet[] {
                 final: s(b.final),
                 decision: s(b.decision),
                 clv: n(b.clv),
+                legacy: !s(b.model_version),
             });
         }
     }

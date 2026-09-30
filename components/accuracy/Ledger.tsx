@@ -15,6 +15,10 @@ import type { GateInfo } from './report';
 import type { BetFinal, LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
 
 const PAGE = 25;
+/** Below this many graded bets ROI, its CI and the bucket tables are noise: record and units only. */
+export const LEDGER_ROI_MIN = 20;
+/** Below this many graded bets results stay uncoloured (the report card's rule). */
+export const LEDGER_COLOR_MIN = 100;
 
 let betsPromise: Promise<LedgerBet[]> | null = null;
 function loadBets(): Promise<LedgerBet[]> {
@@ -83,11 +87,14 @@ export function Ledger({
     seasons,
     finals = {},
     title,
+    currentSeason,
 }: {
     ledger: LedgerData;
     gate: GateInfo | null;
     season: string;
     seasons: string[];
+    /** Bets from this season on with no model version get a LEGACY tag. */
+    currentSeason?: string;
     /** Finals for bets the ledger file still lists as pending. */
     finals?: Record<number, BetFinal>;
     /** Section heading, rendered on the gate status row. */
@@ -139,6 +146,9 @@ export function Ledger({
     const gateOpen = gate?.open ?? ledger.gate?.open ?? false;
     const reasons = (gate?.reasons?.length ? gate.reasons : (ledger.gate?.reasons ?? [])).map(tidyReason);
     const gateWhy = [gate?.summary ? tidyReason(gate.summary) : null, ...reasons].filter(Boolean).join(' · ');
+    const nGraded = summary?.nGraded ?? 0;
+    const showRoi = nGraded >= LEDGER_ROI_MIN;
+    const tone = (v: number) => (nGraded < LEDGER_COLOR_MIN ? 'text-fg-1' : v > 0 ? 'text-pos' : v < 0 ? 'text-neg' : 'text-fg-1');
 
     return (
         <div ref={ref} className="flex flex-col gap-3">
@@ -166,10 +176,15 @@ export function Ledger({
                         <KpiTile label="Record" value={summary.record} sub={`n=${summary.nGraded}${summary.nPending ? ` · ${summary.nPending} pending` : ''}`} />
                         <KpiTile
                             label="Profit"
-                            value={<span className={summary.unitsProfit > 0 ? 'text-pos' : summary.unitsProfit < 0 ? 'text-neg' : 'text-fg-1'}>{units(summary.unitsProfit)}</span>}
-                            sub={gateOpen ? `${summary.unitsStaked.toFixed(1)}u staked` : 'stakes hidden'}
+                            value={<span className={tone(summary.unitsProfit)}>{units(summary.unitsProfit)}</span>}
+                            sub={`${summary.unitsStaked.toFixed(1)}u staked`}
                         />
-                        <KpiTile label="ROI" value={pctSigned(summary.roi)} sub={summary.roiCi ? `CI ${pctSigned(summary.roiCi[0])} / ${pctSigned(summary.roiCi[1])}` : undefined} />
+                        <KpiTile
+                            label="ROI"
+                            value={showRoi ? pctSigned(summary.roi) : '—'}
+                            empty={!showRoi}
+                            sub={showRoi && summary.roiCi ? `CI ${pctSigned(summary.roiCi[0])} / ${pctSigned(summary.roiCi[1])}` : undefined}
+                        />
                         <KpiTile
                             label="CLV"
                             value={summary.clvMean != null ? pctSigned(summary.clvMean) : '—'}
@@ -185,10 +200,10 @@ export function Ledger({
                                 {bets ? <UnitsChart points={curve} /> : <div aria-busy="true" className="h-44 rounded-control bg-surface-2/40" />}
                             </section>
                         ) : null}
-                        {summary.byEv.some(b => b.n > 0) || summary.byStake.some(b => b.n > 0) ? (
+                        {showRoi && (summary.byEv.some(b => b.n > 0) || summary.byStake.some(b => b.n > 0)) ? (
                             <div className={cn('grid min-w-0 gap-3', bets && curve.length < 2 && 'lg:grid-cols-2')}>
-                                <BucketTable title="By edge" buckets={summary.byEv} />
-                                <BucketTable title="By stake" buckets={summary.byStake} />
+                                <BucketTable title="By edge" buckets={summary.byEv} tone={tone} />
+                                <BucketTable title="By stake" buckets={summary.byStake} tone={tone} />
                             </div>
                         ) : null}
                     </div>
@@ -254,13 +269,23 @@ export function Ledger({
                                                             <span className="font-normal text-fg-3">
                                                                 {b.side === 'home' ? 'vs' : '@'} {opp}
                                                             </span>
+                                                            {b.legacy && currentSeason && b.season >= currentSeason ? (
+                                                                <abbr
+                                                                    title="Published by the previous site model"
+                                                                    className="rounded-chip border border-line-strong px-1 text-micro font-normal text-fg-2 no-underline"
+                                                                >
+                                                                    LEGACY
+                                                                </abbr>
+                                                            ) : null}
                                                         </span>
                                                     </td>
                                                     <td className="text-right text-fg-2">{fmtAmerican(b.price)}</td>
                                                     <td className="text-right text-fg-2">{b.evAtBet != null ? pctSigned(b.evAtBet, 0) : '—'}</td>
-                                                    <td className="text-right text-fg-2">{gateOpen ? `${b.stake.toFixed(1)}u` : <span aria-label="hidden while the gate is closed">—</span>}</td>
+                                                    <td className="text-right text-fg-2">
+                                                        {gateOpen || b.result !== 'pending' ? `${b.stake.toFixed(1)}u` : <span aria-label="hidden while the gate is closed">—</span>}
+                                                    </td>
                                                     <td>
-                                                        <span className={cn('font-bold', b.result === 'win' ? 'text-pos' : b.result === 'loss' ? 'text-neg' : 'text-fg-2')}>
+                                                        <span className={cn('font-bold', b.result === 'pending' ? 'text-fg-2' : tone(b.result === 'win' ? 1 : b.result === 'loss' ? -1 : 0))}>
                                                             <span aria-hidden="true">{b.result === 'win' ? '✓ ' : b.result === 'loss' ? '✕ ' : ''}</span>
                                                             {b.result === 'win' ? 'W' : b.result === 'loss' ? 'L' : b.result}
                                                         </span>
@@ -271,7 +296,7 @@ export function Ledger({
                                                             </span>
                                                         ) : null}
                                                     </td>
-                                                    <td className={cn('text-right font-bold', b.profit > 0 ? 'text-pos' : b.profit < 0 ? 'text-neg' : 'text-fg-2')}>{units(b.profit)}</td>
+                                                    <td className={cn('text-right font-bold', tone(b.profit))}>{units(b.profit)}</td>
                                                 </tr>
                                             );
                                         })}
@@ -307,7 +332,7 @@ export function Ledger({
     );
 }
 
-function BucketTable({ title, buckets }: { title: string; buckets: LedgerBucket[] }) {
+function BucketTable({ title, buckets, tone }: { title: string; buckets: LedgerBucket[]; tone: (v: number) => string }) {
     const rows = buckets.filter(b => b.n > 0);
     return (
         <section aria-label={title} className="panel overflow-hidden">
@@ -342,7 +367,7 @@ function BucketTable({ title, buckets }: { title: string; buckets: LedgerBucket[
                             </th>
                             <td className="text-right text-fg-2">{b.n}</td>
                             <td className="text-right text-fg-2">{b.record}</td>
-                            <td className={cn('text-right font-bold', b.unitsProfit > 0 ? 'text-pos' : b.unitsProfit < 0 ? 'text-neg' : 'text-fg-2')}>{units(b.unitsProfit)}</td>
+                            <td className={cn('text-right font-bold', tone(b.unitsProfit))}>{units(b.unitsProfit)}</td>
                             <td className="text-right text-fg-1">{pctSigned(b.roi)}</td>
                         </tr>
                     ))}

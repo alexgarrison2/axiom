@@ -2,11 +2,14 @@
  * Route loading shell: a skeleton of the slate (heading rail + matchup
  * cards) in the page's real layout, so navigation feels instant and nothing
  * jumps when data arrives. Pulses twice, and not at all under reduced motion.
+ * At least a viewport tall: React paints this fallback before revealing a
+ * prerendered page (large boundaries are streamed), and a shorter shell put
+ * the footer on screen and then shoved it off (desktop CLS ~0.07).
  */
 export default function Loading() {
     const block = 'animate-pulse bg-surface-2';
     return (
-        <main aria-busy="true" className="mx-auto max-w-[1180px] px-4 pt-5 md:px-5 md:pt-7">
+        <main aria-busy="true" className="mx-auto min-h-[calc(100svh-var(--appbar-h,56px))] max-w-[1180px] px-4 pt-5 md:px-5 md:pt-7">
             <p role="status" className="sr-only">
                 Loading…
             </p>

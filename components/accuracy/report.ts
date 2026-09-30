@@ -14,7 +14,17 @@ export interface Baseline {
     /** Model on the same games (market baseline only). */
     modelLogLossSame?: number | null;
     modelAccuracySame?: number | null;
+    modelBrierSame?: number | null;
     note?: string | null;
+}
+
+/** One model version's live picks. */
+export interface VersionStats {
+    n: number;
+    correct: number;
+    accuracy: number | null;
+    brier: number | null;
+    logLoss: number | null;
 }
 
 export interface ReliabilityBin {
@@ -52,11 +62,17 @@ export interface CallRow {
     awayScore: number;
     decision: string;
     correct: boolean;
+    /** Published by the previous site model. */
+    legacy?: boolean;
 }
 
 export interface ReportBlock {
     n: number;
     nRetro: number;
+    /** Live picks from the previous site model (no model version recorded). */
+    nLegacy: number;
+    /** The same picks split by model: current = recorded model version, legacy = previous site model. */
+    byModel: { current: VersionStats; legacy: VersionStats } | null;
     accuracy: number | null;
     accuracyCi: [number, number] | null;
     correct: number;
@@ -104,6 +120,7 @@ function parseBaseline(v: unknown): Baseline {
         logLoss: n(o.log_loss),
         modelLogLossSame: n(o.model_log_loss_same_games),
         modelAccuracySame: n(o.model_accuracy_same_games),
+        modelBrierSame: n(o.model_brier_same_games),
         note: s(o.source),
     };
 }
@@ -121,16 +138,28 @@ function parseCall(v: unknown): CallRow | null {
         awayScore: n(v.awayScore) ?? 0,
         decision: s(v.decision) ?? 'REG',
         correct: v.correct === true,
+        legacy: v.legacy === true,
     };
 }
+
+function parseVersion(v: unknown): VersionStats {
+    const o = isObj(v) ? v : {};
+    return { n: n(o.n) ?? 0, correct: n(o.correct) ?? 0, accuracy: n(o.accuracy), brier: n(o.brier), logLoss: n(o.log_loss) };
+}
+
+/** Best calls and worst misses need a real lean: at least this confidence (%) on the pick. */
+export const CALL_MIN_CONF = 55;
 
 export function parseBlock(v: unknown): ReportBlock | null {
     if (!isObj(v)) return null;
     const hr = isObj(v.baselines) ? (v.baselines as Obj).home_rate : null;
     const mk = isObj(v.baselines) ? (v.baselines as Obj).market : null;
+    const bm = isObj(v.by_model) ? v.by_model : null;
     return {
         n: n(v.n) ?? 0,
         nRetro: n(v.n_retro_excluded) ?? 0,
+        nLegacy: n(v.n_legacy) ?? 0,
+        byModel: bm ? { current: parseVersion(bm.current), legacy: parseVersion(bm.legacy) } : null,
         accuracy: n(v.accuracy),
         accuracyCi: pair(v.accuracy_ci),
         correct: n(v.correct) ?? 0,
@@ -159,8 +188,8 @@ export function parseBlock(v: unknown): ReportBlock | null {
             .filter(isObj)
             .map(r => ({ i: n(r.i) ?? 0, date: s(r.date) ?? '', model: n(r.model) ?? NaN, market: n(r.market) ?? NaN }))
             .filter(r => Number.isFinite(r.model) && Number.isFinite(r.market)),
-        bestCalls: (Array.isArray(v.best_calls) ? v.best_calls : []).map(parseCall).filter((c): c is CallRow => !!c),
-        worstMisses: (Array.isArray(v.worst_misses) ? v.worst_misses : []).map(parseCall).filter((c): c is CallRow => !!c),
+        bestCalls: (Array.isArray(v.best_calls) ? v.best_calls : []).map(parseCall).filter((c): c is CallRow => !!c && c.confidence >= CALL_MIN_CONF),
+        worstMisses: (Array.isArray(v.worst_misses) ? v.worst_misses : []).map(parseCall).filter((c): c is CallRow => !!c && c.confidence >= CALL_MIN_CONF),
     };
 }
 
@@ -219,6 +248,19 @@ function combineBaseline(list: Baseline[]): Baseline {
         logLoss: wavg(list.map(b => ({ w: b.n, v: b.logLoss }))),
         modelLogLossSame: wavg(list.map(b => ({ w: b.n, v: b.modelLogLossSame ?? null }))),
         modelAccuracySame: wavg(list.map(b => ({ w: b.n, v: b.modelAccuracySame ?? null }))),
+        modelBrierSame: wavg(list.map(b => ({ w: b.n, v: b.modelBrierSame ?? null }))),
+    };
+}
+
+function combineVersion(list: VersionStats[]): VersionStats {
+    const total = list.reduce((a, b) => a + b.n, 0);
+    const correct = list.reduce((a, b) => a + b.correct, 0);
+    return {
+        n: total,
+        correct,
+        accuracy: total ? correct / total : null,
+        brier: wavg(list.map(b => ({ w: b.n, v: b.brier }))),
+        logLoss: wavg(list.map(b => ({ w: b.n, v: b.logLoss }))),
     };
 }
 
@@ -235,6 +277,10 @@ export function combineBlocks(blocks: ReportBlock[]): ReportBlock | null {
     return {
         n: total,
         nRetro: bs.reduce((a, b) => a + b.nRetro, 0),
+        nLegacy: bs.reduce((a, b) => a + b.nLegacy, 0),
+        byModel: bs.every(b => b.byModel)
+            ? { current: combineVersion(bs.map(b => b.byModel!.current)), legacy: combineVersion(bs.map(b => b.byModel!.legacy)) }
+            : null,
         accuracy: total ? correct / total : null,
         accuracyCi: wilson(correct, total),
         correct,

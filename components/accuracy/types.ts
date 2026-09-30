@@ -98,6 +98,8 @@ export interface LedgerBet {
     final: string | null;
     decision: string | null;
     clv: number | null;
+    /** Suggested by the previous site model (no model version recorded). */
+    legacy?: boolean;
 }
 
 export interface LedgerBucket {

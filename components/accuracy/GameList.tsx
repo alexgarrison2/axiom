@@ -13,34 +13,53 @@ import type { GameTypeKey } from './report';
 
 const PAGE = 50;
 
+const MORE_BTN =
+    'self-center rounded-control border border-line-strong px-4 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11';
+const ROW_LI = 'border-t border-line/60 bg-surface-1 first:border-t-0 xl:[&:nth-child(2)]:border-t-0';
+const LIST_UL = 'panel grid items-start overflow-hidden xl:grid-cols-2 xl:gap-x-px xl:bg-line';
+const SELECT = 'h-8 rounded-control border border-line-strong bg-surface-1 px-2 text-base uppercase tracking-[0.08em] text-fg-1 md:text-caption coarse:h-11';
+
+type ResultFilter = 'all' | 'hit' | 'miss';
+const RESULT_OPTIONS: { value: ResultFilter; label: string; ariaLabel?: string }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'hit', label: '✓', ariaLabel: 'Right' },
+    { value: 'miss', label: '✕', ariaLabel: 'Wrong' },
+];
+
 const cache = new Map<string, Promise<GradedGame[]>>();
 function loadSeason(label: string): Promise<GradedGame[]> {
     let p = cache.get(label);
     if (!p) {
-        p = fetch(`/accuracy/games/${label}`).then(r => (r.ok ? (r.json() as Promise<GradedGame[]>) : []));
+        // A failed fetch rejects, so the cache entry is evicted and a retry refetches.
+        p = fetch(`/accuracy/games/${label}`).then(r => {
+            if (!r.ok) throw new Error(`picks ${label}: HTTP ${r.status}`);
+            return r.json() as Promise<GradedGame[]>;
+        });
         p.catch(() => cache.delete(label));
         cache.set(label, p);
     }
     return p;
 }
 
-type ResultFilter = 'all' | 'hit' | 'miss';
-
 export function GameList({
     season,
     seasons,
     type,
     currentSeason,
+    expected = 0,
     excluded = [],
 }: {
     season: string;
     seasons: string[];
     type: GameTypeKey;
     currentSeason?: string;
+    /** Live graded picks the report counts for this view; sizes the loading placeholder so nothing shifts. */
+    expected?: number;
     /** Finals deliberately left out of grading, with a reason. */
     excluded?: ExcludedGame[];
 }) {
-    const [games, setGames] = React.useState<{ key: string; rows: GradedGame[] } | null>(null);
+    const [games, setGames] = React.useState<{ key: string; rows: GradedGame[]; failed?: boolean } | null>(null);
+    const [attempt, setAttempt] = React.useState(0);
     const [team, setTeam] = React.useState('all');
     const [result, setResult] = React.useState<ResultFilter>('all');
     const [includeRetro, setIncludeRetro] = React.useState(false);
@@ -49,18 +68,19 @@ export function GameList({
     const [open, setOpen] = React.useState<number | null>(null);
     const teamId = React.useId();
 
+    const key = `${season}#${attempt}`;
     React.useEffect(() => {
         let alive = true;
         const labels = season === 'all' ? seasons : [season];
         Promise.all(labels.map(loadSeason))
             .then(lists => {
-                if (alive) setGames({ key: season, rows: lists.flat().sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id) });
+                if (alive) setGames({ key, rows: lists.flat().sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id) });
             })
-            .catch(() => alive && setGames({ key: season, rows: [] }));
+            .catch(() => alive && setGames({ key, rows: [], failed: true }));
         return () => {
             alive = false;
         };
-    }, [season, seasons]);
+    }, [key, season, seasons]);
 
     // Reset paging and the date window when the selection changes.
     React.useEffect(() => {
@@ -69,7 +89,7 @@ export function GameList({
         setOpen(null);
     }, [season, type, includeRetro]);
 
-    const loading = !games || games.key !== season;
+    const loading = !games || games.key !== key;
     const base = React.useMemo(
         () => (games?.rows ?? []).filter(g => (type === 'all' || (type === 'regular' ? g.type === '02' : g.type === '03')) && (includeRetro || !g.retro)),
         [games, type, includeRetro],
@@ -91,11 +111,22 @@ export function GameList({
 
     const hits = rows.filter(isCorrect).length;
 
-    if (loading) {
-        return <div aria-busy="true" className="h-32 rounded-card border border-line bg-surface-1/60" />;
-    }
     const excludedShown = type === 'playoffs' ? [] : excluded;
     const excludedNote = excludedShown.length ? <ExcludedList games={excludedShown} /> : null;
+    if (loading) return <ListSkeleton rows={Math.min(PAGE, expected)} more={expected > PAGE} after={excludedNote} />;
+    if (games.failed) {
+        return (
+            <div className="flex flex-col gap-2">
+                <div role="alert" className="panel flex items-center gap-3 border-dashed px-3 py-2">
+                    <p className="label text-warn">Unavailable</p>
+                    <button type="button" onClick={() => setAttempt(a => a + 1)} className={cn(MORE_BTN, 'ml-auto')}>
+                        Retry
+                    </button>
+                </div>
+                {excludedNote}
+            </div>
+        );
+    }
     if (!base.length && !retroCount) {
         return (
             <div className="flex flex-col gap-2">
@@ -118,7 +149,7 @@ export function GameList({
                         setTeam(e.target.value);
                         setShown(PAGE);
                     }}
-                    className="h-8 rounded-control border border-line-strong bg-surface-1 px-2 text-base uppercase tracking-[0.08em] text-fg-1 md:text-caption coarse:h-11"
+                    className={SELECT}
                 >
                     <option value="all">All teams</option>
                     {TEAM_CODES.map(t => (
@@ -135,11 +166,7 @@ export function GameList({
                         setResult(v);
                         setShown(PAGE);
                     }}
-                    options={[
-                        { value: 'all', label: 'All' },
-                        { value: 'hit', label: '✓', ariaLabel: 'Right' },
-                        { value: 'miss', label: '✕', ariaLabel: 'Wrong' },
-                    ]}
+                    options={RESULT_OPTIONS}
                 />
                 {retroCount ? (
                     <button
@@ -189,7 +216,7 @@ export function GameList({
             {rows.length === 0 ? (
                 <p className="label py-2">No matches</p>
             ) : (
-                <ul className="panel grid items-start overflow-hidden xl:grid-cols-2 xl:gap-x-px xl:bg-line">
+                <ul className={LIST_UL}>
                     {rows.slice(0, shown).map(g => (
                         <GameRowItem
                             key={g.id}
@@ -202,11 +229,7 @@ export function GameList({
                 </ul>
             )}
             {rows.length > shown ? (
-                <button
-                    type="button"
-                    onClick={() => setShown(s => s + PAGE)}
-                    className="self-center rounded-control border border-line-strong px-4 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11"
-                >
+                <button type="button" onClick={() => setShown(s => s + PAGE)} className={MORE_BTN}>
                     More · {(rows.length - shown).toLocaleString('en-US')}
                 </button>
             ) : null}
@@ -221,7 +244,7 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
     const homeWon = g.homeScore > g.awayScore;
     const detailId = `pick-${g.id}`;
     return (
-        <li className={cn('border-t border-line/60 bg-surface-1 first:border-t-0 xl:[&:nth-child(2)]:border-t-0', open && '!bg-surface-2')}>
+        <li className={cn(ROW_LI, open && '!bg-surface-2')}>
             <button
                 type="button"
                 aria-expanded={open}
@@ -295,7 +318,7 @@ function ExcludedList({ games }: { games: ExcludedGame[] }) {
                 <div key={reason} className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     <p className="label">
                         <abbr title={reason} className="no-underline">
-                            Not graded
+                            No pregame pick
                         </abbr>{' '}
                         · {list.length}
                     </p>
@@ -311,6 +334,43 @@ function ExcludedList({ games }: { games: ExcludedGame[] }) {
                     </ul>
                 </div>
             ))}
+        </div>
+    );
+}
+
+/**
+ * Loading placeholder with the list's own box model (toolbar panel, one
+ * 32px row per expected pick up to a page, the More button), so the rows
+ * replace it without moving anything below.
+ */
+function ListSkeleton({ rows, more, after }: { rows: number; more: boolean; after: React.ReactNode }) {
+    if (!rows) {
+        return (
+            <div aria-busy="true" className="flex flex-col gap-2">
+                <p className="label invisible">0 graded</p>
+                {after}
+            </div>
+        );
+    }
+    return (
+        <div aria-busy="true" className="flex flex-col gap-2">
+            <div aria-hidden="true" className="panel invisible flex items-center gap-x-4 px-3 py-2">
+                <span className={cn(SELECT, 'inline-block w-24')} />
+                <Segmented label="Result" size="sm" value="all" onChange={() => {}} options={RESULT_OPTIONS} />
+            </div>
+            <ul aria-hidden="true" className={LIST_UL}>
+                {Array.from({ length: rows }, (_, i) => (
+                    <li key={i} className={ROW_LI}>
+                        <div className="min-h-8 coarse:min-h-11" />
+                    </li>
+                ))}
+            </ul>
+            {more ? (
+                <span aria-hidden="true" className={cn(MORE_BTN, 'invisible')}>
+                    More
+                </span>
+            ) : null}
+            {after}
         </div>
     );
 }

@@ -1,10 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { combineBlocks, deriveExcluded, parseAccuracyReport, reportLags, tallyByType, tallySeason } from './report';
+import { CALL_MIN_CONF, combineBlocks, deriveExcluded, parseAccuracyReport, reportLags, tallyByType, tallySeason } from './report';
 import { cumulativeUnits, gradePending, parseLedger, parseLedgerBets, reconcileLedger, teamFirstScore, tidyReason } from './ledger-data';
 import { isCorrect, pickOf, pickProb, type GradedGame } from './types';
 import { teamTriFromName } from './names';
+import { blockVerdict, compareLogLoss, deltaText, modelLabelOf, SIGNAL_N } from './verdict';
 
 const read = (...p: string[]) => JSON.parse(fs.readFileSync(path.join(process.cwd(), ...p), 'utf8'));
 
@@ -179,5 +180,55 @@ describe('stale report vs graded list', () => {
         expect(tidyReason('Only 1 live games with odds this season; need 200')).toBe('Only 1 game with odds from the current model this season; need 200');
         expect(tidyReason('Only 12 live games with odds this season; need 200')).toBe('Only 12 games with odds from the current model this season; need 200');
         expect(tidyReason('Only 1 live games with odds')).toBe('Only 1 live game with odds');
+    });
+});
+
+describe('fix round 3: verdicts, legacy labels, small samples', () => {
+    const report = parseAccuracyReport(read('public', 'data', 'model_report.json'));
+
+    it('gives 2025-26 a terse verdict: worse than the market, better than home rate', () => {
+        const v = blockVerdict(report.seasons['2025-26']!.all);
+        expect(v.tooEarly).toBe(false);
+        expect(v.vsMarket?.word).toBe('WORSE');
+        expect(v.vsHome?.word).toBe('BETTER');
+    });
+
+    it('calls a tiny sample too early', () => {
+        const b = report.seasons['2026-27']?.all;
+        if (b && b.n < SIGNAL_N) expect(blockVerdict(b)).toMatchObject({ tooEarly: true, vsMarket: null, vsHome: null });
+        expect(blockVerdict(null).tooEarly).toBe(true);
+    });
+
+    it('labels picks by the model that made them', () => {
+        const b = report.seasons['2026-27']?.all;
+        if (b && b.n > 0 && b.nLegacy === b.n) expect(modelLabelOf(b, 'Pony xG')).toBe('Prev. model');
+        const base = report.seasons['2025-26']!.all!;
+        const current = { n: 5, correct: 3, accuracy: 0.6, brier: 0.2, logLoss: 0.6 };
+        const none = { n: 0, correct: 0, accuracy: null, brier: null, logLoss: null };
+        expect(modelLabelOf({ ...base, n: 5, nLegacy: 0, byModel: { current, legacy: none } }, 'x')).toBe('Pony xG');
+        expect(modelLabelOf({ ...base, n: 7, nLegacy: 2, byModel: { current, legacy: { ...current, n: 2 } } }, 'x')).toBeNull();
+    });
+
+    it('never lists a coin flip under best calls or worst misses', () => {
+        for (const s of Object.values(report.seasons))
+            for (const b of Object.values(s)) for (const c of [...b!.bestCalls, ...b!.worstMisses]) expect(c.confidence).toBeGreaterThanOrEqual(CALL_MIN_CONF);
+        expect(report.seasons['2026-27']?.all?.bestCalls.map(c => c.gameId) ?? []).not.toContain(2026020003);
+    });
+
+    it('fills the model Brier on the market games', () => {
+        expect(report.seasons['2025-26']!.all!.market.modelBrierSame).not.toBeNull();
+    });
+
+    it('reads a delta that rounds to zero as same', () => {
+        expect(deltaText(0.00004, 1, ' pts', 100)).toEqual({ text: 'same', same: true });
+        expect(deltaText(-0.0078, 4).text).toBe('−0.0078');
+        expect(deltaText(0.333, 1, ' pts', 100).text).toBe('+33.3 pts');
+        expect(compareLogLoss(0.68221, 0.68219)).toBe('SAME');
+    });
+
+    it('tags ledger bets without a model version as legacy', () => {
+        const bets = parseLedgerBets(read('public', 'data', 'bet_ledger.json'));
+        const vgk = bets.find(b => b.gameId === 2026020005);
+        if (vgk) expect(vgk.legacy).toBe(true);
     });
 });
