@@ -1,3 +1,4 @@
+import { isCorrect, type ExcludedGame, type GradedGame, type SeasonTally } from './types';
 /**
  * Typed, trimmed view of public/data/model_report.json for /accuracy, plus an
  * n-weighted "All seasons" aggregate. Pure: runs on server, client and tests.
@@ -279,3 +280,108 @@ export function combineBlocks(blocks: ReportBlock[]): ReportBlock | null {
 export function seasonLabelOf(seasonId: string): string {
     return `${seasonId.slice(0, 4)}-${seasonId.slice(6, 8)}`;
 }
+
+const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+const ll = (p: number, won: boolean) => -Math.log(Math.min(1 - 1e-6, Math.max(1e-6, won ? p : 1 - p)));
+
+const typeMatch = (g: { type?: string }, type: GameTypeKey) => type === 'all' || (type === 'regular' ? g.type !== '03' : g.type === '03');
+
+/** The season record straight from the graded list (live picks only), optionally for one game type. */
+export function tallySeason(games: GradedGame[], season: string, excluded: ExcludedGame[] = [], type: GameTypeKey = 'all'): SeasonTally {
+    const rows = games.filter(g => g.season === season && !g.retro && typeMatch(g, type));
+    const withMarket = rows.filter(g => g.marketProb != null);
+    return {
+        n: rows.length,
+        correct: rows.filter(isCorrect).length,
+        brier: mean(rows.map(g => g.brier).filter(Number.isFinite)),
+        logLoss: mean(rows.map(g => g.logLoss).filter(Number.isFinite)),
+        marketN: withMarket.length,
+        marketLogLoss: mean(withMarket.map(g => ll(g.marketProb! / 100, g.homeScore > g.awayScore))),
+        modelLogLossSame: mean(withMarket.map(g => ll(g.homeProb / 100, g.homeScore > g.awayScore))),
+        legacyN: rows.filter(g => g.legacy).length,
+        placeholderN: rows.filter(g => g.placeholderOdds).length,
+        excluded: excluded.filter(e => typeMatch(e, type)),
+    };
+}
+
+/** Tallies for every game type, keyed like the report blocks. */
+export function tallyByType(games: GradedGame[], season: string, excluded: ExcludedGame[] = []): Record<GameTypeKey, SeasonTally> {
+    return {
+        all: tallySeason(games, season, excluded, 'all'),
+        regular: tallySeason(games, season, excluded, 'regular'),
+        playoffs: tallySeason(games, season, excluded, 'playoffs'),
+    };
+}
+
+/**
+ * True when model_report.json lags the graded list (it is rebuilt nightly,
+ * the graded list every refresh). The page then shows the tally instead of
+ * the report, so the two can never contradict each other.
+ */
+export function reportLags(reportN: number | null | undefined, tally: SeasonTally | null | undefined): boolean {
+    return !!tally && tally.n > (reportN ?? 0);
+}
+
+const REASONS: Record<string, string> = {
+    snapshot_after_start: 'No pregame snapshot before puck drop',
+    no_snapshot: 'No pregame snapshot before puck drop',
+};
+
+export const seasonOfGameId = (id: number): string => {
+    const y = Math.floor(id / 1_000_000);
+    return y > 1900 ? `${y}-${String(y + 1).slice(2)}` : '';
+};
+
+/**
+ * Finals left out of grading for a season. Explicit exclusion records in
+ * prediction_history ({gameId, excluded}) win; any other final in
+ * gamestats.csv (home rows) with no graded row is listed as having no
+ * pregame snapshot. Pure so it can be tested without the data files.
+ */
+export function deriveExcluded(
+    history: unknown,
+    gamestatsCsv: string,
+    season: string,
+    graded: GradedGame[],
+    teamTri: (name: string) => string | null,
+): ExcludedGame[] {
+    const out = new Map<number, ExcludedGame>();
+    const gradedIds = new Set(graded.map(g => g.id));
+    const typeOf = (id: number) => String(id).slice(4, 6);
+    if (Array.isArray(history)) {
+        for (const r of history as Obj[]) {
+            if (!isObj(r) || !r.excluded) continue;
+            const id = n(r.gameId) ?? 0;
+            if (!id || gradedIds.has(id)) continue;
+            if ((s(r.season) ?? seasonOfGameId(id)) !== season) continue;
+            const home = String(r.homeTeam ?? '');
+            const away = String(r.awayTeam ?? '');
+            out.set(id, {
+                id,
+                date: String(r.date ?? '').slice(0, 10),
+                home: teamTri(home) ?? home,
+                away: teamTri(away) ?? away,
+                reason: REASONS[String(r.excluded)] ?? String(r.excluded).replace(/_/g, ' '),
+                type: typeOf(id),
+            });
+        }
+    }
+    const lines = gamestatsCsv.split(/\r?\n/);
+    const head = (lines[0] ?? '').split(',');
+    const [iId, iDate, iTeam, iOpp, iHA] = ['game_id', 'game_date', 'team', 'opponent', 'home_away'].map(k => head.indexOf(k));
+    if (iId >= 0 && iTeam >= 0 && iOpp >= 0 && iHA >= 0) {
+        for (const line of lines.slice(1)) {
+            const c = line.split(',');
+            const id = Number(c[iId]);
+            if (!id || c[iHA] !== 'Home' || gradedIds.has(id) || out.has(id) || seasonOfGameId(id) !== season) continue;
+            const type = typeOf(id);
+            if (type !== '02' && type !== '03') continue;
+            const home = teamTri(c[iTeam]);
+            const away = teamTri(c[iOpp]);
+            if (!home || !away) continue;
+            out.set(id, { id, date: (c[iDate] ?? '').slice(0, 10), home, away, reason: REASONS.no_snapshot, type });
+        }
+    }
+    return [...out.values()].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+}
+

@@ -1,4 +1,4 @@
-import type { LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
+import type { BetFinal, LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
 
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -109,4 +109,57 @@ export function teamFirstScore(final: string | null, side: 'home' | 'away'): str
 
 export function fmtAmerican(price: number): string {
     return price > 0 ? `+${Math.round(price)}` : `${Math.round(price)}`.replace('-', '−');
+}
+
+/** Grade a bet the ledger file still lists as pending against its final score. */
+export function gradePending(b: LedgerBet, final: BetFinal | undefined): LedgerBet {
+    if (!final || b.result !== 'pending') return b;
+    const homeWon = final.homeScore > final.awayScore;
+    const won = b.side === 'home' ? homeWon : !homeWon;
+    const dec = b.price > 0 ? 1 + b.price / 100 : 1 + 100 / -b.price;
+    return {
+        ...b,
+        result: won ? 'win' : 'loss',
+        profit: Math.round((won ? b.stake * (dec - 1) : -b.stake) * 10000) / 10000,
+        final: `${final.awayScore}-${final.homeScore}`,
+        decision: final.decision,
+    };
+}
+
+/** Fold newly graded pending bets into the per-season summaries. */
+export function reconcileLedger(ledger: LedgerData, raw: unknown, finals: Record<number, BetFinal>): LedgerData {
+    const seasons = { ...ledger.seasons };
+    for (const b of parseLedgerBets(raw)) {
+        if (b.result !== 'pending' || !finals[b.gameId]) continue;
+        const cur = seasons[b.season];
+        if (!cur) continue;
+        const g = gradePending(b, finals[b.gameId]);
+        const [w, l] = cur.record.split('-').map(x => Number(x) || 0);
+        const staked = cur.unitsStaked + b.stake;
+        const profit = Math.round((cur.unitsProfit + g.profit) * 10000) / 10000;
+        seasons[b.season] = {
+            ...cur,
+            nGraded: cur.nGraded + 1,
+            nPending: Math.max(0, cur.nPending - 1),
+            record: g.result === 'win' ? `${w + 1}-${l}` : `${w}-${l + 1}`,
+            unitsStaked: staked,
+            unitsProfit: profit,
+            roi: staked ? profit / staked : null,
+        };
+    }
+    return { ...ledger, seasons };
+}
+
+/**
+ * Gate copy from the pipeline, made readable: plurals fixed, and the live
+ * count spelled out as current-model games (older site models' picks do not
+ * count toward the gate, so it can read 0 while the graded list has rows).
+ */
+export function tidyReason(r: string): string {
+    return r
+        .replace(/\bOnly 0 live games with odds this season\b/i, 'No games with odds from the current model yet this season')
+        .replace(/\bOnly 1 live games with odds this season\b/i, 'Only 1 game with odds from the current model this season')
+        .replace(/\bOnly (\d+) live games with odds this season\b/i, 'Only $1 games with odds from the current model this season')
+        .replace(/\bOnly 0 (live )?games\b/i, (_m, live: string | undefined) => `No ${live ?? ''}games`)
+        .replace(/\b1 (live )?games\b/g, (_m, live: string | undefined) => `1 ${live ?? ''}game`);
 }

@@ -23,6 +23,43 @@ export interface GradedGame {
     retro: boolean;
     /** When the frozen pregame snapshot was taken (UTC ISO). */
     snapshotUtc: string | null;
+    /** Published by the pre-overhaul site model (no modelVersion recorded). */
+    legacy?: boolean;
+    /** Market price was a −110/−110 placeholder, not a real line; excluded from market comparisons. */
+    placeholderOdds?: boolean;
+}
+
+/** A final game that was deliberately left out of grading. */
+export interface ExcludedGame {
+    id: number;
+    date: string;
+    home: string;
+    away: string;
+    reason: string;
+    /** NHL game type ("02" regular, "03" playoffs). */
+    type?: string;
+}
+
+/** Record computed straight from the graded list (never stale). */
+export interface SeasonTally {
+    n: number;
+    correct: number;
+    brier: number | null;
+    logLoss: number | null;
+    /** Games with a real (non-placeholder) market price. */
+    marketN: number;
+    marketLogLoss: number | null;
+    modelLogLossSame: number | null;
+    legacyN: number;
+    placeholderN: number;
+    excluded: ExcludedGame[];
+}
+
+/** Final score for a ledger bet that the ledger file still lists as pending. */
+export interface BetFinal {
+    homeScore: number;
+    awayScore: number;
+    decision: string;
 }
 
 export function pickOf(g: GradedGame): string {

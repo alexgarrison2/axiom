@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHeading } from '@/components/ui/page-heading';
 import { SEASON_START_YEAR } from '@/lib/season';
-import { loadLedger, loadReport } from '@/components/accuracy/data';
+import { loadExcludedGames, loadGradedGames, loadLedger, loadLedgerRaw, loadReport, pendingBetFinals, tallyByType } from '@/components/accuracy/data';
+import { reconcileLedger } from '@/components/accuracy/ledger-data';
+import type { SeasonTally } from '@/components/accuracy/types';
+import type { GameTypeKey } from '@/components/accuracy/report';
 import { AccuracyView } from '@/components/accuracy/AccuracyView';
 
 // Rebuilt with every data refresh (each pipeline commit redeploys).
@@ -19,11 +22,16 @@ export const metadata: Metadata = {
 
 export default function AccuracyPage() {
     const report = loadReport();
-    const ledger = loadLedger();
+    const graded = loadGradedGames();
+    const ledgerRaw = loadLedgerRaw();
+    const finals = pendingBetFinals(ledgerRaw, graded);
+    const ledger = reconcileLedger(loadLedger(), ledgerRaw, finals);
     const seasons = [...new Set([CURRENT, ...Object.keys(report.seasons), ...Object.keys(ledger.seasons)])]
         .filter(s => /^\d{4}-\d{2}$/.test(s))
         .sort()
         .reverse();
+    // The current season is reconciled against the graded list so a report that lags a refresh never contradicts it.
+    const tallies: Record<string, Record<GameTypeKey, SeasonTally>> = { [CURRENT]: tallyByType(graded, CURRENT, loadExcludedGames(CURRENT, graded)) };
 
     return (
         <main className="pb-tabbar">
@@ -33,7 +41,7 @@ export default function AccuracyPage() {
                     title="Accuracy"
                     description="Every pick we published before puck drop, graded against the final score and compared with the betting market and a simple home-team baseline. No back-filled results in the headline numbers."
                 />
-                <AccuracyView report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} />
+                <AccuracyView report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} tallies={tallies} finals={finals} />
                 <p className="text-caption text-fg-3">
                     How grading works: <Link href="/methodology#grading" className="font-semibold text-brand hover:underline">methodology</Link>.
                     {report.generatedAt ? ` Report built ${report.generatedAt.slice(0, 10)}.` : ''}
