@@ -69,7 +69,7 @@ SIDES = ("home", "away")
 FROZEN_COLUMNS = [
     "predicted_at", "model_version", "preseason_prior",
     "home_model_win_pct", "away_model_win_pct", "home_win_pct", "away_win_pct",
-    "home_model_odds", "away_model_odds",
+    "home_model_odds", "away_model_odds", "home_blend_odds", "away_blend_odds",
     "home_vegas_odds", "away_vegas_odds", "home_vegas_win_pct", "away_vegas_win_pct",
     "blend_weight", "home_ev", "away_ev", "ev_gated", "bet_side", "units", "wager_recommendation",
     "gate_reason", "market_source", "market_fetched_at",
@@ -141,6 +141,22 @@ def prob_to_odds(prob):
         return "+100"
     odds = -(prob / (1 - prob)) * 100 if prob > 0.5 else ((1 - prob) / prob) * 100
     return f"+{int(round(odds))}" if odds > 0 else f"{int(round(odds))}"
+
+
+def relabel_fair_odds(row):
+    """Rows frozen before *_blend_odds existed stored the BLENDED fair line in
+    *_model_odds.  Relabel it (no prediction changes): the old value becomes
+    *_blend_odds and *_model_odds is re-derived from the model-only %."""
+    for side in SIDES:
+        if row.get(f"{side}_blend_odds") not in (None, ""):
+            continue
+        try:
+            pm = float(row.get(f"{side}_model_win_pct"))
+            pb = float(row.get(f"{side}_win_pct"))
+        except (TypeError, ValueError):
+            continue
+        row[f"{side}_blend_odds"] = prob_to_odds(pb / 100)
+        row[f"{side}_model_odds"] = prob_to_odds(pm / 100)
 
 
 def convert_to_central(start):
@@ -511,7 +527,12 @@ def build_model_outputs(game, ctx, inp):
         "preseason_prior": preseason,
         "home_model_win_pct": round(100 * p_model, 1), "away_model_win_pct": round(100 * (1 - p_model), 1),
         "home_win_pct": win_pct, "away_win_pct": round(100 - win_pct, 1),
-        "home_model_odds": prob_to_odds(p), "away_model_odds": prob_to_odds(1 - p),
+        # Fair lines: *_model_odds of the model-only %, *_blend_odds of the published (blended) %.
+        # Computed from the rounded percentages so the CSV is self-consistent.
+        "home_model_odds": prob_to_odds(round(100 * p_model, 1) / 100),
+        "away_model_odds": prob_to_odds(round(100 * (1 - p_model), 1) / 100),
+        "home_blend_odds": prob_to_odds(win_pct / 100),
+        "away_blend_odds": prob_to_odds(round(100 - win_pct, 1) / 100),
         "home_vegas_odds": int(hp) if hp is not None else None,
         "away_vegas_odds": int(ap) if ap is not None else None,
         "home_vegas_win_pct": round(100 * q, 1) if q is not None else None,
@@ -556,6 +577,7 @@ def build_row(game, inp):
     if status == "freeze":
         for c in FROZEN_COLUMNS:
             row[c] = existing_row.get(c, "")
+        relabel_fair_odds(row)
         row["prediction_status"] = STATUS_FROZEN
     elif status == "no_pregame":
         row["prediction_status"] = STATUS_NO_PREGAME
