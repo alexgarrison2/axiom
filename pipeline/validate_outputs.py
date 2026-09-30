@@ -35,6 +35,10 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  other clean-start-season final is listed in not_graded
   fair_odds      *_model_odds / *_blend_odds are the fair lines of the model-only
                  and published % (within 1 cent)
+  model_independent
+                 every predicted row has its own model-only % and model_version,
+                 and that % is rebuilt from the row's factor breakdown (so a
+                 model % equal to the market % is a coincidence, not a copy)
   goal_splits    current-season goals_ev + goals_pp + goals_sh + emptynet_goalsfor == goals_for
 
 ``--freshness`` instead only checks that manifest.generated_at is under 26 h
@@ -579,6 +583,73 @@ def check_fair_odds(ctx):
     return errs
 
 
+def model_pct_from_breakdown(row):
+    """Home model-only win % rebuilt from the row's own factor breakdown, or None.
+
+    home_wp_breakdown attributes the published % sequentially: the model's
+    terms (each scaled by blend_weight w) come first, then one 'market' row
+    worth (1 - w) * market logit. So after the model rows the running logit is
+    w * model_logit, and the model-only % is sigmoid(that / w). This never
+    touches the market price, so it proves the model % came from the model.
+    """
+    import math
+    try:
+        bd = json.loads(row.get("home_wp_breakdown") or "")
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(bd, list) or not bd:
+        return None
+    model_rows = [x for x in bd if x.get("factor") != "market"]
+    has_market = len(model_rows) < len(bd)
+    p_after = (50 + sum(float(x.get("wp_delta_pts") or 0) for x in model_rows)) / 100
+    if not 0 < p_after < 1:
+        return None
+    if not has_market:
+        return 100 * p_after
+    w = _num(row.get("blend_weight"))
+    if not w or not 0 < w <= 1:
+        return None
+    z = math.log(p_after / (1 - p_after)) / w
+    return 100 / (1 + math.exp(-z))
+
+
+# Rounding: breakdown deltas are 2-decimal and the market row can carry 80% of
+# the weight, which amplifies the error by 1/w in logit space.
+MODEL_REBUILD_TOL = 0.5
+
+
+def check_model_independent(ctx):
+    """Every predicted row has its own model % (never a copy of the market):
+    home_model_win_pct must be present with a model_version and must be
+    rebuildable from the model's factor breakdown. A model % that equals the
+    de-vigged market % is fine when the factors reproduce it (a coincidence,
+    e.g. TBL@NYR 2026-10-01 at 43.4%)."""
+    errs = []
+    for path in ctx.get("pred_files", PRED_FILES):
+        if not os.path.exists(path):
+            continue
+        name = os.path.relpath(path, REPO_ROOT)
+        for r in _rows(path):
+            if r.get("prediction_status") not in ("pregame", "frozen") or _blank(r.get("home_win_pct")):
+                continue
+            gid = r.get("game_id")
+            pm = _num(r.get("home_model_win_pct"))
+            if pm is None:
+                errs.append(f"{name} {gid}: published % without a model-only %")
+                continue
+            if _blank(r.get("model_version")):
+                errs.append(f"{name} {gid}: model % without a model_version")
+            rebuilt = model_pct_from_breakdown(r)
+            if rebuilt is None:
+                if r.get("prediction_status") == "pregame":
+                    errs.append(f"{name} {gid}: model % {pm} has no factor breakdown to rebuild it from")
+                continue      # legacy frozen rows predate the breakdown
+            if abs(rebuilt - pm) > MODEL_REBUILD_TOL:
+                errs.append(f"{name} {gid}: model % {pm} does not follow from its factors ({rebuilt:.1f}); "
+                            f"market % is {r.get('home_vegas_win_pct')}")
+    return errs
+
+
 def check_gamestats_goals(ctx):
     """Current-season gamestats: goals_ev + goals_pp + goals_sh + emptynet_goalsfor == goals_for."""
     from season import read_season_csv
@@ -631,6 +702,7 @@ CHECKS = {
     "reports": check_reports,
     "graded": check_graded,
     "fair_odds": check_fair_odds,
+    "model_independent": check_model_independent,
     "goal_splits": check_gamestats_goals,
 }
 
