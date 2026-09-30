@@ -33,26 +33,9 @@ export default function PlayersPage() {
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
-                <PageHeading
-                    eyebrow={`${ratingsSeason} ratings · skaters`}
-                    title="Players"
-                    description="Who moves the needle: each skater's impact on goals for and against, adjusted for linemates and opponents, next to his scoring."
-                    actions={
-                        <span
-                            className={
-                                ratingsCurrent
-                                    ? 'inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 py-1 text-caption font-semibold text-fg-1'
-                                    : 'is-stale inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-caption font-semibold'
-                            }
-                        >
-                            <span className="shrink-0 whitespace-nowrap rounded-[3px] bg-fg-3/15 px-1 font-mono text-micro text-fg-2">{ratingsSeason.slice(2)}</span>
-                            <span className="whitespace-nowrap">Ratings: {ratingsSeason}</span>
-                            {ratingsCurrent ? '' : ` · refresh after ~${PLAYER_MODEL_MIN_GAMES} league games${leagueGames ? ` (${leagueGames} played)` : ''}`}
-                        </span>
-                    }
-                />
-                <SkaterStatsTable preview={preview} src="/players/skaters" ratingsLabel={ratingsCurrent ? `${ratingsSeason} season` : `${ratingsSeason} season (teams updated for offseason moves)`} />
+            <div className="mx-auto flex max-w-[1400px] flex-col gap-4 px-4 py-5 md:px-6 md:py-7">
+                <PageHeading title="Players" tag={ratingsCurrent ? undefined : <abbr title={`Ratings from the ${ratingsSeason} season until ~${PLAYER_MODEL_MIN_GAMES} league games are played${leagueGames ? ` (${leagueGames} so far)` : ''}`} className="no-underline">{ratingsSeason.slice(2)}</abbr>} />
+                <SkaterStatsTable preview={preview} src="/players/skaters" />
             </div>
         </main>
     );

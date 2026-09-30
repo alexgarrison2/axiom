@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 import { Segmented } from '@/components/ui/segmented';
-import { KpiTile } from '@/components/ui/kpi-tile';
-import { InfoTip } from '@/components/ui/info-tip';
+import { PageHeading } from '@/components/ui/page-heading';
 import { ScrollRegion } from '@/components/ui/scroll-region';
-import { TeamLogo } from '@/components/views/TeamLogo';
-import { plural, shortDate, signed } from '@/components/views/format';
+import { Crest } from '@/components/ui/crest';
+import { shortDate, signed } from '@/components/views/format';
+import { cn } from '@/lib/utils';
 import { teamTriFromName } from './names';
 import { combineBlocks, reportLags, type AccuracyReport, type CallRow, type GameTypeKey, type ReportBlock } from './report';
 import { ReliabilityChart, RollingChart, TierBars } from './charts';
@@ -27,12 +27,13 @@ export interface AccuracyViewProps {
 }
 
 const TYPE_OPTIONS: { value: GameTypeKey; label: string }[] = [
-    { value: 'all', label: 'All games' },
-    { value: 'regular', label: 'Regular season' },
+    { value: 'all', label: 'All' },
+    { value: 'regular', label: 'Regular' },
     { value: 'playoffs', label: 'Playoffs' },
 ];
 
 const pct1 = (v: number | null | undefined) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
+const dec3 = (v: number | null | undefined) => (v == null ? '—' : v.toFixed(3));
 const dec4 = (v: number | null | undefined) => (v == null ? '—' : v.toFixed(4));
 
 export function AccuracyView({ report, ledger, seasons, currentSeason, tallies = {}, finals = {} }: AccuracyViewProps) {
@@ -74,47 +75,62 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
     const priorSeason = seasons.find(s => s !== currentSeason && (report.seasons[s]?.all?.n ?? 0) > 0);
     const seasonWord = season === 'all' ? 'all seasons' : season;
 
+    const controls = (mobile: boolean) => (
+        <>
+            <Segmented label="Season" size="sm" block={mobile} options={seasonOptions} value={season} onChange={selectSeason} />
+            <Segmented label="Game type" size="sm" block={mobile} options={TYPE_OPTIONS} value={type} onChange={setType} />
+        </>
+    );
+
     return (
-        <div className="flex flex-col gap-10">
-            <div className="flex flex-wrap items-center gap-3">
-                <Segmented label="Season" options={seasonOptions} value={season} onChange={selectSeason} />
-                <Segmented label="Game type" options={TYPE_OPTIONS} value={type} onChange={setType} size="sm" />
+        <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+                <PageHeading title="Accuracy" actions={<div className="hidden flex-wrap items-center gap-2 sm:flex">{controls(false)}</div>} />
+                <div className="flex flex-col gap-2 sm:hidden">{controls(true)}</div>
             </div>
 
-            <section aria-labelledby="report-card" className="flex flex-col gap-5">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 id="report-card" className="text-h2 font-black tracking-tight text-fg-1">
+            <section aria-labelledby="report-card" className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <h2 id="report-card" className="heading-section">
                         Report card
                     </h2>
                     {!empty && !stale && block ? (
-                        <p className="text-caption text-fg-3">
-                            Live pregame picks only · {shortDate(block.firstDate)} – {shortDate(block.lastDate)}
-                            {block.nRetro ? ` · ${plural(block.nRetro, 'back-filled game')} excluded` : ''}
+                        <p className="label">
+                            Live picks · {shortDate(block.firstDate)}–{shortDate(block.lastDate)}
+                            {block.nRetro ? ` · ${block.nRetro.toLocaleString('en-US')} back-filled out` : ''}
                         </p>
                     ) : null}
                 </div>
 
                 {stale && tally ? (
-                    <ThroughSummary tally={tally} season={season} />
+                    <ThroughSummary tally={tally} />
                 ) : empty ? (
                     <EmptyState season={season} currentSeason={currentSeason} type={type} prior={priorSeason} onPrior={() => priorSeason && selectSeason(priorSeason)} />
                 ) : (
-                    <ReportCard block={block!} seasonWord={seasonWord} modelLabel={season === 'all' ? 'Site model (live)' : season < currentSeason ? 'Previous site model (live)' : 'Pony xG model'} />
+                    <ReportCard block={block!} seasonWord={seasonWord} modelLabel={season === 'all' ? 'Site model' : season < currentSeason ? 'Prev. model' : 'Pony xG'} />
                 )}
             </section>
 
-            <section aria-labelledby="every-pick" className="flex flex-col gap-4">
-                <h2 id="every-pick" className="text-h2 font-black tracking-tight text-fg-1">
-                    Every pick
+            <section aria-labelledby="every-pick" className="flex flex-col gap-3">
+                <h2 id="every-pick" className="heading-section">
+                    Picks
                 </h2>
                 <GameList season={season} seasons={seasons} type={type} currentSeason={currentSeason} excluded={season === 'all' ? [] : (tallies[season]?.[type]?.excluded ?? [])} />
             </section>
 
-            <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-4">
-                <h2 id="ledger-title" className="text-h2 font-black tracking-tight text-fg-1">
-                    Bet ledger
-                </h2>
-                <Ledger ledger={ledger} gate={report.gate} season={season} seasons={seasons} finals={finals} />
+            <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-3">
+                <Ledger
+                    ledger={ledger}
+                    gate={report.gate}
+                    season={season}
+                    seasons={seasons}
+                    finals={finals}
+                    title={
+                        <h2 id="ledger-title" className="heading-section">
+                            Bet ledger
+                        </h2>
+                    }
+                />
             </section>
         </div>
     );
@@ -123,64 +139,76 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
 function EmptyState({ season, currentSeason, type, prior, onPrior }: { season: string; currentSeason: string; type: GameTypeKey; prior?: string; onPrior: () => void }) {
     const isCurrent = season === currentSeason;
     return (
-        <div role="status" className="hud-panel flex flex-col items-start gap-3 border-dashed p-5 md:p-6">
-            <p className="text-title font-bold text-fg-1">
-                {isCurrent
-                    ? `No ${season} ${type === 'playoffs' ? 'playoff ' : ''}games graded yet.`
-                    : `No graded ${type === 'playoffs' ? 'playoff ' : type === 'regular' ? 'regular-season ' : ''}games for ${season === 'all' ? 'this selection' : season}.`}
-                {isCurrent && type !== 'playoffs' ? ' First results after tonight.' : ''}
-            </p>
-            <p className="max-w-2xl text-body-sm text-fg-2">
-                We only grade the picks we published before puck drop, so a new season starts from zero rather than carrying last season&apos;s record forward.
+        <div role="status" className="panel flex flex-wrap items-center gap-3 border-dashed px-card py-3">
+            <p className="label text-fg-2">
+                0 graded{type === 'playoffs' ? ' playoff' : type === 'regular' ? ' regular-season' : ''} games{season === 'all' ? '' : ` · ${season}`}
             </p>
             {isCurrent && prior ? (
                 <button
                     type="button"
                     onClick={onPrior}
-                    className="inline-flex min-h-10 items-center rounded-control bg-brand px-4 text-body-sm font-bold text-brand-ink transition-[filter] hover:brightness-110 coarse:min-h-11"
+                    className="ml-auto inline-flex min-h-8 items-center rounded-control border border-brand/50 px-3 text-micro font-medium uppercase tracking-[0.14em] text-brand transition-colors hover:bg-brand/10 coarse:min-h-11"
                 >
-                    See the {prior} record
+                    {prior} →
                 </button>
             ) : null}
         </div>
     );
 }
 
-function ThroughSummary({ tally: t, season }: { tally: SeasonTally; season: string }) {
+/** The report file lags the graded list: show the running record from the graded rows. */
+function ThroughSummary({ tally: t }: { tally: SeasonTally }) {
     const record = `${t.correct}-${t.n - t.correct}`;
     return (
-        <div role="status" className="flex flex-col gap-4">
-            <p className="text-title font-bold text-fg-1">
-                {`Through ${plural(t.n, 'game')}: ${record}`}
-            </p>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <KpiTile label="Picks right" info={<InfoTip term="confidence" />} value={pct1(t.n ? t.correct / t.n : null)} sub={`${record} · n=${t.n}`} />
-                <KpiTile
+        <div role="status" className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+                <BigNum label="Picks right" value={pct1(t.n ? t.correct / t.n : null)} sub={`${record} · n=${t.n}`} />
+                <BigNum
                     label="Log loss"
-                    info={<InfoTip term="log-loss" />}
                     value={dec4(t.logLoss)}
-                    sub={t.marketN ? `Same ${plural(t.marketN, 'game')}: model ${dec4(t.modelLogLossSame)} · market ${dec4(t.marketLogLoss)}` : 'No market prices yet'}
-                />
-                <KpiTile label="Brier score" info={<InfoTip term="brier" />} value={dec4(t.brier)} sub="coin flip 0.2500" />
-                <KpiTile
-                    label="Games graded"
-                    value={t.n.toLocaleString('en-US')}
-                    sub={
-                        <>
-                            {t.marketN ? `${t.marketN} with a real market price` : 'No market prices recorded'}
-                            {t.placeholderN ? ` · ${t.placeholderN} placeholder line excluded from market` : ''}
-                            {t.excluded.length ? ` · ${t.excluded.length} not graded` : ''}
-                        </>
+                    delta={
+                        t.marketN && t.modelLogLossSame != null && t.marketLogLoss != null
+                            ? { value: t.modelLogLossSame - t.marketLogLoss, better: 'lower', text: signed(t.modelLogLossSame - t.marketLogLoss, 4) }
+                            : null
                     }
+                    sub={t.marketN ? `mkt ${dec4(t.marketLogLoss)} · n=${t.marketN}` : 'no mkt prices'}
+                />
+                <BigNum label="Brier" value={dec4(t.brier)} sub="flip 0.2500" />
+                <BigNum
+                    label="Graded"
+                    value={t.n.toLocaleString('en-US')}
+                    sub={[t.marketN ? `${t.marketN} w/ mkt` : null, t.excluded.length ? `${t.excluded.length} not graded` : null].filter(Boolean).join(' · ') || undefined}
                 />
             </div>
-            <p className="max-w-3xl text-body-sm text-fg-2">
-                Tiny sample, so read these as a starting line, not a verdict. The full {season} report (calibration, confidence tiers, baselines)
-                updates after the nightly refresh.
-                {t.legacyN
-                    ? ` ${t.legacyN === t.n ? `All ${t.n}` : t.legacyN} of these picks came from the previous (legacy) site model, so they are graded here but do not count toward the bet gate.`
-                    : ''}
-            </p>
+            {t.legacyN ? <p className="label">{t.legacyN === t.n ? 'All' : t.legacyN} from legacy model · not in bet gate</p> : null}
+        </div>
+    );
+}
+
+interface BigDelta {
+    value: number;
+    better: 'higher' | 'lower';
+    text: string;
+}
+
+/** A report-card number: label, big display value, delta vs the market, tiny sub line. */
+function BigNum({ label, value, delta, sub }: { label: string; value: string; delta?: BigDelta | null; sub?: string }) {
+    const good = delta ? (delta.better === 'higher' ? delta.value > 0 : delta.value < 0) : false;
+    const same = delta ? Math.abs(delta.value) < 1e-9 : true;
+    return (
+        <div className="panel flex min-w-0 flex-col gap-1 px-3 py-2.5 md:px-4 md:py-3">
+            <span className="label">{label}</span>
+            <span className="font-display text-[30px] font-bold leading-none text-fg-1 md:text-[40px]">{value}</span>
+            <span className="flex flex-wrap items-baseline gap-x-2 text-micro">
+                {delta ? (
+                    <span className={cn('font-bold', same ? 'text-fg-2' : good ? 'text-pos' : 'text-neg')}>
+                        {delta.text}
+                        <span className="ml-1 font-medium uppercase tracking-[0.12em] text-fg-3">vs mkt</span>
+                        <span className="sr-only">{same ? ' (same)' : good ? ' (better)' : ' (worse)'}</span>
+                    </span>
+                ) : null}
+                {sub ? <span className="text-fg-3">{sub}</span> : null}
+            </span>
         </div>
     );
 }
@@ -191,66 +219,47 @@ function ReportCard({ block: b, seasonWord, modelLabel }: { block: ReportBlock; 
     const sameAcc = m.modelAccuracySame ?? b.accuracy;
     const record = `${b.correct}-${b.n - b.correct}`;
     return (
-        <div className="flex flex-col gap-6">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <KpiTile
+        <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+                <BigNum
                     label="Picks right"
-                    info={<InfoTip term="confidence" />}
                     value={pct1(b.accuracy)}
-                    sub={
-                        <>
-                            {record} · n={b.n.toLocaleString('en-US')}
-                            {b.accuracyCi ? ` · 95% CI ${(b.accuracyCi[0] * 100).toFixed(0)}–${(b.accuracyCi[1] * 100).toFixed(0)}%` : ''}
-                        </>
-                    }
-                    delta={
-                        sameAcc != null && m.accuracy != null && m.n
-                            ? { value: (sameAcc - m.accuracy) * 100, baseline: 'market favourite', better: 'higher', format: v => `${signed(v, 1)} pts` }
-                            : null
-                    }
+                    delta={sameAcc != null && m.accuracy != null && m.n ? { value: sameAcc - m.accuracy, better: 'higher', text: `${signed((sameAcc - m.accuracy) * 100, 1)} pts` } : null}
+                    sub={`${record}${b.accuracyCi ? ` · CI ${(b.accuracyCi[0] * 100).toFixed(0)}–${(b.accuracyCi[1] * 100).toFixed(0)}` : ''}`}
                 />
-                <KpiTile
+                <BigNum
                     label="Log loss"
-                    info={<InfoTip term="log-loss" />}
                     value={dec4(b.logLoss)}
-                    delta={sameLL != null && m.logLoss != null && m.n ? { value: sameLL - m.logLoss, baseline: 'market', better: 'lower', format: v => signed(v, 4) } : null}
-                    sub={`Home-rate ${dec4(b.homeRate.logLoss)} · coin flip 0.6931`}
+                    delta={sameLL != null && m.logLoss != null && m.n ? { value: sameLL - m.logLoss, better: 'lower', text: signed(sameLL - m.logLoss, 4) } : null}
+                    sub="flip 0.6931"
                 />
-                <KpiTile
-                    label="Brier score"
-                    info={<InfoTip term="brier" />}
+                <BigNum
+                    label="Brier"
                     value={dec4(b.brier)}
-                    delta={b.brier != null && m.brier != null && m.n ? { value: b.brier - m.brier, baseline: 'market', better: 'lower', format: v => signed(v, 4) } : null}
-                    sub={`Home-rate ${dec4(b.homeRate.brier)} · coin flip 0.2500`}
+                    delta={b.brier != null && m.brier != null && m.n ? { value: b.brier - m.brier, better: 'lower', text: signed(b.brier - m.brier, 4) } : null}
+                    sub="flip 0.2500"
                 />
-                <KpiTile
-                    label="Games graded"
-                    value={b.n.toLocaleString('en-US')}
-                    sub={
-                        <>
-                            {m.n ? `${m.n.toLocaleString('en-US')} with a market price` : 'No market prices recorded'}
-                            {b.nRetro ? ` · ${b.nRetro.toLocaleString('en-US')} back-filled excluded` : ''}
-                        </>
-                    }
-                />
+                <BigNum label="Graded" value={b.n.toLocaleString('en-US')} sub={m.n ? `${m.n.toLocaleString('en-US')} w/ mkt` : 'no mkt prices'} />
             </div>
 
-            <BaselineTable block={b} seasonWord={seasonWord} modelLabel={modelLabel} />
-
-            <div className="grid gap-4 lg:grid-cols-2">
-                <Panel title="Calibration" info={<InfoTip term="calibration" />}>
-                    {b.reliability.some(r => r.n > 0) ? <ReliabilityChart bins={b.reliability} /> : <p className="text-body-sm text-fg-3">Not enough games.</p>}
-                </Panel>
-                <Panel title="Accuracy by confidence" info={<InfoTip term="confidence" />}>
-                    {b.tiers.length ? <TierBars tiers={b.tiers} /> : <p className="text-body-sm text-fg-3">Not enough games.</p>}
-                </Panel>
+            <div className="grid items-start gap-3 lg:grid-cols-2">
+                <div className="flex min-w-0 flex-col gap-3">
+                    <BaselineTable block={b} seasonWord={seasonWord} modelLabel={modelLabel} />
+                    <Panel title="By confidence">{b.tiers.length ? <TierBars tiers={b.tiers} /> : <p className="label">n too small</p>}</Panel>
+                </div>
+                <div className="flex min-w-0 flex-col gap-3">
+                    <Panel title="Calibration">
+                        {b.reliability.some(r => r.n > 0) ? <ReliabilityChart bins={b.reliability} /> : <p className="label">n too small</p>}
+                    </Panel>
+                    {b.rolling.length > 1 ? (
+                        <Panel title="Rolling log loss">
+                            <RollingChart points={b.rolling} />
+                        </Panel>
+                    ) : null}
+                </div>
             </div>
 
-            <Panel title="Rolling log loss vs the market" info={<InfoTip term="market-pct" />}>
-                <RollingChart points={b.rolling} />
-            </Panel>
-
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid items-start gap-3 lg:grid-cols-2">
                 <Panel title="Best calls">
                     <CallList rows={b.bestCalls} />
                 </Panel>
@@ -262,13 +271,10 @@ function ReportCard({ block: b, seasonWord, modelLabel }: { block: ReportBlock; 
     );
 }
 
-function Panel({ title, info, children }: { title: string; info?: React.ReactNode; children: React.ReactNode }) {
+function Panel({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
     return (
-        <section aria-label={title} className="hud-panel flex flex-col gap-4 p-4 md:p-5">
-            <h3 className="flex items-center gap-1 text-title font-bold text-fg-1">
-                {title}
-                {info}
-            </h3>
+        <section aria-label={title} className={cn('panel flex min-w-0 flex-col gap-2 px-3 py-2.5 md:px-4 md:py-3', className)}>
+            <h3 className="heading-sub">{title}</h3>
             {children}
         </section>
     );
@@ -280,57 +286,57 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
         { label: modelLabel, n: b.n, acc: b.accuracy, brier: b.brier, ll: b.logLoss, model: true },
     ];
     if (m.n) {
-        rows.push({ label: `${modelLabel}, same games`, n: m.n, acc: m.modelAccuracySame ?? null, brier: null, ll: m.modelLogLossSame ?? null, model: true, note: 'games with a market price' });
-        rows.push({ label: 'Betting market (de-vigged)', n: m.n, acc: m.accuracy, brier: m.brier, ll: m.logLoss });
+        rows.push({ label: `${modelLabel} · mkt games`, n: m.n, acc: m.modelAccuracySame ?? null, brier: null, ll: m.modelLogLossSame ?? null, model: true });
+        rows.push({ label: 'Market (no vig)', n: m.n, acc: m.accuracy, brier: m.brier, ll: m.logLoss });
     }
     rows.push({
-        label: 'Always the home-win rate',
+        label: 'Home rate',
         n: b.homeRate.n,
         acc: b.homeRate.accuracy,
         brier: b.homeRate.brier,
         ll: b.homeRate.logLoss,
-        note: b.homeRate.rate != null ? `${(b.homeRate.rate * 100).toFixed(1)}% home` : undefined,
+        note: b.homeRate.rate != null ? `${(b.homeRate.rate * 100).toFixed(1)}%` : undefined,
     });
     rows.push({ label: 'Coin flip', n: null, acc: null, brier: 0.25, ll: Math.LN2 });
     const bestLL = Math.min(...rows.map(r => r.ll ?? Infinity));
     return (
-        <ScrollRegion label={`Model versus baselines, ${seasonWord}`} className="rounded-card border border-line">
-            <table className="w-full min-w-[560px] text-left text-body-sm">
+        <ScrollRegion label={`Model versus baselines, ${seasonWord}`} className="panel">
+            <table className="table-dense min-w-[440px]">
                 <caption className="sr-only">Model versus baselines for {seasonWord}. Lower Brier and log loss are better.</caption>
-                <thead className="bg-surface-2 text-micro uppercase tracking-[0.06em] text-fg-2">
+                <thead>
                     <tr>
-                        <th scope="col" className="px-4 py-2.5 font-semibold">
-                            Forecaster
+                        <th scope="col" className="text-left">
+                            vs
                         </th>
-                        <th scope="col" className="px-4 py-2.5 text-right font-semibold">
-                            Games
+                        <th scope="col" className="text-right">
+                            n
                         </th>
-                        <th scope="col" className="px-4 py-2.5 text-right font-semibold">
-                            Accuracy
+                        <th scope="col" className="text-right">
+                            Acc
                         </th>
-                        <th scope="col" className="px-4 py-2.5 text-right font-semibold">
+                        <th scope="col" className="text-right">
                             Brier ↓
                         </th>
-                        <th scope="col" className="px-4 py-2.5 text-right font-semibold">
-                            Log loss ↓
+                        <th scope="col" className="text-right">
+                            LL ↓
                         </th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-line tabular-nums">
+                <tbody>
                     {rows.map(r => (
-                        <tr key={r.label} className={r.model ? 'bg-brand/5' : undefined}>
-                            <th scope="row" className="px-4 py-2.5 font-semibold">
+                        <tr key={r.label}>
+                            <th scope="row" className="text-left font-semibold">
                                 <span className={r.model ? 'text-brand' : 'text-fg-1'}>{r.label}</span>
-                                {r.note ? <span className="block text-caption font-normal text-fg-3">{r.note}</span> : null}
+                                {r.note ? <span className="ml-2 font-normal text-fg-3">{r.note}</span> : null}
                             </th>
-                            <td className="px-4 py-2.5 text-right text-fg-2">{r.n != null ? r.n.toLocaleString('en-US') : '—'}</td>
-                            <td className="px-4 py-2.5 text-right text-fg-1">{pct1(r.acc)}</td>
-                            <td className="px-4 py-2.5 text-right text-fg-1">{dec4(r.brier)}</td>
-                            <td className="px-4 py-2.5 text-right text-fg-1">
-                                {dec4(r.ll)}
+                            <td className="text-right text-fg-2">{r.n != null ? r.n.toLocaleString('en-US') : '—'}</td>
+                            <td className="text-right text-fg-1">{pct1(r.acc)}</td>
+                            <td className="text-right text-fg-1">{dec3(r.brier)}</td>
+                            <td className="text-right text-fg-1">
                                 {r.ll === bestLL ? (
-                                    <span className="ml-1.5 rounded-chip bg-pos/15 px-1.5 text-micro font-semibold text-pos">best</span>
+                                    <span className="mr-1.5 rounded-chip border border-pos/40 px-1 text-micro font-semibold uppercase text-pos">best</span>
                                 ) : null}
+                                {dec4(r.ll)}
                             </td>
                         </tr>
                     ))}
@@ -341,27 +347,31 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
 }
 
 function CallList({ rows }: { rows: CallRow[] }) {
-    if (!rows.length) return <p className="text-body-sm text-fg-3">None yet.</p>;
+    if (!rows.length) return <p className="label">—</p>;
     return (
-        <ol className="flex flex-col gap-1.5">
+        <ol className="flex flex-col">
             {rows.map(c => {
                 const home = teamTriFromName(c.homeTeam) ?? c.homeTeam;
                 const away = teamTriFromName(c.awayTeam) ?? c.awayTeam;
                 const pick = teamTriFromName(c.pick) ?? c.pick;
                 return (
-                    <li key={c.gameId} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-control bg-surface-2/60 px-3 py-2 text-body-sm">
-                        <span aria-hidden="true" className={c.correct ? 'font-bold text-pos' : 'font-bold text-neg'}>
-                            {c.correct ? '✓' : '✗'}
+                    <li key={c.gameId} className="flex h-8 items-center gap-2.5 border-t border-line/60 text-caption first:border-t-0">
+                        <span aria-hidden="true" className={cn('w-3 font-bold', c.correct ? 'text-pos' : 'text-neg')}>
+                            {c.correct ? '✓' : '✕'}
                         </span>
-                        <span className="w-14 text-fg-3">{shortDate(c.date)}</span>
-                        <span className="flex items-center gap-1.5 tabular-nums text-fg-1">
-                            <TeamLogo tri={away} size={18} />
-                            {away} {c.awayScore} @ {home} {c.homeScore}
-                            <TeamLogo tri={home} size={18} />
-                            {c.decision !== 'REG' ? <span className="text-caption text-fg-3">{c.decision}</span> : null}
+                        <span className="w-12 shrink-0 text-fg-3">{shortDate(c.date)}</span>
+                        <span className="flex min-w-0 items-center gap-1.5 text-fg-1">
+                            <Crest tri={away} size={16} className="drop-shadow-none" />
+                            {away} {c.awayScore}
+                            <span className="text-fg-3">@</span>
+                            <Crest tri={home} size={16} className="drop-shadow-none" />
+                            {home} {c.homeScore}
+                            {c.decision !== 'REG' ? <span className="text-fg-3">{c.decision}</span> : null}
                         </span>
-                        <span className="ml-auto text-fg-2">
-                            Picked <span className="font-semibold text-fg-1">{pick}</span> at <span className="font-semibold tabular-nums text-fg-1">{c.confidence.toFixed(0)}%</span>
+                        <span className="ml-auto flex shrink-0 items-center gap-1.5">
+                            <span className="sr-only">Picked</span>
+                            <span className="font-bold text-fg-1">{pick}</span>
+                            <span className="font-bold text-fg-2">{c.confidence.toFixed(0)}%</span>
                             <span className="sr-only">{c.correct ? ', correct' : ', wrong'}</span>
                         </span>
                     </li>

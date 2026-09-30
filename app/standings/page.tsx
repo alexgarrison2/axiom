@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { PageHeading } from '@/components/ui/page-heading';
-import { SEASON_GAMES, SEASON_START_YEAR } from '@/lib/season';
+import { SEASON_START_YEAR } from '@/lib/season';
 import { loadStandingsPage } from '@/components/standings/data';
 import { StandingsTable } from '@/components/standings/StandingsTable';
 import { Bracket } from '@/components/standings/Bracket';
@@ -35,20 +33,6 @@ function seedingFor(rows: StandingsRow[], cmp: typeof compareStandings): Record<
     return east && west ? { East: east, West: west } : null;
 }
 
-function Pill({ children, tone = 'brand' }: { children: React.ReactNode; tone?: 'brand' | 'warn' }) {
-    return (
-        <span
-            className={
-                tone === 'warn'
-                    ? 'inline-flex items-center rounded-full border border-dashed border-warn/60 px-2.5 py-0.5 text-caption font-semibold text-warn'
-                    : 'inline-flex items-center rounded-full border border-brand/40 bg-brand/10 px-2.5 py-0.5 text-caption font-semibold text-brand'
-            }
-        >
-            {children}
-        </span>
-    );
-}
-
 export default async function StandingsPage() {
     const data = await loadStandingsPage();
     const { rows, projectionsCurrent, minGp } = data;
@@ -57,109 +41,88 @@ export default async function StandingsPage() {
     const seeding = bracketIsLive || projectionsCurrent ? seedingFor(rows, cmp) : null;
     const leagueOrder = Object.fromEntries([...rows].sort(cmp).map((r, i) => [r.tri, i]));
     const simulatedAt = data.projectionsAt && formatTimeET(data.projectionsAt, 'datetime') ? data.projectionsAt : null;
-    const gpNote = !Number.isFinite(minGp) ? null : minGp === 0 ? 'Some teams have not played yet' : `Every team has played at least ${minGp} of ${SEASON_GAMES}`;
+
+    const meta = (
+        <>
+            {data.standingsSource === 'none' ? <span className="label text-warn">Standings offline</span> : null}
+            {projectionsCurrent ? (
+                <span className="label">
+                    {data.totalSims ? `${data.totalSims.toLocaleString('en-US')} sims` : 'Sims'}
+                    {simulatedAt ? (
+                        <>
+                            {' · '}
+                            <LocalTime iso={simulatedAt} style="datetime" />
+                        </>
+                    ) : null}
+                </span>
+            ) : (
+                <span role="status" className="label text-warn">
+                    Odds pending
+                </span>
+            )}
+        </>
+    );
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto flex max-w-[1400px] flex-col gap-8 px-4 py-6 md:px-6 md:py-10">
-                <PageHeading
-                    eyebrow={`${SEASON_LABEL} season · ${SEASON_GAMES} games`}
-                    title="Standings & playoff odds"
-                    description="Where every team stands tonight, and how often it finished in each spot across thousands of simulations of the rest of the season."
-                />
+            <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-4 py-5 md:px-6 md:py-7">
+                <StandingsTable rows={rows} showProjections={projectionsCurrent} meta={meta} />
 
-                <div className="flex flex-wrap items-center gap-2 text-body-sm text-fg-2">
-                    {projectionsCurrent ? (
-                        <Pill>
-                            {data.totalSims ? `${data.totalSims.toLocaleString('en-US')} simulated seasons` : 'Simulated seasons'}
-                            {simulatedAt ? (
-                                <>
-                                    {' · '}
-                                    <LocalTime iso={simulatedAt} style="datetime" />
-                                </>
-                            ) : null}
-                        </Pill>
-                    ) : null}
-                    {gpNote ? <span className="text-fg-3">{gpNote}.</span> : null}
-                    {data.standingsSource === 'none' ? <span className="text-warn">Live standings are unavailable right now; records show 0-0-0.</span> : null}
-                </div>
-
-                {!projectionsCurrent ? (
-                    <div role="status" className="hud-panel flex flex-col gap-1 border-dashed p-4 md:p-5">
-                        <p className="text-title font-bold text-fg-1">Projections updating</p>
-                        <p className="max-w-2xl text-body-sm text-fg-2">
-                            The {SEASON_LABEL} season simulation hasn&apos;t published yet, so playoff odds are hidden rather than showing last season&apos;s
-                            numbers. Standings below are live.
-                        </p>
-                    </div>
-                ) : minGp < 10 ? (
-                    <p className="max-w-3xl text-body-sm text-fg-2">
-                        <span className="font-semibold text-warn">Early season.</span> With so few games played, the odds lean on preseason team ratings. Bands are
-                        wide on purpose.
-                    </p>
-                ) : null}
-
-                <StandingsTable rows={rows} showProjections={projectionsCurrent} />
-
-                <section aria-labelledby="bracket-heading" className="flex flex-col gap-5">
-                    {bracketIsLive ? (
-                        <>
-                            <div className="flex flex-col gap-1">
+                {bracketIsLive || projectionsCurrent ? (
+                    <section aria-labelledby="bracket-heading" className="flex flex-col gap-3">
+                        {bracketIsLive ? (
+                            seeding ? (
+                                <Bracket
+                                    seeding={seeding}
+                                    strengths={data.strengths}
+                                    leagueOrder={leagueOrder}
+                                    title={
+                                        <h2 id="bracket-heading" className="heading-section">
+                                            Bracket
+                                        </h2>
+                                    }
+                                />
+                            ) : (
                                 <h2 id="bracket-heading" className="heading-section">
-                                    If the playoffs started today
+                                    Bracket
                                 </h2>
-                                <p className="text-body-sm text-fg-2">Seeded from the current standings (points, then points %, regulation wins and wins).</p>
-                            </div>
-                            {seeding ? <Bracket seeding={seeding} strengths={data.strengths} leagueOrder={leagueOrder} /> : null}
-                        </>
-                    ) : projectionsCurrent ? (
-                        <>
-                            <div className="flex flex-col gap-2">
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <h2 id="bracket-heading" className="heading-section">
-                                        Most likely first-round matchups
-                                    </h2>
-                                    <Pill>Projected</Pill>
-                                </div>
-                                <p className="max-w-3xl text-body-sm text-fg-2">
-                                    A bracket from today&apos;s standings means little until teams have played about {STANDINGS_BRACKET_MIN_GP} games, so this
-                                    shows the series the simulations produced most often.
-                                </p>
-                            </div>
-                            <LikelyMatchups rows={rows} totalSims={data.totalSims} />
-                            {seeding ? (
-                                <div className="flex flex-col gap-4 pt-2">
-                                    <div className="flex flex-wrap items-center gap-3">
-                                        <h3 className="heading-sub">Projected bracket</h3>
-                                        <Pill>Projected</Pill>
+                            )
+                        ) : (
+                            <>
+                                <h2 id="bracket-heading" className="heading-section flex items-center gap-2">
+                                    First round
+                                    <ProjTag />
+                                </h2>
+                                <LikelyMatchups rows={rows} totalSims={data.totalSims} />
+                                {seeding ? (
+                                    <div className="pt-3">
+                                        <Bracket
+                                            seeding={seeding}
+                                            strengths={data.strengths}
+                                            leagueOrder={leagueOrder}
+                                            title={
+                                                <h3 className="heading-section flex items-center gap-2">
+                                                    Bracket
+                                                    <ProjTag />
+                                                </h3>
+                                            }
+                                        />
                                     </div>
-                                    <p className="-mt-2 max-w-3xl text-body-sm text-fg-2">Seeded by projected points, not by the current standings. Build your own path to the Cup.</p>
-                                    <Bracket seeding={seeding} strengths={data.strengths} leagueOrder={leagueOrder} />
-                                </div>
-                            ) : null}
-                        </>
-                    ) : (
-                        <div className="flex flex-col gap-1">
-                            <h2 id="bracket-heading" className="heading-section">
-                                Playoff picture
-                            </h2>
-                            <p className="text-body-sm text-fg-2">
-                                The projected bracket returns once the {SEASON_LABEL} projections are published. Until every team has played {STANDINGS_BRACKET_MIN_GP}{' '}
-                                games we don&apos;t seed a bracket from the standings.
-                            </p>
-                        </div>
-                    )}
-                </section>
-
-                <p className="text-caption text-fg-3">
-                    How the simulation works: <Link href="/methodology#players" className="font-semibold text-brand hover:underline">methodology</Link>. Last
-                    season&apos;s postseason lives in the{' '}
-                    <Link href="/playoffs" className="font-semibold text-brand hover:underline">
-                        playoffs archive
-                    </Link>
-                    .
-                </p>
+                                ) : null}
+                            </>
+                        )}
+                    </section>
+                ) : null}
             </div>
         </main>
+    );
+}
+
+/** Projected (sim-based), not today's standings. */
+function ProjTag() {
+    return (
+        <abbr title="Projected from the simulations, not today's standings" className="rounded-chip border border-brand/45 px-1.5 font-sans text-micro font-medium tracking-[0.14em] text-brand no-underline">
+            PROJ
+        </abbr>
     );
 }
