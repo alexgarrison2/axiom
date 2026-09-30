@@ -1,19 +1,42 @@
 import { LazyInfoTip } from './LazyInfoTip';
 import type { Prediction } from '@/types/prediction';
 import { fmtOdds } from '@/lib/matchup/format';
-import { gatedEdge, hasMarket, marketPair, modelPair, onPriors } from '@/lib/matchup/edge';
+import type { GlossaryTerm } from '@/lib/glossary';
+import { blendNote, forecastPair, gatedEdge, hasMarket, marketPair, modelOnlyPair, onPriors } from '@/lib/matchup/edge';
 import { cn } from '@/lib/utils';
 
 /** One "butterfly" row: away value · label · home value, mirroring the win bar. */
-function Row({ label, away, home, strong }: { label: string; away: React.ReactNode; home: React.ReactNode; strong?: boolean }) {
+function Row({
+    label,
+    away,
+    home,
+    strong,
+    term,
+    note,
+}: {
+    label: string;
+    away: React.ReactNode;
+    home: React.ReactNode;
+    strong?: boolean;
+    term?: GlossaryTerm;
+    note?: string;
+}) {
     const val = cn('tabular-nums', strong ? 'text-body-sm font-bold text-fg-1' : 'text-body-sm font-semibold text-fg-1');
     return (
         <div role="row" className="contents">
             <span role="cell" className={cn(val, 'text-left')}>
                 {away}
             </span>
-            <span role="rowheader" className="text-center text-caption text-fg-2">
+            <span role="rowheader" className="inline-flex items-center justify-center gap-0.5 text-center text-caption text-fg-2">
                 {label}
+                {term ? (
+                    <LazyInfoTip
+                        term={term}
+                        note={note}
+                        label={`What is ${label}?`}
+                        className="relative z-10 -my-1 text-fg-3 coarse:-my-3.5"
+                    />
+                ) : null}
             </span>
             <span role="cell" className={cn(val, 'text-right')}>
                 {home}
@@ -29,8 +52,10 @@ function Row({ label, away, home, strong }: { label: string; away: React.ReactNo
  * pipeline's gate is open for this game.
  */
 export function ProjectionRow({ p }: { p: Prediction }) {
-    const model = modelPair(p);
+    const model = forecastPair(p);
     if (!model) return null;
+    const pure = modelOnlyPair(p);
+    const note = blendNote(p) ?? undefined;
     const market = marketPair(p);
     const edge = gatedEdge(p);
     const a = p.away.team.triCode;
@@ -39,16 +64,27 @@ export function ProjectionRow({ p }: { p: Prediction }) {
 
     return (
         <div className="flex flex-col gap-1.5">
-            <div role="table" aria-label={`Model and market, ${a} at ${h}`} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline gap-x-3 gap-y-0.5 px-1">
+            <div role="table" aria-label={`Forecast, model and market, ${a} at ${h}`} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline gap-x-3 gap-y-0.5 px-1">
                 <div role="row" className="sr-only">
                     <span role="columnheader">{a}</span>
                     <span role="columnheader">Measure</span>
                     <span role="columnheader">{h}</span>
                 </div>
-                <Row label="Model" away={`${model.away}%`} home={`${model.home}%`} strong />
-                {market ? <Row label="Market" away={`${market.away}%`} home={`${market.home}%`} /> : null}
+                <Row label="Our forecast" term="model-pct" note={note} away={`${model.away}%`} home={`${model.home}%`} strong />
+                {pure && (pure.away !== model.away || note) ? (
+                    <Row
+                        label="Model only"
+                        term="model-pct"
+                        note="The game model on its own, before it is blended with the betting market."
+                        away={`${pure.away}%`}
+                        home={`${pure.home}%`}
+                    />
+                ) : null}
+                {market ? <Row label="Market" term="market-pct" away={`${market.away}%`} home={`${market.home}%`} /> : null}
                 <Row
-                    label={priced ? 'Fair · line' : 'Fair odds'}
+                    label={priced ? 'Fair · Book' : 'Fair odds'}
+                    term="fair-odds"
+                    note={priced ? 'Fair is the no-margin line for our forecast; Book is the sportsbook moneyline.' : undefined}
                     away={
                         <>
                             {fmtOdds(p.away.fairOdds) ?? '—'}
@@ -62,7 +98,7 @@ export function ProjectionRow({ p }: { p: Prediction }) {
                         </>
                     }
                 />
-                {p.away.xg != null && p.home.xg != null ? <Row label="Proj. goals" away={p.away.xg.toFixed(2)} home={p.home.xg.toFixed(2)} /> : null}
+                {p.away.xg != null && p.home.xg != null ? <Row label="Proj. goals" term="projected-goals" away={p.away.xg.toFixed(2)} home={p.home.xg.toFixed(2)} /> : null}
             </div>
 
             <p className="relative z-10 flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-fg-2">
@@ -81,15 +117,18 @@ export function ProjectionRow({ p }: { p: Prediction }) {
                     </span>
                 ) : null}
                 {onPriors(p) ? (
-                    <span className="inline-flex items-center gap-1.5" title="Either team has fewer than 10 games: the model still leans on preseason ratings and gives the market more weight.">
+                    <span className="inline-flex items-center gap-1.5">
                         <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full border border-warn" />
-                        Early season · model on priors
+                        Early season · leans on preseason ratings
+                        <LazyInfoTip
+                            term="season-prior"
+                            label="What does early season mean here?"
+                            note="Either team has fewer than 10 games, so the model still leans on preseason ratings and the market carries more weight."
+                            className="-my-1 text-fg-3 coarse:-my-3.5"
+                        />
                     </span>
                 ) : null}
                 {!priced ? <span>No market line yet · model only</span> : null}
-                <span className="ml-auto inline-flex items-center">
-                    <LazyInfoTip term="market-pct" label="What is Market probability (de-vigged)?" className="-my-1 text-fg-3 coarse:-my-3.5 coarse:-mr-3" />
-                </span>
             </p>
         </div>
     );

@@ -112,14 +112,17 @@ test.describe('home slate', () => {
         }
     });
 
-    test('collapsed cards show both tricodes, Model % and Market %', async ({ page }) => {
+    test('collapsed cards show both tricodes, Our forecast, Model only and Market %', async ({ page }) => {
         await page.goto('/');
         await settle(page);
         for (const card of await page.locator('article').all()) {
             const text = await card.innerText();
             const tris = text.match(/\b[A-Z]{3}\b/g) ?? [];
             expect(new Set(tris).size).toBeGreaterThanOrEqual(2);
-            if (/Market/.test(text)) expect(text).toContain('Model');
+            if (/Market/.test(text)) {
+                expect(text).toContain('Our forecast');
+                expect(text).toContain('Model only');
+            }
             expect(text).not.toMatch(/\bGAS\b|\(L7\)|#16\b/);
         }
     });

@@ -14,6 +14,8 @@ export interface InfoTipProps {
     showLabel?: boolean;
     side?: 'top' | 'right' | 'bottom' | 'left';
     className?: string;
+    /** Extra game-specific sentence shown in the tip (e.g. the current blend weight). */
+    note?: string;
 }
 
 const TABBABLE =
@@ -35,12 +37,11 @@ function focusNextAfter(from: HTMLElement, skip: HTMLElement | null) {
  * clips it. Tab from the open trigger steps into the tip's "How we calculate
  * it" link; Tab from there continues with whatever follows the trigger.
  */
-export function InfoTip({ term, children, showLabel = false, side = 'top', className }: InfoTipProps) {
+export function InfoTip({ term, children, showLabel = false, side = 'top', className, note }: InfoTipProps) {
     const entry: GlossaryEntry | undefined = GLOSSARY[term];
     const [open, setOpen] = React.useState(false);
     const pointerDown = React.useRef(false);
     const openedByFocus = React.useRef(false);
-    const contentId = React.useId();
     const triggerRef = React.useRef<HTMLButtonElement>(null);
     const contentRef = React.useRef<HTMLDivElement>(null);
     const linkRef = React.useRef<HTMLAnchorElement>(null);
@@ -55,7 +56,6 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
                 ref={triggerRef}
                 type="button"
                 aria-label={visible ? undefined : `What is ${entry.title}?`}
-                aria-describedby={open ? contentId : undefined}
                 className={cn(
                     'group inline-flex items-center gap-1 rounded-chip align-middle text-fg-2 transition-colors hover:text-fg-1',
                     'min-h-6 min-w-6 coarse:min-h-11 coarse:min-w-11 justify-center',
@@ -99,7 +99,6 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
             <Popover.Portal>
                 <Popover.Content
                     ref={contentRef}
-                    id={contentId}
                     role="dialog"
                     aria-label={entry.title}
                     side={side}
@@ -117,6 +116,7 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
                 >
                     <p className="text-body-sm font-semibold text-fg-1">{entry.title}</p>
                     <p className="mt-1 text-body-sm text-fg-2">{entry.short}</p>
+                    {note ? <p className="mt-2 text-body-sm text-fg-1">{note}</p> : null}
                     {entry.detail ? <p className="mt-2 text-caption text-fg-3">{entry.detail}</p> : null}
                     {entry.anchor ? (
                         <a

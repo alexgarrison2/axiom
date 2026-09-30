@@ -5,7 +5,7 @@ import { ImageResponse } from 'next/og';
 import { clashSafePair, TEAM_NAMES } from '@/components/ui/team-color';
 import { readableTextOn } from '@/components/ui/color';
 
-export const alt = "Tonight's NHL games with Pony xG model win probabilities";
+export const alt = "Tonight's NHL games with Pony xG forecast win probabilities";
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 export const revalidate = 3600;
@@ -92,7 +92,7 @@ export default function OpengraphImage() {
                             <path d={HORSE} fill="#4FF5F7" />
                         </svg>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ fontSize: 22, letterSpacing: 4, color: '#22E6F5', textTransform: 'uppercase', fontWeight: 700 }}>Pony xG · Model win %</div>
+                            <div style={{ fontSize: 22, letterSpacing: 4, color: '#22E6F5', textTransform: 'uppercase', fontWeight: 700 }}>Pony xG · Forecast win %</div>
                             <div style={{ fontSize: 46, fontWeight: 800, marginTop: 2 }}>{prettyDate(date)}</div>
                         </div>
                     </div>
@@ -149,7 +149,7 @@ export default function OpengraphImage() {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 20, color: '#7C8796', marginTop: 12 }}>
-                    <div style={{ display: 'flex' }}>Away @ Home · model probabilities, not betting advice</div>
+                    <div style={{ display: 'flex' }}>Away @ Home · forecast (model + market), not betting advice</div>
                     <div style={{ display: 'flex', color: '#A9B4C2' }}>ponyxg.com</div>
                 </div>
             </div>

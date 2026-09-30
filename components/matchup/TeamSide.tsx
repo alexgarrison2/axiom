@@ -4,11 +4,11 @@ import type { Side, SideData } from '@/types/prediction';
 import { lastName } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
 
-const STATUS: Record<string, { dot: string; label: string }> = {
-    Confirmed: { dot: 'bg-pos', label: 'Confirmed' },
-    Likely: { dot: 'bg-warn', label: 'Likely' },
-    'Probable (ESPN)': { dot: 'bg-warn', label: 'Probable' },
-    Unconfirmed: { dot: 'bg-fg-3', label: 'Unconfirmed' },
+const STATUS: Record<string, { dot: string; label: string; short: string }> = {
+    Confirmed: { dot: 'bg-pos', label: 'Confirmed', short: 'Conf.' },
+    Likely: { dot: 'bg-warn', label: 'Likely', short: 'Likely' },
+    'Probable (ESPN)': { dot: 'bg-warn', label: 'Probable', short: 'Prob.' },
+    Unconfirmed: { dot: 'bg-fg-3', label: 'Unconfirmed', short: 'Unconf.' },
 };
 
 export function goalieStatus(s: string | null) {
@@ -83,11 +83,23 @@ export function TeamSide({
                         <span className="shrink-0 whitespace-nowrap tabular-nums">{s.record ?? (s.gp === 0 ? '0-0-0' : '')}</span>
                     ) : null}
                     {s.goalie ? (
-                        <span className="inline-flex min-w-0 items-center gap-1" title={`${s.goalie} · ${st.label}${s.goalieStatusSource ? ` (${s.goalieStatusSource})` : ''}`}>
+                        <span className="inline-flex min-w-0 items-center gap-1">
                             {score == null ? <span aria-hidden="true" className="text-fg-3">·</span> : null}
-                            <span aria-hidden="true" className={cn('h-1.5 w-1.5 shrink-0 rounded-full', st.dot)} />
+                            {score == null ? <span aria-hidden="true" className={cn('h-1.5 w-1.5 shrink-0 rounded-full', st.dot)} /> : null}
                             <span className="truncate">{lastName(s.goalie)}</span>
-                            <span className="sr-only">, starter {st.label.toLowerCase()}</span>
+                            {score == null ? (
+                                <>
+                                    <span aria-hidden="true" className="shrink-0 text-micro text-fg-3">
+                                        {st.short}
+                                    </span>
+                                    <span className="sr-only">
+                                        , starter {st.label.toLowerCase()}
+                                        {s.goalieStatusSource ? ` (source: ${s.goalieStatusSource === 'DFO' ? 'DailyFaceoff' : s.goalieStatusSource})` : ''}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="sr-only">, in goal</span>
+                            )}
                         </span>
                     ) : null}
                 </span>
