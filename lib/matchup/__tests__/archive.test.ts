@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { archiveFinalLabel, buildArchive, validDate, type HistoryRow, type NhlScoreGame } from '../archive';
+import { archiveFinalLabel, buildArchive, slateHeading, validDate, type HistoryRow, type NhlScoreGame } from '../archive';
 import { legacyTabDestination } from '../../legacy-tab';
 
 const feed: NhlScoreGame[] = [
@@ -58,5 +58,12 @@ describe('validDate / legacy tabs', () => {
         expect(legacyTabDestination('2026-10-01')).toBe('/?date=2026-10-01');
         expect(legacyTabDestination('2026-02-30')).toBe('/');
         expect(legacyTabDestination(null)).toBeNull();
+    });
+});
+
+describe('slateHeading', () => {
+    it('omits the year near today and adds it far away', () => {
+        expect(slateHeading('2026-10-01', '2026-09-30')).toBe('Thu, Oct 1');
+        expect(slateHeading('2030-01-01', '2026-09-30')).toBe('Tue, Jan 1, 2030');
     });
 });

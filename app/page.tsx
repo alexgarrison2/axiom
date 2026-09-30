@@ -4,8 +4,8 @@ import { getImplications, getPlayoffOdds, getPlayoffSeries, getPredictions } fro
 import PredictionsViewer from '@/components/PredictionsViewer';
 import { defaultDate } from '@/lib/matchup/lifecycle';
 import { compactForClient } from '@/lib/matchup/parse';
-import { addDays, easternDate, weekdayDate } from '@/lib/matchup/format';
-import { validDate, isFinalState, type ArchiveSlate } from '@/lib/matchup/archive';
+import { addDays, easternDate } from '@/lib/matchup/format';
+import { validDate, isFinalState, slateHeading, type ArchiveSlate } from '@/lib/matchup/archive';
 import { getArchiveSlate } from '@/lib/matchup/archive-server';
 
 /*
@@ -19,10 +19,18 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 /** One CSV parse per request, shared by the metadata and the page. */
 const loadPredictions = cache(getPredictions);
 
-function requested(sp: Record<string, string | string[] | undefined>): string | null {
+/**
+ * ?date= must be a real day between the first season the NHL score feed
+ * covers well and five years out: bounds the feed fetches (each day is one
+ * cached fetch), anything else falls back to the default slate.
+ */
+const FIRST_DATE = '2005-10-01';
+
+function requested(sp: Record<string, string | string[] | undefined>, today: string): string | null {
     const d = sp.date;
     const s = Array.isArray(d) ? d[0] : d;
-    return validDate(s) ? s : null;
+    if (!validDate(s)) return null;
+    return s >= FIRST_DATE && s <= addDays(today, 5 * 366) ? s : null;
 }
 
 async function slateDates(): Promise<string[]> {
@@ -33,8 +41,8 @@ async function slateDates(): Promise<string[]> {
 /** Dated title that follows ?date=, e.g. "NHL predictions for Thu, Oct 1 | Pony xG". */
 export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
     const today = easternDate();
-    const date = requested(await searchParams) ?? defaultDate(await slateDates(), today) ?? today;
-    return { title: { absolute: `NHL predictions for ${weekdayDate(date)} | Pony xG` } };
+    const date = requested(await searchParams, today) ?? defaultDate(await slateDates(), today) ?? today;
+    return { title: { absolute: `NHL predictions for ${slateHeading(date, today)} | Pony xG` } };
 }
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
@@ -42,7 +50,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     const predictions = await loadPredictions();
     const today = easternDate();
     const dates = [...new Set(predictions.map(p => p.date))].sort();
-    const asked = requested(sp);
+    const asked = requested(sp, today);
     const initialDate = asked ?? defaultDate(dates, today);
     const yesterday = addDays(today, -1);
 

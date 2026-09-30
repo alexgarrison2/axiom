@@ -13,7 +13,7 @@ import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
 import { bothOpeners } from '@/lib/matchup/pills';
 import { gateClosedSiteWide, slateGateReason } from '@/lib/matchup/edge';
 import { dayLabel, easternDate, shortDate, weekdayDate } from '@/lib/matchup/format';
-import { isFinalState, type ArchiveSlate } from '@/lib/matchup/archive';
+import { isFinalState, slateHeading, type ArchiveSlate } from '@/lib/matchup/archive';
 import { cn } from '@/lib/utils';
 import styles from '@/components/matchup/slate.module.css';
 
@@ -159,7 +159,7 @@ export default function PredictionsViewer({
                 </p>
                 <h1 className="text-h2 font-black tracking-tight text-fg-1 md:text-display">
                     <span className="sr-only">NHL predictions for </span>
-                    {weekdayDate(headDate)}
+                    {slateHeading(headDate, today)}
                 </h1>
                 <p className="max-w-3xl text-body-sm text-fg-2 md:text-body">
                     Free NHL win probabilities from an expected-goals model, checked against the betting market.{' '}

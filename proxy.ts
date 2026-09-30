@@ -14,7 +14,11 @@ export function proxy(req: NextRequest) {
     const url = req.nextUrl.clone();
     const [pathname, query] = dest.split('?');
     url.pathname = pathname;
-    url.search = query ? `?${query}` : '';
+    // Keep any other params (?tab=teams&date=… keeps date) unless the tab names its own.
+    const params = new URLSearchParams(query ?? req.nextUrl.search);
+    params.delete('tab');
+    const qs = params.toString();
+    url.search = qs ? `?${qs}` : '';
     return NextResponse.redirect(url, 307);
 }
 

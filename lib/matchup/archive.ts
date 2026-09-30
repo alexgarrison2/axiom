@@ -78,6 +78,19 @@ export function validDate(s: string | null | undefined): s is string {
     return Number.isFinite(t) && new Date(t).toISOString().slice(0, 10) === s;
 }
 
+/** Heading date: "Thu, Oct 1", with the year once the date is far from today ("Tue, Jan 1, 2030"). */
+export function slateHeading(date: string, today: string): string {
+    const [y, m, d] = date.split('-').map(Number);
+    const far = Math.abs(Date.UTC(y, m - 1, d) - Date.parse(`${today}T00:00:00Z`)) > 150 * 86_400_000;
+    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        ...(far ? { year: 'numeric' as const } : {}),
+        timeZone: 'UTC',
+    });
+}
+
 const BY_SHORT = new Map(Object.entries(TEAM_NAMES).map(([tri, t]) => [t.short.toLowerCase(), tri]));
 
 export function triFromName(name: string | null | undefined): string | null {

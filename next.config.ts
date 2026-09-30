@@ -177,8 +177,8 @@ const nextConfig: NextConfig = {
 
   /*
    * The old home-page tabs (/?tab=Teams, /?tab=2026-10-01 …) are redirected
-   * by app/page.tsx (legacyTab): config redirects would carry ?tab= along and
-   * can't match case-insensitively.
+   * by proxy.ts (lib/legacy-tab.ts): config redirects would carry ?tab= along
+   * and can't match case-insensitively.
    */
 
   async headers() {
