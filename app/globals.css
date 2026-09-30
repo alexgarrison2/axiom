@@ -3,95 +3,119 @@
 @tailwind utilities;
 
 /* ==========================================================================
- * Pony xG — "Neon Rink HUD" design tokens
+ * Pony xG — "Neon Arcade" tokens (design brief 2026-09-30)
  *
- * One hue, one meaning:
- *   cyan   (--brand)   brand + interactive (links, focus, selected)
- *   green  (--pos)     positive / edge / confirmed
- *   red    (--neg)     negative / loss
- *   amber  (--warn)    caution / likely / small sample
- *   blue   (--info)    neutral information
- *   violet (--playoff) postseason content only
- * Staleness / prior-season data uses the --stale treatment (tertiary text +
- * dashed outline), never a signal colour.
+ * Type: Chakra Petch (display: names, win %, headings) + JetBrains Mono
+ * (everything else). Dark only.
  *
- * Every colour has an `-rgb` channel triplet so Tailwind opacity modifiers
- * work (e.g. bg-brand/10). Text roles are contrast-checked in
- * components/ui/__tests__/tokens.test.ts (≥4.5:1 on every surface).
+ * Neon glows only on live data: the favourite's bar segment, confirmed
+ * goalies, the active nav item / chip, the live dot and the model lean.
+ *
+ *   cyan    brand, active, focus
+ *   green   confirmed goalie, positive, model correct
+ *   magenta raw model marker / model lean
+ *   amber   situational chips (B2B …)
+ *   red     negative
+ *
+ * Legacy semantic names (brand, pos, neg, warn, surface-*, text-*) point at
+ * the palette so existing classes restyle in place. Every colour used with
+ * Tailwind opacity modifiers has an `-rgb` channel triplet (bg-brand/10).
+ * Text roles are contrast-checked in components/ui/__tests__/tokens.test.ts.
  * ========================================================================== */
 @layer base {
   :root {
     color-scheme: dark;
 
-    /* Surfaces (black ice) */
+    /* ---- Palette (brief values) ---- */
+    --ink: #e8eef8;
+    --dim: #6f7b91;
+    --mute: #3b475c;
+    --cyan: #29e7ff;
+    --green: #3dff8f;
+    --magenta: #ff4fd8;
+    --amber: #ffc53d;
+    --red: #ff5470;
+    --panel-top: #0b1019;
+    --panel-bottom: #070a10;
+    --panel-gradient: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
+
+    /* ---- Surfaces ---- */
     --bg: #05070b;
     --bg-rgb: 5 7 11;
-    --surface-1: #0b0f16;
-    --surface-1-rgb: 11 15 22;
-    --surface-2: #111723;
-    --surface-2-rgb: 17 23 35;
-    --surface-3: #151c2b;
-    --surface-3-rgb: 21 28 43;
-    --line: rgba(255, 255, 255, 0.08);
-    --line-strong: rgba(255, 255, 255, 0.16);
+    --surface-1: #0a0e15; /* panel */
+    --surface-1-rgb: 10 14 21;
+    --surface-2: #0f1622; /* track, inset */
+    --surface-2-rgb: 15 22 34;
+    --surface-3: #101a29; /* selected segment */
+    --surface-3-rgb: 16 26 41;
+    --well: #070a10; /* segmented / tab container */
+    --track: #0c121c; /* empty win-bar track */
+    --line: #152031;
+    --line-rgb: 21 32 49;
+    --line-strong: #23405f; /* hover edge */
 
-    /* Brand */
-    --brand: #22e6f5;
-    --brand-rgb: 34 230 245;
-    --brand-glow: rgba(34, 230, 245, 0.35);
+    /* ---- Brand + signals ---- */
+    --brand: #29e7ff;
+    --brand-rgb: 41 231 255;
+    --brand-glow: rgba(41, 231, 255, 0.35);
     --brand-ink: #05070b; /* text on a solid brand fill */
-
-    /* Signals */
-    --pos: #3cff8f;
-    --pos-rgb: 60 255 143;
-    --neg: #ff4d6a;
-    --neg-rgb: 255 77 106;
+    --pos: #3dff8f;
+    --pos-rgb: 61 255 143;
+    --neg: #ff5470;
+    --neg-rgb: 255 84 112;
     --warn: #ffc53d;
     --warn-rgb: 255 197 61;
-    --info: #5aa9ff;
-    --info-rgb: 90 169 255;
-    --playoff: #b98cff;
-    --playoff-rgb: 185 140 255;
+    --model: #ff4fd8;
+    --model-rgb: 255 79 216;
+    --info: #9fb0c8; /* neutral information: ice grey, never neon */
+    --info-rgb: 159 176 200;
+    --playoff: #ff4fd8;
+    --playoff-rgb: 255 79 216;
 
-    /* Text roles */
-    --text-1: #f5f7fa; /* primary: data, headings */
-    --text-1-rgb: 245 247 250;
-    --text-2: #a9b4c2; /* secondary: labels, supporting copy */
-    --text-2-rgb: 169 180 194;
-    --text-3: #7c8796; /* tertiary: captions, units (≥4.5:1 on surface-2) */
-    --text-3-rgb: 124 135 150;
-    --text-disabled: #4a5361; /* non-essential only — never on data */
+    /* ---- Text roles ---- */
+    --text-1: #e8eef8; /* ink: data, names, headings */
+    --text-1-rgb: 232 238 248;
+    --text-2: #8e99ad; /* secondary: projected goalie, labels on raised surfaces */
+    --text-2-rgb: 142 153 173;
+    --text-3: #7a869b; /* dim, AA on every surface (brief --dim is AA on bg/panel only) */
+    --text-3-rgb: 122 134 155;
+    --text-disabled: #3b475c; /* mute: separators, decoration — never data */
 
-    /* Staleness / small-sample treatment */
+    /* ---- Staleness: prior-season / small-sample values ---- */
     --stale: var(--text-3);
-    --stale-border: rgba(124, 135, 150, 0.6);
-    --stale-bg: rgba(124, 135, 150, 0.06);
+    --stale-border: #3b475c;
+    --stale-bg: transparent;
 
-    /* Radii */
-    --r-chip: 6px;
-    --r-control: 10px;
-    --r-card: 20px;
+    /* ---- Shape + density ---- */
+    --r-chip: 4px;
+    --r-control: 8px;
+    --r-bar: 12px;
+    --r-card: 16px;
+    --pad-card: 14px;
 
-    /* Elevation: glow is reserved for a real edge / focus */
-    --glow-brand: 0 0 24px rgba(34, 230, 245, 0.28);
-    --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+    /* ---- Elevation: glow only on live data ---- */
+    --glow-brand: 0 0 16px rgba(41, 231, 255, 0.18), inset 0 0 12px rgba(41, 231, 255, 0.12);
+    --shadow-card: none;
 
-    /* Layout */
-    --appbar-h: 56px;
+    /* ---- Layout ---- */
+    --appbar-h: 52px;
     --tabbar-h: 56px;
 
-    /* ---- shadcn/ui compatibility (components/ui/* + legacy classes) ---- */
+    /* ---- Fonts (set by next/font in app/layout.tsx) ---- */
+    --font-body: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --font-head: var(--font-chakra-petch), "Arial Narrow", system-ui, sans-serif;
+    --font-head-italic: var(--font-chakra-petch-italic), "Arial Narrow", system-ui, sans-serif;
+
+    /* shadcn/ui compatibility */
     --background: var(--bg-rgb);
     --foreground: var(--text-1-rgb);
     --radius: var(--r-control);
-
-    /* Subtle film grain (static, painted once) */
-    --bg-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   }
 
   @media (min-width: 768px) {
     :root {
-      --appbar-h: 60px;
+      --appbar-h: 56px;
+      --pad-card: 16px;
     }
   }
 }
@@ -117,29 +141,26 @@
     }
   }
 
-  /* Header controls that sit under a sticky filter bar (e.g. /players) stay
-     clear of it when focused. */
   .scroll-mt-filterbar,
   .scroll-mt-filterbar button {
     scroll-margin-top: calc(var(--appbar-h) + var(--filterbar-h, 180px) + 12px);
   }
 
   body {
-    @apply font-sans antialiased;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     background-color: var(--bg);
     color: var(--text-1);
-    font-size: 15px;
-    line-height: 22px;
-    /* Numbers line up in every table and card */
+    font-size: 13px;
+    line-height: 18px;
     font-variant-numeric: tabular-nums lining-nums;
-    font-feature-settings: "tnum" 1, "lnum" 1;
+    font-feature-settings: "tnum" 1, "lnum" 1, "zero" 0;
     overflow-x: hidden;
     min-height: 100dvh;
   }
 
-  /* Ice glow + grain, fixed behind content. A fixed pseudo-element is
-     composited once (unlike background-attachment: fixed, which repaints on
-     every scroll frame). */
+  /* Cyan top glow + faint 48px grid, fixed behind content (composited once). */
   body::before {
     content: "";
     position: fixed;
@@ -147,30 +168,33 @@
     z-index: -1;
     pointer-events: none;
     background-image:
-      var(--bg-noise),
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(34, 230, 245, 0.09) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 100% 110%, rgba(90, 169, 255, 0.05) 0%, transparent 60%);
+      radial-gradient(1200px 500px at 50% -120px, rgba(41, 231, 255, 0.1), transparent 70%),
+      linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+    background-size: auto, 48px 48px, 48px 48px;
+    background-position: center top, -1px -1px, -1px -1px;
   }
 
   h1,
   h2,
-  h3,
-  h4 {
-    font-family: var(--font-fira-sans), system-ui, sans-serif;
-    letter-spacing: -0.01em;
+  h3 {
+    font-family: var(--font-head);
+    letter-spacing: 0.01em;
     text-wrap: balance;
   }
 
-  .font-mono {
-    font-family: var(--font-fira-code), ui-monospace, monospace;
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-body);
   }
 
   ::selection {
-    background: rgba(34, 230, 245, 0.28);
+    background: rgba(41, 231, 255, 0.28);
     color: var(--text-1);
   }
 
-  /* One focus style everywhere: 2px brand ring, offset so it clears fills. */
+  /* One focus style everywhere: 2px cyan ring, offset so it clears fills. */
   :focus-visible {
     outline: 2px solid var(--brand);
     outline-offset: 2px;
@@ -180,8 +204,6 @@
     outline: none;
   }
 
-  /* Legacy "focus:outline-none" overrides on inputs no longer remove the
-     indicator for keyboard users. */
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible,
@@ -198,11 +220,8 @@
     opacity: 1;
   }
 
-  /* --------------------------------------------------------------------
-   * Type floor. The scale bottoms out at `micro` (11px). Legacy arbitrary
-   * sizes below that (text-[7px] … text-[10px]) are lifted to 11px until
-   * the owning components migrate to the token scale; ESLint flags new ones.
-   * ------------------------------------------------------------------ */
+  /* Type floor: the scale bottoms out at `micro` (11px). Legacy arbitrary
+     sizes below that are lifted to 11px; ESLint flags new ones. */
   .text-\[7px\],
   .text-\[7\.5px\],
   .text-\[8px\],
@@ -215,11 +234,7 @@
   }
 }
 
-/* --------------------------------------------------------------------------
- * Reduced motion: honour the OS setting everywhere (CSS keyframes,
- * transitions, smooth scrolling). Framer Motion is covered by
- * <MotionConfig reducedMotion="user"> in components/ui/motion-provider.tsx.
- * ------------------------------------------------------------------------ */
+/* Reduced motion: honour the OS setting everywhere. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -231,56 +246,189 @@
     transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
-
-  .flame-spinner,
-  .high-ev-spinner {
-    animation: none !important;
-  }
 }
 
 @layer components {
-  /* Heading system. Page titles are the H1 in <PageHeader> (32px). Every
-     section H2 uses .heading-section (24px, weight 800, sentence case, upright)
-     and every sub-section H3 uses .heading-sub (18px, weight 700). Italic
-     uppercase is reserved for the champion-name display moment only. */
-  .heading-section {
+  /* ---- Type ---- */
+
+  /* The label: 1-2 words, UPPERCASE mono, letter-spaced, dim. */
+  .label,
+  .hud-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  /* Page heading: page name only, Chakra Petch uppercase. */
+  .heading-page {
+    font-family: var(--font-head);
     font-size: 24px;
-    line-height: 28px;
-    letter-spacing: -0.01em;
-    font-weight: 800;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--text-1);
+  }
+  @media (min-width: 768px) {
+    .heading-page {
+      font-size: 30px;
+    }
+  }
+
+  /* Section H2 / sub-section H3. */
+  .heading-section {
+    font-family: var(--font-head);
+    font-size: 18px;
+    line-height: 22px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     font-style: normal;
-    text-transform: none;
     color: var(--text-1);
   }
   .heading-sub {
-    font-size: 18px;
-    line-height: 24px;
-    letter-spacing: -0.005em;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
     font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     font-style: normal;
-    text-transform: none;
     color: var(--text-1);
   }
 
-  /* HUD panel: the default card surface. */
+  /* Big scoreboard number (scores, record). */
+  .num-score {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* Bold italic display percentage (win %). */
+  .num-pct,
+  .font-display.italic,
+  .italic .font-display {
+    font-family: var(--font-head-italic);
+  }
+  .num-pct {
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  /* ---- Surfaces ---- */
+
+  /* The card/panel: gradient, 1px line, 16px radius, tight padding via p-card. */
+  .panel,
   .hud-panel {
-    background-color: var(--surface-1);
+    position: relative;
+    background: var(--panel-gradient);
     border: 1px solid var(--line);
     border-radius: var(--r-card);
-    box-shadow: var(--shadow-card);
+  }
+  .panel-hover {
+    transition: border-color 0.2s;
+  }
+  .panel-hover:hover {
+    border-color: var(--line-strong);
   }
 
-  /* Uppercase micro label (Fira Code) — the only place mono is used for text. */
-  .hud-label {
-    font-family: var(--font-fira-code), ui-monospace, monospace;
+  /* Team-colour wash behind the crests. Set --ac / --hc (away / home). */
+  .team-wash {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .team-wash::before {
+    content: "";
+    position: absolute;
+    inset: -40% -20% auto;
+    height: 70%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.8;
+    background:
+      radial-gradient(40% 60% at 15% 50%, color-mix(in srgb, var(--ac, transparent) 22%, transparent), transparent 70%),
+      radial-gradient(40% 60% at 85% 50%, color-mix(in srgb, var(--hc, transparent) 22%, transparent), transparent 70%);
+  }
+
+  /* Inset tile (stat tiles inside a card). */
+  .tile {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  /* ---- Live data glows (only these glow) ---- */
+  .glow-green {
+    color: var(--green);
+    text-shadow: 0 0 12px rgba(61, 255, 143, 0.45);
+  }
+  .glow-magenta {
+    color: var(--magenta);
+    text-shadow: 0 0 10px rgba(255, 79, 216, 0.45);
+  }
+  .glow-cyan {
+    color: var(--cyan);
+    text-shadow: 0 0 10px rgba(41, 231, 255, 0.45);
+  }
+
+  .live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+  }
+
+  /* ---- Dense data table ----
+     <table class="table-dense"> : mono tabular numbers, ~32px rows, sticky
+     header, zebra via the line colour, sort indicator in cyan (SortHeader). */
+  .table-dense {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+  .table-dense thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    height: 32px;
+    padding: 0 8px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
     font-size: 11px;
-    line-height: 14px;
-    letter-spacing: 0.06em;
+    font-weight: 500;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--text-2);
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+  .table-dense tbody td,
+  .table-dense tbody th {
+    height: 32px;
+    padding: 0 8px;
+    white-space: nowrap;
+  }
+  .table-dense tbody tr:nth-child(even) > * {
+    background: rgb(var(--line-rgb) / 0.35);
+  }
+  .table-dense tbody tr:hover > * {
+    background: rgb(var(--line-rgb) / 0.8);
   }
 
-  /* Stale / prior-season value treatment. */
+  /* Stale / prior-season value treatment: dim value, never a signal colour. */
   .is-stale {
     color: var(--stale);
     border-style: dashed;
@@ -288,7 +436,7 @@
     background-color: var(--stale-bg);
   }
 
-  /* Horizontal scroller with edge fades (see components/ui/scroll-region.tsx). */
+  /* Horizontal scroller edge fades (components/ui/scroll-region.tsx). */
   .edge-fade-x {
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
     mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
@@ -313,168 +461,12 @@
 }
 
 @layer utilities {
-  /* ---- Legacy utilities kept for components not yet migrated ---- */
-  .glass-panel {
-    background-color: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--line-strong);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
-  }
-
-  .glass-panel-hover {
-    transition: background-color 150ms ease, border-color 150ms ease;
-  }
-
-  .glass-panel-hover:hover {
-    background-color: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-
-  .glass-premium {
-    background: rgba(17, 23, 35, 0.72);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--line);
-    box-shadow:
-      0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      0 2px 4px -1px rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-
-  .text-glow-blue {
-    text-shadow: 0 0 10px rgba(34, 230, 245, 0.45);
-  }
-
-  .text-glow-green {
-    text-shadow: 0 0 10px rgba(60, 255, 143, 0.4);
-  }
-
-  .text-glow-amber {
-    text-shadow: 0 0 10px rgba(255, 197, 61, 0.4);
-  }
-
-  .text-glow-purple {
-    text-shadow: 0 0 10px rgba(185, 140, 255, 0.45);
-  }
-
-  .text-gradient {
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-image: linear-gradient(to right, var(--text-1), var(--text-2));
-  }
-
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
-  }
-
-  @keyframes shine-flow {
-    0% {
-      background-position: 0% 50%;
-    }
-
-    100% {
-      background-position: 200% 50%;
-    }
-  }
-
-  /* Runs twice, then rests (no perpetual motion). */
-  .animate-shine-flow {
-    background: linear-gradient(90deg, var(--brand), #ffffff, var(--brand));
-    background-size: 200% auto;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shine-flow 3s linear 2;
-  }
-
-  @keyframes spin {
-    from {
-      transform: translate(-50%, -50%) rotate(0deg);
-    }
-
-    to {
-      transform: translate(-50%, -50%) rotate(360deg);
-    }
-  }
-
-  /* Playoff-implication border (legacy; replaced by the matchup rebuild). */
-  .flame-border-mask {
-    position: absolute;
-    inset: 0;
-    padding: 1px;
-    opacity: 0.45;
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: destination-out;
-    mask-composite: exclude;
-    pointer-events: none;
-    z-index: 20;
-    overflow: hidden;
-  }
-
-  .flame-spinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(from 0deg,
-        #431407 0deg,
-        #7c2d12 60deg,
-        #9a3412 110deg,
-        #c2410c 150deg,
-        #ea580c 175deg,
-        #c2410c 200deg,
-        #9a3412 240deg,
-        #7c2d12 300deg,
-        #431407 360deg);
-    /* One slow sweep, then rest. */
-    animation: spin 12s linear 1 both;
-  }
-
-  .high-ev-border-mask {
-    position: absolute;
-    inset: 0;
-    border-radius: 1.5rem;
-    padding: 2px;
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: destination-out;
-    mask-composite: exclude;
-    pointer-events: none;
-    z-index: 20;
-  }
-
-  .high-ev-spinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(from 0deg,
-        transparent 0deg,
-        #0891b2 90deg,
-        var(--brand) 180deg,
-        #ffffff 225deg,
-        var(--brand) 270deg,
-        #0891b2 300deg,
-        transparent 360deg);
-    animation: spin 8s linear 1 both;
   }
 
   /* Perpetual Tailwind animations stop after two cycles. */
@@ -482,17 +474,6 @@
   .animate-pulse,
   .animate-bounce {
     animation-iteration-count: 2;
-  }
-}
-
-/* Sort column flash */
-@keyframes sortFlash {
-  0% {
-    background-color: rgba(255, 255, 255, 0.08);
-  }
-
-  100% {
-    background-color: transparent;
   }
 }
 
@@ -555,10 +536,9 @@
 }
 
 /* --------------------------------------------------------------------------
- * Win bar (components/ui/win-bar.tsx). Everything animates with transforms
- * or a registered custom property, so nothing moves in layout (CLS 0) and the
- * server HTML already paints the final split: the animation only adds the
- * 50/50 -> split motion on top. prefers-reduced-motion keeps the end state.
+ * Win bar (components/ui/win-bar.tsx). Server HTML paints the final split;
+ * the grow-in is transform-only (no layout shift) and plays once. Under
+ * prefers-reduced-motion nothing animates.
  * ------------------------------------------------------------------------ */
 @property --wb-n {
   syntax: "<integer>";
@@ -572,53 +552,42 @@
   counter-reset: wb var(--wb-n);
 }
 .wb-num::after {
-  content: counter(wb) "%";
+  content: counter(wb);
+}
+
+/* Diagonal hatch over each fill. */
+.wb-hatch {
+  background-image: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.07) 0 2px, transparent 2px 9px);
+  mix-blend-mode: overlay;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .wb-anim .wb-fill {
-    animation: wb-grow 750ms cubic-bezier(0.2, 0.85, 0.25, 1) 80ms both;
-  }
-  .wb-anim .wb-split {
-    animation: wb-slide 750ms cubic-bezier(0.2, 0.85, 0.25, 1) 80ms both;
+    animation: wb-grow 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 60ms both;
   }
   .wb-anim .wb-num {
-    animation: wb-count 750ms cubic-bezier(0.2, 0.85, 0.25, 1) 80ms both;
+    animation: wb-count 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 60ms both;
   }
-  .wb-anim .wb-sheen {
-    animation: wb-sheen 700ms ease-out 650ms both;
+  .wb-anim .wb-mark {
+    animation: wb-mark 320ms ease-out 760ms both;
   }
 }
 
-/* The away fill is drawn at its final width; start it scaled to exactly 50%. */
+/* Each fill grows out from its own end of the bar toward the split. */
 @keyframes wb-grow {
   from {
-    transform: scaleX(var(--wb-s0, 1));
-  }
-}
-/* The split-line layer spans the bar, so translateX(%) is a bar percentage. */
-@keyframes wb-slide {
-  from {
-    transform: translateX(50%);
+    transform: scaleX(0);
   }
 }
 @keyframes wb-count {
   from {
-    --wb-n: 50;
+    --wb-n: 0;
   }
 }
-/* One light sweep across the bar once it has settled. */
-@keyframes wb-sheen {
+@keyframes wb-mark {
   from {
-    transform: translateX(-120%);
     opacity: 0;
-  }
-  35% {
-    opacity: 1;
-  }
-  to {
-    transform: translateX(420%);
-    opacity: 0;
+    transform: translateY(3px);
   }
 }
 

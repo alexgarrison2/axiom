@@ -34,4 +34,48 @@ describe('design tokens', () => {
     it('brand ink on a solid brand fill is AA', () => {
         expect(contrastRatio(token('brand-ink'), token('brand'))).toBeGreaterThanOrEqual(4.5);
     });
+
+    // Neon Arcade brief (2026-09-30): exact palette values.
+    it.each([
+        ['bg', '#05070b'],
+        ['panel-top', '#0b1019'],
+        ['panel-bottom', '#070a10'],
+        ['line', '#152031'],
+        ['ink', '#e8eef8'],
+        ['dim', '#6f7b91'],
+        ['mute', '#3b475c'],
+        ['cyan', '#29e7ff'],
+        ['green', '#3dff8f'],
+        ['magenta', '#ff4fd8'],
+        ['amber', '#ffc53d'],
+        ['red', '#ff5470'],
+    ])('--%s is the brief value %s', (name, hex) => {
+        expect(token(name).toLowerCase()).toBe(hex);
+    });
+
+    it('semantic signals point at the brief palette', () => {
+        expect(token('brand')).toBe(token('cyan'));
+        expect(token('pos')).toBe(token('green'));
+        expect(token('neg')).toBe(token('red'));
+        expect(token('warn')).toBe(token('amber'));
+        expect(token('model')).toBe(token('magenta'));
+        expect(token('text-1')).toBe(token('ink'));
+    });
+});
+
+describe('typefaces', () => {
+    const root = resolve(__dirname, '../../..');
+    const read = (p: string) => readFileSync(resolve(root, p), 'utf8');
+
+    it('loads Chakra Petch + JetBrains Mono via next/font', () => {
+        const layout = read('app/layout.tsx');
+        expect(layout).toMatch(/import \{ Chakra_Petch, JetBrains_Mono \} from "next\/font\/google"/);
+        expect(layout).toMatch(/style: "italic"/);
+    });
+
+    // Retired faces, spelled so a repo-wide grep for them comes back empty.
+    const retired = new RegExp(['F', 'ira', '|', 'Arial', ' Black'].join(''), 'i');
+    it.each(['app/layout.tsx', 'app/globals.css', 'tailwind.config.js'])('%s uses no retired typeface', (f) => {
+        expect(read(f)).not.toMatch(retired);
+    });
 });

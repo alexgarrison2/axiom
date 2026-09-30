@@ -1,25 +1,37 @@
 import type { Metadata, Viewport } from "next";
-import { Fira_Code, Fira_Sans } from "next/font/google";
+import { Chakra_Petch, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/components/SiteNav";
 import Footer from "@/components/Footer";
 import { FocusReveal } from "@/components/ui/focus-reveal";
 
-// Four preloaded weights (regular, semibold, bold, black). font-medium falls
-// back to 400 and font-extrabold is mapped to 900 in tailwind.config.js.
-const firaSans = Fira_Sans({
-  variable: "--font-fira-sans",
+// Body face for everything that is not display type: times, odds, labels,
+// tables, nav. Variable font, one file.
+const mono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "900"],
   display: "swap",
+  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
 });
 
-// Mono is only used for small labels/timestamps and tables below the fold.
-const firaCode = Fira_Code({
-  variable: "--font-fira-code",
+// Display face: goalie/team names, headings (500/600/700 upright).
+const display = Chakra_Petch({
+  variable: "--font-chakra-petch",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
   display: "swap",
-  preload: false,
+  fallback: ["Arial Narrow", "system-ui", "sans-serif"],
+});
+
+// Bold italic for the win-bar percentages only (.num-pct, `font-display italic`).
+// A separate face so the unused 500/600 italics are never preloaded.
+const displayItalic = Chakra_Petch({
+  variable: "--font-chakra-petch-italic",
+  subsets: ["latin"],
+  weight: "700",
+  style: "italic",
+  display: "swap",
+  fallback: ["Arial Narrow", "system-ui", "sans-serif"],
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ponyxg.com";
@@ -65,13 +77,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${firaSans.variable} ${firaCode.variable}`}
+      className={`${mono.variable} ${display.variable} ${displayItalic.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased">
         <a
           href="#content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-control focus:bg-brand focus:px-4 focus:py-2.5 focus:text-body-sm focus:font-bold focus:text-brand-ink"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-control focus:bg-brand focus:px-4 focus:py-2.5 focus:text-caption focus:font-bold focus:uppercase focus:tracking-chip focus:text-brand-ink"
         >
           Skip to content
         </a>

@@ -38,24 +38,43 @@ module.exports = {
       },
     },
     extend: {
-      /* Type scale (px / line-height). Floor is `micro` = 11px. */
+      /* Type scale (px / line-height). Floor is `micro` = 11px. Body is
+         JetBrains Mono, so sizes run a step smaller than a sans scale. */
       fontSize: {
-        micro: ["11px", { lineHeight: "14px", letterSpacing: "0.04em" }],
+        micro: ["11px", { lineHeight: "14px" }],
         caption: ["12px", { lineHeight: "16px" }],
         "body-sm": ["13px", { lineHeight: "18px" }],
-        body: ["15px", { lineHeight: "22px" }],
-        title: ["18px", { lineHeight: "24px", letterSpacing: "-0.005em" }],
-        h2: ["24px", { lineHeight: "28px", letterSpacing: "-0.01em" }],
-        display: ["32px", { lineHeight: "36px", letterSpacing: "-0.015em" }],
-        hero: ["44px", { lineHeight: "44px", letterSpacing: "-0.02em" }],
+        body: ["14px", { lineHeight: "20px" }],
+        title: ["16px", { lineHeight: "20px" }],
+        h2: ["22px", { lineHeight: "26px" }],
+        display: ["30px", { lineHeight: "32px" }],
+        hero: ["40px", { lineHeight: "40px" }],
+      },
+      letterSpacing: {
+        label: "0.16em",
+        chip: "0.14em",
+        wide: "0.08em",
       },
       colors: {
-        /* Neon Rink HUD semantic tokens */
+        /* Neon Arcade palette (brief) */
+        ink: "var(--ink)",
+        dim: "var(--dim)",
+        mute: "var(--mute)",
+        // DEFAULT = the neon; the numbered Tailwind scales stay available.
+        cyan: { ...colors.cyan, DEFAULT: token("brand") },
+        green: { ...colors.green, DEFAULT: token("pos") },
+        magenta: token("model"),
+        amber: { ...colors.amber, DEFAULT: token("warn") },
+        red: { ...colors.red, DEFAULT: token("neg") },
+        model: token("model"),
+        /* Semantic tokens */
         bg: token("bg"),
         "surface-1": token("surface-1"),
         "surface-2": token("surface-2"),
         "surface-3": token("surface-3"),
-        line: "var(--line)",
+        well: "var(--well)",
+        track: "var(--track)",
+        line: token("line"),
         "line-strong": "var(--line-strong)",
         brand: { DEFAULT: token("brand"), ink: "var(--brand-ink)" },
         pos: token("pos"),
@@ -112,7 +131,7 @@ module.exports = {
           DEFAULT: token("surface-1"),
           foreground: token("text-1"),
         },
-        /* Legacy neon names → the same hues as the semantic tokens */
+        /* Legacy neon names → the palette */
         neon: {
           blue: token("brand"),
           green: token("pos"),
@@ -122,6 +141,7 @@ module.exports = {
       borderRadius: {
         chip: "var(--r-chip)",
         control: "var(--r-control)",
+        bar: "var(--r-bar)",
         card: "var(--r-card)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -138,19 +158,21 @@ module.exports = {
       spacing: {
         appbar: "var(--appbar-h)",
         tabbar: "var(--tabbar-h)",
+        /* Card padding: 14px phone, 16px md+ (p-card, px-card …). */
+        card: "var(--pad-card)",
       },
       fontWeight: {
-        // Only 400/600/700/900 are loaded; extrabold renders as black.
-        extrabold: "900",
+        // JetBrains Mono tops out at 800; Chakra Petch at 700.
+        extrabold: "800",
+        black: "800",
       },
       fontFamily: {
-        sans: ["var(--font-fira-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-fira-code)", "ui-monospace", "monospace"],
+        // Everything is JetBrains Mono except display type (font-display).
+        sans: ["var(--font-jetbrains-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        mono: ["var(--font-jetbrains-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        display: ["var(--font-chakra-petch)", "Arial Narrow", "system-ui", "sans-serif"],
       },
       animation: {
-        // Finite: two pulses, then rest.
-        "pulse-glow": "pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) 2",
-        "fade-in-up": "fade-in-up 0.4s ease-out both",
         "fade-in": "fade-in 0.2s ease-out both",
         "pop-in": "pop-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) both",
         "sheet-up": "sheet-up 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both",
@@ -159,14 +181,6 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       keyframes: {
-        "pulse-glow": {
-          "0%, 100%": { opacity: "1", filter: "brightness(1.2)" },
-          "50%": { opacity: "0.8", filter: "brightness(1)" },
-        },
-        "fade-in-up": {
-          "0%": { opacity: "0", transform: "translateY(8px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },

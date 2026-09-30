@@ -51,7 +51,7 @@
 | 5.2 | **Expanded odds markets** — Investigate Bovada odds feed for additional markets: Puckline (-1.5), Total, Team Total, 1st Period ML, 1st Period Total, 3-way (Home Reg Win / Tie / Away Reg Win). Display alongside current ML odds if available | 🟢 Low | 🔍 Investigation + 🔧 Medium | Check `fetch_odds.py` for available market types in the Bovada response |
 | 5.3 | **Historical lineup tracking** — Store final lineup for each team per game (like SiteHistory snapshots). When new projected lineups arrive, display changes: line moves, diff in sum of player impact, new call-ups, etc. | 🟢 Low | 🔨 Large (~2-3 days) | Needs new JSON storage, pipeline step post-game to snapshot actual lineups, and frontend diff view |
 | 5.4 | **Homepage bento grid layout?** — Explore converting the home page to a bento-grid style layout for a more modern, dashboard-like feel | 💭 Idea | 🎨 Design exploration | Would need Figma mockup first; consider impact on mobile |
-| 5.5 | **Site font family review** — Evaluate whether to change the site's font family from current Fira Sans/Fira Code to something else | 💭 Idea | 🎨 Design exploration | Consider readability of small stat text, mono-spaced numbers, brand feel |
+| 5.5 | **Site font family review** — Done 2026-09-30: Chakra Petch (display) + JetBrains Mono (body) per the Neon Arcade brief | ✅ Done | 🎨 Design | |
 | 5.6 | **Full-screen matchup card UX** — Small matchup card thumbnails at top of predictions page; clicking one expands to full-screen detail view with much more context (lineup diffs, advanced stats, historical matchup breakdown, etc.) | 💭 Idea | 🔨 Large (~3-5 days) | Major UX overhaul — would allow richer per-game context without cluttering the overview |
 
 ---
