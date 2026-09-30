@@ -6,7 +6,9 @@ import { Segmented } from '@/components/ui/segmented';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { FilterSheet } from '@/components/ui/filter-sheet';
 import { ScrollRegion } from '@/components/ui/scroll-region';
-import { InfoTip } from '@/components/ui/info-tip';
+import { PageHeading } from '@/components/ui/page-heading';
+import { Crest } from '@/components/ui/crest';
+import { shortSeasonTag } from '@/components/ui/stat-chip';
 import { cn } from '@/lib/utils';
 import { SEASON_ID } from '@/lib/season';
 import { calculateTeamStats } from '@/utils/team-stats/calculate';
@@ -24,7 +26,7 @@ import type { Division, GameRow, LeaguePayload, Matchup, PackedGames, PeriodFilt
 import { COLUMN_BY_KEY, SECTIONS, SECTION_KEYS, columnValue, heatColor, type StatColumn } from './columns';
 import { ChipRow, Field, RangeFields, TriField } from './FilterFields';
 import { HeaderCell, type SortDir } from './HeaderCell';
-import { SeasonBanner } from './SeasonBanner';
+import { CELL_BG, HEAD_CELL, STICKY_EDGE } from './table-style';
 import { useStickyHeader } from './useStickyHeader';
 
 const STORAGE_KEY = 'ponyxg:teams-table:v2';
@@ -118,7 +120,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         let live = true;
         fetchJsonCached<LeaguePayload>(leagueUrl(season))
             .then(p => live && setPayloads(prev => ({ ...prev, [season]: p })))
-            .catch(() => live && setLoadError('Could not load that season.'));
+            .catch(() => live && setLoadError('Season unavailable'));
         return () => {
             live = false;
         };
@@ -132,7 +134,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         let live = true;
         fetchJsonCached<PackedGames>(leagueGamesUrl(season, periods))
             .then(p => live && setGames(prev => ({ ...prev, [gamesKey]: unpackGames(p) })))
-            .catch(() => live && setLoadError('Could not load game-level data for these filters.'));
+            .catch(() => live && setLoadError('Game data unavailable'));
         return () => {
             live = false;
         };
@@ -275,190 +277,176 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
 
     const active = activeFilterCount(filters);
     const chips = activeChips(filters, setFilters);
-    const prevSeason = TEAM_SEASONS.find(s => s !== season);
 
     if (!payload) {
         return (
-            <div className="hud-panel p-6 text-body-sm text-fg-2" role="status">
-                {loadError ?? 'Loading the table…'}
+            <div className="panel p-card text-micro uppercase tracking-label text-fg-3" role="status">
+                {loadError ? <span className="text-neg">{loadError}</span> : 'Loading'}
             </div>
         );
     }
 
     const scopeLabel = filters.scope === 'playoffs' ? 'playoffs' : 'regular season';
-    const gpNote = payload.maxGp > 0 ? `through ${payload.maxGp} ${payload.maxGp === 1 ? 'game' : 'games'}` : 'no games yet';
-    const viewNote =
-        filters.view === 'today' ? "Teams playing today" : filters.view === 'tomorrow' ? 'Teams playing tomorrow' : filters.view === 'bracket' ? 'First-round bracket if the playoffs started today' : null;
+    const viewNote = filters.view === 'today' ? 'today' : filters.view === 'tomorrow' ? 'tomorrow' : filters.view === 'bracket' ? 'bracket' : null;
+    const isPrior = season !== SEASON_ID;
 
     return (
-        <section aria-label="League table" className="flex flex-col gap-3">
-            {/* Toolbar: season · quick filters · all filters */}
-            <div className="flex flex-wrap items-center gap-2">
-                <Segmented
-                    label="Season"
-                    value={season}
-                    onChange={changeSeason}
-                    options={TEAM_SEASONS.map(s => ({ value: s, label: seasonLabel(s) }))}
-                />
-                <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-line sm:block" />
-                <div className="flex flex-wrap items-center gap-2">
-                    <FilterChip selected={filters.recent === 10} onSelectedChange={on => setF('recent', on ? 10 : 'All')}>
-                        Last 10
-                    </FilterChip>
-                    <FilterChip selected={filters.location === 'Home'} onSelectedChange={on => setF('location', on ? 'Home' : 'All')}>
-                        Home
-                    </FilterChip>
-                    <FilterChip selected={filters.location === 'Away'} onSelectedChange={on => setF('location', on ? 'Away' : 'All')}>
-                        Away
-                    </FilterChip>
-                    <FilterSheet
-                        activeCount={active}
-                        triggerLabel="Filters"
-                        title="Filter the table"
-                        description="Filters apply to every team. Ranks and clinch codes always use the full season."
-                        onReset={() => setFilters({ ...DEFAULT_FILTERS, ranges: {} })}
-                        applyLabel="Show table"
-                    >
-                        <TableFilterFields filters={filters} setF={setF} setFilters={setFilters} allowPlayoffs={allowPlayoffs} allowBracket={allowBracket} />
-                    </FilterSheet>
-                </div>
-            </div>
-
-            <SeasonBanner
-                seasonLabel={payload.seasonLabel}
-                maxGp={payload.maxGp}
-                isCurrent={payload.isCurrent}
-                startsOn={payload.seasonStartsOn}
-                previousLabel={prevSeason ? `${seasonLabel(prevSeason)} final standings` : undefined}
-                onViewPrevious={payload.maxGp === 0 && prevSeason ? () => changeSeason(prevSeason) : undefined}
+        <section aria-label="League table" className="flex flex-col gap-2.5">
+            <PageHeading
+                title="Teams"
+                tag={isPrior ? shortSeasonTag(season) : undefined}
+                actions={<Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={TEAM_SEASONS.map(s => ({ value: s, label: seasonLabel(s) }))} />}
             />
 
-            {chips.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
-                    {chips.map(c => (
-                        <FilterChip key={c.key} selected removable onClick={c.clear} aria-label={`Remove filter: ${c.label}`}>
-                            {c.label}
-                        </FilterChip>
-                    ))}
-                    <button type="button" onClick={() => setFilters({ ...DEFAULT_FILTERS, ranges: {} })} className="min-h-9 px-2 text-body-sm font-semibold text-fg-2 underline-offset-4 hover:text-fg-1 hover:underline coarse:min-h-11">
-                        Clear all
-                    </button>
-                </div>
-            ) : null}
+            {/* Column sets · quick filters */}
+            <div className="flex flex-wrap items-center gap-2">
+                <ScrollRegion label="Stat sections" className="-mx-4 w-[calc(100%+2rem)] px-4 md:mx-0 md:w-auto md:px-0">
+                    <Segmented label="Stat section" size="sm" value={section} onChange={setSection} options={SECTIONS.map(s => ({ value: s.key, label: s.label }))} />
+                </ScrollRegion>
+                <FilterChip selected={filters.recent === 10} onSelectedChange={on => setF('recent', on ? 10 : 'All')}>
+                    L10
+                </FilterChip>
+                <FilterChip selected={filters.location === 'Home'} onSelectedChange={on => setF('location', on ? 'Home' : 'All')}>
+                    Home
+                </FilterChip>
+                <FilterChip selected={filters.location === 'Away'} onSelectedChange={on => setF('location', on ? 'Away' : 'All')}>
+                    Away
+                </FilterChip>
+                <FilterSheet activeCount={active} triggerLabel="Filters" title="Filters" onReset={() => setFilters({ ...DEFAULT_FILTERS, ranges: {} })} applyLabel="Done">
+                    <TableFilterFields filters={filters} setF={setF} setFilters={setFilters} allowPlayoffs={allowPlayoffs} allowBracket={allowBracket} />
+                </FilterSheet>
+                {chips.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+                        {chips.map(c => (
+                            <FilterChip key={c.key} selected removable onClick={c.clear} aria-label={`Remove filter: ${c.label}`}>
+                                {c.label}
+                            </FilterChip>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => setFilters({ ...DEFAULT_FILTERS, ranges: {} })}
+                            className="min-h-[34px] px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:min-h-11"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                ) : null}
+            </div>
 
-            {/* Column sets */}
-            <ScrollRegion label="Stat sections" className="-mx-4 px-4 pb-1 md:mx-0 md:px-0">
-                <Segmented label="Stat section" size="sm" value={section} onChange={setSection} options={SECTIONS.map(s => ({ value: s.key, label: s.label }))} />
-            </ScrollRegion>
-
-            {ratingsMissing ? (
-                <p className="text-body-sm text-fg-2">Ratings are published for the current season only.</p>
-            ) : null}
             {loadError ? (
-                <p role="alert" className="text-body-sm text-neg">
+                <p role="alert" className="text-micro uppercase tracking-label text-neg">
                     {loadError}
                 </p>
             ) : null}
 
-            <div className="relative">
-                <ScrollRegion label={`${payload.seasonLabel} team table`} className="rounded-card border border-line bg-surface-1 shadow-card">
-                    <table
-                        ref={tableRef}
-                        className="table-fixed border-separate border-spacing-0 text-body-sm [--team-col:64px] md:[--team-col:220px]"
-                        style={{ width: `calc(var(--team-col) + ${columns.reduce((w, c) => w + colWidth(c.col), 0)}px)`, minWidth: '100%' }}
-                        aria-busy={pending || undefined}
-                    >
-                        <caption className="px-3 pb-2 pt-3 text-left text-caption text-fg-2">
-                            <span className="font-semibold text-fg-1">
+            <ScrollRegion label={`${payload.seasonLabel} team table`} className="-mx-4 border-y border-line bg-surface-1 md:mx-0 md:rounded-card md:border-x">
+                <table
+                    ref={tableRef}
+                    className="table-fixed border-separate border-spacing-0 font-mono text-caption tabular-nums [--team-col:84px] md:[--team-col:208px]"
+                    style={{ width: `calc(var(--team-col) + ${columns.reduce((w, c) => w + colWidth(c.col), 0)}px)`, minWidth: '100%' }}
+                    aria-busy={pending || undefined}
+                >
+                    <caption className="h-8 px-3 text-left align-middle">
+                        <span className="flex h-8 items-center gap-2 whitespace-nowrap text-micro font-medium uppercase tracking-label text-fg-3">
+                            <span className="text-fg-1">
                                 {payload.seasonLabel} {scopeLabel}
-                            </span>{' '}
-                            · {gpNote}
-                            {viewNote ? <> · {viewNote}</> : null}
-                            {section === 'ratings' && payload.ratingsSeasonLabel ? <> · Ratings: {payload.ratingsSeasonLabel}</> : null}
-                            {pending ? <span className="ml-2 text-brand">Updating…</span> : null}
-                            <span className="whitespace-nowrap font-semibold text-brand md:hidden"> · Swipe for more →</span>
-                        </caption>
-                        <colgroup>
-                            <col style={{ width: 'var(--team-col)' }} />
-                            {columns.map(({ col }) => (
-                                <col key={col.key} style={{ width: colWidth(col) }} />
-                            ))}
-                        </colgroup>
-                        <thead className="[--thead-y:0px]">
-                            {section === 'all' ? (
-                                <tr>
-                                    <td className={cn(STICKY_HEAD, 'left-0 z-[4] border-b-0')} />
-                                    {sectionDef.groups.map(g => (
-                                        <th
-                                            key={g.name}
-                                            scope="colgroup"
-                                            colSpan={g.cols.length}
-                                            className={cn(HEAD_BASE, 'z-[3] border-b-0 border-r border-line px-2 pt-2 text-left')}
-                                        >
-                                            <span className="hud-label text-fg-3">{g.name}</span>
-                                        </th>
-                                    ))}
-                                </tr>
+                            </span>
+                            <span aria-hidden="true" className="text-fg-disabled">
+                                ·
+                            </span>
+                            <span>
+                                <span className="text-fg-1">{payload.maxGp}</span> GP
+                            </span>
+                            {viewNote ? (
+                                <>
+                                    <span aria-hidden="true" className="text-fg-disabled">
+                                        ·
+                                    </span>
+                                    <span className="text-brand">{viewNote}</span>
+                                </>
                             ) : null}
+                            {section === 'ratings' ? (
+                                <>
+                                    <span aria-hidden="true" className="text-fg-disabled">
+                                        ·
+                                    </span>
+                                    {ratingsMissing ? <span>No ratings</span> : payload.ratingsSeasonLabel ? <span>Rtg {shortSeasonTag(payload.ratingsSeasonLabel)}</span> : null}
+                                </>
+                            ) : null}
+                            {pending ? <span className="live-dot ml-1" role="status" aria-label="Updating" /> : null}
+                        </span>
+                    </caption>
+                    <colgroup>
+                        <col style={{ width: 'var(--team-col)' }} />
+                        {columns.map(({ col }) => (
+                            <col key={col.key} style={{ width: colWidth(col) }} />
+                        ))}
+                    </colgroup>
+                    <thead className="[--thead-y:0px]">
+                        {section === 'all' ? (
                             <tr>
-                                <th scope="col" className={cn(STICKY_HEAD, 'left-0 z-[4] px-1.5 text-left md:px-3')}>
-                                    <span className="text-micro uppercase tracking-[0.04em] text-fg-2">Team</span>
-                                </th>
-                                {columns.map(({ col, groupEnd }) => (
-                                    <HeaderCell
-                                        key={col.key}
-                                        label={col.label}
-                                        title={col.title}
-                                        tip={col.tip}
-                                        direction={model?.paired ? undefined : sort.key === col.key ? sort.dir : null}
-                                        onSort={model?.paired ? undefined : () => onSort(col.key)}
-                                        className={cn(HEAD_BASE, 'z-[3]', groupEnd && 'border-r border-line')}
-                                    />
+                                <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] border-b-0')} />
+                                {sectionDef.groups.map(g => (
+                                    <th key={g.name} scope="colgroup" colSpan={g.cols.length} className={cn(HEAD_CELL, 'relative z-[3] h-7 border-b-0 border-r px-2 text-left')}>
+                                        <span className="text-micro font-medium uppercase tracking-label text-fg-2">{g.name}</span>
+                                    </th>
                                 ))}
                             </tr>
-                        </thead>
-                        <tbody className={cn(pending && 'opacity-60 transition-opacity')}>
-                            {sorted.length === 0 ? (
-                                <tr>
-                                    <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-body-sm text-fg-2">
-                                        {filters.view === 'today' || filters.view === 'tomorrow' ? 'No games on that slate.' : 'No teams match these filters.'}
-                                    </td>
-                                </tr>
-                            ) : (
-                                sorted.map((row, idx) => (
-                                    <Row
-                                        key={`${row.tri}-${idx}`}
-                                        row={row}
-                                        idx={idx}
-                                        columns={columns}
-                                        ranges={ranges}
-                                        payload={payload}
-                                        paired={!!model?.paired}
-                                        period={filters.period}
-                                        showStarter={filters.withStarter}
-                                        pairEnd={!!model?.paired && idx % 2 === 1 && idx < sorted.length - 1}
-                                    />
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </ScrollRegion>
-            </div>
+                        ) : null}
+                        <tr>
+                            <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-8 px-2 text-left md:px-3')}>
+                                <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">Team</span>
+                            </th>
+                            {columns.map(({ col, groupEnd }) => (
+                                <HeaderCell
+                                    key={col.key}
+                                    label={col.label}
+                                    title={col.title}
+                                    direction={model?.paired ? undefined : sort.key === col.key ? sort.dir : null}
+                                    onSort={model?.paired ? undefined : () => onSort(col.key)}
+                                    className={cn(HEAD_CELL, 'relative z-[3]', groupEnd && 'border-r')}
+                                />
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody className={cn(pending && 'opacity-60 transition-opacity')}>
+                        {sorted.length === 0 ? (
+                            <tr>
+                                <td colSpan={columns.length + 1} className="h-16 px-4 text-center text-micro uppercase tracking-label text-fg-3">
+                                    {filters.view === 'today' || filters.view === 'tomorrow' ? 'No games' : 'No teams'}
+                                </td>
+                            </tr>
+                        ) : (
+                            sorted.map((row, idx) => (
+                                <Row
+                                    key={`${row.tri}-${idx}`}
+                                    row={row}
+                                    idx={idx}
+                                    columns={columns}
+                                    ranges={ranges}
+                                    payload={payload}
+                                    paired={!!model?.paired}
+                                    period={filters.period}
+                                    showStarter={filters.withStarter}
+                                    pairEnd={!!model?.paired && idx % 2 === 1 && idx < sorted.length - 1}
+                                />
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </ScrollRegion>
 
-            <Legend payload={payload} />
+            <Legend clinch={!!payload.clinch} />
         </section>
     );
 }
 
-const colWidth = (c: StatColumn) => (c.tip ? 84 : c.label.length > 5 ? 76 : 64);
+const colWidth = (c: StatColumn) => (c.label.length > 5 ? 72 : c.label.length > 3 ? 62 : 52);
 
 /** Record counts read 0 (not —) before a team's first game. */
 const COUNTING = new Set(['gp', 'wins', 'losses', 'otl', 'points', 'rw', 'ranking']);
 /** Heat colouring starts once a team has this many games. */
 const HEAT_MIN_GP = 5;
-
-const HEAD_BASE = 'relative bg-surface-2 border-b border-line [transform:translateY(var(--thead-y))] will-change-transform';
-const STICKY_HEAD = 'sticky bg-surface-2 border-b border-r border-line [transform:translateY(var(--thead-y))] shadow-[4px_0_8px_-6px_rgba(0,0,0,0.8)]';
 
 function Row({
     row, idx, columns, ranges, payload, paired, period, showStarter, pairEnd,
@@ -475,82 +463,45 @@ function Row({
 }) {
     const meta = payload.teams.find(t => t.tri === row.tri);
     const clinch = row.clinch ?? null;
-    const oddsOf = (m?: Matchup, side?: 'home' | 'away') => {
-        if (!m || !side) return null;
-        const ml = side === 'home' ? m.homeVegasOdds : m.awayVegasOdds;
-        const ev = side === 'home' ? m.homeEV : m.awayEV;
-        return { ml, ev };
-    };
-    const odds = paired ? oddsOf(row.matchup, row.side) : null;
-    const zebra = idx % 2 === 1 ? 'bg-surface-2/40' : '';
+    const odds = paired && row.matchup && row.side ? { ml: row.side === 'home' ? row.matchup.homeVegasOdds : row.matchup.awayVegasOdds } : null;
     return (
         <tr className={cn('group', pairEnd && '[&>*]:border-b-8 [&>*]:border-b-bg')}>
-            <th
-                scope="row"
-                className={cn(
-                    'sticky left-0 z-[2] border-b border-r border-line bg-surface-1 px-1 py-0.5 text-left font-normal md:px-3 shadow-[4px_0_8px_-6px_rgba(0,0,0,0.8)] group-hover:bg-surface-2',
-                )}
-            >
-                <div className="flex min-h-9 items-center gap-1 md:gap-2">
-                    {!paired ? <span className="hidden w-5 shrink-0 text-right text-caption tabular-nums text-fg-3 md:inline">{idx + 1}</span> : null}
-                    <Link href={`/teams/${row.tri}`} prefetch={false} className="flex min-h-9 min-w-0 items-center gap-1 rounded-chip hover:text-brand md:gap-2">
-                        <span className="relative shrink-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo; next/image adds ~6KB of client JS for no optimisation */}
-                            <img src={`/logos/${row.tri}.svg`} alt="" width={28} height={28} className="h-5 w-5 object-contain md:h-7 md:w-7" loading="lazy" decoding="async" />
-                            {clinch ? (
-                                <span
-                                    title={CLINCH_LABEL[clinch]}
-                                    className={cn(
-                                        'absolute -right-1.5 -top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-[4px] px-0.5 text-micro font-bold uppercase leading-none ring-2 ring-surface-1 md:hidden',
-                                        clinch === 'e' ? 'bg-neg text-bg' : 'bg-pos text-bg',
-                                    )}
-                                    aria-hidden="true"
-                                >
-                                    {clinch}
-                                </span>
-                            ) : null}
-                        </span>
-                        <span className="min-w-0">
-                            <span className="block truncate text-caption font-semibold text-fg-1 md:hidden">{row.tri}</span>
-                            <span className="hidden truncate font-semibold text-fg-1 md:block">{meta?.common ?? row.tri}</span>
-                            {paired && showStarter && row.starterName ? (
-                                <span className="block truncate text-micro normal-case text-fg-2">
-                                    {row.starterName.split(' ').slice(-1)[0]}
-                                    <span className="sr-only"> ({row.starterStatus})</span>
-                                </span>
-                            ) : null}
-                        </span>
+            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 border-b border-line px-2 text-left font-normal md:px-3')}>
+                <div className="flex h-8 items-center gap-2">
+                    {!paired ? <span className="hidden w-5 shrink-0 text-right text-micro text-fg-3 md:inline">{idx + 1}</span> : null}
+                    <Link href={`/teams/${row.tri}`} prefetch={false} className="flex h-8 min-w-0 items-center gap-2 hover:text-brand">
+                        <Crest tri={row.tri} size={20} className="drop-shadow-none" />
+                        <span className="font-bold text-fg-1 group-hover:text-inherit">{row.tri}</span>
+                        <span className="hidden truncate text-fg-3 md:inline">{meta?.common}</span>
+                        {paired && showStarter && row.starterName ? (
+                            <span className="truncate text-micro text-fg-2">
+                                {row.starterName.split(' ').slice(-1)[0]}
+                                <span className="sr-only"> ({row.starterStatus})</span>
+                            </span>
+                        ) : null}
                     </Link>
                     {clinch ? (
                         <span
                             title={CLINCH_LABEL[clinch]}
-                            className={cn(
-                                'ml-auto hidden h-5 min-w-5 shrink-0 items-center justify-center rounded-chip px-1 text-micro font-bold uppercase md:inline-flex',
-                                clinch === 'e' ? 'bg-neg/15 text-neg' : 'bg-pos/15 text-pos',
-                            )}
+                            className={cn('ml-auto inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-[3px] px-0.5 text-micro font-bold uppercase leading-none', clinch === 'e' ? 'text-neg' : 'text-pos')}
                         >
                             {clinch}
+                            <span className="sr-only"> ({CLINCH_LABEL[clinch]})</span>
                         </span>
                     ) : null}
-                    {clinch ? <span className="sr-only"> ({CLINCH_LABEL[clinch]})</span> : null}
-                    {paired && row.side ? (
-                        <span className="ml-auto hidden shrink-0 text-right md:block">
-                            <span className="block text-micro uppercase text-fg-3">{row.side === 'home' ? 'Home' : 'Away'}</span>
-                            {odds?.ml != null ? (
-                                <span className="block text-caption tabular-nums text-fg-2">
-                                    {odds.ml > 0 ? `+${odds.ml}` : signed(odds.ml)}
-                                    {odds.ev != null ? <span className={cn('ml-1', odds.ev >= 0 ? 'text-pos' : 'text-fg-3')}>EV {signed(odds.ev, 1)}%</span> : null}
-                                </span>
-                            ) : null}
+                    {odds?.ml != null ? (
+                        <span className="ml-auto hidden shrink-0 text-micro text-fg-2 md:inline">
+                            <span className="sr-only">{row.side === 'home' ? 'Home' : 'Away'} moneyline </span>
+                            {odds.ml > 0 ? `+${odds.ml}` : signed(odds.ml)}
                         </span>
                     ) : null}
                 </div>
             </th>
             {columns.map(({ col, groupEnd }) => {
-                const base = cn('border-b border-line px-1.5 py-0.5 text-center tabular-nums', zebra, groupEnd && 'border-r', 'group-hover:bg-surface-2');
+                const base = cn(CELL_BG, 'h-8 border-b border-line px-1.5 text-center', groupEnd && 'border-r');
                 if (col.key === 'ranking') {
                     return (
-                        <td key={col.key} className={cn(base, row.isPlayoff ? 'font-semibold text-fg-1' : 'text-fg-2')}>
+                        <td key={col.key} className={cn(base, row.isPlayoff ? 'font-bold text-fg-1' : 'text-fg-3')}>
                             {row.ranking && row.ranking !== '—' ? row.ranking : '—'}
                             {row.isPlayoff ? <span className="sr-only"> (playoff position)</span> : null}
                         </td>
@@ -563,8 +514,8 @@ function Row({
                 // No heat on counting stats, and none until a team has 5+ games (1-GP percentages are noise).
                 const color = r && !counting && row.gp >= HEAT_MIN_GP ? heatColor(v, r[0], r[1], col.better) : undefined;
                 return (
-                    <td key={col.key} className={cn(base, 'text-fg-1')} style={color ? { color } : undefined}>
-                        {Number.isFinite(v) ? col.format(v) : <span className="text-fg-3">—</span>}
+                    <td key={col.key} className={cn(base, col.key === 'points' ? 'font-bold text-fg-1' : 'text-fg-1')} style={color ? { color } : undefined}>
+                        {Number.isFinite(v) ? col.format(v) : <span className="text-fg-disabled">—</span>}
                     </td>
                 );
             })}
@@ -572,22 +523,29 @@ function Row({
     );
 }
 
-function Legend({ payload }: { payload: LeaguePayload }) {
+/** One label row: the heat ramp and (when they exist) the clinch codes. */
+function Legend({ clinch }: { clinch: boolean }) {
     return (
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-caption text-fg-3">
+        <div aria-hidden="true" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-micro uppercase tracking-label text-fg-3">
             <span className="inline-flex items-center gap-2">
-                <span aria-hidden="true" className="h-2 w-16 rounded-full bg-[linear-gradient(90deg,rgb(255_110_128),rgb(201_209_219),rgb(92_240_160))]" />
-                Colour compares each team with the league under the current filters (red worse, green better), from 5 games played. Counting stats are never coloured.
+                <span className="text-neg">−</span>
+                <span className="h-1.5 w-12 rounded-full bg-[linear-gradient(90deg,rgb(var(--neg-rgb)),rgb(201_209_219),rgb(var(--pos-rgb)))]" />
+                <span className="text-pos">+</span>
+                <span>5+ GP</span>
             </span>
-            {payload.clinch ? (
-                <span className="inline-flex items-center gap-1">
-                    Clinch codes <InfoTip term="clinch-codes" />
-                </span>
-            ) : null}
-            <span>GF/GA credit the shootout winner with one goal, as NHL standings do.</span>
+            {clinch
+                ? (['x', 'y', 'z', 'p', 'e'] as const).map(c => (
+                      <span key={c} className="inline-flex items-center gap-1">
+                          <b className={c === 'e' ? 'text-neg' : 'text-pos'}>{c}</b>
+                          {CLINCH_SHORT[c]}
+                      </span>
+                  ))
+                : null}
         </div>
     );
 }
+
+const CLINCH_SHORT: Record<string, string> = { x: 'Playoffs', y: 'Conf', z: 'Div', p: 'Pres', e: 'Out' };
 
 function TableFilterFields({
     filters, setF, setFilters, allowPlayoffs, allowBracket,
@@ -599,10 +557,10 @@ function TableFilterFields({
     allowBracket: boolean;
 }) {
     const views: { value: TableView; label: string }[] = [
-        { value: 'all', label: 'All teams' },
-        { value: 'today', label: 'Playing today' },
+        { value: 'all', label: 'All' },
+        { value: 'today', label: 'Today' },
         { value: 'tomorrow', label: 'Tomorrow' },
-        ...(allowBracket ? [{ value: 'bracket' as const, label: 'Playoff matchups' }] : []),
+        ...(allowBracket ? [{ value: 'bracket' as const, label: 'Bracket' }] : []),
     ];
     const pairedView = filters.view === 'today' || filters.view === 'tomorrow';
     return (
@@ -611,24 +569,25 @@ function TableFilterFields({
                 <Field label="Games">
                     <Segmented
                         label="Games"
+                        size="sm"
                         value={filters.scope}
                         onChange={v => setF('scope', v)}
                         options={[
-                            { value: 'regular', label: 'Regular season' },
+                            { value: 'regular', label: 'Regular' },
                             { value: 'playoffs', label: 'Playoffs' },
                         ]}
                     />
                 </Field>
             ) : null}
-            <Field label="View">
-                <Segmented label="View" size="sm" value={filters.view} onChange={v => setF('view', v)} options={views} />
+            <Field label="Teams">
+                <Segmented label="Teams" size="sm" value={filters.view} onChange={v => setF('view', v)} options={views} />
                 {pairedView ? (
                     <ChipRow
-                        label="Split each matchup by"
+                        label="Split by"
                         options={[
-                            { value: 'withLocation', label: 'Home/away split' },
-                            { value: 'withStarter', label: "Tonight's starter" },
-                            { value: 'withDow', label: 'Same weekday' },
+                            { value: 'withLocation', label: 'Home/Away' },
+                            { value: 'withStarter', label: 'Starter' },
+                            { value: 'withDow', label: 'Weekday' },
                         ]}
                         selected={(['withLocation', 'withStarter', 'withDow'] as const).filter(k => filters[k])}
                         onToggle={k => setFilters(f => ({ ...f, [k]: !f[k] }))}
@@ -648,27 +607,27 @@ function TableFilterFields({
                     ]}
                 />
             </Field>
-            <Field label="Recent form" hint="Most recent games of the selected type.">
+            <Field label="Recent">
                 <Segmented
-                    label="Recent form"
+                    label="Recent"
                     size="sm"
                     value={String(filters.recent)}
                     onChange={v => setF('recent', (v === 'All' ? 'All' : Number(v)) as Recent)}
                     options={[
                         { value: 'All', label: 'Season' },
-                        { value: '5', label: 'Last 5' },
-                        { value: '10', label: 'Last 10' },
-                        { value: '20', label: 'Last 20' },
+                        { value: '5', label: 'L5' },
+                        { value: '10', label: 'L10' },
+                        { value: '20', label: 'L20' },
                     ]}
                 />
             </Field>
-            <Field label="Period" hint="Power play, penalty kill and empty-net columns are full-game only.">
+            <Field label="Period">
                 <Segmented
                     label="Period"
                     size="sm"
                     value={filters.period}
                     onChange={v => setF('period', v)}
-                    options={(['All', '1st', '2nd', '3rd', 'OT'] as PeriodFilter[]).map(p => ({ value: p, label: p === 'All' ? 'Full game' : p }))}
+                    options={(['All', '1st', '2nd', '3rd', 'OT'] as PeriodFilter[]).map(p => ({ value: p, label: p === 'All' ? 'Game' : p }))}
                 />
             </Field>
             <Field label="Division">
@@ -679,31 +638,30 @@ function TableFilterFields({
                     onToggle={d => setF('divisions', filters.divisions.includes(d) ? filters.divisions.filter(x => x !== d) : [...filters.divisions, d])}
                 />
             </Field>
-            <Field label="Playoff position">
+            <Field label="Playoff spot">
                 <Segmented
-                    label="Playoff position"
+                    label="Playoff spot"
                     size="sm"
                     value={filters.position}
                     onChange={v => setF('position', v)}
                     options={[
                         { value: 'All', label: 'All' },
-                        { value: 'In', label: 'In a spot' },
-                        { value: 'Out', label: 'Outside' },
+                        { value: 'In', label: 'In' },
+                        { value: 'Out', label: 'Out' },
                     ]}
                 />
             </Field>
-            <details className="group border-b border-line py-2 last:border-b-0">
-                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-body-sm font-semibold text-fg-1">
-                    Per-game filters
+            <details className="group border-b border-line py-1 last:border-b-0">
+                <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between text-micro font-medium uppercase tracking-label text-fg-2 coarse:min-h-11">
+                    Per game
                     <span aria-hidden="true" className="text-fg-3 transition-transform group-open:rotate-180">
                         ▾
                     </span>
                 </summary>
-                <p className="mb-2 text-caption text-fg-3">Keep only games that meet these conditions, then total them.</p>
-                <TriField label="Scored a power-play goal" value={filters.ppg} onChange={v => setF('ppg', v)} />
-                <TriField label="Allowed a power-play goal" value={filters.ppga} onChange={v => setF('ppga', v)} />
-                <TriField label="Scored first" value={filters.scoredFirst} onChange={v => setF('scoredFirst', v)} labels={['Any', 'Scored first', 'Trailed first']} />
-                <div className="py-4">
+                <TriField label="PP goal" value={filters.ppg} onChange={v => setF('ppg', v)} />
+                <TriField label="PP goal against" value={filters.ppga} onChange={v => setF('ppga', v)} />
+                <TriField label="First goal" value={filters.scoredFirst} onChange={v => setF('scoredFirst', v)} labels={['Any', 'For', 'Against']} />
+                <div className="py-3">
                     <RangeFields ranges={filters.ranges} onChange={(k, v) => setFilters(f => ({ ...f, ranges: { ...f.ranges, [k]: v } }))} />
                 </div>
             </details>
@@ -715,18 +673,17 @@ function activeChips(f: TableFilters, set: React.Dispatch<React.SetStateAction<T
     const out: { key: string; label: string; clear: () => void }[] = [];
     const reset = <K extends keyof TableFilters>(k: K) => () => set(prev => ({ ...prev, [k]: DEFAULT_FILTERS[k] }));
     if (f.scope !== 'regular') out.push({ key: 'scope', label: 'Playoffs', clear: reset('scope') });
-    if (f.view !== 'all') out.push({ key: 'view', label: f.view === 'today' ? 'Playing today' : f.view === 'tomorrow' ? 'Playing tomorrow' : 'Playoff matchups', clear: reset('view') });
-    if (f.location !== 'All') out.push({ key: 'location', label: f.location, clear: reset('location') });
-    if (f.recent !== 'All') out.push({ key: 'recent', label: `Last ${f.recent}`, clear: reset('recent') });
-    if (f.period !== 'All') out.push({ key: 'period', label: `${f.period} period`, clear: reset('period') });
-    if (f.divisions.length) out.push({ key: 'divisions', label: f.divisions.map(d => DIVISION_LABEL[d]).join(' + '), clear: () => set(prev => ({ ...prev, divisions: [] })) });
-    if (f.position !== 'All') out.push({ key: 'position', label: f.position === 'In' ? 'In a playoff spot' : 'Outside the playoffs', clear: reset('position') });
-    if (f.ppg !== 'All') out.push({ key: 'ppg', label: f.ppg === 'Yes' ? 'Scored a PPG' : 'No PPG', clear: reset('ppg') });
-    if (f.ppga !== 'All') out.push({ key: 'ppga', label: f.ppga === 'Yes' ? 'Allowed a PPG' : 'No PPG allowed', clear: reset('ppga') });
-    if (f.scoredFirst !== 'All') out.push({ key: 'sfirst', label: f.scoredFirst === 'Yes' ? 'Scored first' : 'Trailed first', clear: reset('scoredFirst') });
+    if (f.view !== 'all') out.push({ key: 'view', label: f.view === 'today' ? 'Today' : f.view === 'tomorrow' ? 'Tomorrow' : 'Bracket', clear: reset('view') });
+    if (f.recent !== 'All' && f.recent !== 10) out.push({ key: 'recent', label: `L${f.recent}`, clear: reset('recent') });
+    if (f.period !== 'All') out.push({ key: 'period', label: f.period, clear: reset('period') });
+    if (f.divisions.length) out.push({ key: 'divisions', label: f.divisions.map(d => DIVISION_LABEL[d]).join('+'), clear: () => set(prev => ({ ...prev, divisions: [] })) });
+    if (f.position !== 'All') out.push({ key: 'position', label: f.position === 'In' ? 'In spot' : 'Out of spot', clear: reset('position') });
+    if (f.ppg !== 'All') out.push({ key: 'ppg', label: f.ppg === 'Yes' ? 'PPG' : 'No PPG', clear: reset('ppg') });
+    if (f.ppga !== 'All') out.push({ key: 'ppga', label: f.ppga === 'Yes' ? 'PPGA' : 'No PPGA', clear: reset('ppga') });
+    if (f.scoredFirst !== 'All') out.push({ key: 'sfirst', label: f.scoredFirst === 'Yes' ? 'Scored 1st' : 'Trailed 1st', clear: reset('scoredFirst') });
     for (const [k, v] of Object.entries(f.ranges)) {
         if (!v || (v[0] === '' && v[1] === '')) continue;
-        const label = `${k.toUpperCase()} ${v[0] !== '' ? `≥ ${v[0]}` : ''}${v[0] !== '' && v[1] !== '' ? ', ' : ''}${v[1] !== '' ? `≤ ${v[1]}` : ''}`;
+        const label = `${k.toUpperCase()} ${v[0] !== '' ? `≥${v[0]}` : ''}${v[0] !== '' && v[1] !== '' ? ' ' : ''}${v[1] !== '' ? `≤${v[1]}` : ''}`;
         out.push({
             key: `r-${k}`,
             label,
@@ -740,4 +697,3 @@ function activeChips(f: TableFilters, set: React.Dispatch<React.SetStateAction<T
     }
     return out;
 }
-

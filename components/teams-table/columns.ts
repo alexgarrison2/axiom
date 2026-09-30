@@ -162,10 +162,10 @@ export const SECTIONS: Section[] = [
     },
     { key: 'record', label: 'Record', groups: [RECORD] },
     { key: 'goals', label: 'Goals', groups: [RECORD_MIN(), GOALS] },
-    { key: 'special', label: 'Special teams', groups: [RECORD_MIN(), PP, PK] },
+    { key: 'special', label: 'PP/PK', groups: [RECORD_MIN(), PP, PK] },
     { key: 'shots', label: 'Shots', groups: [RECORD_MIN(), SAVES, SHOTS] },
     { key: 'xg', label: 'xG', groups: [RECORD_MIN(), XG, SAVES] },
-    { key: 'state', label: 'Game state', groups: [RECORD_MIN(), STATE, COMEBACKS] },
+    { key: 'state', label: 'State', groups: [RECORD_MIN(), STATE, COMEBACKS] },
     { key: 'empty-net', label: 'Empty net', groups: [RECORD_MIN(), EN] },
     {
         key: 'ratings',
@@ -177,7 +177,7 @@ export const SECTIONS: Section[] = [
             G('RAPM & goalie', ['rapm_f', 'rapm_d', 'goalie_impact']),
         ],
     },
-    { key: 'all', label: 'All stats', groups: [RECORD, GOALS, PP, PK, SAVES, SHOTS, XG, STATE, COMEBACKS, EN] },
+    { key: 'all', label: 'All', groups: [RECORD, GOALS, PP, PK, SAVES, SHOTS, XG, STATE, COMEBACKS, EN] },
 ];
 
 function RECORD_MIN(): SectionGroup {
@@ -199,10 +199,10 @@ export function columnValue(col: StatColumn, row: TeamStat, ratings: Record<stri
 
 // ── colour ────────────────────────────────────────────────────────────────────
 // Diverging ramp between the --neg and --pos tokens through a neutral grey.
-// All stops are ≥7:1 on the table surface.
-const NEG: [number, number, number] = [255, 110, 128];
+// Every stop is ≥5:1 on the table surface.
+const NEG: [number, number, number] = [255, 84, 112];
 const MID: [number, number, number] = [201, 209, 219];
-const POS: [number, number, number] = [92, 240, 160];
+const POS: [number, number, number] = [61, 255, 143];
 
 export function heatColor(value: number, min: number, max: number, better: Better): string | undefined {
     if (better === 'none' || !Number.isFinite(value) || !(max > min)) return undefined;

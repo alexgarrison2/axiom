@@ -1,8 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { InfoTip } from '@/components/ui/info-tip';
-import type { GlossaryTerm } from '@/lib/glossary';
 import { cn } from '@/lib/utils';
 
 export type SortDir = 'asc' | 'desc';
@@ -11,7 +9,6 @@ interface HeaderCellProps {
     label: React.ReactNode;
     /** Full column name for screen readers and the native tooltip. */
     title?: string;
-    tip?: GlossaryTerm;
     /** null = sorted by another column; undefined = not sortable. */
     direction?: SortDir | null;
     onSort?: () => void;
@@ -21,41 +18,42 @@ interface HeaderCellProps {
 }
 
 /**
- * <th scope="col"> for data tables. Sortable headers are real buttons with
- * aria-sort on the cell; jargon headers carry a glossary InfoTip next to
- * the button (never nested inside it).
+ * <th scope="col"> for the dense tables: mono uppercase label, cyan when it
+ * is the sort column. Sortable headers are real buttons with aria-sort on
+ * the cell (same contract as the SortHeader primitive, plus a native
+ * tooltip carrying the full column name).
  */
-export function HeaderCell({ label, title, tip, direction, onSort, align = 'center', className, style }: HeaderCellProps) {
+export function HeaderCell({ label, title, direction, onSort, align = 'center', className, style }: HeaderCellProps) {
     const sortable = direction !== undefined && !!onSort;
     const ariaSort = !sortable ? undefined : direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none';
+    const justify = align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start';
+    const text = 'whitespace-nowrap text-micro font-medium uppercase tracking-[0.1em]';
     return (
-        <th scope="col" aria-sort={ariaSort} className={cn('p-0 align-bottom font-semibold', className)} style={style}>
-            <div className={cn('flex min-h-9 items-center gap-0.5 px-1.5', align === 'center' && 'justify-center', align === 'right' && 'justify-end')}>
-                {sortable ? (
-                    <button
-                        type="button"
-                        onClick={onSort}
-                        title={title}
-                        className={cn(
-                            'inline-flex min-h-8 items-center gap-1 whitespace-nowrap rounded-chip px-1 text-micro tracking-[0.02em] transition-colors hover:text-fg-1 coarse:min-h-11',
-                            direction ? 'text-brand' : 'text-fg-2',
-                        )}
-                    >
-                        <span>{label}</span>
-                        {title ? <span className="sr-only">, {title}</span> : null}
-                        <svg aria-hidden="true" viewBox="0 0 10 12" className={cn('h-3 w-2 shrink-0', direction ? 'opacity-100' : 'opacity-40')}>
-                            <path d="M5 1.5L8 5H2z" fill="currentColor" opacity={direction === 'desc' ? 0.3 : 1} />
-                            <path d="M5 10.5L2 7h6z" fill="currentColor" opacity={direction === 'asc' ? 0.3 : 1} />
-                        </svg>
-                    </button>
-                ) : (
-                    <span title={title} className="whitespace-nowrap px-1 text-micro tracking-[0.02em] text-fg-2">
-                        {label}
-                        {title ? <span className="sr-only">, {title}</span> : null}
-                    </span>
-                )}
-                {tip ? <InfoTip term={tip} side="bottom" className="-ml-0.5 text-fg-3" /> : null}
-            </div>
+        <th scope="col" aria-sort={ariaSort} className={cn('h-8 p-0 align-middle font-medium', className)} style={style}>
+            {sortable ? (
+                <button
+                    type="button"
+                    onClick={onSort}
+                    title={title}
+                    className={cn(
+                        'inline-flex h-full min-h-8 w-full items-center gap-1 px-1.5 transition-colors hover:text-fg-1 focus-visible:outline-offset-[-2px] coarse:min-h-11',
+                        justify,
+                        text,
+                        direction ? 'text-brand' : 'text-fg-3',
+                    )}
+                >
+                    <span>{label}</span>
+                    {title ? <span className="sr-only">, {title}</span> : null}
+                    <svg aria-hidden="true" viewBox="0 0 8 8" className={cn('h-2 w-2 shrink-0', !direction && 'invisible')}>
+                        <path d={direction === 'asc' ? 'M4 1.5 7 6H1z' : 'M4 6.5 1 2h6z'} fill="currentColor" />
+                    </svg>
+                </button>
+            ) : (
+                <span title={title} className={cn('flex min-h-8 items-center px-1.5 text-fg-3', justify, text)}>
+                    {label}
+                    {title ? <span className="sr-only">, {title}</span> : null}
+                </span>
+            )}
         </th>
     );
 }
