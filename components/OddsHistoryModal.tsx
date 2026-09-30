@@ -6,19 +6,29 @@ import type { TeamRef } from '@/types/prediction';
 import { fmtOdds } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
 
-/** Snapshot time: ISO UTC → viewer's clock; legacy "HH:MM" (US Central) → "6:22 PM CT". */
-function when(ts: string): string {
+/** Snapshot time: ISO UTC → viewer's clock, plus the day when it is not today; legacy "HH:MM" (US Central) → "6:22 PM CT". */
+function when(ts: string): { day: string | null; time: string } {
     if (/^\d{4}-\d{2}-\d{2}T/.test(ts)) {
         const d = new Date(ts);
-        if (Number.isNaN(d.getTime())) return ts;
+        if (Number.isNaN(d.getTime())) return { day: null, time: ts };
         const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
         const sameDay = d.toDateString() === new Date().toDateString();
-        return sameDay ? time : `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${time}`;
+        return { day: sameDay ? null : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), time };
     }
     const m = ts.match(/^(\d{1,2}):(\d{2})/);
-    if (!m) return ts;
+    if (!m) return { day: null, time: ts };
     const h = Number(m[1]);
-    return `${h % 12 || 12}:${m[2]} ${h < 12 ? 'AM' : 'PM'} CT`;
+    return { day: null, time: `${h % 12 || 12}:${m[2]} ${h < 12 ? 'AM' : 'PM'} CT` };
+}
+
+function When({ ts }: { ts: string }) {
+    const t = when(ts);
+    return (
+        <>
+            {t.day ? <span>{t.day},</span> : null}
+            <span>{t.time}</span>
+        </>
+    );
 }
 
 const toNum = (o: string) => {
@@ -69,7 +79,7 @@ function TotalCell({ t, dir }: { t: OddsTotal | null | undefined; dir: 'up' | 'd
                 ) : null}
                 {t.line}
             </span>
-            <span className="flex flex-wrap justify-end gap-x-2 text-micro text-fg-3">
+            <span className="flex flex-col items-end text-micro text-fg-3 sm:flex-row sm:flex-wrap sm:justify-end sm:gap-x-2">
                 <span className="whitespace-nowrap">
                     <abbr title="Over" className="no-underline">
                         O
@@ -135,11 +145,11 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                 </button>
             }
         >
-            <div className={cn('mb-3 grid gap-2', total ? 'grid-cols-3' : 'grid-cols-2')}>
+            <div className={cn('mb-3 grid grid-cols-2 gap-2', total && 'sm:grid-cols-3')}>
                 <MoveTile label={away.triCode} from={first.awayOdds} to={last.awayOdds} dir={moveOf(first.awayOdds, last.awayOdds)} />
                 <MoveTile label={home.triCode} from={first.homeOdds} to={last.homeOdds} dir={moveOf(first.homeOdds, last.homeOdds)} />
                 {total ? (
-                    <div className="tile flex min-w-0 flex-col gap-0.5 px-3 py-2">
+                    <div className="tile col-span-2 flex min-w-0 items-baseline justify-between gap-0.5 px-3 py-2 sm:col-span-1 sm:flex-col sm:items-start sm:justify-start">
                         <span className="label">Total</span>
                         <span className="font-display text-title font-bold tabular-nums text-fg-1">{total}</span>
                     </div>
@@ -168,9 +178,16 @@ export default function OddsHistoryModal({ entries, away, home, started = false 
                     {entries.map((e, i) => (
                         <tr key={i}>
                             <th scope="row" className="text-left font-normal text-fg-2">
-                                {e.isOpen ? <span className="mr-1.5 rounded-chip border border-line px-1 text-micro font-bold uppercase tracking-wide text-fg-1">First</span> : null}
-                                {e.isLatest ? <span className="mr-1.5 rounded-chip border border-brand/50 px-1 text-micro font-bold uppercase tracking-wide text-brand">{started ? 'Close' : 'Latest'}</span> : null}
-                                {when(e.timestamp)}
+                                {/* Chip, day and clock wrap as whole pieces, so a dated row never pushes the Total column off a phone. */}
+                                <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 py-1">
+                                    {e.isOpen ? (
+                                        <span title="First line we captured" className="rounded-chip border border-line px-1 text-micro font-bold uppercase tracking-wide text-fg-1">
+                                            First
+                                        </span>
+                                    ) : null}
+                                    {e.isLatest ? <span className="rounded-chip border border-brand/50 px-1 text-micro font-bold uppercase tracking-wide text-brand">{started ? 'Close' : 'Latest'}</span> : null}
+                                    <When ts={e.timestamp} />
+                                </span>
                             </th>
                             <td className="text-right text-fg-1">
                                 <Arrow dir={e.awayDir === 'down' ? 'down' : e.awayDir === 'up' ? 'up' : null} className="mr-1" />
