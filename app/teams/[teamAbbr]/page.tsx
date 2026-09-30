@@ -12,9 +12,11 @@ import { isTeamTricode, TEAM_TRICODES } from '@/utils/team-stats/teams';
 
 /*
  * Team pages are generated at build time for the 32 clubs (every pipeline run
- * redeploys). Other tricodes 404 with the site nav; lowercase ones redirect.
+ * redeploys). Anything else is a hard 404 with the site nav (dynamicParams
+ * false: no runtime render, so no streamed soft 404). Links always use the
+ * uppercase tricode.
  */
-export const dynamicParams = true;
+export const dynamicParams = false;
 
 export function generateStaticParams() {
     return TEAM_TRICODES.map(teamAbbr => ({ teamAbbr }));

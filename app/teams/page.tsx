@@ -24,7 +24,7 @@ export default function TeamsPage() {
             <PageHeading
                 eyebrow="League table"
                 title="Teams"
-                description="Standings and team stats for all 32 clubs. Tap a column to sort, or a team to open its page."
+                description="All 32 clubs. Sort any column; tap a team for its page."
                 className="mb-5"
             />
             <TeamsTable initial={payload} />

@@ -491,7 +491,7 @@ function Row({
             >
                 <div className="flex min-h-9 items-center gap-1 md:gap-2">
                     {!paired ? <span className="hidden w-5 shrink-0 text-right text-caption tabular-nums text-fg-3 md:inline">{idx + 1}</span> : null}
-                    <Link href={`/teams/${row.tri}`} className="flex min-h-9 min-w-0 items-center gap-1 rounded-chip hover:text-brand md:gap-2">
+                    <Link href={`/teams/${row.tri}`} prefetch={false} className="flex min-h-9 min-w-0 items-center gap-1 rounded-chip hover:text-brand md:gap-2">
                         <span className="relative shrink-0">
                             <Image src={`/logos/${row.tri}.svg`} alt="" width={28} height={28} unoptimized className="h-5 w-5 object-contain md:h-7 md:w-7" />
                             {clinch ? (

@@ -10,9 +10,7 @@ import { fetchJsonCached, teamUrl } from '@/utils/team-stats/client-cache';
 import { unpackGames } from '@/utils/team-stats/game-row';
 import { seasonGames, seasonLabel } from '@/utils/team-stats/season';
 import type { TeamPayload } from '@/utils/team-stats/team-types';
-import FilterControls from './FilterControls';
 import GamesLogTable from './GamesLogTable';
-import GoaliesPanel from './GoaliesPanel';
 import { DEFAULT_GAME_FILTERS, applyGameFilters, countGameFilters, type TeamGameFilters } from './game-log-model';
 
 const TeamChart = dynamic(() => import('@/components/TeamChart'), {
@@ -29,6 +27,10 @@ const SkaterGrid = dynamic(() => import('./SkaterGrid'), {
         </div>
     ),
 });
+
+// Only needed once the sheet opens / the tab is picked.
+const FilterControls = dynamic(() => import('./FilterControls'), { loading: () => <p className="py-4 text-body-sm text-fg-2">Loading filters…</p> });
+const GoaliesPanel = dynamic(() => import('./GoaliesPanel'), { loading: () => <div className="hud-panel h-64 animate-pulse" role="status" aria-label="Loading goalies" /> });
 
 const TABS = ['games', 'charts', 'skaters', 'goalies'] as const;
 type Tab = (typeof TABS)[number];

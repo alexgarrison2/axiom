@@ -2,6 +2,7 @@
  * Server-only builder for one team's page / API payload. See server.ts.
  */
 import fs from 'node:fs';
+import https from 'node:https';
 import path from 'node:path';
 import Papa from 'papaparse';
 import { SEASON_ID } from '../../lib/season';
@@ -28,6 +29,39 @@ export interface RosterPlayer {
     number: number | null;
 }
 
+/**
+ * Plain HTTPS GET (not Next's patched fetch), so reading the roster at build
+ * time does not turn the static team pages into ISR pages that would
+ * re-render at runtime without the pipeline archive files.
+ */
+function getJson(url: string, timeoutMs: number): Promise<unknown | null> {
+    return new Promise(resolve => {
+        const req = https.get(url, { headers: { 'User-Agent': 'ponyxg-build/1.0', Accept: 'application/json' } }, res => {
+            if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                res.resume();
+                resolve(getJson(new URL(res.headers.location, url).toString(), timeoutMs));
+                return;
+            }
+            if (res.statusCode !== 200) {
+                res.resume();
+                resolve(null);
+                return;
+            }
+            const chunks: Buffer[] = [];
+            res.on('data', c => chunks.push(c));
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+                } catch {
+                    resolve(null);
+                }
+            });
+        });
+        req.setTimeout(timeoutMs, () => req.destroy());
+        req.on('error', () => resolve(null));
+    });
+}
+
 interface NhlRosterPlayer {
     id: number;
     firstName?: { default?: string };
@@ -49,12 +83,8 @@ export function loadRoster(tri: string): Promise<{ players: RosterPlayer[]; sour
     if (hit) return hit;
     const p = (async () => {
         try {
-            const res = await fetch(`https://api-web.nhle.com/v1/roster/${tri}/${SEASON_ID}`, {
-                signal: AbortSignal.timeout(8000),
-                next: { revalidate: 3600 },
-            } as RequestInit);
-            if (res.ok) {
-                const data = (await res.json()) as Record<string, NhlRosterPlayer[]>;
+            const data = (await getJson(`https://api-web.nhle.com/v1/roster/${tri}/${SEASON_ID}`, 8000)) as Record<string, NhlRosterPlayer[]> | null;
+            if (data) {
                 const players: RosterPlayer[] = [];
                 for (const group of ['forwards', 'defensemen', 'goalies']) {
                     for (const p of data[group] ?? []) {
@@ -152,16 +182,15 @@ export function loadPlayerStats(season: string): PlayerRow[] {
     if (hit) return hit;
     const y = season.slice(0, 4);
     const name = `nhl_season_${y}_${Number(y) + 1}_player_stats.csv`;
-    const candidates = [path.join(PUBLIC_DATA, name), path.join(process.cwd(), 'pipeline', name)];
-    let rows: PlayerRow[] = [];
-    for (const f of candidates) {
-        if (!fs.existsSync(f)) continue;
-        rows = Papa.parse<PlayerRow>(fs.readFileSync(f, 'utf8'), { header: true, skipEmptyLines: true }).data.filter(r => {
-            const t = gameTypeOf(r.game_id);
-            return (t === 2 || t === 3) && String(r.game_id).startsWith(y);
-        });
-        break;
-    }
+    const inPublic = path.join(process.cwd(), 'public', 'data', name);
+    const inPipeline = path.join(process.cwd(), 'pipeline', name);
+    const text = fs.existsSync(inPublic) ? fs.readFileSync(inPublic, 'utf8') : fs.existsSync(inPipeline) ? fs.readFileSync(inPipeline, 'utf8') : '';
+    const rows = text
+        ? Papa.parse<PlayerRow>(text, { header: true, skipEmptyLines: true }).data.filter(r => {
+              const t = gameTypeOf(r.game_id);
+              return (t === 2 || t === 3) && String(r.game_id).startsWith(y);
+          })
+        : [];
     playerCache.set(season, rows);
     return rows;
 }

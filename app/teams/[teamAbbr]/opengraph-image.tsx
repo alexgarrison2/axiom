@@ -68,7 +68,7 @@ export default async function Image({ params }: { params: Promise<{ teamAbbr: st
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ fontSize: 64, fontWeight: 900, letterSpacing: -1 }}>{team.name}</div>
                         <div style={{ fontSize: 28, color: '#a9b4c2' }}>
-                            {DIVISION_LABEL[team.division]} Division · {usePrev ? `${label} final` : `${label} season`}
+                            {`${DIVISION_LABEL[team.division]} Division · ${usePrev ? `${label} final` : `${label} season`}`}
                         </div>
                     </div>
                 </div>
