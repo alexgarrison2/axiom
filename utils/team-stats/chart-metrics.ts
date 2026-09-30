@@ -41,18 +41,18 @@ export const CHART_METRICS: ChartMetric[] = [
 ];
 
 export interface Totals {
-    gp: number; pts: number; gf: number; ga: number; xgf: number; xga: number;
+    gp: number; pts: number; gf: number; ga: number; xgf: number; xga: number; xgane: number;
     ppg: number; ppo: number; pkg: number; pko: number;
     sf: number; sa: number; cf: number; ca: number; en_ga: number;
     hdf: number; hda: number; tl: number; tt: number; tti: number; ctrl: number;
 }
 
 export function buildTotals(games: GameRow[]): Totals {
-    const t: Totals = { gp: 0, pts: 0, gf: 0, ga: 0, xgf: 0, xga: 0, ppg: 0, ppo: 0, pkg: 0, pko: 0, sf: 0, sa: 0, cf: 0, ca: 0, en_ga: 0, hdf: 0, hda: 0, tl: 0, tt: 0, tti: 0, ctrl: 0 };
+    const t: Totals = { gp: 0, pts: 0, gf: 0, ga: 0, xgf: 0, xga: 0, xgane: 0, ppg: 0, ppo: 0, pkg: 0, pko: 0, sf: 0, sa: 0, cf: 0, ca: 0, en_ga: 0, hdf: 0, hda: 0, tl: 0, tt: 0, tti: 0, ctrl: 0 };
     for (const g of games) {
         t.gp++;
         t.pts += g.result === 'RW' || g.result === 'OTW' || g.result === 'SOW' ? 2 : (g.result === 'OTL' || g.result === 'SOL') && g.type === 2 ? 1 : 0;
-        t.gf += g.gf; t.ga += g.ga; t.xgf += g.xgf; t.xga += g.xga;
+        t.gf += g.gf; t.ga += g.ga; t.xgf += g.xgf; t.xga += g.xga; t.xgane += Number.isFinite(g.xgane) ? g.xgane : g.xga;
         t.ppg += g.ppg; t.ppo += g.ppo; t.pkg += g.ppga; t.pko += g.pko;
         t.sf += g.sf; t.sa += g.sa; t.cf += g.cf; t.ca += g.ca; t.en_ga += g.enga;
         t.hdf += g.hdf; t.hda += g.hda; t.tl += g.tl; t.tt += g.tt; t.tti += g.tti; t.ctrl += g.ctrl;
@@ -85,7 +85,7 @@ export function metricValue(metric: string, t: Totals): number {
         case 'sf': return t.sf / gp;
         case 'sa': return t.sa / gp;
         case 'sd': return t.sf - t.sa;
-        case 'gsax': return (t.xga - (t.ga - t.en_ga)) / gp;
+        case 'gsax': return (t.xgane - (t.ga - t.en_ga)) / gp;
         default: return NaN;
     }
 }

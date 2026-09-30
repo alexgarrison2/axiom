@@ -83,6 +83,7 @@ export function parseGameRow(raw: Record<string, unknown>, teamToTri: (name: str
         hda: num(raw.hda),
         xgf: num(raw.xG_for),
         xga: num(raw.xG_against),
+        xgane: raw.xga_non_en !== undefined && raw.xga_non_en !== '' && raw.xga_non_en !== null ? num(raw.xga_non_en) : num(raw.xG_against),
         ppg: num(raw.pp_goals),
         ppga: num(raw.pp_goals_against),
         ppo: num(raw.pp_opportunities),
@@ -147,7 +148,7 @@ export function finalizeRows(rows: GameRow[]): GameRow[] {
 // ── Packing (compact JSON for the browser) ───────────────────────────────────
 
 const SCALARS = [
-    'gf', 'ga', 'sf', 'sa', 'cf', 'ca', 'cf5', 'ca5', 'hdf', 'hda', 'xgf', 'xga',
+    'gf', 'ga', 'sf', 'sa', 'cf', 'ca', 'cf5', 'ca5', 'hdf', 'hda', 'xgf', 'xga', 'xgane',
     'ppg', 'ppga', 'ppo', 'pko', 'ppt', 'pkt', 'saves',
     'engf', 'enga', 'enppgf', 'enppga', 'enatt', 'enattag',
     'tl', 'tt', 'tti', 'ctrl', 'sfirst', 'bl1', 'bl2', 'bl3', 'cw1', 'cw2', 'cw3',
@@ -202,6 +203,17 @@ export function unpackGames(packed: PackedGames): GameRow[] {
             p,
         } as GameRow;
         for (const k of SCALARS) (r as unknown as Record<string, number>)[k] = Number(g(row, k));
+        // Packs written before xgane existed: fall back to xga.
+        if (!Number.isFinite(r.xgane)) r.xgane = r.xga;
         return r;
     });
+}
+
+/**
+ * Goals saved above expected for a full game: non-empty-net xG against minus
+ * goals allowed with the goalie in net. Opponent empty-net shots never count.
+ */
+export function gsaxOf(g: Pick<GameRow, 'xga' | 'xgane' | 'ga' | 'enga'>): number {
+    const xg = Number.isFinite(g.xgane) ? g.xgane : g.xga;
+    return xg - (g.ga - g.enga);
 }

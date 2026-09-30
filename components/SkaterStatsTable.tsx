@@ -210,7 +210,7 @@ export default function SkaterStatsTable({ preview, src, ratingsLabel }: SkaterS
                 <ScrollRegion label="Skater ratings table" className="rounded-card border border-line bg-surface-1">
                     <table className="w-full min-w-full text-body-sm md:min-w-[1100px]">
                         <caption className="sr-only">Skaters sorted by {sort.key === 'impact' ? 'impact' : sort.key}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}</caption>
-                        <thead className="bg-surface-2">
+                        <thead className="scroll-mt-filterbar bg-surface-2">
                             <tr>
                                 <SortHeader
                                     direction={sort.key === 'name' ? sort.dir : null}

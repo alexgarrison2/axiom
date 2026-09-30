@@ -39,6 +39,8 @@ interface NhlStandingsTeam {
     points?: number;
     regulationWins?: number;
     regulationPlusOtWins?: number;
+    goalDifferential?: number;
+    goalFor?: number;
     divisionName?: string;
     seasonId?: number;
     gameTypeId?: number;
@@ -103,6 +105,8 @@ export async function loadStandingsPage(): Promise<StandingsPageData> {
             pts: live?.points ?? 0,
             rw: live?.regulationWins ?? 0,
             row: live?.regulationPlusOtWins ?? 0,
+            gd: live?.goalDifferential ?? 0,
+            gf: live?.goalFor ?? 0,
             proj,
             delta24: proj ? delta24 : null,
             trend: proj ? trend : [],

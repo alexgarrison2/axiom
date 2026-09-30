@@ -39,7 +39,7 @@ export function calculateTeamStats(tri: string, games: GameRow[], period: Period
     let ppg = 0, ppo = 0, ppt = 0, pkga = 0, pko = 0, pkt = 0;
     let sf = 0, sa = 0, cf = 0, ca = 0, hdf = 0, hda = 0, saves = 0;
     let engf = 0, enga = 0, enppgf = 0, enppga = 0, enatt = 0;
-    let xgf = 0, xga = 0, otml = 0;
+    let xgf = 0, xga = 0, xgane = 0, otml = 0;
     let tl = 0, tt = 0, tti = 0, ctrl = 0;
     let nlw = 0, ntw = 0, ntl = 0, bl = 0, bl3p = 0, bl2 = 0, bl3 = 0, cw = 0, cw3p = 0, cw2 = 0, cw3 = 0;
 
@@ -67,6 +67,8 @@ export function calculateTeamStats(tri: string, games: GameRow[], period: Period
         hda += pick(g.hda, g.p.hda);
         xgf += pick(g.xgf, g.p.xgf);
         xga += pick(g.xga, g.p.xga);
+        // GSAx: full game excludes opponent empty-net xG (xgane).
+        xgane += pi < 0 ? (Number.isFinite(g.xgane) ? g.xgane : g.xga) : g.p.xga[pi];
         saves += pi < 0 ? g.saves : Math.max(0, g.p.sa[pi] - g.p.ga[pi]);
 
         if (pi < 0) {
@@ -138,7 +140,7 @@ export function calculateTeamStats(tri: string, games: GameRow[], period: Period
         xgf_per_game: xgf / gp,
         xga_per_game: xga / gp,
         xgf_pct: xgf + xga > 0 ? (xgf / (xgf + xga)) * 100 : 0,
-        gsax: pi < 0 ? xga - (ga - enga) : xga - ga,
+        gsax: pi < 0 ? xgane - (ga - enga) : xgane - ga,
         otml,
         time_leading_per_game: tl / gp,
         time_trailing_per_game: tt / gp,

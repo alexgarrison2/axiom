@@ -8,7 +8,7 @@ import type { Boxscores, BoxRow } from '@/utils/team-stats/team-types';
 import type { GameRow, PeriodFilter } from '@/utils/team-stats/types';
 import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
 import { useStickyHeader } from '@/components/teams-table/useStickyHeader';
-import { flags, resultLabel, resultTone, score, stat, totals } from './game-log-model';
+import { flags, gameGsax, resultLabel, resultTone, score, stat, totals } from './game-log-model';
 
 interface GamesLogTableProps {
     games: GameRow[];
@@ -62,9 +62,9 @@ const COLS: Col[] = [
     },
     {
         key: 'gsax', label: 'GSAx', title: 'Goals saved above expected', width: 60,
-        value: (g, p) => stat(g, 'xga', p) - (stat(g, 'ga', p) - (p === 'All' ? g.enga : 0)),
-        render: (g, p) => signed(stat(g, 'xga', p) - (stat(g, 'ga', p) - (p === 'All' ? g.enga : 0)), 2),
-        tone: (g, p) => diffTone(stat(g, 'xga', p) - (stat(g, 'ga', p) - (p === 'All' ? g.enga : 0))),
+        value: (g, p) => gameGsax(g, p),
+        render: (g, p) => signed(gameGsax(g, p), 2),
+        tone: (g, p) => diffTone(gameGsax(g, p)),
     },
     { key: 'tl', label: 'T↑', title: 'Time leading', width: 60, value: (g, p) => stat(g, 'tl', p), render: (g, p) => mmss(stat(g, 'tl', p)) },
     { key: 'tt', label: 'T↓', title: 'Time trailing', width: 60, value: (g, p) => stat(g, 'tt', p), render: (g, p) => mmss(stat(g, 'tt', p)) },
@@ -339,7 +339,7 @@ function Boxscore({ rows, players, state }: { rows: BoxRow[] | undefined; player
                     {goalies.map(r => `${who(r[0])[0]} ${r[9]}/${r[8]} saves (${r[5]})`).join(' · ')}
                 </p>
             ) : null}
-            <div className="overflow-x-auto">
+            <ScrollRegion label="Skater boxscore">
                 <table className="w-full min-w-[420px] text-caption">
                     <caption className="sr-only">Skater boxscore</caption>
                     <thead className="text-fg-3">
@@ -371,7 +371,7 @@ function Boxscore({ rows, players, state }: { rows: BoxRow[] | undefined; player
                         })}
                     </tbody>
                 </table>
-            </div>
+            </ScrollRegion>
         </div>
     );
 }
