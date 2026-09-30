@@ -23,23 +23,22 @@ export function SortHeader({ children, direction, onSort, align = 'left', classN
         <th
             scope="col"
             aria-sort={direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'}
-            className={cn('p-0 font-semibold', className)}
+            className={cn('p-0 font-medium', className)}
             {...rest}
         >
             <button
                 type="button"
                 onClick={onSort}
                 className={cn(
-                    'inline-flex min-h-9 w-full items-center gap-1 px-2 text-micro uppercase tracking-[0.06em] transition-colors hover:text-fg-1 coarse:min-h-11',
+                    'inline-flex min-h-8 w-full items-center gap-1 px-2 text-micro uppercase tracking-[0.12em] transition-colors hover:text-fg-1 coarse:min-h-11',
                     align === 'right' && 'justify-end',
                     align === 'center' && 'justify-center',
-                    direction ? 'text-brand' : 'text-fg-2',
+                    direction ? 'text-brand' : 'text-fg-3',
                 )}
             >
                 <span>{children}</span>
-                <svg aria-hidden="true" viewBox="0 0 10 12" className={cn('h-3 w-2.5 shrink-0', direction ? 'opacity-100' : 'opacity-40')}>
-                    <path d="M5 1.5L8 5H2z" fill="currentColor" opacity={direction === 'desc' ? 0.35 : 1} />
-                    <path d="M5 10.5L2 7h6z" fill="currentColor" opacity={direction === 'asc' ? 0.35 : 1} />
+                <svg aria-hidden="true" viewBox="0 0 8 8" className={cn('h-2 w-2 shrink-0', !direction && 'invisible')}>
+                    <path d={direction === 'asc' ? 'M4 1.5 7 6H1z' : 'M4 6.5 1 2h6z'} fill="currentColor" />
                 </svg>
             </button>
         </th>

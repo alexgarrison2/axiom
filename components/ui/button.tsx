@@ -4,26 +4,23 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/** Buttons: mono uppercase, letter-spaced. Solid cyan only for the one primary action. */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-control text-body-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50 coarse:min-h-11 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-control text-caption font-bold uppercase tracking-chip transition-[color,background-color,border-color,filter] disabled:pointer-events-none disabled:opacity-50 coarse:min-h-11 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default:
-          "bg-brand text-brand-ink shadow hover:brightness-110",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline:
-          "border border-line-strong bg-surface-1 text-fg-1 shadow-sm hover:bg-surface-2",
-        secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "text-fg-2 hover:bg-surface-2 hover:text-fg-1",
-        link: "text-brand underline-offset-4 hover:underline",
+        default: "bg-brand text-brand-ink hover:brightness-110",
+        destructive: "border border-neg/50 text-neg hover:bg-neg/10",
+        outline: "border border-line text-fg-1 hover:border-line-strong",
+        secondary: "bg-surface-3 text-fg-1 hover:text-brand",
+        ghost: "text-fg-3 hover:text-fg-1",
+        link: "normal-case tracking-normal text-brand underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-control px-3 text-caption",
-        lg: "h-11 rounded-control px-8 text-body",
+        default: "h-9 px-4",
+        sm: "h-8 px-3 text-micro",
+        lg: "h-11 px-6",
         icon: "h-9 w-9",
       },
     },

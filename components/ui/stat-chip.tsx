@@ -74,36 +74,41 @@ export function StatChip({
             data-state={state}
             title={title}
             className={cn(
-                'relative inline-flex min-h-6 items-center gap-1.5 whitespace-nowrap rounded-chip border px-2 py-0.5 text-caption',
-                state === 'current' && 'border-line bg-surface-2',
-                state === 'small' && 'border-dashed border-warn/50 bg-surface-2',
-                state === 'prior' && 'is-stale',
+                'relative inline-flex min-h-6 items-center gap-1.5 whitespace-nowrap rounded-chip border px-2 py-0.5 text-micro',
+                state === 'current' && 'border-line',
+                state === 'small' && 'border-dashed border-warn/45',
+                state === 'prior' && 'border-dashed border-mute',
                 className,
             )}
         >
-            {state === 'prior' ? (
-                <span className="rounded-[3px] bg-fg-3/15 px-1 font-mono text-micro font-semibold text-fg-2">{tag}</span>
-            ) : null}
-            <span className={cn('font-medium', state === 'prior' ? 'text-fg-3' : 'text-fg-2')}>{label}</span>
-            <span
-                className={cn(
-                    'font-semibold tabular-nums',
-                    state === 'prior' ? 'text-fg-2' : state === 'small' ? 'text-fg-1' : toneClass[tone],
-                )}
-            >
+            <span className="font-medium uppercase tracking-wide text-fg-3">{label}</span>
+            <span className={cn('font-bold tabular-nums', state === 'prior' ? 'text-fg-2' : state === 'small' ? 'text-fg-1' : toneClass[tone])}>
                 {value}
                 {state === 'small' && n != null ? (
-                    <span aria-hidden="true" className="ml-1 font-mono text-micro font-normal text-warn">
+                    <span aria-hidden="true" className="ml-1 font-normal text-warn">
                         n={n}
                     </span>
                 ) : null}
             </span>
+            {state === 'prior' ? <SeasonTag>{tag}</SeasonTag> : null}
             {srSuffix ? <span className="sr-only">{srSuffix}</span> : null}
             {pct != null && state !== 'prior' ? (
-                <span aria-hidden="true" className="ml-0.5 inline-block h-1 w-6 overflow-hidden rounded-full bg-fg-3/25">
-                    <span className="block h-full rounded-full bg-brand" style={{ width: `${Math.max(8, pct * 100)}%` }} />
+                <span aria-hidden="true" className="ml-0.5 inline-block h-1 w-6 overflow-hidden rounded-full bg-line">
+                    <span className="block h-full rounded-full bg-fg-2" style={{ width: `${Math.max(8, pct * 100)}%` }} />
                 </span>
             ) : null}
+        </span>
+    );
+}
+
+/**
+ * The tiny muted season tag that marks a prior-season value ("25-26").
+ * Use it anywhere last season's number appears next to this season's UI.
+ */
+export function SeasonTag({ children, className }: { children?: React.ReactNode; className?: string }) {
+    return (
+        <span className={cn('inline-flex items-center rounded-[3px] border border-mute px-1 text-micro font-medium leading-[14px] tracking-normal text-fg-3', className)}>
+            {children ?? PRIOR_SEASON_TAG}
         </span>
     );
 }

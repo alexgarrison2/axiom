@@ -3,18 +3,23 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Badge / chip: mono uppercase, 1px border, 4px radius. One per card at most
+ * (e.g. "B2B"). `default` is the TV-network style neutral chip.
+ */
 const badgeVariants = cva(
-  "inline-flex items-center rounded-chip border px-2 py-0.5 text-caption font-semibold transition-colors",
+  "inline-flex items-center whitespace-nowrap rounded-chip border px-1.5 py-px text-micro font-bold uppercase tracking-chip",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-brand/15 text-brand",
-        secondary:
-          "border-line bg-surface-2 text-fg-1",
-        destructive:
-          "border-transparent bg-neg/15 text-neg",
-        outline: "border-line text-fg-2",
+        default: "border-line font-medium text-fg-3",
+        brand: "border-brand/50 text-brand",
+        warn: "border-warn/45 text-warn",
+        pos: "border-pos/45 text-pos",
+        destructive: "border-neg/45 text-neg",
+        model: "border-model/50 text-model",
+        secondary: "border-line text-fg-1",
+        outline: "border-line font-medium text-fg-3",
       },
     },
     defaultVariants: {
@@ -24,12 +29,12 @@ const badgeVariants = cva(
 )
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <span className={cn(badgeVariants({ variant }), className)} {...props} />
   )
 }
 

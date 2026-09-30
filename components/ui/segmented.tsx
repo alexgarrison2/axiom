@@ -24,9 +24,9 @@ export interface SegmentedProps<T extends string> {
 }
 
 /**
- * One segmented control for the whole site (views, seasons, splits).
+ * One segmented control for the whole site (views, seasons, panel tabs).
  * A radiogroup: Tab enters the group, arrow keys move and select.
- * Selected = surface-2 fill + 1px brand inner ring + text-1.
+ * Mono uppercase labels; selected = raised fill + cyan text.
  */
 export function Segmented<T extends string>({ options, value, onChange, label, size = 'md', block = false, className }: SegmentedProps<T>) {
     const refs = React.useRef<(HTMLButtonElement | null)[]>([]);
@@ -48,7 +48,7 @@ export function Segmented<T extends string>({ options, value, onChange, label, s
             role="radiogroup"
             aria-label={label}
             className={cn(
-                'inline-flex max-w-full items-center gap-0.5 rounded-control border border-line bg-surface-1 p-0.5',
+                'inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-[10px] border border-line bg-well p-[3px] scrollbar-hide',
                 block && 'flex w-full',
                 className,
             )}
@@ -78,13 +78,11 @@ export function Segmented<T extends string>({ options, value, onChange, label, s
                             }
                         }}
                         className={cn(
-                            'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[8px] px-3 font-semibold transition-colors',
-                            size === 'sm' ? 'min-h-8 text-caption' : 'min-h-9 text-body-sm',
+                            'inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] px-3 font-medium uppercase tracking-[0.12em] transition-colors focus-visible:outline-offset-[-2px]',
+                            size === 'sm' ? 'min-h-7 text-micro' : 'min-h-8 text-micro md:text-caption',
                             'coarse:min-h-11',
                             block && 'flex-1',
-                            selected
-                                ? 'bg-surface-3 text-fg-1 shadow-[inset_0_0_0_1px_rgb(var(--brand-rgb))]'
-                                : 'text-fg-2 hover:bg-surface-2 hover:text-fg-1',
+                            selected ? 'bg-surface-3 text-brand' : 'text-fg-3 hover:text-fg-1',
                             'disabled:cursor-not-allowed disabled:text-fg-disabled',
                         )}
                     >

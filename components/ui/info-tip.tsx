@@ -57,8 +57,10 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
                 type="button"
                 aria-label={visible ? undefined : `What is ${entry.title}?`}
                 className={cn(
-                    'group inline-flex items-center gap-1 rounded-chip align-middle text-fg-2 transition-colors hover:text-fg-1',
-                    'min-h-6 min-w-6 coarse:min-h-11 coarse:min-w-11 justify-center',
+                    'group relative inline-flex items-center gap-1 rounded-chip align-middle text-fg-3 transition-colors hover:text-fg-1',
+                    'min-h-6 min-w-6 justify-center',
+                    // 44px hit area on touch without growing the layout
+                    "coarse:before:absolute coarse:before:-inset-3 coarse:before:content-['']",
                     'data-[state=open]:text-brand',
                     className,
                 )}
@@ -93,7 +95,7 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
                     }
                 }}
             >
-                {visible ? <span className="underline decoration-dotted decoration-fg-3 underline-offset-[3px]">{visible}</span> : null}
+                {visible ? <span className="underline decoration-mute decoration-dotted underline-offset-[3px]">{visible}</span> : null}
                 <InfoGlyph />
             </Popover.Trigger>
             <Popover.Portal>
@@ -110,14 +112,13 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
                         openedByFocus.current = false;
                     }}
                     className={cn(
-                        'z-[70] w-[min(18rem,calc(100vw-24px))] rounded-control border border-line-strong bg-surface-2 p-3 text-left shadow-card',
+                        'z-[70] w-[min(17rem,calc(100vw-24px))] rounded-control border border-line-strong bg-surface-1 px-3 py-2.5 text-left',
                         'animate-pop-in focus:outline-none',
                     )}
                 >
-                    <p className="text-body-sm font-semibold text-fg-1">{entry.title}</p>
-                    <p className="mt-1 text-body-sm text-fg-2">{entry.short}</p>
-                    {note ? <p className="mt-2 text-body-sm text-fg-1">{note}</p> : null}
-                    {entry.detail ? <p className="mt-2 text-caption text-fg-3">{entry.detail}</p> : null}
+                    <p className="label text-fg-1">{entry.title}</p>
+                    <p className="mt-1.5 text-caption text-fg-2">{entry.short}</p>
+                    {note ? <p className="mt-1.5 text-caption text-fg-1">{note}</p> : null}
                     {entry.anchor ? (
                         <a
                             ref={linkRef}
@@ -131,24 +132,25 @@ export function InfoTip({ term, children, showLabel = false, side = 'top', class
                                 if (e.shiftKey) trigger.focus();
                                 else focusNextAfter(trigger, contentRef.current);
                             }}
-                            className="mt-2 inline-flex min-h-6 items-center text-caption font-semibold text-brand hover:underline"
+                            className="mt-2 inline-flex min-h-6 items-center text-micro font-bold uppercase tracking-wide text-brand hover:underline"
                         >
                             How we calculate it →
                         </a>
                     ) : null}
-                    <Popover.Arrow className="fill-surface-2" width={12} height={6} />
+                    <Popover.Arrow className="fill-line-strong" width={10} height={5} />
                 </Popover.Content>
             </Popover.Portal>
         </Popover.Root>
     );
 }
 
+/** A 12px hairline "i": present when needed, quiet otherwise. */
 function InfoGlyph() {
     return (
-        <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3.5 w-3.5 shrink-0" fill="none">
-            <circle cx="8" cy="8" r="6.75" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M8 7.2v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            <circle cx="8" cy="4.9" r="0.95" fill="currentColor" />
+        <svg aria-hidden="true" viewBox="0 0 12 12" className="h-3 w-3 shrink-0" fill="none">
+            <circle cx="6" cy="6" r="5.25" stroke="currentColor" strokeWidth="1" />
+            <path d="M6 5.4v3.1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            <circle cx="6" cy="3.6" r="0.7" fill="currentColor" />
         </svg>
     );
 }

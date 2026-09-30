@@ -2,24 +2,31 @@ import * as React from 'react';
 import { cn } from '../../lib/utils';
 
 export interface PageHeadingProps {
-    /** The page's single h1. */
+    /** The page's single h1: the page name, nothing else. */
     title: React.ReactNode;
-    /** Small uppercase label above the title (e.g. "2026-27 season"). */
-    eyebrow?: React.ReactNode;
-    description?: React.ReactNode;
+    /** Tiny mono tag beside the title, e.g. a muted "25-26" when the page shows last season. */
+    tag?: React.ReactNode;
     /** Keep the h1 for screen readers / outline only (e.g. the home slate). */
     visuallyHidden?: boolean;
-    /** Right-aligned actions (filters, season switcher …). */
+    /** Right-aligned controls on the same row (date chips, season switcher, legend …). */
     actions?: React.ReactNode;
     className?: string;
     id?: string;
+    /**
+     * @deprecated Not rendered. Page tops carry the page name only; explanations
+     * live on /methodology. Remove from call sites.
+     */
+    eyebrow?: React.ReactNode;
+    /** @deprecated Not rendered (see `eyebrow`). */
+    description?: React.ReactNode;
 }
 
 /**
- * Every page renders exactly one of these (the "h1 slot"). Use
- * `visuallyHidden` when the page's visual header is something else.
+ * The page heading: the page name in Chakra Petch uppercase, optionally a
+ * row of controls to its right. No eyebrow, no tagline, no subtitle.
+ * Every page renders exactly one (the "h1 slot").
  */
-export function PageHeading({ title, eyebrow, description, visuallyHidden, actions, className, id }: PageHeadingProps) {
+export function PageHeading({ title, tag, visuallyHidden, actions, className, id }: PageHeadingProps) {
     if (visuallyHidden) {
         return (
             <h1 id={id} className="sr-only">
@@ -28,15 +35,12 @@ export function PageHeading({ title, eyebrow, description, visuallyHidden, actio
         );
     }
     return (
-        <div className={cn('flex flex-wrap items-end justify-between gap-x-6 gap-y-3', className)}>
-            <div className="min-w-0">
-                {eyebrow ? <p className="hud-label mb-1 text-brand">{eyebrow}</p> : null}
-                <h1 id={id} className="text-h2 font-black tracking-tight text-fg-1 md:text-display">
-                    {title}
-                </h1>
-                {description ? <p className="mt-1 max-w-2xl text-body text-fg-2">{description}</p> : null}
-            </div>
-            {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
+        <div className={cn('flex flex-wrap items-center gap-x-5 gap-y-3', className)}>
+            <h1 id={id} className="heading-page flex items-center gap-3">
+                {title}
+                {tag ? <span className="rounded-chip border border-mute px-1.5 py-0.5 font-sans text-micro font-medium tracking-wide text-fg-3">{tag}</span> : null}
+            </h1>
+            {actions ? <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">{actions}</div> : null}
         </div>
     );
 }

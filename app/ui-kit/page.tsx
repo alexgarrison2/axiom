@@ -8,14 +8,14 @@ export const metadata: Metadata = {
 };
 
 /**
- * Living reference for the Neon Rink HUD primitives (components/ui/*).
+ * Living reference for the Neon Arcade tokens and primitives (components/ui/*).
  * Also the fixture page for tests/design-system.spec.ts (axe + keyboard).
  * Not linked from the site; disallowed in robots.ts.
  */
 export default function UiKitPage() {
     return (
-        <main className="mx-auto max-w-[1200px] px-4 py-8 md:px-6">
-            <PageHeading eyebrow="Design system" title="Neon Rink HUD" description="Tokens and primitives every page is built from." className="mb-8" />
+        <main className="mx-auto max-w-[1180px] px-4 pb-10 pt-5 md:px-5 md:pt-7">
+            <PageHeading title="UI kit" className="mb-6" />
             <Kit />
         </main>
     );

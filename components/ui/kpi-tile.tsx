@@ -15,7 +15,7 @@ export interface KpiDelta {
 export interface KpiTileProps {
     label: React.ReactNode;
     value: React.ReactNode;
-    /** Small text under the value, e.g. "n = 412 games". */
+    /** Tiny unit/sample under the value, e.g. "GSAx/gm" or "n=412". Not a sentence. */
     sub?: React.ReactNode;
     delta?: KpiDelta | null;
     /** Sparkline values (oldest → newest). */
@@ -35,27 +35,27 @@ export function KpiTile({ label, value, sub, delta, spark, info, empty, classNam
     const good = delta ? (delta.better === 'higher' ? delta.value > 0 : delta.value < 0) : false;
     const neutral = delta ? Math.abs(delta.value) < 1e-9 : true;
     return (
-        <div className={cn('hud-panel flex min-w-0 flex-col gap-1 p-4', className)}>
+        <div className={cn('tile flex min-w-0 flex-col gap-1', className)}>
             <div className="flex items-center gap-1">
-                <span className="hud-label">{label}</span>
+                <span className="label">{label}</span>
                 {info}
             </div>
             <div className="flex items-end justify-between gap-3">
-                <span className={cn('text-display font-bold tabular-nums', empty ? 'text-fg-3' : 'text-fg-1')}>{value}</span>
-                {spark && spark.length > 1 ? <Sparkline values={spark} className="mb-1.5" /> : null}
+                <span className={cn('font-display text-[22px] font-bold leading-7 tabular-nums', empty ? 'text-fg-3' : 'text-fg-1')}>{value}</span>
+                {spark && spark.length > 1 ? <Sparkline values={spark} className="mb-1" /> : null}
             </div>
             {delta ? (
-                <p className="text-caption">
-                    <span className={cn('font-semibold tabular-nums', neutral ? 'text-fg-2' : good ? 'text-pos' : 'text-neg')}>
+                <p className="text-micro">
+                    <span className={cn('font-bold tabular-nums', neutral ? 'text-fg-2' : good ? 'text-pos' : 'text-neg')}>
                         {(delta.format ?? signed)(delta.value)}
                     </span>{' '}
-                    <span className="text-fg-3">
+                    <span className="uppercase tracking-wide text-fg-3">
                         vs {delta.baseline}
                         <span className="sr-only">{neutral ? ' (same)' : good ? ' (better)' : ' (worse)'}</span>
                     </span>
                 </p>
             ) : null}
-            {sub ? <p className="text-caption text-fg-3">{sub}</p> : null}
+            {sub ? <p className="text-micro tracking-wide text-fg-3">{sub}</p> : null}
         </div>
     );
 }

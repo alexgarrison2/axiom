@@ -14,6 +14,7 @@ import { cn } from '../../lib/utils';
  */
 export interface DialogProps {
     title: React.ReactNode;
+    /** Announced to screen readers only (no visible sub-copy). */
     description?: React.ReactNode;
     /** Hide the title visually (still announced). */
     hideTitle?: boolean;
@@ -51,23 +52,23 @@ export function Dialog({
                 <DialogPrimitive.Content
                     className={cn(
                         'fixed inset-0 z-[61] m-auto flex h-fit max-h-[min(85dvh,860px)] w-[calc(100vw-24px)] flex-col',
-                        'rounded-card border border-line-strong bg-surface-1 shadow-card animate-pop-in focus:outline-none',
+                        'panel border-line-strong shadow-[0_24px_64px_-24px_rgba(0,0,0,.8)] animate-pop-in focus:outline-none',
                         sizes[size],
                         className,
                     )}
                     {...(description ? {} : { 'aria-describedby': undefined })}
                 >
-                    <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
+                    <div className="flex items-center justify-between gap-3 border-b border-line px-card py-3">
                         <div className="min-w-0">
-                            <DialogPrimitive.Title className={cn('text-title font-bold text-fg-1', hideTitle && 'sr-only')}>{title}</DialogPrimitive.Title>
+                            <DialogPrimitive.Title className={cn('font-display text-title font-bold uppercase tracking-[0.04em] text-fg-1', hideTitle && 'sr-only')}>{title}</DialogPrimitive.Title>
                             {description ? (
-                                <DialogPrimitive.Description className="mt-0.5 text-body-sm text-fg-2">{description}</DialogPrimitive.Description>
+                                <DialogPrimitive.Description className="sr-only">{description}</DialogPrimitive.Description>
                             ) : null}
                         </div>
                         <DialogClose label={closeLabel} />
                     </div>
-                    <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
-                    {footer ? <div className="border-t border-line px-5 py-3">{footer}</div> : null}
+                    <div className="min-h-0 flex-1 overflow-y-auto px-card py-3">{children}</div>
+                    {footer ? <div className="border-t border-line px-card py-3">{footer}</div> : null}
                 </DialogPrimitive.Content>
             </DialogPrimitive.Portal>
         </DialogPrimitive.Root>
@@ -79,7 +80,7 @@ export function DialogClose({ label = 'Close', className }: { label?: string; cl
         <DialogPrimitive.Close
             aria-label={label}
             className={cn(
-                '-mr-2 -mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg-1 coarse:h-11 coarse:w-11',
+                '-mr-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-fg-3 transition-colors hover:text-fg-1 coarse:h-11 coarse:w-11',
                 className,
             )}
         >
