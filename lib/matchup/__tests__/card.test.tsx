@@ -327,8 +327,9 @@ describe('review fixes', () => {
         const side = { goalies: [goalie, backup] } as unknown as GameDetails['home'];
         const data = { home: side, away: { goalies: [] } } as unknown as GameDetails;
         const t = text(render(<GoaliesPanel p={p} state={{ status: 'ready', data }} />).container);
-        expect(t).toMatch(/−0\.08\s*GSAx\/gm rating \(regressed, 2024-25 to 2026-27\)/);
-        expect(t).toMatch(/GSAx 26-27\s*\+1\.82 · 1 GP/);
+        // 1 GP this season: neutral colour and the rating window's tag.
+        expect(t).toMatch(/−0\.08\s*GSAx\/gm\s*24-27 rating/);
+        expect(t).toMatch(/GSAx\/GS 26-27\s*\+1\.82 · 1 GS/);
         expect(t).toMatch(/IR · ~Dec 30/);
         expect(gsaxWindow(['2024-25'], false)).toBe('2024-25');
         expect(gsaxTag(3)).toBe('26-27 · 3 GP');

@@ -256,10 +256,13 @@ export function WinBar({
     );
 }
 
-/** The single legend row for a page of win bars: "| MARKET  ◆ MODEL". */
-export function WinBarLegend({ className, market = true, model = true }: { className?: string; market?: boolean; model?: boolean }) {
-    return (
-        <p className={cn('flex items-center gap-4 text-micro uppercase tracking-wide text-fg-3', className)}>
+/**
+ * The single legend row for a page of win bars: "| MARKET  ◆ MODEL". With
+ * `href` the whole row links to where the marks are explained (no added copy).
+ */
+export function WinBarLegend({ className, market = true, model = true, href }: { className?: string; market?: boolean; model?: boolean; href?: string }) {
+    const body = (
+        <>
             {market ? (
                 <span className="inline-flex items-center gap-1.5">
                     <i aria-hidden="true" className="inline-block h-3 w-0.5 bg-white" />
@@ -272,7 +275,19 @@ export function WinBarLegend({ className, market = true, model = true }: { class
                     Model
                 </span>
             ) : null}
-        </p>
+        </>
+    );
+    const cls = cn('flex items-center gap-4 text-micro uppercase tracking-wide text-fg-3', className);
+    return href ? (
+        <a
+            href={href}
+            className={cn(cls, 'min-h-6 rounded-control transition-colors hover:text-fg-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand')}
+        >
+            {body}
+            <span className="sr-only">: how to read a card</span>
+        </a>
+    ) : (
+        <p className={cls}>{body}</p>
     );
 }
 

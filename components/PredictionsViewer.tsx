@@ -12,9 +12,10 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
 import { bothOpeners } from '@/lib/matchup/pills';
 import { hasPrediction } from '@/lib/matchup/edge';
-import { easternDate, railHeading, railLabel, weekdayDate } from '@/lib/matchup/format';
-import { isFinalState, type ArchiveSlate } from '@/lib/matchup/archive';
+import { easternDate, isCoinFlip, railHeading, railLabel, weekdayDate } from '@/lib/matchup/format';
+import { isFinalState, slateTitle, type ArchiveSlate } from '@/lib/matchup/archive';
 import { WinBarLegend } from '@/components/ui/win-bar';
+import { READING_HREF } from '@/lib/matchup/glossary-links';
 import { cn } from '@/lib/utils';
 import styles from '@/components/matchup/slate.module.css';
 
@@ -124,11 +125,17 @@ export default function PredictionsViewer({
         return () => window.clearTimeout(t);
     }, [target, date]);
 
+    // Client-side day changes keep the tab title in step with the server's dated title.
+    useEffect(() => {
+        if (date) document.title = slateTitle(date, today);
+    }, [date, today]);
+
     const next = date ? chips.map(([d]) => d).find(d => d > date && dates.includes(d)) : null;
     const nextCount = next ? predictions.filter(p => p.date === next).length : 0;
     const headDate = date ?? today;
     const finals = offFile ? offFile.games.filter(g => isFinalState(g.state)) : [];
-    const graded = finals.filter(g => g.pick?.correct != null);
+    // Coin flips (within 1 pt of 50) show NO LEAN and are not the model's picks.
+    const graded = finals.filter(g => g.pick?.correct != null && !isCoinFlip(g.pick.pct));
     const right = graded.filter(g => g.pick?.correct).length;
     const legend = !offFile && slate.some(p => hasPrediction(p));
 
@@ -178,7 +185,7 @@ export default function PredictionsViewer({
                             </b>
                         </span>
                     ) : null}
-                    {legend ? <WinBarLegend className="gap-3 md:gap-4" /> : null}
+                    {legend ? <WinBarLegend href={READING_HREF} className="gap-3 md:gap-4" /> : null}
                 </div>
             </div>
 

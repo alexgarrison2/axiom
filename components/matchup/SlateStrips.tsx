@@ -8,6 +8,16 @@ import { dayLabel } from '@/lib/matchup/format';
 import { teamColor } from '@/components/ui/team-color';
 import { GameTime } from './GameTime';
 
+/** A visual "@" that screen readers hear as "at". */
+function At() {
+    return (
+        <>
+            <span aria-hidden="true" className="before:content-['@']" />
+            <span className="sr-only">at</span>
+        </>
+    );
+}
+
 export interface Jump {
     (date: string, anchor: string): void;
 }
@@ -41,11 +51,11 @@ export function YourTeamStrip({
     if (!items.length) return null;
 
     return (
-        <section aria-labelledby="your-team" className="flex items-center gap-3">
+        <section aria-labelledby="your-team" className="flex min-w-0 max-w-full items-center gap-3">
             <h2 id="your-team" className="label shrink-0">
                 Your team{items.length > 1 ? 's' : ''}
             </h2>
-            <ul className="flex min-w-0 snap-x gap-2 overflow-x-auto scrollbar-hide">
+            <ul className="relative flex min-w-0 flex-1 snap-x gap-2 overflow-x-auto scrollbar-hide">
                 {items.map(({ tri, g }) => {
                     const side = g.home.team.triCode === tri ? 'home' : 'away';
                     const opp = g[side === 'home' ? 'away' : 'home'];
@@ -64,7 +74,7 @@ export function YourTeamStrip({
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={`/logos/${tri}.svg`} alt="" width={20} height={20} className="h-5 w-5" />
                                 <span className="font-bold text-fg-1">
-                                    {tri} {side === 'home' ? 'vs' : '@'} {opp.team.triCode}
+                                    {tri} {side === 'home' ? 'vs' : <At />} {opp.team.triCode}
                                 </span>
                                 <span className="uppercase tracking-wide text-fg-3">
                                     {ph === 'live' ? (
@@ -80,8 +90,8 @@ export function YourTeamStrip({
                                 </span>
                                 {m && ph === 'pre' ? <span className="font-bold tabular-nums text-fg-1">{side === 'home' ? m.home : m.away}%</span> : null}
                                 {odds != null ? (
-                                    <span className="tabular-nums text-fg-3">
-                                        PO <span className="text-fg-1">{odds.toFixed(0)}%</span>
+                                    <span className="tabular-nums text-fg-3" title="Playoff odds">
+                                        Playoffs <span className="text-fg-1">{odds.toFixed(0)}%</span>
                                     </span>
                                 ) : null}
                             </button>
@@ -97,11 +107,11 @@ export function YourTeamStrip({
 export function BiggestGames({ swings, byId, onJump }: { swings: GameSwing[]; byId: Map<string, Prediction>; onJump: Jump }) {
     if (!swings.length) return null;
     return (
-        <section aria-labelledby="biggest-games" className="flex items-center gap-3">
+        <section aria-labelledby="biggest-games" className="flex min-w-0 max-w-full items-center gap-3">
             <h2 id="biggest-games" className="label shrink-0">
                 Stakes
             </h2>
-            <ol className="flex min-w-0 snap-x gap-2 overflow-x-auto scrollbar-hide">
+            <ol className="relative flex min-w-0 flex-1 snap-x gap-2 overflow-x-auto scrollbar-hide">
                 {swings.map(s => {
                     const p = byId.get(String(s.gameId));
                     const t = [s.home, s.away].filter(Boolean).sort((x, y) => (y?.swing ?? 0) - (x?.swing ?? 0))[0];
@@ -114,7 +124,7 @@ export function BiggestGames({ swings, byId, onJump }: { swings: GameSwing[]; by
                                 className="flex min-h-9 items-center gap-2 whitespace-nowrap rounded-full border border-line px-3 text-caption transition-colors hover:border-line-strong hover:bg-surface-2 coarse:min-h-11"
                             >
                                 <span className="font-bold text-fg-1">
-                                    {p.away.team.triCode} @ {p.home.team.triCode}
+                                    {p.away.team.triCode} <At /> {p.home.team.triCode}
                                 </span>
                                 <span className="tabular-nums text-fg-3">
                                     {t.tri} {t.base.toFixed(0)}% <span className="text-pos">W {t.win.toFixed(0)}</span> <span className="text-neg">L {t.lose.toFixed(0)}</span>

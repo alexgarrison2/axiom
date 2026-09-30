@@ -1,7 +1,7 @@
 import type { ArchiveGame, ArchiveSide } from '@/lib/matchup/archive';
 import { archiveFinalLabel, isFinalState } from '@/lib/matchup/archive';
 import { clashSafePair } from '@/components/ui/team-color';
-import { finalWords } from '@/lib/matchup/format';
+import { finalWords, isCoinFlip } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
 import { WinBar } from '@/components/ui/win-bar';
 import { GameTime } from './GameTime';
@@ -42,6 +42,8 @@ export function ArchiveCard({ g }: { g: ArchiveGame }) {
     const score = scored ? `${g.away.tri} ${as}, ${g.home.tri} ${hs}` : null;
     // The frozen pregame pick as a (dimmed, on finals) win bar: pct is the picked side's probability.
     const pAway = g.pick && Number.isFinite(g.pick.pct) ? (g.pick.tri === g.away.tri ? g.pick.pct : 100 - g.pick.pct) / 100 : null;
+    // Within 1 pt of 50 the model had no lean: one decimal on the bar, and no ✓ / ✕.
+    const coin = !!g.pick && isCoinFlip(g.pick.pct);
 
     return (
         <article
@@ -86,12 +88,17 @@ export function ArchiveCard({ g }: { g: ArchiveGame }) {
                     homeColor={colors.home}
                     size="lg"
                     dimmed={final || live}
+                    digits={coin ? 1 : 0}
                     label={final || live ? 'Pregame win probability' : 'Our forecast win probability'}
                     className="pointer-events-none"
                 />
             ) : null}
             <div className="flex min-h-5 items-center justify-center">
-                {g.pick ? (
+                {g.pick && coin ? (
+                    <span className="text-caption font-bold uppercase tracking-chip text-fg-3" title={`Pregame ${g.pick.tri} ${g.pick.pct}%`}>
+                        No lean
+                    </span>
+                ) : g.pick ? (
                     <span
                         className={cn(
                             'text-caption font-bold uppercase tracking-chip',

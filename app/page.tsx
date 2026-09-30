@@ -5,7 +5,7 @@ import PredictionsViewer from '@/components/PredictionsViewer';
 import { defaultDate } from '@/lib/matchup/lifecycle';
 import { compactForClient } from '@/lib/matchup/parse';
 import { addDays, easternDate } from '@/lib/matchup/format';
-import { validDate, isFinalState, slateHeading, type ArchiveSlate } from '@/lib/matchup/archive';
+import { validDate, isFinalState, slateTitle, type ArchiveSlate } from '@/lib/matchup/archive';
 import { getArchiveSlate } from '@/lib/matchup/archive-server';
 
 /*
@@ -42,7 +42,7 @@ async function slateDates(): Promise<string[]> {
 export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
     const today = easternDate();
     const date = requested(await searchParams, today) ?? defaultDate(await slateDates(), today) ?? today;
-    return { title: { absolute: `NHL predictions for ${slateHeading(date, today)} | Pony xG` } };
+    return { title: { absolute: slateTitle(date, today) } };
 }
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {

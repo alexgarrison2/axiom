@@ -5,8 +5,26 @@ import type { Prediction } from '@/types/prediction';
 import LineupGrid from '@/components/LineupGrid';
 import PlayerNewsList from '@/components/PlayerNewsList';
 import { Segmented } from '@/components/ui/segmented';
+import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
+import { SEASON_ID } from '@/lib/season';
 import { DetailsLoading, type DetailsState } from './DetailsLoading';
 import { cn } from '@/lib/utils';
+
+/**
+ * The muted season tag for the impact values, beside GRADE, while they come
+ * from last season's ratings. Exactly one shows: the away grid's always, the
+ * home grid's only on a phone-width card (where one grid shows at a time).
+ */
+function impactTag(season: string | null | undefined, home: boolean) {
+    if (!season || season === SEASON_ID) return null;
+    const tag = shortSeasonTag(season);
+    return (
+        <SeasonTag className={cn(home && 'cq-lg:hidden')}>
+            <span title={`Impact and ranks: ${tag} ratings`}>{tag}</span>
+            <span className="sr-only"> ratings</span>
+        </SeasonTag>
+    );
+}
 
 /**
  * Both projected lineups, injuries and player news. A phone-width card
@@ -33,10 +51,10 @@ export function LineupsPanel({ p, state }: { p: Prediction; state: DetailsState 
                     </div>
                     <div className="grid grid-cols-1 gap-3 cq-lg:grid-cols-2">
                         <div className={cn(side !== 'away' && 'hidden cq-lg:block')}>
-                            <LineupGrid team={p.away.team} d={d.away} now={now} />
+                            <LineupGrid team={p.away.team} d={d.away} now={now} seasonTag={impactTag(d.impactSeason, false)} />
                         </div>
                         <div className={cn(side !== 'home' && 'hidden cq-lg:block')}>
-                            <LineupGrid team={p.home.team} d={d.home} now={now} />
+                            <LineupGrid team={p.home.team} d={d.home} now={now} seasonTag={impactTag(d.impactSeason, true)} />
                         </div>
                     </div>
                     {d.away.news.length || d.home.news.length ? (
