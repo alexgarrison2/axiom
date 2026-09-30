@@ -275,14 +275,14 @@ export default function Kit() {
                         <Badge variant="warn">B2B</Badge>
                     </CardHeader>
                     <CardContent className="flex items-center justify-between">
-                        <span className="flex items-center gap-3">
-                            <Crest tri="NYI" size={56} />
-                            <span className="glow-green font-display text-[18px] font-bold">SOROKIN</span>
+                        <span className="flex items-center gap-2 sm:gap-3">
+                            <Crest tri="NYI" size={56} className="h-10 w-10 sm:h-14 sm:w-14" />
+                            <span className="glow-green font-display text-[15px] font-bold sm:text-[18px]">SOROKIN</span>
                         </span>
                         <span className="text-caption text-fg-3">@</span>
                         <span className="flex items-center gap-3">
-                            <span className="font-display text-[18px] font-bold text-fg-2">STOLARZ</span>
-                            <Crest tri="TOR" size={56} />
+                            <span className="font-display text-[15px] font-bold text-fg-2 sm:text-[18px]">STOLARZ</span>
+                            <Crest tri="TOR" size={56} className="h-10 w-10 sm:h-14 sm:w-14" />
                         </span>
                     </CardContent>
                     <CardFooter className="text-[15px] font-bold text-fg-3">
