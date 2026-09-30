@@ -3,8 +3,9 @@
  *
  * Every rule here is season-aware (pipeline/CONTRACT.md): a value is shown as
  * current only when it belongs to this season and clears its sample gate;
- * last season's values are shown as `prior` chips with a visible "25-26" tag;
- * a team at 0 GP gets a single "Season opener" chip and nothing else.
+ * last season's values stay off the card (getPriorPills feeds the Preview);
+ * a team with no earlier game gets "Season opener" (one shared chip when both
+ * teams open), and the fatigue chips are always evaluated first-hand.
  */
 import type { Prediction, Side, SideData } from '../../types/prediction';
 import { PREV_TAG } from './format';
@@ -79,18 +80,66 @@ function rankPill(kind: 'PP' | 'PK', s: SideData): Pill | null {
     return null;
 }
 
-/** Context chips for one team, in display order. */
+/**
+ * First game of the season for this side: nothing played before tonight.
+ * Uses the schedule columns, not GP, because GP lags a day (a team on the
+ * second night of a back-to-back still shows 0 GP when the CSV was built
+ * before its first game went final). games_in_last_4 counts tonight.
+ */
+export function isOpener(s: SideData): boolean {
+    return s.gp <= 0 && !s.isB2b && (s.gamesInLast4 ?? 1) <= 1;
+}
+
+/** Both teams open their season in this game (one shared chip on the card). */
+export function bothOpeners(p: Prediction): boolean {
+    return isOpener(p.home) && isOpener(p.away);
+}
+
+function seasonText(p: Prediction): string {
+    return p.seasonId ? `${p.seasonId.slice(0, 4)}-${p.seasonId.slice(6)}` : 'new';
+}
+
+function fatiguePills(s: SideData, side: Side): Pill[] {
+    const pills: Pill[] = [];
+    if (s.isB2b) {
+        pills.push({ key: 'b2b', label: 'Back-to-back', tone: 'warn', state: 'current', title: 'Played yesterday (0 days of rest)' });
+    } else if ((s.gamesInLast4 ?? 0) >= 3) {
+        pills.push({ key: '3in4', label: '3 in 4', tone: 'warn', state: 'current', title: 'Third game in four days' });
+    }
+    if (side === 'away' && (s.roadTripGameN ?? 0) >= 4) {
+        pills.push({
+            key: 'trip',
+            label: 'Road trip',
+            value: `G${s.roadTripGameN}`,
+            tone: 'neutral',
+            state: 'current',
+            title: `Game ${s.roadTripGameN} of a road trip`,
+        });
+    }
+    return pills;
+}
+
+/**
+ * Context chips for one team, in display order. Fatigue (back-to-back,
+ * 3 in 4) is always evaluated, even at 0 GP. Last season's special-teams
+ * ranks are not shown on the card (getPriorPills feeds the Preview).
+ */
 export function getTeamPills(p: Prediction, side: Side): Pill[] {
     const s = p[side];
     if (s.gp <= 0) {
+        const fatigue = fatiguePills(s, side);
+        // A shared opener is one centred game chip (getGamePills); when the
+        // whole slate is openers the chip says nothing and is dropped.
+        if (!isOpener(s) || bothOpeners(p) || p.slateAllOpeners) return fatigue;
         return [
             {
                 key: 'opener',
                 label: 'Season opener',
                 tone: 'info',
                 state: 'current',
-                title: `First game of the ${p.seasonId ? `${p.seasonId.slice(0, 4)}-${p.seasonId.slice(6)}` : 'new'} regular season for the ${s.team.commonName}. Form, home/road and special-teams chips appear once games are played.`,
+                title: `First game of the ${seasonText(p)} regular season for the ${s.team.commonName}. Form, home/road and special-teams chips appear once games are played.`,
             },
+            ...fatigue,
         ];
     }
 
@@ -126,32 +175,35 @@ export function getTeamPills(p: Prediction, side: Side): Pill[] {
     }
 
     const pp = rankPill('PP', s);
-    if (pp) pills.push(pp);
+    if (pp && pp.state === 'current') pills.push(pp);
     const pk = rankPill('PK', s);
-    if (pk) pills.push(pk);
+    if (pk && pk.state === 'current') pills.push(pk);
 
-    // Fatigue from the schedule columns (rest_days / is_b2b / games_in_last_4).
-    if (s.isB2b) {
-        pills.push({ key: 'b2b', label: 'Back-to-back', tone: 'warn', state: 'current', title: 'Played yesterday (0 days of rest)' });
-    } else if ((s.gamesInLast4 ?? 0) >= 3) {
-        pills.push({ key: '3in4', label: '3 in 4', tone: 'warn', state: 'current', title: 'Third game in four days' });
-    }
-    if (side === 'away' && (s.roadTripGameN ?? 0) >= 4) {
-        pills.push({
-            key: 'trip',
-            label: 'Road trip',
-            value: `G${s.roadTripGameN}`,
-            tone: 'neutral',
-            state: 'current',
-            title: `Game ${s.roadTripGameN} of a road trip`,
-        });
-    }
+    pills.push(...fatiguePills(s, side));
     return pills;
+}
+
+/**
+ * Last season's extreme special-teams ranks, tagged 25-26. Kept off the
+ * collapsed card; the Preview can list them under "Last season".
+ */
+export function getPriorPills(p: Prediction, side: Side): Pill[] {
+    const s = p[side];
+    return [rankPill('PP', s), rankPill('PK', s)].filter((x): x is Pill => !!x && x.state === 'prior');
 }
 
 /** Chips that describe the matchup rather than one team (season series). */
 export function getGamePills(p: Prediction): Pill[] {
     const pills: Pill[] = [];
+    if (bothOpeners(p) && !p.slateAllOpeners) {
+        pills.push({
+            key: 'opener',
+            label: 'Season opener · both teams',
+            tone: 'info',
+            state: 'current',
+            title: `First game of the ${seasonText(p)} regular season for both the ${p.away.team.commonName} and the ${p.home.team.commonName}. Form, home/road and special-teams chips appear once games are played.`,
+        });
+    }
     // Shown from the 2nd meeting (one meeting already played); before that
     // last season's series lives only in the tooltip-free prior note.
     if (p.h2hGp >= 1 && p.away.h2hRecord) {

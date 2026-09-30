@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getGamePills, getTeamPills, pillText, priorSeriesNote } from '../pills';
+import { getGamePills, getPriorPills, getTeamPills, isOpener, pillText, priorSeriesNote } from '../pills';
 import { byTeams, fixture } from './fixtures';
 
 const texts = (pills: ReturnType<typeof getTeamPills>) => pills.map(pillText);
@@ -8,12 +8,36 @@ describe('getTeamPills (E2)', () => {
     const opening = fixture('opening_night');
     const week3 = fixture('week3');
 
-    it('gives every 0-GP team a single "Season opener" chip on opening night', () => {
+    it('gives a lone opener one "Season opener" chip, and the game one shared chip when both teams open', () => {
         for (const p of opening) {
+            const both = isOpener(p.home) && isOpener(p.away);
             for (const side of ['home', 'away'] as const) {
-                if (p[side].gp !== 0) continue;
-                expect(texts(getTeamPills(p, side))).toEqual(['Season opener']);
+                if (!isOpener(p[side])) continue;
+                expect(texts(getTeamPills(p, side))).toEqual(both ? [] : ['Season opener']);
             }
+            expect(getGamePills(p).map(pillText).includes('Season opener · both teams')).toBe(both);
+        }
+    });
+
+    it('shows Back-to-back, not "Season opener", for a 0-GP team on the second night of a back-to-back', () => {
+        const [base] = opening;
+        const p = {
+            ...base,
+            away: { ...base.away, gp: 0, isB2b: true, restDays: 0, gamesInLast4: 2 },
+            home: { ...base.home, gp: 0, isB2b: false, restDays: 4, gamesInLast4: 1 },
+        };
+        const away = texts(getTeamPills(p, 'away'));
+        expect(away).toContain('Back-to-back');
+        expect(away).not.toContain('Season opener');
+        expect(texts(getTeamPills(p, 'home'))).toEqual(['Season opener']);
+        expect(getGamePills(p).map(pillText)).not.toContain('Season opener · both teams');
+    });
+
+    it('drops the opener chip entirely when the whole slate is openers', () => {
+        for (const p of opening) {
+            const q = { ...p, slateAllOpeners: true };
+            const all = [...getTeamPills(q, 'home'), ...getTeamPills(q, 'away'), ...getGamePills(q)].map(pillText).join(' | ');
+            expect(all).not.toContain('Season opener');
         }
     });
 
@@ -40,11 +64,11 @@ describe('getTeamPills (E2)', () => {
         }
     });
 
-    it('shows no current PP/PK rank while ranks are gated, only extreme prior ranks tagged 25-26', () => {
+    it('keeps last season\'s special-teams ranks off the card; getPriorPills has only extreme ones tagged 25-26', () => {
         for (const p of [...opening, ...week3]) {
             for (const side of ['home', 'away'] as const) {
-                const pills = getTeamPills(p, side).filter(x => x.label === 'PP' || x.label === 'PK');
-                for (const pill of pills) {
+                expect(getTeamPills(p, side).some(x => x.state === 'prior')).toBe(false);
+                for (const pill of getPriorPills(p, side)) {
                     expect(pill.state).toBe('prior');
                     expect(pill.seasonTag).toBe('25-26');
                     const r = Number(pill.value!.slice(1));
