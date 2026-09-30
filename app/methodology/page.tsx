@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import FullLogoAnimated from '@/components/FullLogoAnimated';
+import { DeferredFullLogo } from '@/components/brand/DeferredFullLogo';
 import { GLOSSARY, GLOSSARY_TERMS } from '@/lib/glossary';
 import { SEASON_GAMES, SEASON_START_YEAR } from '@/lib/season';
 import { loadExcludedGames, loadGradedGames, tallySeason } from '@/components/accuracy/data';
@@ -167,7 +167,7 @@ export default function MethodologyPage() {
                     </p>
                 </div>
                 <div className="hidden md:block" aria-hidden="true">
-                    <FullLogoAnimated idPrefix="method-logo" />
+                    <DeferredFullLogo idPrefix="method-logo" />
                 </div>
             </header>
 
