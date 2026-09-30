@@ -1,170 +1,236 @@
 {
-  "feature_columns": [
-    "h_f_xgf_5v5",
-    "a_f_xgf_5v5",
-    "h_f_xga_5v5",
-    "a_f_xga_5v5",
-    "h_f_pp_pct",
-    "a_f_pp_pct",
-    "h_f_pk_pct",
-    "a_f_pk_pct",
-    "h_f_goalie_gsax",
-    "a_f_goalie_gsax",
-    "h_f_goalie_gp",
-    "a_f_goalie_gp",
-    "h_f_rest_days",
-    "a_f_rest_days",
-    "h_f_season_win_rate",
-    "a_f_season_win_rate",
-    "h_f_games_played",
-    "a_f_games_played",
-    "d_xg_net",
-    "d_rest",
-    "d_goalie_gsax",
-    "matchup_ratio",
-    "poisson_home_wp",
-    "poisson_tie_prob"
+  "model_version": "logit-elo-v5-20260930",
+  "model_type": "logistic_regression_l2",
+  "training_date": "2026-09-30T01:18:21.971800+00:00",
+  "training_seasons": [
+    2022,
+    2023,
+    2024,
+    2025
   ],
-  "training_date": "2026-03-24T15:51:13.879527",
-  "ewma_halflife": 12,
-  "min_games": 5,
+  "n_train": 4981,
+  "feature_columns": [
+    "d_xg_share",
+    "d_xg_share_all",
+    "d_elo",
+    "d_goalie_gsax",
+    "d_pts_pct",
+    "h_b2b",
+    "a_b2b",
+    "d_rest"
+  ],
+  "feature_params": {
+    "XG_HALFLIFE": 16,
+    "OFFSEASON_KEEP": 0.5,
+    "PTS_PRIOR_GAMES": 20,
+    "ELO_K": 4.0,
+    "ELO_KX": 4.0,
+    "ELO_HFA": 35.0,
+    "ELO_OFFSEASON_REGRESSION": 0.5,
+    "GOALIE_CUR_PRIOR_GP": 30,
+    "GOALIE_SHRINK_GP": 25,
+    "GOALIE_SEASON_DECAY": [
+      1.0,
+      0.5
+    ],
+    "XG_NORM_PRIOR_GOALS": 1000.0,
+    "REST_CAP": 4
+  },
+  "xg_source": "raw_shot_xg",
+  "game_types": [
+    "02",
+    "03"
+  ],
+  "C": 0.001,
+  "C_scores_latest_season": {
+    "0.001": 0.6715266077545596,
+    "0.003": 0.6685244466858365,
+    "0.01": 0.6679894875663753,
+    "0.03": 0.6682535386704039,
+    "0.1": 0.6685765903765064,
+    "0.3": 0.6687132785765011,
+    "1.0": 0.668761277455858,
+    "best": 0.01,
+    "se": 0.0035703288109804384
+  },
+  "coefficients_raw": {
+    "d_xg_share": 2.0783654501738047,
+    "d_xg_share_all": 2.5882096361029996,
+    "d_elo": 0.12839760888587626,
+    "d_goalie_gsax": 0.12732159109985938,
+    "d_pts_pct": 0.6321860659200519,
+    "h_b2b": -0.07105855288493705,
+    "a_b2b": 0.13811842437343053,
+    "d_rest": 0.0511655340440623
+  },
+  "home_ice_logit": 0.12303151924383007,
+  "home_ice_prob_equal_teams": 0.5307191405749795,
   "cv_results": [
     {
       "test_season": 2023,
-      "train_size": 1293,
-      "test_size": 1380,
-      "log_loss": 0.6763857064528254,
-      "log_loss_raw": 0.7002466070155239,
-      "brier_score": 0.24174196807854442,
-      "accuracy": 0.5855072463768116,
-      "home_win_rate": 0.5355072463768116
+      "C": 0.01,
+      "train_n": 982,
+      "n": 1399,
+      "log_loss": 0.6590051611344925,
+      "brier": 0.23365896946365536,
+      "accuracy": 0.6032880629020729,
+      "mean_pred_home": 0.5199778039088543,
+      "actual_home": 0.5368120085775554,
+      "calibration_slope": 1.0077107775941552,
+      "calibration_intercept": 0.0715754455835178,
+      "reliability_slope": 1.0017954803880298,
+      "early": {
+        "n": 249,
+        "log_loss": 0.6721549354088704,
+        "brier": 0.2397468313219814,
+        "accuracy": 0.5943775100401606,
+        "mean_pred_home": 0.5141261801726186,
+        "actual_home": 0.5301204819277109,
+        "calibration_slope": 0.9908965108910416,
+        "calibration_intercept": 0.06708390436595081,
+        "reliability_slope": 1.1096791108576978
+      },
+      "home_rate_baseline": {
+        "rate": 0.5193482688391039,
+        "log_loss": 0.6910460348205584,
+        "early_log_loss": 0.6915641713732007
+      },
+      "inner_C_scores": {},
+      "legacy_xgb_same_games": {
+        "n": 1380,
+        "log_loss": 0.6757149486397996,
+        "new_model_log_loss": 0.6597111576237648,
+        "early_log_loss": 0.6834544553739393
+      },
+      "legacy_xgb": {
+        "test_season": 2023,
+        "n": 1380,
+        "log_loss": 0.6757149486397996,
+        "brier": 0.24142186485800188,
+        "accuracy": 0.5789855072463768
+      }
     },
     {
       "test_season": 2024,
-      "train_size": 2673,
-      "test_size": 1193,
-      "log_loss": 0.6715823813961392,
-      "log_loss_raw": 0.6748622360655556,
-      "brier_score": 0.23947414677110054,
-      "accuracy": 0.586756077116513,
-      "home_win_rate": 0.5649622799664711
+      "C": 0.003,
+      "train_n": 2381,
+      "n": 1206,
+      "log_loss": 0.6653866407510016,
+      "brier": 0.23664086341773477,
+      "accuracy": 0.5812603648424544,
+      "mean_pred_home": 0.5302517653157727,
+      "actual_home": 0.5688225538971807,
+      "calibration_slope": 1.0911930304217328,
+      "calibration_intercept": 0.15209215740694423,
+      "reliability_slope": 1.0264653910108483,
+      "early": {
+        "n": 250,
+        "log_loss": 0.6754241095390776,
+        "brier": 0.24137966228980068,
+        "accuracy": 0.572,
+        "mean_pred_home": 0.5326340577240463,
+        "actual_home": 0.524,
+        "calibration_slope": 1.4330364291278324,
+        "calibration_intercept": -0.09090896505841352,
+        "reliability_slope": 1.4463163204376202
+      },
+      "home_rate_baseline": {
+        "rate": 0.5296094078118437,
+        "log_loss": 0.6867429676292445,
+        "early_log_loss": 0.6920578634396143
+      },
+      "inner_C_scores": {
+        "0.001": 0.6669987320596699,
+        "0.003": 0.6605200604397595,
+        "0.01": 0.6590051611344925,
+        "0.03": 0.6592669681190463,
+        "0.1": 0.6591892034184929,
+        "0.3": 0.6586455026706304,
+        "1.0": 0.6582536047150451,
+        "best": 1.0,
+        "se": 0.007641388500284511
+      },
+      "legacy_xgb_same_games": {
+        "n": 1188,
+        "log_loss": 0.6703353475217421,
+        "new_model_log_loss": 0.66596810280728,
+        "early_log_loss": 0.6840367015421664
+      },
+      "legacy_xgb": {
+        "test_season": 2024,
+        "n": 1188,
+        "log_loss": 0.6703353475217421,
+        "brier": 0.23888842589282724,
+        "accuracy": 0.5858585858585859
+      }
     },
     {
       "test_season": 2025,
-      "train_size": 3866,
-      "test_size": 1099,
-      "log_loss": 0.6872421672043255,
-      "log_loss_raw": 0.6969468970176792,
-      "brier_score": 0.24709096756199345,
-      "accuracy": 0.5341219290263877,
-      "home_win_rate": 0.521383075523203
+      "C": 0.003,
+      "train_n": 3587,
+      "n": 1394,
+      "log_loss": 0.6792721728807236,
+      "brier": 0.24329289420272432,
+      "accuracy": 0.5401721664275466,
+      "mean_pred_home": 0.5428291304616153,
+      "actual_home": 0.5193687230989957,
+      "calibration_slope": 0.919748082619969,
+      "calibration_intercept": -0.08365084512675931,
+      "reliability_slope": 0.8830964393279428,
+      "early": {
+        "n": 248,
+        "log_loss": 0.691756807707016,
+        "brier": 0.2492661489684721,
+        "accuracy": 0.5161290322580645,
+        "mean_pred_home": 0.5377427038633213,
+        "actual_home": 0.5362903225806451,
+        "calibration_slope": 0.43105486879536675,
+        "calibration_intercept": 0.07973484797945865,
+        "reliability_slope": 0.47403832616800856
+      },
+      "home_rate_baseline": {
+        "rate": 0.5427934206858098,
+        "log_loss": 0.6934996677491434,
+        "early_log_loss": 0.6905960315298606
+      },
+      "inner_C_scores": {
+        "0.001": 0.6672806010229492,
+        "0.003": 0.6627730722844267,
+        "0.01": 0.6615997700552451,
+        "0.03": 0.6615158496049296,
+        "0.1": 0.6613702815490514,
+        "0.3": 0.6611363985122135,
+        "1.0": 0.6609946454661438,
+        "best": 1.0,
+        "se": 0.0052449956653036365
+      },
+      "legacy_xgb_same_games": {
+        "n": 1374,
+        "log_loss": 0.6848839396839758,
+        "new_model_log_loss": 0.6787278493885334,
+        "early_log_loss": 0.6935351915643508
+      },
+      "legacy_xgb": {
+        "test_season": 2025,
+        "n": 1374,
+        "log_loss": 0.6848839396839758,
+        "brier": 0.24593510519871897,
+        "accuracy": 0.5451237263464338
+      }
     }
   ],
-  "holdout": {
-    "holdout_log_loss": 0.6854531556858794,
-    "holdout_accuracy": 0.5507246376811594,
-    "holdout_brier": 0.24619188020987604
+  "early_season_pooled": {
+    "n": 747,
+    "log_loss": 0.6797567531632103,
+    "brier": 0.2434536566476635,
+    "accuracy": 0.5609103078982597,
+    "mean_pred_home": 0.5281608083696081,
+    "actual_home": 0.5301204819277109,
+    "calibration_slope": 0.9422819295504891,
+    "calibration_intercept": 0.014398399825283327,
+    "reliability_slope": 1.017464291293077
   },
-  "avg_log_loss": 0.6784034183510967,
-  "avg_accuracy": 0.5687950841732374,
-  "feature_importance": [
-    {
-      "feature": "d_xg_net",
-      "importance": 0.10571518540382385
-    },
-    {
-      "feature": "matchup_ratio",
-      "importance": 0.0816488116979599
-    },
-    {
-      "feature": "a_f_rest_days",
-      "importance": 0.04516573250293732
-    },
-    {
-      "feature": "d_rest",
-      "importance": 0.04468151554465294
-    },
-    {
-      "feature": "poisson_home_wp",
-      "importance": 0.041593704372644424
-    },
-    {
-      "feature": "h_f_xgf_5v5",
-      "importance": 0.0406639501452446
-    },
-    {
-      "feature": "a_f_season_win_rate",
-      "importance": 0.03906847536563873
-    },
-    {
-      "feature": "a_f_pp_pct",
-      "importance": 0.038393158465623856
-    },
-    {
-      "feature": "a_f_xgf_5v5",
-      "importance": 0.03773031011223793
-    },
-    {
-      "feature": "h_f_season_win_rate",
-      "importance": 0.037583593279123306
-    },
-    {
-      "feature": "poisson_tie_prob",
-      "importance": 0.036184050142765045
-    },
-    {
-      "feature": "d_goalie_gsax",
-      "importance": 0.03616045415401459
-    },
-    {
-      "feature": "a_f_xga_5v5",
-      "importance": 0.03602556139230728
-    },
-    {
-      "feature": "h_f_pk_pct",
-      "importance": 0.035444971174001694
-    },
-    {
-      "feature": "h_f_pp_pct",
-      "importance": 0.03500249236822128
-    },
-    {
-      "feature": "a_f_games_played",
-      "importance": 0.0349898561835289
-    },
-    {
-      "feature": "a_f_pk_pct",
-      "importance": 0.03479712828993797
-    },
-    {
-      "feature": "h_f_games_played",
-      "importance": 0.034671247005462646
-    },
-    {
-      "feature": "a_f_goalie_gsax",
-      "importance": 0.03457728773355484
-    },
-    {
-      "feature": "a_f_goalie_gp",
-      "importance": 0.03454308584332466
-    },
-    {
-      "feature": "h_f_goalie_gsax",
-      "importance": 0.03449021279811859
-    },
-    {
-      "feature": "h_f_rest_days",
-      "importance": 0.03400663658976555
-    },
-    {
-      "feature": "h_f_xga_5v5",
-      "importance": 0.03365635871887207
-    },
-    {
-      "feature": "h_f_goalie_gp",
-      "importance": 0.033206190913915634
-    }
-  ],
-  "model_type": "XGBoost",
-  "calibration": "sigmoid_5fold"
+  "avg_log_loss": 0.6678879915887391,
+  "avg_accuracy": 0.5749068647240246,
+  "evaluation": "season-level walk-forward: train on seasons < S, C tuned on S-1; early = either team game number <= 15"
 }
