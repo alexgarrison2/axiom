@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { listArchiveSeasons, readArchive } from '@/components/playoff/archive';
 import ArchiveExplorer from '@/components/playoff/ArchiveExplorer';
-import { TeamLogo } from '@/components/views/TeamLogo';
+import { Crest } from '@/components/ui/crest';
+import { PageHeading } from '@/components/ui/page-heading';
+import { teamColor } from '@/components/ui/team-color';
 import type { PlayoffArchive } from '@/components/playoff/types';
 
 // A finished postseason never changes: build it once, serve it from the CDN.
@@ -33,42 +35,42 @@ export async function generateMetadata({ params }: { params: Promise<{ season: s
 function Leaders({ archive }: { archive: PlayoffArchive }) {
     const { points, goals, goalies } = archive.leaders;
     const panel = (title: string, rows: { key: string; team: string; name: string; value: string; sub: string }[]) => (
-        <section aria-label={title} className="hud-panel flex flex-col gap-2 p-4">
-            <h3 className="hud-label">{title}</h3>
-            <ol className="flex flex-col gap-1.5">
+        <section aria-label={title} className="panel min-w-0 overflow-hidden">
+            <h3 className="heading-sub border-b border-line px-3 py-2">{title}</h3>
+            <ol>
                 {rows.map((r, i) => (
-                    <li key={r.key} className="flex items-center gap-2 text-body-sm">
-                        <span className="w-4 text-right tabular-nums text-fg-3">{i + 1}</span>
-                        <TeamLogo tri={r.team} size={18} />
-                        <span className="min-w-0 flex-1 truncate font-semibold text-fg-1">{r.name}</span>
-                        <span className="whitespace-nowrap text-caption text-fg-3">{r.sub}</span>
-                        <span className="w-12 text-right font-bold tabular-nums text-fg-1">{r.value}</span>
+                    <li key={r.key} className="flex h-8 items-center gap-2 border-t border-line/60 px-3 text-caption first:border-t-0">
+                        <span className="w-3 text-right text-fg-3">{i + 1}</span>
+                        <Crest tri={r.team} size={16} className="drop-shadow-none" />
+                        <span className="min-w-0 flex-1 truncate font-display text-body-sm font-semibold text-fg-1">{r.name}</span>
+                        <span className="whitespace-nowrap text-micro text-fg-3">{r.sub}</span>
+                        <span className="w-11 text-right font-bold text-fg-1">{r.value}</span>
                     </li>
                 ))}
             </ol>
         </section>
     );
     return (
-        <div className="grid gap-4 md:grid-cols-3">
+        <>
             {panel(
                 'Points',
-                points.map(p => ({ key: p.playerId, team: p.team, name: p.name, value: String(p.pts), sub: `${p.g}G ${p.a}A · ${p.gp} GP` })),
+                points.map(p => ({ key: p.playerId, team: p.team, name: p.name, value: String(p.pts), sub: `${p.g}G ${p.a}A · ${p.gp}GP` })),
             )}
             {panel(
-                'Goals (vs expected)',
-                goals.map(p => ({ key: p.playerId, team: p.team, name: p.name, value: String(p.g), sub: `${p.ixg.toFixed(1)} xG · ${p.gp} GP` })),
+                'Goals',
+                goals.map(p => ({ key: p.playerId, team: p.team, name: p.name, value: String(p.g), sub: `${p.ixg.toFixed(1)} xG · ${p.gp}GP` })),
             )}
             {panel(
-                'Goalies · saved above expected',
+                'GSAx',
                 goalies.map(g => ({
                     key: `${g.team}-${g.name}`,
                     team: g.team,
                     name: g.name,
                     value: `${g.gsax >= 0 ? '+' : '−'}${Math.abs(g.gsax).toFixed(1)}`,
-                    sub: `${g.svPct != null ? g.svPct.toFixed(3).replace(/^0/, '') : '—'} · ${g.gp} GP`,
+                    sub: `${g.svPct != null ? g.svPct.toFixed(3).replace(/^0/, '') : '—'} · ${g.gp}GP`,
                 })),
             )}
-        </div>
+        </>
     );
 }
 
@@ -80,77 +82,56 @@ export default async function PlayoffArchivePage({ params }: { params: Promise<{
     const final = archive.series.find(s => s.round === 4);
     const champ = archive.champion;
     const champName = champ ? archive.teams[champ]?.name ?? champ : null;
-    const runnerUp = archive.runnerUp ? archive.teams[archive.runnerUp]?.short ?? archive.runnerUp : null;
+    const runnerUp = archive.runnerUp ?? null;
     const finalScore = final && champ ? `${Math.max(final.topWins, final.bottomWins)}-${Math.min(final.topWins, final.bottomWins)}` : null;
     const isArchive = archive.status === 'complete';
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto flex max-w-[1400px] flex-col gap-8 px-4 py-6 md:px-6 md:py-10">
-                <div className="grid items-stretch gap-6 lg:grid-cols-[1fr_minmax(0,26rem)]">
-                    <div className="flex flex-col justify-end gap-2">
-                        <p className="hud-label text-playoff">{isArchive ? 'Archive · final results' : 'Postseason in progress'}</p>
-                        <h1 className="text-h2 font-black tracking-tight text-fg-1 md:text-display">
-                            {archive.seasonLabel} Playoffs{isArchive ? ' · Archive' : ''}
-                        </h1>
-                        <p className="max-w-2xl text-body text-fg-2">
-                            Every series from the {archive.year} Stanley Cup Playoffs. Pick a series for its games, then open any game for the shot map,
-                            expected-goals flow and box score.
-                        </p>
-                        {others.length ? (
-                            <p className="text-body-sm text-fg-3">
-                                Other postseasons:{' '}
-                                {others.map((s, i) => (
-                                    <span key={s}>
-                                        {i ? ', ' : ''}
-                                        <Link href={`/playoffs/${s}`} className="font-semibold text-brand hover:underline">
-                                            {`${s.slice(0, 4)}-${s.slice(6)}`}
-                                        </Link>
-                                    </span>
+            <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-4 py-5 md:px-6 md:py-7">
+                <PageHeading
+                    title={`${archive.seasonLabel} Playoffs`}
+                    tag={isArchive ? 'Final' : 'Live'}
+                    actions={
+                        others.length ? (
+                            <nav aria-label="Other postseasons" className="flex flex-wrap gap-1.5">
+                                {others.map(s => (
+                                    <Link
+                                        key={s}
+                                        href={`/playoffs/${s}`}
+                                        className="inline-flex min-h-8 items-center rounded-full border border-line px-3 text-micro font-medium uppercase tracking-[0.14em] text-fg-2 hover:border-brand hover:text-brand coarse:min-h-11"
+                                    >
+                                        {`${s.slice(0, 4)}-${s.slice(6)}`}
+                                    </Link>
                                 ))}
-                            </p>
-                        ) : null}
-                    </div>
+                            </nav>
+                        ) : null
+                    }
+                />
 
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                     {champ && champName ? (
                         <section
                             aria-label="Stanley Cup champion"
-                            className="relative flex items-center gap-4 overflow-hidden rounded-card border border-playoff/40 bg-surface-1 p-5 shadow-card"
+                            className="panel team-wash flex items-center gap-4 px-4 py-3"
+                            style={{ '--ac': teamColor(champ), '--hc': teamColor(champ) } as React.CSSProperties}
                         >
-                            <span
-                                aria-hidden="true"
-                                className="pointer-events-none absolute -left-10 -top-16 h-48 w-48 rounded-full bg-playoff/25 blur-3xl motion-safe:animate-[goal-light_2.4s_ease-in-out_1]"
-                            />
-                            <TeamLogo tri={champ} size={84} className="relative drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]" />
-                            <div className="relative flex min-w-0 flex-col gap-0.5">
-                                <p className="hud-label text-playoff">{archive.year} Stanley Cup champions</p>
-                                <p className="text-h2 font-black uppercase italic leading-none tracking-tight text-fg-1">{champName}</p>
+                            <Crest tri={champ} size={72} priority />
+                            <div className="flex min-w-0 flex-col gap-1">
+                                <p className="label text-brand">{archive.year} Champion</p>
+                                <p className="num-pct font-display text-h2 uppercase leading-none text-fg-1">{champName}</p>
                                 {runnerUp && finalScore ? (
-                                    <p className="text-body-sm text-fg-2">
-                                        Beat the {runnerUp} {finalScore} in the Final
+                                    <p className="text-caption font-bold text-fg-2">
+                                        {finalScore} <span className="font-normal text-fg-3">v</span> {runnerUp}
                                     </p>
                                 ) : null}
                             </div>
                         </section>
                     ) : null}
+                    <Leaders archive={archive} />
                 </div>
 
-                <section aria-labelledby="leaders-title" className="flex flex-col gap-3">
-                    <h2 id="leaders-title" className="heading-section">
-                        Playoff leaders
-                    </h2>
-                    <Leaders archive={archive} />
-                </section>
-
                 <ArchiveExplorer archive={archive} />
-
-                <p className="text-caption text-fg-3">
-                    Results from the NHL; expected goals from the Pony xG shot model. Built {archive.generatedAt.slice(0, 10)}. Looking for this season?{' '}
-                    <Link href="/standings" className="font-semibold text-brand hover:underline">
-                        Standings & playoff odds
-                    </Link>
-                    .
-                </p>
             </div>
         </main>
     );

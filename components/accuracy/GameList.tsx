@@ -5,8 +5,8 @@ import { Segmented } from '@/components/ui/segmented';
 import { Slider } from '@/components/ui/slider';
 import { formatTime } from '@/lib/format/time';
 import { TEAM_CODES } from '@/components/ui/team-color';
-import { TeamLogo } from '@/components/views/TeamLogo';
-import { plural, shortDate } from '@/components/views/format';
+import { Crest } from '@/components/ui/crest';
+import { shortDate } from '@/components/views/format';
 import { cn } from '@/lib/utils';
 import { isCorrect, pickOf, pickProb, type ExcludedGame, type GradedGame } from './types';
 import type { GameTypeKey } from './report';
@@ -92,88 +92,74 @@ export function GameList({
     const hits = rows.filter(isCorrect).length;
 
     if (loading) {
-        return <div aria-busy="true" className="h-40 rounded-card border border-line bg-surface-1/60" />;
+        return <div aria-busy="true" className="h-32 rounded-card border border-line bg-surface-1/60" />;
     }
     const excludedShown = type === 'playoffs' ? [] : excluded;
     const excludedNote = excludedShown.length ? <ExcludedList games={excludedShown} /> : null;
     if (!base.length && !retroCount) {
         return (
-            <div className="flex flex-col gap-3">
-                <p className="text-body-sm text-fg-3">No graded games for this selection yet.</p>
+            <div className="flex flex-col gap-2">
+                <p className="label">0 graded</p>
                 {excludedNote}
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="hud-panel flex flex-col gap-4 p-4">
-                <div className="flex flex-wrap items-end gap-3">
-                    <div className="flex min-w-[10rem] flex-col gap-1">
-                        <label htmlFor={teamId} className="hud-label">
-                            Team
-                        </label>
-                        <select
-                            id={teamId}
-                            value={team}
-                            onChange={e => {
-                                setTeam(e.target.value);
-                                setShown(PAGE);
-                            }}
-                            className="h-10 rounded-control border border-line-strong bg-surface-1 px-2.5 text-base text-fg-1 md:text-body-sm"
-                        >
-                            <option value="all">All teams</option>
-                            {TEAM_CODES.map(t => (
-                                <option key={t} value={t}>
-                                    {t}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <span className="hud-label" aria-hidden="true">
-                            Result
+        <div className="flex flex-col gap-2">
+            <div className="panel flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2">
+                <label htmlFor={teamId} className="sr-only">
+                    Team
+                </label>
+                <select
+                    id={teamId}
+                    value={team}
+                    onChange={e => {
+                        setTeam(e.target.value);
+                        setShown(PAGE);
+                    }}
+                    className="h-8 rounded-control border border-line-strong bg-surface-1 px-2 text-base uppercase tracking-[0.08em] text-fg-1 md:text-caption coarse:h-11"
+                >
+                    <option value="all">All teams</option>
+                    {TEAM_CODES.map(t => (
+                        <option key={t} value={t}>
+                            {t}
+                        </option>
+                    ))}
+                </select>
+                <Segmented
+                    label="Result"
+                    size="sm"
+                    value={result}
+                    onChange={v => {
+                        setResult(v);
+                        setShown(PAGE);
+                    }}
+                    options={[
+                        { value: 'all', label: 'All' },
+                        { value: 'hit', label: '✓', ariaLabel: 'Right' },
+                        { value: 'miss', label: '✕', ariaLabel: 'Wrong' },
+                    ]}
+                />
+                {retroCount ? (
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={includeRetro}
+                        onClick={() => setIncludeRetro(v => !v)}
+                        className="inline-flex min-h-8 items-center gap-2 rounded-control text-micro font-medium uppercase tracking-[0.12em] text-fg-2 coarse:min-h-11"
+                    >
+                        <span className={cn('relative inline-block h-4 w-7 rounded-full border transition-colors', includeRetro ? 'border-brand bg-brand/30' : 'border-line-strong bg-surface-2')}>
+                            <span className={cn('absolute top-[1px] h-3 w-3 rounded-full transition-transform', includeRetro ? 'translate-x-[13px] bg-brand' : 'translate-x-[1px] bg-fg-2')} />
                         </span>
-                        <Segmented
-                            label="Result"
-                            size="sm"
-                            value={result}
-                            onChange={v => {
-                                setResult(v);
-                                setShown(PAGE);
-                            }}
-                            options={[
-                                { value: 'all', label: 'All' },
-                                { value: 'hit', label: '✓ Right' },
-                                { value: 'miss', label: '✗ Wrong' },
-                            ]}
-                        />
-                    </div>
-                    {retroCount ? (
-                        <button
-                            type="button"
-                            role="switch"
-                            aria-checked={includeRetro}
-                            onClick={() => setIncludeRetro(v => !v)}
-                            className="inline-flex min-h-10 items-center gap-2 rounded-control px-1 text-body-sm font-semibold text-fg-1 coarse:min-h-11"
-                        >
-                            <span className={cn('relative inline-block h-5 w-9 rounded-full border transition-colors', includeRetro ? 'border-brand bg-brand/30' : 'border-line-strong bg-surface-2')}>
-                                <span className={cn('absolute top-0.5 h-3.5 w-3.5 rounded-full transition-transform', includeRetro ? 'translate-x-[18px] bg-brand' : 'translate-x-0.5 bg-fg-2')} />
-                            </span>
-                            Include back-filled ({retroCount.toLocaleString('en-US')})
-                        </button>
-                    ) : null}
-                </div>
+                        Back-filled {retroCount.toLocaleString('en-US')}
+                    </button>
+                ) : null}
                 {dates.length > 2 ? (
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between text-caption text-fg-2">
-                            <span className="hud-label" id="date-window">
-                                Dates
-                            </span>
-                            <span className="tabular-nums">
-                                {shortDate(dates[win[0]])} – {shortDate(dates[win[1]])}
-                            </span>
-                        </div>
+                    <div className="flex min-w-[14rem] flex-1 items-center gap-3">
+                        <span className="sr-only" id="date-window">
+                            Dates
+                        </span>
                         <Slider
                             aria-labelledby="date-window"
                             min={0}
@@ -185,20 +171,25 @@ export function GameList({
                                 setRange([v[0], v[1]] as [number, number]);
                                 setShown(PAGE);
                             }}
+                            className="flex-1"
                         />
+                        <span className="shrink-0 text-micro text-fg-2">
+                            {shortDate(dates[win[0]])}–{shortDate(dates[win[1]])}
+                        </span>
                     </div>
                 ) : null}
-                <p className="text-body-sm text-fg-2" aria-live="polite">
-                    {plural(rows.length, 'game')} · {hits}-{rows.length - hits}
-                    {rows.length ? ` (${((hits / rows.length) * 100).toFixed(1)}%)` : ''}
-                    {includeRetro ? <span className="text-warn"> · includes back-filled picks, not counted in the report card</span> : null}
+                <p className="ml-auto text-caption font-bold text-fg-1" aria-live="polite">
+                    {hits}-{rows.length - hits}
+                    {rows.length ? <span className="ml-2 font-normal text-fg-2">{((hits / rows.length) * 100).toFixed(1)}%</span> : null}
+                    <span className="ml-2 font-normal text-fg-3">n={rows.length}</span>
+                    {includeRetro ? <span className="ml-2 font-normal uppercase tracking-[0.12em] text-warn">+BF</span> : null}
                 </p>
             </div>
 
             {rows.length === 0 ? (
-                <p className="text-body-sm text-fg-3">No games match these filters.</p>
+                <p className="label py-2">No matches</p>
             ) : (
-                <ul className="flex flex-col gap-1.5">
+                <ul className="panel grid items-start overflow-hidden xl:grid-cols-2 xl:gap-x-px xl:bg-line">
                     {rows.slice(0, shown).map(g => (
                         <GameRowItem
                             key={g.id}
@@ -214,9 +205,9 @@ export function GameList({
                 <button
                     type="button"
                     onClick={() => setShown(s => s + PAGE)}
-                    className="self-center rounded-control border border-line-strong px-5 py-2 text-body-sm font-semibold text-fg-1 transition-colors hover:bg-surface-2 coarse:min-h-11"
+                    className="self-center rounded-control border border-line-strong px-4 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11"
                 >
-                    Show more ({Math.min(PAGE, rows.length - shown)} of {(rows.length - shown).toLocaleString('en-US')} left)
+                    More · {(rows.length - shown).toLocaleString('en-US')}
                 </button>
             ) : null}
             {excludedNote}
@@ -230,67 +221,62 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
     const homeWon = g.homeScore > g.awayScore;
     const detailId = `pick-${g.id}`;
     return (
-        <li className={cn('rounded-control border bg-surface-1', open ? 'border-line-strong' : 'border-line')}>
-            <div className="grid grid-cols-[1.5rem_1fr_auto] items-center gap-x-3 gap-y-1 px-3 py-2 sm:grid-cols-[1.5rem_3.5rem_minmax(0,1fr)_8.5rem_auto]">
-                <span aria-hidden="true" className={cn('text-title font-black', ok ? 'text-pos' : 'text-neg')}>
-                    {ok ? '✓' : '✗'}
+        <li className={cn('border-t border-line/60 bg-surface-1 first:border-t-0 xl:[&:nth-child(2)]:border-t-0', open && '!bg-surface-2')}>
+            <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={detailId}
+                onClick={onToggle}
+                className="grid min-h-8 w-full grid-cols-[1rem_minmax(0,1fr)_auto_1rem] items-center gap-x-2.5 px-3 py-1 text-left text-caption transition-colors hover:bg-line/80 sm:grid-cols-[1rem_3.25rem_minmax(0,1fr)_auto_1rem] coarse:min-h-11"
+            >
+                <span aria-hidden="true" className={cn('font-bold', ok ? 'text-pos' : 'text-neg')}>
+                    {ok ? '✓' : '✕'}
                 </span>
-                <span className="hidden text-caption tabular-nums text-fg-3 sm:block">{shortDate(g.date)}</span>
-                <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 text-body-sm tabular-nums">
-                    <TeamLogo tri={g.away} size={20} />
+                <span className="hidden text-fg-3 sm:block">{shortDate(g.date)}</span>
+                <span className="flex min-w-0 flex-wrap items-center gap-x-1.5">
+                    <Crest tri={g.away} size={16} className="drop-shadow-none" />
                     <span className={cn(!homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                         {g.away} {g.awayScore}
                     </span>
                     <span className="text-fg-3">@</span>
-                    <TeamLogo tri={g.home} size={20} />
+                    <Crest tri={g.home} size={16} className="drop-shadow-none" />
                     <span className={cn(homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                         {g.home} {g.homeScore}
                     </span>
-                    {g.decision !== 'REG' ? <span className="rounded-chip bg-surface-3 px-1 text-micro font-semibold text-fg-2">{g.decision}</span> : null}
-                    {g.type === '03' ? <span className="rounded-chip bg-playoff/15 px-1 text-micro font-semibold text-playoff">PO</span> : null}
-                    {g.retro ? <span className="rounded-chip border border-dashed border-warn/60 px-1 text-micro font-semibold text-warn">Back-filled</span> : null}
-                    {showLegacy && g.legacy ? (
-                        <span title="Published by the previous site model, before the current model went live" className="rounded-chip border border-line-strong px-1 text-micro font-semibold text-fg-2">
-                            Legacy model
-                        </span>
+                    {g.decision !== 'REG' ? <span className="text-micro text-fg-3">{g.decision}</span> : null}
+                    {g.type === '03' ? <span className="rounded-chip border border-playoff/50 px-1 text-micro text-playoff">PO</span> : null}
+                    {g.retro ? (
+                        <abbr title="Back-filled after the game, not in the report card" className="rounded-chip border border-dashed border-warn/60 px-1 text-micro text-warn no-underline">
+                            BF
+                        </abbr>
                     ) : null}
-                    <span className="w-full text-caption text-fg-3 sm:hidden">{shortDate(g.date)}</span>
+                    {showLegacy && g.legacy ? (
+                        <abbr title="Published by the previous site model" className="rounded-chip border border-line-strong px-1 text-micro text-fg-2 no-underline">
+                            LEGACY
+                        </abbr>
+                    ) : null}
+                    <span className="text-micro text-fg-3 sm:hidden">{shortDate(g.date)}</span>
                 </span>
-                <span className="col-start-2 row-start-2 flex items-center gap-1.5 text-body-sm sm:col-start-auto sm:row-start-auto">
-                    <span className="text-fg-3">Pick</span>
-                    <TeamLogo tri={pick} size={18} />
-                    <span className="font-semibold text-fg-1">{pick}</span>
-                    <span className="rounded-full bg-surface-3 px-2 py-0.5 text-caption font-bold tabular-nums text-fg-1">{pickProb(g).toFixed(0)}%</span>
-                    <span className="sr-only">{ok ? '— right' : '— wrong'}</span>
+                <span className="flex items-center gap-1.5">
+                    <span className="sr-only">Pick</span>
+                    <Crest tri={pick} size={16} className="drop-shadow-none" />
+                    <span className="font-bold text-fg-1">{pick}</span>
+                    <span className="w-8 text-right font-bold text-fg-2">{pickProb(g).toFixed(0)}%</span>
+                    <span className="sr-only">{ok ? '— right' : '— wrong'}. Details for {g.away} at {g.home}, {shortDate(g.date)}</span>
                 </span>
-                <button
-                    type="button"
-                    aria-expanded={open}
-                    aria-controls={detailId}
-                    onClick={onToggle}
-                    className="col-start-3 row-span-2 row-start-1 inline-flex h-9 w-9 items-center justify-center rounded-control text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg-1 sm:col-start-auto sm:row-span-1 sm:row-start-auto coarse:h-11 coarse:w-11"
-                >
-                    <span className="sr-only">
-                        Details for {g.away} at {g.home}, {shortDate(g.date)}
-                    </span>
-                    <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-4 w-4 transition-transform', open && 'rotate-180')}>
-                        <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </button>
-            </div>
+                <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-3 transition-transform', open && 'rotate-180')}>
+                    <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </button>
             {open ? (
-                <dl id={detailId} className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line px-3 py-3 text-body-sm sm:grid-cols-4">
-                    <Detail label={`Model ${g.home} win`} value={`${g.homeProb.toFixed(1)}%`} />
+                <dl id={detailId} className="grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-line px-3 py-2 text-caption sm:grid-cols-5">
+                    <Detail label={`Model ${g.home}`} value={`${g.homeProb.toFixed(1)}%`} />
+                    <Detail label={`Mkt ${g.home}`} value={g.placeholderOdds ? 'Placeholder' : g.marketProb != null ? `${g.marketProb.toFixed(1)}%` : '—'} />
+                    <Detail label="xG" value={g.homeXg != null && g.awayXg != null ? `${g.away} ${g.awayXg.toFixed(2)} · ${g.home} ${g.homeXg.toFixed(2)}` : '—'} />
+                    <Detail label="Brier · LL" value={`${Number.isFinite(g.brier) ? g.brier.toFixed(3) : '—'} · ${Number.isFinite(g.logLoss) ? g.logLoss.toFixed(3) : '—'}`} />
                     <Detail
-                        label={`Market ${g.home} win`}
-                        value={g.placeholderOdds ? 'Placeholder −110/−110 (not counted)' : g.marketProb != null ? `${g.marketProb.toFixed(1)}%` : '—'}
-                    />
-                    <Detail label="Projected goals" value={g.homeXg != null && g.awayXg != null ? `${g.away} ${g.awayXg.toFixed(2)} · ${g.home} ${g.homeXg.toFixed(2)}` : '—'} />
-                    <Detail label="Brier · log loss" value={`${Number.isFinite(g.brier) ? g.brier.toFixed(3) : '—'} · ${Number.isFinite(g.logLoss) ? g.logLoss.toFixed(3) : '—'}`} />
-                    <Detail
-                        label="Source"
-                        value={g.retro ? 'Back-filled after the game (not shown live)' : g.snapshotUtc ? `Pregame snapshot ${formatTime(g.snapshotUtc, 'datetime') ?? ''}`.trim() : 'Pregame snapshot'}
-                        wide
+                        label="Frozen"
+                        value={g.retro ? 'Back-filled' : g.snapshotUtc ? (formatTime(g.snapshotUtc, 'datetime') ?? 'Pregame') : 'Pregame'}
                     />
                 </dl>
             ) : (
@@ -304,34 +290,36 @@ function ExcludedList({ games }: { games: ExcludedGame[] }) {
     const groups = new Map<string, ExcludedGame[]>();
     for (const g of games) groups.set(g.reason, [...(groups.get(g.reason) ?? []), g]);
     return (
-        <div className="flex flex-col gap-2 rounded-card border border-dashed border-line-strong p-4">
+        <div className="flex flex-col gap-1.5 rounded-card border border-dashed border-line-strong px-3 py-2">
             {[...groups.entries()].map(([reason, list]) => (
-                <div key={reason} className="flex flex-col gap-1.5">
-                    <p className="text-body-sm font-semibold text-fg-1">
-                        Not graded: {reason.charAt(0).toLowerCase() + reason.slice(1)} ({plural(list.length, 'game')})
+                <div key={reason} className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <p className="label">
+                        <abbr title={reason} className="no-underline">
+                            Not graded
+                        </abbr>{' '}
+                        · {list.length}
                     </p>
-                    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-body-sm tabular-nums text-fg-2">
+                    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-fg-2">
                         {list.map(g => (
                             <li key={g.id} className="flex items-center gap-1.5">
                                 <span className="text-fg-3">{shortDate(g.date)}</span>
-                                <TeamLogo tri={g.away} size={16} />
+                                <Crest tri={g.away} size={16} className="drop-shadow-none" />
                                 {g.away} @ {g.home}
-                                <TeamLogo tri={g.home} size={16} />
+                                <Crest tri={g.home} size={16} className="drop-shadow-none" />
                             </li>
                         ))}
                     </ul>
                 </div>
             ))}
-            <p className="text-caption text-fg-3">We only grade picks frozen before puck drop, so these games are left out rather than graded after the fact.</p>
         </div>
     );
 }
 
-function Detail({ label, value, wide }: { label: string; value: string; wide?: boolean }) {
+function Detail({ label, value }: { label: string; value: string }) {
     return (
-        <div className={cn('flex flex-col', wide && 'col-span-2')}>
-            <dt className="text-micro uppercase tracking-[0.06em] text-fg-3">{label}</dt>
-            <dd className="font-semibold tabular-nums text-fg-1">{value}</dd>
+        <div className="flex min-w-0 flex-col">
+            <dt className="text-micro uppercase tracking-[0.12em] text-fg-3">{label}</dt>
+            <dd className="truncate font-semibold text-fg-1">{value}</dd>
         </div>
     );
 }

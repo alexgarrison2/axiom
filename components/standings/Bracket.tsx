@@ -3,8 +3,8 @@
 import * as React from 'react';
 import { Segmented } from '@/components/ui/segmented';
 import { TEAM_NAMES } from '@/components/ui/team-color';
-import { TeamLogo } from '@/components/views/TeamLogo';
-import { fmtProb, pctTone } from '@/components/views/format';
+import { Crest } from '@/components/ui/crest';
+import { fmtProb } from '@/components/views/format';
 import { cn } from '@/lib/utils';
 import { seriesOdds, type Conference, type ConferenceSeeding, type Seed, type TeamStrength } from './model';
 
@@ -13,6 +13,8 @@ export interface BracketProps {
     strengths: Record<string, TeamStrength>;
     /** Tricode → league order (0 = best), used for home ice in the Final. */
     leagueOrder: Record<string, number>;
+    /** Section heading, rendered on the same row as the reset button. */
+    title?: React.ReactNode;
 }
 
 type SeriesId = string;
@@ -61,7 +63,7 @@ function buildSlots(seeding: Record<Conference, ConferenceSeeding>, picks: Recor
     return slots;
 }
 
-export function Bracket({ seeding, strengths, leagueOrder }: BracketProps) {
+export function Bracket({ seeding, strengths, leagueOrder, title }: BracketProps) {
     const [picks, setPicks] = React.useState<Record<SeriesId, string>>({});
     const [tab, setTab] = React.useState<'West' | 'East' | 'Final'>('West');
     const slots = React.useMemo(() => buildSlots(seeding, picks), [seeding, picks]);
@@ -105,24 +107,22 @@ export function Bracket({ seeding, strengths, leagueOrder }: BracketProps) {
     const hasPicks = Object.keys(picks).length > 0;
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-body-sm text-fg-2">
-                    <span className="coarse:hidden">Click a team, or press Enter on it, to advance it.</span>
-                    <span className="hidden coarse:inline">Tap a team to advance it.</span> Series odds come from the model&apos;s team ratings.
-                </p>
+        <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-3">
+                {title}
+                <span className="sr-only">Pick a team in each series to advance it. Series odds come from the model&apos;s team ratings.</span>
                 <button
                     type="button"
                     onClick={() => setPicks({})}
                     disabled={!hasPicks}
-                    className="inline-flex min-h-9 items-center rounded-control border border-line-strong px-3 text-body-sm font-semibold text-fg-1 transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:text-fg-disabled coarse:min-h-11"
+                    className="ml-auto inline-flex min-h-8 items-center rounded-control border border-line-strong px-3 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand disabled:cursor-not-allowed disabled:border-line disabled:text-fg-disabled coarse:min-h-11"
                 >
-                    Reset bracket
+                    Reset
                 </button>
             </div>
 
             {/* Phones and tablets: one conference at a time, rounds stacked. */}
-            <div className="flex flex-col gap-4 lg:hidden">
+            <div className="flex flex-col gap-3 lg:hidden">
                 <Segmented
                     label="Bracket section"
                     block
@@ -152,17 +152,17 @@ export function Bracket({ seeding, strengths, leagueOrder }: BracketProps) {
 
             {/* Desktop: the full bracket, West → Final ← East. */}
             <div className="hidden lg:block">
-                <div className="grid grid-cols-7 gap-3">
+                <div className="grid grid-cols-7 gap-2">
                     {[...conferenceRounds('West'), { round: 4, ids: ['final'] }, ...conferenceRounds('East').reverse()].map((r, col) => (
                         <div key={col} className="flex flex-col">
-                            <p className="hud-label mb-2 text-center">
-                                {r.round === 4 ? 'Final' : `${col < 3 ? 'West' : 'East'} · ${r.round === 3 ? 'Conf. final' : `Round ${r.round}`}`}
+                            <p className="label mb-1.5 text-center">
+                                {r.round === 4 ? 'Final' : `${col < 3 ? 'W' : 'E'} · ${r.round === 3 ? 'CF' : `R${r.round}`}`}
                             </p>
-                            <ol className="flex flex-1 flex-col justify-around gap-3">
+                            <ol className="flex flex-1 flex-col justify-around gap-2">
                                 {r.ids.map(id => (
                                     <li key={id}>
                                         {card(id)}
-                                        {id === 'final' ? <Champion tri={champion} className="mt-3" /> : null}
+                                        {id === 'final' ? <Champion tri={champion} className="mt-2" /> : null}
                                     </li>
                                 ))}
                             </ol>
@@ -175,7 +175,7 @@ export function Bracket({ seeding, strengths, leagueOrder }: BracketProps) {
 }
 
 function RoundHeading({ round }: { round: number }) {
-    return <h3 className="hud-label">{ROUND_NAMES[round]}</h3>;
+    return <h3 className="label">{ROUND_NAMES[round]}</h3>;
 }
 
 function SeriesCard({
@@ -192,7 +192,7 @@ function SeriesCard({
     const decided = !!pick && (slot.top?.tri === pick || slot.bottom?.tri === pick);
     const label = slot.top && slot.bottom ? `${ROUND_NAMES[slot.round]}: ${slot.top.tri} vs ${slot.bottom.tri}` : `${ROUND_NAMES[slot.round]}: to be decided`;
     return (
-        <div role="group" aria-label={label} className="overflow-hidden rounded-control border border-line bg-surface-1 shadow-card">
+        <div role="group" aria-label={label} className="overflow-hidden rounded-[10px] border border-line bg-[image:var(--panel-gradient)]">
             <TeamLine slotId={slot.id} seed={slot.top} p={odds?.top} picked={decided && pick === slot.top?.tri} eliminated={decided && pick !== slot.top?.tri} onAdvance={onAdvance} />
             <div className="h-px bg-line" />
             <TeamLine slotId={slot.id} seed={slot.bottom} p={odds?.bottom} picked={decided && pick === slot.bottom?.tri} eliminated={decided && pick !== slot.bottom?.tri} onAdvance={onAdvance} />
@@ -217,9 +217,10 @@ function TeamLine({
 }) {
     if (!seed) {
         return (
-            <div className="flex min-h-11 items-center gap-2 px-2.5 text-body-sm italic text-fg-3">
-                <span aria-hidden="true" className="inline-block h-6 w-6 rounded-full border border-dashed border-line-strong" />
-                Winner advances
+            <div className="flex min-h-9 items-center gap-2 px-2 text-fg-3">
+                <span aria-hidden="true" className="inline-block h-5 w-5 rounded-full border border-dashed border-line-strong" />
+                <span aria-hidden="true">—</span>
+                <span className="sr-only">To be decided</span>
             </div>
         );
     }
@@ -231,25 +232,18 @@ function TeamLine({
             aria-label={`${picked ? 'Advanced' : 'Advance'} ${name} (${seed.label})${p != null ? `, ${fmtProb(p)} to win the series` : ''}`}
             onClick={() => onAdvance(slotId, seed.tri)}
             className={cn(
-                'group flex min-h-11 w-full items-center gap-2 px-2.5 text-left transition-colors',
-                picked ? 'bg-brand/10 shadow-[inset_3px_0_0_rgb(var(--brand-rgb))]' : 'hover:bg-surface-2',
+                'group flex min-h-9 w-full items-center gap-2 px-2 text-left transition-colors coarse:min-h-11',
+                picked ? 'bg-brand/10 shadow-[inset_2px_0_0_rgb(var(--brand-rgb))]' : 'hover:bg-surface-2',
                 eliminated && 'bg-bg/40',
             )}
         >
-            <TeamLogo tri={seed.tri} size={24} className={cn(eliminated && 'opacity-40 grayscale')} />
-            <span className="w-7 shrink-0 font-mono text-micro text-fg-3">{seed.label}</span>
-            <span className={cn('min-w-0 flex-1 truncate font-semibold', eliminated ? 'text-fg-3 line-through decoration-fg-3' : 'text-fg-1')}>
+            <Crest tri={seed.tri} size={20} className={cn('drop-shadow-none', eliminated && 'opacity-40 grayscale')} />
+            <span className={cn('min-w-0 flex-1 truncate font-bold', eliminated ? 'text-fg-3 line-through decoration-fg-3' : picked ? 'text-brand' : 'text-fg-1')}>
                 {seed.tri}
             </span>
-            {picked ? (
-                <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4 shrink-0 text-brand">
-                    <path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-            ) : null}
+            <span className="shrink-0 text-micro text-fg-3">{seed.label}</span>
             {p != null ? (
-                <span className={cn('shrink-0 text-body-sm font-bold tabular-nums', eliminated && 'text-fg-3')} style={eliminated ? undefined : { color: pctTone(p * 100) }}>
-                    {fmtProb(p)}
-                </span>
+                <span className={cn('w-9 shrink-0 text-right font-bold', eliminated ? 'text-fg-3' : p >= 0.5 ? 'text-fg-1' : 'text-fg-2')}>{fmtProb(p)}</span>
             ) : null}
         </button>
     );
@@ -258,8 +252,9 @@ function TeamLine({
 function Champion({ tri, className }: { tri: string | null; className?: string }) {
     if (!tri) {
         return (
-            <p className={cn('rounded-control border border-dashed border-line-strong px-3 py-3 text-center text-body-sm text-fg-3', className)}>
-                Pick a champion
+            <p className={cn('label rounded-[10px] border border-dashed border-line-strong px-3 py-2.5 text-center', className)}>
+                Champion <span aria-hidden="true">—</span>
+                <span className="sr-only">not picked</span>
             </p>
         );
     }
@@ -267,13 +262,13 @@ function Champion({ tri, className }: { tri: string | null; className?: string }
         <div
             role="status"
             className={cn(
-                'relative flex flex-col items-center gap-1 overflow-hidden rounded-control border border-brand/40 bg-brand/10 px-3 py-4 text-center motion-safe:animate-pop-in',
+                'relative flex flex-col items-center gap-1 overflow-hidden rounded-[10px] border border-brand/40 bg-brand/10 px-3 py-3 text-center motion-safe:animate-pop-in',
                 className,
             )}
         >
-            <TeamLogo tri={tri} size={48} />
-            <span className="hud-label text-brand">Your champion</span>
-            <span className="text-title font-black italic uppercase tracking-tight text-fg-1">{TEAM_NAMES[tri]?.short ?? tri}</span>
+            <Crest tri={tri} size={48} />
+            <span className="label text-brand">Champion</span>
+            <span className="num-pct font-display text-title uppercase text-fg-1">{TEAM_NAMES[tri]?.short ?? tri}</span>
         </div>
     );
 }

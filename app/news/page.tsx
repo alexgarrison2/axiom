@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { readPublicJson } from '@/components/views/read-data';
-import { PageHeading } from '@/components/ui/page-heading';
 import { NewsFeed } from '@/components/news/NewsFeed';
 import { toFeedGroups } from '@/components/news/feed';
 import type { GameRef, RawNewsItem } from '@/components/news/model';
@@ -79,19 +78,13 @@ export default function NewsPage() {
     const dayLabel = day
         ? isToday
             ? 'Tonight'
-            : new Date(`${day}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' })
+            : new Date(`${day}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase()
         : null;
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
-                <PageHeading
-                    eyebrow={dayLabel ? `${dayLabel} · ${games.length} ${games.length === 1 ? 'game' : 'games'}` : 'Around the league'}
-                    title="News"
-                    description="Starting goalies, injuries and lineup changes, grouped under the games they affect. Repeat reports on the same player are folded into one card."
-                />
+            <div className="mx-auto max-w-[1400px] px-4 py-5 md:px-6 md:py-7">
                 <NewsFeed groups={groups} dayLabel={dayLabel} />
-                <p className="text-caption text-fg-3">Source: DailyFaceoff. Times are in your time zone.</p>
             </div>
         </main>
     );

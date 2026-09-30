@@ -4,7 +4,7 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import { Segmented } from '@/components/ui/segmented';
 import { clashSafePair } from '@/components/ui/team-color';
-import { TeamLogo } from '@/components/views/TeamLogo';
+import { Crest } from '@/components/ui/crest';
 import { cn } from '@/lib/utils';
 import H2HGameLog from './H2HGameLog';
 import { seriesStatusText, type ArchiveGame, type ArchiveSeries, type PlayoffArchive } from './types';
@@ -66,17 +66,18 @@ export default function ArchiveExplorer({ archive }: { archive: PlayoffArchive }
     const current = byLetter.get(selected);
 
     return (
-        <div className="flex flex-col gap-8">
-            <section aria-labelledby="bracket-title" className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
+            <section aria-labelledby="bracket-title" className="flex flex-col gap-3">
                 <h2 id="bracket-title" className="heading-section">
-                    The bracket
+                    Bracket
                 </h2>
 
                 {/* Phones/tablets: one section at a time. */}
-                <div className="flex flex-col gap-4 lg:hidden">
+                <div className="flex flex-col gap-3 lg:hidden">
                     <Segmented
                         label="Bracket section"
                         block
+                        size="sm"
                         value={section}
                         onChange={setSection}
                         options={[
@@ -86,12 +87,12 @@ export default function ArchiveExplorer({ archive }: { archive: PlayoffArchive }
                         ]}
                     />
                     {section === 'Final' ? (
-                        final ? <div className="flex flex-col gap-2"><h3 className="hud-label">Stanley Cup Final</h3>{tile(final)}</div> : <p className="text-body-sm text-fg-3">The Final hasn&apos;t started.</p>
+                        final ? <div className="flex flex-col gap-1.5"><h3 className="label">Stanley Cup Final</h3>{tile(final)}</div> : <p className="label">Final —</p>
                     ) : (
                         rounds(section).map(r =>
                             r.series.length ? (
-                                <div key={r.round} className="flex flex-col gap-2">
-                                    <h3 className="hud-label">{r.series[0].roundLabel}</h3>
+                                <div key={r.round} className="flex flex-col gap-1.5">
+                                    <h3 className="label">{r.series[0].roundLabel}</h3>
                                     <div className="grid gap-2 sm:grid-cols-2">{r.series.map(tile)}</div>
                                 </div>
                             ) : null,
@@ -100,13 +101,13 @@ export default function ArchiveExplorer({ archive }: { archive: PlayoffArchive }
                 </div>
 
                 {/* Desktop: West → Final ← East. */}
-                <div className="hidden grid-cols-7 gap-3 lg:grid">
+                <div className="hidden grid-cols-7 gap-2 lg:grid">
                     {[...rounds('West'), { round: 4, series: final ? [final] : [] }, ...rounds('East').reverse()].map((r, i) => (
                         <div key={i} className="flex flex-col">
-                            <p className="hud-label mb-2 text-center">
-                                {r.round === 4 ? 'Final' : `${i < 3 ? 'West' : 'East'} · ${r.round === 3 ? 'Conf. final' : `Round ${r.round}`}`}
+                            <p className="label mb-1.5 text-center">
+                                {r.round === 4 ? 'Final' : `${i < 3 ? 'W' : 'E'} · ${r.round === 3 ? 'CF' : `R${r.round}`}`}
                             </p>
-                            <div className="flex flex-1 flex-col justify-around gap-3">{r.series.map(tile)}</div>
+                            <div className="flex flex-1 flex-col justify-around gap-2">{r.series.map(tile)}</div>
                         </div>
                     ))}
                 </div>
@@ -124,11 +125,11 @@ function SeriesTile({ series: s, selected, onSelect }: { series: ArchiveSeries; 
         const won = s.winner === team.tri;
         const lost = !!s.winner && !won;
         return (
-            <span className="flex items-center gap-2">
-                <TeamLogo tri={team.tri} size={22} className={cn(lost && 'opacity-50 grayscale')} />
+            <span className="flex h-7 items-center gap-2">
+                <Crest tri={team.tri} size={20} className={cn('drop-shadow-none', lost && 'opacity-50 grayscale')} />
                 <span className={cn('font-bold', lost ? 'text-fg-3' : 'text-fg-1')}>{team.tri}</span>
-                <span className="font-mono text-micro text-fg-3">{team.seed}</span>
-                <span className={cn('ml-auto text-title font-black tabular-nums', won ? 'text-fg-1' : 'text-fg-3')}>{wins}</span>
+                <span className="text-micro text-fg-3">{team.seed}</span>
+                <span className={cn('num-score ml-auto text-title', won ? 'text-fg-1' : 'text-fg-3')}>{wins}</span>
             </span>
         );
     };
@@ -139,8 +140,8 @@ function SeriesTile({ series: s, selected, onSelect }: { series: ArchiveSeries; 
             aria-label={`${s.roundLabel}${s.conference ? `, ${s.conference}` : ''}: ${s.top.tri} vs ${s.bottom.tri}. ${seriesStatusText(s)}`}
             onClick={() => onSelect(s)}
             className={cn(
-                'flex w-full flex-col gap-1 rounded-control border px-3 py-2 text-left transition-colors',
-                selected ? 'border-playoff/70 bg-playoff/10 shadow-[inset_0_0_0_1px_rgb(var(--playoff-rgb)/0.6)]' : 'border-line bg-surface-1 hover:bg-surface-2',
+                'flex w-full flex-col rounded-[10px] border px-2.5 py-1 text-left transition-colors coarse:py-2',
+                selected ? 'border-brand/70 bg-brand/[0.06] shadow-[0_0_14px_rgb(var(--brand-rgb)/0.18)]' : 'border-line bg-[image:var(--panel-gradient)] hover:border-line-strong',
             )}
         >
             {row(s.top, s.topWins)}
@@ -163,79 +164,82 @@ function SeriesDetail({ series: s, archive }: { series: ArchiveSeries; archive: 
     };
 
     return (
-        <article aria-labelledby={`series-${s.letter}-title`} className="hud-panel flex flex-col gap-6 p-4 md:p-6">
-            <header className="flex flex-col gap-3">
-                <p className="hud-label text-playoff">
+        <article
+            aria-labelledby={`series-${s.letter}-title`}
+            className="panel team-wash flex flex-col gap-4 p-card"
+            style={{ '--ac': colors.away, '--hc': colors.home } as React.CSSProperties}
+        >
+            <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <h2 id={`series-${s.letter}-title`} className="flex items-center gap-3">
+                    <span className="sr-only">
+                        {s.roundLabel}
+                        {s.conference ? `, ${s.conference}` : ''}:{' '}
+                    </span>
+                    <Crest tri={s.top.tri} size={48} />
+                    <span className="num-score text-[28px] leading-none text-fg-1 md:text-[34px]">
+                        <span className="font-display text-title font-semibold tracking-[0.04em]">{s.top.tri}</span> {s.topWins}
+                        <span className="px-1.5 text-fg-3">–</span>
+                        {s.bottomWins} <span className="font-display text-title font-semibold tracking-[0.04em]">{s.bottom.tri}</span>
+                    </span>
+                    <Crest tri={s.bottom.tri} size={48} />
+                </h2>
+                <p className="label">
                     {s.roundLabel}
-                    {s.conference ? ` · ${s.conference}` : ''}
+                    {s.conference ? ` · ${s.conference}` : ''} · {s.top.seed} v {s.bottom.seed}
                 </p>
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                    <h2 id={`series-${s.letter}-title`} className="heading-section flex items-center gap-3">
-                        <TeamLogo tri={s.top.tri} size={40} />
-                        <span className="tabular-nums">
-                            {s.top.tri} {s.topWins}
-                            <span className="px-1.5 text-fg-3">–</span>
-                            {s.bottomWins} {s.bottom.tri}
-                        </span>
-                        <TeamLogo tri={s.bottom.tri} size={40} />
-                    </h2>
-                    <p className={cn('rounded-full px-3 py-1 text-body-sm font-bold', s.winner ? 'bg-playoff/15 text-fg-1' : 'bg-surface-3 text-fg-2')}>{seriesStatusText(s)}</p>
-                </div>
-                <p className="text-body-sm text-fg-2">
-                    ({s.top.seed}) {archive.teams[s.top.tri]?.name ?? s.top.tri} vs ({s.bottom.seed}) {archive.teams[s.bottom.tri]?.name ?? s.bottom.tri}
-                </p>
+                <p className={cn('label ml-auto rounded-chip border px-2 py-0.5', s.winner ? 'border-brand/45 text-brand' : 'border-line-strong text-fg-2')}>{seriesStatusText(s)}</p>
             </header>
 
-            <section aria-labelledby={`games-${s.letter}`} className="flex flex-col gap-2">
-                <h3 id={`games-${s.letter}`} className="hud-label">
-                    Games
-                </h3>
-                <ol className="flex flex-col gap-1.5">
-                    {played.map(g => (
-                        <GameRow key={g.id} game={g} open={analysisId === String(g.id)} onOpen={() => open(String(g.id))} controls={`analysis-${s.letter}`} />
-                    ))}
-                    {upcoming.map(g => (
-                        <li key={g.id} className="flex items-center gap-3 rounded-control border border-dashed border-line-strong px-3 py-2 text-body-sm text-fg-2">
-                            <span className="w-8 font-bold text-fg-1">G{g.n}</span>
-                            <span>{fmtGameDate(g.date)}</span>
-                            <span>
-                                {g.away} @ {g.home}
-                            </span>
-                        </li>
-                    ))}
-                </ol>
-                {played.some(g => g.analysis) && played.length > 1 ? (
-                    <button
-                        type="button"
-                        aria-expanded={analysisId === 'series'}
-                        aria-controls={`analysis-${s.letter}`}
-                        onClick={() => open('series')}
-                        className="self-start rounded-control border border-line-strong px-3 py-2 text-body-sm font-semibold text-fg-1 transition-colors hover:bg-surface-2 coarse:min-h-11"
-                    >
-                        {analysisId === 'series' ? 'Hide series analysis' : 'Shot map for the whole series'}
-                    </button>
-                ) : null}
-            </section>
+            <div className="grid items-start gap-5 lg:grid-cols-2">
+                <section aria-labelledby={`games-${s.letter}`} className="flex flex-col gap-1.5">
+                    <h3 id={`games-${s.letter}`} className="label">
+                        Games
+                    </h3>
+                    <ol className="flex flex-col overflow-hidden rounded-[10px] border border-line">
+                        {played.map(g => (
+                            <GameRow key={g.id} game={g} open={analysisId === String(g.id)} onOpen={() => open(String(g.id))} controls={`analysis-${s.letter}`} />
+                        ))}
+                        {upcoming.map(g => (
+                            <li key={g.id} className="flex h-8 items-center gap-3 border-t border-dashed border-line-strong px-3 text-caption text-fg-2 first:border-t-0">
+                                <span className="w-8 font-bold text-fg-1">G{g.n}</span>
+                                <span>{fmtGameDate(g.date)}</span>
+                                <span>
+                                    {g.away} @ {g.home}
+                                </span>
+                            </li>
+                        ))}
+                    </ol>
+                    {played.some(g => g.analysis) && played.length > 1 ? (
+                        <button
+                            type="button"
+                            aria-expanded={analysisId === 'series'}
+                            aria-controls={`analysis-${s.letter}`}
+                            onClick={() => open('series')}
+                            className="self-start rounded-control border border-line-strong px-3 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11"
+                        >
+                            {analysisId === 'series' ? 'Hide series map' : 'Series shot map'}
+                        </button>
+                    ) : null}
+                </section>
+                <div className="flex min-w-0 flex-col gap-4">
+                    <section aria-labelledby={`numbers-${s.letter}`} className="flex flex-col gap-2">
+                        <h3 id={`numbers-${s.letter}`} className="label">
+                            Series totals
+                        </h3>
+                        <SeriesNumbers series={s} colors={[colors.away, colors.home]} />
+                    </section>
+                    <section aria-labelledby={`h2h-${s.letter}`} className="flex flex-col gap-2">
+                        <h3 id={`h2h-${s.letter}`} className="label">
+                            Regular season
+                        </h3>
+                        <H2HGameLog games={h2h} t1={s.top.tri} t2={s.bottom.tri} seasonLabel={archive.seasonLabel} />
+                    </section>
+                </div>
+            </div>
 
             <div id={`analysis-${s.letter}`} ref={analysisRef} className="scroll-mt-[calc(var(--appbar-h)+12px)]">
                 {analysisId ? <GameAnalysis year={archive.year} games={s.games} initialGameId={analysisId} teamNames={teamNames} /> : null}
             </div>
-
-            <div className="grid gap-6 lg:grid-cols-2">
-                <section aria-labelledby={`numbers-${s.letter}`} className="flex flex-col gap-3">
-                    <h3 id={`numbers-${s.letter}`} className="hud-label">
-                        Series by the numbers
-                    </h3>
-                    <SeriesNumbers series={s} colors={[colors.away, colors.home]} />
-                </section>
-                <section aria-labelledby={`h2h-${s.letter}`} className="flex flex-col gap-3">
-                    <h3 id={`h2h-${s.letter}`} className="hud-label">
-                        Regular-season meetings
-                    </h3>
-                    <H2HGameLog games={h2h} t1={s.top.tri} t2={s.bottom.tri} seasonLabel={archive.seasonLabel} />
-                </section>
-            </div>
-            {s.winner ? <p className="text-caption text-fg-3">Pre-series model odds weren&apos;t archived, so completed series show results only.</p> : null}
         </article>
     );
 }
@@ -248,21 +252,26 @@ function fmtGameDate(date: string) {
 function GameRow({ game: g, open, onOpen, controls }: { game: ArchiveGame; open: boolean; onOpen: () => void; controls: string }) {
     const homeWon = (g.home_score ?? 0) > (g.away_score ?? 0);
     return (
-        <li className={cn('flex flex-wrap items-center gap-x-3 gap-y-1 rounded-control border px-3 py-2 text-body-sm', open ? 'border-playoff/60 bg-playoff/5' : 'border-line bg-surface-2/40')}>
-            <span className="w-8 font-bold text-fg-1">G{g.n}</span>
-            <span className="w-24 text-fg-3">{fmtGameDate(g.date)}</span>
+        <li className={cn('flex min-h-8 flex-wrap items-center gap-x-3 border-t border-line/60 px-3 text-caption first:border-t-0 even:bg-line/35', open && '!bg-brand/[0.06]')}>
+            <span className="w-7 font-bold text-fg-1">G{g.n}</span>
+            <span className="hidden w-24 text-fg-3 sm:inline">{fmtGameDate(g.date)}</span>
             <span className="flex items-center gap-1.5 tabular-nums">
-                <TeamLogo tri={g.away} size={18} />
+                <Crest tri={g.away} size={16} className="drop-shadow-none" />
                 <span className={cn(!homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                     {g.away} {g.away_score}
                 </span>
                 <span className="text-fg-3">@</span>
-                <TeamLogo tri={g.home} size={18} />
+                <Crest tri={g.home} size={16} className="drop-shadow-none" />
                 <span className={cn(homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                     {g.home} {g.home_score}
                 </span>
-                {g.decision && g.decision !== 'REG' ? <span className="rounded-chip bg-surface-3 px-1.5 text-micro font-semibold text-fg-2">{g.decision}</span> : null}
-                {g.state === 'live' ? <span className="rounded-chip bg-neg/15 px-1.5 text-micro font-semibold text-neg">LIVE</span> : null}
+                {g.decision && g.decision !== 'REG' ? <span className="text-micro text-fg-3">{g.decision}</span> : null}
+                {g.state === 'live' ? (
+                    <span className="inline-flex items-center gap-1 text-micro font-semibold text-pos">
+                        <span aria-hidden="true" className="live-dot" />
+                        LIVE
+                    </span>
+                ) : null}
             </span>
             {g.analysis ? (
                 <button
@@ -270,9 +279,9 @@ function GameRow({ game: g, open, onOpen, controls }: { game: ArchiveGame; open:
                     aria-expanded={open}
                     aria-controls={controls}
                     onClick={onOpen}
-                    className="ml-auto inline-flex min-h-9 items-center gap-1 rounded-control px-2.5 font-semibold text-brand transition-colors hover:bg-surface-3 coarse:min-h-11"
+                    className="ml-auto inline-flex min-h-8 items-center gap-1 text-micro font-medium uppercase tracking-[0.14em] text-brand hover:underline coarse:min-h-11"
                 >
-                    {open ? 'Hide analysis' : 'Shot map & box score'}
+                    {open ? 'Hide' : 'Shot map ▸'}
                     <span className="sr-only"> for game {g.n}</span>
                 </button>
             ) : null}
@@ -283,38 +292,46 @@ function GameRow({ game: g, open, onOpen, controls }: { game: ArchiveGame; open:
 function SeriesNumbers({ series: s, colors }: { series: ArchiveSeries; colors: [string, string] }) {
     const a = s.totals[s.top.tri];
     const b = s.totals[s.bottom.tri];
-    if (!a || !b) return <p className="text-body-sm text-fg-3">No team totals recorded.</p>;
-    const rows: { label: string; a: number; b: number; fmt?: (v: number) => string; note?: string }[] = [
+    if (!a || !b) return <p className="label">—</p>;
+    const rows: { label: string; title?: string; a: number; b: number; fmt?: (v: number) => string; da?: string; db?: string }[] = [
         { label: 'Goals', a: a.goals, b: b.goals },
-        { label: 'Expected goals', a: a.xg, b: b.xg, fmt: v => v.toFixed(1) },
-        { label: 'Shots on goal', a: a.sog, b: b.sog },
-        { label: 'Shot attempts', a: a.attempts, b: b.attempts },
-        { label: 'Power-play goals', a: a.ppGoals, b: b.ppGoals, note: `${a.ppGoals}/${a.ppOpps} vs ${b.ppGoals}/${b.ppOpps}` },
+        { label: 'xG', title: 'Expected goals', a: a.xg, b: b.xg, fmt: v => v.toFixed(1) },
+        { label: 'SOG', title: 'Shots on goal', a: a.sog, b: b.sog },
+        { label: 'Attempts', title: 'Shot attempts', a: a.attempts, b: b.attempts },
+        { label: 'PP', title: 'Power-play goals / opportunities', a: a.ppGoals, b: b.ppGoals, da: `${a.ppGoals}/${a.ppOpps}`, db: `${b.ppGoals}/${b.ppOpps}` },
         { label: 'Hits', a: a.hits, b: b.hits },
     ];
     return (
-        <div className="flex flex-col gap-2.5">
-            <div className="flex items-center justify-between text-caption font-semibold text-fg-2">
+        <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-caption font-bold text-fg-1">
                 <span className="flex items-center gap-1.5">
-                    <TeamLogo tri={s.top.tri} size={16} />
+                    <Crest tri={s.top.tri} size={16} className="drop-shadow-none" />
                     {s.top.tri}
                 </span>
                 <span className="flex items-center gap-1.5">
                     {s.bottom.tri}
-                    <TeamLogo tri={s.bottom.tri} size={16} />
+                    <Crest tri={s.bottom.tri} size={16} className="drop-shadow-none" />
                 </span>
             </div>
             {rows.map(r => {
                 const total = r.a + r.b || 1;
                 const f = r.fmt ?? ((v: number) => String(v));
                 return (
-                    <div key={r.label} className="flex flex-col gap-1">
-                        <div className="flex items-baseline justify-between text-body-sm">
-                            <span className={cn('tabular-nums', r.a > r.b ? 'font-bold text-fg-1' : 'text-fg-2')}>{f(r.a)}</span>
-                            <span className="text-caption text-fg-3">{r.note ? `${r.label} (${r.note})` : r.label}</span>
-                            <span className={cn('tabular-nums', r.b > r.a ? 'font-bold text-fg-1' : 'text-fg-2')}>{f(r.b)}</span>
+                    <div key={r.label} className="flex flex-col gap-0.5">
+                        <div className="flex items-baseline justify-between text-caption">
+                            <span className={cn('tabular-nums', r.a > r.b ? 'font-bold text-fg-1' : 'text-fg-2')}>{r.da ?? f(r.a)}</span>
+                            <span className="text-micro uppercase tracking-[0.12em] text-fg-3">
+                                {r.title ? (
+                                    <abbr title={r.title} className="no-underline">
+                                        {r.label}
+                                    </abbr>
+                                ) : (
+                                    r.label
+                                )}
+                            </span>
+                            <span className={cn('tabular-nums', r.b > r.a ? 'font-bold text-fg-1' : 'text-fg-2')}>{r.db ?? f(r.b)}</span>
                         </div>
-                        <div aria-hidden="true" className="flex h-1.5 overflow-hidden rounded-full bg-fg-3/15">
+                        <div aria-hidden="true" className="flex h-1.5 overflow-hidden rounded-full bg-track">
                             <span style={{ width: `${(r.a / total) * 100}%`, backgroundColor: colors[0] }} />
                             <span className="w-0.5 bg-bg" />
                             <span style={{ width: `${(r.b / total) * 100}%`, backgroundColor: colors[1] }} />

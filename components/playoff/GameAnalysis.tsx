@@ -206,17 +206,17 @@ export default function GameAnalysis({ year, games, initialGameId, teamNames }: 
     const shots = React.useMemo(() => (game ? filterShots(game.shots, strength, eventFilter, isSeries ? 'All' : period) : []), [game, strength, eventFilter, period, isSeries]);
 
     if (!playable.length) {
-        return <p className="text-body-sm text-fg-3">No shot data was recorded for this series.</p>;
+        return <p className="label">No shot data</p>;
     }
 
     const colors = game ? clashSafePair(game.awayTriCode, game.homeTriCode) : null;
     const gameLabel = (g: ArchiveGame) => `Game ${g.n}: ${g.away} ${g.away_score ?? ''} @ ${g.home} ${g.home_score ?? ''}${g.decision && g.decision !== 'REG' ? ` (${g.decision})` : ''}`;
 
     return (
-        <section aria-label="Game analysis" className="flex flex-col gap-4">
+        <section aria-label="Game analysis" className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                 <FieldSelect label="Game" value={selected} onChange={setSelected} className="col-span-2 md:col-span-1">
-                    {playable.length > 1 ? <option value="series">Whole series ({playable.length} games)</option> : null}
+                    {playable.length > 1 ? <option value="series">Series ({playable.length} games)</option> : null}
                     {playable.map(g => (
                         <option key={g.id} value={String(g.id)}>
                             {gameLabel(g)}
@@ -226,7 +226,7 @@ export default function GameAnalysis({ year, games, initialGameId, teamNames }: 
                 <FieldSelect label="Strength" value={strength} onChange={setStrength}>
                     {strengthOptions.map(s => (
                         <option key={s} value={s}>
-                            {s === 'All' ? 'All situations' : strengthLabel(s)}
+                            {s === 'All' ? 'All' : strengthLabel(s)}
                         </option>
                     ))}
                 </FieldSelect>
@@ -240,7 +240,7 @@ export default function GameAnalysis({ year, games, initialGameId, teamNames }: 
                 <FieldSelect label="Period" value={period} onChange={setPeriod} disabled={isSeries}>
                     {periodOptions.map(p => (
                         <option key={p} value={p}>
-                            {p === 'All' ? 'All periods' : periodLabel(Number(p))}
+                            {p === 'All' ? 'All' : periodLabel(Number(p))}
                         </option>
                     ))}
                 </FieldSelect>
@@ -255,17 +255,18 @@ export default function GameAnalysis({ year, games, initialGameId, teamNames }: 
                 ]}
                 value={view}
                 onChange={setView}
+                size="sm"
                 block
                 className="md:w-auto md:self-start"
             />
 
             {state.error && state.key === selected ? (
-                <p role="alert" className="rounded-control border border-neg/40 bg-neg/10 px-3 py-2 text-body-sm text-fg-1">
-                    Couldn&apos;t load this game ({state.error}).
+                <p role="alert" className="rounded-control border border-neg/40 px-3 py-2 text-caption text-neg">
+                    Load failed · {state.error}
                 </p>
             ) : loading || !game || !colors ? (
-                <div aria-busy="true" className="flex h-64 items-center justify-center rounded-control border border-line bg-surface-2/50 text-body-sm text-fg-3">
-                    Loading game data…
+                <div aria-busy="true" className="label flex h-64 items-center justify-center rounded-control border border-line bg-surface-2/50">
+                    Loading
                 </div>
             ) : (
                 <>
@@ -297,7 +298,7 @@ function FieldSelect({
     const id = React.useId();
     return (
         <div className={cn('flex min-w-0 flex-col gap-1', className)}>
-            <label htmlFor={id} className="hud-label">
+            <label htmlFor={id} className="label">
                 {label}
             </label>
             <select
@@ -305,7 +306,7 @@ function FieldSelect({
                 value={value}
                 disabled={disabled}
                 onChange={e => onChange(e.target.value)}
-                className="h-10 w-full min-w-0 rounded-control border border-line-strong bg-surface-1 px-2.5 text-base text-fg-1 disabled:text-fg-disabled md:text-body-sm"
+                className="h-8 w-full min-w-0 rounded-control border border-line-strong bg-surface-1 px-2 text-base text-fg-1 disabled:text-fg-disabled md:text-caption coarse:h-11"
             >
                 {children}
             </select>
@@ -414,15 +415,19 @@ function ShotRink({ game, shots, awayColor, homeColor, isSeries }: { game: Playo
                     </div>
                 ) : null}
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-caption text-fg-3">
+            <p className="label flex flex-wrap items-center gap-x-4 gap-y-1">
+                <span>{shots.length} shots</span>
+                <span>● xG</span>
                 <span>
-                    {shots.length} attempts shown · dot size = xG · <span className="text-warn">ring</span> = goal · {game.awayTriCode} attacks left, {game.homeTriCode}{' '}
-                    attacks right
+                    <span className="text-warn">◯</span> Goal
                 </span>
-            </div>
+                <span>
+                    ← {game.awayTriCode} · {game.homeTriCode} →<span className="sr-only"> ({game.awayTriCode} attacks left)</span>
+                </span>
+            </p>
             {goals.length ? (
                 <div>
-                    <h4 className="hud-label mb-1.5">Goals</h4>
+                    <h4 className="label mb-1.5">Goals</h4>
                     {/* One column per team (away left, home right, like the cards above), each in order. */}
                     <div className="grid gap-2 text-body-sm sm:grid-cols-2">
                         {[game.awayTriCode, game.homeTriCode].map(tri => {
@@ -445,7 +450,7 @@ function ShotRink({ game, shots, awayColor, homeColor, isSeries }: { game: Playo
                                             ))}
                                         </ol>
                                     ) : (
-                                        <p className="px-2 py-1 text-fg-3">No goals</p>
+                                        <p className="px-2 py-1 text-fg-3">—</p>
                                     )}
                                 </section>
                             );
@@ -482,8 +487,8 @@ function XgFlow({ game, shots, awayColor, homeColor, isSeries }: { game: Playoff
     const yStep = yMax > 8 ? 2 : 1;
     return (
         <div className="flex flex-col gap-2">
-            <p className="text-center text-body-sm text-fg-2">
-                Cumulative expected goals:{' '}
+            <p className="label flex flex-wrap items-center justify-center gap-x-3 normal-case">
+                <span className="uppercase">xG</span>
                 {/* Team colour marks the swatch, never the text (contrast). */}
                 <span className="inline-flex items-center gap-1.5 font-bold tabular-nums text-fg-1">
                     <span aria-hidden="true" className="inline-block h-1 w-4 rounded-full" style={{ backgroundColor: awayColor }} />
@@ -535,7 +540,6 @@ function XgFlow({ game, shots, awayColor, homeColor, isSeries }: { game: Playoff
                         })}
                 </svg>
             </ScrollRegion>
-            <p className="text-caption text-fg-3">Steps rise with every shot attempt by its xG; photos mark goals.</p>
         </div>
     );
 }
@@ -593,37 +597,37 @@ function GameTables({ game }: { game: PlayoffGameAnalysis }) {
 
     return (
         <div className="flex flex-col gap-4">
-            <ScrollRegion label="Goalie box score" className="rounded-control border border-line">
-                <table className="w-full min-w-[560px] text-body-sm">
+            <ScrollRegion label="Goalie box score" className="panel">
+                <table className="table-dense min-w-[560px]">
                     <caption className="sr-only">Goalies</caption>
-                    <thead className="bg-surface-2 text-micro uppercase tracking-[0.06em] text-fg-2">
+                    <thead>
                         <tr>
                             {['Goalie', 'TOI', 'SA', 'GA', 'xGA', 'GSAx', 'SV%', 'xSV%'].map(hd => (
-                                <th key={hd} scope="col" className={cn('px-3 py-2 font-semibold', hd === 'Goalie' ? 'text-left' : 'text-right')}>
+                                <th key={hd} scope="col" className={cn('px-3 font-semibold', hd === 'Goalie' ? 'text-left' : 'text-right')}>
                                     {hd}
                                 </th>
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-line tabular-nums">
+                    <tbody>
                         {game.goalies.map(g => (
                             <tr key={`${g.teamTriCode}-${g.name}`}>
-                                <th scope="row" className="px-3 py-2 text-left font-semibold text-fg-1">
+                                <th scope="row" className="px-3 text-left font-semibold text-fg-1">
                                     <span className="flex items-center gap-2">
                                         <TeamLogo tri={g.teamTriCode} size={18} />
                                         {g.name}
                                     </span>
                                 </th>
-                                <td className="px-3 py-2 text-right text-fg-2">{clock(g.toiSeconds)}</td>
-                                <td className="px-3 py-2 text-right text-fg-2">{g.shotsAgainst}</td>
-                                <td className="px-3 py-2 text-right text-fg-2">{g.goalsAgainst}</td>
-                                <td className="px-3 py-2 text-right text-fg-2">{fmt(g.xGA)}</td>
-                                <td className={cn('px-3 py-2 text-right font-bold', g.gsax > 0 ? 'text-pos' : g.gsax < 0 ? 'text-neg' : 'text-fg-1')}>
+                                <td className="px-3 text-right text-fg-2">{clock(g.toiSeconds)}</td>
+                                <td className="px-3 text-right text-fg-2">{g.shotsAgainst}</td>
+                                <td className="px-3 text-right text-fg-2">{g.goalsAgainst}</td>
+                                <td className="px-3 text-right text-fg-2">{fmt(g.xGA)}</td>
+                                <td className={cn('px-3 text-right font-bold', g.gsax > 0 ? 'text-pos' : g.gsax < 0 ? 'text-neg' : 'text-fg-1')}>
                                     {g.gsax > 0 ? '+' : g.gsax < 0 ? '−' : ''}
                                     {fmt(Math.abs(g.gsax))}
                                 </td>
-                                <td className="px-3 py-2 text-right text-fg-1">{rate3(g.savePct)}</td>
-                                <td className="px-3 py-2 text-right text-fg-2">{rate3(g.expectedSavePct)}</td>
+                                <td className="px-3 text-right text-fg-1">{rate3(g.savePct)}</td>
+                                <td className="px-3 text-right text-fg-2">{rate3(g.expectedSavePct)}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -632,7 +636,7 @@ function GameTables({ game }: { game: PlayoffGameAnalysis }) {
 
             <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter skaters by team">
                 <FilterChip selected={team === 'both'} onSelectedChange={() => setTeam('both')}>
-                    Both teams
+                    Both
                 </FilterChip>
                 {[game.awayTriCode, game.homeTriCode].map(t => (
                     <FilterChip key={t} selected={team === t} onSelectedChange={() => setTeam(t)} leading={<TeamLogo tri={t} size={16} />}>
@@ -641,12 +645,12 @@ function GameTables({ game }: { game: PlayoffGameAnalysis }) {
                 ))}
             </div>
 
-            <ScrollRegion label="Skater box score" className="rounded-control border border-line">
-                <table className="w-full min-w-[760px] text-body-sm">
+            <ScrollRegion label="Skater box score" className="panel">
+                <table className="table-dense min-w-[760px]">
                     <caption className="sr-only">Skaters, sortable</caption>
-                    <thead className="bg-surface-2">
+                    <thead>
                         <tr>
-                            <th scope="col" className="sticky left-0 z-10 bg-surface-2 px-3 py-2 text-left text-micro font-semibold uppercase tracking-[0.06em] text-fg-2">
+                            <th scope="col" className="sticky left-0 z-10 bg-surface-2 px-3 text-left text-micro font-semibold uppercase tracking-[0.06em] text-fg-2">
                                 Skater
                             </th>
                             {SKATER_COLUMNS.map(c => (
@@ -656,13 +660,13 @@ function GameTables({ game }: { game: PlayoffGameAnalysis }) {
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-line tabular-nums">
+                    <tbody>
                         {players.map(p => {
                             const pm = p.goalsFor - p.goalsAgainst;
                             const box = p.assists != null;
                             return (
                                 <tr key={p.playerId} className="hover:bg-surface-2/50">
-                                    <th scope="row" className="sticky left-0 z-10 bg-surface-1 px-3 py-1.5 text-left font-normal">
+                                    <th scope="row" className="sticky left-0 z-10 bg-surface-1 px-3 text-left font-normal">
                                         <span className="flex items-center gap-2">
                                             <TeamLogo tri={p.teamTriCode} size={16} />
                                             <span className="min-w-0">
@@ -674,18 +678,18 @@ function GameTables({ game }: { game: PlayoffGameAnalysis }) {
                                             </span>
                                         </span>
                                     </th>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{clock(p.toiSeconds)}</td>
-                                    <td className={cn('px-2 py-1.5 text-right', p.goals ? 'font-bold text-fg-1' : 'text-fg-2')}>{p.goals}</td>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{box ? p.assists : '—'}</td>
-                                    <td className="px-2 py-1.5 text-right font-semibold text-fg-1">{box ? p.goals + (p.assists ?? 0) : '—'}</td>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{p.shots}</td>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{fmt(p.ixG)}</td>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{pct(shareValue(p), 0)}</td>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{pm > 0 ? `+${pm}` : pm < 0 ? `−${Math.abs(pm)}` : '0'}</td>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{p.ppToiSeconds != null ? clock(p.ppToiSeconds) : '—'}</td>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{p.pkToiSeconds != null ? clock(p.pkToiSeconds) : '—'}</td>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{box ? p.hits : '—'}</td>
-                                    <td className="px-2 py-1.5 text-right text-fg-2">{box ? p.blockedShots : '—'}</td>
+                                    <td className="px-2 text-right text-fg-2">{clock(p.toiSeconds)}</td>
+                                    <td className={cn('px-2 text-right', p.goals ? 'font-bold text-fg-1' : 'text-fg-2')}>{p.goals}</td>
+                                    <td className="px-2 text-right text-fg-2">{box ? p.assists : '—'}</td>
+                                    <td className="px-2 text-right font-semibold text-fg-1">{box ? p.goals + (p.assists ?? 0) : '—'}</td>
+                                    <td className="px-2 text-right text-fg-2">{p.shots}</td>
+                                    <td className="px-2 text-right text-fg-2">{fmt(p.ixG)}</td>
+                                    <td className="px-2 text-right text-fg-2">{pct(shareValue(p), 0)}</td>
+                                    <td className="px-2 text-right text-fg-2">{pm > 0 ? `+${pm}` : pm < 0 ? `−${Math.abs(pm)}` : '0'}</td>
+                                    <td className="px-2 text-right text-fg-2">{p.ppToiSeconds != null ? clock(p.ppToiSeconds) : '—'}</td>
+                                    <td className="px-2 text-right text-fg-2">{p.pkToiSeconds != null ? clock(p.pkToiSeconds) : '—'}</td>
+                                    <td className="px-2 text-right text-fg-2">{box ? p.hits : '—'}</td>
+                                    <td className="px-2 text-right text-fg-2">{box ? p.blockedShots : '—'}</td>
                                 </tr>
                             );
                         })}
