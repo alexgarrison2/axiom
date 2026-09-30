@@ -36,6 +36,20 @@ def format_ev(val_str):
     except ValueError:
         return val_str
 
+
+def ev_pct(row, side):
+    """SiteHistory keeps EV as a percentage.  predictions_detailed.csv v2
+    (schema_version 2) stores it as a fraction of the stake."""
+    val = row.get(f'{side}_ev', '')
+    if not val:
+        return ''
+    if str(row.get('schema_version', '')).split('.')[0] == '2':
+        try:
+            return f"{float(val) * 100:.2f}"
+        except ValueError:
+            return val
+    return val
+
 def format_pct(val_str):
     if not val_str:
         return ""
@@ -85,7 +99,9 @@ def format_home_bet(wager_str):
 
 def snapshot():
     ct = pytz.timezone('US/Central')
-    now_ct = datetime.datetime.now(ct)
+    now_utc = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+    now_ct = now_utc.astimezone(ct)
+    stamp_utc = now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
     date_str = now_ct.strftime('%Y-%m-%d')
     time_str = now_ct.strftime('%H:%M')
 
@@ -120,13 +136,21 @@ def snapshot():
             # Only snapshot games for today
             if game_date != date_str:
                 continue
+            # v2 rows without a pregame prediction (started before one existed,
+            # or no model) carry no win % or bet: nothing to snapshot.
+            if row.get('prediction_status') in ('no_pregame_prediction', 'no_model'):
+                continue
 
             wager = row.get('wager_recommendation', '')
             rows_to_write.append({
                 'date': now_ct.strftime('%-m/%-d/%y'),
                 'gameid': row.get('game_id', ''),
                 'timestamp': time_str,
+                'timestamp_utc': stamp_utc,
                 'run': run_number,
+                'model_version': row.get('model_version', ''),
+                'home_model%': format_pct(row.get('home_model_win_pct', '')),
+                'home_market%': format_pct(row.get('home_vegas_win_pct', '')),
                 'awayteam': row.get('away_team', ''),
                 'hometeam': row.get('home_team', ''),
 
@@ -135,7 +159,7 @@ def snapshot():
                 'away_win%': format_pct(row.get('away_win_pct', '')),
                 'away_xGOdds': format_odds(row.get('away_model_odds', '')),
                 'away_Odds': format_odds(row.get('away_vegas_odds', '')),
-                'away_EV': format_ev(row.get('away_ev', '')),
+                'away_EV': format_ev(ev_pct(row, 'away')),
                 'away_bet': format_away_bet(wager),
 
                 'home_starter': format_starter(row.get('home_starter', '')),
@@ -143,7 +167,7 @@ def snapshot():
                 'home_win%': format_pct(row.get('home_win_pct', '')),
                 'home_xGOdds': format_odds(row.get('home_model_odds', '')),
                 'home_Odds': format_odds(row.get('home_vegas_odds', '')),
-                'home_EV': format_ev(row.get('home_ev', '')),
+                'home_EV': format_ev(ev_pct(row, 'home')),
                 'home_bet': format_home_bet(wager),
             })
 
@@ -156,6 +180,9 @@ def snapshot():
         'date', 'gameid', 'timestamp', 'run', 'awayteam',
         'away_starter', 'away_xG', 'away_win%', 'away_xGOdds', 'away_Odds', 'away_EV', 'away_bet',
         'hometeam', 'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV', 'home_bet',
+        # v2 additions: UTC snapshot time, model version, model-only and
+        # de-vigged market home probabilities (model_report's rolling gate).
+        'timestamp_utc', 'model_version', 'home_model%', 'home_market%',
     ]
 
     # Build bet lookups by gameid so old rows can be backfilled
@@ -173,7 +200,7 @@ def snapshot():
     # An hourly run whose predictions and lines match the latest stored run
     # for every game adds no information: skip it, so a no-change run leaves
     # the file (and the repo) untouched instead of forcing a data commit.
-    same_keys = [k for k in fieldnames if k not in ('date', 'timestamp', 'run')]
+    same_keys = [k for k in fieldnames if k not in ('date', 'timestamp', 'timestamp_utc', 'run')]
 
     def _norm(r):
         return tuple(str(r.get(k, '')).replace('%', '').replace('+', '') for k in same_keys)

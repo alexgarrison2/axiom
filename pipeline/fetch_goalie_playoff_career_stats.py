@@ -37,8 +37,15 @@ def fetch_all_pages(url_base: str) -> list[dict]:
     return rows
 
 
-def main() -> None:
+def main(force: bool = False):
     print("=== Fetching goalie career playoff stats ===")
+    # The career playoff line is only shown for playoff games, and it only
+    # changes when playoff games are played: skip outside the postseason.
+    if not force:
+        from season_context import postseason_games_exist
+        if not postseason_games_exist():
+            print("  No postseason games on the schedule — skipping.")
+            return {"status": "skip", "reason": "no postseason games"}
     url_base = "https://api.nhle.com/stats/rest/en/goalie/summary?cayenneExp=gameTypeId=3&sort=playerId"
     rows = fetch_all_pages(url_base)
     print(f"  Fetched {len(rows)} season rows")
@@ -81,7 +88,9 @@ def main() -> None:
 
     print(f"  ✓ {len(result)} goalies saved → {out_public}")
     print("=== Done ===")
+    return {"status": "ok", "rows_written": len(result)}
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    main(force="--force" in sys.argv)
