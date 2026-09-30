@@ -99,14 +99,22 @@ def _goalie_gp(season_id: str) -> dict:
 
 def build_team_goalies(rosters: dict | None = None, output_file: str = TEAM_GOALIES_FILE) -> dict:
     """Write team_goalies.json {TRI: [goalie names]} from current rosters,
-    ordered by current-season GP then prior-season GP (desc).  Keeps the
+    ordered by current-season GP then prior-season GP (desc), injured
+    (ESPN Out/IR) goalies last.  Keeps the
     previous file unless all 32 teams have at least one goalie."""
     rosters = rosters if rosters is not None else fetch_rosters()
     cur, prev = _goalie_gp(SEASON_ID), _goalie_gp(PREV_SEASON_ID)
+    # Goalies on the latest ESPN injury report as Out/IR sort last so an
+    # injured goalie is never presented as the healthy backup.
+    from io_utils import read_json
+    hurt = {int(e["playerId"]) for e in (read_json(public_path("injuries.json"), []) or [])
+            if isinstance(e, dict) and e.get("playerId")
+            and (e.get("status") or "").lower() in ("out", "injured reserve")}
     out = {}
     for tri in sorted(rosters):
         goalies = rosters[tri].get("goalies", []) or []
-        ranked = sorted(goalies, key=lambda g: (-cur.get(int(g.get("id", 0)), 0),
+        ranked = sorted(goalies, key=lambda g: (int(g.get("id", 0)) in hurt,
+                                                -cur.get(int(g.get("id", 0)), 0),
                                                 -prev.get(int(g.get("id", 0)), 0),
                                                 player_display_name(g)))
         names = [player_display_name(g) for g in ranked if player_display_name(g)]

@@ -1,475 +1,344 @@
+"""
+fetch_dailyfaceoff.py — DailyFaceoff goalies, lineups (+ cap data) and news.
+
+Reliability rules
+  * Dates are the NHL's local date (America/New_York via season.today_local),
+    never the runner's UTC date, so evening runs keep tonight's games.
+  * Goalies and lineups are MERGED into the existing JSON per game/team: a
+    failed or partial fetch never deletes data, and a later fetch never
+    downgrades a Confirmed starter to Unconfirmed for the same goalie.
+  * Lineups are fetched hourly only for teams playing in the next 36 hours;
+    all 32 teams are refreshed at most once per ALL_TEAMS_MAX_AGE_HOURS
+    (overnight / full run).  Each team entry carries lineup_source
+    ('Projected', 'Practice', ...) and updated_at from DFO.
+  * The lineup payload's per-player ``cap`` object is kept in CAP_DATA for
+    fetch_contracts (replaces the blocked PuckPedia scrape).
+"""
 import json
-import subprocess
-import re
-import datetime
 import os
+import re
+from datetime import datetime, timedelta, timezone
 
-def fetch_dailyfaceoff_goalies():
-    print("Fetching Daily Faceoff data (Today + Tomorrow)...")
-    
-    goalie_info = {}
-    
-    # Dates to fetch: Today and Tomorrow
-    # Use Central Time to align with App logic, or just standard local date
-    # DFO likely uses Eastern or Local. Let's send YYYY-MM-DD.
-    dates_to_fetch = []
-    today = datetime.date.today()
-    dates_to_fetch.append(today.strftime("%Y-%m-%d"))
-    dates_to_fetch.append((today + datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
-    
-    for date_str in dates_to_fetch:
-        # URL logic: /starting-goalies/YYYY-MM-DD
-        url = f"https://www.dailyfaceoff.com/starting-goalies/{date_str}"
-        
-        cmd = [
-            'curl', 
-            '-s',
-            '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
-            url
-        ]
-        
-        try:
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            html = result.stdout
-            
-            # Extract the __NEXT_DATA__ JSON blob
-            match = re.search(r'<script[^>]*id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL)
-            if not match:
-                print(f"Could not find __NEXT_DATA__ in HTML for {date_str}.")
-                continue
-                
-            data = json.loads(match.group(1))
-            games = data.get('props', {}).get('pageProps', {}).get('data', [])
-            
-            print(f"Found {len(games)} games for {date_str} in DFO data.")
-            
-            for game in games:
-                date = game.get('date') # YYYY-MM-DD from DFO
-                if not date: date = date_str # Fallback
-                
-                home_team = game.get('homeTeamName')
-                away_team = game.get('awayTeamName')
-                
-                # Extract Goalies
-                home_goalie = game.get('homeGoalieName')
-                if not home_goalie and 'homeGoalie' in game and game['homeGoalie']:
-                    home_goalie = game['homeGoalie'].get('name')
-                    
-                away_goalie = game.get('awayGoalieName')
-                if not away_goalie and 'awayGoalie' in game and game['awayGoalie']:
-                    away_goalie = game['awayGoalie'].get('name')
-                    
-                # Status
-                home_status = game.get('homeNewsStrengthName')
-                if not home_status and home_goalie: home_status = "Unconfirmed"
-                
-                away_status = game.get('awayNewsStrengthName')
-                if not away_status and away_goalie: away_status = "Unconfirmed"
-                
-                # Store keyed by "TeamName_Date" to allow easy JSON serialization AND uniqueness
-                # We can't use tuple keys in JSON dump.
-                # So we will use a string key: f"{TeamName}_{Date}"
-                
-                if home_team:
-                    key = f"{home_team}_{date}"
-                    goalie_info[key] = {
-                        'goalie': home_goalie,
-                        'status': home_status,
-                        'date': date,
-                        'team': home_team
-                    }
-                    
-                if away_team:
-                    key = f"{away_team}_{date}"
-                    goalie_info[key] = {
-                        'goalie': away_goalie,
-                        'status': away_status,
-                        'date': date,
-                        'team': away_team
-                    }
-                    
-        except Exception as e:
-            print(f"Error fetching DFO for {date_str}: {e}")
+from season import today_local
+from http_utils import get_text, HttpError
+from io_utils import (atomic_write_json, read_json, record_source, source_age_hours,
+                      utc_now_iso, mark_stale)
+from paths import PIPELINE_DIR, public_path
 
-    with open('dailyfaceoff_goalies.json', 'w') as f:
-        json.dump(goalie_info, f, indent=4)
-        
-    return goalie_info
+GOALIES_FILE = os.path.join(PIPELINE_DIR, "dailyfaceoff_goalies.json")
+LINEUPS_FILE = os.path.join(PIPELINE_DIR, "team_lineups.json")
+NEWS_FILE = os.path.join(PIPELINE_DIR, "player_news.json")
+PLAYOFF_NEWS_FILE = os.path.join(PIPELINE_DIR, "playoff_player_news.json")
+
+GOALIE_REUSE_MINUTES = 10        # fetch_upcoming and predict_games both ask; one fetch serves both
+ALL_TEAMS_MAX_AGE_HOURS = 20     # full 32-team lineup refresh at most ~daily
+HOURLY_WINDOW_HOURS = 36         # hourly runs refresh teams playing within this window
+LINE_GROUPS = ("f1", "f2", "f3", "f4", "d1", "d2", "d3", "g", "ir", "pk1", "pk2")
+
+STATUS_RANK = {"confirmed": 3, "likely": 2, "probable": 2, "expected": 2, "unconfirmed": 1, "": 0, None: 0}
+
+CAP_DATA: dict = {}               # tri -> [{name, pos, dfo_id, cap}] (filled by fetch_lineups)
+_LINEUPS_FETCHED_THIS_RUN: dict = {}
+
+
+def _next_data(url):
+    """Return the parsed __NEXT_DATA__ blob of a DFO page, or None."""
+    try:
+        html = get_text(url, retries=2, timeout=20)
+    except HttpError as e:
+        print(f"  [WARN] DFO {url}: {e}")
+        return None
+    m = re.search(r'<script[^>]*id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL)
+    if not m:
+        print(f"  [WARN] DFO {url}: no __NEXT_DATA__ (blocked or layout change)")
+        return None
+    try:
+        return json.loads(m.group(1))
+    except ValueError:
+        return None
+
+
+def _write_both(local_path, public_name, data, **kw):
+    ok = atomic_write_json(local_path, data, indent=4, **kw)
+    if ok and os.path.isdir(public_path()):
+        atomic_write_json(public_path(public_name), data, indent=4, label=public_name)
+    return ok
+
+
+# ── Starting goalies ─────────────────────────────────────────────────────────
+
+def _rank(status):
+    return STATUS_RANK.get((status or "").strip().lower(), 1)
+
+
+def merge_goalie_entry(old, new):
+    """Keep a Confirmed starter unless DFO now names a different goalie."""
+    if not old:
+        return new
+    if not new.get("goalie"):
+        return old
+    same = (old.get("goalie") or "").lower() == (new.get("goalie") or "").lower()
+    if same and _rank(old.get("status")) > _rank(new.get("status")):
+        kept = dict(old)
+        kept["fetched_at"] = new.get("fetched_at")
+        kept["note"] = f"kept {old.get('status')} (DFO now says {new.get('status') or 'nothing'})"
+        return kept
+    return new
+
+
+def fetch_dailyfaceoff_goalies(dates=None, now=None, force=False):
+    """Fetch DFO starting goalies for today and tomorrow (NHL local date) and
+    merge them into dailyfaceoff_goalies.json.  Returns the merged dict
+    keyed "<Team Full Name>_<YYYY-MM-DD>"."""
+    existing = read_json(GOALIES_FILE, {}) or {}
+    age_min = (source_age_hours("dfo_goalies") or 1e9) * 60
+    if not force and dates is None and age_min < GOALIE_REUSE_MINUTES and existing:
+        print(f"Daily Faceoff goalies fetched {age_min:.0f} min ago — reusing")
+        return existing
+
+    today = today_local(now)
+    dates = dates or [today.isoformat(), (today + timedelta(days=1)).isoformat()]
+    print(f"Fetching Daily Faceoff starting goalies for {', '.join(dates)} (ET)...")
+    fetched_at = utc_now_iso()
+    merged = dict(existing)
+    ok_pages = 0
+    for date_str in dates:
+        data = _next_data(f"https://www.dailyfaceoff.com/starting-goalies/{date_str}")
+        if not data:
+            continue
+        games = (data.get("props", {}).get("pageProps", {}) or {}).get("data", []) or []
+        ok_pages += 1
+        print(f"  {date_str}: {len(games)} games")
+        for game in games:
+            gdate = game.get("date") or date_str
+            for side in ("home", "away"):
+                team = game.get(f"{side}TeamName")
+                if not team:
+                    continue
+                goalie = game.get(f"{side}GoalieName") or (game.get(f"{side}Goalie") or {}).get("name")
+                status = game.get(f"{side}NewsStrengthName") or ("Unconfirmed" if goalie else None)
+                entry = {
+                    "goalie": goalie, "status": status, "date": gdate, "team": team,
+                    "source": "dailyfaceoff", "news_source": game.get(f"{side}NewsSourceName"),
+                    "news_at": game.get(f"{side}NewsCreatedAt"), "fetched_at": fetched_at,
+                }
+                key = f"{team}_{gdate}"
+                merged[key] = merge_goalie_entry(existing.get(key), entry)
+
+    # prune entries more than 3 days old
+    cutoff = (today - timedelta(days=3)).isoformat()
+    merged = {k: v for k, v in merged.items() if not isinstance(v, dict) or (v.get("date") or "9") >= cutoff}
+    if ok_pages:
+        _write_both(GOALIES_FILE, "dailyfaceoff_goalies.json", merged, label="dailyfaceoff_goalies.json")
+        record_source("dfo_goalies", pages=ok_pages)
+    else:
+        mark_stale("dailyfaceoff_goalies.json", "DFO starting-goalies pages unavailable")
+    return merged
+
+
+# ── News ─────────────────────────────────────────────────────────────────────
+
+def _news_items():
+    data = _next_data("https://www.dailyfaceoff.com/hockey-player-news")
+    if not data:
+        return None
+    return ((data.get("props", {}).get("pageProps", {}) or {}).get("data", {}) or {}).get("data", []) or []
+
+
+_NEWS_CACHE = None
+
+
+def _cached_news_items():
+    global _NEWS_CACHE
+    if _NEWS_CACHE is None:
+        _NEWS_CACHE = _news_items()
+    return _NEWS_CACHE
 
 
 def fetch_player_news():
     print("Fetching Daily Faceoff Player News...")
-    
-    # Use curl to mimic a browser
-    cmd = [
-        'curl', 
-        '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
-        'https://www.dailyfaceoff.com/hockey-player-news'
-    ]
-    
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        html = result.stdout
-        
-        # Extract the __NEXT_DATA__ JSON blob
-        match = re.search(r'<script[^>]*id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL)
-        if not match:
-            print("Could not find __NEXT_DATA__ in HTML.")
-            return {}
-            
-        data = json.loads(match.group(1))
-        
-        # Structure identified: props -> pageProps -> data -> data (list)
-        news_items = data.get('props', {}).get('pageProps', {}).get('data', {}).get('data', [])
-        
-        print(f"Found {len(news_items)} news items.")
-        
-        # Structure to return: { TeamTriCode: [ { msg: "...", date: "..." }, ... ] }
-        # Actually, let's store by Team Name first, then map to TriCode later if possible, 
-        # or just match by name like we do for goalies.
-        
-        # Load existing accumulated news
-        pipeline_dir = os.path.dirname(os.path.abspath(__file__))
-        local_path = os.path.join(pipeline_dir, 'player_news.json')
-        public_path = os.path.join(pipeline_dir, '..', 'public', 'data', 'player_news.json')
-        accumulated = {}
-        try:
-            if os.path.exists(local_path):
-                with open(local_path, 'r') as f:
-                    accumulated = json.load(f)
-        except Exception:
-            accumulated = {}
-
-        today_str = datetime.date.today().strftime("%Y-%m-%d")
-        print(f"Accumulating news (today: {today_str})")
-
-        for item in news_items:
-            # 1. Category Check
-            category = item.get('newsCategoryName', 'Unknown')
-
-            # 2. Helpers
-            player_name = item.get('playerName', 'Unknown')
-            details = item.get('details', '')
-            if not details:
-                continue
-
-            tri_code = item.get('teamAbbreviation')
-            if not tri_code:
-                continue
-
-            news_date = item.get('date', today_str)
-            timestamp = item.get('createdAt')
-
-            # Dedup key
-            dedup_key = f"{player_name}-{timestamp or news_date}"
-
-            if tri_code not in accumulated:
-                accumulated[tri_code] = []
-
-            # Check for duplicate
-            existing_keys = {f"{n['player']}-{n.get('timestamp') or n.get('date', '')}" for n in accumulated[tri_code]}
-            if dedup_key not in existing_keys:
-                accumulated[tri_code].append({
-                    'player': player_name,
-                    'news': details,
-                    'category': category,
-                    'date': news_date,
-                    'timestamp': timestamp,
-                })
-
-        # Sort each team's news by timestamp desc
-        for tri in accumulated:
-            accumulated[tri].sort(key=lambda x: x.get('timestamp') or x.get('date', ''), reverse=True)
-
-        # Prune: keep only last 30 days of news per team
-        cutoff = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
-        for tri in accumulated:
-            accumulated[tri] = [n for n in accumulated[tri] if (n.get('date') or '') >= cutoff]
-
-        print(f"Accumulated news for {len(accumulated)} teams.")
-
-        with open(local_path, 'w') as f:
-            json.dump(accumulated, f, indent=4)
-        with open(public_path, 'w') as f:
-            json.dump(accumulated, f, indent=4)
-
+    items = _cached_news_items()
+    accumulated = read_json(NEWS_FILE, {}) or {}
+    if items is None:
         return accumulated
-        
-    except Exception as e:
-        print(f"Error fetching player news: {e}")
-        return {}
+    today_str = today_local().isoformat()
+    for item in items:
+        details, tri = item.get("details", ""), item.get("teamAbbreviation")
+        if not details or not tri:
+            continue
+        player = item.get("playerName", "Unknown")
+        ts, ndate = item.get("createdAt"), item.get("date", today_str)
+        lst = accumulated.setdefault(tri, [])
+        if f"{player}-{ts or ndate}" not in {f"{n['player']}-{n.get('timestamp') or n.get('date', '')}" for n in lst}:
+            lst.append({"player": player, "news": details, "category": item.get("newsCategoryName", "Unknown"),
+                        "date": ndate, "timestamp": ts})
+    cutoff = (today_local() - timedelta(days=30)).isoformat()
+    for tri in accumulated:
+        accumulated[tri] = sorted([n for n in accumulated[tri] if (n.get("date") or "") >= cutoff],
+                                  key=lambda x: x.get("timestamp") or x.get("date", ""), reverse=True)
+    _write_both(NEWS_FILE, "player_news.json", accumulated, label="player_news.json")
+    print(f"  News for {len(accumulated)} teams.")
+    return accumulated
 
 
 def fetch_playoff_player_news():
     print("Fetching Daily Faceoff Playoff Player News (accumulating)...")
-
-    pipeline_dir = os.path.dirname(os.path.abspath(__file__))
-    local_path = os.path.join(pipeline_dir, 'playoff_player_news.json')
-    public_path = os.path.join(pipeline_dir, '..', 'public', 'data', 'playoff_player_news.json')
-
-    # Load existing accumulated data
-    accumulated = {}
-    if os.path.exists(local_path):
-        try:
-            with open(local_path, 'r') as f:
-                accumulated = json.load(f)
-        except Exception:
-            accumulated = {}
-
-    # Build dedup set from existing items
-    existing_sigs = set()
-    for items in accumulated.values():
-        for item in items:
-            sig = f"{item.get('player','')}-{item.get('timestamp', item.get('date',''))}"
-            existing_sigs.add(sig)
-
-    # Use curl to mimic a browser
-    cmd = [
-        'curl',
-        '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
-        'https://www.dailyfaceoff.com/hockey-player-news'
-    ]
-
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        html = result.stdout
-
-        match = re.search(r'<script[^>]*id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL)
-        if not match:
-            print("Could not find __NEXT_DATA__ in HTML.")
-            return accumulated
-
-        data = json.loads(match.group(1))
-        news_items = data.get('props', {}).get('pageProps', {}).get('data', {}).get('data', [])
-        print(f"Found {len(news_items)} news items.")
-
-        new_count = 0
-        for item in news_items:
-            # No date filter — keep all items
-            category = item.get('newsCategoryName', 'Unknown')
-            player_name = item.get('playerName', 'Unknown')
-            details = item.get('details', '')
-            if not details:
-                continue
-            tri_code = item.get('teamAbbreviation')
-            if not tri_code:
-                continue
-
-            news_date = item.get('date', '')
-            timestamp = item.get('createdAt')
-
-            sig = f"{player_name}-{timestamp or news_date}"
-            if sig in existing_sigs:
-                continue
-
-            existing_sigs.add(sig)
-            if tri_code not in accumulated:
-                accumulated[tri_code] = []
-            accumulated[tri_code].append({
-                'player': player_name,
-                'news': details,
-                'category': category,
-                'date': news_date,
-                'timestamp': timestamp,
-            })
-            new_count += 1
-
-        # Sort each team's list by timestamp desc
-        for tri_code in accumulated:
-            accumulated[tri_code].sort(
-                key=lambda x: x.get('timestamp') or x.get('date') or '',
-                reverse=True
-            )
-
-        print(f"Added {new_count} new items. Total teams with news: {len(accumulated)}.")
-
-        with open(local_path, 'w') as f:
-            json.dump(accumulated, f, indent=4)
-
-        # Copy to public/data/
-        public_dir = os.path.dirname(public_path)
-        if os.path.exists(public_dir):
-            with open(public_path, 'w') as f:
-                json.dump(accumulated, f, indent=4)
-            print(f"Copied playoff_player_news.json to public/data/")
-
+    accumulated = read_json(PLAYOFF_NEWS_FILE, {}) or {}
+    items = _cached_news_items()
+    if items is None:
         return accumulated
-
-    except Exception as e:
-        print(f"Error fetching playoff player news: {e}")
-        return accumulated
-
-
-def fetch_lineups(teams):
-    """
-    Fetches lineup data for a list of team info objects (need 'triCode' and 'name'/'slug').
-    We need to construct the DFO URL from the team name/slug.
-    """
-    print("Fetching Daily Faceoff Lineups...")
-    
-    # Load OLD lineups to compare
-    old_lineups = {}
-    if os.path.exists('team_lineups.json'):
-        try:
-            with open('team_lineups.json', 'r') as f:
-                old_lineups = json.load(f)
-        except:
-            pass
-
-    lineups = {}
-    
-    # Iterate over teams. 
-    # NOTE: Fetching 32 teams sequentially is slow. 
-    # Ideally, we only fetch for the teams playing today? 
-    # The 'teams' argument should be a list of team slugs or similar.
-    # For now, let's assume we get a list of active teams from predict_games or fetch_upcoming.
-    
-    for team_data in teams:
-        # Construct slug: "Chicago Blackhawks" -> "chicago-blackhawks"
-        # "St. Louis Blues" -> "st-louis-blues"? 
-        # "Montréal Canadiens" -> "montreal-canadiens" (remove accent)
-        
-        team_name = team_data.get('teamName')
-        tri_code = team_data.get('triCode')
-        
-        if not team_name:
+    sigs = {f"{i.get('player', '')}-{i.get('timestamp', i.get('date', ''))}" for v in accumulated.values() for i in v}
+    new = 0
+    for item in items:
+        details, tri = item.get("details", ""), item.get("teamAbbreviation")
+        if not details or not tri:
             continue
-            
-        # Basic slugify attempt
-        slug = team_name.lower().replace('.', '').replace(' ', '-')
-        # Handle special cases? DFO slugs usually standard.
-        # "montréal" -> "montreal"
-        slug = slug.replace('é', 'e')
-        
-        url = f"https://www.dailyfaceoff.com/teams/{slug}/line-combinations"
-        
-        # print(f"Fetching {team_name} ({slug})...")
-        
-        cmd = [
-            'curl', 
-            '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
-            url
-        ]
-        
+        player, ts, ndate = item.get("playerName", "Unknown"), item.get("createdAt"), item.get("date", "")
+        sig = f"{player}-{ts or ndate}"
+        if sig in sigs:
+            continue
+        sigs.add(sig)
+        accumulated.setdefault(tri, []).append({"player": player, "news": details,
+                                                "category": item.get("newsCategoryName", "Unknown"),
+                                                "date": ndate, "timestamp": ts})
+        new += 1
+    for tri in accumulated:
+        accumulated[tri].sort(key=lambda x: x.get("timestamp") or x.get("date") or "", reverse=True)
+    _write_both(PLAYOFF_NEWS_FILE, "playoff_player_news.json", accumulated, label="playoff_player_news.json")
+    print(f"  Added {new} new items.")
+    return accumulated
+
+
+# ── Lineups ──────────────────────────────────────────────────────────────────
+
+def _slug(team_name):
+    return team_name.lower().replace(".", "").replace("é", "e").replace(" ", "-")
+
+
+def teams_playing_within(hours=HOURLY_WINDOW_HOURS, now=None, upcoming_path=None):
+    """Tricodes with a game starting within ``hours`` (from upcoming_games.json)."""
+    now = now or datetime.now(timezone.utc)
+    games = read_json(upcoming_path or os.path.join(PIPELINE_DIR, "upcoming_games.json"), []) or []
+    out = set()
+    for g in games:
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            html = result.stdout
-            
-            # Match script tag with id="__NEXT_DATA__" regardless of attribute order or newlines
-            match = re.search(r'<script[^>]*id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL)
-            if not match:
-                print(f"No data for {team_name}")
-                continue
-                
-            data = json.loads(match.group(1))
-            players = data.get('props', {}).get('pageProps', {}).get('combinations', {}).get('players', [])
-            
-            # Organize by line
-            # Structure: { 'f1': [p1, p2, p3], 'f2': ... }
-            team_lines = {}
-            pp_map = {} # playerId -> 1 or 2
+            start = datetime.fromisoformat(g["startTimeUTC"].replace("Z", "+00:00"))
+        except (KeyError, ValueError, AttributeError):
+            continue
+        if now - timedelta(hours=4) <= start <= now + timedelta(hours=hours):
+            out.update(t for t in (g.get("homeTeamAbbrev"), g.get("awayTeamAbbrev")) if t)
+    return out
 
-            # First pass: Identify PP units
-            for p in players:
-                gid = p.get('groupIdentifier', '').lower()
-                pid = p.get('playerId')
-                if gid == 'pp1':
-                    pp_map[pid] = 1
-                elif gid == 'pp2':
-                    pp_map[pid] = 2
 
-            # Second pass: Build lines with PP info
-            for p in players:
-                # We care about Even Strength (categoryIdentifier='ev' or 'f1'/'d1')
-                # Actually groupIdentifier 'f1', 'f2'... 'd1', 'd2'... are what we want.
-                gid = p.get('groupIdentifier', '').lower()
-                
-                # Filter: F lines (f1-f4), D lines (d1-d3), and IR/injured list
-                if not (gid.startswith('f') or gid.startswith('d') or gid == 'ir'):
-                    continue
-                
-                # Add to line
-                if gid not in team_lines:
-                    team_lines[gid] = []
-                
-                pid = p.get('playerId')
-                team_lines[gid].append({
-                    'name': p.get('name'),
-                    'number': p.get('jerseyNumber'),
-                    'pos': p.get('positionIdentifier'),
-                    'id': pid,
-                    'ppUnit': pp_map.get(pid) # None, 1, or 2
-                })
-            
-            # Sort lines? (f1, f2, f3, f4, d1, d2, d3)
-            # DFO returns array, players usually in order LW-C-RW? 
-            # Let's verify sort order. JSON array order is usually correct.
-            # Position ident: 'lw', 'c', 'rw'.
-            
-            # Sort players in each line by pos logic?
-            # Fwd: LW, C, RW. Def: LD, RD.
-            pos_order = {'lw': 1, 'c': 2, 'rw': 3, 'ld': 1, 'rd': 2}
-            
-            for gid, line_players in team_lines.items():
-                line_players.sort(key=lambda x: pos_order.get(x['pos'], 99))
-            
-            # --- CALCULATE MOVEMENT ---
-            # Compare 'team_lines' (New) vs 'old_lineups.get(triCode)' (Old)
-            old_team_lines = old_lineups.get(tri_code, {})
-            
-            # Create a map of PlayerID -> LineRank for OLD data
-            # Ranks: F1=1, F2=2, F3=3, F4=4, D1=1, D2=2, D3=3
-            old_ranks = {}
-            for gid_old, players_old in old_team_lines.items():
-                # Extract rank from gid (f1->1, d1->1)
-                rank = 99
-                if len(gid_old) > 1 and gid_old[1].isdigit():
-                    rank = int(gid_old[1])
-                
-                for p in players_old:
-                    pid = p.get('id')
-                    if pid:
-                        old_ranks[pid] = rank
-            
-            # Assign movement to NEW players
-            for gid_new, players_new in team_lines.items():
-                new_rank = 99
-                if len(gid_new) > 1 and gid_new[1].isdigit():
-                    new_rank = int(gid_new[1])
-                
-                for p in players_new:
-                    pid = p.get('id')
-                    if pid:
-                        # Default: null
-                        p['movement'] = None
-                        
-                        if pid not in old_ranks:
-                            p['movement'] = 'new'
-                        else:
-                            old_rank = old_ranks[pid]
-                            if new_rank < old_rank:
-                                # 1 < 2 -> Moved UP line
-                                p['movement'] = 'up'
-                            elif new_rank > old_rank:
-                                # 2 > 1 -> Moved DOWN line
-                                p['movement'] = 'down'
-                            # else: same line
-            
-            lineups[tri_code] = team_lines
-            
-        except Exception as e:
-            print(f"Error fetching {team_name}: {e}")
-            
-    # Save
-    with open('team_lineups.json', 'w') as f:
-        json.dump(lineups, f, indent=4)
-        
-    return lineups
+def parse_lineup_payload(data):
+    """(team_lines, meta, cap_rows) from a DFO line-combinations __NEXT_DATA__."""
+    combos = (data.get("props", {}).get("pageProps", {}) or {}).get("combinations", {}) or {}
+    players = combos.get("players", []) or []
+    pp_map = {}
+    for p in players:
+        gid = (p.get("groupIdentifier") or "").lower()
+        if gid in ("pp1", "pp2"):
+            pp_map[p.get("playerId")] = int(gid[-1])
+    lines, cap_rows = {}, []
+    seen_cap = set()
+    for p in players:
+        gid = (p.get("groupIdentifier") or "").lower()
+        pid = p.get("playerId")
+        if p.get("cap") and pid not in seen_cap:
+            seen_cap.add(pid)
+            cap_rows.append({"name": p.get("name"), "pos": p.get("positionIdentifier"),
+                             "dfo_id": pid, "cap": p.get("cap")})
+        if gid not in LINE_GROUPS:
+            continue
+        lines.setdefault(gid, []).append({
+            "name": p.get("name"),
+            "number": p.get("jerseyNumber"),
+            "pos": p.get("positionIdentifier"),
+            "id": pid,
+            "ppUnit": pp_map.get(pid),
+            "injuryStatus": p.get("injuryStatus"),
+            "gameTimeDecision": bool(p.get("gameTimeDecision")),
+        })
+    pos_order = {"lw": 1, "c": 2, "rw": 3, "ld": 1, "rd": 2, "g1": 1, "g2": 2}
+    for gid in lines:
+        lines[gid].sort(key=lambda x: pos_order.get(x["pos"], 99))
+    meta = {"lineup_source": (combos.get("sourceName") or "").strip() or None,
+            "updated_at": combos.get("updatedAt")}
+    return lines, meta, cap_rows
+
+
+def _movement(new_lines, old_lines):
+    old_ranks = {}
+    for gid, plist in (old_lines or {}).items():
+        if not isinstance(plist, list) or gid[:1] not in ("f", "d"):
+            continue
+        rank = int(gid[1]) if len(gid) > 1 and gid[1].isdigit() else 99
+        for p in plist:
+            if isinstance(p, dict) and p.get("id"):
+                old_ranks[p["id"]] = rank
+    for gid, plist in new_lines.items():
+        if gid[:1] not in ("f", "d"):
+            continue
+        rank = int(gid[1]) if len(gid) > 1 and gid[1].isdigit() else 99
+        for p in plist:
+            pid = p.get("id")
+            p["movement"] = None
+            if pid and old_ranks:
+                if pid not in old_ranks:
+                    p["movement"] = "new"
+                elif rank < old_ranks[pid]:
+                    p["movement"] = "up"
+                elif rank > old_ranks[pid]:
+                    p["movement"] = "down"
+
+
+def fetch_lineups(teams, force_all=False, now=None):
+    """Fetch DFO line combinations and merge into team_lineups.json.
+
+    ``teams``: [{'triCode', 'teamName'}].  Unless ``force_all`` (or the last
+    all-teams refresh is older than ALL_TEAMS_MAX_AGE_HOURS), only teams
+    playing within HOURLY_WINDOW_HOURS are requested; every other team keeps
+    its stored lineup.  Returns the full merged {tri: lineup} dict."""
+    old = read_json(LINEUPS_FILE, {}) or {}
+    all_age = source_age_hours("dfo_lineups_all")
+    do_all = force_all or all_age is None or all_age >= ALL_TEAMS_MAX_AGE_HOURS
+    wanted = {t.get("triCode") for t in teams if t.get("triCode")}
+    if not do_all:
+        wanted &= teams_playing_within(now=now)
+    wanted -= set(_LINEUPS_FETCHED_THIS_RUN)
+    todo = [t for t in teams if t.get("triCode") in wanted and t.get("teamName")]
+    print(f"Fetching Daily Faceoff lineups for {len(todo)} team(s) "
+          f"({'all-teams refresh' if do_all else 'teams playing within 36h'})...")
+
+    merged = dict(old)
+    fetched_at = utc_now_iso()
+    ok = 0
+    for t in todo:
+        tri, name = t["triCode"], t["teamName"]
+        data = _next_data(f"https://www.dailyfaceoff.com/teams/{_slug(name)}/line-combinations")
+        if not data:
+            continue
+        lines, meta, cap_rows = parse_lineup_payload(data)
+        if not any(g.startswith("f") for g in lines):
+            print(f"  [WARN] {tri}: empty lineup payload — keeping stored lineup")
+            continue
+        _movement(lines, old.get(tri))
+        entry = dict(lines)
+        entry.update({"lineup_source": meta["lineup_source"], "updated_at": meta["updated_at"],
+                      "fetched_at": fetched_at})
+        merged[tri] = entry
+        CAP_DATA[tri] = cap_rows
+        _LINEUPS_FETCHED_THIS_RUN[tri] = fetched_at
+        ok += 1
+    if ok:
+        _write_both(LINEUPS_FILE, "team_lineups.json", merged, min_items=len(old), label="team_lineups.json")
+        if do_all and ok >= len(todo) * 0.9 and len(todo) >= 30:
+            record_source("dfo_lineups_all", teams=ok)
+    elif todo:
+        mark_stale("team_lineups.json", "DFO line-combination pages unavailable")
+    print(f"  Lineups refreshed for {ok}/{len(todo)} team(s); {len(merged)} teams stored.")
+    return merged
+
 
 if __name__ == "__main__":
-    # fetch_dailyfaceoff_goalies()
-    # fetch_player_news()
-    
-    # Test Lineups
-    test_teams = [{'teamName': 'Chicago Blackhawks', 'triCode': 'CHI'}]
-    fetch_lineups(test_teams)
+    fetch_dailyfaceoff_goalies(force=True)

@@ -1,365 +1,150 @@
 """
 fetch_contracts.py
-Scrapes contract data (cap hit, UFA/RFA status) from PuckPedia for all NHL
-teams and writes public/data/contracts.json.
+Contract data (cap hit, UFA/RFA status) for public/data/contracts.json.
 
-Output format (keyed by player_id string):
+Source: the per-player ``cap`` object in DailyFaceoff's line-combination
+pages (the same pages fetch_dailyfaceoff.fetch_lineups already downloads),
+replacing the PuckPedia scrape that now returns 403.  DFO players are matched
+to NHL player ids by normalised name + current roster team.
+
+Output (keyed by NHL player id string; ``_meta`` holds provenance):
 {
-  "8482740": {
-    "cap_hit": 12000000,
-    "status": "UFA",
-    "year": 2033
-  },
+  "_meta": {"fetched_at": "2026-09-30T12:00:00Z", "source": "dailyfaceoff", "players": 812},
+  "8482740": {"cap_hit": 12000000, "status": "UFA", "year": 2033},
   ...
 }
+- cap_hit: annual cap hit in dollars
+- status:  "UFA" | "RFA" (what the player becomes when the contract ends)
+- year:    the year he becomes a UFA/RFA, or null if that is this coming
+           off-season (contract ends after the current season)
 
-- cap_hit: integer, annual cap hit in dollars
-- status: "UFA" or "RFA"
-- year: integer year they become UFA/RFA, or null if UFA/RFA THIS off-season
+Freshness is judged by ``_meta.fetched_at`` stored in the file, never by the
+file's mtime (a fresh checkout makes every file look new).
 
-Run: python3 pipeline/fetch_contracts.py
+Run: python3 pipeline/fetch_contracts.py [--force]
 """
-
-from season import SEASON_ID, SEASON_LABEL, START_YEAR
-import urllib.request
-import json
-import os
 import re
-import ssl
-import time
+import sys
+import unicodedata
+from datetime import datetime, timezone
 
-try:
-    from bs4 import BeautifulSoup
-except ImportError:
-    raise ImportError("beautifulsoup4 is required: pip install beautifulsoup4")
+from season import START_YEAR
+from io_utils import atomic_write_json, read_json, utc_now_iso
+from paths import public_path
 
-BASE_URL = "https://puckpedia.com/team"
-NHL_API = "https://api-web.nhle.com/v1"
-_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_FILE = os.path.join(_ROOT, "public", "data", "contracts.json")
-
-SEASON = SEASON_ID
-
-# Map NHL 3-letter code → PuckPedia URL slug
-TEAM_SLUGS = {
-    "ANA": "anaheim-ducks",
-    "BOS": "boston-bruins",
-    "BUF": "buffalo-sabres",
-    "CAR": "carolina-hurricanes",
-    "CBJ": "columbus-blue-jackets",
-    "CGY": "calgary-flames",
-    "CHI": "chicago-blackhawks",
-    "COL": "colorado-avalanche",
-    "DAL": "dallas-stars",
-    "DET": "detroit-red-wings",
-    "EDM": "edmonton-oilers",
-    "FLA": "florida-panthers",
-    "LAK": "los-angeles-kings",
-    "MIN": "minnesota-wild",
-    "MTL": "montreal-canadiens",
-    "NJD": "new-jersey-devils",
-    "NSH": "nashville-predators",
-    "NYI": "new-york-islanders",
-    "NYR": "new-york-rangers",
-    "OTT": "ottawa-senators",
-    "PHI": "philadelphia-flyers",
-    "PIT": "pittsburgh-penguins",
-    "SEA": "seattle-kraken",
-    "SJS": "san-jose-sharks",
-    "STL": "st-louis-blues",
-    "TBL": "tampa-bay-lightning",
-    "TOR": "toronto-maple-leafs",
-    "UTA": "utah-hockey-club",
-    "VAN": "vancouver-canucks",
-    "VGK": "vegas-golden-knights",
-    "WSH": "washington-capitals",
-    "WPG": "winnipeg-jets",
-}
-
-ssl._create_default_https_context = ssl._create_unverified_context
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://www.google.com/",
-}
-
-
-def get_html(url: str) -> str | None:
-    """Fetch HTML from a URL with browser-like headers."""
-    req = urllib.request.Request(url, headers=HEADERS)
-    try:
-        with urllib.request.urlopen(req, timeout=15) as r:
-            return r.read().decode("utf-8", errors="replace")
-    except Exception as e:
-        print(f"  Error fetching {url}: {e}")
-        return None
-
-
-def get_json(url: str):
-    """Fetch JSON from a URL."""
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            return json.loads(r.read().decode())
-    except Exception as e:
-        print(f"  Error fetching JSON {url}: {e}")
-        return None
+OUTPUT_FILE = public_path("contracts.json")
+MAX_AGE_DAYS = 7
+MIN_PLAYERS = 600
 
 
 def normalize_name(name: str) -> str:
-    """Normalize a player name for matching: lowercase, strip accents, strip suffixes."""
-    import unicodedata
-    name = unicodedata.normalize("NFD", name)
-    name = "".join(c for c in name if unicodedata.category(c) != "Mn")
-    name = name.lower().strip()
-    # Remove common suffixes
+    """Lowercase, strip accents, punctuation and suffixes for matching."""
+    name = unicodedata.normalize("NFD", name or "")
+    name = "".join(c for c in name if unicodedata.category(c) != "Mn").lower().strip()
     name = re.sub(r"\s+(jr\.?|sr\.?|ii|iii|iv)$", "", name)
-    return name
+    return re.sub(r"[^a-z ]", "", name.replace("-", " ")).strip()
 
 
-def parse_cap_hit(text: str) -> int:
-    """Parse a dollar amount string into integer cents.
-    Handles: '$12,000,000', '$12.00M', '$975K', '$975,000'
-    """
-    text = text.strip().replace(",", "").replace("$", "")
-    if not text:
-        return 0
-    # Handle M suffix
-    m = re.match(r"([\d.]+)\s*M", text, re.IGNORECASE)
-    if m:
-        return int(float(m.group(1)) * 1_000_000)
-    # Handle K suffix
-    m = re.match(r"([\d.]+)\s*K", text, re.IGNORECASE)
-    if m:
-        return int(float(m.group(1)) * 1_000)
-    # Plain number
+def contracts_age_days(path=OUTPUT_FILE):
+    meta = (read_json(path, {}) or {}).get("_meta") or {}
+    ts = meta.get("fetched_at")
+    if not ts:
+        return None
     try:
-        return int(float(text))
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
     except ValueError:
-        return 0
+        return None
+    return (datetime.now(timezone.utc) - dt).total_seconds() / 86400
 
 
-def build_roster_lookup(team: str) -> dict[str, int]:
-    """Build name → player_id lookup from NHL roster API.
-    Returns dict mapping normalized 'first last' name to player_id.
-    """
-    data = get_json(f"{NHL_API}/roster/{team}/{SEASON}")
-    if not data:
-        return {}
-
-    lookup: dict[str, int] = {}
-    for group in ("forwards", "defensemen", "goalies"):
-        for player in data.get(group, []):
-            pid = player.get("id")
-            first = player.get("firstName", {}).get("default", "")
-            last = player.get("lastName", {}).get("default", "")
-            if pid and (first or last):
-                full = normalize_name(f"{first} {last}")
-                lookup[full] = pid
-                # Also store by last name only (fallback)
-                last_norm = normalize_name(last)
-                if last_norm not in lookup:
-                    lookup[f"_last_{last_norm}"] = pid
-    return lookup
+def contracts_due(path=OUTPUT_FILE, max_age_days=MAX_AGE_DAYS):
+    age = contracts_age_days(path)
+    return age is None or age >= max_age_days
 
 
-def parse_puckpedia_team(html: str, roster_lookup: dict[str, int]) -> dict[str, dict]:
-    """Parse a PuckPedia team page and return contract data keyed by player_id."""
-    soup = BeautifulSoup(html, "html.parser")
-    contracts: dict[str, dict] = {}
+def contract_from_cap(cap: dict) -> dict | None:
+    cap_hit = cap.get("capHit")
+    if not cap_hit:
+        return None
+    expiry = cap.get("contractExpiryYear")
+    status = (cap.get("contractExpiresAs") or "").upper() or None
+    year = int(expiry) if expiry else None
+    if year is not None and year <= START_YEAR + 1:
+        year = None          # becomes UFA/RFA this coming off-season
+    return {"cap_hit": int(cap_hit), "status": status, "year": year}
 
-    tables = soup.find_all("table")
 
-    for table in tables:
-        # Check the table headers to find contract tables
-        thead = table.find("thead")
-        if not thead:
-            continue
-        headers = [th.get_text(strip=True) for th in thead.find_all("th")]
-        if len(headers) < 3:
-            continue
-
-        # Contract tables have year headers like "2026-27"
-        year_pattern = re.compile(r"20\d{2}-\d{2}")
-        year_cols = [(i, h) for i, h in enumerate(headers) if year_pattern.match(h)]
-        if not year_cols:
-            continue
-
-        # Find the current season column (e.g. 2026-27)
-        current_col_idx = None
-        for idx, h in year_cols:
-            if h == SEASON_LABEL:
-                current_col_idx = idx
-                break
-        if current_col_idx is None:
-            continue
-
-        tbody = table.find("tbody")
-        if not tbody:
-            continue
-
-        for row in tbody.find_all("tr"):
-            cells = row.find_all("td")
-            if len(cells) <= current_col_idx:
+def build_contracts(cap_data: dict, rosters: dict) -> tuple[dict, list]:
+    """Map DFO cap rows {tri: [{name, cap}]} to NHL ids via rosters."""
+    from fetch_player_bio import player_display_name
+    by_team_name, by_name = {}, {}
+    for tri, r in rosters.items():
+        for grp in ("forwards", "defensemen", "goalies"):
+            for p in r.get(grp, []) or []:
+                n = normalize_name(player_display_name(p))
+                by_team_name[(tri, n)] = str(p["id"])
+                by_name.setdefault(n, set()).add(str(p["id"]))
+    # Players on no current roster (IR/LTIR, AHL) — fall back to the NHL names
+    # carried in player_impact.json (keyed by NHL id).
+    from paths import pipeline_path
+    for pid, d in (read_json(pipeline_path("player_impact.json"), {}) or {}).items():
+        n = normalize_name(d.get("name"))
+        if n and n not in by_name:
+            by_name[n] = {str(pid)}
+        by_team_name.setdefault((d.get("team"), n), str(pid))
+    out, unmatched = {}, []
+    for tri, rows in cap_data.items():
+        for row in rows:
+            c = contract_from_cap(row.get("cap") or {})
+            if not c:
                 continue
-
-            # Extract player name
-            name_cell = cells[0]
-            name_link = name_cell.find("a")
-            if not name_link:
+            n = normalize_name(row.get("name"))
+            pid = by_team_name.get((tri, n))
+            if pid is None and len(by_name.get(n, ())) == 1:
+                pid = next(iter(by_name[n]))
+            if pid is None:
+                unmatched.append(f"{row.get('name')} ({tri})")
                 continue
-            raw_name = name_link.get_text(strip=True)
-
-            # PuckPedia uses "Last, First" format
-            if "," in raw_name:
-                parts = raw_name.split(",", 1)
-                player_name = f"{parts[1].strip()} {parts[0].strip()}"
-            else:
-                player_name = raw_name
-
-            norm = normalize_name(player_name)
-
-            # Match to NHL player ID
-            pid = roster_lookup.get(norm)
-            if not pid:
-                # Try last-name fallback
-                last = norm.split()[-1] if norm else ""
-                pid = roster_lookup.get(f"_last_{last}")
-            if not pid:
-                continue
-
-            pid_str = str(pid)
-
-            # Extract cap hit from current season column
-            cap_cell = cells[current_col_idx]
-            cap_hit = 0
-
-            # Try data-ch attribute first
-            data_ch = cap_cell.get("data-ch", "")
-            if data_ch:
-                cap_hit = parse_cap_hit(data_ch)
-
-            # Fallback: parse the text content
-            if cap_hit == 0:
-                cap_text = cap_cell.get_text(strip=True)
-                # The cell may contain both full and short format, e.g. "$12,000,000$12.00M"
-                # Try to extract the full dollar amount
-                dollar_match = re.search(r"\$[\d,]+(?:\.\d+)?(?!\.\d*M)", cap_text)
-                if dollar_match:
-                    cap_hit = parse_cap_hit(dollar_match.group())
-                elif cap_text:
-                    cap_hit = parse_cap_hit(cap_text)
-
-            if cap_hit == 0:
-                continue
-
-            # Determine UFA/RFA status
-            # Look through future year columns to find status
-            status = "UFA"  # default
-            year = None  # null = this off-season
-
-            # Check the last column (expiry badge)
-            last_cell = cells[-1]
-            last_text = last_cell.get_text(strip=True).upper()
-
-            # Check for UFA/RFA divs in the last cell
-            ufa_div = last_cell.find(class_=re.compile(r"pp-ufa", re.IGNORECASE))
-            rfa_div = last_cell.find(class_=re.compile(r"pp-rfa", re.IGNORECASE))
-
-            if ufa_div or "UFA" in last_text:
-                status = "UFA"
-                # Extract year from the cell
-                year_match = re.search(r"20\d{2}", last_cell.get_text())
-                if year_match:
-                    year = int(year_match.group())
-            elif rfa_div or "RFA" in last_text:
-                status = "RFA"
-                year_match = re.search(r"20\d{2}", last_cell.get_text())
-                if year_match:
-                    year = int(year_match.group())
-
-            # If no status found in last cell, scan year columns after current
-            if year is None:
-                for col_idx, col_header in year_cols:
-                    if col_idx <= current_col_idx:
-                        continue
-                    cell = cells[col_idx] if col_idx < len(cells) else None
-                    if not cell:
-                        continue
-                    cell_text = cell.get_text(strip=True).upper()
-                    cell_ufa = cell.find(class_=re.compile(r"pp-ufa", re.IGNORECASE))
-                    cell_rfa = cell.find(class_=re.compile(r"pp-rfa", re.IGNORECASE))
-
-                    if cell_ufa or "UFA" in cell_text:
-                        status = "UFA"
-                        # Column "2026-27" means free in summer 2026 (before that season)
-                        ym = re.match(r"(20\d{2})-\d{2}", col_header)
-                        if ym:
-                            year = int(ym.group(1))
-                        break
-                    elif cell_rfa or "RFA" in cell_text:
-                        status = "RFA"
-                        ym = re.match(r"(20\d{2})-\d{2}", col_header)
-                        if ym:
-                            year = int(ym.group(1))
-                        break
-
-            # If year equals next off-season (e.g. 2027 during 2026-27), it means UFA/RFA THIS off-season → null
-            if year is not None and year <= START_YEAR + 1:
-                year = None
-
-            contracts[pid_str] = {
-                "cap_hit": cap_hit,
-                "status": status,
-                "year": year,
-            }
-
-    return contracts
+            out[pid] = c
+    return out, unmatched
 
 
-def main():
-    print("--- Fetching Contract Data from PuckPedia ---")
-    all_contracts: dict[str, dict] = {}
+def main(force=False, cap_data=None, rosters=None):
+    """Refresh contracts.json when stale (> MAX_AGE_DAYS by stored fetched_at)
+    or ``force``.  Reuses DFO cap data already downloaded this run."""
+    if not force and not contracts_due():
+        age = contracts_age_days()
+        print(f"Skipping contract refresh — fetched {age:.1f} days ago (threshold {MAX_AGE_DAYS} days).")
+        return {"status": "skip", "rows_written": 0, "reason": "fresh"}
 
-    for team, slug in TEAM_SLUGS.items():
-        print(f"  {team} ({slug})...", end="", flush=True)
+    import fetch_dailyfaceoff as dfo
+    from fetch_player_bio import fetch_rosters, NHL_TEAMS
+    cap_data = cap_data if cap_data is not None else dict(dfo.CAP_DATA)
+    if len(cap_data) < len(NHL_TEAMS):
+        import pandas as pd
+        from paths import pipeline_path
+        teams = pd.read_csv(pipeline_path("nhl_teams.csv"))
+        todo = [{"triCode": r["Team Tricode"], "teamName": r["Team Name"]} for _, r in teams.iterrows()
+                if r["Team Tricode"] not in cap_data]
+        dfo.fetch_lineups(todo, force_all=True)
+        cap_data.update(dfo.CAP_DATA)
+    rosters = rosters if rosters is not None else fetch_rosters()
 
-        # Build name → ID lookup from NHL roster API
-        roster_lookup = build_roster_lookup(team)
-        if not roster_lookup:
-            print(" FAILED (no roster)")
-            continue
-
-        # Fetch PuckPedia page
-        url = f"{BASE_URL}/{slug}"
-        html = get_html(url)
-        if not html:
-            print(" FAILED (no HTML)")
-            time.sleep(1)
-            continue
-
-        # Parse contracts
-        team_contracts = parse_puckpedia_team(html, roster_lookup)
-        all_contracts.update(team_contracts)
-        print(f" {len(team_contracts)} players")
-
-        time.sleep(0.5)  # Be polite to PuckPedia
-
-    # Safety guard: never overwrite good data with an empty result.
-    # If scraping failed entirely, preserve whatever was previously saved.
-    if len(all_contracts) == 0:
-        print("\nWARN: 0 contracts scraped (likely blocked). Keeping existing contracts.json unchanged.")
-        return
-
-    # Write output
-    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-    with open(OUTPUT_FILE, "w") as f:
-        json.dump(all_contracts, f)
-
-    print(f"\nSaved contracts for {len(all_contracts)} players → {OUTPUT_FILE}")
+    contracts, unmatched = build_contracts(cap_data, rosters)
+    previous = {k: v for k, v in (read_json(OUTPUT_FILE, {}) or {}).items() if not k.startswith("_")}
+    merged = {**previous, **contracts}   # keep players DFO did not list this time
+    merged_out = {"_meta": {"fetched_at": utc_now_iso(), "source": "dailyfaceoff",
+                            "players": len(merged), "from_this_fetch": len(contracts),
+                            "teams": len(cap_data)}}
+    merged_out.update(dict(sorted(merged.items())))
+    print(f"  Contracts: {len(contracts)} matched from DFO for {len(cap_data)} teams "
+          f"({len(unmatched)} unmatched), {len(merged)} total")
+    ok = atomic_write_json(OUTPUT_FILE, merged_out, indent=2, label="contracts.json",
+                           validator=lambda _: None if len(contracts) >= MIN_PLAYERS
+                           else f"only {len(contracts)} contracts matched (< {MIN_PLAYERS})")
+    return {"status": "ok" if ok else "fail", "rows_written": len(merged) if ok else 0,
+            "reason": "" if ok else f"{len(contracts)} matched"}
 
 
 if __name__ == "__main__":
-    main()
+    print(main(force="--force" in sys.argv))
