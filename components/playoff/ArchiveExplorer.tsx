@@ -6,6 +6,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { clashSafePair } from '@/components/ui/team-color';
 import { Crest } from '@/components/ui/crest';
 import { cn } from '@/lib/utils';
+import { scrollIntoViewSafe } from '@/lib/scroll';
 import H2HGameLog from './H2HGameLog';
 import { seriesStatusText, type ArchiveGame, type ArchiveSeries, type PlayoffArchive } from './types';
 
@@ -54,7 +55,7 @@ export default function ArchiveExplorer({ archive }: { archive: PlayoffArchive }
             const el = detailRef.current;
             if (!el) return;
             const top = el.getBoundingClientRect().top;
-            if (top > window.innerHeight * 0.6 || top < 0) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (top > window.innerHeight * 0.6 || top < 0) scrollIntoViewSafe(el, { block: 'start' });
             el.focus({ preventScroll: true });
         });
     };
@@ -160,7 +161,7 @@ function SeriesDetail({ series: s, archive }: { series: ArchiveSeries; archive: 
     const h2h = archive.h2h[`${s.top.tri}_${s.bottom.tri}`] ?? archive.h2h[`${s.bottom.tri}_${s.top.tri}`] ?? [];
     const open = (id: string) => {
         setAnalysisId(prev => (prev === id ? null : id));
-        requestAnimationFrame(() => analysisRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+        requestAnimationFrame(() => scrollIntoViewSafe(analysisRef.current, { block: 'nearest' }));
     };
 
     return (

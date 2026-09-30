@@ -33,7 +33,7 @@ export default function PlayersPage() {
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto flex max-w-[1400px] flex-col gap-4 px-4 py-5 md:px-6 md:py-7">
+            <div className="page flex flex-col gap-4 py-5 md:py-7">
                 <PageHeading title="Players" tag={ratingsCurrent ? undefined : <abbr title={`Ratings from the ${ratingsSeason} season until ~${PLAYER_MODEL_MIN_GAMES} league games are played${leagueGames ? ` (${leagueGames} so far)` : ''}`} className="no-underline">{ratingsSeason.slice(2)}</abbr>} />
                 <SkaterStatsTable preview={preview} src="/players/skaters" />
             </div>

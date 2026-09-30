@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fixture from './__fixtures__/player_news_opening.json';
-import { buildCards, classify, groupByGames, matchesFilter, type GameRef, type RawNewsItem } from './model';
+import { buildCards, classify, dropSpent, groupByGames, matchesFilter, type GameRef, type RawNewsItem } from './model';
 import { etLabel } from './feed';
 import { contrastRatio } from '../ui/color';
 
@@ -72,5 +72,46 @@ describe('groupByGames skips stale game-specific items', () => {
         const tonight = groups.find(g => g.game)!;
         expect(tonight.cards.map(c => c.player)).toEqual(['Anthony Stolarz']);
         expect(groups.find(g => !g.game)!.cards.map(c => c.player)).toContain('Sergei Bobrovsky');
+    });
+});
+
+describe('dropSpent drops starter/lineup notes about games already final', () => {
+    // Sep 30, 2026: the Sep 29 openers are final.
+    const lastEnd = {
+        VAN: '2026-09-30T04:30:00Z',
+        NYR: '2026-09-30T02:30:00Z',
+        TOR: '2026-09-30T01:30:00Z',
+        FLA: '2026-09-29T23:30:00Z',
+        MTL: '2026-09-30T01:30:00Z',
+        NSH: null,
+    };
+    const cards = buildCards({
+        VAN: [{ player: 'Kevin Lankinen', news: "Lankinen led the Canucks onto the ice for warmups; he'll start Tuesday in Edmonton.", category: 'Goalie Start', timestamp: '2026-09-30T01:29:51Z' }],
+        NYR: [{ player: 'Igor Shesterkin', news: "Shesterkin led the Rangers onto the ice for warmups; he'll start Tuesday in Boston.", category: 'Goalie Start', timestamp: '2026-09-29T23:30:20Z' }],
+        TOR: [
+            { player: 'Sergei Bobrovsky', news: "Bobrovsky is scheduled to start Toronto's season opener vs. Montreal on Tuesday.", category: 'Goalie Start', timestamp: '2026-09-29T19:15:20Z' },
+            { player: 'Nikolai Marchenko', news: "Marchenko will make his Maple Leafs' debut on Tuesday vs. Montreal.", category: 'Line Change', timestamp: '2026-09-29T19:01:54Z' },
+            { player: 'Anthony Stolarz', news: 'Stolarz is projected to start against the Islanders.', category: 'Goalie Start', timestamp: '2026-09-30T14:00:00Z' },
+        ],
+        FLA: [{ player: 'Jacob Markstrom', news: 'Markstrom will start Tuesday in Carolina.', category: 'Goalie Start', timestamp: '2026-09-29T20:36:29Z' }],
+        MTL: [{ player: 'Ivan Demidov', news: "Demidov (foot) will play in Montreal's season opener.", category: 'Injury', timestamp: '2026-09-29T22:49:38Z' }],
+        NSH: [{ player: 'Tyson Jost', news: 'Tyson Jost was sent down to Milwaukee (AHL).', category: 'Send Down', timestamp: '2026-09-29T20:31:19Z' }],
+    });
+
+    it('keeps only notes still about an upcoming game, plus injury/return/roster items', () => {
+        const kept = dropSpent(cards, lastEnd).map(c => c.player).sort();
+        expect(kept).toEqual(['Anthony Stolarz', 'Ivan Demidov', 'Tyson Jost']);
+    });
+
+    it('keeps roster moves even after the team has played', () => {
+        const kept = dropSpent(cards, { ...lastEnd, NSH: '2026-09-30T03:00:00Z' }).map(c => c.player);
+        expect(kept).toContain('Tyson Jost');
+    });
+
+    it('leaves no spent opener notes anywhere in the grouped feed', () => {
+        const groups = groupByGames(dropSpent(cards, lastEnd), [{ id: 8, away: 'NYI', home: 'TOR', startUtc: '2026-09-30T23:00:00Z', prevEndUtc: lastEnd }]);
+        expect(groups.find(g => g.game)!.cards.map(c => c.player)).toEqual(['Anthony Stolarz']);
+        const all = groups.flatMap(g => g.cards.map(c => c.player));
+        expect(all.some(p => /Bobrovsky|Lankinen|Shesterkin|Markstrom|Marchenko/.test(p))).toBe(false);
     });
 });

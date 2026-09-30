@@ -36,7 +36,7 @@ function Leaders({ archive }: { archive: PlayoffArchive }) {
     const { points, goals, goalies } = archive.leaders;
     const panel = (title: string, rows: { key: string; team: string; name: string; value: string; sub: string }[]) => (
         <section aria-label={title} className="panel min-w-0 overflow-hidden">
-            <h3 className="heading-sub border-b border-line px-3 py-2">{title}</h3>
+            <h2 className="heading-sub border-b border-line px-3 py-2">{title}</h2>
             <ol>
                 {rows.map((r, i) => (
                     <li key={r.key} className="flex h-8 items-center gap-2 border-t border-line/60 px-3 text-caption first:border-t-0">
@@ -88,7 +88,7 @@ export default async function PlayoffArchivePage({ params }: { params: Promise<{
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-4 py-5 md:px-6 md:py-7">
+            <div className="page flex flex-col gap-6 py-5 md:py-7">
                 <PageHeading
                     title={`${archive.seasonLabel} Playoffs`}
                     tag={isArchive ? 'Final' : 'Live'}

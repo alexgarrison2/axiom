@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 /** 404: the nav stays (layout), plus a way back to tonight's games and all 32 crests. */
 export default function NotFound() {
     return (
-        <main className="mx-auto max-w-[1100px] px-4 pb-12 pt-10 md:px-6 md:pt-14">
+        <main className="page pb-12 pt-10 md:pt-14">
             <div className="mx-auto max-w-[280px]" aria-hidden="true">
                 <DeferredFullLogo idPrefix="nf-logo" minWidth={0} />
             </div>

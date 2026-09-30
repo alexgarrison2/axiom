@@ -13,7 +13,7 @@ const link = 'inline-flex min-h-6 items-center transition-colors hover:text-fg-1
 export default function Footer() {
     return (
         <footer className="pb-tabbar mt-12 border-t border-line">
-            <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-5 gap-y-1 px-4 py-4 text-micro uppercase tracking-wide text-fg-3 md:px-6">
+            <div className="page flex flex-wrap items-center gap-x-5 gap-y-1 py-4 text-micro uppercase tracking-wide text-fg-3">
                 <p className="flex flex-wrap items-center gap-x-3">
                     <span>Data</span>
                     {SOURCES.map(s => (

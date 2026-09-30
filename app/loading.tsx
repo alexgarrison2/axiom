@@ -9,12 +9,12 @@
 export default function Loading() {
     const block = 'animate-pulse bg-surface-2';
     return (
-        <main aria-busy="true" className="mx-auto min-h-[calc(100svh-var(--appbar-h,56px))] max-w-[1180px] px-4 pt-5 md:px-5 md:pt-7">
+        <main aria-busy="true" className="page min-h-[calc(100svh-var(--appbar-h,56px))] pt-5 md:pt-7 [&>*]:max-w-[1192px]">
             <p role="status" className="sr-only">
                 Loading…
             </p>
             <div aria-hidden="true">
-                <div className="mb-6 flex items-center gap-2.5">
+                <div className="mb-6 flex items-center gap-2.5 overflow-hidden">
                     <div className={`mr-3 h-7 w-44 rounded-control ${block}`} />
                     {[0, 1, 2].map(i => (
                         <div key={i} className={`h-[34px] w-24 rounded-full ${block}`} />
@@ -30,10 +30,10 @@ export default function Loading() {
                             <div className="my-3 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className={`h-14 w-14 rounded-full md:h-[84px] md:w-[84px] ${block}`} />
-                                    <div className={`h-4 w-24 rounded ${block}`} />
+                                    <div className={`h-4 w-14 rounded min-[400px]:w-24 ${block}`} />
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className={`h-4 w-24 rounded ${block}`} />
+                                    <div className={`h-4 w-14 rounded min-[400px]:w-24 ${block}`} />
                                     <div className={`h-14 w-14 rounded-full md:h-[84px] md:w-[84px] ${block}`} />
                                 </div>
                             </div>

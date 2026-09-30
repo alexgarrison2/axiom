@@ -43,17 +43,39 @@ export interface GameRef {
     names?: Partial<Record<string, string>>;
 }
 
+/** Was an update (ISO instant or YYYY-MM-DD) posted after `endIso`? Date-only values compare by Eastern date. */
+function postedAfter(at: string, endIso: string): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(at)
+        ? at > new Date(endIso).toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+        : Date.parse(at) >= Date.parse(endIso);
+}
+
+/** Starter, warmup and line/scratch notes are about one game. Roster moves (recalls, send-downs, waivers) are not. */
+export function isGameSpecific(u: NewsUpdate): boolean {
+    return u.kind === 'goalie' || (u.kind === 'lineup' && /line|scratch/i.test(u.category));
+}
+
+/**
+ * Drop game-specific cards whose game is already final: the newest update is
+ * a starter/lineup note posted before the team's latest finished game ended
+ * (`lastEnd`, ISO UTC by tricode). Injury, return and transaction items stay.
+ */
+export function dropSpent(cards: NewsCard[], lastEnd: Partial<Record<string, string | null>>): NewsCard[] {
+    return cards.filter(c => {
+        const newest = c.updates[0];
+        const end = lastEnd[c.team];
+        if (!newest || !end || !newest.at || !isGameSpecific(newest)) return true;
+        return postedAfter(newest.at, end);
+    });
+}
+
 /** Is the card's newest update about this game (posted after the team's last game, or naming the opponent)? */
 export function isForGame(card: NewsCard, g: GameRef): boolean {
     const prevEnd = g.prevEndUtc?.[card.team];
     if (!prevEnd) return true;
     const newest = card.updates[0];
     if (!newest) return false;
-    const at = newest.at;
-    const fresh = /^\d{4}-\d{2}-\d{2}$/.test(at)
-        ? at > new Date(prevEnd).toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
-        : Date.parse(at) >= Date.parse(prevEnd);
-    if (fresh) return true;
+    if (postedAfter(newest.at, prevEnd)) return true;
     const opp = card.team === g.home ? g.away : g.home;
     const oppName = g.names?.[opp];
     const text = newest.text;

@@ -249,6 +249,23 @@
 }
 
 @layer components {
+  /* ---- Page container ----
+     One content edge for the nav, every page and the footer: 1400px max,
+     16px gutters on phones, 24px from md (x = 44 at 1440, the logo's edge).
+     Pages add only vertical padding; a narrower block inside (the home
+     slate) keeps this left edge. */
+  .page {
+    width: 100%;
+    max-width: 1400px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+  @media (min-width: 768px) {
+    .page {
+      padding-inline: 24px;
+    }
+  }
+
   /* ---- Type ---- */
 
   /* The label: 1-2 words, UPPERCASE mono, letter-spaced, dim. */

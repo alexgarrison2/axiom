@@ -33,7 +33,7 @@ export default function AccuracyPage() {
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto max-w-[1400px] px-4 py-5 md:px-6 md:py-7">
+            <div className="page py-5 md:py-7">
                 <AccuracyView report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} tallies={tallies} finals={finals} />
             </div>
         </main>

@@ -7,7 +7,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { BookOpen, Ellipsis, ListOrdered, Newspaper, Shield, Target, Trophy, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DialogClose } from '@/components/ui/dialog';
-import { EXTRA_LINKS, NAV_ITEMS, isActive } from './nav-items';
+import { NAV_ITEMS, isActive, isItemActive, playoffsLink, type NavItem } from './nav-items';
 
 /** Rink-and-puck glyph for "Tonight". */
 function RinkIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -37,12 +37,15 @@ const ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> 
  * Respects the home-indicator safe area. "More" opens a bottom sheet with
  * the remaining sections.
  */
-export function MobileTabBar({ showPlayoffs }: { showPlayoffs: boolean }) {
+export function MobileTabBar({ playoffsSeason }: { playoffsSeason?: string | null }) {
     const pathname = usePathname();
     const [moreOpen, setMoreOpen] = React.useState(false);
     const primary = NAV_ITEMS.filter(i => i.primary);
-    const more = [...NAV_ITEMS.filter(i => !i.primary && (!i.playoffsOnly || showPlayoffs)), ...EXTRA_LINKS];
-    const moreActive = more.some(i => isActive(i.href, pathname));
+    const secondary = NAV_ITEMS.filter(i => !i.primary);
+    const archive = playoffsLink(playoffsSeason);
+    // Standings, Playoffs 25-26, News, How it works
+    const more: NavItem[] = archive ? [secondary[0], archive, ...secondary.slice(1)] : secondary;
+    const moreActive = more.some(i => isItemActive(i, pathname));
 
     const tabClass = (active: boolean) =>
         cn(
@@ -55,7 +58,7 @@ export function MobileTabBar({ showPlayoffs }: { showPlayoffs: boolean }) {
             <ul className="flex h-tabbar items-stretch">
                 {primary.map(item => {
                     const Icon = ICONS[item.key];
-                    const active = isActive(item.href, pathname);
+                    const active = isItemActive(item, pathname);
                     return (
                         <li key={item.key} className="flex flex-1">
                             <IntentLink href={item.href} aria-current={active ? 'page' : undefined} className={tabClass(active)}>

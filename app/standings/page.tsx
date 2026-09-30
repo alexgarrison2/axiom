@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { navPlayoffsSeason } from '@/components/SiteNav';
+import { playoffsLink } from '@/components/nav-items';
 import { SEASON_START_YEAR } from '@/lib/season';
 import { loadStandingsPage } from '@/components/standings/data';
 import { StandingsTable } from '@/components/standings/StandingsTable';
@@ -41,6 +44,16 @@ export default async function StandingsPage() {
     const seeding = bracketIsLive || projectionsCurrent ? seedingFor(rows, cmp) : null;
     const leagueOrder = Object.fromEntries([...rows].sort(cmp).map((r, i) => [r.tri, i]));
     const simulatedAt = data.projectionsAt && formatTimeET(data.projectionsAt, 'datetime') ? data.projectionsAt : null;
+    const archive = playoffsLink(navPlayoffsSeason());
+
+    const link = archive ? (
+        <Link
+            href={archive.href}
+            className="relative inline-flex min-h-8 items-center whitespace-nowrap rounded-full border border-line px-3 text-micro font-medium uppercase tracking-[0.14em] text-fg-2 transition-colors hover:border-brand hover:text-brand coarse:before:absolute coarse:before:-inset-y-1.5 coarse:before:inset-x-0 coarse:before:content-['']"
+        >
+            {archive.label}
+        </Link>
+    ) : null;
 
     const meta = (
         <>
@@ -65,8 +78,8 @@ export default async function StandingsPage() {
 
     return (
         <main className="pb-tabbar">
-            <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-4 py-5 md:px-6 md:py-7">
-                <StandingsTable rows={rows} showProjections={projectionsCurrent} meta={meta} />
+            <div className="page flex flex-col gap-6 py-5 md:py-7">
+                <StandingsTable rows={rows} showProjections={projectionsCurrent} meta={meta} link={link} />
 
                 {bracketIsLive || projectionsCurrent ? (
                     <section aria-labelledby="bracket-heading" className="flex flex-col gap-3">

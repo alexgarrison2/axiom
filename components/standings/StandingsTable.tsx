@@ -65,14 +65,21 @@ function blocksFor(view: View, rows: StandingsRow[]): Block[] {
 export interface StandingsTableProps {
     rows: StandingsRow[];
     showProjections: boolean;
-    /** Right side of the heading row (sim count / status labels). */
+    /** Heading-row status labels (sim count, stamp). Phones: their own line under the heading. */
     meta?: React.ReactNode;
+    /** Heading-row link chip, far right (the playoff archive). */
+    link?: React.ReactNode;
 }
 
-export function StandingsTable({ rows, showProjections, meta }: StandingsTableProps) {
+export function StandingsTable({ rows, showProjections, meta, link }: StandingsTableProps) {
     const [view, setView] = React.useState<View>('wildcard');
     const blocks = React.useMemo(() => blocksFor(view, rows), [view, rows]);
     const full = view === 'league';
+    // Movement columns appear once the history has at least one day of change.
+    const cols = React.useMemo<MoveCols>(
+        () => ({ d24: rows.some(r => r.delta24 != null), trend: rows.some(r => r.trend.length > 1) }),
+        [rows],
+    );
 
     // One shared points axis so the 80% bands compare across tables.
     const domain = React.useMemo<[number, number]>(() => {
@@ -89,14 +96,20 @@ export function StandingsTable({ rows, showProjections, meta }: StandingsTablePr
                 actions={
                     <>
                         <Segmented label="Standings view" size="sm" options={VIEW_OPTIONS} value={view} onChange={setView} className="hidden sm:inline-flex" />
-                        {meta ? <div className="ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right">{meta}</div> : null}
+                        {meta || link ? (
+                            <div className="ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right">
+                                {meta ? <div className="hidden flex-wrap items-center justify-end gap-x-3 gap-y-1 sm:flex">{meta}</div> : null}
+                                {link}
+                            </div>
+                        ) : null}
                     </>
                 }
             />
+            {meta ? <div className="-mt-1 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right sm:hidden">{meta}</div> : null}
             <Segmented label="Standings view" size="sm" block options={VIEW_OPTIONS} value={view} onChange={setView} className="sm:hidden" />
             <div className={cn('grid gap-4', !full && 'xl:grid-cols-2')}>
                 {blocks.map(b => (
-                    <ConferenceTable key={b.key} block={b} showProjections={showProjections} domain={domain} full={full} />
+                    <ConferenceTable key={b.key} block={b} showProjections={showProjections} domain={domain} full={full} cols={cols} />
                 ))}
             </div>
         </div>
@@ -110,7 +123,25 @@ const recVis = (proj: boolean) => (proj ? 'hidden md:table-cell' : 'hidden sm:ta
 const WIDE_VIS = 'hidden lg:table-cell';
 const D24_VIS = 'hidden md:table-cell';
 
-function ConferenceTable({ block, showProjections, domain, full }: { block: Block; showProjections: boolean; domain: [number, number]; full: boolean }) {
+/** Which movement columns have data (24H change, 30D sparkline). */
+interface MoveCols {
+    d24: boolean;
+    trend: boolean;
+}
+
+function ConferenceTable({
+    block,
+    showProjections,
+    domain,
+    full,
+    cols,
+}: {
+    block: Block;
+    showProjections: boolean;
+    domain: [number, number];
+    full: boolean;
+    cols: MoveCols;
+}) {
     const rec = recVis(showProjections);
     return (
         <section aria-label={`${block.title} standings`} className="panel min-w-0 overflow-hidden">
@@ -149,10 +180,12 @@ function ConferenceTable({ block, showProjections, domain, full }: { block: Bloc
                                 <th scope="col" className={cn(cell, 'w-12 text-right')}>
                                     <abbr title="Wins the Stanley Cup" className="no-underline">Cup</abbr>
                                 </th>
-                                <th scope="col" className={cn(cell, D24_VIS, 'w-14 text-right')}>
-                                    <abbr title="Playoff odds change since yesterday" className="no-underline">24H</abbr>
-                                </th>
-                                {full ? (
+                                {cols.d24 ? (
+                                    <th scope="col" className={cn(cell, D24_VIS, 'w-14 text-right')}>
+                                        <abbr title="Playoff odds change since yesterday" className="no-underline">24H</abbr>
+                                    </th>
+                                ) : null}
+                                {full && cols.trend ? (
                                     <th scope="col" className={cn(cell, WIDE_VIS, 'w-24 text-right')}>
                                         <abbr title="Playoff odds, last 30 days" className="no-underline">30D</abbr>
                                     </th>
@@ -177,8 +210,8 @@ function ConferenceTable({ block, showProjections, domain, full }: { block: Bloc
                                             <td />
                                             {full ? <td className={WIDE_VIS} /> : null}
                                             <td />
-                                            <td className={D24_VIS} />
-                                            {full ? <td className={WIDE_VIS} /> : null}
+                                            {cols.d24 ? <td className={D24_VIS} /> : null}
+                                            {full && cols.trend ? <td className={WIDE_VIS} /> : null}
                                         </>
                                     ) : null}
                                 </tr>
@@ -191,6 +224,7 @@ function ConferenceTable({ block, showProjections, domain, full }: { block: Bloc
                                     showProjections={showProjections}
                                     domain={domain}
                                     full={full}
+                                    cols={cols}
                                     cut={g.cutAfter != null && i === g.cutAfter && i > 0}
                                 />
                             ))}
@@ -207,6 +241,7 @@ function Row({
     showProjections,
     domain,
     full,
+    cols,
     cut,
 }: {
     row: StandingsRow;
@@ -214,6 +249,7 @@ function Row({
     showProjections: boolean;
     domain: [number, number];
     full: boolean;
+    cols: MoveCols;
     /** Draw the playoff line above this row. */
     cut: boolean;
 }) {
@@ -242,10 +278,12 @@ function Row({
                     <td className={cell}>{p ? <OddsBar pct={p.playoffPct} /> : <Dash />}</td>
                     {full ? <td className={cn(cell, WIDE_VIS, 'text-right text-fg-2')}>{p ? fmtSimPct(p.divisionPct) : <Dash />}</td> : null}
                     <td className={cn(cell, 'text-right text-fg-2')}>{p ? fmtSimPct(p.cupPct) : <Dash />}</td>
-                    <td className={cn(cell, D24_VIS, 'text-right')}>
-                        <Delta value={r.delta24} />
-                    </td>
-                    {full ? (
+                    {cols.d24 ? (
+                        <td className={cn(cell, D24_VIS, 'text-right')}>
+                            <Delta value={r.delta24} />
+                        </td>
+                    ) : null}
+                    {full && cols.trend ? (
                         <td className={cn(cell, WIDE_VIS)}>
                             <div className="flex justify-end">
                                 {r.trend.length > 1 ? (

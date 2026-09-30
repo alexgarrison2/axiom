@@ -3,20 +3,19 @@
 import { IntentLink } from './IntentLink';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { NAV_ITEMS, isActive } from './nav-items';
+import { NAV_ITEMS, isItemActive } from './nav-items';
 
 /** Desktop (md+) section links: mono uppercase, cyan underline on the active one. */
-export function SiteNavLinks({ showPlayoffs }: { showPlayoffs: boolean }) {
+export function SiteNavLinks() {
     const pathname = usePathname();
-    const items = NAV_ITEMS.filter(i => !i.playoffsOnly || showPlayoffs || isActive(i.href, pathname));
 
     return (
-        // Scrolls sideways rather than running into the freshness badge when a
-        // seventh item (Playoffs) joins at tablet widths; p-1 keeps focus rings unclipped.
+        // Scrolls sideways rather than running into the freshness badge at
+        // tablet widths; p-1 keeps focus rings unclipped.
         <nav aria-label="Main" className="hidden min-w-0 overflow-x-auto scrollbar-hide md:block">
             <ul className="flex items-center gap-4 p-1 lg:gap-7">
-                {items.map(item => {
-                    const active = isActive(item.href, pathname);
+                {NAV_ITEMS.map(item => {
+                    const active = isItemActive(item, pathname);
                     return (
                         <li key={item.key}>
                             <IntentLink
