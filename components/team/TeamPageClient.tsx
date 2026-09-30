@@ -11,7 +11,8 @@ import { unpackGames } from '@/utils/team-stats/game-row';
 import { seasonGames, seasonLabel } from '@/utils/team-stats/season';
 import type { TeamPayload } from '@/utils/team-stats/team-types';
 import GamesLogTable from './GamesLogTable';
-import { DEFAULT_GAME_FILTERS, applyGameFilters, countGameFilters, type TeamGameFilters } from './game-log-model';
+import { signed } from '@/utils/team-stats/format';
+import { DEFAULT_GAME_FILTERS, applyGameFilters, countGameFilters, totals, type TeamGameFilters } from './game-log-model';
 
 const TeamChart = dynamic(() => import('@/components/TeamChart'), {
     ssr: false,
@@ -100,6 +101,14 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
     const goalieNames = React.useMemo(() => [...new Set(games.map(g => g.starter).filter(Boolean))].sort(), [games]);
     const opponents = React.useMemo(() => [...new Set(games.map(g => g.opp))].sort(), [games]);
     const active = countGameFilters(filters);
+    // Unfiltered current season = the hero's numbers; the log then skips the
+    // tiles that would repeat them and shows only what the hero lacks (GSAx).
+    const heroView = season === seasons[0] && active === 0;
+    const gsax = React.useMemo(() => {
+        if (!heroView) return null;
+        const t = totals(filtered, filters.period);
+        return t.gp ? signed(t.gsax, 1) : null;
+    }, [heroView, filtered, filters.period]);
 
     const loadBoxscores = React.useCallback(async () => {
         const full = await fetchJsonCached<TeamPayload>(teamUrl(tri, season));
@@ -133,38 +142,41 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
                     <TabsTrigger value="skaters">Skaters</TabsTrigger>
                     <TabsTrigger value="goalies">Goalies</TabsTrigger>
                 </TabsList>
+                {/* One row on phones: season + quick chips scroll sideways instead of wrapping. */}
                 {tab === 'games' || tab === 'charts' ? (
-                    <Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={seasons.map(s => ({ value: s, label: seasonLabel(s) }))} />
-                ) : null}
-                {tab === 'games' ? (
-                    <>
-                        <FilterChip selected={filters.recent === 10} onSelectedChange={on => setFilters(f => ({ ...f, recent: on ? 10 : 'All' }))}>
-                            L10
-                        </FilterChip>
-                        <FilterChip selected={filters.location === 'Home'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Home' : 'All' }))}>
-                            Home
-                        </FilterChip>
-                        <FilterChip selected={filters.location === 'Away'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Away' : 'All' }))}>
-                            Away
-                        </FilterChip>
-                        <FilterSheet
-                            activeCount={active}
-                            title="Filters"
-                            onReset={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })}
-                            applyLabel={`${filtered.length} GP`}
-                        >
-                            <FilterControls filters={filters} setFilters={setFilters} goalies={goalieNames} opponents={opponents} hasPlayoffs={hasPlayoffs} />
-                        </FilterSheet>
-                        {active > 0 ? (
-                            <button
-                                type="button"
-                                onClick={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })}
-                                className="min-h-[34px] px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:min-h-11"
-                            >
-                                Clear
-                            </button>
+                    <div className="-mx-4 flex w-[calc(100%+2rem)] min-w-0 flex-nowrap items-center gap-2 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0 [&>*]:shrink-0">
+                        <Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={seasons.map(s => ({ value: s, label: seasonLabel(s) }))} />
+                        {tab === 'games' ? (
+                            <>
+                                <FilterChip selected={filters.recent === 10} onSelectedChange={on => setFilters(f => ({ ...f, recent: on ? 10 : 'All' }))}>
+                                    L10
+                                </FilterChip>
+                                <FilterChip selected={filters.location === 'Home'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Home' : 'All' }))}>
+                                    Home
+                                </FilterChip>
+                                <FilterChip selected={filters.location === 'Away'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Away' : 'All' }))}>
+                                    Away
+                                </FilterChip>
+                                <FilterSheet
+                                    activeCount={active}
+                                    title="Filters"
+                                    onReset={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })}
+                                    applyLabel={`${filtered.length} GP`}
+                                >
+                                    <FilterControls filters={filters} setFilters={setFilters} goalies={goalieNames} opponents={opponents} hasPlayoffs={hasPlayoffs} />
+                                </FilterSheet>
+                                {active > 0 ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })}
+                                        className="min-h-[34px] px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:min-h-11"
+                                    >
+                                        Clear
+                                    </button>
+                                ) : null}
+                            </>
                         ) : null}
-                    </>
+                    </div>
                 ) : null}
             </div>
             {error ? (
@@ -174,7 +186,7 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
             ) : null}
 
             <TabsContent value="games" className="mt-0 flex flex-col gap-2">
-                <p className="flex items-center gap-2 text-micro font-medium uppercase tracking-label text-fg-3">
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-micro font-medium uppercase tracking-label text-fg-3 [&>span]:whitespace-nowrap">
                     <span className="text-fg-1">
                         {label} {filters.scope === 'playoffs' ? 'playoffs' : 'regular season'}
                     </span>
@@ -184,6 +196,14 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
                     <span>
                         <span className="text-fg-1">{filtered.length}</span>/{filters.scope === 'playoffs' ? games.length - regularCount : regularCount} GP
                     </span>
+                    {gsax ? (
+                        <span>
+                            <span aria-hidden="true" className="mr-2 text-fg-disabled">
+                                ·
+                            </span>
+                            GSAx <span className="text-fg-1">{gsax}</span>
+                        </span>
+                    ) : null}
                 </p>
 
                 {!payload ? (
@@ -203,7 +223,7 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
                         ) : null}
                     </div>
                 ) : (
-                    <GamesLogTable games={filtered} period={filters.period} seasonLabel={label} teamColor={initial.team.color} loadBoxscores={loadBoxscores} />
+                    <GamesLogTable games={filtered} showSummary={!heroView} period={filters.period} seasonLabel={label} teamColor={initial.team.color} loadBoxscores={loadBoxscores} />
                 )}
             </TabsContent>
 

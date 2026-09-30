@@ -69,7 +69,9 @@ export default function SkaterGrid(props: SkaterGridProps) {
     const byId = new Map(skaters.map(s => [s.id, s]));
     const inLineup = new Set(lineup ? Object.values(lineup).flat() : []);
     const ratingsTag = shortSeasonTag(ratingsLabel);
-    const ratingsPrior = ratingsLabel !== currentLabel;
+    // Ratings (IMP + on-ice rates) are one season's model output; tag them
+    // whenever that season differs from the counting-stats season on screen.
+    const ratingsPrior = !!ratingsLabel && ratingsLabel !== label;
 
     const card = (s: SkaterCardData) => (
         <SkaterCard
@@ -79,6 +81,7 @@ export default function SkaterGrid(props: SkaterGridProps) {
             seasonLabel={label}
             prior={which === 'last'}
             ratingsTag={ratingsPrior ? ratingsTag : undefined}
+            ratingsLabel={ratingsLabel}
             team={props.team}
             teamColor={props.teamColor}
             seasonGames={seasonGames}
@@ -175,13 +178,14 @@ function Swatch({ className, label }: { className: string; label: string }) {
 }
 
 function SkaterCard({
-    s, line, seasonLabel, prior, ratingsTag, team, teamColor, seasonGames,
+    s, line, seasonLabel, prior, ratingsTag, ratingsLabel, team, teamColor, seasonGames,
 }: {
     s: SkaterCardData;
     line: SeasonLine | null;
     seasonLabel: string;
     prior: boolean;
     ratingsTag?: string;
+    ratingsLabel: string;
     team: string;
     teamColor: string;
     seasonGames: number;
@@ -227,7 +231,12 @@ function SkaterCard({
                         {s.isNew ? (
                             <span className="font-bold text-brand">
                                 New{s.from ? ` ${s.from}` : ''}
-                                {s.impact ? <span className="ml-1 font-normal text-fg-2">{sgn(s.impact.score.v)}</span> : null}
+                                {s.impact ? (
+                                    <span className="ml-1 font-normal text-fg-2" title={`${ratingsLabel} impact${s.from ? ` with ${s.from}` : ''}`}>
+                                        {sgn(s.impact.score.v)}
+                                        <span className="sr-only"> ({ratingsLabel} impact)</span>
+                                    </span>
+                                ) : null}
                             </span>
                         ) : null}
                         {s.injury ? (
@@ -260,26 +269,32 @@ function SkaterCard({
             </dl>
             <span className="sr-only">{seasonLabel} regular season</span>
 
-            <div className="grid grid-cols-3 gap-x-2 px-3 pt-1.5">
-                <Metric label="xGF/60" m={imp?.xgf60} />
-                <Metric label="xGA/60" m={imp?.xga60} />
-                <Metric label="xG%" m={imp?.xgPct} fmt={v => (v * 100).toFixed(1)} />
-                <Metric label="ixG/60" m={imp?.ixg60} />
-                <Metric label="Rel xG" m={imp?.rel} fmt={v => sgn(v * 100, 1)} />
-                <Metric label="Pen/60" m={imp?.pen} fmt={v => sgn(v)} />
-            </div>
             {imp ? (
-                <p className="flex gap-3 px-3 pt-1 text-micro uppercase tabular-nums text-fg-3">
-                    <span>
-                        EV <span className="text-fg-2">{mmss(imp.evToi)}</span>
-                    </span>
-                    <span>
-                        PP <span className="text-fg-2">{mmss(imp.ppToi)}</span>
-                    </span>
-                    <span>
-                        PK <span className="text-fg-2">{mmss(imp.pkToi)}</span>
-                    </span>
-                </p>
+                <div data-ratings-season={ratingsLabel} data-prior={ratingsTag ? '' : undefined}>
+                    <span className="sr-only">{ratingsLabel} on-ice rates</span>
+                    <div className="grid grid-cols-3 gap-x-2 px-3 pt-1.5">
+                        <Metric label="xGF/60" m={imp.xgf60} faded={!!ratingsTag} />
+                        <Metric label="xGA/60" m={imp.xga60} faded={!!ratingsTag} />
+                        <Metric label="xG%" m={imp.xgPct} faded={!!ratingsTag} fmt={v => (v * 100).toFixed(1)} />
+                        <Metric label="ixG/60" m={imp.ixg60} faded={!!ratingsTag} />
+                        <Metric label="Rel xG" m={imp.rel} faded={!!ratingsTag} fmt={v => sgn(v * 100, 1)} />
+                        <Metric label="Pen/60" m={imp.pen} faded={!!ratingsTag} fmt={v => sgn(v)} />
+                    </div>
+                    <p className="flex items-center gap-3 px-3 pt-1 text-micro uppercase tabular-nums text-fg-3">
+                        <span>
+                            EV <span className={ratingsTag ? undefined : 'text-fg-2'}>{mmss(imp.evToi)}</span>
+                        </span>
+                        <span>
+                            PP <span className={ratingsTag ? undefined : 'text-fg-2'}>{mmss(imp.ppToi)}</span>
+                        </span>
+                        <span>
+                            PK <span className={ratingsTag ? undefined : 'text-fg-2'}>{mmss(imp.pkToi)}</span>
+                        </span>
+                        {ratingsTag ? (
+                            <SeasonTag className="ml-auto">{ratingsTag}</SeasonTag>
+                        ) : null}
+                    </p>
+                </div>
             ) : null}
 
             <Availability avail={line?.avail ?? ''} total={seasonGames} label={seasonLabel} />
@@ -287,11 +302,12 @@ function SkaterCard({
     );
 }
 
-function Metric({ label, m, fmt = v => v.toFixed(2) }: { label: string; m?: Pctl; fmt?: (v: number) => string }) {
+/** One on-ice rate, coloured by league percentile; prior-season values stay muted. */
+function Metric({ label, m, faded, fmt = v => v.toFixed(2) }: { label: string; m?: Pctl; faded?: boolean; fmt?: (v: number) => string }) {
     return (
         <div className="flex items-baseline justify-between gap-1 py-0.5">
             <span className="text-micro text-fg-3">{label}</span>
-            <span className="text-caption font-bold tabular-nums" style={m ? { color: pctColor(m.p) } : undefined}>
+            <span className={cn('text-caption font-bold tabular-nums', faded && 'font-medium text-fg-3')} style={m && !faded ? { color: pctColor(m.p) } : undefined}>
                 {m ? fmt(m.v) : <span className="text-fg-disabled">—</span>}
             </span>
         </div>

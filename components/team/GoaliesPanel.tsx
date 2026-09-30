@@ -3,7 +3,7 @@ import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { cn } from '@/lib/utils';
 import { injuryCode, shortDate, signed } from '@/utils/team-stats/format';
 import type { GoalieLine, GoalieSeason } from '@/utils/team-stats/team-types';
-import { GOALIE_NAME, gaa, goalieState, svPct } from './goalie-line';
+import { GOALIE_NAME, gaa, goalieOut, goalieState, orderGoalies, svPct } from './goalie-line';
 
 interface GoaliesPanelProps {
     goalies: GoalieLine[];
@@ -14,21 +14,26 @@ interface GoaliesPanelProps {
 const gsaxPer = (s: GoalieSeason) => (s.gsax != null && s.gs > 0 ? signed(s.gsax / s.gs, 2) : '—');
 
 /**
- * Roster goalies as dense cards: name (green when his next start is
- * confirmed), this season's and last season's lines side by side, the
- * model's GSAx rating and the last five starts.
+ * Roster goalies as dense cards in depth-chart order (next starter first,
+ * injured last and dimmed): name (green when his next start is confirmed),
+ * this season's and last season's lines side by side, the model's GSAx
+ * rating and the last five starts.
  */
 export default function GoaliesPanel({ goalies, currentLabel, prevLabel }: GoaliesPanelProps) {
     if (goalies.length === 0) return <p className="panel label p-card">No goalies</p>;
     return (
         <div className="grid gap-2 lg:grid-cols-2 2xl:grid-cols-3">
-            {goalies.map(g => {
+            {orderGoalies(goalies).map(g => {
                 const state = g.next ? goalieState(g.next.status) : null;
+                const out = goalieOut(g);
+                // Confirmed / likely starters glow green; a projected starter stays full ink, never greyed below his backup.
+                const nameTone = out ? 'text-fg-3' : state && state !== 'projected' ? GOALIE_NAME[state] : 'text-fg-1';
+                const cell = (prior: boolean) => cn('px-1 text-right', out ? 'text-fg-3' : prior ? 'text-fg-2' : 'text-fg-1');
                 return (
-                    <article key={g.id} aria-labelledby={`goalie-${g.id}`} className="panel flex min-w-0 flex-col gap-2.5 p-card">
+                    <article key={g.id} aria-labelledby={`goalie-${g.id}`} data-out={out ? '' : undefined} className="panel flex min-w-0 flex-col gap-2.5 p-card">
                         <header className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                                <h3 id={`goalie-${g.id}`} className={cn('truncate font-display text-[20px] font-bold uppercase leading-6', state ? GOALIE_NAME[state] : 'text-fg-1')}>
+                                <h3 id={`goalie-${g.id}`} className={cn('truncate font-display text-[20px] font-bold uppercase leading-6', nameTone)}>
                                     {g.name}
                                 </h3>
                                 <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-micro uppercase tracking-wide text-fg-3">
@@ -42,7 +47,7 @@ export default function GoaliesPanel({ goalies, currentLabel, prevLabel }: Goali
                                         </span>
                                     ) : null}
                                     {g.next ? (
-                                        <span className={state ? GOALIE_NAME[state] : undefined}>
+                                        <span className={state && state !== 'projected' ? GOALIE_NAME[state] : 'text-fg-2'}>
                                             Next {shortDate(g.next.date)} {g.next.opp ? `· ${g.next.opp}` : ''}
                                             <span className="sr-only"> ({g.next.status})</span>
                                         </span>
@@ -51,7 +56,7 @@ export default function GoaliesPanel({ goalies, currentLabel, prevLabel }: Goali
                             </div>
                             <div className="shrink-0 text-right">
                                 <p className="label">GSAx/gm</p>
-                                <Rating rating={g.rating} currentLabel={currentLabel} />
+                                <Rating rating={g.rating} currentLabel={currentLabel} muted={out} />
                             </div>
                         </header>
 
@@ -80,13 +85,13 @@ export default function GoaliesPanel({ goalies, currentLabel, prevLabel }: Goali
                                         </th>
                                         {s && s.gp > 0 ? (
                                             <>
-                                                <td className={cn('px-1 text-right', prior ? 'text-fg-2' : 'text-fg-1')}>{s.gp}</td>
-                                                <td className={cn('px-1 text-right', prior ? 'text-fg-2' : 'text-fg-1')}>
+                                                <td className={cell(prior)}>{s.gp}</td>
+                                                <td className={cell(prior)}>
                                                     {s.w}-{s.l}-{s.ot}
                                                 </td>
-                                                <td className={cn('px-1 text-right', prior ? 'text-fg-2' : 'text-fg-1')}>{svPct(s)}</td>
-                                                <td className={cn('px-1 text-right', prior ? 'text-fg-2' : 'text-fg-1')}>{gaa(s)}</td>
-                                                <td className={cn('px-1 text-right', prior ? 'text-fg-2' : 'text-fg-1')}>{gsaxPer(s)}</td>
+                                                <td className={cell(prior)}>{svPct(s)}</td>
+                                                <td className={cell(prior)}>{gaa(s)}</td>
+                                                <td className={cell(prior)}>{gsaxPer(s)}</td>
                                             </>
                                         ) : (
                                             <td colSpan={5} className="px-1 text-right text-fg-3">
@@ -111,12 +116,12 @@ export default function GoaliesPanel({ goalies, currentLabel, prevLabel }: Goali
  * this season yet) it carries the muted tag of the latest season it draws on;
  * a zero rating stays neutral rather than green.
  */
-function Rating({ rating, currentLabel }: { rating: GoalieLine['rating']; currentLabel: string }) {
+function Rating({ rating, currentLabel, muted }: { rating: GoalieLine['rating']; currentLabel: string; muted?: boolean }) {
     if (!rating) return <p className="font-display text-[22px] font-bold leading-7 text-fg-3">—</p>;
     const end = rating.label.split(' to ').pop() ?? rating.label;
     const priorTag = end !== currentLabel ? shortSeasonTag(end) : undefined;
     const v = rating.gsaxPerGame;
-    const tone = Math.abs(v) < 0.005 ? 'text-fg-1' : v > 0 ? 'text-pos' : 'text-neg';
+    const tone = muted ? 'text-fg-3' : Math.abs(v) < 0.005 ? 'text-fg-1' : v > 0 ? 'text-pos' : 'text-neg';
     return (
         <p className="flex items-center justify-end gap-1.5" title={rating.label}>
             {priorTag ? <SeasonTag>{priorTag}</SeasonTag> : null}
