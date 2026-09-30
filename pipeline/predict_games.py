@@ -351,7 +351,8 @@ def build_context(game, inp, existing_row=None):
         name, sched_status, sched_source = _goalie_for(game, side, inp)
         status, source, at = SC.resolve_goalie_status(
             name, sched_status, sched_source, _dfo_entry(inp, tri, gd), inp.news.get(tri, []), gd,
-            [opp, opp_tri, inp.full_names.get(opp_tri, "")], now)
+            SC.opponent_terms(opp, opp_tri, inp.full_names.get(opp_tri, "")), now,
+            not_before=SC.previous_start(g, tri, start))
         if existing_row and existing_row.get(f"{side}_goalie_confirmed") == name \
                 and existing_row.get(f"{side}_goalie_status") == status \
                 and existing_row.get(f"{side}_goalie_status_source") == source \

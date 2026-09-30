@@ -501,14 +501,58 @@ def goalie_lines(lines, name):
 
 # ── goalie status (A7) ───────────────────────────────────────────────────────
 
+WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+_AMBIGUOUS_PLACES = {"new york"}     # Rangers and Islanders share it
+
+
+def opponent_terms(common, tri, full):
+    """Names that identify the opponent in a news blurb: the common name
+    ('Oilers'), the full name, its place ('Edmonton') and the tricode."""
+    terms = [t for t in (common, full) if t]
+    if full and common and full.endswith(common):
+        place = full[: -len(common)].strip()
+        if place and place.lower() not in _AMBIGUOUS_PLACES:
+            terms.append(place)
+    if tri:
+        terms.append(tri)
+    return terms
+
+
 def _names_opponent(text, opponent):
+    """Whole-word match: 'EDM' must not match 'Edmonton' (a different team's
+    blurb can name a city), and a tricode like 'SEA' or 'CAR' must not match
+    'season' or 'career'.  Tricodes (all caps, 3 letters) match case-sensitively."""
+    import re
+    t = text or ""
+    for o in opponent or []:
+        if not o:
+            continue
+        if len(o) == 3 and o.isupper():
+            if re.search(rf"\b{re.escape(o)}\b", t):
+                return True
+        elif re.search(rf"\b{re.escape(o)}\b", t, flags=re.I):
+            return True
+    return False
+
+
+def _weekday_conflict(text, game_date):
+    """True when the blurb names a weekday that is not the game's weekday
+    ('he'll start Tuesday in Edmonton' is not about Thursday's game)."""
     t = (text or "").lower()
-    return any(o and o.lower() in t for o in opponent)
+    named = {d for d in WEEKDAYS if d in t}
+    if not named:
+        return False
+    return WEEKDAYS[_d(game_date).weekday()] not in named
 
 
-def news_confirms(news_items, goalie, game_date, opponent_names):
+def news_confirms(news_items, goalie, game_date, opponent_names, not_before=None):
     """The 'Goalie Start' news item that confirms ``goalie`` for THIS game:
-    its date equals the game date, or its text names the opponent."""
+    its date equals the game date, or its text names the opponent.
+
+    Guards against confirming from a blurb about another game: an item
+    published before ``not_before`` (the start of the team's previous game)
+    is about that earlier game, and an item naming a different weekday is
+    about another day (home-and-home series name the same opponent twice)."""
     if not goalie:
         return None
     g = goalie.lower()
@@ -519,14 +563,32 @@ def news_confirms(news_items, goalie, game_date, opponent_names):
         who = (item.get("player") or "").lower()
         if not who or not (who in g or g in who or who.split()[-1] == last):
             continue
-        if str(item.get("date") or "")[:10] == str(game_date)[:10] or \
-                _names_opponent(item.get("news"), opponent_names):
+        text = item.get("news") or ""
+        ts = parse_utc(item.get("timestamp"))
+        if not_before is not None and ts is not None and ts <= not_before:
+            continue
+        if _weekday_conflict(text, game_date):
+            continue
+        if str(item.get("date") or "")[:10] == str(game_date)[:10] or _names_opponent(text, opponent_names):
             return item
     return None
 
 
+def previous_start(games, tri, before_start):
+    """Start (aware UTC) of ``tri``'s latest game, of any type, that starts
+    before ``before_start``; None when there is none or no start is known."""
+    if before_start is None:
+        return None
+    prev = None
+    for g in team_games(games or [], tri):
+        st = parse_utc(g.get("start_utc"))
+        if st is not None and st < before_start and (prev is None or st > prev):
+            prev = st
+    return prev
+
+
 def resolve_goalie_status(goalie, sched_status, sched_source, dfo_entry, news_items, game_date,
-                          opponent_names, observed_at):
+                          opponent_names, observed_at, not_before=None):
     """(status, source, at) for a projected starter.
 
     status  'Confirmed' / 'Likely' / 'Unconfirmed' / 'Probable (ESPN)' as
@@ -543,7 +605,7 @@ def resolve_goalie_status(goalie, sched_status, sched_source, dfo_entry, news_it
                    or observed_at)
     elif sched_source == "espn":
         source, at = "ESPN probable", iso_z(observed_at)
-    item = news_confirms(news_items, goalie, game_date, opponent_names)
+    item = news_confirms(news_items, goalie, game_date, opponent_names, not_before=not_before)
     if item is not None and status != "Confirmed":
         status, source = "Confirmed", "news"
         at = iso_z(parse_utc(item.get("timestamp")) or observed_at)

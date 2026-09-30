@@ -443,6 +443,39 @@ def test_goalie_start_news_from_another_date_does_not_confirm():
     assert (st, src, at) == ("Confirmed", "news", "2026-09-29T23:50:00Z")
 
 
+def test_home_and_home_blurb_does_not_confirm_the_rematch():
+    # Real DFO item (2026-09-30 01:29Z) about VAN's 9/29 game AT Edmonton; VAN
+    # hosts EDM again on Thursday 10/1.  'EDM' is a substring of 'Edmonton',
+    # and the blurb names the opponent, but it is about the earlier game.
+    item = {"player": "Kevin Lankinen", "category": "Goalie Start", "date": "2026-09-29",
+            "news": "Lankinen led the Canucks onto the ice for warmups; he'll start Tuesday in Edmonton. ",
+            "timestamp": "2026-09-30T01:29:51.277Z"}
+    terms = SC.opponent_terms("Oilers", "EDM", "Edmonton Oilers")
+    assert "Edmonton" in terms
+    now = datetime(2026, 9, 30, 5, 40, tzinfo=UTC)
+    prev_start = datetime(2026, 9, 30, 2, 0, tzinfo=UTC)          # VAN@EDM 9/29, 02:00Z
+    st, src, _ = SC.resolve_goalie_status("Kevin Lankinen", "Unconfirmed", "dailyfaceoff", None, [item],
+                                          "2026-10-01", terms, now, not_before=prev_start)
+    assert (st, src) == ("Unconfirmed", "DFO")
+    # the weekday alone rules it out as well
+    assert SC.news_confirms([item], "Kevin Lankinen", "2026-10-01", terms) is None
+    # a Thursday blurb posted after the 9/29 game does confirm
+    ok = dict(item, news="Lankinen will start Thursday against Edmonton.", timestamp="2026-09-30T15:00:00Z",
+              date="2026-09-30")
+    assert SC.news_confirms([item, ok], "Kevin Lankinen", "2026-10-01", terms, not_before=prev_start) is ok
+
+
+def test_tricode_is_matched_as_a_whole_word():
+    terms = SC.opponent_terms("Kraken", "SEA", "Seattle Kraken")
+    assert not SC._names_opponent("Wolf will start the season opener.", terms)
+    assert not SC._names_opponent("Andersen, a career backup, starts.", SC.opponent_terms("Hurricanes", "CAR",
+                                                                                           "Carolina Hurricanes"))
+    assert SC._names_opponent("Wolf gets the nod vs. SEA.", terms)
+    assert SC._names_opponent("Wolf gets the nod against Seattle.", terms)
+    # 'New York' names two teams: not an opponent identifier
+    assert "New York" not in SC.opponent_terms("Rangers", "NYR", "New York Rangers")
+
+
 def test_every_confirmed_status_has_source_and_time():
     for name in ("predictions_opening_night.csv", "predictions_week3.csv", "predictions_playoffs.csv"):
         for r in rows_of(name):
