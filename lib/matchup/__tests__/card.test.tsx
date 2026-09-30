@@ -11,6 +11,7 @@ import { compactForClient } from '../parse';
 import { WhyThisPick } from '../../../components/matchup/WhyThisPick';
 import { goalieSeasonLine, gsaxTag, gsaxWindow, parseGoalieLine, railHeading, railLabel } from '../format';
 import { modelLean } from '../edge';
+import { situationChip } from '../pills';
 import type { GameDetails } from '../../client-data';
 
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
@@ -126,10 +127,12 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
         }
     });
 
-    it('shows one Opener chip for 0-GP teams', () => {
-        const el = card(byTeams(opening, 'CHI', 'VGK'));
-        expect(visible(el)).toMatch(/\bOpener\b/);
-        expect(el.querySelectorAll('[title^="Season opener"]').length).toBe(1);
+    it('keeps the Opener tag off the collapsed card (it lives in the Why panel)', () => {
+        for (const p of opening) {
+            expect(situationChip(p)?.label ?? '').not.toMatch(/Opener/);
+            expect(visible(card(p))).not.toMatch(/\bOpener\b/);
+            cleanup();
+        }
     });
 
     it('flags a big model lean with the magenta diamond copy', () => {
@@ -247,7 +250,8 @@ describe('archive card', () => {
         const v = visible(container);
         expect(v).toContain('FINAL · OT');
         expect(v).toMatch(/6 - 5/);
-        expect(v).toContain('✕ Pick EDM 73');
+        expect(v).toContain('✕ Pick EDM');
+        expect(container.querySelector('[role="img"]')?.getAttribute('aria-label')).toMatch(/EDM 73%/);
         expect(text(container)).toContain('Model pick wrong');
     });
 });

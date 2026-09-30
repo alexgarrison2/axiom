@@ -3,6 +3,7 @@ import { archiveFinalLabel, isFinalState } from '@/lib/matchup/archive';
 import { clashSafePair } from '@/components/ui/team-color';
 import { finalWords } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
+import { WinBar } from '@/components/ui/win-bar';
 import { GameTime } from './GameTime';
 import { washVars } from './TeamSide';
 
@@ -39,6 +40,8 @@ export function ArchiveCard({ g }: { g: ArchiveGame }) {
     const anchor = `${g.away.tri}-${g.home.tri}`.toLowerCase();
     const scored = (final || live) && g.home.score != null && g.away.score != null;
     const score = scored ? `${g.away.tri} ${as}, ${g.home.tri} ${hs}` : null;
+    // The frozen pregame pick as a (dimmed, on finals) win bar: pct is the picked side's probability.
+    const pAway = g.pick && Number.isFinite(g.pick.pct) ? (g.pick.tri === g.away.tri ? g.pick.pct : 100 - g.pick.pct) / 100 : null;
 
     return (
         <article
@@ -74,6 +77,19 @@ export function ArchiveCard({ g }: { g: ArchiveGame }) {
                 )}
                 <Side s={g.home} lost={final && hs < as} home />
             </div>
+            {pAway != null ? (
+                <WinBar
+                    away={g.away.tri}
+                    home={g.home.tri}
+                    pAway={pAway}
+                    awayColor={colors.away}
+                    homeColor={colors.home}
+                    size="lg"
+                    dimmed={final || live}
+                    label={final || live ? 'Pregame win probability' : 'Our forecast win probability'}
+                    className="pointer-events-none"
+                />
+            ) : null}
             <div className="flex min-h-5 items-center justify-center">
                 {g.pick ? (
                     <span
@@ -84,7 +100,8 @@ export function ArchiveCard({ g }: { g: ArchiveGame }) {
                     >
                         {g.pick.correct != null ? <span aria-hidden="true">{g.pick.correct ? '✓' : '✕'} </span> : null}
                         <span className="sr-only">{g.pick.correct == null ? 'Model pick: ' : g.pick.correct ? 'Model pick right: ' : 'Model pick wrong: '}</span>
-                        Pick {g.pick.tri} {Math.round(g.pick.pct)}
+                        Pick {g.pick.tri}
+                        <span className="sr-only"> {g.pick.pct}%</span>
                     </span>
                 ) : (
                     <span className="label">{final || live ? 'No pick' : 'No pick yet'}</span>

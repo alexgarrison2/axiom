@@ -12,7 +12,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
 import { bothOpeners } from '@/lib/matchup/pills';
 import { hasPrediction } from '@/lib/matchup/edge';
-import { easternDate, railHeading, railLabel, shortDate, weekdayDate } from '@/lib/matchup/format';
+import { easternDate, railHeading, railLabel, weekdayDate } from '@/lib/matchup/format';
 import { isFinalState, type ArchiveSlate } from '@/lib/matchup/archive';
 import { WinBarLegend } from '@/components/ui/win-bar';
 import { cn } from '@/lib/utils';
@@ -214,7 +214,6 @@ export default function PredictionsViewer({
                 ) : (
                     <div className="panel flex flex-col items-center gap-2 border-dashed px-6 py-10 text-center">
                         <p className="heading-section">{offFile && !offFile.scheduleKnown ? 'Schedule unavailable' : 'No games'}</p>
-                        {date ? <p className="label">{shortDate(date)}</p> : null}
                         {next ? (
                             <a
                                 href={`/?date=${next}`}

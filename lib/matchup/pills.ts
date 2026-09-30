@@ -248,9 +248,8 @@ export interface CardChip {
 
 /**
  * At most one chip per card, by priority: playoff series score, back-to-back,
- * 3 games in 4 nights, a long road trip (game 4+), then a season opener
- * (dropped when the whole slate is openers). Everything else lives in the
- * expanded panel.
+ * 3 games in 4 nights, then a long road trip (game 4+). Everything else
+ * (openers included) lives in the expanded panel.
  */
 export function situationChip(p: Prediction, series?: { away: number; home: number } | null): CardChip | null {
     const a = p.away.team.triCode;
@@ -274,9 +273,6 @@ export function situationChip(p: Prediction, series?: { away: number; home: numb
     if (three) return { label: `3in4 ${three}`, title: `Third game in four nights: ${three === 'Both' ? 'both teams' : three}` };
     const trip = p.away.roadTripGameN ?? 0;
     if (trip >= 4) return { label: `Trip G${trip}`, title: `${a}: game ${trip} of a road trip` };
-    if (!p.slateAllOpeners) {
-        const op = who(isOpener);
-        if (op) return { label: op === 'Both' ? 'Opener' : `Opener ${op}`, title: `Season opener for ${op === 'Both' ? 'both teams' : op}` };
-    }
+    // Season openers stay in the expanded panel: in opening week they would tag most of the slate.
     return null;
 }

@@ -330,7 +330,8 @@ test.describe('URL state and routes', () => {
     test('an off day shows the next game day', async ({ page }) => {
         await page.goto('/?date=2030-01-01');
         await expect(page.getByText('No games', { exact: true })).toBeVisible();
-        await expect(page.getByText('Jan 1', { exact: true })).toBeVisible();
+        // The date lives in the heading only (no repeated date line in the empty state).
+        await expect(page.getByRole('heading', { level: 1 })).toContainText(/Jan 1/i);
     });
 
     test('legacy ?tab= links redirect to the new routes', async ({ request }) => {
