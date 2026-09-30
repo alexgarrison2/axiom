@@ -397,6 +397,37 @@ def time_to_seconds(time_str):
     except:
         return 0
 
+def tally_goal_strength(goals, is_home, situation_code, current_strength, is_pp_goal):
+    """Add one non-empty-net goal to goals['ev'|'pp'|'sh'] (and '5v5').
+
+    situationCode is 'AgAsHsHg' (away goalie, away skaters, home skaters, home
+    goalie).  Penalty strength uses BASE skaters (an extra attacker for a pulled
+    goalie does not make a power play); ``is_pp_goal`` is the scorer's PP flag
+    computed the same way.  Empty-net goals are counted in emptynet_goalsfor
+    instead, so goals_ev + goals_pp + goals_sh + emptynet_goalsfor == goals_for."""
+    own_sk = opp_sk = None
+    own_base = opp_base = None
+    if situation_code and len(str(situation_code)) == 4 and str(situation_code).isdigit():
+        a_g, a_s, h_s, h_g = (int(c) for c in str(situation_code))
+        own_sk, opp_sk, own_g = (h_s, a_s, h_g) if is_home else (a_s, h_s, a_g)
+        own_base, opp_base = own_sk - (1 if own_g == 0 else 0), opp_sk
+    else:
+        try:
+            hs_n, as_n = current_strength[0], current_strength[1]
+            own_sk, opp_sk = (hs_n, as_n) if is_home else (as_n, hs_n)
+            own_base, opp_base = own_sk, opp_sk
+        except (TypeError, IndexError):
+            pass
+    if is_pp_goal:
+        goals['pp'] += 1
+    elif own_base is not None and opp_base is not None and own_base < opp_base and own_base < 5:
+        goals['sh'] += 1
+    else:
+        goals['ev'] += 1
+        if own_sk == 5 and opp_sk == 5 and own_base == 5:
+            goals['5v5'] += 1
+
+
 def calculate_shot_metrics(x, y):
     """
     Calculate shot distance and angle from net.
@@ -1033,6 +1064,9 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                     teams[owner_id]['en_attempts'] += 1
                     if is_pp_goal:
                         teams[owner_id]['en_pp_goals'] += 1
+                else:
+                    tally_goal_strength(teams[owner_id]['goals'], owner_id == home_id, situation_code,
+                                        current_strength, is_pp_goal and not is_penalty_shot)
 
         # Shots (506)
         elif type_code == 506:
@@ -1400,6 +1434,7 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 teams[tid]['xg']['ev'] = df_shots[t_mask & (df_shots['is_ev'] == 1)]['xG'].sum()
                 teams[tid]['xg']['pp'] = df_shots[t_mask & (df_shots['is_pp'] == 1)]['xG'].sum()
                 teams[tid]['xg']['sh'] = df_shots[t_mask & (df_shots['is_sh'] == 1)]['xG'].sum()
+                teams[tid]['xg']['non_en'] = df_shots[t_mask & (df_shots['strength_state'] != 'EmptyNet')]['xG'].sum()
 
             
             xg_home = teams[home_id]['xg']['total']
@@ -1698,6 +1733,9 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
             "xg_ag_ev": round(opp_stats['xg']['ev'], 2),
             "xg_ag_pp": round(opp_stats['xg']['pp'], 2),
             "xg_ag_sh": round(opp_stats['xg']['sh'], 2),
+            # xG against excluding empty-net shots (for goalie GSAx); refresh_pipeline
+            # rewrites it from the adjusted shot xG like xG_against.
+            "xga_non_en": round(opp_stats['xg'].get('non_en', 0.0), 2),
 
             # High Danger Totals & Per-Period
             "hdf": stats['hdf'],

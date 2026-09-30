@@ -61,8 +61,8 @@ def test_graded_requires_grade_or_reason(tmp_path):
 
 
 def test_goal_splits(tmp_path):
-    ok = pd.DataFrame({'game_id': [1, 2], 'team': ['A', 'B'], 'goals_for': [3, 2], 'goals_ev': [1, 1],
-                       'goals_pp': [1, 0], 'goals_sh': [0, 0], 'en_goals': [1, 0], 'result': ['W', 'SOW']})
+    ok = pd.DataFrame({'game_id': [1, 2], 'team': ['A', 'B'], 'goals_for': [3, 1], 'goals_ev': [1, 1],
+                       'goals_pp': [1, 0], 'goals_sh': [0, 0], 'emptynet_goalsfor': [1, 0], 'result': ['W', 'SOW']})
     assert V.check_gamestats_goals({'gamestats': ok}) == []
     bad = ok.assign(goals_ev=[0, 0])
     assert len(V.check_gamestats_goals({'gamestats': bad})) == 2

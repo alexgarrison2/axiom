@@ -35,7 +35,7 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  other clean-start-season final is listed in not_graded
   fair_odds      *_model_odds / *_blend_odds are the fair lines of the model-only
                  and published % (within 1 cent)
-  goal_splits    current-season goals_ev + goals_pp + goals_sh + en_goals == goals_for
+  goal_splits    current-season goals_ev + goals_pp + goals_sh + emptynet_goalsfor == goals_for
 
 ``--freshness`` instead only checks that manifest.generated_at is under 26 h
 old during the season (the daily freshness workflow).
@@ -580,17 +580,16 @@ def check_fair_odds(ctx):
 
 
 def check_gamestats_goals(ctx):
-    """Current-season gamestats: goals_ev + goals_pp + goals_sh + en_goals == goals_for."""
+    """Current-season gamestats: goals_ev + goals_pp + goals_sh + emptynet_goalsfor == goals_for."""
     from season import read_season_csv
     gs = ctx["gamestats"] if "gamestats" in ctx else read_season_csv("gamestats")
     need = ("goals_ev", "goals_pp", "goals_sh", "goals_for")
     if gs is None or len(gs) == 0 or any(c not in gs.columns for c in need):
         return []
-    en = gs["en_goals"] if "en_goals" in gs.columns else 0
+    en = gs["emptynet_goalsfor"].fillna(0) if "emptynet_goalsfor" in gs.columns else 0
     tot = gs["goals_ev"].fillna(0) + gs["goals_pp"].fillna(0) + gs["goals_sh"].fillna(0) + en
-    # Shootout winners get +1 goals_for with no shot; allow that one goal.
-    so = gs["result"].isin(["SOW"]) if "result" in gs.columns else False
-    bad = gs[(tot != gs["goals_for"]) & ~((tot + 1 == gs["goals_for"]) & so)]
+    # goals_for excludes the shootout (generate_history adds the deciding goal itself).
+    bad = gs[tot != gs["goals_for"]]
     return [f"{r.game_id} {r.team}: ev+pp+sh+en = {int(t)} but goals_for = {int(r.goals_for)}"
             for r, t in zip(bad.itertuples(index=False), tot[bad.index])]
 

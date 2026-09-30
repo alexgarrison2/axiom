@@ -265,6 +265,8 @@ def stage_rescore_xg(state, rescore_all=False):
         for label, st in (("xG_5v5_sum", "5v5"), ("xG_pp_sum", "5v4")):
             part = df[df["strength_state"] == st].groupby(["game_id", "team_id"])["xG"].sum().rename(label)
             agg = agg.merge(part.reset_index(), on=["game_id", "team_id"], how="left")
+        part = df[df["strength_state"] != "EmptyNet"].groupby(["game_id", "team_id"])["xG"].sum()
+        agg = agg.merge(part.rename("xG_non_en_sum").reset_index(), on=["game_id", "team_id"], how="left")
     agg = agg.fillna(0.0)
     state["xg_agg"] = agg
     state["shots_df"] = df
@@ -298,6 +300,58 @@ def hd_period_table(shots, tid_to_name):
     return out.drop(columns=["opponent"]).fillna(0)
 
 
+def repair_goal_splits(gs, shots, tid_to_name):
+    """Fill goals_5v5/ev/pp/sh (and the goals_ag_* mirrors) on rows scraped before
+    the scraper tallied them (all four 0 while goals_for > empty-net goals).
+
+    PP = the scraper's official pp_goals minus EN PP goals, EN = emptynet_goalsfor,
+    SH and 5v5 come from the goal rows of the shots file ('4v5' etc.), and EV is
+    the remainder, so goals_ev + goals_pp + goals_sh + emptynet_goalsfor ==
+    goals_for always holds.  Rows with a real split are left alone."""
+    need = ("goals_for", "pp_goals", "emptynet_goalsfor")
+    if any(c not in gs.columns for c in need):
+        return 0
+    cols = ("goals_5v5", "goals_ev", "goals_pp", "goals_sh")
+    for c in cols:
+        if c not in gs.columns:
+            gs[c] = 0
+    num = lambda c: pd.to_numeric(gs[c], errors="coerce").fillna(0).astype(int)
+    en = num("emptynet_goalsfor")
+    en_pp = num("en_pp_goalsfor") if "en_pp_goalsfor" in gs.columns else 0
+    legacy = (num("goals_ev") + num("goals_pp") + num("goals_sh") == 0) & (num("goals_for") - en > 0)
+    if not legacy.any():
+        return 0
+    sh_n = pd.Series(0, index=gs.index)
+    v5_n = pd.Series(0, index=gs.index)
+    if shots is not None and {"game_id", "team_id", "is_goal", "strength_state"} <= set(shots.columns):
+        g = shots[pd.to_numeric(shots["is_goal"], errors="coerce").fillna(0) == 1].copy()
+        parts = g["strength_state"].astype(str).str.extract(r"^(\d)v(\d)$").astype(float)
+        g["_sh"] = ((parts[0] < parts[1]) & (parts[0] < 5)).astype(int)
+        g["_5v5"] = ((parts[0] == 5) & (parts[1] == 5)).astype(int)
+        g["team"] = g["team_id"].astype(int).map(tid_to_name)
+        t = g.groupby(["game_id", "team"])[["_sh", "_5v5"]].sum()
+        keys = list(zip(gs["game_id"].astype("int64"), gs["team"]))
+        sh_n = pd.Series(t["_sh"].reindex(keys).values, index=gs.index).fillna(0).astype(int)
+        v5_n = pd.Series(t["_5v5"].reindex(keys).values, index=gs.index).fillna(0).astype(int)
+    non_en = num("goals_for") - en
+    pp = (num("pp_goals") - en_pp).clip(lower=0).clip(upper=non_en)
+    sh = sh_n.clip(upper=non_en - pp)
+    ev = non_en - pp - sh
+    v5 = v5_n.clip(upper=ev)
+    for c, v in (("goals_pp", pp), ("goals_sh", sh), ("goals_ev", ev), ("goals_5v5", v5)):
+        gs.loc[legacy, c] = v[legacy]
+    # goals against = the opponent row's goals for
+    fk = {(int(r.game_id), r.team): r for r in gs[list(cols) + ["game_id", "team"]].itertuples(index=False)}
+    for c in cols:
+        ag = c.replace("goals_", "goals_ag_")
+        vals = [getattr(fk.get((int(gid), opp)), c, None) if fk.get((int(gid), opp)) is not None else None
+                for gid, opp in zip(gs["game_id"], gs["opponent"])]
+        cur = gs[ag] if ag in gs.columns else pd.Series(0, index=gs.index)
+        gs[ag] = pd.Series(vals, index=gs.index).where(lambda x: x.notna(), cur).astype(int)
+    print(f"  Filled goal strength splits for {int(legacy.sum())} team-games scraped before the split fix")
+    return int(legacy.sum())
+
+
 def stage_update_gamestats(state):
     """Write the aggregated xG and HD/per-period columns into this season's gamestats."""
     path = season_file("gamestats")
@@ -326,6 +380,9 @@ def stage_update_gamestats(state):
     gs["xG_against_5v5"] = pick("xG_5v5_sum", key_o, gs.get("xG_against_5v5"))
     gs["xG_pp_for"] = pick("xG_pp_sum", key_t, gs.get("xG_pp_for", 0.0))
     gs["xG_pp_against"] = pick("xG_pp_sum", key_o, gs.get("xG_pp_against", 0.0))
+    # xG against without empty-net shots: the GSAx denominator (EN goals are not on the goalie).
+    gs["xga_non_en"] = pick("xG_non_en_sum", key_o, gs.get("xga_non_en", gs.get("xG_against")))
+    repair_goal_splits(gs, state["shots_df"], tid_to_name)
 
     hd = hd_period_table(state["shots_df"], tid_to_name).set_index(["game_id", "team"])
     for col in hd.columns:
