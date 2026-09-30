@@ -1,0 +1,57 @@
+name: Data freshness
+
+# Daily watchdog independent of the data job: fails (and opens/updates an
+# issue) when public/data/manifest.json on main is more than 26 h old during
+# the season, i.e. the pipeline has silently stopped committing.
+
+on:
+  schedule:
+    - cron: '30 17 * * *'   # after the morning full-refresh window
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout manifest and checker
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            public/data/manifest.json
+            pipeline/validate_outputs.py
+            pipeline/paths.py
+            pipeline/season.py
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.13'
+
+      - name: Check manifest age
+        run: python pipeline/validate_outputs.py --freshness
+
+      - name: Open or update the stale-data issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Data pipeline failing"
+          body=$(printf 'Freshness check %s failed: public/data/manifest.json is older than 26 h in season.\n\n```\n%s\n```\n' \
+                   "$RUN_URL" "$(python pipeline/validate_outputs.py --freshness 2>&1 | tail -20)")
+          num=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" \
+                  --json number,title --jq "map(select(.title == \"$title\")) | .[0].number // empty")
+          if [ -n "$num" ]; then
+            gh issue comment "$num" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          fi
