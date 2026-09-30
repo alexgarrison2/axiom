@@ -23,9 +23,9 @@ export function playoffsActive(): boolean {
 }
 
 /**
- * The one site navigation, rendered once from app/layout.tsx:
- * a sticky 56–60px app bar (horse mark + LED wordmark, section links from md
- * up, data freshness) and, below md, a fixed bottom tab bar.
+ * The one site navigation, rendered once from app/layout.tsx: a compact
+ * sticky bar (pony xG logo, mono section links from md up, "UPDATED 4M" live
+ * dot) and, below md, a fixed bottom tab bar in the same language.
  */
 export default function SiteNav() {
     const stamp = getDataStamp();
@@ -33,14 +33,14 @@ export default function SiteNav() {
 
     return (
         <>
-            <header className="sticky top-0 z-40 border-b border-line bg-bg">
-                <div className="mx-auto flex h-appbar max-w-[1800px] items-center gap-3 px-4 md:gap-6 md:px-6">
+            <header className="sticky top-0 z-40 border-b border-line bg-bg/[.82] pt-[env(safe-area-inset-top)] backdrop-blur-[10px]">
+                <div className="mx-auto flex h-appbar max-w-[1400px] items-center gap-6 px-4 md:gap-8 md:px-6">
                     <Link
                         href="/"
                         aria-label="Pony xG home"
                         className="-ml-1 flex min-h-11 shrink-0 items-center rounded-control px-1 transition-[filter] hover:brightness-125"
                     >
-                        <BrandMark className="h-8 md:h-9" />
+                        <BrandMark className="h-[28px] drop-shadow-[0_0_10px_rgba(41,231,255,.35)] md:h-[30px]" />
                     </Link>
                     <SiteNavLinks showPlayoffs={showPlayoffs} />
                     <div className="ml-auto flex items-center">

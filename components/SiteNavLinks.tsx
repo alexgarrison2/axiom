@@ -3,39 +3,34 @@
 import { IntentLink } from './IntentLink';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { EXTRA_LINKS, NAV_ITEMS, isActive, type NavItem } from './nav-items';
+import { NAV_ITEMS, isActive } from './nav-items';
 
-/** Desktop (md+) section links with aria-current and one brand active style. */
+/** Desktop (md+) section links: mono uppercase, cyan underline on the active one. */
 export function SiteNavLinks({ showPlayoffs }: { showPlayoffs: boolean }) {
     const pathname = usePathname();
-    // "How it works" joins the main row from lg up (it lives in More on mobile).
-    const items: (NavItem & { wide?: boolean })[] = [
-        ...NAV_ITEMS.filter(i => !i.playoffsOnly || showPlayoffs || isActive(i.href, pathname)),
-        ...EXTRA_LINKS.map(l => ({ ...l, wide: true })),
-    ];
+    const items = NAV_ITEMS.filter(i => !i.playoffsOnly || showPlayoffs || isActive(i.href, pathname));
 
     return (
         <nav aria-label="Main" className="hidden min-w-0 md:block">
-            <ul className="flex items-center gap-1">
+            <ul className="flex items-center gap-5 lg:gap-7">
                 {items.map(item => {
                     const active = isActive(item.href, pathname);
                     return (
-                        <li key={item.key} className={cn(item.wide && !active && 'hidden lg:block')}>
+                        <li key={item.key}>
                             <IntentLink
                                 href={item.href}
                                 aria-current={active ? 'page' : undefined}
                                 className={cn(
-                                    'relative flex h-11 items-center rounded-control px-3 text-body-sm font-semibold transition-colors',
-                                    active ? 'text-fg-1' : 'text-fg-2 hover:bg-surface-1 hover:text-fg-1',
-                                    item.playoffsOnly && !active && 'text-playoff',
+                                    'relative flex h-11 items-center whitespace-nowrap text-caption font-medium uppercase tracking-label transition-colors',
+                                    active ? 'text-fg-1' : 'text-fg-3 hover:text-fg-1',
                                 )}
                             >
                                 {item.label}
                                 <span
                                     aria-hidden="true"
                                     className={cn(
-                                        'absolute inset-x-3 -bottom-2 h-0.5 rounded-full transition-opacity',
-                                        active ? 'bg-brand opacity-100 shadow-[0_0_10px_rgb(var(--brand-rgb)/0.8)]' : 'opacity-0',
+                                        'absolute inset-x-0 bottom-1.5 h-0.5 transition-opacity',
+                                        active ? 'bg-brand opacity-100 shadow-[0_6px_12px_-4px_rgb(var(--brand-rgb))]' : 'opacity-0',
                                     )}
                                 />
                             </IntentLink>

@@ -1,39 +1,43 @@
 /**
- * Route loading shell: a skeleton of the slate (header strip + cards) in the
- * page's real layout, so navigation feels instant and nothing jumps when data
- * arrives. The shimmer is CSS-only and switched off under reduced motion.
+ * Route loading shell: a skeleton of the slate (heading rail + matchup
+ * cards) in the page's real layout, so navigation feels instant and nothing
+ * jumps when data arrives. Pulses twice, and not at all under reduced motion.
  */
 export default function Loading() {
+    const block = 'animate-pulse bg-surface-2';
     return (
-        <main aria-busy="true" className="mx-auto max-w-[1800px] px-4 pt-4 md:px-6 md:pt-6">
+        <main aria-busy="true" className="mx-auto max-w-[1180px] px-4 pt-5 md:px-5 md:pt-7">
             <p role="status" className="sr-only">
                 Loading…
             </p>
             <div aria-hidden="true">
-                <div className="mb-4 flex gap-2">
+                <div className="mb-6 flex items-center gap-2.5">
+                    <div className={`mr-3 h-7 w-44 rounded-control ${block}`} />
                     {[0, 1, 2].map(i => (
-                        <div key={i} className="h-9 w-20 animate-pulse rounded-full bg-surface-2" />
+                        <div key={i} className={`h-[34px] w-24 rounded-full ${block}`} />
                     ))}
                 </div>
-                <div className="grid gap-4 xl:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                     {[0, 1, 2, 3].map(i => (
-                        <div key={i} className="hud-panel p-5">
+                        <div key={i} className="panel p-card">
                             <div className="flex items-center justify-between">
+                                <div className={`h-3.5 w-20 rounded ${block}`} />
+                                <div className={`h-4 w-10 rounded-chip ${block}`} />
+                            </div>
+                            <div className="my-3 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 animate-pulse rounded-full bg-surface-2" />
-                                    <div className="h-4 w-24 animate-pulse rounded bg-surface-2" />
+                                    <div className={`h-14 w-14 rounded-full md:h-[84px] md:w-[84px] ${block}`} />
+                                    <div className={`h-4 w-24 rounded ${block}`} />
                                 </div>
-                                <div className="h-4 w-16 animate-pulse rounded bg-surface-2" />
                                 <div className="flex items-center gap-3">
-                                    <div className="h-4 w-24 animate-pulse rounded bg-surface-2" />
-                                    <div className="h-10 w-10 animate-pulse rounded-full bg-surface-2" />
+                                    <div className={`h-4 w-24 rounded ${block}`} />
+                                    <div className={`h-14 w-14 rounded-full md:h-[84px] md:w-[84px] ${block}`} />
                                 </div>
                             </div>
-                            <div className="mt-5 h-8 animate-pulse rounded-control bg-surface-2" />
-                            <div className="mt-4 flex gap-2">
-                                <div className="h-6 w-20 animate-pulse rounded-chip bg-surface-2" />
-                                <div className="h-6 w-16 animate-pulse rounded-chip bg-surface-2" />
-                                <div className="h-6 w-24 animate-pulse rounded-chip bg-surface-2" />
+                            <div className={`h-[50px] rounded-bar ${block}`} />
+                            <div className="mt-4 flex justify-between">
+                                <div className={`h-4 w-12 rounded ${block}`} />
+                                <div className={`h-4 w-12 rounded ${block}`} />
                             </div>
                         </div>
                     ))}

@@ -24,11 +24,17 @@ function clock(d: Date, hydrated: boolean) {
     return formatTime(d, 'datetime', hydrated ? undefined : ET_ZONE) ?? '';
 }
 
+/** "7m ago" → "4M", "3h ago" → "3H", "just now" → "NOW". */
+function shortAge(rel: string): string {
+    if (rel === 'just now') return 'now';
+    return rel.replace(/\s*ago$/, '');
+}
+
 /**
- * "Updated 7m ago" with a status dot. Red only when a scheduled pipeline run
- * was actually missed (see ./freshness.ts). Renders a stable placeholder on
- * the server and computes the relative time after mount (no hydration
- * mismatch); re-checks once a minute.
+ * "UPDATED 4M" with a live dot: green glow when fresh, grey when on schedule,
+ * red only when a scheduled pipeline run was actually missed (./freshness.ts).
+ * Renders a stable placeholder on the server and computes the age after
+ * mount (no hydration mismatch); re-checks once a minute.
  */
 export function FreshnessBadge({ generatedAt, compact = false, className }: { generatedAt: string | null; compact?: boolean; className?: string }) {
     const [now, setNow] = React.useState<Date | null>(null);
@@ -48,20 +54,20 @@ export function FreshnessBadge({ generatedAt, compact = false, className }: { ge
         <span
             title={title}
             className={cn(
-                'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-surface-1/80 px-2.5 py-1 text-caption font-medium text-fg-2',
-                state === 'stale' && 'border-neg/40 text-neg',
+                'inline-flex items-center gap-2 whitespace-nowrap text-micro font-medium uppercase tracking-[0.1em] text-fg-3',
+                state === 'stale' && 'text-neg',
                 className,
             )}
         >
-            <span aria-hidden="true" className={cn('h-2 w-2 shrink-0 rounded-full', dot[state], state === 'fresh' && 'shadow-[0_0_8px_rgb(var(--pos-rgb)/0.7)]')} />
+            <span aria-hidden="true" className={cn('h-[7px] w-[7px] shrink-0 rounded-full', dot[state], state === 'fresh' && 'shadow-[0_0_10px_rgb(var(--pos-rgb))]')} />
             <span className="sr-only">{label[state]}. </span>
             {rel ? (
                 <span>
-                    {state === 'stale' ? 'Stale · ' : compact ? '' : 'Updated '}
-                    {rel}
+                    {state === 'stale' ? 'Stale ' : compact ? '' : 'Updated '}
+                    {shortAge(rel)}
                 </span>
             ) : (
-                <span>{compact ? 'Data' : 'Data status'}</span>
+                <span>{compact ? 'Data' : 'Updated'}</span>
             )}
         </span>
     );
