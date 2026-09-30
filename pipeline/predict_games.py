@@ -738,7 +738,12 @@ def predict(now=None):
     now = now or datetime.now(timezone.utc)
     print(f"Predicting for NHL date {today_local(now)} ({SEASON_ID})...")
     inp = load_inputs(now)
+    from http_utils import request_count
+    before = request_count("/game-log/")
     rows = build_rows(inp)
+    goalies = {r[f"{s}_goalie_confirmed"] for r in rows for s in SIDES if r[f"{s}_goalie_confirmed"]}
+    print(f"Goalie vs-opponent lines: {len(goalies)} goalies, {request_count('/game-log/') - before} "
+          "game-log API calls (<= 2 per goalie on a warm cache)")
     try:
         inp._save_vs_cache()
     except Exception as e:
