@@ -27,7 +27,7 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  odds_closing.json keyed by gameId
   gamestats      every gamestats row is game type 02/03 and belongs to the
                  season its file is named for (the data/ and public/data/
-                 mirrors must be this season)
+                 mirrors must be this season and carry xga_non_en)
   reports        model_report.json / bet_ledger.json are not older than the
                  graded record, report n per season == graded live games, and
                  no ledger bet is pending on a graded game
@@ -441,6 +441,12 @@ def check_gamestats(ctx):
     for path in (os.path.join(DATA_DIR, "gamestats.csv"), os.path.join(PUBLIC_DATA_DIR, "gamestats.csv")):
         if os.path.exists(path):
             errs += _gamestats_problems(path, START_YEAR)
+            # Team GSAx on the site uses xga_non_en (empty-net shots excluded);
+            # a mirror without it silently falls back to all-situations xGA.
+            with open(path, newline="", encoding="utf-8") as f:
+                header = next(csv.reader(f), None) or []
+            if len(header) > 1 and "xga_non_en" not in header:
+                errs.append(f"{os.path.relpath(path, REPO_ROOT)}: missing xga_non_en (team GSAx would count empty-net xG)")
     return errs
 
 
