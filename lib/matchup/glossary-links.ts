@@ -32,7 +32,7 @@ export const CARD_TERMS: Record<string, string> = {
  * Anchors that lib/glossary.ts gains in fix3-G3 (G3-6). Until that lands they
  * fall back to the top of /methodology; every other anchor resolves today.
  */
-export const PENDING_ANCHORS: readonly string[] = ['term-opener', 'term-wt', 'term-lean'];
+export const PENDING_ANCHORS: readonly string[] = [];
 
 /** Every /methodology anchor the card links to. */
 export const CARD_ANCHORS: string[] = [READING_A_CARD, ...new Set(Object.values(CARD_TERMS))];
