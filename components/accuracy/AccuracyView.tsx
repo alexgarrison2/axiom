@@ -332,11 +332,14 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
                             <td className="hidden text-right text-fg-2 sm:table-cell">{r.n != null ? r.n.toLocaleString('en-US') : '—'}</td>
                             <td className="text-right text-fg-1">{pct1(r.acc)}</td>
                             <td className="text-right text-fg-1">{dec3(r.brier)}</td>
-                            <td className="text-right text-fg-1">
+                            <td className={cn('text-right', r.ll === bestLL ? 'font-bold text-pos' : 'text-fg-1')}>
                                 {r.ll === bestLL ? (
-                                    <span className="mr-1.5 rounded-chip border border-pos/40 px-1 text-micro font-semibold uppercase text-pos">best</span>
+                                    <span aria-hidden="true" className="mr-1">
+                                        ●
+                                    </span>
                                 ) : null}
                                 {dec4(r.ll)}
+                                {r.ll === bestLL ? <span className="sr-only"> (best)</span> : null}
                             </td>
                         </tr>
                     ))}
