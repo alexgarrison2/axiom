@@ -189,7 +189,7 @@ export function Ledger({ ledger, gate, season, seasons }: { ledger: LedgerData; 
                                     label="Avg closing-line value"
                                     value={summary.clvMean != null ? pctSigned(summary.clvMean) : '—'}
                                     empty={summary.clvMean == null}
-                                    sub={summary.clvN ? `${summary.clvN} bets with a closing price` : (ledger.clvNote ?? 'No closing prices recorded')}
+                                    sub={summary.clvN ? `${plural(summary.clvN, 'bet')} with a closing price` : (ledger.clvNote ?? 'No closing prices recorded')}
                                 />
                             </div>
 

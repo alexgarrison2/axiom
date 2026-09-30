@@ -97,7 +97,7 @@ export function StandingsTable({ rows, showProjections }: StandingsTableProps) {
             </div>
 
             {sections.map(section => (
-                <section key={section.heading ?? 'league'} aria-label={section.heading ?? 'League standings'} className="flex flex-col gap-3">
+                <section key={section.heading ?? 'league'} aria-label={section.heading ? `${section.heading} standings` : 'League standings'} className="flex flex-col gap-3">
                     {section.heading ? <h2 className="text-title font-bold text-fg-1">{section.heading}</h2> : null}
                     <div className={cn('grid gap-4', view === 'division' && 'xl:grid-cols-2')}>
                         {section.groups.map(g => (

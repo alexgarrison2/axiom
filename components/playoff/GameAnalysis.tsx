@@ -386,7 +386,10 @@ function ShotRink({ game, shots, awayColor, homeColor, isSeries }: { game: Playo
             })),
         [shots, game],
     );
-    const goals = shots.filter(s => s.isGoal);
+    const goals = React.useMemo(
+        () => shots.filter(s => s.isGoal).sort((a, b) => (a.gameNumber ?? 0) - (b.gameNumber ?? 0) || a.elapsedSeconds - b.elapsedSeconds),
+        [shots],
+    );
     return (
         <div className="flex flex-col gap-3">
             <div className="relative overflow-hidden rounded-control border border-line bg-surface-2/40 p-2">
@@ -420,17 +423,34 @@ function ShotRink({ game, shots, awayColor, homeColor, isSeries }: { game: Playo
             {goals.length ? (
                 <div>
                     <h4 className="hud-label mb-1.5">Goals</h4>
-                    <ol className="grid gap-1 text-body-sm sm:grid-cols-2">
-                        {goals.map(s => (
-                            <li key={`${s.gameId ?? ''}-${s.eventId}`} className="flex items-center gap-2 rounded-chip bg-surface-2/60 px-2 py-1">
-                                <TeamLogo tri={s.teamTriCode} size={18} />
-                                <span className="font-semibold text-fg-1">{s.playerName}</span>
-                                <span className="ml-auto whitespace-nowrap tabular-nums text-fg-3">
-                                    {shotClock(s, isSeries)} · xG {fmt(s.xG)}
-                                </span>
-                            </li>
-                        ))}
-                    </ol>
+                    {/* One column per team (away left, home right, like the cards above), each in order. */}
+                    <div className="grid gap-2 text-body-sm sm:grid-cols-2">
+                        {[game.awayTriCode, game.homeTriCode].map(tri => {
+                            const list = goals.filter(s => s.teamTriCode === tri);
+                            return (
+                                <section key={tri} aria-label={`${tri} goals`} className="flex flex-col gap-1">
+                                    <p className="flex items-center gap-1.5 text-caption font-semibold text-fg-2">
+                                        <TeamLogo tri={tri} size={16} />
+                                        {tri} · {list.length}
+                                    </p>
+                                    {list.length ? (
+                                        <ol className="flex flex-col gap-1">
+                                            {list.map(s => (
+                                                <li key={`${s.gameId ?? ''}-${s.eventId}`} className="flex items-center gap-2 rounded-chip bg-surface-2/60 px-2 py-1">
+                                                    <span className="font-semibold text-fg-1">{s.playerName}</span>
+                                                    <span className="ml-auto whitespace-nowrap tabular-nums text-fg-3">
+                                                        {shotClock(s, isSeries)} · xG {fmt(s.xG)}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    ) : (
+                                        <p className="px-2 py-1 text-fg-3">No goals</p>
+                                    )}
+                                </section>
+                            );
+                        })}
+                    </div>
                 </div>
             ) : null}
         </div>

@@ -6,7 +6,7 @@ import { KpiTile } from '@/components/ui/kpi-tile';
 import { InfoTip } from '@/components/ui/info-tip';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { TeamLogo } from '@/components/views/TeamLogo';
-import { shortDate, signed } from '@/components/views/format';
+import { plural, shortDate, signed } from '@/components/views/format';
 import { teamTriFromName } from './names';
 import { combineBlocks, type AccuracyReport, type CallRow, type GameTypeKey, type ReportBlock } from './report';
 import { ReliabilityChart, RollingChart, TierBars } from './charts';
@@ -82,7 +82,7 @@ export function AccuracyView({ report, ledger, seasons, currentSeason }: Accurac
                     {!empty && block ? (
                         <p className="text-caption text-fg-3">
                             Live pregame picks only · {shortDate(block.firstDate)} – {shortDate(block.lastDate)}
-                            {block.nRetro ? ` · ${block.nRetro.toLocaleString('en-US')} back-filled games excluded` : ''}
+                            {block.nRetro ? ` · ${plural(block.nRetro, 'back-filled game')} excluded` : ''}
                         </p>
                     ) : null}
                 </div>
@@ -118,7 +118,7 @@ function EmptyState({ season, currentSeason, type, prior, onPrior }: { season: s
             <p className="text-title font-bold text-fg-1">
                 {isCurrent
                     ? `No ${season} ${type === 'playoffs' ? 'playoff ' : ''}games graded yet.`
-                    : `No graded ${type === 'playoffs' ? 'playoff' : type === 'regular' ? 'regular-season' : ''} games for ${season === 'all' ? 'this selection' : season}.`}
+                    : `No graded ${type === 'playoffs' ? 'playoff ' : type === 'regular' ? 'regular-season ' : ''}games for ${season === 'all' ? 'this selection' : season}.`}
                 {isCurrent && type !== 'playoffs' ? ' First results after tonight.' : ''}
             </p>
             <p className="max-w-2xl text-body-sm text-fg-2">
