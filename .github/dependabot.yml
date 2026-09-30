@@ -1,0 +1,52 @@
+version: 2
+updates:
+  # Frontend (Next.js, React, tooling). Security updates are opened immediately
+  # regardless of this schedule; version bumps are batched weekly.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 5
+    groups:
+      next-react:
+        patterns: ["next", "eslint-config-next", "react", "react-dom", "@types/react", "@types/react-dom"]
+      test-tooling:
+        patterns: ["@playwright/test", "@axe-core/playwright", "vitest", "jsdom", "@testing-library/*"]
+      lint-types:
+        patterns: ["eslint", "typescript", "@types/*"]
+      radix:
+        patterns: ["@radix-ui/*"]
+    commit-message:
+      prefix: "deps"
+
+  # Python data pipeline (requirements.txt at the repo root).
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 5
+    groups:
+      scientific:
+        patterns: ["numpy", "pandas", "scipy", "scikit-learn", "xgboost"]
+    commit-message:
+      prefix: "deps(py)"
+
+  # Workflows pin actions to commit SHAs; Dependabot keeps the SHAs current.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"

@@ -1,0 +1,173 @@
+name: CI
+
+# Quality gate for every PR and every push to main. Required checks:
+#   static    - ESLint (0 errors, <=20 warnings), tsc, vitest
+#   pipeline  - pytest pipeline/tests + the pipeline data-contract check
+#   site      - next build, function-trace budgets, Playwright smoke/axe/type
+#               floor on desktop + mobile, throttled page performance budgets
+#
+# Data-only commits pushed by update_data.yml with GITHUB_TOKEN do not trigger
+# workflows; that workflow runs its own validate step before committing.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: '24'
+  PYTHON_VERSION: '3.13'
+  NEXT_TELEMETRY_DISABLED: '1'
+
+jobs:
+  static:
+    name: Lint, types, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: ESLint (errors fail; more than 20 warnings fail)
+        run: npm run lint -- --max-warnings=20
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Unit tests (vitest)
+        run: npm test
+
+      - name: Production dependency audit (high/critical fail)
+        run: npm audit --omit=dev --audit-level=high
+
+  pipeline:
+    name: Pipeline tests and data contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          if [ -f pipeline/requirements.txt ]; then pip install -r pipeline/requirements.txt; fi
+          pip install pytest
+
+      - name: pytest pipeline/tests
+        run: |
+          if [ -d pipeline/tests ]; then
+            python -m pytest pipeline/tests -q
+          else
+            echo "::notice::pipeline/tests does not exist yet; skipping"
+          fi
+
+      - name: Data contract (pipeline/validate_outputs.py)
+        run: |
+          if [ -f pipeline/validate_outputs.py ]; then
+            python pipeline/validate_outputs.py
+          else
+            echo "::notice::pipeline/validate_outputs.py does not exist yet; skipping"
+          fi
+
+  site:
+    name: Build, e2e quality gate, perf budgets
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PORT: '3100'
+      PLAYWRIGHT_BASE_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: next build
+        id: build
+        run: npm run build
+
+      - name: Function trace budgets (<=50MB each, home <=5MB, /playoffs <=15MB)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npm run perf:traces
+
+      - name: Install Chromium
+        id: browsers
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npx playwright install --with-deps chromium
+
+      - name: Start next (production)
+        id: server
+        if: ${{ !cancelled() && steps.browsers.outcome == 'success' }}
+        run: |
+          nohup npx next start -p "$PORT" > next-server.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS -o /dev/null "$PLAYWRIGHT_BASE_URL/"; then echo "server up after ${i}s"; exit 0; fi
+            sleep 1
+          done
+          echo "::error::next start did not come up"; cat next-server.log; exit 1
+
+      - name: Security headers
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: |
+          headers=$(curl -fsSI "$PLAYWRIGHT_BASE_URL/")
+          echo "$headers"
+          if echo "$headers" | grep -qi '^x-powered-by'; then echo "::error::X-Powered-By is exposed"; exit 1; fi
+          echo "$headers" | grep -qi '^x-content-type-options: nosniff' || { echo "::error::missing nosniff"; exit 1; }
+          echo "$headers" | grep -qi '^content-security-policy' || { echo "::error::missing CSP"; exit 1; }
+          max_age=$(curl -fsSI "$PLAYWRIGHT_BASE_URL/logos/EDM.svg" | tr -d '\r' | grep -i '^cache-control' | grep -oE 'max-age=[0-9]+' | head -1 | cut -d= -f2)
+          [ "${max_age:-0}" -ge 604800 ] || { echo "::error::/logos max-age is ${max_age:-unset}, want >= 604800"; exit 1; }
+
+      - name: Playwright gate (smoke, console errors, axe, 11px floor) desktop + mobile
+        id: e2e
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test
+
+      - name: Page performance budgets (throttled mobile)
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        env:
+          PERF_TIMING_SLACK: '1.25'
+        run: npm run perf:budget -- --runs 3 --out perf-report.json
+
+      - name: Upload reports
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: quality-gate-reports
+          path: |
+            playwright-report/
+            test-results/
+            perf-report.json
+            next-server.log
+          retention-days: 14
+          if-no-files-found: ignore
