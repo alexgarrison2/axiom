@@ -94,7 +94,7 @@ Not viable, do not build on them:
 - **Natural Stat Trick**: Cloudflare challenge (403 "Just a moment...") on every headless request.
 - **DraftKings direct API**: Akamai 403. Get DraftKings prices through the NHL `partner-game` / `schedule` feeds instead.
 - **The Odds API, hourly**: needs a key and the free tier is 500 credits/month, far below ~720 hourly calls. At most one closing-line snapshot per game day.
-- **PuckPedia**: 403 for scripted requests (contracts come from DailyFaceoff's `cap` data or CapWages instead).
+- **PuckPedia**: 403 for scripted requests. `fetch_contracts.py` still targets it, so `contracts.json` is sparse; replace it with the per-player `cap` object in the DailyFaceoff line-combination pages the pipeline already downloads, backfilled from CapWages.
 - **Nitter / X scraping**: all public nitter instances are dead.
 - **NHL transactions/injuries endpoint**: does not exist (`/v1/transactions/now` is 404); use ESPN injuries.
 - NHL `.../now` endpoints (`club-stats/{team}/now`, `player/{id}/game-log/now`, `edge/*/now`) keep returning the previous season around opening night; always pass an explicit season id.
