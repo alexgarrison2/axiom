@@ -1,40 +1,41 @@
-# Automation Instructions
+# Supabase snapshot scripts
 
-To run the prediction snapshot script automatically at 9am, 2pm, and 6pm Central Time, follow these steps to set up a cron job on your machine.
+`scripts/snapshot_predictions.py` and `scripts/sync_history_to_supabase.py` push
+prediction snapshots and prediction history to a Supabase Postgres database.
+The site itself never reads Supabase; these are an optional side channel.
 
-## Prerequisites
+In production they run from `pipeline/refresh_pipeline.py` inside the GitHub
+Actions workflow (`.github/workflows/update_data.yml`), which supplies the
+connection details from repository secrets. No local cron job is needed.
 
-1. **Python dependencies**: Ensure `psycopg2-binary` is installed.
+## Configuration
 
-   ```bash
-   pip3 install psycopg2-binary
-   ```
+Both scripts read the connection **only** from environment variables. Nothing
+identifying the database is hardcoded in the repo.
 
-2. **Database Password**: You will need your Supabase database password.
+| Variable      | Required | Notes                                            |
+|---------------|----------|--------------------------------------------------|
+| `DB_HOST`     | yes      | Supabase pooler host                             |
+| `DB_USER`     | yes      | Pooler format: `postgres.<project-ref>`          |
+| `DB_PASSWORD` | yes      | Never commit this value                          |
+| `DB_NAME`     | no       | Defaults to `postgres`                           |
+| `DB_PORT`     | no       | Defaults to `6543` (transaction pooler)          |
 
-## Cron Schedule
+Set them as GitHub Actions secrets with the same names. For a local run, put
+them in an untracked `.env` file (all `.env*` files are gitignored) or export
+them in your shell.
 
-The cron expression for 9am, 2pm (14:00), and 6pm (18:00) is:
-`0 9,14,18 * * *`
+## Manual run
 
-## Setup Steps
-
-1. Open your terminal.
-2. Type `crontab -e` to edit your cron jobs.
-3. Add the following line to the file (adjust the paths to match your system):
-
-```bash
-0 9,14,18 * * * cd /Users/alexgarrison/Downloads/HockeyData/nhl-predictions-app && DB_PASSWORD='YOUR_SUPABASE_DB_PASSWORD' /usr/bin/python3 scripts/snapshot_predictions.py >> /tmp/snapshot.log 2>&1
-```
-
-> **Important**: Replace `YOUR_SUPABASE_DB_PASSWORD` with your actual Supabase database password.
-> The `>> /tmp/snapshot.log 2>&1` part is optional but recommended to log the output for debugging.
-
-## Verification
-
-You can test the script manually by running:
+From the repository root, with `psycopg2-binary` installed
+(`pip3 install psycopg2-binary python-dotenv`):
 
 ```bash
-export DB_PASSWORD='somfo6-wiprip-Devzuj'
+export DB_HOST='<your-pooler-host>'
+export DB_USER='postgres.<your-project-ref>'
+export DB_PASSWORD='<your-db-password>'
 python3 scripts/snapshot_predictions.py
 ```
+
+If any required variable is missing the script prints which one and exits
+without connecting.

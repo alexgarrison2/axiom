@@ -13,7 +13,6 @@ import MatchupCard from './MatchupCard';
 import HistoryTable from './HistoryTable';
 import TeamsTable from './TeamsTable';
 import NewsSection from './NewsSection';
-import PlayoffTable from './PlayoffTable';
 import PlayoffBracket from './PlayoffBracket';
 import SkaterStatsTable from './SkaterStatsTable';
 import Header from './Header';
@@ -80,7 +79,6 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
     // Map of "AWAY_TRI|HOME_TRI" → { awayWins, homeWins } for active playoff series
     const [seriesScoreMap, setSeriesScoreMap] = useState<Record<string, { awayWins: number; homeWins: number }>>({});
     const [playoffsActive, setPlayoffsActive] = useState(false);
-    const workerRef = useRef<Worker | null>(null);
     const tabBarRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
@@ -174,40 +172,6 @@ const PredictionsViewer: React.FC<PredictionsViewerProps> = ({ predictions: init
             })
             .catch(() => { /* not in playoffs yet — silent */ });
     }, []);
-
-    // Worker Disabled in favor of Backend Projections
-    /*
-    useEffect(() => {
-        if (!fullSchedule || fullSchedule.length === 0 || !currentStandings || currentStandings.length === 0) return;
-
-        // Initialize Worker
-        if (!workerRef.current) {
-            workerRef.current = new Worker(new URL('../workers/simulation.worker.ts', import.meta.url));
-        }
-
-        const worker = workerRef.current;
-
-        // Listen for results
-        worker.onmessage = (e) => {
-            if (e.data.type === 'SIMULATION_COMPLETE') {
-                const results: Record<string, SimResult> = e.data.results;
-                setSimResults(results); // Store full results for table
-            }
-        };
-
-        // Fire off the base simulation
-        worker.postMessage({
-            type: 'RUN_SIMULATION',
-            schedule: fullSchedule,
-            standings: currentStandings,
-            iterations: 5000 // Run 5k to keep it fast
-        });
-
-        return () => {
-            worker.terminate();
-            workerRef.current = null;
-        };
-    }, [fullSchedule, currentStandings, predictions]); */
 
     // Sync Predictions with live News
     React.useEffect(() => {

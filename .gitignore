@@ -54,3 +54,34 @@ pipeline/nhl_season_*_pbp.csv
 
 # Large scraped historical data
 data/historical_pbp/*.csv
+
+# local databases / credential stores (never commit)
+*.db
+*.sqlite
+*.sqlite3
+
+# --- repo hygiene: personal files, one-off output and logs never belong in git ---
+# personal / third-party documents
+*.pdf
+*.xlsx
+*.xls
+TeamLogos_hockeystats
+# screenshots, audit and social-image output
+/output/
+/.playwright-cli/
+/DailyImages/
+/SocialImages/
+# ad-hoc analysis notebooks and scraped pages (keep in a separate repo)
+/analysis/
+# logs, debug dumps and backups
+*.log
+*.bak
+*.bak_*
+pipeline/debug_output*.txt
+# stale duplicates of pipeline outputs (canonical copies live in public/data and data/)
+public/data/shots.csv
+public/data/prediction_history.json
+pipeline/data/gamestats.csv
+pipeline/data/predictions_detailed.csv
+pipeline/data/last_updated.json
+data/nhl_season_*_gamestats.csv
