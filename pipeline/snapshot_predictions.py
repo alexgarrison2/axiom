@@ -97,9 +97,47 @@ def format_home_bet(wager_str):
         return ''
     return format_bet(wager_str)
 
-def snapshot():
+FIELDNAMES = [
+    'date', 'gameid', 'timestamp', 'run', 'awayteam',
+    'away_starter', 'away_xG', 'away_win%', 'away_xGOdds', 'away_Odds', 'away_EV', 'away_bet',
+    'hometeam', 'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV', 'home_bet',
+    # v2 additions: UTC snapshot time, model version, model-only and
+    # de-vigged market home probabilities (model_report's rolling gate).
+    'timestamp_utc', 'model_version', 'home_model%', 'home_market%',
+    # 10-digit NHL gameId, so /api/odds-history can find a game's rows by id.
+    'nhl_game_id',
+]
+
+
+def _is_pregame(row, now_utc):
+    """Only games that have not started get a snapshot row: a frozen (started)
+    row carries the old prediction, and a post-puck-drop row never counts."""
+    status = row.get('prediction_status')
+    if status in ('no_pregame_prediction', 'no_model', 'frozen'):
+        return False
+    start = (row.get('start_time_utc') or '').strip()
+    if start:
+        try:
+            t = datetime.datetime.fromisoformat(start.replace('Z', '+00:00'))
+            if t.tzinfo is None:
+                t = t.replace(tzinfo=datetime.timezone.utc)
+            return t > now_utc
+        except ValueError:
+            pass
+    return True
+
+
+def snapshot(predictions_path=None, history_dir=None, now_utc=None):
+    """Append this run's pregame rows to SiteHistory/<Central date>.csv.
+
+    A game gets a new row only when something it shows changed since its
+    latest stored row (price, win %, starter, xG, bet), so every lite run that
+    moves a market price adds a timestamped point for that game until puck
+    drop (the line-movement chart), and a no-change run leaves the file alone.
+    The file is written without the old blank separator rows (readers skip
+    them in older files)."""
     ct = pytz.timezone('US/Central')
-    now_utc = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+    now_utc = (now_utc or datetime.datetime.now(datetime.timezone.utc)).replace(microsecond=0)
     now_ct = now_utc.astimezone(ct)
     stamp_utc = now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
     date_str = now_ct.strftime('%Y-%m-%d')
@@ -107,8 +145,8 @@ def snapshot():
 
     # Paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    predictions_path = os.path.join(script_dir, '..', 'data', 'predictions_detailed.csv')
-    history_dir = os.path.join(script_dir, '..', 'public', 'data', 'SiteHistory')
+    predictions_path = predictions_path or os.path.join(script_dir, '..', 'data', 'predictions_detailed.csv')
+    history_dir = history_dir or os.path.join(script_dir, '..', 'public', 'data', 'SiteHistory')
     os.makedirs(history_dir, exist_ok=True)
     history_file = os.path.join(history_dir, f'{date_str}.csv')
 
@@ -116,32 +154,27 @@ def snapshot():
         print(f"[snapshot] predictions_detailed.csv not found at {predictions_path}")
         return
 
-    # Determine run number: count existing rows for today + 1
-    run_number = 1
-    if os.path.exists(history_file):
+    all_rows = []
+    if os.path.exists(history_file) and os.path.getsize(history_file) > 0:
         with open(history_file, 'r') as f:
-            reader = csv.DictReader(f)
-            runs_seen = set()
-            for row in reader:
-                if row.get('gameid'):  # skip blank separator rows
-                    runs_seen.add(row.get('run', ''))
-            run_number = len(runs_seen) + 1
+            for row in csv.DictReader(f):
+                if row.get('gameid'):  # skip blank separator rows (older files)
+                    all_rows.append(row)
+    run_number = len({r.get('run', '') for r in all_rows}) + 1
 
-    # Read today's predictions
+    # Read today's pregame predictions
     rows_to_write = []
     with open(predictions_path, 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            game_date = row.get('game_date', '')
-            # Only snapshot games for today
-            if game_date != date_str:
+        for row in csv.DictReader(f):
+            if row.get('game_date', '') != date_str:
                 continue
-            # v2 rows without a pregame prediction (started before one existed,
-            # or no model) carry no win % or bet: nothing to snapshot.
-            if row.get('prediction_status') in ('no_pregame_prediction', 'no_model'):
+            if not _is_pregame(row, now_utc):
                 continue
-
             wager = row.get('wager_recommendation', '')
+            # xGOdds is the fair line of the PUBLISHED win % (the blend); since
+            # fix1-G1 *_model_odds is the model-only line (older CSVs: model_odds only).
+            fair = {side: row.get(f'{side}_blend_odds') or row.get(f'{side}_model_odds', '')
+                    for side in ('home', 'away')}
             rows_to_write.append({
                 'date': now_ct.strftime('%-m/%-d/%y'),
                 'gameid': row.get('game_id', ''),
@@ -151,13 +184,14 @@ def snapshot():
                 'model_version': row.get('model_version', ''),
                 'home_model%': format_pct(row.get('home_model_win_pct', '')),
                 'home_market%': format_pct(row.get('home_vegas_win_pct', '')),
+                'nhl_game_id': row.get('nhl_game_id', ''),
                 'awayteam': row.get('away_team', ''),
                 'hometeam': row.get('home_team', ''),
 
                 'away_starter': format_starter(row.get('away_starter', '')),
                 'away_xG': row.get('away_xg', ''),
                 'away_win%': format_pct(row.get('away_win_pct', '')),
-                'away_xGOdds': format_odds(row.get('away_model_odds', '')),
+                'away_xGOdds': format_odds(fair['away']),
                 'away_Odds': format_odds(row.get('away_vegas_odds', '')),
                 'away_EV': format_ev(ev_pct(row, 'away')),
                 'away_bet': format_away_bet(wager),
@@ -165,55 +199,32 @@ def snapshot():
                 'home_starter': format_starter(row.get('home_starter', '')),
                 'home_xG': row.get('home_xg', ''),
                 'home_win%': format_pct(row.get('home_win_pct', '')),
-                'home_xGOdds': format_odds(row.get('home_model_odds', '')),
+                'home_xGOdds': format_odds(fair['home']),
                 'home_Odds': format_odds(row.get('home_vegas_odds', '')),
                 'home_EV': format_ev(ev_pct(row, 'home')),
                 'home_bet': format_home_bet(wager),
             })
 
     if not rows_to_write:
-        print(f"[snapshot] No games found for {date_str}")
-        return
+        print(f"[snapshot] No pregame games found for {date_str}")
+        return {'status': 'ok', 'rows_written': 0}
 
-    # Write/append to daily history file
-    fieldnames = [
-        'date', 'gameid', 'timestamp', 'run', 'awayteam',
-        'away_starter', 'away_xG', 'away_win%', 'away_xGOdds', 'away_Odds', 'away_EV', 'away_bet',
-        'hometeam', 'home_starter', 'home_xG', 'home_win%', 'home_xGOdds', 'home_Odds', 'home_EV', 'home_bet',
-        # v2 additions: UTC snapshot time, model version, model-only and
-        # de-vigged market home probabilities (model_report's rolling gate).
-        'timestamp_utc', 'model_version', 'home_model%', 'home_market%',
-    ]
-
-    # Build bet lookups by gameid so old rows can be backfilled
-    away_bet_by_gameid = {r['gameid']: r['away_bet'] for r in rows_to_write}
-    home_bet_by_gameid = {r['gameid']: r['home_bet'] for r in rows_to_write}
-
-    all_rows = []
-    if os.path.exists(history_file) and os.path.getsize(history_file) > 0:
-        with open(history_file, 'r') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if row.get('gameid'):  # skip blank separator rows
-                    all_rows.append(row)
-
-    # An hourly run whose predictions and lines match the latest stored run
-    # for every game adds no information: skip it, so a no-change run leaves
-    # the file (and the repo) untouched instead of forcing a data commit.
-    same_keys = [k for k in fieldnames if k not in ('date', 'timestamp', 'timestamp_utc', 'run')]
+    fieldnames = FIELDNAMES
+    same_keys = [k for k in fieldnames if k not in ('date', 'timestamp', 'timestamp_utc', 'run', 'nhl_game_id')]
 
     def _norm(r):
         return tuple(str(r.get(k, '')).replace('%', '').replace('+', '') for k in same_keys)
 
     latest = {}
     for row in all_rows:
-        if row.get('gameid') and int(row.get('run') or 0) >= int(latest.get(row['gameid'], {}).get('run') or 0):
+        if int(row.get('run') or 0) >= int(latest.get(row['gameid'], {}).get('run') or 0):
             latest[row['gameid']] = row
-    if all(r['gameid'] in latest and _norm(latest[r['gameid']]) == _norm(r) for r in rows_to_write):
+    changed = [r for r in rows_to_write if r['gameid'] not in latest or _norm(latest[r['gameid']]) != _norm(r)]
+    if not changed:
         print(f"[snapshot] {len(rows_to_write)} game(s) unchanged since the last run — not appended")
-        return
+        return {'status': 'ok', 'rows_written': 0}
 
-    all_rows.extend(rows_to_write)
+    all_rows.extend(changed)
 
     # Apply format to all rows (fixes runs from earlier today)
     for row in all_rows:
@@ -228,25 +239,20 @@ def snapshot():
         # Re-format starters (handles old rows with full name + full status)
         row['away_starter'] = format_starter(row.get('away_starter', ''))
         row['home_starter'] = format_starter(row.get('home_starter', ''))
-        # Backfill away_bet/home_bet for rows written before these columns existed
-        gameid = row.get('gameid', '')
-        if not row.get('away_bet') and not row.get('home_bet') and gameid in away_bet_by_gameid:
-            row['away_bet'] = away_bet_by_gameid[gameid]
-            row['home_bet'] = home_bet_by_gameid[gameid]
 
     all_rows.sort(key=lambda r: (r.get('gameid', ''), int(r.get('run', 0))))
 
-    with open(history_file, 'w', newline='') as f:
+    tmp = history_file + '.tmp'
+    with open(tmp, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
         writer.writeheader()
-        prev_gameid = None
-        for row in all_rows:
-            if prev_gameid is not None and row.get('gameid') != prev_gameid:
-                writer.writerow({fn: '' for fn in fieldnames})  # blank separator row
+        for row in all_rows:   # no blank separator rows
             writer.writerow(row)
-            prev_gameid = row.get('gameid')
+    os.replace(tmp, history_file)
 
-    print(f"[snapshot] Run #{run_number}: added {len(rows_to_write)} games to {history_file}")
+    print(f"[snapshot] Run #{run_number}: added {len(changed)} of {len(rows_to_write)} pregame game(s) "
+          f"to {history_file}")
+    return {'status': 'ok', 'rows_written': len(changed)}
 
 
 if __name__ == '__main__':

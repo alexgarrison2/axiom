@@ -203,6 +203,10 @@ def load_site_history(site_dir=SITE_DIR) -> pd.DataFrame:
     d['run'] = d['run'].astype(float).astype(int)
     d['snapshot_utc'] = snapshot_times(d['date'], d['timestamp'])
     gid = d['gameid'].astype(str)
+    # Newer snapshots carry the NHL id in its own column next to the legacy key.
+    if 'nhl_game_id' in d.columns:
+        col = d['nhl_game_id'].fillna('').astype(str).str.split('.').str[0].str.strip()
+        gid = gid.where(~col.str.fullmatch(r'\d{10}'), col)
     is_nhl_id = gid.str.fullmatch(r'\d{10}')
     d['nhl_game_id'] = np.where(is_nhl_id, gid, None)
     d['game_date'] = np.where(is_nhl_id, None, gid.str[:10])
