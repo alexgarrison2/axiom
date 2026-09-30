@@ -1,0 +1,44 @@
+{
+  "method": "Preseason projection check for the strength-uncertainty sigma.",
+  "n_sims": 1000,
+  "seasons": {
+    "2023": {
+      "games": 1312,
+      "playoff_teams": 16
+    },
+    "2025": {
+      "games": 1312,
+      "playoff_teams": 16
+    }
+  },
+  "sigmas": {
+    "0.00": {
+      "brier": 0.218,
+      "ll": 0.6176,
+      "cover80": 0.6094,
+      "mae_pts": 10.9049,
+      "n_team_seasons": 64
+    },
+    "0.10": {
+      "brier": 0.2151,
+      "ll": 0.6108,
+      "cover80": 0.6875,
+      "mae_pts": 10.9151,
+      "n_team_seasons": 64
+    },
+    "0.20": {
+      "brier": 0.2119,
+      "ll": 0.6055,
+      "cover80": 0.75,
+      "mae_pts": 10.9409,
+      "n_team_seasons": 64
+    },
+    "0.30": {
+      "brier": 0.2124,
+      "ll": 0.6094,
+      "cover80": 0.8594,
+      "mae_pts": 10.9807,
+      "n_team_seasons": 64
+    }
+  }
+}

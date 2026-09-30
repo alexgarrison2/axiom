@@ -1,6 +1,7 @@
 """season_simulator.py - Monte Carlo standings and playoff odds.
 
-    python3 season_simulator.py        # writes public/data/season_projections.json
+    python3 season_simulator.py              # writes public/data/season_projections.json
+    python3 season_simulator.py --backtest   # preseason-projection check of the sigma
 
 Model
 -----
@@ -17,7 +18,11 @@ Model
   team, N(0, sigma), with sigma = SIGMA0 * sqrt(SIGMA_GP / (SIGMA_GP + GP)),
   so preseason projections are not over-confident (a fixed-strength
   simulation gave several teams 0% / 100% in October).  SIGMA0 = 0.20 logit
-  (about +-5% per game) is an assumption, not fitted.
+  (about +-5% per game) was picked by ``--backtest`` (preseason projections
+  of 2023-24 and 2025-26, 64 team-seasons, tests/out/season_sim_backtest.json):
+  playoff Brier 0.2119 vs 0.2180 with fixed strengths (sigma 0), log loss
+  0.6055 vs 0.6176, and 75% of final point totals inside the 80% interval
+  (61% with fixed strengths); sigma 0.3 covers 86% but scores worse.
 * Playoffs: the NHL bracket (division top 3 + 2 wild cards per conference,
   the better division winner plays the lower wild card), best-of-7 with
   2-2-1-1-1 home ice for the team with more points.
@@ -494,5 +499,67 @@ def full_simulation_loop(n_sims=SIMULATIONS, now=None, standings=None, schedule=
     return {"status": "ok", "rows_written": len(out["teams"])}
 
 
+def backtest(seasons=(2023, 2025), sigmas=(0.0, 0.1, 0.2, 0.3), n_sims=1000,
+             out_path=os.path.join(SCRIPT_DIR, "tests", "out", "season_sim_backtest.json")):
+    """Preseason projection check for the strength-uncertainty sigma.
+
+    For each season, the game model's state is built from games BEFORE
+    opening night only, every regular-season game of that season is
+    simulated from 0-0-0, and the projection is scored against the final
+    table: Brier / log loss of 'makes the playoffs' (NHL clinch flags) and
+    the share of teams whose final points fall inside the 80% interval.
+    (Seasons with an incomplete archive, e.g. 2024-25 without October, are
+    skipped; the game model's coefficients saw these seasons, so this tests
+    the simulation layer, not the model.)"""
+    import features as F
+    from http_utils import get_json
+    from ml_predict import MLPredictor
+    games, _ = F.load_feature_games(SCRIPT_DIR)
+    report = {"method": backtest.__doc__.strip().split("\n")[0], "n_sims": n_sims, "seasons": {}, "sigmas": {}}
+    per_sigma = {s: {"brier": [], "ll": [], "cover80": [], "mae_pts": []} for s in sigmas}
+    for y in seasons:
+        g = games[(games["season"] == y) & (games["game_id"].astype(str).str[4:6] == "02")]
+        start = g["game_date"].min()
+        ml = MLPredictor(games=games[games["game_date"] < start])
+        home = g[g["home_away"] == "Home"].sort_values(["game_date", "game_id"])
+        sched = [{"id": int(r.game_id), "date": r.game_date.strftime("%Y-%m-%d"), "home": r.team,
+                  "away": r.opponent} for r in home.itertuples()]
+        end = g["game_date"].max().strftime("%Y-%m-%d")
+        table = get_json(f"https://api-web.nhle.com/v1/standings/{end}", ua="plain")["standings"]
+        info = {t["teamCommonName"]["default"]: t for t in table}
+        teams = sorted(set(home["team"]) | set(home["opponent"]))
+        missing = [t for t in teams if t not in info]
+        if missing:
+            raise RuntimeError(f"{y}: no standings for {missing}")
+        standings = {t: {"pts": 0, "rw": 0, "row": 0, "w": 0, "l": 0, "otl": 0, "gp": 0,
+                         "conference": info[t]["conferenceAbbrev"], "division": info[t]["divisionAbbrev"]}
+                     for t in teams}
+        made = {t: 0 if info[t].get("clinchIndicator") in (None, "e") else 1 for t in teams}
+        pts = {t: info[t]["points"] for t in teams}
+        probs = Probabilities({t: t for t in teams}, ml=ml)
+        report["seasons"][str(y)] = {"games": len(sched), "playoff_teams": sum(made.values())}
+        for s in sigmas:
+            eng = Engine(standings, sched, probs, n_sims=n_sims, sigma0=s, seed=SEED + y)
+            r = eng.run(playoffs=False)
+            for i, t in enumerate(eng.teams):
+                p = min(max(r["made"][i] / n_sims, 1e-3), 1 - 1e-3)
+                per_sigma[s]["brier"].append((p - made[t]) ** 2)
+                per_sigma[s]["ll"].append(-math.log(p if made[t] else 1 - p))
+                dist = sorted(int(k) for k, c in r["point_dist"][i].items() for _ in range(c))
+                lo, hi = dist[int(0.1 * len(dist))], dist[int(0.9 * len(dist)) - 1]
+                per_sigma[s]["cover80"].append(1.0 if lo <= pts[t] <= hi else 0.0)
+                per_sigma[s]["mae_pts"].append(abs(float(r["pts"][i]) / n_sims - pts[t]))
+    for s, m in per_sigma.items():
+        report["sigmas"][f"{s:.2f}"] = {k: round(float(np.mean(v)), 4) for k, v in m.items()}
+        report["sigmas"][f"{s:.2f}"]["n_team_seasons"] = len(m["brier"])
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    _write_json(out_path, report)
+    print(json.dumps(report["sigmas"], indent=1))
+    return report
+
+
 if __name__ == "__main__":
-    full_simulation_loop()
+    if "--backtest" in sys.argv:
+        backtest()
+    else:
+        full_simulation_loop()
