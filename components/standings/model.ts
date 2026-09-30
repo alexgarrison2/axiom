@@ -199,7 +199,8 @@ export function trendFor(history: HistoryPoint[] | undefined, current: number | 
 /**
  * Official NHL order (shared with /teams via compareOfficial): points, P%,
  * fewer GP, RW, ROW, W, goal differential, goals for. Only when all of those
- * tie do the model's projected points break the tie.
+ * tie do the model's projected points break the tie (teams with 0 GP stay
+ * alphabetical, matching NHL.com).
  */
 export function compareStandings(a: StandingsRow, b: StandingsRow): number {
     return (
@@ -207,7 +208,8 @@ export function compareStandings(a: StandingsRow, b: StandingsRow): number {
             { pts: a.pts, gp: a.gp, rw: a.rw, row: a.row, w: a.w, gd: a.gd ?? 0, gf: a.gf ?? 0 },
             { pts: b.pts, gp: b.gp, rw: b.rw, row: b.row, w: b.w, gd: b.gd ?? 0, gf: b.gf ?? 0 },
         ) ||
-        (b.proj?.avgPoints ?? 0) - (a.proj?.avgPoints ?? 0) ||
+        // Teams that have not played list alphabetically, as NHL.com does; projections only split played ties.
+        (a.gp === 0 && b.gp === 0 ? 0 : (b.proj?.avgPoints ?? 0) - (a.proj?.avgPoints ?? 0)) ||
         a.tri.localeCompare(b.tri)
     );
 }

@@ -167,4 +167,10 @@ describe('compareStandings (official order shared with /teams)', () => {
         const b = row('WSH', { gp: 1, w: 1, pts: 2, rw: 1, row: 1, gd: 2, gf: 3 });
         expect([b, a].sort(compareStandings)[0].tri).toBe('CAR');
     });
+
+    it('lists 0-GP teams alphabetically (NHL.com order), not by projection', () => {
+        const pit = row('PIT', { gp: 0, w: 0, pts: 0, rw: 0, row: 0, proj: { ...(base[0].proj!), avgPoints: 120 } });
+        const njd = row('NJD', { gp: 0, w: 0, pts: 0, rw: 0, row: 0, proj: { ...(base[0].proj!), avgPoints: 60 } });
+        expect([pit, njd].sort(compareStandings).map(r => r.tri)).toEqual(['NJD', 'PIT']);
+    });
 });
