@@ -508,6 +508,26 @@ def stage_bu_bundle():
     return {"status": "ok", "reason": msg}
 
 
+def stage_player_ratings():
+    """public/data/player_ratings.json (RAPM v2 OFF / DEF / NET, the site's player ratings) from
+    the committed serving bundle and today's NHL rosters.  bu_refresh.yml re-exports it with
+    this season's EV sample after each bundle refresh; this daily pass keeps names, teams and
+    roster flags current between bundle refreshes (trades, call-ups)."""
+    import shutil
+    import tempfile
+    from bu.lineup import ratings_export as RE
+    tmp = tempfile.mkdtemp(prefix="ponyxg-ratings-")
+    try:
+        s = RE.export(state_root=tmp, fetch_rosters=True)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    record_source("player_ratings", as_of=s.get("as_of"), roster_skaters=s.get("roster_skaters"),
+                  roster_rated=s.get("roster_rated"), season=s.get("season"))
+    return {"status": "ok", "rows_written": int(s.get("rows") or 0),
+            "reason": f"{s.get('roster_skaters')} roster skaters, as of {s.get('as_of')}"
+                      + ("" if s.get("written") else " (unchanged)")}
+
+
 def stage_player_models(state, n_games):
     """MoneyPuck + PBP + RAPM + player impact once the season has enough games;
     until then only re-point the committed profiles at current rosters."""
@@ -681,6 +701,7 @@ def run_full(r, phase, rescore_all=False):
         r.skip("goalie_playoff_career", "not in the playoffs")
     pregame_stages(r, phase, "full")
     r.run("bu_bundle", stage_bu_bundle, title="RAPM lineup bundle freshness")
+    r.run("player_ratings", stage_player_ratings, title="Player ratings (RAPM v2) export")
     print("Running Predictions...")
     r.run("predict", stage_predict, required=True, title="Running Predictions")
     print("Generating Prediction History...")

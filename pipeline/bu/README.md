@@ -75,7 +75,19 @@ fails on a missing / wrong-season / malformed bundle.
 **Season rollover**: build the next season's pack from the full lake
 (`python -m bu.lineup pack --season <S>` after `bu.rapm asof` through S-1 with the v2 target)
 and commit it before the new season's first games; until then the refresh fails (no pack), the
-bundle ages past 36 h and the term is served neutral.
+bundle ages past 36 h and the term is served neutral.  Also build and commit the season's
+player sample for the site ratings (`python -m bu.lineup.ratings_export sample --lake-dir <lake>
+--season <S>`: EV minutes / games of the three seasons before S, names of every lake player).
+
+**Site player ratings** (`bu/lineup/ratings_export.py` -> `public/data/player_ratings.json`):
+the one player rating the site shows (/players, team pages, the matchup Lines tab).  One row per
+rated skater plus every rostered skater: `off` (EV xGF/60 impact), `def` (EV xGA/60 impact, lower
+is better), `net = off - def`, the EV sample (`toi` minutes, `gp`) over the last three seasons +
+this one, `roster` (on a current NHL roster) and `rated` (False = no NHL sample yet: the rookie
+prior of his position group, as in the lineup term).  Exported by every bundle refresh
+(`bu_refresh.yml` commits it with the bundle) and by the daily full run (`refresh_pipeline.py`
+stage `player_ratings`: today's rosters), rewritten only when its content changed;
+`validate_outputs.py player_ratings` gates it.
 
 ## `bu.lake`: event / shift / roster lake (M0b, DESIGN §2.1-2.3, §2.6)
 

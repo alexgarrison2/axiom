@@ -130,7 +130,7 @@ jobs:
           add pipeline/player_impact.json public/data/player_impact.json \
               pipeline/league_avg_impact.json public/data/league_avg_impact.json \
               pipeline/player_name_lookup.json pipeline/team_lineup_baselines.json public/data/team_lineup_baselines.json \
-              public/data/player_bio.json public/data/contracts.json
+              public/data/player_bio.json public/data/contracts.json public/data/player_ratings.json
           # Season context
           add pipeline/data/season_projections.json public/data/season_projections.json \
               pipeline/game_implications.json public/data/game_implications.json \

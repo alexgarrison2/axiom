@@ -44,6 +44,9 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  (bu/lineup/out/serving_bundle.json.gz) is readable, carries the model's
                  columns, was built after its source data and, when fresh, is of this season
                  (age: manifest stale flag; with a stale bundle the F1 rollback model is published)
+  player_ratings public/data/player_ratings.json (RAPM v2 OFF / DEF / NET): every row named,
+                 >= 600 current-roster skaters on >= 28 teams, net = off - def, same season as
+                 the serving bundle and at most 3 days behind its max_source_date
 
 ``--freshness`` instead only checks that manifest.generated_at is under 26 h
 old during the season (the daily freshness workflow).
@@ -737,6 +740,60 @@ def check_bu_bundle(ctx):
     return errs
 
 
+PLAYER_RATINGS_COLUMNS = ("id", "name", "team", "pos", "roster", "rated", "off", "def", "net", "toi", "gp")
+PLAYER_RATINGS_MIN_ROSTER = 600
+PLAYER_RATINGS_MAX_LAG_DAYS = 3
+
+
+def check_player_ratings(ctx):
+    """public/data/player_ratings.json (the site's RAPM v2 player ratings): readable, every row
+    named, >= PLAYER_RATINGS_MIN_ROSTER current-roster skaters across >= 28 teams, net = off - def,
+    and not behind the committed serving bundle it is exported from (same season, as_of no
+    older than the bundle's max_source_date)."""
+    path = ctx.get("player_ratings_path") or os.path.join(PUBLIC_DATA_DIR, "player_ratings.json")
+    doc = _json(path)
+    if not isinstance(doc, dict):
+        return ["player_ratings.json missing or not JSON (python -m bu.lineup.ratings_export export)"]
+    cols = doc.get("columns") or []
+    miss = [c for c in PLAYER_RATINGS_COLUMNS if c not in cols]
+    if miss:
+        return [f"player_ratings.json: columns {miss} missing"]
+    rows = [dict(zip(cols, r)) for r in doc.get("rows") or []]
+    errs = []
+    unnamed = [r.get("id") for r in rows if not str(r.get("name") or "").strip()]
+    if unnamed:
+        errs.append(f"player_ratings.json: {len(unnamed)} rows without a name, e.g. {unnamed[:5]}")
+    roster = [r for r in rows if r.get("roster")]
+    if len(roster) < PLAYER_RATINGS_MIN_ROSTER:
+        errs.append(f"player_ratings.json: {len(roster)} current-roster skaters (< {PLAYER_RATINGS_MIN_ROSTER})")
+    teams = {r.get("team") for r in roster}
+    if len(teams) < 28:
+        errs.append(f"player_ratings.json: roster skaters on {len(teams)} teams (< 28)")
+    bad = [r.get("name") for r in rows
+           if not all(isinstance(r.get(k), (int, float)) and r[k] == r[k] for k in ("off", "def", "net"))
+           or abs(r["off"] - r["def"] - r["net"]) > 0.002]
+    if bad:
+        errs.append(f"player_ratings.json: {len(bad)} rows with a missing or inconsistent off/def/net, e.g. {bad[:3]}")
+    if any(r.get("pos") == "G" for r in rows):
+        errs.append("player_ratings.json: goalies listed (skaters only)")
+    try:
+        from bu.lineup import serve as SV
+        b = SV.read(ctx.get("bu_bundle_path") or os.path.join(PIPELINE_DIR, "bu", "lineup", "out", "serving_bundle.json.gz"))
+    except Exception:
+        b = None
+    if b:
+        if str(doc.get("season")) != str(b.get("season")):
+            errs.append(f"player_ratings.json: season {doc.get('season')} != serving bundle {b.get('season')}")
+        else:
+            a, m = _dt(f"{doc.get('as_of')}T00:00:00+00:00"), _dt(f"{b.get('max_source_date')}T00:00:00+00:00")
+            # bu_refresh exports with every bundle and the full run re-exports daily, so a short
+            # lag heals itself; only a lasting one (a broken export) fails the gate
+            if a is None or (m is not None and (m - a).days > PLAYER_RATINGS_MAX_LAG_DAYS):
+                errs.append(f"player_ratings.json: as_of {doc.get('as_of')} is behind the serving bundle "
+                            f"({b.get('max_source_date')}) by > {PLAYER_RATINGS_MAX_LAG_DAYS} days; re-export")
+    return errs
+
+
 CHECKS = {
     "manifest": check_manifest,
     "predictions": check_predictions,
@@ -753,6 +810,7 @@ CHECKS = {
     "model_independent": check_model_independent,
     "goal_splits": check_gamestats_goals,
     "bu_bundle": check_bu_bundle,
+    "player_ratings": check_player_ratings,
 }
 
 
