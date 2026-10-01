@@ -1,86 +1,139 @@
-/** Compact skater rows for /players (built on the server from player_impact.json). */
+/**
+ * Compact skater rows for /players: RAPM v2 ratings (public/data/player_ratings.json)
+ * joined with counting stats from the season player boxscores. Built on the server
+ * (lib/players/server.ts); pure functions here so the client can filter and sort.
+ */
+
+/** One season's regular-season counting line. */
+export interface StatLine {
+    gp: number;
+    g: number;
+    a: number;
+    pts: number;
+    sog: number;
+    /** Average time on ice per game, seconds. */
+    toi: number;
+}
 
 export interface Skater {
     id: string;
     name: string;
     team: string;
-    /** Team the ratings were earned with, when the player has since moved. */
-    prevTeam: string | null;
+    /** 'C' | 'L' | 'R' | 'D' */
     pos: string;
     fwd: boolean;
-    onRoster: boolean;
     rookie: boolean;
-    gp: number;
-    g: number;
-    a: number;
-    pts: number;
-    sogPg: number | null;
-    toiPg: number | null;
-    impact: number | null;
-    evOff: number | null;
-    evDef: number | null;
-    pp: number | null;
-    pk: number | null;
-    rapm: number | null;
-    ixg60: number | null;
-    oixgf60: number | null;
+    /** False: no NHL sample yet, the rating is his position group's rookie prior. */
+    rated: boolean;
+    /** EV xGF/60 impact (higher is better). */
+    off: number;
+    /** EV xGA/60 impact (lower is better). */
+    def: number;
+    /** off − def. */
+    net: number;
+    /** The rating's EV sample: minutes and games, last three seasons + this one. */
+    evMin: number;
+    evGp: number;
+    cur: StatLine | null;
+    prev: StatLine | null;
 }
 
-type Obj = Record<string, unknown>;
-const num = (v: unknown, digits = 2): number | null => (typeof v === 'number' && Number.isFinite(v) ? Number(v.toFixed(digits)) : null);
+export type StatSeason = 'cur' | 'prev';
 
-export function compactSkaters(impact: unknown, bio: unknown): Skater[] {
-    if (!impact || typeof impact !== 'object') return [];
-    const bios = (bio && typeof bio === 'object' ? bio : {}) as Record<string, Obj>;
-    const out: Skater[] = [];
-    for (const [id, raw] of Object.entries(impact as Record<string, Obj>)) {
-        if (!raw || typeof raw !== 'object' || typeof raw.name !== 'string') continue;
-        const team = String(raw.team ?? '');
-        const prev = typeof raw.team_prev === 'string' && raw.team_prev && raw.team_prev !== team ? raw.team_prev : null;
-        out.push({
-            id,
-            name: raw.name,
-            team,
-            prevTeam: prev,
-            pos: String(raw.position ?? ''),
-            fwd: raw.is_forward === true,
-            onRoster: raw.on_roster !== false,
-            rookie: bios[id]?.isRookie === true,
-            gp: Number(raw.games_played ?? 0) || 0,
-            g: Number(raw.goals ?? 0) || 0,
-            a: Number(raw.assists ?? 0) || 0,
-            pts: Number(raw.points ?? 0) || 0,
-            sogPg: num(raw.sog_per_game),
-            toiPg: num(raw.toi_per_game_all),
-            impact: num(raw.impact_score),
-            evOff: num(raw.impact_ev_off),
-            evDef: num(raw.impact_ev_def),
-            pp: num(raw.impact_pp),
-            pk: num(raw.impact_pk),
-            rapm: num(raw.rapm_net, 3),
-            ixg60: num(raw.ind_xg_per60),
-            oixgf60: num(raw.ev_xgf_per60),
-        });
-    }
-    return out;
-}
+export type SortKey = 'net' | 'off' | 'def' | 'evMin' | 'gp' | 'g' | 'a' | 'pts' | 'toi' | 'sogPg' | 'name';
 
-export type SortKey = 'impact' | 'gp' | 'g' | 'a' | 'pts' | 'sogPg' | 'toiPg' | 'evOff' | 'evDef' | 'pp' | 'pk' | 'rapm' | 'ixg60' | 'oixgf60' | 'name';
+/** Sort direction a column starts with: lower DEF is better, so it starts ascending. */
+export const FIRST_DIR: Partial<Record<SortKey, 'asc' | 'desc'>> = { def: 'asc', name: 'asc' };
 
 export interface SkaterFilter {
     q: string;
     team: string;
     pos: 'all' | 'F' | 'D';
-    minGp: number;
+    /** Minimum EV minutes behind the rating. */
+    minEv: number;
     rookies: boolean;
-    includeOffRoster: boolean;
+}
+
+export const DEFAULT_FILTER: SkaterFilter = { q: '', team: 'all', pos: 'all', minEv: 0, rookies: false };
+export const MIN_EV_OPTIONS = [0, 250, 1000, 2500] as const;
+
+/** Colour a rating only with this many EV minutes behind it. */
+export const COLOR_MIN_EV = 250;
+
+type Obj = Record<string, unknown>;
+const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+
+/** Ratings file columns -> objects (current-roster skaters only). */
+export function rosterRatings(doc: unknown): Obj[] {
+    if (!doc || typeof doc !== 'object') return [];
+    const { columns, rows } = doc as { columns?: unknown; rows?: unknown };
+    if (!Array.isArray(columns) || !Array.isArray(rows)) return [];
+    const out: Obj[] = [];
+    for (const r of rows) {
+        if (!Array.isArray(r)) continue;
+        const o: Obj = {};
+        columns.forEach((c, i) => (o[String(c)] = r[i]));
+        if (o.roster === true && typeof o.name === 'string' && o.name && o.pos !== 'G') out.push(o);
+    }
+    return out;
+}
+
+/**
+ * Join the ratings with counting lines (keyed by NHL id) and rookie flags
+ * (player_bio.json). Values are rounded for a small payload.
+ */
+export function compactSkaters(
+    ratingsDoc: unknown,
+    lines: { cur: Map<string, StatLine>; prev: Map<string, StatLine> },
+    bio: unknown,
+): Skater[] {
+    const bios = (bio && typeof bio === 'object' ? bio : {}) as Record<string, Obj>;
+    const out: Skater[] = [];
+    for (const o of rosterRatings(ratingsDoc)) {
+        if (!finite(o.off) || !finite(o.def) || !finite(o.net)) continue;
+        const id = String(o.id);
+        const pos = String(o.pos ?? '');
+        out.push({
+            id,
+            name: String(o.name),
+            team: String(o.team ?? ''),
+            pos,
+            fwd: pos !== 'D',
+            rookie: bios[id]?.isRookie === true,
+            rated: o.rated !== false,
+            off: Number(o.off.toFixed(2)),
+            def: Number(o.def.toFixed(2)),
+            net: Number(o.net.toFixed(2)),
+            evMin: finite(o.toi) ? Math.round(o.toi) : 0,
+            evGp: finite(o.gp) ? o.gp : 0,
+            cur: lines.cur.get(id) ?? null,
+            prev: lines.prev.get(id) ?? null,
+        });
+    }
+    return out;
+}
+
+/** The value a column sorts and renders by (counting columns follow the season toggle). */
+export function valueOf(p: Skater, key: Exclude<SortKey, 'name'>, season: StatSeason): number | null {
+    switch (key) {
+        case 'net':
+        case 'off':
+        case 'def':
+        case 'evMin':
+            return p[key];
+        default: {
+            const l = p[season];
+            if (!l || !l.gp) return key === 'gp' ? 0 : null;
+            if (key === 'sogPg') return l.sog / l.gp;
+            return l[key];
+        }
+    }
 }
 
 export function filterSkaters(rows: Skater[], f: SkaterFilter): Skater[] {
     const q = f.q.trim().toLowerCase();
     return rows.filter(p => {
-        if (p.gp < f.minGp) return false;
-        if (!f.includeOffRoster && !p.onRoster) return false;
+        if (p.evMin < f.minEv) return false;
         if (f.pos === 'F' && !p.fwd) return false;
         if (f.pos === 'D' && p.fwd) return false;
         if (f.team !== 'all' && p.team !== f.team) return false;
@@ -90,15 +143,27 @@ export function filterSkaters(rows: Skater[], f: SkaterFilter): Skater[] {
     });
 }
 
-export function sortSkaters(rows: Skater[], key: SortKey, dir: 'asc' | 'desc'): Skater[] {
+export function sortSkaters(rows: Skater[], key: SortKey, dir: 'asc' | 'desc', season: StatSeason = 'cur'): Skater[] {
     const sign = dir === 'asc' ? 1 : -1;
     return [...rows].sort((a, b) => {
         if (key === 'name') return sign * a.name.localeCompare(b.name);
-        const av = a[key] as number | null;
-        const bv = b[key] as number | null;
-        if (av == null && bv == null) return 0;
+        const av = valueOf(a, key, season);
+        const bv = valueOf(b, key, season);
+        if (av == null && bv == null) return a.name.localeCompare(b.name);
         if (av == null) return 1; // missing values always last
         if (bv == null) return -1;
         return sign * (av - bv) || a.name.localeCompare(b.name);
     });
 }
+
+/** Tone of a rating: green good / red bad past `strong`, only with a real sample. `lowerBetter` for DEF. */
+export function ratingTone(v: number, p: Pick<Skater, 'rated' | 'evMin'>, strong: number, lowerBetter = false): 'pos' | 'neg' | null {
+    if (!p.rated || p.evMin < COLOR_MIN_EV) return null;
+    const s = lowerBetter ? -v : v;
+    if (s >= strong) return 'pos';
+    if (s <= -strong) return 'neg';
+    return null;
+}
+
+/** Thresholds ≈ the top / bottom tenth of rostered skaters. */
+export const STRONG = { net: 0.25, off: 0.18, def: 0.16 } as const;

@@ -493,11 +493,13 @@ export default function MethodologyPage() {
 
                         <Section id="players" index={++i} title="Players & standings">
                             <p>
-                                <strong>Player impact</strong> is measured in standard deviations from the average player at the same position (0 =
-                                average). Each skater gets four z-scores — even-strength offence, even-strength defence, power play and penalty kill —
-                                built from on-ice and individual xG rates and a ridge-regression (RAPM-style) estimate that separates him from his
-                                linemates. Impact weights them 50/20/20/10 for forwards and 25/40/15/20 for defence. Ratings rebuild once the league has
-                                played enough games; until then last season&apos;s ratings show with a season tag, with teams updated for offseason moves.
+                                <strong>Player ratings</strong> are expected goals per 60 minutes at even strength, compared with an average skater:{' '}
+                                <strong>OFF</strong> (xG for, higher is better), <strong>DEF</strong> (xG against, lower is better) and{' '}
+                                <strong>NET</strong> = OFF − DEF. A ridge regression (RAPM) over every even-strength shift since 2010-11 separates each
+                                skater from his linemates, opponents, score, zone starts and home ice. Each season starts from the previous estimate plus
+                                an aging step and is updated daily with this season&apos;s games (the date beside the ratings is the last game day in),
+                                so early in a season they are mostly built on the last three seasons; <strong>EV MIN</strong> shows that sample. The same
+                                ratings drive the lineup term of the game model and the Lines tab.
                             </p>
                             <p id="standings" className="scroll-mt-[calc(var(--appbar-h)+16px)]">
                                 <strong>Playoff odds</strong> come from simulating the rest of the season thousands of times with the same game model. On
