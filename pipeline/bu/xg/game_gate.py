@@ -1,24 +1,29 @@
 """M1 gate (c): the incumbent game model with xG v2 features (DESIGN §1.7 A2/A-comp/A5, §8 M1).
 
 The incumbent (``train_game_model``: logit + Elo on ``features.FeatureState``)
-is re-run season walk-forward three times, changing only where the per-game
+is re-run season walk-forward four times, changing only where the per-game
 raw xG comes from (``features.attach_raw_xg``):
 
-  v1_prod  the committed ``xg_model_xgb.pkl`` (what the live site uses today)
-  v1_pit   the v1 recipe re-fit on seasons < S (honest xG v1)
-  v2       xG v2 trained on seasons < S (``bu.xg.walkforward`` OOS scores)
+  v1_pit   the v1 recipe re-fit on seasons < S: the PIT bar of DESIGN §1.3 / A1
+  v1_prod  the committed ``xg_model_xgb.pkl`` (what the live site uses today).  It was
+           fit on a random 80/20 split of 2022-26 shots, so its per-game xG on the
+           test seasons is partly fitted to those games' goals: a leaky, optimistic
+           reference, reported but not the bar
+  v2       xG v2 season-start model (seasons < S)
+  v2_asof  xG v2 with monthly as-of refits (seasons < S + S games before the month);
+           the pre-registered candidate (what ships with the monthly refit cadence)
 
-All three are scored on the same lake shots, so every game has the same shot
+All are scored on the same lake shots, so every game has the same shot
 coverage (the 2024-25 shot CSV misses 192 games; the lake does not).  Nothing
 in ``features.py`` / ``train_game_model.py`` changes: the per-shot xG is
 aggregated here into the frame ``features.raw_team_game_xg`` returns.
 
-Gate rules (DESIGN §1.7):
+Gate rules (DESIGN §1.7), Δ = LL(incumbent with xG v2) - LL(incumbent with PIT xG v1):
   A2      dev folds (2023-24, 2024-25): pooled Δ <= -0.0005 and no fold worse than +0.0005
   A-comp  soft holdout 2025-26, ONE look: one-sided 98.75% upper bound of Δ < +0.0005
   A5      beats the home-rate baseline by >= 0.01 on every fold
-Δ = LL(incumbent with v2) - LL(incumbent with v1 prod), per game, paired.
-The holdout look is appended to ``bu/xg/out/xgv2_gate_log.jsonl`` (look ledger).
+The holdout look is appended to ``bu/xg/out/xgv2_gate_log.jsonl`` (look ledger);
+``--no-holdout`` evaluates the dev folds without spending it.
 
 Usage (from pipeline/):  python -m bu.xg.game_gate --state-dir <dir with oos_xg2_*.parquet>
 """
@@ -41,6 +46,7 @@ LOOK_LOG = os.path.join(HERE, "out", "xgv2_gate_log.jsonl")
 DEV = (2023, 2024)
 HOLDOUT = 2025
 Z_ONE_SIDED_98_75 = 2.2414
+CANDIDATE = "v2_asof"   # pre-registered before the holdout look (dev folds only chose it)
 
 
 def _ll(y, p):
@@ -125,18 +131,22 @@ def main(argv=None):
             if not a.no_holdout:
                 comp[str(HOLDOUT)] = paired(oos[ref], oos[cand], [HOLDOUT])
             res["comparisons"][f"{cand}_minus_{ref}"] = comp
+    res["gate_reference"] = "v1_pit (DESIGN §1.3/§1.7: the incumbent with point-in-time xG v1)"
+    res["candidate"] = CANDIDATE
     res["gate"] = {}
     for cand in cands:
-        c = res["comparisons"][f"{cand}_minus_v1_prod"]
+        c = res["comparisons"][f"{cand}_minus_v1_pit"]
         a2 = c["dev_pooled"]["delta"] <= -0.0005 and all(c[str(s)]["delta"] <= 0.0005 for s in DEV)
         a5 = all(runs[cand][s]["home_rate_ll"] - runs[cand][s]["log_loss"] >= 0.01 for s in runs[cand])
-        gate = {"A2": {"rule": "dev pooled Δ <= -0.0005 and no dev fold Δ > +0.0005 (vs v1_prod incumbent)",
-                       "dev_pooled": c["dev_pooled"]["delta"], "pass": bool(a2)},
+        gate = {"role": "pre-registered candidate" if cand == CANDIDATE else "descriptive",
+                "A2": {"rule": "dev pooled Δ <= -0.0005 and no dev fold Δ > +0.0005 (vs v1_pit)",
+                       "dev_pooled": c["dev_pooled"]["delta"],
+                       "folds": {str(s): c[str(s)]["delta"] for s in DEV}, "pass": bool(a2)},
                 "A5": {"rule": "beats the home-rate baseline by >= 0.01 on every fold", "pass": bool(a5)}}
         if not a.no_holdout:
             h = c[str(HOLDOUT)]
             gate["A_comp"] = {"rule": "2025-26 one-sided 98.75% upper bound of Δ < +0.0005 (one look)",
-                              "delta": h["delta"], "upper": h["upper_98_75_one_sided"],
+                              "delta": h["delta"], "se": h["se"], "upper": h["upper_98_75_one_sided"],
                               "pass": bool(h["upper_98_75_one_sided"] < 0.0005)}
         gate["pass"] = all(v["pass"] for v in gate.values() if isinstance(v, dict))
         res["gate"][cand] = gate
@@ -147,11 +157,11 @@ def main(argv=None):
         f.write("\n")
     if not a.no_holdout:
         with open(LOOK_LOG, "a") as f:
-            f.write(json.dumps({"at": res["generated_at"], "look": "M1 A-comp (xG v2 as incumbent feature)",
-                                "holdout": "2025-26",
-                                "result": {k: v.get("A_comp") for k, v in gate.items()},
-                                "comparison": {k: res["comparisons"][f"{k}_minus_v1_prod"][str(HOLDOUT)]
-                                               for k in gate}}) + "\n")
+            f.write(json.dumps({"at": res["generated_at"], "look": "M1 A-comp: xG v2 as the incumbent's xG input",
+                                "holdout": "2025-26", "candidate": CANDIDATE, "reference": "v1_pit",
+                                "result": gate[CANDIDATE].get("A_comp"),
+                                "descriptive_same_run": {k: v.get("A_comp") for k, v in gate.items()
+                                                         if k != CANDIDATE}}) + "\n")
     print(json.dumps(res["comparisons"], indent=1))
     print(json.dumps(gate, indent=1))
     return res
