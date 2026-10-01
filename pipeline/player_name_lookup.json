@@ -45,12 +45,17 @@
     "dryden hunt": "8478211",
     "john beecher": "8481556",
     "sam morton": "8484821",
+    "abram wiebe": "8483709",
+    "hunter brzustewicz": "8484150",
+    "rory kerins": "8482209",
     "daniil miromanov": "8482624",
+    "aydar suniev": "8484234",
     "tyson gross": "8486056",
     "william stromgren": "8482766",
     "landon slaggert": "8482172",
+    "dominic toninato": "8476952",
+    "sacha boisvert": "8484793",
     "sam lafferty": "8478043",
-    "connor bedard": "8484144",
     "tristen nielsen": "8483039",
     "jason polin": "8484255",
     "zakhar bardakov": "8482947",
@@ -60,12 +65,10 @@
     "keaton middleton": "8479387",
     "taylor makar": "8482953",
     "cameron hughes": "8478888",
-    "colin blackwell": "8476278",
     "nathan bastian": "8479414",
     "adam erne": "8477454",
     "michael bunting": "8478047",
     "alexander petrovic": "8475755",
-    "arttu hyry": "8484938",
     "david perron": "8474102",
     "john leonard": "8481077",
     "james van riemsdyk": "8474037",
@@ -164,7 +167,6 @@
     "olle lycksell": "8480245",
     "jorian donovan": "8483435",
     "xavier bourgault": "8482673",
-    "dennis gilbert": "8478502",
     "artem zub": "8482245",
     "arthur kaliyev": "8481560",
     "kurtis macdermid": "8477073",
@@ -187,6 +189,7 @@
     "caleb jones": "8478452",
     "jake livanavage": "8486169",
     "mathew dumba": "8476856",
+    "rutger mcgroarty": "8483487",
     "tristan broz": "8482698",
     "avery hayes": "8482993",
     "harrison brunicke": "8484839",
@@ -385,11 +388,7 @@
     "brennan othmann": "8482747",
     "matvei gridin": "8484860",
     "adam klapka": "8483609",
-    "abram wiebe": "8483709",
     "samuel honzek": "8484180",
-    "hunter brzustewicz": "8484150",
-    "rory kerins": "8482209",
-    "aydar suniev": "8484234",
     "zach whitecloud": "8480727",
     "martin pospisil": "8481028",
     "mikael backlund": "8474150",
@@ -408,11 +407,9 @@
     "wyatt kaiser": "8482176",
     "matt grzelcyk": "8476891",
     "andre burakovsky": "8477444",
-    "dominic toninato": "8476952",
     "sam rinzel": "8483506",
     "alex vlasic": "8481568",
     "andrew mangiapane": "8478233",
-    "sacha boisvert": "8484793",
     "frank nazar": "8483493",
     "teuvo teravainen": "8476882",
     "ilya mikheyev": "8481624",
@@ -422,6 +419,7 @@
     "tyler bertuzzi": "8477479",
     "louis crevier": "8481806",
     "artyom levshunov": "8484783",
+    "connor bedard": "8484144",
     "ryan greene": "8483450",
     "nick lardis": "8484185",
     "ryan donato": "8477987",
@@ -456,6 +454,7 @@
     "sam steel": "8479351",
     "miro heiskanen": "8480036",
     "lian bichsel": "8483425",
+    "colin blackwell": "8476278",
     "mikko rantanen": "8478420",
     "roope hintz": "8478449",
     "radek faksa": "8476889",
@@ -468,6 +467,7 @@
     "wyatt johnston": "8482740",
     "thomas harley": "8481581",
     "tyler seguin": "8475794",
+    "arttu hyry": "8484938",
     "dylan larkin": "8477946",
     "justin faulk": "8475753",
     "albert johansson": "8481607",
@@ -684,6 +684,7 @@
     "jake sanderson": "8482105",
     "drake batherson": "8480208",
     "cameron crotty": "8480075",
+    "dennis gilbert": "8478502",
     "carter yakemchuk": "8484759",
     "hayden hodgson": "8478173",
     "tim stutzle": "8482116",
@@ -725,7 +726,6 @@
     "erik karlsson": "8474578",
     "blake lizotte": "8481481",
     "egor chinakhov": "8482475",
-    "rutger mcgroarty": "8483487",
     "sidney crosby": "8471675",
     "justin brazeau": "8479638",
     "parker wotherspoon": "8478450",
@@ -1296,10 +1296,38 @@
         "team": "CGY"
       }
     ],
+    "wiebe": [
+      {
+        "pid": "8483709",
+        "full_name": "abram wiebe",
+        "team": "CGY"
+      }
+    ],
+    "brzustewicz": [
+      {
+        "pid": "8484150",
+        "full_name": "hunter brzustewicz",
+        "team": "CGY"
+      }
+    ],
+    "kerins": [
+      {
+        "pid": "8482209",
+        "full_name": "rory kerins",
+        "team": "CGY"
+      }
+    ],
     "miromanov": [
       {
         "pid": "8482624",
         "full_name": "daniil miromanov",
+        "team": "CGY"
+      }
+    ],
+    "suniev": [
+      {
+        "pid": "8484234",
+        "full_name": "aydar suniev",
         "team": "CGY"
       }
     ],
@@ -1324,17 +1352,24 @@
         "team": "CHI"
       }
     ],
+    "toninato": [
+      {
+        "pid": "8476952",
+        "full_name": "dominic toninato",
+        "team": "CHI"
+      }
+    ],
+    "boisvert": [
+      {
+        "pid": "8484793",
+        "full_name": "sacha boisvert",
+        "team": "CHI"
+      }
+    ],
     "lafferty": [
       {
         "pid": "8478043",
         "full_name": "sam lafferty",
-        "team": "CHI"
-      }
-    ],
-    "bedard": [
-      {
-        "pid": "8484144",
-        "full_name": "connor bedard",
         "team": "CHI"
       }
     ],
@@ -1426,13 +1461,6 @@
         "team": "NJD"
       }
     ],
-    "blackwell": [
-      {
-        "pid": "8476278",
-        "full_name": "colin blackwell",
-        "team": "DAL"
-      }
-    ],
     "bastian": [
       {
         "pid": "8479414",
@@ -1458,13 +1486,6 @@
       {
         "pid": "8475755",
         "full_name": "alexander petrovic",
-        "team": "DAL"
-      }
-    ],
-    "hyry": [
-      {
-        "pid": "8484938",
-        "full_name": "arttu hyry",
         "team": "DAL"
       }
     ],
@@ -2229,13 +2250,6 @@
         "team": "OTT"
       }
     ],
-    "gilbert": [
-      {
-        "pid": "8478502",
-        "full_name": "dennis gilbert",
-        "team": "OTT"
-      }
-    ],
     "zub": [
       {
         "pid": "8482245",
@@ -2373,6 +2387,13 @@
       {
         "pid": "8476856",
         "full_name": "mathew dumba",
+        "team": "PIT"
+      }
+    ],
+    "mcgroarty": [
+      {
+        "pid": "8483487",
+        "full_name": "rutger mcgroarty",
         "team": "PIT"
       }
     ],
@@ -3789,38 +3810,10 @@
         "team": "CGY"
       }
     ],
-    "wiebe": [
-      {
-        "pid": "8483709",
-        "full_name": "abram wiebe",
-        "team": "CGY"
-      }
-    ],
     "honzek": [
       {
         "pid": "8484180",
         "full_name": "samuel honzek",
-        "team": "CGY"
-      }
-    ],
-    "brzustewicz": [
-      {
-        "pid": "8484150",
-        "full_name": "hunter brzustewicz",
-        "team": "CGY"
-      }
-    ],
-    "kerins": [
-      {
-        "pid": "8482209",
-        "full_name": "rory kerins",
-        "team": "CGY"
-      }
-    ],
-    "suniev": [
-      {
-        "pid": "8484234",
-        "full_name": "aydar suniev",
         "team": "CGY"
       }
     ],
@@ -3955,13 +3948,6 @@
         "team": "OTT"
       }
     ],
-    "toninato": [
-      {
-        "pid": "8476952",
-        "full_name": "dominic toninato",
-        "team": "CHI"
-      }
-    ],
     "rinzel": [
       {
         "pid": "8483506",
@@ -3980,13 +3966,6 @@
       {
         "pid": "8478233",
         "full_name": "andrew mangiapane",
-        "team": "CHI"
-      }
-    ],
-    "boisvert": [
-      {
-        "pid": "8484793",
-        "full_name": "sacha boisvert",
         "team": "CHI"
       }
     ],
@@ -4043,6 +4022,13 @@
       {
         "pid": "8484783",
         "full_name": "artyom levshunov",
+        "team": "CHI"
+      }
+    ],
+    "bedard": [
+      {
+        "pid": "8484144",
+        "full_name": "connor bedard",
         "team": "CHI"
       }
     ],
@@ -4268,6 +4254,13 @@
         "team": "DAL"
       }
     ],
+    "blackwell": [
+      {
+        "pid": "8476278",
+        "full_name": "colin blackwell",
+        "team": "DAL"
+      }
+    ],
     "rantanen": [
       {
         "pid": "8478420",
@@ -4345,6 +4338,13 @@
       {
         "pid": "8475794",
         "full_name": "tyler seguin",
+        "team": "DAL"
+      }
+    ],
+    "hyry": [
+      {
+        "pid": "8484938",
+        "full_name": "arttu hyry",
         "team": "DAL"
       }
     ],
@@ -5726,6 +5726,13 @@
         "team": "OTT"
       }
     ],
+    "gilbert": [
+      {
+        "pid": "8478502",
+        "full_name": "dennis gilbert",
+        "team": "BUF"
+      }
+    ],
     "yakemchuk": [
       {
         "pid": "8484759",
@@ -6025,13 +6032,6 @@
       {
         "pid": "8482475",
         "full_name": "egor chinakhov",
-        "team": "PIT"
-      }
-    ],
-    "mcgroarty": [
-      {
-        "pid": "8483487",
-        "full_name": "rutger mcgroarty",
         "team": "PIT"
       }
     ],
