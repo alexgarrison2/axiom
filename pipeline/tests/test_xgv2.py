@@ -267,6 +267,24 @@ def test_flag_modes_fill_column_and_fall_back(monkeypatch):
     assert calls == [3] and df[live.V2_COL].tolist() == [0.12] * 3
 
 
+@pytest.mark.skipif(not live.artifacts_present(), reason="production xG v2 artifacts not committed")
+def test_events_missing_from_feed_are_not_retried(monkeypatch):
+    monkeypatch.setenv(live.MODE_ENV, "shadow")
+    calls = []
+
+    def fetch(g):
+        calls.append(g)
+        return _raw("pbp", "20232024", g)
+    pbp = _raw("pbp", "20232024", 2023020500)
+    real = [p["eventId"] for p in pbp["plays"] if p.get("typeCode") == 506][:2]
+    df = pd.DataFrame({"game_id": [2023020500] * 3, "event_id": real + [999999]})
+    info = live.fill_v2_column(df, {}, fetch=fetch)
+    assert df[live.V2_COL].notna().tolist() == [True, True, False]
+    assert info["v2_unmatched_events"] == [[2023020500, 999999]] and info["v2_missing_games"] == []
+    info2 = live.fill_v2_column(df, info, fetch=fetch)
+    assert len(calls) == 1 and info2["v2_unmatched_events"] == [[2023020500, 999999]]
+
+
 def test_v2_failure_never_breaks_the_run(monkeypatch):
     monkeypatch.setattr(live, "artifacts_present", lambda *a, **k: True)
     monkeypatch.setattr(live, "model_signature", lambda *a, **k: "sigNEW")

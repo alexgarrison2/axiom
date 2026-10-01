@@ -162,8 +162,14 @@ def score_rows(rows: pd.DataFrame, fetch=fetch_pbp, model=None) -> tuple[pd.Seri
                        index=rows.index)
     m = key.reset_index().merge(sc, on=["game_id", "event_id"], how="left").set_index("index")
     out.loc[m.index] = pd.to_numeric(m["xg_v2"], errors="coerce").to_numpy(dtype="float64")
+    # rows whose game payload was read but whose event is not in it (the NHL edits PBP after the
+    # fact and renumbers/removes plays): retrying cannot help, so the caller stops asking
+    have = set(sc["game_id"])
+    unmatched = key[out.isna() & key["game_id"].isin(have)]
     stats = {"rows": int(len(rows)), "scored": int(out.notna().sum()), "games": int(gids.nunique()),
-             "games_without_pbp": int(len(set(gids) - set(sc["game_id"])))}
+             "games_without_pbp": int(len(set(gids) - have)),
+             "unmatched_events": [[int(g), int(e)] for g, e in zip(unmatched["game_id"], unmatched["event_id"])
+                                  if e == e]}
     return out, stats
 
 
@@ -194,11 +200,17 @@ def fill_v2_column(df: pd.DataFrame, prev_source: dict | None, fetch=fetch_pbp) 
         df[V2_COL] = np.nan
     df[V2_COL] = pd.to_numeric(df[V2_COL], errors="coerce").astype("float64")
     need = df[V2_COL].isna()
+    gone = {tuple(k) for k in (prev_source or {}).get("v2_unmatched_events") or []}
+    if gone:
+        keys = list(zip(df["game_id"].astype("int64"), pd.to_numeric(df["event_id"], errors="coerce")))
+        need &= ~pd.Series([k in gone for k in keys], index=df.index)
     prev_sig = (prev_source or {}).get("v2_signature")
     if prev_sig and prev_sig != sig:
         print(f"  xG v2 artifacts changed ({prev_sig[:8]} -> {sig[:8]}): rescoring {V2_COL} for every shot")
         need[:] = True
-    info = {"v2_signature": sig, "v2_rows_scored": 0, "v2_missing_games": []}
+        gone = set()
+    info = {"v2_signature": sig, "v2_rows_scored": 0, "v2_missing_games": [],
+            "v2_unmatched_events": sorted([list(k) for k in gone])}
     if need.any():
         # Never fail the run over v2: a broken model, library or feed leaves the column NaN
         # (shadow: nothing published changes; v2: those rows fall back to v1) and is retried.
@@ -215,9 +227,14 @@ def fill_v2_column(df: pd.DataFrame, prev_source: dict | None, fetch=fetch_pbp) 
             return info
         df.loc[need, V2_COL] = vals.round(XG_DECIMALS)
         info["v2_rows_scored"] = int(vals.notna().sum())
-        info["v2_missing_games"] = sorted({int(g) for g in df.loc[need & df[V2_COL].isna(), "game_id"]})
+        new_gone = {tuple(k) for k in st.get("unmatched_events") or []}
+        info["v2_unmatched_events"] = sorted([list(k) for k in gone | new_gone])
+        still = need & df[V2_COL].isna()
+        info["v2_missing_games"] = sorted({int(g) for g, e in zip(df.loc[still, "game_id"], df.loc[still, "event_id"])
+                                           if (int(g), e) not in new_gone})
         print(f"  xG v2 ({m}): scored {info['v2_rows_scored']}/{int(need.sum())} shots in {st['games']} games"
-              + (f"; {len(info['v2_missing_games'])} game(s) without a payload yet" if info["v2_missing_games"] else ""))
+              + (f"; {len(info['v2_missing_games'])} game(s) without a payload yet" if info["v2_missing_games"] else "")
+              + (f"; {len(new_gone)} event(s) no longer in the feed" if new_gone else ""))
     return info
 
 
