@@ -189,3 +189,14 @@ def test_name_keys_and_resolve():
     assert CW.resolve(players, "Sebastian Aho", number=20) == 1
     assert CW.resolve(players, "Tim Stutzle") == 3
     assert CW.resolve(players, "Nobody Here") is None
+
+
+def test_shift_rows_of_other_teams_are_dropped_and_counted():
+    pbp, sh = _raw("pbp", "20232024", 2023020500), _raw("shifts", "20232024", 2023020500)
+    base = parse_game(pbp, sh, season="20232024")
+    foreign = [dict(r, teamId=99, playerId=9000000 + i) for i, r in enumerate(sh["data"][:40])]
+    mixed = dict(sh, data=sh["data"] + foreign)
+    g = parse_game(pbp, mixed, season="20232024")
+    assert g["games"]["n_shift_foreign_team"].iloc[0] == 40
+    assert len(g["shifts"]) == len(base["shifts"]) and 99 not in set(g["shifts"]["team_id"])
+    pd.testing.assert_series_equal(g["events"]["onice_rule"], base["events"]["onice_rule"])

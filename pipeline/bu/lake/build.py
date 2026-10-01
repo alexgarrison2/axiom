@@ -166,7 +166,7 @@ def build_season(lake: Lake, season: str, game_ids=None, *, jobs: int = 1, log=p
     return {"season": season, "rows": written, "errors": errors, "n_games": written.get("games", 0)}
 
 
-def read_table(lake: Lake, table: str, seasons=None) -> pd.DataFrame:
+def read_table(lake: Lake, table: str, seasons=None, columns=None) -> pd.DataFrame:
     import pyarrow.parquet as pq
     base = lake.table_dir(table)
     if not os.path.isdir(base):
@@ -180,5 +180,5 @@ def read_table(lake: Lake, table: str, seasons=None) -> pd.DataFrame:
             continue
         p = os.path.join(base, d, "part-0.parquet")
         if os.path.exists(p):
-            frames.append(pq.read_table(p).to_pandas())
+            frames.append(pq.read_table(p, columns=columns).to_pandas())
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()

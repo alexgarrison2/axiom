@@ -122,17 +122,25 @@ def merge_overlaps(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
     return df, merged
 
 
-def parse_shifts(payload: dict | None, game_id: int, season: str, roster: dict) -> tuple[pd.DataFrame, dict]:
+def parse_shifts(payload: dict | None, game_id: int, season: str, roster: dict,
+                 team_ids=None) -> tuple[pd.DataFrame, dict]:
+    """``team_ids``: the game's two team ids.  Rows of any other team are dropped and
+    counted (the feed occasionally mixes in another game's shifts: 2025020565, NJD-BUF,
+    also carries ~670 VGK/SJS rows)."""
     cols = ["game_id", "season", "player_id", "team_id", "period", "start_s", "end_s", "duration_s",
             "game_start_s", "game_end_s", "shift_number", "is_goalie"]
     qa = {"n_shift_rows_raw": 0, "n_shift_non517": 0, "n_shift_dups": 0, "n_shift_bad_times": 0,
-          "n_shift_overlaps_merged": 0}
+          "n_shift_overlaps_merged": 0, "n_shift_foreign_team": 0}
     rows = (payload or {}).get("data") or []
     qa["n_shift_rows_raw"] = len(rows)
+    teams = {int(t) for t in (team_ids or ()) if t is not None}
     recs = []
     for r in rows:
         if r.get("typeCode") not in (None, 517):
             qa["n_shift_non517"] += 1
+            continue
+        if len(teams) == 2 and r.get("teamId") is not None and int(r["teamId"]) not in teams:
+            qa["n_shift_foreign_team"] += 1
             continue
         st, en = mmss(r.get("startTime")), mmss(r.get("endTime"))
         pid, per = r.get("playerId"), r.get("period")
@@ -357,7 +365,7 @@ def parse_game(pbp: dict, shifts_payload: dict | None = None, box: dict | None =
     home_id, away_id = home.get("id"), away.get("id")
     roster = roster_map(pbp, box)
 
-    shifts, sqa = parse_shifts(shifts_payload, game_id, season, roster)
+    shifts, sqa = parse_shifts(shifts_payload, game_id, season, roster, (home_id, away_id))
     ev = parse_events(pbp, game_id, season, roster, home_id, away_id)
     sides = pd.DataFrame()
     if not ev.empty:

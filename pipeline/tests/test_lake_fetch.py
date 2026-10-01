@@ -37,7 +37,27 @@ def test_rate_limiter_spaces_request_starts():
     assert starts == [0.0, 0.5, 1.0, 1.5, 2.0]
 
 
-def test_rate_limiter_is_thread_safe_in_real_time():
+def test_rate_limiter_is_thread_safe():
+    # Deterministic: a frozen clock and a no-op sleep, so each wait() returns its slot's
+    # offset.  Concurrent callers must get distinct, evenly spaced slots (no two
+    # requests share a slot), whatever the thread interleaving.
+    lim = RateLimiter(40.0, clock=lambda: 0.0, sleep=lambda d: None)
+    slots, lock = [], threading.Lock()
+
+    def go():
+        for _ in range(25):
+            d = lim.wait()
+            with lock:
+                slots.append(round(d * 40))
+    ts = [threading.Thread(target=go) for _ in range(8)]
+    [t.start() for t in ts]
+    [t.join() for t in ts]
+    assert sorted(slots) == list(range(200))
+
+
+def test_rate_limiter_holds_the_rate_in_real_time():
+    # Real sleeps overshoot by a few ms, so individual gaps can shrink; the limiter
+    # schedules starts on a fixed grid, so the span of n starts never does.
     lim = RateLimiter(40.0)
     starts, lock = [], threading.Lock()
 
@@ -50,8 +70,7 @@ def test_rate_limiter_is_thread_safe_in_real_time():
     [t.start() for t in ts]
     [t.join() for t in ts]
     starts.sort()
-    gaps = [b - a for a, b in zip(starts, starts[1:])]
-    assert len(starts) == 20 and min(gaps) >= 1 / 40 - 0.005
+    assert len(starts) == 20 and starts[-1] - starts[0] >= 19 / 40 - 0.03
 
 
 def test_endpoints_use_explicit_seasons_and_two_hosts():
@@ -147,7 +166,7 @@ def test_fetcher_rate_holds_per_host_with_parallel_workers(tmp_path):
     for host in ("api-web.nhle.com", "api.nhle.com"):
         ts = sorted(t for h, t in starts if h == host)
         assert len(ts) == 8
-        assert min(b - a for a, b in zip(ts, ts[1:])) >= 1 / 20 - 0.01
+        assert ts[-1] - ts[0] >= 7 / 20 - 0.03          # 8 starts span >= 7 slots
         assert f.stats[host].as_dict()["achieved_rps"] <= 20 * 1.15
 
 

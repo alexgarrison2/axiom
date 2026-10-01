@@ -148,9 +148,25 @@ def parse_rest_shifts(data: dict, game_id: int) -> list[dict]:
     return _dedupe_rows(rows)
 
 
+def keep_game_teams(rows: list[dict], team_ids) -> list[dict]:
+    """Drop rows of any team other than the game's two (the REST feed occasionally mixes
+    in another game's shifts: 2025020565, NJD-BUF, also carries ~670 VGK/SJS rows)."""
+    keep = {int(t) for t in team_ids if t is not None}
+    if len(keep) != 2:
+        return rows
+    return [r for r in rows if r.get("team_id") is not None and int(r["team_id"]) in keep]
+
+
 def fetch_shifts_rest_api(game_id: int) -> list[dict]:
     """Shifts from the NHL stats REST API (with player IDs). Returns [] when absent."""
-    return parse_rest_shifts(get_json(SHIFTS_API.format(game_id=game_id)), game_id)
+    rows = parse_rest_shifts(get_json(SHIFTS_API.format(game_id=game_id)), game_id)
+    if len({r["team_id"] for r in rows}) > 2:
+        meta = fetch_boxscore_meta(game_id)
+        if meta:
+            n0 = len(rows)
+            rows = keep_game_teams(rows, (meta["home"]["id"], meta["away"]["id"]))
+            print(f"    game {game_id}: dropped {n0 - len(rows)} REST shift rows of other teams")
+    return rows
 
 
 # ── Boxscore: teams + sweater-number → player id for the HTML fallback ──────
@@ -310,6 +326,14 @@ def null_id_game_ids(shifts_file: str) -> list[int]:
     return sorted(int(g) for g in df.loc[df["player_id"].isna(), "game_id"].unique())
 
 
+def stored_duplicate_count(shifts_file: str) -> int:
+    """Duplicate shift rows already in the stored CSV (written before de-duplication existed)."""
+    if not os.path.exists(shifts_file):
+        return 0
+    df = load_shifts(shifts_file)
+    return 0 if df.empty else len(df) - len(dedupe_shift_rows(df))
+
+
 def load_game_dates(gamestats_file: str) -> dict[int, str]:
     df = pd.read_csv(gamestats_file, usecols=lambda c: c in ("game_id", "game_date"))
     if "game_date" not in df.columns:
@@ -407,10 +431,16 @@ def main(argv=None, *, now: datetime | None = None, workdir: str | None = None):
     cap = len(null_games) if args.refetch_null_ids else max(0, args.max_refetch)
     upgrade = null_games[:cap]
 
+    stored_dups = 0 if full_mode else stored_duplicate_count(shifts_file)
     print(f"  Total games: {len(all_game_ids)} | Stored: {len(existing_ids)} | New: {len(todo)} | "
-          f"Stored without player IDs: {len(null_games)} (re-trying {len(upgrade)})")
+          f"Stored without player IDs: {len(null_games)} (re-trying {len(upgrade)}) | "
+          f"Stored duplicate rows: {stored_dups}")
 
     if not todo and not upgrade:
+        if stored_dups:
+            n = replace_games(shifts_file, {})
+            print(f"  Healed {stored_dups} duplicate shift rows in {shifts_file} ({n:,} rows)")
+            return {"status": "ok", "rows_written": 0, "healed": stored_dups}
         print("  ✓ Shifts up to date.")
         return {"status": "skip", "rows_written": 0, "reason": "up to date"}
 
@@ -462,10 +492,12 @@ def main(argv=None, *, now: datetime | None = None, workdir: str | None = None):
         if j % 50 == 0 or j == len(upgrade):
             print(f"  upgrade [{j}/{len(upgrade)}] REST replacements so far: {upgraded}")
 
-    # Rewrite (de-duplicating the whole file) only when a game was upgraded.
-    if replacements:
+    # Rewrite (de-duplicating the whole file) only when a game was upgraded or the
+    # stored file still carries duplicate rows.
+    if replacements or (stored_dups and os.path.exists(shifts_file)):
         n = replace_games(shifts_file, replacements)
-        print(f"  Rewrote {shifts_file}: {n:,} rows ({upgraded} games upgraded to REST IDs)")
+        print(f"  Rewrote {shifts_file}: {n:,} rows ({upgraded} games upgraded to REST IDs, "
+              f"{stored_dups} stored duplicates healed)")
         rows_written += sum(len(r) for r in replacements.values())
 
     print(f"\n✓ Done. REST: {rest_ok} | HTML fallback: {html_ok} | Pending REST: {pending} | "

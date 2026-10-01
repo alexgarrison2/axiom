@@ -65,7 +65,7 @@ python -m bu.lake.dq --strict --no-allowance
 ```
 
 Options:
-- `--rps`: request starts per second **per host**. The default is 2, the ceiling the owner approved (D5).
+- `--rps`: request starts per second **per host**. The default is 2, the ceiling the owner approved (D5). Higher values are clamped to 2.
 - `--workers-per-host`: default 2. It hides latency without exceeding `--rps`.
 - `--endpoints`: default `pbp,boxscore,rightrail,shifts,roster`.
 - `--retry-failed`: also re-tries 404s from closed seasons.
@@ -171,7 +171,14 @@ The thresholds and their provenance are in the `bu/lake/dq.py` docstring.
   - two penalty shots, which are excluded from the denominator.
 - Inferred-side seasons are within 1 ft of the 2021+ mean shot distance (0.62, 0.45 and 0.996 ft).
 
-**Deviation from DESIGN §2.6, documented:** the literal "≥ 99% of shots < 89 ft from the attacked net" check misses even where the side field is present (97.9-98.7% in 4-game samples). Long shots on goal from the defensive or neutral zone are real. `side_zone_consistency` (1.0) is the direct correctness test, and `side_attacking_range` keeps the DESIGN metric under the sampling allowance.
+**Deviation from DESIGN §2.6, documented:** the literal "≥ 99% of shots < 89 ft from the attacked net" check misses even where the side field is present: 97.2-98.7% in 3-4-game-per-season samples. Long shots on goal from the defensive or neutral zone are real, and their zone codes confirm it. A literal 99% would fail every full raw-side season, so:
+- `side_attacking_range` gates inferred-side seasons **relative** to the raw-side 2021+ reference share: the shortfall must be ≤ 1 pp. A flipped period puts about half its shots beyond 89 ft, so this catches flips in about 2% of periods.
+- Raw-side rows are reported but not gated.
+- The 2021+ reference, for this check and for `side_mean_distance`, is read from the lake's own partitions when the run has none. The 2010-2017 leg of the backfill is therefore still gated.
+- If the lake has no 2021+ season at all, `side_attacking_range_abs` applies an absolute floor of 97%.
+- `side_zone_consistency` remains the direct per-shot correctness test.
+
+**Feed defect handled:** the shift chart for 2025020565 (NJD-BUF) also carries about 670 VGK/SJS shifts. The lake drops rows of any team other than the game's two and counts them in `games.n_shift_foreign_team`; the DQ `shift_duplicates` detail reports the total. `fetch_shifts.py` does the same using the boxscore, and the tracked 2025-26 file was repaired.
 
 ### Not yet in the lake
 
@@ -194,3 +201,5 @@ These are follow-ups for later milestones:
 - The HTML fallback now takes player IDs and home/away from the boxscore.
 - Each run re-tries REST for up to 60 stored games that lack IDs.
 - The 493 HTML-sourced 2025-26 games were re-fetched: the null `player_id` share went from 0.349 to 0.000.
+- REST rows of teams other than the game's two are dropped. The boxscore is fetched only when a payload has more than two teams.
+- A stored file that still has duplicate shift rows (from before de-duplication) is healed on the next run, even when no games are new.

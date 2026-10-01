@@ -100,10 +100,36 @@ def test_cluster_se_grows_with_clustered_errors():
 
 def test_backfill_cli_build_only(tmp_path, capsys):
     shutil.copytree(os.path.join(TESTDATA, "raw"), tmp_path / "raw")
-    rc = BF.main(["--games", "2023020500,2010020165", "--build-only", "--lake-dir", str(tmp_path), "--jobs", "1"])
+    rc = BF.main(["--games", "2023020500,2010020165", "--build-only", "--lake-dir", str(tmp_path), "--jobs", "1",
+                  "--rps", "5"])
     out = capsys.readouterr().out
     assert rc == 0
+    assert "using 2" in out and "2.0 rps/host" in out      # D5 ceiling enforced
     assert "Remaining full backfill" in out and "DQ gate" in out
     assert os.path.exists(tmp_path / "dq" / "dq_report_latest.json")
     assert os.path.exists(tmp_path / "dq" / "throughput_latest.json")
     assert os.path.exists(Lake(str(tmp_path)).table_path("events", "20102011"))
+
+
+def test_side_range_is_relative_to_the_raw_reference_and_read_from_the_lake(lake, tmp_path):
+    # Run with the inferred-side season only (the 2010-2017 leg of the backfill): the
+    # 2021+ raw-side reference must come from the lake, not silently disappear.
+    rep = run_dq(lake, ["20102011"], targets={"20102011": GAMES["20102011"]},
+                 historical_shots=str(tmp_path / "none.csv"))
+    row = _check(rep, "side_attacking_range", "20102011:inferred")
+    assert row["op"] == "<=" and row["detail"]["reference"].startswith("lake:") and row["pass"]
+    md = [r for r in rep["checks"] if r["check"] == "side_mean_distance"]
+    assert md and not md[0]["informational"] and md[0]["detail"]["reference"].startswith("lake:")
+    # Raw-side rows are reported but not gated (legitimate long shots exist there).
+    rep = run_dq(lake, list(GAMES), targets=GAMES, historical_shots=str(tmp_path / "none.csv"))
+    assert _check(rep, "side_attacking_range", "all:raw")["informational"]
+    assert _check(rep, "side_attacking_range", "all:inferred")["detail"]["reference"] == "run"
+
+
+def test_side_range_falls_back_to_an_absolute_floor_without_a_reference(lake, tmp_path):
+    for s in ("20192020", "20232024"):
+        shutil.rmtree(os.path.dirname(lake.table_path("shots", s)))
+    rep = run_dq(lake, ["20102011"], targets={"20102011": GAMES["20102011"]},
+                 historical_shots=str(tmp_path / "none.csv"))
+    row = _check(rep, "side_attacking_range_abs", "20102011:inferred")
+    assert row["threshold"] == 0.97 and row["detail"]["reference"] == "none"

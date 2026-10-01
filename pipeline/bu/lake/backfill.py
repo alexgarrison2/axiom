@@ -38,6 +38,7 @@ from .sources import DEFAULT_ENDPOINTS, ENDPOINTS, GAME_ENDPOINTS, season_id
 # for disk projections before the run has its own numbers.
 DEFAULT_GZ_BYTES = {"pbp": 14_000, "boxscore": 4_000, "rightrail": 3_000, "shifts": 17_000, "roster": 3_500}
 DEFAULT_LATENCY = {"api-web.nhle.com": 0.25, "api.nhle.com": 0.15}
+MAX_RPS = 2.0   # DECISIONS D5: polite backfill, <= 2 request starts per second per host
 
 
 def current_start_year() -> int:
@@ -145,7 +146,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m bu.lake.backfill", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--seasons", default=None, help="Start years, e.g. 2010-2026 or 2010,2015 (default: current)")
-    ap.add_argument("--rps", type=float, default=2.0, help="Max request starts per second per host (<= 2)")
+    ap.add_argument("--rps", type=float, default=2.0, help="Max request starts per second per host (capped at 2, D5)")
     ap.add_argument("--workers-per-host", type=int, default=2)
     ap.add_argument("--game-types", default="2,3", help="NHL game types (02 regular, 03 playoffs)")
     ap.add_argument("--endpoints", default=",".join(DEFAULT_ENDPOINTS))
@@ -163,8 +164,12 @@ def main(argv=None) -> int:
     ap.add_argument("--lake-dir", default=None, help="Lake root (default data/lake or $PONYXG_LAKE_DIR)")
     args = ap.parse_args(argv)
 
-    if args.rps > 2.0:
-        print(f"[WARN] --rps {args.rps} exceeds the approved polite rate (D5: <= 2 per host)")
+    if args.rps > MAX_RPS:
+        print(f"[WARN] --rps {args.rps} exceeds the approved polite rate (D5: <= {MAX_RPS:g} per host); "
+              f"using {MAX_RPS:g}")
+        args.rps = MAX_RPS
+    if args.rps <= 0:
+        raise SystemExit("--rps must be > 0")
     lake = Lake(args.lake_dir)
     cur = current_start_year()
     years = parse_seasons(args.seasons) if args.seasons else [cur]
@@ -202,6 +207,10 @@ def main(argv=None) -> int:
         elif args.sample:
             ids = sample_games(ids, args.sample)
         plan[s] = ids
+    no_list = [s for s in seasons if not os.path.exists(lake.raw_path("schedule", s, s))]
+    if no_list:
+        print(f"  [WARN] no cached game list for {', '.join(no_list)}: those seasons plan 0 games "
+              f"(run without --build-only to fetch it)")
     print("  games: " + ", ".join(f"{s}: {len(plan[s])}" + (f"/{len(full_plan[s])}" if len(plan[s]) != len(full_plan[s]) else "")
                                    for s in seasons))
 

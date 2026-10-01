@@ -173,6 +173,43 @@ def test_tracked_2025_26_shifts_have_player_ids():
                         "nhl_season_2025_2026_shifts.csv")
     if not os.path.exists(path):
         pytest.skip("archived 2025-26 shifts not present")
-    df = pd.read_csv(path, usecols=["game_id", "player_id", "period", "start_seconds", "end_seconds"])
+    df = pd.read_csv(path, usecols=["game_id", "player_id", "period", "start_seconds", "end_seconds", "team_id"])
     assert df["player_id"].isna().mean() < 0.001
-    assert not df.duplicated().any()
+    assert not df.drop(columns="team_id").duplicated().any()
+    # 2025020565's REST feed mixes in another game's VGK/SJS shifts; only the two teams stay.
+    assert df.groupby("game_id")["team_id"].nunique().max() == 2
+
+
+def test_rest_rows_of_other_teams_are_dropped(monkeypatch):
+    payload = _rest_payload(2025020565)
+    payload["data"].append({"gameId": 2025020565, "typeCode": 517, "playerId": 8470000, "firstName": "X",
+                            "lastName": "Y", "teamId": 54, "teamAbbrev": "VGK", "period": 1,
+                            "startTime": "00:00", "endTime": "00:50"})
+    payload["data"].append({"gameId": 2025020565, "typeCode": 517, "playerId": 8470001, "firstName": "Z",
+                            "lastName": "W", "teamId": 28, "teamAbbrev": "SJS", "period": 1,
+                            "startTime": "00:00", "endTime": "00:50"})
+    monkeypatch.setattr(FS, "get_json", lambda url: payload)
+    payload["data"].append({"gameId": 2025020565, "typeCode": 517, "playerId": 8470002, "firstName": "A",
+                            "lastName": "B", "teamId": 20, "teamAbbrev": "CGY", "period": 1,
+                            "startTime": "00:00", "endTime": "00:50"})
+    assert {r["team_id"] for r in FS.parse_rest_shifts(payload, 2025020565)} == {22, 20, 54, 28}
+    monkeypatch.setattr(FS, "fetch_boxscore_meta", lambda gid: {"home": {"id": 22}, "away": {"id": 20}})
+    rows = FS.fetch_shifts_rest_api(2025020565)
+    assert {r["team_id"] for r in rows} == {22, 20}
+    assert FS.keep_game_teams(rows, (None, 1)) == rows      # unknown teams: keep everything
+
+
+def test_stored_duplicates_are_healed_when_up_to_date(tmp_path, monkeypatch):
+    season = 2026
+    paths = FS.season_paths(season)
+    _gamestats(tmp_path / paths["gamestats"], [(2026020001, "2026-09-29")])
+    rows = FS.parse_rest_shifts(_rest_payload(2026020001), 2026020001)
+    FS.append_rows(str(tmp_path / paths["shifts"]), rows + rows[:1])   # written before de-dup existed
+    monkeypatch.setattr(FS, "fetch_shifts_rest_api", lambda gid: (_ for _ in ()).throw(AssertionError(gid)))
+    res = FS.main(["--season", str(season)], now=datetime(2026, 10, 1, tzinfo=timezone.utc),
+                  workdir=str(tmp_path))
+    assert res["status"] == "ok" and res["healed"] == 1
+    df = pd.read_csv(tmp_path / paths["shifts"])
+    assert len(df) == len(rows)
+    res = FS.main(["--season", str(season)], now=datetime(2026, 10, 1, tzinfo=timezone.utc), workdir=str(tmp_path))
+    assert res["status"] == "skip"
