@@ -3348,7 +3348,7 @@
                 "id": 3831,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Joseph Woll",
@@ -3447,9 +3447,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Charlie O'Connor",
-        "updated_at": "2026-09-29T15:49:24.469Z",
-        "fetched_at": "2026-09-30T04:45:35Z"
+        "lineup_source": "Siobhan Nolan",
+        "updated_at": "2026-09-30T23:00:12.537Z",
+        "fetched_at": "2026-10-01T01:08:09Z"
     },
     "PIT": {
         "f1": [
@@ -3604,28 +3604,6 @@
         ],
         "d2": [
             {
-                "name": "Trevor van Riemsdyk",
-                "number": 57,
-                "pos": "ld",
-                "id": 2383,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Kris Letang",
-                "number": 58,
-                "pos": "rd",
-                "id": 1233,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
                 "name": "Samuel Girard",
                 "number": 49,
                 "pos": "ld",
@@ -3633,7 +3611,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Kaedan Korczak",
@@ -3643,7 +3621,29 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Trevor van Riemsdyk",
+                "number": 57,
+                "pos": "ld",
+                "id": 2383,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Kris Letang",
+                "number": 58,
+                "pos": "rd",
+                "id": 1233,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "g": [
@@ -3780,9 +3780,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "@PensInsideScoop",
-        "updated_at": "2026-09-29T15:50:54.588Z",
-        "fetched_at": "2026-09-30T04:45:35Z"
+        "lineup_source": "@penguins",
+        "updated_at": "2026-09-30T22:57:46.711Z",
+        "fetched_at": "2026-10-01T01:08:09Z"
     },
     "NYI": {
         "f1": [
