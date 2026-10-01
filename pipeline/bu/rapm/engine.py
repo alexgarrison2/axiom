@@ -18,7 +18,32 @@ from .design import Index, Rows, design_matrix
 from .ridge import Gram
 
 LAG_DAYS = 2
+DEGRADE_ENV = "PONYXG_BU_DEGRADE"   # "0.35:2" = 35% of games get their shifts 2 days late (DESIGN §4.3)
 LAM_STANDALONE = 3600.0 * 10   # flat ridge for the standalone (aging / rookie) fits
+
+
+def degrade_spec() -> tuple[float, int]:
+    import os
+    v = os.environ.get(DEGRADE_ENV, "")
+    if not v:
+        return 0.0, 0
+    frac, days = v.split(":")
+    return float(frac), int(days)
+
+
+def avail_dates(game_ids, dates) -> np.ndarray:
+    """Date from which a game's shifts count as available, before the base LAG_DAYS.
+
+    Normally the game date.  Under the degraded-data sensitivity (``PONYXG_BU_DEGRADE``), a
+    deterministic pseudo-random ``frac`` of games (hash of the game id) arrive ``days`` later,
+    reproducing the live REST shift lag (DESIGN §4.3)."""
+    dates = np.asarray(dates, dtype="datetime64[D]")
+    frac, days = degrade_spec()
+    if frac <= 0:
+        return dates
+    gid = np.asarray(game_ids, dtype=np.int64)
+    u = ((gid * 2654435761) % 2 ** 32) / 2 ** 32
+    return dates + np.where(u < frac, days, 0).astype("timedelta64[D]")
 
 
 def team_rows(rows: Rows) -> Rows:
@@ -37,11 +62,13 @@ class SeasonData:
     Xt: object
     toi: pd.Series        # EV seconds per player, whole season
     dates: np.ndarray     # unique game dates (datetime64[D]) ascending
+    avail: np.ndarray     # per-row availability date (sorted); equals rows.date unless degraded
 
     @classmethod
     def load(cls, paths, season: str, source: str = "v1", target: str = "xgf") -> "SeasonData":
         rows, st = season_rows(paths, season, source, target=target)
-        order = np.argsort(rows.date, kind="stable")
+        avail = avail_dates(rows.game_id, rows.date)
+        order = np.lexsort((rows.date, avail))
         rows = Rows([rows.att[i] for i in order], [rows.dfn[i] for i in order], rows.cov[order], rows.y[order],
                     rows.w[order], rows.date[order], rows.game_id[order], rows.att_team[order],
                     rows.def_team[order])
@@ -49,14 +76,19 @@ class SeasonData:
         tr = team_rows(rows)
         tidx = Index.from_rows(tr)
         return cls(season, rows, st, idx, design_matrix(rows, idx), tidx, design_matrix(tr, tidx),
-                   ev_toi(st), np.unique(rows.date))
+                   ev_toi(st), np.unique(rows.date), avail[order])
 
     def upto(self, d) -> int:
         """Number of leading rows usable for a rating as of date d (lag applied)."""
         cutoff = np.datetime64(d, "D") - np.timedelta64(LAG_DAYS, "D")
-        return int(np.searchsorted(self.rows.date, cutoff, side="right"))
+        return int(np.searchsorted(self.avail, cutoff, side="right"))
+
+    def max_source_date(self, k: int):
+        """Latest game date among the first k (available) rows."""
+        return self.rows.date[:k].max() if k > 0 else np.datetime64("NaT")
 
     def window(self, d, days: int = 30) -> tuple[int, int]:
+        assert degrade_spec()[0] == 0, "validation windows assume rows sorted by game date"
         d0 = np.datetime64(d, "D")
         lo = int(np.searchsorted(self.rows.date, d0, side="left"))
         hi = int(np.searchsorted(self.rows.date, d0 + np.timedelta64(days, "D"), side="left"))

@@ -28,7 +28,7 @@ import pandas as pd
 
 from .aging import fit_aging
 from .design import COVARIATES
-from .engine import LAG_DAYS, SeasonData, fit_standalone
+from .engine import LAG_DAYS, SeasonData, avail_dates, fit_standalone
 from .priors import Chain, Hyper, RookieModel
 from .ridge import Gram
 from bu.lake.build import read_table
@@ -48,6 +48,15 @@ def _per_day_toi(sd: SeasonData) -> pd.DataFrame:
     return df.groupby(["game_date", "player_id"], as_index=False)["sec"].sum()
 
 
+def _per_avail_toi(sd: SeasonData) -> pd.DataFrame:
+    """Like _per_day_toi but keyed on the availability date (differs only when degraded)."""
+    st = sd.stints.copy()
+    st["game_date"] = avail_dates(st["game_id"], pd.to_datetime(st["game_date"]).values.astype("datetime64[D]"))
+    tmp = SeasonData.__new__(SeasonData)
+    tmp.stints = st
+    return _per_day_toi(tmp).sort_values("game_date", kind="stable").reset_index(drop=True)
+
+
 def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: str = "v1", log=print) -> dict:
     chain = Chain(hyper)
     standalone: dict[str, pd.DataFrame] = {}
@@ -61,7 +70,7 @@ def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: 
         n = sd.idx.n
         sched = read_table(paths.lake, "games", [S], columns=["game_date"])
         dates = np.unique(pd.to_datetime(sched["game_date"]).values.astype("datetime64[D]"))
-        toi_day = _per_day_toi(sd)
+        toi_day = _per_avail_toi(sd)
         g = Gram(sd.idx.p)
         ptr, b, last_k = 0, None, -1
         out, covs, srcs = [], [], []
@@ -84,7 +93,7 @@ def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: 
                 b, inv = g.solve(lam, b0, want_inv=weekly)
                 last_k = k
             sdv = np.sqrt(chain.sigma2 * inv) if weekly else np.full(sd.idx.p, np.nan)
-            src = sd.rows.date[k - 1] if k > 0 else np.datetime64("NaT")
+            src = sd.max_source_date(k)
             out.append(pd.DataFrame({
                 "asof": d, "player_id": sd.idx.ids, "o": b[:n], "d": b[n:2 * n],
                 "o_sd": sdv[:n], "d_sd": sdv[n:2 * n], "is_new": is_new,

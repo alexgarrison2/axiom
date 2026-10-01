@@ -1,0 +1,517 @@
+{
+  "generated_at": "2026-10-01T15:43:06.858054+00:00",
+  "incumbent_features": [
+    "d_xg_share",
+    "d_xg_share_all",
+    "d_elo",
+    "d_goalie_gsax",
+    "d_pts_pct",
+    "h_b2b",
+    "a_b2b",
+    "d_rest"
+  ],
+  "feature_meta": {
+    "hyper": {
+      "v_new": 0.02,
+      "kappa": 1.5,
+      "young_old_extra": 0.25,
+      "cov_lam": 72000.0,
+      "use_aging": true,
+      "use_rookie_mean": true
+    },
+    "lag_days": 2,
+    "xg_source": "v1",
+    "lineups": "L-actual",
+    "toi": "ewma-hl8-m2",
+    "baseline_games": 10,
+    "min_rated": 14
+  },
+  "dev_seasons": [
+    2023,
+    2024
+  ],
+  "variants": {
+    "net": {
+      "cols": [
+        "bu_d_net"
+      ],
+      "folds": {
+        "2023": {
+          "n": 1399,
+          "ll_incumbent": 0.6590777245212593,
+          "ll_candidate": 0.6585141563943607,
+          "delta_ll": -0.0005635681268986096,
+          "se": 0.0008110842083812846,
+          "upper95_one_sided": 0.0007705842874677655,
+          "boot_upper95": 0.0007658739768626892,
+          "p_boot_not_better": 0.2375,
+          "brier_incumbent": 0.2336922303348667,
+          "brier_candidate": 0.2334202926134545,
+          "cal_slope_incumbent": 1.005307979442618,
+          "cal_slope_candidate": 1.0200881163360085,
+          "cal_slope_ci_candidate": {
+            "slope": 1.0201071252487632,
+            "lo95": 0.800123667853269,
+            "hi95": 1.2400905826442574
+          },
+          "mean_p_minus_y_incumbent": -0.016811081125367666,
+          "mean_p_minus_y_candidate": -0.017746219760315207,
+          "early": {
+            "n": 249,
+            "delta_ll": -0.00019445905128296606,
+            "se": 0.0022116105265955434
+          }
+        },
+        "2024": {
+          "n": 1206,
+          "ll_incumbent": 0.6653669716293885,
+          "ll_candidate": 0.6627585604786818,
+          "delta_ll": -0.0026084111507068608,
+          "se": 0.0008755370782045307,
+          "upper95_one_sided": -0.0011682402107682283,
+          "boot_upper95": -0.001115975077753225,
+          "p_boot_not_better": 0.0025,
+          "brier_incumbent": 0.23663132139658763,
+          "brier_candidate": 0.23535374280789503,
+          "cal_slope_incumbent": 1.0916214142135148,
+          "cal_slope_candidate": 1.1143304531353033,
+          "cal_slope_ci_candidate": {
+            "slope": 1.1143283743078145,
+            "lo95": 0.817786731692659,
+            "hi95": 1.41087001692297
+          },
+          "mean_p_minus_y_incumbent": -0.03857083908576364,
+          "mean_p_minus_y_candidate": -0.03789085914898227,
+          "early": {
+            "n": 250,
+            "delta_ll": -0.006093741950454487,
+            "se": 0.002410892161504501
+          }
+        }
+      },
+      "pooled_dev": {
+        "n": 2605,
+        "ll_incumbent": 0.661989368288017,
+        "ll_candidate": 0.6604791281124763,
+        "delta_ll": -0.0015102401755407403,
+        "se": 0.0005952282214856983,
+        "upper95_one_sided": -0.0005311492740189151,
+        "boot_upper95": -0.0005592443888879446,
+        "p_boot_not_better": 0.006,
+        "brier_incumbent": 0.23505289974770183,
+        "brier_candidate": 0.2343153946996331,
+        "cal_slope_incumbent": 1.0375198867090705,
+        "cal_slope_candidate": 1.0585749524142405,
+        "cal_slope_ci_candidate": {
+          "slope": 1.058655900817436,
+          "lo95": 0.881900924561708,
+          "hi95": 1.2354108770731642
+        },
+        "mean_p_minus_y_incumbent": -0.02688488845751258,
+        "mean_p_minus_y_candidate": -0.027072298494569602,
+        "early": {
+          "n": 499,
+          "delta_ll": -0.003150011605978117,
+          "se": 0.001639797733121355
+        }
+      },
+      "C": {
+        "2023": 0.01,
+        "2024": 0.003
+      }
+    },
+    "delta": {
+      "cols": [
+        "bu_d_delta"
+      ],
+      "folds": {
+        "2023": {
+          "n": 1399,
+          "ll_incumbent": 0.6590777245212593,
+          "ll_candidate": 0.6588033437717247,
+          "delta_ll": -0.0002743807495346264,
+          "se": 0.0011799766262659266,
+          "upper95_one_sided": 0.0016665628030101964,
+          "boot_upper95": 0.0016545307676589544,
+          "p_boot_not_better": 0.413,
+          "brier_incumbent": 0.2336922303348667,
+          "brier_candidate": 0.23357033624872048,
+          "cal_slope_incumbent": 1.005307979442618,
+          "cal_slope_candidate": 1.003202783662443,
+          "cal_slope_ci_candidate": {
+            "slope": 1.0032162818400565,
+            "lo95": 0.7860813821598991,
+            "hi95": 1.220351181520214
+          },
+          "mean_p_minus_y_incumbent": -0.016811081125367666,
+          "mean_p_minus_y_candidate": -0.018642862178153474,
+          "early": {
+            "n": 249,
+            "delta_ll": -4.400236728451509e-05,
+            "se": 0.0037038861836980186
+          }
+        },
+        "2024": {
+          "n": 1206,
+          "ll_incumbent": 0.6653669716293885,
+          "ll_candidate": 0.6630804534417448,
+          "delta_ll": -0.002286518187643798,
+          "se": 0.0007161369516579065,
+          "upper95_one_sided": -0.0011085445158617077,
+          "boot_upper95": -0.0010600180923770884,
+          "p_boot_not_better": 0.0005,
+          "brier_incumbent": 0.23663132139658763,
+          "brier_candidate": 0.2355160166830996,
+          "cal_slope_incumbent": 1.0916214142135148,
+          "cal_slope_candidate": 1.154382188191319,
+          "cal_slope_ci_candidate": {
+            "slope": 1.1543841131278711,
+            "lo95": 0.8457612554953484,
+            "hi95": 1.4630069707603939
+          },
+          "mean_p_minus_y_incumbent": -0.03857083908576364,
+          "mean_p_minus_y_candidate": -0.03809433060797318,
+          "early": {
+            "n": 250,
+            "delta_ll": -0.001999422806728305,
+            "se": 0.0015622965873597844
+          }
+        }
+      },
+      "pooled_dev": {
+        "n": 2605,
+        "ll_incumbent": 0.661989368288017,
+        "ll_candidate": 0.6607834567322023,
+        "delta_ll": -0.0012059115558147265,
+        "se": 0.0007153309729888955,
+        "upper95_one_sided": -2.9263638345292282e-05,
+        "boot_upper95": 1.4681954370331605e-05,
+        "p_boot_not_better": 0.0525,
+        "brier_incumbent": 0.23505289974770183,
+        "brier_candidate": 0.23447110039607605,
+        "cal_slope_incumbent": 1.0375198867090705,
+        "cal_slope_candidate": 1.0589694631299662,
+        "cal_slope_ci_candidate": {
+          "slope": 1.0590554983965796,
+          "lo95": 0.8812585788508558,
+          "hi95": 1.2368524179423035
+        },
+        "mean_p_minus_y_incumbent": -0.02688488845751258,
+        "mean_p_minus_y_candidate": -0.027648033359098823,
+        "early": {
+          "n": 499,
+          "delta_ll": -0.0010236719261240892,
+          "se": 0.002005594378218546
+        }
+      },
+      "C": {
+        "2023": 0.01,
+        "2024": 0.003
+      }
+    },
+    "net+delta": {
+      "cols": [
+        "bu_d_net",
+        "bu_d_delta"
+      ],
+      "folds": {
+        "2023": {
+          "n": 1399,
+          "ll_incumbent": 0.6590777245212593,
+          "ll_candidate": 0.6585564283320013,
+          "delta_ll": -0.0005212961892580261,
+          "se": 0.0013995284489550918,
+          "upper95_one_sided": 0.0017807881564282043,
+          "boot_upper95": 0.001759124368814657,
+          "p_boot_not_better": 0.3425,
+          "brier_incumbent": 0.2336922303348667,
+          "brier_candidate": 0.23344084103516316,
+          "cal_slope_incumbent": 1.005307979442618,
+          "cal_slope_candidate": 1.0098321761590607,
+          "cal_slope_ci_candidate": {
+            "slope": 1.0098451494399896,
+            "lo95": 0.7922071545751166,
+            "hi95": 1.2274831443048626
+          },
+          "mean_p_minus_y_incumbent": -0.016811081125367666,
+          "mean_p_minus_y_candidate": -0.01902014254630291,
+          "early": {
+            "n": 249,
+            "delta_ll": -0.00016320743086440585,
+            "se": 0.003883556711983175
+          }
+        },
+        "2024": {
+          "n": 1206,
+          "ll_incumbent": 0.6653669716293885,
+          "ll_candidate": 0.6614261512950852,
+          "delta_ll": -0.00394082033430335,
+          "se": 0.0011578618819514201,
+          "upper95_one_sided": -0.002036253324681459,
+          "boot_upper95": -0.0019499849744549847,
+          "p_boot_not_better": 0.0,
+          "brier_incumbent": 0.23663132139658763,
+          "brier_candidate": 0.23470513736350296,
+          "cal_slope_incumbent": 1.0916214142135148,
+          "cal_slope_candidate": 1.1448586154926874,
+          "cal_slope_ci_candidate": {
+            "slope": 1.1448572930443917,
+            "lo95": 0.8481927559672053,
+            "hi95": 1.441521830121578
+          },
+          "mean_p_minus_y_incumbent": -0.03857083908576364,
+          "mean_p_minus_y_candidate": -0.037584641972680966,
+          "early": {
+            "n": 250,
+            "delta_ll": -0.0070889411080102445,
+            "se": 0.0028375615809823505
+          }
+        }
+      },
+      "pooled_dev": {
+        "n": 2605,
+        "ll_incumbent": 0.661989368288017,
+        "ll_candidate": 0.6598849833774828,
+        "delta_ll": -0.0021043849105342877,
+        "se": 0.0009236095520737858,
+        "upper95_one_sided": -0.0005851395583281174,
+        "boot_upper95": -0.000583062868239284,
+        "p_boot_not_better": 0.0135,
+        "brier_incumbent": 0.23505289974770183,
+        "brier_candidate": 0.23402615442171898,
+        "cal_slope_incumbent": 1.0375198867090705,
+        "cal_slope_candidate": 1.0625043715958475,
+        "cal_slope_ci_candidate": {
+          "slope": 1.0625771223559575,
+          "lo95": 0.8869799770634269,
+          "hi95": 1.2381742676484881
+        },
+        "mean_p_minus_y_incumbent": -0.02688488845751258,
+        "mean_p_minus_y_candidate": -0.027614686234676,
+        "early": {
+          "n": 499,
+          "delta_ll": -0.0036330138823402773,
+          "se": 0.0024060105608300214
+        }
+      },
+      "C": {
+        "2023": 0.01,
+        "2024": 0.003
+      }
+    },
+    "xgpct": {
+      "cols": [
+        "bu_d_xgpct"
+      ],
+      "folds": {
+        "2023": {
+          "n": 1399,
+          "ll_incumbent": 0.6590777245212593,
+          "ll_candidate": 0.6589136587501838,
+          "delta_ll": -0.00016406577107545928,
+          "se": 0.0009465735109906373,
+          "upper95_one_sided": 0.00139295299715304,
+          "boot_upper95": 0.0013615186886684041,
+          "p_boot_not_better": 0.426,
+          "brier_incumbent": 0.2336922303348667,
+          "brier_candidate": 0.23361078685825698,
+          "cal_slope_incumbent": 1.005307979442618,
+          "cal_slope_candidate": 0.9941697817763825,
+          "cal_slope_ci_candidate": {
+            "slope": 0.9941767762142788,
+            "lo95": 0.7793697848204817,
+            "hi95": 1.208983767608076
+          },
+          "mean_p_minus_y_incumbent": -0.016811081125367666,
+          "mean_p_minus_y_candidate": -0.021175477218077998,
+          "early": {
+            "n": 249,
+            "delta_ll": 0.00024800446620495774,
+            "se": 0.002653271423033224
+          }
+        },
+        "2024": {
+          "n": 1206,
+          "ll_incumbent": 0.6653669716293885,
+          "ll_candidate": 0.6631467476439962,
+          "delta_ll": -0.002220223985392368,
+          "se": 0.000931051013528252,
+          "upper95_one_sided": -0.000688738173239746,
+          "boot_upper95": -0.0006309222430333082,
+          "p_boot_not_better": 0.01,
+          "brier_incumbent": 0.23663132139658763,
+          "brier_candidate": 0.23553668677801373,
+          "cal_slope_incumbent": 1.0916214142135148,
+          "cal_slope_candidate": 1.1066333364615026,
+          "cal_slope_ci_candidate": {
+            "slope": 1.1066308694582432,
+            "lo95": 0.8128830668762308,
+            "hi95": 1.4003786720402556
+          },
+          "mean_p_minus_y_incumbent": -0.03857083908576364,
+          "mean_p_minus_y_candidate": -0.04112221209567046,
+          "early": {
+            "n": 250,
+            "delta_ll": -0.006683663869422518,
+            "se": 0.002521002603046205
+          }
+        }
+      },
+      "pooled_dev": {
+        "n": 2605,
+        "ll_incumbent": 0.661989368288017,
+        "ll_candidate": 0.6608733920346129,
+        "delta_ll": -0.001115976253404132,
+        "se": 0.0006666696941633554,
+        "upper95_one_sided": -1.9371273474828518e-05,
+        "boot_upper95": -3.955222260944724e-05,
+        "p_boot_not_better": 0.0435,
+        "brier_incumbent": 0.23505289974770183,
+        "brier_candidate": 0.23450239350057048,
+        "cal_slope_incumbent": 1.0375198867090705,
+        "cal_slope_candidate": 1.038497345761148,
+        "cal_slope_ci_candidate": {
+          "slope": 1.0385537990011007,
+          "lo95": 0.8650193831233608,
+          "hi95": 1.2120882148788406
+        },
+        "mean_p_minus_y_incumbent": -0.02688488845751258,
+        "mean_p_minus_y_candidate": -0.03040993490037236,
+        "early": {
+          "n": 499,
+          "delta_ll": -0.0032247752610633173,
+          "se": 0.0018345433763734666
+        }
+      },
+      "C": {
+        "2023": 0.01,
+        "2024": 0.003
+      }
+    }
+  },
+  "incumbent_dev": {
+    "2023": {
+      "n": 1399,
+      "log_loss": 0.6590777245212593,
+      "brier": 0.2336922303348667,
+      "calibration_slope": 1.005307979442618,
+      "C": 0.01
+    },
+    "2024": {
+      "n": 1206,
+      "log_loss": 0.6653669716293885,
+      "brier": 0.23663132139658763,
+      "calibration_slope": 1.0916214142135148,
+      "C": 0.003
+    }
+  },
+  "coverage": {
+    "2023": {
+      "n_games": 1399,
+      "missing_lineup": 0
+    },
+    "2024": {
+      "n_games": 1206,
+      "missing_lineup": 0
+    }
+  },
+  "L_asof_dev": {
+    "lineup": "previous game's dressed 18 (no injury feed)",
+    "cols": [
+      "bu_d_net",
+      "bu_d_delta"
+    ],
+    "pooled_dev": {
+      "n": 2605,
+      "ll_incumbent": 0.661989368288017,
+      "ll_candidate": 0.6606364694208845,
+      "delta_ll": -0.0013528988671325432,
+      "se": 0.0008308679746729375,
+      "upper95_one_sided": 1.3795864406971605e-05,
+      "boot_upper95": 3.9101442470585254e-05,
+      "p_boot_not_better": 0.053,
+      "brier_incumbent": 0.23505289974770183,
+      "brier_candidate": 0.23438163123007882,
+      "cal_slope_incumbent": 1.0375198867090705,
+      "cal_slope_candidate": 1.0508193385524989,
+      "cal_slope_ci_candidate": {
+        "slope": 1.0508930255936229,
+        "lo95": 0.8751518571487109,
+        "hi95": 1.2266341940385348
+      },
+      "mean_p_minus_y_incumbent": -0.02688488845751258,
+      "mean_p_minus_y_candidate": -0.027691118201297438,
+      "early": {
+        "n": 499,
+        "delta_ll": -0.0038829659933485154,
+        "se": 0.002184025397828328
+      }
+    },
+    "folds": {
+      "2023": {
+        "n": 1399,
+        "ll_incumbent": 0.6590777245212593,
+        "ll_candidate": 0.6582697973584283,
+        "delta_ll": -0.0008079271628311106,
+        "se": 0.0012087310761626218,
+        "upper95_one_sided": 0.001180314584348786,
+        "boot_upper95": 0.0010341271035726953,
+        "p_boot_not_better": 0.2315,
+        "brier_incumbent": 0.2336922303348667,
+        "brier_candidate": 0.2332928163572831,
+        "cal_slope_incumbent": 1.005307979442618,
+        "cal_slope_candidate": 1.018336663788692,
+        "cal_slope_ci_candidate": {
+          "slope": 1.0183510229675823,
+          "lo95": 0.7997514386028592,
+          "hi95": 1.2369506073323053
+        },
+        "mean_p_minus_y_incumbent": -0.016811081125367666,
+        "mean_p_minus_y_candidate": -0.018668465306973747,
+        "early": {
+          "n": 249,
+          "delta_ll": -0.002110931159702998,
+          "se": 0.0034337814492607153
+        }
+      },
+      "2024": {
+        "n": 1206,
+        "ll_incumbent": 0.6653669716293885,
+        "ll_candidate": 0.6633818875099197,
+        "delta_ll": -0.001985084119468948,
+        "se": 0.0011204793631927835,
+        "upper95_one_sided": -0.0001420076149531383,
+        "boot_upper95": -5.611894495367912e-05,
+        "p_boot_not_better": 0.045,
+        "brier_incumbent": 0.23663132139658763,
+        "brier_candidate": 0.2356446925957846,
+        "cal_slope_incumbent": 1.0916214142135148,
+        "cal_slope_candidate": 1.0960406505072071,
+        "cal_slope_ci_candidate": {
+          "slope": 1.0960383258439768,
+          "lo95": 0.8005888677963018,
+          "hi95": 1.3914877838916517
+        },
+        "mean_p_minus_y_incumbent": -0.03857083908576364,
+        "mean_p_minus_y_candidate": -0.0381576948175153,
+        "early": {
+          "n": 250,
+          "delta_ll": -0.005647912687659451,
+          "se": 0.0027055700321889932
+        }
+      }
+    }
+  },
+  "candidate": {
+    "variant": "net+delta",
+    "cols": [
+      "bu_d_net",
+      "bu_d_delta"
+    ],
+    "config_hash": "79da98fdaa88",
+    "A2_dev": {
+      "rule": "pooled dev \u0394 <= -0.0005 and no fold worse than +0.0005",
+      "pass": true
+    }
+  }
+}

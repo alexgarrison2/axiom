@@ -107,7 +107,8 @@ def cmd_asof(args, paths, seasons):
         print(f"  [WARN] no validation report at {hp}; using default hyper-parameters")
         h = Hyper()
     summ = A.run(paths, seasons, players, h, source=args.xg)
-    print(f"  report: {_publish(paths.report('asof_summary.json'))}")
+    if not args.degrade:
+        print(f"  report: {_publish(paths.report('asof_summary.json'))}")
     return summ
 
 
@@ -124,7 +125,14 @@ def main(argv=None) -> int:
     ap.add_argument("--hyper", default=None, help="validation report whose selected_hyper to use")
     ap.add_argument("--refresh-bio", default=None, help="season id whose bio payload to re-fetch")
     ap.add_argument("--rebuild", action="store_true")
+    ap.add_argument("--degrade", default=None, help="e.g. 0.35:2: DESIGN §4.3 degraded-data sensitivity "
+                    "(35%% of games' shifts 2 days late); needs its own --out")
     args = ap.parse_args(argv)
+    if args.degrade:
+        if not args.out:
+            raise SystemExit("--degrade needs a separate --out state dir")
+        from .engine import DEGRADE_ENV
+        os.environ[DEGRADE_ENV] = args.degrade
     lake = Lake(args.lake_dir)
     paths = RapmPaths(lake, args.out)
     seasons = _season_ids(args.seasons, lake)

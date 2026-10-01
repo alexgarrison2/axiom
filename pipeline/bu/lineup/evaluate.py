@@ -58,6 +58,32 @@ def attach(M: pd.DataFrame, feats: pd.DataFrame, cols) -> pd.DataFrame:
     return M2
 
 
+def cal_slope_ci(y, p) -> dict:
+    """Logistic recalibration y ~ a + s*logit(p) by IRLS; slope with a two-sided 95% Wald CI."""
+    p = np.clip(np.asarray(p, float), 1e-6, 1 - 1e-6)
+    X = np.column_stack([np.ones(len(p)), np.log(p / (1 - p))])
+    y = np.asarray(y, float)
+    b = np.array([0.0, 1.0])
+    H = np.eye(2)
+    for _ in range(50):
+        mu = 1 / (1 + np.exp(-X @ b))
+        H = X.T @ (X * (mu * (1 - mu))[:, None])
+        step = np.linalg.solve(H, X.T @ (y - mu))
+        b = b + step
+        if np.abs(step).max() < 1e-10:
+            break
+    se = float(np.sqrt(np.linalg.inv(H)[1, 1]))
+    return {"slope": float(b[1]), "lo95": float(b[1] - 1.96 * se), "hi95": float(b[1] + 1.96 * se)}
+
+
+def asof_frame(feats: pd.DataFrame, cols) -> pd.DataFrame:
+    """Feature frame whose candidate columns hold the L-asof values (previous game's lineup)."""
+    f = feats.copy()
+    for c in cols:
+        f[c] = f[c + "_asof"]
+    return f
+
+
 def compare_fold(base: pd.DataFrame, cand: pd.DataFrame, seed: int = 11) -> dict:
     import train_game_model as T
     m = base[["game_id", "home_win", "p_model", "early"]].merge(
@@ -76,6 +102,7 @@ def compare_fold(base: pd.DataFrame, cand: pd.DataFrame, seed: int = 11) -> dict
         "boot_upper95": float(np.quantile(boots, 0.95)), "p_boot_not_better": float((boots >= 0).mean()),
         "brier_incumbent": mb["brier"], "brier_candidate": mc["brier"],
         "cal_slope_incumbent": mb["calibration_slope"], "cal_slope_candidate": mc["calibration_slope"],
+        "cal_slope_ci_candidate": cal_slope_ci(y, m["p_c"].to_numpy()),
         "mean_p_minus_y_incumbent": mb["mean_pred_home"] - mb["actual_home"],
         "mean_p_minus_y_candidate": mc["mean_pred_home"] - mc["actual_home"],
         "early": {"n": int(e.sum()), "delta_ll": float(de.mean()) if len(de) else None,
@@ -120,6 +147,16 @@ def run(M: pd.DataFrame, feats: pd.DataFrame, feats_meta: dict, holdout: bool = 
     cand = report["variants"][best]
     a2 = (cand["pooled_dev"]["delta_ll"] <= -0.0005
           and all(f["delta_ll"] <= 0.0005 for f in cand["folds"].values()))
+    # L-asof (DESIGN §4.2, descriptive): the candidate with each team's previous dressed 18
+    if all(c + "_asof" in feats.columns for c in cand["cols"]):
+        M3 = attach(M, asof_frame(feats, cand["cols"]), cand["cols"])
+        _, oos_a = T.walk_forward(M3, base_cols + cand["cols"], test_seasons=DEV_SEASONS)
+        report["L_asof_dev"] = {
+            "lineup": "previous game's dressed 18 (no injury feed)", "cols": cand["cols"],
+            "pooled_dev": compare_fold(oos_b, oos_a),
+            "folds": {int(S): compare_fold(oos_b[oos_b["season"] == S], oos_a[oos_a["season"] == S])
+                      for S in DEV_SEASONS}}
+        log(f"  [eval] L-asof {best}: pooled dev Δ {report['L_asof_dev']['pooled_dev']['delta_ll']:+.5f}")
     report["candidate"] = {"variant": best, "cols": cand["cols"], "config_hash": config_hash(feats_meta, cand["cols"]),
                            "A2_dev": {"rule": "pooled dev Δ <= -0.0005 and no fold worse than +0.0005",
                                       "pass": bool(a2)}}

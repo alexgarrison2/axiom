@@ -25,6 +25,7 @@ Columns (home minus away where prefixed ``bu_d_``):
   bu_h_xgf60, bu_h_xga60, bu_a_xgf60, bu_a_xga60, bu_h_xgpct, bu_a_xgpct, bu_d_xgpct
   bu_h_delta, bu_a_delta, bu_d_delta        vs the team's last 10 lineups
   bu_h_n, bu_a_n, bu_h_rated, bu_a_rated    dressed skaters / with an NHL rating
+  bu_*_net_asof, bu_*_delta_asof            L-asof: the team's previous dressed 18 (no injury feed)
   bu_ok                                     both sides >= MIN_RATED rated skaters
   ratings_asof, max_source_date             leakage audit: max_source_date <= date - lag
 """
@@ -39,7 +40,7 @@ import pandas as pd
 
 from bu.lake.build import read_table
 from bu.rapm.asof import load_covs, load_ratings
-from bu.rapm.engine import LAG_DAYS
+from bu.rapm.engine import LAG_DAYS, avail_dates
 from bu.rapm.stints import MIN_GAME_ONICE_MATCH  # noqa: F401  (re-exported for docs)
 from .toi import ShareState, game_shares, lag_cutoff, lineup_shares
 
@@ -74,6 +75,7 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
         sh["season"] = s
         shares.append(sh)
     shares = pd.concat(shares, ignore_index=True).merge(games[["game_id", "d"]], on="game_id")
+    shares["d"] = avail_dates(shares["game_id"], shares["d"])   # = game date unless degraded
     shares = shares.sort_values(["d", "game_id"]).reset_index(drop=True)
     sh_d = shares["d"].to_numpy()
     actual = {(int(g), int(p)): float(x) for g, p, x in zip(shares["game_id"], shares["player_id"], shares["share"])}
@@ -145,7 +147,8 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
                 if len(pids) < 10:
                     ok = False
                     row.update({f"bu_{side}_off": np.nan, f"bu_{side}_def": np.nan, f"bu_{side}_n": len(pids),
-                                f"bu_{side}_rated": 0, f"bu_{side}_delta": np.nan})
+                                f"bu_{side}_rated": 0, f"bu_{side}_delta": np.nan,
+                                f"bu_{side}_net_asof": np.nan, f"bu_{side}_delta_asof": np.nan})
                     continue
                 s_ = lineup_shares(state, pids, groups)
                 s_last = lineup_shares(state, pids, groups, method="last")
@@ -165,6 +168,9 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
                     past.append(float(ps @ (po - pdf)))
                 net = row[f"bu_{side}_off"] - row[f"bu_{side}_def"]
                 row[f"bu_{side}_delta"] = net - float(np.mean(past)) if len(past) >= MIN_BASELINE else 0.0
+                # L-asof (DESIGN §4.2): the team's previous dressed 18 instead of tonight's
+                row[f"bu_{side}_net_asof"] = past[-1] if past else np.nan
+                row[f"bu_{side}_delta_asof"] = past[-1] - float(np.mean(past)) if len(past) >= MIN_BASELINE else 0.0
                 ok = ok and rated >= MIN_RATED
             c0, ch = cov_by.get((S, d), (np.nan, np.nan))
             row["c_intercept"], row["c_home"] = c0, ch
@@ -187,6 +193,8 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
     F["bu_a_xgpct"] = 1 - F["bu_h_xgpct"]
     F["bu_d_xgpct"] = F["bu_h_xgpct"] - F["bu_a_xgpct"]
     F["bu_d_delta"] = F["bu_h_delta"] - F["bu_a_delta"]
+    F["bu_d_net_asof"] = F["bu_h_net_asof"] - F["bu_a_net_asof"]
+    F["bu_d_delta_asof"] = F["bu_h_delta_asof"] - F["bu_a_delta_asof"]
     F["lag_days"] = LAG_DAYS
     te = pd.DataFrame(toi_err, columns=["season", "ewma", "last"])
     F.attrs["toi_validation"] = {

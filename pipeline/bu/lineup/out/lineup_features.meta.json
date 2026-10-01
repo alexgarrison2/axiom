@@ -1,0 +1,29 @@
+{
+  "hyper": {
+    "v_new": 0.02,
+    "kappa": 1.5,
+    "young_old_extra": 0.25,
+    "cov_lam": 72000.0,
+    "use_aging": true,
+    "use_rookie_mean": true
+  },
+  "lag_days": 2,
+  "xg_source": "v1",
+  "lineups": "L-actual",
+  "toi": "ewma-hl8-m2",
+  "baseline_games": 10,
+  "min_rated": 14,
+  "sha256_csv": "b0e2a34436c95ecdeced3dc3889d33180fb7bcee82049031f68aa0e424f8b111",
+  "seasons": [
+    "20182019",
+    "20192020",
+    "20202021",
+    "20212022",
+    "20222023",
+    "20232024",
+    "20242025",
+    "20252026"
+  ],
+  "n_games": 10515,
+  "coverage_ok": 0.9982881597717547
+}

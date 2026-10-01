@@ -289,6 +289,19 @@ def test_synthetic_end_to_end_point_in_time(synth):
     assert tv["n"] > 0 and np.isfinite(tv["ewma_mae"]) and np.isfinite(tv["last_game_mae"])
 
 
+def test_degraded_availability(monkeypatch):
+    from bu.rapm.engine import DEGRADE_ENV, avail_dates
+    gids = np.arange(2023020001, 2023021001)
+    dates = np.full(len(gids), np.datetime64("2023-11-01"))
+    assert (avail_dates(gids, dates) == dates).all()
+    monkeypatch.setenv(DEGRADE_ENV, "0.35:2")
+    a = avail_dates(gids, dates)
+    late = a > dates
+    assert 0.30 < late.mean() < 0.40
+    assert ((a - dates)[late] == np.timedelta64(2, "D")).all()
+    assert (avail_dates(gids, dates) == a).all()        # deterministic
+
+
 def test_attach_coverage_gate_neutral():
     from bu.lineup.evaluate import attach
     M = pd.DataFrame({"game_id": [1, 2, 3], "season": [2023] * 3})
