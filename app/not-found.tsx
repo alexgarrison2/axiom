@@ -46,7 +46,7 @@ export default function NotFound() {
                                 href={`/teams/${tri}`}
                                 className="panel panel-hover flex min-h-11 items-center justify-center gap-2 px-2 py-2 text-caption font-bold tracking-wide text-fg-1"
                             >
-                                <Crest tri={tri} size={24} className="drop-shadow-none" />
+                                <Crest tri={tri} size={30} className="drop-shadow-none" />
                                 {tri}
                             </Link>
                         </li>

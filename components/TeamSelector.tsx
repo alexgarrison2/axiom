@@ -107,7 +107,7 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
                                                             t.tri === current ? 'bg-surface-3 text-brand' : 'text-fg-2 hover:text-fg-1',
                                                         )}
                                                     >
-                                                        <Crest tri={t.tri} size={20} className="drop-shadow-none" />
+                                                        <Crest tri={t.tri} size={26} className="drop-shadow-none" />
                                                         <span className="font-bold text-fg-1">{t.tri}</span>
                                                         <span className="truncate text-fg-3">{t.common}</span>
                                                     </Link>

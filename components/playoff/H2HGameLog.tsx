@@ -30,14 +30,14 @@ export default function H2HGameLog({ games, t1, t2, seasonLabel }: { games: H2HM
                             <span className="tabular-nums text-fg-3">{shortDate(g.date)}</span>
                             <span className={cn('flex items-center justify-end gap-1.5', !homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                                 {g.away}
-                                <Crest tri={g.away} size={16} className="drop-shadow-none" />
+                                <Crest tri={g.away} size={22} className="drop-shadow-none" />
                             </span>
                             <span className="whitespace-nowrap text-center font-bold tabular-nums text-fg-1">
                                 {g.awayGoals}–{g.homeGoals}
                                 {g.decision !== 'REG' ? <span className="ml-1 text-micro font-normal text-fg-3">{g.decision}</span> : null}
                             </span>
                             <span className={cn('flex items-center gap-1.5', homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
-                                <Crest tri={g.home} size={16} className="drop-shadow-none" />
+                                <Crest tri={g.home} size={22} className="drop-shadow-none" />
                                 {g.home}
                             </span>
                         </li>

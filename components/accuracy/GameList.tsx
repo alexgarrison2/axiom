@@ -283,12 +283,12 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
                 </span>
                 <span className="hidden text-fg-3 sm:block">{shortDate(g.date)}</span>
                 <span className="flex min-w-0 flex-wrap items-center gap-x-1.5">
-                    <Crest tri={g.away} size={16} className="drop-shadow-none" />
+                    <Crest tri={g.away} size={22} className="drop-shadow-none" />
                     <span className={cn(!homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                         {g.away} {g.awayScore}
                     </span>
                     <span className="text-fg-3">@</span>
-                    <Crest tri={g.home} size={16} className="drop-shadow-none" />
+                    <Crest tri={g.home} size={22} className="drop-shadow-none" />
                     <span className={cn(homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                         {g.home} {g.homeScore}
                     </span>
@@ -308,7 +308,7 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
                 </span>
                 <span className="flex items-center gap-1.5">
                     <span className="sr-only">Pick</span>
-                    <Crest tri={pick} size={16} className="drop-shadow-none" />
+                    <Crest tri={pick} size={22} className="drop-shadow-none" />
                     <span className="font-bold text-fg-1">{pick}</span>
                     <span className="w-8 text-right font-bold text-fg-2">{pickProb(g).toFixed(0)}%</span>
                     <span className="sr-only">{ok ? '— right' : '— wrong'}. Details for {g.away} at {g.home}, {shortDate(g.date)}</span>
@@ -352,9 +352,9 @@ function ExcludedList({ games }: { games: ExcludedGame[] }) {
                         {list.map(g => (
                             <li key={g.id} className="flex items-center gap-1.5">
                                 <span className="text-fg-3">{shortDate(g.date)}</span>
-                                <Crest tri={g.away} size={16} className="drop-shadow-none" />
+                                <Crest tri={g.away} size={22} className="drop-shadow-none" />
                                 {g.away} @ {g.home}
-                                <Crest tri={g.home} size={16} className="drop-shadow-none" />
+                                <Crest tri={g.home} size={22} className="drop-shadow-none" />
                             </li>
                         ))}
                     </ul>
@@ -379,10 +379,10 @@ function NoLeanList({ games }: { games: GradedGame[] }) {
                     {games.map(g => (
                         <li key={g.id} className="flex items-center gap-1.5" title={`Pregame ${g.home} ${g.homeProb.toFixed(1)}%`}>
                             <span className="text-fg-3">{shortDate(g.date)}</span>
-                            <Crest tri={g.away} size={16} className="drop-shadow-none" />
+                            <Crest tri={g.away} size={22} className="drop-shadow-none" />
                             {g.away} {g.awayScore}
                             <span className="text-fg-3">@</span>
-                            <Crest tri={g.home} size={16} className="drop-shadow-none" />
+                            <Crest tri={g.home} size={22} className="drop-shadow-none" />
                             {g.home} {g.homeScore}
                         </li>
                     ))}

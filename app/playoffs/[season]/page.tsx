@@ -41,7 +41,7 @@ function Leaders({ archive }: { archive: PlayoffArchive }) {
                 {rows.map((r, i) => (
                     <li key={r.key} className="flex h-8 items-center gap-2 border-t border-line/60 px-3 text-caption first:border-t-0">
                         <span className="w-3 text-right text-fg-3">{i + 1}</span>
-                        <Crest tri={r.team} size={16} className="drop-shadow-none" />
+                        <Crest tri={r.team} size={22} className="drop-shadow-none" />
                         <span className="min-w-0 flex-1 truncate font-display text-body-sm font-semibold text-fg-1">{r.name}</span>
                         <span className="whitespace-nowrap text-micro text-fg-3">{r.sub}</span>
                         <span className="w-11 text-right font-bold text-fg-1">{r.value}</span>

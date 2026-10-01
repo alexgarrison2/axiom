@@ -120,15 +120,28 @@ function OutRow({ items }: { items: InjuryView[] }) {
  * player's impact, line ranks, the lineup source age and injuries.
  * Presentational: the data comes from /api/matchup-details.
  */
-export default function LineupGrid({ team, d, now, seasonTag }: { team: TeamRef; d: SideDetails; now: Date; seasonTag?: ReactNode }) {
+export default function LineupGrid({
+    team,
+    d,
+    now,
+    seasonTag,
+    titleWideOnly = false,
+}: {
+    team: TeamRef;
+    d: SideDetails;
+    now: Date;
+    seasonTag?: ReactNode;
+    /** The crest + tricode heading shows only on a wide card (a logo toggle names the team on a narrow one). */
+    titleWideOnly?: boolean;
+}) {
     const hasLines = FWD.some(k => d.lines[k]?.length) || DEF.some(k => d.lines[k]?.length);
     const age = relAge(d.lineupUpdatedAt, now);
     return (
         <section aria-label={`${team.commonName} lineup`} className="flex min-w-0 flex-col gap-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="flex items-center gap-2 text-caption font-bold text-fg-1">
+                <h3 className={cn('flex items-center gap-2 text-caption font-bold text-fg-1', titleWideOnly && 'sr-only cq-lg:not-sr-only')}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={team.logoUrl} alt="" width={18} height={18} className="h-[18px] w-[18px]" />
+                    <img src={team.logoUrl} alt="" width={32} height={32} className="h-8 w-8" />
                     {team.triCode}
                 </h3>
                 <span className="flex flex-wrap items-center gap-1.5 text-micro uppercase tracking-wide text-fg-3">

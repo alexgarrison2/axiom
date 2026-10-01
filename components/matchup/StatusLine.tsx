@@ -4,6 +4,7 @@ import type { Prediction } from '@/types/prediction';
 import { finalLabel, liveClock, type LiveGame, type Phase } from '@/lib/matchup/lifecycle';
 import { finalWords } from '@/lib/matchup/format';
 import { GameTime } from './GameTime';
+import { NetworkBadges } from './NetworkBadges';
 
 /** Top-left of the card: puck drop + network, the LIVE clock, or FINAL. */
 export function StatusLine({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame | null }) {
@@ -24,7 +25,7 @@ export function StatusLine({ p, phase, live }: { p: Prediction; phase: Phase; li
     return (
         <span className="flex min-w-0 items-center gap-2.5">
             <GameTime iso={p.startTimeUtc} className="whitespace-nowrap text-body-sm font-bold uppercase tracking-[0.14em] cq-md:tracking-[0.22em] text-fg-1" />
-            {p.tvNetwork ? <span className="rounded-chip border border-line px-1.5 py-px text-micro font-medium tracking-chip text-fg-3">{p.tvNetwork}</span> : null}
+            <NetworkBadges tv={p.tvBroadcasts ?? (p.tvNetwork ? [{ network: p.tvNetwork, market: 'N', team: null, country: 'US' }] : [])} />
         </span>
     );
 }

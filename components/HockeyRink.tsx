@@ -373,10 +373,10 @@ export default function HockeyRink({
         {homeTriCode && (
           <image
             href={`/logos/${homeTriCode}.svg`}
-            x={sx(0) - 40}
-            y={sy(0) - 40}
-            width="80"
-            height="80"
+            x={sx(0) - 26}
+            y={sy(0) - 26}
+            width="52"
+            height="52"
             opacity="0.22"
           />
         )}

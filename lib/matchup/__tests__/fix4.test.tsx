@@ -22,7 +22,7 @@ afterEach(cleanup);
 const opening = fixture('opening_night');
 
 function card(p: Prediction) {
-    return render(<MatchupCard p={p} live={null} implication={null} playoffOdds={{}} favorites={[]} onFavorite={() => {}} />).container;
+    return render(<MatchupCard p={p} live={null} implication={null} playoffOdds={{}} />).container;
 }
 
 describe('F4-4 odds source labels', () => {
@@ -147,16 +147,19 @@ describe('F4-3 card symbols open the glossary without toggling the card', () => 
         const c = card(p);
         const a = c.querySelector<HTMLAnchorElement>('a[data-chip]')!;
         expect(a.getAttribute('href')).toBe('/methodology#term-b2b');
-        expect(a.textContent).toContain('B2B VGK');
+        expect(a.textContent).toContain('B2B');
+        expect(a.textContent).toContain('VGK played yesterday');
         expect(a.closest('button')).toBeNull();
         expect(a.getAttribute('aria-hidden')).toBeNull();
     });
 
-    it('links FAIR and NO BET in the Odds tab', () => {
+    it('links FORECAST, xG and NO BET in the Odds tab', () => {
         const p = byTeams(opening, 'CHI', 'VGK');
         const { container } = render(<OddsPanel p={p} phase="pre" />);
-        const fair = [...container.querySelectorAll('a')].find(a => a.textContent?.startsWith('Fair'));
-        expect(fair?.getAttribute('href')).toBe('/methodology#term-fair-odds');
+        const forecast = [...container.querySelectorAll('a')].find(a => a.textContent?.startsWith('Forecast'));
+        expect(forecast?.getAttribute('href')).toBe('/methodology#term-model-pct');
+        const xg = [...container.querySelectorAll('a')].find(a => a.textContent?.startsWith('xG'));
+        if (p.away.xg != null) expect(xg?.getAttribute('href')).toBe('/methodology#term-projected-goals');
         const noBet = [...container.querySelectorAll('a')].find(a => a.textContent?.startsWith('No bet'));
         if (noBet) expect(noBet.getAttribute('href')).toBe('/methodology#edge');
     });

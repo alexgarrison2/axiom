@@ -29,10 +29,10 @@ export function LikelyMatchups({ rows, totalSims }: { rows: StandingsRow[]; tota
                                 {list.map(m => (
                                     <li key={`${m.a}-${m.b}`} className="flex h-8 items-center gap-3 border-t border-line/60 first:border-t-0">
                                         <span className="flex w-[8.25rem] shrink-0 items-center gap-1.5 font-bold text-fg-1">
-                                            <Crest tri={m.a} size={20} className="drop-shadow-none" />
+                                            <Crest tri={m.a} size={26} className="drop-shadow-none" />
                                             <span>{m.a}</span>
                                             <span className="font-normal text-fg-3">v</span>
-                                            <Crest tri={m.b} size={20} className="drop-shadow-none" />
+                                            <Crest tri={m.b} size={26} className="drop-shadow-none" />
                                             <span>{m.b}</span>
                                             <span className="sr-only">
                                                 ({TEAM_NAMES[m.a]?.short} against {TEAM_NAMES[m.b]?.short})

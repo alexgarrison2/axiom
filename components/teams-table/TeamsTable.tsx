@@ -23,11 +23,14 @@ import { seasonLabel, TEAM_SEASONS, seasonGames } from '@/utils/team-stats/seaso
 import { compareOfficial, computeStandings, officialKeysOf } from '@/utils/team-stats/standings';
 import { DIVISION_OF, DIVISIONS, DIVISION_LABEL, TEAM_TRICODES } from '@/utils/team-stats/teams';
 import type { Division, GameRow, LeaguePayload, Matchup, PackedGames, PeriodFilter, TeamStat } from '@/utils/team-stats/types';
-import { COLUMN_BY_KEY, SECTIONS, SECTION_KEYS, columnValue, heatColor, type StatColumn } from './columns';
+import {
+    COLUMN_BY_KEY, HEAT_BAD, HEAT_FULL_GP, HEAT_GOOD, HEAT_MAX_ALPHA, SECTIONS, SECTION_KEYS, columnValue, heatTint, leaguePercentile, sampleWeight,
+    type StatColumn,
+} from './columns';
 import { ChipRow, Field, RangeFields, TriField } from './FilterFields';
 import { HeaderCell, type SortDir } from './HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from './table-style';
-import { useStickyHeader } from './useStickyHeader';
+import { TableScroller } from './TableScroller';
 
 const STORAGE_KEY = 'ponyxg:teams-table:v2';
 
@@ -76,7 +79,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const [games, setGames] = React.useState<Record<string, GameRow[]>>({});
     const [loadError, setLoadError] = React.useState<string | null>(null);
     const [hydrated, setHydrated] = React.useState(false);
-    const tableRef = React.useRef<HTMLTableElement>(null);
+    const captionId = React.useId();
 
     if (initial) primeCache(leagueUrl(initial.season), initial);
 
@@ -222,27 +225,37 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         [sectionDef],
     );
 
-    const ranges = React.useMemo(() => {
-        const out = new Map<string, [number, number]>();
+    // Every team's value per column (ascending), for the rank-based cell tint.
+    // Ratings are season-independent; everything else counts teams with a game.
+    const dists = React.useMemo(() => {
+        const out = new Map<string, number[]>();
         if (!model) return out;
-        const played = model.league.filter(r => r.gp >= HEAT_MIN_GP);
         for (const { col } of columns) {
-            const vals = played.map(r => columnValue(col, r, payload?.ratings ?? null)).filter(Number.isFinite);
-            if (vals.length > 1) out.set(col.key, [Math.min(...vals), Math.max(...vals)]);
+            if (col.better === 'none') continue;
+            const vals = model.league
+                .filter(r => col.rating || r.gp > 0)
+                .map(r => columnValue(col, r, payload?.ratings ?? null))
+                .filter(Number.isFinite)
+                .sort((a, b) => a - b);
+            if (vals.length > 1 && vals[0] !== vals[vals.length - 1]) out.set(col.key, vals);
         }
         return out;
     }, [model, columns, payload]);
 
+    // A sort key from another section (sessions persist it) falls back to points.
+    const activeSort = columns.some(c => c.col.key === sort.key) ? sort : { key: 'points', dir: 'desc' as SortDir };
+
     const sorted = React.useMemo(() => {
         if (!model) return [];
         if (model.paired) return model.rows;
-        const col = COLUMN_BY_KEY.get(sort.key);
+        const col = COLUMN_BY_KEY.get(activeSort.key);
         const order = [...payload!.standings]
             .sort((a, b) => compareOfficial(officialKeysOf(a), officialKeysOf(b)) || a.tri.localeCompare(b.tri))
             .map(r => r.tri);
         const pos = new Map(order.map((t, i) => [t, i]));
+        // Rank sorts by official order: ascending is first place first.
         const val = (r: TeamRow) => {
-            if (!col || col.key === 'ranking') return -(pos.get(r.tri) ?? 99);
+            if (!col || col.key === 'ranking') return pos.get(r.tri) ?? 99;
             const v = columnValue(col, r, payload?.ratings ?? null);
             return Number.isFinite(v) ? v : null;
         };
@@ -252,12 +265,10 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
             if (va === null && vb === null) return (pos.get(a.tri) ?? 0) - (pos.get(b.tri) ?? 0);
             if (va === null) return 1;
             if (vb === null) return -1;
-            if (va !== vb) return sort.dir === 'desc' ? vb - va : va - vb;
+            if (va !== vb) return activeSort.dir === 'desc' ? vb - va : va - vb;
             return (pos.get(a.tri) ?? 0) - (pos.get(b.tri) ?? 0);
         });
-    }, [model, sort, payload]);
-
-    useStickyHeader(tableRef, [section, season, sorted.length]);
+    }, [model, activeSort.key, activeSort.dir, payload]);
 
     // ── handlers ────────────────────────────────────────────────────────────
     const setF = <K extends keyof TableFilters>(k: K, v: TableFilters[K]) => setFilters(f => ({ ...f, [k]: v }));
@@ -289,6 +300,42 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const scopeLabel = filters.scope === 'playoffs' ? 'playoffs' : 'regular season';
     const viewNote = filters.view === 'today' ? 'today' : filters.view === 'tomorrow' ? 'tomorrow' : filters.view === 'bracket' ? 'bracket' : null;
     const isPrior = season !== SEASON_ID;
+    const dot = (
+        <span aria-hidden="true" className="text-fg-disabled">
+            ·
+        </span>
+    );
+    const captionParts = (
+        <>
+            <span className="text-fg-1">
+                {payload.seasonLabel} {scopeLabel}
+            </span>
+            {dot}
+            <span>
+                <span className="text-fg-1">{payload.maxGp}</span> GP
+            </span>
+            {viewNote ? (
+                <>
+                    {dot}
+                    <span className="text-brand">{viewNote}</span>
+                </>
+            ) : null}
+            {section === 'ratings' ? (
+                <>
+                    {dot}
+                    {ratingsMissing ? <span>No ratings</span> : payload.ratingsSeasonLabel ? <span>Rtg {shortSeasonTag(payload.ratingsSeasonLabel)}</span> : null}
+                </>
+            ) : null}
+            {pending ? <span className="live-dot ml-1" role="status" aria-label="Updating" /> : null}
+        </>
+    );
+    // Team column: crest + tricode only; paired views add the starter and the moneyline.
+    const paired = !!model?.paired;
+    const teamColClass = !paired
+        ? '[--team-col:80px] md:[--team-col:112px]'
+        : filters.withStarter
+          ? '[--team-col:132px] md:[--team-col:196px]'
+          : '[--team-col:80px] md:[--team-col:136px]';
 
     return (
         <section aria-label="League table" className="flex flex-col gap-2.5">
@@ -339,102 +386,81 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                 </p>
             ) : null}
 
-            <ScrollRegion label={`${payload.seasonLabel} team table`} className="-mx-4 border-y border-line bg-surface-1 md:mx-0 md:rounded-card md:border-x">
-                <table
-                    ref={tableRef}
-                    className="table-fixed border-separate border-spacing-0 font-mono text-caption tabular-nums [--team-col:84px] md:[--team-col:208px]"
-                    style={{ width: `calc(var(--team-col) + ${columns.reduce((w, c) => w + colWidth(c.col), 0)}px)`, minWidth: '100%' }}
-                    aria-busy={pending || undefined}
-                >
-                    <caption className="h-8 px-3 text-left align-middle">
-                        <span className="flex h-8 items-center gap-2 whitespace-nowrap text-micro font-medium uppercase tracking-label text-fg-3">
-                            <span className="text-fg-1">
-                                {payload.seasonLabel} {scopeLabel}
-                            </span>
-                            <span aria-hidden="true" className="text-fg-disabled">
-                                ·
-                            </span>
-                            <span>
-                                <span className="text-fg-1">{payload.maxGp}</span> GP
-                            </span>
-                            {viewNote ? (
-                                <>
-                                    <span aria-hidden="true" className="text-fg-disabled">
-                                        ·
-                                    </span>
-                                    <span className="text-brand">{viewNote}</span>
-                                </>
+            {/* Bordered panel: the caption bar stays put, only the table scrolls (both axes). */}
+            <div className="-mx-4 overflow-hidden border-y border-line bg-surface-1 md:mx-0 md:rounded-card md:border-x">
+                <div aria-hidden="true" className="flex h-8 items-center gap-2 overflow-hidden whitespace-nowrap border-b border-line px-3 text-micro font-medium uppercase tracking-label text-fg-3">
+                    {captionParts}
+                </div>
+                <TableScroller label={`${payload.seasonLabel} team table`}>
+                    <table
+                        aria-labelledby={captionId}
+                        className={cn('table-fixed border-separate border-spacing-0 font-mono text-caption tabular-nums', teamColClass)}
+                        style={{ width: `calc(var(--team-col) + ${columns.reduce((w, c) => w + colWidth(c.col), 0)}px)`, minWidth: '100%' }}
+                        aria-busy={pending || undefined}
+                    >
+                        <caption id={captionId} className="sr-only">
+                            {captionParts}
+                        </caption>
+                        <colgroup>
+                            <col style={{ width: 'var(--team-col)' }} />
+                            {columns.map(({ col }) => (
+                                <col key={col.key} style={{ width: colWidth(col) }} />
+                            ))}
+                        </colgroup>
+                        <thead>
+                            {section === 'all' ? (
+                                <tr>
+                                    <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-7 border-b-0')} />
+                                    {sectionDef.groups.map(g => (
+                                        <th key={g.name} scope="colgroup" colSpan={g.cols.length} className={cn(HEAD_CELL, 'h-7 border-b-0 border-r px-2 text-left')}>
+                                            <span className="text-micro font-medium uppercase tracking-label text-fg-2">{g.name}</span>
+                                        </th>
+                                    ))}
+                                </tr>
                             ) : null}
-                            {section === 'ratings' ? (
-                                <>
-                                    <span aria-hidden="true" className="text-fg-disabled">
-                                        ·
-                                    </span>
-                                    {ratingsMissing ? <span>No ratings</span> : payload.ratingsSeasonLabel ? <span>Rtg {shortSeasonTag(payload.ratingsSeasonLabel)}</span> : null}
-                                </>
-                            ) : null}
-                            {pending ? <span className="live-dot ml-1" role="status" aria-label="Updating" /> : null}
-                        </span>
-                    </caption>
-                    <colgroup>
-                        <col style={{ width: 'var(--team-col)' }} />
-                        {columns.map(({ col }) => (
-                            <col key={col.key} style={{ width: colWidth(col) }} />
-                        ))}
-                    </colgroup>
-                    <thead className="[--thead-y:0px]">
-                        {section === 'all' ? (
                             <tr>
-                                <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] border-b-0')} />
-                                {sectionDef.groups.map(g => (
-                                    <th key={g.name} scope="colgroup" colSpan={g.cols.length} className={cn(HEAD_CELL, 'relative z-[3] h-7 border-b-0 border-r px-2 text-left')}>
-                                        <span className="text-micro font-medium uppercase tracking-label text-fg-2">{g.name}</span>
-                                    </th>
+                                <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-8 px-2 text-left', section === 'all' && 'top-7')}>
+                                    <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">Team</span>
+                                </th>
+                                {columns.map(({ col, groupEnd }) => (
+                                    <HeaderCell
+                                        key={col.key}
+                                        label={col.label}
+                                        title={col.title}
+                                        direction={model?.paired ? undefined : activeSort.key === col.key ? activeSort.dir : null}
+                                        onSort={model?.paired ? undefined : () => onSort(col.key)}
+                                        className={cn(HEAD_CELL, section === 'all' && 'top-7', groupEnd && 'border-r')}
+                                    />
                                 ))}
                             </tr>
-                        ) : null}
-                        <tr>
-                            <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-8 px-2 text-left md:px-3')}>
-                                <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">Team</span>
-                            </th>
-                            {columns.map(({ col, groupEnd }) => (
-                                <HeaderCell
-                                    key={col.key}
-                                    label={col.label}
-                                    title={col.title}
-                                    direction={model?.paired ? undefined : sort.key === col.key ? sort.dir : null}
-                                    onSort={model?.paired ? undefined : () => onSort(col.key)}
-                                    className={cn(HEAD_CELL, 'relative z-[3]', groupEnd && 'border-r')}
-                                />
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className={cn(pending && 'opacity-60 transition-opacity')}>
-                        {sorted.length === 0 ? (
-                            <tr>
-                                <td colSpan={columns.length + 1} className="h-16 px-4 text-center text-micro uppercase tracking-label text-fg-3">
-                                    {filters.view === 'today' || filters.view === 'tomorrow' ? 'No games' : 'No teams'}
-                                </td>
-                            </tr>
-                        ) : (
-                            sorted.map((row, idx) => (
-                                <Row
-                                    key={`${row.tri}-${idx}`}
-                                    row={row}
-                                    idx={idx}
-                                    columns={columns}
-                                    ranges={ranges}
-                                    payload={payload}
-                                    paired={!!model?.paired}
-                                    period={filters.period}
-                                    showStarter={filters.withStarter}
-                                    pairEnd={!!model?.paired && idx % 2 === 1 && idx < sorted.length - 1}
-                                />
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </ScrollRegion>
+                        </thead>
+                        <tbody className={cn(pending && 'opacity-60 transition-opacity')}>
+                            {sorted.length === 0 ? (
+                                <tr>
+                                    <td colSpan={columns.length + 1} className="h-16 px-4 text-left text-micro uppercase tracking-label text-fg-3">
+                                        <span className="sticky left-4">{filters.view === 'today' || filters.view === 'tomorrow' ? 'No games' : 'No teams'}</span>
+                                    </td>
+                                </tr>
+                            ) : (
+                                sorted.map((row, idx) => (
+                                    <Row
+                                        key={`${row.tri}-${idx}`}
+                                        row={row}
+                                        idx={idx}
+                                        columns={columns}
+                                        dists={dists}
+                                        payload={payload}
+                                        paired={!!model?.paired}
+                                        period={filters.period}
+                                        showStarter={filters.withStarter}
+                                        pairEnd={!!model?.paired && idx % 2 === 1 && idx < sorted.length - 1}
+                                    />
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </TableScroller>
+            </div>
 
             <Legend clinch={!!payload.clinch} />
         </section>
@@ -445,16 +471,14 @@ const colWidth = (c: StatColumn) => (c.label.length > 5 ? 72 : c.label.length > 
 
 /** Record counts read 0 (not —) before a team's first game. */
 const COUNTING = new Set(['gp', 'wins', 'losses', 'otl', 'points', 'rw', 'ranking']);
-/** Heat colouring starts once a team has this many games. */
-const HEAT_MIN_GP = 5;
 
 function Row({
-    row, idx, columns, ranges, payload, paired, period, showStarter, pairEnd,
+    row, idx, columns, dists, payload, paired, period, showStarter, pairEnd,
 }: {
     row: TeamRow;
     idx: number;
     columns: { col: StatColumn; groupEnd: boolean }[];
-    ranges: Map<string, [number, number]>;
+    dists: Map<string, number[]>;
     payload: LeaguePayload;
     paired: boolean;
     period: PeriodFilter;
@@ -464,15 +488,16 @@ function Row({
     const meta = payload.teams.find(t => t.tri === row.tri);
     const clinch = row.clinch ?? null;
     const odds = paired && row.matchup && row.side ? { ml: row.side === 'home' ? row.matchup.homeVegasOdds : row.matchup.awayVegasOdds } : null;
+    const weight = sampleWeight(row.gp);
     return (
         <tr className={cn('group', pairEnd && '[&>*]:border-b-8 [&>*]:border-b-bg')}>
-            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 border-b border-line px-2 text-left font-normal md:px-3')}>
-                <div className="flex h-8 items-center gap-2">
+            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 border-b border-line pl-1 pr-1.5 text-left font-normal md:pl-2')}>
+                <div className="flex h-9 items-center gap-1.5">
                     {!paired ? <span className="hidden w-5 shrink-0 text-right text-micro text-fg-3 md:inline">{idx + 1}</span> : null}
-                    <Link href={`/teams/${row.tri}`} prefetch={false} className="flex h-8 min-w-0 items-center gap-2 hover:text-brand">
-                        <Crest tri={row.tri} size={20} className="drop-shadow-none" />
+                    <Link href={`/teams/${row.tri}`} prefetch={false} title={meta?.name} className="flex h-9 min-w-0 items-center gap-1.5 hover:text-brand">
+                        <Crest tri={row.tri} size={32} className="drop-shadow-none" />
                         <span className="font-bold text-fg-1 group-hover:text-inherit">{row.tri}</span>
-                        <span className="hidden truncate text-fg-3 md:inline">{meta?.common}</span>
+                        {meta ? <span className="sr-only">, {meta.name}</span> : null}
                         {paired && showStarter && row.starterName ? (
                             <span className="truncate text-micro text-fg-2">
                                 {row.starterName.split(' ').slice(-1)[0]}
@@ -481,10 +506,7 @@ function Row({
                         ) : null}
                     </Link>
                     {clinch ? (
-                        <span
-                            title={CLINCH_LABEL[clinch]}
-                            className={cn('ml-auto inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-[3px] px-0.5 text-micro font-bold uppercase leading-none', clinch === 'e' ? 'text-neg' : 'text-pos')}
-                        >
+                        <span title={CLINCH_LABEL[clinch]} className={cn('-ml-1 self-start pt-1.5 text-micro font-bold uppercase leading-none', clinch === 'e' ? 'text-neg' : 'text-pos')}>
                             {clinch}
                             <span className="sr-only"> ({CLINCH_LABEL[clinch]})</span>
                         </span>
@@ -498,7 +520,7 @@ function Row({
                 </div>
             </th>
             {columns.map(({ col, groupEnd }) => {
-                const base = cn(CELL_BG, 'h-8 border-b border-line px-1.5 text-center', groupEnd && 'border-r');
+                const base = cn(CELL_BG, 'h-9 border-b border-line px-1.5 text-center', groupEnd && 'border-r');
                 if (col.key === 'ranking') {
                     return (
                         <td key={col.key} className={cn(base, row.isPlayoff ? 'font-bold text-fg-1' : 'text-fg-3')}>
@@ -510,11 +532,15 @@ function Row({
                 const counting = COUNTING.has(col.key);
                 const blank = row.gp === 0 && !col.rating && !counting ? true : period !== 'All' && col.fullGameOnly;
                 const v = blank ? NaN : columnValue(col, row, payload.ratings);
-                const r = ranges.get(col.key);
-                // No heat on counting stats, and none until a team has 5+ games (1-GP percentages are noise).
-                const color = r && !counting && row.gp >= HEAT_MIN_GP ? heatColor(v, r[0], r[1], col.better) : undefined;
+                const dist = dists.get(col.key);
+                // League-rank tint, faded by sample size (ratings are season-independent: full strength).
+                const tint = dist && (col.rating || row.gp > 0) ? heatTint(leaguePercentile(v, dist), col.better, col.rating ? 1 : weight) : undefined;
                 return (
-                    <td key={col.key} className={cn(base, col.key === 'points' ? 'font-bold text-fg-1' : 'text-fg-1')} style={color ? { color } : undefined}>
+                    <td
+                        key={col.key}
+                        className={cn(base, 'text-fg-1', col.key === 'points' && 'font-bold')}
+                        style={tint ? { backgroundImage: `linear-gradient(${tint}, ${tint})` } : undefined}
+                    >
                         {Number.isFinite(v) ? col.format(v) : <span className="text-fg-disabled">—</span>}
                     </td>
                 );
@@ -523,16 +549,26 @@ function Row({
     );
 }
 
-/** One label row: the heat ramp and (when they exist) the clinch codes. */
+const rgba = (c: readonly number[], a: number) => `rgb(${c.join(' ')} / ${a})`;
+
+/** One label row: the rank tint scale and (when they exist) the clinch codes. */
 function Legend({ clinch }: { clinch: boolean }) {
     return (
         <div aria-hidden="true" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-micro uppercase tracking-label text-fg-3">
-            <span className="inline-flex items-center gap-2">
-                <span className="text-neg">−</span>
-                <span className="h-1.5 w-12 rounded-full bg-[linear-gradient(90deg,rgb(var(--neg-rgb)),rgb(201_209_219),rgb(var(--pos-rgb)))]" />
-                <span className="text-pos">+</span>
-                <span>5+ GP</span>
+            <span className="inline-flex items-center gap-1.5">
+                <span>Worse</span>
+                <span className="flex overflow-hidden rounded-[3px] border border-line bg-surface-1">
+                    {[-1, -0.5, 0, 0.5, 1].map(d => (
+                        <span
+                            key={d}
+                            className="h-3 w-4"
+                            style={d === 0 ? undefined : { background: rgba(d > 0 ? HEAT_GOOD : HEAT_BAD, Math.abs(d) * (d > 0 ? HEAT_MAX_ALPHA.good : HEAT_MAX_ALPHA.bad)) }}
+                        />
+                    ))}
+                </span>
+                <span>Better</span>
             </span>
+            <span>Faint &lt;{HEAT_FULL_GP} GP</span>
             {clinch
                 ? (['x', 'y', 'z', 'p', 'e'] as const).map(c => (
                       <span key={c} className="inline-flex items-center gap-1">

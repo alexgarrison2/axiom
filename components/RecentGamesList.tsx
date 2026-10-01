@@ -31,7 +31,7 @@ export default function RecentGamesList({ team, gp, games, starter }: { team: Te
         <section aria-label={`${team.commonName} recent games`} className="flex min-w-0 flex-col gap-1">
             <h3 className="flex items-center gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={team.logoUrl} alt="" width={16} height={16} className="h-4 w-4" />
+                <img src={team.logoUrl} alt="" width={22} height={22} className="h-[22px] w-[22px]" />
                 <span className="text-caption font-bold text-fg-1">{team.triCode}</span>
                 <span className="label">{list.length ? `Last ${list.length}` : `${gp} GP`}</span>
             </h3>

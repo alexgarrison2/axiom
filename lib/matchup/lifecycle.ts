@@ -87,15 +87,10 @@ export function cardAnchor(p: Prediction): string {
 const PHASE_ORDER: Record<Phase, number> = { live: 0, pre: 1, final: 2 };
 
 /**
- * Slate order: favourite teams' games first, then LIVE, then upcoming (by
- * puck drop), then FINAL.
+ * Slate order: LIVE, then upcoming (by puck drop), then FINAL.
  */
-export function sortSlate(preds: Prediction[], live: LiveMap, favorites: string[] = []): Prediction[] {
-    const fav = new Set(favorites);
-    const isFav = (p: Prediction) => fav.has(p.home.team.triCode) || fav.has(p.away.team.triCode);
+export function sortSlate(preds: Prediction[], live: LiveMap): Prediction[] {
     return [...preds].sort((a, b) => {
-        const f = Number(isFav(b)) - Number(isFav(a));
-        if (f) return f;
         const ph = PHASE_ORDER[phaseOf(a, live[a.id])] - PHASE_ORDER[phaseOf(b, live[b.id])];
         if (ph) return ph;
         const t = a.startTimeUtc.localeCompare(b.startTimeUtc);

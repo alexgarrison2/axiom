@@ -127,7 +127,7 @@ function SeriesTile({ series: s, selected, onSelect }: { series: ArchiveSeries; 
         const lost = !!s.winner && !won;
         return (
             <span className="flex h-7 items-center gap-2">
-                <Crest tri={team.tri} size={20} className={cn('drop-shadow-none', lost && 'opacity-50 grayscale')} />
+                <Crest tri={team.tri} size={26} className={cn('drop-shadow-none', lost && 'opacity-50 grayscale')} />
                 <span className={cn('font-bold', lost ? 'text-fg-3' : 'text-fg-1')}>{team.tri}</span>
                 <span className="text-micro text-fg-3">{team.seed}</span>
                 <span className={cn('num-score ml-auto text-title', won ? 'text-fg-1' : 'text-fg-3')}>{wins}</span>
@@ -257,12 +257,12 @@ function GameRow({ game: g, open, onOpen, controls }: { game: ArchiveGame; open:
             <span className="w-7 font-bold text-fg-1">G{g.n}</span>
             <span className="hidden w-24 text-fg-3 sm:inline">{fmtGameDate(g.date)}</span>
             <span className="flex items-center gap-1.5 tabular-nums">
-                <Crest tri={g.away} size={16} className="drop-shadow-none" />
+                <Crest tri={g.away} size={22} className="drop-shadow-none" />
                 <span className={cn(!homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                     {g.away} {g.away_score}
                 </span>
                 <span className="text-fg-3">@</span>
-                <Crest tri={g.home} size={16} className="drop-shadow-none" />
+                <Crest tri={g.home} size={22} className="drop-shadow-none" />
                 <span className={cn(homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                     {g.home} {g.home_score}
                 </span>
@@ -306,12 +306,12 @@ function SeriesNumbers({ series: s, colors }: { series: ArchiveSeries; colors: [
         <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between text-caption font-bold text-fg-1">
                 <span className="flex items-center gap-1.5">
-                    <Crest tri={s.top.tri} size={16} className="drop-shadow-none" />
+                    <Crest tri={s.top.tri} size={22} className="drop-shadow-none" />
                     {s.top.tri}
                 </span>
                 <span className="flex items-center gap-1.5">
                     {s.bottom.tri}
-                    <Crest tri={s.bottom.tri} size={16} className="drop-shadow-none" />
+                    <Crest tri={s.bottom.tri} size={22} className="drop-shadow-none" />
                 </span>
             </div>
             {rows.map(r => {

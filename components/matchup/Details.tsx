@@ -11,8 +11,9 @@ import { WhyPanel } from './WhyPanel';
 import { GoaliesPanel } from './GoaliesPanel';
 import { LineupsPanel } from './LineupsPanel';
 import { OddsPanel } from './OddsPanel';
+import { MatchupPanel } from './MatchupPanel';
 
-type Tab = 'goalies' | 'lines' | 'odds' | 'why';
+type Tab = 'goalies' | 'lines' | 'matchup' | 'odds' | 'why';
 
 export interface DetailsProps {
     p: Prediction;
@@ -25,6 +26,7 @@ export interface DetailsProps {
 const TABS: { value: Tab; label: string }[] = [
     { value: 'goalies', label: 'Goalies' },
     { value: 'lines', label: 'Lines' },
+    { value: 'matchup', label: 'Matchup' },
     { value: 'odds', label: 'Odds' },
     { value: 'why', label: 'Why' },
 ];
@@ -53,7 +55,7 @@ export default function Details({ p, phase, implication, onCollapse }: DetailsPr
 
     return (
         <div className="relative flex flex-col gap-3 border-t border-dashed border-line px-3 pb-2 pt-3 cq-md:px-4">
-            <Segmented label={`${game} details`} options={TABS} value={tab} onChange={setTab} size="sm" />
+            <Segmented label={`${game} details`} options={TABS} value={tab} onChange={setTab} size="sm" block optionClassName="px-1.5 tracking-[0.06em] cq-md:px-3 cq-md:tracking-[0.12em]" />
             <div
                 id={panelId}
                 role="region"
@@ -62,6 +64,7 @@ export default function Details({ p, phase, implication, onCollapse }: DetailsPr
             >
                 {tab === 'goalies' ? <GoaliesPanel p={p} state={state} /> : null}
                 {tab === 'lines' ? <LineupsPanel p={p} state={state} /> : null}
+                {tab === 'matchup' ? <MatchupPanel p={p} state={state} /> : null}
                 {tab === 'odds' ? <OddsPanel p={p} phase={phase} /> : null}
                 {tab === 'why' ? <WhyPanel p={p} phase={phase} state={state} implication={implication} /> : null}
             </div>

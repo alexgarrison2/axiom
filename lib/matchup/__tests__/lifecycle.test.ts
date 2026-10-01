@@ -40,14 +40,13 @@ describe('game lifecycle (E1)', () => {
         expect(modelCorrect(mtlTor, g(mtlTor.id, { state: 'FINAL', away: { score: 3, sog: 1 }, home: { score: 2, sog: 1 } }))).toBeNull();
     });
 
-    it('sorts LIVE, then upcoming by puck drop, then FINAL, with favourites first', () => {
+    it('sorts LIVE, then upcoming by puck drop, then FINAL', () => {
         const live = { [byTeams(opening, 'MTL', 'TOR').id]: g('x', { state: 'LIVE', period: 2 }) };
         const day = opening.filter(p => p.date === '2026-09-29');
         const order = sortSlate(day, live).map(cardAnchor);
         expect(order[0]).toBe('mtl-tor');
         expect(order[order.length - 1]).toBe('fla-car');
         expect(order.slice(1, -1)).toEqual(['chi-vgk', 'edm-van']);
-        expect(sortSlate(day, live, ['EDM']).map(cardAnchor)[0]).toBe('edm-van');
     });
 
     it('renders 21:00Z as 5:00 PM EDT in America/New_York', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gateClosedSiteWide, gatedEdge, hasMarket, marketPair, modelPair, pickForm } from '../edge';
+import { gateClosedSiteWide, gatedEdge, hasMarket, kellyUnits, marketPair, modelPair, pickForm, recommendedBet } from '../edge';
 import { buildWaterfall, waterfallFor } from '../waterfall';
 import { fixture, withOverrides } from './fixtures';
 
@@ -28,9 +28,26 @@ describe('model vs market (E4)', () => {
         const p = all.find(x => hasMarket(x) && modelPair(x))!;
         expect(gatedEdge(p)).toBeNull();
         const open = withOverrides(p, { evGated: true, betSide: 'home', units: 1.2 }, { home: { ev: 0.041 } });
-        expect(gatedEdge(open)).toEqual({ side: 'home', tri: p.home.team.triCode, evPct: 4.1, units: 1.2 });
+        expect(gatedEdge(open)).toEqual({ side: 'home', tri: p.home.team.triCode, evPct: 4.1, units: 1.2, official: true });
         const noUnits = withOverrides(open, { units: null });
         expect(gatedEdge(noUnits)?.units).toBeNull();
+    });
+
+    it('sizes quarter-Kelly like pipeline/market.py', () => {
+        // even money, p = 0.55 -> full Kelly 10% -> quarter 2.5% -> 2.5 units
+        expect(kellyUnits(0.55, 100)).toBe(2.5);
+        expect(kellyUnits(0.45, 100)).toBe(0);
+        expect(kellyUnits(0.9, 300)).toBe(5);
+    });
+
+    it('recommends an unofficial bet only at +3% EV and a 0.5u stake', () => {
+        const p = all.find(x => hasMarket(x) && modelPair(x) && !x.evGated)!;
+        const at = (ev: number, winPct: number, odds: number) =>
+            withOverrides(p, {}, { home: { ev, winPct, marketOdds: odds }, away: { ev: -0.1, winPct: 100 - winPct } });
+        expect(recommendedBet(at(0.02, 51, 100))).toBeNull();
+        expect(recommendedBet(at(0.04, 52, 100))).toEqual({ side: 'home', tri: p.home.team.triCode, evPct: 4, units: 1, official: false });
+        // +3% EV on a long shot is a stake under 0.5u: no bet.
+        expect(recommendedBet(at(0.03, 10.3, 900))).toBeNull();
     });
 
     it('reports the gate closed site-wide when no game is gated', () => {

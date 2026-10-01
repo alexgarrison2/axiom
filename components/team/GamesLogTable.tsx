@@ -9,7 +9,7 @@ import type { Boxscores, BoxRow } from '@/utils/team-stats/team-types';
 import type { GameRow, PeriodFilter } from '@/utils/team-stats/types';
 import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
-import { useStickyHeader } from '@/components/teams-table/useStickyHeader';
+import { TableScroller } from '@/components/teams-table/TableScroller';
 import { flags, gameGsax, resultLabel, resultTone, score, stat, totals } from './game-log-model';
 
 interface GamesLogTableProps {
@@ -118,7 +118,6 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
     const [open, setOpen] = React.useState<Set<string>>(new Set());
     const [box, setBox] = React.useState<Boxscores | null>(null);
     const [boxState, setBoxState] = React.useState<'idle' | 'loading' | 'error'>('idle');
-    const tableRef = React.useRef<HTMLTableElement>(null);
 
     const sorted = React.useMemo(() => {
         if (!sort) return games;
@@ -133,7 +132,6 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
     }, [games, sort, period]);
 
     const t = React.useMemo(() => totals(games, period), [games, period]);
-    useStickyHeader(tableRef, [sorted.length, period]);
 
     const toggle = (id: string) => {
         setOpen(prev => {
@@ -206,7 +204,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                         className="grid min-h-11 w-full grid-cols-[46px_22px_minmax(0,1fr)_44px_44px] items-center gap-2 px-3 text-left text-caption"
                                     >
                                         <span className="text-micro uppercase text-fg-3">{shortDate(g.date)}</span>
-                                        <Crest tri={g.opp} size={22} className="drop-shadow-none" />
+                                        <Crest tri={g.opp} size={28} className="drop-shadow-none" />
                                         <span className="min-w-0">
                                             <span className="block font-bold text-fg-1">
                                                 <span className="font-normal text-fg-3">{g.home ? 'vs' : '@'}</span> {g.opp}
@@ -235,9 +233,8 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                     </ol>
 
                     {/* md+: dense table */}
-                    <ScrollRegion label={`${seasonLabel} game log table`} className="hidden rounded-card border border-line bg-surface-1 md:block">
+                    <TableScroller label={`${seasonLabel} game log table`} className="hidden rounded-card border border-line bg-surface-1 md:block">
                         <table
-                            ref={tableRef}
                             className="table-fixed border-separate border-spacing-0 font-mono text-caption tabular-nums"
                             style={{ width: GAME_COL + cols.reduce((w, c) => w + c.width, 0), minWidth: '100%' }}
                         >
@@ -248,7 +245,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                     <col key={c.key} style={{ width: c.width }} />
                                 ))}
                             </colgroup>
-                            <thead className="[--thead-y:0px]">
+                            <thead>
                                 <tr>
                                     <HeaderCell
                                         label="Game"
@@ -266,7 +263,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                             align={UNSORTABLE.has(c.key) ? 'left' : 'center'}
                                             direction={UNSORTABLE.has(c.key) ? undefined : sort?.key === c.key ? sort.dir : null}
                                             onSort={UNSORTABLE.has(c.key) ? undefined : () => onSort(c.key)}
-                                            className={cn(HEAD_CELL, 'relative z-[3]')}
+                                            className={HEAD_CELL}
                                         />
                                     ))}
                                 </tr>
@@ -289,7 +286,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                                             <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
                                                         </svg>
                                                         <span className="w-11 shrink-0 text-micro uppercase text-fg-3">{shortDate(g.date)}</span>
-                                                        <Crest tri={g.opp} size={18} className="drop-shadow-none" />
+                                                        <Crest tri={g.opp} size={24} className="drop-shadow-none" />
                                                         <span className="whitespace-nowrap font-bold text-fg-1">
                                                             <span className="font-normal text-fg-3">{g.home ? 'vs' : '@'}</span> {g.opp}
                                                         </span>
@@ -324,7 +321,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                 })}
                             </tbody>
                         </table>
-                    </ScrollRegion>
+                    </TableScroller>
                 </>
             )}
         </div>

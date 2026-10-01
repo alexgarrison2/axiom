@@ -6,9 +6,8 @@ import type { Prediction } from '@/types/prediction';
 import { biggestGames, findImplication, type GameImplicationsData } from '@/utils/implications';
 import { MatchupCard } from '@/components/matchup/MatchupCard';
 import { ArchiveCard } from '@/components/matchup/ArchiveCard';
-import { BiggestGames, YourTeamStrip } from '@/components/matchup/SlateStrips';
+import { BiggestGames } from '@/components/matchup/SlateStrips';
 import { useLiveScores } from '@/hooks/useLiveScores';
-import { useFavorites } from '@/hooks/useFavorites';
 import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
 import { bothOpeners } from '@/lib/matchup/pills';
 import { hasPrediction } from '@/lib/matchup/edge';
@@ -56,7 +55,6 @@ export default function PredictionsViewer({
     const [picked, setDate] = useState<string | null>(null);
     const [target, setTarget] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
-    const { favorites, toggle } = useFavorites();
 
     const dates = useMemo(() => [...new Set(predictions.map(p => p.date))].sort(), [predictions]);
     const date = picked ?? (explicitDate || today === serverToday ? initialDate : defaultDate(dates, today));
@@ -68,7 +66,7 @@ export default function PredictionsViewer({
         return allOpeners ? games.map(p => ({ ...p, slateAllOpeners: true })) : games;
     }, [predictions, date]);
     const live = useLiveScores(date, dayGames);
-    const slate = useMemo(() => sortSlate(dayGames, live, favorites), [dayGames, live, favorites]);
+    const slate = useMemo(() => sortSlate(dayGames, live), [dayGames, live]);
     const swings = useMemo(() => (date ? biggestGames(implications, date) : []), [implications, date]);
     const offFile = archive && archive.date === date ? archive : null;
 
@@ -189,7 +187,6 @@ export default function PredictionsViewer({
             </div>
 
             <div className={cn('flex flex-col gap-4 transition-opacity', pending && 'opacity-60')} aria-busy={pending || undefined}>
-                <YourTeamStrip favorites={favorites} predictions={predictions} live={live} today={today} playoffOdds={playoffOdds} onJump={jump} />
                 {offFile ? null : <BiggestGames swings={swings} byId={byId} onJump={jump} />}
 
                 {offFile && offFile.games.length ? (
@@ -209,8 +206,6 @@ export default function PredictionsViewer({
                                     live={live[p.id] ?? null}
                                     implication={findImplication(implications, p.home.team.triCode, p.away.team.triCode)}
                                     playoffOdds={playoffOdds}
-                                    favorites={favorites}
-                                    onFavorite={toggle}
                                     highlighted={target === cardAnchor(p)}
                                     seriesScore={series?.[`${p.away.team.triCode}|${p.home.team.triCode}`] ?? null}
                                 />

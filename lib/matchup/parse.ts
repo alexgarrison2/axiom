@@ -6,7 +6,7 @@
  * is tested against exactly what the page renders.
  */
 import { TEAM_NAMES } from '../../components/ui/team-color';
-import type { GameState, Prediction, PredictionStatus, RecentGame, Side, SideData, TeamRef, WpFactor } from '../../types/prediction';
+import type { GameState, Prediction, PredictionStatus, RecentGame, Side, SideData, TeamRef, TvBroadcast, WpFactor } from '../../types/prediction';
 
 export type RawRow = Record<string, string | undefined>;
 
@@ -131,7 +131,28 @@ function side(row: RawRow, s: Side, team: TeamRef): SideData {
     };
 }
 
-export function parseRow(row: RawRow, tvNetwork?: string | null): Prediction | null {
+/**
+ * The broadcasters for one upcoming_games.json game: its curated `tvDisplay`
+ * list, else (older files) the single US national `tvNetwork` string.
+ */
+export function parseTv(game: { tvDisplay?: unknown; tvNetwork?: unknown } | null | undefined): TvBroadcast[] {
+    if (!game) return [];
+    if (Array.isArray(game.tvDisplay)) {
+        const out: TvBroadcast[] = [];
+        for (const b of game.tvDisplay as Record<string, unknown>[]) {
+            const network = typeof b?.network === 'string' ? b.network.trim() : '';
+            if (!network) continue;
+            const market = b.market === 'H' || b.market === 'A' ? b.market : 'N';
+            const team = typeof b.team === 'string' && b.team ? b.team : null;
+            out.push({ network, market, team: market === 'N' ? null : team, country: b.country === 'CA' ? 'CA' : 'US' });
+        }
+        return out;
+    }
+    const legacy = typeof game.tvNetwork === 'string' ? game.tvNetwork.trim() : '';
+    return legacy ? [{ network: legacy, market: 'N', team: null, country: 'US' }] : [];
+}
+
+export function parseRow(row: RawRow, tv?: TvBroadcast[] | string | null): Prediction | null {
     const homeTri = str(row.home_abbrev);
     const awayTri = str(row.away_abbrev);
     const id = str(row.nhl_game_id);
@@ -143,6 +164,8 @@ export function parseRow(row: RawRow, tvNetwork?: string | null): Prediction | n
     const breakdown = json<WpFactor[]>(row.home_wp_breakdown, []).filter(
         f => f && typeof f.factor === 'string' && Number.isFinite(Number(f.wp_delta_pts)),
     ).map(f => ({ factor: String(f.factor), label: typeof f.label === 'string' ? f.label : undefined, wp_delta_pts: Number(f.wp_delta_pts) }));
+
+    const tvBroadcasts: TvBroadcast[] = typeof tv === 'string' ? parseTv({ tvNetwork: tv }) : (tv ?? []);
 
     return {
         id,
@@ -175,7 +198,8 @@ export function parseRow(row: RawRow, tvNetwork?: string | null): Prediction | n
         totalOver: int(row.total_over),
         totalUnder: int(row.total_under),
         threeWayTie: int(row.three_way_tie),
-        tvNetwork: tvNetwork ?? null,
+        tvNetwork: tvBroadcasts[0]?.network ?? null,
+        tvBroadcasts,
         home: side(row, 'home', teamRef(homeTri, str(row.home_team))),
         away: side(row, 'away', teamRef(awayTri, str(row.away_team))),
     };

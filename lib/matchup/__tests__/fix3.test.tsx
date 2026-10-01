@@ -7,7 +7,6 @@ import { LineupsPanel } from '../../../components/matchup/LineupsPanel';
 import { ArchiveCard } from '../../../components/matchup/ArchiveCard';
 import { ContextChips } from '../../../components/matchup/ContextChips';
 import { WhyPanel } from '../../../components/matchup/WhyPanel';
-import { YourTeamStrip } from '../../../components/matchup/SlateStrips';
 import { WinBarLegend } from '../../../components/ui/win-bar';
 import type { LiveGame } from '../lifecycle';
 import type { Prediction } from '../../../types/prediction';
@@ -30,7 +29,7 @@ const opening = fixture('opening_night');
 const pitPhi = byTeams(opening, 'PIT', 'PHI');
 
 function card(p: Prediction, live: LiveGame | null = null) {
-    return render(<MatchupCard p={p} live={live} implication={null} playoffOdds={{}} favorites={[]} onFavorite={() => {}} />).container;
+    return render(<MatchupCard p={p} live={live} implication={null} playoffOdds={{}} />).container;
 }
 
 /** Visible text only (drops .sr-only and aria-hidden copies is NOT done: aria-hidden glyphs are visible). */
@@ -169,16 +168,6 @@ describe('G1-8 / G1-11 collapsed card', () => {
         expect(visible(el)).toContain('Pre');
         expect(el.textContent).toContain('Pregame odds');
     });
-
-    it('YOUR TEAM strip spells out playoffs and reads "at", not "@"', () => {
-        const el = render(<YourTeamStrip favorites={['PIT']} predictions={[pitPhi]} live={{}} today={pitPhi.date} playoffOdds={{ PIT: 70 }} onJump={() => {}} />).container;
-        expect(visible(el)).toContain('Playoffs 70%');
-        expect(visible(el)).not.toMatch(/\bPO\b/);
-        const btn = el.querySelector('button')!;
-        const spoken = btn.cloneNode(true) as HTMLElement;
-        spoken.querySelectorAll('[aria-hidden="true"]').forEach(n => n.remove());
-        expect(spoken.textContent).not.toContain('@');
-    });
 });
 
 describe('G1-9 coin flips', () => {
@@ -231,8 +220,8 @@ describe('G1-10 glossary links', () => {
         cleanup();
 
         const why = render(<WhyPanel p={withOverrides(pitPhi, { blendWeight: 0.2, confidenceGrade: null })} phase="pre" state={{ status: 'loading' }} implication={null} />).container;
-        const wt = [...why.querySelectorAll('a')].find(a => a.getAttribute('href') === '/methodology#term-wt');
-        expect(wt?.getAttribute('title')).toBe('model ×0.20 · market ×0.80');
+        expect([...why.querySelectorAll('a')].map(a => a.getAttribute('href'))).toContain('/methodology#term-rest');
+        expect(why.textContent).toContain('Forecast = model 20% + market 80%');
     });
 });
 

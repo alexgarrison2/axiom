@@ -198,18 +198,60 @@ export function columnValue(col: StatColumn, row: TeamStat, ratings: Record<stri
 }
 
 // ── colour ────────────────────────────────────────────────────────────────────
-// Diverging ramp between the --neg and --pos tokens through a neutral grey.
-// Every stop is ≥5:1 on the table surface.
-const NEG: [number, number, number] = [255, 84, 112];
-const MID: [number, number, number] = [201, 209, 219];
-const POS: [number, number, number] = [61, 255, 143];
+// Diverging cell-background tint by league rank: cool cyan (the --brand hue)
+// for good, warm orange for bad, untinted around the league median. Blue vs
+// orange is the colour-blind-safe diverging pair, and the text stays --text-1
+// on every tint (contrast checked in columns.test.ts). The tint is laid over
+// the cell's own background (zebra / hover) as a background-image, so those
+// row states still show through.
 
-export function heatColor(value: number, min: number, max: number, better: Better): string | undefined {
-    if (better === 'none' || !Number.isFinite(value) || !(max > min)) return undefined;
-    let t = (value - min) / (max - min);
-    t = Math.max(0, Math.min(1, t));
-    if (better === 'low') t = 1 - t;
-    const [a, b, u] = t < 0.5 ? [NEG, MID, t * 2] : [MID, POS, (t - 0.5) * 2];
-    const c = a.map((x, i) => Math.round(x + (b[i] - x) * u));
-    return `rgb(${c[0]} ${c[1]} ${c[2]})`;
+export const HEAT_GOOD: readonly [number, number, number] = [41, 231, 255];
+export const HEAT_BAD: readonly [number, number, number] = [255, 138, 61];
+/** Strongest tint alpha. Orange is darker than cyan, so it gets a little more to read as equally strong. */
+export const HEAT_MAX_ALPHA = { good: 0.3, bad: 0.36 } as const;
+/** Below this strength a cell stays untinted (the neutral middle of the league). */
+const HEAT_FLOOR = 0.06;
+/** Games after which a team's tint reaches full strength. */
+export const HEAT_FULL_GP = 10;
+
+/**
+ * Where `value` sits in the league, 0 (lowest) to 1 (highest), by mid-rank so
+ * tied values share a position. `sorted` is every team's value, ascending.
+ */
+export function leaguePercentile(value: number, sorted: readonly number[]): number | null {
+    if (!Number.isFinite(value) || sorted.length < 2) return null;
+    let below = 0;
+    let equal = 0;
+    for (const v of sorted) {
+        if (v < value) below++;
+        else if (v === value) equal++;
+    }
+    const pos = below + Math.max(0, equal - 1) / 2;
+    return Math.max(0, Math.min(1, pos / (sorted.length - 1)));
+}
+
+/**
+ * How much of the tint a team's sample earns: under half at 1 GP, full at
+ * HEAT_FULL_GP. Early-season colour is honest (faint) rather than missing.
+ */
+export function sampleWeight(gp: number): number {
+    if (!(gp > 0)) return 0;
+    return Math.min(1, 0.4 + 0.6 * (gp / HEAT_FULL_GP));
+}
+
+/**
+ * Cell tint for a league percentile (see leaguePercentile), as an rgb() colour
+ * with alpha, or undefined for the untinted middle / unrated columns.
+ * `weight` (0–1) scales the strength, e.g. sampleWeight(gp).
+ */
+export function heatTint(percentile: number | null, better: Better, weight = 1): string | undefined {
+    if (better === 'none' || percentile === null || !Number.isFinite(percentile)) return undefined;
+    let d = Math.max(0, Math.min(1, percentile)) * 2 - 1; // -1 lowest … +1 highest
+    if (better === 'low') d = -d;
+    const strength = Math.abs(d) * Math.max(0, Math.min(1, weight));
+    if (strength < HEAT_FLOOR) return undefined;
+    const good = d > 0;
+    const [r, g, b] = good ? HEAT_GOOD : HEAT_BAD;
+    const a = Math.round(strength * (good ? HEAT_MAX_ALPHA.good : HEAT_MAX_ALPHA.bad) * 1000) / 1000;
+    return `rgb(${r} ${g} ${b} / ${a})`;
 }

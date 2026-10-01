@@ -11,7 +11,7 @@ import { compactForClient } from '../parse';
 import { WhyThisPick } from '../../../components/matchup/WhyThisPick';
 import { goalieSeasonLine, gsaxTag, gsaxWindow, parseGoalieLine, railHeading, railLabel } from '../format';
 import { modelLean } from '../edge';
-import { situationChip } from '../pills';
+import { teamChip } from '../pills';
 import type { GameDetails } from '../../client-data';
 
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
@@ -20,7 +20,7 @@ afterEach(cleanup);
 
 function card(p: Prediction, live: LiveGame | null = null) {
     const { container } = render(
-        <MatchupCard p={p} live={live} implication={null} playoffOdds={{}} favorites={[]} onFavorite={() => {}} />,
+        <MatchupCard p={p} live={live} implication={null} playoffOdds={{}} />,
     );
     return container;
 }
@@ -129,7 +129,8 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
 
     it('keeps the Opener tag off the collapsed card (it lives in the Why panel)', () => {
         for (const p of opening) {
-            expect(situationChip(p)?.label ?? '').not.toMatch(/Opener/);
+            expect(teamChip(p, 'away')?.label ?? '').not.toMatch(/Opener/);
+            expect(teamChip(p, 'home')?.label ?? '').not.toMatch(/Opener/);
             expect(visible(card(p))).not.toMatch(/\bOpener\b/);
             cleanup();
         }
@@ -222,12 +223,13 @@ describe('lifecycle states on the card (E1)', () => {
         expect(bar!.outerHTML).not.toMatch(/opacity:\s*0/);
     });
 
-    it('shows the edge flag with units only when the gate is open', () => {
+    it('shows the +EV flag with units when the gate is open', () => {
         const p = byTeams(opening, 'PIT', 'PHI');
         const open = withOverrides(p, { evGated: true, betSide: 'away', units: 0.8 }, { away: { ev: 0.041 } });
         const t = text(card(open));
-        expect(t).toContain('Edge +4.1% PIT');
+        expect(t).toContain('+EV 4.1% PIT');
         expect(t).toContain('0.8u');
+        expect(t).not.toContain('unofficial');
     });
 });
 

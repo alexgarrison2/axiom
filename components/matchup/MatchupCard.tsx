@@ -7,14 +7,15 @@ import type { GameImplication } from '@/utils/implications';
 import { WinBar } from '@/components/ui/win-bar';
 import { clashSafePair } from '@/components/ui/team-color';
 import { cardAnchor, finalLabel, hasScore, modelCorrect, phaseOf, type LiveGame, type Phase } from '@/lib/matchup/lifecycle';
-import { forecastPair, gatedEdge, hasMarket, hasPrediction, modelLean } from '@/lib/matchup/edge';
+import { forecastPair, hasMarket, hasPrediction, modelLean, recommendedBet } from '@/lib/matchup/edge';
 import { finalSentence, fmtOdds, isCoinFlip } from '@/lib/matchup/format';
-import { situationChip } from '@/lib/matchup/pills';
+import { seriesChip, teamChip } from '@/lib/matchup/pills';
 import { glossaryHref } from '@/lib/glossary';
 import { cn } from '@/lib/utils';
 import { StatusLine } from './StatusLine';
 import { TeamSide, washVars } from './TeamSide';
 import { ShareButton } from './ShareButton';
+import { CHIP, OVER_TOGGLE } from './chip-styles';
 
 const Details = dynamic(() => import('./Details'), {
     loading: () => (
@@ -30,8 +31,6 @@ export interface MatchupCardProps {
     live: LiveGame | null;
     implication: GameImplication | null;
     playoffOdds: Record<string, number>;
-    favorites: string[];
-    onFavorite: (tri: string) => void;
     highlighted?: boolean;
     seriesScore?: { away: number; home: number } | null;
 }
@@ -40,14 +39,6 @@ export interface MatchupCardProps {
 export function coinFlipFinal(p: Prediction, phase: Phase): boolean {
     return phase === 'final' && hasPrediction(p) && isCoinFlip(p.home.winPct);
 }
-
-/**
- * A glossary link drawn over the card's expand toggle (whose hit area covers
- * the whole summary): positioned above it, never nested in it, 24px tall.
- */
-const CHIP = 'rounded-chip border border-warn/45 px-2 py-0.5 text-micro font-bold uppercase tracking-chip text-warn';
-const OVER_TOGGLE =
-    'relative z-10 inline-flex min-h-6 items-center rounded-chip px-1 transition-[filter] hover:brightness-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand';
 
 /** Centre of the footer: the result flag on finals, else the gated edge or the model lean. */
 function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame | null }) {
@@ -80,13 +71,19 @@ function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame 
         ) : null;
     }
     if (phase !== 'pre') return null;
-    const edge = gatedEdge(p);
-    if (edge) {
+    const bet = recommendedBet(p);
+    if (bet) {
         return (
-            <span className="text-caption font-bold uppercase tracking-[0.1em] text-pos">
-                Edge +{edge.evPct.toFixed(1)}% {edge.tri}
-                {edge.units != null ? <span className="text-fg-2"> · {edge.units.toFixed(1)}u</span> : null}
-            </span>
+            <a
+                href="/methodology#edge"
+                data-bet
+                className={cn(OVER_TOGGLE, 'text-caption font-bold uppercase tracking-[0.1em] text-pos')}
+                title={bet.official ? 'Expected value at the book price, quarter-Kelly stake' : `Unofficial: the betting gate is closed (${p.gateReason ?? 'model not yet proven against the market'})`}
+            >
+                +EV {bet.evPct.toFixed(1)}% {bet.tri}
+                {bet.units != null ? <span className="text-fg-1"> · {bet.units.toFixed(1)}u</span> : null}
+                {bet.official ? null : <span className="sr-only">, unofficial: the betting gate is closed</span>}
+            </a>
         );
     }
     const lean = modelLean(p);
@@ -109,7 +106,48 @@ function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame 
     return null;
 }
 
-export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFavorite, highlighted, seriesScore }: MatchupCardProps) {
+/** One end of the footer: tricode + book moneyline, then our odds (xOdds) and projected goals (xG). */
+function FooterSide({ p, side, phase }: { p: Prediction; side: 'away' | 'home'; phase: Phase }) {
+    const s = p[side];
+    const tri = s.team.triCode;
+    const home = side === 'home';
+    const priced = hasMarket(p);
+    const ours = phase !== 'final' && hasPrediction(p);
+    const xOdds = ours ? s.fairOdds : null;
+    const xg = ours ? s.xg : null;
+    return (
+        <span className={cn('flex min-w-0 flex-col gap-0.5', home ? 'items-end' : 'items-start')}>
+            <span className={cn('flex min-w-0 items-baseline gap-1.5 text-body font-bold tabular-nums text-fg-2 cq-md:text-[15px]', home && 'flex-row-reverse')}>
+                <span data-tri aria-hidden={(home && priced) || undefined} className="text-micro font-medium tracking-wide text-fg-3">
+                    {tri}
+                </span>
+                {priced ? (
+                    <span>
+                        <span className="sr-only">{home ? `${tri} moneyline ` : ' moneyline '}</span>
+                        {fmtOdds(s.marketOdds)}
+                    </span>
+                ) : null}
+            </span>
+            {xOdds || xg != null ? (
+                <span className="flex items-baseline gap-1.5 whitespace-nowrap text-micro tabular-nums text-fg-3">
+                    {xOdds ? (
+                        <span>
+                            xOdds <b className="font-bold text-fg-1">{fmtOdds(xOdds)}</b>
+                        </span>
+                    ) : null}
+                    {xOdds && xg != null ? <span aria-hidden="true">·</span> : null}
+                    {xg != null ? (
+                        <span>
+                            xG <b className="font-bold text-fg-1">{xg.toFixed(1)}</b>
+                        </span>
+                    ) : null}
+                </span>
+            ) : null}
+        </span>
+    );
+}
+
+export function MatchupCard({ p, live, implication, playoffOdds, highlighted, seriesScore }: MatchupCardProps) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLElement>(null);
     const toggleRef = useRef<HTMLButtonElement>(null);
@@ -123,12 +161,12 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
     const a = p.away.team.triCode;
     const h = p.home.team.triCode;
     const colors = clashSafePair(a, h);
-    const fav = favorites.includes(a) ? a : favorites.includes(h) ? h : null;
-    const favColor = fav ? (fav === a ? colors.away : colors.home) : null;
     const anchor = cardAnchor(p);
     const title = `${p.away.team.commonName} at ${p.home.team.commonName}`;
     const forecast = forecastPair(p);
-    const chip = phase === 'pre' || seriesScore ? situationChip(p, seriesScore) : null;
+    const chip = seriesChip(p, seriesScore);
+    const awayChip = phase === 'pre' ? teamChip(p, 'away') : null;
+    const homeChip = phase === 'pre' ? teamChip(p, 'home') : null;
     const awayLost = phase === 'final' && scored && live.away.score < live.home.score;
     const homeLost = phase === 'final' && scored && live.home.score < live.away.score;
 
@@ -160,26 +198,17 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                 'panel team-wash panel-hover scroll-mt-[calc(var(--appbar-h)+12px)] transition-[box-shadow,border-color] duration-300 [container-type:inline-size]',
                 highlighted && 'border-brand shadow-glow',
             )}
-            style={{ ...washVars(colors.away, colors.home), ...(favColor && !highlighted ? { borderColor: `${favColor}99` } : {}) }}
+            style={washVars(colors.away, colors.home)}
         >
             <div className="relative flex flex-col gap-2.5 px-3 pb-3 pt-2.5 cq-md:gap-3 cq-md:px-4 cq-md:pb-3.5 cq-md:pt-3">
                 <div className="flex min-h-6 items-center justify-between gap-2">
                     <StatusLine p={p} phase={phase} live={live} />
                     <div className="flex shrink-0 items-center gap-1">
                         {chip ? (
-                            chip.term ? (
-                                <a href={glossaryHref(chip.term)} data-chip={chip.term} title={chip.title} className={cn(OVER_TOGGLE, 'px-0')}>
-                                    <span aria-hidden="true" className={CHIP}>
-                                        {chip.label}
-                                    </span>
-                                    <span className="sr-only">{chip.title}</span>
-                                </a>
-                            ) : (
-                                <span title={chip.title} className={CHIP}>
-                                    <span aria-hidden="true">{chip.label}</span>
-                                    <span className="sr-only">{chip.title}</span>
-                                </span>
-                            )
+                            <span title={chip.title} className={CHIP}>
+                                <span aria-hidden="true">{chip.label}</span>
+                                <span className="sr-only">{chip.title}</span>
+                            </span>
                         ) : null}
                         <ShareButton p={p} title={title} anchor={anchor} />
                         <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-3 transition-transform', open && 'rotate-180')}>
@@ -190,7 +219,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
 
                 {/* Teams. The h2 is the matchup name only: it holds the expand toggle, whose hit area stretches over the card summary. */}
                 <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 font-mono cq-sm:gap-2">
-                    <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!scored} favorite={favorites.includes(a)} onFavorite={() => onFavorite(a)} />
+                    <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!scored} chip={awayChip} />
                     {finalText ? (
                         <span id={resultId} className="sr-only">
                             {finalText}
@@ -221,7 +250,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                             <span className="sr-only">{open ? ', hide details' : ', show details'}</span>
                         </button>
                     </h2>
-                    <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!scored} favorite={favorites.includes(h)} onFavorite={() => onFavorite(h)} />
+                    <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!scored} chip={homeChip} />
                 </div>
 
                 {forecast ? (
@@ -245,33 +274,13 @@ export function MatchupCard({ p, live, implication, playoffOdds, favorites, onFa
                     </div>
                 )}
 
-                {/* Footer: tricode + book odds under each end of the bar, the flag in the middle. */}
+                {/* Footer: tricode + book odds under each end of the bar, our odds and projected goals under them, the flag in the middle. */}
                 <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-                    <span className="flex min-w-0 items-baseline gap-1.5 text-body font-bold tabular-nums text-fg-2 cq-md:text-[15px]">
-                        <span data-tri className="text-micro font-medium tracking-wide text-fg-3">
-                            {a}
-                        </span>
-                        {hasMarket(p) ? (
-                            <>
-                                <span className="sr-only"> moneyline </span>
-                                {fmtOdds(p.away.marketOdds)}
-                            </>
-                        ) : null}
-                    </span>
+                    <FooterSide p={p} side="away" phase={phase} />
                     <span className="text-center">
                         <Flag p={p} phase={phase} live={live} />
                     </span>
-                    <span className="flex min-w-0 items-baseline justify-end gap-1.5 text-body font-bold tabular-nums text-fg-2 cq-md:text-[15px]">
-                        {hasMarket(p) ? (
-                            <>
-                                <span className="sr-only">{h} moneyline </span>
-                                {fmtOdds(p.home.marketOdds)}
-                            </>
-                        ) : null}
-                        <span data-tri aria-hidden={hasMarket(p) || undefined} className="text-micro font-medium tracking-wide text-fg-3">
-                            {h}
-                        </span>
-                    </span>
+                    <FooterSide p={p} side="home" phase={phase} />
                 </div>
             </div>
 

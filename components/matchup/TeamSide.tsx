@@ -2,10 +2,13 @@
 
 import type { CSSProperties } from 'react';
 import type { Side, SideData } from '@/types/prediction';
-import { fmtSv, goalieSeasonLine, lastName } from '@/lib/matchup/format';
+import { fmtSv, goalieSeasonLine, lastName, vsOppTone } from '@/lib/matchup/format';
+import type { CardChip } from '@/lib/matchup/pills';
+import { glossaryHref } from '@/lib/glossary';
 import { cn } from '@/lib/utils';
 import styles from './slate.module.css';
 import { GoalieGlyph } from './GoalieGlyph';
+import { CHIP, OVER_TOGGLE } from './chip-styles';
 
 export type GoalieTone = 'conf' | 'likely' | 'proj';
 
@@ -28,31 +31,11 @@ export const GOALIE_TONE: Record<GoalieTone, string> = {
     proj: 'text-fg-2',
 };
 
-function Star({ on, team, onToggle, home }: { on: boolean; team: string; onToggle: () => void; home: boolean }) {
-    return (
-        <button
-            type="button"
-            onClick={onToggle}
-            aria-pressed={on}
-            aria-label={on ? `Unfollow the ${team}` : `Follow the ${team}`}
-            className={cn(
-                'absolute top-0 z-20 inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors coarse:h-9 coarse:w-9',
-                home ? '-right-1.5 coarse:-right-3' : '-left-1.5 coarse:-left-3',
-                '-mt-1.5 coarse:-mt-3',
-                on ? 'text-warn' : 'text-fg-3 hover:text-fg-1 focus-visible:text-fg-1',
-            )}
-        >
-            <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3 w-3">
-                <path d="M8 1.6l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.4l-3.8 2 .7-4.3-3.1-3 4.3-.6z" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-            </svg>
-        </button>
-    );
-}
-
 /** "25-26 19-12-8 .888 3.07" / "vs PHI 3-1-1 .941": tiny mono lines under the name. */
 function StatLines({ s, opp, home }: { s: SideData; opp: string; home: boolean }) {
     const line = goalieSeasonLine(s);
     const vs = s.vsOpp;
+    const tone = vsOppTone(vs);
     if (!line && !vs) return null;
     return (
         <span className={cn(styles.stats, styles.gstat, home ? 'items-end' : 'items-start')}>
@@ -74,12 +57,12 @@ function StatLines({ s, opp, home }: { s: SideData; opp: string; home: boolean }
                 </span>
             ) : null}
             {vs ? (
-                <span className="whitespace-nowrap text-fg-3">
+                <span className={cn('whitespace-nowrap', tone === 'good' ? 'font-bold text-pos' : tone === 'poor' ? 'font-bold text-neg' : 'text-fg-3')}>
                     <span aria-hidden="true">
                         vs {opp} {vs.record} {fmtSv(vs.sv)}
                     </span>
                     <span className="sr-only">
-                        Career versus {opp}: {vs.record}, {fmtSv(vs.sv)} save percentage.
+                        Career versus {opp}: {vs.record}, {fmtSv(vs.sv)} save percentage{tone ? ` (${tone === 'good' ? 'strong' : 'poor'} history)` : ''}.
                     </span>
                 </span>
             ) : null}
@@ -87,26 +70,46 @@ function StatLines({ s, opp, home }: { s: SideData; opp: string; home: boolean }
     );
 }
 
+/** A team's fatigue chip under its crest: a glossary link drawn above the card toggle. */
+function SideChip({ chip }: { chip: CardChip }) {
+    const body = (
+        <>
+            <span aria-hidden="true" className={CHIP}>
+                {chip.label}
+            </span>
+            <span className="sr-only">{chip.title}</span>
+        </>
+    );
+    return chip.term ? (
+        <a href={glossaryHref(chip.term)} data-chip={chip.term} title={chip.title} className={cn(OVER_TOGGLE, 'px-0')}>
+            {body}
+        </a>
+    ) : (
+        <span title={chip.title} className="inline-flex min-h-6 items-center">
+            {body}
+        </span>
+    );
+}
+
 /**
  * One side of the card: big crest on a team-colour wash (links to the team
- * page), the starter's name in Chakra Petch coloured by status, and the tiny
- * season / vs-opponent lines. `faded` = the loser of a final.
+ * page) with its fatigue chip under it, the starter's name in Chakra Petch
+ * coloured by status, and the tiny season / vs-opponent lines. `faded` = the
+ * loser of a final.
  */
 export function TeamSide({
     side,
     s,
     opp,
     faded,
-    favorite,
-    onFavorite,
+    chip,
     showStats = true,
 }: {
     side: Side;
     s: SideData;
     opp: string;
     faded?: boolean;
-    favorite: boolean;
-    onFavorite: () => void;
+    chip?: CardChip | null;
     showStats?: boolean;
 }) {
     const home = side === 'home';
@@ -126,7 +129,7 @@ export function TeamSide({
                         className={cn('h-full w-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,.65)] transition-transform duration-300 ease-out hover:scale-105 motion-reduce:transition-none', faded && 'opacity-50 grayscale-[40%]')}
                     />
                 </a>
-                <Star on={favorite} team={s.team.commonName} onToggle={onFavorite} home={home} />
+                {chip ? <SideChip chip={chip} /> : null}
             </span>
             <span
                 className={cn(

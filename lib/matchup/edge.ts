@@ -81,6 +81,8 @@ export interface Edge {
     evPct: number;
     /** Units, only when the data has them. */
     units: number | null;
+    /** True when the pipeline's proven-edge gate is open (the bet is logged in the public ledger). */
+    official: boolean;
 }
 
 /**
@@ -97,7 +99,45 @@ export function gatedEdge(p: Prediction): Edge | null {
         tri: p[side].team.triCode,
         evPct: Math.round(ev * 1000) / 10,
         units: p.units != null && p.units > 0 && p.betSide === side ? p.units : null,
+        official: true,
     };
+}
+
+/** The betting rule's EV floor (pipeline/market.py MIN_EV). */
+export const REC_MIN_EV = 0.03;
+/** Smallest stake worth recommending. */
+export const REC_MIN_UNITS = 0.5;
+
+/**
+ * Quarter-Kelly stake in units (1u = 1% of bankroll, capped at 5u, rounded
+ * to 0.1), mirroring pipeline/market.py kelly_units.
+ */
+export function kellyUnits(prob: number, american: number): number {
+    if (!Number.isFinite(american) || american === 0 || !(prob > 0 && prob < 1)) return 0;
+    const b = american > 0 ? american / 100 : 100 / Math.abs(american);
+    const f = (b * prob - (1 - prob)) / b;
+    if (f <= 0) return 0;
+    return Math.round(Math.min(5, 100 * 0.25 * f) * 10) / 10;
+}
+
+/**
+ * The bet to show: the gated edge when the pipeline's gate is open; otherwise
+ * an unofficial one, only when the better side clears the betting rule's EV
+ * floor (3%) and its quarter-Kelly stake is at least REC_MIN_UNITS.
+ */
+export function recommendedBet(p: Prediction): Edge | null {
+    const gated = gatedEdge(p);
+    if (gated) return gated;
+    if (!hasPrediction(p) || !hasMarket(p)) return null;
+    const a = p.away.ev;
+    const h = p.home.ev;
+    if (a == null && h == null) return null;
+    const side: Side = (h ?? -Infinity) >= (a ?? -Infinity) ? 'home' : 'away';
+    const ev = p[side].ev as number;
+    if (ev < REC_MIN_EV) return null;
+    const units = kellyUnits((p[side].winPct as number) / 100, p[side].marketOdds as number);
+    if (units < REC_MIN_UNITS) return null;
+    return { side, tri: p[side].team.triCode, evPct: Math.round(ev * 1000) / 10, units, official: false };
 }
 
 /** True when no game on the slate has an open gate (the "no bets" note). */

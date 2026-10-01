@@ -1,6 +1,6 @@
 'use client';
 
-import type { PickSummaries, Prediction } from '@/types/prediction';
+import type { PickSummaries, Prediction, SideData } from '@/types/prediction';
 import type { GameImplication } from '@/utils/implications';
 import type { Phase } from '@/lib/matchup/lifecycle';
 import { modelWeight, pickForm } from '@/lib/matchup/edge';
@@ -11,27 +11,30 @@ import { termHref } from '@/lib/matchup/glossary-links';
 import { DetailsLoading, type DetailsState } from './DetailsLoading';
 import { cn } from '@/lib/utils';
 
-/** Dense stat tile: label, Chakra value, tiny sub. With `term` the tile opens its glossary entry. */
-function Tile({ label, value, sub, subTitle, empty, term }: { label: string; value: string; sub?: string; subTitle?: string; empty?: boolean; term?: string }) {
+const CONF_WORD: Record<string, string> = { A: 'High', B: 'Medium', C: 'Low' };
+
+/** Rest before tonight in words: "B2B", "1 day", "3 days". */
+function restWords(s: SideData): string {
+    if (s.isB2b) return 'B2B';
+    if (s.restDays == null) return '—';
+    return `${s.restDays} day${s.restDays === 1 ? '' : 's'}`;
+}
+
+/** A team-aligned fact row: away value · label · home value (same layout as the card). */
+function Fact({ label, away, home, term }: { label: string; away: React.ReactNode; home: React.ReactNode; term?: string }) {
     const href = term ? termHref(term) : null;
-    const body = (
-        <>
-            <span className="label truncate">{label}</span>
-            <span className={cn('truncate font-display text-[17px] font-bold leading-6 tabular-nums cq-sm:text-[22px]', empty ? 'text-fg-3' : 'text-fg-1')}>{value}</span>
-            {sub ? (
-                <span className="truncate text-micro tracking-wide text-fg-3" title={subTitle}>
-                    {sub}
-                </span>
-            ) : null}
-        </>
-    );
-    const cls = 'tile flex min-w-0 flex-col gap-0.5 px-2.5 py-2 cq-sm:px-3';
-    return href ? (
-        <a href={href} title={subTitle} className={cn(cls, 'transition-colors hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand')}>
-            {body}
-        </a>
-    ) : (
-        <div className={cls}>{body}</div>
+    return (
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline gap-2 border-t border-line py-1.5 text-caption first:border-t-0">
+            <span className="font-bold tabular-nums text-fg-1">{away}</span>
+            {href ? (
+                <a href={href} className="text-micro font-medium uppercase tracking-wide text-fg-3 underline decoration-dotted underline-offset-4 hover:text-fg-1">
+                    {label}
+                </a>
+            ) : (
+                <span className="text-micro font-medium uppercase tracking-wide text-fg-3">{label}</span>
+            )}
+            <span className="text-right font-bold tabular-nums text-fg-1">{home}</span>
+        </div>
     );
 }
 
@@ -74,37 +77,42 @@ function Stakes({ p, imp }: { p: Prediction; imp: GameImplication }) {
     );
 }
 
-/** The Why tab: rest / projected goals / confidence tiles, the why-bars, context chips, stakes, recent form, pick record. */
+/**
+ * The Why tab, laid out like the card (away left, home right): the pick in one
+ * sentence, what moved it (the why-bars), rest, confidence in words, context,
+ * stakes, recent form and our pick record.
+ */
 export function WhyPanel({ p, phase, state, implication }: { p: Prediction; phase: Phase; state: DetailsState; implication: GameImplication | null }) {
     const a = p.away;
     const h = p.home;
     const sides = [a, h];
     const w = modelWeight(p);
     const anyPicksIn = (picks: PickSummaries) => sides.some(s => (picks[s.team.triCode]?.pickedWin.length ?? 0) + (picks[s.team.triCode]?.pickedLose.length ?? 0) > 0);
-    const rest = (d: number | null) => (d == null ? '—' : `${d}d`);
-    const wtTitle = w != null ? `model ×${w.toFixed(2)} · market ×${(1 - w).toFixed(2)}` : undefined;
+    const conf = p.confidenceGrade ? (CONF_WORD[p.confidenceGrade] ?? p.confidenceGrade) : null;
+    const blend = w != null && w < 0.999 ? `Forecast = model ${Math.round(w * 100)}% + market ${100 - Math.round(w * 100)}%` : null;
     return (
         <div className="flex flex-col gap-3.5">
-            <div className="grid grid-cols-3 gap-2">
-                <Tile label="Rest" term="rest" value={`${rest(a.restDays)} · ${rest(h.restDays)}`} sub={`${a.team.triCode} · ${h.team.triCode}`} empty={a.restDays == null && h.restDays == null} />
-                <Tile
-                    label="Proj G"
-                    term="proj-g"
-                    value={a.xg != null && h.xg != null ? `${a.xg.toFixed(1)} · ${h.xg.toFixed(1)}` : '—'}
-                    sub={`${a.team.triCode} · ${h.team.triCode}`}
-                    empty={a.xg == null || h.xg == null}
-                />
-                <Tile
-                    label={p.confidenceGrade ? 'Conf' : 'Model wt'}
-                    term={p.confidenceGrade ? 'conf' : 'wt'}
-                    subTitle={wtTitle}
-                    value={p.confidenceGrade ?? (w != null ? `${Math.round(w * 100)}%` : '—')}
-                    sub={p.confidenceGrade && w != null && w < 0.999 ? `Wt ${Math.round(w * 100)}%` : undefined}
-                    empty={!p.confidenceGrade && w == null}
-                />
-            </div>
+            {p.pickSummary ? <p className="text-caption text-fg-2">{p.pickSummary}</p> : null}
 
             {p.breakdown.length ? <WhyThisPick p={p} /> : phase === 'pre' ? <p className="label">No breakdown</p> : null}
+
+            <section aria-label="Rest and confidence" className="flex flex-col">
+                <Fact label="Rest" term="rest" away={restWords(a)} home={restWords(h)} />
+                {conf ? (
+                    <div className="flex flex-col gap-0.5 border-t border-line py-1.5">
+                        <span className="flex items-baseline justify-between gap-2 text-caption">
+                            <a href={termHref('conf') ?? undefined} className="text-micro font-medium uppercase tracking-wide text-fg-3 underline decoration-dotted underline-offset-4 hover:text-fg-1">
+                                Confidence
+                            </a>
+                            <span className="font-bold text-fg-1">{conf}</span>
+                        </span>
+                        {p.confidenceNote ? <span className="text-micro text-fg-3">{p.confidenceNote}</span> : null}
+                        {blend ? <span className="text-micro text-fg-3">{blend}</span> : null}
+                    </div>
+                ) : blend ? (
+                    <p className="border-t border-line py-1.5 text-micro text-fg-3">{blend}</p>
+                ) : null}
+            </section>
             <ContextChips p={p} />
             {implication ? <Stakes p={p} imp={implication} /> : null}
 

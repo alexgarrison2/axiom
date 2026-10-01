@@ -262,7 +262,7 @@ function Row({
             </td>
             <th scope="row" className={cn(cell, 'text-left font-normal')}>
                 <Link href={`/teams/${r.tri}`} prefetch={false} className="group inline-flex min-h-8 items-center gap-2 coarse:min-h-11">
-                    <Crest tri={r.tri} size={20} className="drop-shadow-none" />
+                    <Crest tri={r.tri} size={26} className="drop-shadow-none" />
                     <span className="font-bold text-fg-1 group-hover:text-brand">{r.tri}</span>
                     {full ? <span className="hidden truncate text-fg-3 lg:inline">{r.short}</span> : null}
                 </Link>

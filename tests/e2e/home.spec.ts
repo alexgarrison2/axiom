@@ -150,11 +150,11 @@ test.describe('home slate', () => {
         }
     });
 
-    test('never shows units while the edge gate is closed', async ({ page }) => {
+    test('shows units only beside a +EV bet', async ({ page }) => {
         await page.goto('/');
         for (const card of await page.locator('article').all()) {
             const text = await card.innerText();
-            if (!/EDGE/i.test(text)) expect(text).not.toMatch(/\b\d+(\.\d)?u\b/);
+            if (!/\+EV/i.test(text)) expect(text).not.toMatch(/\b\d+(\.\d)?u\b/);
         }
     });
 
@@ -314,7 +314,7 @@ test.describe('home slate', () => {
         await expect(trigger).toBeFocused();
     });
 
-    test('lean flag, B2B chip, FAIR and NO BET open the glossary; tapping them never toggles the card (fix4 F4-3)', async ({ page }, info) => {
+    test('lean flag, B2B chip, FORECAST and NO BET open the glossary; tapping them never toggles the card (fix4 F4-3)', async ({ page }, info) => {
         const tap = async (l: ReturnType<Page['locator']>) => (info.project.name === 'mobile' ? l.tap() : l.click());
         for (const date of ['', '2026-10-01']) {
             await page.goto(date ? `/?date=${date}` : '/');
@@ -348,19 +348,19 @@ test.describe('home slate', () => {
             else await page.mouse.click(bar.x + bar.width / 2, bar.y + bar.height / 2);
             await expect(first.locator('h2 button[aria-expanded]')).toHaveAttribute('aria-expanded', 'true');
         }
-        // Odds tab: FAIR → fair odds, NO BET → the edge section.
+        // Odds tab: FORECAST → the forecast entry, NO BET → the edge section.
         const card = page.locator('article').filter({ has: page.locator('[role="img"][aria-label*="Market:"]') }).first();
         test.skip((await card.count()) === 0, 'no priced game');
         const toggle = card.locator('h2 button[aria-expanded]');
         if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
         await card.getByRole('radio', { name: 'Odds' }).click();
-        const fair = card.getByRole('link', { name: /^Fair/ });
-        await expect(fair).toHaveAttribute('href', '/methodology#term-fair-odds');
+        const forecast = card.getByRole('link', { name: /^Forecast/ });
+        await expect(forecast).toHaveAttribute('href', '/methodology#term-model-pct');
         const noBet = card.getByRole('link', { name: /^No bet/i });
         if (await noBet.count()) await expect(noBet).toHaveAttribute('href', '/methodology#edge');
-        await tap(fair);
-        await expect(page).toHaveURL(/\/methodology#term-fair-odds$/);
-        await expect(page.locator('#term-fair-odds')).toBeInViewport();
+        await tap(forecast);
+        await expect(page).toHaveURL(/\/methodology#term-model-pct$/);
+        await expect(page.locator('#term-model-pct')).toBeInViewport();
     });
 
     test('expanded cards never scroll sideways: 10 expand/collapse cycles on every tab (fix4 F4-5)', async ({ page }, info) => {
@@ -538,49 +538,6 @@ test.describe('URL state and routes', () => {
         const card = page.locator(`article#${anchor}`);
         await expect(card).toBeInViewport();
         await expect(card).toHaveClass(/border-brand/);
-    });
-});
-
-test.describe('favourites', () => {
-    test("following a team pins its game first after reload", async ({ page }) => {
-        await page.goto('/');
-        const ids = await cards(page);
-        const lastCard = page.locator(`article#${ids[ids.length - 1]}`);
-        const star = lastCard.getByRole('button', { name: /^Follow the / }).last();
-        await star.click();
-        await page.reload();
-        await expect(page.locator('article').first()).toHaveAttribute('id', ids[ids.length - 1]);
-        await expect(page.getByRole('heading', { name: /Your team/ })).toBeVisible();
-    });
-
-    test('a long YOUR TEAMS strip scrolls inside itself at 390px, spells out Playoffs, no page overflow', async ({ page }) => {
-        await page.setViewportSize({ width: 390, height: 844 });
-        await page.goto('/');
-        const tris = await page.locator('article [data-tri]').allTextContents();
-        await page.evaluate(t => localStorage.setItem('ponyxg:favorites', JSON.stringify(t)), [...new Set(tris)]);
-        await page.reload();
-        const strip = page.locator('section[aria-labelledby="your-team"]');
-        await expect(strip).toBeVisible();
-        expect(await strip.evaluate(el => el.scrollWidth)).toBeLessThanOrEqual(390);
-        expect(await strip.innerText()).not.toMatch(/\bPO\b/);
-        expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
-    });
-
-    test('renders normally when localStorage throws', async ({ page }) => {
-        await page.addInitScript(() => {
-            Object.defineProperty(window, 'localStorage', {
-                configurable: true,
-                get() {
-                    throw new Error('blocked');
-                },
-            });
-        });
-        const errors: string[] = [];
-        page.on('pageerror', e => errors.push(String(e)));
-        await page.goto('/');
-        await expect(page.locator('article').first()).toBeVisible();
-        await page.locator('article').first().getByRole('button', { name: /^Follow the / }).first().click();
-        expect(errors).toEqual([]);
     });
 });
 

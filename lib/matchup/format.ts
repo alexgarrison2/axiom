@@ -288,6 +288,27 @@ export function goalieSeasonLine(s: { goalieCur?: string | null; goaliePrev?: st
     return prev ? { tag: PREV_TAG, ...prev } : null;
 }
 
+/** Career starts vs this opponent before a record can read as strong or poor. */
+export const VS_OPP_MIN_GP = 5;
+
+/**
+ * A goalie's career line against tonight's opponent, judged: "good" at a
+ * .920+ save % or 70%+ of decisions won, "poor" at .880 or lower or 30% or
+ * fewer, null when the sample is under VS_OPP_MIN_GP or the signals disagree.
+ */
+export function vsOppTone(vs: { record: string; sv: number } | null | undefined): 'good' | 'poor' | null {
+    if (!vs) return null;
+    const m = vs.record.match(/^(\d+)-(\d+)(?:-(\d+))?$/);
+    if (!m) return null;
+    const w = Number(m[1]);
+    const decisions = w + Number(m[2]) + Number(m[3] ?? 0);
+    if (decisions < VS_OPP_MIN_GP) return null;
+    const winRate = w / decisions;
+    const good = vs.sv >= 0.92 || winRate >= 0.7;
+    const poor = vs.sv <= 0.88 || winRate <= 0.3;
+    return good === poor ? null : good ? 'good' : 'poor';
+}
+
 /** ".917" from 0.917 ("1.000" stays). */
 export function fmtSv(v: number): string {
     return v.toFixed(3).replace(/^0/, '');

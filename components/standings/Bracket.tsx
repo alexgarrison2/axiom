@@ -237,7 +237,7 @@ function TeamLine({
                 eliminated && 'bg-bg/40',
             )}
         >
-            <Crest tri={seed.tri} size={20} className={cn('drop-shadow-none', eliminated && 'opacity-40 grayscale')} />
+            <Crest tri={seed.tri} size={26} className={cn('drop-shadow-none', eliminated && 'opacity-40 grayscale')} />
             <span className={cn('min-w-0 flex-1 truncate font-bold', eliminated ? 'text-fg-3 line-through decoration-fg-3' : picked ? 'text-brand' : 'text-fg-1')}>
                 {seed.tri}
             </span>

@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Papa from 'papaparse';
 import { SEASON_ID } from '@/lib/season';
-import { parseRow, parseRecent, recordFromRecent, str, type RawRow } from '@/lib/matchup/parse';
-import type { Prediction } from '@/types/prediction';
+import { parseRow, parseRecent, parseTv, recordFromRecent, str, type RawRow } from '@/lib/matchup/parse';
+import type { Prediction, TvBroadcast } from '@/types/prediction';
 
 export type { Prediction } from '@/types/prediction';
 
@@ -46,13 +46,14 @@ function readRows(): RawRow[] {
     }
 }
 
-function tvNetworks(): Map<string, string> {
-    const m = new Map<string, string>();
-    const games = readJson<{ id?: number; homeTeamAbbrev?: string; awayTeamAbbrev?: string; tvNetwork?: string }[]>('upcoming') ?? [];
+function tvNetworks(): Map<string, TvBroadcast[]> {
+    const m = new Map<string, TvBroadcast[]>();
+    const games = readJson<{ id?: number; homeTeamAbbrev?: string; awayTeamAbbrev?: string; tvNetwork?: string; tvDisplay?: unknown }[]>('upcoming') ?? [];
     for (const g of games) {
-        if (!g.tvNetwork) continue;
-        if (g.id) m.set(String(g.id), g.tvNetwork);
-        m.set(`${g.homeTeamAbbrev}_${g.awayTeamAbbrev}`, g.tvNetwork);
+        const tv = parseTv(g);
+        if (!tv.length) continue;
+        if (g.id) m.set(String(g.id), tv);
+        m.set(`${g.homeTeamAbbrev}_${g.awayTeamAbbrev}`, tv);
     }
     return m;
 }

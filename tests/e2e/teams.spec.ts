@@ -90,12 +90,16 @@ test.describe('/teams', () => {
         await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
         // Streamed static HTML reveals the table on React's next reveal tick.
         await expect(page.locator('caption').first()).toBeVisible();
-        await page.evaluate(() => window.scrollTo(0, 900));
-        await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+        // The table scrolls inside its own region; the header is natively sticky at its top.
+        const region = page.getByRole('region', { name: /team table/ });
+        await region.evaluate(el => {
+            el.scrollTop = 600;
+        });
+        await expect.poll(() => region.evaluate(el => el.scrollTop)).toBeGreaterThan(300);
         const head = page.getByRole('columnheader', { name: /^GP/ }).first();
-        // The header follows the page once hydrated (it re-measures on mount).
-        await expect.poll(async () => (await head.boundingBox())?.y ?? -1, { timeout: 5000 }).toBeGreaterThanOrEqual(0);
-        await expect.poll(async () => (await head.boundingBox())?.y ?? 9999, { timeout: 5000 }).toBeLessThan(200);
+        const top = (await region.boundingBox())!.y;
+        await expect.poll(async () => ((await head.boundingBox())?.y ?? 9999) - top, { timeout: 5000 }).toBeLessThan(40);
+        await expect.poll(async () => ((await head.boundingBox())?.y ?? -1) - top, { timeout: 5000 }).toBeGreaterThanOrEqual(-1);
     });
 
     test('axe: 0 serious/critical', async ({ page }) => {

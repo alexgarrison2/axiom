@@ -121,6 +121,59 @@ def resolve_goalie(side_label, team_common, tri, target_date, dfo_goalies, roste
     return goalie, status, source, conflict, (alt if conflict else None)
 
 
+def _tv_key(network):
+    """Dedupe key: 'HBO MAX' / 'Max' / 'max' collapse to the same broadcaster."""
+    k = "".join(ch for ch in (network or "").lower() if ch.isalnum())
+    return "max" if k in ("hbomax", "max") else k
+
+
+def select_tv(broadcasts, home_tri, away_tri, max_national=2):
+    """The broadcasters a US viewer should look for, as [{network, market, team, country}].
+
+    NHL ``tvBroadcasts`` rows carry market N (national), H (home) or A (away)
+    and countryCode US/CA. US only:
+      - any US national feed wins (deduped, at most ``max_national``, API order);
+      - otherwise the first US away and first US home regional network, each
+        tagged with its team (one entry, team None, when both sides share it);
+      - a game with no US feed at all (Canada-only) falls back to its Canadian
+        national feed(s) so the card is never blank.
+    """
+    rows = [b for b in (broadcasts or []) if b.get('network')]
+    us = [b for b in rows if b.get('countryCode') == 'US']
+
+    def pick(cands, limit):
+        out, seen = [], set()
+        for b in cands:
+            k = _tv_key(b['network'])
+            if k in seen:
+                continue
+            seen.add(k)
+            out.append(b)
+            if len(out) >= limit:
+                break
+        return out
+
+    national = pick([b for b in us if b.get('market') == 'N'], max_national)
+    if national:
+        return [{'network': b['network'], 'market': 'N', 'team': None, 'country': 'US'} for b in national]
+
+    out = []
+    for market, tri in (('A', away_tri), ('H', home_tri)):
+        b = next((b for b in us if b.get('market') == market), None)
+        if not b:
+            continue
+        dup = next((o for o in out if _tv_key(o['network']) == _tv_key(b['network'])), None)
+        if dup:
+            dup['team'] = None  # shared feed: shown once, untagged
+            continue
+        out.append({'network': b['network'], 'market': market, 'team': tri, 'country': 'US'})
+    if out or us:
+        return out
+
+    ca = pick([b for b in rows if b.get('countryCode') == 'CA' and b.get('market') == 'N'], max_national)
+    return [{'network': b['network'], 'market': 'N', 'team': None, 'country': 'CA'} for b in ca]
+
+
 def fetch_schedule(now=None):
     print("Fetching confirmed goalies from Daily Faceoff...")
     try:
@@ -177,6 +230,7 @@ def fetch_schedule(now=None):
                     'awayGoalieConflict': aconf,
                     'awayGoalieAlt': aalt,
                     'tvNetwork': national_us[0] if national_us else '',
+                    'tvDisplay': select_tv(broadcasts, h_tri, a_tri),
                     'tvBroadcasts': [{'network': b.get('network'), 'market': b.get('market'),
                                       'countryCode': b.get('countryCode')} for b in broadcasts],
                 })

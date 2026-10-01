@@ -21,6 +21,8 @@ export interface SegmentedProps<T extends string> {
     /** Stretch segments to fill the row. */
     block?: boolean;
     className?: string;
+    /** Extra classes for every option button (e.g. logo segments with no side padding). */
+    optionClassName?: string;
 }
 
 /**
@@ -28,7 +30,7 @@ export interface SegmentedProps<T extends string> {
  * A radiogroup: Tab enters the group, arrow keys move and select.
  * Mono uppercase labels; selected = raised fill + cyan text.
  */
-export function Segmented<T extends string>({ options, value, onChange, label, size = 'md', block = false, className }: SegmentedProps<T>) {
+export function Segmented<T extends string>({ options, value, onChange, label, size = 'md', block = false, className, optionClassName }: SegmentedProps<T>) {
     const refs = React.useRef<(HTMLButtonElement | null)[]>([]);
     const enabled = options.filter(o => !o.disabled);
     // Roving tab stop: the selected option, or the first enabled one if nothing matches `value`.
@@ -84,6 +86,7 @@ export function Segmented<T extends string>({ options, value, onChange, label, s
                             block && 'flex-1',
                             selected ? 'bg-surface-3 text-brand' : 'text-fg-3 hover:text-fg-1',
                             'disabled:cursor-not-allowed disabled:text-fg-disabled',
+                            optionClassName,
                         )}
                     >
                         {o.label}

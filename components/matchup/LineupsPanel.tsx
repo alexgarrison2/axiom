@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Prediction } from '@/types/prediction';
 import LineupGrid from '@/components/LineupGrid';
 import PlayerNewsList from '@/components/PlayerNewsList';
+import type { PlayerNewsItem } from '@/utils/data';
 import { Segmented } from '@/components/ui/segmented';
 import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { SEASON_ID } from '@/lib/season';
@@ -26,9 +27,36 @@ function impactTag(season: string | null | undefined, home: boolean) {
     );
 }
 
+/** A team's player news, collapsed under its lineup. */
+function TeamNews({ news, tri }: { news: PlayerNewsItem[]; tri: string }) {
+    if (!news.length) return null;
+    return (
+        <details className="group mt-2.5 rounded-[10px] border border-line px-3 py-1.5">
+            <summary className="flex min-h-7 cursor-pointer list-none items-center justify-between coarse:min-h-11">
+                <span className="label">
+                    News <span className="text-fg-2">{news.length}</span>
+                </span>
+                <span aria-hidden="true" className="text-fg-3 transition-transform group-open:rotate-180">
+                    ▾
+                </span>
+            </summary>
+            <div className="mt-2 pb-1.5">
+                <PlayerNewsList news={news} teamTriCode={tri} />
+            </div>
+        </details>
+    );
+}
+
+/** A team toggle segment: the crest, as large as the segment allows; the other team's crest is dimmed. */
+function Logo({ src, on }: { src: string; on: boolean }) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt="" width={40} height={40} className={cn('h-10 w-10 object-contain transition-[opacity,filter]', !on && 'opacity-40 grayscale')} />;
+}
+
 /**
  * Both projected lineups, injuries and player news. A phone-width card
- * switches between the teams; a wide card shows them side by side.
+ * switches between the teams with a crest toggle (news follows the team);
+ * a wide card shows them side by side, each with its own news.
  */
 export function LineupsPanel({ p, state }: { p: Prediction; state: DetailsState }) {
     const now = new Date();
@@ -36,41 +64,31 @@ export function LineupsPanel({ p, state }: { p: Prediction; state: DetailsState 
     return (
         <DetailsLoading state={state}>
             {d => (
-                <div className="flex flex-col gap-2.5">
+                <div className="flex min-w-0 flex-col gap-2.5">
                     <div className="cq-lg:hidden">
                         <Segmented
                             label="Lineup team"
                             size="sm"
+                            block
+                            optionClassName="px-1 py-0.5"
                             value={side}
                             onChange={setSide}
                             options={[
-                                { value: 'away', label: p.away.team.triCode },
-                                { value: 'home', label: p.home.team.triCode },
+                                { value: 'away', label: <Logo src={p.away.team.logoUrl} on={side === 'away'} />, ariaLabel: p.away.team.triCode },
+                                { value: 'home', label: <Logo src={p.home.team.logoUrl} on={side === 'home'} />, ariaLabel: p.home.team.triCode },
                             ]}
                         />
                     </div>
-                    <div className="grid grid-cols-1 gap-3 cq-lg:grid-cols-2">
-                        <div className={cn(side !== 'away' && 'hidden cq-lg:block')}>
-                            <LineupGrid team={p.away.team} d={d.away} now={now} seasonTag={impactTag(d.impactSeason, false)} />
+                    <div className="grid min-w-0 grid-cols-1 gap-3 cq-lg:grid-cols-2">
+                        <div className={cn('min-w-0', side !== 'away' && 'hidden cq-lg:block')}>
+                            <LineupGrid team={p.away.team} d={d.away} now={now} seasonTag={impactTag(d.impactSeason, false)} titleWideOnly />
+                            <TeamNews news={d.away.news} tri={p.away.team.triCode} />
                         </div>
-                        <div className={cn(side !== 'home' && 'hidden cq-lg:block')}>
-                            <LineupGrid team={p.home.team} d={d.home} now={now} seasonTag={impactTag(d.impactSeason, true)} />
+                        <div className={cn('min-w-0', side !== 'home' && 'hidden cq-lg:block')}>
+                            <LineupGrid team={p.home.team} d={d.home} now={now} seasonTag={impactTag(d.impactSeason, true)} titleWideOnly />
+                            <TeamNews news={d.home.news} tri={p.home.team.triCode} />
                         </div>
                     </div>
-                    {d.away.news.length || d.home.news.length ? (
-                        <details className="group rounded-[10px] border border-line px-3 py-1.5">
-                            <summary className="flex min-h-7 cursor-pointer list-none items-center justify-between coarse:min-h-11">
-                                <span className="label">News</span>
-                                <span aria-hidden="true" className="text-fg-3 transition-transform group-open:rotate-180">
-                                    ▾
-                                </span>
-                            </summary>
-                            <div className="mt-2 grid grid-cols-1 gap-3 pb-1.5 cq-sm:grid-cols-2">
-                                <PlayerNewsList news={d.away.news} teamTriCode={p.away.team.triCode} />
-                                <PlayerNewsList news={d.home.news} teamTriCode={p.home.team.triCode} />
-                            </div>
-                        </details>
-                    ) : null}
                 </div>
             )}
         </DetailsLoading>

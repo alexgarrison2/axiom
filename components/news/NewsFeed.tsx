@@ -105,8 +105,8 @@ function GameGroup({ group: g }: { group: FeedGroup }) {
         >
             <header className="flex min-h-11 min-w-0 items-center gap-2.5 whitespace-nowrap border-b border-line px-3 py-1.5">
                 <span aria-hidden="true" className="flex items-center gap-1">
-                    <Crest tri={game.away} size={24} className="drop-shadow-none" />
-                    <Crest tri={game.home} size={24} className="drop-shadow-none" />
+                    <Crest tri={game.away} size={30} className="drop-shadow-none" />
+                    <Crest tri={game.home} size={30} className="drop-shadow-none" />
                 </span>
                 <h2 id={`${g.key}-h`} className="shrink-0 font-display text-title font-semibold uppercase tracking-[0.04em] text-fg-1">
                     {g.title}
@@ -152,7 +152,7 @@ function NewsRow({ card, showTeam }: { card: FeedGroup['cards'][number]; showTea
                             {KIND_SHORT[latest.kind]}
                         </abbr>
                     </span>
-                    <Crest tri={card.team} size={16} alt={name} className="drop-shadow-none" />
+                    <Crest tri={card.team} size={22} alt={name} className="drop-shadow-none" />
                     <h3 id={`${card.id}-name`} className="min-w-0 truncate font-display text-body font-semibold text-fg-1">
                         {card.player}
                     </h3>

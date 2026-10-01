@@ -100,6 +100,20 @@ export interface SideData {
     hasNews: boolean;
 }
 
+/**
+ * One broadcaster to show on the card (pipeline fetch_upcoming.select_tv):
+ * US national feeds (market N), else the away/home US regional feeds tagged
+ * with their team, else (Canada-only games) the Canadian national feed.
+ */
+export interface TvBroadcast {
+    network: string;
+    /** N national, H home regional, A away regional. */
+    market: 'N' | 'H' | 'A';
+    /** Tri-code of the team whose regional feed this is; null for national or shared feeds. */
+    team: string | null;
+    country: 'US' | 'CA';
+}
+
 export interface Prediction {
     /** 10-digit NHL game id — the join key everywhere. */
     id: string;
@@ -138,7 +152,9 @@ export interface Prediction {
     totalOver: number | null;
     totalUnder: number | null;
     threeWayTie: number | null;
+    /** First broadcaster's network (legacy single-string field; prefer tvBroadcasts). */
     tvNetwork: string | null;
+    tvBroadcasts: TvBroadcast[];
     home: SideData;
     away: SideData;
 }

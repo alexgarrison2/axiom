@@ -238,9 +238,9 @@ export function pillText(pill: Pill): string {
     return [pill.state === 'prior' ? pill.seasonTag : null, pill.label, pill.value].filter(Boolean).join(' ');
 }
 
-/** The one situational chip on a collapsed card (top-right). */
+/** A situational chip on a collapsed card. */
 export interface CardChip {
-    /** 1-3 short uppercase words, e.g. "B2B NYI". */
+    /** 1-2 short uppercase words, e.g. "B2B" or "NYI 3-1". */
     label: string;
     /** Screen-reader / tooltip wording. */
     title: string;
@@ -248,33 +248,29 @@ export interface CardChip {
     term?: string;
 }
 
-/**
- * At most one chip per card, by priority: playoff series score, back-to-back,
- * 3 games in 4 nights, then a long road trip (game 4+). Everything else
- * (openers included) lives in the expanded panel.
- */
-export function situationChip(p: Prediction, series?: { away: number; home: number } | null): CardChip | null {
+/** The playoff series score: the only chip about the game itself (card header). */
+export function seriesChip(p: Prediction, series?: { away: number; home: number } | null): CardChip | null {
+    if (!series) return null;
     const a = p.away.team.triCode;
     const h = p.home.team.triCode;
-    if (series) {
-        const lead = series.away === series.home ? null : series.away > series.home ? a : h;
-        const hi = Math.max(series.away, series.home);
-        const lo = Math.min(series.away, series.home);
-        return lead
-            ? { label: `${lead} ${hi}-${lo}`, title: `Series: ${lead} leads ${hi}-${lo}` }
-            : { label: `Tied ${hi}-${lo}`, title: `Series tied ${hi}-${lo}` };
-    }
-    const who = (f: (s: SideData) => boolean): string | null => {
-        const aa = f(p.away);
-        const hh = f(p.home);
-        return aa && hh ? 'Both' : aa ? a : hh ? h : null;
-    };
-    const b2b = who(s => s.isB2b);
-    if (b2b) return { label: `B2B ${b2b}`, title: `Back-to-back: ${b2b === 'Both' ? 'both teams' : b2b} played yesterday`, term: 'b2b' };
-    const three = who(s => !s.isB2b && (s.gamesInLast4 ?? 0) >= 3);
-    if (three) return { label: `3in4 ${three}`, title: `Third game in four nights: ${three === 'Both' ? 'both teams' : three}`, term: 'rest' };
-    const trip = p.away.roadTripGameN ?? 0;
-    if (trip >= 4) return { label: `Trip G${trip}`, title: `${a}: game ${trip} of a road trip`, term: 'rest' };
-    // Season openers stay in the expanded panel: in opening week they would tag most of the slate.
+    const lead = series.away === series.home ? null : series.away > series.home ? a : h;
+    const hi = Math.max(series.away, series.home);
+    const lo = Math.min(series.away, series.home);
+    return lead ? { label: `${lead} ${hi}-${lo}`, title: `Series: ${lead} leads ${hi}-${lo}` } : { label: `Tied ${hi}-${lo}`, title: `Series tied ${hi}-${lo}` };
+}
+
+/**
+ * At most one fatigue chip per team, shown under that team's crest, by
+ * priority: back-to-back, 3 games in 4 nights, then a long road trip (away,
+ * game 4+). Season openers stay in the expanded panel: in opening week they
+ * would tag most of the slate.
+ */
+export function teamChip(p: Prediction, side: Side): CardChip | null {
+    const s = p[side];
+    const tri = s.team.triCode;
+    if (s.isB2b) return { label: 'B2B', title: `Back-to-back: ${tri} played yesterday`, term: 'b2b' };
+    if ((s.gamesInLast4 ?? 0) >= 3) return { label: '3in4', title: `${tri}: third game in four nights`, term: 'rest' };
+    const trip = side === 'away' ? (s.roadTripGameN ?? 0) : 0;
+    if (trip >= 4) return { label: `Trip G${trip}`, title: `${tri}: game ${trip} of a road trip`, term: 'rest' };
     return null;
 }

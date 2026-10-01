@@ -3,6 +3,7 @@ import { clashSafePair } from '@/components/ui/team-color';
 import { waterfallFor } from '@/lib/matchup/waterfall';
 import { displayPair } from '@/lib/matchup/edge';
 import { cn } from '@/lib/utils';
+import { Crest } from '@/components/ui/crest';
 import styles from './slate.module.css';
 
 /** 1-2 word factor labels. */
@@ -64,11 +65,17 @@ export function WhyThisPick({ p }: { p: Prediction }) {
             <h3 id={`why-${p.id}`} className="sr-only">
                 {even ? 'Why: coin flip' : `Why: ${fav.triCode} ${favPct}%`}
             </h3>
-            <div aria-hidden="true" className={cn(ROW, 'text-micro uppercase tracking-wide text-fg-3')}>
+            <div aria-hidden="true" className={cn(ROW, 'text-micro font-bold uppercase tracking-wide text-fg-2')}>
                 <span />
-                <span className="flex justify-between">
-                    <span>← {a.triCode}</span>
-                    <span>{h.triCode} →</span>
+                <span className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                        <Crest tri={a.triCode} size={32} className="drop-shadow-none" />
+                        {a.triCode}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                        {h.triCode}
+                        <Crest tri={h.triCode} size={32} className="drop-shadow-none" />
+                    </span>
                 </span>
                 <span />
             </div>

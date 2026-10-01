@@ -487,10 +487,10 @@ function CallList({ rows }: { rows: CallRow[] }) {
                         </span>
                         <span className="w-12 shrink-0 text-fg-3">{shortDate(c.date)}</span>
                         <span className="flex min-w-0 items-center gap-1.5 text-fg-1">
-                            <Crest tri={away} size={16} className="drop-shadow-none" />
+                            <Crest tri={away} size={22} className="drop-shadow-none" />
                             {away} {c.awayScore}
                             <span className="text-fg-3">@</span>
-                            <Crest tri={home} size={16} className="drop-shadow-none" />
+                            <Crest tri={home} size={22} className="drop-shadow-none" />
                             {home} {c.homeScore}
                             {c.decision !== 'REG' ? <span className="text-fg-3">{c.decision}</span> : null}
                         </span>

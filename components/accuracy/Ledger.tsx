@@ -261,7 +261,7 @@ export function Ledger({
                                                     <td className="text-fg-3">{shortDate(b.date)}</td>
                                                     <td>
                                                         <span className="flex items-center gap-1.5 font-bold text-fg-1">
-                                                            <Crest tri={tri} size={16} className="drop-shadow-none" />
+                                                            <Crest tri={tri} size={22} className="drop-shadow-none" />
                                                             {tri}
                                                             <span className="font-normal text-fg-3">
                                                                 {b.side === 'home' ? 'vs' : '@'} {opp}
