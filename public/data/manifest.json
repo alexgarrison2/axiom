@@ -15,7 +15,7 @@
     },
     "dfo_goalies": {
       "pages": 2,
-      "fetched_at": "2026-10-01T01:08:01Z"
+      "fetched_at": "2026-10-01T04:35:31Z"
     },
     "espn_injuries": {
       "entries": 118,
@@ -23,20 +23,20 @@
       "fetched_at": "2026-09-30T21:54:59Z"
     },
     "odds": {
-      "games": 9,
+      "games": 11,
       "counts": {
-        "nhl_partner": 1,
+        "nhl_partner": 0,
         "nhl_schedule": 0,
-        "bovada": 8,
+        "bovada": 11,
         "espn": 0
       },
-      "fetched_at": "2026-10-01T01:08:06Z"
+      "fetched_at": "2026-10-01T04:35:44Z"
     }
   },
   "schema_version": 1,
   "season_id": "20262027",
   "season_label": "2026-27",
-  "generated_at": "2026-10-01T01:08:40Z",
+  "generated_at": "2026-10-01T04:36:39Z",
   "mode": "lite",
   "games_played_current_season": 5,
   "phase": {
@@ -45,7 +45,7 @@
     "games_played": 5,
     "min_team_gp": 0,
     "last_game_date": "2026-09-29",
-    "upcoming_games": 11
+    "upcoming_games": 13
   },
   "stages": [
     {
@@ -59,15 +59,15 @@
     {
       "stage": "upcoming_games",
       "status": "ok",
-      "rows_written": 11,
-      "seconds": 3.6,
+      "rows_written": 13,
+      "seconds": 11.5,
       "required": true
     },
     {
       "stage": "injuries",
       "status": "fail",
       "rows_written": 0,
-      "seconds": 0.0,
+      "seconds": 0.1,
       "required": false,
       "reason": "403 for https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/injuries: Forbidden"
     },
@@ -75,7 +75,7 @@
       "stage": "clinch_status",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 0.0,
+      "seconds": 0.2,
       "required": false
     },
     {
@@ -88,15 +88,15 @@
     {
       "stage": "odds",
       "status": "ok",
-      "rows_written": 9,
-      "seconds": 1.9,
+      "rows_written": 11,
+      "seconds": 1.7,
       "required": false
     },
     {
       "stage": "goalie_stats",
       "status": "ok",
       "rows_written": 98,
-      "seconds": 0.4,
+      "seconds": 0.8,
       "required": false
     },
     {
@@ -121,19 +121,19 @@
       "rows_written": 0,
       "seconds": 0.0,
       "required": true,
-      "reason": "3.2h old"
+      "reason": "6.7h old"
     },
     {
       "stage": "predict",
       "status": "ok",
-      "rows_written": 11,
-      "seconds": 31.6,
+      "rows_written": 13,
+      "seconds": 52.4,
       "required": true
     },
     {
       "stage": "snapshot",
       "status": "ok",
-      "rows_written": 1,
+      "rows_written": 0,
       "seconds": 0.0,
       "required": false
     },
@@ -149,14 +149,14 @@
       "stage": "prediction_history",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 1.2,
+      "seconds": 0.9,
       "required": true
     },
     {
       "stage": "model_report",
       "status": "ok",
       "rows_written": 3,
-      "seconds": 0.4,
+      "seconds": 0.2,
       "required": true
     },
     {
@@ -176,18 +176,18 @@
   ],
   "ok": true,
   "run": {
-    "started_at": "2026-10-01T01:08:00Z",
-    "finished_at": "2026-10-01T01:08:40Z",
-    "seconds": 40.0,
-    "github_run_id": "36799583050"
+    "started_at": "2026-10-01T04:35:31Z",
+    "finished_at": "2026-10-01T04:36:39Z",
+    "seconds": 68.6,
+    "github_run_id": "36815801220"
   },
   "last_full_attempt": "2026-09-30T21:55:40Z",
   "last_full_run": "2026-09-30T21:55:40Z",
   "stale": {
     "injuries.json": "ESPN injuries unavailable: 403 for https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/injuries: Forbidden"
   },
-  "last_lite_attempt": "2026-10-01T01:08:40Z",
-  "last_lite_run": "2026-10-01T01:08:40Z",
+  "last_lite_attempt": "2026-10-01T04:36:39Z",
+  "last_lite_run": "2026-10-01T04:36:39Z",
   "stale_since": {
     "injuries.json": "2026-09-30T22:04:33Z"
   }
