@@ -23,7 +23,7 @@ import pandas as pd
 
 from .aging import AgingCurve
 from .bio import age_at
-from .design import COVARIATES, Index
+from .design import COVARIATES, ERA_WEIGHTS, Index
 
 SIGMA2_DEFAULT = 1160.0   # residual variance per second of 5v5 xG/60 (2022-23 flat fit; any season ~1150-1170)
 MIN_SIGMA2_ROWS = 20_000  # regression rows (~2 rows per stint, ~1,000 per game) to re-estimate sigma2
@@ -167,10 +167,15 @@ class Chain:
         ``sigma2`` (residual variance per unit weight, which scales next season's prior
         precisions) is only taken from a season with at least ``MIN_SIGMA2_ROWS`` regression
         rows: a season in progress or an empty partition would otherwise set it to ~0 and
-        make every prior precision vanish."""
+        make every prior precision vanish.
+
+        ``sigma2`` comes from rows weighted by ``seconds x era weight`` (``design.ERA_WEIGHTS``),
+        so for an era-weighted season (2020-21 at 0.5) it is per *weighted* second; it is
+        divided by the era weight to get back to the per-second scale that the next season's
+        unweighted rows use (otherwise 2021-22 would get half-strength priors)."""
         n = idx.n
         if (n_rows is None or n_rows >= MIN_SIGMA2_ROWS) and np.isfinite(sigma2) and sigma2 > 0:
-            self.sigma2 = float(sigma2)
+            self.sigma2 = float(sigma2) / ERA_WEIGHTS.get(str(season), 1.0)
         var = self.sigma2 * inv_diag
         for k, pid in enumerate(idx.ids):
             if toi is not None and float(toi.get(int(pid), 0.0)) <= 0:

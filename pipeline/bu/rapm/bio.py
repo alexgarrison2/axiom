@@ -36,7 +36,7 @@ def fetch_season(paths, season: str, *, refresh: bool = False) -> list[dict]:
     return rows
 
 
-def build_players(paths, seasons, *, refresh_current: str | None = None) -> pd.DataFrame:
+def build_players(paths, seasons, *, refresh_current: str | None = None, write: bool = True) -> pd.DataFrame:
     recs = {}
     for s in sorted(str(x) for x in seasons):
         for r in fetch_season(paths, s, refresh=(s == refresh_current)):
@@ -58,7 +58,8 @@ def build_players(paths, seasons, *, refresh_current: str | None = None) -> pd.D
         df["draft_overall"] = pd.to_numeric(df["draft_overall"], errors="coerce")
         df["draft_year"] = pd.to_numeric(df["draft_year"], errors="coerce")
         df["first_season"] = pd.to_numeric(df["first_season"], errors="coerce")
-    df.to_parquet(paths.players(), index=False)
+    if write:
+        df.to_parquet(paths.players(), index=False)
     return df
 
 

@@ -1,4 +1,5 @@
 {
+  "code_version": "m2-r3",
   "hyper": {
     "v_new": 0.02,
     "kappa": 1.5,
@@ -14,7 +15,7 @@
   "baseline_games": 10,
   "min_rated": 14,
   "degrade": null,
-  "sha256_csv": "b293a72d82302e980eb8201837481bc2c8a73517c64dc473fc01c2175c528af3",
+  "sha256_csv": "d7abd001055f3895aac3ffe785b914f9a5071c718fcf3aebace4ba70c831cb22",
   "seasons": [
     "20102011",
     "20112012",
@@ -31,8 +32,9 @@
     "20222023",
     "20232024",
     "20242025",
-    "20252026"
+    "20252026",
+    "20262027"
   ],
-  "n_games": 20591,
-  "coverage_ok": 0.9986887475110485
+  "n_games": 20599,
+  "coverage_ok": 0.998689256760037
 }

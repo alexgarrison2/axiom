@@ -1,0 +1,338 @@
+"""Live lineup term: season pack, serving bundle and scorer (DESIGN §3.2.2 live wiring, §3.7).
+
+The backtest feature table (``features.build``) replays every lake season.  The live site
+cannot: CI has no historical lake.  So the state is cut in two small JSON files:
+
+``season_pack_<S>.json.gz`` (committed, built once per season from the full lake)
+    the RAPM chain at the start of season S (``bu.rapm.pack``: carried posteriors, aging
+    curve, rookie means, sigma2, covariates, bio) plus the lineup-side state after every game
+    before S: the EV TOI share state (``toi.ShareState``) and each team's last 10 dressed
+    lineups (the ``delta`` baseline).
+
+``serving_bundle.json.gz`` (rebuilt by each refresh)
+    the pack rolled forward through the season's games available now: current ratings
+    (``ratings/latest_season=S`` from ``python -m bu.rapm asof --seed <pack>``; the season
+    prior for every carried player who has not played yet), share state, team histories,
+    the fitted intercept and home term, rookie means and the NHL-id crosswalk for DailyFaceoff
+    names.  ``built_at`` drives the DESIGN §3.2.2 freshness rule.
+
+``LiveLineupTerm.features(home, away, dfo_home, dfo_away)`` turns tonight's DFO projected
+lines (minus out / IR / suspended) into ``bu_d_net`` and ``bu_d_delta`` with exactly the
+per-team arithmetic of the backtest (``features.side_term``).  It never raises on bad input:
+a stale bundle (older than ``MAX_AGE_H``), an unknown team or fewer than ``MIN_RATED`` mapped
+and rated skaters on either side gives ``bu_ok = False`` and neutral (0) model features, the
+same policy the walk-forward used (``evaluate.attach``).
+
+Refresh (from ``pipeline/``; the lake needs only the current season's partition):
+
+    python -m bu.lake.backfill --seasons 2026            # current season PBP + shifts
+    python -m bu.rapm asof --seasons 2026 --seed bu/lineup/out/season_pack_20262027.json.gz
+    python -m bu.lineup serve --season 20262027 --seed bu/lineup/out/season_pack_20262027.json.gz
+"""
+from __future__ import annotations
+
+import gzip
+import json
+import os
+from collections import defaultdict, deque
+from datetime import datetime, timezone
+
+import numpy as np
+import pandas as pd
+
+from bu.lake.build import read_table
+from bu.rapm import pack as rpack
+from bu.rapm.data import ensure_stints, lake_seasons
+from bu.rapm.design import COVARIATES, Index
+from .crosswalk import Resolver, dfo_skaters
+from .features import BASELINE_GAMES, MIN_RATED, lineup_tables, side_term
+from .toi import ShareState, game_shares
+
+BUNDLE_VERSION = 1
+MAX_AGE_H = 36.0
+LIVE_COLUMNS = ("bu_d_net", "bu_d_delta")   # the dev-selected candidate (lineup_eval.json)
+MIN_SKATERS = 10
+
+
+# ----------------------------------------------------------------------- lake replay helpers
+
+def season_shares(paths, seasons, games: pd.DataFrame) -> pd.DataFrame:
+    frames = []
+    for s in seasons:
+        sh = game_shares(ensure_stints(paths, s))
+        if len(sh):
+            frames.append(sh.assign(season=s))
+    if not frames:
+        return pd.DataFrame(columns=["game_id", "player_id", "ev_s", "share", "season", "d"])
+    sh = pd.concat(frames, ignore_index=True).merge(games[["game_id", "d"]], on="game_id")
+    return sh.sort_values(["d", "game_id"], kind="stable").reset_index(drop=True)
+
+
+def replay(state: ShareState, history, shares: pd.DataFrame, games: pd.DataFrame, lineups: dict,
+           pos_group: dict) -> None:
+    """Apply every share row and every dressed lineup (>= MIN_SKATERS) in date order."""
+    for s, sub in shares.groupby("season", sort=True):
+        state.apply(sub, pos_group, s)
+    for g in games.itertuples(index=False):
+        for tid in (int(g.home_team_id), int(g.away_team_id)):
+            lp = lineups.get((int(g.game_id), tid))
+            if lp and len(lp[0]) >= MIN_SKATERS:
+                history[tid].append(lp)
+
+
+def _state_json(state: ShareState) -> dict:
+    return {"columns": ["player_id", "s", "w", "last", "season"],
+            "rows": [[int(p), float(state.s[p]), float(state.w[p]), float(state.last.get(p, np.nan)),
+                      str(state.season.get(p, ""))] for p in state.s],
+            "first_sum": dict(state.first_sum), "first_n": dict(state.first_n)}
+
+
+def _state_from_json(j: dict) -> ShareState:
+    st = ShareState()
+    for p, s, w, last, season in j["rows"]:
+        st.s[int(p)], st.w[int(p)], st.season[int(p)] = float(s), float(w), str(season)
+        if last is not None and np.isfinite(last):
+            st.last[int(p)] = float(last)
+    st.first_sum = {k: float(v) for k, v in j["first_sum"].items()}
+    st.first_n = {k: int(v) for k, v in j["first_n"].items()}
+    return st
+
+
+def _history_json(history) -> dict:
+    return {str(t): [[list(map(int, p)), list(g)] for p, g in dq] for t, dq in history.items()}
+
+
+def _history_from_json(j: dict):
+    h = defaultdict(lambda: deque(maxlen=BASELINE_GAMES))
+    for t, items in (j or {}).items():
+        for p, g in items:
+            h[int(t)].append(([int(x) for x in p], list(g)))
+    return h
+
+
+def _write(path, payload) -> str:
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    tmp = path + ".tmp"
+    with gzip.open(tmp, "wt") as f:
+        json.dump(payload, f, separators=(",", ":"))
+    os.replace(tmp, path)
+    return path
+
+
+def _read(path) -> dict:
+    with gzip.open(path, "rt") as f:
+        return json.load(f)
+
+
+# ----------------------------------------------------------------------- season pack
+
+def build_season_pack(paths, season: str) -> dict:
+    """RAPM prior pack of ``season`` (written by ``bu.rapm asof``) + the lineup state after every
+    lake game of earlier seasons."""
+    p = rpack_path(paths, season)
+    if not os.path.exists(p):
+        raise SystemExit(f"no RAPM prior pack for {season} at {p}: run `python -m bu.rapm asof` through {season}")
+    earlier = [s for s in lake_seasons(paths.lake) if s < str(season)]
+    games, lineups, pos_group = lineup_tables(paths.lake, earlier)
+    state, history = ShareState(), defaultdict(lambda: deque(maxlen=BASELINE_GAMES))
+    if len(games):
+        replay(state, history, season_shares(paths, earlier, games), games, lineups, pos_group)
+    return {"version": BUNDLE_VERSION, "kind": "season_pack", "season": str(season),
+            "built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "lake_seasons": earlier, "rapm": rpack.read(p),
+            "shares": _state_json(state), "history": _history_json(history),
+            "teams": team_ids_from_lake(paths.lake, earlier[-1:]) if earlier else {},
+            "first_pos_group": {str(k): v for k, v in pos_group.items()}}
+
+
+def rpack_path(paths, season) -> str:
+    return os.path.join(paths.root, "prior_pack", f"season={season}.json.gz")
+
+
+# ----------------------------------------------------------------------- serving bundle
+
+def latest_paths(paths, season) -> tuple[str, str]:
+    d = os.path.dirname(paths.ratings(season))
+    return os.path.join(d, f"latest_season={season}.parquet"), os.path.join(d, f"latest_season={season}.json")
+
+
+def _ratings_table(paths, season, seed: rpack.Seed) -> tuple[pd.DataFrame, dict, str | None]:
+    """(player_id, o, d, rated) for the bundle, covariates {name: value}, max_source_date."""
+    p, meta_p = latest_paths(paths, season)
+    if os.path.exists(p) and os.path.exists(meta_p):
+        r = pd.read_parquet(p)
+        with open(meta_p) as f:
+            meta = json.load(f)
+        r["rated"] = (~r["is_new"].astype(bool)) | (r["ev_toi_s"] > 0)
+        return r[["player_id", "o", "d", "rated"]], meta["covariates"], meta.get("max_source_date")
+    # no game of the season yet: the season prior of every carried player
+    idx = Index(sorted(seed.chain.state))
+    b0, _lam, is_new = seed.chain.prior(season, idx, seed.players(), seed.aging, seed.rookie)
+    n = idx.n
+    r = pd.DataFrame({"player_id": idx.ids, "o": b0[:n], "d": b0[n:2 * n], "rated": ~is_new})
+    return r, {c: float(v) for c, v in zip(COVARIATES, b0[2 * n:])}, None
+
+
+def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame | None = None,
+                 now: datetime | None = None) -> dict:
+    """Roll the season pack forward through the season's lake games and attach current ratings."""
+    sp = _read(seed_path)
+    if str(sp["season"]) != str(season):
+        raise SystemExit(f"season pack is for {sp['season']}, not {season}")
+    seed = rpack.Seed(sp["rapm"])
+    state = _state_from_json(sp["shares"])
+    history = _history_from_json(sp["history"])
+    pos_group = {int(k): v for k, v in (sp.get("first_pos_group") or {}).items()}
+    have = str(season) in lake_seasons(paths.lake)
+    games, lineups, pg_now = lineup_tables(paths.lake, [season]) if have else (pd.DataFrame(), {}, {})
+    for k, v in pg_now.items():
+        pos_group.setdefault(k, v)
+    if len(games):
+        replay(state, history, season_shares(paths, [season], games), games, lineups, pos_group)
+    ratings, cov, src = _ratings_table(paths, season, seed)
+    means = seed.rookie.means
+    rookie = {g: [means.get((g, "all", "o"), 0.0), means.get((g, "all", "d"), 0.0)] for g in ("F", "D")}
+    teams = {}
+    if len(games):
+        for a, t in list(zip(games["home_abbrev"], games["home_team_id"])) + list(zip(games["away_abbrev"],
+                                                                                    games["away_team_id"])):
+            teams[str(a)] = int(t)
+    now = now or datetime.now(timezone.utc)
+    out = {"version": BUNDLE_VERSION, "kind": "serving_bundle", "season": str(season),
+           "built_at": now.isoformat(timespec="seconds"), "max_source_date": src,
+           "n_games": int(len(games)), "hyper": seed.hyper.as_dict(), "columns": list(LIVE_COLUMNS),
+           "covariates": {"intercept": float(cov.get("intercept", np.nan)), "home": float(cov.get("home", np.nan))},
+           "rookie": rookie,
+           "players": {"columns": ["player_id", "o", "d", "rated"],
+                       "rows": [[int(p), float(o), float(d), bool(rt)] for p, o, d, rt in
+                                ratings[["player_id", "o", "d", "rated"]].itertuples(index=False)]},
+           "shares": _state_json(state), "history": _history_json(history),
+           "teams": {**sp.get("teams", {}), **teams},
+           "crosswalk": None}
+    if crosswalk is not None and len(crosswalk):
+        cols = ["player_id", "norm", "last", "team", "sweater", "rank"]
+        cw = crosswalk[cols].copy()
+        cw["sweater"] = pd.to_numeric(cw["sweater"], errors="coerce")
+        out["crosswalk"] = {"columns": cols, "rows": [[int(p), n, la, t, None if pd.isna(s) else int(s), int(r)]
+                                                      for p, n, la, t, s, r in cw.itertuples(index=False)]}
+    return out
+
+
+def team_ids_from_lake(lake, seasons) -> dict:
+    g = read_table(lake, "games", seasons, columns=["home_abbrev", "home_team_id"])
+    if g.empty:
+        return {}
+    return {str(a): int(t) for a, t in zip(g["home_abbrev"], g["home_team_id"])}
+
+
+# ----------------------------------------------------------------------- live scorer
+
+class LiveLineupTerm:
+    """Tonight's lineup term from a serving bundle (see module docstring)."""
+
+    def __init__(self, bundle: dict, max_age_h: float = MAX_AGE_H):
+        if int(bundle.get("version", 0)) != BUNDLE_VERSION or bundle.get("kind") != "serving_bundle":
+            raise ValueError("not a serving bundle of version %s" % BUNDLE_VERSION)
+        self.b = bundle
+        self.max_age_h = float(max_age_h)
+        self.built_at = datetime.fromisoformat(bundle["built_at"])
+        cols = bundle["players"]["columns"]
+        self.ratings = {int(r[0]): (float(r[cols.index("o")]), float(r[cols.index("d")]), bool(r[cols.index("rated")]))
+                        for r in bundle["players"]["rows"]}
+        self.rookie = {g: tuple(v) for g, v in bundle["rookie"].items()}
+        self.state = _state_from_json(bundle["shares"])
+        self.history = _history_from_json(bundle["history"])
+        self.teams = {str(k): int(v) for k, v in (bundle.get("teams") or {}).items()}
+        cw = bundle.get("crosswalk")
+        self.resolver = Resolver(pd.DataFrame(cw["rows"], columns=cw["columns"])) if cw else None
+
+    @classmethod
+    def load(cls, path: str, **kw) -> "LiveLineupTerm":
+        return cls(_read(path), **kw)
+
+    def age_hours(self, now: datetime | None = None) -> float:
+        now = now or datetime.now(timezone.utc)
+        return (now - self.built_at).total_seconds() / 3600.0
+
+    def _rate(self, pids, groups):
+        o, d, rated = [], [], 0
+        for p, g in zip(pids, groups):
+            if p in self.ratings:
+                a, b, r = self.ratings[p]
+            else:
+                (a, b), r = self.rookie.get(g, (0.0, 0.0)), False
+            o.append(a); d.append(b); rated += int(r)  # noqa: E702
+        return np.array(o), np.array(d), rated
+
+    def resolve(self, team: str, dfo_team: dict | None) -> tuple[list, list, list]:
+        """DFO projected skaters (minus out / IR / suspended) -> (pids, groups, unmapped names)."""
+        pids, groups, unmapped = [], [], []
+        for p in dfo_skaters({team: dfo_team or {}}, team):
+            pid = None
+            if self.resolver is not None:
+                pid, _how = self.resolver.resolve(team, p["name"], p["number"])
+            if pid is None:
+                unmapped.append(p["name"])
+            elif pid not in pids:
+                pids.append(int(pid)); groups.append(p["group"])  # noqa: E702
+        return pids, groups, unmapped
+
+    def side(self, team: str, pids, groups) -> dict:
+        tid = self.teams.get(team)
+        past = list(self.history.get(tid, ())) if tid is not None else []
+        t = side_term(self.state, pids, groups, self._rate, past)
+        return {"team": team, "n": len(pids), **t}
+
+    def features(self, home: str, away: str, dfo_home: dict | None, dfo_away: dict | None,
+                 now: datetime | None = None, ids_home=None, ids_away=None) -> dict:
+        """Model features (neutral when ``bu_ok`` is False) plus per-side detail.
+
+        ``ids_home`` / ``ids_away``: optional already-resolved ``[(player_id, 'F'|'D'), ...]``
+        lists that replace the DFO lookup (e.g. a confirmed boxscore lineup)."""
+        out = {c: 0.0 for c in LIVE_COLUMNS}
+        out.update({"bu_ok": False, "reason": None, "bundle_built_at": self.b["built_at"],
+                    "bundle_age_h": round(self.age_hours(now), 2), "home": None, "away": None})
+        try:
+            if out["bundle_age_h"] > self.max_age_h:
+                out["reason"] = f"stale bundle ({out['bundle_age_h']:.0f} h > {self.max_age_h:.0f} h)"
+                return out
+            sides = {}
+            for key, team, dfo, ids in (("home", home, dfo_home, ids_home), ("away", away, dfo_away, ids_away)):
+                if ids is not None:
+                    pids, groups, unmapped = [int(p) for p, _ in ids], [g for _, g in ids], []
+                else:
+                    pids, groups, unmapped = self.resolve(team, dfo)
+                if len(pids) < MIN_SKATERS:
+                    out[key] = {"team": team, "n": len(pids), "unmapped": unmapped}
+                    out["reason"] = f"{team}: {len(pids)} mapped skaters"
+                    return out
+                s = self.side(team, pids, groups)
+                s["unmapped"] = unmapped
+                out[key] = sides[key] = s
+            h, a = sides["home"], sides["away"]
+            ok = h["rated"] >= MIN_RATED and a["rated"] >= MIN_RATED
+            if not ok:
+                out["reason"] = f"coverage: {h['rated']}/{a['rated']} rated (< {MIN_RATED})"
+                return out
+            out["bu_ok"] = True
+            out["bu_d_net"] = float(h["net"] - a["net"])
+            out["bu_d_delta"] = float(h["delta"] - a["delta"])
+            return out
+        except Exception as e:      # never break the prediction run
+            out["reason"] = f"error: {e}"
+            out["bu_ok"] = False
+            for c in LIVE_COLUMNS:
+                out[c] = 0.0
+            return out
+
+
+def write_bundle(path: str, bundle: dict) -> str:
+    return _write(path, bundle)
+
+
+def write_pack(path: str, pack: dict) -> str:
+    return _write(path, pack)
+
+
+def read(path: str) -> dict:
+    return _read(path)

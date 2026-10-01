@@ -13,4 +13,5 @@ Modules (run from ``pipeline/``: ``python -m bu.rapm --help``):
   priors    summer roll-forward: last season's posterior + aging -> this season's prior
   asof      point-in-time ratings by date (no future data, availability lag)
   validate  DESIGN §3.2.2 stint-level next-30-day test vs team-only / no-prior / prior-only
+  pack      season-start prior pack (chain + aging + rookie means) for a one-season seeded refit
 """

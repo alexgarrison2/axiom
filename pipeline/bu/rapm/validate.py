@@ -37,12 +37,15 @@ N_BOOT = 2000
 
 V_GRID = (0.01, 0.02, 0.03, 0.04)
 K_GRID = (1.0, 1.25, 1.5, 2.5, 4.0, 6.0)   # 1.0/1.25 added in review: 1.5 was the grid edge
+ABLATION_POINTS = ((0.02, 1.25), (0.02, 1.5), (0.03, 1.25))
 
 
 def default_grid() -> list[Hyper]:
     grid = [Hyper(v_new=v, kappa=k) for v, k in itertools.product(V_GRID, K_GRID)]
-    # ablations (DESIGN §3.2.1 components): no aging curve / no rookie mean, at two grid points
-    for v, k in ((0.02, 2.5), (0.03, 4.0)):
+    # ablations (DESIGN §3.2.1 components): no aging curve / no rookie mean, at the grid points
+    # around the selected optimum (the full-lake runs select v0.02-0.03, kappa 1.25-1.5), so the
+    # report can state each component's value at the chosen setting
+    for v, k in ABLATION_POINTS:
         grid += [Hyper(v_new=v, kappa=k, use_aging=False), Hyper(v_new=v, kappa=k, use_rookie_mean=False)]
     return grid
 
@@ -196,7 +199,8 @@ def summarize(res: dict, tune_seasons, dev_seasons, report_seasons) -> dict:
             "tuning_mse": {k: round(v, 5) for k, v in sorted(by_model_tune.items(), key=lambda kv: kv[1])},
             "folds": folds, "gate": gate,
             "stability": {"per_tuning_season": stability, "within_one_step": stability_ok},
-            "ablations": ablations, "selected_key": full_key}
+            "ablations": ablations, "selected_key": full_key,
+            "ablations_at_selected": {k: v for k, v in ablations.items() if v["vs"] == full_key}}
 
 
 def _grid_steps(a: str, b: str) -> int:

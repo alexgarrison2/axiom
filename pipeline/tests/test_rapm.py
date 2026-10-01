@@ -379,6 +379,19 @@ def test_sigma2_not_taken_from_a_tiny_season():
     assert c.state[1][2] == pytest.approx(1160.0 * 1e-6)
 
 
+def test_sigma2_from_an_era_weighted_season_is_per_second():
+    """2020-21 rows carry weight 0.5 x seconds, so its residual variance per unit weight is
+    half the per-second value; the next season's prior precision must not be halved."""
+    from bu.rapm.design import ERA_WEIGHTS
+    assert ERA_WEIGHTS["20202021"] == 0.5
+    c = Chain(Hyper())
+    idx = Index([1])
+    c.update("20202021", idx, np.zeros(idx.p), np.full(idx.p, 1e-6), 600.0, pd.Series({1: 60.0}))
+    assert c.sigma2 == pytest.approx(1200.0)
+    c.update("20212022", idx, np.zeros(idx.p), np.full(idx.p, 1e-6), 1150.0, pd.Series({1: 60.0}))
+    assert c.sigma2 == pytest.approx(1150.0)
+
+
 def _mini_lake(root, n_games_second):
     """Season 1: 8 game days; season 2: ``n_games_second`` games (0 = one game whose shift chart
     has not arrived: PBP, lineups and shots only)."""
@@ -444,3 +457,123 @@ def test_season_in_progress_zero_or_one_game(tmp_path, n_games_second):
     assert np.isfinite(row["bu_d_net"]) and np.isfinite(row["bu_h_xgf60"])
     assert row["max_source_date"] is None or pd.isna(row["max_source_date"]) \
         or pd.Timestamp(row["max_source_date"]) <= pd.Timestamp(row["game_date"]) - pd.Timedelta(days=LAG_DAYS)
+
+
+# ------------------------------------------------------------ live refresh: seeded refit + serving bundle
+
+
+def _copy_season(src: Lake, dst: Lake, season: str) -> None:
+    import shutil
+    for t in ("games", "shifts", "events", "shots", "lineups"):
+        p = src.table_path(t, season)
+        if os.path.exists(p):
+            os.makedirs(os.path.dirname(dst.table_path(t, season)), exist_ok=True)
+            shutil.copyfile(p, dst.table_path(t, season))
+
+
+def test_seeded_refit_and_live_term_match_the_backtest(synth, tmp_path):
+    """The live path (season pack -> seeded asof -> serving bundle -> LiveLineupTerm) gives the
+    same numbers as the backtest: the seeded refit of a season equals the full chain, and at
+    the season's first game the live term equals the feature-table row (train/serve parity)."""
+    lake, paths, players, seasons, xg_path = synth
+    h = Hyper(v_new=0.02, kappa=2.0)
+    A.run(paths, seasons, players, h, source=xg_path, log=lambda *a: None)
+    S = seasons[1]
+    pack_p = os.path.join(paths.root, "prior_pack", f"season={S}.json.gz")
+    assert os.path.exists(pack_p)
+
+    seeded = RapmPaths(lake, str(tmp_path / "seeded"))
+    A.run(seeded, [S], players, h, source=xg_path, log=lambda *a: None, seed=pack_p)
+    a, b = pd.read_parquet(paths.ratings(S)), pd.read_parquet(seeded.ratings(S))
+    assert len(a) == len(b) and (a["player_id"].to_numpy() == b["player_id"].to_numpy()).all()
+    assert np.allclose(a[["o", "d"]].to_numpy(), b[["o", "d"]].to_numpy(), atol=1e-10)
+    la = pd.read_parquet(os.path.join(os.path.dirname(paths.ratings(S)), f"latest_season={S}.parquet"))
+    lb = pd.read_parquet(os.path.join(os.path.dirname(seeded.ratings(S)), f"latest_season={S}.parquet"))
+    assert np.allclose(la[["o", "d"]].to_numpy(), lb[["o", "d"]].to_numpy(), atol=1e-10)
+    with pytest.raises(SystemExit):
+        A.run(seeded, seasons, players, h, source=xg_path, log=lambda *a: None, seed=pack_p)
+
+    from bu.lineup import serve as SV
+    from bu.lineup.features import build
+    F = build(paths, seasons, log=lambda *a: None)
+    pack_file = SV.write_pack(str(tmp_path / "season_pack.json.gz"), SV.build_season_pack(paths, S))
+    pre = Lake(str(tmp_path / "pre"))            # the lake on the eve of season S
+    _copy_season(lake, pre, seasons[0])
+    bundle = SV.build_bundle(RapmPaths(pre, str(tmp_path / "pre_state")), S, pack_file)
+    assert bundle["n_games"] == 0 and bundle["max_source_date"] is None
+    term = SV.LiveLineupTerm(SV.read(SV.write_bundle(str(tmp_path / "bundle.json.gz"), bundle)))
+    first_day = F[F["season"] == S]["game_date"].min()
+    lu = pd.read_parquet(lake.table_path("lineups", S))
+    lu = lu[(lu["status"] == "dressed") & ~lu["is_goalie"]]
+    opening = F[(F["season"] == S) & (F["game_date"] == first_day)]
+    assert len(opening) == 2 and opening["bu_ok"].all() and (opening["bu_d_net"].abs() > 1e-3).all()
+    for row in opening.itertuples():
+        ids = {t: [(int(p), "D" if pos == "D" else "F") for p, pos in
+                   zip(*lu[(lu["game_id"] == row.game_id) & (lu["team_id"] == t)][["player_id", "position"]]
+                       .to_numpy().T)]
+               for t in (row.home_team_id, row.away_team_id)}
+        out = term.features(row.home_abbrev, row.away_abbrev, None, None,
+                            ids_home=ids[row.home_team_id], ids_away=ids[row.away_team_id])
+        assert out["bu_ok"] == bool(row.bu_ok), out["reason"]
+        assert out["bu_d_net"] == pytest.approx(row.bu_d_net, abs=1e-9)
+        assert out["bu_d_delta"] == pytest.approx(row.bu_d_delta, abs=1e-9)
+
+    # rolled through the season's games: ratings = the seeded latest fit, share state moved on
+    rolled = SV.build_bundle(seeded, S, pack_file)
+    assert rolled["n_games"] == len(F[F["season"] == S]) and rolled["max_source_date"] is not None
+    assert rolled["shares"] != bundle["shares"]
+
+
+def _bundle(now, built_hours_ago=1.0):
+    from datetime import timedelta
+    from bu.lineup import serve as SV
+    from bu.lineup.toi import ShareState
+    rows, cw = [], []
+    for team, abbrev, q in ((1, "AAA", 0.2), (2, "BBB", -0.2)):
+        F, D, _ = _players(team)
+        for k, p in enumerate(F + D):
+            rows.append([p, q, -q, True])
+            cw.append([p, f"player {p}", str(p), abbrev, k + 1, 0])
+    return {"version": SV.BUNDLE_VERSION, "kind": "serving_bundle", "season": "20262027",
+            "built_at": (now - timedelta(hours=built_hours_ago)).isoformat(), "max_source_date": None,
+            "n_games": 0, "hyper": {}, "columns": list(SV.LIVE_COLUMNS),
+            "covariates": {"intercept": 2.5, "home": 0.1}, "rookie": {"F": [0.0, 0.0], "D": [0.0, 0.0]},
+            "players": {"columns": ["player_id", "o", "d", "rated"], "rows": rows},
+            "shares": SV._state_json(ShareState()), "history": {}, "teams": {"AAA": 1, "BBB": 2},
+            "crosswalk": {"columns": ["player_id", "norm", "last", "team", "sweater", "rank"], "rows": cw}}
+
+
+def _dfo(team, out=()):
+    F, D, _ = _players(team)
+    lines = {f"f{i + 1}": [{"name": f"Player {p}", "number": None,
+                            "injuryStatus": "IR" if p in out else None} for p in F[3 * i:3 * i + 3]]
+             for i in range(4)}
+    lines.update({f"d{i + 1}": [{"name": f"Player {p}", "number": None,
+                                 "injuryStatus": "IR" if p in out else None} for p in D[2 * i:2 * i + 2]]
+                  for i in range(3)})
+    return lines
+
+
+def test_live_term_dfo_names_and_guards():
+    from datetime import datetime, timezone
+    from bu.lineup import serve as SV
+    now = datetime(2026, 10, 1, 18, tzinfo=timezone.utc)
+    term = SV.LiveLineupTerm(_bundle(now))
+    out = term.features("AAA", "BBB", _dfo(1), _dfo(2), now=now)
+    assert out["bu_ok"] and out["home"]["n"] == 18 and out["home"]["rated"] == 18
+    assert out["bu_d_net"] == pytest.approx(2 * (5 * 0.2 + 5 * 0.2), rel=1e-9)   # shares sum to 5 per side
+    assert out["bu_d_delta"] == 0.0                                                # no baseline yet
+    # injured (IR) skaters are dropped; under 14 rated -> neutral, with the reason
+    F, D, _ = _players(1)
+    hurt = set(F[:5])
+    out = term.features("AAA", "BBB", _dfo(1, out=hurt), _dfo(2), now=now)
+    assert out["home"]["n"] == 13 and not out["bu_ok"] and out["bu_d_net"] == 0.0 and "coverage" in out["reason"]
+    # unknown names / unknown team: neutral, never raises
+    out = term.features("ZZZ", "BBB", _dfo(9), _dfo(2), now=now)
+    assert not out["bu_ok"] and out["bu_d_net"] == 0.0 and "mapped" in out["reason"]
+    out = term.features("AAA", "BBB", None, {"f1": "garbage"}, now=now)
+    assert not out["bu_ok"] and out["bu_d_net"] == 0.0
+    # stale bundle (DESIGN §3.2.2 bu_state_freshness: > 36 h) -> neutral
+    stale = SV.LiveLineupTerm(_bundle(now, built_hours_ago=40))
+    out = stale.features("AAA", "BBB", _dfo(1), _dfo(2), now=now)
+    assert not out["bu_ok"] and out["bu_d_net"] == 0.0 and "stale" in out["reason"]

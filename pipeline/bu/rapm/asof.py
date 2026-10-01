@@ -15,7 +15,15 @@ a stint from a game dated after ``d - LAG_DAYS``; ``max_source_date`` is stored 
 Outputs (``RapmPaths``): ``ratings/season=S.parquet`` (asof, player_id, o, d, o_sd, d_sd,
 is_new, ev_toi_s, max_source_date) and ``ratings/cov_season=S.parquet`` (asof + the fitted
 covariates).  Posterior SDs are exact and refreshed weekly (Mondays and the first date),
-NaN on other dates.
+NaN on other dates.  Per season also:
+
+* ``prior_pack/season=S.json.gz``: the season-start chain (``bu.rapm.pack``), so the season can
+  later be refit alone (``seed=``, the live refresh: CI has only the current season's lake);
+* ``ratings/prior_season=S.parquet``: the season prior of every carried or new player (what a
+  dressed skater with no EV time yet this season is rated at);
+* ``ratings/latest_season=S.parquet`` + ``.json``: the fit on *all* the season's available
+  stints (the live ratings), the prior for carried players who have not played, the fitted
+  covariates and ``max_source_date``.
 """
 from __future__ import annotations
 
@@ -29,6 +37,8 @@ import pandas as pd
 from .aging import fit_aging
 from .design import COVARIATES
 from .engine import LAG_DAYS, SeasonData, avail_dates, fit_standalone
+from . import pack as rpack
+from .design import Index
 from .priors import Chain, Hyper, RookieModel
 from .ridge import Gram
 from bu.lake.build import read_table
@@ -57,17 +67,53 @@ def _per_avail_toi(sd: SeasonData) -> pd.DataFrame:
     return _per_day_toi(tmp).sort_values("game_date", kind="stable").reset_index(drop=True)
 
 
-def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: str = "v1", log=print) -> dict:
+def _side_paths(paths, S):
+    d = os.path.dirname(paths.ratings(S))
+    return {"prior": os.path.join(d, f"prior_season={S}.parquet"),
+            "latest": os.path.join(d, f"latest_season={S}.parquet"),
+            "latest_meta": os.path.join(d, f"latest_season={S}.json"),
+            "pack": os.path.join(paths.root, "prior_pack", f"season={S}.json.gz")}
+
+
+def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: str = "v1", log=print,
+        seed: str | None = None) -> dict:
+    """``seed``: a prior pack (``bu.rapm.pack`` / a lineup season pack) for ``seasons == [S]``:
+    the season is refit from the pack's chain, aging curve and rookie means instead of
+    replaying earlier seasons (same numbers as the full chain)."""
     chain = Chain(hyper)
     standalone: dict[str, pd.DataFrame] = {}
-    summary = {"hyper": hyper.as_dict(), "lag_days": LAG_DAYS, "xg_source": source, "seasons": {}}
+    seeded = None
+    if seed is not None:
+        seeded = rpack.Seed.load(seed)
+        if [str(s) for s in seasons] != [seeded.season]:
+            raise SystemExit(f"a prior pack for {seeded.season} can only seed that season, not {seasons}")
+        if seeded.hyper != hyper:
+            log(f"  [asof] using the pack's hyper-parameters {seeded.hyper.key()} (not {hyper.key()})")
+            hyper = seeded.hyper
+        chain = seeded.chain
+        players = seeded.players(players)
+    summary = {"hyper": hyper.as_dict(), "lag_days": LAG_DAYS, "xg_source": source, "seasons": {},
+               "seed": os.path.basename(seed) if seed else None}
     for S in seasons:
         t0 = time.time()
+        sp = _side_paths(paths, S)
         sd = SeasonData.load(paths, S, source)
-        aging = fit_aging(standalone, players, S)
-        rookie = RookieModel.fit(standalone, players, S)
+        if seeded is not None:
+            aging, rookie = seeded.aging, seeded.rookie
+        else:
+            aging = fit_aging(standalone, players, S)
+            rookie = RookieModel.fit(standalone, players, S)
+            rpack.write(sp["pack"], rpack.to_json(S, chain, aging, rookie, players))
         b0, lam, is_new = chain.prior(S, sd.idx, players, aging, rookie)
         n = sd.idx.n
+        # season prior of every carried or new player (dressed skaters with no EV time yet)
+        idx_all = Index(set(chain.state) | set(int(p) for p in sd.idx.ids))
+        b0a, lama, newa = chain.prior(S, idx_all, players, aging, rookie)
+        na = idx_all.n
+        prior_all = pd.DataFrame({"player_id": idx_all.ids, "o": b0a[:na], "d": b0a[na:2 * na],
+                                  "o_sd": np.sqrt(chain.sigma2 / lama[:na]),
+                                  "d_sd": np.sqrt(chain.sigma2 / lama[na:2 * na]), "is_new": newa})
+        prior_all.to_parquet(sp["prior"], index=False)
         sched = read_table(paths.lake, "games", [S], columns=["game_date"])
         dates = np.unique(pd.to_datetime(sched["game_date"]).values.astype("datetime64[D]"))
         toi_day = _per_avail_toi(sd)
@@ -111,15 +157,30 @@ def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: 
         G = sd.full_gram()
         bf, inv = G.solve(lam, b0, want_inv=True)
         s2 = G.sigma2(bf)
+        # live ratings: the fit on every available stint of the season + the prior for the rest
+        sdf = np.sqrt(chain.sigma2 * inv)
+        fit = pd.DataFrame({"player_id": sd.idx.ids, "o": bf[:n], "d": bf[n:2 * n], "o_sd": sdf[:n],
+                            "d_sd": sdf[n:2 * n], "is_new": is_new,
+                            "ev_toi_s": sd.toi.reindex(sd.idx.ids).fillna(0.0).to_numpy()})
+        rest = prior_all[~prior_all["player_id"].isin(fit["player_id"])].assign(ev_toi_s=0.0)
+        pd.concat([fit, rest], ignore_index=True).to_parquet(sp["latest"], index=False)
+        last_src = sd.max_source_date(len(sd.rows))
+        with open(sp["latest_meta"], "w") as f:
+            json.dump({"season": S, "covariates": {c: float(v) for c, v in zip(COVARIATES, bf[2 * n:])},
+                       "max_source_date": None if pd.isna(last_src) else str(last_src),
+                       "n_rows": int(len(sd.rows)), "hyper": hyper.as_dict(), "xg_source": source,
+                       "seeded": bool(seeded)}, f, indent=1)
         chain.update(S, sd.idx, bf, inv, s2, sd.toi, n_rows=len(sd.rows))
         post = chain.table()
         post.to_parquet(paths.posterior(S), index=False)
-        standalone[S] = fit_standalone(sd, G)
+        if seeded is None:
+            standalone[S] = fit_standalone(sd, G)
         summary["seasons"][S] = {"n_dates": int(len(dates)), "n_skaters": int(n), "sigma2": s2,
                                  "aging": aging.to_json(), "rookie": rookie.to_json(),
                                  "seconds": round(time.time() - t0, 1)}
         log(f"  [asof] {S}: {len(dates)} dates x {n} skaters in {time.time() - t0:.0f}s")
-    with open(paths.report("asof_summary.json"), "w") as f:
+    name = "asof_summary.json" if seeded is None else f"asof_summary_seeded_{seasons[0]}.json"
+    with open(paths.report(name), "w") as f:  # a seeded refit never overwrites the full-chain summary
         json.dump(summary, f, indent=2, default=float)
     return summary
 

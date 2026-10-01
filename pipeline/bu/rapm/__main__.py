@@ -3,6 +3,7 @@
   python -m bu.rapm stints   [--seasons 2018-2025] [--xg v1|<parquet dir>]   # xG + stints cache
   python -m bu.rapm validate [--seasons 2018-2025] --tune 2021,2022 --dev 2023,2024
   python -m bu.rapm asof     [--seasons 2018-2026] [--hyper reports/rapm_validation.json]
+  python -m bu.rapm asof     --seasons 2026 --seed bu/lineup/out/season_pack_20262027.json.gz   # live refresh
   python -m bu.rapm all      # bios, stints, validate, asof with the tuned setting
 
 ``--seasons`` defaults to every season with a built ``shifts`` partition in the lake
@@ -103,6 +104,18 @@ def cmd_validate(args, paths, seasons):
 def cmd_asof(args, paths, seasons):
     from . import asof as A
     from .priors import Hyper
+    if args.seed:
+        # live refresh: one season from its prior pack; only that season's bio is needed (the
+        # pack carries the bio of every returning player) and the full bio table is not touched
+        from .bio import build_players
+        from .pack import Seed
+        seed = Seed.load(args.seed)
+        if len(seasons) != 1 or seasons[0] != seed.season:
+            raise SystemExit(f"--seed {os.path.basename(args.seed)} is for {seed.season}; pass --seasons {seed.season[:4]}")
+        players = build_players(paths, seasons, refresh_current=args.refresh_bio, write=False)
+        summ = A.run(paths, seasons, players, seed.hyper, source=args.xg, seed=args.seed)
+        print(f"  [asof] seeded {seed.season}: {paths.ratings(seed.season)}")
+        return summ
     players = _players(paths, seasons, refresh_current=args.refresh_bio)
     hp = args.hyper or paths.report("rapm_validation.json")
     if os.path.exists(hp):
@@ -129,6 +142,8 @@ def main(argv=None) -> int:
     ap.add_argument("--dev", default="2023,2024", help="dev folds (DESIGN §1.5)")
     ap.add_argument("--hyper", default=None, help="validation report whose selected_hyper to use")
     ap.add_argument("--refresh-bio", default=None, help="season id whose bio payload to re-fetch")
+    ap.add_argument("--seed", default=None, help="asof: refit one season from its prior pack "
+                    "(bu/lineup/out/season_pack_<S>.json.gz) without replaying earlier seasons (live refresh)")
     ap.add_argument("--rebuild", action="store_true")
     ap.add_argument("--tag", default=None, help="validate: report suffix for a sensitivity run "
                     "(rapm_validation_<tag>.json), so the main report is not overwritten")

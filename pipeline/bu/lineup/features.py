@@ -3,8 +3,9 @@
 For every game in the lake (types 02/03), in date order:
 
 * ratings = RAPM v2 state as of the game date (``bu.rapm.asof``: games up to d - LAG_DAYS);
-  a dressed skater with no EV time yet this season takes his carried posterior from the
-  previous season, else the season's rookie mean for his position group;
+  a dressed skater outside the season's rating table takes his season prior (carried
+  posterior + aging, ``ratings/prior_season=S``), else the season's rookie mean for his
+  position group (not counted as rated);
 * shares = expected EV TOI shares (``toi.ShareState``, games up to d - LAG_DAYS),
   renormalised so forwards sum to 3 and defencemen to 2;
 * team 5v5 rates (xG/60), with the fitted intercept and home term at that date:
@@ -52,20 +53,55 @@ def _group(pos) -> str:
     return "D" if pos == "D" else "F"
 
 
-def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
-    lake = paths.lake
+def lineup_tables(lake, seasons):
+    """(regular-season + playoff games sorted by date, {(game_id, team_id): (pids, groups)} of
+    dressed skaters, position group at each skater's first dressed game).  The first game's
+    position is what the TOI slot prior uses, and it is known at that game (no later info)."""
     games = read_table(lake, "games", seasons, columns=["game_id", "season", "game_date", "game_type",
                                                         "home_team_id", "away_team_id", "home_abbrev",
                                                         "away_abbrev"])
+    if games.empty:
+        return games, {}, {}
     games = games[games["game_type"].isin([2, 3])].copy()
     games["d"] = pd.to_datetime(games["game_date"]).values.astype("datetime64[D]")
     games = games.sort_values(["d", "game_id"]).reset_index(drop=True)
     lu = read_table(lake, "lineups", seasons, columns=["game_id", "team_id", "player_id", "position", "is_goalie",
                                                       "status"])
+    if lu.empty:
+        return games, {}, {}
     lu = lu[(lu["status"] == "dressed") & ~lu["is_goalie"].astype("boolean").fillna(False)]
     lineups = {(int(g), int(t)): (sub["player_id"].astype(int).tolist(), [_group(p) for p in sub["position"]])
                for (g, t), sub in lu.groupby(["game_id", "team_id"])}
-    pos_group = {int(p): _group(x) for p, x in zip(lu["player_id"], lu["position"])}
+    first = lu.sort_values("game_id", kind="stable").drop_duplicates("player_id")
+    return games, lineups, {int(p): _group(x) for p, x in zip(first["player_id"], first["position"])}
+
+
+def side_term(state: ShareState, pids, groups, rate, past_lineups) -> dict:
+    """One team's lineup term (shared by the backtest table and the live scorer).
+
+    ``rate(pids, groups) -> (o, d, n_rated)``; ``past_lineups``: the team's previous dressed
+    lineups (oldest first, at most ``BASELINE_GAMES``), re-rated with tonight's ratings and
+    shares so the team's usual lineup is exactly neutral."""
+    s_ = lineup_shares(state, pids, groups)
+    o, df, rated = rate(pids, groups)
+    off, dfn = float(s_ @ o), float(s_ @ df)
+    past = []
+    for ppids, pgroups in past_lineups:
+        ps = lineup_shares(state, ppids, pgroups)
+        po, pdf, _ = rate(ppids, pgroups)
+        past.append(float(ps @ (po - pdf)))
+    net = off - dfn
+    enough = len(past) >= MIN_BASELINE
+    return {"off": off, "def": dfn, "rated": int(rated), "net": net,
+            "delta": net - float(np.mean(past)) if enough else 0.0,
+            # L-asof (DESIGN §4.2): the team's previous dressed 18 instead of tonight's
+            "net_asof": past[-1] if past else np.nan,
+            "delta_asof": past[-1] - float(np.mean(past)) if enough else 0.0}
+
+
+def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
+    lake = paths.lake
+    games, lineups, pos_group = lineup_tables(lake, seasons)
 
     from bu.rapm.data import ensure_stints
     shares = []
@@ -101,7 +137,14 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
     for i, s in enumerate(seasons):
         prev = seasons[i - 1] if i else None
         fb = {}
-        if prev and os.path.exists(paths.posterior(prev)):
+        pp = os.path.join(os.path.dirname(paths.ratings(s)), f"prior_season={s}.parquet")
+        if os.path.exists(pp):
+            # the season prior (last posterior + aging) of every carried player: what the live
+            # scorer uses for a skater who has not played yet this season
+            pr = pd.read_parquet(pp)
+            pr = pr[~pr["is_new"].astype(bool)]
+            fb = {int(p): (o, d) for p, o, d in zip(pr["player_id"], pr["o"], pr["d"])}
+        elif prev and os.path.exists(paths.posterior(prev)):
             post = pd.read_parquet(paths.posterior(prev))
             fb = {int(p): (o, d) for p, o, d in zip(post["player_id"], post["o"], post["d"])}
         fallback[s] = fb
@@ -163,22 +206,15 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
                     a_ = actual.get((int(g["game_id"]), int(p_)))
                     if a_ is not None:
                         toi_err.append((S, abs(e_ - a_), abs(l_ - a_)))
-                o, df, rated = rate(pids, groups)
-                row[f"bu_{side}_off"] = float(s_ @ o)
-                row[f"bu_{side}_def"] = float(s_ @ df)
+                t = side_term(state, pids, groups, rate, history[tid])
+                row[f"bu_{side}_off"] = t["off"]
+                row[f"bu_{side}_def"] = t["def"]
                 row[f"bu_{side}_n"] = len(pids)
-                row[f"bu_{side}_rated"] = rated
-                past = []
-                for ppids, pgroups in history[tid]:
-                    ps = lineup_shares(state, ppids, pgroups)
-                    po, pdf, _ = rate(ppids, pgroups)
-                    past.append(float(ps @ (po - pdf)))
-                net = row[f"bu_{side}_off"] - row[f"bu_{side}_def"]
-                row[f"bu_{side}_delta"] = net - float(np.mean(past)) if len(past) >= MIN_BASELINE else 0.0
-                # L-asof (DESIGN §4.2): the team's previous dressed 18 instead of tonight's
-                row[f"bu_{side}_net_asof"] = past[-1] if past else np.nan
-                row[f"bu_{side}_delta_asof"] = past[-1] - float(np.mean(past)) if len(past) >= MIN_BASELINE else 0.0
-                ok = ok and rated >= MIN_RATED
+                row[f"bu_{side}_rated"] = t["rated"]
+                row[f"bu_{side}_delta"] = t["delta"]
+                row[f"bu_{side}_net_asof"] = t["net_asof"]
+                row[f"bu_{side}_delta_asof"] = t["delta_asof"]
+                ok = ok and t["rated"] >= MIN_RATED
             c0, ch = cov_by.get((S, d), (np.nan, np.nan))
             row["c_intercept"], row["c_home"] = c0, ch
             row["bu_ok"] = bool(ok)
