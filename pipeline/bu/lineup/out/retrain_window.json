@@ -1,0 +1,146 @@
+{
+ "generated_at": "2026-10-01T23:42:01.561287+00:00",
+ "candidate_version": "logit-elo-v5-20261001-xg2-rapm",
+ "replaced": "logit-elo-v5-20261001-xg2-rapm",
+ "promoted": true,
+ "rule": "owner decision 2026-10-01 (window prior directive): ship the window prior and retrain the game model unless the game-level pooled delta log loss is worse than the current config by more than +0.0010. The standard retrain gate fails only on the 2025 calibration slope range check (candidate 0.812), which the replaced model also fails (0.820); every fold-LL and home-rate check passes.",
+ "standard_gate_passed": false,
+ "checks": [
+  {
+   "check": "2023 fold log loss <= current + 0.0005",
+   "candidate": 0.6592152150955858,
+   "current": 0.6596252862073175,
+   "passed": true
+  },
+  {
+   "check": "2023 beats home-rate by >= 0.01",
+   "gain": 0.03183081972497259,
+   "passed": true
+  },
+  {
+   "check": "2024 fold log loss <= current + 0.0005",
+   "candidate": 0.6612796179702409,
+   "current": 0.6611152948303488,
+   "passed": true
+  },
+  {
+   "check": "2024 beats home-rate by >= 0.01",
+   "gain": 0.025463349659003542,
+   "passed": true
+  },
+  {
+   "check": "2025 fold log loss <= current + 0.0005",
+   "candidate": 0.6776821550531522,
+   "current": 0.6773622784582515,
+   "passed": true
+  },
+  {
+   "check": "2025 beats home-rate by >= 0.01",
+   "gain": 0.015817512695991187,
+   "passed": true
+  },
+  {
+   "check": "2025 calibration slope in [0.9, 1.1]",
+   "slope": 0.812377112503405,
+   "passed": false
+  }
+ ],
+ "paired_vs_replaced_table": {
+  "pooled_2023_2025": {
+   "n": 3999,
+   "delta_ll": 1.7602449284550497e-05,
+   "se": 0.00032916257178668026,
+   "ll_incumbent": 0.6662575236659766,
+   "ll_candidate": 0.6662751261152612,
+   "brier_incumbent": 0.2370758028751073,
+   "brier_candidate": 0.2370887971842882,
+   "cal_slope_incumbent": 0.9458534436312951,
+   "cal_slope_candidate": 0.9396461889622478
+  },
+  "dev_2023_2024": {
+   "n": 2605,
+   "delta_ll": -0.00014415193036575058,
+   "se": 0.00037394353250414425,
+   "ll_incumbent": 0.6603150944220492,
+   "ll_candidate": 0.6601709424916834,
+   "brier_incumbent": 0.23426837184294086,
+   "brier_candidate": 0.23419697926108016,
+   "cal_slope_incumbent": 1.0343470479237793,
+   "cal_slope_candidate": 1.0293080602329259
+  },
+  "2023": {
+   "n": 1399,
+   "delta_ll": -0.0004100711117317402,
+   "se": 0.0006331075147554072,
+   "ll_incumbent": 0.6596252862073175,
+   "ll_candidate": 0.6592152150955858,
+   "brier_incumbent": 0.23397381602664757,
+   "brier_candidate": 0.23377614980660236,
+   "cal_slope_incumbent": 0.9933462394086384,
+   "cal_slope_candidate": 0.9894480862093872
+  },
+  "2024": {
+   "n": 1206,
+   "delta_ll": 0.00016432313989214286,
+   "se": 0.0003363469941207005,
+   "ll_incumbent": 0.6611152948303488,
+   "ll_candidate": 0.6612796179702409,
+   "brier_incumbent": 0.23461006635951986,
+   "brier_candidate": 0.23468515538613363,
+   "cal_slope_incumbent": 1.089942946597147,
+   "cal_slope_candidate": 1.083990425774967
+  },
+  "2025": {
+   "n": 1394,
+   "delta_ll": 0.00031987659490078757,
+   "se": 0.0006352116679067142,
+   "ll_incumbent": 0.6773622784582515,
+   "ll_candidate": 0.6776821550531522,
+   "brier_incumbent": 0.2423221140937541,
+   "brier_candidate": 0.2424928041354768,
+   "cal_slope_incumbent": 0.8200046651789898,
+   "cal_slope_candidate": 0.812377112503405
+  }
+ },
+ "candidate_folds": [
+  {
+   "test_season": 2023,
+   "n": 1399,
+   "log_loss": 0.6592152150955858,
+   "brier": 0.23377614980660236,
+   "accuracy": 0.5968548963545389,
+   "calibration_slope": 0.9894480862093872,
+   "C": 0.01
+  },
+  {
+   "test_season": 2024,
+   "n": 1206,
+   "log_loss": 0.6612796179702409,
+   "brier": 0.23468515538613363,
+   "accuracy": 0.5829187396351575,
+   "calibration_slope": 1.083990425774967,
+   "C": 0.003
+  },
+  {
+   "test_season": 2025,
+   "n": 1394,
+   "log_loss": 0.6776821550531522,
+   "brier": 0.2424928041354768,
+   "accuracy": 0.554519368723099,
+   "calibration_slope": 0.812377112503405,
+   "C": 0.01
+  }
+ ],
+ "coefficients_raw": {
+  "d_xg_share": 1.3022847995739961,
+  "d_xg_share_all": 3.129196167287027,
+  "d_elo": 0.10330387607611437,
+  "d_goalie_gsax": 0.18102531785293965,
+  "d_pts_pct": 0.48703920154706715,
+  "h_b2b": -0.10456714102445677,
+  "a_b2b": 0.19377416344331214,
+  "d_rest": 0.059289282332862965,
+  "bu_d_net": 0.2855537984257622,
+  "bu_d_delta": 0.4509984875597712
+ }
+}

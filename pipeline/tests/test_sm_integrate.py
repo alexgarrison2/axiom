@@ -365,7 +365,12 @@ def test_live_model_is_the_joint_model_with_a_rollback_shadow(live_meta):
     assert os.path.exists(os.path.join(PIPELINE, sh["model"])) and os.path.exists(os.path.join(PIPELINE, sh["meta"]))
     assert sh["xg_inputs"] == "v1" and sh["dedupe"] == "legacy" and "d_lineup" in sh["features"]
     g = live_meta["bu_lineup"]["gate"]
-    assert g["pooled_delta_vs_previous"]["delta"] <= 0
+    # owner decision 2026-10-01 (window prior directive): the retrain on the window-prior lineup
+    # table ships unless it is worse than the model it replaces by more than +0.0010 pooled
+    window = "window prior directive" in str((live_meta.get("promotion") or {}).get("rule", ""))
+    assert g["pooled_delta_vs_previous"]["delta"] <= (0.0010 if window else 0)
+    if window:   # and the replaced joint model's own gain over the F1 rollback model is kept
+        assert g["previous_gate"]["pooled_delta_vs_previous"]["delta"] <= 0
     assert os.path.exists(os.path.join(PIPELINE, g["report"]))
 
 
