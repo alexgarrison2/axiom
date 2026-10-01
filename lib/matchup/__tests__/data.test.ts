@@ -91,6 +91,25 @@ describe('lineup ratings by player id (E6, RAPM NET)', () => {
         expect(idx.resolve('Brady Tkachuk', 'FLA')?.id).toBe(8480801);
         expect(disambiguate(['Sam Reinhart', 'Sam Bennett']).get('Sam Bennett')).toBe('Bennett');
     });
+
+    it('tells two same-named teammates apart by the lineup slot (VAN Elias Pettersson C / D)', () => {
+        const van = parseRatings({
+            season: '20262027',
+            columns: cols,
+            rows: [
+                [8480012, 'Elias Pettersson', 'VAN', 'C', true, true, 0.07, -0.06, 0.13, 3268, 234, 0, 0],
+                [8483678, 'Elias Pettersson', 'VAN', 'D', true, true, -0.18, 0.16, -0.34, 1269, 95, 0, 0],
+            ],
+        });
+        const idx = buildIndex(van);
+        expect(idx.resolve('Elias Pettersson', 'VAN')).toBeNull();
+        expect(idx.resolve('Elias Pettersson', 'VAN', false)?.id).toBe(8480012);
+        expect(idx.resolve('Elias Nils Pettersson', 'VAN', true)?.id).toBe(8483678);
+        const lu = { f1: [{ name: 'Elias Pettersson' }], d3: [{ name: 'Elias Nils Pettersson' }] };
+        const v = lineupView(leagueContext(idx, { VAN: lu }), lu, 'VAN')!;
+        expect(v.lines.f1[0].impact).toBe(0.13);
+        expect(v.lines.d3[0].impact).toBe(-0.34);
+    });
 });
 
 describe('odds-history API input validation (E9)', () => {

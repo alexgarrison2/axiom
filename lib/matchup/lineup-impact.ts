@@ -37,15 +37,16 @@ interface Entry {
 }
 
 export interface ImpactIndex {
-    resolve(name: string, team: string): Entry | null;
+    /** `def`: the player sits in a defence pair (breaks a same-name tie). */
+    resolve(name: string, team: string, def?: boolean): Entry | null;
 }
 
 /** Name -> NHL id + NET from the ratings file. */
 export function buildIndex(ratings: Ratings): ImpactIndex {
     const find = nameIndex(ratings);
     return {
-        resolve(name, team) {
-            const p = find(name, team);
+        resolve(name, team, def) {
+            const p = find(name, team, null, def);
             return p ? { id: p.id, impact: p.rated ? p.net : null } : null;
         },
     };
@@ -61,7 +62,7 @@ function slotTotal(index: ImpactIndex, lineup: DfoLineup, team: string, key: str
     if (ps.length < required) return null;
     let t = 0;
     for (const p of ps.slice(0, required)) {
-        const v = index.resolve(p.name, team)?.impact;
+        const v = index.resolve(p.name, team, key.startsWith('d'))?.impact;
         if (v == null) return null;
         t += v;
     }
@@ -73,7 +74,7 @@ function gradeOf(index: ImpactIndex, lineup: DfoLineup, team: string): { value: 
     let found = 0;
     for (const [key] of SLOTS) {
         for (const p of playersIn(lineup, key)) {
-            const v = index.resolve(p.name, team)?.impact;
+            const v = index.resolve(p.name, team, key.startsWith('d'))?.impact;
             if (v != null) {
                 value += v;
                 found++;
@@ -132,7 +133,7 @@ export function lineupView(ctx: LeagueContext, lineup: DfoLineup | null | undefi
     const lineImpacts: Record<string, LineImpact | null> = {};
     for (const [key, req] of SLOTS) {
         lines[key] = playersIn(lineup, key).map(p => {
-            const e = ctx.index.resolve(p.name, team);
+            const e = ctx.index.resolve(p.name, team, key.startsWith('d'));
             return {
                 playerId: e?.id ?? null,
                 name: p.name,

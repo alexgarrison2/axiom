@@ -96,6 +96,8 @@ export function foldName(s: string): string {
  * Name lookup for sources without NHL ids (DailyFaceoff lines): exact folded
  * full name, preferring the player's own team; else same team + first initial
  * + surname. Never a bare surname, so two Tkachuks never share a rating.
+ * `def` (the lineup slot: defence pair or forward line) breaks a tie
+ * between two same-named teammates (VAN's two Elias Petterssons).
  */
 export function nameIndex(r: Ratings) {
     const byFull = new Map<string, PlayerRating[]>();
@@ -107,7 +109,14 @@ export function nameIndex(r: Ratings) {
         const k = `${p.team}|${n.split(' ').at(-1)}`;
         (byTeamLast.get(k) ?? byTeamLast.set(k, []).get(k)!).push(p);
     }
-    return (name: string, team: string, id?: number | string | null): PlayerRating | null => {
+    /** The one candidate, or the one at the slot's position when two share the name. */
+    const pick = (cands: PlayerRating[], def?: boolean): PlayerRating | null => {
+        if (cands.length === 1) return cands[0];
+        if (def == null || cands.length === 0) return null;
+        const at = cands.filter(p => (p.pos === 'D') === def);
+        return at.length === 1 ? at[0] : null;
+    };
+    return (name: string, team: string, id?: number | string | null, def?: boolean): PlayerRating | null => {
         if (id != null && id !== '') {
             const hit = r.byId.get(Number(id));
             if (hit) return hit;
@@ -116,13 +125,13 @@ export function nameIndex(r: Ratings) {
         const full = byFull.get(n);
         if (full?.length) {
             const own = full.filter(p => p.team === team);
-            if (own.length === 1) return own[0];
+            if (own.length) return pick(own, def);
             const rostered = full.filter(p => p.roster);
-            return full.length === 1 ? full[0] : rostered.length === 1 ? rostered[0] : null;
+            return full.length === 1 ? full[0] : rostered.length === 1 ? rostered[0] : pick(rostered, def);
         }
         const parts = n.split(' ');
         const cands = (byTeamLast.get(`${team}|${parts.at(-1)}`) ?? []).filter(p => foldName(p.name).charAt(0) === (parts[0] ?? '').charAt(0));
-        return cands.length === 1 ? cands[0] : null;
+        return pick(cands, def);
     };
 }
 

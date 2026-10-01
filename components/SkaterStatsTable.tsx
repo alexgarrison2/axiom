@@ -276,7 +276,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                                 <SortHeader
                                     direction={sort.key === 'name' ? sort.dir : null}
                                     onSort={() => onSort('name')}
-                                    className="sticky left-0 z-10 w-[9rem] min-w-[9rem] border-b border-line bg-bg md:w-60"
+                                    className="sticky left-0 z-10 w-[9rem] min-w-[9rem] border-b border-line bg-bg md:w-72"
                                 >
                                     Player
                                 </SortHeader>
@@ -305,7 +305,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                         <tbody>
                             {visible.map((p, i) => (
                                 <tr key={p.id} className="group">
-                                    <th scope="row" className={cn(CELL_BG, 'sticky left-0 z-10 h-8 w-[9rem] min-w-[9rem] border-b border-line px-2 text-left font-normal md:w-60')}>
+                                    <th scope="row" className={cn(CELL_BG, 'sticky left-0 z-10 h-8 w-[9rem] min-w-[9rem] border-b border-line px-2 text-left font-normal md:w-72')}>
                                         <span className="flex items-center gap-2">
                                             <span className="hidden w-7 shrink-0 text-right text-micro text-fg-3 md:inline">{current * PAGE + i + 1}</span>
                                             <TeamLogo tri={p.team} size={18} />

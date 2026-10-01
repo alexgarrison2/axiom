@@ -254,13 +254,13 @@ export function loadRatingsView(): Record<string, TeamRatingEntry> | null {
 
     // DailyFaceoff ids are not NHL ids: resolve by name within the team.
     const find = nameIndex(players);
-    const lookup = (p: LineupPlayer, team: string) => (p.name ? find(p.name, team) : null);
+    const lookup = (p: LineupPlayer, team: string, def: boolean) => (p.name ? find(p.name, team, null, def) : null);
     // Lines: sum of the skaters' RAPM NET (EV xG/60 above average).
-    const sumNet = (list: LineupPlayer[] | undefined, team: string) => (list ?? []).reduce((s, p) => s + (lookup(p, team)?.net ?? 0), 0);
+    const sumNet = (list: LineupPlayer[] | undefined, team: string, def = false) => (list ?? []).reduce((s, p) => s + (lookup(p, team, def)?.net ?? 0), 0);
     // Forwards / defence: EV-TOI-weighted NET, scaled by the group size.
-    const toiNet = (list: LineupPlayer[], team: string) => {
+    const toiNet = (list: LineupPlayer[], team: string, def: boolean) => {
         const e = list.map(p => {
-            const r = lookup(p, team);
+            const r = lookup(p, team, def);
             return { net: r?.net ?? 0, toi: r && r.gp > 0 ? r.toi / r.gp : 0 };
         });
         const tot = e.reduce((s, x) => s + x.toi, 0);
@@ -285,9 +285,9 @@ export function loadRatingsView(): Record<string, TeamRatingEntry> | null {
             xga_5v5: val('xga_5v5_rating'),
             lines: {
                 f1: sumNet(lu.f1, t.tri), f2: sumNet(lu.f2, t.tri), f3: sumNet(lu.f3, t.tri), f4: sumNet(lu.f4, t.tri),
-                d1: sumNet(lu.d1, t.tri), d2: sumNet(lu.d2, t.tri), d3: sumNet(lu.d3, t.tri),
+                d1: sumNet(lu.d1, t.tri, true), d2: sumNet(lu.d2, t.tri, true), d3: sumNet(lu.d3, t.tri, true),
             },
-            rapm: { f: toiNet(f, t.tri), d: toiNet(d, t.tri) },
+            rapm: { f: toiNet(f, t.tri, false), d: toiNet(d, t.tri, true) },
             goalie: g.reduce((s, name) => s + (goalieByKey.get(goalieKey(name))?.gsax_per_game ?? 0), 0),
         };
     }
