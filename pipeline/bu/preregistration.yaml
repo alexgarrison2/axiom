@@ -210,4 +210,29 @@ multiplicity:
     look (M5 deliverable).
   subgroups: early season, lineup-change and goalie-change games are reported with CIs only and never gated
 
-amendments: []
+amendments:
+  - at: "2026-10-01T14:45:52Z"
+    by: pre-merge review of the sm-snapshots workstream
+    looks_before_this_amendment: 0        # the 2026-27 archive was still empty; no test had been run on any data
+    reason: >-
+      Two bugs in the analysis code, found in review before the registration
+      reached main and before any data existed.  (1) load_outcomes accepted
+      only W/L/OTW/OTL/SOW/SOL, but the scraper writes RW/RL for regulation
+      results, so about 75% of games (every regulation result) would have
+      been excluded as "no outcome" and the remaining sample would have been
+      OT/SO games only.  RW and RL are now read as home win / home loss
+      (plain W/L still accepted).  (2) gate_e called m1_line_movement with
+      min_n=0, which selected zero games, so Gate E's registered
+      "also_reported: M-1 beta on the same games" was always empty; min_n=0
+      now means a descriptive fit on every game given.  Degenerate designs
+      (singular matrices) now return a "degenerate" status instead of
+      raising.  No definition, data rule, threshold, alpha, margin or
+      minimum n changes.
+    clarifications:
+      population.target: home row result in RW/OTW/SOW (home win) or RL/OTL/SOL (home loss)
+      M-2.sample: also reported, descriptive only, at the M-1 binding look (DESIGN §1.7); the season-end look is the binding one
+      bu_shadow_home_win_pct: >-
+        must be the BU candidate's PUBLISHED-STYLE BLEND (same market input
+        and blend weight as home_win_pct at that snapshot), so Gate C and
+        Gate E compare blend_BU with blend_current like for like
+    new_analysis_sha256: 7af936269139ad393a818388ed1392e5936a2c1626ae9768d6e24377efedb0f1

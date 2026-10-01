@@ -60,6 +60,8 @@ NI_MARGIN = 0.001                         # Gates C and E
 GATE_C_MIN_N = 400
 GATE_E_MIN_N = 200
 GATE_E_MAX_GP = 15
+HOME_WIN_RESULTS = ("RW", "W", "OTW", "SOW")    # gamestats `result`, home row
+HOME_LOSS_RESULTS = ("RL", "L", "OTL", "SOL")
 BOOTSTRAP_N = 2000
 SEED = 20261001
 P_CLIP = 1e-6
@@ -239,7 +241,8 @@ def load_snapshots(root=SNAPSHOT_DIR, season=SEASON_LABEL, until=None) -> list[d
 
 def load_outcomes(path=None, season=SEASON_LABEL) -> dict:
     """{game_id: 1 if the home team won (incl. OT/SO) else 0} from the season
-    gamestats CSV (one row per team; result W/L/OTW/OTL/SOW/SOL)."""
+    gamestats CSV (one row per team).  The scraper writes RW/RL for
+    regulation, OTW/OTL and SOW/SOL; plain W/L are accepted too."""
     y = int(season[:4])
     path = path or os.path.join(PIPELINE_DIR, f"nhl_season_{y}_{y + 1}_gamestats.csv")
     out = {}
@@ -249,9 +252,9 @@ def load_outcomes(path=None, season=SEASON_LABEL) -> dict:
                 if (r.get("home_away") or "").lower() != "home":
                     continue
                 res = (r.get("result") or "").upper()
-                if res in ("W", "OTW", "SOW"):
+                if res in HOME_WIN_RESULTS:
                     out[int(float(r["game_id"]))] = 1
-                elif res in ("L", "OTL", "SOL"):
+                elif res in HOME_LOSS_RESULTS:
                     out[int(float(r["game_id"]))] = 0
     except OSError:
         pass
@@ -339,17 +342,22 @@ def market_games(rows, outcomes) -> tuple[list[dict], dict]:
 # ── Tests ────────────────────────────────────────────────────────────────────
 
 def m1_line_movement(games, min_n=M1_MIN_N) -> dict:
-    """Binding look: the first ``min_n`` eligible games by start time."""
+    """Binding look: the first ``min_n`` eligible games by start time.
+    ``min_n=0`` is a descriptive fit on every game given (Gate E's early-season
+    beta); it is never binding."""
     n_avail = len(games)
-    g = games[:min_n] if n_avail >= min_n else games
+    binding = bool(min_n) and n_avail >= min_n
+    g = games[:min_n] if binding else games
     out = {"test": "M-1", "n_available": n_avail, "n_used": len(g), "min_n": min_n}
     if len(g) < 10:
         return {**out, "status": "insufficient data", "pass": None}
     q0, qc, p0 = (np.array([x[k] for x in g]) for k in ("q0", "q_close", "p0"))
     y, x = logit(qc) - logit(q0), logit(p0) - logit(q0)
-    a, b, se, se_cl = ols(y, x, clusters=[x_["game_date"] for x_ in g])
+    try:
+        a, b, se, se_cl = ols(y, x, clusters=[x_["game_date"] for x_ in g])
+    except np.linalg.LinAlgError:
+        return {**out, "status": "degenerate design (no variation in the model-market gap)", "pass": None}
     lower = b - Z_ONE_SIDED * se
-    binding = n_avail >= min_n
     out.update({
         "alpha": a, "beta": b, "se_hc1": se, "lower95_one_sided": lower,
         "se_cluster_by_date": se_cl,
@@ -357,7 +365,7 @@ def m1_line_movement(games, min_n=M1_MIN_N) -> dict:
         "sd_dlogit_q": float(np.std(y, ddof=1)), "sd_gap": float(np.std(x, ddof=1)),
         "model_versions": sorted({str(x_["model_version_q0"]) for x_ in g}),
         "binding": binding, "pass": bool(lower > 0) if binding else None,
-        "status": "binding look" if binding else f"descriptive (n < {min_n})",
+        "status": "binding look" if binding else (f"descriptive (n < {min_n})" if min_n else "descriptive"),
     })
     return out
 
@@ -368,7 +376,10 @@ def m2_unshrunk_weight(games) -> dict:
     if len(g) < 30:
         return {**out, "status": "insufficient data", "pass": None}
     X = np.column_stack([logit([x["p_model_close"] for x in g]), logit([x["q_close"] for x in g])])
-    b, se = logistic(X, np.array([x["y"] for x in g]))
+    try:
+        b, se = logistic(X, np.array([x["y"] for x in g]))
+    except np.linalg.LinAlgError:
+        return {**out, "status": "degenerate design (separation or collinearity)", "pass": None}
     lower = float(b[1] - Z_ONE_SIDED * se[1])
     return {**out, "a": float(b[0]), "b1_model": float(b[1]), "se_b1": float(se[1]),
             "b2_close": float(b[2]), "se_b2": float(se[2]), "b1_lower95_one_sided": lower,
@@ -453,7 +464,10 @@ def noninferiority(y, p_new, p_old, margin=NI_MARGIN, min_n=GATE_C_MIN_N, name="
         return {**out, "status": "insufficient data", "pass": None}
     d = ll_per_game(y, p_new) - ll_per_game(y, p_old)
     res = paired(d)
-    cal = calibration_slope(y, p_new)
+    try:
+        cal = calibration_slope(y, p_new)
+    except np.linalg.LinAlgError:
+        cal = {"slope": None, "ci95": None, "contains_1": False, "status": "degenerate"}
     binding = len(y) >= min_n
     ok = res["upper95_one_sided"] < margin and cal["contains_1"]
     return {**out, "diff": res, "calibration_new": cal, "binding": binding,

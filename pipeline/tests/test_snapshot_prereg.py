@@ -193,6 +193,7 @@ def test_season_end_tests_run_on_the_synthetic_archive(tmp_path):
     assert c["n"] == 400 and c["binding"] and c["diff"]["mean"] == pytest.approx(0, abs=1e-12)
     e = A.gate_e(games)       # all synthetic games are in October; min GP <= 15 for the first 256
     assert e["n"] == 256 and e["binding"]
+    assert e["m1_beta_early"] == pytest.approx(0.4, abs=0.1)     # M-1 beta on the same games, reported
 
 
 def test_eligibility_rules(tmp_path):
@@ -262,3 +263,36 @@ def test_outcomes_from_gamestats(tmp_path):
     p.write_text("game_id,home_away,result\n2026020001,Home,OTL\n2026020001,Away,OTW\n"
                  "2026020002,Home,SOW\n2026020003,Home,\n")
     assert A.load_outcomes(str(p)) == {2026020001: 0, 2026020002: 1}
+
+
+def test_outcomes_accept_the_scrapers_regulation_codes(tmp_path):
+    """nhl_scraper_poc writes RW/RL for regulation results (most games)."""
+    p = tmp_path / "gs.csv"
+    p.write_text("game_id,home_away,result\n2026020001,Home,RW\n2026020001,Away,RL\n"
+                 "2026020002,Home,RL\n2026020003,Away,RW\n2026020004,Home,W\n2026020005,Home,L\n")
+    assert A.load_outcomes(str(p)) == {2026020001: 1, 2026020002: 0, 2026020004: 1, 2026020005: 0}
+
+
+def test_outcomes_cover_every_game_of_a_real_season():
+    path = os.path.join(os.path.dirname(HERE), "nhl_season_2025_2026_gamestats.csv")
+    if not os.path.exists(path):
+        pytest.skip("2025-26 gamestats archive not present")
+    import csv
+    with open(path, newline="", encoding="utf-8") as fh:
+        ids = {int(float(r["game_id"])) for r in csv.DictReader(fh)}
+    got = A.load_outcomes(path)
+    assert set(got) == ids                   # no game silently dropped as "no outcome"
+    assert 0.5 < sum(got.values()) / len(got) < 0.6     # home win rate
+
+
+def test_m1_degenerate_design_is_reported_not_raised():
+    g = [{"q0": 0.5, "q_close": 0.52, "p0": 0.5, "game_date": "d", "model_version_q0": "v"}] * 20
+    r = A.m1_line_movement(g)
+    assert r["pass"] is None and r["status"].startswith("degenerate")
+
+
+def test_m1_min_n_zero_is_descriptive_on_every_game(tmp_path):
+    outcomes = synthetic_archive(tmp_path, n_games=60)
+    games, _ = A.market_games(A.load_snapshots(str(tmp_path)), outcomes)
+    r = A.m1_line_movement(games, min_n=0)
+    assert r["n_used"] == 60 and r["binding"] is False and r["pass"] is None and r["beta"] is not None
