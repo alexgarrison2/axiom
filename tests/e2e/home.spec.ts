@@ -185,6 +185,21 @@ test.describe('home slate', () => {
         expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
     });
 
+    test('the why panel shows the lineup / starting-goalie bar when the model has it', async ({ page }) => {
+        await page.goto('/');
+        const card = page.locator('article').first();
+        await card.locator('h2 button[aria-expanded]').click();
+        await card.getByRole('radio', { name: 'Why' }).click();
+        const rows = card.locator('section[aria-labelledby^="why-"] li');
+        await expect(rows.first()).toBeVisible();
+        const labels = await rows.allInnerTexts();
+        // Fast-track models publish a 'lineup_goalie' factor; older frozen rows keep 'lineup'.
+        const who = labels.find(t => /who plays/i.test(t));
+        const old = labels.find(t => /^lineups/i.test(t.trim()));
+        expect(who ?? old).toBeTruthy();
+        if (who) expect(who).toMatch(/(\+\d+\.\d [A-Z]{3}|0\.0)/);
+    });
+
     test('tapping inside an expanded card keeps it open; Collapse closes it', async ({ page }) => {
         await page.goto('/');
         const card = page.locator('article').first();
