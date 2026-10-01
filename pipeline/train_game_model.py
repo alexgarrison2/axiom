@@ -72,9 +72,35 @@ OOS_PATH = os.path.join(F.CACHE_DIR, 'walkforward_oos.csv')
 
 # ─── Data ─────────────────────────────────────────────────────────────────────
 
-def build_matrix(current_df=None, use_raw_xg=True):
+LINEUP_KEEP = ['game_id', 'd_lineup', 'd_lineup_level', 'd_lineup_asof', 'h_lineup_dq', 'a_lineup_dq', 'h_lineup_rated',
+               'a_lineup_rated', 'lineup_ok', 'ratings_asof', 'ratings_data_max_season', 'history_max_date']
+
+
+def attach_lineup_features(M: pd.DataFrame, lineup: pd.DataFrame | None = None, **kw) -> pd.DataFrame:
+    """Merge the fast-track lineup features (lineup_adjust.build_lineup_matrix,
+    point-in-time, L-actual) into the training matrix by game id.  Games
+    without stored lineups (or without a baseline yet) get d_lineup = 0 and
+    lineup_ok = False."""
+    import lineup_adjust as L
+    lm = L.build_lineup_matrix(**kw) if lineup is None else lineup
+    M = M.drop(columns=[c for c in LINEUP_KEEP if c != 'game_id' and c in M.columns])
+    if lm is None or lm.empty:
+        M['d_lineup'] = 0.0
+        M['lineup_ok'] = False
+        return M
+    M = M.merge(lm[[c for c in LINEUP_KEEP if c in lm.columns]], on='game_id', how='left')
+    for c in ('d_lineup', 'd_lineup_level', 'd_lineup_asof'):
+        if c in M.columns:
+            M[c] = M[c].fillna(0.0)
+    M['lineup_ok'] = M['lineup_ok'].astype('boolean').fillna(False).astype(bool)
+    return M
+
+
+def build_matrix(current_df=None, use_raw_xg=True, lineups=True):
     games, xg_source = F.load_feature_games(current_df=current_df, use_raw_xg=use_raw_xg)
     M = F.build_training_matrix(games)
+    if lineups and len(M):
+        M = attach_lineup_features(M)
     M['early'] = (M['team_game_number_h'] <= EARLY_GP) | (M['team_game_number_a'] <= EARLY_GP)
     first = M['season'].min()
     M['burn_in'] = (M['season'] == first) & ((M['h_gp'] < BURN_IN_GP) | (M['a_gp'] < BURN_IN_GP))

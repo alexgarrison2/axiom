@@ -75,6 +75,7 @@ GOALIE_SHRINK_GP = 25         # rating *= ev / (ev + 25), ev = weighted GP
 GOALIE_SEASON_DECAY = (1.0, 0.5)   # weights of seasons s-1, s-2 in the prior
 XG_NORM_PRIOR_GOALS = 1000.0  # shrink in-season normalisation factor to last season's
 REST_CAP = 4
+GOALIE_USUAL_GAMES = 20       # starts behind a team's "usual" goalie quality (fast track F1)
 PACE_HALFLIFE = 20            # games; EWMA of goals for/against (total-goals model)
 
 FEATURE_COLUMNS = [
@@ -91,7 +92,13 @@ CANDIDATE_COLUMNS = [
     'd_st',             # special-teams xG net per game
     'd_travel_km', 'h_tz_shift', 'a_tz_shift',  # C10 candidates
     'h_3in4', 'a_3in4',  # third game in four nights (the old IN3_4_PENALTY)
+    # Fast track F1 (DESIGN §8 F1, §3.4, §3.7):
+    'd_goalie_swap',    # tonight's starter GSAx rating minus the team's usual (last-20-starts) goalie quality, home - away
+    'd_lineup',         # lineup quality vs the team's own baseline lineup, home - away (lineup_adjust.LineupState)
 ]
+
+# Fast-track columns that do not come from FeatureState (merged by game id).
+LINEUP_COLUMNS = ('d_lineup',)
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -346,6 +353,7 @@ class TeamState:
     last_date: pd.Timestamp | None = None
     last_venue: tuple | None = None
     recent_dates: tuple = ()      # dates of the last 3 games (3-in-4 candidate)
+    recent_starters: tuple = ()   # starting goalies of the last GOALIE_USUAL_GAMES games (F1)
 
 
 @dataclass
@@ -570,6 +578,9 @@ class FeatureState:
             t.last_date = pd.Timestamp(row.game_date)
             t.recent_dates = (t.recent_dates + (t.last_date,))[-3:]
             t.last_venue = _arena(h.team)
+            g = getattr(row, 'starting_goalie', None)
+            if isinstance(g, str) and g:
+                t.recent_starters = (t.recent_starters + (g,))[-GOALIE_USUAL_GAMES:]
 
         # Goalies (starter credited; EN excluded; raw xG, normalised at read time)
         season = int(h.season)
@@ -597,6 +608,31 @@ class FeatureState:
         oh, dh, oa, da = ht.gf / half, ht.ga / half, at.gf / half, at.ga / half
         return float((oh * da + oa * dh) / 2)
 
+    def usual_goalie(self, team) -> tuple[str | None, float]:
+        """(name, start share) of the goalie who started most of the team's last
+        GOALIE_USUAL_GAMES games (ties: the most recent).  (None, 0) before
+        the team's first start."""
+        t = self._team(team)
+        if not t.recent_starters:
+            return None, 0.0
+        from collections import Counter
+        c = Counter(t.recent_starters)
+        top = max(c.values())
+        name = next(g for g in reversed(t.recent_starters) if c[g] == top)
+        return name, top / len(t.recent_starters)
+
+    def goalie_swap(self, team, goalie, rating) -> float:
+        """Tonight's starter rating minus the rating of the team's usual starter
+        (both as of now).  0 when tonight's starter IS the usual starter, or when
+        either is unknown: the feature only fires on a goalie change, the case
+        the team-level numbers (earned mostly with the usual starter) miss."""
+        if not goalie or self.resolve_goalie(goalie) is None:
+            return 0.0
+        usual, _ = self.usual_goalie(team)
+        if usual is None or self.resolve_goalie(usual) == self.resolve_goalie(goalie):
+            return 0.0
+        return float(rating - self.goalie_rating(usual)[0])
+
     # --- features ---------------------------------------------------------------
     def pregame(self, home, away, game_date, h_goalie=None, a_goalie=None,
                 h_rest_days=None, a_rest_days=None, season=None) -> dict:
@@ -619,6 +655,8 @@ class FeatureState:
         h_rest, a_rest = rest(ht, h_rest_days), rest(at, a_rest_days)
         hg, h_ev, h_gp = self.goalie_rating(h_goalie)
         ag, a_ev, a_gp = self.goalie_rating(a_goalie)
+        h_swap = self.goalie_swap(home, h_goalie, hg)
+        a_swap = self.goalie_swap(away, a_goalie, ag)
         k = PTS_PRIOR_GAMES
         h_pts = (ht.pts2 + 0.5 * k) / (ht.rs_gp + k)
         a_pts = (at.pts2 + 0.5 * k) / (at.rs_gp + k)
@@ -648,12 +686,15 @@ class FeatureState:
             'h_tz_shift': abs(h_tz) * recent(h_rest),
             'a_tz_shift': abs(a_tz) * recent(a_rest),
             'h_3in4': three_in_four(ht), 'a_3in4': three_in_four(at),
+            'd_goalie_swap': h_swap - a_swap,
+            'd_lineup': 0.0,   # filled from lineup_adjust (training: merged by game id; serving: extra_features)
             # context (not model inputs)
             'h_gp': float(ht.gp), 'a_gp': float(at.gp),
             'h_rs_gp': float(ht.rs_gp), 'a_rs_gp': float(at.rs_gp),
             'h_goalie_gsax': hg, 'a_goalie_gsax': ag,
             'h_goalie_ev': h_ev, 'a_goalie_ev': a_ev,
             'h_goalie_gp': float(h_gp), 'a_goalie_gp': float(a_gp),
+            'h_goalie_swap': h_swap, 'a_goalie_swap': a_swap,
             'h_xg_share': ht.xg_share, 'a_xg_share': at.xg_share,
             'h_elo': ht.elo, 'a_elo': at.elo,
             'h_pts_pct': h_pts, 'a_pts_pct': a_pts,

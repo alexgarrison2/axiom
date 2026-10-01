@@ -383,6 +383,495 @@ def save_weight(report):
         json.dump(c, f, indent=2)
 
 
+# ═══ Fast track F1: point-in-time lineup store (boxscore dressed lineups) ═══
+# DESIGN §8 F1 / §3.7.  One compact row per dressed player per game, from the
+# NHL boxscore (the free source of truth for who dressed and their TOI):
+#   game_id, game_date, side (H/A), team (tricode), player_id, name (as the
+#   boxscore prints it, 'J. Staal'), sweater, pos (F/D/G), toi_sec, starter
+# Stored per season as pipeline/models/fasttrack/lineups_<start year>.csv.gz
+# (~1 MB per season).  Historical seasons are fetched once (polite: <= 2 rps);
+# the current season is topped up gap-driven by predict_games (only completed
+# games missing from the file are fetched).
+
+FT_DIR = os.path.join(SCRIPT_DIR, 'models', 'fasttrack')
+LINEUP_COLS = ['game_id', 'game_date', 'side', 'team', 'player_id', 'name', 'sweater', 'pos', 'toi_sec', 'starter']
+BOXSCORE_URL = 'https://api-web.nhle.com/v1/gamecenter/{gid}/boxscore'
+FETCH_MIN_INTERVAL = 0.6        # seconds between boxscore requests (<= ~1.7 rps)
+
+
+def lineup_store_path(season, ft_dir=None):
+    return os.path.join(ft_dir or FT_DIR, f'lineups_{int(season)}.csv.gz')
+
+
+def _toi_seconds(s):
+    try:
+        m, sec = str(s).split(':')
+        return int(m) * 60 + int(sec)
+    except Exception:
+        return 0
+
+
+def parse_boxscore(box) -> list[dict]:
+    """Dressed-player rows of one boxscore JSON (skaters and goalies)."""
+    gid = int(box['id'])
+    date = str(box.get('gameDate', ''))[:10]
+    out = []
+    pbg = box.get('playerByGameStats') or {}
+    for side, key in (('H', 'homeTeam'), ('A', 'awayTeam')):
+        team = (box.get(key) or {}).get('abbrev')
+        grp = pbg.get(key) or {}
+        for pos, plist in (('F', grp.get('forwards')), ('D', grp.get('defense')), ('G', grp.get('goalies'))):
+            for p in plist or []:
+                name = p.get('name')
+                name = name.get('default') if isinstance(name, dict) else name
+                out.append({'game_id': gid, 'game_date': date, 'side': side, 'team': team,
+                            'player_id': int(p['playerId']), 'name': name or '',
+                            'sweater': p.get('sweaterNumber'), 'pos': pos,
+                            'toi_sec': _toi_seconds(p.get('toi')),
+                            'starter': bool(p.get('starter')) if pos == 'G' else False})
+    return out
+
+
+def load_lineup_store(seasons=None, ft_dir=None) -> pd.DataFrame:
+    """All stored dressed lineups (optionally only some seasons)."""
+    ft_dir = ft_dir or FT_DIR
+    frames = []
+    if os.path.isdir(ft_dir):
+        for fn in sorted(os.listdir(ft_dir)):
+            if not (fn.startswith('lineups_') and fn.endswith('.csv.gz')):
+                continue
+            s = int(fn[len('lineups_'):-len('.csv.gz')])
+            if seasons is not None and s not in seasons:
+                continue
+            frames.append(pd.read_csv(os.path.join(ft_dir, fn)))
+    if not frames:
+        return pd.DataFrame(columns=LINEUP_COLS)
+    df = pd.concat(frames, ignore_index=True)
+    df['game_date'] = pd.to_datetime(df['game_date']).dt.normalize()
+    return df.drop_duplicates(subset=['game_id', 'player_id']).sort_values(['game_date', 'game_id', 'side'])
+
+
+def _write_store(df, season, ft_dir=None):
+    path = lineup_store_path(season, ft_dir)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    df = df.sort_values(['game_id', 'side', 'pos', 'player_id'])[LINEUP_COLS]
+    tmp = path + '.tmp'
+    df.to_csv(tmp, index=False, compression={'method': 'gzip', 'mtime': 0})
+    os.replace(tmp, path)
+
+
+def _append(have, rows):
+    new = pd.DataFrame(rows, columns=LINEUP_COLS)
+    return new if have.empty else pd.concat([have, new], ignore_index=True)
+
+
+def fetch_lineups(game_ids, season, ft_dir=None, min_interval=FETCH_MIN_INTERVAL, verbose=True,
+                  checkpoint_every=200, getter=None):
+    """Fetch the boxscores of ``game_ids`` missing from the season's store and
+    append them.  Resumable (checkpoints every ``checkpoint_every`` games);
+    returns the number of games added.  ``getter`` is injectable for tests."""
+    import time
+    if getter is None:
+        from http_utils import get_json
+        getter = lambda gid: get_json(BOXSCORE_URL.format(gid=gid), timeout=20)  # noqa: E731
+    path = lineup_store_path(season, ft_dir)
+    have = pd.read_csv(path) if os.path.exists(path) else pd.DataFrame(columns=LINEUP_COLS)
+    done = set(have['game_id'].astype(int)) if len(have) else set()
+    todo = [int(g) for g in game_ids if int(g) not in done]
+    rows, added, last = [], 0, 0.0
+    for i, gid in enumerate(todo, 1):
+        wait = min_interval - (time.monotonic() - last)
+        if wait > 0:
+            time.sleep(wait)
+        last = time.monotonic()
+        try:
+            r = parse_boxscore(getter(gid))
+        except Exception as e:
+            if verbose:
+                print(f"  [lineups] {gid}: {e}")
+            continue
+        if sum(1 for x in r if x['pos'] != 'G') < 12:     # boxscore not populated (future / postponed)
+            continue
+        rows.extend(r)
+        added += 1
+        if rows and (i % checkpoint_every == 0 or i == len(todo)):
+            have = _append(have, rows)
+            _write_store(have, season, ft_dir)
+            rows = []
+            if verbose:
+                print(f"  [lineups] {season}: {i}/{len(todo)} fetched")
+    if rows:
+        have = _append(have, rows)
+        _write_store(have, season, ft_dir)
+    return added
+
+
+def completed_game_ids(seasons, pipeline_dir=SCRIPT_DIR):
+    """Completed NHL (02/03) game ids per season from the gamestats files."""
+    import features as F
+    g = F.load_gamestats(pipeline_dir)
+    g = g[g['season'].isin(seasons)]
+    return {int(s): sorted(set(x['game_id'].astype(int))) for s, x in g.groupby('season')}
+
+
+# ═══ Fast track F1: point-in-time player ratings (MoneyPuck, credited) ═══
+# Skater value = 5v5 on-ice relative net xG per 60 (on-ice xGF-xGA per 60
+# minus the team's off-ice xGF-xGA per 60), aggregated over the two seasons
+# BEFORE the game's season (weights 1.0 / 0.5) and shrunk toward 0 by 5v5
+# minutes.  Data: MoneyPuck.com season summaries (free for non-commercial
+# use, credit required; DECISIONS D3).  Only completed seasons < S are read,
+# so a rating used in season S is "as of" July 1 of S, before every game of
+# S (asserted in tests/test_fasttrack_features.py).
+
+MP_URL = 'https://moneypuck.com/moneypuck/playerData/seasonSummary/{y}/regular/skaters.csv'
+MP_PATH = os.path.join(FT_DIR, 'mp_skaters.csv.gz')
+MP_COLS = ['player_id', 'season', 'name', 'pos', 'gp', 'toi_all', 'toi5', 'on_f5', 'on_a5',
+           'off_f5', 'off_a5', 'bench5', 'ixg_all']
+RATING_SEASON_WEIGHTS = (1.0, 0.5)    # seasons S-1, S-2
+RATING_SHRINK_MIN = 600.0             # 5v5 minutes at which a rating is 50% data / 50% league average
+UNRATED_GP = 20                        # players below this many weighted GP define the "unrated" value
+DEFAULT_TOI = {'F': 900.0, 'D': 1200.0}   # seconds per game without any history
+TOI_HISTORY = 20                       # dressed games behind a player's expected TOI
+TEAM_ALIASES = {'ARI': 'UTA'}          # franchise continuity for baselines
+
+
+def extract_mp(raw: pd.DataFrame) -> pd.DataFrame:
+    """Compact per (player, season) row from a MoneyPuck skaters.csv."""
+    a = raw[raw['situation'] == 'all']
+    f = raw[raw['situation'] == '5on5']
+    a = a.groupby('playerId').agg(season=('season', 'first'), name=('name', 'first'), position=('position', 'first'),
+                                  gp=('games_played', 'sum'), toi_all=('icetime', 'sum'), ixg_all=('I_F_xGoals', 'sum'))
+    f = f.groupby('playerId').agg(toi5=('icetime', 'sum'), on_f5=('OnIce_F_xGoals', 'sum'),
+                                  on_a5=('OnIce_A_xGoals', 'sum'), off_f5=('OffIce_F_xGoals', 'sum'),
+                                  off_a5=('OffIce_A_xGoals', 'sum'), bench5=('timeOnBench', 'sum'))
+    out = a.join(f, how='left').fillna({c: 0.0 for c in f.columns})
+    out['pos'] = np.where(out['position'].astype(str).str.upper().eq('D'), 'D', 'F')
+    out = out.reset_index().rename(columns={'playerId': 'player_id'})
+    out['player_id'] = out['player_id'].astype(int)
+    out['season'] = out['season'].astype(int)
+    out['gp'] = out['gp'].astype(int)
+    return out[MP_COLS]
+
+
+def build_mp_store(seasons, getter=None, path=MP_PATH, pause=2.0):
+    """Download MoneyPuck season summaries (one request per season, explicit
+    season ids) into the compact committed table.  Seasons already stored and
+    not listed in ``seasons`` are kept."""
+    import io
+    import time
+    if getter is None:
+        from http_utils import get_text
+        getter = lambda y: pd.read_csv(io.StringIO(get_text(MP_URL.format(y=y), timeout=60)))  # noqa: E731
+    have = pd.read_csv(path) if os.path.exists(path) else pd.DataFrame(columns=MP_COLS)
+    parts = [have[~have['season'].isin(seasons)]] if len(have) else []
+    for i, y in enumerate(seasons):
+        if i:
+            time.sleep(pause)
+        parts.append(extract_mp(getter(y)))
+    df = pd.concat(parts, ignore_index=True).sort_values(['season', 'player_id'])
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    df.to_csv(path, index=False, compression={'method': 'gzip', 'mtime': 0}, float_format='%.3f')
+    return df
+
+
+def load_mp(path=MP_PATH) -> pd.DataFrame:
+    return pd.read_csv(path) if os.path.exists(path) else pd.DataFrame(columns=MP_COLS)
+
+
+def ratings_asof(season) -> pd.Timestamp:
+    """Ratings for season S use completed seasons < S only: as of July 1 of S."""
+    return pd.Timestamp(int(season), 7, 1)
+
+
+def player_ratings(mp: pd.DataFrame, season, weights=RATING_SEASON_WEIGHTS, shrink_min=RATING_SHRINK_MIN):
+    """Point-in-time skater ratings for ``season``.
+
+    Returns {'values': {pid: xG/60}, 'toi': {pid: prior TOI sec/GP}, 'pos': {pid: F|D},
+    'names': {norm name: pid}, 'unrated': {F: v, D: v}, 'asof': Timestamp,
+    'data_seasons': [seasons read]}."""
+    season = int(season)
+    use = [(season - k, w) for k, w in enumerate(weights, start=1)]
+    rows = [mp[mp['season'] == s].assign(w=w) for s, w in use if (mp['season'] == s).any()]
+    out = {'values': {}, 'toi': {}, 'pos': {}, 'names': {}, 'unrated': {'F': 0.0, 'D': 0.0},
+           'asof': ratings_asof(season), 'data_seasons': sorted(int(r['season'].iloc[0]) for r in rows)}
+    if not rows:
+        return out
+    r = pd.concat(rows, ignore_index=True)
+    assert int(r['season'].max()) < season, 'a rating may only use completed seasons'
+    for c in ('toi5', 'on_f5', 'on_a5', 'off_f5', 'off_a5', 'bench5', 'gp', 'toi_all'):
+        r[c] = r[c].astype(float) * r['w']
+    r = r.sort_values('season')
+    g = r.groupby('player_id').agg(toi5=('toi5', 'sum'), on_f5=('on_f5', 'sum'), on_a5=('on_a5', 'sum'),
+                                   off_f5=('off_f5', 'sum'), off_a5=('off_a5', 'sum'), bench5=('bench5', 'sum'),
+                                   gp=('gp', 'sum'), toi_all=('toi_all', 'sum'),
+                                   pos=('pos', 'last'), name=('name', 'last'))
+    on = (g['on_f5'] - g['on_a5']) / g['toi5'].clip(lower=1) * 3600
+    off = (g['off_f5'] - g['off_a5']) / g['bench5'].clip(lower=1) * 3600
+    rel = np.where(g['toi5'] > 0, on, 0.0) - np.where(g['bench5'] > 0, off, 0.0)
+    minutes = g['toi5'] / 60.0
+    g = g.assign(rel=rel, v=rel * minutes / (minutes + shrink_min))
+    for pos in ('F', 'D'):
+        low = g[(g['pos'] == pos) & (g['gp'] < UNRATED_GP) & (g['toi5'] > 0)]
+        if len(low):
+            # pooled (TOI-weighted) relative impact of fringe players, shrunk the same way
+            m = low['toi5'].sum() / 60.0
+            out['unrated'][pos] = float(np.average(low['rel'], weights=low['toi5'])) * m / (m + shrink_min)
+    out['values'] = {int(p): float(x) for p, x in zip(g.index, g['v'])}
+    out['toi'] = {int(p): float(t / n) for p, t, n in zip(g.index, g['toi_all'], g['gp']) if n > 0}
+    out['pos'] = {int(p): str(x) for p, x in zip(g.index, g['pos'])}
+    out['names'] = {_norm(n): int(p) for p, n in zip(g.index, g['name'])}
+    return out
+
+
+# ═══ Fast track F1: lineup-quality delta feature (shared by training and serving) ═══
+
+def lineup_q(ids, pos, values, toi, unrated):
+    """On-ice weighted net xG/60 impact of a lineup: forwards' values weighted
+    by expected TOI and scaled to 3 on-ice forwards, defencemen to 2.  Players
+    without a rating get their position's unrated value."""
+    q = 0.0
+    for grp, slots in (('F', 3.0), ('D', 2.0)):
+        members = [p for p in ids if pos.get(p, 'F') == grp]
+        if not members:
+            continue
+        w = np.array([toi.get(p, DEFAULT_TOI[grp]) for p in members], float)
+        v = np.array([values.get(p, unrated.get(grp, 0.0)) for p in members], float)
+        q += slots * float(np.sum(w * v) / np.sum(w))
+    return q
+
+
+class LineupState:
+    """Running, point-in-time lineup state: who dressed for each team in its
+    recent games, each player's recent TOI, and the season's ratings.
+
+    ``pregame`` only reads games already folded in with ``update_day``; a
+    training replay folds a date in AFTER computing that date's features."""
+
+    def __init__(self, mp: pd.DataFrame, baseline_games=BASELINE_GAMES, cross_season=True,
+                 min_baseline=MIN_BASELINE_GAMES):
+        from collections import deque
+        self.mp = mp
+        self.baseline_games = baseline_games
+        self.cross_season = cross_season
+        self.min_baseline = min_baseline
+        self.season = None
+        self.r = None
+        self.team_games = defaultdict(lambda: deque(maxlen=baseline_games))   # team -> (date, season, ids)
+        self.player_toi = defaultdict(lambda: deque(maxlen=TOI_HISTORY))     # pid -> toi sec
+        self.player_pos = {}
+        self.roster_keys = defaultdict(dict)    # team -> {(sweater, last name): pid}
+        self.history_max_date = None
+
+    @staticmethod
+    def team_key(team):
+        return TEAM_ALIASES.get(team, team)
+
+    def ensure_season(self, season):
+        season = int(season)
+        if self.season != season:
+            self.r = player_ratings(self.mp, season)
+            self.season = season
+
+    def update_day(self, day_rows: pd.DataFrame):
+        """Fold the dressed lineups of one day's completed games."""
+        for (gid, team), g in day_rows.groupby(['game_id', 'team'], sort=True):
+            sk = g[g['pos'] != 'G']
+            d = pd.Timestamp(g['game_date'].iloc[0]).normalize()
+            ids = [int(p) for p in sk['player_id']]
+            self.team_games[self.team_key(team)].append((d, int(str(gid)[:4]), ids))
+            for p, t, pos, num, nm in zip(sk['player_id'], sk['toi_sec'], sk['pos'], sk['sweater'], sk['name']):
+                p = int(p)
+                if t and t > 0:
+                    self.player_toi[p].append(float(t))
+                self.player_pos[p] = pos
+                last = _norm(nm).split()[-1:] if isinstance(nm, str) else []
+                if last and not pd.isna(num):
+                    self.roster_keys[self.team_key(team)][(int(num), last[0])] = p
+            if self.history_max_date is None or d > self.history_max_date:
+                self.history_max_date = d
+
+    def pos_of(self, p):
+        return self.player_pos.get(p) or (self.r['pos'].get(p) if self.r else None) or 'F'
+
+    def expected_toi(self, p):
+        h = self.player_toi.get(p)
+        if h and len(h) >= 3:
+            return float(np.mean(h))
+        if self.r and p in self.r['toi']:
+            return self.r['toi'][p]
+        return DEFAULT_TOI[self.pos_of(p)]
+
+    def baseline(self, team, season):
+        games = list(self.team_games.get(self.team_key(team), ()))
+        if not self.cross_season:
+            games = [g for g in games if g[1] == int(season)]
+        if len(games) < self.min_baseline:
+            return None
+        return baseline_lineup([g[2] for g in games])
+
+    def last_lineup(self, team):
+        games = self.team_games.get(self.team_key(team))
+        return list(games[-1][2]) if games else None
+
+    def side(self, team, season, tonight_ids):
+        """{'dq', 'q', 'q_base', 'rated', 'n'} for one team, or None without a baseline."""
+        self.ensure_season(season)
+        base = self.baseline(team, season)
+        if base is None or not tonight_ids:
+            return None
+        ids = [int(p) for p in tonight_ids][:LINEUP_SIZE]
+        allp = set(ids) | set(base)
+        pos = {p: self.pos_of(p) for p in allp}
+        toi = {p: self.expected_toi(p) for p in allp}
+        vals, unr = self.r['values'], self.r['unrated']
+        q_t = lineup_q(ids, pos, vals, toi, unr)
+        q_b = lineup_q(base, pos, vals, toi, unr)
+        return {'dq': q_t - q_b, 'q': q_t, 'q_base': q_b, 'rated': sum(1 for p in ids if p in vals), 'n': len(ids)}
+
+    def pregame(self, home, away, game_date, season, home_ids, away_ids):
+        """Feature dict for one game (zeros when a side has no baseline yet)."""
+        h = self.side(home, season, home_ids)
+        a = self.side(away, season, away_ids)
+        ok = h is not None and a is not None
+        return {
+            'd_lineup': (h['dq'] - a['dq']) if ok else 0.0,
+            'd_lineup_level': (h['q'] - a['q']) if ok else 0.0,
+            'h_lineup_dq': h['dq'] if h else None, 'a_lineup_dq': a['dq'] if a else None,
+            'h_lineup_rated': h['rated'] if h else None, 'a_lineup_rated': a['rated'] if a else None,
+            'lineup_ok': bool(ok),
+            'ratings_asof': self.r['asof'],
+            'ratings_data_max_season': max(self.r['data_seasons']) if self.r['data_seasons'] else None,
+            'history_max_date': self.history_max_date,
+            'game_date': pd.Timestamp(game_date).normalize(),
+        }
+
+    # --- serving: DailyFaceoff names -> NHL ids ---------------------------------
+    def resolve(self, team, players, extra_names=None):
+        """([NHL id], [unmatched names]) for DailyFaceoff player dicts
+        ({name, number}): sweater number + last name on the team's recent
+        boxscores first, then MoneyPuck / lookup full names."""
+        keys = self.roster_keys.get(self.team_key(team), {})
+        names = dict(extra_names or {})
+        if self.r:
+            names.update(self.r['names'])
+        ids, unknown = [], []
+        for pl in players:
+            nm = pl.get('name') if isinstance(pl, dict) else pl
+            num = pl.get('number') if isinstance(pl, dict) else None
+            n = _norm(nm or '')
+            pid = None
+            if n and num is not None:
+                try:
+                    pid = keys.get((int(num), n.split()[-1]))
+                except (TypeError, ValueError):
+                    pid = None
+            if pid is None and n:
+                pid = names.get(n)
+            (ids if pid is not None else unknown).append(pid if pid is not None else nm)
+        return ids, unknown
+
+
+def _dfo_skaters(lineup):
+    """DailyFaceoff lineup dict -> [{name, number, injuryStatus}] for f1-f4, d1-d3."""
+    out = []
+    for key in ('f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3'):
+        for p in (lineup or {}).get(key) or []:
+            if isinstance(p, dict) and p.get('name'):
+                out.append(p)
+    return out
+
+
+def serve_lineup_side(st: LineupState, team, season, lineup, injured=None):
+    """Tonight's skater ids for one team: DailyFaceoff projected lines minus
+    players listed out (DFO injuryStatus or ESPN Out/IR), mapped to NHL ids.
+    Coverage gate: >= MIN_MATCHED mapped, else the team's last dressed lineup
+    (L-asof, DESIGN §4.2).  Returns (ids, info) or (None, info)."""
+    out_names = {_norm(i.get('name', '')) for i in (injured or [])
+                 if str(i.get('status', '')).strip().lower() in OUT_STATUSES}
+    players = [p for p in _dfo_skaters(lineup)
+               if str(p.get('injuryStatus') or '').strip().lower() not in OUT_STATUSES
+               and _norm(p['name']) not in out_names]
+    ids, unknown = st.resolve(team, players)
+    if len(ids) >= MIN_MATCHED:
+        return ids, {'source': 'projected', 'matched': len(ids), 'unknown': unknown}
+    last = st.last_lineup(team)
+    if last:
+        return last, {'source': 'last_game', 'matched': len(ids), 'unknown': unknown}
+    return None, {'source': None, 'matched': len(ids), 'unknown': unknown}
+
+
+def serve_lineup_features(st: LineupState, home, away, game_date, home_lineup, away_lineup,
+                          injured=None, season=None):
+    """F1 lineup features for an upcoming game (same maths as training).
+    ``injured`` is {tricode: [{name, status}]} (ESPN)."""
+    from season import season_start_year
+    gd = pd.Timestamp(game_date).normalize()
+    season = int(season) if season is not None else season_start_year(gd.date())
+    injured = injured or {}
+    h_ids, h_info = serve_lineup_side(st, home, season, home_lineup, injured.get(home))
+    a_ids, a_info = serve_lineup_side(st, away, season, away_lineup, injured.get(away))
+    f = st.pregame(home, away, gd, season, h_ids or [], a_ids or [])
+    f['home'] = {**h_info, 'dq': f['h_lineup_dq'], 'rated': f['h_lineup_rated']}
+    f['away'] = {**a_info, 'dq': f['a_lineup_dq'], 'rated': f['a_lineup_rated']}
+    return f
+
+
+def update_current_store(pipeline_dir=SCRIPT_DIR, max_fetch=60, ft_dir=None, getter=None, verbose=True):
+    """Gap-driven top-up of this season's lineup store: fetch the boxscores of
+    completed current-season games (gamestats file) that are not stored yet,
+    at most ``max_fetch`` per run.  Returns the number of games added."""
+    from season import START_YEAR, season_file
+    p = os.path.join(pipeline_dir, season_file('gamestats', START_YEAR))
+    if not os.path.exists(p):
+        return 0
+    g = pd.read_csv(p, usecols=['game_id'])
+    ids = sorted({int(x) for x in g['game_id'] if str(x)[4:6] in ('02', '03')})
+    path = lineup_store_path(START_YEAR, ft_dir)
+    have = set(pd.read_csv(path, usecols=['game_id'])['game_id'].astype(int)) if os.path.exists(path) else set()
+    todo = [x for x in ids if x not in have][:max_fetch]
+    if not todo:
+        return 0
+    n = fetch_lineups(todo, START_YEAR, ft_dir=ft_dir, verbose=False, getter=getter)
+    if verbose:
+        print(f"  [lineups] stored {n} new {START_YEAR} boxscore lineups ({len(have) + n} games)")
+    return n
+
+
+LINEUP_CROSS_SEASON = True     # baseline may reach into last season's final games (selected on dev folds)
+
+
+def build_lineup_matrix(store: pd.DataFrame | None = None, mp: pd.DataFrame | None = None,
+                        cross_season=None) -> pd.DataFrame:
+    """One row per stored game: the lineup features computed from the state
+    BEFORE the game's date (L-actual: tonight = the dressed skaters)."""
+    store = load_lineup_store() if store is None else store
+    mp = load_mp() if mp is None else mp
+    cross_season = LINEUP_CROSS_SEASON if cross_season is None else cross_season
+    if store.empty:
+        return pd.DataFrame(columns=['game_id', 'season', 'd_lineup'])
+    st = LineupState(mp, cross_season=cross_season)
+    rows = []
+    store = store.copy()
+    store['game_date'] = pd.to_datetime(store['game_date']).dt.normalize()
+    for date, day in store.groupby('game_date', sort=True):
+        for gid, g in day.groupby('game_id', sort=True):
+            sk = g[g['pos'] != 'G']
+            h, a = sk[sk['side'] == 'H'], sk[sk['side'] == 'A']
+            if h.empty or a.empty:
+                continue
+            season = int(str(gid)[:4])
+            ht, at = h['team'].iloc[0], a['team'].iloc[0]
+            f = st.pregame(ht, at, date, season, list(h['player_id']), list(a['player_id']))
+            # L-asof (DESIGN §4.2): tonight = each team's previous dressed lineup
+            fa = st.pregame(ht, at, date, season, st.last_lineup(ht) or [], st.last_lineup(at) or [])
+            f['d_lineup_asof'] = fa['d_lineup']
+            f['game_id'] = int(gid)
+            f['season'] = season
+            rows.append(f)
+        st.update_day(day)
+    return pd.DataFrame(rows)
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--backtest', action='store_true')
