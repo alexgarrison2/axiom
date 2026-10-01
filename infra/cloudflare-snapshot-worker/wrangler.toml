@@ -1,0 +1,25 @@
+# Cloudflare Worker that triggers .github/workflows/odds_close.yml shortly
+# before each NHL game (SETUP.md has the step-by-step guide).
+name = "ponyxg-snapshot-trigger"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+# No public route is needed; the *.workers.dev URL only shows a read-only
+# status page.
+workers_dev = true
+
+[triggers]
+# Every 5 minutes.  Keep CRON_INTERVAL_MIN below in sync if you change it.
+crons = ["*/5 * * * *"]
+
+[vars]
+GITHUB_REPO = "alexgarrison2/axiom"
+WORKFLOW_FILE = "odds_close.yml"
+GITHUB_REF = "main"
+# Trigger when a game starts in (LEAD_MAX_MIN - CRON_INTERVAL_MIN, LEAD_MAX_MIN]
+# minutes, i.e. 8-13 min before the scheduled start.  The GitHub job then
+# starts ~1 min later, inside the 15-minute "close" window.
+LEAD_MAX_MIN = "13"
+CRON_INTERVAL_MIN = "5"
+
+# The GitHub token is a secret, never put it in this file:
+#   npx wrangler secret put GITHUB_TOKEN
