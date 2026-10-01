@@ -842,6 +842,185 @@ def fasttrack_main(M, cols, xg_source, cur_meta, args):
     return 0
 
 
+# ─── Joint retrain: xG v2 inputs + RAPM v2 lineup term (bu/xg, bu/lineup) ────────
+
+JOINT_REPORT = os.path.join(SCRIPT_DIR, 'bu', 'lineup', 'out', 'joint_retrain.json')
+JOINT_FOLDS = (2023, 2024, 2025)
+SHADOW_DIR = os.path.join(SCRIPT_DIR, 'models', 'shadow')
+SHADOW_MODEL = os.path.join(SHADOW_DIR, 'game_model_f1.pkl')
+SHADOW_META = os.path.join(SHADOW_DIR, 'game_model_f1_meta.json')
+JOINT_CANDIDATE = 'v2 xG + BU replacing d_lineup'
+
+
+def _fold_metrics(folds):
+    return {str(s): {k: f.get(k) for k in ('n', 'log_loss', 'brier', 'accuracy', 'calibration_slope',
+                                             'calibration_intercept', 'mean_pred_home', 'actual_home', 'C')}
+            | {'early_log_loss': f['early'].get('log_loss'), 'early_n': f['early'].get('n'),
+               'home_rate_log_loss': f['home_rate_baseline']['log_loss']}
+            for s, f in folds.items()}
+
+
+LIVE_ROW = 'live (v1 xG, F1 d_lineup)'
+
+
+def joint_backtest(M2, M1, M1e, live_cols, folds=JOINT_FOLDS, verbose=True):
+    """Walk-forward 2023-24..2025-26 of the joint candidate and its decomposition against the
+    LIVE model as it runs today: its feature set on exactly the inputs it was trained on (M1:
+    xG v1, legacy shot dedupe; reproduces its game_model_meta.json cv_results).  M2: xG v2
+    with the fixed dedupe (the candidate's inputs); M1e: xG v1 with the fixed dedupe.
+
+    The candidate (replace F1 ``d_lineup`` with ``bu_d_net + bu_d_delta`` on v2 xG) was fixed
+    before this run by the sm-rapm review (``lineup_eval_vs_f1_main.json``: dev folds only);
+    the other rows are reported, not selected from.  2025-26 was the soft holdout of both
+    components (one logged look each); here it is pooled evidence per the owner decision of
+    2026-10-01, and 2026-27 live games are the clean re-test (Gate C, pre-registered)."""
+    base_f1 = [c for c in live_cols if c not in F.BU_COLUMNS]
+    no_lineup = [c for c in base_f1 if c not in FT_COLUMNS]
+    bu = list(F.BU_COLUMNS)
+    variants = {
+        LIVE_ROW: (M1, base_f1),
+        'v1 xG (shot dedupe fixed), F1 d_lineup': (M1e, base_f1),
+        'v2 xG, F1 d_lineup': (M2, base_f1),
+        JOINT_CANDIDATE: (M2, no_lineup + bu),
+        'v2 xG + BU on top of d_lineup': (M2, base_f1 + bu),
+        'v2 xG, no lineup term': (M2, no_lineup),
+        'v1 xG (dedupe fixed) + BU replacing d_lineup': (M1e, no_lineup + bu),
+    }
+    base_folds, base_oos = walk(M1, base_f1, test_seasons=folds)
+    early_ids = base_oos.loc[base_oos['early'], 'game_id']
+    rows = {}
+    for name, (M, cols) in variants.items():
+        fd, oos = (base_folds, base_oos) if name == LIVE_ROW else walk(M, cols, test_seasons=folds)
+        g = ft_gate(base_oos, oos, fd, folds=folds)
+        rows[name] = {'features': cols, 'xg_inputs': {id(M1): 'v1 (legacy dedupe)', id(M1e): 'v1',
+                                                      id(M2): 'v2'}[id(M)],
+                      'folds': _fold_metrics(fd), 'vs_live': {'per_fold': g['per_fold'], 'pooled': g['pooled'],
+                                                               'brier': g['brier']},
+                      'calibration_pooled': g['calibration'],
+                      'early_season_vs_live': _subgroup(base_oos, oos, early_ids, folds=folds),
+                      'market_descriptive': ft_market_descriptive(base_oos, oos), 'checks': g['checks']}
+        for S in folds:
+            sub = oos[oos['season'] == S]
+            if len(sub) > 50:
+                b, se, ci = calibration_slope_ci(sub['home_win'], sub['p_model'])
+                rows[name]['folds'][str(S)]['calibration_slope_ci95'] = list(ci)
+        if verbose:
+            p = g['pooled']
+            print(f"  {name:34s} pooled Δ {p['delta']:+.5f} (se {p['se']:.5f}, 95% {p['boot_ci95'][0]:+.5f}.."
+                  f"{p['boot_ci95'][1]:+.5f}) folds "
+                  + ', '.join(f"{s} {v['delta']:+.5f}" for s, v in g['per_fold'].items())
+                  + f" | LL " + ', '.join(f"{s} {fd[s]['log_loss']:.4f}" for s in fd)
+                  + f" | slope {g['calibration']['slope']:.3f}")
+        if name == JOINT_CANDIDATE:
+            cand_folds = fd
+    return rows, cand_folds
+
+
+def joint_checks(row, cand_folds, folds=JOINT_FOLDS):
+    """Owner decision 2026-10-01: ship xG v2 + the RAPM lineup term on POOLED evidence, with
+    the old model kept as a rollback shadow.  Binding: pooled Δ log loss vs the live model
+    <= 0, pooled calibration slope 95% CI contains 1, every fold beats the home-rate constant
+    by >= 0.01.  Per-fold Δ and the latest-fold slope range are reported, not binding."""
+    p, cal = row['vs_live']['pooled'], row['calibration_pooled']
+    checks = [{'check': 'pooled delta log loss <= 0 vs the live model (2023-24..2025-26)', 'value': p['delta'],
+               'boot_ci95': p['boot_ci95'], 'binding': True, 'passed': bool(p['delta'] <= 0)},
+              {'check': 'pooled calibration slope 95% CI contains 1', 'value': cal['slope'], 'ci95': cal['ci95'],
+               'binding': True, 'passed': bool(cal['ci95'][0] <= 1 <= cal['ci95'][1])}]
+    for s in folds:
+        f = cand_folds[s]
+        gain = f['home_rate_baseline']['log_loss'] - f['log_loss']
+        checks.append({'check': f'{s} beats home-rate by >= {MIN_GAIN_VS_HOME_RATE}', 'value': gain,
+                       'binding': True, 'passed': bool(gain >= MIN_GAIN_VS_HOME_RATE)})
+    for s in folds:
+        d = row['vs_live']['per_fold'][str(s)]['delta']
+        checks.append({'check': f'{s} fold delta <= +{FT_FOLD_TOL} (reported)', 'value': d, 'binding': False,
+                       'passed': bool(d <= FT_FOLD_TOL)})
+    ls = cand_folds[max(folds)].get('calibration_slope')
+    checks.append({'check': f'{max(folds)} calibration slope in {list(CAL_SLOPE_RANGE)} (reported)', 'value': ls,
+                   'binding': False, 'passed': bool(ls is not None and CAL_SLOPE_RANGE[0] <= ls <= CAL_SLOPE_RANGE[1])})
+    for s in folds:
+        ci = (row.get('folds') or {}).get(str(s), {}).get('calibration_slope_ci95')
+        if ci:
+            checks.append({'check': f'{s} calibration slope 95% CI contains 1 (reported)',
+                           'value': row['folds'][str(s)]['calibration_slope'], 'ci95': ci, 'binding': False,
+                           'passed': bool(ci[0] <= 1 <= ci[1])})
+    return bool(all(c['passed'] for c in checks if c['binding'])), checks
+
+
+def archive_shadow(cur_meta, model_path=T.MODEL_PATH, out_model=SHADOW_MODEL, out_meta=SHADOW_META):
+    """Keep the replaced live model as the rollback shadow (served on xG v1 inputs)."""
+    import shutil
+    os.makedirs(os.path.dirname(out_model), exist_ok=True)
+    shutil.copyfile(model_path, out_model)
+    meta = dict(cur_meta)
+    meta['shadow'] = {'role': 'rollback shadow of the joint xG v2 + RAPM lineup model',
+                      'archived_at': _now().isoformat(), 'xg_inputs': 'v1', 'dedupe': 'legacy',
+                      'serving': 'ml_predict.MLPredictor(model_path=models/shadow/game_model_f1.pkl, xg="v1", '
+                                 'dedupe="legacy")'}
+    _write(out_meta, meta)
+    return meta
+
+
+def joint_main(cur_meta, args):
+    live_cols = list(cur_meta.get('feature_columns') or F.FEATURE_COLUMNS)
+    if any(c in live_cols for c in F.BU_COLUMNS):
+        print('[joint] the live model already uses the RAPM lineup term; nothing to do')
+        return 0
+    if F.history_xg_version() != 'v2':
+        raise SystemExit('[joint] the historical shot files have no v2 xg_raw: run `python -m bu.xg.history apply`')
+    M2, xg_source = T.build_matrix()
+    M1, _ = T.build_matrix(xg='v1', dedupe='legacy')
+    M1e, _ = T.build_matrix(xg='v1')
+    print(f"[joint] {len(M2)} games; live {cur_meta.get('model_version')} features {live_cols}")
+    rows, cand_folds = joint_backtest(M2, M1, M1e, live_cols)
+    live_fd = rows[LIVE_ROW]['folds']
+    repro = {str(f['test_season']): abs(f['log_loss'] - live_fd[str(f['test_season'])]['log_loss'])
+             for f in cur_meta.get('cv_results', []) if str(f['test_season']) in live_fd}
+    print(f"[joint] live baseline reproduces game_model_meta.json cv_results: max |dLL| "
+          f"{max(repro.values()) if repro else float('nan'):.2e}")
+    cand = rows[JOINT_CANDIDATE]
+    ok, checks = joint_checks(cand, cand_folds)
+    report = {
+        'generated_at': _now().isoformat(),
+        'design': 'DESIGN.md §3.1 live wiring + §3.2.2 lineup term; owner decision 2026-10-01 (DECISIONS.md)',
+        'live_model': cur_meta.get('model_version'), 'live_features': live_cols, 'folds': list(JOINT_FOLDS),
+        'live_baseline_reproduction_max_abs_ll_diff': max(repro.values()) if repro else None,
+        'candidate': JOINT_CANDIDATE, 'candidate_features': cand['features'],
+        'candidate_fixed_by': 'bu/lineup/out/xgv1/lineup_eval_vs_f1_main.json (dev folds: replacing d_lineup beat adding on top)',
+        'variants': rows, 'checks': checks, 'passed': ok,
+        'rule': ('owner decision 2026-10-01: ship on pooled evidence (no strict single-season gate), keeping the '
+                 'old model as a rollback shadow; binding = pooled Δ <= 0, pooled calibration CI contains 1, '
+                 'every fold beats the home-rate constant'),
+        'bu_features_meta': os.path.relpath(os.path.join(os.path.dirname(T.BU_FEATURES_PATH),
+                                                         'lineup_features.meta.json'), SCRIPT_DIR),
+        'lake_coverage': {'games_with_bu': int(M2['bu_ok'].sum()), 'games': int(len(M2))},
+    }
+    _write(JOINT_REPORT, report)
+    print(f"[joint] report {JOINT_REPORT}; binding checks {'PASS' if ok else 'FAIL'}")
+    for c in checks:
+        print(f"   {'ok ' if c['passed'] else 'NO '} {c['check']}: {c['value']}")
+    if not (args.promote and ok and not args.dry_run):
+        print('[joint] not promoted')
+        return 1 if (args.strict and not ok) else 0
+    archive_shadow(cur_meta)
+    model, meta, _ = T.train(cols=cand['features'], save=False, legacy=not args.no_legacy, verbose=True,
+                             M=M2, xg_source=xg_source, prev_meta=cur_meta)
+    carry_legacy_baselines(meta, cur_meta)
+    meta['bu_lineup'] = {**(meta.get('bu_lineup') or {}), 'gate': {
+        'pooled_delta_vs_previous': cand['vs_live']['pooled'], 'per_fold': cand['vs_live']['per_fold'],
+        'calibration': cand['calibration_pooled'], 'report': os.path.relpath(JOINT_REPORT, SCRIPT_DIR)}}
+    meta['shadow'] = {'f1': {'model': os.path.relpath(SHADOW_MODEL, SCRIPT_DIR),
+                             'meta': os.path.relpath(SHADOW_META, SCRIPT_DIR),
+                             'model_version': cur_meta.get('model_version'), 'xg_inputs': 'v1',
+                             'dedupe': 'legacy',
+                             'features': live_cols}}
+    meta['promotion'] = {'promoted_at': _now().isoformat(), 'replaced': cur_meta.get('model_version'),
+                         'checks': checks, 'rule': report['rule']}
+    T.save_model(model, meta)
+    print(f"[joint] promoted {meta['model_version']} ({meta['xg_version']} xG) with {cand['features']}")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--dry-run', action='store_true', help='evaluate gates, never promote')
@@ -854,11 +1033,17 @@ def main(argv=None):
     ap.add_argument('--fasttrack', action='store_true',
                     help='F1 gate: lineup + starting-goalie features (models/fasttrack/fasttrack_backtest.json); '
                          'with --promote, retrain and promote the selected candidate if its gate passes')
-    ap.add_argument('--promote', action='store_true', help='with --fasttrack: promote on a passing gate')
+    ap.add_argument('--promote', action='store_true', help='with --fasttrack / --joint: promote on a passing gate')
+    ap.add_argument('--joint', action='store_true',
+                    help='joint retrain: xG v2 inputs + RAPM v2 lineup term replacing F1 d_lineup, vs the live '
+                         'model on its v1 inputs (bu/lineup/out/joint_retrain.json); with --promote, archive the '
+                         'live model as the rollback shadow (models/shadow/) and promote')
     args = ap.parse_args(argv)
 
     with open(T.META_PATH) as f:
         cur_meta = json.load(f)
+    if args.joint:
+        return joint_main(cur_meta, args)
     cols = list(cur_meta.get('feature_columns') or F.FEATURE_COLUMNS)
     M, xg_source = T.build_matrix()
     print(f"[retrain] {len(M)} games, live features {cols}")

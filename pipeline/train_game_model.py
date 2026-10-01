@@ -96,11 +96,40 @@ def attach_lineup_features(M: pd.DataFrame, lineup: pd.DataFrame | None = None, 
     return M
 
 
-def build_matrix(current_df=None, use_raw_xg=True, lineups=True):
-    games, xg_source = F.load_feature_games(current_df=current_df, use_raw_xg=use_raw_xg)
+BU_FEATURES_PATH = os.path.join(SCRIPT_DIR, 'bu', 'lineup', 'out', 'lineup_features.csv.gz')
+BU_KEEP = ['game_id', 'bu_ok', *F.BU_COLUMNS]
+
+
+def attach_bu_features(M: pd.DataFrame, path: str = BU_FEATURES_PATH) -> pd.DataFrame:
+    """Merge the RAPM v2 lineup term (``python -m bu.lineup features``: point-in-time ratings
+    as of 2 days before each game, L-actual dressed 18) by game id.  Games without a row, or
+    under the coverage gate (``bu_ok`` False: < 14 rated skaters a side), get neutral 0, the
+    same policy as the walk-forward (``bu.lineup.evaluate.attach``) and the live scorer."""
+    M = M.drop(columns=[c for c in BU_KEEP if c != 'game_id' and c in M.columns])
+    if not os.path.exists(path):
+        for c in F.BU_COLUMNS:
+            M[c] = 0.0
+        M['bu_ok'] = False
+        return M
+    f = pd.read_csv(path, usecols=lambda c: c in BU_KEEP)
+    ok = f['bu_ok'].astype(str).str.lower().isin(('true', '1'))
+    for c in F.BU_COLUMNS:
+        f[c] = pd.to_numeric(f[c], errors='coerce').where(ok, 0.0)
+    f['bu_ok'] = ok
+    M = M.merge(f.drop_duplicates('game_id'), on='game_id', how='left')
+    for c in F.BU_COLUMNS:
+        M[c] = M[c].fillna(0.0)
+    M['bu_ok'] = M['bu_ok'].astype('boolean').fillna(False).astype(bool)
+    return M
+
+
+def build_matrix(current_df=None, use_raw_xg=True, lineups=True, xg='live', bu=True, dedupe='event'):
+    games, xg_source = F.load_feature_games(current_df=current_df, use_raw_xg=use_raw_xg, xg=xg, dedupe=dedupe)
     M = F.build_training_matrix(games)
     if lineups and len(M):
         M = attach_lineup_features(M)
+    if bu and len(M):
+        M = attach_bu_features(M)
     M['early'] = (M['team_game_number_h'] <= EARLY_GP) | (M['team_game_number_a'] <= EARLY_GP)
     first = M['season'].min()
     M['burn_in'] = (M['season'] == first) & ((M['h_gp'] < BURN_IN_GP) | (M['a_gp'] < BURN_IN_GP))
@@ -258,8 +287,16 @@ def explain_coefficients(model, cols):
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
-def model_version(training_date: datetime) -> str:
-    return f"{MODEL_FAMILY}-v{MODEL_GENERATION}-{training_date.strftime('%Y%m%d')}"
+def model_version(training_date: datetime, cols=None, xg_version=None) -> str:
+    """``logit-elo-v5-YYYYMMDD`` plus the input tags of models trained on xG v2 (``-xg2``) and
+    with the RAPM v2 lineup term (``-rapm``), so two models trained the same day stay apart in
+    the graded record (model_report groups by version within the ``logit-elo`` family)."""
+    v = f"{MODEL_FAMILY}-v{MODEL_GENERATION}-{training_date.strftime('%Y%m%d')}"
+    if xg_version == 'v2':
+        v += '-xg2'
+    if cols is not None and any(c in cols for c in F.BU_COLUMNS):
+        v += '-rapm'
+    return v
 
 
 def feature_params():
@@ -327,7 +364,7 @@ def train(cols=None, save=True, legacy=True, verbose=True, M=None, xg_source=Non
         print(f"  final C={C_final}; home-ice logit {home_logit:.3f} (p={1 / (1 + np.exp(-home_logit)):.3f}); betas {betas}")
 
     meta = {
-        'model_version': model_version(now),
+        'model_version': model_version(now, cols, F.history_xg_version()),
         'model_type': 'logistic_regression_l2',
         'training_date': now.isoformat(),
         'training_seasons': sorted(int(s) for s in usable['season'].unique()),
@@ -335,6 +372,9 @@ def train(cols=None, save=True, legacy=True, verbose=True, M=None, xg_source=Non
         'feature_columns': cols,
         'feature_params': feature_params(),
         'xg_source': xg_source,
+        # xG version of the training inputs; "v2" releases the bu.xg.live interlock (an unset
+        # PONYXG_XG then scores live shots with v2, matching what this model learned from)
+        'xg_version': F.history_xg_version(),
         'game_types': list(F.NHL_GAME_TYPES),
         'C': C_final,
         'C_scores_latest_season': {str(k): v for k, v in C_scores.items()},
@@ -351,6 +391,9 @@ def train(cols=None, save=True, legacy=True, verbose=True, M=None, xg_source=Non
     ft = fasttrack_config(cols, prev_meta)
     if ft:
         meta['fasttrack'] = ft
+    bu = bu_config(cols, prev_meta)
+    if bu:
+        meta['bu_lineup'] = bu
     if len(oos):
         os.makedirs(F.CACHE_DIR, exist_ok=True)
         oos.to_csv(OOS_PATH, index=False)
@@ -369,6 +412,34 @@ def fasttrack_config(cols, prev_meta=None):
     import lineup_adjust as L
     prev = (prev_meta or {}).get('fasttrack') or {}
     return {**prev, 'lineup_cross_season': L.LINEUP_CROSS_SEASON, 'rating_value': L.RATING_VALUE}
+
+
+def bu_config(cols, prev_meta=None):
+    """meta['bu_lineup'] for a model that uses the RAPM v2 lineup term: the feature table it was
+    trained on (sha256, as built by ``python -m bu.lineup features``), the serving bundle the
+    live path reads and its freshness rule, plus the previous model's gate record."""
+    if not any(c in cols for c in F.BU_COLUMNS):
+        return None
+    import hashlib
+    from bu.lineup import serve as SV
+    prev = (prev_meta or {}).get('bu_lineup') or {}
+    fmeta_p = os.path.join(os.path.dirname(BU_FEATURES_PATH), 'lineup_features.meta.json')
+    fmeta = {}
+    try:
+        with open(fmeta_p) as f:
+            fmeta = json.load(f)
+    except (OSError, ValueError):
+        pass
+    sha = None
+    if os.path.exists(BU_FEATURES_PATH):
+        with open(BU_FEATURES_PATH, 'rb') as f:
+            sha = hashlib.sha256(f.read()).hexdigest()
+    return {**prev, 'features': [c for c in cols if c in F.BU_COLUMNS],
+            'training_table': os.path.relpath(BU_FEATURES_PATH, SCRIPT_DIR), 'training_table_sha256': sha,
+            'rapm_xg_source': fmeta.get('xg_source'), 'rapm_code_version': fmeta.get('code_version'),
+            'rapm_hyper': fmeta.get('hyper'),
+            'serving_bundle': 'bu/lineup/out/serving_bundle.json.gz', 'max_age_h': SV.MAX_AGE_H,
+            'min_rated': SV.MIN_RATED, 'flag': 'PONYXG_BU=on|off (off: neutral 0, the term is logged in shadow only)'}
 
 
 def save_model(model, meta, model_path=MODEL_PATH, meta_path=META_PATH):

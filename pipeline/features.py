@@ -100,6 +100,11 @@ CANDIDATE_COLUMNS = [
 
 # Fast-track columns that do not come from FeatureState (merged by game id).
 LINEUP_COLUMNS = ('d_lineup', 'd_lineup_level')
+# RAPM v2 lineup term (BU M2, pipeline/bu/lineup): tonight's dressed 18 x RAPM v2 ratings x
+# expected EV TOI, home - away.  ``bu_d_net``: lineup net xG/60; ``bu_d_delta``: the same
+# minus each team's last 10 dressed lineups.  Training merges them by game id from
+# bu/lineup/out/lineup_features.csv.gz; serving uses bu.lineup.serve.LiveLineupTerm.
+BU_COLUMNS = ('bu_d_net', 'bu_d_delta')
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -222,10 +227,18 @@ def _score_raw_xg(shots: pd.DataFrame, pipeline_dir) -> pd.Series:
     """Raw shot-model xG (no talent multiplier, no normalisation)."""
     if 'xg_raw' in shots.columns and shots['xg_raw'].notna().any():
         return pd.to_numeric(shots['xg_raw'], errors='coerce')
+    return _score_v1_pickle(shots, pipeline_dir)
+
+
+def _score_v1_pickle(shots: pd.DataFrame, pipeline_dir) -> pd.Series:
+    """xG v1: re-score shots with ``xg_model_xgb.pkl`` (ignores any stored xg_raw)."""
     import pickle
     import sys
     if pipeline_dir not in sys.path:
         sys.path.insert(0, pipeline_dir)
+    out = pd.Series(np.nan, index=shots.index)
+    if shots.empty:
+        return out
     cwd = os.getcwd()
     try:
         os.chdir(pipeline_dir)  # preprocess_data reads player_hand.json relative to cwd
@@ -235,8 +248,7 @@ def _score_raw_xg(shots: pd.DataFrame, pipeline_dir) -> pd.Series:
         with open(os.path.join(pipeline_dir, 'xg_model_xgb.pkl'), 'rb') as f:
             model = pickle.load(f)
         with contextlib.redirect_stdout(io.StringIO()):
-            X, _ = preprocess_data(shots)
-        out = pd.Series(np.nan, index=shots.index)
+            X, _ = preprocess_data(shots.drop(columns=['xg_raw'], errors='ignore'))
         if len(X):
             out.loc[X.index] = model.predict_proba(X)[:, 1]
         return out
@@ -244,47 +256,48 @@ def _score_raw_xg(shots: pd.DataFrame, pipeline_dir) -> pd.Series:
         os.chdir(cwd)
 
 
-def raw_team_game_xg(pipeline_dir=SCRIPT_DIR, use_cache=True) -> pd.DataFrame | None:
-    """Per (game_id, team): raw xG for/against (all situations and 5v5), excluding
-    empty-net shots, plus non-empty-net goals against (for goalie GSAx).
+# Shot-xG inputs of the feature state: 'live' = each file's xg_raw (v2 once the history is
+# applied and PONYXG_XG=v2), 'v1' = the v1 pickle's score (the F1 rollback shadow's inputs).
+XG_INPUTS = ('live', 'v1')
+# Shot de-duplication across files: 'event' (one row per game_id + event_id) or 'legacy' (the
+# pre-2026-10-01 full-row dedupe that also merged different shots with equal xG; kept only to
+# reproduce the models trained on it, i.e. the F1 shadow, exactly).
+DEDUPE_MODES = ('event', 'legacy')
 
-    Returns None if no shot files / xG model are available (callers then fall
-    back to the xG columns already in the gamestats file)."""
-    files = _shot_files(pipeline_dir)
-    if not files:
-        return None
-    sig = '|'.join(f"{os.path.basename(f)}:{os.path.getsize(f)}:{int(os.path.getmtime(f))}" for f in files)
-    model_path = os.path.join(pipeline_dir, 'xg_model_xgb.pkl')
-    if os.path.exists(model_path):
-        sig += f"|model:{os.path.getsize(model_path)}:{int(os.path.getmtime(model_path))}"
-    cache_path = os.path.join(CACHE_DIR, 'raw_team_game_xg.csv')
-    sig_path = cache_path + '.sig'
-    if use_cache and os.path.exists(cache_path) and os.path.exists(sig_path):
-        with open(sig_path) as f:
-            if f.read() == sig:
-                return pd.read_csv(cache_path)
 
-    team_ids = load_team_ids(pipeline_dir)
-    parts = []
-    usecols = None
-    for f in files:
-        head = pd.read_csv(f, nrows=0)
-        if head.empty and len(head.columns) == 0:
-            continue
-        s = pd.read_csv(f, low_memory=False)
-        if s.empty:
-            continue
-        s = s[s['game_id'].astype(str).str[4:6].isin(NHL_GAME_TYPES)]
-        try:
-            s['xg_raw_'] = _score_raw_xg(s, pipeline_dir)
-        except Exception as e:  # model missing / incompatible
-            print(f"[features] raw xG scoring failed for {os.path.basename(f)}: {e}")
-            return None
-        s = s[s['event_type'].isin([505, 506, 507])] if 'event_type' in s.columns else s
-        parts.append(s[['game_id', 'team_id', 'strength_state', 'is_goal', 'xg_raw_']])
-    if not parts:
-        return None
-    s = pd.concat(parts, ignore_index=True).drop_duplicates()
+def _file_xg(s: pd.DataFrame, pipeline_dir, xg: str = 'live') -> pd.Series:
+    """Per-shot raw xG of one shot file.  ``live``: the file's ``xg_raw`` (v2 under
+    ``PONYXG_XG=v2`` and for history files after ``bu.xg.history apply``; v1 otherwise).
+    ``v1``: the v1 pickle's score: ``xg_raw_v1`` (the live v2 rollback column), the file's
+    ``xg_raw`` when the file was written in shadow/v1 mode (it then carries ``xg_raw_v2``),
+    else a pickle re-score."""
+    if xg != 'v1':
+        return _score_raw_xg(s, pipeline_dir)
+    if 'xg_raw_v1' in s.columns and s['xg_raw_v1'].notna().any():
+        out = pd.to_numeric(s['xg_raw_v1'], errors='coerce')
+        miss = out.isna()
+        if miss.any():
+            out[miss] = _score_v1_pickle(s[miss], pipeline_dir)
+        return out
+    if 'xg_raw_v2' in s.columns:
+        return _score_raw_xg(s, pipeline_dir)
+    return _score_v1_pickle(s, pipeline_dir)
+
+
+def history_xg_version(pipeline_dir=SCRIPT_DIR) -> str:
+    """'v2' when the historical shot file carries the xG v2 ``xg_raw`` (bu.xg.history apply),
+    else 'v1': the xG version a game model trained now learns from."""
+    p = os.path.join(pipeline_dir, 'nhl_historical_shots.csv')
+    try:
+        return 'v2' if 'xg_raw' in pd.read_csv(p, nrows=0).columns else 'v1'
+    except (OSError, ValueError):
+        return 'v1'
+
+
+def _aggregate_team_game(s: pd.DataFrame, team_ids: dict) -> pd.DataFrame:
+    """Shots (game_id, team_id, strength_state, is_goal, xg_raw_) -> per (game_id, team)
+    xgf/xga all situations and 5v5 (empty net excluded) and non-EN goals for/against."""
+    s = s.copy()
     s['team'] = s['team_id'].map(team_ids)
     s = s.dropna(subset=['team'])
     s['en'] = s['strength_state'].eq('EmptyNet')
@@ -300,7 +313,73 @@ def raw_team_game_xg(pipeline_dir=SCRIPT_DIR, use_cache=True) -> pd.DataFrame | 
     # Opponent view: each game has exactly two teams.
     opp = g.rename(columns={'team': 'opp', 'xgf_all': 'xga_all', 'gf_noen': 'ga_noen', 'xgf_5v5': 'xga_5v5'})
     m = g.merge(opp, on='game_id')
-    m = m[m['team'] != m['opp']].drop(columns=['opp'])
+    return m[m['team'] != m['opp']].drop(columns=['opp'])
+
+
+SHOT_KEEP = ['game_id', 'event_id', 'team_id', 'strength_state', 'is_goal', 'xg_raw_']
+
+
+def _dedupe_shots(s: pd.DataFrame, mode: str = 'event') -> pd.DataFrame:
+    """One row per shot when a game appears in two shot files (keyed on game_id + event_id).
+    The old full-row dedupe on (game, team, strength, goal, xG) also merged DIFFERENT shots
+    whose xG happened to be equal: ~1.3% of shots once xG is stored to 4 decimals
+    (xg_raw in the season files and the v2 history), which undercounted team xG.
+    ``mode='legacy'`` keeps that behaviour (DEDUPE_MODES)."""
+    if mode != 'legacy' and 'event_id' in s.columns and s['event_id'].notna().all():
+        return s.drop_duplicates(subset=['game_id', 'event_id'], keep='last')
+    return s.drop(columns=['event_id'], errors='ignore').drop_duplicates()
+
+
+def _read_shot_file(f):
+    head = pd.read_csv(f, nrows=0)
+    if head.empty and len(head.columns) == 0:
+        return None
+    s = pd.read_csv(f, low_memory=False)
+    if s.empty:
+        return None
+    return s[s['game_id'].astype(str).str[4:6].isin(NHL_GAME_TYPES)]
+
+
+def raw_team_game_xg(pipeline_dir=SCRIPT_DIR, use_cache=True, xg='live', dedupe='event') -> pd.DataFrame | None:
+    """Per (game_id, team): raw xG for/against (all situations and 5v5), excluding
+    empty-net shots, plus non-empty-net goals against (for goalie GSAx).
+
+    ``xg``: 'live' (each file's ``xg_raw``; see ``_file_xg``) or 'v1' (the xG v1
+    rollback inputs of the F1 shadow model).  ``dedupe``: see ``DEDUPE_MODES``.
+
+    Returns None if no shot files / xG model are available (callers then fall
+    back to the xG columns already in the gamestats file)."""
+    files = _shot_files(pipeline_dir)
+    if not files:
+        return None
+    sig = '|'.join(f"{os.path.basename(f)}:{os.path.getsize(f)}:{int(os.path.getmtime(f))}" for f in files)
+    model_path = os.path.join(pipeline_dir, 'xg_model_xgb.pkl')
+    if os.path.exists(model_path):
+        sig += f"|model:{os.path.getsize(model_path)}:{int(os.path.getmtime(model_path))}"
+    tag = ('' if xg != 'v1' else '_v1') + ('' if dedupe != 'legacy' else '_legacy')
+    cache_path = os.path.join(CACHE_DIR, f'raw_team_game_xg{tag}.csv')
+    sig_path = cache_path + '.sig'
+    if use_cache and os.path.exists(cache_path) and os.path.exists(sig_path):
+        with open(sig_path) as f:
+            if f.read() == sig:
+                return pd.read_csv(cache_path)
+
+    team_ids = load_team_ids(pipeline_dir)
+    parts = []
+    for f in files:
+        s = _read_shot_file(f)
+        if s is None:
+            continue
+        try:
+            s['xg_raw_'] = _file_xg(s, pipeline_dir, xg)
+        except Exception as e:  # model missing / incompatible
+            print(f"[features] raw xG scoring failed for {os.path.basename(f)}: {e}")
+            return None
+        s = s[s['event_type'].isin([505, 506, 507])] if 'event_type' in s.columns else s
+        parts.append(s[[c for c in SHOT_KEEP if c in s.columns]])
+    if not parts:
+        return None
+    m = _aggregate_team_game(_dedupe_shots(pd.concat(parts, ignore_index=True), dedupe), team_ids)
     os.makedirs(CACHE_DIR, exist_ok=True)
     gi = os.path.join(CACHE_DIR, '.gitignore')
     if not os.path.exists(gi):
@@ -332,9 +411,9 @@ def attach_raw_xg(games: pd.DataFrame, raw: pd.DataFrame | None) -> tuple[pd.Dat
     return g, source
 
 
-def load_feature_games(pipeline_dir=SCRIPT_DIR, current_df=None, use_raw_xg=True):
+def load_feature_games(pipeline_dir=SCRIPT_DIR, current_df=None, use_raw_xg=True, xg='live', dedupe='event'):
     games = load_gamestats(pipeline_dir, current_df=current_df)
-    raw = raw_team_game_xg(pipeline_dir) if use_raw_xg else None
+    raw = raw_team_game_xg(pipeline_dir, xg=xg, dedupe=dedupe) if use_raw_xg else None
     return attach_raw_xg(games, raw)
 
 

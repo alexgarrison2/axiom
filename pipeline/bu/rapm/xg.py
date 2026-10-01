@@ -7,8 +7,14 @@ Sources (``--xg``):
   v1 was trained on a random 80/20 split over 2022-26, so its xG is in-sample for those
   seasons.  It is a *target* here, not a predictor, which limits the damage; swap to v2 when
   it lands.
+* ``v2``: the live xG v2 artifacts (``pipeline/models/xg2_*.json``, ``bu.xg.live``) scored on
+  the lake's events with the training feature path (``bu.xg.features.shot_features``).  This is
+  what the daily serving-bundle refresh uses for the current season, so the live RAPM target is
+  the same model the pipeline publishes.  ``v2:<dir>`` scores with the artifacts in ``<dir>``.
 * a path (file or directory) of parquet with ``game_id, event_id, xg`` (e.g. xG v2 per fold
   written by ``bu.xg``).  A directory is read as ``season=S.parquet`` / ``season=S/*.parquet``.
+  The historical chain uses the walk-forward out-of-sample ``xg2_asof`` this way
+  (``bu.rapm.v2_source``), so no season's target is scored by a model that saw it or later.
 
 ``xg_flurry = xg * prod(1 - xg_prev)`` over earlier shots of the same team in the same
 flurry (consecutive unblocked shots <= 3 s apart).  It is the RAPM target.
@@ -100,6 +106,28 @@ def score_v1(lake: Lake, season: str, shots: pd.DataFrame) -> pd.Series:
     return out
 
 
+def score_v2(lake: Lake, season: str, model_dir: str | None = None) -> pd.DataFrame:
+    """(game_id, event_id, xg) from xG v2 for every unblocked regular/playoff lake shot of ``season``."""
+    from bu.xg import handedness
+    from bu.xg.features import shot_features
+    from bu.xg.live import MODEL_DIR
+    from bu.xg.model import XGv2
+    model = XGv2.load(model_dir or MODEL_DIR, "xg2")
+    ev = read_table(lake, "events", [season])
+    g = read_table(lake, "games", [season])
+    if ev.empty:
+        return pd.DataFrame(columns=["game_id", "event_id", "xg"])
+    keep = set(g.loc[pd.to_numeric(g["game_type"], errors="coerce").isin([2, 3]), "game_id"])
+    ev = ev[ev["game_id"].isin(keep)]
+    f = shot_features(ev, g, handedness.load(), rink=model.rink)
+    if f.empty:
+        return pd.DataFrame(columns=["game_id", "event_id", "xg"])
+    out = pd.DataFrame({"game_id": f["game_id"].astype("int64").to_numpy(),
+                        "event_id": pd.to_numeric(f["event_id"], errors="coerce").astype("int64").to_numpy(),
+                        "xg": model.predict(f)})
+    return out.drop_duplicates(["game_id", "event_id"])
+
+
 def _read_external(source: str, season: str) -> pd.DataFrame:
     if os.path.isfile(source):
         files = [source]
@@ -126,10 +154,13 @@ def build_xg(lake: Lake, season: str, source: str = "v1") -> pd.DataFrame:
     shots = shots.reset_index(drop=True)
     if source == "v1":
         shots["xg"] = score_v1(lake, season, shots).to_numpy()
+    elif source == "v2" or source.startswith("v2:"):
+        sc = score_v2(lake, season, source[3:] or None)
+        shots = shots.merge(sc, on=["game_id", "event_id"], how="left")
     else:
         ext = _read_external(source, season)
         shots = shots.merge(ext, on=["game_id", "event_id"], how="left")
-    shots["xg_source"] = "v1" if source == "v1" else os.path.basename(os.path.normpath(source))
+    shots["xg_source"] = source if source in ("v1", "v2") else os.path.basename(os.path.normpath(source))
     shots["xg_flurry"] = flurry_adjust(shots)
     keep = ["game_id", "event_id", "period", "game_seconds", "shooting_team_id", "acting_is_home", "shooter_id",
             "is_goal", "strength", "empty_net_against", "xg", "xg_flurry", "xg_source"]

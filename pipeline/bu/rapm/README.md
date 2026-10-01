@@ -6,32 +6,49 @@ Design: DESIGN.md §3.2 (RAPM v2, priors, aging, eras, validation), §3.7 (TOI, 
 override with `--out` / `PONYXG_RAPM_DIR`).  Only the small reports that back a model claim
 and the per-game feature table are committed (`bu/rapm/out/`, `bu/lineup/out/`).
 
-## Re-run on the full lake
+**Shipped (2026-10-01, owner decision): RAPM v2 on the xG v2 target, as the lineup term of the
+live game model** (`logit-elo-v5-20261001-xg2-rapm`: `bu_d_net + bu_d_delta` replace the F1
+`d_lineup`; `pipeline/bu/README.md` "Live").  The xG v1-target results below are kept for the
+record; their reports are archived in `out/xgv1/` and `../lineup/out/xgv1/`.
+
+## Re-run on the full lake (xG v2 target, as shipped)
 
 ```bash
 cd pipeline
-# 1. stints (+ xG re-score) for every built lake season; bios fetched once per season
-python -m bu.rapm stints   --lake-dir ../data/lake
+L=../data/lake; O=<state dir>; X=<scratch>/xg_v2
+# 0. the xG v2 target: one season=S.parquet per lake season from the bu.xg walk-forward state
+#    (OOS xg2_asof; burn-in 2010-11 scored by the fold fit on it; 2026-27 by the live artifacts)
+python -m bu.rapm.v2_source --lake-dir $L --state-dir <bu.xg walk-forward state> --out $X
+# 1. stints (+ xG) for every built lake season; bios fetched once per season
+python -m bu.rapm stints   --lake-dir $L --out $O --xg $X --seasons 2010-2026
 # 2. tuning + DESIGN §3.2.2 stint-level validation (burn-in = first lake season)
-python -m bu.rapm validate --lake-dir ../data/lake --tune 2021,2022 --dev 2023,2024
-# 3. daily point-in-time ratings with the tuned setting
-python -m bu.rapm asof     --lake-dir ../data/lake
+python -m bu.rapm validate --lake-dir $L --out $O --xg $X --seasons 2010-2025 --tune 2021,2022 --dev 2023,2024
+# 3. daily point-in-time ratings with the tuned setting (through the current season: its prior pack)
+python -m bu.rapm asof     --lake-dir $L --out $O --xg $X --seasons 2010-2026
 # 4. per-game lineup features, then the walk-forward inside the incumbent
-python -m bu.lineup features --lake-dir ../data/lake
-python -m bu.lineup evaluate --lake-dir ../data/lake --matrix /tmp/M.pkl   # dev folds only
-python -m bu.lineup evaluate --lake-dir ../data/lake --holdout             # refused: the one look is taken
+python -m bu.lineup features --lake-dir $L --out $O --seasons 2010-2026
+python -m bu.lineup evaluate --lake-dir $L --out $O --matrix /tmp/M.pkl   # dev folds only
 # 5. live path: season-start pack (committed, once per season from the full lake)
-python -m bu.lineup pack --lake-dir ../data/lake --season 20262027
+python -m bu.lineup pack --lake-dir $L --out $O --season 20262027
+# 6. joint game-model retrain against the live model (xG v2 inputs + this term)
+python3 retrain.py --joint --no-legacy [--promote]
 ```
 
-## Live refresh (no historical lake needed)
+## Live refresh (no historical lake needed; CI: `.github/workflows/bu_refresh.yml`)
 
 ```bash
 cd pipeline
-python -m bu.lake.backfill --seasons 2026                       # current season's PBP + shifts only
-python -m bu.rapm asof --seasons 2026 --seed bu/lineup/out/season_pack_20262027.json.gz
-python -m bu.lineup serve --season 20262027 --publish          # -> bu/lineup/out/serving_bundle.json.gz
+python -m bu.lineup.refresh --lake-dir <runner-local lake> [--dry-run]
+# = python -m bu.lake.backfill --seasons 2026 --endpoints pbp,boxscore,shifts   (gap-driven)
+#   python -m bu.rapm asof --seasons 2026 --seed bu/lineup/out/season_pack_20262027.json.gz --xg v2
+#   python -m bu.lineup serve --season 20262027 --seed <pack>   -> publish when changed or > 12 h old
 ```
+
+`--xg v2` scores the current season's lake shots with the live xG v2 artifacts
+(`pipeline/models/xg2_*.json`, the training feature path), the same scores `v2_source` used for
+2026-27 in the full chain: on the lake of 2026-10-01 the CI path (empty lake -> backfill of 8
+games -> seeded refit) reproduced the full-chain 2026-27 ratings exactly (2,816 players, max
+|diff| 0.0) in 16 s.
 
 `asof --seed` refits the season from the pack's chain, aging curve and rookie means; on the
 real lake it reproduces the full-chain 2025-26 ratings exactly (max |diff| 0.0, also tested on
@@ -53,8 +70,9 @@ the first game of a season the live term equals the backtest feature row (parity
 Players DFO marks out / IR / suspended are dropped; game-time decisions are counted as dressed
 (DESIGN's 50/50 mix is not implemented).
 
-Swap the RAPM target to xG v2 with `--xg <dir of parquet with game_id,event_id,xg>` on
-`stints`/`validate`/`asof` (the stints cache is keyed on the xG source, so it rebuilds).
+The RAPM target is chosen with `--xg` on `stints`/`validate`/`asof`: `v1` (the pickle),
+`v2` (the live xG v2 artifacts) or a directory of `season=S.parquet` with
+`game_id,event_id,xg` (the stints cache is keyed on the source, so it rebuilds).
 
 ## Pipeline
 
@@ -73,16 +91,55 @@ Swap the RAPM target to xG v2 with `--xg <dir of parquet with game_id,event_id,x
 | Live | `lineup/serve.py` | season pack -> serving bundle -> `LiveLineupTerm` (above) |
 | Game level | `lineup/evaluate.py` | incumbent `train_game_model.walk_forward` with and without the lineup columns; dev folds pick the variant; one logged holdout look |
 
-## Results (lake 2010-11 .. 2026-27, xG v1 target, code m2-r3, 2026-10-01)
+## Results on the xG v2 target (as shipped; lake 2010-11 .. 2026-27, code m2-r3, 2026-10-01)
+
+Target: walk-forward out-of-sample xG v2 (`xg2_asof`) for 2011-12 .. 2025-26, the 2011-12 fold's
+season-start model for the 2010-11 burn-in, the live artifacts for 2026-27 (`v2_source`); 100%
+of the lake's unblocked non-penalty-shot attempts covered in every season.
+
+**Stint level** (`out/rapm_validation.json`): tuning 2021-22 + 2022-23 picks `v_new 0.02`,
+`kappa 1.25` (v1 target: kappa 1.5, one grid step away).  Next-30-day weighted MSE of stint
+xG/60, RAPM v2 minus baseline (z, game-clustered):
+
+| Fold | vs team-only (a) | vs no-prior RAPM (b) | vs prior-only (c) |
+|---|---|---|---|
+| 2023-24 dev | -0.2044 (-16.7) | -0.0966 (-9.8) | -0.0324 (-6.8) |
+| 2024-25 dev | -0.2291 (-15.6) | -0.1127 (-10.1) | -0.0399 (-7.1) |
+| 2025-26 (report) | -0.1956 (-13.4) | -0.0959 (-8.7) | -0.0395 (-6.7) |
+
+Gate PASS, and RAPM v2 beats all three baselines in all 15 seasons 2011-12 .. 2025-26.
+
+**Game level** (`../lineup/out/lineup_eval.json`, dev folds only, no holdout look): Δ log loss
+vs the live feature set (`d_lineup` included) on xG v2 inputs, per game:
+
+| Variant | 2023-24 | 2024-25 | dev pooled (SE) |
+|---|---|---|---|
+| `bu_d_net` | +0.00045 | -0.00175 | -0.00057 (0.00052) |
+| `bu_d_delta` | +0.00045 | -0.00163 | -0.00051 (0.00085) |
+| `bu_d_net + bu_d_delta` on top of `d_lineup` | +0.00100 | -0.00289 | -0.00080 (0.00100); A2 fails (2023-24 > +0.0005) |
+| `bu_d_net + bu_d_delta` **replacing** `d_lineup` | +0.00003 | -0.00285 | **-0.00130 (0.00105)** |
+
+L-asof (previous game's 18): -0.00047 dev pooled.  The shipped configuration is "replacing"
+(fixed by the v1-target review before this run, see below); its joint retrain against the live
+model, 2023-24 .. 2025-26, is in `../lineup/out/joint_retrain.json` and `pipeline/bu/README.md`.
+
+Descriptive, not used for selection: the same joint candidate with the **v1-target** feature
+table scores better in the backtest (vs the live model, dev pooled -0.00214 vs -0.00147 for the
+v2 target; 2025-26 -0.00317 vs -0.00180).  The v1 pickle is in sample for 2022-26 (fit on a
+random 80/20 split of those seasons' shots, goals included), so a v1 target carries
+information from later games of the same seasons into point-in-time ratings, and that edge
+cannot carry over to live 2026-27 games.  The v2 target is strictly walk-forward and ships.
+
+## Results (lake 2010-11 .. 2026-27, xG v1 target, code m2-r3, 2026-10-01; archived in out/xgv1/)
 
 Era handling: 2020-21 rows at weight 0.5; the 2019-20 on-ice anomalies are handled by dropping
 games whose shift charts disagree with `situationCode` on > 10% of shots (138 games; the kept
 2019-20 games match on 99.7% of shots), and 2019-20 / 2020-21 get half weight in the aging fit.
 Sensitivity (DESIGN §3.2.1): with 2019-21 left out entirely the tuning picks `v_new 0.03,
 kappa 1.25`, within one grid step of the main pick, so the main run stands
-(`out/rapm_validation_excl_2019_2021.json`).
+(`out/xgv1/rapm_validation_excl_2019_2021.json`).
 
-**Stint level (DESIGN §3.2.2, `out/rapm_validation.json`).** Burn-in 2010-11; tuning 2021-22 +
+**Stint level (DESIGN §3.2.2, `out/xgv1/rapm_validation.json`).** Burn-in 2010-11; tuning 2021-22 +
 2022-23 picks `v_new = 0.02`, `kappa = 1.5` (each tuning season alone: v0.03/k1.25 and
 v0.02/k1.25, both within one grid step).  Next-30-day weighted MSE of stint xG/60, RAPM v2 minus
 baseline (z, game-clustered):
@@ -102,7 +159,7 @@ the 2022-23 tuning season); both components are kept as designed.
 
 **TOI shares** (`../lineup/out/toi_validation.json`): MAE 0.0323 vs 0.0403 for "last game's share".
 
-**Game level, lineup term as a feature of the incumbent** (`../lineup/out/lineup_eval.json`):
+**Game level, lineup term as a feature of the incumbent** (`../lineup/out/xgv1/lineup_eval.json`):
 Δ log loss vs the `train_game_model` walk-forward on the same games (negative = better).
 Candidate `bu_d_net + bu_d_delta`, chosen on the dev folds:
 
@@ -115,7 +172,7 @@ Candidate `bu_d_net + bu_d_delta`, chosen on the dev folds:
 
 Early season (GP <= 15) on dev: -0.0034 (SE 0.0025; one-sided upper bound +0.0007 < +0.002, A4).
 L-asof (previous game's 18): -0.00113 on dev.  Degraded shifts (35% of games +2 days,
-`lineup_eval_degraded.json`): -0.00194, a 0.0001 loss (< the 0.0005 DESIGN §4.3 threshold).
+`../lineup/out/xgv1/lineup_eval_degraded.json`): -0.00194, a 0.0001 loss (< the 0.0005 DESIGN §4.3 threshold).
 
 The holdout A-comp test (one-sided 98.75% upper bound < +0.0005) did **not** pass on its single
 look (+0.0011: favourable point estimate, underpowered).  The look was taken with code m2-r1;
@@ -125,7 +182,7 @@ dev and the logged look: -0.0022 (SE ~0.0008, n 3,999).  **Owner decision (2026-
 this pooled evidence, keeping the old version in shadow for rollback; the 2026-27 live games are
 the clean re-test.**
 
-**Against the live F1 model** (`../lineup/out/lineup_eval_vs_f1_main.json`, descriptive: main's
+**Against the live F1 model** (`../lineup/out/xgv1/lineup_eval_vs_f1_main.json`, descriptive: main's
 `train_game_model` with `d_lineup`, logit-elo-v5-20261001): adding the term on top of `d_lineup`
 gives dev Δ -0.00137 (SE 0.00097; 2023-24 +0.00014, 2024-25 -0.00313; A2 passes, early-season
 upper bound +0.0029 fails A4), while **replacing `d_lineup` with it gives -0.00183**

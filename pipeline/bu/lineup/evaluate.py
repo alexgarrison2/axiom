@@ -59,7 +59,9 @@ def attach(M: pd.DataFrame, feats: pd.DataFrame, cols) -> pd.DataFrame:
     f = feats[["game_id", "bu_ok", *cols]].copy()
     for c in cols:
         f.loc[~f["bu_ok"].astype(bool), c] = 0.0     # coverage gate: neutral when not covered
-    M2 = M.merge(f, on="game_id", how="left")
+    # train_game_model.build_matrix already merges the committed table; this run's table wins
+    M2 = M.drop(columns=[c for c in ("bu_ok", "bu_missing", *cols) if c in M.columns])
+    M2 = M2.merge(f, on="game_id", how="left")
     M2["bu_missing"] = M2[cols[0]].isna()
     for c in cols:
         M2[c] = M2[c].fillna(0.0)
