@@ -269,7 +269,7 @@ def feature_params():
     return {k: getattr(F, k) for k in keys}
 
 
-def train(cols=None, save=True, legacy=True, verbose=True, M=None, xg_source=None):
+def train(cols=None, save=True, legacy=True, verbose=True, M=None, xg_source=None, prev_meta=None):
     cols = list(cols or F.FEATURE_COLUMNS)
     if M is None:
         M, xg_source = build_matrix()
@@ -348,12 +348,27 @@ def train(cols=None, save=True, legacy=True, verbose=True, M=None, xg_source=Non
         'evaluation': ('season-level walk-forward: train on seasons < S, C tuned on S-1; '
                        'early = either team game number <= %d' % EARLY_GP),
     }
+    ft = fasttrack_config(cols, prev_meta)
+    if ft:
+        meta['fasttrack'] = ft
     if len(oos):
         os.makedirs(F.CACHE_DIR, exist_ok=True)
         oos.to_csv(OOS_PATH, index=False)
     if save:
         save_model(final, meta)
     return final, meta, oos
+
+
+def fasttrack_config(cols, prev_meta=None):
+    """meta['fasttrack'] for a model that uses the F1 lineup features: the
+    lineup-state settings serving must replay (lineup_adjust module values, the
+    ones build_matrix trained with), plus the previous model's gate record when
+    it already used them.  None for a model without them."""
+    if not any(c in cols for c in F.LINEUP_COLUMNS):
+        return None
+    import lineup_adjust as L
+    prev = (prev_meta or {}).get('fasttrack') or {}
+    return {**prev, 'lineup_cross_season': L.LINEUP_CROSS_SEASON, 'rating_value': L.RATING_VALUE}
 
 
 def save_model(model, meta, model_path=MODEL_PATH, meta_path=META_PATH):
@@ -366,12 +381,30 @@ def save_model(model, meta, model_path=MODEL_PATH, meta_path=META_PATH):
     print(f"[SAVE] {model_path}\n[SAVE] {meta_path}")
 
 
+def live_feature_columns(meta_path=META_PATH):
+    """The promoted model's feature set (falls back to the incumbent columns).
+    A plain retrain keeps it, so it never silently drops a gated feature such
+    as the fast-track d_lineup."""
+    try:
+        with open(meta_path) as f:
+            meta = json.load(f)
+        return list(meta.get('feature_columns') or F.FEATURE_COLUMNS), meta
+    except (OSError, ValueError):
+        return list(F.FEATURE_COLUMNS), {}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--no-save', action='store_true')
     ap.add_argument('--no-legacy', action='store_true')
+    ap.add_argument('--incumbent-features', action='store_true',
+                    help='train on features.FEATURE_COLUMNS instead of the live model\'s feature set')
     args = ap.parse_args()
-    train(save=not args.no_save, legacy=not args.no_legacy)
+    cols, cur = live_feature_columns()
+    if args.incumbent_features:
+        cols = list(F.FEATURE_COLUMNS)
+    print(f"[TRAIN] features: {cols}")
+    train(cols=cols, save=not args.no_save, legacy=not args.no_legacy, prev_meta=cur)
 
 
 if __name__ == '__main__':

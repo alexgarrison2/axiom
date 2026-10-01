@@ -73,6 +73,7 @@ class MLPredictor:
     def __init__(self, game_stats_df=None, goalie_ratings=None, pipeline_dir=SCRIPT_DIR,
                  model_path=None, meta_path=None, games=None):
         self.available = False
+        self._lineup_state = None
         self.last_path = None
         self.last_detail = None
         self.model = None
@@ -108,9 +109,10 @@ class MLPredictor:
         self.state = F.build_state(games)
         if self.meta.get('xg_source') and self.xg_source not in (self.meta['xg_source'], 'provided'):
             print(f"[ML] WARNING: serving xG source {self.xg_source} != training {self.meta['xg_source']}")
-        self.lineup_state = None
-        if any(c in self.feature_cols for c in F.LINEUP_COLUMNS):
-            self.lineup_state = load_lineup_state(self.meta)
+        # F1 lineup state: replayed from the stored boxscore lineups on first use
+        # (~10 s), so consumers that never pass lineups (season simulator,
+        # fixtures) do not pay for it.
+        self._lineup_state = None
         self.available = True
         n_cur = int((games['season'] == games['season'].max()).sum() // 2) if len(games) else 0
         print(f"[ML] {self.model_version}: {len(self.feature_cols)} features, "
@@ -119,7 +121,13 @@ class MLPredictor:
     # ------------------------------------------------------------------ core
     @property
     def uses_lineups(self) -> bool:
-        return self.lineup_state is not None
+        return self.available and any(c in self.feature_cols for c in F.LINEUP_COLUMNS)
+
+    @property
+    def lineup_state(self):
+        if self._lineup_state is None and self.uses_lineups:
+            self._lineup_state = load_lineup_state(self.meta)
+        return self._lineup_state
 
     def features_for(self, home_team, away_team, game_date, h_goalie=None, a_goalie=None,
                      h_rest_days=None, a_rest_days=None, h_is_b2b=None, a_is_b2b=None,

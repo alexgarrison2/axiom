@@ -267,3 +267,104 @@ def test_incumbent_model_keeps_its_factor_list():
 def test_stored_files_are_small():
     for fn in os.listdir(L.FT_DIR) if os.path.isdir(L.FT_DIR) else []:
         assert os.path.getsize(os.path.join(L.FT_DIR, fn)) < 3_000_000, fn
+
+
+# ─── review fixes ────────────────────────────────────────────────────────────
+
+def test_unmapped_projected_player_dresses_as_an_unrated_debut():
+    """A projected player with no NHL id (call-up / debut) is scored like a
+    debut in training (position's unrated value, default TOI), not dropped."""
+    store = _store(n_days=8)
+    mp = _mp()
+    st = L.LineupState(mp)
+    for _, day in store.groupby('game_date'):
+        st.update_day(day)
+    # training: the usual 18 minus the star, plus debut 99 (a D-man with no history)
+    tr = store[store['game_id'] == store['game_id'].max()].copy()
+    tr = tr[tr['player_id'] != 1]
+    debut = tr[(tr['side'] == 'H')].iloc[[0]].assign(player_id=99, name='P. 99', sweater=99, pos='D', toi_sec=1200)
+    tr = pd.concat([tr, debut], ignore_index=True)
+    tr['game_date'] = tr['game_date'] + pd.Timedelta(days=1)
+    tr['game_id'] = tr['game_id'] + 1
+    M = L.build_lineup_matrix(pd.concat([store, tr], ignore_index=True), mp).set_index('game_id')
+    want = M.loc[int(tr['game_id'].iloc[0]), 'd_lineup']
+    assert want < 0
+    # serving: same lineup from DailyFaceoff, the debut unknown by name/number, listed on a D pair
+    fwd = [{'name': f'Player {p}', 'number': p} for p in range(2, 19) if p % 3]
+    dmen = [{'name': f'Player {p}', 'number': p} for p in range(2, 19) if not p % 3] + \
+        [{'name': 'Brand New', 'number': 99}]
+    away = [{'name': f'Player {p}', 'number': p} for p in range(31, 49)]
+    f = L.serve_lineup_features(st, 'AAA', 'BBB', tr['game_date'].iloc[0], {'f1': fwd, 'd1': dmen},
+                                {'f1': away}, season=2025)
+    assert f['home']['source'] == 'projected' and f['home']['matched'] == 17
+    assert f['home']['unknown'] == ['Brand New'] and 'placeholder_pos' not in f['home']
+    assert abs(f['d_lineup'] - want) < 1e-12
+
+
+def test_debut_position_comes_from_the_boxscore_in_training():
+    store = _store(n_days=8)
+    last = store['game_id'] == store['game_id'].max()
+    store.loc[last & (store['player_id'] == 3), 'player_id'] = 77      # a debut D-man replaces D 3
+    st = L.LineupState(_mp())
+    for _, day in store[~last].groupby('game_date'):
+        st.update_day(day)
+    assert st.pos_of(77) == 'F'                     # nothing known before his debut
+    M = L.build_lineup_matrix(store, _mp()).set_index('game_id')
+    ids = list(store.loc[last & (store['side'] == 'H'), 'player_id'])
+    s = st.side('AAA', 2025, ids, {77: 'D'})
+    assert abs(M.loc[int(store.loc[last, 'game_id'].iloc[0]), 'h_lineup_dq'] - s['dq']) < 1e-12
+
+
+def test_lineup_state_loads_lazily(tmp_path, training_matrix, monkeypatch):
+    import ml_predict
+    import train_game_model as T
+    calls = []
+    monkeypatch.setattr(ml_predict, 'load_lineup_state', lambda meta=None: calls.append(1) or 'STATE')
+    M = training_matrix[training_matrix['season'] >= 2024].copy()
+    M['d_lineup'] = 0.0
+    M.loc[M.index[::2], 'd_lineup'] = 0.1
+    cols = list(F.FEATURE_COLUMNS) + ['d_lineup']
+    m = T.fit_logit(M, cols, 0.01)
+    betas, home = T.explain_coefficients(m, cols)
+    T.save_model(m, {'model_version': 't', 'feature_columns': cols, 'coefficients_raw': betas,
+                     'home_ice_logit': home}, model_path=str(tmp_path / 'm.pkl'), meta_path=str(tmp_path / 'm.json'))
+    ml = ml_predict.MLPredictor(pd.DataFrame(), model_path=str(tmp_path / 'm.pkl'), meta_path=str(tmp_path / 'm.json'))
+    assert ml.uses_lineups and calls == []          # constructing it does not replay the store
+    ml.predict_detail('Kings', 'Ducks', '2026-10-03')
+    assert calls == []
+    assert ml.lineup_state == 'STATE' and ml.lineup_state == 'STATE' and calls == [1]
+    off = ml_predict.MLPredictor(pd.DataFrame(), model_path=str(tmp_path / 'missing.pkl'))
+    assert not off.uses_lineups and off.lineup_state is None
+
+
+def test_plain_retrain_keeps_the_live_feature_set(tmp_path):
+    import json
+
+    import train_game_model as T
+    meta = {'feature_columns': list(F.FEATURE_COLUMNS) + ['d_lineup'],
+            'fasttrack': {'gate_passed': True, 'candidate': 'lineup', 'lineup_cross_season': True}}
+    p = tmp_path / 'meta.json'
+    p.write_text(json.dumps(meta))
+    cols, cur = T.live_feature_columns(str(p))
+    assert cols == meta['feature_columns']
+    ft = T.fasttrack_config(cols, cur)
+    assert ft['gate_passed'] is True and ft['candidate'] == 'lineup'
+    assert ft['lineup_cross_season'] == L.LINEUP_CROSS_SEASON and ft['rating_value'] == L.RATING_VALUE
+    assert T.fasttrack_config(list(F.FEATURE_COLUMNS), cur) is None
+    assert T.live_feature_columns(str(tmp_path / 'none.json'))[0] == list(F.FEATURE_COLUMNS)
+
+
+def test_first_lookup_of_a_run_can_use_rating_names():
+    """A fresh LineupState (first game of a predict run) must still resolve a
+    player by his full name when his sweater/team key is unknown (offseason
+    move): resolve() needs the season's ratings loaded first."""
+    store = _store(n_days=8)
+    mp = _mp()
+    st = L.LineupState(mp)
+    for _, day in store.groupby('game_date'):
+        st.update_day(day)
+    assert st.r is None
+    # 18 regulars with their numbers, plus nothing else: player 2 listed under a new number
+    ps = [{'name': f'Player {p}', 'number': p if p != 2 else 66} for p in range(1, 19)]
+    ids, info = L.serve_lineup_side(st, 'AAA', 2025, {'f1': ps})
+    assert info['matched'] == 18 and 2 in ids and info['unknown'] == []

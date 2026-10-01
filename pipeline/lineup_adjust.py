@@ -706,13 +706,13 @@ class LineupState:
     def pos_of(self, p):
         return self.player_pos.get(p) or (self.r['pos'].get(p) if self.r else None) or 'F'
 
-    def expected_toi(self, p):
+    def expected_toi(self, p, pos=None):
         h = self.player_toi.get(p)
         if h and len(h) >= 3:
             return float(np.mean(h))
         if self.r and p in self.r['toi']:
             return self.r['toi'][p]
-        return DEFAULT_TOI[self.pos_of(p)]
+        return DEFAULT_TOI[pos or self.pos_of(p)]
 
     def baseline(self, team, season):
         games = list(self.team_games.get(self.team_key(team), ()))
@@ -726,25 +726,28 @@ class LineupState:
         games = self.team_games.get(self.team_key(team))
         return list(games[-1][2]) if games else None
 
-    def side(self, team, season, tonight_ids):
-        """{'dq', 'q', 'q_base', 'rated', 'n'} for one team, or None without a baseline."""
+    def side(self, team, season, tonight_ids, extra_pos=None):
+        """{'dq', 'q', 'q_base', 'rated', 'n'} for one team, or None without a baseline.
+        ``extra_pos`` gives the position of serving placeholders (players with
+        no NHL id yet, see serve_lineup_side)."""
         self.ensure_season(season)
         base = self.baseline(team, season)
         if base is None or not tonight_ids:
             return None
         ids = [int(p) for p in tonight_ids][:LINEUP_SIZE]
         allp = set(ids) | set(base)
-        pos = {p: self.pos_of(p) for p in allp}
-        toi = {p: self.expected_toi(p) for p in allp}
+        extra_pos = extra_pos or {}
+        pos = {p: extra_pos.get(p) or self.pos_of(p) for p in allp}
+        toi = {p: self.expected_toi(p, pos[p]) for p in allp}
         vals, unr = self.r['values'], self.r['unrated']
         q_t = lineup_q(ids, pos, vals, toi, unr)
         q_b = lineup_q(base, pos, vals, toi, unr)
         return {'dq': q_t - q_b, 'q': q_t, 'q_base': q_b, 'rated': sum(1 for p in ids if p in vals), 'n': len(ids)}
 
-    def pregame(self, home, away, game_date, season, home_ids, away_ids):
+    def pregame(self, home, away, game_date, season, home_ids, away_ids, extra_pos=None):
         """Feature dict for one game (zeros when a side has no baseline yet)."""
-        h = self.side(home, season, home_ids)
-        a = self.side(away, season, away_ids)
+        h = self.side(home, season, home_ids, extra_pos)
+        a = self.side(away, season, away_ids, extra_pos)
         ok = h is not None and a is not None
         return {
             'd_lineup': (h['dq'] - a['dq']) if ok else 0.0,
@@ -785,20 +788,24 @@ class LineupState:
 
 
 def _dfo_skaters(lineup):
-    """DailyFaceoff lineup dict -> [{name, number, injuryStatus}] for f1-f4, d1-d3."""
+    """DailyFaceoff lineup dict -> [{name, number, injuryStatus, _pos}] for f1-f4, d1-d3."""
     out = []
     for key in ('f1', 'f2', 'f3', 'f4', 'd1', 'd2', 'd3'):
         for p in (lineup or {}).get(key) or []:
             if isinstance(p, dict) and p.get('name'):
-                out.append(p)
+                out.append({**p, '_pos': 'D' if key.startswith('d') else 'F'})
     return out
 
 
-def serve_lineup_side(st: LineupState, team, season, lineup, injured=None):
+PLACEHOLDER_BASE = -1_000_000      # serving ids for projected players without an NHL id (never a real id)
+
+
+def serve_lineup_side(st: LineupState, team, season, lineup, injured=None, placeholder_base=None):
     """Tonight's skater ids for one team: DailyFaceoff projected lines minus
     players listed out (DFO injuryStatus or ESPN Out/IR), mapped to NHL ids.
     Coverage gate: >= MIN_MATCHED mapped, else the team's last dressed lineup
     (L-asof, DESIGN §4.2).  Returns (ids, info) or (None, info)."""
+    st.ensure_season(season)       # resolve() needs this season's rating names (MoneyPuck full names)
     out_names = {_norm(i.get('name', '')) for i in (injured or [])
                  if str(i.get('status', '')).strip().lower() in OUT_STATUSES}
     players = [p for p in _dfo_skaters(lineup)
@@ -806,7 +813,14 @@ def serve_lineup_side(st: LineupState, team, season, lineup, injured=None):
                and _norm(p['name']) not in out_names]
     ids, unknown = st.resolve(team, players)
     if len(ids) >= MIN_MATCHED:
-        return ids, {'source': 'projected', 'matched': len(ids), 'unknown': unknown}
+        # Projected players with no NHL id yet (debuts, call-ups) still dress:
+        # like a debut in training they take their position's unrated value and
+        # the default TOI, instead of silently shrinking tonight's lineup.
+        by_name = {p['name']: p.get('_pos', 'F') for p in players}
+        b = PLACEHOLDER_BASE if placeholder_base is None else placeholder_base
+        ph = {b - i: by_name.get(nm, 'F') for i, nm in enumerate(unknown)}
+        return ids + list(ph), {'source': 'projected', 'matched': len(ids), 'unknown': unknown,
+                                'placeholder_pos': ph}
     last = st.last_lineup(team)
     if last:
         return last, {'source': 'last_game', 'matched': len(ids), 'unknown': unknown}
@@ -822,8 +836,10 @@ def serve_lineup_features(st: LineupState, home, away, game_date, home_lineup, a
     season = int(season) if season is not None else season_start_year(gd.date())
     injured = injured or {}
     h_ids, h_info = serve_lineup_side(st, home, season, home_lineup, injured.get(home))
-    a_ids, a_info = serve_lineup_side(st, away, season, away_lineup, injured.get(away))
-    f = st.pregame(home, away, gd, season, h_ids or [], a_ids or [])
+    a_ids, a_info = serve_lineup_side(st, away, season, away_lineup, injured.get(away),
+                                      placeholder_base=PLACEHOLDER_BASE - 100)
+    extra_pos = {**h_info.pop('placeholder_pos', {}), **a_info.pop('placeholder_pos', {})}
+    f = st.pregame(home, away, gd, season, h_ids or [], a_ids or [], extra_pos=extra_pos)
     f['home'] = {**h_info, 'dq': f['h_lineup_dq'], 'rated': f['h_lineup_rated']}
     f['away'] = {**a_info, 'dq': f['a_lineup_dq'], 'rated': f['a_lineup_rated']}
     return f
@@ -874,7 +890,9 @@ def build_lineup_matrix(store: pd.DataFrame | None = None, mp: pd.DataFrame | No
                 continue
             season = int(str(gid)[:4])
             ht, at = h['team'].iloc[0], a['team'].iloc[0]
-            f = st.pregame(ht, at, date, season, list(h['player_id']), list(a['player_id']))
+            # tonight's positions come from the boxscore (a debut has no earlier record)
+            pos = {int(p): str(x) for p, x in zip(sk['player_id'], sk['pos'])}
+            f = st.pregame(ht, at, date, season, list(h['player_id']), list(a['player_id']), extra_pos=pos)
             # L-asof (DESIGN §4.2): tonight = each team's previous dressed lineup
             fa = st.pregame(ht, at, date, season, st.last_lineup(ht) or [], st.last_lineup(at) or [])
             f['d_lineup_asof'] = fa['d_lineup']

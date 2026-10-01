@@ -883,7 +883,7 @@ def main(argv=None):
         cols = sel
 
     model, meta, oos = T.train(cols=cols, save=False, legacy=not args.no_legacy, verbose=True,
-                               M=M, xg_source=xg_source)
+                               M=M, xg_source=xg_source, prev_meta=cur_meta)
     if selection:
         meta['feature_selection'] = selection
     carry_legacy_baselines(meta, cur_meta)
