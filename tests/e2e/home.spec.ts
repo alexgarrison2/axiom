@@ -516,8 +516,10 @@ test.describe('URL state and routes', () => {
         await page.goto('/');
         const tabs = page.getByRole('navigation', { name: 'Game day' }).getByRole('link');
         await tabs.last().click();
+        await page.waitForLoadState('networkidle');
         const [anchor] = await cards(page);
-        await page.goto(`/#${anchor}`);
+        // Load the anchor on the same slate the card came from (not today's).
+        await page.goto(`${page.url().split('#')[0]}#${anchor}`);
         const card = page.locator(`article#${anchor}`);
         await expect(card).toBeInViewport();
         await expect(card).toHaveClass(/border-brand/);

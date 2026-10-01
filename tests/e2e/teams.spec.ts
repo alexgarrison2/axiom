@@ -143,6 +143,8 @@ test.describe('/teams/[abbr]', () => {
     test('keyboard can sort the game log and expand a row', async ({ page, isMobile }) => {
         test.skip(isMobile, 'the sortable table is the md+ layout; phones get card rows');
         await page.goto('/teams/EDM?season=20252026');
+        // Wait for hydration: on slow CI runners a keypress can land before React attaches the handler.
+        await page.waitForLoadState('networkidle');
         const sortBtn = page.getByRole('columnheader', { name: /^SF/ }).getByRole('button');
         await sortBtn.focus();
         await page.keyboard.press('Enter');
