@@ -283,7 +283,7 @@
     "serving_bundle": "bu/lineup/out/serving_bundle.json.gz",
     "max_age_h": 36.0,
     "min_rated": 14,
-    "flag": "PONYXG_BU=on|off (off: neutral 0, the term is logged in shadow only)",
+    "flag": "PONYXG_BU=on|off (off, stale bundle or coverage gate: the F1 rollback model shadow.f1 is published; the joint model is logged in bu_shadow_home_win_pct)",
     "gate": {
       "pooled_delta_vs_previous": {
         "n": 3999,

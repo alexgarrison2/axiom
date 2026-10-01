@@ -487,8 +487,8 @@ def stage_ratings_freshness(phase):
 
 def stage_bu_bundle():
     """Freshness of the RAPM v2 lineup bundle the live model reads (bu_refresh.yml rebuilds it):
-    manifest ``sources.bu_bundle`` and a ``stale`` flag past ``serve.MAX_AGE_H`` (the term is
-    then neutral at serving time, so this never fails the run)."""
+    manifest ``sources.bu_bundle`` and a ``stale`` flag past ``serve.MAX_AGE_H`` (predict_games
+    then publishes the F1 rollback model, so this never fails the run)."""
     meta = read_json(os.path.join(PIPELINE_DIR, "game_model_meta.json"), {}) or {}
     from features import BU_COLUMNS
     if not any(c in (meta.get("feature_columns") or []) for c in BU_COLUMNS):
@@ -502,7 +502,7 @@ def stage_bu_bundle():
                   n_games=b.get("n_games"), season=b.get("season"), age_h=round(age, 1), flag=bu_mode())
     msg = f"built {age:.1f}h ago, {b.get('n_games')} games of {b.get('season')}, PONYXG_BU={bu_mode()}"
     if age > SV.MAX_AGE_H:
-        mark_stale("serving_bundle.json.gz", f"built {age:.0f}h ago (> {SV.MAX_AGE_H:.0f}h): lineup term neutral")
+        mark_stale("serving_bundle.json.gz", f"built {age:.0f}h ago (> {SV.MAX_AGE_H:.0f}h): F1 rollback model published")
         return {"status": "ok", "reason": "STALE " + msg}
     clear_stale("serving_bundle.json.gz")
     return {"status": "ok", "reason": msg}

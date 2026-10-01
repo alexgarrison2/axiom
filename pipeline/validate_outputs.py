@@ -43,7 +43,7 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
   bu_bundle      when the live game model uses the RAPM v2 lineup term: its serving bundle
                  (bu/lineup/out/serving_bundle.json.gz) is readable, carries the model's
                  columns, was built after its source data and, when fresh, is of this season
-                 (age: manifest stale flag; a stale bundle is served as a neutral term)
+                 (age: manifest stale flag; with a stale bundle the F1 rollback model is published)
 
 ``--freshness`` instead only checks that manifest.generated_at is under 26 h
 old during the season (the daily freshness workflow).
@@ -702,8 +702,8 @@ def check_freshness(ctx):
 def check_bu_bundle(ctx):
     """The RAPM v2 lineup bundle, when the live game model uses the term: readable, a serving
     bundle of this season with the model's lineup columns and built after its source data.
-    Age is reported by the pipeline stage (manifest stale flag), not failed here: a stale
-    bundle only makes the term neutral at serving time."""
+    Age is reported by the pipeline stage (manifest stale flag), not failed here: with a stale
+    bundle predict_games publishes the F1 rollback model."""
     meta = _json(os.path.join(PIPELINE_DIR, "game_model_meta.json"), {}) or {}
     from features import BU_COLUMNS
     used = [c for c in (meta.get("feature_columns") or []) if c in BU_COLUMNS]
@@ -722,7 +722,7 @@ def check_bu_bundle(ctx):
     built = _dt(b.get("built_at"))
     fresh = built is not None and (datetime.now(timezone.utc) - built).total_seconds() / 3600 <= SV.MAX_AGE_H
     if str(b.get("season")) != SEASON_ID and fresh:
-        # a stale bundle of last season is served as a neutral term (manifest stale flag); a FRESH
+        # a stale bundle of last season means the F1 rollback model is published; a FRESH
         # one of another season means the refresh is pointed at the wrong season pack
         errs.append(f"{rel}: freshly built for season {b.get('season')} != {SEASON_ID}")
     if not set(used) <= set(b.get("columns") or []):

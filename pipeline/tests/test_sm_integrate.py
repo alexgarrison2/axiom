@@ -184,6 +184,59 @@ def test_shadow_outputs_term_on_and_off(monkeypatch):
     assert out["f1_shadow_home_win_pct"] == 40.0
 
 
+@pytest.fixture(scope="module")
+def live_and_shadow():
+    import predict_games as P
+    from ml_predict import MLPredictor
+    ml = MLPredictor(pd.DataFrame())
+    if not ml.uses_bu:
+        pytest.skip("the live model has no RAPM lineup term")
+    sh = P.load_shadow(ml, pd.DataFrame())
+    assert sh is not None and sh.available, "the live joint model must ship its F1 rollback shadow"
+    return ml, sh
+
+
+def _outputs(monkeypatch, ml, sh, bf, mode):
+    import predict_games as P
+    monkeypatch.setenv("PONYXG_BU", mode)
+    monkeypatch.setattr(P, "bu_lineup", lambda game, inp: bf)
+    inp = P.Inputs(now=datetime.now(timezone.utc), schedule=[])
+    inp.ml, inp.shadow = ml, sh
+    game = {"homeTeam": "Maple Leafs", "awayTeam": "Bruins", "homeTeamAbbrev": "TOR", "awayTeamAbbrev": "BOS",
+            "gameDate": "2026-10-02", "startTimeUTC": "2026-10-02T23:00:00Z", "id": 2026020020}
+    ctx = {"home_goalie_confirmed": "", "away_goalie_confirmed": "", "home_gp": 1, "away_gp": 1}
+    return P.build_model_outputs(game, ctx, inp)
+
+
+@pytest.mark.parametrize("mode,ok", [("on", False), ("off", True), ("shadow", True)])
+def test_term_off_or_unavailable_publishes_the_f1_rollback_model(monkeypatch, live_and_shadow, mode, ok):
+    """PONYXG_BU=off|shadow, a stale bundle or a failed coverage gate publish the incumbent
+    without the term (the F1 rollback model), not the joint model with zero-filled bu_d_net /
+    bu_d_delta (bu_d_net carries team strength there, so zeros shrink picks toward 50%)."""
+    ml, sh = live_and_shadow
+    bf = {"bu_d_net": 0.6, "bu_d_delta": 0.3, "bu_ok": ok, "reason": None if ok else "stale bundle (40 h > 36 h)",
+          "home": {"delta": 0.2, "n": 18}, "away": {"delta": -0.1, "n": 18}}
+    out = _outputs(monkeypatch, ml, sh, bf, mode)
+    assert out["model_version"] == sh.model_version != ml.model_version
+    assert out["home_model_win_pct"] == out["f1_shadow_model_win_pct"]
+    assert out["home_win_pct"] == out["f1_shadow_home_win_pct"]
+    assert {r["factor"] for r in out["home_wp_breakdown"]} >= {"lineup_goalie", "strength_5v5"}
+    term_on = ml.predict_detail("Maple Leafs", "Bruins", "2026-10-02",
+                                extra_features={"bu_d_net": 0.6 if ok else 0.0, "bu_d_delta": 0.3 if ok else 0.0})
+    assert out["bu_shadow_home_win_pct"] == round(100 * term_on["home_win_prob"], 1)   # no market: model-only
+
+
+def test_term_on_publishes_the_joint_model(monkeypatch, live_and_shadow):
+    ml, sh = live_and_shadow
+    bf = {"bu_d_net": 0.6, "bu_d_delta": 0.3, "bu_ok": True, "reason": None,
+          "home": {"delta": 0.2, "n": 18}, "away": {"delta": -0.1, "n": 17}}
+    out = _outputs(monkeypatch, ml, sh, bf, "on")
+    assert out["model_version"] == ml.model_version
+    assert out["bu_shadow_home_win_pct"] == out["home_win_pct"]
+    assert (out["home_lineup_score"], out["away_lineup_matched"]) == (0.2, 17)
+    assert out["f1_shadow_model_win_pct"] is not None and out["f1_shadow_model_win_pct"] != out["home_model_win_pct"]
+
+
 def test_shadow_outputs_without_bu_or_shadow():
     import predict_games as P
     inp = P.Inputs(now=datetime.now(timezone.utc), schedule=[])

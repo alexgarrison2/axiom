@@ -81,8 +81,8 @@ jobs:
           MODE: ${{ steps.mode.outputs.mode }}
           # Rollback switches (repository variables; empty = default):
           #   PONYXG_XG=v1|shadow  publish xG v1 again (pipeline/bu/xg/README.md "Rollback")
-          #   PONYXG_BU=off        publish the RAPM lineup term as neutral 0 (still logged in
-          #                        bu_shadow_home_win_pct; pipeline/bu/README.md)
+          #   PONYXG_BU=off        publish the F1 rollback model (no RAPM lineup term); the joint
+          #                        model stays logged in bu_shadow_home_win_pct (pipeline/bu/README.md)
           PONYXG_XG: ${{ vars.PONYXG_XG }}
           PONYXG_BU: ${{ vars.PONYXG_BU }}
         run: python pipeline/refresh_pipeline.py --mode "$MODE"

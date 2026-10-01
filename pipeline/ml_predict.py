@@ -62,9 +62,11 @@ def bu_mode() -> str:
     """Rollback switch for the RAPM v2 lineup term (DESIGN §5.2 ``PONYXG_BU``).
 
     on (default)   the live model gets tonight's bu_d_net / bu_d_delta
-    off | shadow   the published model gets neutral 0 for both (the term is switched off
-                   without a retrain); the term-on probability is still logged in
-                   ``bu_shadow_home_win_pct``.
+    off | shadow   predict_games publishes the incumbent WITHOUT the term, the F1 rollback
+                   model (``shadow.f1`` in the meta), as it also does per game when the term is
+                   unavailable (stale bundle, coverage gate); the joint model's term-on
+                   probability is still logged in ``bu_shadow_home_win_pct``.  Zero-filling the
+                   two features is not neutral (bu_d_net carries team strength in the joint fit).
     Full rollback to the previous model: restore game_model.pkl/meta from git (the F1
     model is also kept in models/shadow/ and logged every run)."""
     v = (os.environ.get(BU_ENV) or 'on').strip().lower()

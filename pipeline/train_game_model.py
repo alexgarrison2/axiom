@@ -439,7 +439,7 @@ def bu_config(cols, prev_meta=None):
             'rapm_xg_source': fmeta.get('xg_source'), 'rapm_code_version': fmeta.get('code_version'),
             'rapm_hyper': fmeta.get('hyper'),
             'serving_bundle': 'bu/lineup/out/serving_bundle.json.gz', 'max_age_h': SV.MAX_AGE_H,
-            'min_rated': SV.MIN_RATED, 'flag': 'PONYXG_BU=on|off (off: neutral 0, the term is logged in shadow only)'}
+            'min_rated': SV.MIN_RATED, 'flag': 'PONYXG_BU=on|off (off, stale bundle or coverage gate: the F1 rollback model shadow.f1 is published; the joint model is logged in bu_shadow_home_win_pct)'}
 
 
 def save_model(model, meta, model_path=MODEL_PATH, meta_path=META_PATH):

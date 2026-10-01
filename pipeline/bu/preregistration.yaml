@@ -260,3 +260,21 @@ amendments:
       Gate C.data: games where the close row's published block carries bu_shadow_home_win_pct (blend_BU) and, once BU is live, f1_shadow_home_win_pct (blend_current)
       snapshots: the published block also records f1_shadow_model_pct and f1_shadow_home_win_pct (pipeline/bu/snapshots.py PUBLISHED_FIELDS)
     new_analysis_sha256: 99b0611d5113899d98391f84745c613865a95b823e2e2803611494209de0dac7
+  - at: "2026-10-01T21:00:00Z"
+    by: sm-integrate review (serving fallback of the shipped BU model)
+    looks_before_this_amendment: 0        # prereg_looks.jsonl does not exist yet
+    reason: >-
+      Text-only clarification of the 2026-10-01T19:00:00Z amendment.  When the
+      RAPM lineup term is switched off (PONYXG_BU=off|shadow) or unavailable for
+      a game (serving bundle older than 36 h, a side under the coverage gate),
+      the site now publishes the incumbent without the term (the F1 rollback
+      model, DESIGN §5.2) instead of the joint model with zero-filled
+      bu_d_net / bu_d_delta.  bu_shadow_home_win_pct stays the BU candidate's
+      published-style blend (the joint model with its term-on features, neutral
+      0 only when the term is unavailable); it equals home_win_pct when the
+      joint model published the row, and f1_shadow_home_win_pct equals
+      home_win_pct when the rollback model did.  Gate C / Gate E still compare
+      bu_shadow_home_win_pct (blend_BU) with f1_shadow_home_win_pct
+      (blend_current).  No definition, data rule, threshold, alpha, margin,
+      minimum n or analysis code changes.
+    new_analysis_sha256: 99b0611d5113899d98391f84745c613865a95b823e2e2803611494209de0dac7

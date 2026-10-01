@@ -507,17 +507,20 @@ def _blend_pct(p_model, q, w):
     return round(100 * p, 1)
 
 
-def shadow_outputs(game, ctx, inp, d, p_published, q, w, bu_on_features, extra_terms):
-    """Shadow columns (DESIGN §6.2; preregistration amendment of 2026-10-01): published-style
+def shadow_outputs(game, ctx, inp, d, p_published, q, w, bu_on_features, extra_terms, published_bu=None):
+    """Shadow columns (DESIGN §6.2; preregistration amendments of 2026-10-01): published-style
     blends (same market price and blend weight as ``home_win_pct``) of
 
-      bu_shadow_home_win_pct   the model WITH the RAPM v2 lineup term on (= home_win_pct
-                               while PONYXG_BU=on; the term-on blend when it is switched off)
+      bu_shadow_home_win_pct   the joint model WITH the RAPM v2 lineup term on (tonight's
+                               bu_d_net / bu_d_delta, neutral 0 when the term is unavailable);
+                               = home_win_pct when that model is what was published
       f1_shadow_*              the replaced live model (F1 lineup term, xG v1 inputs;
                                models/shadow/game_model_f1.pkl), the rollback shadow and
-                               Gate C's incumbent
+                               Gate C's incumbent; = home_win_pct when the fallback published it
 
-    Empty when the live model has no BU term / no shadow model is configured.  Never raises."""
+    ``published_bu``: True when ``p_published`` is the joint model's term-on blend (default:
+    PONYXG_BU=on).  Empty when the live model has no BU term / no shadow model is configured.
+    Never raises."""
     out = {"bu_shadow_home_win_pct": None, "f1_shadow_model_win_pct": None, "f1_shadow_home_win_pct": None}
     ml = inp.ml
     home, away = game["homeTeam"], game["awayTeam"]
@@ -525,11 +528,13 @@ def shadow_outputs(game, ctx, inp, d, p_published, q, w, bu_on_features, extra_t
               h_rest_days=ctx.get("_home_model_rest"), a_rest_days=ctx.get("_away_model_rest"))
     try:
         if getattr(ml, "uses_bu", False):
-            if bu_mode() == "on":
+            if published_bu is None:
+                published_bu = bu_mode() == "on"
+            if published_bu:
                 out["bu_shadow_home_win_pct"] = round(100 * p_published, 1)
             else:
-                ds = ml.predict_detail(home, away, game_date_of(game), extra_terms=extra_terms,
-                                       extra_features=bu_on_features, **kw)
+                ds = ml.predict_detail(home, away, game_date_of(game), extra_terms=[],
+                                       extra_features=bu_on_features or {c: 0.0 for c in BU_COLUMNS}, **kw)
                 if ds is not None:
                     out["bu_shadow_home_win_pct"] = _blend_pct(ds["home_win_prob"], q, w)
     except Exception as e:
@@ -585,6 +590,18 @@ def pick_summary(home, away, p_home, rows):
     return s
 
 
+def incumbent_lineup_inputs(game, inp, model):
+    """(extra_terms, extra_features, lineup detail) for a model WITHOUT the RAPM term: the F1
+    lineup features when ``model`` uses them (its 'lineup_goalie' factor replaces the separate
+    lineup_adjust term), the legacy lineup_adjust logit term otherwise."""
+    if getattr(model, "uses_lineups", False):
+        lf = fasttrack_lineup(game, inp, ml=model)
+        return [], {c: (lf[c] if lf else 0.0) for c in ("d_lineup", "d_lineup_level")}, \
+            (lf if (lf and lf.get("lineup_ok")) else None)
+    l_logit, l_detail = lineup_term(game, inp)
+    return [("lineup", "Lineups & injuries", l_logit)], None, l_detail
+
+
 def build_model_outputs(game, ctx, inp):
     """Model outputs for a pregame game (FROZEN_COLUMNS), or None."""
     ml = inp.ml
@@ -592,27 +609,39 @@ def build_model_outputs(game, ctx, inp):
         return None
     home, away = game["homeTeam"], game["awayTeam"]
     gd = game_date_of(game)
-    bu_on_features = None    # term-on model features, for the BU shadow when the flag is off
+    bu_on_features = None    # term-on model features, for the BU shadow when it is not published
+    published_bu = None      # True: the joint model with the term on is what gets published
+    model = ml
     if getattr(ml, "uses_bu", False):
         # RAPM v2 lineup term (bu.lineup.serve.LiveLineupTerm): tonight's DFO lines minus
         # players out; neutral 0 when the bundle is stale or a side fails the coverage gate.
         bf = bu_lineup(game, inp)
         on = bu_mode() == "on"
-        bu_on_features = {c: float((bf or {}).get(c) or 0.0) for c in BU_COLUMNS}
-        extra = []
-        extra_features = bu_on_features if on else {c: 0.0 for c in BU_COLUMNS}
-        l_detail = bu_detail(bf) if (on and bf and bf.get("bu_ok")) else None
-    elif getattr(ml, "uses_lineups", False):
-        # F1 model: the lineup delta is a model feature and its factor
-        # ('lineup_goalie') replaces the separate lineup_adjust term (weight 0).
-        lf = fasttrack_lineup(game, inp)
-        extra = []
-        extra_features = {c: (lf[c] if lf else 0.0) for c in ("d_lineup", "d_lineup_level")}
-        l_detail = lf if (lf and lf.get("lineup_ok")) else None
+        term_ok = bool(bf and bf.get("bu_ok"))
+        bu_on_features = {c: (float(bf.get(c) or 0.0) if term_ok else 0.0) for c in BU_COLUMNS}
+        sh = inp.shadow
+        if on and term_ok:
+            published_bu = True
+            extra, extra_features, l_detail = [], bu_on_features, bu_detail(bf)
+        elif sh is not None and getattr(sh, "available", False):
+            # Term switched off (PONYXG_BU=off|shadow) or unavailable for this game (stale
+            # bundle, unmapped / under-covered lineup): publish the incumbent WITHOUT the term,
+            # i.e. the F1 rollback model (DESIGN §5.2).  Zero-filling bu_d_net / bu_d_delta in
+            # the joint model is not neutral: bu_d_net carries part of team strength there, so
+            # zeros shrink every pick toward 50% (walk-forward 2023-26: +0.0013 / +0.0007 /
+            # +0.0005 log loss per game vs the F1 model, logit SD -20%).
+            published_bu = False
+            model = sh
+            why = f"PONYXG_BU={bu_mode()}" if not on else ((bf or {}).get("reason") or "term unavailable")
+            print(f"  [bu] {away}@{home}: publishing the F1 rollback model {sh.model_version} ({why})")
+            extra, extra_features, l_detail = incumbent_lineup_inputs(game, inp, sh)
+        else:
+            # no rollback model on disk: the joint model with a neutral term (logged)
+            published_bu = False
+            extra, extra_features, l_detail = [], {c: 0.0 for c in BU_COLUMNS}, None
     else:
-        l_logit, l_detail = lineup_term(game, inp)
-        extra, extra_features = [("lineup", "Lineups & injuries", l_logit)], None
-    d = ml.predict_detail(home, away, gd, h_goalie=ctx["home_goalie_confirmed"] or None,
+        extra, extra_features, l_detail = incumbent_lineup_inputs(game, inp, ml)
+    d = model.predict_detail(home, away, gd, h_goalie=ctx["home_goalie_confirmed"] or None,
                           a_goalie=ctx["away_goalie_confirmed"] or None,
                           h_rest_days=ctx.get("_home_model_rest"), a_rest_days=ctx.get("_away_model_rest"),
                           extra_terms=extra, extra_features=extra_features)
@@ -656,7 +685,7 @@ def build_model_outputs(game, ctx, inp):
     units, side = priced["units"], priced["bet_side"]
     wager = f"{side.title()} {units} {'Unit' if units == 1.0 else 'Units'}" if (units and side) else "No Bet"
     out = {
-        "model_version": d.get("model_version") or getattr(ml, "model_version", ""),
+        "model_version": d.get("model_version") or getattr(model, "model_version", ""),
         "preseason_prior": preseason,
         "home_model_win_pct": round(100 * p_model, 1), "away_model_win_pct": round(100 * (1 - p_model), 1),
         "home_win_pct": win_pct, "away_win_pct": round(100 - win_pct, 1),
@@ -691,7 +720,7 @@ def build_model_outputs(game, ctx, inp):
         "home_lineup_matched": l_detail["home"]["matched"] if l_detail else None,
         "away_lineup_matched": l_detail["away"]["matched"] if l_detail else None,
     }
-    out.update(shadow_outputs(game, ctx, inp, d, p, q, w, bu_on_features, extra))
+    out.update(shadow_outputs(game, ctx, inp, d, p, q, w, bu_on_features, extra, published_bu=published_bu))
     for k in ("total_line", "total_over", "total_under", "three_way_tie"):
         out[k] = go.get(k)
     for side_, team in (("home", home), ("away", away)):

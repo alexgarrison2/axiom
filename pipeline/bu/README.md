@@ -58,8 +58,13 @@ seeded season refit with the xG v2 target, bundle rebuild; ~1 min), lake saved t
 fails on a missing / wrong-season / malformed bundle.
 
 **Rollback** (repository variables read by `update_data.yml`, no code change):
-- `PONYXG_BU=off`: the term is published as neutral 0 (its term-on probability stays in
-  `bu_shadow_home_win_pct`).
+- `PONYXG_BU=off`: the incumbent without the term is published, i.e. the F1 rollback model
+  `models/shadow/game_model_f1.pkl` (`model_version` says which model made each row); the joint
+  model's term-on probability stays in `bu_shadow_home_win_pct`.  The same automatic fallback
+  applies per game when the term is unavailable (bundle older than 36 h, a side under the
+  coverage gate).  The joint model is not run with zero-filled `bu_d_net` / `bu_d_delta`:
+  `bu_d_net` carries part of team strength there, so zeros shrink every pick toward 50%
+  (walk-forward 2023-26 vs the F1 model: +0.0013 / +0.0007 / +0.0005 log loss per game).
 - `PONYXG_XG=v1`: xG v1 again (`bu/xg/README.md` "Rollback").
 - Full rollback to the previous model: `git checkout <commit before 2b2622b9> --
   pipeline/game_model.pkl pipeline/game_model_meta.json` (the same pickle is

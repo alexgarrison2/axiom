@@ -13,12 +13,13 @@ name: RAPM lineup bundle refresh
 #   4. commit the bundle (the only committed file)
 #
 # Runs before the morning full refresh (update_data.yml, 12:00-14:59 UTC) and twice
-# more as a fallback (GitHub cron can fire late or not at all).  The live term goes
-# neutral by itself when the bundle is older than 36 h (bu.lineup.serve.MAX_AGE_H).
+# more as a fallback (GitHub cron can fire late or not at all).  When the bundle is
+# older than 36 h (bu.lineup.serve.MAX_AGE_H) predict_games publishes the F1 rollback
+# model (the incumbent without the term) by itself.
 #
 # Rollback switch (no code change): repository variable PONYXG_BU=off makes
-# update_data.yml publish the term as neutral 0 (the term-on probability is still
-# logged in bu_shadow_home_win_pct).  BU_REFRESH=off stops this workflow's crons.
+# update_data.yml publish the F1 rollback model (the joint model's probability is
+# still logged in bu_shadow_home_win_pct).  BU_REFRESH=off stops this workflow's crons.
 
 on:
   schedule:
@@ -95,12 +96,17 @@ jobs:
         run: python -m bu.lineup.refresh --lake-dir "$LAKE"
 
       - name: Save the lake to the season release
+        # Also after a failed / timed-out refresh: the backfill is resumable (atomic raw writes),
+        # so a partial ingest (e.g. a whole season refetched after a lost release asset, more
+        # than one 15-min backfill window late in the season) carries over to the next run.
+        if: ${{ !cancelled() && steps.season.outputs.id != '' }}
         continue-on-error: true   # the bundle is the product; the lake copy only saves refetching
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEASON: ${{ steps.season.outputs.id }}
           LAKE: ${{ steps.season.outputs.lake }}
         run: |
+          if [ -z "$(ls -A "$LAKE" 2>/dev/null)" ]; then echo "empty lake; nothing to save"; exit 0; fi
           out="${RUNNER_TEMP:-/tmp}/lake-$SEASON.tar.gz"
           # raw payloads + this season's parquet + manifest; the rebuildable state/ cache stays out
           (cd "$LAKE" && tar -czf "$out" --exclude='./state' .)
