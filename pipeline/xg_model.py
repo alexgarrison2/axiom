@@ -1,3 +1,14 @@
+"""xG v1: the incumbent shot model (``xg_model_xgb.pkl``), still the published xG.
+
+Its successor, xG v2 (DESIGN §3.1, milestone M1), lives in ``pipeline/bu/xg/``
+and runs live in shadow (``PONYXG_XG``, see ``bu/xg/README.md``).  Known v1
+limits, measured there: no strength or empty-net feature, ``player_hand.json``
+is all "U" (off-wing always 0), ``is_rebound``/``is_rush`` always 0 (the
+scraper compares against old type names), and a random 80/20 split, so the
+committed pickle is in sample on 2022-26.  ``bu/xg/v1.py`` re-fits this exact
+recipe point-in-time as the M1 benchmark, so keep ``preprocess_data`` and
+``train_xgboost`` stable.
+"""
 from season import season_file
 import json
 import os
