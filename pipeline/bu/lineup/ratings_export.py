@@ -236,8 +236,12 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
         hist = {int(r[0]): (float(r[sc.index("ev_s")]), int(r[sc.index("gp")])) for r in sample["sample"]["rows"]}
         ic = sample["players"]["columns"]
         ident = {int(r[0]): dict(zip(ic, r)) for r in sample["players"]["rows"]}
+    prev_roster = {p: (d["name"], d["team"], d["pos"]) for p, d in prev_rows.items() if d.get("roster")}
     if roster is None:      # no roster source at all: keep the previous export's roster view
-        roster = {p: (d["name"], d["team"], d["pos"]) for p, d in prev_rows.items() if d.get("roster")}
+        roster = prev_roster
+    else:                   # a team whose roster call failed keeps its previous roster
+        have = {t for _, t, _ in roster.values()}
+        roster = {**{p: v for p, v in prev_roster.items() if v[1] not in have}, **roster}
     roster = {p: v for p, v in roster.items() if v[2] != "G"}
 
     rows = []
@@ -257,15 +261,19 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
         else:
             o, d = rookie.get("D" if pos == "D" else "F", (0.0, 0.0))
             rated = False
+        # This season's EV minutes are rounded on their own and the window's added to them, so a
+        # run that carries them over from the previous export (no stints: the daily full run)
+        # writes exactly what the bundle refresh wrote, not a +-1 minute churn.
         if cur is not None:
             c_s, c_gp = cur.get(pid, (0.0, 0))
+            c_min = round(c_s / 60)
         elif old.get("_same_season"):
-            c_s, c_gp = float(old.get("toi_cur") or 0) * 60, int(old.get("gp_cur") or 0)
+            c_min, c_gp = int(round(float(old.get("toi_cur") or 0))), int(old.get("gp_cur") or 0)
         else:
-            c_s, c_gp = 0.0, 0
+            c_min, c_gp = 0, 0
         h_s, h_gp = hist.get(pid, (0.0, 0))
         rows.append([pid, name, team, pos, pid in roster, bool(rated), round(o, 3), round(d, 3), round(o - d, 3),
-                     round((h_s + c_s) / 60), h_gp + c_gp, round(c_s / 60), c_gp])
+                     round(h_s / 60) + c_min, h_gp + c_gp, c_min, c_gp])
     rows.sort(key=lambda r: (-r[8], r[1]))
     now = now or datetime.now(timezone.utc)
     return {

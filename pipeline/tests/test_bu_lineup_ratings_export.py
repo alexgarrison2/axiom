@@ -76,6 +76,30 @@ def test_fallbacks_carry_the_previous_export():
     assert rows[1]["toi"] == 0 and 3 not in rows        # no name for the retired player -> dropped
 
 
+def test_carry_over_is_byte_identical():
+    """The daily full run (no stints) re-exports exactly what the bundle refresh wrote, so the
+    two jobs never trade +-1 minute EV totals back and forth."""
+    cur = {1: (629.0, 1), 2: (31.0, 1)}       # 10.48 and 0.52 minutes: rounding edges
+    sample = _sample()
+    sample["sample"]["rows"] = [[1, 290_029, 270], [2, 180_031, 200], [3, 6_000, 10]]
+    first = RE.build_export(_bundle(), sample, ROSTER, cur, now=NOW)
+    again = RE.build_export(_bundle(), sample, ROSTER, None, first, now=NOW)
+    assert again["rows"] == first["rows"]
+
+
+def test_missing_team_keeps_its_previous_roster():
+    prev = RE.build_export(_bundle(), _sample(), ROSTER, None, now=NOW)
+    partial = {k: v for k, v in ROSTER.items() if v[1] != "CAR"}     # CAR's roster call failed
+    rows = _rows(RE.build_export(_bundle(), _sample(), partial, None, prev, now=NOW))
+    assert rows[2]["roster"] and rows[2]["team"] == "CAR"
+    # a player who left a team that did answer is no longer rostered there
+    moved = dict(partial)
+    del moved[1]
+    moved[5] = ("Leon Draisaitl", "EDM", "C")
+    rows = _rows(RE.build_export(_bundle(), _sample(), moved, None, prev, now=NOW))
+    assert not rows[1]["roster"]
+
+
 def test_write_only_when_content_changes(tmp_path):
     p = str(tmp_path / "player_ratings.json")
     doc = RE.build_export(_bundle(), _sample(), ROSTER, None, now=NOW)
