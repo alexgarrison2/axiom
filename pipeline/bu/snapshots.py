@@ -479,6 +479,8 @@ PUBLISHED_FIELDS = {
     "blend_weight": "blend_weight", "market_source": "market_source",
     "market_fetched_at": "market_fetched_at", "home_market_pct": "home_vegas_win_pct",
     "home_gp": "home_gp", "away_gp": "away_gp",
+    # DESIGN §6.2 shadow column (absent until a BU stage ships in shadow).
+    "bu_shadow_home_win_pct": "bu_shadow_home_win_pct",
 }
 
 

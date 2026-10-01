@@ -1,0 +1,213 @@
+# pony xG: pre-registration of the 2026-27 market tests
+#
+# Registered BEFORE any result exists.  At registration time the forward
+# archive (pipeline/snapshots/) is empty: the first row is written by
+# .github/workflows/odds_close.yml after this file is committed.  No 2026-27
+# close has been captured, no outcome has been joined to a close, and none of
+# the tests below has been run on 2026-27 data.  The git commit that adds this
+# file is the registration timestamp of record; registered_at is the time
+# the text was finalised, just before that commit.
+#
+# Source of the design: DESIGN.md v2 (2026-10-01) §1.4 (price classes and
+# information sets), §1.5 (evaluation, holdout policy, pre-registration),
+# §1.6 (power), §1.7 (ship criteria), §2.4 (forward archive); owner
+# decisions D1, D2, D3, D6, D7, D8 (DECISIONS.md, 2026-10-01).
+#
+# Rules for changing this file
+#   * Append-only.  Changes go in `amendments` with a timestamp and reason.
+#   * An amendment may not change the definition, data, threshold or sample
+#     of a test after that test has had any look (binding or descriptive) on
+#     2026-27 data.  Before its first look a test may only be made stricter
+#     (larger min_n, smaller alpha), except for the M0b power recomputation
+#     below, which may raise min_n.
+#   * The analysis code is pinned by sha256; editing it requires an amendment
+#     carrying new_analysis_sha256 and a reason (CI fails otherwise:
+#     pipeline/tests/test_snapshot_prereg.py).
+
+id: ponyxg-market-prereg-2026-27
+version: 0
+registered_at: "2026-10-01T14:33:11Z"
+registered_by: pony xG model workstream (sm-snapshots), for the owner
+season: "2026-27"            # NHL season id 20262027, 84-game regular season
+
+analysis_code:
+  path: pipeline/bu/prereg_analysis.py
+  sha256: 6aa68cf2438283a605d69bb8e3c96c8086199b1ee2ea421f49a372fcf0796907
+  command: "cd pipeline && python3 -m bu.prereg_analysis --test <M-1|M-2|M-3|M-4|M-5|C|E|all> --until YYYY-MM-DD --record"
+  look_ledger: pipeline/bu/prereg_looks.jsonl   # every look is appended with --record
+  dependencies: [python>=3.11 stdlib, numpy]   # self-contained; does not import market.py or bu/snapshots.py
+
+# What "beats the market" means (owner decision D1, approved 2026-10-01):
+claim:
+  definition: >-
+    The pony xG model "beats the de-vigged market" in 2026-27 if and only if
+    M-1 passes (the model, frozen at an early timestamped price, predicts the
+    direction of line movement to a timestamped close) AND M-3 passes (the
+    published blend is not worse than the de-vigged close, point estimate).
+    M-2, M-4 and M-5 are reported alongside; M-2 is binding at season end
+    for any claim that the model adds information beyond the close.
+  historical: >-
+    Market comparisons on 2023-24 to 2025-26 and the Jan-Jun 2026 git-history
+    replay are descriptive only (no free timestamped closes; D2 free data
+    only).  None of their numbers sets a bar, prior, weight or threshold here.
+
+blend_policy:
+  decision: D7
+  text: >-
+    No cap (D7) on the live blend weight ("let's stay aggressive").  The published
+    weight is the existing walk-forward market.walk_forward_weights fit
+    (shrunk toward 0.2 with 200 pseudo-games) on the existing GP ramp
+    (effective_weight, EARLY_WEIGHT_GP = 20).  DESIGN §1.7's proposed cap of
+    0.2 until M-1 passes is NOT adopted.  M-3 is therefore evaluated on the
+    blend exactly as published, whatever its weight; a failing M-3 is
+    reported to the owner and does not automatically change the weight.
+
+population:
+  games: NHL 2026-27 game types 02 (regular season) and 03 (playoffs); types 01, 04, 12, 19, 20 excluded
+  target: home_win including OT and shootout (from pipeline/nhl_season_2026_2027_gamestats.csv, home row result in W/OTW/SOW)
+  regular_season_only_for: [M-2, M-3, M-5]
+
+data:
+  snapshots: >-
+    pipeline/snapshots/2026-27/<ET game date>.jsonl.gz (schema v1), written by
+    pipeline/bu/snapshots.py from .github/workflows/odds_close.yml (cron and
+    Cloudflare Worker triggers) and copied to the snapshots-2026-27 release.
+  model_probability: >-
+    The `published` block of each snapshot row: the site's
+    public/data/predictions_detailed.csv at capture time (home_model_win_pct =
+    incumbent pre-blend model, home_win_pct = published blend, blend_weight,
+    model_version, predicted_at, home_gp/away_gp, and bu_shadow_home_win_pct
+    once a BU stage runs in shadow).  The incumbent's pre-blend probability
+    uses no market input.
+  bets: public/data/bet_ledger.json seasons["2026-27"].bets (M-4)
+
+prices:
+  classes:                       # DESIGN §1.4
+    close: timestamped, 0 < lead_min <= 15
+    snapshot: timestamped, lead_min > 0
+    reference: untimestamped (ESPN `open` lines); never used by any test below
+  close_max_lead_min: 15.0
+  q0_min_lead_min: 60.0          # q0 = earliest price captured on the game's ET date with lead >= 60 min
+  primary_book: draftkings       # all binding tests use this book; other books reported per book, never gated
+  source_priority: [nhl_partner, espn]   # per game, the first source that has both a q0 and a close
+  devig: power method on the two-way moneyline
+  filters:                       # price-only; fixed now; never depend on the model or the outcome
+    both_moneylines_present: true
+    overround_range: [0.01, 0.10]
+    max_abs_q_move: 0.25         # |q_close - q0| on the de-vigged home probability
+  information_set: >-
+    A model probability compared with a price must have predicted_at <=
+    that price's fetched_at (lineups and goalies as known to the published
+    model at that time).  Rows that violate this are excluded.
+  missingness: >-
+    Every report lists games excluded for no q0/close, price filter, missing
+    published model and missing outcome, and the close coverage share of all
+    scheduled games (python3 -m bu.snapshots report).
+
+inference:
+  paired_differences: analytic paired SE (one-sided bounds use z = 1.6449)
+  bootstrap:
+    resamples: 2000
+    seed: 20261001
+    unit: game
+  calibration_slope: logistic y ~ a + s * logit(p); two-sided 95% Wald CI
+
+tests:
+  M-1:
+    role: primary market test (binding; D1)
+    function: m1_line_movement
+    hypothesis: "beta > 0 in  logit q_close - logit q0 = alpha + beta * (logit p0 - logit q0) + e"
+    p0: published home_model_win_pct in the q0 snapshot row (model frozen at q0's timestamp)
+    model_under_test: >-
+      The live published pony xG pre-blend model at q0 time, whatever
+      model_version is live (the fast-track lineup/goalie feature, D8,
+      included); versions are reported.  A BU shadow model gets its own M-1
+      only through an amendment made before its first look.
+    estimator: OLS with HC1 (game-level) standard errors; date-clustered SE reported as a robustness check
+    alpha: 0.05
+    sided: one-sided
+    pass_rule: one-sided 95% lower bound of beta > 0
+    min_n: 400
+    sample: the first 400 eligible games by scheduled start (one binding look, made when the 400th eligible game is final)
+    after_binding: descriptive season-end update on all eligible games; it cannot overturn the binding result
+    power: >-
+      DESIGN §1.6: with SD(dlogit q) ~ 0.06-0.10 and SD(gap) ~ 0.15 a true
+      beta of 0.08 needs ~250-450 games.  M0b recomputes these SDs on the
+      Jan-Jun 2026 git-history replay (descriptive data, not 2026-27); an
+      amendment before the first M-1 look may raise min_n, never lower it.
+  M-2:
+    role: unshrunk weight test (binding at season end; D1/DESIGN §1.7)
+    function: m2_unshrunk_weight
+    hypothesis: "b1 > 0 in  logit P(y=1) = a + b1 * logit p_model_close + b2 * logit q_close"
+    estimator: unpenalised logistic regression (IRLS), Wald SE
+    alpha: 0.05
+    sided: one-sided
+    pass_rule: one-sided 95% lower bound of b1 > 0
+    min_n: 30               # analysis refuses smaller samples; expected n ~ 1,100
+    sample: all eligible regular-season games through the last regular-season game day (one look, season end)
+  M-3:
+    role: published blend vs close (binding as point estimate; D1)
+    function: m3_blend_vs_close
+    statistic: mean over games of LL(published home_win_pct at the close row) - LL(de-vigged close)
+    alpha: 0.05             # for the reported CI only
+    pass_rule: point estimate <= 0 (superiority not required, §1.6 power)
+    reported: analytic and bootstrap 95% CIs
+    sample: all eligible regular-season games, season end; also reported (descriptive) at the M-1 look
+  M-4:
+    role: CLV of the live rule's bets (reported; binding only if n >= 150)
+    function: m4_from_ledger
+    statistic: mean of decimal(bet price) * q_close(side) - 1, bootstrap CI, share positive
+    alpha: 0.05
+    sided: one-sided
+    pass_rule: one-sided 95% lower bound of mean CLV > 0 (only when n >= 150)
+    min_n: 150
+  M-5:
+    role: standalone model vs close (reported, never gated)
+    function: m5_standalone
+    statistic: mean LL(home_model_win_pct at close) - LL(de-vigged close), with CI
+    alpha: 0.05
+  Gate C:
+    role: live shadow non-inferiority of a BU candidate vs the incumbent (DESIGN §1.7 Gate C)
+    function: gate_c
+    data: games where the close row's published block carries bu_shadow_home_win_pct (blend_BU) next to home_win_pct (blend_current), both frozen at the same snapshot
+    statistic: mean over games of LL(blend_BU) - LL(blend_current)
+    alpha: 0.05
+    sided: one-sided
+    margin: 0.001
+    pass_rule: one-sided 95% upper bound < +0.001 AND blend_BU calibration slope 95% CI contains 1
+    min_n: 400
+    sample: the first 400 graded games with both probabilities (one binding look per candidate config_hash)
+    precedence: when Gate C and the backtest disagree, Gate C wins
+  Gate E:
+    role: early-season non-inferiority (pre-registered now, evaluated October-November 2027; DESIGN §1.7)
+    function: gate_e
+    season: "2027-28"      # run with --season 2027-28
+    data: games played in October-November 2027 with min(home GP, away GP) <= 15 before the game (published home_gp/away_gp), with blend_BU and blend_current at the close
+    statistic: mean LL(blend_BU) - LL(blend_current)
+    alpha: 0.05
+    sided: one-sided
+    margin: 0.001
+    max_gp: 15
+    pass_rule: one-sided 95% upper bound < +0.001 AND blend_BU calibration slope 95% CI contains 1
+    min_n: 200
+    also_reported: M-1 beta on the same games (descriptive)
+
+multiplicity:
+  market_tests: >-
+    M-1 is the single primary test (one binding look).  M-2 and M-3 have one
+    season-end look each.  Gate C has one binding look per candidate
+    config_hash.  No other look at 2026-27 data can be binding.
+  holdout_looks: >-
+    Separate from the market tests: backtest holdout looks on 2025-26 are
+    capped at 5 (4 component non-inferiority looks at one-sided alpha 0.0125,
+    Bonferroni over 4, plus 1 final superiority look at one-sided alpha 0.05),
+    each logged to bu_gate_log.json (DESIGN §1.5).  A failed candidate returns
+    to the dev folds (2023-24, 2024-25) and can only be re-tested on 2026-27
+    live data.
+  final_candidate: >-
+    The BU final candidate's mode, variants and hyperparameters are frozen by
+    config_hash and added here by amendment before its first holdout or live
+    look (M5 deliverable).
+  subgroups: early season, lineup-change and goalie-change games are reported with CIs only and never gated
+
+amendments: []
