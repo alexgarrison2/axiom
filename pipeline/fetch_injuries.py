@@ -66,7 +66,7 @@ def _name_index(rosters):
 
 
 def _search_player(name, tri):
-    data = try_get_json(SEARCH_URL.format(q=quote(name)), ua="plain", retries=2) or []
+    data = try_get_json(SEARCH_URL.format(q=quote(name)), ua="espn", retries=2) or []
     cands = [d for d in data if norm(d.get("name")) == norm(name)] if isinstance(data, list) else []
     same_team = [d for d in cands if (d.get("teamAbbrev") or "") == tri]
     pick = same_team or (cands if len(cands) == 1 else [])
@@ -76,7 +76,7 @@ def _search_player(name, tri):
 def fetch_injuries(rosters=None, search_budget=40):
     print("Fetching ESPN injury report...")
     try:
-        data = get_json(URL, ua="plain", retries=3)
+        data = get_json(URL, ua="espn", retries=3)
     except HttpError as e:
         mark_stale("injuries.json", f"ESPN injuries unavailable: {e}")
         print(f"  [WARN] {e} — keeping the previous injuries.json")

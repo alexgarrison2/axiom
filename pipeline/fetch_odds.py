@@ -298,7 +298,7 @@ def from_espn(books, now):
     missing = [b for b in books.values() if not b.has_ml()]
     n = 0
     for d in sorted({b.e["game_date"] for b in missing if b.e["game_date"]}):
-        data = try_get_json(ESPN_URL.format(d=d.replace("-", "")), ua="plain", retries=2)
+        data = try_get_json(ESPN_URL.format(d=d.replace("-", "")), ua="espn", retries=2)
         if not data:
             continue
         from fetch_injuries import espn_tri

@@ -58,7 +58,7 @@ def espn_probables(dates):
     from fetch_injuries import espn_tri
     out = {}
     for d in dates:
-        data = try_get_json(ESPN_SCOREBOARD.format(d=d.replace("-", "")), ua="plain", retries=2)
+        data = try_get_json(ESPN_SCOREBOARD.format(d=d.replace("-", "")), ua="espn", retries=2)
         if not data:
             continue
         for ev in data.get("events", []) or []:

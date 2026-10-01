@@ -24,6 +24,7 @@ tests can assert request counts.
 from __future__ import annotations
 
 import json
+import sys
 import os
 import random
 import socket
@@ -42,9 +43,11 @@ BROWSER_UA = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 )
-# ESPN's edge rejects full Chrome UAs from datacenter IPs but accepts a bare
-# "Mozilla/5.0"; it is also the UA the NHL APIs have always been called with.
+# The UA the NHL APIs have always been called with (they 403 non-browser UAs).
 PLAIN_UA = "Mozilla/5.0"
+# ESPN's edge rejects every "Mozilla/..." UA (Chrome and bare "Mozilla/5.0" both
+# 403 as of Oct 2026) but accepts an honest client UA. Use ua="espn".
+ESPN_UA = f"Python-urllib/{sys.version_info.major}.{sys.version_info.minor}"
 
 DEFAULT_TIMEOUT = 15
 DEFAULT_RETRIES = 3
@@ -88,6 +91,8 @@ def _resolve_ua(ua) -> str:
         return BROWSER_UA
     if ua == "plain":
         return PLAIN_UA
+    if ua == "espn":
+        return ESPN_UA
     return str(ua)
 
 

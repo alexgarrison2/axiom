@@ -159,8 +159,13 @@ jobs:
 
           git commit -q -m "Auto-Update: Data Refresh [$(date -u +%Y-%m-%dT%H:%M:%SZ)] (${{ steps.mode.outputs.mode }})"
           auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
-          git -c "http.https://github.com/.extraheader=$auth" pull --rebase --autostash origin main
-          git -c "http.https://github.com/.extraheader=$auth" push origin HEAD:main
+          # odds_close.yml also pushes to main (disjoint files), so retry a rejected push.
+          for attempt in 1 2 3 4; do
+            git -c "http.https://github.com/.extraheader=$auth" pull --rebase --autostash origin main
+            if git -c "http.https://github.com/.extraheader=$auth" push origin HEAD:main; then break; fi
+            [ "$attempt" = 4 ] && { echo "::error::push failed after 4 attempts"; exit 1; }
+            sleep $((attempt * 5))
+          done
           # Vercel's git integration deploys the push; vercel.json's ignoreCommand
           # skips builds for commits that touch only pipeline-internal state.
 
