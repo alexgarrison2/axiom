@@ -485,6 +485,29 @@ def stage_ratings_freshness(phase):
     return {"status": "ok", "reason": f"{age:.1f}h old"}
 
 
+def stage_bu_bundle():
+    """Freshness of the RAPM v2 lineup bundle the live model reads (bu_refresh.yml rebuilds it):
+    manifest ``sources.bu_bundle`` and a ``stale`` flag past ``serve.MAX_AGE_H`` (the term is
+    then neutral at serving time, so this never fails the run)."""
+    meta = read_json(os.path.join(PIPELINE_DIR, "game_model_meta.json"), {}) or {}
+    from features import BU_COLUMNS
+    if not any(c in (meta.get("feature_columns") or []) for c in BU_COLUMNS):
+        return {"status": "skip", "reason": "the live game model has no RAPM lineup term"}
+    from bu.lineup import serve as SV
+    from ml_predict import bu_mode
+    rel = (meta.get("bu_lineup") or {}).get("serving_bundle") or "bu/lineup/out/serving_bundle.json.gz"
+    b = SV.read(os.path.join(PIPELINE_DIR, rel))
+    age = (datetime.now(timezone.utc) - datetime.fromisoformat(b["built_at"])).total_seconds() / 3600
+    record_source("bu_bundle", built_at=b["built_at"], max_source_date=b.get("max_source_date"),
+                  n_games=b.get("n_games"), season=b.get("season"), age_h=round(age, 1), flag=bu_mode())
+    msg = f"built {age:.1f}h ago, {b.get('n_games')} games of {b.get('season')}, PONYXG_BU={bu_mode()}"
+    if age > SV.MAX_AGE_H:
+        mark_stale("serving_bundle.json.gz", f"built {age:.0f}h ago (> {SV.MAX_AGE_H:.0f}h): lineup term neutral")
+        return {"status": "ok", "reason": "STALE " + msg}
+    clear_stale("serving_bundle.json.gz")
+    return {"status": "ok", "reason": msg}
+
+
 def stage_player_models(state, n_games):
     """MoneyPuck + PBP + RAPM + player impact once the season has enough games;
     until then only re-point the committed profiles at current rosters."""
@@ -620,6 +643,7 @@ def run_lite(r, phase):
     pregame_stages(r, phase, "lite")
     r.run("sync_gamestats", stage_sync_gamestats)
     r.run("ratings_freshness", stage_ratings_freshness, phase, required=True)
+    r.run("bu_bundle", stage_bu_bundle, title="RAPM lineup bundle freshness")
     print("Running Predictions...")
     r.run("predict", stage_predict, required=True, title="Running Predictions")
     post_predict_stages(r, phase)
@@ -656,6 +680,7 @@ def run_full(r, phase, rescore_all=False):
         r.skip("playoff_news", "not in the playoffs")
         r.skip("goalie_playoff_career", "not in the playoffs")
     pregame_stages(r, phase, "full")
+    r.run("bu_bundle", stage_bu_bundle, title="RAPM lineup bundle freshness")
     print("Running Predictions...")
     r.run("predict", stage_predict, required=True, title="Running Predictions")
     print("Generating Prediction History...")

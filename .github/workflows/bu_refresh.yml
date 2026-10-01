@@ -1,0 +1,150 @@
+name: RAPM lineup bundle refresh
+
+# Keeps the RAPM v2 serving bundle (pipeline/bu/lineup/out/serving_bundle.json.gz,
+# ~0.2 MB) fresh for the live game model's lineup term (DESIGN §5.2, pipeline/bu/README.md).
+#
+#   1. restore the runner-local lake of the CURRENT season from the "lake-<season>"
+#      release asset (tens of MB; never committed, never in the Actions cache: D4)
+#   2. python -m bu.lineup.refresh: gap-driven ingest of new final games (<= 2 rps per
+#      host), season refit from the committed season pack with the live xG v2 target,
+#      bundle rebuild; publishes only when the content changed or the committed bundle
+#      is older than 12 h
+#   3. save the lake back to the release (second copy for the next run)
+#   4. commit the bundle (the only committed file)
+#
+# Runs before the morning full refresh (update_data.yml, 12:00-14:59 UTC) and twice
+# more as a fallback (GitHub cron can fire late or not at all).  The live term goes
+# neutral by itself when the bundle is older than 36 h (bu.lineup.serve.MAX_AGE_H).
+#
+# Rollback switch (no code change): repository variable PONYXG_BU=off makes
+# update_data.yml publish the term as neutral 0 (the term-on probability is still
+# logged in bu_shadow_home_win_pct).  BU_REFRESH=off stops this workflow's crons.
+
+on:
+  schedule:
+    - cron: '23 9,11,17 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: bu-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    if: github.event_name != 'schedule' || vars.BU_REFRESH != 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write   # push the bundle commit and upload the lake release asset
+    env:
+      PYTHONUNBUFFERED: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false   # the token is handed only to the push step
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.13'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: requirements.txt
+
+      - name: Install dependencies
+        run: uv pip install --system -r requirements.txt
+
+      - name: Season
+        id: season
+        working-directory: pipeline
+        run: |
+          sid=$(python -c "from season import SEASON_ID; print(SEASON_ID)")
+          case "$sid" in [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]) ;; *) echo "bad season '$sid'"; exit 1 ;; esac
+          echo "id=$sid" >> "$GITHUB_OUTPUT"
+          echo "lake=${RUNNER_TEMP:-/tmp}/lake" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the current-season lake
+        continue-on-error: true   # first run of a season: the release does not exist yet
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEASON: ${{ steps.season.outputs.id }}
+          LAKE: ${{ steps.season.outputs.lake }}
+        run: |
+          mkdir -p "$LAKE"
+          if gh release download "lake-$SEASON" --repo "$GITHUB_REPOSITORY" -p "lake-$SEASON.tar.gz" \
+               -D "${RUNNER_TEMP:-/tmp}" --clobber; then
+            tar -xzf "${RUNNER_TEMP:-/tmp}/lake-$SEASON.tar.gz" -C "$LAKE"
+            du -sh "$LAKE"
+          else
+            echo "no lake-$SEASON release asset yet; the refresh fetches the season from scratch"
+          fi
+
+      - name: Refresh the serving bundle
+        timeout-minutes: 30
+        working-directory: pipeline
+        env:
+          LAKE: ${{ steps.season.outputs.lake }}
+        run: python -m bu.lineup.refresh --lake-dir "$LAKE"
+
+      - name: Save the lake to the season release
+        continue-on-error: true   # the bundle is the product; the lake copy only saves refetching
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEASON: ${{ steps.season.outputs.id }}
+          LAKE: ${{ steps.season.outputs.lake }}
+        run: |
+          out="${RUNNER_TEMP:-/tmp}/lake-$SEASON.tar.gz"
+          # raw payloads + this season's parquet + manifest; the rebuildable state/ cache stays out
+          (cd "$LAKE" && tar -czf "$out" --exclude='./state' .)
+          ls -la "$out"
+          tag="lake-$SEASON"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target main --latest=false \
+              --title "Event/shift lake $SEASON (current season)" \
+              --notes "Runner-local lake of the current season for the RAPM bundle refresh (bu_refresh.yml). Not committed (DESIGN D4)."
+          fi
+          gh release upload "$tag" "$out" --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Commit and push the bundle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          f=pipeline/bu/lineup/out/serving_bundle.json.gz
+          if git diff --quiet -- "$f"; then
+            echo "Bundle unchanged (not republished)."
+            exit 0
+          fi
+          staged="${RUNNER_TEMP:-/tmp}/serving_bundle.json.gz"
+          cp "$f" "$staged"
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          for i in 1 2 3 4 5; do
+            # Start each attempt from the latest main and re-apply the bundle (one binary file,
+            # owned by this workflow only), so a concurrent data push never conflicts.
+            if git -c "http.https://github.com/.extraheader=$auth" fetch -q --depth=1 origin main &&
+               git reset -q --hard FETCH_HEAD; then
+              cp "$staged" "$f"
+              git add -- "$f"
+              if git diff --cached --quiet; then
+                echo "Bundle already on main."
+                exit 0
+              fi
+              git commit -q -m "RAPM lineup bundle refresh [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+              if git -c "http.https://github.com/.extraheader=$auth" push -q origin HEAD:main; then
+                exit 0
+              fi
+            fi
+            echo "push attempt $i failed; retrying"
+            sleep $((i * 4))
+          done
+          echo "::error::could not push the bundle after 5 attempts"
+          exit 1

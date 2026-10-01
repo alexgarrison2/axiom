@@ -79,6 +79,12 @@ jobs:
         timeout-minutes: ${{ steps.mode.outputs.mode == 'full' && 30 || 20 }}
         env:
           MODE: ${{ steps.mode.outputs.mode }}
+          # Rollback switches (repository variables; empty = default):
+          #   PONYXG_XG=v1|shadow  publish xG v1 again (pipeline/bu/xg/README.md "Rollback")
+          #   PONYXG_BU=off        publish the RAPM lineup term as neutral 0 (still logged in
+          #                        bu_shadow_home_win_pct; pipeline/bu/README.md)
+          PONYXG_XG: ${{ vars.PONYXG_XG }}
+          PONYXG_BU: ${{ vars.PONYXG_BU }}
         run: python pipeline/refresh_pipeline.py --mode "$MODE"
 
       - name: Validate outputs (data contract gate)

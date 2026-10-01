@@ -9,6 +9,69 @@ cd pipeline
 python -m bu.lake.backfill --help
 ```
 
+## Live: xG v2 + the RAPM v2 lineup term (shipped 2026-10-01)
+
+Owner decision 2026-10-01: ship xG v2 (`bu/xg/README.md`) and the RAPM v2 lineup term
+(`bu/rapm/README.md`) together on pooled evidence, keeping the replaced model as a rollback
+shadow.  The live game model is `logit-elo-v5-20261001-xg2-rapm`
+(`python3 retrain.py --joint --promote`, report `bu/lineup/out/joint_retrain.json`): the
+incumbent logistic + Elo features on xG v2 inputs, with `bu_d_net` (tonight's dressed
+skaters' EV RAPM net xG/60, home - away) and `bu_d_delta` (the same vs each team's last 10
+lineups) in place of the F1 `d_lineup`.
+
+**Backtest vs the model it replaced** (walk-forward, Δ log loss per game; the baseline
+reproduces the replaced model's own cv_results exactly):
+
+| Fold | n | Δ LL | Brier old → new | cal. slope new (95% CI) |
+|---|---|---|---|---|
+| 2023-24 | 1,399 | +0.00015 | 0.2339 → 0.2340 | 0.99 (0.78-1.21) |
+| 2024-25 | 1,206 | -0.00334 | 0.2362 → 0.2346 | 1.09 (0.81-1.37) |
+| 2025-26 | 1,394 | -0.00180 | 0.2432 → 0.2423 | 0.82 (0.58-1.06) |
+| pooled | 3,999 | **-0.00158** (SE 0.00099; bootstrap 95% CI -0.00351..+0.00034) | | 0.947 (0.808-1.086) |
+
+Early season (either team ≤ 15 GP): -0.00375 (SE 0.00241).  Against the de-vigged market
+(descriptive; 410 games of one soft book, last pregame snapshot, leaky L-actual lineups):
+new - market -0.00807 (SE 0.00537).  2025-26 was the soft holdout of both components; the
+pre-registered live test (Gate C: `bu_shadow_home_win_pct` vs `f1_shadow_home_win_pct`,
+amendment 2026-10-01 in `preregistration.yaml`) on 2026-27 is the clean one.
+
+**Serving** (`predict_games.py` → `ml_predict.MLPredictor`):
+- `bu_d_net` / `bu_d_delta` come from `bu.lineup.serve.LiveLineupTerm` over tonight's
+  DailyFaceoff lines (players out / IR / suspended removed, names mapped by the bundle's
+  crosswalk).  Neutral 0 (and empty `side_lineup_*`) when the bundle is older than 36 h, a
+  side maps < 10 skaters or rates < 14; the reason is logged.
+- Why panel: `bu_d_net` is part of the `strength_5v5` factor, `bu_d_delta` the `lineup_goalie`
+  factor ("Who plays"); `side_lineup_score` = each side's `delta`, `side_lineup_matched` = its
+  mapped DFO skaters.  No frontend change.
+- Shadows, every pregame row (frozen with the prediction): `bu_shadow_home_win_pct` (term on),
+  `f1_shadow_model_win_pct` / `f1_shadow_home_win_pct` (the replaced F1 model on its own xG v1
+  inputs, published-style blend).  SiteHistory records the F1 shadow as `home_inc_model%` /
+  `home_inc%`.
+- xG: `game_model_meta.json` `"xg_version": "v2"` released the interlock, so an unset
+  `PONYXG_XG` publishes v2 xG with `xg_raw_v1` kept as the rollback column.
+
+**Daily bundle refresh** (`.github/workflows/bu_refresh.yml`, 09:23 / 11:23 / 17:23 UTC):
+`python -m bu.lineup.refresh --lake-dir $RUNNER_TEMP/lake` (gap-driven current-season ingest,
+seeded season refit with the xG v2 target, bundle rebuild; ~1 min), lake saved to the
+`lake-<season>` release asset, only the ~0.2 MB bundle committed.  The full pipeline records
+`manifest.sources.bu_bundle` and a `stale` flag past 36 h; `validate_outputs.py bu_bundle`
+fails on a missing / wrong-season / malformed bundle.
+
+**Rollback** (repository variables read by `update_data.yml`, no code change):
+- `PONYXG_BU=off`: the term is published as neutral 0 (its term-on probability stays in
+  `bu_shadow_home_win_pct`).
+- `PONYXG_XG=v1`: xG v1 again (`bu/xg/README.md` "Rollback").
+- Full rollback to the previous model: `git checkout <commit before 2b2622b9> --
+  pipeline/game_model.pkl pipeline/game_model_meta.json` (the same pickle is
+  `models/shadow/game_model_f1.pkl`), then `python -m bu.xg.history revert` if xG v1 inputs are
+  wanted for training too.
+- `BU_REFRESH=off` stops the refresh crons.
+
+**Season rollover**: build the next season's pack from the full lake
+(`python -m bu.lineup pack --season <S>` after `bu.rapm asof` through S-1 with the v2 target)
+and commit it before the new season's first games; until then the refresh fails (no pack), the
+bundle ages past 36 h and the term is served neutral.
+
 ## `bu.lake`: event / shift / roster lake (M0b, DESIGN §2.1-2.3, §2.6)
 
 ### Layout

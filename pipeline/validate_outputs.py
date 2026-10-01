@@ -40,6 +40,10 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  and that % is rebuilt from the row's factor breakdown (so a
                  model % equal to the market % is a coincidence, not a copy)
   goal_splits    current-season goals_ev + goals_pp + goals_sh + emptynet_goalsfor == goals_for
+  bu_bundle      when the live game model uses the RAPM v2 lineup term: its serving bundle
+                 (bu/lineup/out/serving_bundle.json.gz) is readable, carries the model's
+                 columns, was built after its source data and, when fresh, is of this season
+                 (age: manifest stale flag; a stale bundle is served as a neutral term)
 
 ``--freshness`` instead only checks that manifest.generated_at is under 26 h
 old during the season (the daily freshness workflow).
@@ -695,6 +699,44 @@ def check_freshness(ctx):
     return probs
 
 
+def check_bu_bundle(ctx):
+    """The RAPM v2 lineup bundle, when the live game model uses the term: readable, a serving
+    bundle of this season with the model's lineup columns and built after its source data.
+    Age is reported by the pipeline stage (manifest stale flag), not failed here: a stale
+    bundle only makes the term neutral at serving time."""
+    meta = _json(os.path.join(PIPELINE_DIR, "game_model_meta.json"), {}) or {}
+    from features import BU_COLUMNS
+    used = [c for c in (meta.get("feature_columns") or []) if c in BU_COLUMNS]
+    if not used:
+        return []
+    rel = (meta.get("bu_lineup") or {}).get("serving_bundle") or "bu/lineup/out/serving_bundle.json.gz"
+    path = ctx.get("bu_bundle_path") or os.path.join(PIPELINE_DIR, rel)
+    try:
+        from bu.lineup import serve as SV
+        b = SV.read(path)
+    except Exception as e:
+        return [f"{rel}: unreadable ({type(e).__name__}: {e}); the live model uses {used}"]
+    errs = []
+    if b.get("kind") != "serving_bundle" or int(b.get("version", 0)) != SV.BUNDLE_VERSION:
+        errs.append(f"{rel}: not a v{SV.BUNDLE_VERSION} serving bundle")
+    built = _dt(b.get("built_at"))
+    fresh = built is not None and (datetime.now(timezone.utc) - built).total_seconds() / 3600 <= SV.MAX_AGE_H
+    if str(b.get("season")) != SEASON_ID and fresh:
+        # a stale bundle of last season is served as a neutral term (manifest stale flag); a FRESH
+        # one of another season means the refresh is pointed at the wrong season pack
+        errs.append(f"{rel}: freshly built for season {b.get('season')} != {SEASON_ID}")
+    if not set(used) <= set(b.get("columns") or []):
+        errs.append(f"{rel}: columns {b.get('columns')} do not cover the model's {used}")
+    src = b.get("max_source_date")
+    if built is None:
+        errs.append(f"{rel}: built_at {b.get('built_at')!r} is not a timestamp")
+    elif src and str(src)[:10] > built.date().isoformat():
+        errs.append(f"{rel}: max_source_date {src} is after built_at {b.get('built_at')}")
+    if not (b.get("players") or {}).get("rows"):
+        errs.append(f"{rel}: no player ratings")
+    return errs
+
+
 CHECKS = {
     "manifest": check_manifest,
     "predictions": check_predictions,
@@ -710,6 +752,7 @@ CHECKS = {
     "fair_odds": check_fair_odds,
     "model_independent": check_model_independent,
     "goal_splits": check_gamestats_goals,
+    "bu_bundle": check_bu_bundle,
 }
 
 
