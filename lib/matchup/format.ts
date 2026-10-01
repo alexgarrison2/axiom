@@ -1,5 +1,11 @@
 /** Display formatting for the matchup card (pure). */
 import { SEASON_START_YEAR } from '../season';
+import { dateFormatter } from '../format/time';
+
+/** Date.prototype.toLocaleDateString('en-US', opts) on a shared formatter ("Invalid Date" for a bad date, as before). */
+function localeDate(dt: Date, opts: Intl.DateTimeFormatOptions): string {
+    return Number.isNaN(dt.getTime()) ? 'Invalid Date' : dateFormatter('en-US', opts).format(dt);
+}
 
 /** "25-26" (previous season) and "26-27" (current). */
 export const PREV_TAG = `${String(SEASON_START_YEAR - 1).slice(2)}-${String(SEASON_START_YEAR).slice(2)}`;
@@ -39,7 +45,7 @@ export function fmtSigned(v: number, digits = 2): string {
 export function fmtTime(iso: string, timeZone?: string, locale = 'en-US'): string {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    return new Intl.DateTimeFormat(locale, {
+    return dateFormatter(locale, {
         hour: 'numeric',
         minute: '2-digit',
         timeZoneName: 'short',
@@ -106,12 +112,12 @@ export function shortAge(iso: string | null | undefined, now: Date): string | nu
 export function fmtClock(iso: string, timeZone?: string): string {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', ...(timeZone ? { timeZone } : {}) }).format(d);
+    return dateFormatter('en-US', { hour: 'numeric', minute: '2-digit', ...(timeZone ? { timeZone } : {}) }).format(d);
 }
 
 /** Today's NHL slate date (Eastern) as YYYY-MM-DD. */
 export function easternDate(now: Date = new Date()): string {
-    const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+    const p = dateFormatter('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
     return p; // en-CA formats as YYYY-MM-DD
 }
 
@@ -124,13 +130,13 @@ export function addDays(ymd: string, n: number): string {
 /** "Oct 2" */
 export function shortDate(ymd: string): string {
     const [y, m, d] = ymd.split('-').map(Number);
-    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+    return localeDate(new Date(Date.UTC(y, m - 1, d)), { month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
 /** "Thu, Oct 2" */
 export function weekdayDate(ymd: string): string {
     const [y, m, d] = ymd.split('-').map(Number);
-    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    return localeDate(new Date(Date.UTC(y, m - 1, d)), { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
 /** Date-tab label: "Today", "Tomorrow", "Yesterday" or "Thu, Oct 2". */
@@ -303,15 +309,15 @@ export function railLabel(ymd: string, today: string): string {
     if (ymd === addDays(today, -1)) return 'Yesterday';
     const dt = utc(ymd);
     const days = Math.round((dt.getTime() - utc(today).getTime()) / 86_400_000);
-    if (Math.abs(days) < 7) return dt.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
-    return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+    if (Math.abs(days) < 7) return localeDate(dt, { weekday: 'short', timeZone: 'UTC' });
+    return localeDate(dt, { month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
 /** Page heading for the slate: "Wed · Sep 30" (rendered uppercase; year added when far from today). */
 export function railHeading(ymd: string, today: string): string {
     const dt = utc(ymd);
     const far = Math.abs(dt.getTime() - utc(today).getTime()) > 150 * 86_400_000;
-    const wd = dt.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
-    const md = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+    const wd = localeDate(dt, { weekday: 'short', timeZone: 'UTC' });
+    const md = localeDate(dt, { month: 'short', day: 'numeric', timeZone: 'UTC' });
     return `${wd} · ${md}${far ? ` ${dt.getUTCFullYear()}` : ''}`;
 }

@@ -17,7 +17,10 @@ function read(): string[] {
     try {
         const raw = window.localStorage.getItem(KEY);
         const v = raw ? (JSON.parse(raw) as unknown) : [];
-        cached = Array.isArray(v) ? v.filter((t): t is string => typeof t === 'string' && /^[A-Z]{3}$/.test(t)).slice(0, 8) : [];
+        const list = Array.isArray(v) ? v.filter((t): t is string => typeof t === 'string' && /^[A-Z]{3}$/.test(t)).slice(0, 8) : [];
+        // No favourites: the same EMPTY the server snapshot returns, so hydration
+        // does not schedule a blocking re-render of the whole slate for an equal [].
+        cached = list.length ? list : EMPTY;
     } catch {
         cached = EMPTY;
     }

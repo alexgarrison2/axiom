@@ -23,6 +23,24 @@ const STYLE_OPTS: Record<TimeStyle, Intl.DateTimeFormatOptions> = {
     weekday: { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' },
 };
 
+const FORMATTERS = new Map<string, Intl.DateTimeFormat>();
+
+/**
+ * A shared Intl.DateTimeFormat per (locale, options). Building one costs far
+ * more than formatting with it, and a slate renders the same few formats for
+ * every card, so the home page hydrates with a handful of formatters instead
+ * of one per call. Output is identical to `new Intl.DateTimeFormat(...)`.
+ */
+export function dateFormatter(locale: string, opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+    const key = `${locale}|${JSON.stringify(opts)}`;
+    let f = FORMATTERS.get(key);
+    if (!f) {
+        f = new Intl.DateTimeFormat(locale, opts);
+        FORMATTERS.set(key, f);
+    }
+    return f;
+}
+
 function toDate(value: string | number | Date | null | undefined): Date | null {
     if (value === null || value === undefined || value === '') return null;
     const d = value instanceof Date ? value : new Date(value);
@@ -41,7 +59,7 @@ export function formatTime(
 ): string | null {
     const d = toDate(value);
     if (!d) return null;
-    return new Intl.DateTimeFormat('en-US', {
+    return dateFormatter('en-US', {
         ...STYLE_OPTS[style],
         timeZoneName: 'short',
         ...(timeZone ? { timeZone } : {}),

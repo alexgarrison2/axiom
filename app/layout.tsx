@@ -36,6 +36,13 @@ const displayItalic = Chakra_Petch({
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ponyxg.com";
 
+// The browser's first Intl.DateTimeFormat with a time zone loads ICU's zone
+// data: tens of ms on a phone, once per page. Every page formats times while
+// it hydrates (the app-bar badge, puck drops), which put that load inside a
+// hydration long task. Pay it here instead, in its own idle task while the
+// main thread is waiting on the JS chunks.
+const WARM_INTL = `(window.requestIdleCallback||setTimeout)(function(){try{new Intl.DateTimeFormat("en-US",{hour:"numeric",timeZone:"America/New_York",timeZoneName:"short"}).format(0)}catch(e){}})`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -81,6 +88,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased">
+        <script dangerouslySetInnerHTML={{ __html: WARM_INTL }} />
         <a
           href="#content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-control focus:bg-brand focus:px-4 focus:py-2.5 focus:text-caption focus:font-bold focus:uppercase focus:tracking-chip focus:text-brand-ink"
