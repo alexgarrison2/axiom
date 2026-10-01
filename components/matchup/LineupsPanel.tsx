@@ -12,8 +12,8 @@ import { DetailsLoading, type DetailsState } from './DetailsLoading';
 import { cn } from '@/lib/utils';
 
 /**
- * The muted season tag for the impact values, beside GRADE, while they come
- * from last season's ratings. Exactly one shows: the away grid's always, the
+ * The muted season tag for the NET values, beside the lineup NET, if the
+ * ratings file is ever of another season than this one. Exactly one shows: the away grid's always, the
  * home grid's only on a phone-width card (where one grid shows at a time).
  */
 function impactTag(season: string | null | undefined, home: boolean) {
@@ -21,7 +21,7 @@ function impactTag(season: string | null | undefined, home: boolean) {
     const tag = shortSeasonTag(season);
     return (
         <SeasonTag className={cn(home && 'cq-lg:hidden')}>
-            <span title={`Impact and ranks: ${tag} ratings`}>{tag}</span>
+            <span title={`NET and ranks: ${tag} ratings`}>{tag}</span>
             <span className="sr-only"> ratings</span>
         </SeasonTag>
     );

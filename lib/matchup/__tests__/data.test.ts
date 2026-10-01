@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { NextRequest } from 'next/server';
 import { biggestGames, type GameImplication, type GameImplicationsData } from '../../../utils/implications';
 import { buildIndex, leagueContext, lineupView } from '../lineup-impact';
+import { parseRatings } from '../../players/ratings';
 import { disambiguate } from '../format';
 import { GET as oddsHistory } from '../../../app/api/odds-history/route';
 import { trimGame } from '../../../app/api/scores/route';
@@ -48,32 +49,44 @@ describe('biggest games strip (E11)', () => {
     });
 });
 
-describe('lineup impact by player id (E6)', () => {
-    const impact = {
-        '8480801': { name: 'Brady Tkachuk', team: 'FLA', games_played: 70, impact_score: 1.9 },
-        '8479314': { name: 'Matthew Tkachuk', team: 'FLA', games_played: 70, impact_score: 2.06 },
-        '8477493': { name: 'Aleksander Barkov', team: 'FLA', games_played: 70, impact_score: 2.5 },
-        '8470000': { name: 'Some Tkachuk', team: 'OTT', games_played: 70, impact_score: -1 },
-    };
+describe('lineup ratings by player id (E6, RAPM NET)', () => {
+    const cols = ['id', 'name', 'team', 'pos', 'roster', 'rated', 'off', 'def', 'net', 'toi', 'gp', 'toi_cur', 'gp_cur'];
+    const ratings = parseRatings({
+        season: '20262027',
+        columns: cols,
+        rows: [
+            [8480801, 'Brady Tkachuk', 'FLA', 'L', true, true, 0.73, 0.0, 0.72, 3000, 220, 0, 0],
+            [8479314, 'Matthew Tkachuk', 'FLA', 'L', true, true, 0.57, -0.09, 0.66, 2800, 210, 0, 0],
+            [8477493, 'Aleksander Barkov', 'FLA', 'C', true, true, 0.29, -0.26, 0.54, 2600, 185, 0, 0],
+            [8470000, 'Some Tkachuk', 'OTT', 'C', true, true, -0.1, 0.1, -0.2, 500, 40, 0, 0],
+            [8490000, 'New Kid', 'FLA', 'C', true, false, -0.01, 0.0, -0.01, 0, 0, 0, 0],
+        ],
+    });
     const lineup = {
         f1: [{ name: 'Brady Tkachuk' }, { name: 'Aleksander Barkov' }, { name: 'Matthew Tkachuk' }],
+        f2: [{ name: 'New Kid' }],
     };
 
-    it('shows first initials for colliding last names and gives each Tkachuk his own value', () => {
-        const ctx = leagueContext(buildIndex(impact), { FLA: lineup });
+    it('shows first initials for colliding last names and gives each Tkachuk his own NET', () => {
+        const ctx = leagueContext(buildIndex(ratings), { FLA: lineup });
         const v = lineupView(ctx, lineup, 'FLA')!;
         const [b, , m] = v.lines.f1;
         expect(b.display).toBe('B. Tkachuk');
         expect(m.display).toBe('M. Tkachuk');
         expect(b.playerId).toBe(8480801);
         expect(m.playerId).toBe(8479314);
-        expect(b.impact).toBe(1.9);
-        expect(m.impact).toBe(2.06);
+        expect(b.impact).toBe(0.72);
+        expect(m.impact).toBe(0.66);
         expect(v.lines.f1[1].display).toBe('Barkov');
+        expect(v.lineImpacts.f1?.total).toBe(1.92);
+        // A skater with no NHL sample is resolved but unrated: no value, no line total.
+        expect(v.lines.f2[0].playerId).toBe(8490000);
+        expect(v.lines.f2[0].impact).toBeNull();
+        expect(v.lineImpacts.f2).toBeNull();
     });
 
     it('never falls back to a bare last name', () => {
-        const idx = buildIndex(impact);
+        const idx = buildIndex(ratings);
         expect(idx.resolve('Kyle Tkachuk', 'FLA')).toBeNull();
         expect(idx.resolve('Brady Tkachuk', 'FLA')?.id).toBe(8480801);
         expect(disambiguate(['Sam Reinhart', 'Sam Bennett']).get('Sam Bennett')).toBe('Bennett');

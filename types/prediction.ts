@@ -169,7 +169,7 @@ export interface LineupPlayerView {
     pos: string;
     ppUnit: number | null;
     movement: 'up' | 'down' | 'new' | null;
-    /** Impact z-score (player_impact.json), keyed by NHL id. */
+    /** RAPM NET, EV xG/60 above average (player_ratings.json), keyed by NHL id; null = no NHL sample yet. */
     impact: number | null;
 }
 
@@ -222,7 +222,7 @@ export interface SideDetails {
 export interface MatchupDetails {
     home: SideDetails;
     away: SideDetails;
-    /** Season id the lineup impact values describe ("20252026" until this season's ratings are rebuilt). */
+    /** Season id of the player ratings behind the lineup NET values (the RAPM file: this season). */
     impactSeason?: string | null;
 }
 

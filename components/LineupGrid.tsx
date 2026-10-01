@@ -2,15 +2,16 @@ import type { ReactNode } from 'react';
 import type { InjuryView, LineImpact, LineupPlayerView, SideDetails, TeamRef } from '@/types/prediction';
 import { fmtSigned, relAge } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
+import { STRONG } from '@/components/players/model';
 
 const FWD = ['f1', 'f2', 'f3', 'f4'];
 const DEF = ['d1', 'd2', 'd3'];
 
-/** Player impact z-score colour: only clear signals get colour. */
-function impactTone(z: number | null): string {
-    if (z == null) return 'text-fg-3';
-    if (z >= 1) return 'text-pos';
-    if (z > -1) return 'text-fg-3';
+/** Player NET (RAPM, EV xG/60) colour: only the top / bottom tenth of skaters get colour. */
+function impactTone(net: number | null): string {
+    if (net == null) return 'text-fg-3';
+    if (net >= STRONG.net) return 'text-pos';
+    if (net > -STRONG.net) return 'text-fg-3';
     return 'text-neg';
 }
 
@@ -56,7 +57,7 @@ function LineCell({ imp }: { imp: LineImpact | null | undefined }) {
         );
     return (
         <span className={cn('flex flex-col items-end leading-tight tabular-nums', lineTone(imp.pct))} title={`${ord(imp.rank)} of ${imp.outOf}`}>
-            <span className="text-caption font-bold">{fmtSigned(imp.total, 1)}</span>
+            <span className="text-caption font-bold">{fmtSigned(imp.total, 2)}</span>
             <span className="text-micro text-fg-3">
                 {imp.rank}/{imp.outOf}
             </span>
@@ -117,7 +118,7 @@ function OutRow({ items }: { items: InjuryView[] }) {
 
 /**
  * One team's projected lineup: forward lines and defence pairs with each
- * player's impact, line ranks, the lineup source age and injuries.
+ * player's NET rating (RAPM, EV xG/60), line ranks, the lineup source age and injuries.
  * Presentational: the data comes from /api/matchup-details.
  */
 export default function LineupGrid({
@@ -146,8 +147,8 @@ export default function LineupGrid({
                 </h3>
                 <span className="flex flex-wrap items-center gap-1.5 text-micro uppercase tracking-wide text-fg-3">
                     {d.grade ? (
-                        <span className="tabular-nums">
-                            Grade <span className="font-bold text-fg-1">{fmtSigned(d.grade.value, 1)}</span>
+                        <span className="tabular-nums" title="Lineup NET: sum of the skaters' RAPM NET (EV xG/60)">
+                            Net <span className="font-bold text-fg-1">{fmtSigned(d.grade.value, 2)}</span>
                             {d.grade.rank != null ? ` · ${d.grade.rank}/${d.grade.outOf}` : ''}
                         </span>
                     ) : null}

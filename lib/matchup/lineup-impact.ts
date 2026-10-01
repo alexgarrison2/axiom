@@ -1,9 +1,9 @@
 /**
- * Lineup impact, computed once on the server (app/api/matchup-details)
+ * Lineup ratings, computed once on the server (app/api/matchup-details)
  * instead of in every expanded card: DailyFaceoff lineup players are
- * resolved to NHL player ids, impact values are looked up by id, and each
- * line / pairing is ranked against the same slot on every team's current
- * lineup.
+ * resolved to NHL player ids, each gets his RAPM NET (EV xG/60 above
+ * average, lib/players/ratings.ts), and each line / pairing total is ranked
+ * against the same slot on every team's current lineup.
  *
  * Name resolution is strict: exact full name (diacritics folded), preferring
  * the player's own team; the only fallback is same team + same first
@@ -11,18 +11,8 @@
  * Tkachuks never share a value.
  */
 import type { LineImpact, LineupPlayerView } from '../../types/prediction';
+import { nameIndex, type Ratings } from '../players/ratings';
 import { disambiguate } from './format';
-
-export interface ImpactPlayer {
-    name: string;
-    team: string;
-    is_forward?: boolean;
-    games_played?: number;
-    impact_score?: number | null;
-    xgaa_per_game?: number | null;
-}
-
-export type ImpactData = Record<string, ImpactPlayer>;
 
 export interface DfoPlayer {
     name: string;
@@ -40,15 +30,9 @@ const SLOTS: [string, number][] = [
     ['d1', 2], ['d2', 2], ['d3', 2],
 ];
 
-export function normName(s: string): string {
-    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[.'’-]/g, ' ').replace(/\s+/g, ' ').toLowerCase().trim();
-}
-
 interface Entry {
     id: number;
-    team: string;
-    first: string;
-    last: string;
+    /** NET, EV xG/60 above average; null for a skater with no NHL sample yet (rookie prior). */
     impact: number | null;
 }
 
@@ -56,32 +40,13 @@ export interface ImpactIndex {
     resolve(name: string, team: string): Entry | null;
 }
 
-function impactOf(p: ImpactPlayer): number | null {
-    if ((p.games_played ?? 0) <= 0) return null;
-    const v = p.impact_score ?? p.xgaa_per_game;
-    return typeof v === 'number' && Number.isFinite(v) ? v : null;
-}
-
-export function buildIndex(data: ImpactData): ImpactIndex {
-    const byFull = new Map<string, Entry[]>();
-    const byTeamLast = new Map<string, Entry[]>();
-    for (const [id, p] of Object.entries(data)) {
-        if (!p?.name) continue;
-        const n = normName(p.name);
-        const parts = n.split(' ');
-        const e: Entry = { id: Number(id), team: p.team, first: parts[0] ?? '', last: parts.slice(1).join(' '), impact: impactOf(p) };
-        (byFull.get(n) ?? byFull.set(n, []).get(n)!).push(e);
-        const k = `${p.team}|${parts.at(-1)}`;
-        (byTeamLast.get(k) ?? byTeamLast.set(k, []).get(k)!).push(e);
-    }
+/** Name -> NHL id + NET from the ratings file. */
+export function buildIndex(ratings: Ratings): ImpactIndex {
+    const find = nameIndex(ratings);
     return {
         resolve(name, team) {
-            const n = normName(name);
-            const full = byFull.get(n);
-            if (full?.length) return full.find(e => e.team === team) ?? (full.length === 1 ? full[0] : null);
-            const parts = n.split(' ');
-            const cands = (byTeamLast.get(`${team}|${parts.at(-1)}`) ?? []).filter(e => e.first.charAt(0) === (parts[0] ?? '').charAt(0));
-            return cands.length === 1 ? cands[0] : null;
+            const p = find(name, team);
+            return p ? { id: p.id, impact: p.rated ? p.net : null } : null;
         },
     };
 }
@@ -182,6 +147,6 @@ export function lineupView(ctx: LeagueContext, lineup: DfoLineup | null | undefi
         lineImpacts[key] = total == null || !ctx.dist[key]?.length ? null : { total: Math.round(total * 100) / 100, ...rankIn(ctx.dist[key], total) };
     }
     const g = gradeOf(ctx.index, lineup, team);
-    const grade = g.found >= 10 ? { value: Math.round(g.value * 10) / 10, ...(ctx.grades.length > 1 ? { rank: rankIn(ctx.grades, g.value).rank, outOf: rankIn(ctx.grades, g.value).outOf } : { rank: null, outOf: 0 }) } : null;
+    const grade = g.found >= 10 ? { value: Math.round(g.value * 100) / 100, ...(ctx.grades.length > 1 ? { rank: rankIn(ctx.grades, g.value).rank, outOf: rankIn(ctx.grades, g.value).outOf } : { rank: null, outOf: 0 }) } : null;
     return { lines, lineImpacts, grade };
 }

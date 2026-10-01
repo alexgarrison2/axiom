@@ -13,9 +13,10 @@ import { goalieStartsGsax, packGames } from './game-row';
 import { gameTypeOf, prevSeasonId, seasonLabel } from './season';
 import { leagueStandings, loadPredictionRows, loadProjections, ratingsSeason, readPublicJson } from './server';
 import { teamMeta } from './teams';
+import { loadRatings } from '../../lib/players/server';
 import type { GameRow } from './types';
 import type {
-    Boxscores, GoalieLine, GoalieSeason, NextGame, Pctl, SeasonLine, SkaterCardData, SkaterImpact, TeamHero, TeamPayload,
+    Boxscores, GoalieLine, GoalieSeason, NextGame, Pctl, SeasonLine, SkaterCardData, SkaterRates, SkaterRating, TeamHero, TeamPayload,
 } from './team-types';
 
 // ── roster ───────────────────────────────────────────────────────────────────
@@ -118,13 +119,12 @@ interface ImpactEntry {
 }
 
 function fallbackRoster(tri: string): RosterPlayer[] {
-    const impact = readPublicJson<Record<string, ImpactEntry>>('player_impact.json') ?? {};
-    const lost = new Set(rosterChanges(tri)?.lost.map(p => String(p.id)) ?? []);
+    // Current-roster skaters from the player ratings file (NHL rosters as of its last export).
     const out: RosterPlayer[] = [];
-    for (const [id, p] of Object.entries(impact)) {
-        if (p.team !== tri || p.on_roster === false || lost.has(id)) continue;
-        const pos = String(p.position ?? '').toUpperCase();
-        out.push({ id, name: p.name ?? id, pos: (pos === 'G' ? 'G' : pos === 'D' ? 'D' : pos === 'L' ? 'L' : pos === 'R' ? 'R' : 'C'), number: null });
+    for (const p of loadRatings().byId.values()) {
+        if (!p.roster || p.team !== tri) continue;
+        const pos = p.pos.toUpperCase();
+        out.push({ id: String(p.id), name: p.name, pos: pos === 'D' ? 'D' : pos === 'L' ? 'L' : pos === 'R' ? 'R' : 'C', number: null });
     }
     const goalies = readPublicJson<Record<string, string[]>>('team_goalies.json')?.[tri] ?? [];
     goalies.forEach((name, i) => out.push({ id: `g-${i}-${name}`, name, pos: 'G', number: null }));
@@ -237,7 +237,8 @@ const pctile = (val: number, pool: number[], hiGood = true) => {
 };
 const r2 = (v: number) => Math.round(v * 100) / 100;
 
-function impactBuilder() {
+/** On-ice rates (xGF/60, xGA/60, ...) from the player model's season, with percentiles. */
+function ratesBuilder() {
     const impact = readPublicJson<Record<string, ImpactEntry>>('player_impact.json') ?? {};
     const label = seasonLabel(ratingsSeason());
     const all = Object.values(impact).filter(p => p.position !== 'G' && Number(p.games_played ?? 0) >= 5);
@@ -246,7 +247,6 @@ function impactBuilder() {
         const arr = all.filter(p => !!p.is_forward === fwd);
         const col = (k: string) => arr.map(p => num(p, k));
         return {
-            score: arr.map(p => Number(p.impact_score ?? p.xgaa_per_game ?? 0)),
             xgf60: col('ev_xgf_per60'), xga60: col('ev_xga_per60'), xgPct: col('onice_xgf_pct'), ixg60: col('ind_xg_per60'),
             rel: col('relative_xgf_pct'), pen: col('penalty_diff_per60'),
             pp: arr.filter(p => num(p, 'pp_toi_per_game') >= 60).map(p => num(p, 'pp_xgf_per60')),
@@ -255,21 +255,15 @@ function impactBuilder() {
     };
     const F = pools(true);
     const D = pools(false);
-    return (id: string): SkaterImpact | null => {
+    return (id: string): SkaterRates | null => {
         const p = impact[id];
         if (!p || p.position === 'G' || Number(p.games_played ?? 0) < 5) return null;
         const pool = p.is_forward ? F : D;
         const pc = (k: string, poolArr: number[], hi = true): Pctl => ({ v: r2(num(p, k)), p: pctile(num(p, k), poolArr, hi) });
-        const score = Number(p.impact_score ?? p.xgaa_per_game ?? 0);
         return {
             season: label,
             team: (p.team_prev as string) ?? p.team ?? null,
             gp: Number(p.games_played ?? 0),
-            score: { v: r2(score), p: pctile(score, pool.score) },
-            evOff: r2(num(p, 'impact_ev_off')),
-            evDef: r2(num(p, 'impact_ev_def')),
-            pp: r2(num(p, 'impact_pp')),
-            pk: r2(num(p, 'impact_pk')),
             xgf60: pc('ev_xgf_per60', pool.xgf60),
             xga60: pc('ev_xga_per60', pool.xga60, false),
             xgPct: pc('onice_xgf_pct', pool.xgPct),
@@ -281,6 +275,26 @@ function impactBuilder() {
             evToi: Math.round(num(p, 'ev_toi_per_game')),
             ppToi: Math.round(num(p, 'pp_toi_per_game')),
             pkToi: Math.round(num(p, 'pk_toi_per_game')),
+        };
+    };
+}
+
+/** The player rating (RAPM v2 NET / OFF / DEF) with a NET percentile among rostered skaters at his position. */
+function ratingBuilder() {
+    const { byId } = loadRatings();
+    const pool = (d: boolean) =>
+        [...byId.values()].filter(p => p.roster && p.rated && p.toi >= 250 && (p.pos === 'D') === d).map(p => p.net);
+    const pools = { F: pool(false), D: pool(true) };
+    return (id: string): SkaterRating | null => {
+        const p = byId.get(Number(id));
+        if (!p) return null;
+        return {
+            net: r2(p.net),
+            off: r2(p.off),
+            def: r2(p.def),
+            pct: p.rated ? pctile(p.net, pools[p.pos === 'D' ? 'D' : 'F']) : null,
+            rated: p.rated,
+            evMin: Math.round(p.toi),
         };
     };
 }
@@ -506,7 +520,8 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
         const i = injuries.find(x => (x.playerId != null && String(x.playerId) === id) || norm(x.name ?? '') === norm(name));
         return i ? { status: i.status ?? 'Injured', returnDate: i.returnDate ?? null } : null;
     };
-    const impactOf = impactBuilder();
+    const ratesOf = ratesBuilder();
+    const ratingOf = ratingBuilder();
 
     const skaters: SkaterCardData[] = roster
         .filter(p => p.pos !== 'G')
@@ -514,14 +529,14 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
             const isNew = addedIds.has(p.id) || (rc === null && lastRows.length > 0 && !lastSeasonTeamIds.has(p.id));
             const bio = bios[p.id] ?? {};
             const c = contracts[p.id];
-            const imp = impactOf(p.id);
+            const rates = ratesOf(p.id);
             return {
                 id: p.id,
                 name: p.name,
                 pos: p.pos as SkaterCardData['pos'],
                 number: p.number,
                 isNew,
-                from: addedFrom.get(p.id) ?? (isNew ? (imp?.team ?? null) : null),
+                from: addedFrom.get(p.id) ?? (isNew ? (rates?.team ?? null) : null),
                 age: bio.age ?? null,
                 height: bio.height ?? null,
                 weight: bio.weight ?? null,
@@ -529,7 +544,8 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
                 capHit: c ? (c.cap_hit ?? c.capHit ?? null) : null,
                 expiry: c ? [c.status, c.year ?? c.expiry_year].filter(Boolean).join(' ') || null : null,
                 injury: injuryFor(p.id, p.name),
-                impact: imp,
+                rating: ratingOf(p.id),
+                rates,
                 current: seasonLine(p.id, curRows, curTeamGames, tri),
                 last: seasonLine(p.id, lastRows, lastTeamGames, tri),
             };
