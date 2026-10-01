@@ -72,8 +72,11 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
     for s in seasons:
         sh = game_shares(ensure_stints(paths, s))
         sh["season"] = s
-        shares.append(sh)
-    shares = pd.concat(shares, ignore_index=True).merge(games[["game_id", "d"]], on="game_id")
+        if len(sh):
+            shares.append(sh)
+    shares = (pd.concat(shares, ignore_index=True) if shares
+              else pd.DataFrame(columns=["game_id", "player_id", "ev_s", "share", "season"]))
+    shares = shares.merge(games[["game_id", "d"]], on="game_id")
     shares["d"] = avail_dates(shares["game_id"], shares["d"])   # = game date unless degraded
     shares = shares.sort_values(["d", "game_id"]).reset_index(drop=True)
     sh_d = shares["d"].to_numpy()
@@ -82,6 +85,11 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
 
     ratings = load_ratings(paths, seasons)
     covs = load_covs(paths, seasons)
+    if ratings.empty or covs.empty:
+        raise SystemExit(f"no RAPM ratings under {paths.root} for {', '.join(seasons)}: "
+                         "run `python -m bu.rapm asof` first")
+    if games.empty:
+        return pd.DataFrame()
     covs["asof"] = pd.to_datetime(covs["asof"]).values.astype("datetime64[D]")
     cov_by = {(s, a): (c0, ch) for s, a, c0, ch in zip(covs["season"], covs["asof"], covs["intercept"], covs["home"])}
     ratings["asof"] = pd.to_datetime(ratings["asof"]).values.astype("datetime64[D]")

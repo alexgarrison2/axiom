@@ -348,3 +348,99 @@ def test_published_reports_are_consistent():
         assert f["rapm_beats_all"] == all(f["rapm_vs"][b]["delta_mse"] < 0 for b in ("team", "flat", "prior_only"))
     assert rep["gate"]["pass"] == all(rep["folds"][s]["rapm_beats_all"] for s in rep["dev_seasons"])
     assert all(s < min(rep["dev_seasons"]) for s in rep["tune_seasons"])
+
+
+def test_aging_step_uses_last_seasons_age():
+    """The aging curve maps age in season S-1 to rating(S) - rating(S-1), so a returning
+    player's prior steps from his age last season (and once per skipped season)."""
+    from bu.rapm.aging import AgingCurve
+    curve = AgingCurve(coef={("F", "o"): [0.0, 0.01, 0.0], ("F", "d"): [0.0, 0.0, 0.0],
+                             ("D", "o"): [0.0, 0.0, 0.0], ("D", "d"): [0.0, 0.0, 0.0]})
+    players = pd.DataFrame({"player_id": [1, 2], "birth_date": ["1996-02-01", "1996-02-01"],
+                            "pos_group": ["F", "F"], "draft_overall": [5.0, 5.0], "first_season": [20152016] * 2})
+    c = Chain(Hyper(v_new=0.02, kappa=1.5, use_aging=True))
+    idx0 = Index([1])
+    c.update("20232024", idx0, np.zeros(idx0.p), np.full(idx0.p, 1e-6), 1000.0, pd.Series({1: 5000.0}))
+    idx1 = Index([2])
+    c.update("20222023", idx1, np.zeros(idx1.p), np.full(idx1.p, 1e-6), 1000.0, pd.Series({2: 5000.0}))
+    idx = Index([1, 2])
+    b0, _, _ = c.prior("20242025", idx, players, curve, None)
+    # age on 1 Feb 2025 is 29.0, so last season's age is 28 (= PEAK + 1): one step of 0.01 * 1
+    assert b0[idx.o(idx.pos[1])] == pytest.approx(0.01, abs=1e-4)
+    # two seasons since his last rating: steps at ages 28 and 27 (0.01 + 0.0)
+    assert b0[idx.o(idx.pos[2])] == pytest.approx(0.01, abs=1e-4)
+
+
+def test_sigma2_not_taken_from_a_tiny_season():
+    c = Chain(Hyper())
+    idx = Index([1])
+    c.update("20262027", idx, np.zeros(idx.p), np.full(idx.p, 1e-6), 0.0, pd.Series({1: 60.0}), n_rows=40)
+    assert c.sigma2 == pytest.approx(1160.0)
+    assert c.state[1][2] == pytest.approx(1160.0 * 1e-6)
+
+
+def _mini_lake(root, n_games_second):
+    """Season 1: 8 game days; season 2: ``n_games_second`` games (0 = one game whose shift chart
+    has not arrived: PBP, lineups and shots only)."""
+    lake = Lake(str(root))
+    rng = np.random.default_rng(5)
+    strength = {1: 1.4, 2: 1.0, 3: 0.9, 4: 0.7}
+    xg_rows, gid = [], 0
+    seasons = ["20242025", "20252026"]
+    for si, season in enumerate(seasons):
+        y = int(season[:4])
+        tabs = {k: [] for k in ("games", "shifts", "events", "shots", "lineups")}
+        n_days = 8 if si == 0 else max(n_games_second, 1)
+        for day in range(n_days):
+            date = str((pd.Timestamp(f"{y}-10-10") + pd.Timedelta(days=2 * day)).date())
+            pairs = ((1, 2), (3, 4)) if si == 0 else ((1, 2),)
+            for home, away in pairs:
+                gid += 1
+                g, sh, ev, s, lu = _make_game(y * 1000000 + 20000 + gid, season, date, home, away, rng, strength)
+                tabs["games"].append(pd.DataFrame([g]))
+                if si == 1 and n_games_second == 0:
+                    g["has_shifts"] = False      # PBP is in (lineups, shots), the shift chart is not yet
+                else:
+                    tabs["shifts"].append(sh)
+                tabs["events"].append(ev)
+                xg_rows.append(s[["game_id", "event_id", "xg"]])
+                tabs["shots"].append(s.drop(columns="xg"))
+                tabs["lineups"].append(lu)
+        for t, frames in tabs.items():
+            if frames:
+                write_table(pd.concat(frames, ignore_index=True), lake.table_path(t, season))
+    xg_path = root / "xg.parquet"
+    pd.concat(xg_rows, ignore_index=True).to_parquet(xg_path)
+    paths = RapmPaths(lake)
+    pl = []
+    for team in TEAMS:
+        F, D, G = _players(team)
+        pl += [(p, "1995-06-01", "C", "F", 10.0, 20152016) for p in F]
+        pl += [(p, "1996-06-01", "D", "D", np.nan, 20152016) for p in D]
+    players = pd.DataFrame(pl, columns=["player_id", "birth_date", "position", "pos_group", "draft_overall",
+                                        "first_season"])
+    players.to_parquet(paths.players(), index=False)
+    return lake, paths, players, seasons, str(xg_path)
+
+
+@pytest.mark.parametrize("n_games_second", [0, 1])
+def test_season_in_progress_zero_or_one_game(tmp_path, n_games_second):
+    """Opening week: the new season has no shift data yet (0) or a single game (1).  Ratings
+    fall back to the carried prior, sigma2 is kept from the last full season and the lineup
+    features still come out finite and point-in-time."""
+    lake, paths, players, seasons, xg_path = _mini_lake(tmp_path, n_games_second)
+    summ = A.run(paths, seasons, players, Hyper(v_new=0.02, kappa=2.0), source=xg_path, log=lambda *a: None)
+    s1 = summ["seasons"][seasons[0]]["sigma2"]
+    assert np.isfinite(s1) and s1 > 0
+    post = pd.read_parquet(paths.posterior(seasons[1]))
+    assert np.isfinite(post[["o", "d", "o_var", "d_var"]].to_numpy()).all()
+    assert (post["o_var"] > 0).all()
+    from bu.lineup.features import build
+    F = build(paths, seasons, log=lambda *a: None)
+    new = F[F["season"] == seasons[1]]
+    assert len(new) == 1
+    row = new.iloc[0]
+    assert row["bu_h_n"] == 18 and row["bu_ok"]          # carried posteriors cover the dressed 18
+    assert np.isfinite(row["bu_d_net"]) and np.isfinite(row["bu_h_xgf60"])
+    assert row["max_source_date"] is None or pd.isna(row["max_source_date"]) \
+        or pd.Timestamp(row["max_source_date"]) <= pd.Timestamp(row["game_date"]) - pd.Timedelta(days=LAG_DAYS)

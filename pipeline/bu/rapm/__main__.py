@@ -45,13 +45,17 @@ def _season_ids(spec: str | None, lake: Lake) -> list[str]:
 
 
 def _players(paths, seasons, refresh_current=None):
+    """Bio table; rebuilt (fetching only the missing season payloads) whenever a requested
+    season has no cached bio payload, so a new season's rookies get their position and draft
+    slot instead of the F / undrafted fallback."""
     from .bio import build_players
-    if os.path.exists(paths.players()) and refresh_current is None:
+    want = sorted(set(seasons) | {f"{y}{y + 1}" for y in range(2010, int(seasons[-1][:4]) + 1)})
+    have_all = all(os.path.exists(paths.bio_raw(s)) for s in want)
+    if os.path.exists(paths.players()) and refresh_current is None and have_all:
         p = pd.read_parquet(paths.players())
         if len(p):
             return p
-    return build_players(paths, sorted(set(seasons) | {f"{y}{y + 1}" for y in range(2010, int(seasons[-1][:4]) + 1)}),
-                         refresh_current=refresh_current)
+    return build_players(paths, want, refresh_current=refresh_current)
 
 
 def _n_games(lake, season) -> int:
@@ -78,9 +82,10 @@ def cmd_validate(args, paths, seasons):
     tune = _season_ids(args.tune, paths.lake)
     dev = _season_ids(args.dev, paths.lake)
     res = V.run(paths, seasons, players, source=args.xg)
-    res["per_game"].to_parquet(paths.report("rapm_validation_per_game.parquet"), index=False)
+    tag = f"_{args.tag}" if args.tag else ""
+    res["per_game"].to_parquet(paths.report(f"rapm_validation{tag}_per_game.parquet"), index=False)
     summ = V.summarize(res, tune, dev, seasons[1:])
-    out = paths.report("rapm_validation.json")
+    out = paths.report(f"rapm_validation{tag}.json")
     V.write_report(out, summ, {
         "design": "DESIGN §3.2.2 stint-level next-30-day weighted MSE (xG/60 of the attacking side, "
                   "weights = stint seconds), 7 as-of dates per season",
@@ -125,6 +130,8 @@ def main(argv=None) -> int:
     ap.add_argument("--hyper", default=None, help="validation report whose selected_hyper to use")
     ap.add_argument("--refresh-bio", default=None, help="season id whose bio payload to re-fetch")
     ap.add_argument("--rebuild", action="store_true")
+    ap.add_argument("--tag", default=None, help="validate: report suffix for a sensitivity run "
+                    "(rapm_validation_<tag>.json), so the main report is not overwritten")
     ap.add_argument("--degrade", default=None, help="e.g. 0.35:2: DESIGN §4.3 degraded-data sensitivity "
                     "(35%% of games' shifts 2 days late); needs its own --out")
     args = ap.parse_args(argv)
@@ -145,7 +152,11 @@ def main(argv=None) -> int:
     if args.command in ("validate", "all"):
         # validation needs complete seasons; a season in progress (e.g. 2026-27 in October) is skipped
         full = [s for s in seasons if _n_games(lake, s) >= 400]
-        cmd_validate(args, paths, full)
+        if len(full) < 2:
+            print("  [validate] needs >= 2 complete seasons (a burn-in plus one to score); skipped",
+                  file=sys.stderr)
+        else:
+            cmd_validate(args, paths, full)
     if args.command in ("asof", "all"):
         cmd_asof(args, paths, seasons)
     return 0

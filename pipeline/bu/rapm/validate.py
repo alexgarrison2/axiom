@@ -36,7 +36,7 @@ N_BOOT = 2000
 
 
 V_GRID = (0.01, 0.02, 0.03, 0.04)
-K_GRID = (1.5, 2.5, 4.0, 6.0)
+K_GRID = (1.0, 1.25, 1.5, 2.5, 4.0, 6.0)   # 1.0/1.25 added in review: 1.5 was the grid edge
 
 
 def default_grid() -> list[Hyper]:
@@ -111,7 +111,7 @@ def run(paths, seasons: list[str], players: pd.DataFrame, grid=None, flat_lams=F
         for key, c in chains.items():
             b0, lam, _ = priors[key]
             b, inv = G.solve(lam, b0, want_inv=True)
-            c.update(S, sd.idx, b, inv, G.sigma2(b), sd.toi)
+            c.update(S, sd.idx, b, inv, G.sigma2(b), sd.toi, n_rows=len(sd.rows))
         standalone[S] = fit_standalone(sd, G)
         b0, lam = flat_prior(sd.idx, 3600.0 * 10, COV_LAM, flat_cov_prev)
         flat_cov_prev = G.solve(lam, b0)[0][2 * n:]

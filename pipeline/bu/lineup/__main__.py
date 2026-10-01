@@ -3,6 +3,7 @@
   python -m bu.lineup features [--seasons 2018-2025]   # point-in-time feature table
   python -m bu.lineup evaluate [--holdout]             # Δ log loss inside the incumbent
   python -m bu.lineup all [--holdout]
+  python -m bu.lineup crosswalk [--season 20262027]    # NHL-id crosswalk + DFO lineup coverage
 
 Outputs: ``<out>/lineup/lineup_features.parquet`` (state) and, committed,
 ``pipeline/bu/lineup/out/lineup_features.csv.gz``, ``toi_validation.json``,
@@ -24,11 +25,16 @@ from bu.rapm.paths import RapmPaths
 from bu.rapm.engine import DEGRADE_ENV
 from .evaluate import OUT_DIR
 
+CODE_VERSION = "m2-r2"
+
 
 def _feature_meta(paths) -> dict:
     p = paths.report("asof_summary.json")
     s = json.load(open(p)) if os.path.exists(p) else {}
-    return {"hyper": s.get("hyper"), "lag_days": s.get("lag_days"), "xg_source": s.get("xg_source"),
+    # code_version: "m2-r1" = the build that took the single 2025-26 look (look_log.jsonl,
+    # config b89386dcfb31); "m2-r2" = review fixes (aging step indexed by last season's age).
+    return {"code_version": CODE_VERSION,
+            "hyper": s.get("hyper"), "lag_days": s.get("lag_days"), "xg_source": s.get("xg_source"),
             "lineups": "L-actual", "toi": "ewma-hl8-m2", "baseline_games": 10, "min_rated": 14,
             "degrade": os.environ.get(DEGRADE_ENV) or None}
 
@@ -79,10 +85,35 @@ def cmd_evaluate(args, paths) -> dict:
     return rep
 
 
+def cmd_crosswalk(args, paths, lake_seasons) -> dict:
+    """Build the season's NHL-id crosswalk and report DFO lineup coverage (DESIGN §3.7)."""
+    from . import crosswalk as X
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    from season import SEASON_ID
+    season = str(args.season or SEASON_ID)
+    with open(args.dfo) as f:
+        dfo = json.load(f)
+    teams = [k for k, v in dfo.items() if isinstance(v, dict)]
+    cw = X.build(paths, season, teams, lake_seasons=lake_seasons[-1:])
+    cov = X.coverage(X.Resolver(cw), dfo, teams)
+    cov.update({"season": season, "dfo_file": os.path.relpath(args.dfo), "crosswalk_rows": int(len(cw)),
+                "lake_seasons": lake_seasons[-1:]})
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(os.path.join(OUT_DIR, "crosswalk_coverage.json"), "w") as f:
+        json.dump(cov, f, indent=2, default=str)
+    bad = {t: v["unmapped"] for t, v in cov["per_team"].items() if v["unmapped"]}
+    print(f"  [crosswalk] {season}: {len(cw):,} rows; teams >= {X.MIN_MAPPED}/18 mapped: "
+          f"{cov['share_ok']:.0%} of {cov['teams']}; unmapped: {bad or 'none'}")
+    return cov
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m bu.lineup", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["features", "evaluate", "all"])
+    ap.add_argument("command", choices=["features", "evaluate", "all", "crosswalk"])
+    ap.add_argument("--season", default=None, help="crosswalk: season id (default season.SEASON_ID)")
+    ap.add_argument("--dfo", default=os.path.join("..", "public", "data", "team_lineups.json"),
+                    help="crosswalk: DailyFaceoff team_lineups.json")
     ap.add_argument("--lake-dir", default=None)
     ap.add_argument("--out", default=None)
     ap.add_argument("--seasons", default=None)
@@ -97,6 +128,9 @@ def main(argv=None) -> int:
     lake = Lake(args.lake_dir)
     paths = RapmPaths(lake, args.out)
     seasons = _season_ids(args.seasons, lake)
+    if args.command == "crosswalk":
+        cmd_crosswalk(args, paths, seasons)
+        return 0
     if args.command in ("features", "all"):
         cmd_features(args, paths, seasons)
     if args.command in ("evaluate", "all"):

@@ -2,7 +2,8 @@
 
 For season S, every skater column gets a prior mean b0 and a prior precision lam:
 
-  returning player  b0 = b_post(S-1) + delta_age(age, pos)           (Kalman-style carry)
+  returning player  b0 = b_post(last) + sum of one-season aging steps (age in each       (Kalman-style carry)
+                    skipped-to season minus one: the curve is indexed by the earlier season's age)
                     var0 = min(kappa^k * var_post + extra_age, v_new)  k = seasons since last seen
   new player        b0 = rookie mean (position group x draft tier, fitted on seasons < S)
                     var0 = v_new
@@ -25,6 +26,7 @@ from .bio import age_at
 from .design import COVARIATES, Index
 
 SIGMA2_DEFAULT = 1160.0   # residual variance per second of 5v5 xG/60 (2022-23 flat fit; any season ~1150-1170)
+MIN_SIGMA2_ROWS = 20_000  # regression rows (~2 rows per stint, ~1,000 per game) to re-estimate sigma2
 
 
 @dataclass(frozen=True)
@@ -112,8 +114,11 @@ class Chain:
         var = np.full(2 * n, h.v_new)
         is_new = np.ones(n, dtype=bool)
         yr = int(season[:4])
-        d_o = aging.delta(pg, "o", age) if (aging is not None and h.use_aging) else np.zeros(n)
-        d_d = aging.delta(pg, "d", age) if (aging is not None and h.use_aging) else np.zeros(n)
+        # seasons since each returning player's last posterior (1 = played last season)
+        gaps = np.array([max(1, yr - int(str(self.state[int(p)][4])[:4])) if int(p) in self.state else 1
+                         for p in idx.ids], dtype=int)
+        d_o, d_d = self._aging_deltas(aging, pg, age, gaps) if (aging is not None and h.use_aging) \
+            else (np.zeros(n), np.zeros(n))
         extra = np.where((age <= 22) | (age >= 33), h.young_old_extra * h.v_new, 0.0)
         for k, pid in enumerate(idx.ids):
             s = self.state.get(int(pid))
@@ -123,7 +128,7 @@ class Chain:
                     b0[n + k] = rookie.mean(pg[k], tier[k], "d")
                 continue
             o, d, ov, dv, last = s
-            gap = max(1, yr - int(str(last)[:4]))
+            gap = int(gaps[k])
             b0[k] = o + d_o[k]
             b0[n + k] = d + d_d[k]
             var[k] = min(ov * h.kappa ** gap + extra[k], h.v_new)
@@ -138,17 +143,40 @@ class Chain:
             b0[2 * n] = self.cov_prev[0]
         return b0, lam, is_new
 
+    @staticmethod
+    def _aging_deltas(aging: AgingCurve, pg, age, gaps) -> tuple[np.ndarray, np.ndarray]:
+        """Summed one-season aging steps from the last rated season to this one.
+
+        The curve is fitted as ``rating(S) - rating(S-1)`` against the age in season S-1
+        (``aging.fit_aging``), so a player last rated ``gap`` seasons ago gets
+        ``sum_{j=1..gap} delta(age_S - j)``: for the usual gap of 1, the step indexed by
+        last season's age."""
+        age = np.asarray(age, dtype=float)
+        gaps = np.asarray(gaps, dtype=int)
+        d_o, d_d = np.zeros(len(age)), np.zeros(len(age))
+        for j in range(1, int(gaps.max(initial=1)) + 1):
+            m = gaps >= j
+            d_o += np.where(m, aging.delta(pg, "o", age - j), 0.0)
+            d_d += np.where(m, aging.delta(pg, "d", age - j), 0.0)
+        return d_o, d_d
+
     def update(self, season: str, idx: Index, b: np.ndarray, inv_diag: np.ndarray, sigma2: float,
-               toi: pd.Series | None = None) -> None:
-        """Fold the end-of-season posterior in (players without EV time keep their old state)."""
+               toi: pd.Series | None = None, n_rows: int | None = None) -> None:
+        """Fold the end-of-season posterior in (players without EV time keep their old state).
+
+        ``sigma2`` (residual variance per unit weight, which scales next season's prior
+        precisions) is only taken from a season with at least ``MIN_SIGMA2_ROWS`` regression
+        rows: a season in progress or an empty partition would otherwise set it to ~0 and
+        make every prior precision vanish."""
         n = idx.n
-        var = sigma2 * inv_diag
+        if (n_rows is None or n_rows >= MIN_SIGMA2_ROWS) and np.isfinite(sigma2) and sigma2 > 0:
+            self.sigma2 = float(sigma2)
+        var = self.sigma2 * inv_diag
         for k, pid in enumerate(idx.ids):
             if toi is not None and float(toi.get(int(pid), 0.0)) <= 0:
                 continue
             self.state[int(pid)] = (float(b[k]), float(b[n + k]), float(var[k]), float(var[n + k]), season)
         self.cov_prev = b[2 * n:].copy()
-        self.sigma2 = float(sigma2)
 
     def table(self) -> pd.DataFrame:
         return pd.DataFrame([(p, *v) for p, v in self.state.items()],

@@ -111,7 +111,7 @@ def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: 
         G = sd.full_gram()
         bf, inv = G.solve(lam, b0, want_inv=True)
         s2 = G.sigma2(bf)
-        chain.update(S, sd.idx, bf, inv, s2, sd.toi)
+        chain.update(S, sd.idx, bf, inv, s2, sd.toi, n_rows=len(sd.rows))
         post = chain.table()
         post.to_parquet(paths.posterior(S), index=False)
         standalone[S] = fit_standalone(sd, G)

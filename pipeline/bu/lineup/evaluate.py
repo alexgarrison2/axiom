@@ -11,7 +11,15 @@ Protocol (DESIGN §1.5):
   pooled dev Δ is the candidate;
 * the candidate gets ONE look at the soft holdout 2025-26, appended to
   ``pipeline/bu/lineup/out/look_log.jsonl`` with its config hash.  ``--holdout`` refuses a
-  second look at the same config hash.
+  second look for the M2 lineup component whatever the config (DESIGN §1.5: one look per
+  component; a failed candidate goes back to the dev folds and is re-tested only on 2026-27
+  live data).
+
+The incumbent is the *live* model's feature set (``train_game_model.live_feature_columns``,
+i.e. ``game_model_meta.json``, which includes the fast-track ``d_lineup`` once F1 is
+promoted), falling back to ``features.FEATURE_COLUMNS`` on a checkout without it.  When the
+incumbent already carries F1 lineup columns, the report also gives (descriptively) the
+candidate *replacing* them instead of being added on top.
 
 Per fold: n, log loss (incumbent / candidate), Δ with paired SE and a one-sided 95% upper
 bound, 2,000-resample game bootstrap, Brier, calibration slope, early-season (GP <= 15) Δ.
@@ -110,6 +118,27 @@ def compare_fold(base: pd.DataFrame, cand: pd.DataFrame, seed: int = 11) -> dict
     }
 
 
+LOOK_COMPONENT = "M2 lineup term"
+LOOK_NAME = LOOK_COMPONENT + ", soft holdout 2025-26"
+
+
+def incumbent_columns(M: pd.DataFrame | None = None) -> tuple[list, str]:
+    """(feature columns, source) of the incumbent the lineup term is tested against."""
+    import features as F
+    import train_game_model as T
+    if hasattr(T, "live_feature_columns"):
+        cols, meta = T.live_feature_columns()
+        cols, src = list(cols), f"game_model_meta.json ({meta.get('model_version', '?')})"
+    else:
+        cols, src = list(F.FEATURE_COLUMNS), "features.FEATURE_COLUMNS"
+    if M is not None:
+        missing = [c for c in cols if c not in M.columns]
+        if missing:
+            raise SystemExit(f"incumbent columns {missing} are not in the training matrix: rebuild it "
+                             "(drop a stale --matrix cache)")
+    return cols, src
+
+
 def config_hash(feats_meta: dict, cols) -> str:
     blob = json.dumps({"meta": feats_meta, "cols": list(cols)}, sort_keys=True, default=str)
     return hashlib.sha256(blob.encode()).hexdigest()[:12]
@@ -119,8 +148,9 @@ def run(M: pd.DataFrame, feats: pd.DataFrame, feats_meta: dict, holdout: bool = 
         variants=VARIANTS, log=print) -> dict:
     import features as F
     import train_game_model as T
-    base_cols = list(F.FEATURE_COLUMNS)
+    base_cols, base_src = incumbent_columns(M)
     report = {"generated_at": datetime.now(timezone.utc).isoformat(), "incumbent_features": base_cols,
+              "incumbent_source": base_src,
               "feature_meta": feats_meta, "dev_seasons": list(DEV_SEASONS), "variants": {}}
     folds_b, oos_b = T.walk_forward(M, base_cols, test_seasons=DEV_SEASONS)
     report["incumbent_dev"] = {f["test_season"]: {k: f[k] for k in ("n", "log_loss", "brier", "calibration_slope", "C")}
@@ -157,12 +187,35 @@ def run(M: pd.DataFrame, feats: pd.DataFrame, feats_meta: dict, holdout: bool = 
             "folds": {int(S): compare_fold(oos_b[oos_b["season"] == S], oos_a[oos_a["season"] == S])
                       for S in DEV_SEASONS}}
         log(f"  [eval] L-asof {best}: pooled dev Δ {report['L_asof_dev']['pooled_dev']['delta_ll']:+.5f}")
+    # The incumbent already has the fast-track lineup feature(s): also show the candidate in
+    # their place (descriptive; selection above is "added on top of the live model").
+    f1 = [c for c in getattr(F, "LINEUP_COLUMNS", ()) if c in base_cols]
+    if f1:
+        repl_base = [c for c in base_cols if c not in f1]
+        M2 = attach(M, feats, cand["cols"])
+        _, oos_r = T.walk_forward(M2, repl_base + cand["cols"], test_seasons=DEV_SEASONS)
+        report["replace_f1_dev"] = {
+            "removed": f1, "cols": repl_base + cand["cols"],
+            "pooled_dev": compare_fold(oos_b, oos_r),
+            "folds": {int(S): compare_fold(oos_b[oos_b["season"] == S], oos_r[oos_r["season"] == S])
+                      for S in DEV_SEASONS}}
+        log(f"  [eval] {best} replacing {f1}: pooled dev Δ {report['replace_f1_dev']['pooled_dev']['delta_ll']:+.5f}")
     report["candidate"] = {"variant": best, "cols": cand["cols"], "config_hash": config_hash(feats_meta, cand["cols"]),
                            "A2_dev": {"rule": "pooled dev Δ <= -0.0005 and no fold worse than +0.0005",
                                       "pass": bool(a2)}}
     if holdout:
         report["holdout"] = holdout_look(M, feats, feats_meta, cand["cols"], base_cols)
+    report["logged_holdout_looks"] = logged_looks()
     return report
+
+
+def logged_looks() -> list:
+    """Every holdout look recorded in ``look_log.jsonl`` (kept in each report, so a dev-only
+    re-run never hides the single look that was taken)."""
+    if not os.path.exists(LOOK_LOG):
+        return []
+    with open(LOOK_LOG) as f:
+        return [json.loads(line) for line in f if line.strip()]
 
 
 def holdout_look(M, feats, feats_meta, cols, base_cols) -> dict:
@@ -173,9 +226,13 @@ def holdout_look(M, feats, feats_meta, cols, base_cols) -> dict:
     if os.path.exists(LOOK_LOG):
         with open(LOOK_LOG) as f:
             for line in f:
+                if not line.strip():
+                    continue
                 rec = json.loads(line)
-                if rec.get("config_hash") == h:
-                    return {"refused": f"config {h} already had its holdout look at {rec['at']}", "previous": rec}
+                if rec.get("config_hash") == h or str(rec.get("look", "")).startswith(LOOK_COMPONENT):
+                    return {"refused": f"the {LOOK_COMPONENT} already had its single 2025-26 look "
+                                       f"(config {rec.get('config_hash')}, {rec['at']}); re-test on 2026-27 live data",
+                            "previous": rec}
     _, oos_b = T.walk_forward(M, base_cols, test_seasons=(HOLDOUT_SEASON,))
     M2 = attach(M, feats, cols)
     _, oos_c = T.walk_forward(M2, base_cols + cols, test_seasons=(HOLDOUT_SEASON,))
@@ -183,8 +240,8 @@ def holdout_look(M, feats, feats_meta, cols, base_cols) -> dict:
     res["A_comp"] = {"rule": "one-sided 98.75% upper bound of Δ < +0.0005 (Bonferroni over 4 component looks)",
                      "upper98_75": res["delta_ll"] + 2.2414 * res["se"]}
     res["A_comp"]["pass"] = bool(res["A_comp"]["upper98_75"] < 0.0005)
-    rec = {"at": datetime.now(timezone.utc).isoformat(), "look": "M2 lineup term, soft holdout 2025-26",
-           "config_hash": h, "cols": cols, "result": res}
+    rec = {"at": datetime.now(timezone.utc).isoformat(), "look": LOOK_NAME,
+           "config_hash": h, "cols": cols, "incumbent_features": list(base_cols), "result": res}
     with open(LOOK_LOG, "a") as f:
         f.write(json.dumps(rec, default=float) + "\n")
     return res
