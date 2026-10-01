@@ -494,8 +494,8 @@ export default function MethodologyPage() {
                         <Section id="players" index={++i} title="Players & standings">
                             <p>
                                 <strong>Player ratings</strong> are expected goals per 60 minutes at even strength, compared with an average skater:{' '}
-                                <strong>OFF</strong> (xG for, higher is better), <strong>DEF</strong> (xG against, lower is better) and{' '}
-                                <strong>NET</strong> = OFF − DEF. A ridge regression (RAPM) over every even-strength shift since 2010-11 separates each
+                                <strong>OFF</strong> (xG for), <strong>DEF</strong> (xG against prevented) and <strong>NET</strong> = OFF + DEF,
+                                all higher = better. A ridge regression (RAPM) over every even-strength shift since 2010-11 separates each
                                 skater from his linemates, opponents, score, zone starts and home ice. Each season starts from the previous estimate plus
                                 an aging step and is updated daily with this season&apos;s games (the date beside the ratings is the last game day in),
                                 so early in a season they are mostly built on the last three seasons; <strong>EV MIN</strong> shows that sample. The same

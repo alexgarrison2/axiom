@@ -55,8 +55,8 @@ const mmss = (sec: number | null) => {
 };
 const thousands = (n: number) => n.toLocaleString('en-US');
 
-function Rating({ v, p, strong, lowerBetter = false, bold = false }: { v: number; p: Skater; strong: number; lowerBetter?: boolean; bold?: boolean }) {
-    const t = ratingTone(v, p, strong, lowerBetter);
+function Rating({ v, p, strong, bold = false }: { v: number; p: Skater; strong: number; bold?: boolean }) {
+    const t = ratingTone(v, p, strong);
     return (
         <span className={cn(t ? TONE[t] : p.rated ? 'text-fg-2' : 'text-fg-3', bold && 'font-bold')}>
             {signed(v)}
@@ -67,7 +67,7 @@ function Rating({ v, p, strong, lowerBetter = false, bold = false }: { v: number
 
 const COLUMNS: Column[] = [
     { key: 'off', label: 'OFF', title: 'Offence: EV xG for per 60 above average', group: 'rating', sets: ['rating'], render: p => <Rating v={p.off} p={p} strong={STRONG.off} /> },
-    { key: 'def', label: 'DEF', title: 'Defence: EV xG against per 60 above average (lower is better)', group: 'rating', sets: ['rating'], render: p => <Rating v={p.def} p={p} strong={STRONG.def} lowerBetter /> },
+    { key: 'def', label: 'DEF', title: 'Defence: EV xG against per 60 prevented vs average', group: 'rating', sets: ['rating'], render: p => <Rating v={p.def} p={p} strong={STRONG.def} /> },
     { key: 'evMin', label: 'EV MIN', title: 'Even-strength minutes behind the rating (last three seasons + this one)', group: 'rating', sets: ['rating'], render: p => <span className={p.evMin < 250 ? 'text-fg-3' : undefined}>{thousands(p.evMin)}</span> },
     { key: 'gp', label: 'GP', title: 'Games played', group: 'count', sets: ['scoring'], render: (p, s) => valueOf(p, 'gp', s) ?? 0 },
     { key: 'g', label: 'G', title: 'Goals', group: 'count', sets: ['scoring'], render: (p, s) => valueOf(p, 'g', s) ?? '—' },
@@ -283,7 +283,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                                 <SortHeader
                                     direction={sort.key === 'net' ? sort.dir : null}
                                     onSort={() => onSort('net')}
-                                    title="Net: OFF − DEF, EV xG per 60 above average"
+                                    title="Net: OFF + DEF, EV xG per 60 above average"
                                     className="border-b border-line md:min-w-[9.5rem]"
                                 >
                                     NET

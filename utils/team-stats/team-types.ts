@@ -26,7 +26,7 @@ export interface Pctl {
 export interface SkaterRating {
     net: number;
     off: number;
-    /** Lower is better. */
+    /** xGA/60 prevented (higher is better). */
     def: number;
     /** NET percentile among rated forwards or defencemen on current rosters (null when not rated). */
     pct: number | null;

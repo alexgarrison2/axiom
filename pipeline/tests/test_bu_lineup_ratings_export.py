@@ -49,15 +49,19 @@ def test_build_export_rows_and_units():
     assert set(rows) == {1, 2, 3, 4}                      # goalie 9 dropped, retired 3 kept off-roster
     mc = rows[1]
     assert mc["name"] == "Connor McDavid" and mc["team"] == "EDM" and mc["roster"] and mc["rated"]
-    assert mc["net"] == pytest.approx(0.70) and mc["off"] == 0.76 and mc["def"] == 0.06
+    assert mc["net"] == pytest.approx(0.70) and mc["off"] == 0.76 and mc["def"] == -0.06   # def = -d
     assert mc["toi"] == round((290_000 + 600) / 60) and mc["gp"] == 271 and mc["toi_cur"] == 10 and mc["gp_cur"] == 1
-    assert rows[2]["net"] == pytest.approx(0.40)          # lower def is better: net = off - def
+    assert rows[2]["def"] == 0.30 and rows[2]["net"] == pytest.approx(0.40)   # xGA prevented: net = off + def
     assert not rows[3]["roster"] and rows[3]["name"] == "Patrice Bergeron"
     rookie = rows[4]
-    assert rookie["roster"] and not rookie["rated"] and rookie["off"] == -0.005 and rookie["def"] == 0.001
+    assert rookie["roster"] and not rookie["rated"] and rookie["off"] == -0.005 and rookie["def"] == -0.001
     assert rookie["toi"] == 0 and rookie["gp"] == 0
     assert [r[0] for r in doc["rows"]][:2] == [3, 1]       # sorted by net, best first
     assert doc["columns"] == RE.COLUMNS
+    assert doc["version"] == 2 and "prevented" in doc["units"]["def"] and doc["units"]["net"] == "off + def"
+    for r in rows.values():                               # every rating higher = better, net = off + def
+        assert r["net"] == pytest.approx(r["off"] + r["def"], abs=0.002)
+    assert all(not (isinstance(v, float) and v == 0 and str(v).startswith("-")) for r in doc["rows"] for v in r)
 
 
 def test_fallbacks_carry_the_previous_export():
@@ -166,7 +170,7 @@ def test_refresh_export_never_raises(tmp_path):
 def _big_doc(season="20262027", as_of="2026-09-30"):
     roster = {i: (f"Player {i}", f"T{i % 32:02d}", "D" if i % 3 == 0 else "C") for i in range(1, 701)}
     b = _bundle(season, as_of)
-    b["players"]["rows"] = [[i, 0.01 * (i % 50), 0.0, True] for i in range(1, 701)]
+    b["players"]["rows"] = [[i, 0.01 * (i % 50), 0.01 * (i % 7) - 0.03, True] for i in range(1, 701)]
     return RE.build_export(b, None, roster, None, now=NOW)
 
 
@@ -193,6 +197,14 @@ def test_check_player_ratings(tmp_path):
     p.write_text(json.dumps(doc))
     errs = V.check_player_ratings(ctx)
     assert any("without a name" in e for e in errs) and any("inconsistent" in e for e in errs)
+    doc = _big_doc()                                      # a v1 file (def = xGA impact, lower = better)
+    doc["version"] = 1
+    i, j, k = (doc["columns"].index(c) for c in ("off", "def", "net"))
+    for r in doc["rows"]:
+        r[j] = -r[j]
+        r[k] = round(r[i] - r[j], 3)
+    p.write_text(json.dumps(doc))
+    assert any("version" in e for e in V.check_player_ratings(ctx))
     assert V.check_player_ratings({"player_ratings_path": str(tmp_path / "x.json")})
 
 
@@ -206,6 +218,10 @@ def test_committed_player_ratings():
     top = [r["name"] for r in sorted(ros, key=lambda r: -r["net"])[:15]]
     for name in ("Connor McDavid", "Nathan MacKinnon", "Auston Matthews"):
         assert name in top, (name, top)
+    # v2 signs: DEF is xGA/60 prevented (Mark Stone, a defensive forward, is positive), NET = OFF + DEF
+    by = {r["name"]: r for r in ros}
+    assert doc["version"] == 2 and by["Mark Stone"]["def"] > 0.2 and by["Connor McDavid"]["def"] < 0
+    assert all(abs(r["off"] + r["def"] - r["net"]) <= 0.002 for r in ros)
 
 
 def test_workflows_publish_the_ratings():

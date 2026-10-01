@@ -70,19 +70,22 @@ describe('/methodology glossary anchors', () => {
         expect(html).not.toMatch(/rest and travel/);
     });
 
-    it('defines NET = OFF − DEF exactly as the published ratings file computes it', async () => {
+    it('defines NET = OFF + DEF exactly as the published ratings file computes it', async () => {
         type Doc = { columns: string[]; rows: unknown[][] };
         const doc = JSON.parse(readFileSync(join(process.cwd(), 'public/data/player_ratings.json'), 'utf8')) as Doc;
         const c = (k: string) => doc.columns.indexOf(k);
         expect(doc.rows.length).toBeGreaterThan(700);
-        for (const r of doc.rows) expect(Math.abs((r[c('off')] as number) - (r[c('def')] as number) - (r[c('net')] as number))).toBeLessThan(0.002);
-        expect(GLOSSARY['player-net'].detail).toMatch(/NET = OFF − DEF/);
-        expect(GLOSSARY['player-def'].short).toMatch(/Lower is better/);
+        for (const r of doc.rows) expect(Math.abs((r[c('off')] as number) + (r[c('def')] as number) - (r[c('net')] as number))).toBeLessThan(0.002);
+        expect(GLOSSARY['player-net'].detail).toMatch(/NET = OFF \+ DEF/);
+        expect(GLOSSARY['player-def'].short).toMatch(/Higher is better/);
+        expect(GLOSSARY['player-def'].short).not.toMatch(/Lower is better/);
         // The old composite is gone from the glossary and the page.
         expect(Object.keys(GLOSSARY)).not.toContain('player-impact');
         const html = await renderPage();
         expect(html).not.toMatch(/50\/20\/20\/10|standard deviations from the average player/);
-        expect(html).toMatch(/NET<\/strong> = OFF − DEF/);
+        expect(html).toMatch(/NET<\/strong> = OFF \+ DEF/);
+        expect(html).not.toMatch(/xG against, lower is better/);
+        expect(html).toMatch(/DEF<\/strong> \(xG against prevented\)/);
     });
 
     it('keeps every term id addressable', () => {

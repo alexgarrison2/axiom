@@ -27,9 +27,9 @@ export interface Skater {
     rated: boolean;
     /** EV xGF/60 impact (higher is better). */
     off: number;
-    /** EV xGA/60 impact (lower is better). */
+    /** EV xGA/60 prevented (higher is better). */
     def: number;
-    /** off − def. */
+    /** off + def. */
     net: number;
     /** The rating's EV sample: minutes and games, last three seasons + this one. */
     evMin: number;
@@ -42,8 +42,8 @@ export type StatSeason = 'cur' | 'prev';
 
 export type SortKey = 'net' | 'off' | 'def' | 'evMin' | 'gp' | 'g' | 'a' | 'pts' | 'toi' | 'sogPg' | 'name';
 
-/** Sort direction a column starts with: lower DEF is better, so it starts ascending. */
-export const FIRST_DIR: Partial<Record<SortKey, 'asc' | 'desc'>> = { def: 'asc', name: 'asc' };
+/** Sort direction a column starts with (every rating is higher = better, so only the name starts ascending). */
+export const FIRST_DIR: Partial<Record<SortKey, 'asc' | 'desc'>> = { name: 'asc' };
 
 export interface SkaterFilter {
     q: string;
@@ -156,12 +156,11 @@ export function sortSkaters(rows: Skater[], key: SortKey, dir: 'asc' | 'desc', s
     });
 }
 
-/** Tone of a rating: green good / red bad past `strong`, only with a real sample. `lowerBetter` for DEF. */
-export function ratingTone(v: number, p: Pick<Skater, 'rated' | 'evMin'>, strong: number, lowerBetter = false): 'pos' | 'neg' | null {
+/** Tone of a rating (higher is better for all three): green good / red bad past `strong`, only with a real sample. */
+export function ratingTone(v: number, p: Pick<Skater, 'rated' | 'evMin'>, strong: number): 'pos' | 'neg' | null {
     if (!p.rated || p.evMin < COLOR_MIN_EV) return null;
-    const s = lowerBetter ? -v : v;
-    if (s >= strong) return 'pos';
-    if (s <= -strong) return 'neg';
+    if (v >= strong) return 'pos';
+    if (v <= -strong) return 'neg';
     return null;
 }
 

@@ -4,13 +4,17 @@ The live serving bundle (``out/serving_bundle.json.gz``) carries one row per rat
 ``o`` (offence: EV xGF/60 impact, higher is better) and ``d`` (defence: EV xGA/60 impact,
 LOWER is better).  This module turns it into the one player-rating file every page reads:
 
-    {"season": "20262027", "season_label": "2026-27", "as_of": "2026-09-30", ...,
+    {"version": 2, "season": "20262027", "season_label": "2026-27", "as_of": "2026-09-30", ...,
      "columns": ["id", "name", "team", "pos", "roster", "rated", "off", "def", "net",
                  "toi", "gp", "toi_cur", "gp_cur"],
-     "rows": [[8478402, "Connor McDavid", "EDM", "C", true, true, 0.763, 0.057, 0.706, ...], ...]}
+     "rows": [[8478402, "Connor McDavid", "EDM", "C", true, true, 0.763, -0.057, 0.706, ...], ...]}
 
-``net = off - def`` (xG/60 above an average skater at even strength).  ``toi`` / ``gp`` are the
-rating's recent sample: EV minutes and games in the ``WINDOW`` completed seasons before this one
+The site file presents every rating as higher = better: ``off = o``, ``def = -d`` (EV xGA/60
+PREVENTED vs an average skater) and ``net = off + def`` (= ``o - d``, xG/60 above an average
+skater at even strength).  Version 1 files carried ``def = d`` (lower is better) and
+``net = off - def``; only the presented sign changed, the bundle and the model keep ``d``.
+
+``toi`` / ``gp`` are the rating's recent sample: EV minutes and games in the ``WINDOW`` completed seasons before this one
 plus this season so far (``toi_cur`` / ``gp_cur``).  ``roster`` = on a current NHL roster
 (``/v1/roster/{TEAM}/{season}``, explicit season id); ``rated`` = False for a rostered skater
 with no NHL sample yet, who carries the rookie prior of his position group (the same value the
@@ -50,7 +54,8 @@ OUT_DIR = os.path.join(HERE, "out")
 BUNDLE = os.path.join(OUT_DIR, "serving_bundle.json.gz")
 PUBLIC_FILE = os.path.join(REPO_ROOT, "public", "data", "player_ratings.json")
 
-VERSION = 1
+VERSION = 1                 # player sample file
+RATINGS_VERSION = 2         # site file; 2: def = xGA/60 prevented (-d), net = off + def
 WINDOW = 3                  # completed seasons in the sample before the current one
 MIN_ROSTER_SKATERS = 600    # an export with fewer named roster skaters is not written
 COLUMNS = ["id", "name", "team", "pos", "roster", "rated", "off", "def", "net", "toi", "gp", "toi_cur", "gp_cur"]
@@ -272,18 +277,19 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
         else:
             c_min, c_gp = 0, 0
         h_s, h_gp = hist.get(pid, (0.0, 0))
-        rows.append([pid, name, team, pos, pid in roster, bool(rated), round(o, 3), round(d, 3), round(o - d, 3),
+        # Presented higher = better: def = xGA/60 prevented (-d); net = off + def = o - d.
+        rows.append([pid, name, team, pos, pid in roster, bool(rated), round(o, 3), round(-d, 3) + 0.0, round(o - d, 3),
                      round(h_s / 60) + c_min, h_gp + c_gp, c_min, c_gp])
     rows.sort(key=lambda r: (-r[8], r[1]))
     now = now or datetime.now(timezone.utc)
     return {
-        "version": VERSION, "kind": "player_ratings", "model": MODEL,
+        "version": RATINGS_VERSION, "kind": "player_ratings", "model": MODEL,
         "season": season, "season_label": season_label(season),
         "as_of": bundle.get("max_source_date"), "bundle_built_at": bundle.get("built_at"),
         "season_games": int(bundle.get("n_games") or 0),
         "window": (sample or {}).get("window") or prior_seasons(season),
         "units": {"off": "EV xGF/60 vs average (higher is better)",
-                  "def": "EV xGA/60 vs average (lower is better)", "net": "off - def",
+                  "def": "EV xGA/60 prevented vs average (higher is better)", "net": "off + def",
                   "toi": "EV minutes, window seasons + this season", "gp": "games, same span"},
         "generated_at": now.isoformat(timespec="seconds"),
         "columns": COLUMNS, "rows": rows,

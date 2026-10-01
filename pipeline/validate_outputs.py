@@ -45,7 +45,8 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  columns, was built after its source data and, when fresh, is of this season
                  (age: manifest stale flag; with a stale bundle the F1 rollback model is published)
   player_ratings public/data/player_ratings.json (RAPM v2 OFF / DEF / NET): every row named,
-                 >= 600 current-roster skaters on >= 28 teams, net = off - def, same season as
+                 >= 600 current-roster skaters on >= 28 teams, v2 signs (def = xGA/60 prevented,
+                 higher = better; net = off + def), same season as
                  the serving bundle and at most 3 days behind its max_source_date
 
 ``--freshness`` instead only checks that manifest.generated_at is under 26 h
@@ -743,12 +744,13 @@ def check_bu_bundle(ctx):
 PLAYER_RATINGS_COLUMNS = ("id", "name", "team", "pos", "roster", "rated", "off", "def", "net", "toi", "gp")
 PLAYER_RATINGS_MIN_ROSTER = 600
 PLAYER_RATINGS_MAX_LAG_DAYS = 3
+PLAYER_RATINGS_VERSION = 2      # def = xGA/60 prevented (higher = better), net = off + def
 
 
 def check_player_ratings(ctx):
     """public/data/player_ratings.json (the site's RAPM v2 player ratings): readable, every row
-    named, >= PLAYER_RATINGS_MIN_ROSTER current-roster skaters across >= 28 teams, net = off - def,
-    and not behind the committed serving bundle it is exported from (same season, as_of no
+    named, >= PLAYER_RATINGS_MIN_ROSTER current-roster skaters across >= 28 teams, the v2 sign
+    convention (every rating higher = better: def = xGA/60 prevented, net = off + def), and not behind the committed serving bundle it is exported from (same season, as_of no
     older than the bundle's max_source_date)."""
     path = ctx.get("player_ratings_path") or os.path.join(PUBLIC_DATA_DIR, "player_ratings.json")
     doc = _json(path)
@@ -760,6 +762,9 @@ def check_player_ratings(ctx):
         return [f"player_ratings.json: columns {miss} missing"]
     rows = [dict(zip(cols, r)) for r in doc.get("rows") or []]
     errs = []
+    if int(doc.get("version") or 0) < PLAYER_RATINGS_VERSION:
+        errs.append(f"player_ratings.json: version {doc.get('version')} < {PLAYER_RATINGS_VERSION} "
+                    "(def must be xGA/60 prevented, higher = better; re-export)")
     unnamed = [r.get("id") for r in rows if not str(r.get("name") or "").strip()]
     if unnamed:
         errs.append(f"player_ratings.json: {len(unnamed)} rows without a name, e.g. {unnamed[:5]}")
@@ -771,7 +776,7 @@ def check_player_ratings(ctx):
         errs.append(f"player_ratings.json: roster skaters on {len(teams)} teams (< 28)")
     bad = [r.get("name") for r in rows
            if not all(isinstance(r.get(k), (int, float)) and r[k] == r[k] for k in ("off", "def", "net"))
-           or abs(r["off"] - r["def"] - r["net"]) > 0.002]
+           or abs(r["off"] + r["def"] - r["net"]) > 0.002]
     if bad:
         errs.append(f"player_ratings.json: {len(bad)} rows with a missing or inconsistent off/def/net, e.g. {bad[:3]}")
     if any(r.get("pos") == "G" for r in rows):

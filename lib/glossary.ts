@@ -227,7 +227,7 @@ export const GLOSSARY = {
         label: 'NET',
         title: 'Net player rating (RAPM)',
         short: 'Expected goals per 60 minutes a skater adds at even strength, for minus against, compared with an average skater. +0.50 means his team out-chances opponents by half an expected goal per 60 more with him on the ice.',
-        detail: 'NET = OFF − DEF. A ridge regression (RAPM) over every even-strength shift since 2010-11 separates each skater from his linemates, opponents, score state, zone starts and home ice; each season starts from last season’s estimate plus an aging step, rookies from the average of their position and draft tier, and this season’s games update it daily. Small samples stay close to average, so a hot week cannot top the list.',
+        detail: 'NET = OFF + DEF. A ridge regression (RAPM) over every even-strength shift since 2010-11 separates each skater from his linemates, opponents, score state, zone starts and home ice; each season starts from last season’s estimate plus an aging step, rookies from the average of their position and draft tier, and this season’s games update it daily. Small samples stay close to average, so a hot week cannot top the list.',
         anchor: 'players',
         aliases: ['RAPM', 'net rating', 'player rating', 'impact', 'xG/60'],
     },
@@ -241,9 +241,9 @@ export const GLOSSARY = {
     'player-def': {
         label: 'DEF',
         title: 'Defensive rating',
-        short: 'Expected goals against per 60 minutes at even strength with him on the ice, above an average skater. Lower is better: −0.20 means 0.20 fewer xG allowed per 60.',
+        short: 'Expected goals against per 60 minutes at even strength he prevents, compared with an average skater. Higher is better: +0.20 means 0.20 fewer xG allowed per 60 with him on the ice.',
         anchor: 'players',
-        aliases: ['defence', 'defense', 'xGA/60 impact'],
+        aliases: ['defence', 'defense', 'xGA/60 prevented', 'xGA/60 impact'],
     },
     'ev-min': {
         label: 'EV MIN',

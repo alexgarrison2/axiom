@@ -3,8 +3,8 @@
  * (public/data/player_ratings.json, exported by pipeline/bu/lineup/ratings_export.py).
  *
  *   OFF  xG for per 60 above an average skater (higher is better)
- *   DEF  xG against per 60 above average (LOWER is better)
- *   NET  OFF − DEF
+ *   DEF  xG against per 60 prevented vs average (higher is better)
+ *   NET  OFF + DEF
  *
  * Pure helpers (no fs) shared by /players, the team pages, the teams table
  * and the matchup Lines tab.
@@ -19,7 +19,9 @@ export interface PlayerRating {
     /** False: no NHL sample yet (the rookie prior of his position group). */
     rated: boolean;
     off: number;
+    /** xGA/60 prevented (higher is better). */
     def: number;
+    /** off + def. */
     net: number;
     /** EV minutes / games behind the rating (last three seasons + this one). */
     toi: number;
@@ -65,7 +67,7 @@ export function parseRatings(doc: unknown): Ratings {
             rated: r[I.rated] !== false,
             off,
             def,
-            net: typeof r[I.net] === 'number' ? (r[I.net] as number) : off - def,
+            net: typeof r[I.net] === 'number' ? (r[I.net] as number) : off + def,
             toi: num(r[I.toi]),
             gp: num(r[I.gp]),
             toiCur: num(r[I.toiCur]),

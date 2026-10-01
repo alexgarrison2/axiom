@@ -81,8 +81,9 @@ player sample for the site ratings (`python -m bu.lineup.ratings_export sample -
 
 **Site player ratings** (`bu/lineup/ratings_export.py` -> `public/data/player_ratings.json`):
 the one player rating the site shows (/players, team pages, the matchup Lines tab).  One row per
-rated skater plus every rostered skater: `off` (EV xGF/60 impact), `def` (EV xGA/60 impact, lower
-is better), `net = off - def`, the EV sample (`toi` minutes, `gp`) over the last three seasons +
+rated skater plus every rostered skater, every rating higher = better: `off` (EV xGF/60 impact,
+the bundle's `o`), `def` (EV xGA/60 *prevented*, `-d`; file version 2, v1 carried `d`), `net = off + def`
+(= `o - d`), the EV sample (`toi` minutes, `gp`) over the last three seasons +
 this one, `roster` (on a current NHL roster) and `rated` (False = no NHL sample yet: the rookie
 prior of his position group, as in the lineup term).  Exported by every bundle refresh
 (`bu_refresh.yml` commits it with the bundle) and by the daily full run (`refresh_pipeline.py`

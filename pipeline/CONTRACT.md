@@ -184,6 +184,13 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   `{season_id, generated_at, baseline_generated_at, max_swing_pts, min_swing_pts, games: [...]}`.
   `games` is empty while the largest swing on the slate is under
   `min_swing_pts` (3 points).
+* `public/data/player_ratings.json` (`bu/lineup/ratings_export.py`, the site's RAPM v2
+  player ratings, EV xG/60 vs an average skater): `{version: 2, season, as_of, units, columns,
+  rows}` with columns `id, name, team, pos, roster, rated, off, def, net, toi, gp, toi_cur,
+  gp_cur`. Every rating is higher = better: `off` = xGF/60 added, `def` = xGA/60
+  **prevented** (the negated RAPM `d`; version 1 carried `d` itself, lower = better) and
+  `net = off + def`. Model internals (`bu.rapm`, the serving bundle, `bu_d_net`) keep `d`.
+  `validate_outputs.py player_ratings` gates it.
 * `public/data/clinch_status.json`:
   `{season_id, generated_at, teams: {TRI: "x" | "y" | "z" | "p" | "e" | null}}`.
 * SiteHistory snapshots (`public/data/SiteHistory/<date>.csv`) gain

@@ -239,7 +239,7 @@ function SkaterCard({
                         ) : null}
                     </p>
                 </div>
-                <div className="flex shrink-0 flex-col items-end" title="NET: EV xG per 60 above average (OFF − DEF)">
+                <div className="flex shrink-0 flex-col items-end" title="NET: EV xG per 60 above average (OFF + DEF)">
                     <span className="label">Net</span>
                     <span
                         className="font-display text-[22px] font-bold leading-7 tabular-nums"
@@ -267,7 +267,7 @@ function SkaterCard({
                     <span title="Offence: EV xG for per 60 above average">
                         Off <span className="font-bold text-fg-2">{sgn(rt.off)}</span>
                     </span>
-                    <span title="Defence: EV xG against per 60 above average (lower is better)">
+                    <span title="Defence: EV xG against per 60 prevented vs average">
                         Def <span className="font-bold text-fg-2">{sgn(rt.def)}</span>
                     </span>
                     <span title="Even-strength minutes behind the rating" className="ml-auto">

@@ -38,16 +38,28 @@ test.describe('/players', () => {
         expect(urls.filter(u => u.includes('player_impact.json'))).toHaveLength(0);
     });
 
-    test('DEF sorts lowest (best) first and NET = OFF − DEF', async ({ page }) => {
+    test('DEF (xGA prevented) sorts highest (best) first and NET = OFF + DEF', async ({ page }) => {
         await page.goto('/players');
         await settle(page);
         await page.getByRole('button', { name: /^DEF/ }).click();
-        await expect(page.getByRole('columnheader', { name: /^DEF/ })).toHaveAttribute('aria-sort', 'ascending');
+        await expect(page.getByRole('columnheader', { name: /^DEF/ })).toHaveAttribute('aria-sort', 'descending');
         const def = (await column(page, 'DEF')).map(num);
-        for (let i = 1; i < def.length; i++) expect(def[i]).toBeGreaterThanOrEqual(def[i - 1]);
+        for (let i = 1; i < def.length; i++) expect(def[i]).toBeLessThanOrEqual(def[i - 1]);
+        expect(def[0]).toBeGreaterThan(0);
         const off = (await column(page, 'OFF')).map(num);
         const net = (await column(page, 'NET')).map(num);
-        for (let i = 0; i < 10; i++) expect(Math.abs(off[i] - def[i] - net[i])).toBeLessThanOrEqual(0.011);
+        for (let i = 0; i < 10; i++) expect(Math.abs(off[i] + def[i] - net[i])).toBeLessThanOrEqual(0.011);
+    });
+
+    test('a strong defensive forward shows a positive, green DEF', async ({ page }) => {
+        await page.goto('/players');
+        await settle(page);
+        await page.getByPlaceholder('SEARCH').fill('Mark Stone');
+        const heads = (await page.locator('thead tr').last().locator('th').allInnerTexts()).map(t => t.trim().split(/\s/)[0].toUpperCase());
+        const row = page.locator('tbody tr', { has: page.locator('th[scope="row"]', { hasText: 'Mark Stone' }) });
+        const cell = row.locator(`> :nth-child(${heads.indexOf('DEF') + 1}) span`).first();
+        await expect(cell).toHaveText(/^\+0\.\d\d/);
+        await expect(cell).toHaveClass(/text-pos/);
     });
 
     test('filters and the counting-stat season toggle', async ({ page, isMobile }) => {

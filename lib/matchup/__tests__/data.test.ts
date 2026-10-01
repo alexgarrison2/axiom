@@ -56,9 +56,9 @@ describe('lineup ratings by player id (E6, RAPM NET)', () => {
         columns: cols,
         rows: [
             [8480801, 'Brady Tkachuk', 'FLA', 'L', true, true, 0.73, 0.0, 0.72, 3000, 220, 0, 0],
-            [8479314, 'Matthew Tkachuk', 'FLA', 'L', true, true, 0.57, -0.09, 0.66, 2800, 210, 0, 0],
-            [8477493, 'Aleksander Barkov', 'FLA', 'C', true, true, 0.29, -0.26, 0.54, 2600, 185, 0, 0],
-            [8470000, 'Some Tkachuk', 'OTT', 'C', true, true, -0.1, 0.1, -0.2, 500, 40, 0, 0],
+            [8479314, 'Matthew Tkachuk', 'FLA', 'L', true, true, 0.57, 0.09, 0.66, 2800, 210, 0, 0],
+            [8477493, 'Aleksander Barkov', 'FLA', 'C', true, true, 0.29, 0.26, 0.54, 2600, 185, 0, 0],
+            [8470000, 'Some Tkachuk', 'OTT', 'C', true, true, -0.1, -0.1, -0.2, 500, 40, 0, 0],
             [8490000, 'New Kid', 'FLA', 'C', true, false, -0.01, 0.0, -0.01, 0, 0, 0, 0],
         ],
     });
