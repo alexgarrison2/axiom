@@ -279,6 +279,29 @@ def test_run_writes_timestamped_rows_and_is_idempotent(tmp_path, games, mocked_s
     assert c[(2026020009, "draftkings")]["home_ml"] == -160
 
 
+def test_stage_then_append_is_idempotent(tmp_path, games, mocked_sources):
+    """CI path: capture to a staging file, then apply it (possibly several
+    times, after resetting to a newer main) to the archive."""
+    stage = tmp_path / "runner" / "rows.jsonl"
+    root = tmp_path / "archive"
+    res = S.run(now=NOW, window_min=25, root=str(root), games=games, stage=str(stage))
+    assert res["staged"] == 2 and not root.exists()
+    assert [r["game_id"] for r in S.read_stage(str(stage))] == [2026020009, 2026020010]
+    assert S.apply_stage(str(stage), str(root)) == {os.path.join("2026-27", "2026-10-01.jsonl.gz"): 2}
+    assert S.apply_stage(str(stage), str(root)) == {os.path.join("2026-27", "2026-10-01.jsonl.gz"): 0}
+    assert len(S.read_rows(str(root / "2026-27" / "2026-10-01.jsonl.gz"))) == 2
+    assert S.main(["append", "--stage", str(stage), "--out", str(root)]) == 0
+    assert len(S.read_rows(str(root / "2026-27" / "2026-10-01.jsonl.gz"))) == 2
+    assert S.apply_stage(str(tmp_path / "missing.jsonl"), str(root)) == {}
+
+
+def test_no_games_with_stage_writes_no_stage_file(tmp_path, games, mocked_sources):
+    stage = tmp_path / "rows.jsonl"
+    S.run(now=datetime(2026, 10, 1, 12, 0, tzinfo=timezone.utc), root=str(tmp_path / "a"), games=games,
+          stage=str(stage))
+    assert not stage.exists()
+
+
 def test_identical_rows_far_apart_are_both_kept(tmp_path, games, mocked_sources):
     S.run(now=NOW, window_min=25, root=str(tmp_path), games=games)
     res = S.run(now=datetime(2026, 10, 1, 22, 55, tzinfo=timezone.utc), window_min=25, root=str(tmp_path),

@@ -13,7 +13,7 @@ movement, blend vs close) have timestamped data. Design: DESIGN.md §2.4
 | Capture job | `pipeline/bu/snapshots.py` | Reads the schedule, captures the selected games, appends rows |
 | Archive | `pipeline/snapshots/<season>/<ET date>.jsonl.gz` | Tracked in git, append-only, ~1 KB per row |
 | Release copy | release `snapshots-<season>` | Same day files, uploaded on every run (`--clobber`) |
-| Workflow | `.github/workflows/odds_close.yml` | Runs the job, commits, pushes, uploads |
+| Workflow | `.github/workflows/odds_close.yml` | Runs the job into a staging file, applies it on top of the latest `main`, commits, pushes, uploads |
 | Trigger | `infra/cloudflare-snapshot-worker/` | Dispatches the workflow 8-13 min before each start (SETUP.md) |
 | Pre-registration | `pipeline/bu/preregistration.yaml` + `prereg_analysis.py` | What the archive will be used to test, frozen before any data |
 
@@ -72,12 +72,24 @@ rewrites earlier bytes; a row whose content matches a row stored for the
 same game less than 3 minutes earlier is skipped (retries and double
 triggers do not duplicate); readers tolerate a truncated last member.
 
+Concurrency: snapshot runs share the `odds-close-snapshots` group, so they
+never overlap (GitHub keeps at most one waiting run; a newer trigger replaces
+it, and both would have captured the same games). A waiting run checks out
+the `main` of the moment it was triggered, which can predate the previous
+run's push, so the capture goes to a staging file
+(`--stage $RUNNER_TEMP/snapshot_rows.jsonl`) and every push attempt resets to
+the latest `main` and re-applies it (`append --stage`). Re-applying is
+idempotent, and a stale checkout can never cause a binary merge conflict on
+a day file.
+
 ## Commands (from `pipeline/`)
 
 ```bash
 python3 -m bu.snapshots --dry-run --window 1440          # see what a slate sweep would store
 python3 -m bu.snapshots --window 25                      # close capture now
 python3 -m bu.snapshots report --since 2026-10-01         # close coverage per book (M0a gate: >= 80%)
+python3 -m bu.snapshots --stage /tmp/rows.jsonl          # capture to a staging file (what CI does)
+python3 -m bu.snapshots append --stage /tmp/rows.jsonl   # apply it to the archive (idempotent)
 python3 -m bu.prereg_analysis --test M-1                  # registered analysis (adds --record for a look)
 ```
 

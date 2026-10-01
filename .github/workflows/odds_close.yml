@@ -33,10 +33,18 @@ on:
         description: 'Who asked (worker, manual, ...); recorded on every row'
         default: 'manual'
 
-# Snapshot runs queue behind each other (never cancelled: each one is data).
-# Deliberately NOT the update-nhl-data group: a queued close capture must not
-# wait behind a 30-minute full refresh.  The two jobs write disjoint files and
-# the push below rebases and retries.
+# Snapshot runs never overlap (they append to the same day file).  A running
+# capture is never cancelled; note that GitHub keeps at most ONE pending run
+# per group, so a third trigger arriving while one runs and one waits replaces
+# the waiting one (both would capture the same games).  Deliberately NOT the
+# update-nhl-data group: a queued close capture must not wait behind a
+# 30-minute full refresh.  The two workflows write disjoint files.
+#
+# A queued run checks out the commit that was main when it was TRIGGERED, which
+# can be older than the previous snapshot run's push.  So the capture writes to
+# a staging file and the push loop re-applies it on top of the latest main on
+# every attempt (append-only + content dedupe make that idempotent): no binary
+# rebase conflict on the .jsonl.gz day file can ever drop a run's rows.
 concurrency:
   group: odds-close-snapshots
   cancel-in-progress: false
@@ -88,28 +96,40 @@ jobs:
           case "$window" in ''|*[!0-9.]*) echo "bad window '$window'"; exit 1 ;; esac
           case "$games" in *[!0-9,\ ]*) echo "bad games '$games'"; exit 1 ;; esac
           trigger=$(printf '%s' "$trigger" | tr -cd 'A-Za-z0-9_.-' | cut -c1-32)
-          python -m bu.snapshots --window "$window" --games "$games" --trigger "$trigger"
+          python -m bu.snapshots --window "$window" --games "$games" --trigger "$trigger" \
+            --stage "${RUNNER_TEMP:-/tmp}/snapshot_rows.jsonl"
 
       - name: Commit and push snapshots
         id: push
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git add -A -- pipeline/snapshots
-          if git diff --cached --quiet; then
-            echo "No new snapshot rows."
+          stage="${RUNNER_TEMP:-/tmp}/snapshot_rows.jsonl"
+          files="${RUNNER_TEMP:-/tmp}/snapshot_files.txt"
+          if [ ! -s "$stage" ]; then
+            echo "No snapshot rows captured."
             exit 0
           fi
-          git diff --cached --name-only > /tmp/snapshot_files.txt
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git commit -q -m "Snapshots: odds/lineups [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
           auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
           for i in 1 2 3 4 5; do
-            if git -c "http.https://github.com/.extraheader=$auth" pull -q --rebase --autostash origin main &&
-               git -c "http.https://github.com/.extraheader=$auth" push -q origin HEAD:main; then
-              echo "pushed=1" >> "$GITHUB_OUTPUT"
-              exit 0
+            # Start every attempt from the latest main and re-apply the staged
+            # rows (idempotent), so a concurrent push can never conflict.
+            if git -c "http.https://github.com/.extraheader=$auth" fetch -q --depth=1 origin main &&
+               git reset -q --hard FETCH_HEAD &&
+               (cd pipeline && python -m bu.snapshots append --stage "$stage" --out snapshots); then
+              git add -A -- pipeline/snapshots
+              if git diff --cached --quiet; then
+                echo "No new snapshot rows (already stored)."
+                exit 0
+              fi
+              git diff --cached --name-only > "$files"
+              git commit -q -m "Snapshots: odds/lineups [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+              if git -c "http.https://github.com/.extraheader=$auth" push -q origin HEAD:main; then
+                echo "pushed=1" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
             fi
             echo "push attempt $i failed; retrying"
             sleep $((i * 4))
@@ -133,4 +153,4 @@ jobs:
                 --notes "Append-only pregame odds/lineup snapshots (one .jsonl.gz per game date). See docs/SNAPSHOTS.md."
             fi
             gh release upload "$tag" "$f" --repo "$GITHUB_REPOSITORY" --clobber
-          done < /tmp/snapshot_files.txt
+          done < "${RUNNER_TEMP:-/tmp}/snapshot_files.txt"

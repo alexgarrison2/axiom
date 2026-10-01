@@ -38,6 +38,11 @@ Usage (run from pipeline/):
     python3 -m bu.snapshots --window 1440         # whole-slate sweep (q0)
     python3 -m bu.snapshots --dry-run --window 1440 --out /tmp/snaps
     python3 -m bu.snapshots report --since 2026-10-01 [--until 2026-10-07]
+
+    # CI (odds_close.yml): capture to a staging file, then apply it on top of
+    # the latest main inside the push retry loop (no binary merge conflicts).
+    python3 -m bu.snapshots --window 25 --stage $RUNNER_TEMP/rows.jsonl
+    python3 -m bu.snapshots append --stage $RUNNER_TEMP/rows.jsonl --out snapshots
 """
 from __future__ import annotations
 
@@ -632,8 +637,44 @@ def append_rows(rows, root=SNAPSHOT_DIR) -> dict:
 
 # ── Run ──────────────────────────────────────────────────────────────────────
 
+def write_stage(rows, path) -> None:
+    """Write built rows to a plain JSONL staging file (replacing it)."""
+    d = os.path.dirname(os.path.abspath(path))
+    os.makedirs(d, exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        for r in rows:
+            fh.write(json.dumps(r, separators=(",", ":"), ensure_ascii=False) + "\n")
+    os.replace(tmp, path)
+
+
+def read_stage(path) -> list[dict]:
+    rows = []
+    try:
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    try:
+                        rows.append(json.loads(line))
+                    except ValueError:
+                        continue
+    except OSError:
+        pass
+    return rows
+
+
+def apply_stage(path, root=SNAPSHOT_DIR) -> dict:
+    """Append staged rows to the archive under ``root``.  Idempotent: rows
+    already stored (same game, same content, same capture minute) are
+    skipped, so the CI push loop can re-apply after resetting to main."""
+    rows = [r for r in read_stage(path) if r.get("game_id") and r.get("season") and r.get("game_date")]
+    return {os.path.relpath(p, root): n for p, n in append_rows(rows, root).items()}
+
+
 def run(now=None, window_min=DEFAULT_WINDOW_MIN, game_ids=None, root=SNAPSHOT_DIR, dry_run=False,
-        trigger="manual", run_id=None, with_lineups=True, with_injuries=True, games=None) -> dict:
+        trigger="manual", run_id=None, with_lineups=True, with_injuries=True, games=None,
+        stage=None) -> dict:
     now = _dt(now) or datetime.now(timezone.utc)
     errors = []
     if games is None:
@@ -665,6 +706,11 @@ def run(now=None, window_min=DEFAULT_WINDOW_MIN, game_ids=None, root=SNAPSHOT_DI
     if dry_run:
         summary["rows"] = rows
         print(f"[snapshots] dry run: {len(rows)} row(s) built, nothing written")
+        return summary
+    if stage:
+        write_stage(rows, stage)
+        summary["staged"] = len(rows)
+        print(f"[snapshots] staged {len(rows)} row(s) in {stage}; source errors: {summary['errors'] or 'none'}")
         return summary
     summary["written"] = {os.path.relpath(p, root): n for p, n in append_rows(rows, root).items()}
     print(f"[snapshots] wrote {summary['written']}; source errors: {summary['errors'] or 'none'}")
@@ -801,7 +847,7 @@ def report(since, until=None, root=SNAPSHOT_DIR) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
-    ap.add_argument("command", nargs="?", default="capture", choices=["capture", "report"])
+    ap.add_argument("command", nargs="?", default="capture", choices=["capture", "report", "append"])
     ap.add_argument("--window", type=float, default=DEFAULT_WINDOW_MIN,
                     help="capture games starting within this many minutes (default 25; 1440 = whole slate)")
     ap.add_argument("--games", default="", help="comma-separated game ids to capture regardless of window")
@@ -811,6 +857,9 @@ def main(argv=None) -> int:
     ap.add_argument("--trigger", default=os.environ.get("SNAPSHOT_TRIGGER", "manual"))
     ap.add_argument("--no-lineups", action="store_true")
     ap.add_argument("--no-injuries", action="store_true")
+    ap.add_argument("--stage", default=None,
+                    help="capture: write rows to this JSONL file instead of the archive; "
+                         "append: apply this staging file to the archive")
     ap.add_argument("--since", default=None)
     ap.add_argument("--until", default=None)
     a = ap.parse_args(argv)
@@ -819,10 +868,16 @@ def main(argv=None) -> int:
             ap.error("report needs --since YYYY-MM-DD")
         print(json.dumps(report(a.since, a.until, a.out), indent=1))
         return 0
+    if a.command == "append":
+        if not a.stage:
+            ap.error("append needs --stage FILE")
+        written = apply_stage(a.stage, a.out)
+        print(f"[snapshots] appended {written or 'nothing (no staged rows)'}")
+        return 0
     ids = [int(x) for x in a.games.replace(" ", "").split(",") if x.strip().isdigit()]
     res = run(now=a.now, window_min=a.window, game_ids=ids, root=a.out, dry_run=a.dry_run,
               trigger=a.trigger, run_id=os.environ.get("GITHUB_RUN_ID"),
-              with_lineups=not a.no_lineups, with_injuries=not a.no_injuries)
+              with_lineups=not a.no_lineups, with_injuries=not a.no_injuries, stage=a.stage)
     if a.dry_run:
         print(json.dumps(res.get("rows", []), indent=1, ensure_ascii=False)[:20000])
     print(json.dumps({k: v for k, v in res.items() if k != "rows"}, indent=1))
