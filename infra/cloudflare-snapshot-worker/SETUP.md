@@ -27,21 +27,21 @@ locally), and this repository checked out. Nothing here costs money.
 
 4. **Log in to Cloudflare from the terminal:**
    ```bash
-   npx wrangler login
+   npx wrangler@4 login
    ```
    A browser tab opens; click *Allow*. (If asked to install `wrangler`, answer `y`.)
 
 5. **Store the GitHub token as a Worker secret** (it is encrypted by
    Cloudflare and never written to any file):
    ```bash
-   npx wrangler secret put GITHUB_TOKEN
+   npx wrangler@4 secret put GITHUB_TOKEN
    ```
    Paste the token from step 2 when prompted and press Enter. If it says the
    Worker does not exist yet and offers to create it, answer `y`.
 
 6. **Deploy:**
    ```bash
-   npx wrangler deploy
+   npx wrangler@4 deploy
    ```
    It prints a URL like `https://ponyxg-snapshot-trigger.<you>.workers.dev`
    and `schedule: */5 * * * *`.
@@ -52,7 +52,7 @@ locally), and this repository checked out. Nothing here costs money.
 
 8. **Watch the first trigger:** about 10 minutes before the next game, open
    GitHub → *Actions* → *Odds close snapshots*. A run with the trigger
-   `worker` should appear. Live logs: `npx wrangler tail`.
+   `worker` should appear. Live logs: `npx wrangler@4 tail`.
 
 9. **Turn off GitHub's backup timer** (saves Actions minutes) once you have
    seen a few `worker` runs: GitHub → repo *Settings → Secrets and variables →
@@ -69,16 +69,16 @@ locally), and this repository checked out. Nothing here costs money.
   "Actions: Read and write" on this repo. Redo steps 2 and 5.
 - *Status 404*: `GITHUB_REPO` in `wrangler.toml` is not `owner/name` of this
   repo, or `odds_close.yml` is not on the `main` branch yet.
-- *Nothing happens on game days*: Cloudflare dashboard → Workers → 
+- *Nothing happens on game days*: Cloudflare dashboard → Workers →
   `ponyxg-snapshot-trigger` → *Settings → Triggers* should list the cron.
-- To stop it entirely: `npx wrangler delete` (GitHub's backup timer still
+- To stop it entirely: `npx wrangler@4 delete` (GitHub's backup timer still
   works if `SNAPSHOT_CRON` is not `off`).
 
 ## For developers
 
-- Code: `src/worker.js`; config: `wrangler.toml`; tests:
+- Code: `src/trigger.js` (logic) and `src/worker.js` (entry point); config: `wrangler.toml`; tests:
   `npx vitest run infra` from the repo root (mocked schedule and GitHub API).
-- Local run without credentials: `npx wrangler dev --test-scheduled`, then
+- Local run without credentials: `npx wrangler@4 dev --test-scheduled`, then
   `curl "http://localhost:8787/__scheduled?cron=*/5+*+*+*+*"`.
 - Each game triggers exactly once without any storage: the lead window
   (8, 13] minutes is one cron interval wide and is measured from the run's

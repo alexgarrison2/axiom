@@ -22,4 +22,4 @@ LEAD_MAX_MIN = "13"
 CRON_INTERVAL_MIN = "5"
 
 # The GitHub token is a secret, never put it in this file:
-#   npx wrangler secret put GITHUB_TOKEN
+#   npx wrangler@4 secret put GITHUB_TOKEN
