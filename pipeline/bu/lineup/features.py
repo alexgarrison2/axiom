@@ -41,7 +41,6 @@ import pandas as pd
 from bu.lake.build import read_table
 from bu.rapm.asof import load_covs, load_ratings
 from bu.rapm.engine import LAG_DAYS, avail_dates
-from bu.rapm.stints import MIN_GAME_ONICE_MATCH  # noqa: F401  (re-exported for docs)
 from .toi import ShareState, game_shares, lag_cutoff, lineup_shares
 
 BASELINE_GAMES = 10

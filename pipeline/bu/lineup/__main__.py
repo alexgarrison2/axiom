@@ -14,7 +14,6 @@ import argparse
 import hashlib
 import json
 import os
-import pickle
 import sys
 
 import pandas as pd
