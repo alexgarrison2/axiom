@@ -257,8 +257,8 @@ def test_ml_predictor_serves_the_lineup_goalie_factor(tmp_path, training_matrix)
 def test_incumbent_model_keeps_its_factor_list():
     from ml_predict import MLPredictor
     ml = MLPredictor(pd.DataFrame())
-    if any(c in ml.feature_cols for c in ('d_lineup', 'd_goalie_swap')):
-        pytest.skip('live model is the fast-track model')
+    if any(c in ml.feature_cols for c in ('d_lineup', 'd_goalie_swap', 'bu_d_net', 'bu_d_delta')):
+        pytest.skip('live model has a lineup feature (fast track or RAPM v2)')
     d = ml.predict_detail('Kings', 'Ducks', '2026-10-03')
     assert 'lineup_goalie' not in {t['factor'] for t in d['logit_terms']}
     assert not ml.uses_lineups

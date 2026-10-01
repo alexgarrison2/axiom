@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import features as F
 import retrain as R
 
 PIPE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -91,6 +92,13 @@ def test_live_model_matches_the_gate_decision(report):
     with open(os.path.join(PIPE, 'game_model_meta.json')) as f:
         meta = json.load(f)
     live_ft = [c for c in meta['feature_columns'] if c in R.FT_COLUMNS]
+    if any(c in meta['feature_columns'] for c in F.BU_COLUMNS):
+        # superseded by the joint xG v2 + RAPM lineup model (retrain --joint): the F1 model is
+        # the rollback shadow and must carry its gate record there
+        with open(os.path.join(PIPE, meta['shadow']['f1']['meta'])) as f:
+            shadow = json.load(f)
+        assert not live_ft and shadow.get('fasttrack', {}).get('gate_passed') is True
+        return
     if report['selected_passed']:
         assert live_ft and meta.get('fasttrack', {}).get('gate_passed') is True
     else:

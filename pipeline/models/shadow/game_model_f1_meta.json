@@ -1,0 +1,370 @@
+{
+  "model_version": "logit-elo-v5-20261001",
+  "model_type": "logistic_regression_l2",
+  "training_date": "2026-10-01T15:41:40.386322+00:00",
+  "training_seasons": [
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "n_train": 4986,
+  "feature_columns": [
+    "d_xg_share",
+    "d_xg_share_all",
+    "d_elo",
+    "d_goalie_gsax",
+    "d_pts_pct",
+    "h_b2b",
+    "a_b2b",
+    "d_rest",
+    "d_lineup"
+  ],
+  "feature_params": {
+    "XG_HALFLIFE": 16,
+    "OFFSEASON_KEEP": 0.5,
+    "PTS_PRIOR_GAMES": 20,
+    "ELO_K": 4.0,
+    "ELO_KX": 4.0,
+    "ELO_HFA": 35.0,
+    "ELO_OFFSEASON_REGRESSION": 0.5,
+    "GOALIE_CUR_PRIOR_GP": 30,
+    "GOALIE_SHRINK_GP": 25,
+    "GOALIE_SEASON_DECAY": [
+      1.0,
+      0.5
+    ],
+    "XG_NORM_PRIOR_GOALS": 1000.0,
+    "REST_CAP": 4
+  },
+  "xg_source": "raw_shot_xg",
+  "game_types": [
+    "02",
+    "03"
+  ],
+  "C": 0.003,
+  "C_scores_latest_season": {
+    "0.001": 0.671419788388945,
+    "0.003": 0.6683922495933882,
+    "0.01": 0.6679001164069238,
+    "0.03": 0.6682121201770785,
+    "0.1": 0.6685401698603961,
+    "0.3": 0.6686405104115043,
+    "1.0": 0.6686606981509328,
+    "best": 0.01,
+    "se_paired": {
+      "0.001": 0.0014205957706398824,
+      "0.003": 0.0006082939200950636,
+      "0.01": 0.0,
+      "0.03": 0.0003654138162216782,
+      "0.1": 0.0006731203178681198,
+      "0.3": 0.0008798344448398165,
+      "1.0": 0.001013983129740563
+    }
+  },
+  "coefficients_raw": {
+    "d_xg_share": 2.2629527176897937,
+    "d_xg_share_all": 3.716997916323316,
+    "d_elo": 0.14070237000532312,
+    "d_goalie_gsax": 0.16912029941299705,
+    "d_pts_pct": 0.48315084213090664,
+    "h_b2b": -0.10931705046212864,
+    "a_b2b": 0.19698896475820288,
+    "d_rest": 0.061311827016537965,
+    "d_lineup": 0.2850437837955014
+  },
+  "home_ice_logit": 0.11579113069590499,
+  "home_ice_prob_equal_teams": 0.5289154826561282,
+  "cv_results": [
+    {
+      "test_season": 2023,
+      "C": 0.01,
+      "train_n": 982,
+      "n": 1399,
+      "log_loss": 0.6594741855996719,
+      "brier": 0.2338795674163725,
+      "accuracy": 0.6032880629020729,
+      "mean_pred_home": 0.5200577181383104,
+      "actual_home": 0.5368120085775554,
+      "calibration_slope": 0.9981235044100503,
+      "calibration_intercept": 0.0718974411379712,
+      "reliability_slope": 1.0045171614045973,
+      "early": {
+        "n": 249,
+        "log_loss": 0.6741242626790873,
+        "brier": 0.24069922500335908,
+        "accuracy": 0.5863453815261044,
+        "mean_pred_home": 0.514382469491968,
+        "actual_home": 0.5301204819277109,
+        "calibration_slope": 0.9312989493527419,
+        "calibration_intercept": 0.06912740625308335,
+        "reliability_slope": 1.0948013232630738
+      },
+      "home_rate_baseline": {
+        "rate": 0.5193482688391039,
+        "log_loss": 0.6910460348205584,
+        "early_log_loss": 0.6915641713732007
+      },
+      "inner_C_scores": {},
+      "legacy_xgb": {
+        "test_season": 2023,
+        "n": 1380,
+        "log_loss": 0.6757149486397996,
+        "brier": 0.24142186485800188,
+        "accuracy": 0.5789855072463768
+      },
+      "legacy_xgb_same_games": {
+        "n": 1380,
+        "log_loss": 0.6757149486397996,
+        "early_log_loss": 0.6834544553739393,
+        "carried_from": "logit-elo-v5-20261001"
+      }
+    },
+    {
+      "test_season": 2024,
+      "C": 0.003,
+      "train_n": 2381,
+      "n": 1206,
+      "log_loss": 0.6644599785719519,
+      "brier": 0.23618558166444337,
+      "accuracy": 0.5812603648424544,
+      "mean_pred_home": 0.5301901463972799,
+      "actual_home": 0.5688225538971807,
+      "calibration_slope": 1.1236467352638275,
+      "calibration_intercept": 0.1489255041370489,
+      "reliability_slope": 1.0497882336565671,
+      "early": {
+        "n": 250,
+        "log_loss": 0.6740251362788044,
+        "brier": 0.24069606956839018,
+        "accuracy": 0.576,
+        "mean_pred_home": 0.532579373250735,
+        "actual_home": 0.524,
+        "calibration_slope": 1.5243378628145643,
+        "calibration_intercept": -0.10216392527387488,
+        "reliability_slope": 1.5837476568275302
+      },
+      "home_rate_baseline": {
+        "rate": 0.5296094078118437,
+        "log_loss": 0.6867429676292445,
+        "early_log_loss": 0.6920578634396143
+      },
+      "inner_C_scores": {
+        "0.001": 0.6671207766830383,
+        "0.003": 0.6607823326845487,
+        "0.01": 0.6594741855996719,
+        "0.03": 0.6598889377175421,
+        "0.1": 0.6598458815263134,
+        "0.3": 0.6592310695168421,
+        "1.0": 0.6587508390232204,
+        "best": 1.0,
+        "se_paired": {
+          "0.001": 0.004629648230866919,
+          "0.003": 0.003086472263907828,
+          "0.01": 0.0020137555982225,
+          "0.03": 0.001452879838246092,
+          "0.1": 0.0009363443170858372,
+          "0.3": 0.0004259423355294436,
+          "1.0": 0.0
+        }
+      },
+      "legacy_xgb": {
+        "test_season": 2024,
+        "n": 1188,
+        "log_loss": 0.6703353475217421,
+        "brier": 0.23888842589282724,
+        "accuracy": 0.5858585858585859
+      },
+      "legacy_xgb_same_games": {
+        "n": 1188,
+        "log_loss": 0.6703353475217421,
+        "early_log_loss": 0.6840367015421664,
+        "carried_from": "logit-elo-v5-20261001"
+      }
+    },
+    {
+      "test_season": 2025,
+      "C": 0.003,
+      "train_n": 3587,
+      "n": 1394,
+      "log_loss": 0.6791588945658396,
+      "brier": 0.24324821150585926,
+      "accuracy": 0.5552367288378766,
+      "mean_pred_home": 0.5422725841275904,
+      "actual_home": 0.5193687230989957,
+      "calibration_slope": 0.903355881996991,
+      "calibration_intercept": -0.07887173845496437,
+      "reliability_slope": 0.9127529954512621,
+      "early": {
+        "n": 248,
+        "log_loss": 0.6932981098122271,
+        "brier": 0.2499866675083115,
+        "accuracy": 0.5524193548387096,
+        "mean_pred_home": 0.536944830902483,
+        "actual_home": 0.5362903225806451,
+        "calibration_slope": 0.35722516609641747,
+        "calibration_intercept": 0.09212916638309948,
+        "reliability_slope": 0.666333797773225
+      },
+      "home_rate_baseline": {
+        "rate": 0.5427934206858098,
+        "log_loss": 0.6934996677491434,
+        "early_log_loss": 0.6905960315298606
+      },
+      "inner_C_scores": {
+        "0.001": 0.6671088856081755,
+        "0.003": 0.6624849203775268,
+        "0.01": 0.6612589601392892,
+        "0.03": 0.661179456430709,
+        "0.1": 0.6610140713679029,
+        "0.3": 0.660728354655763,
+        "1.0": 0.6605406174062084,
+        "best": 1.0,
+        "se_paired": {
+          "0.001": 0.0029336480118388204,
+          "0.003": 0.0020043135760259025,
+          "0.01": 0.0013752494367504338,
+          "0.03": 0.0009905005734729044,
+          "0.1": 0.0005939264455431971,
+          "0.3": 0.00025385631717704873,
+          "1.0": 0.0
+        }
+      },
+      "legacy_xgb": {
+        "test_season": 2025,
+        "n": 1374,
+        "log_loss": 0.6848839396839758,
+        "brier": 0.24593510519871897,
+        "accuracy": 0.5451237263464338
+      },
+      "legacy_xgb_same_games": {
+        "n": 1374,
+        "log_loss": 0.6848839396839758,
+        "early_log_loss": 0.6935351915643508,
+        "carried_from": "logit-elo-v5-20261001"
+      }
+    }
+  ],
+  "early_season_pooled": {
+    "n": 747,
+    "log_loss": 0.6804567024233281,
+    "brier": 0.24378155014724928,
+    "accuracy": 0.571619812583668,
+    "mean_pred_home": 0.5279630472289151,
+    "actual_home": 0.5301204819277109,
+    "calibration_slope": 0.9059437594977009,
+    "calibration_intercept": 0.019169004420910643,
+    "reliability_slope": 1.0889713838955568
+  },
+  "avg_log_loss": 0.6676976862458212,
+  "avg_accuracy": 0.579928385527468,
+  "evaluation": "season-level walk-forward: train on seasons < S, C tuned on S-1; early = either team game number <= 15",
+  "fasttrack": {
+    "candidate": "lineup",
+    "features": [
+      "d_lineup"
+    ],
+    "gate_passed": true,
+    "pooled_delta_vs_previous": -0.00017589486348679244,
+    "per_fold": {
+      "2023": {
+        "n": 1399,
+        "delta": 0.00039646107841260694,
+        "se": 0.00028163239864204416,
+        "base_log_loss": 0.6590777245212592,
+        "cand_log_loss": 0.6594741855996719
+      },
+      "2024": {
+        "n": 1206,
+        "delta": -0.0009069930574366907,
+        "se": 0.00031703802432978277,
+        "base_log_loss": 0.6653669716293886,
+        "cand_log_loss": 0.6644599785719519
+      },
+      "2025": {
+        "n": 1394,
+        "delta": -0.00011780414671038082,
+        "se": 0.0009233021506090367,
+        "base_log_loss": 0.6792766987125499,
+        "cand_log_loss": 0.6791588945658396
+      }
+    },
+    "calibration": {
+      "slope": 0.9852377641418663,
+      "se": 0.07668779037788659,
+      "ci95": [
+        0.8349296950012085,
+        1.135545833282524
+      ],
+      "mean_pred_minus_actual": -0.009527870341466071
+    },
+    "report": "models/fasttrack/fasttrack_backtest.json",
+    "lineup_cross_season": true,
+    "rating_value": "rel5"
+  },
+  "promotion": {
+    "promoted_at": "2026-10-01T15:41:40.399049+00:00",
+    "replaced": "logit-elo-v5-20260930",
+    "checks": [
+      {
+        "check": "pooled delta log loss <= 0 vs current",
+        "value": -0.00017589486348679244,
+        "passed": true
+      },
+      {
+        "check": "2023 fold delta <= +0.0005",
+        "value": 0.00039646107841260694,
+        "passed": true
+      },
+      {
+        "check": "2024 fold delta <= +0.0005",
+        "value": -0.0009069930574366907,
+        "passed": true
+      },
+      {
+        "check": "2025 fold delta <= +0.0005",
+        "value": -0.00011780414671038082,
+        "passed": true
+      },
+      {
+        "check": "pooled calibration slope 95% CI contains 1",
+        "value": 0.9852377641418663,
+        "ci95": [
+          0.8349296950012085,
+          1.135545833282524
+        ],
+        "passed": true
+      },
+      {
+        "check": "2025 calibration slope in [0.9, 1.1] (promotion_checks rule)",
+        "value": 0.903355881996991,
+        "passed": true
+      },
+      {
+        "check": "2023 beats home-rate by >= 0.01",
+        "value": 0.031571849220886516,
+        "passed": true
+      },
+      {
+        "check": "2024 beats home-rate by >= 0.01",
+        "value": 0.022282989057292535,
+        "passed": true
+      },
+      {
+        "check": "2025 beats home-rate by >= 0.01",
+        "value": 0.014340773183303845,
+        "passed": true
+      }
+    ],
+    "rule": "fast track F1 gate (retrain.ft_gate)",
+    "note": "re-promoted in review on the same day: debut skaters now take their boxscore position in the lineup features (154 of 5,508 games changed); supersedes the first 20261001 build (d_lineup beta 0.288)"
+  },
+  "shadow": {
+    "role": "rollback shadow of the joint xG v2 + RAPM lineup model",
+    "archived_at": "2026-10-01T18:38:42.855174+00:00",
+    "xg_inputs": "v1",
+    "dedupe": "legacy",
+    "serving": "ml_predict.MLPredictor(model_path=models/shadow/game_model_f1.pkl, xg=\"v1\", dedupe=\"legacy\")"
+  }
+}
