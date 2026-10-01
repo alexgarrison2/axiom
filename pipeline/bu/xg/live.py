@@ -50,6 +50,7 @@ XG_DECIMALS = 4
 API_PBP = "https://api-web.nhle.com/v1/gamecenter/{gid}/play-by-play"
 
 _MODEL = None
+_UNMATCHED: set = set()   # (game_id, event_id) the current PBP no longer has (set by fill_v2_column)
 
 
 def artifacts_present(model_dir: str = MODEL_DIR) -> bool:
@@ -235,6 +236,8 @@ def fill_v2_column(df: pd.DataFrame, prev_source: dict | None, fetch=fetch_pbp) 
         print(f"  xG v2 ({m}): scored {info['v2_rows_scored']}/{int(need.sum())} shots in {st['games']} games"
               + (f"; {len(info['v2_missing_games'])} game(s) without a payload yet" if info["v2_missing_games"] else "")
               + (f"; {len(new_gone)} event(s) no longer in the feed" if new_gone else ""))
+    _UNMATCHED.clear()
+    _UNMATCHED.update(tuple(k) for k in info["v2_unmatched_events"])
     return info
 
 
@@ -257,6 +260,9 @@ def score_shots(sub: pd.DataFrame, v1_score) -> tuple[np.ndarray, dict]:
     if v1_rows.any():
         probs[v1_rows] = np.asarray(v1_score(sub[v1_rows]), dtype="float64")
         if m == "v2":
-            info["v1_fallback_games"] = sorted({int(g) for g in sub.loc[v1_rows, "game_id"]})
+            # events the feed no longer has keep v1 for good: do not queue their games again
+            fb = sub.loc[v1_rows]
+            info["v1_fallback_games"] = sorted({int(g) for g, e in zip(fb["game_id"], fb["event_id"])
+                                                if (int(g), e) not in _UNMATCHED})
     info["v1_rows"] = v1_rows
     return probs, info
