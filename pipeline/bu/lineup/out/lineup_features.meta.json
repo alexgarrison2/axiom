@@ -1,0 +1,40 @@
+{
+  "code_version": "m2-r3",
+  "hyper": {
+    "v_new": 0.02,
+    "kappa": 1.5,
+    "young_old_extra": 0.25,
+    "cov_lam": 72000.0,
+    "use_aging": true,
+    "use_rookie_mean": true
+  },
+  "lag_days": 2,
+  "xg_source": "v1",
+  "lineups": "L-actual",
+  "toi": "ewma-hl8-m2",
+  "baseline_games": 10,
+  "min_rated": 14,
+  "degrade": null,
+  "sha256_csv": "d7abd001055f3895aac3ffe785b914f9a5071c718fcf3aebace4ba70c831cb22",
+  "seasons": [
+    "20102011",
+    "20112012",
+    "20122013",
+    "20132014",
+    "20142015",
+    "20152016",
+    "20162017",
+    "20172018",
+    "20182019",
+    "20192020",
+    "20202021",
+    "20212022",
+    "20222023",
+    "20232024",
+    "20242025",
+    "20252026",
+    "20262027"
+  ],
+  "n_games": 20599,
+  "coverage_ok": 0.998689256760037
+}
