@@ -486,6 +486,9 @@ PUBLISHED_FIELDS = {
     "home_gp": "home_gp", "away_gp": "away_gp",
     # DESIGN §6.2 shadow column (absent until a BU stage ships in shadow).
     "bu_shadow_home_win_pct": "bu_shadow_home_win_pct",
+    # Rollback shadow of the replaced live model (Gate C/E incumbent once BU is live).
+    "f1_shadow_model_pct": "f1_shadow_model_win_pct",
+    "f1_shadow_home_win_pct": "f1_shadow_home_win_pct",
 }
 
 

@@ -4,6 +4,8 @@ Design: DESIGN.md v2 §3.1 (shot model v2), §4.4 (leakage rules), §8 M1 (gate 
 
 **Status (2026-10-01).** xG v2 beats the incumbent shot model in every one of 15 walk-forward seasons. The literal M1 gate has not passed (part (b) is narrower than sampling error, part (c) missed on the single 2025-26 look, part (d) needs live games). **Owner decision 2026-10-01: ship xG v2, together with the RAPM lineup term, on the pooled evidence** (see "Ship decision"), keeping v1 as a shadow for rollback. The flag now defaults to `v2`. An interlock holds an unset flag at `shadow` until the game model is retrained on v2 xG, which the integrator does after merging both workstreams.
 
+**Live since 2026-10-01 (sm-integrate):** `python -m bu.xg.history apply` gave the historical shot files a v2 `xg_raw`, and the game model was retrained jointly with the RAPM v2 lineup term (`logit-elo-v5-20261001-xg2-rapm`, `"xg_version": "v2"`), which released the interlock: an unset flag now publishes v2. Numbers and rollback: `pipeline/bu/README.md` "Live".
+
 ## What v2 is
 
 **Unit.** Unblocked attempts (codes 505, 506 and 507) outside the shootout.

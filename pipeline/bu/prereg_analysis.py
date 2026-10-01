@@ -334,6 +334,12 @@ def market_games(rows, outcomes) -> tuple[list[dict], dict]:
             "min_gp": min(float(pubc.get("home_gp", 99)), float(pubc.get("away_gp", 99))),
             "p_bu_blend_close": (pubc["bu_shadow_home_win_pct"] / 100.0
                                  if pubc.get("bu_shadow_home_win_pct") is not None else None),
+            # Gate C / E incumbent (amendment 2026-10-01b): once the BU candidate is the live
+            # model, blend_current is the replaced model's published-style blend (the rollback
+            # shadow f1_shadow_home_win_pct); before that it is the published blend itself.
+            "p_inc_blend_close": (pubc["f1_shadow_home_win_pct"] / 100.0
+                                  if pubc.get("f1_shadow_home_win_pct") is not None
+                                  else (pubc.get("home_win_pct") or pubc["home_model_pct"]) / 100.0),
         })
     games.sort(key=lambda g: (g["start_utc"], g["game_id"]))
     return games, excl
@@ -479,7 +485,7 @@ def gate_c(games) -> dict:
     g = [x for x in games if x.get("p_bu_blend_close") is not None]
     g = g[:GATE_C_MIN_N] if len(g) >= GATE_C_MIN_N else g
     return noninferiority([x["y"] for x in g], [x["p_bu_blend_close"] for x in g],
-                          [x["p_blend_close"] for x in g], NI_MARGIN, GATE_C_MIN_N, "C")
+                          [x["p_inc_blend_close"] for x in g], NI_MARGIN, GATE_C_MIN_N, "C")
 
 
 def gate_e(games) -> dict:
@@ -487,7 +493,7 @@ def gate_e(games) -> dict:
     g = [x for x in games if x.get("p_bu_blend_close") is not None and x["min_gp"] <= GATE_E_MAX_GP
          and str(x["game_date"])[5:7] in ("10", "11")]
     res = noninferiority([x["y"] for x in g], [x["p_bu_blend_close"] for x in g],
-                         [x["p_blend_close"] for x in g], NI_MARGIN, GATE_E_MIN_N, "E")
+                         [x["p_inc_blend_close"] for x in g], NI_MARGIN, GATE_E_MIN_N, "E")
     res["m1_beta_early"] = m1_line_movement(g, min_n=0).get("beta") if len(g) >= 10 else None
     return res
 

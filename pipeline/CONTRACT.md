@@ -90,13 +90,16 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | `side_xg` | float goals | no | Expected goals, including the expected OT goal. Backed out of the published win % (`goal_model.display_xg`), so the xG favourite is always the win % favourite. |
 | `expected_total` | float goals | no | Expected total goals (league pace × matchup pace). |
 | `side_xg_explained` | JSON list[string] | no | `["Even matchup: 3.08", "Home ice: +0.02", ...]`. The parts add up to `side_xg` (±0.02). |
-| `home_wp_breakdown` | JSON list | no | "Why this pick": `[{factor, label, wp_delta_pts, xg_home_delta, xg_away_delta}]` in order. Factors: `home_ice`, `strength_5v5`, `special_teams`, `goaltending`, `rest`, then `lineup_goalie` for a game model with the fast-track features (who dresses and who starts in net vs the team's usual: `d_lineup`, `d_goalie_swap`; DESIGN §8 F1) or `lineup` for an older model (the separate `lineup_adjust` term), then `market` when there are odds. A frozen row keeps the factor list of the model that made it. `50 + Σ wp_delta_pts = home_win_pct` (±0.1). Positive values favour the home team. |
+| `home_wp_breakdown` | JSON list | no | "Why this pick": `[{factor, label, wp_delta_pts, xg_home_delta, xg_away_delta}]` in order. Factors: `home_ice`, `strength_5v5`, `special_teams`, `goaltending`, `rest`, then `lineup_goalie` for a game model with a lineup feature (who dresses and who starts in net vs the team's usual: the RAPM v2 `bu_d_delta`, or the fast-track `d_lineup` / `d_goalie_swap`; DESIGN §8 F1/M2) or `lineup` for an older model (the separate `lineup_adjust` term), then `market` when there are odds. With the RAPM v2 lineup term, `strength_5v5` also carries `bu_d_net` (tonight's dressed skaters' even-strength RAPM net xG/60, home minus away). A frozen row keeps the factor list of the model that made it. `50 + Σ wp_delta_pts = home_win_pct` (±0.1). Positive values favour the home team. |
 | `pick_summary` | string | no | One sentence (≤160 chars) naming the favourite and the top 2 factors. |
 | `confidence_grade` | enum | no | `A` (favourite ≥ 65%), `B` (60-65%), `C` (< 60%). Capped at `B` while `preseason_prior`. |
 | `confidence_note` | string | yes | How that tier has done in live picks (`model_report.json`), plus the early-season note. |
 | `side_model_goalie` | string | yes | Goalie the model used (the projected starter at prediction time). |
-| `side_lineup_score` | float | yes | Tonight's lineup quality minus the team's own baseline lineup, in on-ice net xG/60. Fast-track models (`lineup_adjust.LineupState`): MoneyPuck 5v5 on-ice relative xG/60 from the two previous seasons, weighted by expected TOI; tonight = DailyFaceoff projected lines minus players out, or the team's last dressed lineup when fewer than 14 of 18 map to NHL ids; baseline = the 18 most-used skaters over the last 20 games. Older models: RAPM net xG/60 × ice-time share. **Both sides are empty when either side has no baseline / fails the coverage gate**; the lineup term is then neutral for both. |
+| `side_lineup_score` | float | yes | Tonight's lineup quality minus the team's own baseline lineup, in on-ice net xG/60. RAPM v2 models (`bu.lineup.serve.LiveLineupTerm`, `game_model_meta.json` `bu_lineup`): tonight's DailyFaceoff skaters minus players marked out / IR / suspended, mapped to NHL ids (`bu/lineup/crosswalk.py`), rated by point-in-time RAPM v2 EV offence/defence (xG v2 target) weighted by expected EV TOI share; baseline = the same ratings over the team's last 10 dressed lineups (`bu_d_delta` per side). Empty when the serving bundle is older than 36 h, a side maps fewer than 10 skaters or rates fewer than 14 (term neutral), or `PONYXG_BU=off`. Fast-track models (`lineup_adjust.LineupState`): MoneyPuck 5v5 on-ice relative xG/60 from the two previous seasons, weighted by expected TOI; tonight = DailyFaceoff projected lines minus players out, or the team's last dressed lineup when fewer than 14 of 18 map to NHL ids; baseline = the 18 most-used skaters over the last 20 games. Older models: RAPM net xG/60 × ice-time share. **Both sides are empty when either side has no baseline / fails the coverage gate**; the lineup term is then neutral for both. |
 | `side_lineup_matched` | int | yes | Skaters in tonight's projected lineup mapped to an NHL id (fast-track models) or rated (older models), of 18. |
+| `bu_shadow_home_win_pct` | float % | yes | Shadow, not displayed (DESIGN §6.2; preregistration amendment 2026-10-01). Published-style blend (same market price and `blend_weight` as `home_win_pct`) of the model with the RAPM v2 lineup term ON: equal to `home_win_pct` while `PONYXG_BU=on`, the term-on blend while it is switched off. Empty for a model without the term. |
+| `f1_shadow_model_win_pct` | float % | yes | Rollback shadow, not displayed: the replaced live model (`game_model_meta.json` `shadow.f1`, `models/shadow/game_model_f1.pkl`: F1 `d_lineup` on xG v1 inputs), model-only home win %. Logged every run so a rollback and Gate C have its record. |
+| `f1_shadow_home_win_pct` | float % | yes | The same, blended like `home_win_pct` (Gate C/E's `blend_current` once BU is live). |
 | `total_line` | string | yes | Over/under line (`6.0`) at prediction time. |
 | `total_over` | int | yes | Over price (American). |
 | `total_under` | int | yes | Under price (American). |
@@ -203,6 +206,16 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   until scored. `manifest.json` `sources.xg_model` records `mode`, `hash`,
   `v2_signature`, `v1_fallback_games`, `v2_unmatched_events` and
   `v1_shadow_hash`.
+* SiteHistory also gains `home_inc_model%` / `home_inc%` (the F1 rollback shadow,
+  `f1_shadow_model_win_pct` / `f1_shadow_home_win_pct`).
+* RAPM v2 lineup term (`pipeline/bu/lineup/out/serving_bundle.json.gz`, rebuilt by the daily
+  `bu_refresh.yml` workflow, see `pipeline/bu/README.md`): `built_at`, `max_source_date`,
+  `n_games`, current ratings, TOI-share state, team lineup histories and the DFO-name
+  crosswalk. `validate_outputs.py` (`bu_bundle`) fails when the live model uses the term and
+  the bundle is missing or malformed, freshly built for another season or built before
+  `max_source_date`; a bundle older than 36 h is not an error (the term is then neutral at serving time). `manifest.json`
+  `sources.bu_bundle` mirrors `built_at` / `max_source_date` / `n_games`. Rollback switch:
+  `PONYXG_BU=off` (repo variable) publishes the term as neutral 0 without a retrain.
 * Historical shot files (`nhl_historical_shots.csv`, last season's
   `nhl_season_<yyyy>_<yyyy>_shots.csv`) may carry `xg_raw` (raw xG v2,
   walk-forward out of sample) after `python -m bu.xg.history apply`; readers

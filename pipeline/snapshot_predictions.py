@@ -111,6 +111,9 @@ FIELDNAMES = [
     # Where the moneyline came from (odds.json source, e.g. bovada,
     # nhl_partner_draftkings), so the line move can tell a book switch from a move.
     'market_source',
+    # Rollback shadow (DESIGN §6.2 "SiteHistory gains home_inc%"): the replaced F1 model's
+    # pre-blend and published-style blended home win % (predictions_detailed f1_shadow_*).
+    'home_inc_model%', 'home_inc%',
 ]
 
 
@@ -208,6 +211,8 @@ def snapshot(predictions_path=None, history_dir=None, now_utc=None):
                 'total_over': format_odds(row.get('total_over', '')),
                 'total_under': format_odds(row.get('total_under', '')),
                 'market_source': (row.get('market_source') or '').strip(),
+                'home_inc_model%': format_pct(row.get('f1_shadow_model_win_pct', '')),
+                'home_inc%': format_pct(row.get('f1_shadow_home_win_pct', '')),
                 'awayteam': row.get('away_team', ''),
                 'hometeam': row.get('home_team', ''),
 

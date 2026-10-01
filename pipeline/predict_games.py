@@ -42,6 +42,8 @@ import pandas as pd  # noqa: E402
 
 import goal_model  # noqa: E402
 import market  # noqa: E402
+from features import BU_COLUMNS  # noqa: E402
+from ml_predict import bu_mode  # noqa: E402
 import season_context as SC  # noqa: E402
 from season import (SEASON_ID, PREV_SEASON_ID, PREV_START_YEAR, read_season_csv, today_local,  # noqa: E402
                     game_type_of)
@@ -80,6 +82,8 @@ FROZEN_COLUMNS = [
     "total_line", "total_over", "total_under",
     "home_puckline", "away_puckline", "home_puckline_spread", "away_puckline_spread",
     "home_1p_ml", "away_1p_ml", "home_three_way", "away_three_way", "three_way_tie",
+    # Shadows (schema v2.1, additive, not displayed): see shadow_outputs()
+    "bu_shadow_home_win_pct", "f1_shadow_model_win_pct", "f1_shadow_home_win_pct",
 ]
 
 
@@ -224,6 +228,7 @@ class Inputs:
     team_goalies: dict = field(default_factory=dict)     # TRI -> roster goalies
     existing: dict = field(default_factory=dict)         # key -> previous CSV row
     ml: object = None
+    shadow: object = None                                # F1 rollback shadow MLPredictor (xG v1 inputs)
     lineup_adj: object = None
     gate_state: dict = None
     tiers: list = field(default_factory=list)
@@ -437,11 +442,12 @@ def lineup_term(game, inp):
     return float(r["logit"]), r
 
 
-def fasttrack_lineup(game, inp):
+def fasttrack_lineup(game, inp, ml=None):
     """F1 lineup features ({'d_lineup', 'home': {...}, 'away': {...}}) for a
     model that uses them, or None.  Never raises: a failure means a neutral
-    lineup term (d_lineup = 0), recorded in the log."""
-    ml = inp.ml
+    lineup term (d_lineup = 0), recorded in the log.  ``ml`` defaults to the
+    live model (the F1 rollback shadow passes its own predictor)."""
+    ml = inp.ml if ml is None else ml
     if not getattr(ml, "uses_lineups", False):
         return None
     h, a = game.get("homeTeamAbbrev"), game.get("awayTeamAbbrev")
@@ -451,6 +457,98 @@ def fasttrack_lineup(game, inp):
     except Exception as e:
         print(f"  [WARN] fast-track lineup {a}@{h}: {e}")
         return None
+
+
+def load_shadow(ml, gs=None, goalie_ratings=None):
+    """The rollback shadow named in the live model's meta (``shadow.f1``: the replaced F1 model
+    and the xG inputs it was trained on), or None.  Never raises."""
+    spec = ((getattr(ml, "meta", None) or {}).get("shadow") or {}).get("f1") or {}
+    if not spec.get("model"):
+        return None
+    try:
+        from ml_predict import MLPredictor
+        sh = MLPredictor(gs, goalie_ratings=goalie_ratings,
+                         model_path=os.path.join(SCRIPT_DIR, spec["model"]),
+                         meta_path=os.path.join(SCRIPT_DIR, spec.get("meta") or ""),
+                         xg=spec.get("xg_inputs") or "live", dedupe=spec.get("dedupe") or "event")
+        return sh if sh.available else None
+    except Exception as e:
+        print(f"[WARN] F1 shadow model unavailable: {e}")
+        return None
+
+
+def bu_lineup(game, inp):
+    """RAPM v2 lineup term for tonight (``ml_predict.MLPredictor.bu_features``), or None.
+    Never raises; the reason for a neutral term is logged."""
+    ml = inp.ml
+    h, a = game.get("homeTeamAbbrev"), game.get("awayTeamAbbrev")
+    try:
+        bf = ml.bu_features(h, a, inp.lineups.get(h), inp.lineups.get(a))
+    except Exception as e:
+        print(f"  [WARN] RAPM lineup term {a}@{h}: {e}")
+        return None
+    if bf and not bf.get("bu_ok"):
+        print(f"  [bu] {a}@{h}: lineup term neutral ({bf.get('reason')})")
+    return bf
+
+
+def bu_detail(bf):
+    """``side_lineup_score`` / ``side_lineup_matched`` from the RAPM v2 term: each side's
+    lineup net xG/60 minus its last-10-lineup baseline, and its DFO skaters mapped to an NHL id."""
+    out = {}
+    for side in SIDES:
+        s = bf.get(side) or {}
+        out[side] = {"dq": float(s.get("delta") or 0.0), "matched": int(s.get("n") or 0)}
+    return out
+
+
+def _blend_pct(p_model, q, w):
+    p = market.blend(p_model, q, w) if q is not None else float(p_model)
+    return round(100 * p, 1)
+
+
+def shadow_outputs(game, ctx, inp, d, p_published, q, w, bu_on_features, extra_terms):
+    """Shadow columns (DESIGN §6.2; preregistration amendment of 2026-10-01): published-style
+    blends (same market price and blend weight as ``home_win_pct``) of
+
+      bu_shadow_home_win_pct   the model WITH the RAPM v2 lineup term on (= home_win_pct
+                               while PONYXG_BU=on; the term-on blend when it is switched off)
+      f1_shadow_*              the replaced live model (F1 lineup term, xG v1 inputs;
+                               models/shadow/game_model_f1.pkl), the rollback shadow and
+                               Gate C's incumbent
+
+    Empty when the live model has no BU term / no shadow model is configured.  Never raises."""
+    out = {"bu_shadow_home_win_pct": None, "f1_shadow_model_win_pct": None, "f1_shadow_home_win_pct": None}
+    ml = inp.ml
+    home, away = game["homeTeam"], game["awayTeam"]
+    kw = dict(h_goalie=ctx["home_goalie_confirmed"] or None, a_goalie=ctx["away_goalie_confirmed"] or None,
+              h_rest_days=ctx.get("_home_model_rest"), a_rest_days=ctx.get("_away_model_rest"))
+    try:
+        if getattr(ml, "uses_bu", False):
+            if bu_mode() == "on":
+                out["bu_shadow_home_win_pct"] = round(100 * p_published, 1)
+            else:
+                ds = ml.predict_detail(home, away, game_date_of(game), extra_terms=extra_terms,
+                                       extra_features=bu_on_features, **kw)
+                if ds is not None:
+                    out["bu_shadow_home_win_pct"] = _blend_pct(ds["home_win_prob"], q, w)
+    except Exception as e:
+        print(f"  [WARN] BU shadow {away}@{home}: {e}")
+    sh = inp.shadow
+    if sh is not None and getattr(sh, "available", False):
+        try:
+            lf = fasttrack_lineup(game, inp, ml=sh)
+            ef = {c: (lf[c] if lf else 0.0) for c in ("d_lineup", "d_lineup_level")} if sh.uses_lineups else None
+            ds = sh.predict_detail(home, away, game_date_of(game), extra_features=ef, **kw)
+            if ds is not None:
+                out["f1_shadow_model_win_pct"] = round(100 * ds["home_win_prob"], 1)
+                out["f1_shadow_home_win_pct"] = _blend_pct(ds["home_win_prob"], q, w)
+                print(f"  [shadow] {away}@{home}: live {100 * d['model_prob_raw']:.1f}% model, "
+                      f"F1 {100 * ds['home_win_prob']:.1f}% (d_lineup "
+                      f"{(ef or {}).get('d_lineup', 0.0):+.3f})")
+        except Exception as e:
+            print(f"  [WARN] F1 shadow {away}@{home}: {e}")
+    return out
 
 
 def confidence(p, preseason, tiers):
@@ -494,7 +592,17 @@ def build_model_outputs(game, ctx, inp):
         return None
     home, away = game["homeTeam"], game["awayTeam"]
     gd = game_date_of(game)
-    if getattr(ml, "uses_lineups", False):
+    bu_on_features = None    # term-on model features, for the BU shadow when the flag is off
+    if getattr(ml, "uses_bu", False):
+        # RAPM v2 lineup term (bu.lineup.serve.LiveLineupTerm): tonight's DFO lines minus
+        # players out; neutral 0 when the bundle is stale or a side fails the coverage gate.
+        bf = bu_lineup(game, inp)
+        on = bu_mode() == "on"
+        bu_on_features = {c: float((bf or {}).get(c) or 0.0) for c in BU_COLUMNS}
+        extra = []
+        extra_features = bu_on_features if on else {c: 0.0 for c in BU_COLUMNS}
+        l_detail = bu_detail(bf) if (on and bf and bf.get("bu_ok")) else None
+    elif getattr(ml, "uses_lineups", False):
         # F1 model: the lineup delta is a model feature and its factor
         # ('lineup_goalie') replaces the separate lineup_adjust term (weight 0).
         lf = fasttrack_lineup(game, inp)
@@ -583,6 +691,7 @@ def build_model_outputs(game, ctx, inp):
         "home_lineup_matched": l_detail["home"]["matched"] if l_detail else None,
         "away_lineup_matched": l_detail["away"]["matched"] if l_detail else None,
     }
+    out.update(shadow_outputs(game, ctx, inp, d, p, q, w, bu_on_features, extra))
     for k in ("total_line", "total_over", "total_under", "three_way_tie"):
         out[k] = go.get(k)
     for side_, team in (("home", home), ("away", away)):
@@ -735,6 +844,7 @@ def load_inputs(now=None, schedule=None):
     except Exception as e:
         print(f"[WARN] ML predictor unavailable: {e}")
         inp.ml = None
+    inp.shadow = load_shadow(inp.ml, gs, inp.goalie_ratings)
     try:
         from lineup_adjust import LineupAdjuster
         inp.lineup_adj = LineupAdjuster.from_files()

@@ -41,16 +41,34 @@ PROB_FLOOR, PROB_CEIL = 0.03, 0.97   # numerical guard only (no 25/75 clamp)
 # Grouping of model terms for the 'why this pick' breakdown (A11).
 TERM_GROUPS = [
     ('home_ice', 'Home ice', None),
-    ('strength_5v5', '5v5 strength', ('d_xg_share', 'd_elo', 'd_pts_pct')),
+    # bu_d_net: tonight's dressed skaters' RAPM v2 even-strength net xG/60 (player-level EV strength)
+    ('strength_5v5', '5v5 strength', ('d_xg_share', 'd_elo', 'd_pts_pct', 'bu_d_net')),
     ('special_teams', 'Special teams & all-situations play', ('d_xg_share_all', 'd_st')),
     ('goaltending', 'Goaltending', ('d_goalie_gsax',)),
     ('rest', 'Rest & travel', ('h_b2b', 'a_b2b', 'd_rest', 'd_travel_km', 'h_tz_shift', 'a_tz_shift')),
-    # Fast track F1: who dresses and who starts in net, vs the team's usual
-    ('lineup_goalie', 'Lineup & starter vs usual', ('d_lineup', 'd_lineup_level', 'd_goalie_swap')),
+    # Who dresses and who starts in net, vs the team's usual: fast track F1 (d_lineup) or the
+    # RAPM v2 lineup term (bu_d_delta: tonight's 18 vs the team's last 10 lineups)
+    ('lineup_goalie', 'Lineup & starter vs usual', ('d_lineup', 'd_lineup_level', 'd_goalie_swap', 'bu_d_delta')),
 ]
 # Groups shown only when the model has one of their features (older models
 # keep their exact factor list).
 OPTIONAL_GROUPS = {'lineup_goalie'}
+
+BU_ENV = 'PONYXG_BU'
+BU_MODES = ('on', 'off', 'shadow')
+
+
+def bu_mode() -> str:
+    """Rollback switch for the RAPM v2 lineup term (DESIGN §5.2 ``PONYXG_BU``).
+
+    on (default)   the live model gets tonight's bu_d_net / bu_d_delta
+    off | shadow   the published model gets neutral 0 for both (the term is switched off
+                   without a retrain); the term-on probability is still logged in
+                   ``bu_shadow_home_win_pct``.
+    Full rollback to the previous model: restore game_model.pkl/meta from git (the F1
+    model is also kept in models/shadow/ and logged every run)."""
+    v = (os.environ.get(BU_ENV) or 'on').strip().lower()
+    return v if v in BU_MODES else 'on'
 
 
 def load_lineup_state(meta=None):
@@ -71,9 +89,15 @@ class MLPredictor:
     """Runtime predictor using the trained game model."""
 
     def __init__(self, game_stats_df=None, goalie_ratings=None, pipeline_dir=SCRIPT_DIR,
-                 model_path=None, meta_path=None, games=None):
+                 model_path=None, meta_path=None, games=None, xg='live', dedupe='event'):
+        """``xg``: the shot-xG inputs of the feature state, 'live' (the files' ``xg_raw``) or
+        'v1' (the xG v1 rollback inputs, for the F1 shadow model in models/shadow/);
+        ``dedupe``: features.DEDUPE_MODES ('legacy' reproduces the F1 model's training inputs)."""
         self.available = False
         self._lineup_state = None
+        self._bu_term = None
+        self._bu_error = None
+        self.xg_inputs = xg
         self.last_path = None
         self.last_detail = None
         self.model = None
@@ -102,7 +126,7 @@ class MLPredictor:
         # Historical archive is ALWAYS loaded; an empty current season is fine.
         if games is None:
             cur = game_stats_df if game_stats_df is not None else None
-            games, self.xg_source = F.load_feature_games(pipeline_dir, current_df=cur)
+            games, self.xg_source = F.load_feature_games(pipeline_dir, current_df=cur, xg=xg, dedupe=dedupe)
         else:
             self.xg_source = 'provided'
         self.games = games
@@ -122,6 +146,40 @@ class MLPredictor:
     @property
     def uses_lineups(self) -> bool:
         return self.available and any(c in self.feature_cols for c in F.LINEUP_COLUMNS)
+
+    @property
+    def uses_bu(self) -> bool:
+        return self.available and any(c in self.feature_cols for c in F.BU_COLUMNS)
+
+    @property
+    def bu_term(self):
+        """The RAPM v2 serving bundle as a ``bu.lineup.serve.LiveLineupTerm`` (loaded once), or
+        None when the model does not use it or the bundle cannot be read."""
+        if self._bu_term is None and self._bu_error is None and self.uses_bu:
+            rel = (self.meta.get('bu_lineup') or {}).get('serving_bundle', 'bu/lineup/out/serving_bundle.json.gz')
+            path = rel if os.path.isabs(rel) else os.path.join(self.pipeline_dir, rel)
+            try:
+                from bu.lineup.serve import LiveLineupTerm
+                self._bu_term = LiveLineupTerm.load(path)
+                print(f"[ML] RAPM lineup bundle: built {self._bu_term.b['built_at']} "
+                      f"({self._bu_term.age_hours():.1f} h old), {self._bu_term.b['n_games']} games of "
+                      f"{self._bu_term.b['season']}, max source date {self._bu_term.b.get('max_source_date')}")
+            except Exception as e:     # missing / unreadable bundle: neutral term, logged
+                self._bu_error = f"{type(e).__name__}: {e}"
+                print(f"[ML] WARNING: RAPM lineup bundle unavailable ({self._bu_error}); bu term neutral")
+        return self._bu_term
+
+    def bu_features(self, home_tri, away_tri, dfo_home, dfo_away):
+        """``LiveLineupTerm.features`` for tonight's DailyFaceoff lines (``bu_ok`` False and
+        neutral 0 features when stale / unmapped / under the coverage gate), or None when
+        the model does not use the term.  Never raises."""
+        if not self.uses_bu:
+            return None
+        term = self.bu_term
+        if term is None:
+            return {**{c: 0.0 for c in F.BU_COLUMNS}, 'bu_ok': False,
+                    'reason': f"bundle unavailable ({self._bu_error})", 'home': None, 'away': None}
+        return term.features(home_tri, away_tri, dfo_home, dfo_away)
 
     @property
     def lineup_state(self):
@@ -187,7 +245,7 @@ class MLPredictor:
             'model_version': self.model_version,
             'home_win_prob': p,
             'model_prob_raw': p_model,
-            'features': {c: float(feats[c]) for c in self.feature_cols},
+            'features': {c: float(feats.get(c, 0.0)) for c in self.feature_cols},
             'context': {k: feats[k] for k in ('h_gp', 'a_gp', 'h_rs_gp', 'a_rs_gp', 'h_goalie_gsax',
                                               'a_goalie_gsax', 'h_goalie_gp', 'a_goalie_gp',
                                               'h_goalie_ev', 'a_goalie_ev', 'h_rest', 'a_rest',

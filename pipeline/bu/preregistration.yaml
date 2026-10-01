@@ -236,3 +236,27 @@ amendments:
         and blend weight as home_win_pct at that snapshot), so Gate C and
         Gate E compare blend_BU with blend_current like for like
     new_analysis_sha256: 7af936269139ad393a818388ed1392e5936a2c1626ae9768d6e24377efedb0f1
+  - at: "2026-10-01T19:00:00Z"
+    by: sm-integrate (ship of xG v2 + the RAPM v2 lineup term, owner decision 2026-10-01)
+    looks_before_this_amendment: 0        # prereg_looks.jsonl is empty; no snapshot row carried a BU shadow yet
+    reason: >-
+      The owner approved shipping the BU candidate (xG v2 inputs + the RAPM v2
+      lineup term, game model retrained jointly) as the LIVE model on pooled
+      backtest evidence, keeping the replaced model as a rollback shadow.
+      Gate C and Gate E compare blend_BU with blend_current.  While a BU
+      candidate runs in shadow, blend_current is the published blend
+      (home_win_pct).  Once it is live, home_win_pct IS blend_BU and the test
+      would compare the candidate with itself.  blend_current is therefore
+      the replaced live model's published-style blend, logged as
+      f1_shadow_home_win_pct (same market input and blend weight as
+      home_win_pct at that snapshot), whenever a snapshot row carries it, and
+      the published blend otherwise (unchanged).  bu_shadow_home_win_pct stays
+      the BU candidate's published-style blend (equal to home_win_pct while
+      PONYXG_BU=on; the term-on blend when the term is switched off).  M-1 to
+      M-5 are unchanged and keep testing the published model, whatever
+      model_version is live.  No definition, threshold, alpha, margin or
+      minimum n changes.
+    clarifications:
+      Gate C.data: games where the close row's published block carries bu_shadow_home_win_pct (blend_BU) and, once BU is live, f1_shadow_home_win_pct (blend_current)
+      snapshots: the published block also records f1_shadow_model_pct and f1_shadow_home_win_pct (pipeline/bu/snapshots.py PUBLISHED_FIELDS)
+    new_analysis_sha256: 99b0611d5113899d98391f84745c613865a95b823e2e2803611494209de0dac7
