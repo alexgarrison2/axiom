@@ -15,3 +15,5 @@ beautifulsoup4==4.13.4
 requests==2.32.5
 # TLS CA bundle for pipeline/http_utils.py (verification is always on)
 certifi==2026.2.25
+# Parquet IO for the bottom-up data lake (pipeline/bu/lake)
+pyarrow==25.0.1

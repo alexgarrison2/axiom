@@ -7,6 +7,12 @@ Fetches PBP for any completed games from the last N days that are not
 already present in the CSV, and appends them.  Much faster than a full
 season re-scrape (~15 min) — each run typically processes 0-15 new games.
 
+The write is an upsert on (game_id, eventId): candidates are de-duplicated
+(``/schedule/{date}`` returns the whole game *week*, so looking back N days used
+to queue the same game N times and append its plays 2-3x), rows whose key is
+already stored are skipped, and a file that already carries duplicate keys is
+rewritten once without them.
+
 Run manually:
     cd pipeline
     python3 update_raw_pbp.py
@@ -78,12 +84,56 @@ def get_url(url: str):
         return None
 
 
+KEY = ["game_id", "eventId"]
+
+
 # ── Load existing game IDs ─────────────────────────────────────────────────────
-def load_existing_game_ids() -> set:
-    if not os.path.exists(RAW_PBP):
+def load_existing_game_ids(path: str | None = None) -> set:
+    path = path or RAW_PBP
+    if not os.path.exists(path):
         return set()
-    df = pd.read_csv(RAW_PBP, usecols=["game_id"])
-    return set(df["game_id"].unique())
+    df = pd.read_csv(path, usecols=["game_id"])
+    return set(int(g) for g in df["game_id"].unique())
+
+
+def heal_duplicates(path: str | None = None) -> int:
+    """Rewrite ``path`` without duplicate (game_id, eventId) rows. Returns rows dropped."""
+    path = path or RAW_PBP
+    if not os.path.exists(path):
+        return 0
+    keys = pd.read_csv(path, usecols=KEY)
+    n_dup = int(keys.duplicated(KEY).sum())
+    if not n_dup:
+        return 0
+    from io_utils import atomic_write_csv
+    df = pd.read_csv(path, low_memory=False)
+    df = df.drop_duplicates(subset=KEY, keep="last")
+    atomic_write_csv(path, df, min_rows=1, label=os.path.basename(path))
+    return n_dup
+
+
+def upsert_rows(new_df: pd.DataFrame, path: str | None = None) -> int:
+    """Append rows whose (game_id, eventId) is not stored yet. Returns rows written."""
+    path = path or RAW_PBP
+    new_df = new_df.drop_duplicates(subset=KEY, keep="last")
+    if os.path.exists(path):
+        heal_duplicates(path)
+        stored = pd.read_csv(path, usecols=KEY)
+        stored_keys = set(zip(stored["game_id"].astype("int64"), stored["eventId"].astype("int64")))
+        mask = [(int(g), int(e)) not in stored_keys for g, e in zip(new_df["game_id"], new_df["eventId"])]
+        new_df = new_df[mask]
+        if new_df.empty:
+            return 0
+        existing_df = pd.read_csv(path, nrows=0)
+        for col in existing_df.columns:
+            if col not in new_df.columns:
+                new_df[col] = None
+        new_df = new_df.reindex(columns=existing_df.columns)
+        new_df.to_csv(path, mode="a", header=False, index=False)
+    else:
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        new_df.to_csv(path, index=False)
+    return len(new_df)
 
 
 # ── Flatten one PBP JSON → list of play-row dicts ─────────────────────────────
@@ -150,24 +200,34 @@ def get_schedule_games(date_str: str) -> list[dict]:
     if not data:
         return []
 
+    # The endpoint returns the whole game week; keep only ``date_str`` so a
+    # multi-day look-back does not queue the same game several times.
     games = []
-    for week in data.get("gameWeek", []):
-        for g in week.get("games", []):
+    for day in data.get("gameWeek", []):
+        if day.get("date") not in (None, date_str):
+            continue
+        for g in day.get("games", []):
             games.append(g)
     return games
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
-def main(days_back: int = 2, dry_run: bool = False):
+def main(days_back: int = 2, dry_run: bool = False, path: str | None = None):
     print(f"{'[DRY RUN] ' if dry_run else ''}update_raw_pbp.py — incremental {SEASON_ID} PBP updater")
 
     # 1. Which game IDs do we already have?
-    existing_ids = load_existing_game_ids()
+    path = path or RAW_PBP
+    if not dry_run:
+        healed = heal_duplicates(path)
+        if healed:
+            print(f"  Healed {healed} duplicate (game_id, eventId) rows in {path}")
+    existing_ids = load_existing_game_ids(path)
     print(f"  Existing games in CSV: {len(existing_ids)}")
 
     # 2. Gather candidate game IDs from the last `days_back` days
     today      = date.today()
     candidates = []   # (game_id, is_playoff, date_str)
+    seen = set()
 
     for offset in range(1, days_back + 1):
         check_date = today - timedelta(days=offset)
@@ -189,9 +249,10 @@ def main(days_back: int = 2, dry_run: bool = False):
             # Skip games from previous seasons
             if str(gid)[:4] != SEASON_ID[:4]:
                 continue
-            # Skip if already in CSV
-            if gid in existing_ids:
+            # Skip if already in CSV or already queued this run
+            if gid in existing_ids or gid in seen:
                 continue
+            seen.add(gid)
 
             is_playoff = 1 if gtype == 3 else 0
             candidates.append((gid, is_playoff, date_str))
@@ -225,29 +286,15 @@ def main(days_back: int = 2, dry_run: bool = False):
         print("  No rows extracted.")
         return
 
-    # 4. Align columns + append to CSV
+    # 4. Align columns + upsert on (game_id, eventId)
     new_df = pd.DataFrame(all_new_rows)
-
-    # Re-order / fill to match the expected schema
     for col in RAW_PBP_COLS:
         if col not in new_df.columns:
             new_df[col] = None
     new_df = new_df[RAW_PBP_COLS]
+    written = upsert_rows(new_df, path)
 
-    if os.path.exists(RAW_PBP):
-        # Read only the header to verify column schema, then append without reloading full file
-        existing_df = pd.read_csv(RAW_PBP, nrows=0)
-        # Add any columns present in existing but not in new
-        for col in existing_df.columns:
-            if col not in new_df.columns:
-                new_df[col] = None
-        new_df = new_df.reindex(columns=existing_df.columns)
-        # Append — mode='a', header=False
-        new_df.to_csv(RAW_PBP, mode="a", header=False, index=False)
-    else:
-        new_df.to_csv(RAW_PBP, index=False)
-
-    print(f"\n  ✓ Appended {len(all_new_rows)} rows for {len(candidates)} games → {RAW_PBP}")
+    print(f"\n  ✓ Upserted {written} rows for {len(candidates)} games → {path}")
 
 
 if __name__ == "__main__":
