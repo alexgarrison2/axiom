@@ -200,36 +200,57 @@ def stage_rescore_xg(state, rescore_all=False):
         return {"status": "skip", "reason": "no shots this season yet"}
     before = df.copy()
 
-    mh = model_hash()
-    prev_hash = ((load_manifest().get("sources") or {}).get("xg_model") or {}).get("hash")
+    # Shot model flag PONYXG_XG=v1|shadow|v2 (bu/xg/live.py); the xg_raw contract is the same for all.
+    # shadow/v2 first fill the additive xg_raw_v2 column (xG v2 from each game's PBP).
+    from bu.xg import live as xg_live
+    mh = xg_live.active_hash(model_hash)
+    prev_src = (load_manifest().get("sources") or {}).get("xg_model") or {}
+    prev_hash = prev_src.get("hash")
+    v2_info = xg_live.fill_v2_column(df, prev_src)
+    v2_changed = xg_live.V2_COL in df.columns and (
+        xg_live.V2_COL not in before.columns
+        or not before[xg_live.V2_COL].astype(float).fillna(-1).equals(df[xg_live.V2_COL].astype(float).fillna(-1)))
     if "xg_raw" not in df.columns:
         df["xg_raw"] = float("nan")
     need = df["xg_raw"].isna()
     if rescore_all or (prev_hash and prev_hash != mh):
         print(f"  Model hash changed ({prev_hash} -> {mh}) — rescoring every shot")
         need[:] = True
+    need |= xg_live.pending_mask(df, prev_src)
     n_scored = int(need.sum())
-    if n_scored:
+    xg_info = {"mode": xg_live.mode(), "v1_fallback_games": []}
+
+    def v1_score(rows):
         import pickle
         from xg_model import preprocess_data
         with open(os.path.join(PIPELINE_DIR, "xg_model_xgb.pkl"), "rb") as f:
             model = pickle.load(f)
+        X, _ = preprocess_data(rows)
+        if len(X) != len(rows):
+            raise ValueError(f"preprocess_data returned {len(X)} rows for {len(rows)} shots")
+        return model.predict_proba(X)[:, 1]
+
+    if n_scored:
         sub = df[need]
-        X, _ = preprocess_data(sub)
-        if len(X) != len(sub):
-            raise ValueError(f"preprocess_data returned {len(X)} rows for {len(sub)} shots")
-        probs = model.predict_proba(X)[:, 1]
+        probs, xg_info = xg_live.score_shots(sub, v1_score)
         mean_new = float(probs.mean())
-        print(f"  Scored {n_scored} shots; mean raw xG {mean_new:.4f} (expected ~0.07)")
+        print(f"  Scored {n_scored} shots with xG {xg_info['mode']} (v2: {xg_info['v2_scored']}, "
+              f"v1 fallback games: {len(xg_info['v1_fallback_games'])}); mean raw xG {mean_new:.4f} (expected ~0.07)")
         if mean_new > 0.15:
             raise ValueError(f"ABORT: mean xG {mean_new:.4f} — model/library mismatch?")
         df.loc[need, "xg_raw"] = probs
         if "strength_state" in df.columns:
-            df.loc[need & (df["strength_state"] == "EmptyNet"), "xg_raw"] = EN_XG
+            # v1 has no empty-net model: its rows get the empirical EN rate; v2 scores EN shots itself
+            v1_idx = sub.index[xg_info["v1_rows"]]
+            df.loc[v1_idx[df.loc[v1_idx, "strength_state"] == "EmptyNet"], "xg_raw"] = EN_XG
     df["xg_raw"] = df["xg_raw"].astype(float).round(XG_DECIMALS)
+    # Under v2 the incumbent's score stays in xg_raw_v1 (rollback shadow); dropped otherwise.
+    v1_info = xg_live.fill_v1_shadow(df, v1_score, EN_XG, prev_src, v1_hash=model_hash())
+    v1_changed = v1_info.pop("changed")
+    v2_changed = v2_changed or v1_changed
 
     # Persist xg_raw first: shooting talent is computed from xg_raw on disk.
-    if n_scored:
+    if n_scored or v2_changed:
         atomic_write_csv(path, df, min_rows=len(before), label="season shots")
     try:
         from shooting_talent import compute_shooting_talent
@@ -253,12 +274,14 @@ def stage_rescore_xg(state, rescore_all=False):
     cols = ["xg_raw", "xG", "xG_flurry_adj"]
     changed = any(c not in before.columns for c in cols) or not all(
         before[c].astype(float).round(XG_DECIMALS).fillna(-1).equals(df[c].astype(float).fillna(-1)) for c in cols)
+    changed = changed or v2_changed
     if changed:
         atomic_write_csv(path, df, min_rows=len(before), label="season shots")
         print(f"  Updated {path} (xg_raw + adjusted xG)")
     else:
         print(f"  {path}: xG unchanged — not rewritten")
-    record_source("xg_model", hash=mh)
+    record_source("xg_model", hash=mh, mode=xg_info["mode"], v1_fallback_games=xg_info["v1_fallback_games"],
+                  **{k: v for k, v in v2_info.items() if k != "v2_column"}, **v1_info)
 
     agg = df.groupby(["game_id", "team_id"])["xG"].sum().rename("xG_sum").reset_index()
     if "strength_state" in df.columns:

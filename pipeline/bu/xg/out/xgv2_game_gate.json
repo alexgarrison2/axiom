@@ -1,0 +1,339 @@
+{
+ "generated_at": "2026-10-01T16:26:28Z",
+ "incumbent_features": [
+  "d_xg_share",
+  "d_xg_share_all",
+  "d_elo",
+  "d_goalie_gsax",
+  "d_pts_pct",
+  "h_b2b",
+  "a_b2b",
+  "d_rest"
+ ],
+ "seasons_with_lake_xg": [
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "runs": {
+  "v1_prod": {
+   "2023": {
+    "n": 1399,
+    "log_loss": 0.6590853301737801,
+    "brier": 0.23368776466350508,
+    "calibration_slope": 1.0102019809790328,
+    "C": 0.01,
+    "mean_pred_home": 0.5199474669095703,
+    "actual_home": 0.5368120085775554,
+    "home_rate_ll": 0.6910460348205584,
+    "early_log_loss": 0.6718896816265741
+   },
+   "2024": {
+    "n": 1206,
+    "log_loss": 0.665255076193241,
+    "brier": 0.23657769176487586,
+    "calibration_slope": 1.0968229262199052,
+    "C": 0.003,
+    "mean_pred_home": 0.5301998131504321,
+    "actual_home": 0.5688225538971807,
+    "home_rate_ll": 0.6867429676292445,
+    "early_log_loss": 0.6751952527419446
+   },
+   "2025": {
+    "n": 1394,
+    "log_loss": 0.6793916643591812,
+    "brier": 0.2433548196064229,
+    "calibration_slope": 0.91228080480169,
+    "C": 0.003,
+    "mean_pred_home": 0.5428615779116661,
+    "actual_home": 0.5193687230989957,
+    "home_rate_ll": 0.6934996677491434,
+    "early_log_loss": 0.6917180152076214
+   }
+  },
+  "v1_pit": {
+   "2023": {
+    "n": 1399,
+    "log_loss": 0.6601422526587182,
+    "brier": 0.23417936457410765,
+    "calibration_slope": 1.025915434882208,
+    "C": 0.01,
+    "mean_pred_home": 0.520086507043147,
+    "actual_home": 0.5368120085775554,
+    "home_rate_ll": 0.6910460348205584,
+    "early_log_loss": 0.671922740366119
+   },
+   "2024": {
+    "n": 1206,
+    "log_loss": 0.6656916013983579,
+    "brier": 0.23677391913531104,
+    "calibration_slope": 1.0941690220108793,
+    "C": 0.003,
+    "mean_pred_home": 0.5301441061244441,
+    "actual_home": 0.5688225538971807,
+    "home_rate_ll": 0.6867429676292445,
+    "early_log_loss": 0.6752595817501028
+   },
+   "2025": {
+    "n": 1394,
+    "log_loss": 0.6794865233381838,
+    "brier": 0.24340069500787948,
+    "calibration_slope": 0.9146819362152067,
+    "C": 0.003,
+    "mean_pred_home": 0.5425373726887657,
+    "actual_home": 0.5193687230989957,
+    "home_rate_ll": 0.6934996677491434,
+    "early_log_loss": 0.6914700338581335
+   }
+  },
+  "v2": {
+   "2023": {
+    "n": 1399,
+    "log_loss": 0.6595200545519844,
+    "brier": 0.23389843615261066,
+    "calibration_slope": 1.0359532272999894,
+    "C": 0.01,
+    "mean_pred_home": 0.5199814783561967,
+    "actual_home": 0.5368120085775554,
+    "home_rate_ll": 0.6910460348205584,
+    "early_log_loss": 0.6728550631346623
+   },
+   "2024": {
+    "n": 1206,
+    "log_loss": 0.6650602036532102,
+    "brier": 0.23650562167259404,
+    "calibration_slope": 1.0489618908472447,
+    "C": 0.003,
+    "mean_pred_home": 0.5297215334284875,
+    "actual_home": 0.5688225538971807,
+    "home_rate_ll": 0.6867429676292445,
+    "early_log_loss": 0.6737611684412735
+   },
+   "2025": {
+    "n": 1394,
+    "log_loss": 0.678663547376787,
+    "brier": 0.24297614625114877,
+    "calibration_slope": 0.9224854390176888,
+    "C": 0.003,
+    "mean_pred_home": 0.5424132049842654,
+    "actual_home": 0.5193687230989957,
+    "home_rate_ll": 0.6934996677491434,
+    "early_log_loss": 0.6894580672950517
+   }
+  },
+  "v2_asof": {
+   "2023": {
+    "n": 1399,
+    "log_loss": 0.6589608221819789,
+    "brier": 0.23363332449641686,
+    "calibration_slope": 1.0265732160236365,
+    "C": 0.01,
+    "mean_pred_home": 0.5199299068153181,
+    "actual_home": 0.5368120085775554,
+    "home_rate_ll": 0.6910460348205584,
+    "early_log_loss": 0.6728732829265099
+   },
+   "2024": {
+    "n": 1206,
+    "log_loss": 0.6645232690806686,
+    "brier": 0.23624535663271592,
+    "calibration_slope": 1.0638352576203447,
+    "C": 0.003,
+    "mean_pred_home": 0.5299700605043922,
+    "actual_home": 0.5688225538971807,
+    "home_rate_ll": 0.6867429676292445,
+    "early_log_loss": 0.6729438174223759
+   },
+   "2025": {
+    "n": 1394,
+    "log_loss": 0.6791292405057989,
+    "brier": 0.24321637052175332,
+    "calibration_slope": 0.8301016521705907,
+    "C": 0.01,
+    "mean_pred_home": 0.5423437028337459,
+    "actual_home": 0.5193687230989957,
+    "home_rate_ll": 0.6934996677491434,
+    "early_log_loss": 0.6899045467255808
+   }
+  }
+ },
+ "comparisons": {
+  "v2_minus_v1_prod": {
+   "2023": {
+    "n": 1399,
+    "delta": 0.000435,
+    "se": 0.000711,
+    "upper_95_one_sided": 0.001604,
+    "upper_98_75_one_sided": 0.002027
+   },
+   "2024": {
+    "n": 1206,
+    "delta": -0.000195,
+    "se": 0.000678,
+    "upper_95_one_sided": 0.000921,
+    "upper_98_75_one_sided": 0.001326
+   },
+   "dev_pooled": {
+    "n": 2605,
+    "delta": 0.000143,
+    "se": 0.000494,
+    "upper_95_one_sided": 0.000956,
+    "upper_98_75_one_sided": 0.001251
+   },
+   "2025": {
+    "n": 1394,
+    "delta": -0.000728,
+    "se": 0.000713,
+    "upper_95_one_sided": 0.000444,
+    "upper_98_75_one_sided": 0.00087
+   }
+  },
+  "v2_minus_v1_pit": {
+   "2023": {
+    "n": 1399,
+    "delta": -0.000622,
+    "se": 0.00058,
+    "upper_95_one_sided": 0.000332,
+    "upper_98_75_one_sided": 0.000678
+   },
+   "2024": {
+    "n": 1206,
+    "delta": -0.000631,
+    "se": 0.000769,
+    "upper_95_one_sided": 0.000634,
+    "upper_98_75_one_sided": 0.001093
+   },
+   "dev_pooled": {
+    "n": 2605,
+    "delta": -0.000626,
+    "se": 0.000473,
+    "upper_95_one_sided": 0.000152,
+    "upper_98_75_one_sided": 0.000434
+   },
+   "2025": {
+    "n": 1394,
+    "delta": -0.000823,
+    "se": 0.000735,
+    "upper_95_one_sided": 0.000386,
+    "upper_98_75_one_sided": 0.000824
+   }
+  },
+  "v2_asof_minus_v1_prod": {
+   "2023": {
+    "n": 1399,
+    "delta": -0.000125,
+    "se": 0.00065,
+    "upper_95_one_sided": 0.000944,
+    "upper_98_75_one_sided": 0.001332
+   },
+   "2024": {
+    "n": 1206,
+    "delta": -0.000732,
+    "se": 0.000607,
+    "upper_95_one_sided": 0.000267,
+    "upper_98_75_one_sided": 0.000629
+   },
+   "dev_pooled": {
+    "n": 2605,
+    "delta": -0.000406,
+    "se": 0.000448,
+    "upper_95_one_sided": 0.000331,
+    "upper_98_75_one_sided": 0.000598
+   },
+   "2025": {
+    "n": 1394,
+    "delta": -0.000262,
+    "se": 0.00112,
+    "upper_95_one_sided": 0.00158,
+    "upper_98_75_one_sided": 0.002248
+   }
+  },
+  "v2_asof_minus_v1_pit": {
+   "2023": {
+    "n": 1399,
+    "delta": -0.001181,
+    "se": 0.000632,
+    "upper_95_one_sided": -0.000142,
+    "upper_98_75_one_sided": 0.000235
+   },
+   "2024": {
+    "n": 1206,
+    "delta": -0.001168,
+    "se": 0.000726,
+    "upper_95_one_sided": 2.6e-05,
+    "upper_98_75_one_sided": 0.000459
+   },
+   "dev_pooled": {
+    "n": 2605,
+    "delta": -0.001175,
+    "se": 0.000478,
+    "upper_95_one_sided": -0.00039,
+    "upper_98_75_one_sided": -0.000105
+   },
+   "2025": {
+    "n": 1394,
+    "delta": -0.000357,
+    "se": 0.001158,
+    "upper_95_one_sided": 0.001547,
+    "upper_98_75_one_sided": 0.002238
+   }
+  }
+ },
+ "gate_reference": "v1_pit (DESIGN \u00a71.3/\u00a71.7: the incumbent with point-in-time xG v1)",
+ "candidate": "v2_asof",
+ "gate": {
+  "v2": {
+   "role": "descriptive",
+   "A2": {
+    "rule": "dev pooled \u0394 <= -0.0005 and no dev fold \u0394 > +0.0005 (vs v1_pit)",
+    "dev_pooled": -0.000626,
+    "folds": {
+     "2023": -0.000622,
+     "2024": -0.000631
+    },
+    "pass": true
+   },
+   "A5": {
+    "rule": "beats the home-rate baseline by >= 0.01 on every fold",
+    "pass": true
+   },
+   "A_comp": {
+    "rule": "2025-26 one-sided 98.75% upper bound of \u0394 < +0.0005 (one look)",
+    "delta": -0.000823,
+    "se": 0.000735,
+    "upper": 0.000824,
+    "pass": false
+   },
+   "pass": false
+  },
+  "v2_asof": {
+   "role": "pre-registered candidate",
+   "A2": {
+    "rule": "dev pooled \u0394 <= -0.0005 and no dev fold \u0394 > +0.0005 (vs v1_pit)",
+    "dev_pooled": -0.001175,
+    "folds": {
+     "2023": -0.001181,
+     "2024": -0.001168
+    },
+    "pass": true
+   },
+   "A5": {
+    "rule": "beats the home-rate baseline by >= 0.01 on every fold",
+    "pass": true
+   },
+   "A_comp": {
+    "rule": "2025-26 one-sided 98.75% upper bound of \u0394 < +0.0005 (one look)",
+    "delta": -0.000357,
+    "se": 0.001158,
+    "upper": 0.002238,
+    "pass": false
+   },
+   "pass": false
+  }
+ }
+}

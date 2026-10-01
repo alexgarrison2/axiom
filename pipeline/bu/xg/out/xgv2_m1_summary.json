@@ -1,0 +1,605 @@
+{
+ "generated_at": "2026-10-01T17:43:33Z",
+ "candidate": "v2_asof",
+ "m1_gate": {
+  "a_shot_ll": {
+   "pass": true,
+   "rule": "dev folds: LL <= LL(v1 PIT) - 0.002 and AUC >= AUC(v1 PIT)"
+  },
+  "b_goals_per_xg": {
+   "pass": false,
+   "consistent_within_sampling_error": true,
+   "rule": "dev folds: goals/xG in [0.97, 1.03] for ['5v5', '5v4', '4v5', '3v3', 'EN']"
+  },
+  "c_incumbent_with_v2": {
+   "pass": false,
+   "A2": {
+    "rule": "dev pooled \u0394 <= -0.0005 and no dev fold \u0394 > +0.0005 (vs v1_pit)",
+    "dev_pooled": -0.001175,
+    "folds": {
+     "2023": -0.001181,
+     "2024": -0.001168
+    },
+    "pass": true
+   },
+   "A_comp": {
+    "rule": "2025-26 one-sided 98.75% upper bound of \u0394 < +0.0005 (one look)",
+    "delta": -0.000357,
+    "se": 0.001158,
+    "upper": 0.002238,
+    "pass": false
+   },
+   "A5": {
+    "rule": "beats the home-rate baseline by >= 0.01 on every fold",
+    "pass": true
+   }
+  },
+  "d_live_shadow": {
+   "games": 0,
+   "pass": false,
+   "reason": "no xg_raw_v2 column yet (shadow not run)"
+  }
+ },
+ "m1_pass": false,
+ "ship": {
+  "decision": "owner 2026-10-01: ship xG v2 (with the RAPM lineup term) on the pooled evidence, keep v1 as a shadow for rollback; the game model is retrained on v2 by the integrator",
+  "pooled_game_level": {
+   "v2_asof_minus_v1_pit": {
+    "seasons": [
+     "2023",
+     "2024",
+     "2025"
+    ],
+    "n": 3999,
+    "delta": -0.00089,
+    "se": 0.00051,
+    "upper_95_one_sided": -5.1e-05,
+    "upper_98_75_one_sided": 0.000253,
+    "a_comp_rule": "one-sided 98.75% upper bound < +0.0005",
+    "a_comp_pass": true
+   },
+   "v2_asof_minus_v1_prod": {
+    "seasons": [
+     "2023",
+     "2024",
+     "2025"
+    ],
+    "n": 3999,
+    "delta": -0.000356,
+    "se": 0.000487,
+    "upper_95_one_sided": 0.000446,
+    "upper_98_75_one_sided": 0.000737,
+    "a_comp_rule": "one-sided 98.75% upper bound < +0.0005",
+    "a_comp_pass": false
+   }
+  },
+  "shot_level": "every one of the walk-forward seasons, LL and AUC (a_shot_ll per_fold)",
+  "live_flag": {
+   "default": "v2",
+   "game_model_on_v2": false,
+   "active_mode": "shadow",
+   "interlock": "an unset PONYXG_XG runs shadow until game_model_meta.json declares \"xg_version\": \"v2\""
+  }
+ },
+ "headline": {
+  "seasons_tested": 15,
+  "v2_beats_v1_pit_every_season": true,
+  "mean_dLL_asof_vs_v1_pit": -0.00897,
+  "dev_dLL_asof_vs_v1_pit": {
+   "20232024": -0.01224,
+   "20242025": -0.013057
+  }
+ },
+ "per_season": {
+  "20112012": {
+   "role": "other",
+   "train": [
+    "20102011"
+   ],
+   "xg2": {
+    "ll": 0.197775,
+    "auc": 0.78475,
+    "cal_slope": 0.9966,
+    "goals_per_xg": 0.9957
+   },
+   "xg2_asof": {
+    "ll": 0.19695,
+    "auc": 0.78814,
+    "cal_slope": 1.0119,
+    "goals_per_xg": 0.9995
+   },
+   "xg1_pit": {
+    "ll": 0.20653,
+    "auc": 0.75184,
+    "cal_slope": 1.0441,
+    "goals_per_xg": 0.959
+   },
+   "xg1_prod": {
+    "ll": 0.214378,
+    "auc": 0.71756,
+    "cal_slope": 0.9344,
+    "goals_per_xg": 0.8935
+   },
+   "dLL_asof_vs_v1_pit": -0.00958,
+   "moneypuck_ll_all": 0.189009,
+   "xg2_asof_ll_all": 0.198584,
+   "dLL_asof_vs_mp": 0.009575
+  },
+  "20122013": {
+   "role": "other",
+   "train": [
+    "20112012"
+   ],
+   "xg2": {
+    "ll": 0.200579,
+    "auc": 0.77767,
+    "cal_slope": 0.9835,
+    "goals_per_xg": 1.0202
+   },
+   "xg2_asof": {
+    "ll": 0.200424,
+    "auc": 0.77858,
+    "cal_slope": 0.9896,
+    "goals_per_xg": 1.0132
+   },
+   "xg1_pit": {
+    "ll": 0.208765,
+    "auc": 0.74411,
+    "cal_slope": 0.9823,
+    "goals_per_xg": 0.9738
+   },
+   "xg1_prod": {
+    "ll": 0.215846,
+    "auc": 0.71524,
+    "cal_slope": 0.9283,
+    "goals_per_xg": 0.9009
+   },
+   "dLL_asof_vs_v1_pit": -0.008342,
+   "moneypuck_ll_all": 0.190218,
+   "xg2_asof_ll_all": 0.201842,
+   "dLL_asof_vs_mp": 0.011625
+  },
+  "20132014": {
+   "role": "other",
+   "train": [
+    "20122013"
+   ],
+   "xg2": {
+    "ll": 0.200287,
+    "auc": 0.77909,
+    "cal_slope": 1.0535,
+    "goals_per_xg": 0.9913
+   },
+   "xg2_asof": {
+    "ll": 0.19939,
+    "auc": 0.78119,
+    "cal_slope": 1.0131,
+    "goals_per_xg": 0.9934
+   },
+   "xg1_pit": {
+    "ll": 0.20712,
+    "auc": 0.75199,
+    "cal_slope": 1.0015,
+    "goals_per_xg": 0.9673
+   },
+   "xg1_prod": {
+    "ll": 0.214592,
+    "auc": 0.72017,
+    "cal_slope": 0.94,
+    "goals_per_xg": 0.9006
+   },
+   "dLL_asof_vs_v1_pit": -0.00773,
+   "moneypuck_ll_all": 0.190064,
+   "xg2_asof_ll_all": 0.201219,
+   "dLL_asof_vs_mp": 0.011155
+  },
+  "20142015": {
+   "role": "other",
+   "train": [
+    "20132014"
+   ],
+   "xg2": {
+    "ll": 0.198431,
+    "auc": 0.77626,
+    "cal_slope": 0.9886,
+    "goals_per_xg": 1.0018
+   },
+   "xg2_asof": {
+    "ll": 0.197438,
+    "auc": 0.77981,
+    "cal_slope": 1.0059,
+    "goals_per_xg": 0.9991
+   },
+   "xg1_pit": {
+    "ll": 0.206013,
+    "auc": 0.7468,
+    "cal_slope": 0.9893,
+    "goals_per_xg": 0.9608
+   },
+   "xg1_prod": {
+    "ll": 0.213509,
+    "auc": 0.71663,
+    "cal_slope": 0.9161,
+    "goals_per_xg": 0.8896
+   },
+   "dLL_asof_vs_v1_pit": -0.008575,
+   "moneypuck_ll_all": 0.188655,
+   "xg2_asof_ll_all": 0.199807,
+   "dLL_asof_vs_mp": 0.011152
+  },
+  "20152016": {
+   "role": "other",
+   "train": [
+    "20142015"
+   ],
+   "xg2": {
+    "ll": 0.197296,
+    "auc": 0.78209,
+    "cal_slope": 1.0089,
+    "goals_per_xg": 0.9831
+   },
+   "xg2_asof": {
+    "ll": 0.196557,
+    "auc": 0.78474,
+    "cal_slope": 1.0283,
+    "goals_per_xg": 0.9935
+   },
+   "xg1_pit": {
+    "ll": 0.204307,
+    "auc": 0.75318,
+    "cal_slope": 1.0236,
+    "goals_per_xg": 0.9521
+   },
+   "xg1_prod": {
+    "ll": 0.21367,
+    "auc": 0.72021,
+    "cal_slope": 0.8923,
+    "goals_per_xg": 0.8835
+   },
+   "dLL_asof_vs_v1_pit": -0.00775,
+   "moneypuck_ll_all": 0.189228,
+   "xg2_asof_ll_all": 0.199121,
+   "dLL_asof_vs_mp": 0.009893
+  },
+  "20162017": {
+   "role": "other",
+   "train": [
+    "20152016"
+   ],
+   "xg2": {
+    "ll": 0.19989,
+    "auc": 0.77756,
+    "cal_slope": 0.9935,
+    "goals_per_xg": 1.0063
+   },
+   "xg2_asof": {
+    "ll": 0.198971,
+    "auc": 0.78139,
+    "cal_slope": 0.9971,
+    "goals_per_xg": 1.0035
+   },
+   "xg1_pit": {
+    "ll": 0.206954,
+    "auc": 0.75041,
+    "cal_slope": 1.0099,
+    "goals_per_xg": 0.9613
+   },
+   "xg1_prod": {
+    "ll": 0.217101,
+    "auc": 0.72034,
+    "cal_slope": 0.8381,
+    "goals_per_xg": 0.8941
+   },
+   "dLL_asof_vs_v1_pit": -0.007983,
+   "moneypuck_ll_all": 0.192453,
+   "xg2_asof_ll_all": 0.20099,
+   "dLL_asof_vs_mp": 0.008537
+  },
+  "20172018": {
+   "role": "other",
+   "train": [
+    "20162017"
+   ],
+   "xg2": {
+    "ll": 0.205313,
+    "auc": 0.7719,
+    "cal_slope": 1.0098,
+    "goals_per_xg": 1.0194
+   },
+   "xg2_asof": {
+    "ll": 0.20463,
+    "auc": 0.77477,
+    "cal_slope": 1.0051,
+    "goals_per_xg": 1.0151
+   },
+   "xg1_pit": {
+    "ll": 0.212691,
+    "auc": 0.74145,
+    "cal_slope": 0.9858,
+    "goals_per_xg": 0.9766
+   },
+   "xg1_prod": {
+    "ll": 0.221238,
+    "auc": 0.70939,
+    "cal_slope": 0.8462,
+    "goals_per_xg": 0.9134
+   },
+   "dLL_asof_vs_v1_pit": -0.008061,
+   "moneypuck_ll_all": 0.197792,
+   "xg2_asof_ll_all": 0.206955,
+   "dLL_asof_vs_mp": 0.009163
+  },
+  "20182019": {
+   "role": "other",
+   "train": [
+    "20172018"
+   ],
+   "xg2": {
+    "ll": 0.210115,
+    "auc": 0.77073,
+    "cal_slope": 0.9742,
+    "goals_per_xg": 1.021
+   },
+   "xg2_asof": {
+    "ll": 0.20957,
+    "auc": 0.77188,
+    "cal_slope": 0.98,
+    "goals_per_xg": 1.0078
+   },
+   "xg1_pit": {
+    "ll": 0.217715,
+    "auc": 0.73796,
+    "cal_slope": 0.9633,
+    "goals_per_xg": 0.9822
+   },
+   "xg1_prod": {
+    "ll": 0.223169,
+    "auc": 0.71393,
+    "cal_slope": 0.909,
+    "goals_per_xg": 0.9311
+   },
+   "dLL_asof_vs_v1_pit": -0.008145,
+   "moneypuck_ll_all": 0.204577,
+   "xg2_asof_ll_all": 0.21151,
+   "dLL_asof_vs_mp": 0.006933
+  },
+  "20192020": {
+   "role": "other",
+   "train": [
+    "20182019"
+   ],
+   "xg2": {
+    "ll": 0.213007,
+    "auc": 0.7653,
+    "cal_slope": 0.9568,
+    "goals_per_xg": 0.9304
+   },
+   "xg2_asof": {
+    "ll": 0.211028,
+    "auc": 0.77107,
+    "cal_slope": 0.9972,
+    "goals_per_xg": 0.9523
+   },
+   "xg1_pit": {
+    "ll": 0.219727,
+    "auc": 0.73923,
+    "cal_slope": 0.9242,
+    "goals_per_xg": 0.9166
+   },
+   "xg1_prod": {
+    "ll": 0.223635,
+    "auc": 0.71839,
+    "cal_slope": 0.9145,
+    "goals_per_xg": 0.9438
+   },
+   "dLL_asof_vs_v1_pit": -0.008698,
+   "moneypuck_ll_all": 0.202297,
+   "xg2_asof_ll_all": 0.213382,
+   "dLL_asof_vs_mp": 0.011085
+  },
+  "20202021": {
+   "role": "other",
+   "train": [
+    "20192020"
+   ],
+   "xg2": {
+    "ll": 0.211854,
+    "auc": 0.77527,
+    "cal_slope": 1.0043,
+    "goals_per_xg": 1.0126
+   },
+   "xg2_asof": {
+    "ll": 0.211461,
+    "auc": 0.77669,
+    "cal_slope": 1.0081,
+    "goals_per_xg": 1.0092
+   },
+   "xg1_pit": {
+    "ll": 0.22026,
+    "auc": 0.74518,
+    "cal_slope": 0.9853,
+    "goals_per_xg": 0.9367
+   },
+   "xg1_prod": {
+    "ll": 0.225003,
+    "auc": 0.72147,
+    "cal_slope": 0.9493,
+    "goals_per_xg": 0.9458
+   },
+   "dLL_asof_vs_v1_pit": -0.0088,
+   "moneypuck_ll_all": 0.204076,
+   "xg2_asof_ll_all": 0.213949,
+   "dLL_asof_vs_mp": 0.009873
+  },
+  "20212022": {
+   "role": "tuning",
+   "train": [
+    "20202021"
+   ],
+   "xg2": {
+    "ll": 0.218833,
+    "auc": 0.75996,
+    "cal_slope": 0.9827,
+    "goals_per_xg": 0.9725
+   },
+   "xg2_asof": {
+    "ll": 0.218402,
+    "auc": 0.7607,
+    "cal_slope": 0.9915,
+    "goals_per_xg": 1.0003
+   },
+   "xg1_pit": {
+    "ll": 0.226235,
+    "auc": 0.732,
+    "cal_slope": 0.9529,
+    "goals_per_xg": 0.9289
+   },
+   "xg1_prod": {
+    "ll": 0.231096,
+    "auc": 0.70701,
+    "cal_slope": 0.8882,
+    "goals_per_xg": 0.9349
+   },
+   "dLL_asof_vs_v1_pit": -0.007833,
+   "moneypuck_ll_all": 0.211072,
+   "xg2_asof_ll_all": 0.220822,
+   "dLL_asof_vs_mp": 0.00975
+  },
+  "20222023": {
+   "role": "tuning",
+   "train": [
+    "20212022"
+   ],
+   "xg2": {
+    "ll": 0.22317,
+    "auc": 0.75231,
+    "cal_slope": 0.9334,
+    "goals_per_xg": 0.9603
+   },
+   "xg2_asof": {
+    "ll": 0.221507,
+    "auc": 0.75732,
+    "cal_slope": 0.9834,
+    "goals_per_xg": 0.98
+   },
+   "xg1_pit": {
+    "ll": 0.22887,
+    "auc": 0.72898,
+    "cal_slope": 0.9657,
+    "goals_per_xg": 0.9086
+   },
+   "xg1_prod": {
+    "ll": 0.226716,
+    "auc": 0.73674,
+    "cal_slope": 1.028,
+    "goals_per_xg": 0.9319
+   },
+   "dLL_asof_vs_v1_pit": -0.007363,
+   "moneypuck_ll_all": 0.215012,
+   "xg2_asof_ll_all": 0.223972,
+   "dLL_asof_vs_mp": 0.00896
+  },
+  "20232024": {
+   "role": "dev",
+   "train": [
+    "20222023"
+   ],
+   "xg2": {
+    "ll": 0.214213,
+    "auc": 0.76872,
+    "cal_slope": 1.0132,
+    "goals_per_xg": 1.0192
+   },
+   "xg2_asof": {
+    "ll": 0.210419,
+    "auc": 0.78046,
+    "cal_slope": 1.0398,
+    "goals_per_xg": 1.0231
+   },
+   "xg1_pit": {
+    "ll": 0.222659,
+    "auc": 0.73315,
+    "cal_slope": 0.9804,
+    "goals_per_xg": 0.9232
+   },
+   "xg1_prod": {
+    "ll": 0.213188,
+    "auc": 0.77405,
+    "cal_slope": 1.2101,
+    "goals_per_xg": 0.9735
+   },
+   "dLL_asof_vs_v1_pit": -0.01224,
+   "moneypuck_ll_all": 0.213939,
+   "xg2_asof_ll_all": 0.213525,
+   "dLL_asof_vs_mp": -0.000414
+  },
+  "20242025": {
+   "role": "dev",
+   "train": [
+    "20232024"
+   ],
+   "xg2": {
+    "ll": 0.207844,
+    "auc": 0.78488,
+    "cal_slope": 0.9728,
+    "goals_per_xg": 0.9781
+   },
+   "xg2_asof": {
+    "ll": 0.207253,
+    "auc": 0.78682,
+    "cal_slope": 1.0175,
+    "goals_per_xg": 0.9853
+   },
+   "xg1_pit": {
+    "ll": 0.22031,
+    "auc": 0.7368,
+    "cal_slope": 1.0046,
+    "goals_per_xg": 0.9426
+   },
+   "xg1_prod": {
+    "ll": 0.212764,
+    "auc": 0.76973,
+    "cal_slope": 1.1878,
+    "goals_per_xg": 0.9641
+   },
+   "dLL_asof_vs_v1_pit": -0.013057,
+   "moneypuck_ll_all": 0.218116,
+   "xg2_asof_ll_all": 0.210823,
+   "dLL_asof_vs_mp": -0.007293
+  },
+  "20252026": {
+   "role": "soft-holdout",
+   "train": [
+    "20242025"
+   ],
+   "xg2": {
+    "ll": 0.214366,
+    "auc": 0.77606,
+    "cal_slope": 0.9688,
+    "goals_per_xg": 0.9617
+   },
+   "xg2_asof": {
+    "ll": 0.213716,
+    "auc": 0.77799,
+    "cal_slope": 0.9931,
+    "goals_per_xg": 0.9765
+   },
+   "xg1_pit": {
+    "ll": 0.224118,
+    "auc": 0.73893,
+    "cal_slope": 1.0405,
+    "goals_per_xg": 0.922
+   },
+   "xg1_prod": {
+    "ll": 0.21833,
+    "auc": 0.7642,
+    "cal_slope": 1.1569,
+    "goals_per_xg": 0.9367
+   },
+   "dLL_asof_vs_v1_pit": -0.010401,
+   "moneypuck_ll_all": 0.222575,
+   "xg2_asof_ll_all": 0.217808,
+   "dLL_asof_vs_mp": -0.004767
+  }
+ }
+}
