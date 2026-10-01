@@ -9,6 +9,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Papa from 'papaparse';
 import { SEASON_ID } from '../../lib/season';
+import { nameIndex, parseRatings } from '../../lib/players/ratings';
+import { readRatingsDoc } from '../../lib/players/server';
 import { calculateTeamStats, emptyTeamStat } from './calculate';
 import { goalieKey, groupByTeam } from './filter';
 import { finalizeRows, parseGameRow } from './game-row';
@@ -241,31 +243,28 @@ interface LineupPlayer {
     id?: number | string;
     name?: string;
 }
-interface ImpactPlayer {
-    name?: string;
-    impact_score?: number;
-    rapm_net?: number;
-    ev_toi_per_game?: number;
-}
-
-const normName = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
 export function loadRatingsView(): Record<string, TeamRatingEntry> | null {
     const ratings = readPublicJson<Record<string, Record<string, number>>>('team_ratings.json');
     if (!ratings) return null;
     const lineups = readPublicJson<Record<string, Record<string, LineupPlayer[]>>>('team_lineups.json') ?? {};
-    const impact = readPublicJson<Record<string, ImpactPlayer>>('player_impact.json') ?? {};
+    const players = parseRatings(readRatingsDoc());
     const goalies = readPublicJson<Record<string, { gsax_per_game?: number }>>('goalie_ratings.json') ?? {};
     const teamGoalies = readPublicJson<Record<string, string[]>>('team_goalies.json') ?? {};
 
-    const byName = new Map<string, ImpactPlayer>();
-    for (const p of Object.values(impact)) if (p?.name) byName.set(normName(p.name), p);
-    const lookup = (p: LineupPlayer) => impact[String(p.id)] ?? byName.get(normName(p.name ?? ''));
-    const sumImpact = (list?: LineupPlayer[]) => (list ?? []).reduce((s, p) => s + (lookup(p)?.impact_score ?? 0), 0);
-    const toiRapm = (list: LineupPlayer[]) => {
-        const e = list.map(p => ({ rapm: lookup(p)?.rapm_net ?? 0, toi: lookup(p)?.ev_toi_per_game ?? 0 }));
+    // DailyFaceoff ids are not NHL ids: resolve by name within the team.
+    const find = nameIndex(players);
+    const lookup = (p: LineupPlayer, team: string, def: boolean) => (p.name ? find(p.name, team, null, def) : null);
+    // Lines: sum of the skaters' RAPM NET (EV xG/60 above average).
+    const sumNet = (list: LineupPlayer[] | undefined, team: string, def = false) => (list ?? []).reduce((s, p) => s + (lookup(p, team, def)?.net ?? 0), 0);
+    // Forwards / defence: EV-TOI-weighted NET, scaled by the group size.
+    const toiNet = (list: LineupPlayer[], team: string, def: boolean) => {
+        const e = list.map(p => {
+            const r = lookup(p, team, def);
+            return { net: r?.net ?? 0, toi: r && r.gp > 0 ? r.toi / r.gp : 0 };
+        });
         const tot = e.reduce((s, x) => s + x.toi, 0);
-        return tot > 0 ? e.reduce((s, x) => s + x.rapm * (x.toi / tot), 0) * e.length : 0;
+        return tot > 0 ? e.reduce((s, x) => s + x.net * (x.toi / tot), 0) * e.length : 0;
     };
     const goalieByKey = new Map(Object.entries(goalies).map(([k, v]) => [goalieKey(k), v]));
 
@@ -285,10 +284,10 @@ export function loadRatingsView(): Record<string, TeamRatingEntry> | null {
             xgf_5v5: val('xgf_5v5_rating'),
             xga_5v5: val('xga_5v5_rating'),
             lines: {
-                f1: sumImpact(lu.f1), f2: sumImpact(lu.f2), f3: sumImpact(lu.f3), f4: sumImpact(lu.f4),
-                d1: sumImpact(lu.d1), d2: sumImpact(lu.d2), d3: sumImpact(lu.d3),
+                f1: sumNet(lu.f1, t.tri), f2: sumNet(lu.f2, t.tri), f3: sumNet(lu.f3, t.tri), f4: sumNet(lu.f4, t.tri),
+                d1: sumNet(lu.d1, t.tri, true), d2: sumNet(lu.d2, t.tri, true), d3: sumNet(lu.d3, t.tri, true),
             },
-            rapm: { f: toiRapm(f), d: toiRapm(d) },
+            rapm: { f: toiNet(f, t.tri, false), d: toiNet(d, t.tri, true) },
             goalie: g.reduce((s, name) => s + (goalieByKey.get(goalieKey(name))?.gsax_per_game ?? 0), 0),
         };
     }

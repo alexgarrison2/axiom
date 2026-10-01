@@ -9,7 +9,6 @@ import path from 'node:path';
  * each function.
  */
 const READERS = {
-    'player_impact.json': () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'player_impact.json'), 'utf8'),
     'player_bio.json': () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'player_bio.json'), 'utf8'),
     'manifest.json': () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'manifest.json'), 'utf8'),
     'player_news.json': () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'player_news.json'), 'utf8'),

@@ -22,15 +22,25 @@ export interface Pctl {
     p: number;
 }
 
-export interface SkaterImpact {
-    season: string; // ratings season label, e.g. "2025-26"
-    team: string | null; // team the rating was earned with
+/** The player rating (RAPM v2, public/data/player_ratings.json): EV xG per 60 above average. */
+export interface SkaterRating {
+    net: number;
+    off: number;
+    /** Lower is better. */
+    def: number;
+    /** NET percentile among rated forwards or defencemen on current rosters (null when not rated). */
+    pct: number | null;
+    /** False: no NHL sample yet (rookie prior). */
+    rated: boolean;
+    /** EV minutes behind the rating (last three seasons + this one). */
+    evMin: number;
+}
+
+/** Descriptive on-ice rates from the player model's season (player_impact.json), with league percentiles. */
+export interface SkaterRates {
+    season: string; // season label of the rates, e.g. "2025-26"
+    team: string | null; // team the rates were earned with
     gp: number;
-    score: Pctl;
-    evOff: number;
-    evDef: number;
-    pp: number;
-    pk: number;
     xgf60: Pctl;
     xga60: Pctl;
     xgPct: Pctl;
@@ -58,7 +68,8 @@ export interface SkaterCardData {
     capHit: number | null;
     expiry: string | null;
     injury: { status: string; returnDate: string | null } | null;
-    impact: SkaterImpact | null;
+    rating: SkaterRating | null;
+    rates: SkaterRates | null;
     current: SeasonLine | null;
     last: SeasonLine | null;
 }

@@ -103,7 +103,7 @@ export function traceLimitMB(route) {
  * reported but not failed: nft can only trace files that exist.
  */
 const STAMP_FILES = ['data/last_updated.json', 'public/data/last_updated.json', 'public/data/manifest.json'];
-const READ_DATA = ['public/data/player_impact.json', 'public/data/player_bio.json', 'public/data/player_news.json',
+const READ_DATA = ['public/data/player_bio.json', 'public/data/player_news.json',
     'public/data/upcoming_games.json', 'public/data/season_projections.json', 'public/data/team_ratings.json'];
 export const RUNTIME_TRACE_REQUIREMENTS = {
     '/': ['data/predictions_detailed.csv', 'data/prediction_history.json', 'public/data/upcoming_games.json',
@@ -113,13 +113,13 @@ export const RUNTIME_TRACE_REQUIREMENTS = {
         'data/prediction_history.json', ...STAMP_FILES],
     '/methodology': ['public/data/model_report.json', ...STAMP_FILES],
     '/news': ['pipeline/data/nhl_schedule_*.json', ...READ_DATA, ...STAMP_FILES],
-    '/players': [...READ_DATA, ...STAMP_FILES],
+    '/players': ['public/data/player_ratings.json', 'public/data/player_bio.json', ...STAMP_FILES],
     '/standings': [...READ_DATA, ...STAMP_FILES],
     '/teams/[teamAbbr]': ['pipeline/data/nhl_schedule_*.json', 'public/data/upcoming_games.json',
         'public/data/gamestats.csv', 'public/data/nhl_teams.csv', ...STAMP_FILES],
     '/api/matchup-details': ['data/predictions_detailed.csv', 'data/prediction_history.json',
         'public/data/team_goalies.json', 'public/data/goalie_season_lines.json', 'public/data/goalie_ratings.json',
-        'public/data/injuries.json', 'public/data/player_impact.json', 'public/data/team_lineups.json', 'public/data/gamestats.csv'],
+        'public/data/injuries.json', 'public/data/player_ratings.json', 'public/data/team_lineups.json', 'public/data/gamestats.csv'],
     '/api/odds-history': ['public/data/SiteHistory/*.csv'],
     '/opengraph-image': ['data/predictions_detailed.csv'],
 };

@@ -10,7 +10,8 @@ name: RAPM lineup bundle refresh
 #      bundle rebuild; publishes only when the content changed or the committed bundle
 #      is older than 12 h
 #   3. save the lake back to the release (second copy for the next run)
-#   4. commit the bundle (the only committed file)
+#   4. commit the bundle and public/data/player_ratings.json (the site's player ratings,
+#      exported from the bundle by bu.lineup.ratings_export inside the refresh)
 #
 # Runs before the morning full refresh (update_data.yml, 12:00-14:59 UTC) and twice
 # more as a fallback (GitHub cron can fire late or not at all).  When the bundle is
@@ -119,29 +120,39 @@ jobs:
           fi
           gh release upload "$tag" "$out" --repo "$GITHUB_REPOSITORY" --clobber
 
-      - name: Commit and push the bundle
+      - name: Commit and push the bundle and player ratings
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          f=pipeline/bu/lineup/out/serving_bundle.json.gz
-          if git diff --quiet -- "$f"; then
-            echo "Bundle unchanged (not republished)."
+          # The bundle and the player ratings export are only rewritten when their content
+          # changed, so an unchanged run leaves nothing to commit.
+          stage="${RUNNER_TEMP:-/tmp}/bu-staged"
+          changed=""
+          for f in pipeline/bu/lineup/out/serving_bundle.json.gz public/data/player_ratings.json; do
+            if [ -e "$f" ] && [ -n "$(git status --porcelain -- "$f")" ]; then
+              mkdir -p "$stage/$(dirname "$f")"
+              cp "$f" "$stage/$f"
+              changed="$changed $f"
+            fi
+          done
+          if [ -z "$changed" ]; then
+            echo "Bundle and player ratings unchanged (not republished)."
             exit 0
           fi
-          staged="${RUNNER_TEMP:-/tmp}/serving_bundle.json.gz"
-          cp "$f" "$staged"
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
           for i in 1 2 3 4 5; do
-            # Start each attempt from the latest main and re-apply the bundle (one binary file,
-            # owned by this workflow only), so a concurrent data push never conflicts.
+            # Start each attempt from the latest main and re-apply the staged files, so a
+            # concurrent data push never conflicts.
             if git -c "http.https://github.com/.extraheader=$auth" fetch -q --depth=1 origin main &&
                git reset -q --hard FETCH_HEAD; then
-              cp "$staged" "$f"
-              git add -- "$f"
+              for f in $changed; do
+                cp "$stage/$f" "$f"
+                git add -- "$f"
+              done
               if git diff --cached --quiet; then
-                echo "Bundle already on main."
+                echo "Bundle and player ratings already on main."
                 exit 0
               fi
               git commit -q -m "RAPM lineup bundle refresh [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"

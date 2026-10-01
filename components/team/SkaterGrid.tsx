@@ -21,7 +21,7 @@ interface SkaterGridProps {
 }
 
 type Which = 'current' | 'last';
-type SortBy = 'lineup' | 'impact' | 'pts' | 'toi';
+type SortBy = 'lineup' | 'net' | 'pts' | 'toi';
 
 // Percentile ramp: --neg → neutral → --pos (every stop ≥5:1 on the panel).
 const NEG: [number, number, number] = [255, 84, 112];
@@ -41,15 +41,15 @@ const sgn = (v: number, d = 2) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(
 
 /**
  * Current-roster skater cards. Counting stats come from one season's NHL
- * boxscores (season toggle); ratings come from the player model and carry
- * their own season tag. Players new to the club show their rating from the
- * previous team as a tag, not as this team's number.
+ * boxscores (season toggle); NET / OFF / DEF are the current RAPM ratings
+ * (they follow the player, so a newcomer shows his own); the on-ice rates
+ * come from the player model's season and carry its tag.
  */
 export default function SkaterGrid(props: SkaterGridProps) {
     const { skaters, lineup, currentLabel, prevLabel, ratingsLabel } = props;
     const anyCurrent = skaters.some(s => (s.current?.gp ?? 0) > 0);
     const [which, setWhich] = React.useState<Which>(anyCurrent ? 'current' : 'last');
-    const [sortBy, setSortBy] = React.useState<SortBy>(lineup ? 'lineup' : 'impact');
+    const [sortBy, setSortBy] = React.useState<SortBy>(lineup ? 'lineup' : 'net');
     const [pos, setPos] = React.useState<'all' | 'f' | 'd'>('all');
     const seasonGames = which === 'current' ? props.currentSeasonGames : props.prevSeasonGames;
     const label = which === 'current' ? currentLabel : prevLabel;
@@ -60,7 +60,7 @@ export default function SkaterGrid(props: SkaterGridProps) {
         const key = (s: SkaterCardData) => {
             if (sortBy === 'pts') return line(s)?.pts ?? -1;
             if (sortBy === 'toi') return line(s)?.toi ?? -1;
-            return s.isNew ? -99 : (s.impact?.score.v ?? -99);
+            return s.rating?.net ?? -99;
         };
         return [...list].sort((a, b) => key(b) - key(a) || a.name.localeCompare(b.name));
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,8 +69,8 @@ export default function SkaterGrid(props: SkaterGridProps) {
     const byId = new Map(skaters.map(s => [s.id, s]));
     const inLineup = new Set(lineup ? Object.values(lineup).flat() : []);
     const ratingsTag = shortSeasonTag(ratingsLabel);
-    // Ratings (IMP + on-ice rates) are one season's model output; tag them
-    // whenever that season differs from the counting-stats season on screen.
+    // On-ice rates are one season's model output; tag them whenever that
+    // season differs from the counting-stats season on screen.
     const ratingsPrior = !!ratingsLabel && ratingsLabel !== label;
 
     const card = (s: SkaterCardData) => (
@@ -108,7 +108,7 @@ export default function SkaterGrid(props: SkaterGridProps) {
                     onChange={setSortBy}
                     options={[
                         ...(lineup ? [{ value: 'lineup' as const, label: 'Lines' }] : []),
-                        { value: 'impact', label: 'Impact' },
+                        { value: 'net', label: 'NET' },
                         { value: 'pts', label: 'PTS' },
                         { value: 'toi', label: 'TOI' },
                     ]}
@@ -132,7 +132,7 @@ export default function SkaterGrid(props: SkaterGridProps) {
                     <Swatch className="bg-brand/60" label="Other" />
                     {ratingsPrior ? (
                         <span className="inline-flex items-center gap-1">
-                            Rtg <SeasonTag>{ratingsTag}</SeasonTag>
+                            Rates <SeasonTag>{ratingsTag}</SeasonTag>
                         </span>
                     ) : null}
                 </span>
@@ -190,7 +190,8 @@ function SkaterCard({
     teamColor: string;
     seasonGames: number;
 }) {
-    const imp = s.isNew ? null : s.impact;
+    const imp = s.rates;
+    const rt = s.rating;
     const [imgOk, setImgOk] = React.useState(true);
     const stats: [string, React.ReactNode][] = [
         ['GP', line?.gp ?? 0],
@@ -228,17 +229,7 @@ function SkaterCard({
                         <span className="font-bold text-fg-1">{POS_LABEL[s.pos] ?? s.pos}</span>
                         {s.number != null ? <span>#{s.number}</span> : null}
                         {s.age ? <span>{s.age}Y</span> : null}
-                        {s.isNew ? (
-                            <span className="font-bold text-brand">
-                                New{s.from ? ` ${s.from}` : ''}
-                                {s.impact ? (
-                                    <span className="ml-1 font-normal text-fg-2" title={`${ratingsLabel} impact${s.from ? ` with ${s.from}` : ''}`}>
-                                        {sgn(s.impact.score.v)}
-                                        <span className="sr-only"> ({ratingsLabel} impact)</span>
-                                    </span>
-                                ) : null}
-                            </span>
-                        ) : null}
+                        {s.isNew ? <span className="font-bold text-brand">New{s.from ? ` ${s.from}` : ''}</span> : null}
                         {s.injury ? (
                             <span className="font-bold text-neg" title={s.injury.status}>
                                 {injuryCode(s.injury.status)}
@@ -248,14 +239,16 @@ function SkaterCard({
                         ) : null}
                     </p>
                 </div>
-                <div className="flex shrink-0 flex-col items-end">
-                    <span className="label flex items-center gap-1">
-                        Imp{ratingsTag && imp ? <SeasonTag>{ratingsTag}</SeasonTag> : null}
+                <div className="flex shrink-0 flex-col items-end" title="NET: EV xG per 60 above average (OFF − DEF)">
+                    <span className="label">Net</span>
+                    <span
+                        className="font-display text-[22px] font-bold leading-7 tabular-nums"
+                        style={rt && rt.pct != null && rt.evMin >= 250 ? { color: pctColor(rt.pct) } : { color: 'rgb(var(--text-3-rgb))' }}
+                    >
+                        {rt ? sgn(rt.net) : '—'}
                     </span>
-                    <span className="font-display text-[22px] font-bold leading-7 tabular-nums" style={imp ? { color: pctColor(imp.score.p) } : { color: 'rgb(var(--text-3-rgb))' }}>
-                        {imp ? sgn(imp.score.v) : '—'}
-                    </span>
-                    {imp ? <span className="text-micro tabular-nums text-fg-3">P{imp.score.p}</span> : null}
+                    {rt?.pct != null ? <span className="text-micro tabular-nums text-fg-3">P{rt.pct}</span> : null}
+                    {rt && !rt.rated ? <span className="sr-only">rookie prior</span> : null}
                 </div>
             </div>
 
@@ -268,6 +261,20 @@ function SkaterCard({
                 ))}
             </dl>
             <span className="sr-only">{seasonLabel} regular season</span>
+
+            {rt ? (
+                <p className="flex items-center gap-3 px-3 pt-1.5 text-micro uppercase tabular-nums text-fg-3">
+                    <span title="Offence: EV xG for per 60 above average">
+                        Off <span className="font-bold text-fg-2">{sgn(rt.off)}</span>
+                    </span>
+                    <span title="Defence: EV xG against per 60 above average (lower is better)">
+                        Def <span className="font-bold text-fg-2">{sgn(rt.def)}</span>
+                    </span>
+                    <span title="Even-strength minutes behind the rating" className="ml-auto">
+                        {rt.evMin.toLocaleString('en-US')} EV min
+                    </span>
+                </p>
+            ) : null}
 
             {imp ? (
                 <div data-ratings-season={ratingsLabel} data-prior={ratingsTag ? '' : undefined}>

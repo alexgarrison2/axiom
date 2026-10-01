@@ -3,19 +3,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Papa from 'papaparse';
 import { json, parseRecent, str, type RawRow } from './parse';
-import { buildIndex, leagueContext, lineupView, type DfoLineup, type ImpactData } from './lineup-impact';
+import { buildIndex, leagueContext, lineupView, type DfoLineup } from './lineup-impact';
+import { parseRatings } from '../players/ratings';
 import { disambiguate, gsaxWindow, isCoinFlip, shortDate } from './format';
 import type { GoalieView, InjuryView, MatchupDetails, MatchupDetailsPayload, PickSummaries, SideDetails } from '../../types/prediction';
 import { SEASON_ID, SEASON_START_DATE } from '../season';
 import { TEAM_CODES, TEAM_NAMES } from '../../components/ui/team-color';
-import { loadSeasonGames, ratingsSeason } from '../../utils/team-stats/server';
+import { loadSeasonGames } from '../../utils/team-stats/server';
 import { goalieStartsGsax } from '../../utils/team-stats/game-row';
 
 /*
- * Server loader for /api/matchup-details: lineups with impact values,
+ * Server loader for /api/matchup-details: lineups with player ratings (NET),
  * goalie tandems, injuries, recent games and news for every game on the
  * slate. Kept out of utils/data.ts so the home function never traces
- * player_impact.json (1.1MB) or team_lineups.json. Literal paths only.
+ * player_ratings.json or team_lineups.json. Literal paths only.
  */
 const READ = {
     predictions: () => fs.readFileSync(path.join(process.cwd(), 'data', 'predictions_detailed.csv'), 'utf8'),
@@ -23,7 +24,7 @@ const READ = {
     goalieLines: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'goalie_season_lines.json'), 'utf8'),
     goalieRatings: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'goalie_ratings.json'), 'utf8'),
     injuries: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'injuries.json'), 'utf8'),
-    impact: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'player_impact.json'), 'utf8'),
+    ratings: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'player_ratings.json'), 'utf8'),
     lineups: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'team_lineups.json'), 'utf8'),
     history: () => fs.readFileSync(path.join(process.cwd(), 'data', 'prediction_history.json'), 'utf8'),
 } as const;
@@ -146,9 +147,10 @@ export function getMatchupDetails(): MatchupDetailsPayload {
     );
     const injuries = readJson<Injury[]>('injuries') ?? [];
     const goalieInjuries = new Map(injuries.filter(i => i && (i.position ?? '').toUpperCase() === 'G' && i.status && OUT_STATUSES.test(i.status)).map(i => [fold(i.name), i]));
-    const ctx = leagueContext(buildIndex(readJson<ImpactData>('impact') ?? {}), readJson<Record<string, DfoLineup>>('lineups') ?? {});
-    // player_impact.json describes last season until enough games are in (the team pages use the same rule).
-    const impactSeason = ratingsSeason();
+    const playerRatings = parseRatings(readJson<unknown>('ratings'));
+    const ctx = leagueContext(buildIndex(playerRatings), readJson<Record<string, DfoLineup>>('lineups') ?? {});
+    // RAPM ratings are current (this season's games are in as of the file's date).
+    const impactSeason = playerRatings.season ?? SEASON_ID;
     // This season's starts per goalie, from the same rows and function as the team page's goalie lines.
     let seasonGames: ReturnType<typeof loadSeasonGames> = [];
     try {

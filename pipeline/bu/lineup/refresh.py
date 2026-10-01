@@ -13,6 +13,8 @@ and refits the season from the committed season pack:
   4. publish ``bu/lineup/out/serving_bundle.json.gz`` when its content changed or the
      committed copy is older than ``REPUBLISH_H`` (so ``built_at`` never ages past the
      36 h serving limit while the content is unchanged, e.g. over a break)
+  5. export the site's player ratings ``public/data/player_ratings.json``
+     (``bu.lineup.ratings_export``; rewritten only when its content changed)
 
 Run from ``pipeline/``:
 
@@ -145,7 +147,21 @@ def refresh(lake_dir: str, season: str | None = None, publish: bool = True, xg: 
         os.replace(tmp, BUNDLE)
         summary["published"] = True
     log(f"[bu-refresh] {'published' if summary['published'] else 'not published'}: {why}")
+    if publish:
+        summary["player_ratings"] = export_ratings(BUNDLE, state, log)
     return _finish(summary, state, log)
+
+
+def export_ratings(bundle_path, state, log=_log, out_path=None) -> dict:
+    """5. ``public/data/player_ratings.json`` from the committed bundle, this run's rosters
+    (crosswalk parquet) and stints.  Never fails the refresh: the bundle is the product, and
+    ``validate_outputs.py player_ratings`` flags a missing or stale file."""
+    from . import ratings_export as RE
+    try:
+        return RE.export(bundle_path, out_path or RE.PUBLIC_FILE, state_root=state, fetch_rosters=True, log=log)
+    except Exception as e:  # noqa: BLE001
+        log(f"[bu-refresh] player ratings export failed: {type(e).__name__}: {e}")
+        return {"error": f"{type(e).__name__}: {e}"}
 
 
 def _finish(summary, state, log):

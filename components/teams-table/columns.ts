@@ -111,7 +111,7 @@ export const COLUMNS: StatColumn[] = [
     C('xgf_5v5', 'xGF 5v5', '5-on-5 xG-for rating', 'high', d2, { rating: r => r.xgf_5v5 }),
     C('xga_5v5', 'xGA 5v5', '5-on-5 xG-against rating', 'low', d2, { rating: r => r.xga_5v5 }),
     C('lineup_rating', 'Lineup', 'Lineup impact: all seven lines plus the goalies', 'high', d2, {
-        tip: 'player-impact',
+        tip: 'player-net',
         rating: r => r.lines.f1 + r.lines.f2 + r.lines.f3 + r.lines.f4 + r.lines.d1 + r.lines.d2 + r.lines.d3 + r.goalie,
     }),
     C('f1_impact', 'F1', 'First line impact', 'high', d2, { rating: r => r.lines.f1 }),
@@ -123,8 +123,8 @@ export const COLUMNS: StatColumn[] = [
     C('d3_impact', 'D3', 'Third pair impact', 'high', d2, { rating: r => r.lines.d3 }),
     C('f_impact', 'F Tot', 'All forwards', 'high', d2, { rating: r => r.lines.f1 + r.lines.f2 + r.lines.f3 + r.lines.f4 }),
     C('d_impact', 'D Tot', 'All defence', 'high', d2, { rating: r => r.lines.d1 + r.lines.d2 + r.lines.d3 }),
-    C('rapm_f', 'F RAPM', 'Forwards, TOI-weighted RAPM', 'high', d2, { tip: 'player-impact', rating: r => r.rapm.f }),
-    C('rapm_d', 'D RAPM', 'Defence, TOI-weighted RAPM', 'high', d2, { tip: 'player-impact', rating: r => r.rapm.d }),
+    C('rapm_f', 'F RAPM', 'Forwards, TOI-weighted RAPM', 'high', d2, { tip: 'player-net', rating: r => r.rapm.f }),
+    C('rapm_d', 'D RAPM', 'Defence, TOI-weighted RAPM', 'high', d2, { tip: 'player-net', rating: r => r.rapm.d }),
     C('goalie_impact', 'G Impact', 'Goalie impact (GSAx per game, top two goalies)', 'high', d2, { tip: 'gsax', rating: r => r.goalie }),
 ];
 
