@@ -289,6 +289,28 @@ def test_synthetic_end_to_end_point_in_time(synth):
     assert tv["n"] > 0 and np.isfinite(tv["ewma_mae"]) and np.isfinite(tv["last_game_mae"])
 
 
+def test_validation_summary_selects_on_tuning_only():
+    from bu.rapm import validate as V
+    rng = np.random.default_rng(1)
+    rows = []
+    good, bad = "v0.02_k1.5_y0.25_a1_r1", "v0.04_k6_y0.25_a1_r1"
+    models = {"const": 1.0, "team|18000": 0.9, "flat|36000": 0.8, f"rapm|{good}": 0.5, f"prior_only|{good}": 0.7,
+              f"rapm|{bad}": 0.6, f"prior_only|{bad}": 0.75, f"rapm|{good.replace('_a1_', '_a0_')}": 0.4}
+    for S in ("2021", "2022", "2023"):
+        for g in range(200):
+            noise = rng.normal(0, 0.05)
+            for m, lvl in models.items():
+                rows.append((S, "2021-11-01", m, g, (lvl + noise) * 100, 100.0))
+    pg = pd.DataFrame(rows, columns=["season", "asof", "model", "game_id", "sse", "sw"])
+    hypers = {good: Hyper(0.02, 1.5), bad: Hyper(0.04, 6.0)}
+    s = V.summarize({"per_game": pg, "hypers": hypers}, ["2021", "2022"], ["2023"], ["2021", "2022", "2023"])
+    assert s["selected"]["rapm"] == f"rapm|{good}"           # ablations are never selected
+    assert s["stability"]["within_one_step"]
+    assert s["gate"]["pass"] and s["folds"]["2023"]["role"] == "dev"
+    assert s["folds"]["2023"]["rapm_vs"]["team"]["delta_mse"] == pytest.approx(-0.4)
+    assert good.replace("_a1_", "_a0_") in s["ablations"]
+
+
 def test_degraded_availability(monkeypatch):
     from bu.rapm.engine import DEGRADE_ENV, avail_dates
     gids = np.arange(2023020001, 2023021001)
