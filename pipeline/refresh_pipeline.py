@@ -33,7 +33,7 @@ import importlib
 import shutil
 import time
 import traceback
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
 if PIPELINE_DIR not in sys.path:
@@ -746,14 +746,36 @@ def write_manifest(r, mode, phase):
 FULL_WINDOW_UTC = range(12, 15)   # 12:00-14:59 UTC (7-10 am ET): last night's games are final
 FULL_MIN_INTERVAL_HOURS = 20       # one successful full run per morning window
 FULL_CATCH_UP_HOURS = 36           # outside the window, force a full run if none succeeded for this long
+FULL_UNSCRAPED_RETRY_HOURS = 3     # min gap between full attempts triggered by unstored final games
+
+
+def has_unscraped_finals():
+    """True when the NHL schedule lists a completed game that is not yet in this
+    season's gamestats.  Only the full run scrapes games, so the lite hours
+    would otherwise serve stale records, game logs and player stats until the
+    next morning window (which GitHub's cron can skip).  Any lookup failure
+    counts as False so the hourly run stays lite."""
+    import scrape_games
+    try:
+        path = os.path.join(PIPELINE_DIR, season_file("gamestats"))
+        stored = set()
+        if os.path.exists(path):
+            stored = set(pd.read_csv(path, usecols=["game_id"])["game_id"].astype("int64"))
+        sched, _ = scrape_games.completed_schedule_games(date(START_YEAR, 9, 1), today_local())
+    except Exception as e:
+        print(f"[WARN] unscraped-finals check failed: {e}")
+        return False
+    return any(gid not in stored for gid in sched)
 
 
 def auto_mode(now=None):
     """'full' once per morning window (retrying on later hours of the window
-    if the first attempt failed), and as a catch-up when the last successful
-    full run is older than FULL_CATCH_UP_HOURS; otherwise 'lite'."""
+    if the first attempt failed), when final games are waiting to be scraped,
+    and as a catch-up when the last successful full run is older than
+    FULL_CATCH_UP_HOURS; otherwise 'lite'."""
     now = now or datetime.now(timezone.utc)
-    last = load_manifest().get("last_full_run")
+    manifest = load_manifest()
+    last = manifest.get("last_full_run")
     try:
         age = (now - datetime.fromisoformat(last.replace("Z", "+00:00"))).total_seconds() / 3600
     except (AttributeError, TypeError, ValueError):
@@ -761,6 +783,13 @@ def auto_mode(now=None):
     if now.hour in FULL_WINDOW_UTC and age >= FULL_MIN_INTERVAL_HOURS:
         return "full"
     if age >= FULL_CATCH_UP_HOURS:
+        return "full"
+    try:
+        attempt_age = (now - datetime.fromisoformat(manifest["last_full_attempt"].replace("Z", "+00:00"))
+                       ).total_seconds() / 3600
+    except (KeyError, AttributeError, TypeError, ValueError):
+        attempt_age = float("inf")
+    if attempt_age >= FULL_UNSCRAPED_RETRY_HOURS and has_unscraped_finals():
         return "full"
     return "lite"
 
