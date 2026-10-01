@@ -187,3 +187,15 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   `timestamp_utc` (ISO-8601 UTC), `model_version`, `home_model%` and
   `home_market%`. `timestamp` stays as the legacy US Central `HH:MM`. `*_EV`
   stays a percentage there (the snapshot converts from the fraction).
+* Season shot file (`pipeline/nhl_season_<yyyy>_<yyyy>_shots.csv`, from
+  `refresh_pipeline.stage_rescore_xg`): `xg_raw` is the raw output of the
+  **active** shot model (no shooting talent, no league normalisation), and
+  `xG` / `xG_flurry_adj` are `xg_raw` x shooting talent x league
+  normalisation. The active model is chosen by `PONYXG_XG`
+  (`pipeline/bu/xg/live.py`): `v1` (`xg_model_xgb.pkl`; empty-net shots get
+  the constant 0.52), `shadow` (the default: `xg_raw` from v1, plus the
+  additive column `xg_raw_v2` from xG v2, `pipeline/models/xg2_*.json`) or
+  `v2` (`xg_raw` from xG v2, v1 only for shots v2 cannot score yet, plus
+  `xg_raw_v2`). `xg_raw_v2` is NaN until the game's play-by-play has been
+  scored. `manifest.json` `sources.xg_model` records `mode`, `hash`,
+  `v2_signature`, `v1_fallback_games` and `v2_unmatched_events`.
