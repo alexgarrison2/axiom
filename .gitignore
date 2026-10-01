@@ -86,3 +86,6 @@ pipeline/data/predictions_detailed.csv
 pipeline/data/last_updated.json
 data/nhl_season_*_gamestats.csv
 .claude/worktrees/
+
+# bottom-up model data lake (DESIGN §2.3, D4): raw JSON + parquet live outside git
+/data/lake/
