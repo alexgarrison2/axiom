@@ -13,6 +13,7 @@ const SHORT: Record<string, string> = {
     goaltending: 'Goalies',
     rest: 'Rest',
     lineup: 'Lineups',
+    lineup_goalie: 'Who plays',
     market: 'Market',
 };
 

@@ -31,6 +31,7 @@ const LABELS: Record<string, string> = {
     goaltending: 'Goaltending',
     rest: 'Rest & travel',
     lineup: 'Lineups & injuries',
+    lineup_goalie: 'Lineup & starter vs usual',
     market: 'Betting market',
 };
 

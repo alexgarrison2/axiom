@@ -203,7 +203,7 @@ export function recordFromRecent(gp: number, games: RecentGame[]): string | null
     return `${w}-${l}-${o}`;
 }
 
-const KNOWN_FACTORS = new Set(['home_ice', 'strength_5v5', 'special_teams', 'goaltending', 'rest', 'lineup', 'market']);
+const KNOWN_FACTORS = new Set(['home_ice', 'strength_5v5', 'special_teams', 'goaltending', 'rest', 'lineup', 'lineup_goalie', 'market']);
 
 /**
  * Shrink a Prediction for the page payload: drop null / false / empty

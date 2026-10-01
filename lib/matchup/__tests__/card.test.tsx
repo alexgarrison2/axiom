@@ -296,6 +296,25 @@ describe('review fixes', () => {
         expect(text(render(<WhyThisPick p={clear} />).container)).toContain('Why: PHI 56%');
     });
 
+    it('shows the lineup / starting-goalie factor as its own bar: label and number only', () => {
+        const p = withOverrides(byTeams(fixture('opening_night'), 'PIT', 'PHI'), {
+            breakdown: [
+                { factor: 'home_ice', wp_delta_pts: 2 },
+                { factor: 'goaltending', wp_delta_pts: -1 },
+                { factor: 'lineup_goalie', wp_delta_pts: -2.4 },
+            ],
+        });
+        const { container } = render(<WhyThisPick p={p} />);
+        const rows = [...container.querySelectorAll('li')].map(li => text(li));
+        const row = rows.find(r => r.includes('Who plays'));
+        expect(row).toBeDefined();
+        expect(row).toContain('+2.4');
+        expect(row).toContain('PIT');
+        // compactForClient drops the label of a factor the UI names itself
+        expect(compactForClient(p).breakdown.find(f => f.factor === 'lineup_goalie')).toEqual({ factor: 'lineup_goalie', wp_delta_pts: -2.4 });
+        expect(container.querySelectorAll('[class*="whyFill"]').length).toBe(4);
+    });
+
     it('draws why-bars from the centre toward the team each factor helps', () => {
         const p = withOverrides(byTeams(fixture('opening_night'), 'PIT', 'PHI'), {
             breakdown: [
