@@ -23,8 +23,11 @@ python -m bu.rapm.v2_source --lake-dir $L --state-dir <bu.xg walk-forward state>
 python -m bu.rapm stints   --lake-dir $L --out $O --xg $X --seasons 2010-2026
 # 2. tuning + DESIGN §3.2.2 stint-level validation (burn-in = first lake season)
 python -m bu.rapm validate --lake-dir $L --out $O --xg $X --seasons 2010-2025 --tune 2021,2022 --dev 2023,2024
-# 3. daily point-in-time ratings with the tuned setting (through the current season: its prior pack)
-python -m bu.rapm asof     --lake-dir $L --out $O --xg $X --seasons 2010-2026
+# 3. daily point-in-time ratings with the shipped setting (window prior, owner directive
+#    2026-10-01; through the current season: its prior pack)
+python -m bu.rapm asof     --lake-dir $L --out $O --xg $X --seasons 2010-2026 --hyper bu/rapm/out/rapm_validation_window.json
+# 3b. finishing-talent season pack for the player ratings export
+python -m bu.rapm.finishing pack --lake-dir $L --out $O --xg $X --season 20262027
 # 4. per-game lineup features, then the walk-forward inside the incumbent
 python -m bu.lineup features --lake-dir $L --out $O --seasons 2010-2026
 python -m bu.lineup evaluate --lake-dir $L --out $O --matrix /tmp/M.pkl   # dev folds only
@@ -90,6 +93,71 @@ The RAPM target is chosen with `--xg` on `stints`/`validate`/`asof`: `v1` (the p
 | Crosswalk | `lineup/crosswalk.py` | NHL rosters (explicit season id) + lake rosterSpots -> ids for DFO names; `out/crosswalk_coverage.json` |
 | Live | `lineup/serve.py` | season pack -> serving bundle -> `LiveLineupTerm` (above) |
 | Game level | `lineup/evaluate.py` | incumbent `train_game_model.walk_forward` with and without the lineup columns; dev folds pick the variant; one logged holdout look |
+| Finishing | `finishing.py` | FIN = shrunk EV goals above xG per 60 from the player's own unblocked shots: gamma-Poisson multiplier `(G + 60) / (X + 60)` on league-scaled xG, times shrunk ixG/60; all seasons equally weighted; point-in-time `FinState` (games up to `d - 2 days`); season-start state `../lineup/out/fin_pack_<S>.json.gz` (`python -m bu.rapm.finishing pack --season S --xg <source>`, once per season next to the lineup season pack) |
+
+## OFF credibility pass (2026-10-01): prior dynamics and finishing
+
+Owner smell test: Brendan Gallagher (23 pts, 1.6 SOG/GP in 2025-26) ranked 11th in OFF (+0.46),
+above Cole Caufield (51 goals, +0.34).  Evidence in `out/diagnosis_off_fin.json`,
+`out/rapm_validation_prior_dynamics.json`, `out/fin_validation.json` and
+`../lineup/out/lineup_eval_rapm_fin.json`.
+
+**Why Gallagher rates high.** He is a real 5v5 xG driver: raw on-ice EV xGF/60 relative to his
+team +0.37 (2023-24) and +0.43 (2024-25), no-prior RAPM +0.28 / +0.36 in those seasons, and
+MoneyPuck's 3-season 5on5 relative xGF/60 +0.59 (rank 20 of 564; Caufield +0.38).  2025-26 was
+weak (rel -0.02, no-prior +0.19 on 14 EV hours), but his season-start prior (+0.52, SD 0.11,
+worth 24 EV hours) outweighs it, so the 2025-26 posterior is +0.475 (+0.16 with his own prior
+reset).  Linemate collinearity is not the cause (his linemates are average or weak OFF players);
+Caufield's credit is split with Suzuki (17-22 shared EV hours a season).
+
+**Prior dynamics: window prior shipped by owner directive** (`out/rapm_validation_window.json`).
+The season-start prior is now a fresh ridge fit on the last three seasons' EV stints weighted
+1 / 0.5 / 0.25 (S-4 and older: 0), each older season's rows moved forward by the players'
+aging steps, ridged to the rookie / position means at `v_new 0.04` (picked on the tuning
+seasons among 0.02-0.06), summarised per player as mean + posterior variance
+(`priors.window_prior`, `Hyper(window="1,0.5,0.25")`); the in-season update is unchanged and
+the season pack / seeded live refit reproduce the full chain exactly.  Cost and gain vs the
+Kalman chain it replaces: game level neutral (dev folds, lineup term vs no lineup term on the
+live base: -0.00167 vs -0.00153; window minus current -0.00014, SE 0.00037; the owner's ship
+threshold was +0.0010), but the stint-level metrics are worse everywhere: next-30-day MSE
++0.016 (tuning, z 5.5), +0.015 (dev, z 5.5), +0.013 (2025-26, z 3.3); next-season MSE +0.026,
++0.024, +0.015 (z 8.6, 8.1, 3.6), and worse in every age bucket (<=24, 25-29, 30-32, 33+) and
+prior-strength bucket.  The next-season on-ice bias of 33+ players' O (the prior over-rates
+them by -0.024 xG/60 on 2021-26 rows) is only slightly smaller in window mode (-0.020).
+Correlation with MoneyPuck's 3-season 5on5 relative xGF/60 rises from 0.790 to 0.804.
+Gallagher OFF 0.457 -> 0.340 (11th -> 24th of roster skaters), McDavid 0.763 -> 0.552
+(2nd -> 5th; NET 2nd -> 14th).
+
+Before the directive, the Kalman chain's own dynamics were swept (kept for the record): a 180-point grid (`validate.prior_dynamics_grid`: additive
+season drift `q_add`, `aging_scale`, `young_old_extra`, `v_new`, `kappa`) scored on the shipped
+next-30-day stint MSE and on a new next-season metric (players fixed at the season-start prior,
+`next|` models).  The tuning-season best (`q_add 0.001`) gains 0.0004 on the 30-day MSE (z -0.65)
+but is worse on the next-season metric (tuning +0.0008, dev +0.0007, 2025-26 +0.0038, z 3.9)
+and on the 2025-26 30-day MSE (+0.0021); the per-season stability check fails, so DESIGN §3.2
+keeps the more regularised Kalman setting.  Stronger aging and wider age-tail variance are
+worse everywhere.  The looser chain would move Gallagher *up* (+0.505), since his strong
+2023-25 seasons then count for more.  At game level the looser candidate is -0.00017 (SE 0.00010)
+vs current on the dev folds: too small to override the stint-level loss.
+
+**Finishing (FIN).**  RAPM OFF is an xG impact by design, so it ignores finishing.  FIN is tuned
+on held-out shot log loss (tuning seasons, one-SE rule: `PRIOR_XG 60`, no season decay) and
+improves every season's shot LL vs xG alone (z -5.8, -4.4 tuning; -2.1, -2.8 dev; -2.6 2025-26).
+Gallagher has the 5th-worst FIN of all skaters with 20+ EV hours (-0.145 goals/60), Caufield
+the 11th best (+0.172).  `public/data/player_ratings.json` gains `fin` and `off_total = off + fin`
+(existing fields unchanged; DEF keeps the v2 "xG prevented" sign): with the window prior
+Gallagher 0.195 (93rd of roster skaters), Caufield 0.472 (14th).  Against MoneyPuck (goals
+included: rel xGF/60 + GAx/60) the correlation rises from 0.725 (OFF) to 0.794 (OFF_total) on
+the Kalman chain, 0.815 with the window prior.  Game level (dev folds, live features without
+the lineup term as the base): adding the team FIN term `bu_d_fin` to `bu_d_net + bu_d_delta`
+gives -0.00058 (SE 0.00040; 2023-24 -0.00067, 2024-25 -0.00048) on the Kalman ratings and
+-0.00058 on the window ratings (window + FIN vs Kalman without: -0.00072), which passes the A2
+dev rule, but it is **not wired into
+the live game model yet**: that needs the FIN term in the serving bundle / `LiveLineupTerm`, a
+joint retrain and the M3 component's holdout look (DESIGN §1.5), an owner decision.
+
+`lineup features` and the serving bundle now read the stints cache whatever xG source built it
+(`data.cached_stints`): with the old default `ensure_stints(paths, s)` (source `v1`) they rebuilt
+the cache that `asof --xg v2` had just written, re-scoring every season with the v1 pickle.
 
 ## Results on the xG v2 target (as shipped; lake 2010-11 .. 2026-27, code m2-r3, 2026-10-01)
 

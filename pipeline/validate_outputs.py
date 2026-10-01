@@ -779,6 +779,13 @@ def check_player_ratings(ctx):
            or abs(r["off"] + r["def"] - r["net"]) > 0.002]
     if bad:
         errs.append(f"player_ratings.json: {len(bad)} rows with a missing or inconsistent off/def/net, e.g. {bad[:3]}")
+    if "fin" in cols and "off_total" in cols:
+        # finishing talent (bu.rapm.finishing): off_total = off + fin; shrunk FIN stays small
+        badf = [r.get("name") for r in rows
+                if not all(isinstance(r.get(k), (int, float)) and r[k] == r[k] for k in ("fin", "off_total"))
+                or abs(r["off"] + r["fin"] - r["off_total"]) > 0.002 or abs(r["fin"]) > 0.5]
+        if badf:
+            errs.append(f"player_ratings.json: {len(badf)} rows with a missing or inconsistent fin/off_total, e.g. {badf[:3]}")
     if any(r.get("pos") == "G" for r in rows):
         errs.append("player_ratings.json: goalies listed (skaters only)")
     try:

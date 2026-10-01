@@ -334,6 +334,37 @@ def test_attach_coverage_gate_neutral():
     assert out.loc[3, "bu_d_net"] == 0.0 and bool(out.loc[3, "bu_missing"])
 
 
+def test_window_prior_weights_recent_seasons(synth, tmp_path):
+    """Window mode (owner directive): a season's data enters the next prior with its recency
+    weight (S-1 1.0, S-2 0.5, S-3 0.25, older 0), and the seeded live refit still equals the
+    full chain."""
+    from bu.rapm.engine import SeasonData
+    from bu.rapm.priors import window_prior
+    lake, paths, players, seasons, xg_path = synth
+    h = Hyper(v_new=0.02, kappa=1.25, window="1,0.5,0.25")
+    assert h.key() == "v0.02_k1.25_w1-0.5-0.25_y0.25_a1_r1" and Hyper(v_new=0.02).key() == "v0.02_k1.5_y0.25_a1_r1"
+    sd = SeasonData.load(paths, seasons[0], xg_path)
+    G = sd.full_gram()
+    one = window_prior("20232024", [(seasons[0], sd.idx, G)], players, None, None, h, 1160.0)
+    three = window_prior("20252026", [(seasons[0], sd.idx, G)], players, None, None, h, 1160.0)
+    assert window_prior("20262027", [(seasons[0], sd.idx, G)], players, None, None, h, 1160.0) == {}
+    p = max(one, key=lambda q: abs(one[q][0]))
+    # same data at a quarter of the weight: shrunk harder toward the (zero) group mean, wider
+    assert abs(three[p][0]) < abs(one[p][0]) and three[p][2] > one[p][2]
+
+    full = RapmPaths(lake, str(tmp_path / "full"))
+    A.run(full, seasons, players, h, source=xg_path, log=lambda *a: None)
+    S = seasons[1]
+    pr = pd.read_parquet(os.path.join(os.path.dirname(full.ratings(S)), f"prior_season={S}.parquet"))
+    pr = pr.set_index("player_id")
+    assert not pr.loc[p, "is_new"] and pr.loc[p, "o"] != 0.0
+    seeded = RapmPaths(lake, str(tmp_path / "seeded_w"))
+    A.run(seeded, [S], players, h, source=xg_path, log=lambda *a: None,
+          seed=os.path.join(full.root, "prior_pack", f"season={S}.json.gz"))
+    a, b = pd.read_parquet(full.ratings(S)), pd.read_parquet(seeded.ratings(S))
+    assert np.allclose(a[["o", "d"]].to_numpy(), b[["o", "d"]].to_numpy(), atol=1e-10)
+
+
 def test_published_reports_are_consistent():
     """The committed reports (if present) carry the walk-forward numbers the commit claims."""
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

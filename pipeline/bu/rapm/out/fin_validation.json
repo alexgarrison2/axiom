@@ -1,0 +1,1321 @@
+{
+ "design": "held-out shot log loss (DESIGN \u00a73.3 validation): every unblocked EV shot of a season scored as xG x the shooter's point-in-time multiplier (prior seasons + this season to d - 2 days) vs xG alone; delta per shot, negative = finishing talent helps; SE game-clustered",
+ "xg_source": "xg_v2 walk-forward OOS (bu.rapm.v2_source), lake 2010-11..2025-26; 2010-11..2020-21 burn-in",
+ "tune_seasons": [
+  20212022,
+  20222023
+ ],
+ "dev_seasons": [
+  20232024,
+  20242025
+ ],
+ "report_seasons": [
+  20252026
+ ],
+ "selection": "one-SE rule on the pooled tuning seasons (train_game_model C convention): the most regularised (largest PRIOR_XG) setting within one SE of the best",
+ "best_on_tuning": {
+  "prior_xg": 20.0,
+  "decay": 0.85,
+  "delta_ll_per_shot": -0.0004015491847384108,
+  "se": 7.192144780609454e-05
+ },
+ "selected": {
+  "prior_xg": 60.0,
+  "decay": 1.0,
+  "tuning_delta_ll_per_shot": -0.0003673068732978764
+ },
+ "selected_by_season": {
+  "20212022": {
+   "delta_ll_per_shot": -0.0003980873482749,
+   "se": 6.89024247410263e-05,
+   "z": -5.777552092994319,
+   "n_shots": 98397
+  },
+  "20222023": {
+   "delta_ll_per_shot": -0.000336307442413,
+   "se": 7.623113994740896e-05,
+   "z": -4.4116806156252535,
+   "n_shots": 97702
+  },
+  "20232024": {
+   "delta_ll_per_shot": -0.0001597112279202,
+   "se": 7.718195688471257e-05,
+   "z": -2.069281919850286,
+   "n_shots": 97992
+  },
+  "20242025": {
+   "delta_ll_per_shot": -0.0002135200924472,
+   "se": 7.610040643993445e-05,
+   "z": -2.805768095545324,
+   "n_shots": 97668
+  },
+  "20252026": {
+   "delta_ll_per_shot": -0.000204769515763,
+   "se": 7.746556395802144e-05,
+   "z": -2.643361841062237,
+   "n_shots": 95699
+  }
+ },
+ "grid": [
+  {
+   "prior_xg": 20.0,
+   "decay": 0.5,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0003942,
+   "se": 9.19e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.7,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0004406,
+   "se": 9.39e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.85,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0004522,
+   "se": 9.69e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 1.0,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.000428,
+   "se": 0.0001022
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.5,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0003623,
+   "se": 6.34e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.7,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0004073,
+   "se": 6.82e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.85,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0004291,
+   "se": 7.35e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 1.0,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0004242,
+   "se": 8.11e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.5,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0003132,
+   "se": 4.9e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.7,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0003592,
+   "se": 5.43e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.85,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0003887,
+   "se": 6.03e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 1.0,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0003981,
+   "se": 6.89e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.5,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0002399,
+   "se": 3.39e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.7,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.000284,
+   "se": 3.89e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.85,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0003199,
+   "se": 4.51e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 1.0,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0003459,
+   "se": 5.42e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.5,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0001839,
+   "se": 2.45e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.7,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0002232,
+   "se": 2.9e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.85,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0002599,
+   "se": 3.46e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 1.0,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0002947,
+   "se": 4.34e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.5,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0001248,
+   "se": 1.59e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.7,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0001556,
+   "se": 1.92e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.85,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0001882,
+   "se": 2.37e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 1.0,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0002266,
+   "se": 3.14e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.5,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -8.41e-05,
+   "se": 1.04e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.7,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0001068,
+   "se": 1.28e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.85,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0001329,
+   "se": 1.62e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 1.0,
+   "season": 20212022,
+   "n_shots": 98397,
+   "n_games": 1401,
+   "delta_ll_per_shot": -0.0001681,
+   "se": 2.24e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.5,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0002783,
+   "se": 0.0001022
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.7,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.000329,
+   "se": 0.0001035
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.85,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0003505,
+   "se": 0.0001064
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 1.0,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0003391,
+   "se": 0.0001115
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.5,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0002996,
+   "se": 7.17e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.7,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0003371,
+   "se": 7.57e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.85,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0003563,
+   "se": 8.13e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 1.0,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.000352,
+   "se": 8.93e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.5,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.000274,
+   "se": 5.58e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.7,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0003096,
+   "se": 6.05e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.85,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0003322,
+   "se": 6.69e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 1.0,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0003363,
+   "se": 7.62e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.5,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0002206,
+   "se": 3.9e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.7,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0002542,
+   "se": 4.36e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.85,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0002813,
+   "se": 5.01e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 1.0,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0002974,
+   "se": 6.02e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.5,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001738,
+   "se": 2.84e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.7,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0002042,
+   "se": 3.25e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.85,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0002325,
+   "se": 3.84e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 1.0,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0002563,
+   "se": 4.82e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.5,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001208,
+   "se": 1.85e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.7,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001452,
+   "se": 2.16e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.85,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001711,
+   "se": 2.64e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 1.0,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001995,
+   "se": 3.5e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.5,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -8.26e-05,
+   "se": 1.21e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.7,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001009,
+   "se": 1.44e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.85,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001221,
+   "se": 1.8e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 1.0,
+   "season": 20222023,
+   "n_shots": 97702,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001494,
+   "se": 2.5e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.5,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -6.72e-05,
+   "se": 0.0001019
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.7,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -7.72e-05,
+   "se": 0.0001037
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.85,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -7.02e-05,
+   "se": 0.0001067
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 1.0,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -3.74e-05,
+   "se": 0.000112
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.5,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001627,
+   "se": 7.19e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.7,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001698,
+   "se": 7.63e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.85,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001622,
+   "se": 8.18e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 1.0,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001304,
+   "se": 9.01e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.5,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001733,
+   "se": 5.62e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.7,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001848,
+   "se": 6.13e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.85,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001835,
+   "se": 6.76e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 1.0,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001597,
+   "se": 7.72e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.5,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001555,
+   "se": 3.94e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.7,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001724,
+   "se": 4.44e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.85,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001808,
+   "se": 5.09e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 1.0,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001722,
+   "se": 6.14e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.5,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001292,
+   "se": 2.88e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.7,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001478,
+   "se": 3.33e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.85,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001619,
+   "se": 3.93e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 1.0,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001655,
+   "se": 4.95e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.5,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -9.37e-05,
+   "se": 1.88e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.7,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001109,
+   "se": 2.22e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.85,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001277,
+   "se": 2.72e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 1.0,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001423,
+   "se": 3.62e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.5,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -6.56e-05,
+   "se": 1.24e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.7,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -7.96e-05,
+   "se": 1.49e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.85,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -9.51e-05,
+   "se": 1.87e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 1.0,
+   "season": 20232024,
+   "n_shots": 97992,
+   "n_games": 1400,
+   "delta_ll_per_shot": -0.0001137,
+   "se": 2.61e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.5,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001121,
+   "se": 9.55e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.7,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001476,
+   "se": 9.9e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.85,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.000164,
+   "se": 0.0001031
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 1.0,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001479,
+   "se": 0.0001091
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.5,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001681,
+   "se": 6.71e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.7,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.000197,
+   "se": 7.29e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.85,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0002133,
+   "se": 7.94e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 1.0,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0002042,
+   "se": 8.84e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.5,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001665,
+   "se": 5.23e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.7,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001952,
+   "se": 5.85e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.85,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0002148,
+   "se": 6.57e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 1.0,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0002135,
+   "se": 7.61e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.5,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001423,
+   "se": 3.66e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.7,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001707,
+   "se": 4.24e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.85,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001943,
+   "se": 4.96e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 1.0,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0002044,
+   "se": 6.09e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.5,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001155,
+   "se": 2.68e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.7,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001418,
+   "se": 3.17e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.85,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001668,
+   "se": 3.83e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 1.0,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001848,
+   "se": 4.94e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.5,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -8.23e-05,
+   "se": 1.74e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.7,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001038,
+   "se": 2.12e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.85,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001272,
+   "se": 2.66e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 1.0,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.000151,
+   "se": 3.64e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.5,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -5.7e-05,
+   "se": 1.15e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.7,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -7.35e-05,
+   "se": 1.42e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.85,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -9.29e-05,
+   "se": 1.83e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 1.0,
+   "season": 20242025,
+   "n_shots": 97668,
+   "n_games": 1398,
+   "delta_ll_per_shot": -0.0001173,
+   "se": 2.64e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.5,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001782,
+   "se": 9.81e-05
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.7,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001757,
+   "se": 0.0001002
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 0.85,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001527,
+   "se": 0.0001036
+  },
+  {
+   "prior_xg": 20.0,
+   "decay": 1.0,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001032,
+   "se": 0.0001089
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.5,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002297,
+   "se": 6.95e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.7,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002326,
+   "se": 7.44e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 0.85,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002196,
+   "se": 8.05e-05
+  },
+  {
+   "prior_xg": 40.0,
+   "decay": 1.0,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001823,
+   "se": 8.93e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.5,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002207,
+   "se": 5.45e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.7,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002308,
+   "se": 5.99e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 0.85,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002286,
+   "se": 6.7e-05
+  },
+  {
+   "prior_xg": 60.0,
+   "decay": 1.0,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002048,
+   "se": 7.75e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.5,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001848,
+   "se": 3.83e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.7,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002021,
+   "se": 4.36e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 0.85,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002128,
+   "se": 5.09e-05
+  },
+  {
+   "prior_xg": 100.0,
+   "decay": 1.0,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0002091,
+   "se": 6.27e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.5,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001487,
+   "se": 2.81e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.7,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.000168,
+   "se": 3.28e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 0.85,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001855,
+   "se": 3.95e-05
+  },
+  {
+   "prior_xg": 150.0,
+   "decay": 1.0,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001963,
+   "se": 5.14e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.5,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001052,
+   "se": 1.83e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.7,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001231,
+   "se": 2.19e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 0.85,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001432,
+   "se": 2.75e-05
+  },
+  {
+   "prior_xg": 250.0,
+   "decay": 1.0,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001664,
+   "se": 3.83e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.5,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -7.26e-05,
+   "se": 1.21e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.7,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -8.71e-05,
+   "se": 1.47e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 0.85,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001054,
+   "se": 1.89e-05
+  },
+  {
+   "prior_xg": 400.0,
+   "decay": 1.0,
+   "season": 20252026,
+   "n_shots": 95699,
+   "n_games": 1394,
+   "delta_ll_per_shot": -0.0001324,
+   "se": 2.8e-05
+  }
+ ]
+}

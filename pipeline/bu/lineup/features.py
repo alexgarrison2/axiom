@@ -27,6 +27,8 @@ Columns (home minus away where prefixed ``bu_d_``):
   bu_h_delta, bu_a_delta, bu_d_delta        vs the team's last 10 lineups
   bu_h_n, bu_a_n, bu_h_rated, bu_a_rated    dressed skaters / with an NHL rating
   bu_*_net_asof, bu_*_delta_asof            L-asof: the team's previous dressed 18 (no injury feed)
+  bu_h_fin, bu_a_fin, bu_d_fin              sum of share x FIN (bu.rapm.finishing, goals above xG / 60);
+                                            evaluated on the dev folds, not a live model feature
   bu_ok                                     both sides >= MIN_RATED rated skaters
   ratings_asof, max_source_date             leakage audit: max_source_date <= date - lag
 """
@@ -42,6 +44,7 @@ import pandas as pd
 from bu.lake.build import read_table
 from bu.rapm.asof import load_covs, load_ratings
 from bu.rapm.engine import LAG_DAYS, avail_dates
+from bu.rapm.finishing import FinState
 from .toi import ShareState, game_shares, lag_cutoff, lineup_shares
 
 BASELINE_GAMES = 10
@@ -99,14 +102,32 @@ def side_term(state: ShareState, pids, groups, rate, past_lineups) -> dict:
             "delta_asof": past[-1] - float(np.mean(past)) if enough else 0.0}
 
 
-def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
+def fin_player_games(paths, seasons, source: str | None, games: pd.DataFrame) -> pd.DataFrame | None:
+    """Player-game EV goals / xG / seconds of every season (``bu.rapm.finishing``), sorted by the
+    date the game becomes usable (game date + LAG_DAYS, degraded like the shifts); None when a
+    season has no xG cache to read the shooter's goals and xG from."""
+    from bu.rapm.data import cached_source, cached_stints, ensure_xg
+    from bu.rapm.finishing import player_games
+    frames = []
+    for s in seasons:
+        src = source or cached_source(paths, s)
+        if src is None:
+            return None
+        pg = player_games(ensure_xg(paths, s, src), game_shares(cached_stints(paths, s)))
+        frames.append(pg.assign(season=s))
+    pg = pd.concat(frames, ignore_index=True).merge(games[["game_id", "d"]], on="game_id")
+    pg["avail"] = avail_dates(pg["game_id"], pg["d"])
+    return pg.sort_values(["avail", "game_id"], kind="stable").reset_index(drop=True)
+
+
+def build(paths, seasons: list[str], log=print, fin: bool = True) -> pd.DataFrame:
     lake = paths.lake
     games, lineups, pos_group = lineup_tables(lake, seasons)
 
-    from bu.rapm.data import ensure_stints
+    from bu.rapm.data import cached_stints
     shares = []
     for s in seasons:
-        sh = game_shares(ensure_stints(paths, s))
+        sh = game_shares(cached_stints(paths, s))
         sh["season"] = s
         if len(sh):
             shares.append(sh)
@@ -151,6 +172,13 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
         rm = (summ["seasons"].get(s) or {}).get("rookie", {}).get("means", {})
         rookie[s] = {g: (rm.get(f"{g}|all|o", 0.0), rm.get(f"{g}|all|d", 0.0)) for g in ("F", "D")}
 
+    # finishing talent (bu.rapm.finishing): point-in-time FIN of every dressed skater
+    fpg = fin_player_games(paths, seasons, summ.get("xg_source"), games) if fin else None
+    if fin and fpg is None:
+        log("  [lineup] no xG cache for every season: FIN columns skipped")
+    fstate = FinState() if fpg is not None else None
+    f_ptr, f_av = 0, (fpg["avail"].to_numpy() if fpg is not None else None)
+
     state = ShareState()
     sh_ptr = 0
     history: dict[int, deque] = defaultdict(lambda: deque(maxlen=BASELINE_GAMES))
@@ -164,6 +192,16 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
             for s, sub in chunk.groupby("season", sort=False):
                 state.apply(sub, pos_group, s)
             sh_ptr = hi
+        if fstate is not None:
+            S0 = str(day["season"].iloc[0])
+            if fstate.season != S0:
+                # every game of earlier seasons is in before the roll (incl. the last LAG_DAYS)
+                hi_prev = f_ptr + int((fpg["season"].iloc[f_ptr:] < S0).sum())
+                fstate.add_games(fpg.iloc[f_ptr:hi_prev]); f_ptr = hi_prev  # noqa: E702
+                fstate.roll(S0, pos_group)
+            fhi = int(np.searchsorted(f_av, cut, side="right"))
+            if fhi > f_ptr:
+                fstate.add_games(fpg.iloc[f_ptr:fhi]); f_ptr = fhi  # noqa: E702
         for _, g in day.iterrows():
             S = g["season"]
             if cache_key != (S, d):
@@ -199,6 +237,8 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
                     row.update({f"bu_{side}_off": np.nan, f"bu_{side}_def": np.nan, f"bu_{side}_n": len(pids),
                                 f"bu_{side}_rated": 0, f"bu_{side}_delta": np.nan,
                                 f"bu_{side}_net_asof": np.nan, f"bu_{side}_delta_asof": np.nan})
+                    if fstate is not None:
+                        row[f"bu_{side}_fin"] = np.nan
                     continue
                 s_ = lineup_shares(state, pids, groups)
                 s_last = lineup_shares(state, pids, groups, method="last")
@@ -214,6 +254,9 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
                 row[f"bu_{side}_delta"] = t["delta"]
                 row[f"bu_{side}_net_asof"] = t["net_asof"]
                 row[f"bu_{side}_delta_asof"] = t["delta_asof"]
+                if fstate is not None:
+                    fv = np.array([fstate.fin(p_, g_) for p_, g_ in zip(pids, groups)])
+                    row[f"bu_{side}_fin"] = float(s_ @ fv)
                 ok = ok and t["rated"] >= MIN_RATED
             c0, ch = cov_by.get((S, d), (np.nan, np.nan))
             row["c_intercept"], row["c_home"] = c0, ch
@@ -238,6 +281,8 @@ def build(paths, seasons: list[str], log=print) -> pd.DataFrame:
     F["bu_d_delta"] = F["bu_h_delta"] - F["bu_a_delta"]
     F["bu_d_net_asof"] = F["bu_h_net_asof"] - F["bu_a_net_asof"]
     F["bu_d_delta_asof"] = F["bu_h_delta_asof"] - F["bu_a_delta_asof"]
+    if "bu_h_fin" in F.columns:
+        F["bu_d_fin"] = F["bu_h_fin"] - F["bu_a_fin"]
     F["lag_days"] = LAG_DAYS
     te = pd.DataFrame(toi_err, columns=["season", "ewma", "last"])
     F.attrs["toi_validation"] = {

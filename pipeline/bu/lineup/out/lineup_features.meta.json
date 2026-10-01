@@ -1,21 +1,24 @@
 {
-  "code_version": "m2-r3",
+  "code_version": "m2-r4",
   "hyper": {
-    "v_new": 0.02,
+    "v_new": 0.04,
     "kappa": 1.25,
     "young_old_extra": 0.25,
     "cov_lam": 72000.0,
     "use_aging": true,
-    "use_rookie_mean": true
+    "use_rookie_mean": true,
+    "q_add": 0.0,
+    "aging_scale": 1.0,
+    "window": "1,0.5,0.25"
   },
   "lag_days": 2,
-  "xg_source": "xg_v2 (python -m bu.rapm.v2_source: walk-forward OOS xg2_asof)",
+  "xg_source": "/private/tmp/claude-501/-Users-alexgarrison-axiom/6556fcb8-f839-44c1-9ae3-5ee70b3ea620/scratchpad/int/xg_v2",
   "lineups": "L-actual",
   "toi": "ewma-hl8-m2",
   "baseline_games": 10,
   "min_rated": 14,
   "degrade": null,
-  "sha256_csv": "748a9d2a88508c8a7a8c766f8219377c4b83b3fbf450d0451d0ab520252ab318",
+  "sha256_csv": "aec916dc379a703e8408d638ead58778a5a08004d0dc6f9f0da1c60db351ac52",
   "seasons": [
     "20102011",
     "20112012",

@@ -53,6 +53,28 @@ def ensure_stints(paths, season: str, source: str = "v1", rebuild: bool = False)
     return st
 
 
+def cached_stints(paths, season: str, fallback_source: str = "v1") -> pd.DataFrame:
+    """The season's stints cache whatever xG source built it (for EV time and on-ice sets only,
+    which do not depend on the xG source); built with ``fallback_source`` when there is none.
+
+    ``ensure_stints(paths, s)`` with its default ``v1`` key rebuilt (and so overwrote) a cache that
+    ``bu.rapm stints/asof --xg v2`` had just written: the lineup features and the serving bundle
+    only need EV time, so they read the cache as it is."""
+    p = paths.stints(season)
+    if os.path.exists(p) and os.path.exists(_meta_path(p)):
+        return pd.read_parquet(p)
+    return ensure_stints(paths, season, fallback_source)
+
+
+def cached_source(paths, season: str) -> str | None:
+    """The xG source key of the season's xG cache (None when there is none)."""
+    p = paths.xg(season)
+    if not (os.path.exists(p) and os.path.exists(_meta_path(p))):
+        return None
+    with open(_meta_path(p)) as f:
+        return json.load(f).get("source")
+
+
 def season_rows(paths, season: str, source: str = "v1", entity: str = "player", target: str = "xgf",
                 game_types=(2, 3)):
     st = ensure_stints(paths, season, source)

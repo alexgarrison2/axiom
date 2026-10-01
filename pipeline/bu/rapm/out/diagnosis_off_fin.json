@@ -1,0 +1,1811 @@
+{
+ "question": "Owner smell test 2026-10-01: Brendan Gallagher (23 pts, 1.6 SOG/GP, 3rd/4th line 2025-26) ranks ~11th in RAPM v2 OFF (+0.46), above Cole Caufield (51 goals, +0.34)",
+ "per_season": {
+  "note": "shipped config v0.02_k1.25, xG v2 target, full-season fit from each season-start prior pack. onice/office = raw EV xGF/60 of the attacking side with / without him (his main team); prior_equiv_ev_h = prior precision in EV hours (sigma2 / prior var); posterior_o = data_part + prior_part exactly (A^-1 X'Wy + A^-1 L b0); standalone_flat_o = no-prior ridge (10 h) used for aging; o_if_own_prior_reset = refit with only his own prior replaced by the rookie mean at v_new",
+  "seasons": {
+   "20222023": {
+    "Gallagher": {
+     "ev_h": 7.4,
+     "onice_xgf60": 2.349,
+     "team_office_xgf60": 2.369,
+     "rel_xgf60": -0.02,
+     "prior_mean_o": 0.526,
+     "prior_sd_o": 0.101,
+     "prior_equiv_ev_h": 37.2,
+     "posterior_o": 0.448,
+     "data_part": -0.015,
+     "prior_part": 0.462,
+     "standalone_flat_o": -0.01,
+     "o_if_own_prior_reset": -0.003,
+     "top_mates_h": [
+      [
+       "Christian Dvorak",
+       4.2
+      ],
+      [
+       "Johnathan Kovacevic",
+       2.3
+      ],
+      [
+       "Jordan Harris",
+       2.1
+      ],
+      [
+       "Joel Edmundson",
+       1.9
+      ],
+      [
+       "Jake Evans",
+       1.9
+      ]
+     ],
+     "top_mates_o": [
+      -0.033,
+      0.042,
+      0.054,
+      -0.129,
+      -0.049
+     ]
+    },
+    "Caufield": {
+     "ev_h": 10.9,
+     "onice_xgf60": 2.544,
+     "team_office_xgf60": 2.332,
+     "rel_xgf60": 0.212,
+     "prior_mean_o": 0.125,
+     "prior_sd_o": 0.118,
+     "prior_equiv_ev_h": 27.5,
+     "posterior_o": 0.13,
+     "data_part": -0.005,
+     "prior_part": 0.135,
+     "standalone_flat_o": 0.009,
+     "o_if_own_prior_reset": 0.04,
+     "top_mates_h": [
+      [
+       "Nick Suzuki",
+       9.8
+      ],
+      [
+       "Kirby Dach",
+       6.6
+      ],
+      [
+       "David Savard",
+       3.6
+      ],
+      [
+       "Kaiden Guhle",
+       3.6
+      ],
+      [
+       "Jordan Harris",
+       3.4
+      ]
+     ],
+     "top_mates_o": [
+      -0.082,
+      0.06,
+      -0.045,
+      -0.144,
+      0.054
+     ]
+    },
+    "McDavid": {
+     "ev_h": 26.1,
+     "onice_xgf60": 3.647,
+     "team_office_xgf60": 2.736,
+     "rel_xgf60": 0.911,
+     "prior_mean_o": 0.859,
+     "prior_sd_o": 0.093,
+     "prior_equiv_ev_h": 44.6,
+     "posterior_o": 0.826,
+     "data_part": 0.252,
+     "prior_part": 0.574,
+     "standalone_flat_o": 0.463,
+     "o_if_own_prior_reset": 0.367,
+     "top_mates_h": [
+      [
+       "Zach Hyman",
+       14.7
+      ],
+      [
+       "Evan Bouchard",
+       10.4
+      ],
+      [
+       "Darnell Nurse",
+       10.2
+      ],
+      [
+       "Leon Draisaitl",
+       10.2
+      ],
+      [
+       "Cody Ceci",
+       8.7
+      ]
+     ],
+     "top_mates_o": [
+      0.373,
+      0.132,
+      0.092,
+      0.336,
+      -0.15
+     ]
+    }
+   },
+   "20232024": {
+    "Gallagher": {
+     "ev_h": 15.5,
+     "onice_xgf60": 2.662,
+     "team_office_xgf60": 2.295,
+     "rel_xgf60": 0.368,
+     "prior_mean_o": 0.434,
+     "prior_sd_o": 0.094,
+     "prior_equiv_ev_h": 35.0,
+     "posterior_o": 0.464,
+     "data_part": 0.114,
+     "prior_part": 0.35,
+     "standalone_flat_o": 0.276,
+     "o_if_own_prior_reset": 0.242,
+     "top_mates_h": [
+      [
+       "Jake Evans",
+       5.2
+      ],
+      [
+       "Mike Matheson",
+       4.9
+      ],
+      [
+       "Kaiden Guhle",
+       4.5
+      ],
+      [
+       "Joel Armia",
+       4.2
+      ],
+      [
+       "Josh Anderson",
+       4.1
+      ]
+     ],
+     "top_mates_o": [
+      -0.083,
+      0.007,
+      -0.199,
+      0.019,
+      0.091
+     ]
+    },
+    "Caufield": {
+     "ev_h": 21.0,
+     "onice_xgf60": 2.72,
+     "team_office_xgf60": 2.226,
+     "rel_xgf60": 0.494,
+     "prior_mean_o": 0.136,
+     "prior_sd_o": 0.104,
+     "prior_equiv_ev_h": 28.3,
+     "posterior_o": 0.235,
+     "data_part": 0.077,
+     "prior_part": 0.158,
+     "standalone_flat_o": 0.148,
+     "o_if_own_prior_reset": 0.201,
+     "top_mates_h": [
+      [
+       "Nick Suzuki",
+       17.1
+      ],
+      [
+       "Juraj Slafkovsk\u00fd",
+       15.0
+      ],
+      [
+       "Mike Matheson",
+       9.9
+      ],
+      [
+       "Kaiden Guhle",
+       7.3
+      ],
+      [
+       "David Savard",
+       5.3
+      ]
+     ],
+     "top_mates_o": [
+      -0.003,
+      0.199,
+      0.007,
+      -0.199,
+      0.002
+     ]
+    },
+    "McDavid": {
+     "ev_h": 28.8,
+     "onice_xgf60": 3.861,
+     "team_office_xgf60": 2.494,
+     "rel_xgf60": 1.367,
+     "prior_mean_o": 0.819,
+     "prior_sd_o": 0.078,
+     "prior_equiv_ev_h": 50.6,
+     "posterior_o": 0.857,
+     "data_part": 0.282,
+     "prior_part": 0.575,
+     "standalone_flat_o": 0.496,
+     "o_if_own_prior_reset": 0.5,
+     "top_mates_h": [
+      [
+       "Zach Hyman",
+       21.6
+      ],
+      [
+       "Evan Bouchard",
+       20.4
+      ],
+      [
+       "Mattias Ekholm",
+       18.3
+      ],
+      [
+       "Ryan Nugent-Hopkins",
+       11.8
+      ],
+      [
+       "Leon Draisaitl",
+       10.6
+      ]
+     ],
+     "top_mates_o": [
+      0.486,
+      0.221,
+      0.132,
+      0.032,
+      0.382
+     ]
+    }
+   },
+   "20242025": {
+    "Gallagher": {
+     "ev_h": 16.7,
+     "onice_xgf60": 2.989,
+     "team_office_xgf60": 2.561,
+     "rel_xgf60": 0.428,
+     "prior_mean_o": 0.449,
+     "prior_sd_o": 0.085,
+     "prior_equiv_ev_h": 38.0,
+     "posterior_o": 0.539,
+     "data_part": 0.144,
+     "prior_part": 0.394,
+     "standalone_flat_o": 0.357,
+     "o_if_own_prior_reset": 0.374,
+     "top_mates_h": [
+      [
+       "Christian Dvorak",
+       11.9
+      ],
+      [
+       "Josh Anderson",
+       11.2
+      ],
+      [
+       "Lane Hutson",
+       6.0
+      ],
+      [
+       "Mike Matheson",
+       5.6
+      ],
+      [
+       "David Savard",
+       5.0
+      ]
+     ],
+     "top_mates_o": [
+      -0.092,
+      0.115,
+      0.271,
+      -0.036,
+      -0.128
+     ]
+    },
+    "Caufield": {
+     "ev_h": 20.1,
+     "onice_xgf60": 3.039,
+     "team_office_xgf60": 2.512,
+     "rel_xgf60": 0.527,
+     "prior_mean_o": 0.239,
+     "prior_sd_o": 0.093,
+     "prior_equiv_ev_h": 31.6,
+     "posterior_o": 0.304,
+     "data_part": 0.098,
+     "prior_part": 0.206,
+     "standalone_flat_o": 0.161,
+     "o_if_own_prior_reset": 0.215,
+     "top_mates_h": [
+      [
+       "Nick Suzuki",
+       17.2
+      ],
+      [
+       "Juraj Slafkovsk\u00fd",
+       12.8
+      ],
+      [
+       "Lane Hutson",
+       9.7
+      ],
+      [
+       "Mike Matheson",
+       9.3
+      ],
+      [
+       "Kaiden Guhle",
+       5.2
+      ]
+     ],
+     "top_mates_o": [
+      0.098,
+      0.277,
+      0.271,
+      -0.036,
+      -0.104
+     ]
+    },
+    "McDavid": {
+     "ev_h": 25.8,
+     "onice_xgf60": 3.853,
+     "team_office_xgf60": 2.528,
+     "rel_xgf60": 1.325,
+     "prior_mean_o": 0.849,
+     "prior_sd_o": 0.072,
+     "prior_equiv_ev_h": 53.7,
+     "posterior_o": 0.843,
+     "data_part": 0.258,
+     "prior_part": 0.585,
+     "standalone_flat_o": 0.474,
+     "o_if_own_prior_reset": 0.45,
+     "top_mates_h": [
+      [
+       "Evan Bouchard",
+       18.1
+      ],
+      [
+       "Zach Hyman",
+       13.8
+      ],
+      [
+       "Mattias Ekholm",
+       12.4
+      ],
+      [
+       "Leon Draisaitl",
+       10.9
+      ],
+      [
+       "Ryan Nugent-Hopkins",
+       9.5
+      ]
+     ],
+     "top_mates_o": [
+      0.203,
+      0.512,
+      0.122,
+      0.504,
+      -0.036
+     ]
+    }
+   },
+   "20252026": {
+    "Gallagher": {
+     "ev_h": 14.1,
+     "onice_xgf60": 2.621,
+     "team_office_xgf60": 2.639,
+     "rel_xgf60": -0.018,
+     "prior_mean_o": 0.523,
+     "prior_sd_o": 0.113,
+     "prior_equiv_ev_h": 23.9,
+     "posterior_o": 0.475,
+     "data_part": 0.081,
+     "prior_part": 0.394,
+     "standalone_flat_o": 0.194,
+     "o_if_own_prior_reset": 0.16,
+     "top_mates_h": [
+      [
+       "Phillip Danault",
+       5.3
+      ],
+      [
+       "Alexandre Carrier",
+       4.8
+      ],
+      [
+       "Josh Anderson",
+       4.8
+      ],
+      [
+       "Lane Hutson",
+       4.6
+      ],
+      [
+       "Mike Matheson",
+       4.4
+      ]
+     ],
+     "top_mates_o": [
+      0.13,
+      -0.084,
+      0.064,
+      0.326,
+      -0.048
+     ]
+    },
+    "Caufield": {
+     "ev_h": 23.5,
+     "onice_xgf60": 3.014,
+     "team_office_xgf60": 2.488,
+     "rel_xgf60": 0.526,
+     "prior_mean_o": 0.304,
+     "prior_sd_o": 0.094,
+     "prior_equiv_ev_h": 34.3,
+     "posterior_o": 0.346,
+     "data_part": 0.133,
+     "prior_part": 0.213,
+     "standalone_flat_o": 0.266,
+     "o_if_own_prior_reset": 0.206,
+     "top_mates_h": [
+      [
+       "Nick Suzuki",
+       21.7
+      ],
+      [
+       "Juraj Slafkovsk\u00fd",
+       12.7
+      ],
+      [
+       "Lane Hutson",
+       10.6
+      ],
+      [
+       "Mike Matheson",
+       10.4
+      ],
+      [
+       "Noah Dobson",
+       10.2
+      ]
+     ],
+     "top_mates_o": [
+      0.063,
+      0.19,
+      0.326,
+      -0.048,
+      0.036
+     ]
+    },
+    "McDavid": {
+     "ev_h": 25.8,
+     "onice_xgf60": 3.557,
+     "team_office_xgf60": 2.24,
+     "rel_xgf60": 1.317,
+     "prior_mean_o": 0.832,
+     "prior_sd_o": 0.074,
+     "prior_equiv_ev_h": 56.4,
+     "posterior_o": 0.784,
+     "data_part": 0.194,
+     "prior_part": 0.59,
+     "standalone_flat_o": 0.488,
+     "o_if_own_prior_reset": 0.308,
+     "top_mates_h": [
+      [
+       "Evan Bouchard",
+       17.4
+      ],
+      [
+       "Mattias Ekholm",
+       15.6
+      ],
+      [
+       "Zach Hyman",
+       13.0
+      ],
+      [
+       "Ryan Nugent-Hopkins",
+       9.6
+      ],
+      [
+       "Leon Draisaitl",
+       6.6
+      ]
+     ],
+     "top_mates_o": [
+      0.208,
+      0.119,
+      0.39,
+      -0.107,
+      0.485
+     ]
+    }
+   }
+  }
+ },
+ "fin_2026_27_start": {
+  "Gallagher": {
+   "g_w": 190.0,
+   "xg_w": 228.509,
+   "ev_s_w": 748432.0,
+   "mult": 0.8665,
+   "fin": -0.1455
+  },
+  "Caufield": {
+   "g_w": 128.0,
+   "xg_w": 101.148,
+   "ev_s_w": 347827.0,
+   "mult": 1.1666,
+   "fin": 0.1716
+  },
+  "McDavid": {
+   "g_w": 289.0,
+   "xg_w": 270.795,
+   "ev_s_w": 903442.0,
+   "mult": 1.055,
+   "fin": 0.059
+  }
+ },
+ "findings": [
+  "Gallagher is a genuine xG driver at 5v5 by both our model and an independent one: raw on-ice EV xGF/60 relative to his team +0.37 (2023-24) and +0.43 (2024-25), MoneyPuck 3-season 5on5 relative xGF/60 +0.59 (rank 20 of 564, Caufield +0.38, rank 59). His no-prior single-season RAPM was +0.28 / +0.36 in those years.",
+  "2025-26 is the outlier year: on-ice rel -0.02, standalone +0.19 on 14.1 EV hours; his season-start prior (+0.52, SD 0.11, worth 24 EV hours) outweighs that season, so the posterior stays +0.475 (with his own prior reset it would be +0.16). This is the Kalman chain working as tuned: one weak 14-hour season against three strong ones.",
+  "Collinearity is not the driver: his 2024-25/2025-26 linemates (Dvorak, Anderson, Danault, Carrier) are average-to-weak OFF players; Caufield shares 17-22 EV hours a season with Suzuki, which splits his on-ice credit (rel +0.53 every season, posterior +0.35).",
+  "Loosening the prior does not lower him: the tuning-best looser chain (q_add 0.001) moves Gallagher UP to +0.505 because his strong 2023-25 data then count for more.",
+  "What OFF misses is finishing. RAPM OFF is an xG impact by design. Gallagher has the 5th-worst shrunk finishing of all skaters with 20+ EV hours (FIN -0.145 goals/60: 190 EV goals on 229 league-scaled xG since 2010-11), Caufield the 11th best (+0.172: 128 on 101). OFF_total = OFF + FIN: Gallagher 0.33 (rank 52 of 564 qualified), Caufield 0.52 (rank 12)."
+ ],
+ "moneypuck_benchmark": {
+  "source": "MoneyPuck.com season summaries (skaters_2023/2024/2025.csv, situation 5on5), free for non-commercial use, credit MoneyPuck.com; 3-season sums; skaters with >= 1500 5v5 minutes; ours = posterior at the end of 2025-26 (and FIN at the start of 2026-27)",
+  "mp_metrics": "mp_rel_xgf60 = on-ice xGF/60 - off-ice xGF/60 (not teammate-adjusted); mp_gax60 = (goals - ixG) per 60; mp_off_total = mp_rel_xgf60 + mp_gax60",
+  "current_o": {
+   "n": 564,
+   "min_toi_5v5_3y": 1500.0,
+   "corr_o_vs_mp_rel_xgf60": {
+    "pearson": 0.79,
+    "spearman": 0.785
+   },
+   "corr_o_vs_mp_off_total": {
+    "pearson": 0.725,
+    "spearman": 0.717
+   },
+   "corr_o_vs_mp_ixg60": {
+    "pearson": 0.499,
+    "spearman": 0.559
+   },
+   "corr_o_vs_mp_gax60": {
+    "pearson": 0.167,
+    "spearman": 0.178
+   },
+   "compare": "o vs mp_rel_xgf60",
+   "top25_disagreements": [
+    {
+     "id": 8475218,
+     "name": "Mattias Ekholm",
+     "pos": "D",
+     "team": "EDM",
+     "toi_min": 4000.383,
+     "o": 0.119,
+     "mp_rel_xgf60": 0.886,
+     "mp_gax60": -0.054,
+     "rank_ours": 169,
+     "rank_mp": 5,
+     "gap": -2.344
+    },
+    {
+     "id": 8473419,
+     "name": "Brad Marchand",
+     "pos": "L",
+     "team": "FLA",
+     "toi_min": 2637.867,
+     "o": 0.562,
+     "mp_rel_xgf60": 0.273,
+     "mp_gax60": 0.196,
+     "rank_ours": 6,
+     "rank_mp": 116,
+     "gap": 2.111
+    },
+    {
+     "id": 8475810,
+     "name": "Bryan Rust",
+     "pos": "R",
+     "team": "PIT",
+     "toi_min": 3014.117,
+     "o": 0.031,
+     "mp_rel_xgf60": 0.626,
+     "mp_gax60": 0.162,
+     "rank_ours": 279,
+     "rank_mp": 18,
+     "gap": -1.974
+    },
+    {
+     "id": 8481481,
+     "name": "Blake Lizotte",
+     "pos": "C",
+     "team": "PIT",
+     "toi_min": 1881.633,
+     "o": 0.103,
+     "mp_rel_xgf60": -0.396,
+     "mp_gax60": -0.058,
+     "rank_ours": 183,
+     "rank_mp": 517,
+     "gap": 1.778
+    },
+    {
+     "id": 8475786,
+     "name": "Zach Hyman",
+     "pos": "L",
+     "team": "EDM",
+     "toi_min": 3229.767,
+     "o": 0.39,
+     "mp_rel_xgf60": 1.161,
+     "mp_gax60": -0.135,
+     "rank_ours": 20,
+     "rank_mp": 1,
+     "gap": -1.757
+    },
+    {
+     "id": 8476454,
+     "name": "Ryan Nugent-Hopkins",
+     "pos": "C",
+     "team": "EDM",
+     "toi_min": 3098.717,
+     "o": -0.107,
+     "mp_rel_xgf60": 0.327,
+     "mp_gax60": -0.208,
+     "rank_ours": 450,
+     "rank_mp": 88,
+     "gap": -1.753
+    },
+    {
+     "id": 8480835,
+     "name": "Jack Drury",
+     "pos": "C",
+     "team": "COL",
+     "toi_min": 2539.95,
+     "o": 0.033,
+     "mp_rel_xgf60": -0.499,
+     "mp_gax60": -0.173,
+     "rank_ours": 277,
+     "rank_mp": 537,
+     "gap": 1.734
+    },
+    {
+     "id": 8478569,
+     "name": "Noel Acciari",
+     "pos": "C",
+     "team": "PIT",
+     "toi_min": 2174.867,
+     "o": -0.103,
+     "mp_rel_xgf60": -0.726,
+     "mp_gax60": -0.179,
+     "rank_ours": 444,
+     "rank_mp": 561,
+     "gap": 1.727
+    },
+    {
+     "id": 8476372,
+     "name": "Nick Seeler",
+     "pos": "D",
+     "team": "PHI",
+     "toi_min": 3426.033,
+     "o": -0.189,
+     "mp_rel_xgf60": 0.182,
+     "mp_gax60": -0.052,
+     "rank_ours": 519,
+     "rank_mp": 178,
+     "gap": -1.727
+    },
+    {
+     "id": 8479066,
+     "name": "Ryan Lomberg",
+     "pos": "L",
+     "team": "CGY",
+     "toi_min": 1872.967,
+     "o": -0.085,
+     "mp_rel_xgf60": -0.669,
+     "mp_gax60": -0.186,
+     "rank_ours": 415,
+     "rank_mp": 558,
+     "gap": 1.643
+    },
+    {
+     "id": 8480803,
+     "name": "Evan Bouchard",
+     "pos": "D",
+     "team": "EDM",
+     "toi_min": 4530.817,
+     "o": 0.208,
+     "mp_rel_xgf60": 0.818,
+     "mp_gax60": 0.073,
+     "rank_ours": 95,
+     "rank_mp": 9,
+     "gap": -1.63
+    },
+    {
+     "id": 8480980,
+     "name": "Connor Dewar",
+     "pos": "C",
+     "team": "PIT",
+     "toi_min": 2021.2,
+     "o": 0.058,
+     "mp_rel_xgf60": -0.423,
+     "mp_gax60": -0.073,
+     "rank_ours": 243,
+     "rank_mp": 523,
+     "gap": 1.62
+    },
+    {
+     "id": 8476441,
+     "name": "Joel Edmundson",
+     "pos": "D",
+     "team": "LAK",
+     "toi_min": 3344.867,
+     "o": -0.259,
+     "mp_rel_xgf60": 0.023,
+     "mp_gax60": -0.048,
+     "rank_ours": 547,
+     "rank_mp": 299,
+     "gap": -1.592
+    },
+    {
+     "id": 8478427,
+     "name": "Sebastian Aho",
+     "pos": "C",
+     "team": "CAR",
+     "toi_min": 3290.383,
+     "o": 0.398,
+     "mp_rel_xgf60": 0.17,
+     "mp_gax60": 0.003,
+     "rank_ours": 18,
+     "rank_mp": 187,
+     "gap": 1.543
+    },
+    {
+     "id": 8478904,
+     "name": "Steven Lorentz",
+     "pos": "C",
+     "team": "TOR",
+     "toi_min": 1732.683,
+     "o": -0.016,
+     "mp_rel_xgf60": -0.514,
+     "mp_gax60": -0.228,
+     "rank_ours": 332,
+     "rank_mp": 540,
+     "gap": 1.511
+    },
+    {
+     "id": 8479318,
+     "name": "Auston Matthews",
+     "pos": "C",
+     "team": "TOR",
+     "toi_min": 3206.817,
+     "o": 0.635,
+     "mp_rel_xgf60": 0.578,
+     "mp_gax60": 0.109,
+     "rank_ours": 4,
+     "rank_mp": 22,
+     "gap": 1.51
+    },
+    {
+     "id": 8480289,
+     "name": "Morgan Barron",
+     "pos": "C",
+     "team": "WPG",
+     "toi_min": 2071.55,
+     "o": 0.076,
+     "mp_rel_xgf60": -0.357,
+     "mp_gax60": -0.026,
+     "rank_ours": 218,
+     "rank_mp": 507,
+     "gap": 1.502
+    },
+    {
+     "id": 8476457,
+     "name": "Adam Larsson",
+     "pos": "D",
+     "team": "SEA",
+     "toi_min": 4509.733,
+     "o": -0.192,
+     "mp_rel_xgf60": 0.109,
+     "mp_gax60": 0.029,
+     "rank_ours": 520,
+     "rank_mp": 231,
+     "gap": -1.5
+    },
+    {
+     "id": 8478399,
+     "name": "Jonas Siegenthaler",
+     "pos": "D",
+     "team": "NJD",
+     "toi_min": 3285.833,
+     "o": -0.29,
+     "mp_rel_xgf60": -0.062,
+     "mp_gax60": -0.087,
+     "rank_ours": 554,
+     "rank_mp": 374,
+     "gap": -1.479
+    },
+    {
+     "id": 8476331,
+     "name": "Dylan DeMelo",
+     "pos": "D",
+     "team": "WPG",
+     "toi_min": 4558.55,
+     "o": -0.054,
+     "mp_rel_xgf60": 0.331,
+     "mp_gax60": 0.011,
+     "rank_ours": 383,
+     "rank_mp": 85,
+     "gap": -1.473
+    },
+    {
+     "id": 8477946,
+     "name": "Dylan Larkin",
+     "pos": "C",
+     "team": "DET",
+     "toi_min": 3262.05,
+     "o": 0.349,
+     "mp_rel_xgf60": 0.111,
+     "mp_gax60": -0.015,
+     "rank_ours": 31,
+     "rank_mp": 227,
+     "gap": 1.468
+    },
+    {
+     "id": 8475784,
+     "name": "Jeff Skinner",
+     "pos": "L",
+     "team": "SJS",
+     "toi_min": 2125.25,
+     "o": 0.297,
+     "mp_rel_xgf60": 0.029,
+     "mp_gax60": 0.061,
+     "rank_ours": 48,
+     "rank_mp": 290,
+     "gap": 1.451
+    },
+    {
+     "id": 8479400,
+     "name": "Pierre-Luc Dubois",
+     "pos": "C",
+     "team": "WSH",
+     "toi_min": 2628.483,
+     "o": 0.412,
+     "mp_rel_xgf60": 0.222,
+     "mp_gax60": -0.21,
+     "rank_ours": 16,
+     "rank_mp": 151,
+     "gap": 1.449
+    },
+    {
+     "id": 8475179,
+     "name": "Dmitry Kulikov",
+     "pos": "D",
+     "team": "FLA",
+     "toi_min": 2527.45,
+     "o": -0.28,
+     "mp_rel_xgf60": -0.06,
+     "mp_gax60": -0.074,
+     "rank_ours": 551,
+     "rank_mp": 372,
+     "gap": -1.434
+    },
+    {
+     "id": 8481641,
+     "name": "Joel Kiviranta",
+     "pos": "L",
+     "team": "COL",
+     "toi_min": 1804.083,
+     "o": 0.026,
+     "mp_rel_xgf60": -0.42,
+     "mp_gax60": -0.11,
+     "rank_ours": 284,
+     "rank_mp": 520,
+     "gap": 1.43
+    }
+   ],
+   "mean_abs_gap_top25": 1.646,
+   "n_over_ours_top25": 14,
+   "focus": [
+    {
+     "id": 8475848,
+     "name": "Brendan Gallagher",
+     "pos": "R",
+     "team": "MTL",
+     "toi_min": 2754.883,
+     "o": 0.475,
+     "mp_rel_xgf60": 0.591,
+     "mp_gax60": -0.314,
+     "rank_ours": 11,
+     "rank_mp": 20,
+     "gap": 0.584
+    },
+    {
+     "id": 8478402,
+     "name": "Connor McDavid",
+     "pos": "C",
+     "team": "EDM",
+     "toi_min": 3851.45,
+     "o": 0.784,
+     "mp_rel_xgf60": 1.145,
+     "mp_gax60": 0.041,
+     "rank_ours": 1,
+     "rank_mp": 2,
+     "gap": 0.469
+    },
+    {
+     "id": 8481540,
+     "name": "Cole Caufield",
+     "pos": "R",
+     "team": "MTL",
+     "toi_min": 3526.7,
+     "o": 0.346,
+     "mp_rel_xgf60": 0.384,
+     "mp_gax60": 0.356,
+     "rank_ours": 34,
+     "rank_mp": 59,
+     "gap": 0.555
+    }
+   ]
+  },
+  "current_off_total": {
+   "n": 564,
+   "min_toi_5v5_3y": 1500.0,
+   "corr_o_vs_mp_rel_xgf60": {
+    "pearson": 0.79,
+    "spearman": 0.785
+   },
+   "corr_o_vs_mp_off_total": {
+    "pearson": 0.725,
+    "spearman": 0.717
+   },
+   "corr_o_vs_mp_ixg60": {
+    "pearson": 0.499,
+    "spearman": 0.559
+   },
+   "corr_o_vs_mp_gax60": {
+    "pearson": 0.167,
+    "spearman": 0.178
+   },
+   "corr_off_total_vs_mp_rel_xgf60": {
+    "pearson": 0.773,
+    "spearman": 0.778
+   },
+   "corr_off_total_vs_mp_off_total": {
+    "pearson": 0.794,
+    "spearman": 0.794
+   },
+   "corr_off_total_vs_mp_ixg60": {
+    "pearson": 0.445,
+    "spearman": 0.505
+   },
+   "corr_off_total_vs_mp_gax60": {
+    "pearson": 0.359,
+    "spearman": 0.351
+   },
+   "compare": "off_total vs mp_off_total",
+   "top25_disagreements": [
+    {
+     "id": 8473419,
+     "name": "Brad Marchand",
+     "pos": "L",
+     "team": "FLA",
+     "toi_min": 2637.867,
+     "o": 0.562,
+     "fin": 0.191,
+     "off_total": 0.753,
+     "mp_rel_xgf60": 0.273,
+     "mp_gax60": 0.196,
+     "rank_ours": 4,
+     "rank_mp": 61,
+     "gap": 2.269
+    },
+    {
+     "id": 8475810,
+     "name": "Bryan Rust",
+     "pos": "R",
+     "team": "PIT",
+     "toi_min": 3014.117,
+     "o": 0.031,
+     "fin": -0.003,
+     "off_total": 0.028,
+     "mp_rel_xgf60": 0.626,
+     "mp_gax60": 0.162,
+     "rank_ours": 276,
+     "rank_mp": 14,
+     "gap": -2.148
+    },
+    {
+     "id": 8479318,
+     "name": "Auston Matthews",
+     "pos": "C",
+     "team": "TOR",
+     "toi_min": 3206.817,
+     "o": 0.635,
+     "fin": 0.201,
+     "off_total": 0.837,
+     "mp_rel_xgf60": 0.578,
+     "mp_gax60": 0.109,
+     "rank_ours": 3,
+     "rank_mp": 23,
+     "gap": 2.084
+    },
+    {
+     "id": 8475218,
+     "name": "Mattias Ekholm",
+     "pos": "D",
+     "team": "EDM",
+     "toi_min": 4000.383,
+     "o": 0.119,
+     "fin": -0.004,
+     "off_total": 0.115,
+     "mp_rel_xgf60": 0.886,
+     "mp_gax60": -0.054,
+     "rank_ours": 187,
+     "rank_mp": 12,
+     "gap": -1.843
+    },
+    {
+     "id": 8475786,
+     "name": "Zach Hyman",
+     "pos": "L",
+     "team": "EDM",
+     "toi_min": 3229.767,
+     "o": 0.39,
+     "fin": -0.144,
+     "off_total": 0.245,
+     "mp_rel_xgf60": 1.161,
+     "mp_gax60": -0.135,
+     "rank_ours": 92,
+     "rank_mp": 5,
+     "gap": -1.732
+    },
+    {
+     "id": 8478233,
+     "name": "Andrew Mangiapane",
+     "pos": "L",
+     "team": "CHI",
+     "toi_min": 2682.833,
+     "o": 0.181,
+     "fin": 0.005,
+     "off_total": 0.186,
+     "mp_rel_xgf60": -0.14,
+     "mp_gax60": -0.174,
+     "rank_ours": 126,
+     "rank_mp": 481,
+     "gap": 1.62
+    },
+    {
+     "id": 8477406,
+     "name": "Mattias Janmark",
+     "pos": "C",
+     "team": "EDM",
+     "toi_min": 2067.317,
+     "o": -0.219,
+     "fin": -0.081,
+     "off_total": -0.3,
+     "mp_rel_xgf60": -0.82,
+     "mp_gax60": -0.363,
+     "rank_ours": 552,
+     "rank_mp": 564,
+     "gap": 1.609
+    },
+    {
+     "id": 8479400,
+     "name": "Pierre-Luc Dubois",
+     "pos": "C",
+     "team": "WSH",
+     "toi_min": 2628.483,
+     "o": 0.412,
+     "fin": -0.049,
+     "off_total": 0.363,
+     "mp_rel_xgf60": 0.222,
+     "mp_gax60": -0.21,
+     "rank_ours": 39,
+     "rank_mp": 301,
+     "gap": 1.604
+    },
+    {
+     "id": 8478569,
+     "name": "Noel Acciari",
+     "pos": "C",
+     "team": "PIT",
+     "toi_min": 2174.867,
+     "o": -0.103,
+     "fin": -0.048,
+     "off_total": -0.151,
+     "mp_rel_xgf60": -0.726,
+     "mp_gax60": -0.179,
+     "rank_ours": 484,
+     "rank_mp": 560,
+     "gap": 1.583
+    },
+    {
+     "id": 8479066,
+     "name": "Ryan Lomberg",
+     "pos": "L",
+     "team": "CGY",
+     "toi_min": 1872.967,
+     "o": -0.085,
+     "fin": -0.053,
+     "off_total": -0.137,
+     "mp_rel_xgf60": -0.669,
+     "mp_gax60": -0.186,
+     "rank_ours": 471,
+     "rank_mp": 558,
+     "gap": 1.513
+    },
+    {
+     "id": 8480835,
+     "name": "Jack Drury",
+     "pos": "C",
+     "team": "COL",
+     "toi_min": 2539.95,
+     "o": 0.033,
+     "fin": -0.079,
+     "off_total": -0.046,
+     "mp_rel_xgf60": -0.499,
+     "mp_gax60": -0.173,
+     "rank_ours": 372,
+     "rank_mp": 539,
+     "gap": 1.463
+    },
+    {
+     "id": 8478427,
+     "name": "Sebastian Aho",
+     "pos": "C",
+     "team": "CAR",
+     "toi_min": 3290.383,
+     "o": 0.398,
+     "fin": 0.026,
+     "off_total": 0.423,
+     "mp_rel_xgf60": 0.17,
+     "mp_gax60": 0.003,
+     "rank_ours": 24,
+     "rank_mp": 188,
+     "gap": 1.462
+    },
+    {
+     "id": 8480803,
+     "name": "Evan Bouchard",
+     "pos": "D",
+     "team": "EDM",
+     "toi_min": 4530.817,
+     "o": 0.208,
+     "fin": 0.021,
+     "off_total": 0.229,
+     "mp_rel_xgf60": 0.818,
+     "mp_gax60": 0.073,
+     "rank_ours": 99,
+     "rank_mp": 8,
+     "gap": -1.445
+    },
+    {
+     "id": 8476372,
+     "name": "Nick Seeler",
+     "pos": "D",
+     "team": "PHI",
+     "toi_min": 3426.033,
+     "o": -0.189,
+     "fin": -0.001,
+     "off_total": -0.19,
+     "mp_rel_xgf60": 0.182,
+     "mp_gax60": -0.052,
+     "rank_ours": 511,
+     "rank_mp": 216,
+     "gap": -1.426
+    },
+    {
+     "id": 8476457,
+     "name": "Adam Larsson",
+     "pos": "D",
+     "team": "SEA",
+     "toi_min": 4509.733,
+     "o": -0.192,
+     "fin": 0.009,
+     "off_total": -0.183,
+     "mp_rel_xgf60": 0.109,
+     "mp_gax60": 0.029,
+     "rank_ours": 507,
+     "rank_mp": 209,
+     "gap": -1.413
+    },
+    {
+     "id": 8476331,
+     "name": "Dylan DeMelo",
+     "pos": "D",
+     "team": "WPG",
+     "toi_min": 4558.55,
+     "o": -0.054,
+     "fin": -0.014,
+     "off_total": -0.068,
+     "mp_rel_xgf60": 0.331,
+     "mp_gax60": 0.011,
+     "rank_ours": 389,
+     "rank_mp": 101,
+     "gap": -1.404
+    },
+    {
+     "id": 8471215,
+     "name": "Evgeni Malkin",
+     "pos": "C",
+     "team": "PIT",
+     "toi_min": 2952.417,
+     "o": 0.328,
+     "fin": 0.133,
+     "off_total": 0.461,
+     "mp_rel_xgf60": 0.162,
+     "mp_gax60": 0.1,
+     "rank_ours": 18,
+     "rank_mp": 142,
+     "gap": 1.4
+    },
+    {
+     "id": 8475913,
+     "name": "Mark Stone",
+     "pos": "R",
+     "team": "VGK",
+     "toi_min": 2533.483,
+     "o": 0.357,
+     "fin": 0.112,
+     "off_total": 0.469,
+     "mp_rel_xgf60": 0.231,
+     "mp_gax60": 0.053,
+     "rank_ours": 17,
+     "rank_mp": 126,
+     "gap": 1.381
+    },
+    {
+     "id": 8478904,
+     "name": "Steven Lorentz",
+     "pos": "C",
+     "team": "TOR",
+     "toi_min": 1732.683,
+     "o": -0.016,
+     "fin": -0.087,
+     "off_total": -0.103,
+     "mp_rel_xgf60": -0.514,
+     "mp_gax60": -0.228,
+     "rank_ours": 430,
+     "rank_mp": 549,
+     "gap": 1.373
+    },
+    {
+     "id": 8481481,
+     "name": "Blake Lizotte",
+     "pos": "C",
+     "team": "PIT",
+     "toi_min": 1881.633,
+     "o": 0.103,
+     "fin": -0.047,
+     "off_total": 0.056,
+     "mp_rel_xgf60": -0.396,
+     "mp_gax60": -0.058,
+     "rank_ours": 244,
+     "rank_mp": 514,
+     "gap": 1.368
+    },
+    {
+     "id": 8479324,
+     "name": "Ryan Lindgren",
+     "pos": "D",
+     "team": "SEA",
+     "toi_min": 3600.117,
+     "o": -0.357,
+     "fin": -0.01,
+     "off_total": -0.367,
+     "mp_rel_xgf60": -0.226,
+     "mp_gax60": 0.014,
+     "rank_ours": 561,
+     "rank_mp": 444,
+     "gap": -1.36
+    },
+    {
+     "id": 8479371,
+     "name": "Dante Fabbro",
+     "pos": "D",
+     "team": "CBJ",
+     "toi_min": 3188.583,
+     "o": -0.041,
+     "fin": 0.014,
+     "off_total": -0.027,
+     "mp_rel_xgf60": 0.249,
+     "mp_gax60": 0.148,
+     "rank_ours": 350,
+     "rank_mp": 86,
+     "gap": -1.354
+    },
+    {
+     "id": 8477946,
+     "name": "Dylan Larkin",
+     "pos": "C",
+     "team": "DET",
+     "toi_min": 3262.05,
+     "o": 0.349,
+     "fin": 0.006,
+     "off_total": 0.355,
+     "mp_rel_xgf60": 0.111,
+     "mp_gax60": -0.015,
+     "rank_ours": 43,
+     "rank_mp": 238,
+     "gap": 1.333
+    },
+    {
+     "id": 8477956,
+     "name": "David Pastrnak",
+     "pos": "R",
+     "team": "BOS",
+     "toi_min": 3759.75,
+     "o": 0.437,
+     "fin": 0.204,
+     "off_total": 0.641,
+     "mp_rel_xgf60": 0.319,
+     "mp_gax60": 0.294,
+     "rank_ours": 8,
+     "rank_mp": 31,
+     "gap": 1.327
+    },
+    {
+     "id": 8476441,
+     "name": "Joel Edmundson",
+     "pos": "D",
+     "team": "LAK",
+     "toi_min": 3344.867,
+     "o": -0.259,
+     "fin": 0.004,
+     "off_total": -0.256,
+     "mp_rel_xgf60": 0.023,
+     "mp_gax60": -0.048,
+     "rank_ours": 543,
+     "rank_mp": 327,
+     "gap": -1.323
+    }
+   ],
+   "mean_abs_gap_top25": 1.553,
+   "n_over_ours_top25": 15,
+   "focus": [
+    {
+     "id": 8475848,
+     "name": "Brendan Gallagher",
+     "pos": "R",
+     "team": "MTL",
+     "toi_min": 2754.883,
+     "o": 0.475,
+     "fin": -0.145,
+     "off_total": 0.329,
+     "mp_rel_xgf60": 0.591,
+     "mp_gax60": -0.314,
+     "rank_ours": 52,
+     "rank_mp": 135,
+     "gap": 0.718
+    },
+    {
+     "id": 8478402,
+     "name": "Connor McDavid",
+     "pos": "C",
+     "team": "EDM",
+     "toi_min": 3851.45,
+     "o": 0.784,
+     "fin": 0.059,
+     "off_total": 0.843,
+     "mp_rel_xgf60": 1.145,
+     "mp_gax60": 0.041,
+     "rank_ours": 2,
+     "rank_mp": 2,
+     "gap": 0.76
+    },
+    {
+     "id": 8481540,
+     "name": "Cole Caufield",
+     "pos": "R",
+     "team": "MTL",
+     "toi_min": 3526.7,
+     "o": 0.346,
+     "fin": 0.172,
+     "off_total": 0.517,
+     "mp_rel_xgf60": 0.384,
+     "mp_gax60": 0.356,
+     "rank_ours": 12,
+     "rank_mp": 17,
+     "gap": 0.379
+    }
+   ]
+  },
+  "candidate_q001_o": {
+   "n": 564,
+   "min_toi_5v5_3y": 1500.0,
+   "corr_o_vs_mp_rel_xgf60": {
+    "pearson": 0.783,
+    "spearman": 0.778
+   },
+   "corr_o_vs_mp_off_total": {
+    "pearson": 0.722,
+    "spearman": 0.712
+   },
+   "corr_o_vs_mp_ixg60": {
+    "pearson": 0.502,
+    "spearman": 0.564
+   },
+   "corr_o_vs_mp_gax60": {
+    "pearson": 0.171,
+    "spearman": 0.181
+   },
+   "compare": "o vs mp_rel_xgf60",
+   "top25_disagreements": [
+    {
+     "id": 8475218,
+     "name": "Mattias Ekholm",
+     "pos": "D",
+     "team": "EDM",
+     "toi_min": 4000.383,
+     "o": 0.135,
+     "mp_rel_xgf60": 0.886,
+     "mp_gax60": -0.054,
+     "rank_ours": 159,
+     "rank_mp": 5,
+     "gap": -2.308
+    },
+    {
+     "id": 8473419,
+     "name": "Brad Marchand",
+     "pos": "L",
+     "team": "FLA",
+     "toi_min": 2637.867,
+     "o": 0.596,
+     "mp_rel_xgf60": 0.273,
+     "mp_gax60": 0.196,
+     "rank_ours": 5,
+     "rank_mp": 116,
+     "gap": 2.145
+    },
+    {
+     "id": 8475810,
+     "name": "Bryan Rust",
+     "pos": "R",
+     "team": "PIT",
+     "toi_min": 3014.117,
+     "o": 0.045,
+     "mp_rel_xgf60": 0.626,
+     "mp_gax60": 0.162,
+     "rank_ours": 265,
+     "rank_mp": 18,
+     "gap": -1.925
+    },
+    {
+     "id": 8481481,
+     "name": "Blake Lizotte",
+     "pos": "C",
+     "team": "PIT",
+     "toi_min": 1881.633,
+     "o": 0.128,
+     "mp_rel_xgf60": -0.396,
+     "mp_gax60": -0.058,
+     "rank_ours": 166,
+     "rank_mp": 517,
+     "gap": 1.867
+    },
+    {
+     "id": 8476454,
+     "name": "Ryan Nugent-Hopkins",
+     "pos": "C",
+     "team": "EDM",
+     "toi_min": 3098.717,
+     "o": -0.126,
+     "mp_rel_xgf60": 0.327,
+     "mp_gax60": -0.208,
+     "rank_ours": 471,
+     "rank_mp": 88,
+     "gap": -1.847
+    },
+    {
+     "id": 8475786,
+     "name": "Zach Hyman",
+     "pos": "L",
+     "team": "EDM",
+     "toi_min": 3229.767,
+     "o": 0.404,
+     "mp_rel_xgf60": 1.161,
+     "mp_gax60": -0.135,
+     "rank_ours": 22,
+     "rank_mp": 1,
+     "gap": -1.787
+    },
+    {
+     "id": 8480835,
+     "name": "Jack Drury",
+     "pos": "C",
+     "team": "COL",
+     "toi_min": 2539.95,
+     "o": 0.044,
+     "mp_rel_xgf60": -0.499,
+     "mp_gax60": -0.173,
+     "rank_ours": 267,
+     "rank_mp": 537,
+     "gap": 1.765
+    },
+    {
+     "id": 8478569,
+     "name": "Noel Acciari",
+     "pos": "C",
+     "team": "PIT",
+     "toi_min": 2174.867,
+     "o": -0.1,
+     "mp_rel_xgf60": -0.726,
+     "mp_gax60": -0.179,
+     "rank_ours": 439,
+     "rank_mp": 561,
+     "gap": 1.749
+    },
+    {
+     "id": 8480980,
+     "name": "Connor Dewar",
+     "pos": "C",
+     "team": "PIT",
+     "toi_min": 2021.2,
+     "o": 0.086,
+     "mp_rel_xgf60": -0.423,
+     "mp_gax60": -0.073,
+     "rank_ours": 218,
+     "rank_mp": 523,
+     "gap": 1.732
+    },
+    {
+     "id": 8476441,
+     "name": "Joel Edmundson",
+     "pos": "D",
+     "team": "LAK",
+     "toi_min": 3344.867,
+     "o": -0.292,
+     "mp_rel_xgf60": 0.023,
+     "mp_gax60": -0.048,
+     "rank_ours": 551,
+     "rank_mp": 299,
+     "gap": -1.725
+    },
+    {
+     "id": 8480803,
+     "name": "Evan Bouchard",
+     "pos": "D",
+     "team": "EDM",
+     "toi_min": 4530.817,
+     "o": 0.207,
+     "mp_rel_xgf60": 0.818,
+     "mp_gax60": 0.073,
+     "rank_ours": 106,
+     "rank_mp": 9,
+     "gap": -1.703
+    },
+    {
+     "id": 8476372,
+     "name": "Nick Seeler",
+     "pos": "D",
+     "team": "PHI",
+     "toi_min": 3426.033,
+     "o": -0.185,
+     "mp_rel_xgf60": 0.182,
+     "mp_gax60": -0.052,
+     "rank_ours": 507,
+     "rank_mp": 178,
+     "gap": -1.684
+    },
+    {
+     "id": 8476331,
+     "name": "Dylan DeMelo",
+     "pos": "D",
+     "team": "WPG",
+     "toi_min": 4558.55,
+     "o": -0.09,
+     "mp_rel_xgf60": 0.331,
+     "mp_gax60": 0.011,
+     "rank_ours": 424,
+     "rank_mp": 85,
+     "gap": -1.672
+    },
+    {
+     "id": 8479066,
+     "name": "Ryan Lomberg",
+     "pos": "L",
+     "team": "CGY",
+     "toi_min": 1872.967,
+     "o": -0.087,
+     "mp_rel_xgf60": -0.669,
+     "mp_gax60": -0.186,
+     "rank_ours": 421,
+     "rank_mp": 558,
+     "gap": 1.629
+    },
+    {
+     "id": 8478427,
+     "name": "Sebastian Aho",
+     "pos": "C",
+     "team": "CAR",
+     "toi_min": 3290.383,
+     "o": 0.422,
+     "mp_rel_xgf60": 0.17,
+     "mp_gax60": 0.003,
+     "rank_ours": 19,
+     "rank_mp": 187,
+     "gap": 1.565
+    },
+    {
+     "id": 8480289,
+     "name": "Morgan Barron",
+     "pos": "C",
+     "team": "WPG",
+     "toi_min": 2071.55,
+     "o": 0.094,
+     "mp_rel_xgf60": -0.357,
+     "mp_gax60": -0.026,
+     "rank_ours": 209,
+     "rank_mp": 507,
+     "gap": 1.561
+    },
+    {
+     "id": 8478904,
+     "name": "Steven Lorentz",
+     "pos": "C",
+     "team": "TOR",
+     "toi_min": 1732.683,
+     "o": -0.004,
+     "mp_rel_xgf60": -0.514,
+     "mp_gax60": -0.228,
+     "rank_ours": 322,
+     "rank_mp": 540,
+     "gap": 1.556
+    },
+    {
+     "id": 8478399,
+     "name": "Jonas Siegenthaler",
+     "pos": "D",
+     "team": "NJD",
+     "toi_min": 3285.833,
+     "o": -0.312,
+     "mp_rel_xgf60": -0.062,
+     "mp_gax60": -0.087,
+     "rank_ours": 555,
+     "rank_mp": 374,
+     "gap": -1.551
+    },
+    {
+     "id": 8481641,
+     "name": "Joel Kiviranta",
+     "pos": "L",
+     "team": "COL",
+     "toi_min": 1804.083,
+     "o": 0.05,
+     "mp_rel_xgf60": -0.42,
+     "mp_gax60": -0.11,
+     "rank_ours": 260,
+     "rank_mp": 520,
+     "gap": 1.535
+    },
+    {
+     "id": 8476457,
+     "name": "Adam Larsson",
+     "pos": "D",
+     "team": "SEA",
+     "toi_min": 4509.733,
+     "o": -0.198,
+     "mp_rel_xgf60": 0.109,
+     "mp_gax60": 0.029,
+     "rank_ours": 521,
+     "rank_mp": 231,
+     "gap": -1.509
+    },
+    {
+     "id": 8477956,
+     "name": "David Pastrnak",
+     "pos": "R",
+     "team": "BOS",
+     "toi_min": 3759.75,
+     "o": 0.492,
+     "mp_rel_xgf60": 0.319,
+     "mp_gax60": 0.294,
+     "rank_ours": 12,
+     "rank_mp": 90,
+     "gap": 1.446
+    },
+    {
+     "id": 8477946,
+     "name": "Dylan Larkin",
+     "pos": "C",
+     "team": "DET",
+     "toi_min": 3262.05,
+     "o": 0.359,
+     "mp_rel_xgf60": 0.111,
+     "mp_gax60": -0.015,
+     "rank_ours": 33,
+     "rank_mp": 227,
+     "gap": 1.427
+    },
+    {
+     "id": 8475179,
+     "name": "Dmitry Kulikov",
+     "pos": "D",
+     "team": "FLA",
+     "toi_min": 2527.45,
+     "o": -0.286,
+     "mp_rel_xgf60": -0.06,
+     "mp_gax60": -0.074,
+     "rank_ours": 549,
+     "rank_mp": 372,
+     "gap": -1.422
+    },
+    {
+     "id": 8479400,
+     "name": "Pierre-Luc Dubois",
+     "pos": "C",
+     "team": "WSH",
+     "toi_min": 2628.483,
+     "o": 0.427,
+     "mp_rel_xgf60": 0.222,
+     "mp_gax60": -0.21,
+     "rank_ours": 18,
+     "rank_mp": 151,
+     "gap": 1.422
+    },
+    {
+     "id": 8475784,
+     "name": "Jeff Skinner",
+     "pos": "L",
+     "team": "SJS",
+     "toi_min": 2125.25,
+     "o": 0.307,
+     "mp_rel_xgf60": 0.029,
+     "mp_gax60": 0.061,
+     "rank_ours": 52,
+     "rank_mp": 290,
+     "gap": 1.42
+    }
+   ],
+   "mean_abs_gap_top25": 1.678,
+   "n_over_ours_top25": 14,
+   "focus": [
+    {
+     "id": 8475848,
+     "name": "Brendan Gallagher",
+     "pos": "R",
+     "team": "MTL",
+     "toi_min": 2754.883,
+     "o": 0.505,
+     "mp_rel_xgf60": 0.591,
+     "mp_gax60": -0.314,
+     "rank_ours": 11,
+     "rank_mp": 20,
+     "gap": 0.617
+    },
+    {
+     "id": 8478402,
+     "name": "Connor McDavid",
+     "pos": "C",
+     "team": "EDM",
+     "toi_min": 3851.45,
+     "o": 0.773,
+     "mp_rel_xgf60": 1.145,
+     "mp_gax60": 0.041,
+     "rank_ours": 2,
+     "rank_mp": 2,
+     "gap": 0.217
+    },
+    {
+     "id": 8481540,
+     "name": "Cole Caufield",
+     "pos": "R",
+     "team": "MTL",
+     "toi_min": 3526.7,
+     "o": 0.368,
+     "mp_rel_xgf60": 0.384,
+     "mp_gax60": 0.356,
+     "rank_ours": 29,
+     "rank_mp": 59,
+     "gap": 0.575
+    }
+   ]
+  }
+ }
+}

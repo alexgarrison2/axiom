@@ -1,0 +1,3970 @@
+{
+ "design": "DESIGN \u00a73.2.2 stint-level validation re-run over a prior-dynamics grid (owner review 2026-10-01: veterans looked too sticky). Two metrics per setting: (1) next-30-day weighted MSE of stint xG/60 at 7 as-of dates per season (the tuning objective, as shipped); (2) next-season: players fixed at the season-start prior mean (covariates fitted on the season), scored on every EV row of the season, which isolates the summer roll-forward",
+ "xg_source": "xg_v2 walk-forward OOS (bu.rapm.v2_source); lake 2010-11..2025-26, burn-in 2010-11, cells recorded 2021-22..2025-26",
+ "grid": {
+  "v_new": [
+   0.02,
+   0.03
+  ],
+  "kappa": [
+   1.0,
+   1.25,
+   1.5
+  ],
+  "q_add": [
+   0.0,
+   0.001,
+   0.002,
+   0.004,
+   0.008
+  ],
+  "aging_scale": [
+   1.0,
+   1.5,
+   2.0
+  ],
+  "young_old_extra": [
+   0.25,
+   1.0
+  ],
+  "n": 180
+ },
+ "current": "v0.02_k1.25_y0.25_a1_r1",
+ "tuning_best": "v0.02_k1.25_q0.001_y0.25_a1_r1",
+ "stability": {
+  "per_tuning_season": {
+   "20212022": "rapm|v0.02_k1.25_y0.25_a1_r1",
+   "20222023": "rapm|v0.02_k1_q0.004_y0.25_a1_r1"
+  },
+  "within_one_step": false
+ },
+ "tuning_best_vs_current": {
+  "current": "v0.02_k1.25_y0.25_a1_r1",
+  "selected": "v0.02_k1.25_q0.001_y0.25_a1_r1",
+  "per_season": {
+   "20212022": {
+    "30d": {
+     "delta_mse": 0.00032651893310323734,
+     "se": 0.000814102851894154,
+     "z": 0.4010782327362365,
+     "upper95_one_sided": 0.0016897721192287419,
+     "p_b_not_better": 0.6665,
+     "n_games": 1199
+    },
+    "next_season": {
+     "delta_mse": 0.0017297907413322956,
+     "se": 0.0006745954353003046,
+     "z": 2.564189810389478,
+     "upper95_one_sided": 0.0028250265754998375,
+     "p_b_not_better": 0.992,
+     "n_games": 1396
+    }
+   },
+   "20222023": {
+    "30d": {
+     "delta_mse": -0.001078913024417578,
+     "se": 0.0008682190676796671,
+     "z": -1.2426737266908852,
+     "upper95_one_sided": 0.0003393323614808237,
+     "p_b_not_better": 0.1025,
+     "n_games": 1271
+    },
+    "next_season": {
+     "delta_mse": -0.00019947750790611873,
+     "se": 0.0007191432261371436,
+     "z": -0.27738216902578117,
+     "upper95_one_sided": 0.0009380529058684251,
+     "p_b_not_better": 0.3775,
+     "n_games": 1399
+    }
+   },
+   "20232024": {
+    "30d": {
+     "delta_mse": -0.001389469931421447,
+     "se": 0.000894814129221691,
+     "z": -1.552802851503929,
+     "upper95_one_sided": 7.190123949855883e-05,
+     "p_b_not_better": 0.0565,
+     "n_games": 1254
+    },
+    "next_season": {
+     "delta_mse": -0.00023914508127960071,
+     "se": 0.0008003229656428156,
+     "z": -0.29881071960432937,
+     "upper95_one_sided": 0.0010512088562665161,
+     "p_b_not_better": 0.3895,
+     "n_games": 1400
+    }
+   },
+   "20242025": {
+    "30d": {
+     "delta_mse": 0.0006865607881474525,
+     "se": 0.0010827888239331295,
+     "z": 0.6340671172182812,
+     "upper95_one_sided": 0.002553062378758224,
+     "p_b_not_better": 0.7425,
+     "n_games": 1204
+    },
+    "next_season": {
+     "delta_mse": 0.001708000174459988,
+     "se": 0.0008989399975861866,
+     "z": 1.9000157730730323,
+     "upper95_one_sided": 0.003143330057034045,
+     "p_b_not_better": 0.976,
+     "n_games": 1341
+    }
+   },
+   "20252026": {
+    "30d": {
+     "delta_mse": 0.002051626696463917,
+     "se": 0.0011272266507807726,
+     "z": 1.8200658182122107,
+     "upper95_one_sided": 0.0038933562955162523,
+     "p_b_not_better": 0.971,
+     "n_games": 1221
+    },
+    "next_season": {
+     "delta_mse": 0.003760426374132826,
+     "se": 0.0009611753997993179,
+     "z": 3.912320659598611,
+     "upper95_one_sided": 0.005308521458108388,
+     "p_b_not_better": 1.0,
+     "n_games": 1393
+    }
+   }
+  },
+  "pooled": {
+   "tuning": {
+    "30d": {
+     "delta_mse": -0.000385075001215595,
+     "se": 0.0005956734750351051,
+     "z": -0.6464531615964622,
+     "upper95_one_sided": 0.0005961853971567641,
+     "p_b_not_better": 0.27,
+     "n_games": 2470
+    },
+    "next_season": {
+     "delta_mse": 0.0007670789386022179,
+     "se": 0.000493202088808006,
+     "z": 1.5553035074448496,
+     "upper95_one_sided": 0.0015823987223038353,
+     "p_b_not_better": 0.936,
+     "n_games": 2795
+    }
+   },
+   "dev": {
+    "30d": {
+     "delta_mse": -0.00036932478769509126,
+     "se": 0.0007003312341080227,
+     "z": -0.5273572985295765,
+     "upper95_one_sided": 0.0007276241823711174,
+     "p_b_not_better": 0.31,
+     "n_games": 2458
+    },
+    "next_season": {
+     "delta_mse": 0.0007208143369671612,
+     "se": 0.0006010566928116059,
+     "z": 1.1992451720242168,
+     "upper95_one_sided": 0.0016864810818221524,
+     "p_b_not_better": 0.8865,
+     "n_games": 2741
+    }
+   },
+   "report_2025_26": {
+    "30d": {
+     "delta_mse": 0.002051626696463917,
+     "se": 0.0011272266507807726,
+     "z": 1.8200658182122107,
+     "upper95_one_sided": 0.0038933562955162523,
+     "p_b_not_better": 0.971,
+     "n_games": 1221
+    },
+    "next_season": {
+     "delta_mse": 0.003760426374132826,
+     "se": 0.0009611753997993179,
+     "z": 3.912320659598611,
+     "upper95_one_sided": 0.005308521458108388,
+     "p_b_not_better": 1.0,
+     "n_games": 1393
+    }
+   }
+  }
+ },
+ "decision": "keep the current setting v0.02_k1.25 (q_add 0, aging_scale 1, young_old_extra 0.25). The tuning-best q_add 0.001 gains 0.0004 on the tuning 30-day MSE (z -0.65) but loses on the next-season metric (tuning +0.0008, dev +0.0007, 2025-26 +0.0038, z 3.9) and on the 2025-26 30-day MSE (+0.0021, z 1.8); the per-season stability check fails (2021-22 picks the current setting, 2022-23 k1_q0.004), so DESIGN \u00a73.2 prefers the more regularised neighbour, which is the current setting. A stronger aging step (aging_scale 1.5/2.0) and wider age-tail variance (young_old_extra 1.0) are worse on every metric. The data do not support making veterans move faster. Game-level check of the tuning-best candidate: bu/lineup/out/lineup_eval_rapm_fin.json",
+ "table_vs_current": [
+  {
+   "key": "v0.02_k1.25_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00082,
+   "tune_next_vs_cur": 0.00269,
+   "dev_30d_vs_cur": 0.00103,
+   "dev_next_vs_cur": 0.00185,
+   "rep_30d_vs_cur": 0.00142,
+   "rep_next_vs_cur": 0.00314
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00087,
+   "tune_next_vs_cur": 0.00269,
+   "dev_30d_vs_cur": 0.0023,
+   "dev_next_vs_cur": 0.00237,
+   "rep_30d_vs_cur": 0.0029,
+   "rep_next_vs_cur": 0.00525
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00347,
+   "tune_next_vs_cur": 0.00693,
+   "dev_30d_vs_cur": 0.00352,
+   "dev_next_vs_cur": 0.00477,
+   "rep_30d_vs_cur": 0.00203,
+   "rep_next_vs_cur": 0.00458
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.0035,
+   "tune_next_vs_cur": 0.00692,
+   "dev_30d_vs_cur": 0.00475,
+   "dev_next_vs_cur": 0.00526,
+   "rep_30d_vs_cur": 0.0035,
+   "rep_next_vs_cur": 0.00667
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_y0.25_a1_r1",
+   "tune_30d_vs_cur": -0.00039,
+   "tune_next_vs_cur": 0.00077,
+   "dev_30d_vs_cur": -0.00037,
+   "dev_next_vs_cur": 0.00072,
+   "rep_30d_vs_cur": 0.00205,
+   "rep_next_vs_cur": 0.00376
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_y1_a1_r1",
+   "tune_30d_vs_cur": -0.00032,
+   "tune_next_vs_cur": 0.00077,
+   "dev_30d_vs_cur": 0.00092,
+   "dev_next_vs_cur": 0.00125,
+   "rep_30d_vs_cur": 0.0035,
+   "rep_next_vs_cur": 0.00584
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00123,
+   "tune_next_vs_cur": 0.00365,
+   "dev_30d_vs_cur": 0.00173,
+   "dev_next_vs_cur": 0.00304,
+   "rep_30d_vs_cur": 0.00431,
+   "rep_next_vs_cur": 0.00704
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00122,
+   "tune_next_vs_cur": 0.00364,
+   "dev_30d_vs_cur": 0.00248,
+   "dev_next_vs_cur": 0.00323,
+   "rep_30d_vs_cur": 0.00499,
+   "rep_next_vs_cur": 0.00817
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00367,
+   "tune_next_vs_cur": 0.00764,
+   "dev_30d_vs_cur": 0.00395,
+   "dev_next_vs_cur": 0.00564,
+   "rep_30d_vs_cur": 0.00474,
+   "rep_next_vs_cur": 0.0081
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00366,
+   "tune_next_vs_cur": 0.00763,
+   "dev_30d_vs_cur": 0.00468,
+   "dev_next_vs_cur": 0.00581,
+   "rep_30d_vs_cur": 0.00542,
+   "rep_next_vs_cur": 0.00922
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00014,
+   "tune_next_vs_cur": 0.00185,
+   "dev_30d_vs_cur": 0.0005,
+   "dev_next_vs_cur": 0.0021,
+   "rep_30d_vs_cur": 0.00499,
+   "rep_next_vs_cur": 0.00788
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00013,
+   "tune_next_vs_cur": 0.00184,
+   "dev_30d_vs_cur": 0.00125,
+   "dev_next_vs_cur": 0.00229,
+   "rep_30d_vs_cur": 0.00565,
+   "rep_next_vs_cur": 0.00899
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00224,
+   "tune_next_vs_cur": 0.00511,
+   "dev_30d_vs_cur": 0.00407,
+   "dev_next_vs_cur": 0.00539,
+   "rep_30d_vs_cur": 0.0096,
+   "rep_next_vs_cur": 0.01347
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00224,
+   "tune_next_vs_cur": 0.00511,
+   "dev_30d_vs_cur": 0.00418,
+   "dev_next_vs_cur": 0.0054,
+   "rep_30d_vs_cur": 0.00965,
+   "rep_next_vs_cur": 0.01368
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00449,
+   "tune_next_vs_cur": 0.00887,
+   "dev_30d_vs_cur": 0.00607,
+   "dev_next_vs_cur": 0.00776,
+   "rep_30d_vs_cur": 0.00988,
+   "rep_next_vs_cur": 0.01417
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00449,
+   "tune_next_vs_cur": 0.00887,
+   "dev_30d_vs_cur": 0.00618,
+   "dev_next_vs_cur": 0.00778,
+   "rep_30d_vs_cur": 0.00994,
+   "rep_next_vs_cur": 0.01438
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00125,
+   "tune_next_vs_cur": 0.00344,
+   "dev_30d_vs_cur": 0.00296,
+   "dev_next_vs_cur": 0.00457,
+   "rep_30d_vs_cur": 0.0103,
+   "rep_next_vs_cur": 0.01452
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00125,
+   "tune_next_vs_cur": 0.00344,
+   "dev_30d_vs_cur": 0.00307,
+   "dev_next_vs_cur": 0.00458,
+   "rep_30d_vs_cur": 0.01035,
+   "rep_next_vs_cur": 0.01473
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00274,
+   "tune_next_vs_cur": 0.0056,
+   "dev_30d_vs_cur": 0.00847,
+   "dev_next_vs_cur": 0.00905,
+   "rep_30d_vs_cur": 0.01551,
+   "rep_next_vs_cur": 0.0214
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00274,
+   "tune_next_vs_cur": 0.0056,
+   "dev_30d_vs_cur": 0.00847,
+   "dev_next_vs_cur": 0.00905,
+   "rep_30d_vs_cur": 0.01551,
+   "rep_next_vs_cur": 0.0214
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00493,
+   "tune_next_vs_cur": 0.00932,
+   "dev_30d_vs_cur": 0.01035,
+   "dev_next_vs_cur": 0.01134,
+   "rep_30d_vs_cur": 0.0157,
+   "rep_next_vs_cur": 0.02182
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00493,
+   "tune_next_vs_cur": 0.00932,
+   "dev_30d_vs_cur": 0.01035,
+   "dev_next_vs_cur": 0.01134,
+   "rep_30d_vs_cur": 0.0157,
+   "rep_next_vs_cur": 0.02182
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00179,
+   "tune_next_vs_cur": 0.00394,
+   "dev_30d_vs_cur": 0.00742,
+   "dev_next_vs_cur": 0.00824,
+   "rep_30d_vs_cur": 0.01624,
+   "rep_next_vs_cur": 0.02264
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00179,
+   "tune_next_vs_cur": 0.00394,
+   "dev_30d_vs_cur": 0.00742,
+   "dev_next_vs_cur": 0.00824,
+   "rep_30d_vs_cur": 0.01624,
+   "rep_next_vs_cur": 0.02264
+  },
+  {
+   "key": "v0.02_k1.25_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00137,
+   "tune_next_vs_cur": 0.00212,
+   "dev_30d_vs_cur": 0.00168,
+   "dev_next_vs_cur": 0.00146,
+   "rep_30d_vs_cur": -0.00052,
+   "rep_next_vs_cur": -0.00028
+  },
+  {
+   "key": "v0.02_k1.25_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00164,
+   "tune_next_vs_cur": 0.00231,
+   "dev_30d_vs_cur": 0.00357,
+   "dev_next_vs_cur": 0.00254,
+   "rep_30d_vs_cur": 0.00197,
+   "rep_next_vs_cur": 0.00317
+  },
+  {
+   "key": "v0.02_k1.25_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00436,
+   "tune_next_vs_cur": 0.00677,
+   "dev_30d_vs_cur": 0.00464,
+   "dev_next_vs_cur": 0.00492,
+   "rep_30d_vs_cur": 0.0004,
+   "rep_next_vs_cur": 0.00177
+  },
+  {
+   "key": "v0.02_k1.25_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00458,
+   "tune_next_vs_cur": 0.00689,
+   "dev_30d_vs_cur": 0.00643,
+   "dev_next_vs_cur": 0.00592,
+   "rep_30d_vs_cur": 0.00285,
+   "rep_next_vs_cur": 0.00516
+  },
+  {
+   "key": "v0.02_k1.25_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0,
+   "tune_next_vs_cur": 0.0,
+   "dev_30d_vs_cur": 0.0,
+   "dev_next_vs_cur": 0.0,
+   "rep_30d_vs_cur": 0.0,
+   "rep_next_vs_cur": 0.0
+  },
+  {
+   "key": "v0.02_k1.25_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00029,
+   "tune_next_vs_cur": 0.00021,
+   "dev_30d_vs_cur": 0.00192,
+   "dev_next_vs_cur": 0.00111,
+   "rep_30d_vs_cur": 0.00244,
+   "rep_next_vs_cur": 0.00339
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0022,
+   "tune_next_vs_cur": 0.00505,
+   "dev_30d_vs_cur": 0.00324,
+   "dev_next_vs_cur": 0.00486,
+   "rep_30d_vs_cur": 0.00777,
+   "rep_next_vs_cur": 0.01143
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00219,
+   "tune_next_vs_cur": 0.00505,
+   "dev_30d_vs_cur": 0.00355,
+   "dev_next_vs_cur": 0.0049,
+   "rep_30d_vs_cur": 0.00799,
+   "rep_next_vs_cur": 0.01193
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00446,
+   "tune_next_vs_cur": 0.00882,
+   "dev_30d_vs_cur": 0.00527,
+   "dev_next_vs_cur": 0.00725,
+   "rep_30d_vs_cur": 0.00808,
+   "rep_next_vs_cur": 0.01222
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00445,
+   "tune_next_vs_cur": 0.00882,
+   "dev_30d_vs_cur": 0.00558,
+   "dev_next_vs_cur": 0.00729,
+   "rep_30d_vs_cur": 0.00831,
+   "rep_next_vs_cur": 0.01271
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0012,
+   "tune_next_vs_cur": 0.00337,
+   "dev_30d_vs_cur": 0.00211,
+   "dev_next_vs_cur": 0.00404,
+   "rep_30d_vs_cur": 0.00847,
+   "rep_next_vs_cur": 0.01244
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_y1_a1_r1",
+   "tune_30d_vs_cur": 0.0012,
+   "tune_next_vs_cur": 0.00337,
+   "dev_30d_vs_cur": 0.00243,
+   "dev_next_vs_cur": 0.00407,
+   "rep_30d_vs_cur": 0.00869,
+   "rep_next_vs_cur": 0.01293
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00244,
+   "tune_next_vs_cur": 0.00539,
+   "dev_30d_vs_cur": 0.00458,
+   "dev_next_vs_cur": 0.00611,
+   "rep_30d_vs_cur": 0.01039,
+   "rep_next_vs_cur": 0.01446
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00244,
+   "tune_next_vs_cur": 0.00539,
+   "dev_30d_vs_cur": 0.00469,
+   "dev_next_vs_cur": 0.00612,
+   "rep_30d_vs_cur": 0.01043,
+   "rep_next_vs_cur": 0.01466
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00467,
+   "tune_next_vs_cur": 0.00912,
+   "dev_30d_vs_cur": 0.00655,
+   "dev_next_vs_cur": 0.00846,
+   "rep_30d_vs_cur": 0.01066,
+   "rep_next_vs_cur": 0.01512
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00467,
+   "tune_next_vs_cur": 0.00912,
+   "dev_30d_vs_cur": 0.00665,
+   "dev_next_vs_cur": 0.00847,
+   "rep_30d_vs_cur": 0.01071,
+   "rep_next_vs_cur": 0.01532
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00146,
+   "tune_next_vs_cur": 0.00372,
+   "dev_30d_vs_cur": 0.00349,
+   "dev_next_vs_cur": 0.00529,
+   "rep_30d_vs_cur": 0.01109,
+   "rep_next_vs_cur": 0.01555
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00146,
+   "tune_next_vs_cur": 0.00372,
+   "dev_30d_vs_cur": 0.00359,
+   "dev_next_vs_cur": 0.0053,
+   "rep_30d_vs_cur": 0.01113,
+   "rep_next_vs_cur": 0.01574
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00268,
+   "tune_next_vs_cur": 0.00559,
+   "dev_30d_vs_cur": 0.0071,
+   "dev_next_vs_cur": 0.00822,
+   "rep_30d_vs_cur": 0.01419,
+   "rep_next_vs_cur": 0.01933
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00268,
+   "tune_next_vs_cur": 0.00559,
+   "dev_30d_vs_cur": 0.0071,
+   "dev_next_vs_cur": 0.00822,
+   "rep_30d_vs_cur": 0.01419,
+   "rep_next_vs_cur": 0.01933
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00488,
+   "tune_next_vs_cur": 0.00932,
+   "dev_30d_vs_cur": 0.009,
+   "dev_next_vs_cur": 0.01053,
+   "rep_30d_vs_cur": 0.0144,
+   "rep_next_vs_cur": 0.01982
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00488,
+   "tune_next_vs_cur": 0.00932,
+   "dev_30d_vs_cur": 0.009,
+   "dev_next_vs_cur": 0.01053,
+   "rep_30d_vs_cur": 0.0144,
+   "rep_next_vs_cur": 0.01982
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00173,
+   "tune_next_vs_cur": 0.00394,
+   "dev_30d_vs_cur": 0.00604,
+   "dev_next_vs_cur": 0.00741,
+   "rep_30d_vs_cur": 0.01491,
+   "rep_next_vs_cur": 0.02052
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00173,
+   "tune_next_vs_cur": 0.00394,
+   "dev_30d_vs_cur": 0.00604,
+   "dev_next_vs_cur": 0.00741,
+   "rep_30d_vs_cur": 0.01491,
+   "rep_next_vs_cur": 0.02052
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00274,
+   "tune_next_vs_cur": 0.0056,
+   "dev_30d_vs_cur": 0.00877,
+   "dev_next_vs_cur": 0.00917,
+   "rep_30d_vs_cur": 0.01577,
+   "rep_next_vs_cur": 0.02192
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00274,
+   "tune_next_vs_cur": 0.0056,
+   "dev_30d_vs_cur": 0.00877,
+   "dev_next_vs_cur": 0.00917,
+   "rep_30d_vs_cur": 0.01577,
+   "rep_next_vs_cur": 0.02192
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00493,
+   "tune_next_vs_cur": 0.00932,
+   "dev_30d_vs_cur": 0.01064,
+   "dev_next_vs_cur": 0.01146,
+   "rep_30d_vs_cur": 0.01595,
+   "rep_next_vs_cur": 0.02234
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00493,
+   "tune_next_vs_cur": 0.00932,
+   "dev_30d_vs_cur": 0.01064,
+   "dev_next_vs_cur": 0.01146,
+   "rep_30d_vs_cur": 0.01595,
+   "rep_next_vs_cur": 0.02234
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00179,
+   "tune_next_vs_cur": 0.00394,
+   "dev_30d_vs_cur": 0.00772,
+   "dev_next_vs_cur": 0.00836,
+   "rep_30d_vs_cur": 0.0165,
+   "rep_next_vs_cur": 0.02317
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00179,
+   "tune_next_vs_cur": 0.00394,
+   "dev_30d_vs_cur": 0.00772,
+   "dev_next_vs_cur": 0.00836,
+   "rep_30d_vs_cur": 0.0165,
+   "rep_next_vs_cur": 0.02317
+  },
+  {
+   "key": "v0.02_k1.5_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00173,
+   "tune_next_vs_cur": 0.00435,
+   "dev_30d_vs_cur": 0.00204,
+   "dev_next_vs_cur": 0.00366,
+   "rep_30d_vs_cur": 0.00504,
+   "rep_next_vs_cur": 0.00817
+  },
+  {
+   "key": "v0.02_k1.5_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00171,
+   "tune_next_vs_cur": 0.00434,
+   "dev_30d_vs_cur": 0.00272,
+   "dev_next_vs_cur": 0.00378,
+   "rep_30d_vs_cur": 0.00565,
+   "rep_next_vs_cur": 0.00919
+  },
+  {
+   "key": "v0.02_k1.5_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00406,
+   "tune_next_vs_cur": 0.00822,
+   "dev_30d_vs_cur": 0.00417,
+   "dev_next_vs_cur": 0.00614,
+   "rep_30d_vs_cur": 0.00541,
+   "rep_next_vs_cur": 0.00912
+  },
+  {
+   "key": "v0.02_k1.5_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00404,
+   "tune_next_vs_cur": 0.00821,
+   "dev_30d_vs_cur": 0.00483,
+   "dev_next_vs_cur": 0.00624,
+   "rep_30d_vs_cur": 0.00602,
+   "rep_next_vs_cur": 0.01014
+  },
+  {
+   "key": "v0.02_k1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00069,
+   "tune_next_vs_cur": 0.00263,
+   "dev_30d_vs_cur": 0.00087,
+   "dev_next_vs_cur": 0.0028,
+   "rep_30d_vs_cur": 0.00574,
+   "rep_next_vs_cur": 0.00908
+  },
+  {
+   "key": "v0.02_k1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00067,
+   "tune_next_vs_cur": 0.00262,
+   "dev_30d_vs_cur": 0.00155,
+   "dev_next_vs_cur": 0.00292,
+   "rep_30d_vs_cur": 0.00633,
+   "rep_next_vs_cur": 0.0101
+  },
+  {
+   "key": "v0.02_k1_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00541,
+   "tune_next_vs_cur": 0.00345,
+   "dev_30d_vs_cur": 0.0051,
+   "dev_next_vs_cur": 0.00339,
+   "rep_30d_vs_cur": -0.00111,
+   "rep_next_vs_cur": -0.00204
+  },
+  {
+   "key": "v0.02_k1_q0.001_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00584,
+   "tune_next_vs_cur": 0.00386,
+   "dev_30d_vs_cur": 0.00722,
+   "dev_next_vs_cur": 0.00495,
+   "rep_30d_vs_cur": 0.002,
+   "rep_next_vs_cur": 0.00242
+  },
+  {
+   "key": "v0.02_k1_q0.001_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00897,
+   "tune_next_vs_cur": 0.0087,
+   "dev_30d_vs_cur": 0.00867,
+   "dev_next_vs_cur": 0.0076,
+   "rep_30d_vs_cur": 0.00014,
+   "rep_next_vs_cur": 0.00066
+  },
+  {
+   "key": "v0.02_k1_q0.001_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00928,
+   "tune_next_vs_cur": 0.00896,
+   "dev_30d_vs_cur": 0.01062,
+   "dev_next_vs_cur": 0.00903,
+   "rep_30d_vs_cur": 0.00319,
+   "rep_next_vs_cur": 0.00506
+  },
+  {
+   "key": "v0.02_k1_q0.001_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00374,
+   "tune_next_vs_cur": 0.00099,
+   "dev_30d_vs_cur": 0.00305,
+   "dev_next_vs_cur": 0.00145,
+   "rep_30d_vs_cur": -0.0007,
+   "rep_next_vs_cur": -0.00216
+  },
+  {
+   "key": "v0.02_k1_q0.001_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00421,
+   "tune_next_vs_cur": 0.00146,
+   "dev_30d_vs_cur": 0.0052,
+   "dev_next_vs_cur": 0.00303,
+   "rep_30d_vs_cur": 0.00231,
+   "rep_next_vs_cur": 0.00216
+  },
+  {
+   "key": "v0.02_k1_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00225,
+   "tune_next_vs_cur": 0.00235,
+   "dev_30d_vs_cur": 0.00172,
+   "dev_next_vs_cur": 0.00139,
+   "rep_30d_vs_cur": -0.00119,
+   "rep_next_vs_cur": -0.00083
+  },
+  {
+   "key": "v0.02_k1_q0.002_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00258,
+   "tune_next_vs_cur": 0.00257,
+   "dev_30d_vs_cur": 0.00346,
+   "dev_next_vs_cur": 0.00246,
+   "rep_30d_vs_cur": 0.00115,
+   "rep_next_vs_cur": 0.00241
+  },
+  {
+   "key": "v0.02_k1_q0.002_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00535,
+   "tune_next_vs_cur": 0.0071,
+   "dev_30d_vs_cur": 0.00473,
+   "dev_next_vs_cur": 0.00494,
+   "rep_30d_vs_cur": -0.00031,
+   "rep_next_vs_cur": 0.00118
+  },
+  {
+   "key": "v0.02_k1_q0.002_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00561,
+   "tune_next_vs_cur": 0.00725,
+   "dev_30d_vs_cur": 0.00638,
+   "dev_next_vs_cur": 0.00594,
+   "rep_30d_vs_cur": 0.00201,
+   "rep_next_vs_cur": 0.00439
+  },
+  {
+   "key": "v0.02_k1_q0.002_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00082,
+   "tune_next_vs_cur": 0.00015,
+   "dev_30d_vs_cur": 1e-05,
+   "dev_next_vs_cur": -0.00014,
+   "rep_30d_vs_cur": -0.00065,
+   "rep_next_vs_cur": -0.00055
+  },
+  {
+   "key": "v0.02_k1_q0.002_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00117,
+   "tune_next_vs_cur": 0.00041,
+   "dev_30d_vs_cur": 0.00177,
+   "dev_next_vs_cur": 0.00094,
+   "rep_30d_vs_cur": 0.00161,
+   "rep_next_vs_cur": 0.0026
+  },
+  {
+   "key": "v0.02_k1_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00095,
+   "tune_next_vs_cur": 0.00306,
+   "dev_30d_vs_cur": 0.00146,
+   "dev_next_vs_cur": 0.00241,
+   "rep_30d_vs_cur": 0.00345,
+   "rep_next_vs_cur": 0.00567
+  },
+  {
+   "key": "v0.02_k1_q0.004_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00097,
+   "tune_next_vs_cur": 0.00304,
+   "dev_30d_vs_cur": 0.00228,
+   "dev_next_vs_cur": 0.00272,
+   "rep_30d_vs_cur": 0.00424,
+   "rep_next_vs_cur": 0.00695
+  },
+  {
+   "key": "v0.02_k1_q0.004_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00351,
+   "tune_next_vs_cur": 0.00721,
+   "dev_30d_vs_cur": 0.00382,
+   "dev_next_vs_cur": 0.0052,
+   "rep_30d_vs_cur": 0.00394,
+   "rep_next_vs_cur": 0.00688
+  },
+  {
+   "key": "v0.02_k1_q0.004_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00353,
+   "tune_next_vs_cur": 0.00718,
+   "dev_30d_vs_cur": 0.00462,
+   "dev_next_vs_cur": 0.0055,
+   "rep_30d_vs_cur": 0.00473,
+   "rep_next_vs_cur": 0.00814
+  },
+  {
+   "key": "v0.02_k1_q0.004_y0.25_a1_r1",
+   "tune_30d_vs_cur": -0.00021,
+   "tune_next_vs_cur": 0.00118,
+   "dev_30d_vs_cur": 0.00013,
+   "dev_next_vs_cur": 0.00134,
+   "rep_30d_vs_cur": 0.0041,
+   "rep_next_vs_cur": 0.00641
+  },
+  {
+   "key": "v0.02_k1_q0.004_y1_a1_r1",
+   "tune_30d_vs_cur": -0.00018,
+   "tune_next_vs_cur": 0.00116,
+   "dev_30d_vs_cur": 0.00095,
+   "dev_next_vs_cur": 0.00166,
+   "rep_30d_vs_cur": 0.00486,
+   "rep_next_vs_cur": 0.00767
+  },
+  {
+   "key": "v0.02_k1_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00254,
+   "tune_next_vs_cur": 0.00548,
+   "dev_30d_vs_cur": 0.00611,
+   "dev_next_vs_cur": 0.00715,
+   "rep_30d_vs_cur": 0.01306,
+   "rep_next_vs_cur": 0.01774
+  },
+  {
+   "key": "v0.02_k1_q0.008_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00254,
+   "tune_next_vs_cur": 0.00548,
+   "dev_30d_vs_cur": 0.00611,
+   "dev_next_vs_cur": 0.00715,
+   "rep_30d_vs_cur": 0.01306,
+   "rep_next_vs_cur": 0.01774
+  },
+  {
+   "key": "v0.02_k1_q0.008_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00475,
+   "tune_next_vs_cur": 0.00921,
+   "dev_30d_vs_cur": 0.00804,
+   "dev_next_vs_cur": 0.00948,
+   "rep_30d_vs_cur": 0.01329,
+   "rep_next_vs_cur": 0.01829
+  },
+  {
+   "key": "v0.02_k1_q0.008_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00475,
+   "tune_next_vs_cur": 0.00921,
+   "dev_30d_vs_cur": 0.00804,
+   "dev_next_vs_cur": 0.00948,
+   "rep_30d_vs_cur": 0.01329,
+   "rep_next_vs_cur": 0.01829
+  },
+  {
+   "key": "v0.02_k1_q0.008_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00157,
+   "tune_next_vs_cur": 0.00383,
+   "dev_30d_vs_cur": 0.00504,
+   "dev_next_vs_cur": 0.00634,
+   "rep_30d_vs_cur": 0.01377,
+   "rep_next_vs_cur": 0.01889
+  },
+  {
+   "key": "v0.02_k1_q0.008_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00157,
+   "tune_next_vs_cur": 0.00383,
+   "dev_30d_vs_cur": 0.00504,
+   "dev_next_vs_cur": 0.00634,
+   "rep_30d_vs_cur": 0.01377,
+   "rep_next_vs_cur": 0.01889
+  },
+  {
+   "key": "v0.02_k1_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.01405,
+   "tune_next_vs_cur": 0.00819,
+   "dev_30d_vs_cur": 0.01603,
+   "dev_next_vs_cur": 0.01154,
+   "rep_30d_vs_cur": 0.00665,
+   "rep_next_vs_cur": 0.00354
+  },
+  {
+   "key": "v0.02_k1_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01395,
+   "tune_next_vs_cur": 0.00849,
+   "dev_30d_vs_cur": 0.0178,
+   "dev_next_vs_cur": 0.0135,
+   "rep_30d_vs_cur": 0.00968,
+   "rep_next_vs_cur": 0.00883
+  },
+  {
+   "key": "v0.02_k1_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.01843,
+   "tune_next_vs_cur": 0.01431,
+   "dev_30d_vs_cur": 0.02067,
+   "dev_next_vs_cur": 0.01697,
+   "rep_30d_vs_cur": 0.00863,
+   "rep_next_vs_cur": 0.00744
+  },
+  {
+   "key": "v0.02_k1_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01805,
+   "tune_next_vs_cur": 0.01431,
+   "dev_30d_vs_cur": 0.02208,
+   "dev_next_vs_cur": 0.01864,
+   "rep_30d_vs_cur": 0.01148,
+   "rep_next_vs_cur": 0.01261
+  },
+  {
+   "key": "v0.02_k1_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.01196,
+   "tune_next_vs_cur": 0.00526,
+   "dev_30d_vs_cur": 0.01333,
+   "dev_next_vs_cur": 0.00885,
+   "rep_30d_vs_cur": 0.0068,
+   "rep_next_vs_cur": 0.00272
+  },
+  {
+   "key": "v0.02_k1_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01194,
+   "tune_next_vs_cur": 0.00567,
+   "dev_30d_vs_cur": 0.01521,
+   "dev_next_vs_cur": 0.01085,
+   "rep_30d_vs_cur": 0.00968,
+   "rep_next_vs_cur": 0.00778
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00221,
+   "tune_next_vs_cur": 0.00348,
+   "dev_30d_vs_cur": 0.00417,
+   "dev_next_vs_cur": 0.00658,
+   "rep_30d_vs_cur": 0.00588,
+   "rep_next_vs_cur": 0.00925
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00316,
+   "tune_next_vs_cur": 0.00405,
+   "dev_30d_vs_cur": 0.00763,
+   "dev_next_vs_cur": 0.0083,
+   "rep_30d_vs_cur": 0.0099,
+   "rep_next_vs_cur": 0.01425
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00439,
+   "tune_next_vs_cur": 0.00728,
+   "dev_30d_vs_cur": 0.00644,
+   "dev_next_vs_cur": 0.00924,
+   "rep_30d_vs_cur": 0.00635,
+   "rep_next_vs_cur": 0.01061
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.0053,
+   "tune_next_vs_cur": 0.00779,
+   "dev_30d_vs_cur": 0.00986,
+   "dev_next_vs_cur": 0.01092,
+   "rep_30d_vs_cur": 0.01037,
+   "rep_next_vs_cur": 0.01563
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00129,
+   "tune_next_vs_cur": 0.00184,
+   "dev_30d_vs_cur": 0.00287,
+   "dev_next_vs_cur": 0.0056,
+   "rep_30d_vs_cur": 0.00653,
+   "rep_next_vs_cur": 0.00989
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00226,
+   "tune_next_vs_cur": 0.00244,
+   "dev_30d_vs_cur": 0.00632,
+   "dev_next_vs_cur": 0.0073,
+   "rep_30d_vs_cur": 0.01045,
+   "rep_next_vs_cur": 0.01479
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00323,
+   "tune_next_vs_cur": 0.00487,
+   "dev_30d_vs_cur": 0.00547,
+   "dev_next_vs_cur": 0.00833,
+   "rep_30d_vs_cur": 0.00914,
+   "rep_next_vs_cur": 0.01334
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00381,
+   "tune_next_vs_cur": 0.00513,
+   "dev_30d_vs_cur": 0.00825,
+   "dev_next_vs_cur": 0.00956,
+   "rep_30d_vs_cur": 0.01221,
+   "rep_next_vs_cur": 0.01727
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00523,
+   "tune_next_vs_cur": 0.00844,
+   "dev_30d_vs_cur": 0.0075,
+   "dev_next_vs_cur": 0.0107,
+   "rep_30d_vs_cur": 0.00947,
+   "rep_next_vs_cur": 0.01436
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00578,
+   "tune_next_vs_cur": 0.00867,
+   "dev_30d_vs_cur": 0.01026,
+   "dev_next_vs_cur": 0.0119,
+   "rep_30d_vs_cur": 0.01255,
+   "rep_next_vs_cur": 0.01831
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0024,
+   "tune_next_vs_cur": 0.00333,
+   "dev_30d_vs_cur": 0.0043,
+   "dev_next_vs_cur": 0.00751,
+   "rep_30d_vs_cur": 0.00981,
+   "rep_next_vs_cur": 0.01417
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00299,
+   "tune_next_vs_cur": 0.00361,
+   "dev_30d_vs_cur": 0.00708,
+   "dev_next_vs_cur": 0.00874,
+   "rep_30d_vs_cur": 0.01281,
+   "rep_next_vs_cur": 0.01803
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00594,
+   "tune_next_vs_cur": 0.00759,
+   "dev_30d_vs_cur": 0.00925,
+   "dev_next_vs_cur": 0.01238,
+   "rep_30d_vs_cur": 0.01606,
+   "rep_next_vs_cur": 0.02152
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00611,
+   "tune_next_vs_cur": 0.00763,
+   "dev_30d_vs_cur": 0.01087,
+   "dev_next_vs_cur": 0.01291,
+   "rep_30d_vs_cur": 0.01758,
+   "rep_next_vs_cur": 0.02372
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00769,
+   "tune_next_vs_cur": 0.01086,
+   "dev_30d_vs_cur": 0.01098,
+   "dev_next_vs_cur": 0.01439,
+   "rep_30d_vs_cur": 0.01623,
+   "rep_next_vs_cur": 0.02211
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00785,
+   "tune_next_vs_cur": 0.01089,
+   "dev_30d_vs_cur": 0.0126,
+   "dev_next_vs_cur": 0.0149,
+   "rep_30d_vs_cur": 0.01777,
+   "rep_next_vs_cur": 0.02432
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00521,
+   "tune_next_vs_cur": 0.00619,
+   "dev_30d_vs_cur": 0.00826,
+   "dev_next_vs_cur": 0.01177,
+   "rep_30d_vs_cur": 0.01675,
+   "rep_next_vs_cur": 0.02259
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_y1_a1_r1",
+   "tune_30d_vs_cur": 0.0054,
+   "tune_next_vs_cur": 0.00623,
+   "dev_30d_vs_cur": 0.00988,
+   "dev_next_vs_cur": 0.0123,
+   "rep_30d_vs_cur": 0.01823,
+   "rep_next_vs_cur": 0.02475
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00976,
+   "tune_next_vs_cur": 0.01106,
+   "dev_30d_vs_cur": 0.01671,
+   "dev_next_vs_cur": 0.01866,
+   "rep_30d_vs_cur": 0.02766,
+   "rep_next_vs_cur": 0.03446
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00976,
+   "tune_next_vs_cur": 0.01106,
+   "dev_30d_vs_cur": 0.01691,
+   "dev_next_vs_cur": 0.01868,
+   "rep_30d_vs_cur": 0.02774,
+   "rep_next_vs_cur": 0.03479
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0113,
+   "tune_next_vs_cur": 0.01406,
+   "dev_30d_vs_cur": 0.01818,
+   "dev_next_vs_cur": 0.02036,
+   "rep_30d_vs_cur": 0.02772,
+   "rep_next_vs_cur": 0.03464
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.0113,
+   "tune_next_vs_cur": 0.01406,
+   "dev_30d_vs_cur": 0.01838,
+   "dev_next_vs_cur": 0.02039,
+   "rep_30d_vs_cur": 0.0278,
+   "rep_next_vs_cur": 0.03497
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00914,
+   "tune_next_vs_cur": 0.00979,
+   "dev_30d_vs_cur": 0.01587,
+   "dev_next_vs_cur": 0.0182,
+   "rep_30d_vs_cur": 0.02832,
+   "rep_next_vs_cur": 0.03575
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00914,
+   "tune_next_vs_cur": 0.00979,
+   "dev_30d_vs_cur": 0.01607,
+   "dev_next_vs_cur": 0.01823,
+   "rep_30d_vs_cur": 0.0284,
+   "rep_next_vs_cur": 0.03607
+  },
+  {
+   "key": "v0.03_k1.25_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00196,
+   "tune_next_vs_cur": 0.0025,
+   "dev_30d_vs_cur": 0.00403,
+   "dev_next_vs_cur": 0.00563,
+   "rep_30d_vs_cur": 0.0035,
+   "rep_next_vs_cur": 0.00568
+  },
+  {
+   "key": "v0.03_k1.25_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00336,
+   "tune_next_vs_cur": 0.00343,
+   "dev_30d_vs_cur": 0.00823,
+   "dev_next_vs_cur": 0.00794,
+   "rep_30d_vs_cur": 0.00857,
+   "rep_next_vs_cur": 0.01203
+  },
+  {
+   "key": "v0.03_k1.25_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0044,
+   "tune_next_vs_cur": 0.0066,
+   "dev_30d_vs_cur": 0.00665,
+   "dev_next_vs_cur": 0.00872,
+   "rep_30d_vs_cur": 0.00419,
+   "rep_next_vs_cur": 0.00754
+  },
+  {
+   "key": "v0.03_k1.25_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00572,
+   "tune_next_vs_cur": 0.00743,
+   "dev_30d_vs_cur": 0.01077,
+   "dev_next_vs_cur": 0.01095,
+   "rep_30d_vs_cur": 0.00926,
+   "rep_next_vs_cur": 0.01389
+  },
+  {
+   "key": "v0.03_k1.25_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00094,
+   "tune_next_vs_cur": 0.00073,
+   "dev_30d_vs_cur": 0.00251,
+   "dev_next_vs_cur": 0.0044,
+   "rep_30d_vs_cur": 0.00409,
+   "rep_next_vs_cur": 0.00605
+  },
+  {
+   "key": "v0.03_k1.25_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00235,
+   "tune_next_vs_cur": 0.0017,
+   "dev_30d_vs_cur": 0.00672,
+   "dev_next_vs_cur": 0.00669,
+   "rep_30d_vs_cur": 0.00905,
+   "rep_next_vs_cur": 0.01224
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00692,
+   "tune_next_vs_cur": 0.00836,
+   "dev_30d_vs_cur": 0.00934,
+   "dev_next_vs_cur": 0.01305,
+   "rep_30d_vs_cur": 0.01548,
+   "rep_next_vs_cur": 0.02141
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00705,
+   "tune_next_vs_cur": 0.00839,
+   "dev_30d_vs_cur": 0.01107,
+   "dev_next_vs_cur": 0.01354,
+   "rep_30d_vs_cur": 0.01714,
+   "rep_next_vs_cur": 0.02374
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00862,
+   "tune_next_vs_cur": 0.01156,
+   "dev_30d_vs_cur": 0.01102,
+   "dev_next_vs_cur": 0.01497,
+   "rep_30d_vs_cur": 0.01564,
+   "rep_next_vs_cur": 0.02197
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00875,
+   "tune_next_vs_cur": 0.01158,
+   "dev_30d_vs_cur": 0.01274,
+   "dev_next_vs_cur": 0.01545,
+   "rep_30d_vs_cur": 0.01732,
+   "rep_next_vs_cur": 0.02431
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00623,
+   "tune_next_vs_cur": 0.007,
+   "dev_30d_vs_cur": 0.0084,
+   "dev_next_vs_cur": 0.0125,
+   "rep_30d_vs_cur": 0.01618,
+   "rep_next_vs_cur": 0.02249
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00636,
+   "tune_next_vs_cur": 0.00704,
+   "dev_30d_vs_cur": 0.01012,
+   "dev_next_vs_cur": 0.01298,
+   "rep_30d_vs_cur": 0.0178,
+   "rep_next_vs_cur": 0.02479
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00817,
+   "tune_next_vs_cur": 0.00956,
+   "dev_30d_vs_cur": 0.01127,
+   "dev_next_vs_cur": 0.01481,
+   "rep_30d_vs_cur": 0.01899,
+   "rep_next_vs_cur": 0.02513
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00821,
+   "tune_next_vs_cur": 0.00955,
+   "dev_30d_vs_cur": 0.0125,
+   "dev_next_vs_cur": 0.01507,
+   "rep_30d_vs_cur": 0.02,
+   "rep_next_vs_cur": 0.02678
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0098,
+   "tune_next_vs_cur": 0.01267,
+   "dev_30d_vs_cur": 0.01287,
+   "dev_next_vs_cur": 0.01663,
+   "rep_30d_vs_cur": 0.01911,
+   "rep_next_vs_cur": 0.02556
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00984,
+   "tune_next_vs_cur": 0.01266,
+   "dev_30d_vs_cur": 0.01409,
+   "dev_next_vs_cur": 0.01688,
+   "rep_30d_vs_cur": 0.02013,
+   "rep_next_vs_cur": 0.02721
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00751,
+   "tune_next_vs_cur": 0.00823,
+   "dev_30d_vs_cur": 0.01037,
+   "dev_next_vs_cur": 0.0143,
+   "rep_30d_vs_cur": 0.01968,
+   "rep_next_vs_cur": 0.02629
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00755,
+   "tune_next_vs_cur": 0.00823,
+   "dev_30d_vs_cur": 0.01159,
+   "dev_next_vs_cur": 0.01456,
+   "rep_30d_vs_cur": 0.02066,
+   "rep_next_vs_cur": 0.02791
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0096,
+   "tune_next_vs_cur": 0.01093,
+   "dev_30d_vs_cur": 0.01496,
+   "dev_next_vs_cur": 0.01771,
+   "rep_30d_vs_cur": 0.02505,
+   "rep_next_vs_cur": 0.03163
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00959,
+   "tune_next_vs_cur": 0.01093,
+   "dev_30d_vs_cur": 0.01546,
+   "dev_next_vs_cur": 0.01777,
+   "rep_30d_vs_cur": 0.0253,
+   "rep_next_vs_cur": 0.0323
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.01115,
+   "tune_next_vs_cur": 0.01393,
+   "dev_30d_vs_cur": 0.01645,
+   "dev_next_vs_cur": 0.01942,
+   "rep_30d_vs_cur": 0.02512,
+   "rep_next_vs_cur": 0.03187
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01114,
+   "tune_next_vs_cur": 0.01393,
+   "dev_30d_vs_cur": 0.01695,
+   "dev_next_vs_cur": 0.01949,
+   "rep_30d_vs_cur": 0.02538,
+   "rep_next_vs_cur": 0.03255
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00898,
+   "tune_next_vs_cur": 0.00965,
+   "dev_30d_vs_cur": 0.01411,
+   "dev_next_vs_cur": 0.01725,
+   "rep_30d_vs_cur": 0.02571,
+   "rep_next_vs_cur": 0.03288
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00897,
+   "tune_next_vs_cur": 0.00965,
+   "dev_30d_vs_cur": 0.0146,
+   "dev_next_vs_cur": 0.01731,
+   "rep_30d_vs_cur": 0.02596,
+   "rep_next_vs_cur": 0.03354
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.01102,
+   "tune_next_vs_cur": 0.01207,
+   "dev_30d_vs_cur": 0.02167,
+   "dev_next_vs_cur": 0.02276,
+   "rep_30d_vs_cur": 0.03413,
+   "rep_next_vs_cur": 0.04169
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01102,
+   "tune_next_vs_cur": 0.01207,
+   "dev_30d_vs_cur": 0.02167,
+   "dev_next_vs_cur": 0.02276,
+   "rep_30d_vs_cur": 0.03413,
+   "rep_next_vs_cur": 0.04169
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.01252,
+   "tune_next_vs_cur": 0.01503,
+   "dev_30d_vs_cur": 0.02306,
+   "dev_next_vs_cur": 0.0244,
+   "rep_30d_vs_cur": 0.03416,
+   "rep_next_vs_cur": 0.04173
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01252,
+   "tune_next_vs_cur": 0.01503,
+   "dev_30d_vs_cur": 0.02306,
+   "dev_next_vs_cur": 0.0244,
+   "rep_30d_vs_cur": 0.03416,
+   "rep_next_vs_cur": 0.04173
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.01042,
+   "tune_next_vs_cur": 0.0108,
+   "dev_30d_vs_cur": 0.02087,
+   "dev_next_vs_cur": 0.02232,
+   "rep_30d_vs_cur": 0.03478,
+   "rep_next_vs_cur": 0.04307
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01042,
+   "tune_next_vs_cur": 0.0108,
+   "dev_30d_vs_cur": 0.02087,
+   "dev_next_vs_cur": 0.02232,
+   "rep_30d_vs_cur": 0.03478,
+   "rep_next_vs_cur": 0.04306
+  },
+  {
+   "key": "v0.03_k1.5_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00536,
+   "tune_next_vs_cur": 0.00685,
+   "dev_30d_vs_cur": 0.00735,
+   "dev_next_vs_cur": 0.01097,
+   "rep_30d_vs_cur": 0.01179,
+   "rep_next_vs_cur": 0.01719
+  },
+  {
+   "key": "v0.03_k1.5_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00565,
+   "tune_next_vs_cur": 0.00698,
+   "dev_30d_vs_cur": 0.0097,
+   "dev_next_vs_cur": 0.01176,
+   "rep_30d_vs_cur": 0.01429,
+   "rep_next_vs_cur": 0.02048
+  },
+  {
+   "key": "v0.03_k1.5_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00717,
+   "tune_next_vs_cur": 0.01019,
+   "dev_30d_vs_cur": 0.00917,
+   "dev_next_vs_cur": 0.01306,
+   "rep_30d_vs_cur": 0.01202,
+   "rep_next_vs_cur": 0.01797
+  },
+  {
+   "key": "v0.03_k1.5_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00745,
+   "tune_next_vs_cur": 0.0103,
+   "dev_30d_vs_cur": 0.0115,
+   "dev_next_vs_cur": 0.01383,
+   "rep_30d_vs_cur": 0.01454,
+   "rep_next_vs_cur": 0.02126
+  },
+  {
+   "key": "v0.03_k1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00462,
+   "tune_next_vs_cur": 0.00543,
+   "dev_30d_vs_cur": 0.00632,
+   "dev_next_vs_cur": 0.01032,
+   "rep_30d_vs_cur": 0.01248,
+   "rep_next_vs_cur": 0.01816
+  },
+  {
+   "key": "v0.03_k1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00492,
+   "tune_next_vs_cur": 0.00557,
+   "dev_30d_vs_cur": 0.00866,
+   "dev_next_vs_cur": 0.01111,
+   "rep_30d_vs_cur": 0.01493,
+   "rep_next_vs_cur": 0.02139
+  },
+  {
+   "key": "v0.03_k1_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00455,
+   "tune_next_vs_cur": 0.0029,
+   "dev_30d_vs_cur": 0.00589,
+   "dev_next_vs_cur": 0.00598,
+   "rep_30d_vs_cur": 0.0016,
+   "rep_next_vs_cur": 0.00235
+  },
+  {
+   "key": "v0.03_k1_q0.001_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00631,
+   "tune_next_vs_cur": 0.00412,
+   "dev_30d_vs_cur": 0.01073,
+   "dev_next_vs_cur": 0.00915,
+   "rep_30d_vs_cur": 0.00752,
+   "rep_next_vs_cur": 0.00982
+  },
+  {
+   "key": "v0.03_k1_q0.001_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00749,
+   "tune_next_vs_cur": 0.00753,
+   "dev_30d_vs_cur": 0.00903,
+   "dev_next_vs_cur": 0.00975,
+   "rep_30d_vs_cur": 0.00253,
+   "rep_next_vs_cur": 0.00479
+  },
+  {
+   "key": "v0.03_k1_q0.001_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00911,
+   "tune_next_vs_cur": 0.00858,
+   "dev_30d_vs_cur": 0.01377,
+   "dev_next_vs_cur": 0.01285,
+   "rep_30d_vs_cur": 0.00845,
+   "rep_next_vs_cur": 0.01232
+  },
+  {
+   "key": "v0.03_k1_q0.001_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00329,
+   "tune_next_vs_cur": 0.00087,
+   "dev_30d_vs_cur": 0.0041,
+   "dev_next_vs_cur": 0.00435,
+   "rep_30d_vs_cur": 0.00215,
+   "rep_next_vs_cur": 0.00237
+  },
+  {
+   "key": "v0.03_k1_q0.001_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00507,
+   "tune_next_vs_cur": 0.00213,
+   "dev_30d_vs_cur": 0.0089,
+   "dev_next_vs_cur": 0.00744,
+   "rep_30d_vs_cur": 0.00791,
+   "rep_next_vs_cur": 0.00958
+  },
+  {
+   "key": "v0.03_k1_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00231,
+   "tune_next_vs_cur": 0.0022,
+   "dev_30d_vs_cur": 0.00351,
+   "dev_next_vs_cur": 0.00463,
+   "rep_30d_vs_cur": 0.00198,
+   "rep_next_vs_cur": 0.00386
+  },
+  {
+   "key": "v0.03_k1_q0.002_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00388,
+   "tune_next_vs_cur": 0.0032,
+   "dev_30d_vs_cur": 0.00778,
+   "dev_next_vs_cur": 0.00717,
+   "rep_30d_vs_cur": 0.00712,
+   "rep_next_vs_cur": 0.01019
+  },
+  {
+   "key": "v0.03_k1_q0.002_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00491,
+   "tune_next_vs_cur": 0.00645,
+   "dev_30d_vs_cur": 0.00623,
+   "dev_next_vs_cur": 0.00788,
+   "rep_30d_vs_cur": 0.00265,
+   "rep_next_vs_cur": 0.00573
+  },
+  {
+   "key": "v0.03_k1_q0.002_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00638,
+   "tune_next_vs_cur": 0.00734,
+   "dev_30d_vs_cur": 0.01044,
+   "dev_next_vs_cur": 0.01037,
+   "rep_30d_vs_cur": 0.0078,
+   "rep_next_vs_cur": 0.01211
+  },
+  {
+   "key": "v0.03_k1_q0.002_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0012,
+   "tune_next_vs_cur": 0.00034,
+   "dev_30d_vs_cur": 0.00195,
+   "dev_next_vs_cur": 0.0033,
+   "rep_30d_vs_cur": 0.0026,
+   "rep_next_vs_cur": 0.00422
+  },
+  {
+   "key": "v0.03_k1_q0.002_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00279,
+   "tune_next_vs_cur": 0.00138,
+   "dev_30d_vs_cur": 0.00619,
+   "dev_next_vs_cur": 0.00578,
+   "rep_30d_vs_cur": 0.0076,
+   "rep_next_vs_cur": 0.01034
+  },
+  {
+   "key": "v0.03_k1_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00213,
+   "tune_next_vs_cur": 0.00343,
+   "dev_30d_vs_cur": 0.00415,
+   "dev_next_vs_cur": 0.00632,
+   "rep_30d_vs_cur": 0.00707,
+   "rep_next_vs_cur": 0.01057
+  },
+  {
+   "key": "v0.03_k1_q0.004_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00307,
+   "tune_next_vs_cur": 0.00394,
+   "dev_30d_vs_cur": 0.00723,
+   "dev_next_vs_cur": 0.00791,
+   "rep_30d_vs_cur": 0.01058,
+   "rep_next_vs_cur": 0.01489
+  },
+  {
+   "key": "v0.03_k1_q0.004_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00431,
+   "tune_next_vs_cur": 0.00722,
+   "dev_30d_vs_cur": 0.00636,
+   "dev_next_vs_cur": 0.00895,
+   "rep_30d_vs_cur": 0.00746,
+   "rep_next_vs_cur": 0.01175
+  },
+  {
+   "key": "v0.03_k1_q0.004_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.0052,
+   "tune_next_vs_cur": 0.00766,
+   "dev_30d_vs_cur": 0.00942,
+   "dev_next_vs_cur": 0.01051,
+   "rep_30d_vs_cur": 0.01099,
+   "rep_next_vs_cur": 0.0161
+  },
+  {
+   "key": "v0.03_k1_q0.004_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00121,
+   "tune_next_vs_cur": 0.00178,
+   "dev_30d_vs_cur": 0.00287,
+   "dev_next_vs_cur": 0.00534,
+   "rep_30d_vs_cur": 0.00773,
+   "rep_next_vs_cur": 0.01131
+  },
+  {
+   "key": "v0.03_k1_q0.004_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00216,
+   "tune_next_vs_cur": 0.00231,
+   "dev_30d_vs_cur": 0.00593,
+   "dev_next_vs_cur": 0.00691,
+   "rep_30d_vs_cur": 0.01116,
+   "rep_next_vs_cur": 0.01552
+  },
+  {
+   "key": "v0.03_k1_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00621,
+   "tune_next_vs_cur": 0.00791,
+   "dev_30d_vs_cur": 0.01112,
+   "dev_next_vs_cur": 0.01352,
+   "rep_30d_vs_cur": 0.0195,
+   "rep_next_vs_cur": 0.02524
+  },
+  {
+   "key": "v0.03_k1_q0.008_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00631,
+   "tune_next_vs_cur": 0.00791,
+   "dev_30d_vs_cur": 0.0122,
+   "dev_next_vs_cur": 0.01387,
+   "rep_30d_vs_cur": 0.02035,
+   "rep_next_vs_cur": 0.02663
+  },
+  {
+   "key": "v0.03_k1_q0.008_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.00793,
+   "tune_next_vs_cur": 0.01115,
+   "dev_30d_vs_cur": 0.0128,
+   "dev_next_vs_cur": 0.01548,
+   "rep_30d_vs_cur": 0.01964,
+   "rep_next_vs_cur": 0.02571
+  },
+  {
+   "key": "v0.03_k1_q0.008_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.00803,
+   "tune_next_vs_cur": 0.01114,
+   "dev_30d_vs_cur": 0.01388,
+   "dev_next_vs_cur": 0.01582,
+   "rep_30d_vs_cur": 0.0205,
+   "rep_next_vs_cur": 0.02711
+  },
+  {
+   "key": "v0.03_k1_q0.008_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0055,
+   "tune_next_vs_cur": 0.00652,
+   "dev_30d_vs_cur": 0.01016,
+   "dev_next_vs_cur": 0.01292,
+   "rep_30d_vs_cur": 0.02017,
+   "rep_next_vs_cur": 0.02636
+  },
+  {
+   "key": "v0.03_k1_q0.008_y1_a1_r1",
+   "tune_30d_vs_cur": 0.0056,
+   "tune_next_vs_cur": 0.00651,
+   "dev_30d_vs_cur": 0.01123,
+   "dev_next_vs_cur": 0.01327,
+   "rep_30d_vs_cur": 0.021,
+   "rep_next_vs_cur": 0.02773
+  },
+  {
+   "key": "v0.03_k1_s1.5_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0111,
+   "tune_next_vs_cur": 0.00647,
+   "dev_30d_vs_cur": 0.01435,
+   "dev_next_vs_cur": 0.01242,
+   "rep_30d_vs_cur": 0.00748,
+   "rep_next_vs_cur": 0.00649
+  },
+  {
+   "key": "v0.03_k1_s1.5_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01259,
+   "tune_next_vs_cur": 0.00776,
+   "dev_30d_vs_cur": 0.0192,
+   "dev_next_vs_cur": 0.01618,
+   "rep_30d_vs_cur": 0.01347,
+   "rep_next_vs_cur": 0.01472
+  },
+  {
+   "key": "v0.03_k1_s2_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0146,
+   "tune_next_vs_cur": 0.0117,
+   "dev_30d_vs_cur": 0.01823,
+   "dev_next_vs_cur": 0.01708,
+   "rep_30d_vs_cur": 0.00888,
+   "rep_next_vs_cur": 0.00987
+  },
+  {
+   "key": "v0.03_k1_s2_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01584,
+   "tune_next_vs_cur": 0.01271,
+   "dev_30d_vs_cur": 0.02286,
+   "dev_next_vs_cur": 0.02068,
+   "rep_30d_vs_cur": 0.01482,
+   "rep_next_vs_cur": 0.01817
+  },
+  {
+   "key": "v0.03_k1_y0.25_a1_r1",
+   "tune_30d_vs_cur": 0.0096,
+   "tune_next_vs_cur": 0.00416,
+   "dev_30d_vs_cur": 0.01212,
+   "dev_next_vs_cur": 0.01024,
+   "rep_30d_vs_cur": 0.0079,
+   "rep_next_vs_cur": 0.00597
+  },
+  {
+   "key": "v0.03_k1_y1_a1_r1",
+   "tune_30d_vs_cur": 0.01111,
+   "tune_next_vs_cur": 0.00552,
+   "dev_30d_vs_cur": 0.01697,
+   "dev_next_vs_cur": 0.01393,
+   "rep_30d_vs_cur": 0.01368,
+   "rep_next_vs_cur": 0.01383
+  }
+ ],
+ "table_abs": [
+  {
+   "key": "v0.02_k1.25_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57423,
+   "tune_next": 131.96261,
+   "dev_30d": 123.28083,
+   "dev_next": 124.40146,
+   "rep_30d": 132.14673,
+   "rep_next": 132.9854
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_s1.5_y1_a1_r1",
+   "tune_30d": 130.57428,
+   "tune_next": 131.96261,
+   "dev_30d": 123.28211,
+   "dev_next": 124.40198,
+   "rep_30d": 132.14821,
+   "rep_next": 132.98752
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_s2_y0.25_a1_r1",
+   "tune_30d": 130.57688,
+   "tune_next": 131.96685,
+   "dev_30d": 123.28333,
+   "dev_next": 124.40438,
+   "rep_30d": 132.14734,
+   "rep_next": 132.98684
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_s2_y1_a1_r1",
+   "tune_30d": 130.57691,
+   "tune_next": 131.96683,
+   "dev_30d": 123.28456,
+   "dev_next": 124.40487,
+   "rep_30d": 132.14881,
+   "rep_next": 132.98893
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_y0.25_a1_r1",
+   "tune_30d": 130.57302,
+   "tune_next": 131.96069,
+   "dev_30d": 123.27944,
+   "dev_next": 124.40033,
+   "rep_30d": 132.14736,
+   "rep_next": 132.98602
+  },
+  {
+   "key": "v0.02_k1.25_q0.001_y1_a1_r1",
+   "tune_30d": 130.57309,
+   "tune_next": 131.96069,
+   "dev_30d": 123.28072,
+   "dev_next": 124.40086,
+   "rep_30d": 132.14881,
+   "rep_next": 132.98811
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57464,
+   "tune_next": 131.96357,
+   "dev_30d": 123.28154,
+   "dev_next": 124.40265,
+   "rep_30d": 132.14962,
+   "rep_next": 132.9893
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_s1.5_y1_a1_r1",
+   "tune_30d": 130.57463,
+   "tune_next": 131.96356,
+   "dev_30d": 123.28228,
+   "dev_next": 124.40284,
+   "rep_30d": 132.1503,
+   "rep_next": 132.99043
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_s2_y0.25_a1_r1",
+   "tune_30d": 130.57708,
+   "tune_next": 131.96756,
+   "dev_30d": 123.28376,
+   "dev_next": 124.40525,
+   "rep_30d": 132.15005,
+   "rep_next": 132.99036
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_s2_y1_a1_r1",
+   "tune_30d": 130.57707,
+   "tune_next": 131.96755,
+   "dev_30d": 123.28449,
+   "dev_next": 124.40542,
+   "rep_30d": 132.15073,
+   "rep_next": 132.99148
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_y0.25_a1_r1",
+   "tune_30d": 130.57354,
+   "tune_next": 131.96177,
+   "dev_30d": 123.28031,
+   "dev_next": 124.40171,
+   "rep_30d": 132.1503,
+   "rep_next": 132.99014
+  },
+  {
+   "key": "v0.02_k1.25_q0.002_y1_a1_r1",
+   "tune_30d": 130.57354,
+   "tune_next": 131.96176,
+   "dev_30d": 123.28106,
+   "dev_next": 124.4019,
+   "rep_30d": 132.15096,
+   "rep_next": 132.99126
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57565,
+   "tune_next": 131.96503,
+   "dev_30d": 123.28388,
+   "dev_next": 124.405,
+   "rep_30d": 132.15491,
+   "rep_next": 132.99573
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_s1.5_y1_a1_r1",
+   "tune_30d": 130.57565,
+   "tune_next": 131.96503,
+   "dev_30d": 123.28399,
+   "dev_next": 124.40502,
+   "rep_30d": 132.15496,
+   "rep_next": 132.99595
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_s2_y0.25_a1_r1",
+   "tune_30d": 130.5779,
+   "tune_next": 131.96879,
+   "dev_30d": 123.28587,
+   "dev_next": 124.40738,
+   "rep_30d": 132.15519,
+   "rep_next": 132.99643
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_s2_y1_a1_r1",
+   "tune_30d": 130.5779,
+   "tune_next": 131.96879,
+   "dev_30d": 123.28598,
+   "dev_next": 124.40739,
+   "rep_30d": 132.15525,
+   "rep_next": 132.99665
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_y0.25_a1_r1",
+   "tune_30d": 130.57466,
+   "tune_next": 131.96336,
+   "dev_30d": 123.28276,
+   "dev_next": 124.40418,
+   "rep_30d": 132.15561,
+   "rep_next": 132.99679
+  },
+  {
+   "key": "v0.02_k1.25_q0.004_y1_a1_r1",
+   "tune_30d": 130.57466,
+   "tune_next": 131.96336,
+   "dev_30d": 123.28288,
+   "dev_next": 124.40419,
+   "rep_30d": 132.15566,
+   "rep_next": 132.997
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57615,
+   "tune_next": 131.96552,
+   "dev_30d": 123.28828,
+   "dev_next": 124.40866,
+   "rep_30d": 132.16082,
+   "rep_next": 133.00366
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_s1.5_y1_a1_r1",
+   "tune_30d": 130.57615,
+   "tune_next": 131.96552,
+   "dev_30d": 123.28828,
+   "dev_next": 124.40866,
+   "rep_30d": 132.16082,
+   "rep_next": 133.00366
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_s2_y0.25_a1_r1",
+   "tune_30d": 130.57834,
+   "tune_next": 131.96924,
+   "dev_30d": 123.29016,
+   "dev_next": 124.41096,
+   "rep_30d": 132.16101,
+   "rep_next": 133.00409
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_s2_y1_a1_r1",
+   "tune_30d": 130.57834,
+   "tune_next": 131.96924,
+   "dev_30d": 123.29016,
+   "dev_next": 124.41096,
+   "rep_30d": 132.16101,
+   "rep_next": 133.00409
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_y0.25_a1_r1",
+   "tune_30d": 130.5752,
+   "tune_next": 131.96386,
+   "dev_30d": 123.28723,
+   "dev_next": 124.40785,
+   "rep_30d": 132.16155,
+   "rep_next": 133.0049
+  },
+  {
+   "key": "v0.02_k1.25_q0.008_y1_a1_r1",
+   "tune_30d": 130.5752,
+   "tune_next": 131.96386,
+   "dev_30d": 123.28723,
+   "dev_next": 124.40785,
+   "rep_30d": 132.16155,
+   "rep_next": 133.0049
+  },
+  {
+   "key": "v0.02_k1.25_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57478,
+   "tune_next": 131.96204,
+   "dev_30d": 123.28149,
+   "dev_next": 124.40107,
+   "rep_30d": 132.14479,
+   "rep_next": 132.98199
+  },
+  {
+   "key": "v0.02_k1.25_s1.5_y1_a1_r1",
+   "tune_30d": 130.57505,
+   "tune_next": 131.96223,
+   "dev_30d": 123.28338,
+   "dev_next": 124.40215,
+   "rep_30d": 132.14728,
+   "rep_next": 132.98544
+  },
+  {
+   "key": "v0.02_k1.25_s2_y0.25_a1_r1",
+   "tune_30d": 130.57777,
+   "tune_next": 131.96669,
+   "dev_30d": 123.28445,
+   "dev_next": 124.40453,
+   "rep_30d": 132.14571,
+   "rep_next": 132.98403
+  },
+  {
+   "key": "v0.02_k1.25_s2_y1_a1_r1",
+   "tune_30d": 130.57799,
+   "tune_next": 131.96681,
+   "dev_30d": 123.28623,
+   "dev_next": 124.40553,
+   "rep_30d": 132.14816,
+   "rep_next": 132.98743
+  },
+  {
+   "key": "v0.02_k1.25_y0.25_a1_r1",
+   "tune_30d": 130.57341,
+   "tune_next": 131.95992,
+   "dev_30d": 123.27981,
+   "dev_next": 124.39961,
+   "rep_30d": 132.14531,
+   "rep_next": 132.98226
+  },
+  {
+   "key": "v0.02_k1.25_y1_a1_r1",
+   "tune_30d": 130.5737,
+   "tune_next": 131.96013,
+   "dev_30d": 123.28173,
+   "dev_next": 124.40072,
+   "rep_30d": 132.14775,
+   "rep_next": 132.98565
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57561,
+   "tune_next": 131.96497,
+   "dev_30d": 123.28304,
+   "dev_next": 124.40448,
+   "rep_30d": 132.15308,
+   "rep_next": 132.9937
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_s1.5_y1_a1_r1",
+   "tune_30d": 130.5756,
+   "tune_next": 131.96497,
+   "dev_30d": 123.28336,
+   "dev_next": 124.40451,
+   "rep_30d": 132.1533,
+   "rep_next": 132.99419
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_s2_y0.25_a1_r1",
+   "tune_30d": 130.57787,
+   "tune_next": 131.96874,
+   "dev_30d": 123.28507,
+   "dev_next": 124.40687,
+   "rep_30d": 132.15339,
+   "rep_next": 132.99448
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_s2_y1_a1_r1",
+   "tune_30d": 130.57786,
+   "tune_next": 131.96874,
+   "dev_30d": 123.28538,
+   "dev_next": 124.4069,
+   "rep_30d": 132.15362,
+   "rep_next": 132.99497
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_y0.25_a1_r1",
+   "tune_30d": 130.57461,
+   "tune_next": 131.96329,
+   "dev_30d": 123.28192,
+   "dev_next": 124.40365,
+   "rep_30d": 132.15378,
+   "rep_next": 132.9947
+  },
+  {
+   "key": "v0.02_k1.5_q0.001_y1_a1_r1",
+   "tune_30d": 130.57461,
+   "tune_next": 131.96329,
+   "dev_30d": 123.28223,
+   "dev_next": 124.40369,
+   "rep_30d": 132.154,
+   "rep_next": 132.99519
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57585,
+   "tune_next": 131.9653,
+   "dev_30d": 123.28439,
+   "dev_next": 124.40572,
+   "rep_30d": 132.1557,
+   "rep_next": 132.99673
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_s1.5_y1_a1_r1",
+   "tune_30d": 130.57585,
+   "tune_next": 131.9653,
+   "dev_30d": 123.28449,
+   "dev_next": 124.40573,
+   "rep_30d": 132.15574,
+   "rep_next": 132.99693
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_s2_y0.25_a1_r1",
+   "tune_30d": 130.57808,
+   "tune_next": 131.96904,
+   "dev_30d": 123.28636,
+   "dev_next": 124.40807,
+   "rep_30d": 132.15597,
+   "rep_next": 132.99739
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_s2_y1_a1_r1",
+   "tune_30d": 130.57808,
+   "tune_next": 131.96904,
+   "dev_30d": 123.28646,
+   "dev_next": 124.40808,
+   "rep_30d": 132.15602,
+   "rep_next": 132.99759
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_y0.25_a1_r1",
+   "tune_30d": 130.57487,
+   "tune_next": 131.96364,
+   "dev_30d": 123.28329,
+   "dev_next": 124.4049,
+   "rep_30d": 132.1564,
+   "rep_next": 132.99781
+  },
+  {
+   "key": "v0.02_k1.5_q0.002_y1_a1_r1",
+   "tune_30d": 130.57487,
+   "tune_next": 131.96364,
+   "dev_30d": 123.2834,
+   "dev_next": 124.40491,
+   "rep_30d": 132.15644,
+   "rep_next": 132.998
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57609,
+   "tune_next": 131.96551,
+   "dev_30d": 123.28691,
+   "dev_next": 124.40784,
+   "rep_30d": 132.1595,
+   "rep_next": 133.00159
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_s1.5_y1_a1_r1",
+   "tune_30d": 130.57609,
+   "tune_next": 131.96551,
+   "dev_30d": 123.28691,
+   "dev_next": 124.40784,
+   "rep_30d": 132.1595,
+   "rep_next": 133.00159
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_s2_y0.25_a1_r1",
+   "tune_30d": 130.57829,
+   "tune_next": 131.96923,
+   "dev_30d": 123.28881,
+   "dev_next": 124.41014,
+   "rep_30d": 132.15972,
+   "rep_next": 133.00209
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_s2_y1_a1_r1",
+   "tune_30d": 130.57829,
+   "tune_next": 131.96923,
+   "dev_30d": 123.28881,
+   "dev_next": 124.41014,
+   "rep_30d": 132.15972,
+   "rep_next": 133.00209
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_y0.25_a1_r1",
+   "tune_30d": 130.57514,
+   "tune_next": 131.96386,
+   "dev_30d": 123.28584,
+   "dev_next": 124.40703,
+   "rep_30d": 132.16022,
+   "rep_next": 133.00279
+  },
+  {
+   "key": "v0.02_k1.5_q0.004_y1_a1_r1",
+   "tune_30d": 130.57514,
+   "tune_next": 131.96386,
+   "dev_30d": 123.28584,
+   "dev_next": 124.40703,
+   "rep_30d": 132.16022,
+   "rep_next": 133.00279
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57615,
+   "tune_next": 131.96552,
+   "dev_30d": 123.28858,
+   "dev_next": 124.40878,
+   "rep_30d": 132.16108,
+   "rep_next": 133.00419
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_s1.5_y1_a1_r1",
+   "tune_30d": 130.57615,
+   "tune_next": 131.96552,
+   "dev_30d": 123.28858,
+   "dev_next": 124.40878,
+   "rep_30d": 132.16108,
+   "rep_next": 133.00419
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_s2_y0.25_a1_r1",
+   "tune_30d": 130.57834,
+   "tune_next": 131.96924,
+   "dev_30d": 123.29045,
+   "dev_next": 124.41107,
+   "rep_30d": 132.16126,
+   "rep_next": 133.0046
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_s2_y1_a1_r1",
+   "tune_30d": 130.57834,
+   "tune_next": 131.96924,
+   "dev_30d": 123.29045,
+   "dev_next": 124.41107,
+   "rep_30d": 132.16126,
+   "rep_next": 133.0046
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_y0.25_a1_r1",
+   "tune_30d": 130.5752,
+   "tune_next": 131.96386,
+   "dev_30d": 123.28753,
+   "dev_next": 124.40797,
+   "rep_30d": 132.16181,
+   "rep_next": 133.00543
+  },
+  {
+   "key": "v0.02_k1.5_q0.008_y1_a1_r1",
+   "tune_30d": 130.5752,
+   "tune_next": 131.96386,
+   "dev_30d": 123.28753,
+   "dev_next": 124.40797,
+   "rep_30d": 132.16181,
+   "rep_next": 133.00543
+  },
+  {
+   "key": "v0.02_k1.5_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57514,
+   "tune_next": 131.96427,
+   "dev_30d": 123.28185,
+   "dev_next": 124.40327,
+   "rep_30d": 132.15035,
+   "rep_next": 132.99043
+  },
+  {
+   "key": "v0.02_k1.5_s1.5_y1_a1_r1",
+   "tune_30d": 130.57512,
+   "tune_next": 131.96426,
+   "dev_30d": 123.28252,
+   "dev_next": 124.40339,
+   "rep_30d": 132.15096,
+   "rep_next": 132.99146
+  },
+  {
+   "key": "v0.02_k1.5_s2_y0.25_a1_r1",
+   "tune_30d": 130.57747,
+   "tune_next": 131.96814,
+   "dev_30d": 123.28397,
+   "dev_next": 124.40575,
+   "rep_30d": 132.15072,
+   "rep_next": 132.99139
+  },
+  {
+   "key": "v0.02_k1.5_s2_y1_a1_r1",
+   "tune_30d": 130.57745,
+   "tune_next": 131.96813,
+   "dev_30d": 123.28463,
+   "dev_next": 124.40585,
+   "rep_30d": 132.15133,
+   "rep_next": 132.9924
+  },
+  {
+   "key": "v0.02_k1.5_y0.25_a1_r1",
+   "tune_30d": 130.5741,
+   "tune_next": 131.96255,
+   "dev_30d": 123.28068,
+   "dev_next": 124.40241,
+   "rep_30d": 132.15105,
+   "rep_next": 132.99135
+  },
+  {
+   "key": "v0.02_k1.5_y1_a1_r1",
+   "tune_30d": 130.57408,
+   "tune_next": 131.96254,
+   "dev_30d": 123.28135,
+   "dev_next": 124.40253,
+   "rep_30d": 132.15164,
+   "rep_next": 132.99236
+  },
+  {
+   "key": "v0.02_k1_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57882,
+   "tune_next": 131.96337,
+   "dev_30d": 123.2849,
+   "dev_next": 124.403,
+   "rep_30d": 132.1442,
+   "rep_next": 132.98023
+  },
+  {
+   "key": "v0.02_k1_q0.001_s1.5_y1_a1_r1",
+   "tune_30d": 130.57925,
+   "tune_next": 131.96378,
+   "dev_30d": 123.28702,
+   "dev_next": 124.40456,
+   "rep_30d": 132.14731,
+   "rep_next": 132.98468
+  },
+  {
+   "key": "v0.02_k1_q0.001_s2_y0.25_a1_r1",
+   "tune_30d": 130.58238,
+   "tune_next": 131.96862,
+   "dev_30d": 123.28848,
+   "dev_next": 124.40721,
+   "rep_30d": 132.14545,
+   "rep_next": 132.98293
+  },
+  {
+   "key": "v0.02_k1_q0.001_s2_y1_a1_r1",
+   "tune_30d": 130.58269,
+   "tune_next": 131.96888,
+   "dev_30d": 123.29043,
+   "dev_next": 124.40864,
+   "rep_30d": 132.1485,
+   "rep_next": 132.98733
+  },
+  {
+   "key": "v0.02_k1_q0.001_y0.25_a1_r1",
+   "tune_30d": 130.57715,
+   "tune_next": 131.96091,
+   "dev_30d": 123.28286,
+   "dev_next": 124.40107,
+   "rep_30d": 132.14461,
+   "rep_next": 132.9801
+  },
+  {
+   "key": "v0.02_k1_q0.001_y1_a1_r1",
+   "tune_30d": 130.57762,
+   "tune_next": 131.96138,
+   "dev_30d": 123.28501,
+   "dev_next": 124.40264,
+   "rep_30d": 132.14762,
+   "rep_next": 132.98442
+  },
+  {
+   "key": "v0.02_k1_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57566,
+   "tune_next": 131.96227,
+   "dev_30d": 123.28153,
+   "dev_next": 124.401,
+   "rep_30d": 132.14412,
+   "rep_next": 132.98143
+  },
+  {
+   "key": "v0.02_k1_q0.002_s1.5_y1_a1_r1",
+   "tune_30d": 130.57599,
+   "tune_next": 131.96249,
+   "dev_30d": 123.28327,
+   "dev_next": 124.40207,
+   "rep_30d": 132.14646,
+   "rep_next": 132.98467
+  },
+  {
+   "key": "v0.02_k1_q0.002_s2_y0.25_a1_r1",
+   "tune_30d": 130.57876,
+   "tune_next": 131.96702,
+   "dev_30d": 123.28453,
+   "dev_next": 124.40455,
+   "rep_30d": 132.145,
+   "rep_next": 132.98345
+  },
+  {
+   "key": "v0.02_k1_q0.002_s2_y1_a1_r1",
+   "tune_30d": 130.57902,
+   "tune_next": 131.96717,
+   "dev_30d": 123.28619,
+   "dev_next": 124.40555,
+   "rep_30d": 132.14732,
+   "rep_next": 132.98665
+  },
+  {
+   "key": "v0.02_k1_q0.002_y0.25_a1_r1",
+   "tune_30d": 130.57423,
+   "tune_next": 131.96007,
+   "dev_30d": 123.27982,
+   "dev_next": 124.39947,
+   "rep_30d": 132.14466,
+   "rep_next": 132.98171
+  },
+  {
+   "key": "v0.02_k1_q0.002_y1_a1_r1",
+   "tune_30d": 130.57458,
+   "tune_next": 131.96033,
+   "dev_30d": 123.28157,
+   "dev_next": 124.40055,
+   "rep_30d": 132.14692,
+   "rep_next": 132.98486
+  },
+  {
+   "key": "v0.02_k1_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57436,
+   "tune_next": 131.96298,
+   "dev_30d": 123.28127,
+   "dev_next": 124.40202,
+   "rep_30d": 132.14876,
+   "rep_next": 132.98793
+  },
+  {
+   "key": "v0.02_k1_q0.004_s1.5_y1_a1_r1",
+   "tune_30d": 130.57438,
+   "tune_next": 131.96296,
+   "dev_30d": 123.28209,
+   "dev_next": 124.40234,
+   "rep_30d": 132.14955,
+   "rep_next": 132.98921
+  },
+  {
+   "key": "v0.02_k1_q0.004_s2_y0.25_a1_r1",
+   "tune_30d": 130.57692,
+   "tune_next": 131.96712,
+   "dev_30d": 123.28363,
+   "dev_next": 124.40481,
+   "rep_30d": 132.14925,
+   "rep_next": 132.98914
+  },
+  {
+   "key": "v0.02_k1_q0.004_s2_y1_a1_r1",
+   "tune_30d": 130.57694,
+   "tune_next": 131.9671,
+   "dev_30d": 123.28443,
+   "dev_next": 124.40511,
+   "rep_30d": 132.15004,
+   "rep_next": 132.9904
+  },
+  {
+   "key": "v0.02_k1_q0.004_y0.25_a1_r1",
+   "tune_30d": 130.5732,
+   "tune_next": 131.96109,
+   "dev_30d": 123.27994,
+   "dev_next": 124.40095,
+   "rep_30d": 132.14941,
+   "rep_next": 132.98868
+  },
+  {
+   "key": "v0.02_k1_q0.004_y1_a1_r1",
+   "tune_30d": 130.57323,
+   "tune_next": 131.96108,
+   "dev_30d": 123.28076,
+   "dev_next": 124.40127,
+   "rep_30d": 132.15017,
+   "rep_next": 132.98994
+  },
+  {
+   "key": "v0.02_k1_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57595,
+   "tune_next": 131.9654,
+   "dev_30d": 123.28592,
+   "dev_next": 124.40676,
+   "rep_30d": 132.15837,
+   "rep_next": 133.0
+  },
+  {
+   "key": "v0.02_k1_q0.008_s1.5_y1_a1_r1",
+   "tune_30d": 130.57595,
+   "tune_next": 131.9654,
+   "dev_30d": 123.28592,
+   "dev_next": 124.40676,
+   "rep_30d": 132.15837,
+   "rep_next": 133.0
+  },
+  {
+   "key": "v0.02_k1_q0.008_s2_y0.25_a1_r1",
+   "tune_30d": 130.57816,
+   "tune_next": 131.96913,
+   "dev_30d": 123.28784,
+   "dev_next": 124.40909,
+   "rep_30d": 132.1586,
+   "rep_next": 133.00055
+  },
+  {
+   "key": "v0.02_k1_q0.008_s2_y1_a1_r1",
+   "tune_30d": 130.57816,
+   "tune_next": 131.96913,
+   "dev_30d": 123.28784,
+   "dev_next": 124.40909,
+   "rep_30d": 132.1586,
+   "rep_next": 133.00055
+  },
+  {
+   "key": "v0.02_k1_q0.008_y0.25_a1_r1",
+   "tune_30d": 130.57498,
+   "tune_next": 131.96374,
+   "dev_30d": 123.28484,
+   "dev_next": 124.40595,
+   "rep_30d": 132.15908,
+   "rep_next": 133.00116
+  },
+  {
+   "key": "v0.02_k1_q0.008_y1_a1_r1",
+   "tune_30d": 130.57498,
+   "tune_next": 131.96374,
+   "dev_30d": 123.28484,
+   "dev_next": 124.40595,
+   "rep_30d": 132.15908,
+   "rep_next": 133.00116
+  },
+  {
+   "key": "v0.02_k1_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.58746,
+   "tune_next": 131.96811,
+   "dev_30d": 123.29584,
+   "dev_next": 124.41115,
+   "rep_30d": 132.15197,
+   "rep_next": 132.98581
+  },
+  {
+   "key": "v0.02_k1_s1.5_y1_a1_r1",
+   "tune_30d": 130.58736,
+   "tune_next": 131.96841,
+   "dev_30d": 123.29761,
+   "dev_next": 124.41311,
+   "rep_30d": 132.15499,
+   "rep_next": 132.99109
+  },
+  {
+   "key": "v0.02_k1_s2_y0.25_a1_r1",
+   "tune_30d": 130.59184,
+   "tune_next": 131.97423,
+   "dev_30d": 123.30048,
+   "dev_next": 124.41658,
+   "rep_30d": 132.15394,
+   "rep_next": 132.9897
+  },
+  {
+   "key": "v0.02_k1_s2_y1_a1_r1",
+   "tune_30d": 130.59146,
+   "tune_next": 131.97422,
+   "dev_30d": 123.30188,
+   "dev_next": 124.41825,
+   "rep_30d": 132.15679,
+   "rep_next": 132.99488
+  },
+  {
+   "key": "v0.02_k1_y0.25_a1_r1",
+   "tune_30d": 130.58537,
+   "tune_next": 131.96517,
+   "dev_30d": 123.29314,
+   "dev_next": 124.40846,
+   "rep_30d": 132.15211,
+   "rep_next": 132.98498
+  },
+  {
+   "key": "v0.02_k1_y1_a1_r1",
+   "tune_30d": 130.58535,
+   "tune_next": 131.96559,
+   "dev_30d": 123.29502,
+   "dev_next": 124.41046,
+   "rep_30d": 132.15499,
+   "rep_next": 132.99004
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57562,
+   "tune_next": 131.9634,
+   "dev_30d": 123.28398,
+   "dev_next": 124.40619,
+   "rep_30d": 132.15119,
+   "rep_next": 132.99151
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_s1.5_y1_a1_r1",
+   "tune_30d": 130.57657,
+   "tune_next": 131.96397,
+   "dev_30d": 123.28744,
+   "dev_next": 124.40791,
+   "rep_30d": 132.15521,
+   "rep_next": 132.99652
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_s2_y0.25_a1_r1",
+   "tune_30d": 130.5778,
+   "tune_next": 131.9672,
+   "dev_30d": 123.28625,
+   "dev_next": 124.40885,
+   "rep_30d": 132.15166,
+   "rep_next": 132.99287
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_s2_y1_a1_r1",
+   "tune_30d": 130.5787,
+   "tune_next": 131.96771,
+   "dev_30d": 123.28967,
+   "dev_next": 124.41053,
+   "rep_30d": 132.15568,
+   "rep_next": 132.99789
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_y0.25_a1_r1",
+   "tune_30d": 130.5747,
+   "tune_next": 131.96176,
+   "dev_30d": 123.28267,
+   "dev_next": 124.40521,
+   "rep_30d": 132.15184,
+   "rep_next": 132.99216
+  },
+  {
+   "key": "v0.03_k1.25_q0.001_y1_a1_r1",
+   "tune_30d": 130.57567,
+   "tune_next": 131.96235,
+   "dev_30d": 123.28613,
+   "dev_next": 124.40692,
+   "rep_30d": 132.15576,
+   "rep_next": 132.99705
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57664,
+   "tune_next": 131.96479,
+   "dev_30d": 123.28528,
+   "dev_next": 124.40794,
+   "rep_30d": 132.15445,
+   "rep_next": 132.9956
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_s1.5_y1_a1_r1",
+   "tune_30d": 130.57722,
+   "tune_next": 131.96505,
+   "dev_30d": 123.28806,
+   "dev_next": 124.40917,
+   "rep_30d": 132.15752,
+   "rep_next": 132.99954
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_s2_y0.25_a1_r1",
+   "tune_30d": 130.57864,
+   "tune_next": 131.96836,
+   "dev_30d": 123.28731,
+   "dev_next": 124.41031,
+   "rep_30d": 132.15478,
+   "rep_next": 132.99663
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_s2_y1_a1_r1",
+   "tune_30d": 130.57919,
+   "tune_next": 131.96859,
+   "dev_30d": 123.29007,
+   "dev_next": 124.41151,
+   "rep_30d": 132.15786,
+   "rep_next": 133.00057
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_y0.25_a1_r1",
+   "tune_30d": 130.57581,
+   "tune_next": 131.96325,
+   "dev_30d": 123.28411,
+   "dev_next": 124.40712,
+   "rep_30d": 132.15512,
+   "rep_next": 132.99643
+  },
+  {
+   "key": "v0.03_k1.25_q0.002_y1_a1_r1",
+   "tune_30d": 130.5764,
+   "tune_next": 131.96353,
+   "dev_30d": 123.28688,
+   "dev_next": 124.40835,
+   "rep_30d": 132.15812,
+   "rep_next": 133.00029
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57935,
+   "tune_next": 131.96751,
+   "dev_30d": 123.28905,
+   "dev_next": 124.412,
+   "rep_30d": 132.16137,
+   "rep_next": 133.00379
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_s1.5_y1_a1_r1",
+   "tune_30d": 130.57952,
+   "tune_next": 131.96755,
+   "dev_30d": 123.29068,
+   "dev_next": 124.41252,
+   "rep_30d": 132.16289,
+   "rep_next": 133.00599
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_s2_y0.25_a1_r1",
+   "tune_30d": 130.5811,
+   "tune_next": 131.97078,
+   "dev_30d": 123.29078,
+   "dev_next": 124.414,
+   "rep_30d": 132.16154,
+   "rep_next": 133.00438
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_s2_y1_a1_r1",
+   "tune_30d": 130.58126,
+   "tune_next": 131.97081,
+   "dev_30d": 123.2924,
+   "dev_next": 124.41451,
+   "rep_30d": 132.16308,
+   "rep_next": 133.00658
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_y0.25_a1_r1",
+   "tune_30d": 130.57862,
+   "tune_next": 131.96611,
+   "dev_30d": 123.28807,
+   "dev_next": 124.41138,
+   "rep_30d": 132.16206,
+   "rep_next": 133.00485
+  },
+  {
+   "key": "v0.03_k1.25_q0.004_y1_a1_r1",
+   "tune_30d": 130.57881,
+   "tune_next": 131.96615,
+   "dev_30d": 123.28969,
+   "dev_next": 124.41191,
+   "rep_30d": 132.16354,
+   "rep_next": 133.00702
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.58317,
+   "tune_next": 131.97098,
+   "dev_30d": 123.29652,
+   "dev_next": 124.41827,
+   "rep_30d": 132.17297,
+   "rep_next": 133.01673
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_s1.5_y1_a1_r1",
+   "tune_30d": 130.58317,
+   "tune_next": 131.97098,
+   "dev_30d": 123.29672,
+   "dev_next": 124.41829,
+   "rep_30d": 132.17305,
+   "rep_next": 133.01705
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_s2_y0.25_a1_r1",
+   "tune_30d": 130.58471,
+   "tune_next": 131.97398,
+   "dev_30d": 123.29799,
+   "dev_next": 124.41997,
+   "rep_30d": 132.17303,
+   "rep_next": 133.01691
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_s2_y1_a1_r1",
+   "tune_30d": 130.58471,
+   "tune_next": 131.97398,
+   "dev_30d": 123.29819,
+   "dev_next": 124.42,
+   "rep_30d": 132.17311,
+   "rep_next": 133.01723
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_y0.25_a1_r1",
+   "tune_30d": 130.58255,
+   "tune_next": 131.9697,
+   "dev_30d": 123.29568,
+   "dev_next": 124.41782,
+   "rep_30d": 132.17363,
+   "rep_next": 133.01801
+  },
+  {
+   "key": "v0.03_k1.25_q0.008_y1_a1_r1",
+   "tune_30d": 130.58255,
+   "tune_next": 131.9697,
+   "dev_30d": 123.29588,
+   "dev_next": 124.41784,
+   "rep_30d": 132.17371,
+   "rep_next": 133.01833
+  },
+  {
+   "key": "v0.03_k1.25_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57537,
+   "tune_next": 131.96242,
+   "dev_30d": 123.28383,
+   "dev_next": 124.40524,
+   "rep_30d": 132.14881,
+   "rep_next": 132.98795
+  },
+  {
+   "key": "v0.03_k1.25_s1.5_y1_a1_r1",
+   "tune_30d": 130.57677,
+   "tune_next": 131.96335,
+   "dev_30d": 123.28804,
+   "dev_next": 124.40755,
+   "rep_30d": 132.15388,
+   "rep_next": 132.99429
+  },
+  {
+   "key": "v0.03_k1.25_s2_y0.25_a1_r1",
+   "tune_30d": 130.57781,
+   "tune_next": 131.96652,
+   "dev_30d": 123.28646,
+   "dev_next": 124.40833,
+   "rep_30d": 132.1495,
+   "rep_next": 132.9898
+  },
+  {
+   "key": "v0.03_k1.25_s2_y1_a1_r1",
+   "tune_30d": 130.57913,
+   "tune_next": 131.96734,
+   "dev_30d": 123.29057,
+   "dev_next": 124.41057,
+   "rep_30d": 132.15457,
+   "rep_next": 132.99616
+  },
+  {
+   "key": "v0.03_k1.25_y0.25_a1_r1",
+   "tune_30d": 130.57435,
+   "tune_next": 131.96065,
+   "dev_30d": 123.28232,
+   "dev_next": 124.40401,
+   "rep_30d": 132.1494,
+   "rep_next": 132.98832
+  },
+  {
+   "key": "v0.03_k1.25_y1_a1_r1",
+   "tune_30d": 130.57576,
+   "tune_next": 131.96162,
+   "dev_30d": 123.28652,
+   "dev_next": 124.4063,
+   "rep_30d": 132.15436,
+   "rep_next": 132.99451
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.58033,
+   "tune_next": 131.96827,
+   "dev_30d": 123.28915,
+   "dev_next": 124.41266,
+   "rep_30d": 132.16079,
+   "rep_next": 133.00367
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_s1.5_y1_a1_r1",
+   "tune_30d": 130.58046,
+   "tune_next": 131.96831,
+   "dev_30d": 123.29088,
+   "dev_next": 124.41315,
+   "rep_30d": 132.16245,
+   "rep_next": 133.00601
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_s2_y0.25_a1_r1",
+   "tune_30d": 130.58203,
+   "tune_next": 131.97147,
+   "dev_30d": 123.29082,
+   "dev_next": 124.41459,
+   "rep_30d": 132.16095,
+   "rep_next": 133.00424
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_s2_y1_a1_r1",
+   "tune_30d": 130.58216,
+   "tune_next": 131.9715,
+   "dev_30d": 123.29255,
+   "dev_next": 124.41506,
+   "rep_30d": 132.16263,
+   "rep_next": 133.00658
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_y0.25_a1_r1",
+   "tune_30d": 130.57964,
+   "tune_next": 131.96692,
+   "dev_30d": 123.2882,
+   "dev_next": 124.41211,
+   "rep_30d": 132.16149,
+   "rep_next": 133.00475
+  },
+  {
+   "key": "v0.03_k1.5_q0.001_y1_a1_r1",
+   "tune_30d": 130.57977,
+   "tune_next": 131.96696,
+   "dev_30d": 123.28993,
+   "dev_next": 124.41259,
+   "rep_30d": 132.16311,
+   "rep_next": 133.00705
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.58158,
+   "tune_next": 131.96947,
+   "dev_30d": 123.29108,
+   "dev_next": 124.41442,
+   "rep_30d": 132.16431,
+   "rep_next": 133.0074
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_s1.5_y1_a1_r1",
+   "tune_30d": 130.58162,
+   "tune_next": 131.96947,
+   "dev_30d": 123.29231,
+   "dev_next": 124.41468,
+   "rep_30d": 132.16531,
+   "rep_next": 133.00904
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_s2_y0.25_a1_r1",
+   "tune_30d": 130.58321,
+   "tune_next": 131.97259,
+   "dev_30d": 123.29267,
+   "dev_next": 124.41624,
+   "rep_30d": 132.16442,
+   "rep_next": 133.00782
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_s2_y1_a1_r1",
+   "tune_30d": 130.58325,
+   "tune_next": 131.97258,
+   "dev_30d": 123.2939,
+   "dev_next": 124.4165,
+   "rep_30d": 132.16544,
+   "rep_next": 133.00947
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_y0.25_a1_r1",
+   "tune_30d": 130.58092,
+   "tune_next": 131.96815,
+   "dev_30d": 123.29018,
+   "dev_next": 124.41391,
+   "rep_30d": 132.16499,
+   "rep_next": 133.00855
+  },
+  {
+   "key": "v0.03_k1.5_q0.002_y1_a1_r1",
+   "tune_30d": 130.58096,
+   "tune_next": 131.96815,
+   "dev_30d": 123.2914,
+   "dev_next": 124.41417,
+   "rep_30d": 132.16597,
+   "rep_next": 133.01017
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.58301,
+   "tune_next": 131.97084,
+   "dev_30d": 123.29477,
+   "dev_next": 124.41732,
+   "rep_30d": 132.17036,
+   "rep_next": 133.01389
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_s1.5_y1_a1_r1",
+   "tune_30d": 130.583,
+   "tune_next": 131.97084,
+   "dev_30d": 123.29526,
+   "dev_next": 124.41738,
+   "rep_30d": 132.17061,
+   "rep_next": 133.01456
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_s2_y0.25_a1_r1",
+   "tune_30d": 130.58456,
+   "tune_next": 131.97384,
+   "dev_30d": 123.29626,
+   "dev_next": 124.41904,
+   "rep_30d": 132.17043,
+   "rep_next": 133.01414
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_s2_y1_a1_r1",
+   "tune_30d": 130.58455,
+   "tune_next": 131.97384,
+   "dev_30d": 123.29675,
+   "dev_next": 124.4191,
+   "rep_30d": 132.17069,
+   "rep_next": 133.01481
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_y0.25_a1_r1",
+   "tune_30d": 130.58239,
+   "tune_next": 131.96957,
+   "dev_30d": 123.29392,
+   "dev_next": 124.41686,
+   "rep_30d": 132.17102,
+   "rep_next": 133.01514
+  },
+  {
+   "key": "v0.03_k1.5_q0.004_y1_a1_r1",
+   "tune_30d": 130.58238,
+   "tune_next": 131.96957,
+   "dev_30d": 123.29441,
+   "dev_next": 124.41692,
+   "rep_30d": 132.17127,
+   "rep_next": 133.01581
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.58443,
+   "tune_next": 131.97199,
+   "dev_30d": 123.30148,
+   "dev_next": 124.42237,
+   "rep_30d": 132.17944,
+   "rep_next": 133.02396
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_s1.5_y1_a1_r1",
+   "tune_30d": 130.58443,
+   "tune_next": 131.97199,
+   "dev_30d": 123.30148,
+   "dev_next": 124.42237,
+   "rep_30d": 132.17944,
+   "rep_next": 133.02395
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_s2_y0.25_a1_r1",
+   "tune_30d": 130.58592,
+   "tune_next": 131.97495,
+   "dev_30d": 123.30287,
+   "dev_next": 124.42401,
+   "rep_30d": 132.17947,
+   "rep_next": 133.02399
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_s2_y1_a1_r1",
+   "tune_30d": 130.58592,
+   "tune_next": 131.97495,
+   "dev_30d": 123.30287,
+   "dev_next": 124.42401,
+   "rep_30d": 132.17947,
+   "rep_next": 133.02399
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_y0.25_a1_r1",
+   "tune_30d": 130.58383,
+   "tune_next": 131.97072,
+   "dev_30d": 123.30068,
+   "dev_next": 124.42193,
+   "rep_30d": 132.18009,
+   "rep_next": 133.02533
+  },
+  {
+   "key": "v0.03_k1.5_q0.008_y1_a1_r1",
+   "tune_30d": 130.58383,
+   "tune_next": 131.97072,
+   "dev_30d": 123.30068,
+   "dev_next": 124.42193,
+   "rep_30d": 132.18009,
+   "rep_next": 133.02533
+  },
+  {
+   "key": "v0.03_k1.5_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57877,
+   "tune_next": 131.96677,
+   "dev_30d": 123.28716,
+   "dev_next": 124.41058,
+   "rep_30d": 132.1571,
+   "rep_next": 132.99946
+  },
+  {
+   "key": "v0.03_k1.5_s1.5_y1_a1_r1",
+   "tune_30d": 130.57906,
+   "tune_next": 131.9669,
+   "dev_30d": 123.28951,
+   "dev_next": 124.41137,
+   "rep_30d": 132.1596,
+   "rep_next": 133.00274
+  },
+  {
+   "key": "v0.03_k1.5_s2_y0.25_a1_r1",
+   "tune_30d": 130.58058,
+   "tune_next": 131.97011,
+   "dev_30d": 123.28897,
+   "dev_next": 124.41267,
+   "rep_30d": 132.15733,
+   "rep_next": 133.00023
+  },
+  {
+   "key": "v0.03_k1.5_s2_y1_a1_r1",
+   "tune_30d": 130.58086,
+   "tune_next": 131.97022,
+   "dev_30d": 123.29131,
+   "dev_next": 124.41345,
+   "rep_30d": 132.15985,
+   "rep_next": 133.00352
+  },
+  {
+   "key": "v0.03_k1.5_y0.25_a1_r1",
+   "tune_30d": 130.57803,
+   "tune_next": 131.96535,
+   "dev_30d": 123.28613,
+   "dev_next": 124.40993,
+   "rep_30d": 132.15779,
+   "rep_next": 133.00043
+  },
+  {
+   "key": "v0.03_k1.5_y1_a1_r1",
+   "tune_30d": 130.57833,
+   "tune_next": 131.96549,
+   "dev_30d": 123.28847,
+   "dev_next": 124.41072,
+   "rep_30d": 132.16024,
+   "rep_next": 133.00365
+  },
+  {
+   "key": "v0.03_k1_q0.001_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57796,
+   "tune_next": 131.96282,
+   "dev_30d": 123.2857,
+   "dev_next": 124.40559,
+   "rep_30d": 132.14691,
+   "rep_next": 132.98461
+  },
+  {
+   "key": "v0.03_k1_q0.001_s1.5_y1_a1_r1",
+   "tune_30d": 130.57972,
+   "tune_next": 131.96404,
+   "dev_30d": 123.29054,
+   "dev_next": 124.40877,
+   "rep_30d": 132.15283,
+   "rep_next": 132.99208
+  },
+  {
+   "key": "v0.03_k1_q0.001_s2_y0.25_a1_r1",
+   "tune_30d": 130.5809,
+   "tune_next": 131.96745,
+   "dev_30d": 123.28884,
+   "dev_next": 124.40936,
+   "rep_30d": 132.14784,
+   "rep_next": 132.98705
+  },
+  {
+   "key": "v0.03_k1_q0.001_s2_y1_a1_r1",
+   "tune_30d": 130.58252,
+   "tune_next": 131.9685,
+   "dev_30d": 123.29358,
+   "dev_next": 124.41246,
+   "rep_30d": 132.15376,
+   "rep_next": 132.99458
+  },
+  {
+   "key": "v0.03_k1_q0.001_y0.25_a1_r1",
+   "tune_30d": 130.5767,
+   "tune_next": 131.96079,
+   "dev_30d": 123.2839,
+   "dev_next": 124.40396,
+   "rep_30d": 132.14746,
+   "rep_next": 132.98464
+  },
+  {
+   "key": "v0.03_k1_q0.001_y1_a1_r1",
+   "tune_30d": 130.57848,
+   "tune_next": 131.96205,
+   "dev_30d": 123.2887,
+   "dev_next": 124.40705,
+   "rep_30d": 132.15322,
+   "rep_next": 132.99184
+  },
+  {
+   "key": "v0.03_k1_q0.002_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57572,
+   "tune_next": 131.96211,
+   "dev_30d": 123.28332,
+   "dev_next": 124.40424,
+   "rep_30d": 132.14729,
+   "rep_next": 132.98613
+  },
+  {
+   "key": "v0.03_k1_q0.002_s1.5_y1_a1_r1",
+   "tune_30d": 130.57729,
+   "tune_next": 131.96312,
+   "dev_30d": 123.28759,
+   "dev_next": 124.40678,
+   "rep_30d": 132.15243,
+   "rep_next": 132.99245
+  },
+  {
+   "key": "v0.03_k1_q0.002_s2_y0.25_a1_r1",
+   "tune_30d": 130.57832,
+   "tune_next": 131.96637,
+   "dev_30d": 123.28603,
+   "dev_next": 124.40749,
+   "rep_30d": 132.14796,
+   "rep_next": 132.988
+  },
+  {
+   "key": "v0.03_k1_q0.002_s2_y1_a1_r1",
+   "tune_30d": 130.57979,
+   "tune_next": 131.96726,
+   "dev_30d": 123.29025,
+   "dev_next": 124.40998,
+   "rep_30d": 132.15311,
+   "rep_next": 132.99437
+  },
+  {
+   "key": "v0.03_k1_q0.002_y0.25_a1_r1",
+   "tune_30d": 130.57461,
+   "tune_next": 131.96026,
+   "dev_30d": 123.28176,
+   "dev_next": 124.40291,
+   "rep_30d": 132.14791,
+   "rep_next": 132.98648
+  },
+  {
+   "key": "v0.03_k1_q0.002_y1_a1_r1",
+   "tune_30d": 130.5762,
+   "tune_next": 131.96129,
+   "dev_30d": 123.286,
+   "dev_next": 124.40539,
+   "rep_30d": 132.15291,
+   "rep_next": 132.9926
+  },
+  {
+   "key": "v0.03_k1_q0.004_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57554,
+   "tune_next": 131.96335,
+   "dev_30d": 123.28395,
+   "dev_next": 124.40593,
+   "rep_30d": 132.15238,
+   "rep_next": 132.99283
+  },
+  {
+   "key": "v0.03_k1_q0.004_s1.5_y1_a1_r1",
+   "tune_30d": 130.57648,
+   "tune_next": 131.96386,
+   "dev_30d": 123.28704,
+   "dev_next": 124.40752,
+   "rep_30d": 132.15589,
+   "rep_next": 132.99715
+  },
+  {
+   "key": "v0.03_k1_q0.004_s2_y0.25_a1_r1",
+   "tune_30d": 130.57772,
+   "tune_next": 131.96714,
+   "dev_30d": 123.28617,
+   "dev_next": 124.40856,
+   "rep_30d": 132.15277,
+   "rep_next": 132.99402
+  },
+  {
+   "key": "v0.03_k1_q0.004_s2_y1_a1_r1",
+   "tune_30d": 130.57861,
+   "tune_next": 131.96758,
+   "dev_30d": 123.28922,
+   "dev_next": 124.41012,
+   "rep_30d": 132.1563,
+   "rep_next": 132.99836
+  },
+  {
+   "key": "v0.03_k1_q0.004_y0.25_a1_r1",
+   "tune_30d": 130.57462,
+   "tune_next": 131.9617,
+   "dev_30d": 123.28268,
+   "dev_next": 124.40495,
+   "rep_30d": 132.15304,
+   "rep_next": 132.99357
+  },
+  {
+   "key": "v0.03_k1_q0.004_y1_a1_r1",
+   "tune_30d": 130.57557,
+   "tune_next": 131.96223,
+   "dev_30d": 123.28574,
+   "dev_next": 124.40652,
+   "rep_30d": 132.15647,
+   "rep_next": 132.99778
+  },
+  {
+   "key": "v0.03_k1_q0.008_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.57962,
+   "tune_next": 131.96783,
+   "dev_30d": 123.29093,
+   "dev_next": 124.41313,
+   "rep_30d": 132.16481,
+   "rep_next": 133.0075
+  },
+  {
+   "key": "v0.03_k1_q0.008_s1.5_y1_a1_r1",
+   "tune_30d": 130.57972,
+   "tune_next": 131.96782,
+   "dev_30d": 123.29201,
+   "dev_next": 124.41348,
+   "rep_30d": 132.16566,
+   "rep_next": 133.0089
+  },
+  {
+   "key": "v0.03_k1_q0.008_s2_y0.25_a1_r1",
+   "tune_30d": 130.58134,
+   "tune_next": 131.97107,
+   "dev_30d": 123.29261,
+   "dev_next": 124.41509,
+   "rep_30d": 132.16495,
+   "rep_next": 133.00798
+  },
+  {
+   "key": "v0.03_k1_q0.008_s2_y1_a1_r1",
+   "tune_30d": 130.58144,
+   "tune_next": 131.97106,
+   "dev_30d": 123.29368,
+   "dev_next": 124.41543,
+   "rep_30d": 132.16581,
+   "rep_next": 133.00938
+  },
+  {
+   "key": "v0.03_k1_q0.008_y0.25_a1_r1",
+   "tune_30d": 130.57891,
+   "tune_next": 131.96644,
+   "dev_30d": 123.28997,
+   "dev_next": 124.41254,
+   "rep_30d": 132.16548,
+   "rep_next": 133.00863
+  },
+  {
+   "key": "v0.03_k1_q0.008_y1_a1_r1",
+   "tune_30d": 130.57901,
+   "tune_next": 131.96643,
+   "dev_30d": 123.29104,
+   "dev_next": 124.41288,
+   "rep_30d": 132.16631,
+   "rep_next": 133.01
+  },
+  {
+   "key": "v0.03_k1_s1.5_y0.25_a1_r1",
+   "tune_30d": 130.58451,
+   "tune_next": 131.96639,
+   "dev_30d": 123.29415,
+   "dev_next": 124.41203,
+   "rep_30d": 132.15279,
+   "rep_next": 132.98876
+  },
+  {
+   "key": "v0.03_k1_s1.5_y1_a1_r1",
+   "tune_30d": 130.586,
+   "tune_next": 131.96768,
+   "dev_30d": 123.29901,
+   "dev_next": 124.41579,
+   "rep_30d": 132.15878,
+   "rep_next": 132.99698
+  },
+  {
+   "key": "v0.03_k1_s2_y0.25_a1_r1",
+   "tune_30d": 130.58801,
+   "tune_next": 131.97162,
+   "dev_30d": 123.29804,
+   "dev_next": 124.41669,
+   "rep_30d": 132.15419,
+   "rep_next": 132.99213
+  },
+  {
+   "key": "v0.03_k1_s2_y1_a1_r1",
+   "tune_30d": 130.58925,
+   "tune_next": 131.97263,
+   "dev_30d": 123.30267,
+   "dev_next": 124.42029,
+   "rep_30d": 132.16013,
+   "rep_next": 133.00043
+  },
+  {
+   "key": "v0.03_k1_y0.25_a1_r1",
+   "tune_30d": 130.58301,
+   "tune_next": 131.96408,
+   "dev_30d": 123.29193,
+   "dev_next": 124.40985,
+   "rep_30d": 132.15321,
+   "rep_next": 132.98823
+  },
+  {
+   "key": "v0.03_k1_y1_a1_r1",
+   "tune_30d": 130.58452,
+   "tune_next": 131.96544,
+   "dev_30d": 123.29678,
+   "dev_next": 124.41355,
+   "rep_30d": 132.15899,
+   "rep_next": 132.99609
+  }
+ ],
+ "folds_at_tuning_best": {
+  "20212022": {
+   "role": "tuning",
+   "n_games": 1199,
+   "n_asof": 7,
+   "mse": {
+    "team": 130.25308484819288,
+    "flat": 130.1814473120395,
+    "rapm": 130.1029977439263,
+    "prior_only": 130.1485830629937,
+    "const": 130.32170791962105
+   },
+   "skill_vs_const": {
+    "team": 0.0005265666980860395,
+    "flat": 0.0010762643447557174,
+    "rapm": 0.0016782328837314786,
+    "prior_only": 0.00132844220192474,
+    "const": 0.0
+   },
+   "rapm_vs": {
+    "team": {
+     "delta_mse": -0.15008710426658897,
+     "se": 0.011625883470276776,
+     "z": -12.90973753954338,
+     "upper95_one_sided": -0.13127253717275109,
+     "p_b_not_better": 0.0,
+     "n_games": 1199
+    },
+    "flat": {
+     "delta_mse": -0.07844956811321667,
+     "se": 0.008224458416993083,
+     "z": -9.53856948818988,
+     "upper95_one_sided": -0.06516439724950437,
+     "p_b_not_better": 0.0,
+     "n_games": 1199
+    },
+    "prior_only": {
+     "delta_mse": -0.04558531906741061,
+     "se": 0.005919265155302182,
+     "z": -7.701178756382887,
+     "upper95_one_sided": -0.036173919360005705,
+     "p_b_not_better": 0.0,
+     "n_games": 1199
+    },
+    "const": {
+     "delta_mse": -0.21871017569476595,
+     "se": 0.013346631070799468,
+     "z": -16.38692000509947,
+     "upper95_one_sided": -0.196309945074435,
+     "p_b_not_better": 0.0,
+     "n_games": 1199
+    }
+   },
+   "by_asof": {
+    "2021-10-26": {
+     "team": 124.10689,
+     "flat": 124.11099,
+     "rapm": 123.98872,
+     "prior_only": 124.00196,
+     "const": 124.15611
+    },
+    "2021-11-01": {
+     "team": 121.89519,
+     "flat": 121.90197,
+     "rapm": 121.79557,
+     "prior_only": 121.80398,
+     "const": 121.94616
+    },
+    "2021-12-01": {
+     "team": 124.34519,
+     "flat": 124.2813,
+     "rapm": 124.21899,
+     "prior_only": 124.24709,
+     "const": 124.36362
+    },
+    "2022-01-01": {
+     "team": 133.98297,
+     "flat": 133.89026,
+     "rapm": 133.81403,
+     "prior_only": 133.88399,
+     "const": 134.08883
+    },
+    "2022-02-01": {
+     "team": 127.24767,
+     "flat": 127.10323,
+     "rapm": 127.05152,
+     "prior_only": 127.11098,
+     "const": 127.28215
+    },
+    "2022-03-01": {
+     "team": 139.86288,
+     "flat": 139.74999,
+     "rapm": 139.68696,
+     "prior_only": 139.75165,
+     "const": 139.96004
+    },
+    "2022-04-01": {
+     "team": 136.74413,
+     "flat": 136.6376,
+     "rapm": 136.57798,
+     "prior_only": 136.64856,
+     "const": 136.84321
+    }
+   },
+   "next_season_mse": 132.6189420930925,
+   "rapm_beats_all": true
+  },
+  "20222023": {
+   "role": "tuning",
+   "n_games": 1271,
+   "n_asof": 7,
+   "mse": {
+    "team": 131.21711047247774,
+    "flat": 131.1201299408005,
+    "rapm": 131.03132339055784,
+    "prior_only": 131.07710384749393,
+    "const": 131.29979134910968
+   },
+   "skill_vs_const": {
+    "team": 0.0006297106475371406,
+    "flat": 0.0013683297320060683,
+    "rapm": 0.002044694479658493,
+    "prior_only": 0.0016960232710778733,
+    "const": 0.0
+   },
+   "rapm_vs": {
+    "team": {
+     "delta_mse": -0.18578708191989005,
+     "se": 0.013720851398758376,
+     "z": -13.540492242099658,
+     "upper95_one_sided": -0.16143780031117885,
+     "p_b_not_better": 0.0,
+     "n_games": 1271
+    },
+    "flat": {
+     "delta_mse": -0.08880655024262382,
+     "se": 0.010006576028301973,
+     "z": -8.87481891822427,
+     "upper95_one_sided": -0.07209463318927055,
+     "p_b_not_better": 0.0,
+     "n_games": 1271
+    },
+    "prior_only": {
+     "delta_mse": -0.04578045693610692,
+     "se": 0.005549299205922082,
+     "z": -8.249772671700796,
+     "upper95_one_sided": -0.036681844354705236,
+     "p_b_not_better": 0.0,
+     "n_games": 1271
+    },
+    "const": {
+     "delta_mse": -0.2684679585518172,
+     "se": 0.015918204596934153,
+     "z": -16.865467265292228,
+     "upper95_one_sided": -0.24194140912982978,
+     "p_b_not_better": 0.0,
+     "n_games": 1271
+    }
+   },
+   "by_asof": {
+    "2022-10-21": {
+     "team": 131.66525,
+     "flat": 131.64883,
+     "rapm": 131.47119,
+     "prior_only": 131.4751,
+     "const": 131.71222
+    },
+    "2022-11-01": {
+     "team": 128.15743,
+     "flat": 128.10433,
+     "rapm": 128.00056,
+     "prior_only": 128.01426,
+     "const": 128.20284
+    },
+    "2022-12-01": {
+     "team": 127.28699,
+     "flat": 127.1781,
+     "rapm": 127.03473,
+     "prior_only": 127.05791,
+     "const": 127.35773
+    },
+    "2023-01-01": {
+     "team": 133.48756,
+     "flat": 133.36443,
+     "rapm": 133.2839,
+     "prior_only": 133.34367,
+     "const": 133.58289
+    },
+    "2023-02-01": {
+     "team": 135.54359,
+     "flat": 135.38569,
+     "rapm": 135.35931,
+     "prior_only": 135.44706,
+     "const": 135.66619
+    },
+    "2023-03-01": {
+     "team": 131.44755,
+     "flat": 131.32982,
+     "rapm": 131.2878,
+     "prior_only": 131.34464,
+     "const": 131.54088
+    },
+    "2023-04-01": {
+     "team": 131.49302,
+     "flat": 131.37993,
+     "rapm": 131.34962,
+     "prior_only": 131.44048,
+     "const": 131.61048
+    }
+   },
+   "next_season_mse": 131.29980023780226,
+   "rapm_beats_all": true
+  },
+  "20232024": {
+   "role": "dev",
+   "n_games": 1254,
+   "n_asof": 7,
+   "mse": {
+    "team": 117.18434031996432,
+    "flat": 117.07654545077509,
+    "rapm": 116.97859644866676,
+    "prior_only": 117.01165337020409,
+    "const": 117.23374531731832
+   },
+   "skill_vs_const": {
+    "team": 0.00042142300598069227,
+    "flat": 0.0013409097023876493,
+    "rapm": 0.0021764114757312214,
+    "prior_only": 0.0018944370199305283,
+    "const": 0.0
+   },
+   "rapm_vs": {
+    "team": {
+     "delta_mse": -0.20574387129755223,
+     "se": 0.012541795476583944,
+     "z": -16.40465846231384,
+     "upper95_one_sided": -0.18618354130324632,
+     "p_b_not_better": 0.0,
+     "n_games": 1254
+    },
+    "flat": {
+     "delta_mse": -0.097949002108315,
+     "se": 0.00983370420077084,
+     "z": -9.96053980357036,
+     "upper95_one_sided": -0.08340500479703869,
+     "p_b_not_better": 0.0,
+     "n_games": 1254
+    },
+    "prior_only": {
+     "delta_mse": -0.03305692153731272,
+     "se": 0.005221896926130454,
+     "z": -6.330443133010797,
+     "upper95_one_sided": -0.024723032954146282,
+     "p_b_not_better": 0.0,
+     "n_games": 1254
+    },
+    "const": {
+     "delta_mse": -0.2551488686515409,
+     "se": 0.014600113733074346,
+     "z": -17.475813772158485,
+     "upper95_one_sided": -0.23199175705091699,
+     "p_b_not_better": 0.0,
+     "n_games": 1254
+    }
+   },
+   "by_asof": {
+    "2023-10-24": {
+     "team": 109.41883,
+     "flat": 109.39332,
+     "rapm": 109.24515,
+     "prior_only": 109.24993,
+     "const": 109.42796
+    },
+    "2023-11-01": {
+     "team": 107.66326,
+     "flat": 107.63875,
+     "rapm": 107.47758,
+     "prior_only": 107.47975,
+     "const": 107.68642
+    },
+    "2023-12-01": {
+     "team": 126.23024,
+     "flat": 126.1415,
+     "rapm": 126.02499,
+     "prior_only": 126.04876,
+     "const": 126.27609
+    },
+    "2024-01-01": {
+     "team": 116.81167,
+     "flat": 116.65269,
+     "rapm": 116.56841,
+     "prior_only": 116.61768,
+     "const": 116.8548
+    },
+    "2024-02-01": {
+     "team": 129.0137,
+     "flat": 128.85927,
+     "rapm": 128.77213,
+     "prior_only": 128.81292,
+     "const": 129.06053
+    },
+    "2024-03-01": {
+     "team": 116.24066,
+     "flat": 116.10181,
+     "rapm": 116.04231,
+     "prior_only": 116.07362,
+     "const": 116.3271
+    },
+    "2024-04-01": {
+     "team": 116.72099,
+     "flat": 116.53876,
+     "rapm": 116.52315,
+     "prior_only": 116.61477,
+     "const": 116.81636
+    }
+   },
+   "next_season_mse": 117.84263547461889,
+   "rapm_beats_all": true
+  },
+  "20242025": {
+   "role": "dev",
+   "n_games": 1204,
+   "n_asof": 7,
+   "mse": {
+    "team": 130.0293973992442,
+    "flat": 129.91302277079174,
+    "rapm": 129.80102642506887,
+    "prior_only": 129.84178156141527,
+    "const": 130.08065197264543
+   },
+   "skill_vs_const": {
+    "team": 0.0003940214983855217,
+    "flat": 0.0012886559170147693,
+    "rapm": 0.002149632119274436,
+    "prior_only": 0.0018363254458502176,
+    "const": 0.0
+   },
+   "rapm_vs": {
+    "team": {
+     "delta_mse": -0.22837097417532604,
+     "se": 0.015105009189962888,
+     "z": -15.11889011805938,
+     "upper95_one_sided": -0.20365116857867954,
+     "p_b_not_better": 0.0,
+     "n_games": 1204
+    },
+    "flat": {
+     "delta_mse": -0.11199634572288104,
+     "se": 0.011234325850196614,
+     "z": -9.969120285123381,
+     "upper95_one_sided": -0.09329150971079007,
+     "p_b_not_better": 0.0,
+     "n_games": 1204
+    },
+    "prior_only": {
+     "delta_mse": -0.040755136346391246,
+     "se": 0.006278646765351046,
+     "z": -6.491070109454164,
+     "upper95_one_sided": -0.030655641844678345,
+     "p_b_not_better": 0.0,
+     "n_games": 1204
+    },
+    "const": {
+     "delta_mse": -0.27962554757656816,
+     "se": 0.0174543989397657,
+     "z": -16.020348139259486,
+     "upper95_one_sided": -0.2514863626882233,
+     "p_b_not_better": 0.0,
+     "n_games": 1204
+    }
+   },
+   "by_asof": {
+    "2024-10-18": {
+     "team": 134.01416,
+     "flat": 133.95277,
+     "rapm": 133.69813,
+     "prior_only": 133.71615,
+     "const": 134.04985
+    },
+    "2024-11-01": {
+     "team": 126.12475,
+     "flat": 126.04543,
+     "rapm": 125.88726,
+     "prior_only": 125.89908,
+     "const": 126.14186
+    },
+    "2024-12-01": {
+     "team": 127.57361,
+     "flat": 127.48456,
+     "rapm": 127.40977,
+     "prior_only": 127.44444,
+     "const": 127.63701
+    },
+    "2025-01-01": {
+     "team": 128.07617,
+     "flat": 127.94663,
+     "rapm": 127.8708,
+     "prior_only": 127.9214,
+     "const": 128.16022
+    },
+    "2025-02-01": {
+     "team": 135.97353,
+     "flat": 135.83154,
+     "rapm": 135.7602,
+     "prior_only": 135.80065,
+     "const": 135.99741
+    },
+    "2025-03-01": {
+     "team": 130.21798,
+     "flat": 130.05472,
+     "rapm": 129.99116,
+     "prior_only": 130.05619,
+     "const": 130.29676
+    },
+    "2025-04-01": {
+     "team": 130.51935,
+     "flat": 130.33781,
+     "rapm": 130.28925,
+     "prior_only": 130.36863,
+     "const": 130.55739
+    }
+   },
+   "next_season_mse": 131.14401873020194,
+   "rapm_beats_all": true
+  },
+  "20252026": {
+   "role": "report",
+   "n_games": 1221,
+   "n_asof": 7,
+   "mse": {
+    "team": 132.34092692948533,
+    "flat": 132.24118598362213,
+    "rapm": 132.1473618904289,
+    "prior_only": 132.18813651409198,
+    "const": 132.38857019867922
+   },
+   "skill_vs_const": {
+    "team": 0.0003598744900891182,
+    "flat": 0.0011132699358857856,
+    "rapm": 0.0018219723038652713,
+    "prior_only": 0.0015139802800683277,
+    "const": 0.0
+   },
+   "rapm_vs": {
+    "team": {
+     "delta_mse": -0.19356503905646366,
+     "se": 0.015003061900468823,
+     "z": -12.901702355198244,
+     "upper95_one_sided": -0.1684461232056664,
+     "p_b_not_better": 0.0,
+     "n_games": 1221
+    },
+    "flat": {
+     "delta_mse": -0.09382409319324171,
+     "se": 0.011052921085319092,
+     "z": -8.488624180793476,
+     "upper95_one_sided": -0.07550962925704394,
+     "p_b_not_better": 0.0,
+     "n_games": 1221
+    },
+    "prior_only": {
+     "delta_mse": -0.04077462366308864,
+     "se": 0.006471295005467828,
+     "z": -6.300844518544852,
+     "upper95_one_sided": -0.029809391758274708,
+     "p_b_not_better": 0.0,
+     "n_games": 1221
+    },
+    "const": {
+     "delta_mse": -0.24120830825031223,
+     "se": 0.01740766558867757,
+     "z": -13.856441980778905,
+     "upper95_one_sided": -0.21189330975093054,
+     "p_b_not_better": 0.0,
+     "n_games": 1221
+    }
+   },
+   "by_asof": {
+    "2025-10-21": {
+     "team": 127.62924,
+     "flat": 127.598,
+     "rapm": 127.48302,
+     "prior_only": 127.50072,
+     "const": 127.66643
+    },
+    "2025-11-01": {
+     "team": 137.55584,
+     "flat": 137.48244,
+     "rapm": 137.32417,
+     "prior_only": 137.35101,
+     "const": 137.58312
+    },
+    "2025-12-01": {
+     "team": 133.70235,
+     "flat": 133.61217,
+     "rapm": 133.47119,
+     "prior_only": 133.47851,
+     "const": 133.72236
+    },
+    "2026-01-01": {
+     "team": 128.7614,
+     "flat": 128.63017,
+     "rapm": 128.5674,
+     "prior_only": 128.60035,
+     "const": 128.80185
+    },
+    "2026-02-01": {
+     "team": 151.80655,
+     "flat": 151.59784,
+     "rapm": 151.58405,
+     "prior_only": 151.69141,
+     "const": 151.90651
+    },
+    "2026-03-01": {
+     "team": 129.1581,
+     "flat": 129.02972,
+     "rapm": 128.95549,
+     "prior_only": 129.01688,
+     "const": 129.23346
+    },
+    "2026-04-01": {
+     "team": 128.95647,
+     "flat": 128.85716,
+     "rapm": 128.82809,
+     "prior_only": 128.90832,
+     "const": 129.02482
+    }
+   },
+   "next_season_mse": 132.98602434606244,
+   "rapm_beats_all": true
+  }
+ }
+}

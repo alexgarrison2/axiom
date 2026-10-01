@@ -42,7 +42,7 @@ import pandas as pd
 
 from bu.lake.build import read_table
 from bu.rapm import pack as rpack
-from bu.rapm.data import ensure_stints, lake_seasons
+from bu.rapm.data import cached_stints, lake_seasons
 from bu.rapm.design import COVARIATES, Index
 from .crosswalk import Resolver, dfo_skaters
 from .features import BASELINE_GAMES, MIN_RATED, lineup_tables, side_term
@@ -59,7 +59,7 @@ MIN_SKATERS = 10
 def season_shares(paths, seasons, games: pd.DataFrame) -> pd.DataFrame:
     frames = []
     for s in seasons:
-        sh = game_shares(ensure_stints(paths, s))
+        sh = game_shares(cached_stints(paths, s))
         if len(sh):
             frames.append(sh.assign(season=s))
     if not frames:

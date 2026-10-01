@@ -28,7 +28,7 @@ from bu.rapm.paths import RapmPaths
 from bu.rapm.engine import DEGRADE_ENV
 from .evaluate import OUT_DIR
 
-CODE_VERSION = "m2-r3"
+CODE_VERSION = "m2-r4"
 
 
 def _feature_meta(paths) -> dict:
@@ -37,7 +37,8 @@ def _feature_meta(paths) -> dict:
     # code_version: "m2-r1" = the build that took the single 2025-26 look (look_log.jsonl,
     # config b89386dcfb31); "m2-r2" = review fixes (aging step indexed by last season's age);
     # "m2-r3" = sigma2 per second after an era-weighted season, season prior (with aging) for
-    # dressed skaters without a rating, first-game position for the TOI slot prior.
+    # dressed skaters without a rating, first-game position for the TOI slot prior; "m2-r4" =
+    # window-mode season prior (owner directive: S-1 1.0, S-2 0.5, S-3 0.25), FIN columns.
     return {"code_version": CODE_VERSION,
             "hyper": s.get("hyper"), "lag_days": s.get("lag_days"), "xg_source": s.get("xg_source"),
             "lineups": "L-actual", "toi": "ewma-hl8-m2", "baseline_games": 10, "min_rated": 14,

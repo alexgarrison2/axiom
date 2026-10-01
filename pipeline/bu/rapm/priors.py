@@ -2,9 +2,9 @@
 
 For season S, every skater column gets a prior mean b0 and a prior precision lam:
 
-  returning player  b0 = b_post(last) + sum of one-season aging steps (age in each       (Kalman-style carry)
-                    skipped-to season minus one: the curve is indexed by the earlier season's age)
-                    var0 = min(kappa^k * var_post + extra_age, v_new)  k = seasons since last seen
+  returning player  b0 = b_post(last) + aging_scale x sum of one-season aging steps (age in   (Kalman-style carry)
+                    each skipped-to season minus one: the curve is indexed by the earlier season's age)
+                    var0 = min(kappa^k * var_post + k * q_add + extra_age, v_new)  k = seasons since last seen
   new player        b0 = rookie mean (position group x draft tier, fitted on seasons < S)
                     var0 = v_new
   lam = sigma2 / var0,  sigma2 = residual variance per unit weight of season S-1's fit
@@ -13,6 +13,15 @@ For season S, every skater column gets a prior mean b0 and a prior precision lam
 variance at both ends of the age curve).  Covariates carry last season's values with a
 moderate ridge ``cov_lam``; the intercept is effectively unpenalised.  Players with little
 TOI fall back toward the prior automatically because their data precision is small.
+
+Window mode (``Hyper.window``, owner directive 2026-10-01: seasons 4+ back should barely
+matter).  The Kalman carry forgets geometrically (``kappa``), so every past season keeps some
+weight.  With a window the season-start prior is instead a fresh fit on the last seasons' EV
+stints only, each season's rows weighted by recency (default S-1 1.0, S-2 0.5, S-3 0.25, older
+0), ridged toward the rookie / position-group means at ``v_new``, with every player's older
+rows moved forward by his aging steps (an offset: ``y + X_att . delta_o + X_def . delta_d``),
+summarised as (mean, posterior variance) per player (``window_prior``).  The in-season update
+is unchanged: this season's stints at full weight on top of that prior.
 """
 from __future__ import annotations
 
@@ -37,9 +46,21 @@ class Hyper:
     cov_lam: float = 3600.0 * 20    # pseudo-seconds of ridge on covariates (toward last season)
     use_aging: bool = True
     use_rookie_mean: bool = True
+    q_add: float = 0.0              # additive innovation variance per season, (xG/60)^2: random-walk talent drift
+    aging_scale: float = 1.0        # multiplier on the fitted one-season aging step
+    window: str = ""                # "1,0.5,0.25": window-mode prior, weights of seasons S-1, S-2, ...
 
     def key(self) -> str:
-        return f"v{self.v_new:g}_k{self.kappa:g}_y{self.young_old_extra:g}_a{int(self.use_aging)}_r{int(self.use_rookie_mean)}"
+        # the prior-dynamics terms enter the key only when set, so every key (and report)
+        # written before they existed stays valid
+        extra = (f"_q{self.q_add:g}" if self.q_add else "") + (f"_s{self.aging_scale:g}" if self.aging_scale != 1.0 else "")
+        if self.window:
+            extra += "_w" + "-".join(f"{w:g}" for w in self.window_weights())
+        return (f"v{self.v_new:g}_k{self.kappa:g}{extra}_y{self.young_old_extra:g}_a{int(self.use_aging)}"
+                f"_r{int(self.use_rookie_mean)}")
+
+    def window_weights(self) -> tuple:
+        return tuple(float(x) for x in str(self.window).split(",") if x.strip()) if self.window else ()
 
     def as_dict(self):
         return asdict(self)
@@ -128,11 +149,18 @@ class Chain:
                     b0[n + k] = rookie.mean(pg[k], tier[k], "d")
                 continue
             o, d, ov, dv, last = s
+            if h.window:
+                # window prior for this season (window_prior): aging already applied, no inflation
+                b0[k], b0[n + k] = o, d
+                var[k], var[n + k] = min(ov, h.v_new), min(dv, h.v_new)
+                is_new[k] = False
+                continue
             gap = int(gaps[k])
-            b0[k] = o + d_o[k]
-            b0[n + k] = d + d_d[k]
-            var[k] = min(ov * h.kappa ** gap + extra[k], h.v_new)
-            var[n + k] = min(dv * h.kappa ** gap + extra[k], h.v_new)
+            b0[k] = o + h.aging_scale * d_o[k]
+            b0[n + k] = d + h.aging_scale * d_d[k]
+            drift = gap * h.q_add + extra[k]
+            var[k] = min(ov * h.kappa ** gap + drift, h.v_new)
+            var[n + k] = min(dv * h.kappa ** gap + drift, h.v_new)
             is_new[k] = False
         lam = np.empty(idx.p)
         lam[:2 * n] = self.sigma2 / var
@@ -186,6 +214,73 @@ class Chain:
     def table(self) -> pd.DataFrame:
         return pd.DataFrame([(p, *v) for p, v in self.state.items()],
                             columns=["player_id", "o", "d", "o_var", "d_var", "last_season"])
+
+
+def window_prior(season: str, hist, players: pd.DataFrame, aging: AgingCurve | None, rookie: RookieModel | None,
+                 hyper: Hyper, sigma2: float) -> dict:
+    """Window-mode season-start prior: {pid: (o, d, o_var, d_var, season)} (see the module doc).
+
+    ``hist``: (season, Index, Gram) of earlier full seasons (any order); season S-k enters with
+    weight ``hyper.window_weights()[k-1]`` and its own covariate block (league level, score and
+    zone effects of that season)."""
+    import scipy.linalg as la
+    yr = int(str(season)[:4])
+    ws = hyper.window_weights()
+    use = [(yr - int(str(s)[:4]), s, idx, g) for s, idx, g in hist if 1 <= yr - int(str(s)[:4]) <= len(ws)]
+    use = [(k, s, idx, g) for k, s, idx, g in use if ws[k - 1] > 0]
+    if not use:
+        return {}
+    ids = np.array(sorted({int(p) for _, _, idx, _ in use for p in idx.ids}), dtype=np.int64)
+    pos = {int(p): i for i, p in enumerate(ids)}
+    nU, nc = len(ids), len(COVARIATES)
+    P = 2 * nU + nc * len(use)
+    G = np.zeros((P, P))
+    r = np.zeros(P)
+    bio = players.set_index("player_id")
+    for b, (k, s, idx, g) in enumerate(use):
+        w = ws[k - 1]
+        pl = np.array([pos[int(p)] for p in idx.ids])
+        m = np.concatenate([pl, nU + pl, 2 * nU + b * nc + np.arange(nc)])
+        shift = np.zeros(idx.p)
+        if aging is not None and hyper.use_aging:
+            pg = bio["pos_group"].reindex(idx.ids).fillna("F").to_numpy()
+            age_S = age_at(bio["birth_date"].reindex(idx.ids), season).to_numpy()
+            d_o, d_d = Chain._aging_deltas(aging, pg, age_S, np.full(idx.n, k))
+            shift[:idx.n] = hyper.aging_scale * d_o
+            shift[idx.n:2 * idx.n] = hyper.aging_scale * d_d
+        G[np.ix_(m, m)] += w * g.G
+        r[m] += w * (g.r + g.G @ shift)       # rows moved forward by the players' aging steps
+    b0 = np.zeros(P)
+    if rookie is not None and hyper.use_rookie_mean:
+        pg = bio["pos_group"].reindex(ids).fillna("F").to_numpy()
+        tier = RookieModel.tier(bio["draft_overall"].reindex(ids).to_numpy())
+        b0[:nU] = [rookie.mean(a, t, "o") for a, t in zip(pg, tier)]
+        b0[nU:2 * nU] = [rookie.mean(a, t, "d") for a, t in zip(pg, tier)]
+    lam = np.full(P, hyper.cov_lam)
+    lam[:2 * nU] = sigma2 / hyper.v_new
+    lam[2 * nU::nc] = 1e-6                    # each season's intercept
+    A = G
+    A[np.diag_indices_from(A)] += lam
+    c = la.cho_factor(A, lower=False, check_finite=False)
+    bb = la.cho_solve(c, r + lam * b0, check_finite=False)
+    var = sigma2 * _inv_diag(c, 2 * nU, P)
+    return {int(p): (float(bb[i]), float(bb[nU + i]), float(var[i]), float(var[nU + i]), str(season))
+            for i, p in enumerate(ids)}
+
+
+def _inv_diag(c, k: int, P: int) -> np.ndarray:
+    """First ``k`` diagonal entries of A^-1 from A's Cholesky factor."""
+    import scipy.linalg as la
+    E = np.zeros((P, k))
+    E[np.arange(k), np.arange(k)] = 1.0
+    X = la.cho_solve(c, E, check_finite=False)
+    return X[np.arange(k), np.arange(k)].copy()
+
+
+def set_window_state(chain: "Chain", season: str, hist, players, aging, rookie) -> None:
+    """Replace the chain's carried state by the window prior of ``season`` (window mode only)."""
+    if chain.h.window:
+        chain.state = window_prior(season, hist, players, aging, rookie, chain.h, chain.sigma2)
 
 
 COV_NAMES = COVARIATES

@@ -39,7 +39,7 @@ from .design import COVARIATES
 from .engine import LAG_DAYS, SeasonData, avail_dates, fit_standalone
 from . import pack as rpack
 from .design import Index
-from .priors import Chain, Hyper, RookieModel
+from .priors import Chain, Hyper, RookieModel, set_window_state
 from .ridge import Gram
 from bu.lake.build import read_table
 
@@ -81,6 +81,7 @@ def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: 
     the season is refit from the pack's chain, aging curve and rookie means instead of
     replaying earlier seasons (same numbers as the full chain)."""
     chain = Chain(hyper)
+    hist = []           # (season, Index, full-season Gram) for window-mode priors
     standalone: dict[str, pd.DataFrame] = {}
     seeded = None
     if seed is not None:
@@ -103,6 +104,7 @@ def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: 
         else:
             aging = fit_aging(standalone, players, S)
             rookie = RookieModel.fit(standalone, players, S)
+            set_window_state(chain, S, hist, players, aging, rookie)
             rpack.write(sp["pack"], rpack.to_json(S, chain, aging, rookie, players))
         b0, lam, is_new = chain.prior(S, sd.idx, players, aging, rookie)
         n = sd.idx.n
@@ -175,6 +177,7 @@ def run(paths, seasons: list[str], players: pd.DataFrame, hyper: Hyper, source: 
         post.to_parquet(paths.posterior(S), index=False)
         if seeded is None:
             standalone[S] = fit_standalone(sd, G)
+            hist = (hist + [(S, sd.idx, G)])[-4:]
         summary["seasons"][S] = {"n_dates": int(len(dates)), "n_skaters": int(n), "sigma2": s2,
                                  "aging": aging.to_json(), "rookie": rookie.to_json(),
                                  "seconds": round(time.time() - t0, 1)}

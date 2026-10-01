@@ -58,7 +58,12 @@ VERSION = 1                 # player sample file
 RATINGS_VERSION = 2         # site file; 2: def = xGA/60 prevented (-d), net = off + def
 WINDOW = 3                  # completed seasons in the sample before the current one
 MIN_ROSTER_SKATERS = 600    # an export with fewer named roster skaters is not written
-COLUMNS = ["id", "name", "team", "pos", "roster", "rated", "off", "def", "net", "toi", "gp", "toi_cur", "gp_cur"]
+COLUMNS = ["id", "name", "team", "pos", "roster", "rated", "off", "def", "net", "toi", "gp", "toi_cur", "gp_cur",
+           "fin", "off_total"]
+# fin       finishing talent (bu.rapm.finishing): shrunk EV goals above xG per 60 from the player's own
+#           shots, decayed over seasons; season-start state out/fin_pack_<S>.json.gz + this season's
+#           games from the refresh's xG / stints caches
+# off_total off + fin (both EV, per 60): xG impact plus finishing
 VOLATILE = ("generated_at",)
 MODEL = "RAPM v2 (EV, xG v2 target)"
 
@@ -209,6 +214,31 @@ def current_sample(state_root: str | None, season: str):
     return ev_sample(pd.read_parquet(p))
 
 
+def current_fin(state_root: str | None, season: str, log=print):
+    """(FinState, counted this season's games) from ``out/fin_pack_<season>.json.gz`` plus the
+    season's games in the refresh's caches (``<state>/xg`` for the shooter's goals and xG,
+    ``<state>/stints`` for EV time); (None, False) without a pack for the season."""
+    from bu.rapm import finishing as FN
+    st = FN.read_pack(FN.pack_path(season))
+    if st is None:
+        log(f"  [ratings] no fin_pack_{season}.json.gz: fin carried over / 0")
+        return None, False
+    st.roll(season)
+    if not state_root:
+        return st, False
+    xp = os.path.join(state_root, "xg", f"season={season}.parquet")
+    sp = os.path.join(state_root, "stints", f"season={season}.parquet")
+    if not (os.path.exists(xp) and os.path.exists(sp)):
+        return st, False
+    import pandas as pd
+    from .toi import game_shares
+    stints = pd.read_parquet(sp)
+    stints = stints[stints["game_type"].isin([2, 3])]
+    xg = pd.read_parquet(xp)
+    st.add_games(FN.player_games(xg[xg["game_id"].isin(set(stints["game_id"]))], game_shares(stints)))
+    return st, True
+
+
 # ----------------------------------------------------------------------- export
 
 def _prev_rows(prev: dict | None, season: str) -> dict:
@@ -225,7 +255,8 @@ def _prev_rows(prev: dict | None, season: str) -> dict:
 
 
 def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: dict | None,
-                 prev: dict | None = None, now: datetime | None = None) -> dict:
+                 prev: dict | None = None, now: datetime | None = None, fin=None,
+                 fin_current: bool = False) -> dict:
     """The site file from the bundle, the season's sample file, the current rosters and this
     season's EV sample (see the module docstring for the fallbacks)."""
     season = str(bundle["season"])
@@ -277,9 +308,19 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
         else:
             c_min, c_gp = 0, 0
         h_s, h_gp = hist.get(pid, (0.0, 0))
-        # Presented higher = better: def = xGA/60 prevented (-d); net = off + def = o - d.
+        # FIN: this season's games counted when the refresh's caches are there; otherwise the
+        # previous export's value of the same season (no churn on a run without them), else the
+        # season-start pack alone
+        if fin is not None and (fin_current or not old.get("_same_season") or old.get("fin") is None):
+            f_ = round(fin.fin(pid, "D" if pos == "D" else "F"), 3) + 0.0
+        elif old.get("_same_season") and old.get("fin") is not None:
+            f_ = float(old["fin"])
+        else:
+            f_ = 0.0
+        # Presented higher = better: def = xGA/60 prevented (-d); net = off + def = o - d;
+        # off_total = off + fin (xG impact plus finishing, both EV per 60).
         rows.append([pid, name, team, pos, pid in roster, bool(rated), round(o, 3), round(-d, 3) + 0.0, round(o - d, 3),
-                     round(h_s / 60) + c_min, h_gp + c_gp, c_min, c_gp])
+                     round(h_s / 60) + c_min, h_gp + c_gp, c_min, c_gp, f_, round(round(o, 3) + f_, 3) + 0.0])
     rows.sort(key=lambda r: (-r[8], r[1]))
     now = now or datetime.now(timezone.utc)
     return {
@@ -290,7 +331,9 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
         "window": (sample or {}).get("window") or prior_seasons(season),
         "units": {"off": "EV xGF/60 vs average (higher is better)",
                   "def": "EV xGA/60 prevented vs average (higher is better)", "net": "off + def",
-                  "toi": "EV minutes, window seasons + this season", "gp": "games, same span"},
+                  "toi": "EV minutes, window seasons + this season", "gp": "games, same span",
+                  "fin": "EV goals above xG per 60 from own shots, shrunk (higher is better)",
+                  "off_total": "off + fin"},
         "generated_at": now.isoformat(timespec="seconds"),
         "columns": COLUMNS, "rows": rows,
     }
@@ -339,7 +382,8 @@ def export(bundle_path: str = BUNDLE, out_path: str = PUBLIC_FILE, state_root: s
         log("  [ratings] no roster source: keeping the previous export's roster flags")
     cur = current_sample(state_root, season)
     prev = _read_json(out_path)
-    doc = build_export(bundle, sample, roster, cur, prev)
+    fin, fin_current = current_fin(state_root, season, log)
+    doc = build_export(bundle, sample, roster, cur, prev, fin=fin, fin_current=fin_current)
     s = summary(doc)
     if s["roster_named"] < MIN_ROSTER_SKATERS:
         raise RuntimeError(f"only {s['roster_named']} named roster skaters (< {MIN_ROSTER_SKATERS}); not written")

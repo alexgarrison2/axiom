@@ -1,19 +1,22 @@
 {
   "hyper": {
-    "v_new": 0.02,
+    "v_new": 0.04,
     "kappa": 1.25,
     "young_old_extra": 0.25,
     "cov_lam": 72000.0,
     "use_aging": true,
-    "use_rookie_mean": true
+    "use_rookie_mean": true,
+    "q_add": 0.0,
+    "aging_scale": 1.0,
+    "window": "1,0.5,0.25"
   },
   "lag_days": 2,
-  "xg_source": "xg_v2 (python -m bu.rapm.v2_source: walk-forward OOS xg2_asof)",
+  "xg_source": "/private/tmp/claude-501/-Users-alexgarrison-axiom/6556fcb8-f839-44c1-9ae3-5ee70b3ea620/scratchpad/int/xg_v2",
   "seasons": {
     "20102011": {
       "n_dates": 226,
       "n_skaters": 892,
-      "sigma2": 1732.0222240118007,
+      "sigma2": 1731.1766187089577,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [],
@@ -24,12 +27,12 @@
         "fit_seasons": [],
         "means": {}
       },
-      "seconds": 16.3
+      "seconds": 16.4
     },
     "20112012": {
       "n_dates": 224,
       "n_skaters": 897,
-      "sigma2": 1569.2101979025338,
+      "sigma2": 1569.006929298441,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -61,12 +64,12 @@
           "F|undrafted|d": -0.02081269500382743
         }
       },
-      "seconds": 17.8
+      "seconds": 16.4
     },
     "20122013": {
       "n_dates": 144,
       "n_skaters": 843,
-      "sigma2": 1575.083864455267,
+      "sigma2": 1574.838806132929,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -126,12 +129,12 @@
           "F|undrafted|d": -0.011256825153267364
         }
       },
-      "seconds": 10.7
+      "seconds": 9.6
     },
     "20132014": {
       "n_dates": 224,
       "n_skaters": 888,
-      "sigma2": 1543.8490768686258,
+      "sigma2": 1543.6388326947588,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -193,12 +196,12 @@
           "F|undrafted|d": 0.008959614519273152
         }
       },
-      "seconds": 18.7
+      "seconds": 16.6
     },
     "20142015": {
       "n_dates": 225,
       "n_skaters": 883,
-      "sigma2": 1480.1924472129847,
+      "sigma2": 1479.9856698218814,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -262,12 +265,12 @@
           "F|undrafted|d": -0.017378644337930047
         }
       },
-      "seconds": 17.7
+      "seconds": 16.2
     },
     "20152016": {
       "n_dates": 226,
       "n_skaters": 897,
-      "sigma2": 1428.432676107629,
+      "sigma2": 1428.2238756428503,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -333,12 +336,12 @@
           "F|undrafted|d": -0.027457287088305655
         }
       },
-      "seconds": 19.6
+      "seconds": 17.2
     },
     "20162017": {
       "n_dates": 218,
       "n_skaters": 891,
-      "sigma2": 1485.8402580538075,
+      "sigma2": 1485.6062820367977,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -406,12 +409,12 @@
           "F|undrafted|d": -0.02909675089486644
         }
       },
-      "seconds": 18.8
+      "seconds": 16.6
     },
     "20172018": {
       "n_dates": 223,
       "n_skaters": 890,
-      "sigma2": 1561.9018041683173,
+      "sigma2": 1561.7012528055473,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -481,12 +484,12 @@
           "F|undrafted|d": -0.028978759522623233
         }
       },
-      "seconds": 18.6
+      "seconds": 18.0
     },
     "20182019": {
       "n_dates": 223,
       "n_skaters": 910,
-      "sigma2": 1599.4363755124807,
+      "sigma2": 1599.1681998590373,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -558,12 +561,12 @@
           "F|undrafted|d": -0.02651563138025664
         }
       },
-      "seconds": 19.1
+      "seconds": 18.5
     },
     "20192020": {
       "n_dates": 205,
       "n_skaters": 889,
-      "sigma2": 1777.8246465436748,
+      "sigma2": 1777.4973120090046,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -637,12 +640,12 @@
           "F|undrafted|d": -0.024015461783305957
         }
       },
-      "seconds": 15.9
+      "seconds": 14.7
     },
     "20202021": {
       "n_dates": 167,
       "n_skaters": 913,
-      "sigma2": 818.5949896194,
+      "sigma2": 818.4892689995626,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -718,12 +721,12 @@
           "F|undrafted|d": -0.02664094532648325
         }
       },
-      "seconds": 14.1
+      "seconds": 13.8
     },
     "20212022": {
       "n_dates": 232,
       "n_skaters": 1005,
-      "sigma2": 1375.5469661308039,
+      "sigma2": 1375.2644861697186,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -801,12 +804,12 @@
           "F|undrafted|d": -0.025291552557440394
         }
       },
-      "seconds": 25.6
+      "seconds": 20.7
     },
     "20222023": {
       "n_dates": 222,
       "n_skaters": 953,
-      "sigma2": 1106.7628345130968,
+      "sigma2": 1106.5337939557692,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -886,12 +889,12 @@
           "F|undrafted|d": -0.026301510450209894
         }
       },
-      "seconds": 26.6
+      "seconds": 22.1
     },
     "20232024": {
       "n_dates": 232,
       "n_skaters": 925,
-      "sigma2": 993.1203105142439,
+      "sigma2": 992.9201103317951,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -973,12 +976,12 @@
           "F|undrafted|d": -0.027272831747854626
         }
       },
-      "seconds": 26.8
+      "seconds": 22.3
     },
     "20242025": {
       "n_dates": 224,
       "n_skaters": 914,
-      "sigma2": 1099.0458339336183,
+      "sigma2": 1098.8715837717598,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -1062,12 +1065,12 @@
           "F|undrafted|d": -0.028062328341327044
         }
       },
-      "seconds": 25.3
+      "seconds": 20.8
     },
     "20252026": {
       "n_dates": 211,
       "n_skaters": 940,
-      "sigma2": 1123.8917676590388,
+      "sigma2": 1123.7119221817807,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -1153,12 +1156,12 @@
           "F|undrafted|d": -0.030771059216954177
         }
       },
-      "seconds": 27.3
+      "seconds": 21.7
     },
     "20262027": {
       "n_dates": 2,
       "n_skaters": 271,
-      "sigma2": 960.8522787950216,
+      "sigma2": 960.2151669092879,
       "aging": {
         "peak": 27.0,
         "fit_seasons": [
@@ -1246,7 +1249,7 @@
           "F|undrafted|d": -0.029027869912575853
         }
       },
-      "seconds": 0.4
+      "seconds": 0.6
     }
   },
   "seed": null

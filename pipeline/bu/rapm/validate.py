@@ -10,6 +10,9 @@ score is the weighted (stint-seconds) MSE.  Models, all with the same covariates
   flat        (b) player O/D ridge, no prior (classic RAPM)          lambda tuned
   prior_only  (c) players fixed at the prior mean, covariates fitted
   rapm        (d) RAPM v2: prior-informed generalized ridge          (v_new, kappa) tuned
+  next        next-season check of the prior alone: players fixed at the season-start prior
+              mean, covariates fitted on the whole season, scored on every EV row of the season
+              (one cell per season, ``asof`` = "season"); isolates the summer roll-forward
 
 The first season of the lake is a burn-in (no prior exists).  Hyper-parameters are chosen
 on ``tune_seasons`` only and then frozen; the gate is "(d) beats (a), (b) and (c) on every
@@ -27,8 +30,9 @@ import numpy as np
 import pandas as pd
 
 from .aging import fit_aging
+from .bio import age_at
 from .engine import SeasonData, fit_standalone, flat_prior
-from .priors import Chain, Hyper, RookieModel
+from .priors import Chain, Hyper, RookieModel, set_window_state
 from .ridge import Gram
 
 BIG = 1e12
@@ -50,6 +54,31 @@ def default_grid() -> list[Hyper]:
     return grid
 
 
+# Prior dynamics sweep (owner review 2026-10-01: veterans' ratings looked too sticky).  The
+# chain's season innovation was multiplicative only (kappa x last posterior variance), so a
+# veteran with a tight posterior barely moves; ``q_add`` adds a random-walk drift per season,
+# ``aging_scale`` strengthens the fitted aging step, ``young_old_extra`` widens both ends.
+PD_V = (0.02, 0.03)
+PD_K = (1.0, 1.25, 1.5)
+Q_GRID = (0.0, 0.001, 0.002, 0.004, 0.008)
+S_GRID = (1.0, 1.5, 2.0)
+PD_Y = (0.25, 1.0)
+
+
+def prior_dynamics_grid() -> list[Hyper]:
+    return [Hyper(v_new=v, kappa=k, q_add=q, aging_scale=a, young_old_extra=y)
+            for v, k, q, a, y in itertools.product(PD_V, PD_K, Q_GRID, S_GRID, PD_Y)]
+
+
+WINDOW = "1,0.5,0.25"            # owner directive 2026-10-01: S-1 1.0, S-2 0.5, S-3 0.25, older 0
+W_V = (0.02, 0.03, 0.04, 0.06)
+
+
+def window_grid() -> list[Hyper]:
+    """The shipped Kalman setting and the window-mode prior at a few ridge strengths (v_new)."""
+    return [Hyper(v_new=0.02, kappa=1.25)] + [Hyper(v_new=v, kappa=1.25, window=WINDOW) for v in W_V]
+
+
 FLAT_LAMS = (3600.0 * 5, 3600.0 * 10, 3600.0 * 20, 3600.0 * 40)
 TEAM_LAMS = (3600.0 * 5, 3600.0 * 20, 3600.0 * 80)
 COV_LAM = 3600.0 * 20
@@ -61,13 +90,17 @@ def _per_game(gid, w, e2):
 
 
 def run(paths, seasons: list[str], players: pd.DataFrame, grid=None, flat_lams=FLAT_LAMS, team_lams=TEAM_LAMS,
-        source: str = "v1", log=print) -> dict:
+        source: str = "v1", log=print, record_from: str | None = None, next_season: bool = True) -> dict:
+    """``record_from``: keep per-game cells only for seasons >= this one (a large grid still
+    rolls every chain through every season); ``next_season``: also score the ``next|`` model."""
     grid = grid or default_grid()
     chains = {h.key(): Chain(h) for h in grid}
     hypers = {h.key(): h for h in grid}
     standalone: dict[str, pd.DataFrame] = {}
     flat_cov_prev = None
+    hist = []           # (season, Index, full-season Gram) of the last seasons (window-mode priors)
     recs = []           # per (season, asof, model, game) sse / sw
+    pcells = []         # per (season, next| model, player, comp) on-ice residual sums
     meta = {"aging": {}, "rookie": {}}
     for si, S in enumerate(seasons):
         t0 = time.time()
@@ -76,9 +109,12 @@ def run(paths, seasons: list[str], players: pd.DataFrame, grid=None, flat_lams=F
         rookie = RookieModel.fit(standalone, players, S)
         meta["aging"][S] = aging.to_json()
         meta["rookie"][S] = rookie.to_json()
+        for c in chains.values():
+            set_window_state(c, S, hist, players, aging, rookie)
         priors = {k: c.prior(S, sd.idx, players, aging, rookie) for k, c in chains.items()}
         n = sd.idx.n
-        if si > 0:
+        record = si > 0 and (record_from is None or S >= str(record_from))
+        if record:
             g, gt = Gram(sd.idx.p), Gram(sd.tidx.p)
             ptr = 0
             for d in sd.asof_points():
@@ -111,16 +147,35 @@ def run(paths, seasons: list[str], players: pd.DataFrame, grid=None, flat_lams=F
                                               "sse": pg["sse"].to_numpy(), "sw": pg["sw"].to_numpy()}))
         # season end: roll every chain forward with the full-season posterior
         G = sd.full_gram()
+        if record and next_season:
+            gid, w, y = sd.rows.game_id, sd.rows.w, sd.rows.y
+            age = age_at(players.set_index("player_id")["birth_date"].reindex(sd.idx.ids), S).to_numpy()
+            Xo, Xd = sd.X[:, :n].T.tocsr(), sd.X[:, n:2 * n].T.tocsr()
+            for key, (b0, lam, _new) in priors.items():
+                lam_p = lam.copy()
+                lam_p[:2 * n] = BIG
+                res_ = y - sd.X @ G.solve(lam_p, b0)[0]
+                # per-player on-ice residuals of the next-season model (age / prior-strength splits)
+                for comp, Xc, off in (("o", Xo, 0), ("d", Xd, n)):
+                    pcells.append(pd.DataFrame({
+                        "season": S, "model": f"next|{key}", "player_id": sd.idx.ids, "comp": comp,
+                        "sw": Xc @ w, "swr": Xc @ (w * res_), "swr2": Xc @ (w * res_ * res_), "age": age,
+                        "prior_h": lam[off:off + n] / 3600.0, "is_new": _new}))
+                pg = _per_game(gid, w, res_ ** 2)
+                recs.append(pd.DataFrame({"season": S, "asof": "season", "model": f"next|{key}", "game_id": pg.index,
+                                          "sse": pg["sse"].to_numpy(), "sw": pg["sw"].to_numpy()}))
         for key, c in chains.items():
             b0, lam, _ = priors[key]
             b, inv = G.solve(lam, b0, want_inv=True)
             c.update(S, sd.idx, b, inv, G.sigma2(b), sd.toi, n_rows=len(sd.rows))
         standalone[S] = fit_standalone(sd, G)
+        hist = (hist + [(S, sd.idx, G)])[-4:]
         b0, lam = flat_prior(sd.idx, 3600.0 * 10, COV_LAM, flat_cov_prev)
         flat_cov_prev = G.solve(lam, b0)[0][2 * n:]
         log(f"  [validate] {S}: {len(sd.rows):,} rows, {n} skaters, {time.time() - t0:.0f}s")
     per_game = pd.concat(recs, ignore_index=True) if recs else pd.DataFrame()
-    return {"per_game": per_game, "hypers": hypers, "meta": meta}
+    player_next = pd.concat(pcells, ignore_index=True) if pcells else pd.DataFrame()
+    return {"per_game": per_game, "player_next": player_next, "hypers": hypers, "meta": meta}
 
 
 def _mse(df):
@@ -152,7 +207,7 @@ def paired(per_game: pd.DataFrame, a: str, b: str, seasons, seed: int = 7) -> di
 
 def summarize(res: dict, tune_seasons, dev_seasons, report_seasons) -> dict:
     pg = res["per_game"]
-    tune = pg[pg["season"].isin(tune_seasons)]
+    tune = pg[pg["season"].isin(tune_seasons) & (pg["asof"] != "season")]
     by_model_tune = {m: _mse(d) for m, d in tune.groupby("model")}
 
     def best(prefix, table=by_model_tune):
@@ -164,17 +219,19 @@ def summarize(res: dict, tune_seasons, dev_seasons, report_seasons) -> dict:
     # step of the joint choice; otherwise the more regularised neighbour is preferred.
     stability = {}
     for S in tune_seasons:
-        tS = {m: _mse(d) for m, d in pg[pg["season"] == S].groupby("model")}
+        tS = {m: _mse(d) for m, d in pg[(pg["season"] == S) & (pg["asof"] != "season")].groupby("model")}
         stability[S] = best("rapm", tS)
     stability_ok = all(_grid_steps(stability[S], sel["rapm"]) <= 1 for S in stability)
     sel["prior_only"] = "prior_only|" + sel["rapm"].split("|", 1)[1]
     sel["const"] = "const"
+    nxt = "next|" + sel["rapm"].split("|", 1)[1]
     folds = {}
     for S in report_seasons:
-        x = pg[pg["season"] == S]
+        x = pg[(pg["season"] == S) & (pg["asof"] != "season")]
         if x.empty:
             continue
         mse = {name: _mse(x[x["model"] == m]) for name, m in sel.items()}
+        xn = pg[(pg["season"] == S) & (pg["model"] == nxt)]
         f = {"role": "tuning" if S in tune_seasons else ("dev" if S in dev_seasons else "report"),
              "n_games": int(x["game_id"].nunique()), "n_asof": int(x["asof"].nunique()),
              "mse": mse, "skill_vs_const": {k: 1 - v / mse["const"] for k, v in mse.items()},
@@ -183,6 +240,8 @@ def summarize(res: dict, tune_seasons, dev_seasons, report_seasons) -> dict:
         for a, xa in x.groupby("asof"):
             ma = {name: _mse(xa[xa["model"] == m]) for name, m in sel.items()}
             f["by_asof"][a] = {k: round(v, 5) for k, v in ma.items()}
+        if len(xn):
+            f["next_season_mse"] = _mse(xn)
         f["rapm_beats_all"] = all(f["rapm_vs"][b]["delta_mse"] < 0 for b in ("team", "flat", "prior_only"))
         folds[S] = f
     gate_seasons = [s for s in dev_seasons if s in folds]
@@ -206,11 +265,14 @@ def summarize(res: dict, tune_seasons, dev_seasons, report_seasons) -> dict:
 def _grid_steps(a: str, b: str) -> int:
     """Grid distance between two rapm keys (max over v_new and kappa index differences)."""
     def parse(m):
-        k = m.split("|", 1)[1]
-        v = float(k.split("_")[0][1:]); kk = float(k.split("_")[1][1:])  # noqa: E702
-        return (V_GRID.index(v) if v in V_GRID else 0, K_GRID.index(kk) if kk in K_GRID else 0)
+        parts = {p[0]: float(p[1:]) for p in m.split("|", 1)[1].split("_")}
+        v, kk = parts["v"], parts["k"]
+        q, sc, y = parts.get("q", 0.0), parts.get("s", 1.0), parts.get("y", 0.25)
+        return (V_GRID.index(v) if v in V_GRID else 0, K_GRID.index(kk) if kk in K_GRID else 0,
+                Q_GRID.index(q) if q in Q_GRID else 0, S_GRID.index(sc) if sc in S_GRID else 0,
+                PD_Y.index(y) if y in PD_Y else 0)
     pa, pb = parse(a), parse(b)
-    return max(abs(pa[0] - pb[0]), abs(pa[1] - pb[1]))
+    return max(abs(x - y) for x, y in zip(pa, pb))
 
 
 def write_report(path: str, summary: dict, extra: dict) -> None:
