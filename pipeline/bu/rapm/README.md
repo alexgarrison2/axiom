@@ -40,7 +40,35 @@ Swap the RAPM target to xG v2 with `--xg <dir of parquet with game_id,event_id,x
 | Lineup term | `lineup/features.py` | team xGF60/xGA60 from tonight's dressed 18 (L-actual), net and baseline-relative delta, coverage gate 14/18 |
 | Game level | `lineup/evaluate.py` | incumbent `train_game_model.walk_forward` with and without the lineup columns; dev folds pick the variant; one logged holdout look |
 
-## Results
+## Results (lake 2010-11 .. 2025-26, xG v1 target, 2026-10-01)
 
-See `out/rapm_validation.json`, `../lineup/out/lineup_eval.json`, `../lineup/out/toi_validation.json`
-and the commit messages for the numbers.
+**Stint level (DESIGN §3.2.2, `out/rapm_validation.json`).** Burn-in 2010-11; tuning 2021-22 +
+2022-23 picks `v_new = 0.02`, `kappa = 1.5` (each tuning season alone picks the same point).
+Next-30-day weighted MSE of stint xG/60, RAPM v2 minus baseline (z, game-clustered):
+
+| Fold | vs team-only (a) | vs no-prior RAPM (b) | vs prior-only (c) |
+|---|---|---|---|
+| 2023-24 dev | -0.2224 (-14.7) | -0.1024 (-9.0) | -0.0424 (-6.8) |
+| 2024-25 dev | -0.2189 (-13.7) | -0.1038 (-8.7) | -0.0360 (-5.9) |
+
+Gate PASS; RAPM v2 also wins against all three in each of the 15 seasons 2011-12 .. 2025-26.
+Ablations: the rookie mean helps (2024-25 z 3.0); the aging curve is not significant on the
+dev folds (z -1.3 / 0.0) and helps on 2025-26 (z 2.6); both are kept as designed.
+
+**TOI shares** (`../lineup/out/toi_validation.json`): MAE 0.0323 vs 0.0403 for "last game's share".
+
+**Game level, lineup term as a feature of the incumbent** (`../lineup/out/lineup_eval.json`),
+Δ log loss vs `train_game_model` walk-forward on the same games (negative = better):
+
+| Fold | n | Δ LL | SE | Role |
+|---|---|---|---|---|
+| 2023-24 | 1,399 | -0.00029 | 0.00141 | dev |
+| 2024-25 | 1,206 | -0.00382 | 0.00113 | dev |
+| 2025-26 | 1,394 | -0.00254 | 0.00162 | soft holdout, single logged look (`look_log.jsonl`) |
+| pooled | 3,999 | -0.00214 | 0.00082 | |
+
+Candidate `bu_d_net + bu_d_delta` (chosen on dev). Dev A2 passes; calibration slope CIs contain 1.
+The holdout A-comp test (one-sided 98.75% upper bound < +0.0005) does **not** pass
+(+0.0011): the point estimate is favourable but the look is underpowered, so per DESIGN §1.7 the
+term stays in shadow until the pooled re-test with 2026-27 live games.  L-asof (previous game's
+18) gives -0.00110 on dev; the degraded-shift sensitivity (35% of games +2 days) -0.00183.
