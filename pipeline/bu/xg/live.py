@@ -51,6 +51,8 @@ API_PBP = "https://api-web.nhle.com/v1/gamecenter/{gid}/play-by-play"
 
 _MODEL = None
 _UNMATCHED: set = set()   # (game_id, event_id) the current PBP no longer has (set by fill_v2_column)
+_UPDATED: set = set()     # v2 mode: df index labels whose V2_COL fill_v2_column (re)wrote on this run
+MAX_CONSECUTIVE_MISSES = 3   # stop fetching after this many games in a row without a payload (feed down)
 
 
 def artifacts_present(model_dir: str = MODEL_DIR) -> bool:
@@ -141,7 +143,14 @@ def featurise_payloads(payloads: dict, hand: dict | None = None, rink=None) -> p
 def score_games(game_ids, fetch=fetch_pbp, model=None) -> pd.DataFrame:
     """(game_id, event_id, xg_v2, strength_class) for every unblocked shot of ``game_ids``."""
     model = model or load_model()
-    payloads = {int(g): fetch(int(g)) for g in sorted({int(g) for g in game_ids})}
+    payloads, misses = {}, 0
+    for g in sorted({int(g) for g in game_ids}):
+        if misses >= MAX_CONSECUTIVE_MISSES:
+            # the feed is down (each miss already cost retries): leave the rest for the next run
+            payloads[g] = None
+            continue
+        payloads[g] = fetch(g)
+        misses = 0 if payloads[g] else misses + 1
     feats = featurise_payloads(payloads, rink=model.rink)
     if feats.empty:
         return pd.DataFrame(columns=["game_id", "event_id", "xg_v2", "strength_class"])
@@ -183,17 +192,24 @@ def active_hash(v1_hash_fn) -> str:
 
 
 def pending_mask(df: pd.DataFrame, prev_source: dict | None) -> pd.Series:
-    """Rows whose ``xg_raw`` still holds v1 because v2 could not score them on an earlier v2 run."""
-    games = set((prev_source or {}).get("v1_fallback_games") or [])
-    if not games or mode() != "v2" or "game_id" not in df.columns:
+    """Under v2, rows whose ``xg_raw`` must be re-taken from the v2 column: rows that still hold
+    v1 because v2 could not score them on an earlier v2 run, and rows whose ``xg_raw_v2`` was
+    (re)written on this run (e.g. an artifact rescore that failed on the run that changed the
+    ``xg_model`` hash and succeeded later: without this their ``xg_raw`` would keep the old model)."""
+    if mode() != "v2" or "game_id" not in df.columns:
         return pd.Series(False, index=df.index)
-    return df["game_id"].astype("int64").isin({int(g) for g in games})
+    out = df.index.isin(list(_UPDATED))
+    games = set((prev_source or {}).get("v1_fallback_games") or [])
+    if games:
+        out = out | df["game_id"].astype("int64").isin({int(g) for g in games}).to_numpy()
+    return pd.Series(out, index=df.index)
 
 
 def fill_v2_column(df: pd.DataFrame, prev_source: dict | None, fetch=fetch_pbp) -> dict:
     """Shadow/v2: fill ``df[V2_COL]`` in place where it is missing (every row when the v2
     artifacts changed since the last run).  Returns what happened, for the manifest."""
     m = mode()
+    _UPDATED.clear()
     if m == "v1":
         return {"v2_column": "off"}
     sig = model_signature()
@@ -227,6 +243,8 @@ def fill_v2_column(df: pd.DataFrame, prev_source: dict | None, fetch=fetch_pbp) 
                 info["v2_signature"] = prev_sig   # retry the full rescore next run
             return info
         df.loc[need, V2_COL] = vals.round(XG_DECIMALS)
+        if m == "v2":
+            _UPDATED.update(df.index[need.to_numpy()].tolist())
         info["v2_rows_scored"] = int(vals.notna().sum())
         new_gone = {tuple(k) for k in st.get("unmatched_events") or []}
         info["v2_unmatched_events"] = sorted([list(k) for k in gone | new_gone])

@@ -55,6 +55,14 @@ def _ll(y, p):
     return -(y * np.log(p) + (1 - y) * np.log(1 - p))
 
 
+def holdout_looks(path: str = LOOK_LOG) -> list[dict]:
+    """M1 holdout looks already recorded in the ledger."""
+    if not os.path.exists(path):
+        return []
+    with open(path) as f:
+        return [json.loads(x) for x in f if x.strip()]
+
+
 def raw_frame(shots: pd.DataFrame, col: str, team_ids: dict) -> pd.DataFrame:
     """Per (game_id, team) frame in the schema of ``features.raw_team_game_xg``."""
     s = shots[["game_id", "shooting_team_id", "strength", "strength_class", "is_goal", col]].copy()
@@ -86,7 +94,12 @@ def main(argv=None):
     ap.add_argument("--state-dir", required=True)
     ap.add_argument("--out", default=OUT)
     ap.add_argument("--no-holdout", action="store_true", help="dev folds only (no holdout look)")
+    ap.add_argument("--spend-another-look", action="store_true",
+                    help="allow a holdout look although the ledger already records one (DESIGN §1.5 caps looks)")
     a = ap.parse_args(argv)
+    if not a.no_holdout and not a.spend_another_look and holdout_looks():
+        ap.error(f"the 2025-26 holdout look for M1 is already spent ({LOOK_LOG}); "
+                 "use --no-holdout for dev folds, or --spend-another-look deliberately")
     if PIPELINE_DIR not in sys.path:
         sys.path.insert(0, PIPELINE_DIR)
     import features as F

@@ -310,3 +310,60 @@ def test_score_rows_missing_payload_leaves_nan():
 
     xg, st = live.score_rows(rows, fetch=lambda g: None, model=Dummy())
     assert xg.isna().all() and st["scored"] == 0 and st["games_without_pbp"] == 1
+
+
+def test_v2_rows_rewritten_this_run_retake_xg_raw(monkeypatch):
+    """Under v2, rows whose xg_raw_v2 was rewritten this run get xg_raw re-taken from it (an
+    artifact rescore that failed on the run that moved the hash must not leave stale xg_raw)."""
+    monkeypatch.setattr(live, "artifacts_present", lambda *a, **k: True)
+    monkeypatch.setattr(live, "model_signature", lambda *a, **k: "sigNEW")
+    monkeypatch.setattr(live, "score_rows", lambda sub, fetch=None: (
+        pd.Series(0.09, index=sub.index), {"scored": len(sub), "games": 1}))
+    df = pd.DataFrame({"game_id": [1, 1, 2], "event_id": [1, 2, 3], live.V2_COL: [0.05, 0.06, 0.07]},
+                      index=[5, 6, 7])
+    monkeypatch.setenv(live.MODE_ENV, "v2")
+    live.fill_v2_column(df, {"v2_signature": "sigOLD"})
+    assert live.pending_mask(df, {}).all()
+    live.fill_v2_column(df, {"v2_signature": "sigNEW"})          # nothing to do this time
+    assert not live.pending_mask(df, {}).any()
+    monkeypatch.setenv(live.MODE_ENV, "shadow")                   # shadow never touches xg_raw
+    live.fill_v2_column(df, {"v2_signature": "sigOLD"})
+    assert not live.pending_mask(df, {}).any()
+
+
+def test_feed_outage_stops_fetching():
+    calls = []
+
+    class Dummy:
+        rink = None
+
+        def predict(self, df):
+            return np.full(len(df), 0.1)
+
+    def fetch(g):
+        calls.append(g)
+        return None
+    out = live.score_games(range(2026020001, 2026020011), fetch=fetch, model=Dummy())
+    assert out.empty and len(calls) == live.MAX_CONSECUTIVE_MISSES
+
+
+def test_shadow_gate_counts_only_out_of_sample_games(tmp_path):
+    from bu.xg.summary import shadow_status
+    rng = np.random.default_rng(2)
+    n_games, per = 160, 60
+    gids = np.repeat(np.arange(2026020001, 2026020001 + n_games), per)
+    p = rng.uniform(0.01, 0.3, len(gids))
+    shots = pd.DataFrame({"game_id": gids, "is_goal": (rng.uniform(size=len(gids)) < p).astype(int),
+                          "xg_raw_v2": p})
+    dates = pd.date_range("2026-10-01", periods=n_games, freq="12h").strftime("%Y-%m-%d")
+    gs = pd.DataFrame({"game_id": np.arange(2026020001, 2026020001 + n_games), "game_date": dates})
+    shots.to_csv(tmp_path / "shots.csv", index=False)
+    gs.to_csv(tmp_path / "gs.csv", index=False)
+    kw = dict(shots_csv=str(tmp_path / "shots.csv"), gamestats_csv=str(tmp_path / "gs.csv"))
+    allg = shadow_status(cutoff=None, **kw)
+    assert allg["games"] == n_games and allg["pass"]
+    assert 0.8 < allg["cal_slope"] < 1.2
+    cut = shadow_status(cutoff="2026-10-20", **kw)    # games through Oct 20 were in the training set
+    assert cut["games"] == n_games - 40 and cut["games_in_sample_excluded"] == 40 and cut["pass"]
+    late = shadow_status(cutoff="2026-11-20", **kw)
+    assert late["games"] == int((dates > "2026-11-20").sum()) < 100 and not late["pass"]
