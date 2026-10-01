@@ -10,7 +10,7 @@ scikit-learn==1.7.2
 pytz==2025.2
 psycopg2-binary==2.9.11
 python-dotenv==1.2.1
-beautifulsoup4==4.13.4
+beautifulsoup4==4.15.0
 # NHL roster/player lookups in team_ratings.py
 requests==2.32.5
 # workflow-structure tests (pipeline/tests) parse the GitHub Actions YAML
