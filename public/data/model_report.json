@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-09-30T21:28:29.076879+00:00",
+ "generated_at": "2026-10-01T17:43:40.664027+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -4818,11 +4818,12 @@
    "2022-23",
    "2023-24",
    "2024-25",
-   "2025-26"
+   "2025-26",
+   "2026-27"
   ],
-  "version": "logit-elo-v5-20260930",
+  "version": "logit-elo-v5-20261001",
   "type": "logistic_regression_l2",
-  "trained_at": "2026-09-30T04:48:01.310069+00:00",
+  "trained_at": "2026-10-01T15:41:40.386322+00:00",
   "features": [
    "d_xg_share",
    "d_xg_share_all",
@@ -4831,17 +4832,18 @@
    "d_pts_pct",
    "h_b2b",
    "a_b2b",
-   "d_rest"
+   "d_rest",
+   "d_lineup"
   ],
   "walk_forward": [
    {
     "test_season": 2023,
     "n": 1399,
-    "log_loss": 0.6591,
-    "brier": 0.2337,
-    "accuracy": 0.6011,
-    "calibration_slope": 1.0053,
-    "mean_pred_home": 0.52,
+    "log_loss": 0.6595,
+    "brier": 0.2339,
+    "accuracy": 0.6033,
+    "calibration_slope": 0.9981,
+    "mean_pred_home": 0.5201,
     "actual_home": 0.5368,
     "home_rate_log_loss": 0.691,
     "legacy_xgb_log_loss": 0.6757
@@ -4849,11 +4851,11 @@
    {
     "test_season": 2024,
     "n": 1206,
-    "log_loss": 0.6654,
-    "brier": 0.2366,
+    "log_loss": 0.6645,
+    "brier": 0.2362,
     "accuracy": 0.5813,
-    "calibration_slope": 1.0916,
-    "mean_pred_home": 0.5303,
+    "calibration_slope": 1.1236,
+    "mean_pred_home": 0.5302,
     "actual_home": 0.5688,
     "home_rate_log_loss": 0.6867,
     "legacy_xgb_log_loss": 0.6703
@@ -4861,16 +4863,16 @@
    {
     "test_season": 2025,
     "n": 1394,
-    "log_loss": 0.6793,
-    "brier": 0.2433,
-    "accuracy": 0.5395,
-    "calibration_slope": 0.9192,
-    "mean_pred_home": 0.5428,
+    "log_loss": 0.6792,
+    "brier": 0.2432,
+    "accuracy": 0.5552,
+    "calibration_slope": 0.9034,
+    "mean_pred_home": 0.5423,
     "actual_home": 0.5194,
     "home_rate_log_loss": 0.6935,
     "legacy_xgb_log_loss": 0.6849
    }
   ],
-  "early_season_log_loss": 0.6798
+  "early_season_log_loss": 0.6805
  }
 }
