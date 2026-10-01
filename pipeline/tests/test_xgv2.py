@@ -267,6 +267,20 @@ def test_flag_modes_fill_column_and_fall_back(monkeypatch):
     assert calls == [3] and df[live.V2_COL].tolist() == [0.12] * 3
 
 
+def test_v2_failure_never_breaks_the_run(monkeypatch):
+    monkeypatch.setattr(live, "artifacts_present", lambda *a, **k: True)
+    monkeypatch.setattr(live, "model_signature", lambda *a, **k: "sigNEW")
+    monkeypatch.setenv(live.MODE_ENV, "shadow")
+
+    def boom(*a, **k):
+        raise RuntimeError("xgboost exploded")
+    monkeypatch.setattr(live, "score_rows", boom)
+    df = pd.DataFrame({"game_id": [1, 2], "event_id": [1, 2], live.V2_COL: [0.05, np.nan]})
+    info = live.fill_v2_column(df, {"v2_signature": "sigOLD"})
+    assert "v2_error" in info and info["v2_signature"] == "sigOLD"   # full rescore retried next run
+    assert df[live.V2_COL].iloc[0] == 0.05                            # nothing overwritten
+
+
 def test_score_rows_missing_payload_leaves_nan():
     rows = pd.DataFrame({"game_id": [2023020500, 2023020500], "event_id": [1, 2]})
 

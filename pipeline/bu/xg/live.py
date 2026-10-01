@@ -44,7 +44,7 @@ MODEL_DIR = os.path.join(PIPELINE_DIR, "models")
 PREFIX = "xg2"
 MODE_ENV = "PONYXG_XG"
 MODES = ("v1", "shadow", "v2")
-DEFAULT_MODE = "v1"
+DEFAULT_MODE = "shadow"   # M1 gate not passed (see bu/xg/README.md): publish v1, log v2 in shadow
 V2_COL = "xg_raw_v2"
 XG_DECIMALS = 4
 API_PBP = "https://api-web.nhle.com/v1/gamecenter/{gid}/play-by-play"
@@ -200,9 +200,19 @@ def fill_v2_column(df: pd.DataFrame, prev_source: dict | None, fetch=fetch_pbp) 
         need[:] = True
     info = {"v2_signature": sig, "v2_rows_scored": 0, "v2_missing_games": []}
     if need.any():
-        vals, st = score_rows(df[need], fetch=fetch)
-        if vals.notna().any() and float(vals.mean()) > 0.15:
-            raise ValueError(f"ABORT: mean xG v2 {float(vals.mean()):.4f} - model/library mismatch?")
+        # Never fail the run over v2: a broken model, library or feed leaves the column NaN
+        # (shadow: nothing published changes; v2: those rows fall back to v1) and is retried.
+        try:
+            vals, st = score_rows(df[need], fetch=fetch)
+            if vals.notna().any() and float(vals.mean()) > 0.15:
+                raise ValueError(f"mean xG v2 {float(vals.mean()):.4f} - model/library mismatch?")
+        except Exception as e:  # noqa: BLE001
+            print(f"  [WARN] xG v2 scoring failed ({m}); left for the next run: {str(e)[:200]}")
+            info["v2_error"] = str(e)[:200]
+            info["v2_missing_games"] = sorted({int(g) for g in df.loc[need & df[V2_COL].isna(), "game_id"]})
+            if prev_sig and prev_sig != sig:
+                info["v2_signature"] = prev_sig   # retry the full rescore next run
+            return info
         df.loc[need, V2_COL] = vals.round(XG_DECIMALS)
         info["v2_rows_scored"] = int(vals.notna().sum())
         info["v2_missing_games"] = sorted({int(g) for g in df.loc[need & df[V2_COL].isna(), "game_id"]})

@@ -111,7 +111,8 @@ def fit_asof(prior: pd.DataFrame, prior_w: np.ndarray, current: pd.DataFrame, *,
     """One as-of model: prior seasons (recency-weighted) + the current season's games so far."""
     tr = pd.concat([prior, current], ignore_index=True)
     w = np.concatenate([prior_w, np.full(len(current), cur_weight)])
-    fit_seasons = sorted(set(prior["season"].astype(str)) | set(current["season"].astype(str)))
+    fit_seasons = sorted(set(prior.loc[np.asarray(prior_w) > 0, "season"].astype(str))
+                         | set(current["season"].astype(str)))
     return XGv2.fit(tr, sample_weight=w, calibrate=calibrate, log=log, fit_seasons=fit_seasons, rink=rink,
                     extra_meta=extra_meta)
 
