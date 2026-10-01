@@ -2,7 +2,7 @@
 
 Design: DESIGN.md v2 §3.1 (shot model v2), §4.4 (leakage rules), §8 M1 (gate and live wiring). Owner decisions: D3 (MoneyPuck may be used, with credit).
 
-**Status (2026-10-01).** xG v2 beats the incumbent shot model in every one of 15 walk-forward seasons. The M1 gate as a whole has **not** passed, so the site still publishes v1 xG. v2 runs live in **shadow** (`PONYXG_XG=shadow`, the default) so the live-shadow part of the gate starts collecting games now.
+**Status (2026-10-01).** xG v2 beats the incumbent shot model in every one of 15 walk-forward seasons. The literal M1 gate has not passed (part (b) is narrower than sampling error, part (c) missed on the single 2025-26 look, part (d) needs live games). **Owner decision 2026-10-01: ship xG v2, together with the RAPM lineup term, on the pooled evidence** (see "Ship decision"), keeping v1 as a shadow for rollback. The flag now defaults to `v2`. An interlock holds an unset flag at `shadow` until the game model is retrained on v2 xG, which the integrator does after merging both workstreams.
 
 ## What v2 is
 
@@ -91,7 +91,7 @@ How to read the MoneyPuck comparison:
 | (a) shot LL | Dev folds: LL ≤ PIT v1 − 0.002 and AUC ≥ v1 | **PASS.** −0.0122 / −0.0131; AUC +0.047 / +0.050. Every season of 2011-26 also passes. |
 | (b) goals/xG by strength | Within [0.97, 1.03] for 5v5, 5v4, 4v5, 3v3 and EN on the dev folds | **FAIL** as literally written; every ratio's 95% Poisson CI overlaps the band. The small strengths have SE of 6-10% per season (about 100-250 goals). v1 PIT is much further off: EN 6-7x, 3v3 1.3-1.7, 5v5 0.87. |
 | (c) incumbent with v2 xG (`game_gate.py`, `out/xgv2_game_gate.json`) | A2 + A5 on the dev folds; A-comp on the 2025-26 holdout (one look, logged in `out/xgv2_gate_log.jsonl`) | **A2 PASS, A5 PASS, A-comp FAIL** (details below) |
-| (d) live shadow | ≥ 100 live games with no calibration break | **Pending.** 2026-27 has 8 games. Shadow logging starts with this change (`python -m bu.xg.summary` reports it). |
+| (d) live shadow | ≥ 100 live games with no calibration break | **Pending.** 2026-27 has 8 games. `python -m bu.xg.summary` reports it, counting only games after the artifact's training cutoff, with v1 on the same shots. |
 
 **Part (c) in detail**, Δ per game against the incumbent fed PIT xG v1:
 
@@ -103,11 +103,33 @@ How to read the MoneyPuck comparison:
 | `v2_asof` vs the committed in-sample v1 pickle, dev pooled | −0.00041 | |
 | `v2_asof` vs the committed in-sample v1 pickle, holdout | −0.00026 | |
 
-**Verdict.**
-- **Not shipped as the published xG.** That follows the workstream rule: wire it in default-on only if the M1 gate passes.
+**Verdict on the literal gate.**
 - **Shot level:** a large, consistent win.
-- **Game level:** the point estimates favour v2 in every fold, but the 2025-26 holdout cannot establish non-inferiority at the strict A-comp bound with n = 1,394 games.
-- **Retest policy (DESIGN §1.7 A1):** 2026-27 live shadow plus a pooled re-test at the end of the regular season. Shadow mode makes that possible.
+- **Game level:** the point estimates favour v2 in every fold, but the 2025-26 holdout alone cannot establish non-inferiority at the strict A-comp bound with n = 1,394 games.
+
+## Ship decision (owner, 2026-10-01)
+
+Ship on the pooled evidence (`ship` block of `out/xgv2_m1_summary.json`, computed by `summary.pooled` from the per-season rows of `out/xgv2_game_gate.json`; no new holdout look):
+
+| Pooled 2023-24 + 2024-25 + 2025-26, n = 3,999 games | Δ LL per game | SE | one-sided 98.75% upper bound | A-comp margin +0.0005 |
+|---|---|---|---|---|
+| `v2_asof` − v1 PIT (the gate's reference) | −0.00089 | 0.00051 | +0.00025 | **pass** |
+| `v2_asof` − v1 pickle (in sample, what the site runs today) | −0.00036 | 0.00049 | +0.00074 | miss (descriptive) |
+
+Plus: A2 and A5 pass on the dev folds; the shot-level gain holds in all 15 seasons; goals/xG by strength is consistent with 1 within sampling error everywhere (v1 is off by 0.85-7x).
+
+**Independent re-check (review, 2026-10-01).** The walk-forward was re-run from scratch for 2018-19 … 2025-26 on the full lake: every per-season log loss in the table above reproduced to the last printed digit (it is deterministic), and log loss, AUC and goals/xG recomputed with scikit-learn from the per-shot out-of-sample scores agree. The game-gate dev folds were re-run from those scores (`--no-holdout`) and match `out/xgv2_game_gate.json`. Leakage review: `train_window` never includes S or later; the rink map and the season-start model see only S-1; each as-of block is scored by a refit on S-1 plus S's games strictly before the block; early stopping uses a slice of the training window; score state is the score *before* the event (`bu.lake.parse`); previous-event and clock features look backward only.
+
+**What ships, and what the integrator does** (in this order, one release; DESIGN §3.1 live wiring, items 2-3):
+1. Merge this branch and the RAPM branch.
+2. `python -m bu.xg.history apply` (from `pipeline/`): appends a v2 `xg_raw` to `nhl_historical_shots.csv` and `nhl_season_2025_2026_shots.csv`, taken from the committed walk-forward out-of-sample scores in `models/xg2_history.csv.gz` (`xg2_asof`; 99.8% of rows, the v1 pickle for the rest, as in a dry run on copies). Every other byte is kept, and `revert` restores the files exactly.
+3. Retrain the game model jointly (v2 xG + RAPM lineup term) with `train_game_model.py`. `features.raw_team_game_xg` then reads v2 for 2022-26. One known wrinkle: in the 2023-24 and 2024-25 shot files about 97 third-period shots per season are empty-net shots that the old scraper labelled `5v5`/`5v4` (the lake knows they are EN; their goal rate is 49%). `raw_team_game_xg` filters EN by the file's `strength_state`, so they stay in the "non-EN" sums. v1 gave them ordinary xG of about 0.07; v2 gives them about 0.55. Under v2 the goals and the xG of those shots agree, so goalie GSAx is less distorted than under v1, but it is a small difference from the game gate, which excludes them using the lake's strength.
+4. Add `"xg_version": "v2"` to `game_model_meta.json` (`train_game_model.py` should write it). This releases the interlock: the next pipeline run resolves the unset flag to `v2`, sees the hash change, and rescores the current season's `xg_raw` with v2 while keeping v1 in `xg_raw_v1`.
+5. Commit the retrain on its own with its validation numbers (CLAUDE.md).
+
+**Rollback:** set `PONYXG_XG=v1` in the workflow (or `shadow`). `xg_raw` is re-taken from v1 on the next run, and `xg_raw_v1` is dropped. Then run `python -m bu.xg.history revert` and restore the previous `game_model.pkl` and `game_model_meta.json` from git.
+
+**Still tracked after shipping:** gate (d) live shadow (≥ 100 out-of-sample games with goals/xG and calibration-slope CIs containing 1, now also reported against v1 on the same shots), and the pre-registered pooled A-comp re-test over 2025-26 plus 2026-27 at season end (DESIGN §1.7 A1).
 
 ## Live wiring (`live.py`; hook in `refresh_pipeline.stage_rescore_xg`)
 
@@ -116,26 +138,20 @@ How to read the MoneyPuck comparison:
 | Value | `xg_raw` (published, contract unchanged) | `xg_raw_v2` (additive column) |
 |---|---|---|
 | `v1` | `xg_model_xgb.pkl` | not written |
-| `shadow` (default) | v1 | xG v2 |
-| `v2` | xG v2; v1 only for shots v2 cannot score yet | xG v2 |
+| `shadow` | v1 | xG v2 |
+| `v2` (default) | xG v2; v1 only for shots v2 cannot score yet | xG v2, plus `xg_raw_v1` (v1's score of every shot, the rollback shadow) |
+
+**Interlock.** An unset (or invalid) `PONYXG_XG` means `v2` only when `game_model_meta.json` has `"xg_version": "v2"`; otherwise it means `shadow`, and the run prints why. An explicit value always wins, so `PONYXG_XG=v2` forces v2 and `PONYXG_XG=v1` rolls back.
 
 How live scoring works:
 - **Scoring path:** v2 scores each game from its play-by-play, using the lake copy if present and otherwise one GET per game with unscored shots. The payload goes through the lake parser and `features.shot_features`, the exact training path. A parity test checks live features against training features, with and without shifts and boxscore, and through a parquet round trip.
-- **Rescoring:** the manifest records `mode`, `hash`, `v2_signature`, `v1_fallback_games` and `v2_unmatched_events`. Flipping the flag or changing the artifacts rescores the season. Games v2 could not score are retried on the next run. Shots the NHL has since removed from the play-by-play are not retried.
+- **Rescoring:** the manifest records `mode`, `hash`, `v2_signature`, `v1_fallback_games`, `v2_unmatched_events` and, under v2, `v1_shadow_hash`. Flipping the flag or changing the artifacts rescores the season. Games v2 could not score are retried on the next run. Shots the NHL has since removed from the play-by-play are not retried.
 - **Failure handling:** v2 never fails a run. On any error the column stays NaN, and under `v2` the affected shots fall back to v1.
 
 **Checked on 2026-10-01, in this worktree, with the outputs reverted afterwards:**
 - Sequence: full (shadow) → lite (shadow) → full (`v2`) → full (`v2`, idempotent, file unchanged) → lite (`v2`) → full (back to shadow).
 - Every run exited 0 with every required stage ok, and `validate_outputs.py` reported 0 failed.
 - Shadow scored 620 of 621 live shots. The remaining event (2026020005 #201) is no longer in the NHL feed.
-
-## Before flipping to `PONYXG_XG=v2`
-
-1. **Retrain the game model on v2 xG.** `game_model.pkl` was fit on v1 xG distributions (DESIGN §3.1 live wiring, item 2).
-   - Give the historical shot files a v2 `xg_raw`, taken from the walk-forward out-of-sample scores (`<state-dir>/oos_xg2_<S>.parquet`, column `xg2_asof`). `features._score_raw_xg` then reads it directly.
-   - Retrain `train_game_model.py`. These files are owned by the fast-track workstream.
-2. **Shadow check:** ≥ 100 live games with the goals/xG v2 CI containing 1 (`python -m bu.xg.summary`).
-3. **Pooled re-test:** the pre-registered A-comp re-test pooled over 2025-26 and 2026-27 at season end (DESIGN §1.7 A1).
 
 ## Commands (run from `pipeline/`)
 
@@ -144,7 +160,10 @@ How live scoring works:
 python -m bu.xg.walkforward --lake-dir ../data/lake --mp-dir <dir of shots_YYYY.zip> --state-dir <scratch>/xg_state
 # Game-level gate: dev folds only (re-runnable); the holdout look is spent (out/xgv2_gate_log.jsonl)
 python -m bu.xg.game_gate --state-dir <scratch>/xg_state --no-holdout --out <scratch>/game_gate_dev.json
-python -m bu.xg.summary                       # M1 verdict incl. live shadow status
+python -m bu.xg.summary                       # M1 verdict, ship block (pooled evidence), live shadow status
+# v2 xg_raw for the historical shot files the game model trains on (see "Ship decision")
+python -m bu.xg.history export --state-dir <scratch>/xg_state   # walk-forward OOS -> models/xg2_history.csv.gz
+python -m bu.xg.history apply|revert|status
 # Monthly live refit (as-of): previous season + current season to date -> models/xg2_*.json
 python -m bu.lake.backfill --seasons 2026     # bring the lake's current season up to date first
 python -m bu.xg.walkforward --lake-dir ../data/lake --production-only [--asof YYYY-MM-DD]
@@ -162,7 +181,8 @@ The monthly refit changes `models/xg2_*.json`, so commit it on its own with the 
 - `summary.py`: the verdict.
 - `v1.py`: v1 inputs rebuilt from the lake, exactly as `scrape_games.py` builds them; tested against the CSVs.
 - `moneypuck.py`: the MoneyPuck benchmark.
-- `live.py`: pipeline scoring and the flag.
+- `live.py`: pipeline scoring, the flag, its interlock and the v1 rollback shadow.
+- `history.py`: v2 `xg_raw` for the historical shot files (`export`, `apply`, `revert`, `status`).
 - `out/`:
   - `xgv2_report.json`: per-season metrics, reliability bins, goals/xG by strength, MoneyPuck comparison;
   - `xgv2_dev_experiments.json`: every structural choice, with numbers;
@@ -170,5 +190,6 @@ The monthly refit changes `models/xg2_*.json`, so commit it on its own with the 
   - `xgv2_m1_summary.json`: the verdict.
 - `models/handedness.json`.
 - Production artifacts: `pipeline/models/xg2_booster.json` and `pipeline/models/xg2_calibrators.json`.
+- `pipeline/models/xg2_history.csv.gz`: walk-forward out-of-sample `xg2_asof` per shot for the seasons in the historical shot files (2022-23 … 2025-26).
 
 The game-gate run used the 2017-26 lake as it stood before the 2010-16 backfill finished. With the S-1 training scheme those seasons do not change the 2023-26 v2 scores.

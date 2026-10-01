@@ -10,6 +10,14 @@ normalisation are applied afterwards and land in ``xG``).  The flag
   shadow  xg_raw from v1 (published numbers unchanged) plus the additive column
           ``xg_raw_v2`` from xG v2, so live shadow games accumulate (M1 gate (d))
   v2      xg_raw from xG v2 (v1 only for rows v2 cannot score yet) plus ``xg_raw_v2``
+          and the rollback shadow ``xg_raw_v1`` (the incumbent's score of every shot)
+
+The default is ``v2`` (owner decision 2026-10-01: ship on the pooled evidence,
+README "Ship decision"), with one interlock: xG v2 and the game model switch
+together (DESIGN §3.1 live wiring, item 3).  While ``game_model_meta.json`` does
+not declare ``"xg_version": "v2"`` (the game model was fit on v1 xG), an unset
+flag resolves to ``shadow``.  An explicit ``PONYXG_XG`` always wins.  Rollback:
+``PONYXG_XG=v1`` (or ``shadow``) re-takes ``xg_raw`` from v1 on the next run.
 
 v2 needs the whole play sequence of a game (previous event, faceoff and
 strength clocks), which the season CSV does not carry, so v2 scores from the
@@ -44,8 +52,11 @@ MODEL_DIR = os.path.join(PIPELINE_DIR, "models")
 PREFIX = "xg2"
 MODE_ENV = "PONYXG_XG"
 MODES = ("v1", "shadow", "v2")
-DEFAULT_MODE = "shadow"   # M1 gate not passed (see bu/xg/README.md): publish v1, log v2 in shadow
+DEFAULT_MODE = "v2"   # owner decision 2026-10-01 (README "Ship decision"); see game_model_on_v2()
+INTERLOCK_MODE = "shadow"   # an unset flag while the game model still expects v1 xG
 V2_COL = "xg_raw_v2"
+V1_COL = "xg_raw_v1"   # under v2: the incumbent's score of every shot (rollback shadow)
+GAME_MODEL_META = os.path.join(PIPELINE_DIR, "game_model_meta.json")
 XG_DECIMALS = 4
 API_PBP = "https://api-web.nhle.com/v1/gamecenter/{gid}/play-by-play"
 
@@ -59,13 +70,39 @@ def artifacts_present(model_dir: str = MODEL_DIR) -> bool:
     return all(os.path.exists(os.path.join(model_dir, f"{PREFIX}_{k}.json")) for k in ("booster", "calibrators"))
 
 
+def game_model_on_v2(path: str | None = None) -> bool:
+    """True when the committed game model was trained on xG v2 (``"xg_version": "v2"`` in its meta)."""
+    try:
+        with open(path or GAME_MODEL_META) as f:
+            return str((json.load(f) or {}).get("xg_version", "")).strip().lower() == "v2"
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
+_NOTED: set = set()
+
+
+def _note_once(msg: str):
+    if msg not in _NOTED:
+        _NOTED.add(msg)
+        print(msg)
+
+
 def mode() -> str:
-    """Active flag: ``v1``, ``shadow`` or ``v2`` (shadow/v2 fall back to v1 without the artifacts)."""
-    m = (os.environ.get(MODE_ENV) or DEFAULT_MODE).strip().lower()
-    if m not in MODES:
-        m = DEFAULT_MODE
+    """Active flag: ``v1``, ``shadow`` or ``v2`` (shadow/v2 fall back to v1 without the artifacts).
+
+    An explicit ``PONYXG_XG`` is used as given.  Unset (or invalid), the flag is
+    ``DEFAULT_MODE`` (v2), held at ``shadow`` until the game model declares it was
+    trained on xG v2, so the published xG and the game model's inputs switch together."""
+    raw = (os.environ.get(MODE_ENV) or "").strip().lower()
+    explicit = raw in MODES
+    m = raw if explicit else DEFAULT_MODE
+    if not explicit and m == "v2" and not game_model_on_v2():
+        _note_once(f"  xG v2 interlock: game_model_meta.json has no \"xg_version\": \"v2\" yet; "
+                   f"running {INTERLOCK_MODE} (set {MODE_ENV}=v2 to override)")
+        m = INTERLOCK_MODE
     if m != "v1" and not artifacts_present():
-        print(f"  [WARN] {MODE_ENV}={m} but {MODEL_DIR}/{PREFIX}_*.json are missing; using v1")
+        _note_once(f"  [WARN] {MODE_ENV}={m} but {MODEL_DIR}/{PREFIX}_*.json are missing; using v1")
         m = "v1"
     return m
 
@@ -284,3 +321,42 @@ def score_shots(sub: pd.DataFrame, v1_score) -> tuple[np.ndarray, dict]:
                                                 if (int(g), e) not in _UNMATCHED})
     info["v1_rows"] = v1_rows
     return probs, info
+
+
+def fill_v1_shadow(df: pd.DataFrame, v1_score, en_xg: float, prev_source: dict | None,
+                   v1_hash: str | None = None) -> dict:
+    """Under v2, keep the incumbent's score of every shot in ``V1_COL`` (rollback and audit
+    shadow; the empty-net constant applies as in production v1).  Rows missing it are scored;
+    a changed v1 pickle (``v1_hash``) rescores the column.  Under v1/shadow ``xg_raw`` *is* v1,
+    so the column is dropped.  Never fails a run.  Returns manifest fields plus ``changed``."""
+    if mode() != "v2":
+        if V1_COL in df.columns:
+            df.drop(columns=[V1_COL], inplace=True)
+            return {"changed": True}
+        return {"changed": False}
+    info = {"v1_shadow_hash": v1_hash, "changed": False}
+    if V1_COL not in df.columns:
+        df[V1_COL] = np.nan
+        info["changed"] = True
+    df[V1_COL] = pd.to_numeric(df[V1_COL], errors="coerce").astype("float64")
+    need = df[V1_COL].isna()
+    prev = (prev_source or {}).get("v1_shadow_hash")
+    if v1_hash and prev and prev != v1_hash:
+        need[:] = True
+    if not need.any():
+        return info
+    try:
+        vals = np.asarray(v1_score(df[need]), dtype="float64")
+        if len(vals) != int(need.sum()):
+            raise ValueError(f"v1 returned {len(vals)} scores for {int(need.sum())} shots")
+    except Exception as e:  # noqa: BLE001
+        print(f"  [WARN] xG v1 shadow scoring failed; left for the next run: {str(e)[:200]}")
+        info["v1_shadow_error"] = str(e)[:200]
+        info["v1_shadow_hash"] = prev   # retry a pending full rescore next run
+        return info
+    if "strength_state" in df.columns:
+        vals = np.where(df.loc[need, "strength_state"].eq("EmptyNet").to_numpy(), en_xg, vals)
+    df.loc[need, V1_COL] = np.round(vals, XG_DECIMALS)
+    info["changed"] = True
+    info["v1_shadow_rows_scored"] = int(need.sum())
+    return info

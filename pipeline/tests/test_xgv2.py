@@ -201,13 +201,107 @@ def test_asof_blocks_cover_season_without_lookahead():
 # ------------------------------------------------------------------- live
 
 def test_mode_flag(monkeypatch):
+    monkeypatch.setattr(live, "artifacts_present", lambda *a, **k: True)
     monkeypatch.setenv(live.MODE_ENV, "v1")
     assert live.mode() == "v1"
-    monkeypatch.setenv(live.MODE_ENV, "bogus")
-    assert live.mode() == live.DEFAULT_MODE or live.mode() == "v1"
+    monkeypatch.setenv(live.MODE_ENV, "bogus")          # invalid = unset: the default, with its interlock
+    monkeypatch.setattr(live, "game_model_on_v2", lambda *a, **k: True)
+    assert live.mode() == live.DEFAULT_MODE == "v2"
     monkeypatch.setenv(live.MODE_ENV, "v2")
     monkeypatch.setattr(live, "artifacts_present", lambda *a, **k: False)
     assert live.mode() == "v1"   # missing artifacts fall back to v1
+
+
+def test_default_v2_waits_for_a_v2_game_model(monkeypatch, tmp_path):
+    """Unset flag: v2 only once game_model_meta.json declares xg_version v2 (xG and game model
+    switch together); an explicit flag always wins."""
+    monkeypatch.setattr(live, "artifacts_present", lambda *a, **k: True)
+    meta = tmp_path / "game_model_meta.json"
+    monkeypatch.setattr(live, "GAME_MODEL_META", str(meta))
+    monkeypatch.delenv(live.MODE_ENV, raising=False)
+    assert not live.game_model_on_v2() and live.mode() == live.INTERLOCK_MODE == "shadow"   # no file
+    meta.write_text(json.dumps({"model_version": "x", "xg_source": "raw_shot_xg"}))
+    assert live.mode() == "shadow"
+    meta.write_text("{not json")
+    assert live.mode() == "shadow"
+    meta.write_text(json.dumps({"xg_version": "v2"}))
+    assert live.game_model_on_v2() and live.mode() == "v2"
+    meta.write_text(json.dumps({"xg_version": "v1"}))
+    monkeypatch.setenv(live.MODE_ENV, "v2")
+    assert live.mode() == "v2"                              # explicit override
+    monkeypatch.setenv(live.MODE_ENV, "v1")
+    meta.write_text(json.dumps({"xg_version": "v2"}))
+    assert live.mode() == "v1"                              # rollback
+
+
+def test_v1_shadow_column_under_v2(monkeypatch):
+    """Under v2 the incumbent's score of every shot is kept in xg_raw_v1 (rollback shadow)."""
+    monkeypatch.setattr(live, "artifacts_present", lambda *a, **k: True)
+    calls = []
+
+    def v1(rows):
+        calls.append(len(rows))
+        return np.full(len(rows), 0.05)
+    df = pd.DataFrame({"game_id": [1, 1, 2], "event_id": [1, 2, 3],
+                       "strength_state": ["5v5", "EmptyNet", "5v4"]})
+    monkeypatch.setenv(live.MODE_ENV, "v2")
+    info = live.fill_v1_shadow(df, v1, 0.52, {}, v1_hash="h1")
+    assert info["changed"] and info["v1_shadow_hash"] == "h1" and info["v1_shadow_rows_scored"] == 3
+    assert df[live.V1_COL].tolist() == [0.05, 0.52, 0.05]          # production EN constant
+    assert not live.fill_v1_shadow(df, v1, 0.52, {"v1_shadow_hash": "h1"}, v1_hash="h1")["changed"]
+    df.loc[3] = [3, 4, "5v5", np.nan]                               # a new game: only it is scored
+    live.fill_v1_shadow(df, v1, 0.52, {"v1_shadow_hash": "h1"}, v1_hash="h1")
+    assert calls == [3, 1]
+    live.fill_v1_shadow(df, v1, 0.52, {"v1_shadow_hash": "h0"}, v1_hash="h1")   # new v1 pickle
+    assert calls == [3, 1, 4]
+
+    def boom(rows):
+        raise ValueError("preprocess_data returned 1 rows for 2 shots")
+    df.loc[4] = [3, 5, "5v5", np.nan]
+    info = live.fill_v1_shadow(df, boom, 0.52, {"v1_shadow_hash": "h1"}, v1_hash="h1")
+    assert "v1_shadow_error" in info and np.isnan(df.loc[4, live.V1_COL])   # never fails the run
+    monkeypatch.setenv(live.MODE_ENV, "shadow")                     # xg_raw is v1 again: column dropped
+    assert live.fill_v1_shadow(df, v1, 0.52, {}, v1_hash="h1")["changed"] and live.V1_COL not in df
+
+
+def test_history_apply_revert_is_exact(tmp_path, monkeypatch):
+    """bu.xg.history: v2 xg_raw joins on (game_id, event_id), unmatched rows keep the v1 score,
+    every other byte is kept, and revert restores the file exactly."""
+    from bu.xg import history as H
+    src = ("game_id,event_id,player_id,x,y,strength_state,is_goal,event_type,xG\n"
+           "2023020001,10,8476453,-74,16,5v4,0,506,0.10660055\n"
+           "2023020001,11,,58,-25,5v5,1,505,0.0111266235\n"
+           "2023020002,7,8478010,81,8,EmptyNet,0,507,0.5\n")
+    f = tmp_path / "shots.csv"
+    f.write_text(src)
+    hist = tmp_path / "h.csv"
+    hist.write_text("game_id,event_id,xg2\n2023020001,10,0.0812\n2023020001,11,0.2001\n2023020009,1,0.3\n")
+    res = H.apply([str(f)], history=str(hist), v1_score=lambda rows: np.full(len(rows), 0.0444))
+    out = pd.read_csv(f)
+    assert out["xg_raw"].tolist() == [0.0812, 0.2001, 0.0444]
+    assert res["shots.csv"] == {"rows": 3, "v2": 2, "v1_fallback": 1, "v2_share": 0.66667}
+    assert f.read_text().splitlines()[2].startswith("2023020001,11,,58,-25,5v5,1,505,0.0111266235,")
+    H.apply([str(f)], history=str(hist), v1_score=lambda rows: np.full(len(rows), 0.0444))   # idempotent
+    assert pd.read_csv(f).columns.tolist().count("xg_raw") == 1
+    H.revert([str(f)])
+    assert f.read_text() == src
+    live_file = tmp_path / "live.csv"                     # a season file the live pipeline wrote
+    live_src = "game_id,event_id,xg_raw,xg_raw_v2\n2023020001,10,0.0700,0.0700\n"
+    live_file.write_text(live_src)
+    H.apply([str(live_file)], history=str(hist), v1_score=lambda rows: np.full(len(rows), 0.0444))
+    H.revert([str(live_file)])
+    assert live_file.read_text() == live_src
+
+
+def test_pooled_game_level_delta():
+    from bu.xg.summary import pooled
+    comp = {"2023": {"n": 1399, "delta": -0.001181, "se": 0.000632},
+            "2024": {"n": 1206, "delta": -0.001168, "se": 0.000726},
+            "2025": {"n": 1394, "delta": -0.000357, "se": 0.001158}}
+    p = pooled(comp)
+    assert p["n"] == 3999 and abs(p["delta"] - (-0.000890)) < 2e-6 and abs(p["se"] - 0.000510) < 2e-6
+    assert p["upper_98_75_one_sided"] < 0.0005 and p["a_comp_pass"]
+    assert pooled({"2023": comp["2023"]}) is None
 
 
 @pytest.mark.skipif(not live.artifacts_present(), reason="production xG v2 artifacts not committed")

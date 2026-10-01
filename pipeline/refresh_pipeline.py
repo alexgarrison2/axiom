@@ -219,17 +219,18 @@ def stage_rescore_xg(state, rescore_all=False):
     need |= xg_live.pending_mask(df, prev_src)
     n_scored = int(need.sum())
     xg_info = {"mode": xg_live.mode(), "v1_fallback_games": []}
-    if n_scored:
-        def v1_score(rows):
-            import pickle
-            from xg_model import preprocess_data
-            with open(os.path.join(PIPELINE_DIR, "xg_model_xgb.pkl"), "rb") as f:
-                model = pickle.load(f)
-            X, _ = preprocess_data(rows)
-            if len(X) != len(rows):
-                raise ValueError(f"preprocess_data returned {len(X)} rows for {len(rows)} shots")
-            return model.predict_proba(X)[:, 1]
 
+    def v1_score(rows):
+        import pickle
+        from xg_model import preprocess_data
+        with open(os.path.join(PIPELINE_DIR, "xg_model_xgb.pkl"), "rb") as f:
+            model = pickle.load(f)
+        X, _ = preprocess_data(rows)
+        if len(X) != len(rows):
+            raise ValueError(f"preprocess_data returned {len(X)} rows for {len(rows)} shots")
+        return model.predict_proba(X)[:, 1]
+
+    if n_scored:
         sub = df[need]
         probs, xg_info = xg_live.score_shots(sub, v1_score)
         mean_new = float(probs.mean())
@@ -243,6 +244,10 @@ def stage_rescore_xg(state, rescore_all=False):
             v1_idx = sub.index[xg_info["v1_rows"]]
             df.loc[v1_idx[df.loc[v1_idx, "strength_state"] == "EmptyNet"], "xg_raw"] = EN_XG
     df["xg_raw"] = df["xg_raw"].astype(float).round(XG_DECIMALS)
+    # Under v2 the incumbent's score stays in xg_raw_v1 (rollback shadow); dropped otherwise.
+    v1_info = xg_live.fill_v1_shadow(df, v1_score, EN_XG, prev_src, v1_hash=model_hash())
+    v1_changed = v1_info.pop("changed")
+    v2_changed = v2_changed or v1_changed
 
     # Persist xg_raw first: shooting talent is computed from xg_raw on disk.
     if n_scored or v2_changed:
@@ -276,7 +281,7 @@ def stage_rescore_xg(state, rescore_all=False):
     else:
         print(f"  {path}: xG unchanged — not rewritten")
     record_source("xg_model", hash=mh, mode=xg_info["mode"], v1_fallback_games=xg_info["v1_fallback_games"],
-                  **{k: v for k, v in v2_info.items() if k != "v2_column"})
+                  **{k: v for k, v in v2_info.items() if k != "v2_column"}, **v1_info)
 
     agg = df.groupby(["game_id", "team_id"])["xG"].sum().rename("xG_sum").reset_index()
     if "strength_state" in df.columns:

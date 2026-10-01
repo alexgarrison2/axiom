@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-01T16:45:39Z",
+ "generated_at": "2026-10-01T17:43:33Z",
  "candidate": "v2_asof",
  "m1_gate": {
   "a_shot_ll": {
@@ -41,6 +41,46 @@
   }
  },
  "m1_pass": false,
+ "ship": {
+  "decision": "owner 2026-10-01: ship xG v2 (with the RAPM lineup term) on the pooled evidence, keep v1 as a shadow for rollback; the game model is retrained on v2 by the integrator",
+  "pooled_game_level": {
+   "v2_asof_minus_v1_pit": {
+    "seasons": [
+     "2023",
+     "2024",
+     "2025"
+    ],
+    "n": 3999,
+    "delta": -0.00089,
+    "se": 0.00051,
+    "upper_95_one_sided": -5.1e-05,
+    "upper_98_75_one_sided": 0.000253,
+    "a_comp_rule": "one-sided 98.75% upper bound < +0.0005",
+    "a_comp_pass": true
+   },
+   "v2_asof_minus_v1_prod": {
+    "seasons": [
+     "2023",
+     "2024",
+     "2025"
+    ],
+    "n": 3999,
+    "delta": -0.000356,
+    "se": 0.000487,
+    "upper_95_one_sided": 0.000446,
+    "upper_98_75_one_sided": 0.000737,
+    "a_comp_rule": "one-sided 98.75% upper bound < +0.0005",
+    "a_comp_pass": false
+   }
+  },
+  "shot_level": "every one of the walk-forward seasons, LL and AUC (a_shot_ll per_fold)",
+  "live_flag": {
+   "default": "v2",
+   "game_model_on_v2": false,
+   "active_mode": "shadow",
+   "interlock": "an unset PONYXG_XG runs shadow until game_model_meta.json declares \"xg_version\": \"v2\""
+  }
+ },
  "headline": {
   "seasons_tested": 15,
   "v2_beats_v1_pit_every_season": true,
