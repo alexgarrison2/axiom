@@ -225,22 +225,46 @@ def test_production_model_scores_csv_rows():
         assert xg[en].mean() > 0.2
 
 
-def test_score_shots_v2_falls_back_to_v1_and_queues_game(monkeypatch):
-    monkeypatch.setenv(live.MODE_ENV, "v2")
+def test_flag_modes_fill_column_and_fall_back(monkeypatch):
     monkeypatch.setattr(live, "artifacts_present", lambda *a, **k: True)
-    rows = pd.DataFrame({"game_id": [1, 1, 2], "event_id": [1, 2, 3]}, index=[10, 11, 12])
+    monkeypatch.setattr(live, "model_signature", lambda *a, **k: "sigA")
     monkeypatch.setattr(live, "score_rows", lambda sub, fetch=None: (
-        pd.Series([0.1, 0.2, np.nan], index=sub.index), {"scored": 2, "games": 2}))
-    probs, info = live.score_shots(rows, lambda r: np.full(len(r), 0.05))
-    assert probs.tolist() == [0.1, 0.2, 0.05]
-    assert info["v1_fallback_games"] == [2] and info["v1_rows"].tolist() == [False, False, True]
-    assert live.pending_mask(rows, {"v1_fallback_games": [2]}).tolist() == [False, False, True]
-    assert live.active_hash(lambda: "md5v1").startswith("v2:")
+        pd.Series([0.08, 0.1, np.nan][:len(sub)], index=sub.index), {"scored": 2, "games": 2}))
+    v1 = lambda r: np.full(len(r), 0.05)  # noqa: E731
+    base = pd.DataFrame({"game_id": [1, 1, 2], "event_id": [1, 2, 3]}, index=[10, 11, 12])
+
+    # v1: no v2 work, nothing added
     monkeypatch.setenv(live.MODE_ENV, "v1")
-    probs, info = live.score_shots(rows, lambda r: np.full(len(r), 0.05))
-    assert probs.tolist() == [0.05] * 3 and info["v1_fallback_games"] == [] and info["v1_rows"].all()
+    df = base.copy()
+    assert live.fill_v2_column(df, {}) == {"v2_column": "off"} and live.V2_COL not in df
+    probs, info = live.score_shots(df, v1)
+    assert probs.tolist() == [0.05] * 3 and info["v1_rows"].all() and info["v1_fallback_games"] == []
     assert live.active_hash(lambda: "md5v1") == "md5v1"
-    assert not live.pending_mask(rows, {"v1_fallback_games": [2]}).any()
+
+    # shadow: xg_raw stays v1, the v2 column is filled (NaN where v2 had no payload)
+    monkeypatch.setenv(live.MODE_ENV, "shadow")
+    df = base.copy()
+    inf = live.fill_v2_column(df, {})
+    assert df[live.V2_COL].tolist()[:2] == [0.08, 0.1] and np.isnan(df[live.V2_COL].iloc[2])
+    assert inf["v2_missing_games"] == [2] and inf["v2_signature"] == "sigA"
+    probs, info = live.score_shots(df, v1)
+    assert probs.tolist() == [0.05] * 3 and info["v1_fallback_games"] == []
+    assert live.active_hash(lambda: "md5v1") == "md5v1"     # shadow publishes v1
+
+    # v2: xg_raw from the v2 column, v1 fallback queued for the next run
+    monkeypatch.setenv(live.MODE_ENV, "v2")
+    probs, info = live.score_shots(df, v1)
+    assert probs.tolist() == [0.08, 0.1, 0.05]
+    assert info["v1_fallback_games"] == [2] and info["v1_rows"].tolist() == [False, False, True]
+    assert live.pending_mask(df, {"v1_fallback_games": [2]}).tolist() == [False, False, True]
+    assert live.active_hash(lambda: "md5v1") == "v2:sigA"
+
+    # a new v2 artifact rescores the whole column
+    calls = []
+    monkeypatch.setattr(live, "score_rows", lambda sub, fetch=None: (
+        calls.append(len(sub)) or pd.Series(0.12, index=sub.index), {"scored": len(sub), "games": 2}))
+    live.fill_v2_column(df, {"v2_signature": "sigOLD"})
+    assert calls == [3] and df[live.V2_COL].tolist() == [0.12] * 3
 
 
 def test_score_rows_missing_payload_leaves_nan():

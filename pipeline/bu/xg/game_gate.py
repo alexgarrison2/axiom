@@ -95,7 +95,9 @@ def main(argv=None):
     tests = (*DEV,) + (() if a.no_holdout else (HOLDOUT,))
 
     runs, oos = {}, {}
-    for name, col in (("v1_prod", "xg1_prod"), ("v1_pit", "xg1_pit"), ("v2", "xg2")):
+    for name, col in (("v1_prod", "xg1_prod"), ("v1_pit", "xg1_pit"), ("v2", "xg2"), ("v2_asof", "xg2_asof")):
+        if col not in shots.columns:
+            continue
         raw = raw_frame(shots, col, team_ids)
         g, _ = F.attach_raw_xg(games, raw)
         M = F.build_training_matrix(g)
@@ -113,26 +115,32 @@ def main(argv=None):
     res = {"generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
            "incumbent_features": cols, "seasons_with_lake_xg": sorted({int(str(g)[:4]) for g in shots["game_id"]}),
            "runs": runs, "comparisons": {}}
-    for ref in ("v1_prod", "v1_pit"):
-        comp = {}
-        for s in DEV:
-            comp[str(s)] = paired(oos[ref], oos["v2"], [s])
-        comp["dev_pooled"] = paired(oos[ref], oos["v2"], list(DEV))
+    cands = [c for c in ("v2", "v2_asof") if c in oos]
+    for cand in cands:
+        for ref in ("v1_prod", "v1_pit"):
+            comp = {}
+            for s in DEV:
+                comp[str(s)] = paired(oos[ref], oos[cand], [s])
+            comp["dev_pooled"] = paired(oos[ref], oos[cand], list(DEV))
+            if not a.no_holdout:
+                comp[str(HOLDOUT)] = paired(oos[ref], oos[cand], [HOLDOUT])
+            res["comparisons"][f"{cand}_minus_{ref}"] = comp
+    res["gate"] = {}
+    for cand in cands:
+        c = res["comparisons"][f"{cand}_minus_v1_prod"]
+        a2 = c["dev_pooled"]["delta"] <= -0.0005 and all(c[str(s)]["delta"] <= 0.0005 for s in DEV)
+        a5 = all(runs[cand][s]["home_rate_ll"] - runs[cand][s]["log_loss"] >= 0.01 for s in runs[cand])
+        gate = {"A2": {"rule": "dev pooled Δ <= -0.0005 and no dev fold Δ > +0.0005 (vs v1_prod incumbent)",
+                       "dev_pooled": c["dev_pooled"]["delta"], "pass": bool(a2)},
+                "A5": {"rule": "beats the home-rate baseline by >= 0.01 on every fold", "pass": bool(a5)}}
         if not a.no_holdout:
-            comp[str(HOLDOUT)] = paired(oos[ref], oos["v2"], [HOLDOUT])
-        res["comparisons"][f"v2_minus_{ref}"] = comp
-    c = res["comparisons"]["v2_minus_v1_prod"]
-    a2 = c["dev_pooled"]["delta"] <= -0.0005 and all(c[str(s)]["delta"] <= 0.0005 for s in DEV)
-    a5 = all(runs["v2"][s]["home_rate_ll"] - runs["v2"][s]["log_loss"] >= 0.01 for s in runs["v2"])
-    gate = {"A2": {"rule": "dev pooled Δ <= -0.0005 and no dev fold Δ > +0.0005 (vs v1_prod incumbent)",
-                   "pass": bool(a2)},
-            "A5": {"rule": "beats the home-rate baseline by >= 0.01 on every fold", "pass": bool(a5)}}
-    if not a.no_holdout:
-        h = c[str(HOLDOUT)]
-        gate["A_comp"] = {"rule": "2025-26 one-sided 98.75% upper bound of Δ < +0.0005 (one look)",
-                          "upper": h["upper_98_75_one_sided"], "pass": bool(h["upper_98_75_one_sided"] < 0.0005)}
-    gate["pass"] = all(v["pass"] for v in gate.values() if isinstance(v, dict))
-    res["gate"] = gate
+            h = c[str(HOLDOUT)]
+            gate["A_comp"] = {"rule": "2025-26 one-sided 98.75% upper bound of Δ < +0.0005 (one look)",
+                              "delta": h["delta"], "upper": h["upper_98_75_one_sided"],
+                              "pass": bool(h["upper_98_75_one_sided"] < 0.0005)}
+        gate["pass"] = all(v["pass"] for v in gate.values() if isinstance(v, dict))
+        res["gate"][cand] = gate
+    gate = res["gate"]
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as f:
         json.dump(res, f, indent=1)
@@ -140,8 +148,10 @@ def main(argv=None):
     if not a.no_holdout:
         with open(LOOK_LOG, "a") as f:
             f.write(json.dumps({"at": res["generated_at"], "look": "M1 A-comp (xG v2 as incumbent feature)",
-                                "holdout": "2025-26", "result": gate.get("A_comp"),
-                                "comparison": c[str(HOLDOUT)]}) + "\n")
+                                "holdout": "2025-26",
+                                "result": {k: v.get("A_comp") for k, v in gate.items()},
+                                "comparison": {k: res["comparisons"][f"{k}_minus_v1_prod"][str(HOLDOUT)]
+                                               for k in gate}}) + "\n")
     print(json.dumps(res["comparisons"], indent=1))
     print(json.dumps(gate, indent=1))
     return res

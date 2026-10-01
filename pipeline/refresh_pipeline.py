@@ -200,11 +200,16 @@ def stage_rescore_xg(state, rescore_all=False):
         return {"status": "skip", "reason": "no shots this season yet"}
     before = df.copy()
 
-    # Shot model flag PONYXG_XG=v1|v2 (bu/xg/live.py); the xg_raw contract is the same for both.
+    # Shot model flag PONYXG_XG=v1|shadow|v2 (bu/xg/live.py); the xg_raw contract is the same for all.
+    # shadow/v2 first fill the additive xg_raw_v2 column (xG v2 from each game's PBP).
     from bu.xg import live as xg_live
     mh = xg_live.active_hash(model_hash)
     prev_src = (load_manifest().get("sources") or {}).get("xg_model") or {}
     prev_hash = prev_src.get("hash")
+    v2_info = xg_live.fill_v2_column(df, prev_src)
+    v2_changed = xg_live.V2_COL in df.columns and (
+        xg_live.V2_COL not in before.columns
+        or not before[xg_live.V2_COL].astype(float).fillna(-1).equals(df[xg_live.V2_COL].astype(float).fillna(-1)))
     if "xg_raw" not in df.columns:
         df["xg_raw"] = float("nan")
     need = df["xg_raw"].isna()
@@ -240,7 +245,7 @@ def stage_rescore_xg(state, rescore_all=False):
     df["xg_raw"] = df["xg_raw"].astype(float).round(XG_DECIMALS)
 
     # Persist xg_raw first: shooting talent is computed from xg_raw on disk.
-    if n_scored:
+    if n_scored or v2_changed:
         atomic_write_csv(path, df, min_rows=len(before), label="season shots")
     try:
         from shooting_talent import compute_shooting_talent
@@ -264,12 +269,14 @@ def stage_rescore_xg(state, rescore_all=False):
     cols = ["xg_raw", "xG", "xG_flurry_adj"]
     changed = any(c not in before.columns for c in cols) or not all(
         before[c].astype(float).round(XG_DECIMALS).fillna(-1).equals(df[c].astype(float).fillna(-1)) for c in cols)
+    changed = changed or v2_changed
     if changed:
         atomic_write_csv(path, df, min_rows=len(before), label="season shots")
         print(f"  Updated {path} (xg_raw + adjusted xG)")
     else:
         print(f"  {path}: xG unchanged — not rewritten")
-    record_source("xg_model", hash=mh, mode=xg_info["mode"], v1_fallback_games=xg_info["v1_fallback_games"])
+    record_source("xg_model", hash=mh, mode=xg_info["mode"], v1_fallback_games=xg_info["v1_fallback_games"],
+                  **{k: v for k, v in v2_info.items() if k != "v2_column"})
 
     agg = df.groupby(["game_id", "team_id"])["xG"].sum().rename("xG_sum").reset_index()
     if "strength_state" in df.columns:

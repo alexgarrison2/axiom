@@ -2,26 +2,30 @@
 
 ``refresh_pipeline.stage_rescore_xg`` keeps its contract: it fills the season
 shot CSV's ``xg_raw`` column (raw shot-model output; shooting talent and league
-normalisation are applied afterwards and land in ``xG``).  Which model fills
-it is chosen by the flag
+normalisation are applied afterwards and land in ``xG``).  The flag
 
-    PONYXG_XG=v1|v2        (unset: ``DEFAULT_MODE`` below)
+    PONYXG_XG=v1|shadow|v2        (unset: ``DEFAULT_MODE`` below)
+
+  v1      xg_raw from ``xg_model_xgb.pkl`` (the incumbent); no v2 work at all
+  shadow  xg_raw from v1 (published numbers unchanged) plus the additive column
+          ``xg_raw_v2`` from xG v2, so live shadow games accumulate (M1 gate (d))
+  v2      xg_raw from xG v2 (v1 only for rows v2 cannot score yet) plus ``xg_raw_v2``
 
 v2 needs the whole play sequence of a game (previous event, faceoff and
 strength clocks), which the season CSV does not carry, so v2 scores from the
 game's play-by-play: the lake copy when one exists
 (``data/lake/raw/pbp/<season>/<game>.json.gz``), otherwise one GET of
-``/v1/gamecenter/{id}/play-by-play`` per game that has unscored shots.  The
-payload is parsed with the lake parser (``bu.lake.parse.parse_game``) and
-featurised with ``bu.xg.features.shot_features``, i.e. the exact training code
-path; rows join back to the CSV on (game_id, event_id).  Any row v2 cannot
-score (payload unavailable, event missing) is left for the v1 fallback, and the
-counts are returned so the stage can report them.
+``/v1/gamecenter/{id}/play-by-play`` per game with unscored shots.  The payload
+is parsed with the lake parser (``bu.lake.parse.parse_game``) and featurised
+with ``bu.xg.features.shot_features``, i.e. the exact training code path; rows
+join back to the CSV on (game_id, event_id).  Rows v2 cannot score stay NaN in
+``xg_raw_v2`` and are retried on the next run; under v2 their ``xg_raw`` holds
+v1 until then (the games are queued in the manifest).
 
 Artifacts (committed, JSON, no pickles):
   pipeline/models/xg2_booster.json      XGBoost booster
-  pipeline/models/xg2_calibrators.json  per-strength Platt maps, empty-net logistic,
-                                        penalty-shot rate, rink knots, meta
+  pipeline/models/xg2_calibrators.json  meta (fit seasons, as-of date), empty-net logistic,
+                                        penalty-shot rate, rink knots, optional Platt maps
   pipeline/bu/xg/models/handedness.json shooter handedness
 """
 from __future__ import annotations
@@ -39,7 +43,10 @@ PIPELINE_DIR = os.path.dirname(os.path.dirname(HERE))
 MODEL_DIR = os.path.join(PIPELINE_DIR, "models")
 PREFIX = "xg2"
 MODE_ENV = "PONYXG_XG"
+MODES = ("v1", "shadow", "v2")
 DEFAULT_MODE = "v1"
+V2_COL = "xg_raw_v2"
+XG_DECIMALS = 4
 API_PBP = "https://api-web.nhle.com/v1/gamecenter/{gid}/play-by-play"
 
 _MODEL = None
@@ -50,12 +57,12 @@ def artifacts_present(model_dir: str = MODEL_DIR) -> bool:
 
 
 def mode() -> str:
-    """Active shot model: ``v1`` or ``v2`` (v2 falls back to v1 when its artifacts are missing)."""
+    """Active flag: ``v1``, ``shadow`` or ``v2`` (shadow/v2 fall back to v1 without the artifacts)."""
     m = (os.environ.get(MODE_ENV) or DEFAULT_MODE).strip().lower()
-    if m not in ("v1", "v2"):
+    if m not in MODES:
         m = DEFAULT_MODE
-    if m == "v2" and not artifacts_present():
-        print(f"  [WARN] {MODE_ENV}=v2 but {MODEL_DIR}/{PREFIX}_*.json are missing; using v1")
+    if m != "v1" and not artifacts_present():
+        print(f"  [WARN] {MODE_ENV}={m} but {MODEL_DIR}/{PREFIX}_*.json are missing; using v1")
         m = "v1"
     return m
 
@@ -144,50 +151,11 @@ def score_games(game_ids, fetch=fetch_pbp, model=None) -> pd.DataFrame:
     return out.drop_duplicates(["game_id", "event_id"])
 
 
-def active_hash(v1_hash_fn) -> str:
-    """The ``xg_model`` hash recorded in the manifest: v1 keeps its historical pickle md5,
-    v2 is tagged, so switching the flag either way forces a full-season rescore."""
-    return v1_hash_fn() if mode() == "v1" else f"v2:{model_signature()}"
-
-
-def pending_mask(df: pd.DataFrame, prev_source: dict | None) -> pd.Series:
-    """Rows of games that v2 could not score on an earlier run (they hold v1 values)."""
-    games = set((prev_source or {}).get("v1_fallback_games") or [])
-    if not games or mode() != "v2" or "game_id" not in df.columns:
-        return pd.Series(False, index=df.index)
-    return df["game_id"].astype("int64").isin({int(g) for g in games})
-
-
-def score_shots(sub: pd.DataFrame, v1_score, fetch=fetch_pbp) -> tuple[np.ndarray, dict]:
-    """``xg_raw`` for the season-CSV rows ``sub`` under the active flag.
-
-    ``v1_score(rows) -> ndarray`` is the incumbent scorer (the pickle path).  Under v2,
-    rows v2 cannot score (no payload yet) fall back to v1 and their games are listed in
-    ``info["v1_fallback_games"]`` so the next run rescores them.  ``info["v1_rows"]``
-    marks the rows that hold v1 values (the empty-net override applies only to those).
-    """
-    m = mode()
-    info = {"mode": m, "rows": int(len(sub)), "v2_scored": 0, "v1_fallback_games": []}
-    probs = np.full(len(sub), np.nan)
-    if m == "v2" and len(sub):
-        v2, st = score_rows(sub, fetch=fetch)
-        probs = v2.to_numpy(dtype="float64")
-        info["v2_scored"] = st["scored"]
-        info["games"] = st["games"]
-    v1_rows = np.isnan(probs)
-    if v1_rows.any():
-        probs[v1_rows] = np.asarray(v1_score(sub[v1_rows]), dtype="float64")
-        if m == "v2":
-            info["v1_fallback_games"] = sorted({int(g) for g in sub.loc[v1_rows, "game_id"]})
-    info["v1_rows"] = v1_rows
-    return probs, info
-
-
 def score_rows(rows: pd.DataFrame, fetch=fetch_pbp, model=None) -> tuple[pd.Series, dict]:
     """v2 xG for season-CSV shot rows (aligned to ``rows.index``; NaN where v2 could not score)."""
     out = pd.Series(np.nan, index=rows.index, dtype="float64")
     if rows.empty:
-        return out, {"rows": 0, "scored": 0, "games": 0}
+        return out, {"rows": 0, "scored": 0, "games": 0, "games_without_pbp": 0}
     gids = rows["game_id"].astype("int64")
     sc = score_games(gids.unique(), fetch=fetch, model=model)
     key = pd.DataFrame({"game_id": gids.to_numpy(), "event_id": pd.to_numeric(rows["event_id"], errors="coerce").to_numpy()},
@@ -197,3 +165,71 @@ def score_rows(rows: pd.DataFrame, fetch=fetch_pbp, model=None) -> tuple[pd.Seri
     stats = {"rows": int(len(rows)), "scored": int(out.notna().sum()), "games": int(gids.nunique()),
              "games_without_pbp": int(len(set(gids) - set(sc["game_id"])))}
     return out, stats
+
+
+# ------------------------------------------------------------- stage helpers
+
+def active_hash(v1_hash_fn) -> str:
+    """The ``xg_model`` hash recorded in the manifest for ``xg_raw``: v1 and shadow keep the
+    pickle md5 (shadow publishes v1), v2 is tagged, so flipping v1 <-> v2 rescores the season."""
+    return f"v2:{model_signature()}" if mode() == "v2" else v1_hash_fn()
+
+
+def pending_mask(df: pd.DataFrame, prev_source: dict | None) -> pd.Series:
+    """Rows whose ``xg_raw`` still holds v1 because v2 could not score them on an earlier v2 run."""
+    games = set((prev_source or {}).get("v1_fallback_games") or [])
+    if not games or mode() != "v2" or "game_id" not in df.columns:
+        return pd.Series(False, index=df.index)
+    return df["game_id"].astype("int64").isin({int(g) for g in games})
+
+
+def fill_v2_column(df: pd.DataFrame, prev_source: dict | None, fetch=fetch_pbp) -> dict:
+    """Shadow/v2: fill ``df[V2_COL]`` in place where it is missing (every row when the v2
+    artifacts changed since the last run).  Returns what happened, for the manifest."""
+    m = mode()
+    if m == "v1":
+        return {"v2_column": "off"}
+    sig = model_signature()
+    if V2_COL not in df.columns:
+        df[V2_COL] = np.nan
+    df[V2_COL] = pd.to_numeric(df[V2_COL], errors="coerce").astype("float64")
+    need = df[V2_COL].isna()
+    prev_sig = (prev_source or {}).get("v2_signature")
+    if prev_sig and prev_sig != sig:
+        print(f"  xG v2 artifacts changed ({prev_sig[:8]} -> {sig[:8]}): rescoring {V2_COL} for every shot")
+        need[:] = True
+    info = {"v2_signature": sig, "v2_rows_scored": 0, "v2_missing_games": []}
+    if need.any():
+        vals, st = score_rows(df[need], fetch=fetch)
+        if vals.notna().any() and float(vals.mean()) > 0.15:
+            raise ValueError(f"ABORT: mean xG v2 {float(vals.mean()):.4f} - model/library mismatch?")
+        df.loc[need, V2_COL] = vals.round(XG_DECIMALS)
+        info["v2_rows_scored"] = int(vals.notna().sum())
+        info["v2_missing_games"] = sorted({int(g) for g in df.loc[need & df[V2_COL].isna(), "game_id"]})
+        print(f"  xG v2 ({m}): scored {info['v2_rows_scored']}/{int(need.sum())} shots in {st['games']} games"
+              + (f"; {len(info['v2_missing_games'])} game(s) without a payload yet" if info["v2_missing_games"] else ""))
+    return info
+
+
+def score_shots(sub: pd.DataFrame, v1_score) -> tuple[np.ndarray, dict]:
+    """``xg_raw`` for the season-CSV rows ``sub`` under the active flag.
+
+    ``v1_score(rows) -> ndarray`` is the incumbent scorer (the pickle path).  Under v2 the
+    values come from ``sub[V2_COL]`` (``fill_v2_column`` runs first); rows without one fall
+    back to v1 and their games are listed in ``info["v1_fallback_games"]`` so the next run
+    rescores them.  ``info["v1_rows"]`` marks rows holding v1 values (the empty-net constant
+    applies only to those).
+    """
+    m = mode()
+    info = {"mode": m, "rows": int(len(sub)), "v2_scored": 0, "v1_fallback_games": []}
+    probs = np.full(len(sub), np.nan)
+    if m == "v2" and V2_COL in sub.columns:
+        probs = pd.to_numeric(sub[V2_COL], errors="coerce").to_numpy(dtype="float64").copy()
+        info["v2_scored"] = int(np.isfinite(probs).sum())
+    v1_rows = ~np.isfinite(probs)
+    if v1_rows.any():
+        probs[v1_rows] = np.asarray(v1_score(sub[v1_rows]), dtype="float64")
+        if m == "v2":
+            info["v1_fallback_games"] = sorted({int(g) for g in sub.loc[v1_rows, "game_id"]})
+    info["v1_rows"] = v1_rows
+    return probs, info
