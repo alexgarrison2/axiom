@@ -90,13 +90,13 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | `side_xg` | float goals | no | Expected goals, including the expected OT goal. Backed out of the published win % (`goal_model.display_xg`), so the xG favourite is always the win % favourite. |
 | `expected_total` | float goals | no | Expected total goals (league pace × matchup pace). |
 | `side_xg_explained` | JSON list[string] | no | `["Even matchup: 3.08", "Home ice: +0.02", ...]`. The parts add up to `side_xg` (±0.02). |
-| `home_wp_breakdown` | JSON list | no | "Why this pick": `[{factor, label, wp_delta_pts, xg_home_delta, xg_away_delta}]` in order. Factors: `home_ice`, `strength_5v5`, `special_teams`, `goaltending`, `rest`, `lineup`, then `market` when there are odds. `50 + Σ wp_delta_pts = home_win_pct` (±0.1). Positive values favour the home team. |
+| `home_wp_breakdown` | JSON list | no | "Why this pick": `[{factor, label, wp_delta_pts, xg_home_delta, xg_away_delta}]` in order. Factors: `home_ice`, `strength_5v5`, `special_teams`, `goaltending`, `rest`, then `lineup_goalie` for a game model with the fast-track features (who dresses and who starts in net vs the team's usual: `d_lineup`, `d_goalie_swap`; DESIGN §8 F1) or `lineup` for an older model (the separate `lineup_adjust` term), then `market` when there are odds. A frozen row keeps the factor list of the model that made it. `50 + Σ wp_delta_pts = home_win_pct` (±0.1). Positive values favour the home team. |
 | `pick_summary` | string | no | One sentence (≤160 chars) naming the favourite and the top 2 factors. |
 | `confidence_grade` | enum | no | `A` (favourite ≥ 65%), `B` (60-65%), `C` (< 60%). Capped at `B` while `preseason_prior`. |
 | `confidence_note` | string | yes | How that tier has done in live picks (`model_report.json`), plus the early-season note. |
 | `side_model_goalie` | string | yes | Goalie the model used (the projected starter at prediction time). |
-| `side_lineup_score` | float | yes | Tonight's lineup quality minus the team's own baseline lineup (RAPM net xG/60 × ice-time share, from `lineup_adjust.py`). **Both sides are empty when either side fails the coverage gate** (≥14 of 18 skaters rated). The lineup factor is then neutral for both. |
-| `side_lineup_matched` | int | yes | Rated skaters in tonight's lineup (of 18). |
+| `side_lineup_score` | float | yes | Tonight's lineup quality minus the team's own baseline lineup, in on-ice net xG/60. Fast-track models (`lineup_adjust.LineupState`): MoneyPuck 5v5 on-ice relative xG/60 from the two previous seasons, weighted by expected TOI; tonight = DailyFaceoff projected lines minus players out, or the team's last dressed lineup when fewer than 14 of 18 map to NHL ids; baseline = the 18 most-used skaters over the last 20 games. Older models: RAPM net xG/60 × ice-time share. **Both sides are empty when either side has no baseline / fails the coverage gate**; the lineup term is then neutral for both. |
+| `side_lineup_matched` | int | yes | Skaters in tonight's projected lineup mapped to an NHL id (fast-track models) or rated (older models), of 18. |
 | `total_line` | string | yes | Over/under line (`6.0`) at prediction time. |
 | `total_over` | int | yes | Over price (American). |
 | `total_under` | int | yes | Under price (American). |

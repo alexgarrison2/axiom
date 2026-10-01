@@ -533,6 +533,8 @@ UNRATED_GP = 20                        # players below this many weighted GP def
 DEFAULT_TOI = {'F': 900.0, 'D': 1200.0}   # seconds per game without any history
 TOI_HISTORY = 20                       # dressed games behind a player's expected TOI
 TEAM_ALIASES = {'ARI': 'UTA'}          # franchise continuity for baselines
+RATING_VALUE = 'rel5'                  # 'rel5' | 'rel5_ix' (adds individual xG/60 vs position); dev-fold choice
+IX_SHRINK_MIN = 300.0                  # all-situations minutes for 50% reliability of individual xG/60
 
 
 def extract_mp(raw: pd.DataFrame) -> pd.DataFrame:
@@ -583,13 +585,15 @@ def ratings_asof(season) -> pd.Timestamp:
     return pd.Timestamp(int(season), 7, 1)
 
 
-def player_ratings(mp: pd.DataFrame, season, weights=RATING_SEASON_WEIGHTS, shrink_min=RATING_SHRINK_MIN):
+def player_ratings(mp: pd.DataFrame, season, weights=RATING_SEASON_WEIGHTS, shrink_min=RATING_SHRINK_MIN,
+                   value=None):
     """Point-in-time skater ratings for ``season``.
 
     Returns {'values': {pid: xG/60}, 'toi': {pid: prior TOI sec/GP}, 'pos': {pid: F|D},
     'names': {norm name: pid}, 'unrated': {F: v, D: v}, 'asof': Timestamp,
     'data_seasons': [seasons read]}."""
     season = int(season)
+    value = value or RATING_VALUE
     use = [(season - k, w) for k, w in enumerate(weights, start=1)]
     rows = [mp[mp['season'] == s].assign(w=w) for s, w in use if (mp['season'] == s).any()]
     out = {'values': {}, 'toi': {}, 'pos': {}, 'names': {}, 'unrated': {'F': 0.0, 'D': 0.0},
@@ -598,18 +602,26 @@ def player_ratings(mp: pd.DataFrame, season, weights=RATING_SEASON_WEIGHTS, shri
         return out
     r = pd.concat(rows, ignore_index=True)
     assert int(r['season'].max()) < season, 'a rating may only use completed seasons'
-    for c in ('toi5', 'on_f5', 'on_a5', 'off_f5', 'off_a5', 'bench5', 'gp', 'toi_all'):
+    for c in ('toi5', 'on_f5', 'on_a5', 'off_f5', 'off_a5', 'bench5', 'gp', 'toi_all', 'ixg_all'):
         r[c] = r[c].astype(float) * r['w']
     r = r.sort_values('season')
     g = r.groupby('player_id').agg(toi5=('toi5', 'sum'), on_f5=('on_f5', 'sum'), on_a5=('on_a5', 'sum'),
                                    off_f5=('off_f5', 'sum'), off_a5=('off_a5', 'sum'), bench5=('bench5', 'sum'),
-                                   gp=('gp', 'sum'), toi_all=('toi_all', 'sum'),
+                                   gp=('gp', 'sum'), toi_all=('toi_all', 'sum'), ixg_all=('ixg_all', 'sum'),
                                    pos=('pos', 'last'), name=('name', 'last'))
     on = (g['on_f5'] - g['on_a5']) / g['toi5'].clip(lower=1) * 3600
     off = (g['off_f5'] - g['off_a5']) / g['bench5'].clip(lower=1) * 3600
     rel = np.where(g['toi5'] > 0, on, 0.0) - np.where(g['bench5'] > 0, off, 0.0)
     minutes = g['toi5'] / 60.0
     g = g.assign(rel=rel, v=rel * minutes / (minutes + shrink_min))
+    if value == 'rel5_ix':
+        # individual xG/60 (all situations) relative to the position's TOI-weighted mean, shrunk
+        ix = g['ixg_all'] / g['toi_all'].clip(lower=1) * 3600
+        mean = {p: float(np.average(ix[g['pos'] == p], weights=g.loc[g['pos'] == p, 'toi_all'].clip(lower=1)))
+                for p in ('F', 'D') if (g['pos'] == p).any()}
+        m_all = g['toi_all'] / 60.0
+        ixr = (ix - g['pos'].map(mean).fillna(0.0)) * m_all / (m_all + IX_SHRINK_MIN)
+        g = g.assign(rel=g['rel'] + ixr, v=g['v'] + ixr)
     for pos in ('F', 'D'):
         low = g[(g['pos'] == pos) & (g['gp'] < UNRATED_GP) & (g['toi5'] > 0)]
         if len(low):
@@ -648,9 +660,10 @@ class LineupState:
     training replay folds a date in AFTER computing that date's features."""
 
     def __init__(self, mp: pd.DataFrame, baseline_games=BASELINE_GAMES, cross_season=True,
-                 min_baseline=MIN_BASELINE_GAMES):
+                 min_baseline=MIN_BASELINE_GAMES, value=None):
         from collections import deque
         self.mp = mp
+        self.value = value or RATING_VALUE
         self.baseline_games = baseline_games
         self.cross_season = cross_season
         self.min_baseline = min_baseline
@@ -669,7 +682,7 @@ class LineupState:
     def ensure_season(self, season):
         season = int(season)
         if self.season != season:
-            self.r = player_ratings(self.mp, season)
+            self.r = player_ratings(self.mp, season, value=self.value)
             self.season = season
 
     def update_day(self, day_rows: pd.DataFrame):
@@ -841,7 +854,7 @@ LINEUP_CROSS_SEASON = True     # baseline may reach into last season's final gam
 
 
 def build_lineup_matrix(store: pd.DataFrame | None = None, mp: pd.DataFrame | None = None,
-                        cross_season=None) -> pd.DataFrame:
+                        cross_season=None, value=None) -> pd.DataFrame:
     """One row per stored game: the lineup features computed from the state
     BEFORE the game's date (L-actual: tonight = the dressed skaters)."""
     store = load_lineup_store() if store is None else store
@@ -849,7 +862,7 @@ def build_lineup_matrix(store: pd.DataFrame | None = None, mp: pd.DataFrame | No
     cross_season = LINEUP_CROSS_SEASON if cross_season is None else cross_season
     if store.empty:
         return pd.DataFrame(columns=['game_id', 'season', 'd_lineup'])
-    st = LineupState(mp, cross_season=cross_season)
+    st = LineupState(mp, cross_season=cross_season, value=value)
     rows = []
     store = store.copy()
     store['game_date'] = pd.to_datetime(store['game_date']).dt.normalize()

@@ -226,6 +226,44 @@ def test_goalie_swap_is_point_in_time(feature_games, training_matrix):
         assert abs(f['d_goalie_swap'] - r['d_goalie_swap']) < 1e-9
 
 
+def test_ml_predictor_serves_the_lineup_goalie_factor(tmp_path, training_matrix):
+    """A model trained with the F1 columns: the lineup delta enters through
+    extra_features and the 'lineup_goalie' factor carries its logit."""
+    import math
+
+    import train_game_model as T
+    from ml_predict import MLPredictor
+    rng = np.random.default_rng(0)
+    M = training_matrix[training_matrix['season'] >= 2023].copy()
+    M['d_lineup'] = rng.normal(0, 0.2, len(M))
+    cols = list(F.FEATURE_COLUMNS) + ['d_goalie_swap', 'd_lineup']
+    m = T.fit_logit(M, cols, 0.01)
+    betas, home = T.explain_coefficients(m, cols)
+    meta = {'model_version': 'test-ft', 'feature_columns': cols, 'coefficients_raw': betas,
+            'home_ice_logit': home, 'fasttrack': {'lineup_cross_season': True, 'rating_value': 'rel5'}}
+    T.save_model(m, meta, model_path=str(tmp_path / 'm.pkl'), meta_path=str(tmp_path / 'm.json'))
+    ml = MLPredictor(pd.DataFrame(), model_path=str(tmp_path / 'm.pkl'), meta_path=str(tmp_path / 'm.json'))
+    assert ml.uses_lineups
+    d0 = ml.predict_detail('Kings', 'Ducks', '2026-10-03', extra_features={'d_lineup': 0.0})
+    d1 = ml.predict_detail('Kings', 'Ducks', '2026-10-03', extra_features={'d_lineup': 0.5})
+    t0 = {t['factor']: t['logit'] for t in d0['logit_terms']}
+    t1 = {t['factor']: t['logit'] for t in d1['logit_terms']}
+    assert 'lineup_goalie' in t1 and 'lineup' not in t1
+    assert abs((t1['lineup_goalie'] - t0['lineup_goalie']) - 0.5 * betas['d_lineup']) < 1e-9
+    p = d1['model_prob_raw']
+    assert abs(sum(t1.values()) - math.log(p / (1 - p))) < 1e-9
+
+
+def test_incumbent_model_keeps_its_factor_list():
+    from ml_predict import MLPredictor
+    ml = MLPredictor(pd.DataFrame())
+    if any(c in ml.feature_cols for c in ('d_lineup', 'd_goalie_swap')):
+        pytest.skip('live model is the fast-track model')
+    d = ml.predict_detail('Kings', 'Ducks', '2026-10-03')
+    assert 'lineup_goalie' not in {t['factor'] for t in d['logit_terms']}
+    assert not ml.uses_lineups
+
+
 def test_stored_files_are_small():
     for fn in os.listdir(L.FT_DIR) if os.path.isdir(L.FT_DIR) else []:
         assert os.path.getsize(os.path.join(L.FT_DIR, fn)) < 3_000_000, fn

@@ -45,7 +45,26 @@ TERM_GROUPS = [
     ('special_teams', 'Special teams & all-situations play', ('d_xg_share_all', 'd_st')),
     ('goaltending', 'Goaltending', ('d_goalie_gsax',)),
     ('rest', 'Rest & travel', ('h_b2b', 'a_b2b', 'd_rest', 'd_travel_km', 'h_tz_shift', 'a_tz_shift')),
+    # Fast track F1: who dresses and who starts in net, vs the team's usual
+    ('lineup_goalie', 'Lineup & starter vs usual', ('d_lineup', 'd_lineup_level', 'd_goalie_swap')),
 ]
+# Groups shown only when the model has one of their features (older models
+# keep their exact factor list).
+OPTIONAL_GROUPS = {'lineup_goalie'}
+
+
+def load_lineup_state(meta=None):
+    """LineupState replayed over every stored completed game (F1 serving)."""
+    import lineup_adjust as L
+    cross = (meta or {}).get('fasttrack', {}).get('lineup_cross_season', L.LINEUP_CROSS_SEASON)
+    st = L.LineupState(L.load_mp(), cross_season=cross,
+                       value=(meta or {}).get('fasttrack', {}).get('rating_value', L.RATING_VALUE))
+    store = L.load_lineup_store()
+    for _, day in store.groupby('game_date', sort=True):
+        st.update_day(day)
+    latest = st.history_max_date.date() if st.history_max_date is not None else 'none'
+    print(f"[ML] lineup state: {store['game_id'].nunique() if len(store) else 0} stored games, latest {latest}")
+    return st
 
 
 class MLPredictor:
@@ -89,26 +108,41 @@ class MLPredictor:
         self.state = F.build_state(games)
         if self.meta.get('xg_source') and self.xg_source not in (self.meta['xg_source'], 'provided'):
             print(f"[ML] WARNING: serving xG source {self.xg_source} != training {self.meta['xg_source']}")
+        self.lineup_state = None
+        if any(c in self.feature_cols for c in F.LINEUP_COLUMNS):
+            self.lineup_state = load_lineup_state(self.meta)
         self.available = True
         n_cur = int((games['season'] == games['season'].max()).sum() // 2) if len(games) else 0
         print(f"[ML] {self.model_version}: {len(self.feature_cols)} features, "
               f"state from {len(games) // 2} games (latest season {n_cur})")
 
     # ------------------------------------------------------------------ core
+    @property
+    def uses_lineups(self) -> bool:
+        return self.lineup_state is not None
+
     def features_for(self, home_team, away_team, game_date, h_goalie=None, a_goalie=None,
-                     h_rest_days=None, a_rest_days=None, h_is_b2b=None, a_is_b2b=None):
+                     h_rest_days=None, a_rest_days=None, h_is_b2b=None, a_is_b2b=None,
+                     extra_features=None):
         if h_rest_days is None and h_is_b2b:
             h_rest_days = 1
         if a_rest_days is None and a_is_b2b:
             a_rest_days = 1
-        return self.state.pregame(home_team, away_team, game_date, h_goalie, a_goalie,
-                                  h_rest_days, a_rest_days)
+        feats = self.state.pregame(home_team, away_team, game_date, h_goalie, a_goalie,
+                                   h_rest_days, a_rest_days)
+        # Features computed outside FeatureState (the F1 lineup delta); absent = neutral 0
+        for k, v in (extra_features or {}).items():
+            if v is not None:
+                feats[k] = float(v)
+        return feats
 
     def logit_terms(self, feats, extra_terms=None):
         """Ordered additive logit terms: home ice, grouped feature terms, extras."""
         terms = [('home_ice', 'Home ice', self.home_logit)]
         used = set()
         for key, label, cols in TERM_GROUPS[1:]:
+            if key in OPTIONAL_GROUPS and not any(c in self.betas for c in cols):
+                continue
             d = sum(self.betas.get(c, 0.0) * float(feats.get(c, 0.0)) for c in cols if c in self.betas)
             used.update(c for c in cols if c in self.betas)
             terms.append((key, label, d))
@@ -121,14 +155,16 @@ class MLPredictor:
 
     def predict_detail(self, home_team, away_team, game_date, h_goalie=None, a_goalie=None,
                        h_rest_days=None, a_rest_days=None, h_is_b2b=None, a_is_b2b=None,
-                       extra_terms=None):
+                       extra_terms=None, extra_features=None):
         """Full prediction record.  ``extra_terms`` are additional logit terms
-        (e.g. ('lineup', 'Lineup & injuries', 0.04) from lineup_adjust)."""
+        (e.g. ('lineup', 'Lineup & injuries', 0.04) from lineup_adjust);
+        ``extra_features`` are model inputs computed outside FeatureState
+        (e.g. {'d_lineup': 0.12} from lineup_adjust.LineupState)."""
         if not self.available:
             self.last_path = None
             return None
         feats = self.features_for(home_team, away_team, game_date, h_goalie, a_goalie,
-                                  h_rest_days, a_rest_days, h_is_b2b, a_is_b2b)
+                                  h_rest_days, a_rest_days, h_is_b2b, a_is_b2b, extra_features)
         X = np.array([[float(feats.get(c, 0.0)) for c in self.feature_cols]])
         p_model = float(self.model.predict_proba(X)[0][1])
         terms = self.logit_terms(feats, extra_terms)
@@ -148,7 +184,7 @@ class MLPredictor:
                                               'a_goalie_gsax', 'h_goalie_gp', 'a_goalie_gp',
                                               'h_goalie_ev', 'a_goalie_ev', 'h_rest', 'a_rest',
                                               'h_elo', 'a_elo', 'h_pts_pct', 'a_pts_pct', 'pace',
-                                              'league_gpg')},
+                                              'league_gpg', 'h_goalie_swap', 'a_goalie_swap')},
             'logit_terms': [{'factor': f, 'label': lab, 'logit': d} for f, lab, d in terms],
             'expected_total': total,
             'home_xg': h_xg,
@@ -169,6 +205,16 @@ class MLPredictor:
         if d is None:
             return None
         return d['home_win_prob'], 1 - d['home_win_prob'], round(d['home_xg'], 2), round(d['away_xg'], 2)
+
+    def lineup_features(self, home_tri, away_tri, game_date, home_players, away_players,
+                        injured=None, season=None):
+        """F1 lineup delta for an upcoming game, or None when the model does not
+        use it.  See lineup_adjust.serve_lineup_features."""
+        if self.lineup_state is None:
+            return None
+        import lineup_adjust as L
+        return L.serve_lineup_features(self.lineup_state, home_tri, away_tri, game_date,
+                                       home_players, away_players, injured=injured, season=season)
 
     def goalie_rating(self, name):
         """(regressed GSAx/game, weighted GP evidence, current GP) from the live state."""

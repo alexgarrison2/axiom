@@ -112,6 +112,7 @@ COLUMNS = CONTEXT_COLUMNS[:N_IDENTITY] + FROZEN_COLUMNS + CONTEXT_COLUMNS[N_IDEN
 FACTOR_SHORT = {
     "home_ice": "home ice", "strength_5v5": "5v5 strength", "special_teams": "special teams",
     "goaltending": "goaltending", "rest": "rest", "lineup": "lineups & injuries",
+    "lineup_goalie": "lineup & starter",
     "market": "betting market", "other": "other factors",
 }
 
@@ -436,6 +437,22 @@ def lineup_term(game, inp):
     return float(r["logit"]), r
 
 
+def fasttrack_lineup(game, inp):
+    """F1 lineup features ({'d_lineup', 'home': {...}, 'away': {...}}) for a
+    model that uses them, or None.  Never raises: a failure means a neutral
+    lineup term (d_lineup = 0), recorded in the log."""
+    ml = inp.ml
+    if not getattr(ml, "uses_lineups", False):
+        return None
+    h, a = game.get("homeTeamAbbrev"), game.get("awayTeamAbbrev")
+    try:
+        return ml.lineup_features(h, a, game_date_of(game), inp.lineups.get(h), inp.lineups.get(a),
+                                  injured=inp.injuries)
+    except Exception as e:
+        print(f"  [WARN] fast-track lineup {a}@{h}: {e}")
+        return None
+
+
 def confidence(p, preseason, tiers):
     """(grade, note).  A: favourite >= 65%, B: 60-65%, C: below 60%; capped at
     B while either team is on preseason priors (< 10 GP).  The note quotes
@@ -477,12 +494,20 @@ def build_model_outputs(game, ctx, inp):
         return None
     home, away = game["homeTeam"], game["awayTeam"]
     gd = game_date_of(game)
-    l_logit, l_detail = lineup_term(game, inp)
-    extra = [("lineup", "Lineups & injuries", l_logit)]
+    if getattr(ml, "uses_lineups", False):
+        # F1 model: the lineup delta is a model feature and its factor
+        # ('lineup_goalie') replaces the separate lineup_adjust term (weight 0).
+        lf = fasttrack_lineup(game, inp)
+        extra = []
+        extra_features = {c: (lf[c] if lf else 0.0) for c in ("d_lineup", "d_lineup_level")}
+        l_detail = lf if (lf and lf.get("lineup_ok")) else None
+    else:
+        l_logit, l_detail = lineup_term(game, inp)
+        extra, extra_features = [("lineup", "Lineups & injuries", l_logit)], None
     d = ml.predict_detail(home, away, gd, h_goalie=ctx["home_goalie_confirmed"] or None,
                           a_goalie=ctx["away_goalie_confirmed"] or None,
                           h_rest_days=ctx.get("_home_model_rest"), a_rest_days=ctx.get("_away_model_rest"),
-                          extra_terms=extra)
+                          extra_terms=extra, extra_features=extra_features)
     if d is None:
         return None
     p_model = float(d["home_win_prob"])
@@ -698,6 +723,12 @@ def load_inputs(now=None, schedule=None):
     inp.gate_state = market.load_gate_state()
     inp.tiers = _load_tiers()
 
+    try:
+        # Gap-driven top-up of this season's boxscore lineups (fast track F1 state).
+        import lineup_adjust
+        lineup_adjust.update_current_store()
+    except Exception as e:
+        print(f"  [WARN] lineup store top-up failed: {e}")
     try:
         from ml_predict import MLPredictor
         inp.ml = MLPredictor(gs, goalie_ratings=inp.goalie_ratings)

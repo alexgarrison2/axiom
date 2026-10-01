@@ -522,6 +522,252 @@ def roster_prior_backtest(M, cols, out_path=os.path.join(OUT_DIR, 'roster_prior_
     return rep
 
 
+# ─── Fast track F1: lineup + starting-goalie feature gate (DESIGN §8 F1) ──────
+
+FT_REPORT = os.path.join(SCRIPT_DIR, 'models', 'fasttrack', 'fasttrack_backtest.json')
+FT_FOLDS = (2023, 2024, 2025)
+FT_FOLD_TOL = 0.0005              # no fold worse than the current model by more than this
+FT_N_BOOT = 2000
+FT_CANDIDATES = {
+    'goalie_swap': ['d_goalie_swap'],
+    'lineup': ['d_lineup'],
+    'lineup_same_season': ['d_lineup_ss'],
+    'lineup+goalie_swap': ['d_lineup', 'd_goalie_swap'],
+    'lineup_same_season+goalie_swap': ['d_lineup_ss', 'd_goalie_swap'],
+    'lineup+level': ['d_lineup', 'd_lineup_level'],
+    'lineup+level+goalie_swap': ['d_lineup', 'd_lineup_level', 'd_goalie_swap'],
+}
+
+
+def calibration_slope_ci(y, p, z=1.96):
+    """Logistic recalibration y ~ a + b*logit(p) by Newton-Raphson; returns
+    (b, se_b, (lo, hi)) with the Wald interval from the observed information."""
+    y = np.asarray(y, float)
+    p = np.clip(np.asarray(p, float), 1e-6, 1 - 1e-6)
+    X = np.column_stack([np.ones_like(p), np.log(p / (1 - p))])
+    beta = np.array([0.0, 1.0])
+    for _ in range(50):
+        mu = 1 / (1 + np.exp(-X @ beta))
+        W = mu * (1 - mu)
+        H = X.T @ (X * W[:, None])
+        step = np.linalg.solve(H, X.T @ (y - mu))
+        beta = beta + step
+        if np.max(np.abs(step)) < 1e-10:
+            break
+    mu = 1 / (1 + np.exp(-X @ beta))
+    cov = np.linalg.inv(X.T @ (X * (mu * (1 - mu))[:, None]))
+    b, se = float(beta[1]), float(math.sqrt(cov[1, 1]))
+    return b, se, (b - z * se, b + z * se)
+
+
+def _paired(base_oos, cand_oos, seasons, mask=None):
+    a = base_oos[base_oos['season'].isin(seasons)][['game_id', 'home_win', 'p_model']]
+    b = cand_oos[cand_oos['season'].isin(seasons)][['game_id', 'p_model']].rename(columns={'p_model': 'p_b'})
+    m = a.merge(b, on='game_id')
+    if mask is not None:
+        m = m[m['game_id'].isin(mask)]
+    return m, _ll_vec(m['home_win'], m['p_b']) - _ll_vec(m['home_win'], m['p_model'])
+
+
+def ft_gate(base_oos, cand_oos, cand_folds, folds=FT_FOLDS, seed=11):
+    """The F1 gate: pooled delta log loss <= 0 vs the current model, no fold
+    worse than +FT_FOLD_TOL, pooled calibration-slope 95% CI containing 1,
+    and >= MIN_GAIN_VS_HOME_RATE better than the home-rate constant on every fold."""
+    per_fold = {}
+    for s in folds:
+        m, d = _paired(base_oos, cand_oos, (s,))
+        per_fold[str(s)] = {'n': int(len(d)), 'delta': float(d.mean()),
+                            'se': float(d.std(ddof=1) / math.sqrt(len(d))),
+                            'base_log_loss': float(_ll_vec(m['home_win'], m['p_model']).mean()),
+                            'cand_log_loss': float(_ll_vec(m['home_win'], m['p_b']).mean())}
+    m, d = _paired(base_oos, cand_oos, folds)
+    rng = np.random.default_rng(seed)
+    boots = np.array([d[rng.integers(0, len(d), len(d))].mean() for _ in range(FT_N_BOOT)])
+    cand = cand_oos[cand_oos['season'].isin(folds)]
+    slope, slope_se, (lo, hi) = calibration_slope_ci(cand['home_win'], cand['p_model'])
+    checks = [
+        {'check': 'pooled delta log loss <= 0 vs current', 'value': float(d.mean()), 'passed': bool(d.mean() <= 0)},
+    ]
+    for s in folds:
+        f = per_fold[str(s)]
+        checks.append({'check': f'{s} fold delta <= +{FT_FOLD_TOL}', 'value': f['delta'],
+                       'passed': bool(f['delta'] <= FT_FOLD_TOL)})
+    checks.append({'check': 'pooled calibration slope 95% CI contains 1', 'value': slope, 'ci95': [lo, hi],
+                   'passed': bool(lo <= 1 <= hi)})
+    # the standing promotion rule (promotion_checks): the latest fold's slope stays in range
+    last = max(folds)
+    ls = cand_folds[last].get('calibration_slope')
+    checks.append({'check': f'{last} calibration slope in {list(CAL_SLOPE_RANGE)} (promotion_checks rule)',
+                   'value': ls, 'passed': bool(ls is not None and CAL_SLOPE_RANGE[0] <= ls <= CAL_SLOPE_RANGE[1])})
+    for s in folds:
+        f = cand_folds[s]
+        gain = f['home_rate_baseline']['log_loss'] - f['log_loss']
+        checks.append({'check': f'{s} beats home-rate by >= {MIN_GAIN_VS_HOME_RATE}', 'value': gain,
+                       'passed': bool(gain >= MIN_GAIN_VS_HOME_RATE)})
+    return {
+        'per_fold': per_fold,
+        'pooled': {'n': int(len(d)), 'delta': float(d.mean()), 'se': float(d.std(ddof=1) / math.sqrt(len(d))),
+                   'boot_ci95': [float(np.quantile(boots, 0.025)), float(np.quantile(boots, 0.975))],
+                   'boot_p_worse': float((boots > 0).mean())},
+        'calibration': {'slope': slope, 'se': slope_se, 'ci95': [lo, hi],
+                        'mean_pred_minus_actual': float(cand['p_model'].mean() - cand['home_win'].mean())},
+        'brier': {str(s): {'base': float(((base_oos[base_oos['season'] == s]['p_model']
+                                            - base_oos[base_oos['season'] == s]['home_win']) ** 2).mean()),
+                           'cand': cand_folds[s]['brier']} for s in folds},
+        'checks': checks,
+        'passed': bool(all(c['passed'] for c in checks)),
+    }
+
+
+def _subgroup(base_oos, cand_oos, ids, folds=FT_FOLDS):
+    m, d = _paired(base_oos, cand_oos, folds, mask=set(ids))
+    if len(d) < 2:
+        return {'n': int(len(d))}
+    se = float(d.std(ddof=1) / math.sqrt(len(d)))
+    return {'n': int(len(d)), 'delta': float(d.mean()), 'se': se,
+            'ci95': [float(d.mean() - 1.96 * se), float(d.mean() + 1.96 * se)]}
+
+
+def attach_same_season_lineups(M):
+    """d_lineup_ss: the lineup delta with a same-season-only baseline (no
+    carry-over of last season's lineups into a new season's first games)."""
+    import lineup_adjust as L
+    lm = L.build_lineup_matrix(cross_season=False)
+    if lm.empty:
+        M['d_lineup_ss'] = 0.0
+        return M
+    M = M.drop(columns=['d_lineup_ss'], errors='ignore').merge(
+        lm[['game_id', 'd_lineup']].rename(columns={'d_lineup': 'd_lineup_ss'}), on='game_id', how='left')
+    M['d_lineup_ss'] = M['d_lineup_ss'].fillna(0.0)
+    return M
+
+
+def ft_market_descriptive(base_oos, cand_oos):
+    """Descriptive only: both models' walk-forward OOS vs the de-vigged last
+    pregame SiteHistory price (single soft book, pre-close snapshots).  The
+    lineups are L-actual, so against prices this is a leaky upper bound (DESIGN §1.3, §1.4)."""
+    try:
+        import market as MK
+        import site_history as S
+        sh, _ = S.load_keyed_site_history(allow_fetch=False)
+        last = S.last_pregame(sh).dropna(subset=['home_odds', 'away_odds'])
+        last = last[(last['home_odds'].abs() >= 100) & (last['away_odds'].abs() >= 100)]
+    except Exception as e:  # informative only
+        return {'error': str(e)}
+    m = last[['game_id', 'home_odds', 'away_odds', 'start_ts']].merge(
+        base_oos[['game_id', 'home_win', 'p_model']], on='game_id').merge(
+        cand_oos[['game_id', 'p_model']].rename(columns={'p_model': 'p_new'}), on='game_id')
+    if m.empty:
+        return {'n': 0}
+    q = np.array([MK.devig([h, a])[0] for h, a in zip(m['home_odds'], m['away_odds'])])
+    y = m['home_win'].values
+    a, b, c = _ll_vec(y, m['p_model']), _ll_vec(y, m['p_new']), _ll_vec(y, q)
+    se = lambda d: float(d.std(ddof=1) / math.sqrt(len(d)))  # noqa: E731
+    return {'n': int(len(m)), 'playoff_n': int(m['game_id'].astype(str).str[4:6].eq('03').sum()),
+            'window': [str(m['start_ts'].min()), str(m['start_ts'].max())],
+            'log_loss': {'current': float(a.mean()), 'candidate': float(b.mean()), 'market_devig': float(c.mean())},
+            'brier': {'current': float(((m['p_model'] - y) ** 2).mean()), 'candidate': float(((m['p_new'] - y) ** 2).mean()),
+                      'market_devig': float(((q - y) ** 2).mean())},
+            'candidate_minus_current': {'delta': float((b - a).mean()), 'se': se(b - a)},
+            'candidate_minus_market': {'delta': float((b - c).mean()), 'se': se(b - c)},
+            'note': ('descriptive only: walk-forward OOS with L-actual lineups vs the last pregame snapshot of one soft '
+                     'book (leaky upper bound; not a close, never a gate)')}
+
+
+def ft_leakage_report(M):
+    """Point-in-time evidence for every training row that has lineup features."""
+    x = M[M['lineup_ok']] if 'lineup_ok' in M.columns else M.iloc[0:0]
+    if x.empty:
+        return {'rows_checked': 0}
+    gd = pd.to_datetime(x['game_date'])
+    ra = pd.to_datetime(x['ratings_asof'])
+    hm = pd.to_datetime(x['history_max_date'])
+    return {'rows_checked': int(len(x)),
+            'ratings_asof_before_game_date': bool((ra < gd).all()),
+            'ratings_data_seasons_before_game_season': bool((x['ratings_data_max_season'] < x['season']).all()),
+            'lineup_history_before_game_date': bool((hm < gd).all())}
+
+
+def fasttrack_backtest(M, base, out_path=FT_REPORT, candidates=None, verbose=True):
+    """Walk-forward on the F1 folds for every candidate; the candidate is
+    SELECTED on the dev folds (2023, 2024: lowest pooled delta, must be < 0) and
+    the gate is then applied to it on all three folds (DESIGN §1.5 / §1.7 A2, A3, A5)."""
+    candidates = candidates or FT_CANDIDATES
+    if 'd_lineup_ss' not in M.columns:
+        M = attach_same_season_lineups(M)
+    base_folds, base_oos = walk(M, base)
+    early_ids = base_oos.loc[base_oos['early'], 'game_id']
+    lineup_change = M.loc[M['lineup_ok'] & ((M['h_lineup_dq'].abs() > 0.05) | (M['a_lineup_dq'].abs() > 0.05)), 'game_id'] \
+        if 'h_lineup_dq' in M.columns else []
+    goalie_change = M.loc[M['d_goalie_swap'].abs() > 1e-9, 'game_id']
+    res = {}
+    for name, extra in candidates.items():
+        cols = list(base) + [c for c in extra if c not in base]
+        folds, oos = walk(M, cols)
+        g = ft_gate(base_oos, oos, folds)
+        dev_d, dev_se, n_dev = compare(base_oos, oos, DEV_SEASONS)
+        betas, _ = T.explain_coefficients(T.fit_logit(M[~M['burn_in']], cols, T.DEFAULT_C), cols)
+        res[name] = {'features': extra, 'dev_delta': dev_d, 'dev_se': dev_se, 'n_dev': n_dev,
+                     'fold_log_loss': {str(s): folds[s]['log_loss'] for s in folds},
+                     'fold_calibration_slope': {str(s): folds[s]['calibration_slope'] for s in folds},
+                     'coefficients_raw_C_default': {c: betas[c] for c in extra},
+                     'subgroups': {'early_season': _subgroup(base_oos, oos, early_ids),
+                                   'lineup_change_games': _subgroup(base_oos, oos, lineup_change),
+                                   'goalie_change_games': _subgroup(base_oos, oos, goalie_change)},
+                     'early_season_by_fold': {str(s): folds[s]['early'].get('log_loss') for s in folds},
+                     'market_descriptive': ft_market_descriptive(base_oos, oos),
+                     'gate': g}
+        if verbose:
+            print(f"  {name:32s} dev {dev_d:+.5f} (se {dev_se:.5f}) pooled {g['pooled']['delta']:+.5f} "
+                  f"folds {', '.join('%s %+.5f' % (s, v['delta']) for s, v in g['per_fold'].items())} "
+                  f"slope {g['calibration']['slope']:.3f} gate {'PASS' if g['passed'] else 'FAIL'}")
+    # Selection: candidates that lower dev-fold (2023, 2024) log loss, best dev delta first; the
+    # first one whose full gate passes is selected.  Every candidate and its gate is in the report,
+    # so the number of candidates looked at on 2025-26 is visible.
+    order = sorted((k for k, v in res.items() if v['dev_delta'] < 0), key=lambda k: res[k]['dev_delta'])
+    selected = next((k for k in order if res[k]['gate']['passed']), None)
+    rejected = {k: [c['check'] for c in res[k]['gate']['checks'] if not c['passed']] for k in order if k != selected
+                and order.index(k) < (order.index(selected) if selected else len(order))}
+    lasof = None
+    if 'd_lineup_asof' in M.columns and 'lineup' in res:
+        f_a, oos_a = walk(M, list(base) + ['d_lineup_asof'])
+        _, oos_l = walk(M, list(base) + ['d_lineup'])
+        # value of lineup information: LL(L-actual) - LL(L-asof), negative = actual lineups help
+        lasof = {'l_asof_vs_current': ft_gate(base_oos, oos_a, f_a)['pooled'],
+                 'l_actual_minus_l_asof': _paired(oos_a, oos_l, FT_FOLDS)[1].mean()}
+    report = {
+        'generated_at': _now().isoformat(),
+        'design': 'DESIGN.md §8 F1, §3.4, §3.7, gates §1.7 A2/A3/A5 (owner decision D8: ship as soon as the gate passes)',
+        'current_features': list(base),
+        'current_fold_log_loss': {str(s): base_folds[s]['log_loss'] for s in base_folds},
+        'current_fold_calibration_slope': {str(s): base_folds[s]['calibration_slope'] for s in base_folds},
+        'current_early_season_by_fold': {str(s): base_folds[s]['early'].get('log_loss') for s in base_folds},
+        'folds': list(FT_FOLDS), 'selection_folds': list(DEV_SEASONS),
+        'gate_rule': ('pooled delta log loss <= 0 vs the current model over 2023-24..2025-26, no fold worse than '
+                      f'+{FT_FOLD_TOL}, pooled calibration slope 95% CI contains 1, every fold beats the home-rate '
+                      f'constant by >= {MIN_GAIN_VS_HOME_RATE}, latest-fold calibration slope in '
+                      f'{list(CAL_SLOPE_RANGE)} (the standing promotion_checks rule)'),
+        'selection_rule': ('candidates with a negative dev-fold delta, in order of dev delta; the first whose full '
+                           'gate passes is selected'),
+        'selection_order': order,
+        'rejected_before_selected': rejected,
+        'lineup_mode': 'L-actual (boxscore dressed 18) for both models; L-asof reported (DESIGN §1.4, §4.2)',
+        'leakage': ft_leakage_report(M),
+        'candidates': res,
+        'selected': selected,
+        'selected_passed': bool(selected and res[selected]['gate']['passed']),
+        'l_asof': lasof,
+        'data': {'ratings': 'MoneyPuck.com season summaries (5v5 on-ice relative xG/60), seasons S-1 and S-2',
+                 'lineups': 'NHL boxscores (api-web.nhle.com), pipeline/models/fasttrack/lineups_<season>.csv.gz',
+                 'games_with_lineup_features': int(M['lineup_ok'].sum()) if 'lineup_ok' in M.columns else 0,
+                 'games': int(len(M))},
+    }
+    _write(out_path, report)
+    if verbose:
+        print(f"[fasttrack] selected {selected}; gate {'PASS' if report['selected_passed'] else 'FAIL'} -> {out_path}")
+    return report
+
+
 # ─── Promotion ────────────────────────────────────────────────────────────────
 
 def carry_legacy_baselines(cand_meta, cur_meta):
@@ -565,6 +811,37 @@ def promotion_checks(cand_meta, cur_meta):
     return bool(ok), checks
 
 
+FT_COLUMNS = ('d_lineup', 'd_lineup_ss', 'd_lineup_level', 'd_goalie_swap')
+
+
+def fasttrack_main(M, cols, xg_source, cur_meta, args):
+    import lineup_adjust as L
+    base = [c for c in cols if c not in FT_COLUMNS]
+    rep = fasttrack_backtest(M, base)
+    if not (args.promote and rep['selected_passed'] and not args.dry_run):
+        print('[fasttrack] not promoted' + ('' if rep['selected_passed'] else ' (gate failed or nothing selected)'))
+        return 1 if (args.strict and not rep['selected_passed']) else 0
+    sel = rep['candidates'][rep['selected']]['features']
+    if 'd_lineup_ss' in sel:      # the live column is always d_lineup; rebuild it in the selected mode
+        M =T.attach_lineup_features(M.drop(columns=['d_lineup']), L.build_lineup_matrix(cross_season=False))
+        sel = ['d_lineup' if c == 'd_lineup_ss' else c for c in sel]
+    new_cols = base + [c for c in sel if c not in base]
+    model, meta, _ = T.train(cols=new_cols, save=False, legacy=not args.no_legacy, verbose=True,
+                             M=M, xg_source=xg_source)
+    carry_legacy_baselines(meta, cur_meta)
+    g = rep['candidates'][rep['selected']]['gate']
+    meta['fasttrack'] = {'candidate': rep['selected'], 'features': sel, 'gate_passed': True,
+                         'pooled_delta_vs_previous': g['pooled']['delta'], 'per_fold': g['per_fold'],
+                         'calibration': g['calibration'], 'report': os.path.relpath(FT_REPORT, SCRIPT_DIR),
+                         'lineup_cross_season': 'same_season' not in rep['selected'],
+                         'rating_value': L.RATING_VALUE}
+    meta['promotion'] = {'promoted_at': _now().isoformat(), 'replaced': cur_meta.get('model_version'),
+                         'checks': g['checks'], 'rule': 'fast track F1 gate (retrain.ft_gate)'}
+    T.save_model(model, meta)
+    print(f"[fasttrack] promoted {meta['model_version']} with {sel}")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--dry-run', action='store_true', help='evaluate gates, never promote')
@@ -574,6 +851,10 @@ def main(argv=None):
     ap.add_argument('--no-legacy', action='store_true', help='skip the legacy XGB baseline')
     ap.add_argument('--strict', action='store_true', help='exit 1 when the gates fail (CI)')
     ap.add_argument('--roster-prior', action='store_true', help='backtest the roster-aware preseason prior (C9)')
+    ap.add_argument('--fasttrack', action='store_true',
+                    help='F1 gate: lineup + starting-goalie features (models/fasttrack/fasttrack_backtest.json); '
+                         'with --promote, retrain and promote the selected candidate if its gate passes')
+    ap.add_argument('--promote', action='store_true', help='with --fasttrack: promote on a passing gate')
     args = ap.parse_args(argv)
 
     with open(T.META_PATH) as f:
@@ -584,6 +865,8 @@ def main(argv=None):
 
     if args.roster_prior:
         roster_prior_backtest(M, cols)
+    if args.fasttrack:
+        return fasttrack_main(M, cols, xg_source, cur_meta, args)
     abl = None
     if args.ablate:
         abl = ablation(M, cols)

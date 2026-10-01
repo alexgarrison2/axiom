@@ -115,6 +115,8 @@ jobs:
           add pipeline/nhl_season_*_gamestats.csv pipeline/nhl_season_*_shots.csv pipeline/nhl_season_*_shifts.csv \
               pipeline/pending_failed.json data/gamestats.csv public/data/gamestats.csv \
               public/data/nhl_season_*_player_stats.csv
+          # Boxscore dressed lineups (fast-track lineup feature state; gap-driven top-up)
+          add pipeline/models/fasttrack/lineups_*.csv.gz
           # Ratings and team splits
           add public/data/team_ratings.json public/data/goalie_ratings.json public/data/team_stats_extended.json \
               pipeline/nhl_goalie_stats.json

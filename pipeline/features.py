@@ -95,10 +95,11 @@ CANDIDATE_COLUMNS = [
     # Fast track F1 (DESIGN §8 F1, §3.4, §3.7):
     'd_goalie_swap',    # tonight's starter GSAx rating minus the team's usual (last-20-starts) goalie quality, home - away
     'd_lineup',         # lineup quality vs the team's own baseline lineup, home - away (lineup_adjust.LineupState)
+    'd_lineup_level',   # tonight's lineup quality itself, home - away (same ratings; candidate)
 ]
 
 # Fast-track columns that do not come from FeatureState (merged by game id).
-LINEUP_COLUMNS = ('d_lineup',)
+LINEUP_COLUMNS = ('d_lineup', 'd_lineup_level')
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -688,6 +689,7 @@ class FeatureState:
             'h_3in4': three_in_four(ht), 'a_3in4': three_in_four(at),
             'd_goalie_swap': h_swap - a_swap,
             'd_lineup': 0.0,   # filled from lineup_adjust (training: merged by game id; serving: extra_features)
+            'd_lineup_level': 0.0,
             # context (not model inputs)
             'h_gp': float(ht.gp), 'a_gp': float(at.gp),
             'h_rs_gp': float(ht.rs_gp), 'a_rs_gp': float(at.rs_gp),
