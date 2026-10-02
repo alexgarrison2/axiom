@@ -56,6 +56,12 @@
    "before": "any dev / holdout run (none has been made)",
    "change": "rule 'dispersion' also fits a strength stretch s in {1.0, 1.25, 1.5, 1.75} (every team-strength term of the four rate regressions multiplied by s; constants and home ice unchanged) on the same fit-season criterion, jointly with the shock shapes, grid {0, 60, 30, 15} (pace) x {0, 30} (team)",
    "why": "on the fit seasons the per-state regressions are each calibrated but the simulated margins are compressed (actual margin on simulated expected margin: slope 1.46; ML calibration slope 1.5): a team's strengths across states go together more than separate state regressions carry; diagnosed on the fit seasons only"
+  },
+  {
+   "at": "2026-10-02T17:30:00Z",
+   "before": "any dev / holdout run (none has been made)",
+   "change": "(1) a post-goal lull (goal hazards x m for the first 10 s and 10-30 s after any goal, m measured on the fit seasons' 5v5 time) is part of the structural fit; (2) the dispersion grid replaces the independent per-team Gamma shock by a game-level strength tilt: log home rates + e, log away rates - e, e ~ N(0, sd), sd in {0, 0.1, 0.2}; pace shock shape in {0 (none), 30}; stretch in {1.0, 1.25, 1.5, 1.75}; same fit-season criterion",
+   "why": "fit seasons: actual totals are under-dispersed (residual variance / mean 0.86, 1st-period variance / mean 0.96) and home / away goals are negatively correlated (-0.07), while the simulator had variance / mean 0.94-0.99 and no correlation; the measured lull (5v5 goal rate 0.17x in the 10 s after a goal, 0.79x in the next 20 s) brings the simulated 1st period to 0.96; independent team shocks and the pace shock both raise total variance, which the first grid points confirmed (criterion fell)"
   }
  ]
 }
