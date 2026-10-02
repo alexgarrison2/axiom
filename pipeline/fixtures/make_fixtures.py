@@ -110,6 +110,18 @@ def prev_ranks():
     return {t: {"pp_rank": a, "pk_rank": b} for t, (a, b) in PREV_RANKS.items()}
 
 
+def fixture_sim():
+    """The game simulator on the committed parameters and season-start pack only (no
+    current-season CSVs), so the fixtures do not move with the live season."""
+    from bu.sim.live import SimServer
+    from bu.sim.params import load_params, state_pack_path
+    from bu.sim.state import SimState
+    from season import SEASON_ID
+    teams = pd.read_csv(os.path.join(PIPELINE, "nhl_teams.csv"))
+    tri = {str(t): int(i) for t, i in zip(teams["Team Tricode"], teams["NHL Team ID"])}
+    return SimServer(load_params(), SimState.load(state_pack_path(SEASON_ID)), tri)
+
+
 def base_inputs(now, schedule, club_games, goalie_lines, ml, st_table=None, existing=None, odds=None):
     inp = P.Inputs(now=now, schedule=schedule)
     inp.club_games = club_games
@@ -124,6 +136,7 @@ def base_inputs(now, schedule, club_games, goalie_lines, ml, st_table=None, exis
     inp.odds = odds or {}
     inp.existing = existing or {}
     inp.ml = ml
+    inp.sim = fixture_sim()
     inp.gate_state = {"backtest": {"n": 64, "roi": 0.14, "roi_ci_low": -0.095, "roi_ci_high": 0.379,
                                    "clv_mean": -0.052}, "rolling": {"n": 0}}
     inp.tiers = P._load_tiers()

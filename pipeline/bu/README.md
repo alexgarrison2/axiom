@@ -146,6 +146,17 @@ test (`bu_shadow_home_win_pct` now carries the FIN model).
 **Refresh**: `bu_refresh.yml` needs no change: `bu.lineup serve` adds the `fin` table from the
 committed `fin_pack_<S>.json.gz` plus this season's games in the refit's xG / stints caches.
 
+## Game simulator (M5, `bu/sim/`)
+
+A continuous-time Monte Carlo of every game (regulation, 3v3 OT, shootout; penalties and power
+plays, pulled goalies, score effects, a post-goal lull, a strength-tilt shock), with rates built
+from the RAPM v2 lineup term, FIN, the expected starters and a point-in-time team state.  It
+prices every market in `odds.json` (regulation 3-way, puck line, totals with pushes, 1st-period
+3-way and 2-way) in `predictions_detailed.csv` (CONTRACT "Game simulator"), anchored to the
+published win % and total; its raw win % is a shadow.  Derivative EVs are INFO ONLY until the
+live closing-line test of `bu/sim/prereg.json` passes.  Model, fitted parameters and validation:
+`bu/sim/README.md`.
+
 ## `bu.lake`: event / shift / roster lake (M0b, DESIGN §2.1-2.3, §2.6)
 
 ### Layout

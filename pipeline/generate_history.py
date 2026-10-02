@@ -93,8 +93,14 @@ def load_results() -> pd.DataFrame:
     as_ = h['goals_ag'].astype(int) + ((h['decision'] == 'SO') & ~h['home_won']).astype(int)
     h['home_score'], h['away_score'] = hs, as_
     h['date'] = h['game_date'].dt.strftime('%Y-%m-%d')
+    # regulation and 1st-period goals (game simulator grading); NaN when the file lacks them
+    num = lambda c: pd.to_numeric(h[c], errors='coerce') if c in h.columns else np.nan  # noqa: E731
+    h['reg_home'] = num('goals_for') - pd.Series(num('goals_for_OT'), index=h.index).fillna(0)
+    h['reg_away'] = num('goals_ag') - pd.Series(num('goals_ag_OT'), index=h.index).fillna(0)
+    h['p1_home'], h['p1_away'] = num('goals_for_1P'), num('goals_ag_1P')
     return h[['game_id', 'date', 'team', 'opponent', 'home_score', 'away_score', 'decision',
-              'home_won', 'result']].rename(columns={'team': 'home', 'opponent': 'away'})
+              'home_won', 'result', 'reg_home', 'reg_away', 'p1_home', 'p1_away']].rename(
+        columns={'team': 'home', 'opponent': 'away'})
 
 
 def excluded_by_pipeline() -> set:
@@ -125,7 +131,7 @@ def row_from_snapshot(snap, res) -> dict:
     pc = min(max(p, 1e-6), 1 - 1e-6)
     pm = snap.get('p_home_model')
     pm = None if pm is None or (isinstance(pm, float) and math.isnan(pm)) or not 0 < pm < 1 else float(pm)
-    return {
+    out = {
         'gameId': int(res['game_id']),
         'season': season_label(res['game_id']),
         'gameType': str(res['game_id'])[4:6],
@@ -150,6 +156,104 @@ def row_from_snapshot(snap, res) -> dict:
         'homeOdds': _round(snap['home_odds'], 0), 'awayOdds': _round(snap['away_odds'], 0),
         'modelVersion': snap['model_version'] if isinstance(snap.get('model_version'), str) else None,
     }
+    sim = grade_sim_markets(snap, res)
+    if sim is not None:
+        # Game simulator (bu/sim): derivative markets graded from the same frozen snapshot
+        out['simStatus'] = snap.get('sim_status') if isinstance(snap.get('sim_status'), str) else None
+        out['simHomeProb'] = _round(_pct(snap.get('sim_home%')), 1)
+        out['simMarkets'] = sim
+    return out
+
+
+def _pct(v):
+    try:
+        return float(str(v).replace('%', ''))
+    except (TypeError, ValueError):
+        return None
+
+
+def _ll(p) -> float | None:
+    if p is None or not np.isfinite(p):
+        return None
+    return round(-math.log(min(max(float(p), 1e-6), 1.0)), 4)
+
+
+def grade_sim_markets(snap, res) -> dict | None:
+    """Grade the simulator's frozen pregame market probabilities (SiteHistory ``sim_markets``)
+    against the final: per market the outcome, the model's probability of it, its log loss,
+    the naive independent-Poisson log loss with the same win % and total (goal_model), and the
+    de-vigged posted price's probability when the book had one.  None without simulator data."""
+    raw = snap.get('sim_markets')
+    if not isinstance(raw, str) or not raw.strip().startswith('{'):
+        return None
+    try:
+        m = json.loads(raw)
+    except ValueError:
+        return None
+    from bu.sim.validate import naive_summary
+    hs, as_ = int(res['home_score']), int(res['away_score'])
+
+    def opt(k):
+        v = res.get(k)
+        return None if v is None or pd.isna(v) else int(v)
+    rh, ra, p1h, p1a = opt('reg_home'), opt('reg_away'), opt('p1_home'), opt('p1_away')
+    total = hs + as_
+    out = {}
+    p_home = float(snap['p_home'])
+    tot_exp = m.get('total') or ((snap.get('home_xg') or 0) + (snap.get('away_xg') or 0))
+    naive = naive_summary(p_home, float(tot_exp)) if tot_exp and np.isfinite(tot_exp) else None
+
+    def devig(px, k):
+        try:
+            if any(x is None for x in px):
+                return None
+            return market.devig(list(px))[k]
+        except Exception:
+            return None
+
+    def add(name, probs_pct, k, naive_p, px=None):
+        if probs_pct is None or any(p is None for p in probs_pct) or k is None:
+            return
+        p = probs_pct[k] / 100.0
+        out[name] = {'outcome': k, 'p': round(p, 4), 'll': _ll(p),
+                     'naive_ll': _ll(naive_p) if naive_p is not None else None,
+                     'market_p': round(devig(px, k), 4) if px and devig(px, k) is not None else None}
+    if rh is not None and ra is not None:
+        k = 0 if rh > ra else (1 if rh == ra else 2)
+        nv = [naive['reg_home'], naive['reg_tie'], naive['reg_away']][k] if naive else None
+        add('reg3', m.get('reg'), k, nv, m.get('reg_px'))
+    pl = m.get('pl') or {}
+    if pl.get('spread') is not None and pl.get('home') is not None:
+        v = (hs - as_) + pl['spread']
+        k = 0 if v > 0 else (2 if v < 0 else 1)
+        if k != 1:
+            probs = [pl['home'], 0.0, pl['away']]
+            nv = None
+            if naive and abs(abs(pl['spread']) - 1.5) < 1e-9:
+                ph = naive['pl_home_m15'] if pl['spread'] < 0 else 1 - naive['pl_away_m15']
+                nv = ph if k == 0 else 1 - ph
+            add('puckline', probs, k, nv, [pl['px'][0], None, pl['px'][1]] if pl.get('px') else None)
+            if 'puckline' in out and pl.get('px') and None not in pl['px']:
+                out['puckline']['market_p'] = round(market.devig(list(pl['px']))[0 if k == 0 else 1], 4)
+    t = m.get('tot') or {}
+    if t.get('line') is not None and t.get('over') is not None:
+        k = 0 if total > t['line'] else (1 if total == t['line'] else 2)
+        nv = None
+        if naive and t['line'] in (5.5, 6.0, 6.5):
+            key = f"{t['line']:.1f}".replace('.', '_')
+            nv = [naive[f'over_{key}'], naive[f'push_{key}'], naive[f'under_{key}']][k]
+        add('total', [t['over'], t['push'], t['under']], k, nv)
+        if 'total' in out and k != 1 and t.get('px') and None not in t['px']:
+            out['total']['market_p'] = round(market.devig(list(t['px']))[0 if k == 0 else 1], 4)
+    if p1h is not None and p1a is not None:
+        k = 0 if p1h > p1a else (1 if p1h == p1a else 2)
+        nv = [naive['p1_home'], naive['p1_tie'], naive['p1_away']][k] if naive else None
+        add('p1_3w', m.get('p1'), k, nv, m.get('p1_px3'))
+        if k != 1 and m.get('p1_2w') and None not in m['p1_2w']:
+            k2 = 0 if k == 0 else 1
+            nv2 = (naive['p1_home_2w'] if k2 == 0 else 1 - naive['p1_home_2w']) if naive else None
+            add('p1_2w', m['p1_2w'], k2, nv2, m.get('p1_px2'))
+    return out or None
 
 
 def row_from_retro(old: dict, res) -> dict:

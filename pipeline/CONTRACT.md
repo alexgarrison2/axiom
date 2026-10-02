@@ -1,10 +1,13 @@
-# Predictions data contract (schema v2)
+# Predictions data contract (schema v2.2)
+
+v2.1 added the shadow columns, v2.2 the game simulator columns (both additive; the
+`schema_version` column stays `2`).
 
 `predictions_detailed.csv` is written by `pipeline/predict_games.py` to
 `data/predictions_detailed.csv` (server copy) and
 `public/data/predictions_detailed.csv` (browser copy). The two files are
 identical. `pipeline/validate_outputs.py` checks the contract before the
-workflow commits (`predictions`, `placeholders`, `after_start`).
+workflow commits (`predictions`, `placeholders`, `after_start`, `sim_markets`).
 
 Fixtures for building and testing the frontend without a live refresh:
 
@@ -105,9 +108,61 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | `total_under` | int | yes | Under price (American). |
 | `side_puckline` | int | yes | Puck-line price. |
 | `side_puckline_spread` | string | yes | Puck-line spread (`-1.5`). |
-| `side_1p_ml` | int | yes | First-period moneyline. |
+| `side_1p_ml` | int | yes | First-period 2-way moneyline (Bovada "Moneyline - 1st Period"): bets are **refunded when the period is tied** (verified on the raw feed 2026-10-02). |
 | `side_three_way` | int | yes | Regulation three-way price. |
 | `three_way_tie` | int | yes | Regulation tie price. |
+
+### Game simulator (frozen after puck drop; schema v2.2)
+
+Written by `bu/sim/live.py` (`SimServer.game`, called from `predict_games.build_model_outputs`)
+for every `pregame` row; copied byte for byte when the row is frozen.  The model, its fitted
+parameters and its validation are in `pipeline/bu/sim/README.md`.  Probabilities are
+**percentages** (1 decimal) and each market's outcomes sum to exactly 100.0; EV is a **fraction**
+of the stake at the posted price, with a push returning the stake.  Fair odds are the American
+price at which the bet breaks even (a push excluded).  Every derivative EV is **INFO ONLY**:
+`sim_ev_gated` is always `False` until the live closing-line test of `bu/sim/prereg.json`
+passes.  Markets without a posted price still get model probabilities; their EVs are empty.
+
+| Column | Type | Null | Description |
+|---|---|---|---|
+| `sim_status` | enum | no | `sim`: simulated (20,000 runs). `poisson_fallback`: the simulator's bottom-up inputs were unavailable for this game (lineup term not usable: stale bundle, coverage gate; no state pack; a non-finite input), so the markets come from `goal_model`'s independent Poisson anchored to the same published win % and total. Never zero-filled. |
+| `sim_version` | string | no | Simulator parameter version (`sim-m5-YYYYMMDD`). |
+| `sim_variant` | enum | no | `anchored` (the simulated game is tilted / paced so its home win % and expected total equal `home_win_pct` and `expected_total`), `raw`, or `poisson` (fallback). Chosen on the dev seasons by the pre-declared rule. |
+| `sim_n` | int | yes | Simulations behind the row (empty for the fallback). |
+| `sim_home_win_pct` | float % | yes | Shadow, not displayed: the raw simulator's own home win % (before anchoring). Empty for the fallback. |
+| `sim_expected_total` | float goals | yes | The raw simulator's expected total (shootout winner counts 1 goal). |
+| `side_reg_pct` | float % | no | Regulation 3-way: the side leads after 60 minutes. |
+| `reg_tie_pct` | float % | no | Regulation 3-way: tied after 60 minutes. |
+| `side_reg_fair` | string | no | Fair American odds of `side_reg_pct`. |
+| `reg_tie_fair` | string | no | Fair American odds of `reg_tie_pct`. |
+| `side_reg_ev` | float fraction | yes | EV at `side_three_way`. |
+| `reg_tie_ev` | float fraction | yes | EV at `three_way_tie`. |
+| `sim_pl_spread` | string | no | Home puck-line spread priced (`-1.5`; the posted one, else -1.5). The away side is its negative. |
+| `side_pl_pct` | float % | no | P(cover) of each side at that spread on the official final (a shootout adds one goal to the winner). |
+| `side_pl_fair` | string | no | Fair odds of covering. |
+| `side_pl_ev` | float fraction | yes | EV at `side_puckline`. |
+| `sim_total_line` | string | no | Total line priced (the posted `total_line`, else `6.0`). |
+| `over_pct` | float % | no | P(official final total > line). |
+| `total_push_pct` | float % | no | P(total = line): a push, whole lines only (0 on half lines). |
+| `under_pct` | float % | no | P(total < line). |
+| `over_fair` | string | no | Fair odds of the over (push excluded). |
+| `under_fair` | string | no | Fair odds of the under. |
+| `over_ev` | float fraction | yes | EV at `total_over`; a push returns the stake. |
+| `under_ev` | float fraction | yes | EV at `total_under`. |
+| `side_1p_pct` | float % | no | 1st-period 3-way: the side leads after the 1st period. |
+| `p1_tie_pct` | float % | no | 1st-period 3-way: tied after the 1st period. |
+| `side_1p_fair` | string | no | Fair odds of `side_1p_pct`. |
+| `p1_tie_fair` | string | no | Fair odds of `p1_tie_pct`. |
+| `side_1p3_ev` | float fraction | yes | EV at `side_1p_three_way`. |
+| `p1_tie_ev` | float fraction | yes | EV at `p1_three_way_tie`. |
+| `side_1p_2w_pct` | float % | no | 1st-period 2-way with ties refunded: P(side wins the period \| the period is not tied). |
+| `side_1p_2w_fair` | string | no | Its fair odds. |
+| `side_1p_ev` | float fraction | yes | EV at `side_1p_ml` (a tied period returns the stake). |
+| `side_1p_three_way` | int | yes | Posted 1st-period 3-way price (Bovada; `odds.json` `TEAM_1p_three_way`). |
+| `p1_three_way_tie` | int | yes | Posted 1st-period tie price (`odds.json` `1p_three_way_tie`). |
+| `sim_ev_gated` | bool | no | Always `False` (INFO ONLY until the live test passes). |
+| `sim_gate_reason` | string | no | Why the derivative EVs are not gate-open. |
+| `sim_detail` | JSON object | no | `{exp_home, exp_away, exp_total, p_ot, p_so, exp_en, exp_p1_total, total_hist[16] (P(total = 0..15+)), margin_hist[15] (P(home margin = -7..+7, clipped)), anchor {tilt, pace, ess, resim, p, total, p_err, t_err} \| null, fallback_reason}`. |
 
 ### Season context (recomputed every run)
 
@@ -213,6 +268,15 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   until scored. `manifest.json` `sources.xg_model` records `mode`, `hash`,
   `v2_signature`, `v1_fallback_games`, `v2_unmatched_events` and
   `v1_shadow_hash`.
+* SiteHistory gains `sim_status`, `sim_home%` (the raw simulator's home win %) and
+  `sim_markets` (JSON: `{v, reg[3], reg_px[3], pl {spread, home, away, px[2]}, tot {line, over,
+  push, under, px[2]}, p1[3], p1_px3[3], p1_2w[2], p1_px2[2], total}`, percentages and the posted
+  American prices), so the last pregame snapshot freezes every simulator probability.
+  `data/prediction_history.json` rows graded from such a snapshot gain `simStatus`,
+  `simHomeProb` and `simMarkets` (`{reg3, puckline, total, p1_3w, p1_2w}`, each `{outcome, p, ll,
+  naive_ll, market_p}`: the outcome index, the model's probability of it and its log loss, the
+  naive independent-Poisson log loss with the same win % and total, and the de-vigged posted
+  probability of the outcome when there was a price).
 * SiteHistory also gains `home_inc_model%` / `home_inc%` (the F1 rollback shadow,
   `f1_shadow_model_win_pct` / `f1_shadow_home_win_pct`).
 * RAPM v2 lineup term (`pipeline/bu/lineup/out/serving_bundle.json.gz`, rebuilt by the daily

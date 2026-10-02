@@ -31,6 +31,7 @@ import json
 import math
 import os
 import sys
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
@@ -42,6 +43,7 @@ import pandas as pd  # noqa: E402
 
 import goal_model  # noqa: E402
 import market  # noqa: E402
+from bu.sim.live import COLUMNS as SIM_COLUMNS  # noqa: E402
 from features import BU_COLUMNS  # noqa: E402
 from ml_predict import bu_mode  # noqa: E402
 import season_context as SC  # noqa: E402
@@ -84,7 +86,8 @@ FROZEN_COLUMNS = [
     "home_1p_ml", "away_1p_ml", "home_three_way", "away_three_way", "three_way_tie",
     # Shadows (schema v2.1, additive, not displayed): see shadow_outputs()
     "bu_shadow_home_win_pct", "f1_shadow_model_win_pct", "f1_shadow_home_win_pct",
-]
+    # Game simulator (schema v2.2, additive): every market we have odds for, see sim_outputs()
+] + SIM_COLUMNS
 
 
 def _side_cols(*names):
@@ -230,6 +233,8 @@ class Inputs:
     ml: object = None
     shadow: object = None                                # F1 rollback shadow MLPredictor (xG v1 inputs)
     nofin: object = None                                 # joint model without FIN (shadow.rapm), lazy; False = unavailable
+    sim: object = None                                   # bu.sim.live.SimServer (game simulator)
+    sim_stats: dict = field(default_factory=lambda: {"games": 0, "seconds": 0.0})
     lineup_adj: object = None
     gate_state: dict = None
     tiers: list = field(default_factory=list)
@@ -516,6 +521,50 @@ def bu_detail(bf):
     return out
 
 
+def sim_lineup(game, inp, bf):
+    """The RAPM v2 lineup term with FIN for the simulator: the live model's own ``bf`` when it has
+    one, else the serving bundle read directly (a model without the term still gets simulated);
+    the bundle's RAPM intercept is added (the term's 5v5 xGF/60 = intercept + OFF + opposing DEF)."""
+    ml = inp.ml
+    term = getattr(ml, "bu_term", None) if ml is not None else None
+    if bf is None and term is not None:
+        h, a = game.get("homeTeamAbbrev"), game.get("awayTeamAbbrev")
+        try:
+            bf = term.features(h, a, inp.lineups.get(h), inp.lineups.get(a), now=inp.now)
+        except Exception as e:
+            print(f"  [WARN] sim lineup term {a}@{h}: {e}")
+            bf = None
+    if bf is None or term is None:
+        return bf
+    cov = (term.b.get("covariates") or {}) if hasattr(term, "b") else {}
+    return dict(bf, c_intercept=cov.get("intercept"))
+
+
+def sim_outputs(game, ctx, inp, p_pub, total_pub, go, bf):
+    """Simulator columns (bu.sim.live.COLUMNS) for one pregame row: all derivative markets,
+    anchored to the published win % and total; Poisson fallback flagged in ``sim_status``.
+    Never raises."""
+    if inp.sim is None:
+        return {}
+    h, a = game.get("homeTeamAbbrev"), game.get("awayTeamAbbrev")
+    t0 = time.time()
+    try:
+        rest = {s: (ctx.get(f"_{s}_model_rest") if ctx.get(f"_{s}_model_rest") is not None
+                    else (1 if ctx.get(f"{s}_is_b2b") else None)) for s in SIDES}
+        return inp.sim.game(game.get("id"), h, a, p_pub, total_pub,
+                            h_goalie=ctx.get("home_goalie_confirmed") or None,
+                            a_goalie=ctx.get("away_goalie_confirmed") or None,
+                            bf=sim_lineup(game, inp, bf), h_rest=rest["home"], a_rest=rest["away"],
+                            game_type=int(str(ctx.get("game_type") or "02")), odds=go,
+                            home_name=game["homeTeam"], away_name=game["awayTeam"])
+    except Exception as e:
+        print(f"  [WARN] simulator {a}@{h}: {e}")
+        return {}
+    finally:
+        inp.sim_stats["games"] += 1
+        inp.sim_stats["seconds"] += time.time() - t0
+
+
 def _blend_pct(p_model, q, w):
     p = market.blend(p_model, q, w) if q is not None else float(p_model)
     return round(100 * p, 1)
@@ -626,6 +675,7 @@ def build_model_outputs(game, ctx, inp):
     bu_on_features = None    # term-on model features, for the BU shadow when it is not published
     published_bu = None      # True: the joint model with the term on is what gets published
     model = ml
+    bf = None
     if getattr(ml, "uses_bu", False):
         # RAPM v2 lineup term (bu.lineup.serve.LiveLineupTerm): tonight's DFO lines minus
         # players out; neutral 0 when the bundle is stale or a side fails the coverage gate.
@@ -750,6 +800,7 @@ def build_model_outputs(game, ctx, inp):
     for side_, team in (("home", home), ("away", away)):
         for k in ("puckline", "puckline_spread", "1p_ml", "three_way"):
             out[f"{side_}_{k}"] = go.get(f"{team}_{k}")
+    out.update(sim_outputs(game, ctx, inp, p, total, go, bf))
     return out
 
 
@@ -907,6 +958,14 @@ def load_inputs(now=None, schedule=None):
             print("[WARN] PONYXG_BU=nofin but no shadow.rapm model; serving the live model")
     inp.shadow = load_shadow(inp.ml, gs, inp.goalie_ratings)
     try:
+        from bu.sim.live import SimServer
+        inp.sim = SimServer.load(SEASON_ID)
+        if not inp.sim.available:
+            print(f"[WARN] game simulator unavailable ({inp.sim.error}); markets from the Poisson fallback")
+    except Exception as e:
+        print(f"[WARN] game simulator unavailable: {e}")
+        inp.sim = None
+    try:
         from lineup_adjust import LineupAdjuster
         inp.lineup_adj = LineupAdjuster.from_files()
     except Exception as e:
@@ -966,6 +1025,10 @@ def predict(now=None):
     from http_utils import request_count
     before = request_count("/game-log/")
     rows = build_rows(inp)
+    st = inp.sim_stats
+    if st["games"]:
+        print(f"[sim] {st['games']} game(s) simulated in {st['seconds']:.1f} s "
+              f"({st['seconds'] / st['games']:.2f} s per game incl. anchoring and pricing)")
     goalies = {r[f"{s}_goalie_confirmed"] for r in rows for s in SIDES if r[f"{s}_goalie_confirmed"]}
     print(f"Goalie vs-opponent lines: {len(goalies)} goalies, {request_count('/game-log/') - before} "
           "game-log API calls (<= 2 per goalie on a warm cache)")

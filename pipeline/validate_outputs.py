@@ -35,6 +35,10 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  other clean-start-season final is listed in not_graded
   fair_odds      *_model_odds / *_blend_odds are the fair lines of the model-only
                  and published % (within 1 cent)
+  sim_markets    game-simulator columns (bu/sim): every pregame row has a sim_status; each
+                 market's percentages (regulation 3-way, puck line, total incl. push, 1st period
+                 3-way and 2-way) lie in [0, 100], sum to 100.0 and are never NaN; an EV is set
+                 exactly when its price is (pushes handled) and is never gate-open (INFO ONLY)
   model_independent
                  every predicted row has its own model-only % and model_version,
                  and that % is rebuilt from the row's factor breakdown (so a
@@ -597,6 +601,84 @@ def check_fair_odds(ctx):
     return errs
 
 
+SIM_GROUPS = {   # mutually exclusive outcomes of one market: their percentages sum to 100.0
+    "reg3": ("home_reg_pct", "reg_tie_pct", "away_reg_pct"),
+    "puckline": ("home_pl_pct", "away_pl_pct"),
+    "total": ("over_pct", "total_push_pct", "under_pct"),
+    "p1_3w": ("home_1p_pct", "p1_tie_pct", "away_1p_pct"),
+    "p1_2w": ("home_1p_2w_pct", "away_1p_2w_pct"),
+}
+SIM_EV = ("home_reg_ev", "reg_tie_ev", "away_reg_ev", "home_pl_ev", "away_pl_ev", "over_ev", "under_ev",
+          "home_1p_ev", "away_1p_ev", "home_1p3_ev", "p1_tie_ev", "away_1p3_ev")
+SIM_PRICE_FOR_EV = {"home_reg_ev": "home_three_way", "reg_tie_ev": "three_way_tie", "away_reg_ev": "away_three_way",
+                    "home_pl_ev": "home_puckline", "away_pl_ev": "away_puckline", "over_ev": "total_over",
+                    "under_ev": "total_under", "home_1p_ev": "home_1p_ml", "away_1p_ev": "away_1p_ml",
+                    "home_1p3_ev": "home_1p_three_way", "p1_tie_ev": "p1_three_way_tie",
+                    "away_1p3_ev": "away_1p_three_way"}
+
+
+def check_sim_markets(ctx):
+    """predictions_detailed.csv game-simulator columns (bu/sim): every pregame / frozen row with a
+    model has a simulator status; each market's percentages are in [0, 100] and sum to 100.0;
+    an EV is present (finite) exactly when its posted price is, and is never gate-open (INFO
+    ONLY until the live test); a half-goal puck line has no push and a whole total line can."""
+    errs = []
+    for path in PRED_FILES:
+        if not os.path.exists(path):
+            continue
+        name = os.path.relpath(path, REPO_ROOT)
+        rows = _rows(path)
+        if not rows or "sim_status" not in rows[0]:
+            continue
+        for r in rows:
+            gid = r.get("game_id")
+            if r.get("prediction_status") not in ("pregame", "frozen") or _blank(r.get("home_win_pct")):
+                continue
+            if r.get("prediction_status") == "frozen" and _blank(r.get("sim_status")):
+                continue      # frozen before the simulator shipped
+            st = r.get("sim_status")
+            if st not in ("sim", "poisson_fallback"):
+                errs.append(f"{name} {gid}: sim_status {st!r}")
+                continue
+            for mkt, cols in SIM_GROUPS.items():
+                vals = [_num(r.get(c)) for c in cols]
+                if any(v is None or v != v for v in vals):
+                    errs.append(f"{name} {gid}: {mkt} probabilities missing ({cols})")
+                    continue
+                if any(not 0 <= v <= 100 for v in vals):
+                    errs.append(f"{name} {gid}: {mkt} probability out of [0, 100]: {vals}")
+                if abs(sum(vals) - 100.0) > 0.051:
+                    errs.append(f"{name} {gid}: {mkt} probabilities sum to {sum(vals):.2f}, not 100")
+            spread = _num(r.get("sim_pl_spread"))
+            if spread is None or abs(abs(spread) - round(abs(spread))) < 1e-9:
+                errs.append(f"{name} {gid}: sim_pl_spread {r.get('sim_pl_spread')!r} is not a half-goal line")
+            line = _num(r.get("sim_total_line"))
+            push = _num(r.get("total_push_pct"))
+            if line is None or not 3 <= line <= 12:
+                errs.append(f"{name} {gid}: sim_total_line {r.get('sim_total_line')!r}")
+            elif abs(line - round(line)) > 1e-9 and push not in (None, 0.0):
+                errs.append(f"{name} {gid}: push {push} on a half-goal total {line}")
+            for c in SIM_EV:
+                pc = SIM_PRICE_FOR_EV[c]
+                has_price = not _blank(r.get(pc)) and abs(_num(r.get(pc)) or 0) >= 100
+                v = _num(r.get(c))
+                if has_price and (v is None or v != v or not -1.0 <= v <= 20.0):
+                    errs.append(f"{name} {gid}: {c} {r.get(c)!r} with price {r.get(pc)}")
+                if not has_price and not _blank(r.get(c)):
+                    errs.append(f"{name} {gid}: {c} set without a price")
+            if str(r.get("sim_ev_gated")) != "False":
+                errs.append(f"{name} {gid}: sim_ev_gated {r.get('sim_ev_gated')!r} (derivative EVs are INFO ONLY)")
+            try:
+                d = json.loads(r.get("sim_detail") or "")
+                if not isinstance(d, dict) or len(d.get("total_hist") or []) != 16:
+                    errs.append(f"{name} {gid}: sim_detail malformed")
+            except ValueError:
+                errs.append(f"{name} {gid}: sim_detail is not JSON")
+            if st == "sim" and _blank(r.get("sim_home_win_pct")):
+                errs.append(f"{name} {gid}: simulated row without sim_home_win_pct (shadow)")
+    return errs
+
+
 def model_pct_from_breakdown(row):
     """Home model-only win % rebuilt from the row's own factor breakdown, or None.
 
@@ -828,6 +910,7 @@ CHECKS = {
     "reports": check_reports,
     "graded": check_graded,
     "fair_odds": check_fair_odds,
+    "sim_markets": check_sim_markets,
     "model_independent": check_model_independent,
     "goal_splits": check_gamestats_goals,
     "bu_bundle": check_bu_bundle,

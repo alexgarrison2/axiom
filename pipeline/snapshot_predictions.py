@@ -114,7 +114,45 @@ FIELDNAMES = [
     # Rollback shadow (DESIGN §6.2 "SiteHistory gains home_inc%"): the replaced F1 model's
     # pre-blend and published-style blended home win % (predictions_detailed f1_shadow_*).
     'home_inc_model%', 'home_inc%',
+    # Game simulator (bu/sim): status, the raw simulator's home win % (shadow) and every
+    # derivative market's model probabilities + posted prices (JSON, sim_markets()), so the
+    # last pregame snapshot freezes them and generate_history.py grades them.
+    'sim_status', 'sim_home%', 'sim_markets',
 ]
+
+
+def _num(v):
+    try:
+        x = float(v)
+    except (TypeError, ValueError):
+        return None
+    return x if x == x else None
+
+
+def sim_markets(row):
+    """Compact JSON of the simulator's market probabilities (percent) and the posted prices
+    of one predictions_detailed.csv row ('' when the row has none)."""
+    import json
+    if not row.get('sim_status'):
+        return ''
+
+    def n(c):
+        return _num(row.get(c))
+    out = {
+        'v': 1,
+        'reg': [n('home_reg_pct'), n('reg_tie_pct'), n('away_reg_pct')],
+        'reg_px': [n('home_three_way'), n('three_way_tie'), n('away_three_way')],
+        'pl': {'spread': n('sim_pl_spread'), 'home': n('home_pl_pct'), 'away': n('away_pl_pct'),
+               'px': [n('home_puckline'), n('away_puckline')]},
+        'tot': {'line': n('sim_total_line'), 'over': n('over_pct'), 'push': n('total_push_pct'),
+                'under': n('under_pct'), 'px': [n('total_over'), n('total_under')]},
+        'p1': [n('home_1p_pct'), n('p1_tie_pct'), n('away_1p_pct')],
+        'p1_px3': [n('home_1p_three_way'), n('p1_three_way_tie'), n('away_1p_three_way')],
+        'p1_2w': [n('home_1p_2w_pct'), n('away_1p_2w_pct')],
+        'p1_px2': [n('home_1p_ml'), n('away_1p_ml')],
+        'total': n('expected_total'),
+    }
+    return json.dumps(out, separators=(',', ':'))
 
 
 def format_total(val_str):
@@ -213,6 +251,9 @@ def snapshot(predictions_path=None, history_dir=None, now_utc=None):
                 'market_source': (row.get('market_source') or '').strip(),
                 'home_inc_model%': format_pct(row.get('f1_shadow_model_win_pct', '')),
                 'home_inc%': format_pct(row.get('f1_shadow_home_win_pct', '')),
+                'sim_status': (row.get('sim_status') or '').strip(),
+                'sim_home%': format_pct(row.get('sim_home_win_pct', '')),
+                'sim_markets': sim_markets(row),
                 'awayteam': row.get('away_team', ''),
                 'hometeam': row.get('home_team', ''),
 
