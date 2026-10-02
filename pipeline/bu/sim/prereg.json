@@ -3,8 +3,18 @@
  "declared_at": "2026-10-02T15:30:00Z",
  "declared_before": "any simulator run on the dev seasons (2023-24, 2024-25) or the holdout (2025-26)",
  "seasons": {
-  "fit": ["20172018", "20182019", "20192020", "20202021", "20212022", "20222023"],
-  "dev": ["20232024", "20242025"],
+  "fit": [
+   "20172018",
+   "20182019",
+   "20192020",
+   "20202021",
+   "20212022",
+   "20222023"
+  ],
+  "dev": [
+   "20232024",
+   "20242025"
+  ],
   "holdout": "20252026",
   "scope": "regular-season games (game type 02) with finite point-in-time inputs; playoffs are simulated live but not scored"
  },
@@ -19,7 +29,16 @@
   "tot65": "over 6.5",
   "p1_3w": "1st period 3-way, multinomial",
   "p1_2w": "1st period 2-way with ties refunded, scored on non-tied periods",
-  "derivative_set": ["reg3", "pl_home", "pl_away", "tot55", "tot60", "tot65", "p1_3w", "p1_2w"],
+  "derivative_set": [
+   "reg3",
+   "pl_home",
+   "pl_away",
+   "tot55",
+   "tot60",
+   "tot65",
+   "p1_3w",
+   "p1_2w"
+  ],
   "derivative_score": "sum over the derivative set of the mean per-game log loss"
  },
  "rules": {
@@ -30,5 +49,13 @@
   "holdout": "one look at 2025-26 with the configuration fixed by the rules above, logged in bu/sim/out/look_log.jsonl; no parameter or rule changes after it; the holdout result is reported whatever it is",
   "publication": "the simulator's probabilities for every derivative market are published (frozen pregame, graded by generate_history.py), but their EVs are INFO ONLY (never gate-open, no units) until the live test passes",
   "live_test": "per market, on 2026-27 regular-season games with a frozen pregame model probability and a timestamped closing price (odds_close / snapshots): at least 300 graded games and model log loss <= de-vigged closing log loss + 0.002 with the sim also beating the naive Poisson on the same games; until then INFO ONLY"
- }
+ },
+ "amendments": [
+  {
+   "at": "2026-10-02T16:40:00Z",
+   "before": "any dev / holdout run (none has been made)",
+   "change": "rule 'dispersion' also fits a strength stretch s in {1.0, 1.25, 1.5, 1.75} (every team-strength term of the four rate regressions multiplied by s; constants and home ice unchanged) on the same fit-season criterion, jointly with the shock shapes, grid {0, 60, 30, 15} (pace) x {0, 30} (team)",
+   "why": "on the fit seasons the per-state regressions are each calibrated but the simulated margins are compressed (actual margin on simulated expected margin: slope 1.46; ML calibration slope 1.5): a team's strengths across states go together more than separate state regressions carry; diagnosed on the fit seasons only"
+  }
+ ]
 }
