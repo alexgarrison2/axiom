@@ -140,7 +140,8 @@ test.describe('/teams/[abbr]', () => {
         const mcd = body.skaters.find((s: { name: string }) => s.name === 'Connor McDavid');
         expect(mcd.last).toMatchObject({ gp: 82 });
         expect(mcd.last.pts).toBeGreaterThan(0);
-        expect(mcd.current?.gp ?? 0).toBeLessThanOrEqual(1);
+        // Never more games than EDM has played (the cap grows as the season goes on).
+        expect(mcd.current?.gp ?? 0).toBeLessThanOrEqual(body.standing?.gp ?? 0);
         for (const s of body.skaters) for (const line of [s.current, s.last]) if (line) expect(line.pts).toBe(line.g + line.a);
     });
 
