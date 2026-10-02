@@ -1,4 +1,6 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { blockingAxeViolations, formatAxe, horizontalOverflow, settle } from './quality';
 
 /**
@@ -416,8 +418,10 @@ test.describe('home slate', () => {
         await expect(table).toBeVisible();
         const rows = table.locator('tbody tr[data-market]');
         const keys = await rows.evaluateAll(trs => trs.map(tr => tr.getAttribute('data-market')));
-        // Simulated games price every derivative market (model % at least); posted prices join them.
-        if (keys.includes('reg')) {
+        // When the slate was simulated, every derivative market has a model % (posted prices alone,
+        // as in data from before the simulator, can show a REG 3-WAY row without the 1P 3-WAY one).
+        const header = readFileSync(join(process.cwd(), 'public/data/predictions_detailed.csv'), 'utf8').split('\n', 1)[0];
+        if (header.split(',').includes('sim_status')) {
             for (const k of ['pl', 'total', 'reg', 'reg-tie', 'p1', 'p1-tie', 'p1-2w']) expect(keys, k).toContain(k);
             await expect(table.locator('tr[data-market="pl"] th')).toContainText(/PL/);
             await expect(table.locator('tr[data-market="total"] th')).toContainText(/^O [\d.]+ U$/);

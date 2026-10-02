@@ -150,10 +150,17 @@ test.describe('/teams/[abbr]', () => {
         await page.goto('/teams/EDM?season=20252026');
         // Wait for hydration: on slow CI runners a keypress can land before React attaches the handler.
         await page.waitForLoadState('networkidle');
-        const sortBtn = page.getByRole('columnheader', { name: /^SF/ }).getByRole('button');
-        await sortBtn.focus();
-        await page.keyboard.press('Enter');
-        await expect(page.getByRole('columnheader', { name: /^SF/ })).toHaveAttribute('aria-sort', 'descending');
+        const sfHeader = page.getByRole('columnheader', { name: /^SF/ });
+        const sortBtn = sfHeader.getByRole('button');
+        // networkidle is not always hydration on a loaded runner: re-press only while the first press was lost.
+        await expect(async () => {
+            if ((await sfHeader.getAttribute('aria-sort')) === 'none') {
+                await sortBtn.focus();
+                await page.keyboard.press('Enter');
+            }
+            await expect(sfHeader).not.toHaveAttribute('aria-sort', 'none', { timeout: 1_000 });
+        }).toPass({ timeout: 15_000 });
+        await expect(sfHeader).toHaveAttribute('aria-sort', 'descending');
         const expand = page.locator('tbody th button[aria-expanded]').first();
         await expand.focus();
         await page.keyboard.press('Enter');
