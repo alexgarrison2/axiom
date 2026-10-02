@@ -130,7 +130,7 @@ export function marketRows(p: Prediction): MarketRow[] {
     const over = join(m?.total?.over, samePostedLine ? p.totalOver : null);
     const under = join(m?.total?.under, samePostedLine ? p.totalUnder : null);
     // Over on the left, under on the right, as the label reads.
-    const total = sides('total', line ? `O/U ${line}` : 'O/U', over, under, gated);
+    const total = sides('total', line ? `O ${line} U` : 'O · U', over, under, gated);
     rows.push(total);
     const push = m?.total?.pushPct;
     if (total && push != null && push > 0) rows.push(middle('total-push', 'Push', { pct: push }, gated, 'push'));

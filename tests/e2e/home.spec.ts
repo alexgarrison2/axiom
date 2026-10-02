@@ -420,7 +420,7 @@ test.describe('home slate', () => {
         if (keys.includes('reg')) {
             for (const k of ['pl', 'total', 'reg', 'reg-tie', 'p1', 'p1-tie', 'p1-2w']) expect(keys, k).toContain(k);
             await expect(table.locator('tr[data-market="pl"] th')).toContainText(/PL/);
-            await expect(table.locator('tr[data-market="total"] th')).toContainText(/O\/U \d/);
+            await expect(table.locator('tr[data-market="total"] th')).toContainText(/^O [\d.]+ U$/);
             await expect(table.locator('tr[data-market="reg"] th')).toContainText(/REG 3-WAY/i);
             await expect(table.locator('tr[data-market="p1"] th')).toContainText(/1P 3-WAY/i);
             await expect(table.locator('tr[data-market="p1-2w"] th')).toContainText(/1P 2-WAY/i);

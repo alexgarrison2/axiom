@@ -98,7 +98,7 @@ describe('parseMarkets (contract v2.2)', () => {
 });
 
 describe('marketRows', () => {
-    it('lists ML, PL, O/U + push, REG 3-WAY + tie, 1P 3-WAY + tie, 1P 2-WAY in order', () => {
+    it('lists ML, PL, O U + push, REG 3-WAY + tie, 1P 3-WAY + tie, 1P 2-WAY in order', () => {
         const rows = marketRows(parseRow(priced())!);
         expect(rows.map(r => r.key)).toEqual(['ml', 'pl', 'total', 'total-push', 'reg', 'reg-tie', 'p1', 'p1-tie', 'p1-2w']);
         const pl = rows.find(r => r.key === 'pl') as SidesRow;
@@ -106,7 +106,7 @@ describe('marketRows', () => {
         expect(pl.away).toMatchObject({ price: -240, pct: 79.5 });
         expect(pl.gated).toBe(true);
         const total = rows.find(r => r.key === 'total') as SidesRow;
-        expect(total.label).toBe('O/U 6');
+        expect(total.label).toBe('O 6 U');
         expect(total.away).toMatchObject({ price: -110, pct: 50.8, ev: 0.0802 });
         expect((rows.find(r => r.key === 'reg-tie') as MiddleRow).outcome).toMatchObject({ price: 305, pct: 15.8 });
         expect((rows.find(r => r.key === 'ml') as SidesRow).gated).toBe(false);
@@ -128,7 +128,7 @@ describe('marketRows', () => {
     it('drops the push row on half-goal lines', () => {
         const rows = marketRows(parseRow({ ...priced(), sim_total_line: '6.5', total_line: '6.5', total_push_pct: '0.0' })!);
         expect(rows.map(r => r.key)).not.toContain('total-push');
-        expect(rows.find(r => r.key === 'total')?.label).toBe('O/U 6.5');
+        expect(rows.find(r => r.key === 'total')?.label).toBe('O 6.5 U');
     });
 
     it('formats spreads and EV', () => {
