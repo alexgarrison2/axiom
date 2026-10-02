@@ -1,0 +1,345 @@
+{
+  "generated_at": "2026-10-02T12:48:58.224712+00:00",
+  "rule": "owner approval 2026-10-02 (\"Yes\" to wiring FIN into the game model, no blend cap): promote the live features + bu_d_fin when it is better than the live model on BOTH dev seasons (2023-24, 2024-25: each season and pooled delta log loss < 0) and its single 2025-26 holdout look is not worse than the live model by more than +0.0010 log loss per game",
+  "live_model": "logit-elo-v5-20261001-xg2-rapm",
+  "live_features": [
+    "d_xg_share",
+    "d_xg_share_all",
+    "d_elo",
+    "d_goalie_gsax",
+    "d_pts_pct",
+    "h_b2b",
+    "a_b2b",
+    "d_rest",
+    "bu_d_net",
+    "bu_d_delta"
+  ],
+  "candidate_features": [
+    "d_xg_share",
+    "d_xg_share_all",
+    "d_elo",
+    "d_goalie_gsax",
+    "d_pts_pct",
+    "h_b2b",
+    "a_b2b",
+    "d_rest",
+    "bu_d_net",
+    "bu_d_delta",
+    "bu_d_fin"
+  ],
+  "config_hash": "610b1dab5836",
+  "feature": {
+    "name": "bu_d_fin",
+    "definition": "sum over the dressed skaters of expected EV TOI share x FIN (bu.rapm.finishing: shrunk EV goals above xG per 60, prior 60 xG), home minus away: the bu_d_fin column of bu/lineup/out/lineup_features.csv.gz (point in time: FIN from games up to d - 2 days), neutral 0 under the coverage gate like bu_d_net / bu_d_delta",
+    "games_nonzero": 5319
+  },
+  "live_baseline_reproduction_max_abs_ll_diff": 0.0,
+  "dev": {
+    "2023": {
+      "n": 1399,
+      "ll_incumbent": 0.6592152150955858,
+      "ll_candidate": 0.6585441362509831,
+      "delta_ll": -0.0006710788446027864,
+      "se": 0.00039181202722649917,
+      "upper95_one_sided": -2.658724101791798e-05,
+      "boot_upper95": -3.7490718992852894e-05,
+      "p_boot_not_better": 0.0425,
+      "brier_incumbent": 0.23377614980660236,
+      "brier_candidate": 0.2334582130794051,
+      "cal_slope_incumbent": 0.9894480862093872,
+      "cal_slope_candidate": 0.9940401591246641,
+      "cal_slope_ci_candidate": {
+        "slope": 0.9940470624241897,
+        "lo95": 0.7799707790603134,
+        "hi95": 1.208123345788066
+      },
+      "mean_p_minus_y_incumbent": -0.020309898954359307,
+      "mean_p_minus_y_candidate": -0.020158989048587928,
+      "early": {
+        "n": 249,
+        "delta_ll": -0.0014475494987774135,
+        "se": 0.0009341524567405442
+      },
+      "cal_slope_ci_incumbent": {
+        "slope": 0.9894570903022027,
+        "lo95": 0.7745212976310749,
+        "hi95": 1.2043928829733306
+      }
+    },
+    "2024": {
+      "n": 1206,
+      "ll_incumbent": 0.6612796179702409,
+      "ll_candidate": 0.6608200444331501,
+      "delta_ll": -0.00045957353709092925,
+      "se": 0.0007384614890809842,
+      "upper95_one_sided": 0.0007551217662983816,
+      "boot_upper95": 0.0006868896584070907,
+      "p_boot_not_better": 0.2695,
+      "brier_incumbent": 0.23468515538613363,
+      "brier_candidate": 0.23446577184695117,
+      "cal_slope_incumbent": 1.083990425774967,
+      "cal_slope_candidate": 1.0964207462496531,
+      "cal_slope_ci_candidate": {
+        "slope": 1.0964207475190215,
+        "lo95": 0.8142065633463991,
+        "hi95": 1.378634931691644
+      },
+      "mean_p_minus_y_incumbent": -0.037909751827965854,
+      "mean_p_minus_y_candidate": -0.038081245193590796,
+      "early": {
+        "n": 250,
+        "delta_ll": -6.8081569158533476e-06,
+        "se": 0.0016174268776708487
+      },
+      "cal_slope_ci_incumbent": {
+        "slope": 1.0839885274747074,
+        "lo95": 0.8026935326963391,
+        "hi95": 1.3652835222530757
+      }
+    },
+    "pooled": {
+      "n": 2605,
+      "ll_incumbent": 0.6601709424916834,
+      "ll_candidate": 0.6595977812673721,
+      "delta_ll": -0.0005731612243113087,
+      "se": 0.0004013637196628036,
+      "upper95_one_sided": 8.704195816203696e-05,
+      "boot_upper95": 9.412890583559613e-05,
+      "p_boot_not_better": 0.083,
+      "brier_incumbent": 0.23419697926108016,
+      "brier_candidate": 0.2339246683092172,
+      "cal_slope_incumbent": 1.0293080602329259,
+      "cal_slope_candidate": 1.0364530820228852,
+      "cal_slope_ci_candidate": {
+        "slope": 1.0364955675673408,
+        "lo95": 0.8659511350273595,
+        "hi95": 1.2070400001073223
+      },
+      "mean_p_minus_y_incumbent": -0.028457853873963712,
+      "mean_p_minus_y_candidate": -0.028456202450074963,
+      "early": {
+        "n": 499,
+        "delta_ll": -0.0007257351992475735,
+        "se": 0.0009344617342646175
+      },
+      "cal_slope_ci_incumbent": {
+        "slope": 1.0293528102688254,
+        "lo95": 0.8586098636260044,
+        "hi95": 1.2000957569116464
+      }
+    }
+  },
+  "dev_pass": true,
+  "promoted": true,
+  "holdout": {
+    "n": 1394,
+    "ll_incumbent": 0.6776821550531522,
+    "ll_candidate": 0.678433120315924,
+    "delta_ll": 0.0007509652627716854,
+    "se": 0.0009034607410618441,
+    "upper95_one_sided": 0.002237067835744313,
+    "boot_upper95": 0.002244383296859849,
+    "p_boot_not_better": 0.7825,
+    "brier_incumbent": 0.2424928041354768,
+    "brier_candidate": 0.24284273116814153,
+    "cal_slope_incumbent": 0.812377112503405,
+    "cal_slope_candidate": 0.7979934537535142,
+    "cal_slope_ci_candidate": {
+      "slope": 0.7982681903217315,
+      "lo95": 0.5573328787595274,
+      "hi95": 1.0392035018839354
+    },
+    "mean_p_minus_y_incumbent": 0.021740458987735023,
+    "mean_p_minus_y_candidate": 0.021768870559756404,
+    "early": {
+      "n": 248,
+      "delta_ll": 0.0023749593631713422,
+      "se": 0.0021656552268828184
+    },
+    "cal_slope_ci_incumbent": {
+      "slope": 0.81266408843636,
+      "lo95": 0.571830032846956,
+      "hi95": 1.053498144025764
+    },
+    "logged_at": "2026-10-02T12:48:34.433204+00:00",
+    "reused_logged_look": true
+  },
+  "holdout_pass": true,
+  "all_folds": {
+    "pooled_2023_2025": {
+      "n": 3999,
+      "ll_incumbent": 0.6662751261152612,
+      "ll_candidate": 0.6661635383650668,
+      "delta_ll": -0.00011158775019435605,
+      "se": 0.0004093726026842945,
+      "upper95_one_sided": 0.0005617892439610399,
+      "boot_upper95": 0.000571967961076766,
+      "p_boot_not_better": 0.4085,
+      "brier_incumbent": 0.2370887971842882,
+      "brier_candidate": 0.23703339039607405,
+      "cal_slope_incumbent": 0.9396461889622478,
+      "cal_slope_candidate": 0.9400373347743934,
+      "cal_slope_ci_candidate": {
+        "slope": 0.941041175925529,
+        "lo95": 0.8028355178428708,
+        "hi95": 1.0792468340081873
+      },
+      "mean_p_minus_y_incumbent": -0.010959367219998128,
+      "mean_p_minus_y_candidate": -0.010948387552424221,
+      "early": {
+        "n": 747,
+        "delta_ll": 0.0003036787920240344,
+        "se": 0.0009527866969372811
+      },
+      "cal_slope_ci_incumbent": {
+        "slope": 0.940620059332253,
+        "lo95": 0.8022668391410508,
+        "hi95": 1.0789732795234552
+      }
+    },
+    "2025": {
+      "n": 1394,
+      "ll_incumbent": 0.6776821550531522,
+      "ll_candidate": 0.678433120315924,
+      "delta_ll": 0.0007509652627716854,
+      "se": 0.0009034607410618441,
+      "upper95_one_sided": 0.002237067835744313,
+      "boot_upper95": 0.002244383296859849,
+      "p_boot_not_better": 0.7825,
+      "brier_incumbent": 0.2424928041354768,
+      "brier_candidate": 0.24284273116814153,
+      "cal_slope_incumbent": 0.812377112503405,
+      "cal_slope_candidate": 0.7979934537535142,
+      "cal_slope_ci_candidate": {
+        "slope": 0.7982681903217315,
+        "lo95": 0.5573328787595274,
+        "hi95": 1.0392035018839354
+      },
+      "mean_p_minus_y_incumbent": 0.021740458987735023,
+      "mean_p_minus_y_candidate": 0.021768870559756404,
+      "early": {
+        "n": 248,
+        "delta_ll": 0.0023749593631713422,
+        "se": 0.0021656552268828184
+      },
+      "cal_slope_ci_incumbent": {
+        "slope": 0.81266408843636,
+        "lo95": 0.571830032846956,
+        "hi95": 1.053498144025764
+      }
+    }
+  },
+  "market_descriptive": {
+    "n": 410,
+    "playoff_n": 82,
+    "window": [
+      "2026-03-06 00:00:00+00:00",
+      "2026-06-15 00:00:00+00:00"
+    ],
+    "log_loss": {
+      "current": 0.6670192640271464,
+      "candidate": 0.6704123187402196,
+      "market_devig": 0.6744100818130186
+    },
+    "brier": {
+      "current": 0.2374985796202992,
+      "candidate": 0.23909193251123956,
+      "market_devig": 0.24095426923584784
+    },
+    "candidate_minus_current": {
+      "delta": 0.0033930547130732068,
+      "se": 0.001749283477872372
+    },
+    "candidate_minus_market": {
+      "delta": -0.0039977630727991865,
+      "se": 0.00518245068636467
+    },
+    "note": "descriptive only: walk-forward OOS with L-actual lineups vs the last pregame snapshot of one soft book (leaky upper bound; not a close, never a gate)"
+  },
+  "passed": true,
+  "candidate_version": "logit-elo-v5-20261002-xg2-rapm-fin",
+  "decision": "promoted logit-elo-v5-20261002-xg2-rapm-fin",
+  "standard_gate_checks": [
+    {
+      "check": "2023 fold log loss <= current + 0.0005",
+      "candidate": 0.6585441362509831,
+      "current": 0.6592152150955858,
+      "passed": true
+    },
+    {
+      "check": "2023 beats home-rate by >= 0.01",
+      "gain": 0.032501898569575305,
+      "passed": true
+    },
+    {
+      "check": "2024 fold log loss <= current + 0.0005",
+      "candidate": 0.6608200444331501,
+      "current": 0.6612796179702409,
+      "passed": true
+    },
+    {
+      "check": "2024 beats home-rate by >= 0.01",
+      "gain": 0.02592292319609435,
+      "passed": true
+    },
+    {
+      "check": "2025 fold log loss <= current + 0.0005",
+      "candidate": 0.678433120315924,
+      "current": 0.6776821550531522,
+      "passed": false
+    },
+    {
+      "check": "2025 beats home-rate by >= 0.01",
+      "gain": 0.015066547433219446,
+      "passed": true
+    },
+    {
+      "check": "2025 calibration slope in [0.9, 1.1]",
+      "slope": 0.7979934537535142,
+      "passed": false
+    }
+  ],
+  "standard_gate_passed": false,
+  "candidate_folds": [
+    {
+      "test_season": 2023,
+      "n": 1399,
+      "log_loss": 0.6585441362509831,
+      "brier": 0.2334582130794051,
+      "accuracy": 0.5918513223731237,
+      "calibration_slope": 0.9940401591246641,
+      "C": 0.01
+    },
+    {
+      "test_season": 2024,
+      "n": 1206,
+      "log_loss": 0.6608200444331501,
+      "brier": 0.23446577184695117,
+      "accuracy": 0.587893864013267,
+      "calibration_slope": 1.0964207462496531,
+      "C": 0.003
+    },
+    {
+      "test_season": 2025,
+      "n": 1394,
+      "log_loss": 0.678433120315924,
+      "brier": 0.24284273116814153,
+      "accuracy": 0.56025824964132,
+      "calibration_slope": 0.7979934537535142,
+      "C": 0.01
+    }
+  ],
+  "coefficients_raw": {
+    "d_xg_share": 1.3969454187635963,
+    "d_xg_share_all": 3.1631633514039277,
+    "d_elo": 0.09389122156213923,
+    "d_goalie_gsax": 0.1756083718174397,
+    "d_pts_pct": 0.41942780835570853,
+    "h_b2b": -0.10465794407335195,
+    "a_b2b": 0.19510123568542592,
+    "d_rest": 0.05931415597850536,
+    "bu_d_net": 0.30145347641275505,
+    "bu_d_delta": 0.43709561218858783,
+    "bu_d_fin": 0.437726781438147
+  }
+}
