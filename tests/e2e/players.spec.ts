@@ -96,7 +96,7 @@ test.describe('/players', () => {
         await page.getByRole('button', { name: /^PTS/ }).click();
         const pts = (await column(page, 'PTS')).map(num);
         expect(pts[0]).toBeGreaterThan(30); // a full season of a top defenceman
-        await expect(page.locator('thead th[scope="colgroup"]').first()).toContainText(/RAPM/);
+        await expect(page.locator('thead th[scope="colgroup"]').first()).toContainText(/RTG \/ 60/);
     });
 
     test('is accessible and fits a phone', async ({ page }) => {

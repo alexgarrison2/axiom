@@ -241,14 +241,14 @@ export const GLOSSARY = {
     'player-fin': {
         label: 'FIN',
         title: 'Finishing rating',
-        short: 'Goals above expected per 60 minutes at even strength on his own shots, pulled toward average on small samples. Higher is better. Not part of NET.',
+        short: 'Goals above expected per 60 minutes at even strength on the player’s own shots, pulled toward average on small samples. Higher is better. Not part of NET.',
         anchor: 'players',
         aliases: ['finishing', 'shooting talent', 'goals above expected', 'GAx/60'],
     },
     'player-off-fin': {
         label: 'OFF+FIN',
         title: 'Offence including finishing',
-        short: 'OFF + FIN: the chances he creates on the ice plus how well he finishes his own. Higher is better.',
+        short: 'OFF + FIN: chances created on the ice plus finishing on own shots. Higher is better.',
         anchor: 'players',
         aliases: ['total offence', 'off total'],
     },

@@ -268,7 +268,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                                 <td className="sticky left-0 z-10 bg-bg" />
                                 <th scope="colgroup" colSpan={1 + nRating} className="border-b border-line px-2 pb-0.5 pt-1.5 text-left text-micro font-medium uppercase tracking-label text-fg-3">
                                     <Link href={glossaryHref('player-net')} className="inline-flex min-h-6 items-center hover:text-brand focus-visible:text-brand">
-                                        RAPM / 60{asOf ? <span className="text-fg-2"> · {asOf}</span> : null}
+                                        RTG / 60{asOf ? <span className="text-fg-2"> · {asOf}</span> : null}
                                     </Link>
                                 </th>
                                 <th scope="colgroup" colSpan={nCount} className="border-b border-line px-2 pb-0.5 pt-1.5 text-right text-micro font-medium uppercase tracking-label text-fg-3">
