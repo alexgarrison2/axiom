@@ -157,6 +157,56 @@ export interface Prediction {
     tvBroadcasts: TvBroadcast[];
     home: SideData;
     away: SideData;
+    /** Game-simulator markets (contract v2.2); undefined on older rows. */
+    markets?: SimMarkets;
+}
+
+/**
+ * One outcome of a simulated market. Every field is optional: undefined
+ * means the CSV cell is empty or the column is absent (older rows).
+ */
+export interface MarketOutcome {
+    /** Posted American price, when the row carries it. */
+    price?: number;
+    /** Model probability, % to one decimal. */
+    pct?: number;
+    /** Fair American price of `pct` ("+124"; a push excluded). */
+    fair?: string;
+    /** EV at the posted price, fraction of the stake (-0.0457 = -4.57%). */
+    ev?: number;
+}
+
+export interface TwoWayMarket {
+    away?: MarketOutcome;
+    home?: MarketOutcome;
+}
+
+export interface ThreeWayMarket extends TwoWayMarket {
+    tie?: MarketOutcome;
+}
+
+/**
+ * Derivative markets from the game simulator (pipeline/CONTRACT.md, "Game
+ * simulator"). Posted prices that predate v2.2 (puck line, total, regulation
+ * 3-way, 1st-period moneyline) stay on Prediction / SideData; only the
+ * 1st-period 3-way prices are carried here.
+ */
+export interface SimMarkets {
+    /** sim: simulated; poisson_fallback: an estimate from the goal model. */
+    status?: 'sim' | 'poisson_fallback';
+    /** sim_ev_gated: true only once the derivative edges' gate opens (always false today). */
+    evGated?: boolean;
+    gateReason?: string;
+    /** Regulation 3-way (after 60 minutes). */
+    reg?: ThreeWayMarket;
+    /** Puck line; `spread` is the home side's ("-1.5"), the away side's is its negative. */
+    pl?: TwoWayMarket & { spread?: string };
+    /** Game total at `line`; pushPct is P(total = line), 0 on half lines. */
+    total?: { line?: string; over?: MarketOutcome; under?: MarketOutcome; pushPct?: number };
+    /** 1st-period 3-way. */
+    p1?: ThreeWayMarket;
+    /** 1st-period 2-way, ties refunded. */
+    p1TwoWay?: TwoWayMarket;
 }
 
 /** Heavy per-game data, loaded on first expand (app/api/matchup-details). */

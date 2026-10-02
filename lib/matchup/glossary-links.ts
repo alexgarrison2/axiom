@@ -8,7 +8,7 @@
 /** Section explaining the whole card (bar, tick, diamond, goalie colours). */
 export const READING_A_CARD = 'reading';
 
-/** Glossary term per context chip key (lib/matchup/pills) or Why-tab tile. */
+/** Glossary term per context chip key (lib/matchup/pills), Why-tab tile or Odds-tab market label. */
 export const CARD_TERMS: Record<string, string> = {
     opener: 'term-opener',
     form: 'term-last-n',
@@ -26,6 +26,15 @@ export const CARD_TERMS: Record<string, string> = {
     conf: 'term-confidence',
     wt: 'term-wt',
     lean: 'term-lean',
+    // Odds tab: the simulator's markets (MarketsTable labels and footer).
+    simulator: 'term-simulator',
+    'reg-3way': 'term-reg-3way',
+    // 1P 3-WAY shares the regulation 3-way entry, which defines both.
+    'p1-3way': 'term-reg-3way',
+    'p1-2way': 'term-p1-2way',
+    push: 'term-push',
+    'fair-price': 'term-fair-price',
+    'sim-edge': 'term-sim-edge',
 };
 
 /**

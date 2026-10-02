@@ -35,6 +35,13 @@ const CARD_ANCHORS = [
     'term-log-loss',
     'term-fair-odds',
     'term-edge',
+    // Odds tab: the game simulator's markets.
+    'term-simulator',
+    'term-reg-3way',
+    'term-p1-2way',
+    'term-push',
+    'term-fair-price',
+    'term-sim-edge',
 ];
 
 async function renderPage(): Promise<string> {

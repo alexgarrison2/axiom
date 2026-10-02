@@ -12,6 +12,8 @@ import { hasMarket, hasPrediction, recommendedBet } from '@/lib/matchup/edge';
 import { cn } from '@/lib/utils';
 import { GlossLink } from '@/components/ui/gloss-link';
 import { useHydrated } from './GameTime';
+import { MarketsTable } from './MarketsTable';
+import { hasInfoOnlyEv, marketRows } from '@/lib/matchup/markets';
 
 const OddsHistoryModal = dynamic(() => import('@/components/OddsHistoryModal'));
 
@@ -61,16 +63,6 @@ function PctRow({ label, pair, odds, tone }: { label: React.ReactNode; pair: { a
     );
 }
 
-/** One section of the TOTAL / xG row: small label over a value. */
-function Cell({ label, children, align = 'center' }: { label: React.ReactNode; children: React.ReactNode; align?: 'left' | 'center' | 'right' }) {
-    return (
-        <div className={cn('flex min-w-0 flex-col gap-0.5', align === 'left' ? 'items-start' : align === 'right' ? 'items-end' : 'items-center')}>
-            <span className="text-micro font-medium uppercase tracking-wide text-fg-3">{label}</span>
-            <span className="whitespace-nowrap font-display text-body font-bold tabular-nums text-fg-1 cq-md:text-[17px]">{children}</span>
-        </div>
-    );
-}
-
 /** A probability pair to one decimal that sums to 100 (null when neither side is known). */
 function pair1(away: number | null | undefined, home: number | null | undefined): { away: number; home: number } | null {
     if (away == null && home == null) return null;
@@ -92,6 +84,7 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
     const market = priced0 ? pair1(p.away.marketWinPct, p.home.marketWinPct) : null;
     const edge = phase === 'pre' ? recommendedBet(p) : null;
     const priced = priced0;
+    const infoOnly = hasInfoOnlyEv(marketRows(p));
 
     useEffect(() => {
         let live = true;
@@ -145,46 +138,15 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
                         />
                     ) : null}
                     {market ? <PctRow label={<GlossLink term="market-pct">Market</GlossLink>} pair={market} odds={[fmtOdds(p.away.marketOdds), fmtOdds(p.home.marketOdds)]} /> : null}
-                    {p.totalLine || (p.away.xg != null && p.home.xg != null) ? (
-                        <tr className="border-t border-line">
-                            <td colSpan={3} className="py-2">
-                                <div className="grid grid-cols-3 items-center gap-2">
-                                    <Cell label="Total" align="left">
-                                        {p.totalLine ?? '—'}
-                                    </Cell>
-                                    <Cell label="O / U">
-                                        {p.totalOver != null || p.totalUnder != null ? `${fmtOdds(p.totalOver) ?? '—'} / ${fmtOdds(p.totalUnder) ?? '—'}` : '—'}
-                                    </Cell>
-                                    <Cell label={<GlossLink term="projected-goals">xG</GlossLink>} align="right">
-                                        {p.away.xg != null && p.home.xg != null ? (
-                                            <>
-                                                {p.away.xg.toFixed(2)} <span className="text-fg-3">–</span> {p.home.xg.toFixed(2)}
-                                                <span className="sr-only">
-                                                    {' '}
-                                                    projected goals, {a} then {h}
-                                                </span>
-                                            </>
-                                        ) : (
-                                            '—'
-                                        )}
-                                    </Cell>
-                                </div>
-                            </td>
-                        </tr>
+                    {p.away.xg != null && p.home.xg != null ? (
+                        <Row label={<GlossLink term="projected-goals">xG</GlossLink>} away={p.away.xg.toFixed(2)} home={p.home.xg.toFixed(2)} strong />
                     ) : null}
-                </tbody>
-                <tbody className="border-t-[3px] border-double border-line-strong">
-                    {p.away.puckline != null && p.home.puckline != null ? (
-                        <Row label="Puck line" away={`${p.away.pucklineSpread ?? ''} ${fmtOdds(p.away.puckline)}`} home={`${p.home.pucklineSpread ?? ''} ${fmtOdds(p.home.puckline)}`} />
-                    ) : null}
-                    {p.away.threeWay != null && p.home.threeWay != null ? (
-                        <Row label={p.threeWayTie != null ? `3-way · tie ${fmtOdds(p.threeWayTie)}` : '3-way'} away={fmtOdds(p.away.threeWay)} home={fmtOdds(p.home.threeWay)} />
-                    ) : null}
-                    {p.away.firstPeriodMl != null && p.home.firstPeriodMl != null ? <Row label="1st per" away={fmtOdds(p.away.firstPeriodMl)} home={fmtOdds(p.home.firstPeriodMl)} /> : null}
                 </tbody>
             </table>
 
-            <div className="flex flex-wrap items-center justify-between gap-2">
+            <MarketsTable p={p} />
+
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 {edge ? (
                     <span className="flex flex-wrap items-center gap-2">
                         <span className="rounded-chip border border-pos/40 px-2 py-0.5 text-micro font-bold uppercase tracking-chip text-pos">
@@ -201,9 +163,13 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
                     <GlossLink href="/methodology#edge" desc="No side clears +3% EV with a stake of 0.5u or more." className="label">
                         No bet
                     </GlossLink>
-                ) : (
-                    <span />
-                )}
+                ) : null}
+                {infoOnly ? (
+                    <GlossLink term="sim-edge" desc={p.markets?.gateReason ?? undefined} className="label">
+                        Info only
+                    </GlossLink>
+                ) : null}
+                <span className="flex-1" />
                 {history && history.length > 1 ? <OddsHistoryModal entries={history} away={p.away.team} home={p.home.team} started={phase !== 'pre'} /> : null}
             </div>
         </div>

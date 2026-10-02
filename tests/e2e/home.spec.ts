@@ -404,6 +404,74 @@ test.describe('home slate', () => {
         }
     });
 
+    test('Odds tab: simulator markets per outcome, derivative edges info only with no units', async ({ page }) => {
+        await page.goto('/');
+        await settle(page, 300);
+        const card = page.locator('article[id]').filter({ has: page.locator('h2 button[aria-expanded]') }).first();
+        test.skip((await card.count()) === 0, 'no pregame or live game on the slate');
+        await card.locator('h2 button[aria-expanded]').click();
+        await card.getByRole('radio', { name: 'Odds' }).click();
+        const table = card.locator('table[data-markets]');
+        test.skip((await table.count()) === 0, 'no market on this game');
+        await expect(table).toBeVisible();
+        const rows = table.locator('tbody tr[data-market]');
+        const keys = await rows.evaluateAll(trs => trs.map(tr => tr.getAttribute('data-market')));
+        // Simulated games price every derivative market (model % at least); posted prices join them.
+        if (keys.includes('reg')) {
+            for (const k of ['pl', 'total', 'reg', 'reg-tie', 'p1', 'p1-tie', 'p1-2w']) expect(keys, k).toContain(k);
+            await expect(table.locator('tr[data-market="pl"] th')).toContainText(/PL/);
+            await expect(table.locator('tr[data-market="total"] th')).toContainText(/O\/U \d/);
+            await expect(table.locator('tr[data-market="reg"] th')).toContainText(/REG 3-WAY/i);
+            await expect(table.locator('tr[data-market="p1"] th')).toContainText(/1P 3-WAY/i);
+            await expect(table.locator('tr[data-market="p1-2w"] th')).toContainText(/1P 2-WAY/i);
+        }
+        for (const r of await table.locator('tr[data-gated]').all()) {
+            const text = await r.innerText();
+            expect(text).not.toMatch(/\b\d+(\.\d)?u\b/);
+            expect(text).not.toMatch(/\+EV|NaN/);
+            // Percentages to one decimal, American odds signed.
+            for (const n of text.match(/\b\d+\.\d+\b/g) ?? []) expect(n).toMatch(/^\d+\.\d$/);
+        }
+        if (await card.locator('[data-ev="info-only"]').count()) {
+            await expect(card.getByRole('link', { name: /^Info only/ })).toHaveAttribute('href', '/methodology#term-sim-edge');
+        }
+        const axe = await blockingAxeViolations(page);
+        expect(axe, formatAxe(axe)).toEqual([]);
+    });
+
+    test('Odds tab markets fit a 375px phone without sideways scroll', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 812 });
+        await page.goto('/');
+        await settle(page, 300);
+        const arts = page.locator('article[id]').filter({ has: page.locator('h2 button[aria-expanded]') });
+        const n = await arts.count();
+        test.skip(n === 0, 'no pregame or live game on the slate');
+        for (let i = 0; i < n; i++) {
+            const art = arts.nth(i);
+            await art.locator('h2 button[aria-expanded]').click();
+            await art.getByRole('radio', { name: 'Odds' }).click();
+            await page.waitForTimeout(60);
+            const m = await art.evaluate(el => {
+                const region = el.querySelector('[role="region"]') as HTMLElement;
+                const table = el.querySelector('table[data-markets]');
+                return {
+                    left: el.scrollLeft,
+                    sw: el.scrollWidth,
+                    cw: el.clientWidth,
+                    rsw: region.scrollWidth,
+                    rcw: region.clientWidth,
+                    tw: table ? table.getBoundingClientRect().width : 0,
+                };
+            });
+            expect(m.left, `card ${i}`).toBe(0);
+            expect(m.sw, `card ${i}`).toBeLessThanOrEqual(m.cw + 1);
+            expect(m.rsw, `card ${i} region`).toBeLessThanOrEqual(m.rcw + 1);
+            expect(m.tw, `card ${i} table`).toBeLessThanOrEqual(m.rcw + 1);
+            expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
+            await art.locator('h2 button[aria-expanded]').click();
+        }
+    });
+
     test('goalie names keep their surname next to IR chips (fix4 F4-6)', async ({ page }) => {
         await page.goto('/');
         await settle(page, 300);

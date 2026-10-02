@@ -6,7 +6,7 @@
  * is tested against exactly what the page renders.
  */
 import { TEAM_NAMES } from '../../components/ui/team-color';
-import type { GameState, Prediction, PredictionStatus, RecentGame, Side, SideData, TeamRef, TvBroadcast, WpFactor } from '../../types/prediction';
+import type { GameState, MarketOutcome, Prediction, PredictionStatus, RecentGame, Side, SideData, SimMarkets, TeamRef, ThreeWayMarket, TvBroadcast, TwoWayMarket, WpFactor } from '../../types/prediction';
 
 export type RawRow = Record<string, string | undefined>;
 
@@ -202,6 +202,80 @@ export function parseRow(row: RawRow, tv?: TvBroadcast[] | string | null): Predi
         tvBroadcasts,
         home: side(row, 'home', teamRef(homeTri, str(row.home_team))),
         away: side(row, 'away', teamRef(awayTri, str(row.away_team))),
+        markets: parseMarkets(row),
+    };
+}
+
+/** num() / str() / int() with absent → undefined (the markets' convention). */
+const u = <T>(v: T | null): T | undefined => (v == null ? undefined : v);
+
+/** One market outcome, or undefined when every cell is empty. */
+function outcome(o: { price?: string; pct?: string; fair?: string; ev?: string }): MarketOutcome | undefined {
+    const out: MarketOutcome = {};
+    const price = int(o.price);
+    const pct = num(o.pct);
+    const fair = str(o.fair);
+    const ev = num(o.ev);
+    if (price != null) out.price = price;
+    if (pct != null) out.pct = pct;
+    if (fair != null) out.fair = fair;
+    if (ev != null) out.ev = ev;
+    return Object.keys(out).length ? out : undefined;
+}
+
+/** Drop undefined members; undefined when nothing is left. */
+function some<T extends object>(o: T): T | undefined {
+    const kept = Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
+    return Object.keys(kept).length ? kept : undefined;
+}
+
+const SIM_STATUSES = ['sim', 'poisson_fallback'] as const;
+
+/**
+ * The game simulator's markets (contract v2.2). Tolerant of their absence:
+ * older SiteHistory rows and fixtures without the columns give undefined,
+ * and an empty or non-numeric cell gives an undefined field, never NaN.
+ */
+export function parseMarkets(row: RawRow): SimMarkets | undefined {
+    const st = str(row.sim_status);
+    const status = SIM_STATUSES.find(s => s === st);
+    const two = (pre: string): TwoWayMarket | undefined =>
+        some({
+            away: outcome({ pct: row[`away_${pre}_pct`], fair: row[`away_${pre}_fair`], ev: row[`away_${pre}_ev`] }),
+            home: outcome({ pct: row[`home_${pre}_pct`], fair: row[`home_${pre}_fair`], ev: row[`home_${pre}_ev`] }),
+        });
+    const p1 = some<ThreeWayMarket>({
+        away: outcome({ price: row.away_1p_three_way, pct: row.away_1p_pct, fair: row.away_1p_fair, ev: row.away_1p3_ev }),
+        home: outcome({ price: row.home_1p_three_way, pct: row.home_1p_pct, fair: row.home_1p_fair, ev: row.home_1p3_ev }),
+        tie: outcome({ price: row.p1_three_way_tie, pct: row.p1_tie_pct, fair: row.p1_tie_fair, ev: row.p1_tie_ev }),
+    });
+    const reg = some<ThreeWayMarket>({
+        ...two('reg'),
+        tie: outcome({ pct: row.reg_tie_pct, fair: row.reg_tie_fair, ev: row.reg_tie_ev }),
+    });
+    const pl = two('pl');
+    const total = some({
+        over: outcome({ pct: row.over_pct, fair: row.over_fair, ev: row.over_ev }),
+        under: outcome({ pct: row.under_pct, fair: row.under_fair, ev: row.under_ev }),
+        pushPct: u(num(row.total_push_pct)),
+    });
+    const p1TwoWay = some<TwoWayMarket>({
+        away: outcome({ pct: row.away_1p_2w_pct, fair: row.away_1p_2w_fair, ev: row.away_1p_ev }),
+        home: outcome({ pct: row.home_1p_2w_pct, fair: row.home_1p_2w_fair, ev: row.home_1p_ev }),
+    });
+    const markets = some<Omit<SimMarkets, 'status' | 'evGated' | 'gateReason'>>({
+        reg,
+        pl: pl ? { ...pl, ...some({ spread: u(str(row.sim_pl_spread)) }) } : undefined,
+        total: total ? { ...total, ...some({ line: u(str(row.sim_total_line)) }) } : undefined,
+        p1,
+        p1TwoWay,
+    });
+    if (!status && !markets) return undefined;
+    return {
+        ...(status ? { status } : {}),
+        evGated: bool(row.sim_ev_gated),
+        ...some({ gateReason: u(str(row.sim_gate_reason)) }),
+        ...markets,
     };
 }
 
