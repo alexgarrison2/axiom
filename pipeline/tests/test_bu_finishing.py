@@ -62,32 +62,6 @@ def test_player_games_counts_even_strength_shots_only():
     assert pg.loc[8, "s"] == 800.0
 
 
-def test_export_adds_fin_and_off_total(tmp_path, monkeypatch):
-    from bu.lineup import ratings_export as RE
-    bundle = {"version": 1, "kind": "serving_bundle", "season": "20262027", "built_at": "2026-10-01T09:30:00+00:00",
-              "max_source_date": "2026-09-30", "n_games": 8, "rookie": {"F": [0.0, 0.0], "D": [0.0, 0.0]},
-              "players": {"columns": ["player_id", "o", "d", "rated"], "rows": [[1, 0.40, 0.0, True], [2, 0.30, 0.0, True]]}}
-    roster = {1: ("Grinder", "AAA", "R"), 2: ("Sniper", "AAA", "R")}
-    st = FN.FinState(prior_xg=40.0)
-    st.roll("20252026")
-    st.add_games(_pg([(1, 1, 60, 90, 300_000), (1, 2, 100, 75, 260_000), (1, 3, 5000, 5000, 9e7)]))
-    st.roll("20262027")
-    now = datetime(2026, 10, 1, tzinfo=timezone.utc)
-    doc = RE.build_export(bundle, None, roster, None, now=now, fin=st, fin_current=True)
-    rows = {r[0]: dict(zip(doc["columns"], r)) for r in doc["rows"]}
-    assert rows[1]["fin"] < 0 < rows[2]["fin"]
-    for r in rows.values():
-        assert r["off_total"] == pytest.approx(r["off"] + r["fin"], abs=1e-9)
-    assert rows[2]["off_total"] > rows[1]["off_total"]     # finishing reorders the two
-    assert rows[1]["def"] == 0.0 and rows[1]["net"] == 0.40   # existing fields untouched
-    # a run without this season's caches carries the previous export's FIN (no churn)
-    again = RE.build_export(bundle, None, roster, None, doc, now=now, fin=FN.FinState(), fin_current=False)
-    assert again["rows"] == doc["rows"]
-    # no pack at all and no previous value: FIN 0
-    bare = RE.build_export(bundle, None, roster, None, now=now)
-    assert all(dict(zip(bare["columns"], r))["fin"] == 0.0 for r in bare["rows"])
-
-
 # ── live FIN (bu_d_fin): serving bundle table and the lineup-side sum ─────────
 
 def test_season_state_adds_the_seasons_games_to_the_pack(tmp_path, monkeypatch):

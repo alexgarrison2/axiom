@@ -78,7 +78,8 @@ UNITS = {
     "fin": "EV goals above xG per 60 from his own shots, shrunk (higher is better)",
     "toi_ev_gp": "expected EV minutes per game", "toi_pp_gp": "expected PP minutes per game",
     "toi_pk_gp": "expected PK minutes per game",
-    "off": "= ev_off (v2 name)", "def": "= ev_def (v2 name)", "net": "off + def (EV per 60)", "off_total": "off + fin",
+    "off": "EV xGF/60 vs average (= ev_off, the v2 name)", "def": "EV xGA/60 prevented vs average (= ev_def, the v2 name)",
+    "net": "off + def (EV per 60)", "off_total": "off + fin",
     "toi": "EV minutes, window seasons + this season", "gp": "games, same span",
     "toi_cur": "EV minutes this season", "gp_cur": "games this season"}
 VOLATILE = ("generated_at",)

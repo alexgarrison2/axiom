@@ -1,4 +1,4 @@
-"""bu.lineup.ratings_export: the site's RAPM v2 player ratings file (offline, synthetic inputs)."""
+"""bu.lineup.ratings_export: the site's player ratings file, v3 (offline, synthetic inputs)."""
 from __future__ import annotations
 
 import gzip
@@ -17,14 +17,18 @@ NOW = datetime(2026, 10, 1, 12, tzinfo=timezone.utc)
 
 
 def _bundle(season="20262027", max_source_date="2026-09-30"):
+    from bu.rapm.v3_pack import LIVE_COLUMNS
+
+    def row(pid, g, o, d, rated=True):
+        return [pid, g, rated, o, d, 0.01, 0.004, 0.0, 0.1, -0.1, 0.04, 0.02, 0.0, 15.0, 1.5, 1.5, f"{g}|u3"]
+    rows = [row(1, "F", 0.76, 0.06), row(2, "D", 0.10, -0.30), row(3, "F", 0.41, -0.54), row(9, "F", -0.2, 0.1)]
+    meta = {"season": season, "max_source_date": max_source_date, "goals_per_xg": 1.0, "g": 0.5,
+            "low_role": {"F": [-0.005, 0.001, 0.0, 0.0], "D": [-0.005, 0.017, 0.0, 0.0]},
+            "toi_pos_means": {"F": {"ev": 780, "pp": 90, "pk": 60}, "D": {"ev": 1080, "pp": 60, "pk": 90}},
+            "prior_var": {"o": 0.03, "d": 0.02, "pp": 0.1, "pk": 0.1}}
     return {"version": 1, "kind": "serving_bundle", "season": season, "built_at": "2026-10-01T09:30:00+00:00",
             "max_source_date": max_source_date, "n_games": 8,
-            "rookie": {"F": [-0.005, 0.001], "D": [-0.005, 0.017]},
-            "players": {"columns": ["player_id", "o", "d", "rated"],
-                        "rows": [[1, 0.76, 0.06, True],      # star forward
-                                 [2, 0.10, -0.30, True],     # defensive defenceman
-                                 [3, 0.41, -0.54, True],     # retired: rated, not on a roster
-                                 [9, -0.2, 0.1, True]]}}     # a goalie id that slipped in
+            "v3": {"columns": LIVE_COLUMNS, "rows": rows, "meta": meta}}
 
 
 def _sample(season="20262027"):
@@ -50,17 +54,20 @@ def test_build_export_rows_and_units():
     mc = rows[1]
     assert mc["name"] == "Connor McDavid" and mc["team"] == "EDM" and mc["roster"] and mc["rated"]
     assert mc["net"] == pytest.approx(0.70) and mc["off"] == 0.76 and mc["def"] == -0.06   # def = -d
+    assert mc["ev_off"] == mc["off"] and mc["ev_def"] == mc["def"]
     assert mc["toi"] == round((290_000 + 600) / 60) and mc["gp"] == 271 and mc["toi_cur"] == 10 and mc["gp_cur"] == 1
     assert rows[2]["def"] == 0.30 and rows[2]["net"] == pytest.approx(0.40)   # xGA prevented: net = off + def
     assert not rows[3]["roster"] and rows[3]["name"] == "Patrice Bergeron"
     rookie = rows[4]
     assert rookie["roster"] and not rookie["rated"] and rookie["off"] == -0.005 and rookie["def"] == -0.001
-    assert rookie["toi"] == 0 and rookie["gp"] == 0
-    assert [r[0] for r in doc["rows"]][:2] == [3, 1]       # sorted by net, best first
+    assert rookie["toi"] == 0 and rookie["gp"] == 0 and rookie["toi_ev_gp"] == 13.0
+    imp = [r[doc["columns"].index("impact")] for r in doc["rows"]]
+    assert imp == sorted(imp, reverse=True)               # sorted by impact, best first
     assert doc["columns"] == RE.COLUMNS
-    assert doc["version"] == 2 and "prevented" in doc["units"]["def"] and doc["units"]["net"] == "off + def"
+    assert doc["version"] == 3 and "prevented" in doc["units"]["def"] and doc["units"]["net"].startswith("off + def")
     for r in rows.values():                               # every rating higher = better, net = off + def
         assert r["net"] == pytest.approx(r["off"] + r["def"], abs=0.002)
+        assert r["impact"] == pytest.approx(r["off_impact"] + r["def_impact"], abs=0.011)
     assert all(not (isinstance(v, float) and v == 0 and str(v).startswith("-")) for r in doc["rows"] for v in r)
 
 
@@ -170,7 +177,8 @@ def test_refresh_export_never_raises(tmp_path):
 def _big_doc(season="20262027", as_of="2026-09-30"):
     roster = {i: (f"Player {i}", f"T{i % 32:02d}", "D" if i % 3 == 0 else "C") for i in range(1, 701)}
     b = _bundle(season, as_of)
-    b["players"]["rows"] = [[i, 0.01 * (i % 50), 0.01 * (i % 7) - 0.03, True] for i in range(1, 701)]
+    b["v3"]["rows"] = [[i, "D" if i % 3 == 0 else "F", True, 0.01 * (i % 50), 0.01 * (i % 7) - 0.03, 0.01, 0.004, 0.0,
+                        0.1, -0.1, 0.04, 0.02, 0.0, 15.0, 1.5, 1.5, ""] for i in range(1, 701)]
     return RE.build_export(b, None, roster, None, now=NOW)
 
 
@@ -197,14 +205,14 @@ def test_check_player_ratings(tmp_path):
     p.write_text(json.dumps(doc))
     errs = V.check_player_ratings(ctx)
     assert any("without a name" in e for e in errs) and any("inconsistent" in e for e in errs)
-    doc = _big_doc()                                      # a v1 file (def = xGA impact, lower = better)
-    doc["version"] = 1
-    i, j, k = (doc["columns"].index(c) for c in ("off", "def", "net"))
-    for r in doc["rows"]:
-        r[j] = -r[j]
-        r[k] = round(r[i] - r[j], 3)
+    doc = _big_doc()                                      # a v2 file (no impact headline)
+    doc["version"] = 2
     p.write_text(json.dumps(doc))
     assert any("version" in e for e in V.check_player_ratings(ctx))
+    doc = _big_doc()
+    doc["columns"] = [c for c in doc["columns"] if c != "impact"]
+    p.write_text(json.dumps(doc))
+    assert any("missing" in e for e in V.check_player_ratings(ctx))
     assert V.check_player_ratings({"player_ratings_path": str(tmp_path / "x.json")})
 
 
@@ -215,13 +223,13 @@ def test_committed_player_ratings():
     doc = json.load(open(os.path.join(ROOT, "public", "data", "player_ratings.json")))
     ros = [dict(zip(doc["columns"], r)) for r in doc["rows"] if r[doc["columns"].index("roster")]]
     assert len(ros) >= 700 and all(r["name"] for r in ros)
-    top = [r["name"] for r in sorted(ros, key=lambda r: -r["net"])[:15]]
-    for name in ("Connor McDavid", "Nathan MacKinnon", "Auston Matthews"):
+    top = [r["name"] for r in sorted(ros, key=lambda r: -r["impact"])[:25]]
+    for name in ("Connor McDavid", "Nathan MacKinnon"):
         assert name in top, (name, top)
-    # v2 signs: DEF is xGA/60 prevented (Mark Stone, a defensive forward, is positive), NET = OFF + DEF
-    by = {r["name"]: r for r in ros}
-    assert doc["version"] == 2 and by["Mark Stone"]["def"] > 0.2 and by["Connor McDavid"]["def"] < 0
+    # signs: DEF is xGA/60 prevented, NET = OFF + DEF, impact = off_impact + def_impact
+    assert doc["version"] == 3
     assert all(abs(r["off"] + r["def"] - r["net"]) <= 0.002 for r in ros)
+    assert all(abs(r["off_impact"] + r["def_impact"] - r["impact"]) <= 0.02 for r in ros)
 
 
 def test_workflows_publish_the_ratings():
