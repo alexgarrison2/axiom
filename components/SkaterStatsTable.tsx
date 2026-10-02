@@ -55,7 +55,8 @@ const mmss = (sec: number | null) => {
 };
 const thousands = (n: number) => n.toLocaleString('en-US');
 
-function Rating({ v, p, strong, bold = false }: { v: number; p: Skater; strong: number; bold?: boolean }) {
+function Rating({ v, p, strong, bold = false }: { v: number | null | undefined; p: Skater; strong: number; bold?: boolean }) {
+    if (v == null) return <span className="text-fg-3">—</span>;
     const t = ratingTone(v, p, strong);
     return (
         <span className={cn(t ? TONE[t] : p.rated ? 'text-fg-2' : 'text-fg-3', bold && 'font-bold')}>
@@ -67,6 +68,8 @@ function Rating({ v, p, strong, bold = false }: { v: number; p: Skater; strong: 
 
 const COLUMNS: Column[] = [
     { key: 'off', label: 'OFF', title: 'Offence: EV xG for per 60 above average', group: 'rating', sets: ['rating'], render: p => <Rating v={p.off} p={p} strong={STRONG.off} /> },
+    { key: 'fin', label: 'FIN', title: 'Finishing: EV goals above xG per 60 on his own shots (not in NET)', group: 'rating', sets: ['rating'], render: p => <Rating v={p.fin} p={p} strong={STRONG.fin} /> },
+    { key: 'offTotal', label: 'OFF+FIN', title: 'OFF + FIN per 60', group: 'rating', sets: ['rating'], render: p => <Rating v={p.offTotal} p={p} strong={STRONG.offTotal} /> },
     { key: 'def', label: 'DEF', title: 'Defence: EV xG against per 60 prevented vs average', group: 'rating', sets: ['rating'], render: p => <Rating v={p.def} p={p} strong={STRONG.def} /> },
     { key: 'evMin', label: 'EV MIN', title: 'Even-strength minutes behind the rating (last three seasons + this one)', group: 'rating', sets: ['rating'], render: p => <span className={p.evMin < 250 ? 'text-fg-3' : undefined}>{thousands(p.evMin)}</span> },
     { key: 'gp', label: 'GP', title: 'Games played', group: 'count', sets: ['scoring'], render: (p, s) => valueOf(p, 'gp', s) ?? 0 },

@@ -77,6 +77,38 @@ describe('players model (RAPM v2 ratings)', () => {
         expect(find('Anyone', 'EDM', 8475913)?.name).toBe('Mark Stone');
     });
 
+    it('FIN and OFF+FIN: undefined / null without the columns, parsed and sortable with them', () => {
+        const r = parseRatings(doc);
+        const mc = r.byId.get(8478402)!;
+        expect(mc.fin).toBeUndefined();
+        expect(mc.offTotal).toBeUndefined();
+        expect(rows.find(p => p.id === '8478402')).toMatchObject({ fin: null, offTotal: null });
+        // A column missing from the file sorts last, never as zero.
+        expect(valueOf(rows[0], 'fin', 'cur')).toBeNull();
+
+        const withFin = {
+            ...doc,
+            columns: [...cols, 'fin', 'off_total'],
+            rows: [
+                [...doc.rows[0], 0.12, 0.883],
+                [...doc.rows[1], -0.04, 0.31],
+                [...doc.rows[3], 0.2, null], // off_total missing: falls back to off + fin
+                [...doc.rows[4], 'x', 'y'],
+            ],
+        };
+        const f = parseRatings(withFin);
+        expect(f.byId.get(8478402)).toMatchObject({ fin: 0.12, offTotal: 0.883, net: 0.706 });
+        expect(f.byId.get(8481606)?.offTotal).toBeCloseTo(0.526, 3);
+        expect(f.byId.get(8490000)?.fin).toBeUndefined();
+        const sk = compactSkaters(withFin, lines, {});
+        expect(sk.find(p => p.id === '8478402')).toMatchObject({ fin: 0.12, offTotal: 0.88, net: 0.71 });
+        expect(sk.find(p => p.id === '8490000')).toMatchObject({ fin: null, offTotal: null });
+        expect(sortSkaters(sk, 'fin', 'desc').map(p => p.name)).toEqual(['Jordan Spence', 'Connor McDavid', 'Mark Stone', 'New Kid']);
+        expect(sortSkaters(sk, 'offTotal', 'desc').map(p => p.name)).toEqual(['Connor McDavid', 'Jordan Spence', 'Mark Stone', 'New Kid']);
+        expect(sortSkaters(sk, 'fin', 'asc').at(-1)?.name).toBe('New Kid');
+        expect(FIRST_DIR.fin ?? 'desc').toBe('desc');
+    });
+
     it('the published file ranks the stars near the top of rostered skaters', () => {
         const pub = JSON.parse(readFileSync(join(process.cwd(), 'public/data/player_ratings.json'), 'utf8'));
         const all = compactSkaters(pub, { cur: new Map(), prev: new Map() }, {});

@@ -31,6 +31,10 @@ export interface Skater {
     def: number;
     /** off + def. */
     net: number;
+    /** Shrunk EV finishing: goals above xG per 60 from his own shots (not part of NET). Null/absent: no finishing column in the file. */
+    fin?: number | null;
+    /** off + fin. */
+    offTotal?: number | null;
     /** The rating's EV sample: minutes and games, last three seasons + this one. */
     evMin: number;
     evGp: number;
@@ -40,7 +44,7 @@ export interface Skater {
 
 export type StatSeason = 'cur' | 'prev';
 
-export type SortKey = 'net' | 'off' | 'def' | 'evMin' | 'gp' | 'g' | 'a' | 'pts' | 'toi' | 'sogPg' | 'name';
+export type SortKey = 'net' | 'off' | 'fin' | 'offTotal' | 'def' | 'evMin' | 'gp' | 'g' | 'a' | 'pts' | 'toi' | 'sogPg' | 'name';
 
 /** Sort direction a column starts with (every rating is higher = better, so only the name starts ascending). */
 export const FIRST_DIR: Partial<Record<SortKey, 'asc' | 'desc'>> = { name: 'asc' };
@@ -92,6 +96,8 @@ export function compactSkaters(
     for (const o of rosterRatings(ratingsDoc)) {
         if (!finite(o.off) || !finite(o.def) || !finite(o.net)) continue;
         const id = String(o.id);
+        const fin = finite(o.fin) ? o.fin : null;
+        const offTotal = finite(o.off_total) ? o.off_total : fin == null ? null : o.off + fin;
         const pos = String(o.pos ?? '');
         out.push({
             id,
@@ -104,6 +110,8 @@ export function compactSkaters(
             off: Number(o.off.toFixed(2)),
             def: Number(o.def.toFixed(2)),
             net: Number(o.net.toFixed(2)),
+            fin: fin == null ? null : Number(fin.toFixed(2)),
+            offTotal: offTotal == null ? null : Number(offTotal.toFixed(2)),
             evMin: finite(o.toi) ? Math.round(o.toi) : 0,
             evGp: finite(o.gp) ? o.gp : 0,
             cur: lines.cur.get(id) ?? null,
@@ -121,6 +129,9 @@ export function valueOf(p: Skater, key: Exclude<SortKey, 'name'>, season: StatSe
         case 'def':
         case 'evMin':
             return p[key];
+        case 'fin':
+        case 'offTotal':
+            return p[key] ?? null;
         default: {
             const l = p[season];
             if (!l || !l.gp) return key === 'gp' ? 0 : null;
@@ -156,7 +167,7 @@ export function sortSkaters(rows: Skater[], key: SortKey, dir: 'asc' | 'desc', s
     });
 }
 
-/** Tone of a rating (higher is better for all three): green good / red bad past `strong`, only with a real sample. */
+/** Tone of a rating (higher is better for every one): green good / red bad past `strong`, only with a real sample. */
 export function ratingTone(v: number, p: Pick<Skater, 'rated' | 'evMin'>, strong: number): 'pos' | 'neg' | null {
     if (!p.rated || p.evMin < COLOR_MIN_EV) return null;
     if (v >= strong) return 'pos';
@@ -165,4 +176,4 @@ export function ratingTone(v: number, p: Pick<Skater, 'rated' | 'evMin'>, strong
 }
 
 /** Thresholds ≈ the top / bottom tenth of rostered skaters. */
-export const STRONG = { net: 0.25, off: 0.18, def: 0.16 } as const;
+export const STRONG = { net: 0.25, off: 0.18, def: 0.16, fin: 0.065, offTotal: 0.22 } as const;

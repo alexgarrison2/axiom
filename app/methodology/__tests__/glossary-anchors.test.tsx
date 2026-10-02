@@ -88,6 +88,21 @@ describe('/methodology glossary anchors', () => {
         expect(html).toMatch(/DEF<\/strong> \(xG against prevented\)/);
     });
 
+    it('defines OFF+FIN = OFF + FIN and keeps FIN out of NET', async () => {
+        type Doc = { columns: string[]; rows: unknown[][] };
+        const doc = JSON.parse(readFileSync(join(process.cwd(), 'public/data/player_ratings.json'), 'utf8')) as Doc;
+        const c = (k: string) => doc.columns.indexOf(k);
+        if (c('fin') >= 0 && c('off_total') >= 0) {
+            for (const r of doc.rows) expect(Math.abs((r[c('off')] as number) + (r[c('fin')] as number) - (r[c('off_total')] as number))).toBeLessThan(0.002);
+        }
+        expect(GLOSSARY['player-fin'].label).toBe('FIN');
+        expect(GLOSSARY['player-off-fin'].label).toBe('OFF+FIN');
+        expect(GLOSSARY['player-fin'].short).toMatch(/Not part of NET/);
+        expect(GLOSSARY_ANCHORS).toEqual(expect.arrayContaining(['term-player-fin', 'term-player-off-fin']));
+        const html = await renderPage();
+        expect(html).toMatch(/OFF\+FIN<\/strong> = OFF \+ FIN/);
+    });
+
     it('keeps every term id addressable', () => {
         for (const t of GLOSSARY_TERMS) expect(glossaryIds(t)[0]).toBe(t);
     });

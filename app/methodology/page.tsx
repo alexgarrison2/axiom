@@ -499,7 +499,8 @@ export default function MethodologyPage() {
                                 skater from his linemates, opponents, score, zone starts and home ice. Each season starts from the previous estimate plus
                                 an aging step and is updated daily with this season&apos;s games (the date beside the ratings is the last game day in),
                                 so early in a season they are mostly built on the last three seasons; <strong>EV MIN</strong> shows that sample. The same
-                                ratings drive the lineup term of the game model and the Lines tab.
+                                ratings drive the lineup term of the game model and the Lines tab. <strong>FIN</strong> (finishing) is goals above xG per 60
+                                on his own even-strength shots, shrunk toward average; <strong>OFF+FIN</strong> = OFF + FIN. FIN is not part of NET.
                             </p>
                             <p id="standings" className="scroll-mt-[calc(var(--appbar-h)+16px)]">
                                 <strong>Playoff odds</strong> come from simulating the rest of the season thousands of times with the same game model. On

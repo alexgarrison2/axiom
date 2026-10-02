@@ -25,7 +25,7 @@ test.describe('/players', () => {
         const net = page.getByRole('columnheader', { name: /^NET/ });
         await expect(net).toHaveAttribute('aria-sort', 'descending');
         const heads = (await page.locator('thead tr').last().locator('th').allInnerTexts()).map(t => t.trim().split(/\s/)[0].toUpperCase());
-        expect(heads.slice(0, 4)).toEqual(['PLAYER', 'NET', 'OFF', 'DEF']);
+        expect(heads.slice(0, 6)).toEqual(['PLAYER', 'NET', 'OFF', 'FIN', 'OFF+FIN', 'DEF']);
         const full = (await page.locator('thead').innerText()).toUpperCase();
         for (const old of ['IMPACT', 'EV OFF', 'EV DEF', 'PP', 'PK', 'IXG/60']) expect(full).not.toMatch(new RegExp(`(^|\\s)${old.replace('/', '\\/')}(\\s|$)`));
         const nets = (await column(page, 'NET')).map(num);
@@ -49,6 +49,28 @@ test.describe('/players', () => {
         const off = (await column(page, 'OFF')).map(num);
         const net = (await column(page, 'NET')).map(num);
         for (let i = 0; i < 10; i++) expect(Math.abs(off[i] + def[i] - net[i])).toBeLessThanOrEqual(0.011);
+    });
+
+    test('FIN and OFF+FIN sort highest first and OFF+FIN = OFF + FIN', async ({ page }) => {
+        await page.goto('/players');
+        await settle(page);
+        for (const label of ['FIN', 'OFF+FIN']) {
+            const re = new RegExp(`^${label.replace('+', '\\+')}(\\s|$)`);
+            await page.getByRole('button', { name: re }).click();
+            await expect(page.getByRole('columnheader', { name: re })).toHaveAttribute('aria-sort', 'descending');
+            const vals = (await column(page, label)).map(num);
+            expect(vals.length).toBe(50);
+            for (let i = 1; i < vals.length; i++) expect(vals[i]).toBeLessThanOrEqual(vals[i - 1]);
+            expect(vals[0]).toBeGreaterThan(0);
+            await page.getByRole('button', { name: re }).click();
+            await expect(page.getByRole('columnheader', { name: re })).toHaveAttribute('aria-sort', 'ascending');
+            const asc = (await column(page, label)).map(num);
+            expect(asc[0]).toBeLessThan(0);
+        }
+        const off = (await column(page, 'OFF')).map(num);
+        const fin = (await column(page, 'FIN')).map(num);
+        const tot = (await column(page, 'OFF+FIN')).map(num);
+        for (let i = 0; i < 10; i++) expect(Math.abs(off[i] + fin[i] - tot[i])).toBeLessThanOrEqual(0.011);
     });
 
     test('a strong defensive forward shows a positive, green DEF', async ({ page }) => {

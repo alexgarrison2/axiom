@@ -5,6 +5,8 @@
  *   OFF  xG for per 60 above an average skater (higher is better)
  *   DEF  xG against per 60 prevented vs average (higher is better)
  *   NET  OFF + DEF
+ *   FIN  goals above xG per 60 from his own shots, shrunk (finishing; not in NET)
+ *   OFF+FIN  OFF + FIN
  *
  * Pure helpers (no fs) shared by /players, the team pages, the teams table
  * and the matchup Lines tab.
@@ -23,6 +25,10 @@ export interface PlayerRating {
     def: number;
     /** off + def. */
     net: number;
+    /** Shrunk EV finishing: goals above xG per 60 from his own shots. Absent in files without the column. */
+    fin?: number;
+    /** off + fin. Absent when the file has no finishing column. */
+    offTotal?: number;
     /** EV minutes / games behind the rating (last three seasons + this one). */
     toi: number;
     gp: number;
@@ -42,6 +48,8 @@ export interface Ratings extends RatingsMeta {
 }
 
 const num = (v: unknown, d = 0) => (typeof v === 'number' && Number.isFinite(v) ? v : d);
+/** An optional numeric column: undefined when the column is missing or the cell is not a finite number. */
+const opt = (r: unknown[], i: number): number | undefined => (i >= 0 && typeof r[i] === 'number' && Number.isFinite(r[i]) ? (r[i] as number) : undefined);
 
 export function parseRatings(doc: unknown): Ratings {
     const empty: Ratings = { season: null, seasonLabel: null, asOf: null, byId: new Map() };
@@ -49,7 +57,7 @@ export function parseRatings(doc: unknown): Ratings {
     const d = doc as { columns?: unknown; rows?: unknown; season?: unknown; season_label?: unknown; as_of?: unknown };
     if (!Array.isArray(d.columns) || !Array.isArray(d.rows)) return empty;
     const ix = (c: string) => (d.columns as unknown[]).indexOf(c);
-    const I = { id: ix('id'), name: ix('name'), team: ix('team'), pos: ix('pos'), roster: ix('roster'), rated: ix('rated'), off: ix('off'), def: ix('def'), net: ix('net'), toi: ix('toi'), gp: ix('gp'), toiCur: ix('toi_cur'), gpCur: ix('gp_cur') };
+    const I = { id: ix('id'), name: ix('name'), team: ix('team'), pos: ix('pos'), roster: ix('roster'), rated: ix('rated'), off: ix('off'), def: ix('def'), net: ix('net'), toi: ix('toi'), gp: ix('gp'), toiCur: ix('toi_cur'), gpCur: ix('gp_cur'), fin: ix('fin'), offTotal: ix('off_total') };
     if (I.id < 0 || I.off < 0 || I.def < 0) return empty;
     const byId = new Map<number, PlayerRating>();
     for (const r of d.rows as unknown[][]) {
@@ -58,6 +66,8 @@ export function parseRatings(doc: unknown): Ratings {
         const off = r[I.off];
         const def = r[I.def];
         if (!Number.isFinite(id) || typeof off !== 'number' || typeof def !== 'number') continue;
+        const fin = opt(r, I.fin);
+        const offTotal = opt(r, I.offTotal) ?? (fin == null ? undefined : off + fin);
         byId.set(id, {
             id,
             name: String(r[I.name] ?? ''),
@@ -72,6 +82,8 @@ export function parseRatings(doc: unknown): Ratings {
             gp: num(r[I.gp]),
             toiCur: num(r[I.toiCur]),
             gpCur: num(r[I.gpCur]),
+            fin,
+            offTotal,
         });
     }
     return {
