@@ -1,4 +1,21 @@
 {
+ "anchor": {
+  "dev_derivative_score": {
+   "anchored": 6.32802,
+   "raw": 6.32928
+  },
+  "info": {
+   "max_abs_p_err": 1.3652596748681134e-06,
+   "max_abs_t_err": 1.5998709224085417e-05,
+   "mean_ess": 0.9673521447081695,
+   "n": 2375,
+   "pace_mean": 1.01245486284457,
+   "resim_share": 0.0,
+   "tilt_sd": 0.08625950338297782
+  },
+  "rule": "lower dev derivative score; ties (< 0.0005) to anchored",
+  "variant": "anchored"
+ },
  "dispersion": {
   "criterion": "mean log P(final total) + log P(final margin) - LL(reg 3-way) - LL(ML), fit seasons",
   "grid": [
@@ -450,6 +467,68 @@
    "20212022",
    "20222023"
   ]
+ },
+ "rest": {
+  "keep_b2b": true,
+  "paired_with_minus_without": {
+   "derivative_sum": {
+    "diff": -0.00346,
+    "n": 2375,
+    "se": 0.00223
+   },
+   "ml": {
+    "diff": -0.00161,
+    "n": 2375,
+    "se": 0.00068
+   },
+   "p1_2w": {
+    "diff": 0.00022,
+    "n": 1569,
+    "se": 0.00067
+   },
+   "p1_3w": {
+    "diff": -8e-05,
+    "n": 2375,
+    "se": 0.00045
+   },
+   "pl_away": {
+    "diff": -0.00097,
+    "n": 2375,
+    "se": 0.00058
+   },
+   "pl_home": {
+    "diff": -0.0013,
+    "n": 2375,
+    "se": 0.00064
+   },
+   "reg3": {
+    "diff": -0.00147,
+    "n": 2375,
+    "se": 0.00072
+   },
+   "tot55": {
+    "diff": -2e-05,
+    "n": 2375,
+    "se": 0.00013
+   },
+   "tot60": {
+    "diff": 0.00013,
+    "n": 2375,
+    "se": 0.00015
+   },
+   "tot60_2w": {
+    "diff": 4e-05,
+    "n": 2101,
+    "se": 0.00014
+   },
+   "tot65": {
+    "diff": 9e-05,
+    "n": 2375,
+    "se": 0.00011
+   }
+  },
+  "score_with": 6.98808,
+  "score_without": 6.99308
  },
  "state": {
   "criterion": "next-game Poisson log-likelihood, regular season of the fit seasons",
@@ -1127,5 +1206,6 @@
     "6v6_11": 0.9646302250803859
    }
   }
- }
+ },
+ "version": "sim-m5-20261002"
 }
