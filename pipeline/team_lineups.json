@@ -5395,11 +5395,11 @@
         ],
         "f2": [
             {
-                "name": "Alex Killorn",
-                "number": 17,
+                "name": "Beckett Sennecke",
+                "number": 45,
                 "pos": "lw",
-                "id": 1877,
-                "ppUnit": 2,
+                "id": 36637,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5415,11 +5415,11 @@
                 "movement": null
             },
             {
-                "name": "Beckett Sennecke",
-                "number": 45,
+                "name": "Alex Killorn",
+                "number": 17,
                 "pos": "rw",
-                "id": 36637,
-                "ppUnit": 1,
+                "id": 1877,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5690,8 +5690,8 @@
             }
         ],
         "lineup_source": "Derek Lee",
-        "updated_at": "2026-10-01T19:26:13.562Z",
-        "fetched_at": "2026-10-01T21:54:41Z"
+        "updated_at": "2026-10-02T18:12:55.731Z",
+        "fetched_at": "2026-10-02T19:02:25Z"
     },
     "NJD": {
         "f1": [
@@ -9298,7 +9298,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -9307,20 +9307,20 @@
                 "number": 6,
                 "pos": "ld",
                 "id": 30607,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Adam  Ji\u0159\u00ed\u010dek",
                 "number": null,
                 "pos": "rd",
                 "id": 38135,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d2": [
@@ -9332,7 +9332,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Colton Parayko",
@@ -9342,7 +9342,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -9351,7 +9351,7 @@
                 "number": 17,
                 "pos": "ld",
                 "id": 16,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -9431,7 +9431,7 @@
                 "number": 6,
                 "pos": "sk3",
                 "id": 30607,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -9469,7 +9469,7 @@
                 "number": 17,
                 "pos": "sk3",
                 "id": 16,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -9485,7 +9485,7 @@
         ],
         "lineup_source": "Jeremy Rutherford",
         "updated_at": "2026-10-02T16:40:35.318Z",
-        "fetched_at": "2026-10-02T17:01:43Z"
+        "fetched_at": "2026-10-02T19:02:25Z"
     },
     "CGY": {
         "f1": [
@@ -9628,6 +9628,28 @@
                 "movement": null
             },
             {
+                "name": "Zach Whitecloud",
+                "number": 28,
+                "pos": "rd",
+                "id": 4658,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            }
+        ],
+        "d2": [
+            {
+                "name": "Joel Hanley",
+                "number": 44,
+                "pos": "ld",
+                "id": 2605,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Simon Nemec",
                 "number": 71,
                 "pos": "rd",
@@ -9635,10 +9657,10 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
-        "d2": [
+        "d3": [
             {
                 "name": "Jacob Middleton",
                 "number": 5,
@@ -9647,7 +9669,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Zayne Parekh",
@@ -9657,29 +9679,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Yan Kuznetsov",
-                "number": 37,
-                "pos": "ld",
-                "id": 30745,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Zach Whitecloud",
-                "number": 28,
-                "pos": "rd",
-                "id": 4658,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
@@ -9771,10 +9771,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Yan Kuznetsov",
-                "number": 37,
+                "name": "Joel Hanley",
+                "number": 44,
                 "pos": "sk3",
-                "id": 30745,
+                "id": 2605,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -9789,9 +9789,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-01)",
-        "updated_at": "2026-10-02T14:04:21.927Z",
-        "fetched_at": "2026-10-02T15:27:10Z"
+        "lineup_source": "Pat Steinberg",
+        "updated_at": "2026-10-02T18:05:42.231Z",
+        "fetched_at": "2026-10-02T19:02:25Z"
     },
     "NSH": {
         "f1": [
