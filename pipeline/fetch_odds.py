@@ -33,7 +33,14 @@ Output (pipeline/odds.json, public/data/odds.json, data/odds.json):
       "Flyers_puckline": 180, "Flyers_puckline_spread": "-1.5",
       "total_line": "5.5", "total_over": -110, "total_under": -110,
       "Flyers_three_way": 150, "three_way_tie": 290, "Flyers_1p_ml": -120,
+      "Flyers_1p_three_way": 168, "1p_three_way_tie": 172,
       "source": "nhl_partner", "sources": [...], "fetched_at": "..." } }
+
+1st period (Bovada only; the NHL partner feed has no period markets): ``TEAM_1p_ml`` is the
+2-way period moneyline (market key 2W-12), whose bets are REFUNDED when the period is tied
+(checked on the raw feed 2026-10-02: -130 / EVEN sums to ~1.065 implied, which only fits a
+2-way price with the tie refunded); ``TEAM_1p_three_way`` / ``1p_three_way_tie`` is the 3-way
+period market (home / tie / away).
 """
 import os
 from datetime import datetime, timedelta, timezone
@@ -283,15 +290,25 @@ def _parse_bovada_event(b, ev, away_raw, home_raw):
     b.put_ml(ml.get("home"), ml.get("away"), src)
     for m in (groups.get("Game Props") or {}).get("markets", []) or []:
         outs = m.get("outcomes", []) or []
-        if m.get("description") == "3-Way Moneyline" and not any("P" in (o.get("description") or "")[-3:] for o in outs):
-            for o in outs:
-                val = _american((o.get("price") or {}).get("american"))
-                d = o.get("description") or ""
-                if "Tie" in d or "Draw" in d:
-                    b.put("three_way_tie", val, src)
-                elif side_of(d):
-                    b.put(f"{b.side_name(side_of(d))}_three_way", val, src)
-            break
+        if m.get("description") != "3-Way Moneyline":
+            continue
+        period = ((m.get("period") or {}).get("abbreviation") or "").upper()
+        p1 = period in ("1P", "P1") or any((o.get("description") or "").endswith("1P") for o in outs)
+        if p1:
+            # 1st-period 3-way (home / tie / away).  The "Moneyline - 1st Period" in Game Lines is
+            # the 2-way market (key 2W-12) whose bets are refunded when the period is tied.
+            tie_key, side_key = "1p_three_way_tie", "{}_1p_three_way"
+        elif not any("P" in (o.get("description") or "")[-3:] for o in outs):
+            tie_key, side_key = "three_way_tie", "{}_three_way"    # regulation 3-way
+        else:
+            continue                                               # other periods
+        for o in outs:
+            val = _american((o.get("price") or {}).get("american"))
+            d = o.get("description") or ""
+            if "Tie" in d or "Draw" in d:
+                b.put(tie_key, val, src)
+            elif side_of(d):
+                b.put(side_key.format(b.side_name(side_of(d))), val, src)
 
 
 def from_espn(books, now):

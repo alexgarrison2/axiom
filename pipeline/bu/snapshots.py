@@ -240,7 +240,10 @@ def price_from_book_entry(e: dict, book: str, source: str, fetched_at: str) -> d
         "pl_home": e.get(f"{hn}_puckline"), "pl_away": e.get(f"{an}_puckline"),
         "three_way_home": e.get(f"{hn}_three_way"), "three_way_away": e.get(f"{an}_three_way"),
         "three_way_tie": e.get("three_way_tie"),
+        # 1st period: the 2-way moneyline (ties refunded) and the 3-way market
         "ml_1p_home": e.get(f"{hn}_1p_ml"), "ml_1p_away": e.get(f"{an}_1p_ml"),
+        "three_way_1p_home": e.get(f"{hn}_1p_three_way"), "three_way_1p_away": e.get(f"{an}_1p_three_way"),
+        "three_way_1p_tie": e.get("1p_three_way_tie"),
     })
 
 
