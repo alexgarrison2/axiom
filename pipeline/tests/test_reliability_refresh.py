@@ -189,14 +189,18 @@ def test_gamestats_type_and_season(tmp_path):
     assert any("not from the 2026-2027 season" in x for x in probs)
 
 
-def test_auto_mode(manifest):
+def test_auto_mode(manifest, monkeypatch):
     at = lambda h, d=1: datetime(2026, 10, d, h, 5, tzinfo=timezone.utc)  # noqa: E731
+    finals = [False]   # has_unscraped_finals() reads the repo's live season data; pin it
+    monkeypatch.setattr(rp, "has_unscraped_finals", lambda: finals[0])
     assert rp.auto_mode(at(12)) == "full"                 # no successful full run recorded
     manifest.write_text(json.dumps({"last_full_run": "2026-10-01T12:20:00Z"}))
     assert rp.auto_mode(at(13)) == "lite"                 # morning full already done
     assert rp.auto_mode(at(20)) == "lite"
     assert rp.auto_mode(at(12, 2)) == "full"              # next morning
     assert rp.auto_mode(at(2, 3)) == "full"               # > 36h without a full run: catch up
+    finals[0] = True
+    assert rp.auto_mode(at(20)) == "full"                 # final games waiting to be scraped
 
 
 def test_freshness_check(tmp_path):

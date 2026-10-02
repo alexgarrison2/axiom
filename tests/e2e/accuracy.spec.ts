@@ -61,13 +61,15 @@ test.describe('/accuracy', () => {
         await page.goto('/accuracy');
         const card = reportCard(page);
         const picksRight = card.locator('div.panel').filter({ hasText: /^Picks right/i }).first();
-        await expect(picksRight).toContainText(slate);
+        // The season record equals the opening-night chip only until a second slate is graded.
+        const openingN = history.filter(h => h.date === '2026-09-29' && !h.retro).length;
+        if (curN === openingN) await expect(picksRight).toContainText(slate);
         if (curN === 3) {
             expect(slate).toBe('1-1');
             await expect(picksRight).toContainText('50.0%');
         }
         const picks = page.locator('section[aria-labelledby="every-pick"]');
-        const noLean = picks.getByTestId('no-lean');
+        const noLean = picks.getByTestId('no-lean').filter({ hasText: /NYR 0\s*@\s*BOS 3/ });
         await expect(noLean).toContainText(/No lean/i);
         await expect(noLean).toContainText(/NYR 0\s*@\s*BOS 3/);
         // NYR@BOS is not a ✓ row in the pick list.

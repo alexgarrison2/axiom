@@ -140,7 +140,7 @@ def test_roster_table_from_the_refresh_crosswalk(tmp_path):
 def test_roster_table_fetches_rosters(tmp_path):
     def getter(url):
         team = url.split("/roster/")[1].split("/")[0]
-        return {"forwards": [{"id": hash(team) % 10_000, "firstName": {"default": "A"}, "lastName": {"default": team},
+        return {"forwards": [{"id": 8_000_000 + int(team[1:]), "firstName": {"default": "A"}, "lastName": {"default": team},
                               "sweaterNumber": 9, "positionCode": "C"}], "defensemen": [], "goalies": []}
     teams = [f"T{i:02d}" for i in range(32)]
     r = RE.roster_table(str(tmp_path), "20262027", fetch=True, teams=teams, getter=getter)

@@ -140,12 +140,22 @@ test.describe('home slate', () => {
 
     test('goalie stat lines from last season carry a 25-26 tag', async ({ page }) => {
         await page.goto('/');
+        await settle(page);
+        // Read every line in one pass: the slate re-renders while games are live, so
+        // per-element locators taken from .all() can go stale mid-loop.
+        const lines = await page.locator('article [class*="gstat"] > span:first-child:has(.sr-only)').evaluateAll(els =>
+            els.map(e => {
+                const sr = e.querySelector('.sr-only')?.textContent ?? '';
+                const c = e.cloneNode(true) as HTMLElement;
+                c.querySelectorAll('.sr-only').forEach(n => n.remove());
+                return { sr, visible: c.textContent ?? '' };
+            }),
+        );
         // The h2 is the matchup name only, so the goalie lines sit beside it, not inside it.
-        const lines = await page.locator('article [class*="gstat"] > span:first-child:has(.sr-only)').all();
-        expect(lines.length).toBeGreaterThan(0);
-        for (const line of lines) {
-            const sr = (await line.locator('.sr-only').textContent()) ?? '';
-            if (/25-26 season/.test(sr)) await expect(line).toContainText('25-26');
+        const season = lines.filter(l => !/^Career versus/.test(l.sr));
+        expect(season.length).toBeGreaterThan(0);
+        for (const { sr, visible } of season) {
+            if (/25-26 season/.test(sr)) expect(visible).toContain('25-26');
             else expect(sr).toMatch(/^This season/);
         }
     });
@@ -323,7 +333,8 @@ test.describe('home slate', () => {
                 ['a[data-lean]', '/methodology#term-lean'],
                 ['a[data-chip="b2b"]', '/methodology#term-b2b'],
             ] as const) {
-                const link = page.locator(`article ${sel}`).first();
+                // Final cards don't expand, so only pregame/live cards carry the toggle under the link.
+                const link = page.locator(`article:has(h2 button[aria-expanded]) ${sel}`).first();
                 if (!(await link.count())) continue;
                 await expect(link).toHaveAttribute('href', href);
                 expect(await link.evaluate(a => !!a.closest('button') || a.getAttribute('aria-hidden') === 'true')).toBe(false);
@@ -342,7 +353,8 @@ test.describe('home slate', () => {
                 await settle(page, 300);
             }
             // Tapping the bar still expands the card.
-            const first = page.locator('article[id]').first();
+            const first = page.locator('article[id]').filter({ has: page.locator('h2 button[aria-expanded]') }).first();
+            if (!(await first.count())) continue;   // a slate of finals
             const bar = (await first.locator('[role="img"][aria-label*="win probability"]').first().boundingBox())!;
             if (info.project.name === 'mobile') await page.touchscreen.tap(bar.x + bar.width / 2, bar.y + bar.height / 2);
             else await page.mouse.click(bar.x + bar.width / 2, bar.y + bar.height / 2);
@@ -393,11 +405,12 @@ test.describe('home slate', () => {
     });
 
     test('goalie names keep their surname next to IR chips (fix4 F4-6)', async ({ page }) => {
-        await page.goto('/?date=2026-10-01');
+        await page.goto('/');
         await settle(page, 300);
-        const games = page.locator('article[id]').filter({ hasText: /EDM|FLA/ });
+        // Every expandable card tonight (finals don't expand), not one fixed date that goes final.
+        const games = page.locator('article[id]').filter({ has: page.locator('h2 button[aria-expanded]') });
         const n = await games.count();
-        test.skip(n === 0, 'EDM / FLA not on 2026-10-01');
+        test.skip(n === 0, 'no pregame or live game on the slate');
         for (let i = 0; i < n; i++) {
             const art = games.nth(i);
             await art.locator('h2 button[aria-expanded]').click();
