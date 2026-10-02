@@ -1,0 +1,34 @@
+{
+ "title": "M5 game-state simulator: pre-declared fitting, selection and validation rules",
+ "declared_at": "2026-10-02T15:30:00Z",
+ "declared_before": "any simulator run on the dev seasons (2023-24, 2024-25) or the holdout (2025-26)",
+ "seasons": {
+  "fit": ["20172018", "20182019", "20192020", "20202021", "20212022", "20222023"],
+  "dev": ["20232024", "20242025"],
+  "holdout": "20252026",
+  "scope": "regular-season games (game type 02) with finite point-in-time inputs; playoffs are simulated live but not scored"
+ },
+ "inputs": "point in time only: team / goalie state from games before the game date, RAPM v2 lineup term and FIN as of d - 2 days (committed lineup_features.csv.gz), league levels decayed over earlier games; the anchoring target is the live game model's walk-forward probability (folds trained on earlier seasons only) and goal_model.expected_total",
+ "markets": {
+  "ml": "P(home wins incl. OT / SO)",
+  "reg3": "regulation 3-way, multinomial log loss",
+  "pl_home": "home -1.5 on the official final (shootout goal included)",
+  "pl_away": "away -1.5",
+  "tot55": "over 5.5",
+  "tot60": "over / push / under 6.0, multinomial log loss",
+  "tot65": "over 6.5",
+  "p1_3w": "1st period 3-way, multinomial",
+  "p1_2w": "1st period 2-way with ties refunded, scored on non-tied periods",
+  "derivative_set": ["reg3", "pl_home", "pl_away", "tot55", "tot60", "tot65", "p1_3w", "p1_2w"],
+  "derivative_score": "sum over the derivative set of the mean per-game log loss"
+ },
+ "rules": {
+  "dispersion": "fit seasons only: overall goal scale set so the mean simulated total equals the actual mean; Gamma shapes of the shared pace shock and the per-team shock chosen on a grid {0 (none), 60, 30, 15} x {0, 60, 30, 15} by the mean of log P(final total) + log P(final margin) - LL(reg 3-way) - LL(ML); scale refit once at the chosen shapes",
+  "rest": "the back-to-back terms (fitted on the fit seasons inside the 5v5 rate regression) stay only if, on the dev seasons pooled, removing them makes the raw simulator's ML log loss + derivative score worse (lower is better)",
+  "anchoring": "variant (a) raw simulator vs (b) simulator anchored (tilt + pace, bisection on likelihood-ratio weights) to the game model's walk-forward win probability and expected total; pick the lower derivative score on the dev seasons pooled; ties (|diff| < 0.0005) go to (b), which keeps the published moneyline coherent with every derivative price",
+  "naive_baseline": "goal_model independent Poisson with the same win % and expected total as the variant it is compared with (raw: the simulator's own; anchored: the game model's)",
+  "holdout": "one look at 2025-26 with the configuration fixed by the rules above, logged in bu/sim/out/look_log.jsonl; no parameter or rule changes after it; the holdout result is reported whatever it is",
+  "publication": "the simulator's probabilities for every derivative market are published (frozen pregame, graded by generate_history.py), but their EVs are INFO ONLY (never gate-open, no units) until the live test passes",
+  "live_test": "per market, on 2026-27 regular-season games with a frozen pregame model probability and a timestamped closing price (odds_close / snapshots): at least 300 graded games and model log loss <= de-vigged closing log loss + 0.002 with the sim also beating the naive Poisson on the same games; until then INFO ONLY"
+ }
+}
