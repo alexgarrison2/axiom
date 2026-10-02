@@ -325,7 +325,8 @@ def test_load_shadow_needs_a_shadow_spec():
 def _bundle(built_at, n_games=10, season="20262027", **kw):
     b = {"version": 1, "kind": "serving_bundle", "season": season, "built_at": built_at,
          "max_source_date": "2026-09-30", "n_games": n_games, "columns": ["bu_d_net", "bu_d_delta"],
-         "players": {"columns": ["player_id", "o", "d", "rated"], "rows": [[1, 0.1, 0.0, True]]}}
+         "players": {"columns": ["player_id", "o", "d", "rated"], "rows": [[1, 0.1, 0.0, True]]},
+         "v3": {"columns": ["player_id", "o", "d"], "rows": [[1, 0.1, 0.0]], "meta": {}}}
     b.update(kw)
     return b
 
@@ -363,6 +364,8 @@ def test_check_bu_bundle(tmp_path, monkeypatch):
     assert V.check_bu_bundle({"bu_bundle_path": str(p)}) == []
     _write_gz(p, _bundle(now, season=V.SEASON_ID, columns=["bu_d_net"]))
     assert any("columns" in e for e in V.check_bu_bundle({"bu_bundle_path": str(p)}))
+    _write_gz(p, _bundle(now, season=V.SEASON_ID, v3=None))                         # site ratings source missing
+    assert any("v3" in e for e in V.check_bu_bundle({"bu_bundle_path": str(p)}))
     assert any("unreadable" in e for e in V.check_bu_bundle({"bu_bundle_path": str(tmp_path / "x.gz")}))
     # a model with bu_d_fin: a fresh bundle must carry the FIN table (else the no-FIN model is served)
     meta["feature_columns"] = ["d_elo", "bu_d_net", "bu_d_delta", "bu_d_fin"]
