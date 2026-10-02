@@ -7,8 +7,16 @@
   "headline": "per-game impact like The Athletic: goals per 82 games from EV offense, EV defense, PP offense, PK defense and finishing, scaled by expected TOI per game in each state; per-60 rates stay as secondary columns"
  },
  "seasons": {
-  "tuning": ["20192020", "20202021", "20212022", "20222023"],
-  "dev": ["20232024", "20242025"],
+  "tuning": [
+   "20192020",
+   "20202021",
+   "20212022",
+   "20222023"
+  ],
+  "dev": [
+   "20232024",
+   "20242025"
+  ],
   "holdout": "20252026",
   "holdout_rule": "one look, every candidate of this file scored in the same run, logged in bu/rapm/out/v3_look_log.jsonl; no parameter or rule change after it; reported whatever it is"
  },
@@ -28,23 +36,121 @@
  ],
  "ev_candidates": {
   "recency": {
-   "B_lin10": {"kind": "blocks", "block_games": 30, "steps": [1.0, 0.9, 0.8, 0.7, 0.6]},
-   "B_lin15": {"kind": "blocks", "block_games": 30, "steps": [1.0, 0.85, 0.7, 0.55, 0.4]},
-   "B_lin20": {"kind": "blocks", "block_games": 30, "steps": [1.0, 0.8, 0.6, 0.4, 0.2]},
-   "B_geo": {"kind": "blocks", "block_games": 30, "steps": [1.0, 0.7, 0.49, 0.343, 0.24]},
-   "B_flat": {"kind": "blocks", "block_games": 30, "steps": [1.0, 1.0, 1.0, 1.0, 1.0]},
-   "D40": {"kind": "decay", "half_life": 40},
-   "D60": {"kind": "decay", "half_life": 60},
-   "D90": {"kind": "decay", "half_life": 90},
+   "B_lin10": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     0.9,
+     0.8,
+     0.7,
+     0.6
+    ]
+   },
+   "B_lin15": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     0.85,
+     0.7,
+     0.55,
+     0.4
+    ]
+   },
+   "B_lin20": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     0.8,
+     0.6,
+     0.4,
+     0.2
+    ]
+   },
+   "B_geo": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     0.7,
+     0.49,
+     0.343,
+     0.24
+    ]
+   },
+   "B_flat": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "D40": {
+    "kind": "decay",
+    "half_life": 40
+   },
+   "D60": {
+    "kind": "decay",
+    "half_life": 60
+   },
+   "D90": {
+    "kind": "decay",
+    "half_life": 90
+   },
    "truncation": "every candidate has weight exactly 0 beyond 246 games ago (three 82-game seasons); the blocks stop at 150"
   },
   "shrinkage_grid_per_recency": {
-   "role 'both' (OFF and DEF means by position x EV-usage tier, position x draft tier under 10 weighted games)": {"v_o": [0.03, 0.045, 0.065], "v_d": [0.01, 0.017, 0.025], "v_role": [0.001, 0.003]},
-   "role 'none' (fixed rookie means by position x draft tier, the v2 target)": {"v_o": [0.03, 0.045, 0.065], "v_d": [0.01, 0.017, 0.025]},
-   "usage tiers (EV minutes per weighted game)": {"F": [11.0, 13.0, 15.0], "D": [16.0, 18.5]},
+   "role 'both' (OFF and DEF means by position x EV-usage tier, position x draft tier under 10 weighted games)": {
+    "v_o": [
+     0.03,
+     0.045,
+     0.065
+    ],
+    "v_d": [
+     0.01,
+     0.017,
+     0.025
+    ],
+    "v_role": [
+     0.001,
+     0.003
+    ]
+   },
+   "role 'none' (fixed rookie means by position x draft tier, the v2 target)": {
+    "v_o": [
+     0.03,
+     0.045,
+     0.065
+    ],
+    "v_d": [
+     0.01,
+     0.017,
+     0.025
+    ]
+   },
+   "usage tiers (EV minutes per weighted game)": {
+    "F": [
+     11.0,
+     13.0,
+     15.0
+    ],
+    "D": [
+     16.0,
+     18.5
+    ]
+   },
    "fixed": "aging steps on earlier seasons' rows (the season's aging curve, fitted on earlier seasons), covariate ridge 20 h toward the last season's, sigma2 1160 per second"
   },
-  "benchmarks": ["window: the shipped season-start window prior + this season's stints at full weight (reproduces bu.rapm asof exactly)", "kalman: the Kalman chain prior (v_new 0.02, kappa 1.25) + this season at full weight"]
+  "benchmarks": [
+   "window: the shipped season-start window prior + this season's stints at full weight (reproduces bu.rapm asof exactly)",
+   "kalman: the Kalman chain prior (v_new 0.02, kappa 1.25) + this season at full weight"
+  ]
  },
  "selection_rule": "the candidate (recency x shrinkage) with the lowest pooled tuning-season primary MSE wins; if the best block-weight candidate is within one paired SE of the overall best, the block candidate is chosen (the owner's lead form). Dev and holdout are reported for the chosen candidate, the benchmarks and the best candidate of every recency, never used to re-select",
  "st_rule": "with the chosen recency and v_role: v_pp in {0.01, 0.02, 0.04, 0.08} x v_pk in {0.005, 0.01, 0.02, 0.04} (position-group means with a light ridge 0.05, sigma2 2800 per second); lowest pooled tuning-season PP next-30-game MSE",
@@ -57,5 +163,13 @@
   "exports": "impact, off_impact (EV OFF + PP + FIN parts), def_impact (EV DEF + PK parts), all in goals per 82 games, plus the per-60 rates and the posterior SD of impact"
  },
  "game_model_rule": "owner rule: the retrained game model with v3 bu_d_net / bu_d_delta / bu_d_fin is promoted only if its dev pooled (2023-24 + 2024-25) walk-forward log loss is lower than the live model's (paired per game) and the single 2025-26 look is not worse than +0.0010 per game; the look is logged in bu/lineup/out/look_log.jsonl. Otherwise the live game model and the v2 serving bundle stay, and only the site's player ratings move to v3",
- "descriptive": "credibility tables (DAL roster, league top 30, named players), correlation with MoneyPuck 5on5 relative xGF/60 and xGA/60 (free skater data), effective weight tables"
+ "descriptive": "credibility tables (DAL roster, league top 30, named players), correlation with MoneyPuck 5on5 relative xGF/60 and xGA/60 (free skater data), effective weight tables",
+ "amendments": [
+  {
+   "at": "2026-10-02T22:40:00Z",
+   "before": "any dev / holdout run (none has been made)",
+   "change": "(1) PP / PK grid extended: v_pp in {0.08, 0.16, 0.32, 0.64} x v_pk in {0.04, 0.08, 0.16, 0.32}, same rule (lowest pooled tuning-season PP next-30-game MSE); (2) EV grid edge: for the selected recency, v_o in {0.015, 0.02} is also scored at the selected (role, v_d, v_role); the lowest pooled tuning MSE among the selected point and these two wins",
+   "why": "tuning seasons only: the PP / PK optimum of the first grid sat at its corner (v_pp 0.08, v_pk 0.04) with calibration slopes still above 1 (PP 1.20-1.24, PK 1.43-1.54: under-dispersed), and the EV optimum sat at the v_o edge 0.03 for every block recency (OFF slope ~1.0)"
+  }
+ ]
 }
