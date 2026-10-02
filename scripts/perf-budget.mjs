@@ -336,7 +336,9 @@ async function checkPages({ baseUrl, routes, runs, out, slack }) {
             if (over.length) failed++;
             console.log(`\n${over.length ? 'FAIL' : 'ok  '} ${route}`);
             for (const r of results) {
-                console.log(`   ${r.pass ? ' ' : '✗'} ${r.metric.padEnd(9)} ${String(r.value).padStart(9)}  (budget ${r.limit})`);
+                // Timing metrics are medians: show every load so a flaky median is visible in the log.
+                const runs = TIMING_METRICS.has(r.metric) && samples.length > 1 ? `  runs ${samples.map((s) => Math.round(s[r.metric])).join(', ')}` : '';
+                console.log(`   ${r.pass ? ' ' : '✗'} ${r.metric.padEnd(9)} ${String(r.value).padStart(9)}  (budget ${r.limit})${runs}`);
             }
             report.routes.push({ route, metrics, results, samples });
         }

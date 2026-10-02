@@ -35,6 +35,21 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ponyxg.com";
 // main thread is waiting on the JS chunks.
 const WARM_INTL = `(window.requestIdleCallback||setTimeout)(function(){try{new Intl.DateTimeFormat("en-US",{hour:"numeric",timeZone:"America/New_York",timeZoneName:"short"}).format(0)}catch(e){}})`;
 
+// First paint waits for the whole document (render-blocking `expect` link,
+// Chromium; other browsers ignore it). Pages sit under loading.tsx and are
+// larger than React's 12.8KB outlining threshold, so the HTML carries the
+// skeleton first and the page in a hidden div that an inline script ($RC)
+// swaps in. If a frame paints before the parser reaches that script, React
+// holds the swap until 300ms after that paint and the whole page then lays
+// out in one long task after FCP: home TBT ~205ms instead of ~95ms at a
+// CI-like 16x CPU throttle, decided by a race between parsing and the first
+// frame. With the paint held until parsing ends, the swap has always run and
+// the first frame is the page itself. No element has this id on purpose: an
+// id inside the page releases the paint before the parser reaches $RC.
+// React hoists the link into <head>. Client-side navigations still show
+// loading.tsx (tests/unit/render-gate.test.ts).
+const RENDER_AFTER_PARSE = "#end-of-document";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -80,6 +95,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased">
+        <link rel="expect" href={RENDER_AFTER_PARSE} blocking="render" />
         <script dangerouslySetInnerHTML={{ __html: WARM_INTL }} />
         <a
           href="#content"
