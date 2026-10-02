@@ -117,7 +117,6 @@ export function GameList({
     );
     const noLean = React.useMemo(() => (result === 'all' ? inWindow.filter(isNoLean) : []), [inWindow, result]);
 
-    const hits = rows.filter(isCorrect).length;
     // KPIs cover the whole filtered span (team, dates, back-filled), not just the right/wrong rows on show.
     const summary = React.useMemo(() => summarize(inWindow), [inWindow]);
     const legacyShown = !!currentSeason && rows.some(g => g.legacy && g.season >= currentSeason);
