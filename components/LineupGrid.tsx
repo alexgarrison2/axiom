@@ -116,6 +116,45 @@ function OutRow({ items }: { items: InjuryView[] }) {
     );
 }
 
+const PART_LABEL = { off: 'OFF', fin: 'FIN', def: 'DEF', net: 'NET' } as const;
+const PART_HINT = {
+    off: 'Offence: sum of the skaters\' RAPM offence (EV xG/60 above average)',
+    fin: 'Finishing: sum of the skaters\' shooting talent beyond shot quality',
+    def: 'Defence: sum of the skaters\' RAPM defence (xGA/60 prevented)',
+    net: 'Net: sum of the skaters\' RAPM NET (OFF + DEF)',
+} as const;
+
+/** Whole-lineup OFF / FIN / DEF / NET as centred bars, each scaled to the league's range for that component. */
+function LineupSummary({ grade }: { grade: NonNullable<SideDetails['grade']> }) {
+    const parts = grade.parts;
+    if (!parts) return null;
+    return (
+        <div role="group" aria-label="Lineup totals" className="flex flex-col gap-1 rounded-[10px] border border-line px-2.5 py-2">
+            {(['off', 'fin', 'def', 'net'] as const).map(k => {
+                const part = parts[k];
+                const span = Math.max(Math.abs(part.min), Math.abs(part.max), Math.abs(part.value), 0.01);
+                const half = Math.min(50, (Math.abs(part.value) / span) * 50);
+                const pos = part.value >= 0;
+                const isNet = k === 'net';
+                return (
+                    <div key={k} title={PART_HINT[k]} className="grid grid-cols-[2rem_minmax(0,1fr)_3.25rem_2.75rem] items-center gap-x-2">
+                        <span className={cn('text-micro uppercase tracking-wide', isNet ? 'font-bold text-fg-1' : 'text-fg-3')}>{PART_LABEL[k]}</span>
+                        <span aria-hidden="true" className={cn('relative rounded-full bg-line', isNet ? 'h-2.5' : 'h-1.5')}>
+                            <span className="absolute inset-y-[-2px] left-1/2 w-px bg-fg-3/60" />
+                            <span
+                                className={cn('absolute inset-y-0 rounded-full', pos ? 'bg-pos/80' : 'bg-neg/80')}
+                                style={pos ? { left: '50%', width: `${half}%` } : { right: '50%', width: `${half}%` }}
+                            />
+                        </span>
+                        <span className={cn('text-right tabular-nums', isNet ? 'text-caption font-bold' : 'text-caption', pos ? 'text-pos' : 'text-neg')}>{fmtSigned(part.value, 2)}</span>
+                        <span className="text-right text-micro tabular-nums text-fg-3">{part.rank != null ? `${part.rank}/${part.outOf}` : ''}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 /**
  * One team's projected lineup: forward lines and defence pairs with each
  * player's NET rating (RAPM, EV xG/60), line ranks, the lineup source age and injuries.
@@ -146,7 +185,7 @@ export default function LineupGrid({
                     {team.triCode}
                 </h3>
                 <span className="flex flex-wrap items-center gap-1.5 text-micro uppercase tracking-wide text-fg-3">
-                    {d.grade ? (
+                    {d.grade && !d.grade.parts ? (
                         <span className="tabular-nums" title="Lineup NET: sum of the skaters' RAPM NET (EV xG/60)">
                             Net <span className="font-bold text-fg-1">{fmtSigned(d.grade.value, 2)}</span>
                             {d.grade.rank != null ? ` · ${d.grade.rank}/${d.grade.outOf}` : ''}
@@ -156,6 +195,7 @@ export default function LineupGrid({
                     {hasLines && age ? <span title={d.lineupSource ? `${d.lineupSource} via DailyFaceoff` : 'DailyFaceoff'}>· {age}</span> : null}
                 </span>
             </div>
+            {d.grade?.parts ? <LineupSummary grade={d.grade} /> : null}
             {hasLines ? (
                 <>
                     <Table keys={FWD} cols={['LW', 'C', 'RW']} d={d} label={`${team.commonName} forward lines`} />

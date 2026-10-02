@@ -287,7 +287,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                                     direction={sort.key === 'net' ? sort.dir : null}
                                     onSort={() => onSort('net')}
                                     align="right"
-                                    title="Net: OFF + DEF, EV xG per 60 above average"
+                                    title="Net: OFF (cyan) + DEF (magenta), EV xG per 60 above average. White tick = NET, grey line = FIN"
                                     className="border-b border-line md:min-w-[9.5rem]"
                                 >
                                     NET
@@ -377,18 +377,38 @@ function shortName(name: string): string {
     return parts.length > 1 ? `${parts[0][0]}. ${parts.slice(1).join(' ')}` : name;
 }
 
-/** NET as a diverging bar around 0 (±0.75 xG/60 full scale), value to the right. */
-const NET_SCALE = 0.75;
+/**
+ * NET as a waterfall around 0 (±1.0 xG/60 full scale): OFF runs out from zero,
+ * DEF continues from where OFF ended, and the white tick is where that lands
+ * (NET = OFF + DEF). FIN is not in NET, so it rides as a thin line underneath.
+ */
+const NET_SCALE = 1;
+const pct = (v: number) => 50 + (Math.max(-NET_SCALE, Math.min(NET_SCALE, v)) / NET_SCALE) * 50;
+function Seg({ from, to, className }: { from: number; to: number; className: string }) {
+    const a = pct(Math.min(from, to));
+    const b = pct(Math.max(from, to));
+    return <span className={cn('absolute rounded-full', className)} style={{ left: `${a}%`, width: `${Math.max(b - a, 1.5)}%` }} />;
+}
 function NetBar({ p }: { p: Skater }) {
-    const clamped = Math.max(-NET_SCALE, Math.min(NET_SCALE, p.net));
-    const half = (Math.abs(clamped) / NET_SCALE) * 50;
     const t = ratingTone(p.net, p, STRONG.net);
-    const fill = !p.rated || p.evMin < 250 ? 'bg-fg-3/50' : p.net >= 0 ? 'bg-pos/70' : 'bg-neg/70';
+    const dim = !p.rated || p.evMin < 250;
     return (
         <span className="flex items-center justify-end gap-2">
-            <span aria-hidden="true" className="relative hidden h-2 w-20 shrink-0 rounded-full bg-line md:block">
-                <span className="absolute inset-y-0 left-1/2 w-px bg-fg-3/60" />
-                <span className={cn('absolute inset-y-0 rounded-full', fill)} style={p.net >= 0 ? { left: '50%', width: `${half}%` } : { right: '50%', width: `${half}%` }} />
+            <span aria-hidden="true" className="relative hidden h-5 w-32 shrink-0 md:block" title={`OFF ${signed(p.off)} + DEF ${signed(p.def)} = NET ${signed(p.net)}${p.fin != null ? ` · FIN ${signed(p.fin)}` : ''}`}>
+                <span className="absolute inset-x-0 top-[7px] h-2 rounded-full bg-line" />
+                <span className="absolute inset-y-0 left-1/2 w-px bg-fg-3/50" />
+                <span className={cn('absolute inset-0 transition-opacity', dim && 'opacity-50')}>
+                    <span className="absolute inset-x-0 top-[7px] h-2">
+                        <Seg from={0} to={p.off} className="inset-y-0 bg-brand" />
+                        <Seg from={p.off} to={p.off + p.def} className="inset-y-[1px] bg-magenta" />
+                    </span>
+                    {p.fin != null ? (
+                        <span className="absolute inset-x-0 top-[17px] h-[3px]">
+                            <Seg from={0} to={p.fin} className="inset-y-0 bg-fg-2" />
+                        </span>
+                    ) : null}
+                    <span className="absolute top-[3px] h-[16px] w-[2px] -translate-x-1/2 rounded-full bg-fg-1" style={{ left: `${pct(p.net)}%` }} />
+                </span>
             </span>
             <span className={cn('w-12 text-right font-bold', t ? TONE[t] : p.rated ? 'text-fg-1' : 'text-fg-3')}>
                 {signed(p.net)}

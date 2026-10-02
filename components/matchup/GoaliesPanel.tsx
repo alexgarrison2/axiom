@@ -10,11 +10,24 @@ import { cn } from '@/lib/utils';
 
 type Line = GoalieView['cur'];
 
-/** "29-24-2 .906 2.68" from a structured line or the CSV "(W-L-OTL) | .SV% | GAA" text. */
-function lineText(l?: Line, text?: string | null): string | null {
-    if (l) return `${l.w}-${l.l}-${l.ot} ${fmtSv(l.svpct)} ${l.gaa.toFixed(2)}`;
+type Parts = { record: string; sv: string; gaa: string };
+
+/** Record / SV% / GAA from a structured line or the CSV "(W-L-OTL) | .SV% | GAA" text. */
+function lineParts(l?: Line, text?: string | null): Parts | null {
+    if (l) return { record: `${l.w}-${l.l}-${l.ot}`, sv: fmtSv(l.svpct), gaa: l.gaa.toFixed(2) };
     const g = parseGoalieLine(text);
-    return g ? `${g.record} ${g.sv} ${g.gaa}` : (text ?? null);
+    return g ? { record: g.record, sv: g.sv, gaa: g.gaa } : null;
+}
+
+/** The three figures as separate, evenly spaced cells so they never read as one run of digits. */
+function Figures({ f }: { f: Parts }) {
+    return (
+        <span className="inline-flex items-baseline gap-4">
+            <span>{f.record}</span>
+            <span>{f.sv}</span>
+            <span>{f.gaa}</span>
+        </span>
+    );
 }
 
 /** One label / value row of a goalie tile. */
@@ -46,14 +59,14 @@ function StarterTile({ s, opp, now, view }: { s: SideData; opp: string; now: Dat
     const st = goalieStatus(s.goalieStatus);
     const at = shortAge(s.goalieStatusAt, now);
     const curGp = s.goalieCurGp ?? 0;
-    const cur = lineText(undefined, curGp >= 1 ? s.goalieCur : null);
-    const prev = lineText(undefined, s.goaliePrev);
+    const cur = lineParts(undefined, curGp >= 1 ? s.goalieCur : null);
+    const prev = lineParts(undefined, s.goaliePrev);
     const window = view?.gsaxSeason ?? null;
     const head = s.gsax != null ? gsaxHeadline(s.gsax, curGp) : null;
     // Until he has a real sample this season the rating is last season's (or the seasons it spans).
     const tag = head?.prior ? (windowTag(window) ?? PREV_TAG) : null;
     return (
-        <div className="tile flex min-w-0 flex-col gap-2">
+        <div className="tile flex min-w-0 flex-col gap-3">
             {/* The injury chip wraps under the name rather than squeezing it (never under 7 characters). */}
             <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
                 <span className="flex min-w-[7ch] max-w-full flex-col">
@@ -81,13 +94,13 @@ function StarterTile({ s, opp, now, view }: { s: SideData; opp: string; now: Dat
                     ) : null}
                 </div>
             ) : null}
-            <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-3 gap-y-1 text-caption">
+            <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-5 gap-y-2.5 text-caption">
                 <Row k={CUR_TAG} dim={!cur}>
-                    {cur ?? '0 GP'}
+                    {cur ? <Figures f={cur} /> : '0 GP'}
                 </Row>
                 {prev ? (
                     <Row k={PREV_TAG} dim>
-                        {prev}
+                        <Figures f={prev} />
                     </Row>
                 ) : null}
                 {view?.gsaxCur != null && view.gsaxCurGp ? (
@@ -97,7 +110,7 @@ function StarterTile({ s, opp, now, view }: { s: SideData; opp: string; now: Dat
                 ) : null}
                 {s.vsOpp ? (
                     <Row k={`vs ${opp}`}>
-                        {s.vsOpp.record} {fmtSv(s.vsOpp.sv)} {s.vsOpp.gaa.toFixed(2)}
+                        <Figures f={{ record: s.vsOpp.record, sv: fmtSv(s.vsOpp.sv), gaa: s.vsOpp.gaa.toFixed(2) }} />
                     </Row>
                 ) : null}
                 {s.goaliePo ? <Row k="Career PO">{s.goaliePo.replace(/\s*\|\s*/g, ' ')}</Row> : null}
@@ -107,11 +120,11 @@ function StarterTile({ s, opp, now, view }: { s: SideData; opp: string; now: Dat
 }
 
 function Backup({ g }: { g: GoalieView }) {
-    const cur = lineText(g.cur);
-    const prev = lineText(g.prev);
+    const cur = lineParts(g.cur);
+    const prev = lineParts(g.prev);
     const tag = (g.cur?.gp ?? 0) < SMALL_SAMPLE_GP ? windowTag(g.gsaxSeason) : null;
     return (
-        <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 border-t border-line pt-1.5 text-caption">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-line pt-2.5 text-caption">
             {/* Name first: the IR chip and the stat lines wrap to the next line before the name loses a letter. */}
             <span className="flex min-w-0 max-w-full flex-wrap items-center gap-x-1.5 gap-y-0.5">
                 <span data-goalie-name className="min-w-[7ch] max-w-full shrink-0 truncate font-display font-bold uppercase text-fg-2">
@@ -119,15 +132,17 @@ function Backup({ g }: { g: GoalieView }) {
                 </span>
                 <InjuryTag injury={g.injury} />
             </span>
-            <span className="ml-auto flex flex-col items-end tabular-nums">
+            <span className="ml-auto flex flex-col items-end gap-1 tabular-nums">
                 {cur ? (
                     <span className="text-fg-1">
-                        <span className="text-micro text-fg-3">{CUR_TAG}</span> {cur}
+                        <span className="mr-2 text-micro text-fg-3">{CUR_TAG}</span>
+                        <Figures f={cur} />
                     </span>
                 ) : null}
                 {prev ? (
                     <span className="text-fg-3">
-                        <span className="text-micro">{PREV_TAG}</span> {prev}
+                        <span className="mr-2 text-micro">{PREV_TAG}</span>
+                        <Figures f={prev} />
                     </span>
                 ) : null}
                 {g.gsaxPerGame != null ? (
@@ -159,7 +174,7 @@ export function GoaliesPanel({ p, state }: { p: Prediction; state: DetailsState 
                                 {d => {
                                     const others = d[side].goalies.filter(g => !g.starter);
                                     return others.length ? (
-                                        <div className="flex flex-col gap-1.5 px-1">
+                                        <div className="flex flex-col gap-2.5 px-1">
                                             {others.map(g => (
                                                 <Backup key={g.name} g={g} />
                                             ))}

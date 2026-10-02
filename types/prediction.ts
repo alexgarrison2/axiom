@@ -230,6 +230,24 @@ export interface LineImpact {
     pct: number;
 }
 
+/** One RAPM component summed over the projected lineup, with its rank and the league range it is drawn against. */
+export interface LineupPart {
+    value: number;
+    rank: number | null;
+    outOf: number;
+    /** Lowest / highest lineup total across the league (the bar scale). */
+    min: number;
+    max: number;
+}
+
+export interface LineupGrade {
+    value: number;
+    rank: number | null;
+    outOf: number;
+    /** Lineup OFF / FIN / DEF / NET totals (EV xG/60 above average). */
+    parts?: Record<'off' | 'fin' | 'def' | 'net', LineupPart>;
+}
+
 export interface InjuryView {
     name: string;
     display: string;
@@ -260,7 +278,7 @@ export interface GoalieView {
 export interface SideDetails {
     lines: Record<string, LineupPlayerView[]>; // f1..f4, d1..d3
     lineImpacts: Record<string, LineImpact | null>;
-    grade: { value: number; rank: number | null; outOf: number } | null;
+    grade: LineupGrade | null;
     lineupSource: string | null;
     lineupUpdatedAt: string | null;
     injuries: InjuryView[];

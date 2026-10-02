@@ -10,7 +10,7 @@
  * initial + same surname. There is no bare last-name fallback, so two
  * Tkachuks never share a value.
  */
-import type { LineImpact, LineupPlayerView } from '../../types/prediction';
+import type { LineImpact, LineupGrade, LineupPlayerView } from '../../types/prediction';
 import { nameIndex, type Ratings } from '../players/ratings';
 import { disambiguate } from './format';
 
@@ -34,6 +34,10 @@ interface Entry {
     id: number;
     /** NET, EV xG/60 above average; null for a skater with no NHL sample yet (rookie prior). */
     impact: number | null;
+    /** RAPM components behind the NET (EV xG/60 above average); null when unrated or absent from the file. */
+    off: number | null;
+    def: number | null;
+    fin: number | null;
 }
 
 export interface ImpactIndex {
@@ -47,7 +51,7 @@ export function buildIndex(ratings: Ratings): ImpactIndex {
     return {
         resolve(name, team, def) {
             const p = find(name, team, null, def);
-            return p ? { id: p.id, impact: p.rated ? p.net : null } : null;
+            return p ? { id: p.id, impact: p.rated ? p.net : null, off: p.rated ? p.off : null, def: p.rated ? p.def : null, fin: p.rated ? (p.fin ?? null) : null } : null;
         },
     };
 }
@@ -69,19 +73,29 @@ function slotTotal(index: ImpactIndex, lineup: DfoLineup, team: string, key: str
     return t;
 }
 
-function gradeOf(index: ImpactIndex, lineup: DfoLineup, team: string): { value: number; found: number } {
+export const PARTS = ['off', 'fin', 'def', 'net'] as const;
+export type Part = (typeof PARTS)[number];
+export type PartTotals = Record<Part, number>;
+
+function gradeOf(index: ImpactIndex, lineup: DfoLineup, team: string): { value: number; found: number; parts: PartTotals } {
     let value = 0;
     let found = 0;
+    const parts: PartTotals = { off: 0, fin: 0, def: 0, net: 0 };
     for (const [key] of SLOTS) {
         for (const p of playersIn(lineup, key)) {
-            const v = index.resolve(p.name, team, key.startsWith('d'))?.impact;
-            if (v != null) {
+            const e = index.resolve(p.name, team, key.startsWith('d'));
+            const v = e?.impact;
+            if (e && v != null) {
                 value += v;
                 found++;
+                parts.off += e.off ?? 0;
+                parts.fin += e.fin ?? 0;
+                parts.def += e.def ?? 0;
+                parts.net += v;
             }
         }
     }
-    return { value, found };
+    return { value, found, parts };
 }
 
 export interface LeagueContext {
@@ -89,12 +103,15 @@ export interface LeagueContext {
     /** Sorted slot totals across every team's current lineup. */
     dist: Record<string, number[]>;
     grades: number[];
+    /** Sorted lineup totals per component across every team's current lineup. */
+    partDist: Record<Part, number[]>;
 }
 
 export function leagueContext(index: ImpactIndex, allLineups: Record<string, DfoLineup>): LeagueContext {
     const dist: Record<string, number[]> = {};
     for (const [key] of SLOTS) dist[key] = [];
     const grades: number[] = [];
+    const partDist: Record<Part, number[]> = { off: [], fin: [], def: [], net: [] };
     for (const [team, lu] of Object.entries(allLineups)) {
         if (!lu || typeof lu !== 'object') continue;
         for (const [key, req] of SLOTS) {
@@ -102,11 +119,15 @@ export function leagueContext(index: ImpactIndex, allLineups: Record<string, Dfo
             if (t != null) dist[key].push(t);
         }
         const g = gradeOf(index, lu, team);
-        if (g.found >= 10) grades.push(g.value);
+        if (g.found >= 10) {
+            grades.push(g.value);
+            for (const k of PARTS) partDist[k].push(g.parts[k]);
+        }
     }
     for (const k of Object.keys(dist)) dist[k].sort((a, b) => a - b);
     grades.sort((a, b) => a - b);
-    return { index, dist, grades };
+    for (const k of PARTS) partDist[k].sort((a, b) => a - b);
+    return { index, dist, grades, partDist };
 }
 
 function rankIn(sorted: number[], v: number): { rank: number; outOf: number; pct: number } {
@@ -119,7 +140,7 @@ function rankIn(sorted: number[], v: number): { rank: number; outOf: number; pct
 export interface LineupView {
     lines: Record<string, LineupPlayerView[]>;
     lineImpacts: Record<string, LineImpact | null>;
-    grade: { value: number; rank: number | null; outOf: number } | null;
+    grade: LineupGrade | null;
 }
 
 const MOVES = new Set(['up', 'down', 'new']);
@@ -148,6 +169,8 @@ export function lineupView(ctx: LeagueContext, lineup: DfoLineup | null | undefi
         lineImpacts[key] = total == null || !ctx.dist[key]?.length ? null : { total: Math.round(total * 100) / 100, ...rankIn(ctx.dist[key], total) };
     }
     const g = gradeOf(ctx.index, lineup, team);
-    const grade = g.found >= 10 ? { value: Math.round(g.value * 100) / 100, ...(ctx.grades.length > 1 ? { rank: rankIn(ctx.grades, g.value).rank, outOf: rankIn(ctx.grades, g.value).outOf } : { rank: null, outOf: 0 }) } : null;
+    const parts = g.found >= 10 ? Object.fromEntries(PARTS.map(k => [k, { value: Math.round(g.parts[k] * 100) / 100, rank: ctx.partDist[k].length > 1 ? rankIn(ctx.partDist[k], g.parts[k]).rank : null, outOf: ctx.partDist[k].length, min: ctx.partDist[k][0] ?? 0, max: ctx.partDist[k][ctx.partDist[k].length - 1] ?? 0 }])) as LineupGrade['parts'] : undefined;
+    const grade: LineupGrade | null = g.found >= 10 ? {
+        parts, value: Math.round(g.value * 100) / 100, ...(ctx.grades.length > 1 ? { rank: rankIn(ctx.grades, g.value).rank, outOf: rankIn(ctx.grades, g.value).outOf } : { rank: null, outOf: 0 }) } : null;
     return { lines, lineImpacts, grade };
 }

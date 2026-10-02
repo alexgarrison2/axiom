@@ -27,6 +27,7 @@ import {
     unpackTeamGames,
     type LeagueReference,
     type MatchupGame,
+    type LastKey,
     type SideFilter,
     type StatDef,
     type TeamGamesPayload,
@@ -50,6 +51,7 @@ interface Cell {
     value: number | null;
     pct: number | null;
     gp?: number;
+    minGp?: number;
 }
 
 interface RowModel {
@@ -61,38 +63,45 @@ interface RowModel {
 const HATCH = 'repeating-linear-gradient(135deg, rgb(var(--text-3-rgb) / 0.55) 0 2px, transparent 2px 5px)';
 
 /**
- * One half of a row: the bar grows outward from the axis, the value sits at
- * its end, and the side with the advantage gets its crest beside the value.
+ * One half of a row: the value sits in a fixed column at the outer edge and
+ * the bar grows outward from the axis inside its own track, so nothing can
+ * overflow the panel (no horizontal scroll at any width).
  */
-function Bar({ side, cell, color, state, fmt, tri }: { side: Side; cell: Cell; color: string; state: BarState; fmt: (v: number) => string; tri: string }) {
+function Bar({ side, cell, color, state, fmt }: { side: Side; cell: Cell; color: string; state: BarState; fmt: (v: number) => string }) {
     const away = side === 'away';
-    if (cell.value == null || cell.pct == null) {
-        return <div className={cn('flex h-7 items-center px-1.5 text-caption text-fg-3', away ? 'justify-end' : 'justify-start')}>—</div>;
-    }
-    const w = Math.max(cell.pct, 2);
-    return (
-        <div className={cn('relative h-7', away ? 'ml-12' : 'mr-12')}>
-            <div
-                data-bar={state}
-                className={cn('absolute top-1/2 h-2.5 -translate-y-1/2', away ? 'right-0 rounded-l-full' : 'left-0 rounded-r-full')}
-                style={{
-                    width: `${w}%`,
-                    background: state === 'small' ? HATCH : color,
-                    opacity: state === 'adv' || state === 'small' ? 1 : state === 'even' ? 0.55 : 0.28,
-                }}
-            />
-            <span
-                className={cn(
-                    'absolute top-1/2 flex -translate-y-1/2 items-center gap-1 whitespace-nowrap text-caption tabular-nums',
-                    away ? 'flex-row-reverse pr-1.5' : 'pl-1.5',
-                    state === 'adv' ? 'font-bold text-fg-1' : state === 'small' ? 'text-fg-3' : 'text-fg-2',
-                )}
-                style={away ? { right: `${w}%` } : { left: `${w}%` }}
-            >
-                {fmt(cell.value)}
-                {state === 'adv' ? <Crest tri={tri} size={22} className="h-[22px] w-[22px] drop-shadow-none" /> : null}
-            </span>
+    const w = cell.pct == null ? 0 : Math.max(cell.pct, 2);
+    const missing = cell.value == null || cell.pct == null;
+    const value = (
+        <span
+            className={cn(
+                'whitespace-nowrap text-caption tabular-nums',
+                away ? 'text-left' : 'text-right',
+                state === 'adv' ? 'font-bold text-fg-1' : state === 'small' || missing ? 'text-fg-3' : 'text-fg-2',
+            )}
+        >
+            {missing ? '—' : fmt(cell.value!)}
+        </span>
+    );
+    const track = (
+        <div className="relative h-7">
+            {missing ? null : (
+                <div
+                    data-bar={state}
+                    className={cn('absolute top-1/2 h-2.5 -translate-y-1/2', away ? 'right-0 rounded-l-full' : 'left-0 rounded-r-full')}
+                    style={{
+                        width: `${w}%`,
+                        background: state === 'small' ? HATCH : color,
+                        opacity: state === 'adv' || state === 'small' ? 1 : state === 'even' ? 0.55 : 0.28,
+                    }}
+                />
+            )}
         </div>
+    );
+    return (
+        <>
+            {away ? value : track}
+            {away ? track : value}
+        </>
     );
 }
 
@@ -104,18 +113,34 @@ function barState(row: RowModel, side: Side): BarState {
     return row.adv === side ? 'adv' : 'dim';
 }
 
-function ChartRow({ row, tris, colors }: { row: RowModel; tris: Record<Side, string>; colors: Record<Side, string> }) {
+/** White wedge between the stat label and the bar of the side with the advantage. */
+function Wedge({ side }: { side: Side }) {
+    return (
+        <span
+            aria-hidden="true"
+            data-wedge={side}
+            className={cn(
+                'absolute top-1/2 h-0 w-0 -translate-y-1/2 border-y-[5px] border-y-transparent',
+                side === 'away' ? 'left-1 border-r-[7px] border-r-white' : 'right-1 border-l-[7px] border-l-white',
+            )}
+        />
+    );
+}
+
+function ChartRow({ row, colors }: { row: RowModel; colors: Record<Side, string> }) {
     return (
         <div
-            className="grid grid-cols-[minmax(0,1fr)_64px_minmax(0,1fr)] items-center cq-md:grid-cols-[minmax(0,1fr)_84px_minmax(0,1fr)]"
+            className="grid grid-cols-[2.75rem_minmax(0,1fr)_5.25rem_minmax(0,1fr)_2.75rem] items-center gap-x-1.5 cq-md:grid-cols-[3.25rem_minmax(0,1fr)_6rem_minmax(0,1fr)_3.25rem]"
             data-stat={row.stat.key}
             data-adv={row.adv ?? 'none'}
         >
-            <Bar side="away" tri={tris.away} cell={row.cells.away} color={colors.away} state={barState(row, 'away')} fmt={row.stat.fmt} />
-            <span className="flex h-7 items-center justify-center whitespace-nowrap border-x border-line text-micro font-bold uppercase tracking-wide text-fg-2">
+            <Bar side="away" cell={row.cells.away} color={colors.away} state={barState(row, 'away')} fmt={row.stat.fmt} />
+            <span className="relative flex h-7 items-center justify-center whitespace-nowrap border-x border-line px-3 text-micro font-bold uppercase tracking-wide text-fg-2">
+                {row.adv === 'away' ? <Wedge side="away" /> : null}
                 {row.stat.label}
+                {row.adv === 'home' ? <Wedge side="home" /> : null}
             </span>
-            <Bar side="home" tri={tris.home} cell={row.cells.home} color={colors.home} state={barState(row, 'home')} fmt={row.stat.fmt} />
+            <Bar side="home" cell={row.cells.home} color={colors.home} state={barState(row, 'home')} fmt={row.stat.fmt} />
         </div>
     );
 }
@@ -163,6 +188,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
     const [useLoc, setUseLoc] = useState(false);
     const [useRest, setUseRest] = useState(false);
     const [useStarter, setUseStarter] = useState(false);
+    const [last, setLast] = useState<LastKey>('all');
 
     useEffect(() => {
         let live = true;
@@ -197,6 +223,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
                 location: useLoc ? (side === 'home' ? 'home' : 'road') : 'all',
                 rest: useRest ? rest[side] : 'all',
                 starter: useStarter ? p[side].goalie : null,
+                last,
             };
             const sel = filterGames(games[side], filters[side], p.id);
             gp[side] = sel.length;
@@ -210,15 +237,15 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
                     const g = details?.[side]?.grade ?? null;
                     cells[side] = { value: g?.value ?? null, pct: g ? rankPercentile(g.rank, g.outOf) : null };
                 } else {
-                    const ref = league.ref[refKey(filters[side].location, filters[side].rest)]?.[stat.key];
+                    const ref = league.ref[refKey(filters[side].location, filters[side].rest, last)]?.[stat.key];
                     const v = values[side][stat.key];
-                    cells[side] = { value: v, pct: percentile(v, ref, stat.higherBetter), gp: gp[side] };
+                    cells[side] = { value: v, pct: percentile(v, ref, stat.higherBetter), gp: gp[side], minGp: last === 'all' ? undefined : last };
                 }
             }
             return { stat, cells, adv: advantage(cells.away, cells.home) };
         });
         return { rows, gp, rest, filters, seasons: league.seasons };
-    }, [load, state, useLoc, useRest, useStarter, p]);
+    }, [load, state, useLoc, useRest, useStarter, last, p]);
 
     if (load.status === 'loading') {
         return (
@@ -238,6 +265,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
         if (f.location !== 'all') t.push(f.location);
         if (f.rest !== 'all') t.push(REST_LABEL[f.rest]);
         if (useStarter) t.push(goalie[side] ? lastName(goalie[side]!) : 'Any G');
+        if (last !== 'all') t.push(`L${last}`);
         return t;
     };
     const teamRows = model.rows.filter(r => r.stat.key !== 'lineup');
@@ -271,6 +299,12 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
                 >
                     Starter
                 </FilterChip>
+                <FilterChip selected={last === 5} onSelectedChange={v => setLast(v ? 5 : 'all')} title="Each team's last 5 games (after the other filters)">
+                    Last 5
+                </FilterChip>
+                <FilterChip selected={last === 10} onSelectedChange={v => setLast(v ? 10 : 'all')} title="Each team's last 10 games (after the other filters)">
+                    Last 10
+                </FilterChip>
             </div>
 
             <div className="flex items-center justify-center gap-2 text-micro uppercase tracking-wide text-fg-3">
@@ -287,23 +321,23 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
                 {teamRows
                     .filter(r => r.stat.sub)
                     .map(r => (
-                        <ChartRow key={r.stat.key} row={r} tris={tris} colors={colors} />
+                        <ChartRow key={r.stat.key} row={r} colors={colors} />
                     ))}
                 <GroupTag>All situations</GroupTag>
                 {teamRows
                     .filter(r => !r.stat.sub)
                     .map(r => (
-                        <ChartRow key={r.stat.key} row={r} tris={tris} colors={colors} />
+                        <ChartRow key={r.stat.key} row={r} colors={colors} />
                     ))}
                 <GroupTag extra={lineupImpactSeason && lineupImpactSeason !== SEASON_ID ? <SeasonTag>{shortSeason(lineupImpactSeason)}</SeasonTag> : null}>
                     Ignores filters
                 </GroupTag>
-                <ChartRow row={lineupRow} tris={tris} colors={colors} />
+                <ChartRow row={lineupRow} colors={colors} />
             </div>
 
             <table className="sr-only">
                 <caption>
-                    {`League percentiles, ${windowLabel} regular season${useLoc || useRest || useStarter ? ', filtered to each team’s situation tonight' : ''}. ${tris.away} ${model.gp.away} games, ${tris.home} ${model.gp.home} games.`}
+                    {`League percentiles, ${windowLabel} regular season${useLoc || useRest || useStarter || last !== 'all' ? ', filtered to each team’s situation tonight' : ''}. ${tris.away} ${model.gp.away} games, ${tris.home} ${model.gp.home} games.`}
                 </caption>
                 <thead>
                     <tr>

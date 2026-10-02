@@ -11,6 +11,8 @@ import { fairLine } from '@/lib/matchup/parse';
 import { hasMarket, hasPrediction, recommendedBet } from '@/lib/matchup/edge';
 import { cn } from '@/lib/utils';
 import { GlossLink } from '@/components/ui/gloss-link';
+import { clashSafePair } from '@/components/ui/team-color';
+import { readableTextOn } from '@/components/ui/color';
 import { useHydrated } from './GameTime';
 import { MarketsTable } from './MarketsTable';
 import { hasInfoOnlyEv, marketRows } from '@/lib/matchup/markets';
@@ -22,44 +24,47 @@ export function oddsHistoryUrl(p: Prediction): string {
     return `/api/odds-history?${q.toString()}`;
 }
 
-/** Butterfly row: away value · label · home value. */
-function Row({ label, away, home, strong, tone }: { label: React.ReactNode; away: React.ReactNode; home: React.ReactNode; strong?: boolean; tone?: string }) {
-    const v = cn('py-1 tabular-nums', strong ? 'font-bold text-fg-1' : 'text-fg-1', tone);
+/** One view of the win probability as a split bar: each team's share and its moneyline on its own side. */
+function ProbRow({
+    label,
+    pair,
+    odds,
+    colors,
+    a,
+    h,
+    magenta,
+}: {
+    label: React.ReactNode;
+    pair: { away: number; home: number };
+    odds: [string | null, string | null];
+    colors: { away: string; home: string };
+    a: string;
+    h: string;
+    magenta?: boolean;
+}) {
+    const seg = (side: 'away' | 'home') => {
+        const win = pair[side];
+        const fill = colors[side];
+        return (
+            <div
+                className={cn('flex h-11 min-w-0 items-center px-2.5', side === 'away' ? 'justify-start' : 'justify-end text-right')}
+                style={{ width: `${win}%`, background: fill, color: readableTextOn(fill), opacity: win >= 50 ? 1 : 0.62 }}
+            >
+                <span className="flex flex-col leading-tight">
+                    <span className="font-display text-title font-bold tabular-nums">{win.toFixed(1)}%</span>
+                    <span className="text-micro tabular-nums opacity-80">{odds[side === 'away' ? 0 : 1] ?? '—'}</span>
+                </span>
+            </div>
+        );
+    };
     return (
-        <tr className="border-t border-line first:border-t-0">
-            <td className={cn(v, 'text-left')}>{away ?? '—'}</td>
-            <th scope="row" className="px-2 py-1 text-center text-micro font-medium uppercase tracking-wide text-fg-3">
-                {label}
-            </th>
-            <td className={cn(v, 'text-right')}>{home ?? '—'}</td>
-        </tr>
-    );
-}
-
-/** One side of a probability row: win % (one decimal) over its moneyline. */
-function PctOdds({ pct, odds, home, tone }: { pct: number; odds: string | null; home?: boolean; tone?: string }) {
-    return (
-        <span className={cn('flex flex-col leading-tight', home ? 'items-end' : 'items-start')}>
-            <span className={cn('font-display text-body font-bold tabular-nums cq-md:text-[17px]', tone ?? 'text-fg-1')}>{pct.toFixed(1)}%</span>
-            <span className="text-micro tabular-nums text-fg-3">{odds ?? '—'}</span>
-        </span>
-    );
-}
-
-/** Double-height probability row: forecast, model or market. */
-function PctRow({ label, pair, odds, tone }: { label: React.ReactNode; pair: { away: number; home: number }; odds: [string | null, string | null]; tone?: string }) {
-    return (
-        <tr className="border-t border-line first:border-t-0">
-            <td className="py-1.5 text-left">
-                <PctOdds pct={pair.away} odds={odds[0]} tone={tone} />
-            </td>
-            <th scope="row" className="px-2 py-1.5 text-center text-micro font-medium uppercase tracking-wide text-fg-3">
-                {label}
-            </th>
-            <td className="py-1.5 text-right">
-                <PctOdds pct={pair.home} odds={odds[1]} tone={tone} home />
-            </td>
-        </tr>
+        <div className="flex flex-col gap-1" role="group" aria-label={`${a} ${pair.away.toFixed(1)}%, ${h} ${pair.home.toFixed(1)}%`}>
+            <span className={cn('text-micro font-medium uppercase tracking-wide', magenta ? 'text-magenta' : 'text-fg-3')}>{label}</span>
+            <div className="flex overflow-hidden rounded-control">
+                {seg('away')}
+                {seg('home')}
+            </div>
+        </div>
     );
 }
 
@@ -104,45 +109,46 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
     const at = atTime && notToday && fetched ? `${fetched.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${atTime}` : atTime;
     const a = p.away.team.triCode;
     const h = p.home.team.triCode;
+    const colors = clashSafePair(a, h);
 
     return (
         <div className="flex flex-col gap-2.5">
-            <table className="w-full text-caption">
-                <caption className="sr-only">
-                    {a} at {h}: forecast, model and market
-                </caption>
-                <thead>
-                    <tr className="text-micro uppercase tracking-label text-fg-3">
-                        <th scope="col" className="pb-1 text-left font-bold text-fg-1">
-                            {a}
-                        </th>
-                        <th scope="col" className="pb-1 text-center font-medium">
-                            {[src, at].filter(Boolean).join(' · ') || (priced ? 'Market' : 'No line')}
-                            {phase !== 'pre' && priced ? ' · pregame' : ''}
-                        </th>
-                        <th scope="col" className="pb-1 text-right font-bold text-fg-1">
-                            {h}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {forecast ? (
-                        <PctRow label={<GlossLink term="model-pct">Forecast</GlossLink>} pair={forecast} odds={[fmtOdds(p.away.fairOdds), fmtOdds(p.home.fairOdds)]} />
-                    ) : null}
-                    {pure ? (
-                        <PctRow
-                            label={<GlossLink term="model-only">Model</GlossLink>}
-                            pair={pure}
-                            odds={[fmtOdds(fairLine(pure.away)), fmtOdds(fairLine(pure.home))]}
-                            tone="text-magenta"
-                        />
-                    ) : null}
-                    {market ? <PctRow label={<GlossLink term="market-pct">Market</GlossLink>} pair={market} odds={[fmtOdds(p.away.marketOdds), fmtOdds(p.home.marketOdds)]} /> : null}
-                    {p.away.xg != null && p.home.xg != null ? (
-                        <Row label={<GlossLink term="projected-goals">xG</GlossLink>} away={p.away.xg.toFixed(2)} home={p.home.xg.toFixed(2)} strong />
-                    ) : null}
-                </tbody>
-            </table>
+            <div className="flex items-baseline justify-between gap-2 text-micro uppercase tracking-label text-fg-3">
+                <span className="font-bold text-fg-1">{a}</span>
+                <span className="text-center font-medium">
+                    {[src, at].filter(Boolean).join(' · ') || (priced ? 'Market' : 'No line')}
+                    {phase !== 'pre' && priced ? ' · pregame' : ''}
+                </span>
+                <span className="font-bold text-fg-1">{h}</span>
+            </div>
+            <div className="flex flex-col gap-2.5">
+                {forecast ? (
+                    <ProbRow label={<GlossLink term="model-pct">Forecast</GlossLink>} pair={forecast} odds={[fmtOdds(p.away.fairOdds), fmtOdds(p.home.fairOdds)]} colors={colors} a={a} h={h} />
+                ) : null}
+                {pure ? (
+                    <ProbRow
+                        label={<GlossLink term="model-only">Model</GlossLink>}
+                        pair={pure}
+                        odds={[fmtOdds(fairLine(pure.away)), fmtOdds(fairLine(pure.home))]}
+                        colors={colors}
+                        a={a}
+                        h={h}
+                        magenta
+                    />
+                ) : null}
+                {market ? (
+                    <ProbRow label={<GlossLink term="market-pct">Market</GlossLink>} pair={market} odds={[fmtOdds(p.away.marketOdds), fmtOdds(p.home.marketOdds)]} colors={colors} a={a} h={h} />
+                ) : null}
+                {p.away.xg != null && p.home.xg != null ? (
+                    <div className="flex items-baseline justify-between gap-2 border-t border-line pt-2 tabular-nums">
+                        <span className="font-display text-title font-bold text-fg-1">{p.away.xg.toFixed(2)}</span>
+                        <span className="text-micro font-medium uppercase tracking-wide text-fg-3">
+                            <GlossLink term="projected-goals">xG</GlossLink>
+                        </span>
+                        <span className="font-display text-title font-bold text-fg-1">{p.home.xg.toFixed(2)}</span>
+                    </div>
+                ) : null}
+            </div>
 
             <MarketsTable p={p} />
 

@@ -60,7 +60,7 @@ export default function Details({ p, phase, implication, onCollapse }: DetailsPr
                 id={panelId}
                 role="region"
                 aria-label={`${TABS.find(t => t.value === tab)?.label ?? 'Details'}: ${game}`}
-                className="max-h-[640px] overflow-y-auto overscroll-contain [scrollbar-width:thin]"
+                className="max-h-[640px] overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-width:thin]"
             >
                 {tab === 'goalies' ? <GoaliesPanel p={p} state={state} /> : null}
                 {tab === 'lines' ? <LineupsPanel p={p} state={state} /> : null}

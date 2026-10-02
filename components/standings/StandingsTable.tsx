@@ -176,14 +176,6 @@ function ConferenceTable({
                                         <abbr title="Makes the playoffs" className="no-underline">PO%</abbr>
                                     </span>
                                 </th>
-                                {full ? (
-                                    <th scope="col" className={cn(cell, WIDE_VIS, 'w-14 text-right')}>
-                                        <abbr title="Wins the division" className="no-underline">Div</abbr>
-                                    </th>
-                                ) : null}
-                                <th scope="col" className={cn(cell, 'w-12 text-right')}>
-                                    <abbr title="Wins the Stanley Cup" className="no-underline">Cup</abbr>
-                                </th>
                                 {cols.d24 ? (
                                     <th scope="col" className={cn(cell, D24_VIS, 'w-14 text-right')}>
                                         <abbr title="Playoff odds change since yesterday" className="no-underline">24H</abbr>
@@ -194,6 +186,14 @@ function ConferenceTable({
                                         <abbr title="Playoff odds, last 30 days" className="no-underline">30D</abbr>
                                     </th>
                                 ) : null}
+                                {full ? (
+                                    <th scope="col" className={cn(cell, WIDE_VIS, 'w-14 text-right')}>
+                                        <abbr title="Wins the division" className="no-underline">Div</abbr>
+                                    </th>
+                                ) : null}
+                                <th scope="col" className={cn(cell, 'w-12 text-right')}>
+                                    <abbr title="Wins the Stanley Cup" className="no-underline">Cup</abbr>
+                                </th>
                             </>
                         ) : null}
                     </tr>
@@ -212,10 +212,10 @@ function ConferenceTable({
                                         <>
                                             <td />
                                             <td />
-                                            {full ? <td className={WIDE_VIS} /> : null}
-                                            <td />
                                             {cols.d24 ? <td className={D24_VIS} /> : null}
                                             {full && cols.trend ? <td className={WIDE_VIS} /> : null}
+                                            {full ? <td className={WIDE_VIS} /> : null}
+                                            <td />
                                         </>
                                     ) : null}
                                 </tr>
@@ -280,8 +280,6 @@ function Row({
                 <>
                     <td className={cell}>{p ? <ProjCell avg={p.avgPoints} lo={p.p10} hi={p.p90} domain={domain} /> : <Dash />}</td>
                     <td className={cell}>{p ? <OddsBar pct={p.playoffPct} /> : <Dash />}</td>
-                    {full ? <td className={cn(cell, WIDE_VIS, 'text-right text-fg-2')}>{p ? fmtSimPct(p.divisionPct) : <Dash />}</td> : null}
-                    <td className={cn(cell, 'text-right text-fg-2')}>{p ? fmtSimPct(p.cupPct) : <Dash />}</td>
                     {cols.d24 ? (
                         <td className={cn(cell, D24_VIS, 'text-right')}>
                             <Delta value={r.delta24} />
@@ -303,6 +301,8 @@ function Row({
                             </div>
                         </td>
                     ) : null}
+                    {full ? <td className={cn(cell, WIDE_VIS, 'text-right text-fg-2')}>{p ? fmtSimPct(p.divisionPct) : <Dash />}</td> : null}
+                    <td className={cn(cell, 'text-right text-fg-2')}>{p ? fmtSimPct(p.cupPct) : <Dash />}</td>
                 </>
             ) : null}
         </tr>

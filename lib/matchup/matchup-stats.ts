@@ -11,6 +11,7 @@
  *   location — home team: home games only; away team: road games only
  *   rest     — games in the same rest bucket as tonight (B2B / 1 / 2 / 3+ days off)
  *   starter  — games started by tonight's projected starter
+ *   last     — only the team's most recent N games (after the filters above)
  *
  * Percentiles ("better than X% of the league", so lower-is-better stats are
  * flipped and a longer bar is always better) rank a side's value against
@@ -133,20 +134,23 @@ export function unpackTeamGames(p: TeamGamesPayload): MatchupGame[] {
 
 export type LocationKey = 'all' | 'home' | 'road';
 export type RestKey = 'all' | RestBucket;
+export type LastKey = 'all' | 5 | 10;
 
 export interface SideFilter {
     location: LocationKey;
     rest: RestKey;
     /** Projected starter's name; null = any starter. */
     starter: string | null;
+    /** Most recent N games after the other filters; omitted = whole window. */
+    last?: LastKey;
 }
 
-export const NO_FILTER: SideFilter = { location: 'all', rest: 'all', starter: null };
+export const NO_FILTER: SideFilter = { location: 'all', rest: 'all', starter: null, last: 'all' };
 
 /** Regular-season games matching the filter (tonight's own game excluded). */
 export function filterGames(games: MatchupGame[], f: SideFilter, excludeId?: string): MatchupGame[] {
     const key = f.starter ? goalieMatchKey(f.starter) : '';
-    return games.filter(
+    const picked = games.filter(
         g =>
             g.row.type === 2 &&
             g.row.id !== excludeId &&
@@ -154,6 +158,8 @@ export function filterGames(games: MatchupGame[], f: SideFilter, excludeId?: str
             (f.rest === 'all' || g.rest === f.rest) &&
             (!key || goalieMatchKey(g.row.starter) === key),
     );
+    if (!f.last || f.last === 'all') return picked;
+    return [...picked].sort((a, b) => a.row.date.localeCompare(b.row.date)).slice(-f.last);
 }
 
 // ── stats ────────────────────────────────────────────────────────────────────
@@ -232,7 +238,7 @@ export function sideValues(tri: string, games: MatchupGame[]): SideValues {
 /** A team needs this many games in a slice to enter the league reference. */
 export const REF_MIN_GP = 3;
 
-export const refKey = (location: LocationKey, rest: RestKey) => `${location}|${rest}`;
+export const refKey = (location: LocationKey, rest: RestKey, last: LastKey = 'all') => (last === 'all' ? `${location}|${rest}` : `${location}|${rest}|L${last}`);
 
 export interface LeagueReference {
     seasons: string[];
@@ -242,24 +248,27 @@ export interface LeagueReference {
 
 const LOCS: LocationKey[] = ['all', 'home', 'road'];
 const RESTS: RestKey[] = ['all', 0, 1, 2, 3];
+const LASTS: LastKey[] = ['all', 5, 10];
 
 /** Per-team values for every location × rest slice (server side, at build). */
 export function buildReference(byTeam: Map<string, MatchupGame[]>): LeagueReference['ref'] {
     const ref: LeagueReference['ref'] = {};
     for (const location of LOCS) {
         for (const rest of RESTS) {
-            const slice: Partial<Record<TeamStatKey, number[]>> = {};
-            for (const [tri, games] of byTeam) {
-                const sel = filterGames(games, { location, rest, starter: null });
-                if (sel.length < REF_MIN_GP) continue;
-                const v = sideValues(tri, sel);
-                for (const k of TEAM_STAT_KEYS) {
-                    const x = v[k];
-                    if (x != null && Number.isFinite(x)) (slice[k] ??= []).push(Math.round(x * 1000) / 1000);
+            for (const last of LASTS) {
+                const slice: Partial<Record<TeamStatKey, number[]>> = {};
+                for (const [tri, games] of byTeam) {
+                    const sel = filterGames(games, { location, rest, starter: null, last });
+                    if (sel.length < REF_MIN_GP) continue;
+                    const v = sideValues(tri, sel);
+                    for (const k of TEAM_STAT_KEYS) {
+                        const x = v[k];
+                        if (x != null && Number.isFinite(x)) (slice[k] ??= []).push(Math.round(x * 1000) / 1000);
+                    }
                 }
+                for (const k of TEAM_STAT_KEYS) slice[k]?.sort((a, b) => a - b);
+                ref[refKey(location, rest, last)] = slice;
             }
-            for (const k of TEAM_STAT_KEYS) slice[k]?.sort((a, b) => a - b);
-            ref[refKey(location, rest)] = slice;
         }
     }
     return ref;
@@ -297,9 +306,11 @@ export interface SideScore {
     pct: number | null;
     /** Games behind the value; omit for values without a sample (lineup). */
     gp?: number;
+    /** Sample needed before the value is trusted; defaults to MIN_GP (a "last N" window is full at N). */
+    minGp?: number;
 }
 
-export const smallSample = (s: SideScore) => s.gp != null && s.gp < MIN_GP;
+export const smallSample = (s: SideScore) => s.gp != null && s.gp < (s.minGp ?? MIN_GP);
 
 /** Which side is better, or null for a near-tie, a missing value or a small-sample winner. */
 export function advantage(away: SideScore, home: SideScore): 'away' | 'home' | null {

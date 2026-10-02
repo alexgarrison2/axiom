@@ -31,7 +31,7 @@ function impactTag(season: string | null | undefined, home: boolean) {
 function TeamNews({ news, tri }: { news: PlayerNewsItem[]; tri: string }) {
     if (!news.length) return null;
     return (
-        <details className="group mt-2.5 rounded-[10px] border border-line px-3 py-1.5">
+        <details open className="group mt-2.5 rounded-[10px] border border-line px-3 py-1.5">
             <summary className="flex min-h-7 cursor-pointer list-none items-center justify-between coarse:min-h-11">
                 <span className="label">
                     News <span className="text-fg-2">{news.length}</span>

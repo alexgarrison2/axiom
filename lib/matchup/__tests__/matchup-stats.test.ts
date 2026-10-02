@@ -164,6 +164,6 @@ describe('league reference', () => {
         expect(ref[refKey('all', 'all')].gf_gp).toEqual([2.5]); // DAL has 2 games < 3
         expect(ref[refKey('home', 'all')].gf_gp).toBeUndefined();
         expect(ref[refKey('all', 0)].gf_gp).toEqual([2.5]);
-        expect(Object.keys(ref)).toHaveLength(15);
+        expect(Object.keys(ref)).toHaveLength(45);
     });
 });
