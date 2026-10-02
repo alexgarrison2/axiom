@@ -197,7 +197,7 @@ def build(paths, seasons: list[str], log=print, fin: bool = True) -> pd.DataFram
     # recency) when the state has them for every season, else bu.rapm.finishing's FinState replay
     v3fin = v3_fin_tables(paths, seasons) if fin else None
     fpg = fin_player_games(paths, seasons, summ.get("xg_source"), games) if (fin and v3fin is None) else None
-    if fin and fpg is None:
+    if fin and fpg is None and v3fin is None:
         log("  [lineup] no xG cache for every season: FIN columns skipped")
     fstate = FinState() if fpg is not None else None
     v3f_key, v3f_map = None, {}

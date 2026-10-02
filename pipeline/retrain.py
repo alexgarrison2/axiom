@@ -1284,9 +1284,14 @@ def v3_main(cur_meta, args):
               'dev': dev_rep, 'dev_pass': dev_pass, 'promoted': False}
     if not dev_pass:
         report['decision'] = 'dev rule failed: no holdout look, not promoted'
-        _write(V3_REPORT, report)
-        print(f"[v3] {report['decision']} ({V3_REPORT})")
+        _write(args.report or V3_REPORT, report)
+        print(f"[v3] {report['decision']} ({args.report or V3_REPORT})")
         return 1 if args.strict else 0
+    if args.no_holdout:
+        report['decision'] = 'dev rule passed; holdout look not taken (--no-holdout)'
+        _write(args.report or V3_REPORT, report)
+        print(f"[v3] {report['decision']} ({args.report or V3_REPORT})")
+        return 0
     H = HOLDOUT_SEASON
     _, base_h = walk(M, live_cols, test_seasons=(H,))
     _, cand_h = walk(Mc, live_cols, test_seasons=(H,))
@@ -1369,7 +1374,8 @@ def main(argv=None):
                     help='add the FIN lineup finishing term bu_d_fin to the live joint model: dev folds, then the '
                          'single logged 2025-26 look (bu/lineup/out/retrain_fin.json); with --promote, archive the '
                          'live model as the no-FIN rollback (models/shadow/game_model_rapm.pkl) and promote')
-    ap.add_argument('--no-holdout', action='store_true', help='with --fin: dev folds only (no holdout look)')
+    ap.add_argument('--no-holdout', action='store_true', help='with --fin / --ratings-v3: dev folds only (no holdout look)')
+    ap.add_argument('--report', default=None, help='with --ratings-v3 --no-holdout: report path (dev comparisons of alternatives)')
     ap.add_argument('--ratings-v3', default=None, metavar='TABLE',
                     help='the live feature set on the lineup table rebuilt from player ratings v3 (TABLE, e.g. '
                          'bu/lineup/out/lineup_features_v3.csv.gz) vs the live model: dev folds, then the single logged '

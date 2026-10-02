@@ -239,11 +239,12 @@ def ratings_table(engine: V.Engine, S: str, asof, pr: V.Prior, fin_pre: pd.DataF
 def live_table(pack: Pack, inputs_cur: "V.SeasonInputs | None", games_cur: pd.DataFrame,
                players_cur: pd.DataFrame | None = None, asof=None) -> tuple[pd.DataFrame, dict]:
     """The live v3 ratings from the season pack and the season's games so far (``games_cur``: the
-    lake games of the season; only games with a final boxscore advance the clock)."""
+    lake games of the season; only played games - shift charts or a boxscore - advance the clock)."""
     S = pack.season
     played = games_cur
-    if "has_boxscore" in played.columns:
-        played = played[played["has_boxscore"].astype("boolean").fillna(False)]
+    flags = [c for c in ("has_shifts", "has_boxscore") if c in played.columns]
+    if flags:       # played games only (a scheduled game does not advance the clock)
+        played = played[np.logical_or.reduce([played[c].astype("boolean").fillna(False).to_numpy() for c in flags])]
     inp = {S: inputs_cur} if inputs_cur is not None else {}
     clk = season_clock(played) if len(played) else None
     last = None
@@ -365,3 +366,53 @@ def bundle_table(paths, season: str, pack_file: str | None = None, source: str |
         rows.append([int(r.player_id), r.group, bool(r.rated)] + [round(float(getattr(r, c)), 6) + 0.0 for c in
                      LIVE_COLUMNS[3:-1]] + [r.role or ""])
     return {"columns": LIVE_COLUMNS, "rows": rows, "meta": meta}
+
+
+# ----------------------------------------------------------------------- CLI (season rollover)
+
+def engine_for(paths, season: str, source: str, n_back: int = 4, log=print) -> V.Engine:
+    """An engine over the ``n_back`` seasons before ``season`` (and ``season`` itself when built):
+    v3 inputs cached under ``<state>/v3``, the league clock from the lake, bio from the RAPM state,
+    the aging curve of the season's RAPM prior pack (``bu.rapm asof``) when there is one."""
+    from bu.lake.build import read_table
+    from . import pack as rpack
+    from .__main__ import _players
+    from .data import lake_seasons
+    have = lake_seasons(paths.lake)
+    y = int(str(season)[:4])
+    seasons = [s for s in have if y - n_back <= int(s[:4]) <= y]
+    inputs = {s: V.SeasonInputs.load(paths, s, source, log=log) for s in seasons}
+    games = read_table(paths.lake, "games", seasons, columns=["season", "game_id", "game_date", "game_type",
+                                                             "home_team_id", "away_team_id"])
+    players = _players(paths, seasons)
+    agings = {}
+    pp = os.path.join(paths.root, "prior_pack", f"season={season}.json.gz")
+    if os.path.exists(pp):
+        agings[str(season)] = rpack.Seed.load(pp).aging
+    else:
+        log(f"  [v3] no RAPM prior pack for {season}: no aging steps on earlier seasons' rows")
+    return V.Engine(inputs, LeagueClock(league_index(games)), players, agings)
+
+
+def main(argv=None) -> int:
+    import argparse
+    from bu.lake.paths import Lake
+    from .paths import RapmPaths
+    ap = argparse.ArgumentParser(prog="python -m bu.rapm.v3_pack", description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("command", choices=["pack"])
+    ap.add_argument("--lake-dir", default=None)
+    ap.add_argument("--out", default=None, help="RAPM state dir (stints / xG caches of the --xg source)")
+    ap.add_argument("--xg", required=True, help="xG source key of the caches (as passed to bu.rapm)")
+    ap.add_argument("--season", required=True)
+    a = ap.parse_args(argv)
+    paths = RapmPaths(Lake(a.lake_dir), a.out)
+    eng = engine_for(paths, a.season, a.xg)
+    pk = build_pack(eng, a.season, V.RECENCY, V.Shrink(), V.FIN_PRIOR_XG)
+    print(f"  [v3-pack] -> {write_pack(pack_path(a.season), pk)}")
+    return 0
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(main())
