@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-01T21:55:35.260194+00:00",
+ "generated_at": "2026-10-02T01:55:50.554219+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -4223,20 +4223,20 @@
   },
   "2026-27": {
    "all": {
-    "n": 6,
+    "n": 9,
     "n_retro_excluded": 0,
     "n_legacy": 3,
-    "n_picks": 5,
-    "n_no_lean": 1,
+    "n_picks": 7,
+    "n_no_lean": 2,
     "by_model": {
      "current": {
-      "n": 3,
-      "n_picks": 3,
-      "correct": 2,
-      "accuracy": 0.6667,
-      "accuracy_all": 0.6667,
-      "brier": 0.2278,
-      "log_loss": 0.6468
+      "n": 6,
+      "n_picks": 5,
+      "correct": 3,
+      "accuracy": 0.6,
+      "accuracy_all": 0.5833,
+      "brier": 0.2322,
+      "log_loss": 0.6557
      },
      "legacy": {
       "n": 3,
@@ -4248,38 +4248,38 @@
       "log_loss": 0.7476
      }
     },
-    "accuracy": 0.6,
+    "accuracy": 0.5714,
     "accuracy_ci": [
-     0.2307,
-     0.8824
+     0.2505,
+     0.8418
     ],
-    "correct": 3,
-    "accuracy_all": 0.5833,
-    "brier": 0.2515,
-    "log_loss": 0.6972,
-    "mean_pred_home": 0.6162,
-    "actual_home": 0.6667,
+    "correct": 4,
+    "accuracy_all": 0.5556,
+    "brier": 0.2466,
+    "log_loss": 0.6864,
+    "mean_pred_home": 0.5851,
+    "actual_home": 0.7778,
     "first_date": "2026-09-29",
-    "last_date": "2026-09-30",
+    "last_date": "2026-10-01",
     "baselines": {
      "home_rate": {
       "rate": 0.5362,
       "source": "2022-2025 home win rate",
-      "n": 6,
-      "log_loss": 0.6716,
-      "brier": 0.2392,
-      "accuracy": 0.6667
+      "n": 9,
+      "log_loss": 0.6554,
+      "brier": 0.2312,
+      "accuracy": 0.7778
      },
      "market": {
-      "n": 6,
+      "n": 9,
       "source": "odds_closing",
       "devig": "power",
-      "log_loss": 0.7117,
-      "brier": 0.2566,
-      "accuracy": 0.5833,
-      "model_log_loss_same_games": 0.6972,
-      "model_brier_same_games": 0.2515,
-      "model_accuracy_same_games": 0.5833
+      "log_loss": 0.7004,
+      "brier": 0.252,
+      "accuracy": 0.5556,
+      "model_log_loss_same_games": 0.6864,
+      "model_brier_same_games": 0.2466,
+      "model_accuracy_same_games": 0.5556
      }
     },
     "reliability": [
@@ -4319,24 +4319,24 @@
       "bin": 4,
       "lo": 0.4,
       "hi": 0.5,
-      "n": 0,
-      "mean_pred": null,
-      "actual": null
+      "n": 1,
+      "mean_pred": 0.417,
+      "actual": 1.0
      },
      {
       "bin": 5,
       "lo": 0.5,
       "hi": 0.6,
-      "n": 3,
-      "mean_pred": 0.5277,
-      "actual": 0.6667
+      "n": 4,
+      "mean_pred": 0.5215,
+      "actual": 0.75
      },
      {
       "bin": 6,
       "lo": 0.6,
       "hi": 0.7,
-      "n": 1,
-      "mean_pred": 0.644,
+      "n": 2,
+      "mean_pred": 0.6465,
       "actual": 1.0
      },
      {
@@ -4378,25 +4378,25 @@
      },
      {
       "tier": "55-60",
-      "n": 1,
+      "n": 2,
       "correct": 0,
       "accuracy": 0.0,
       "accuracy_ci": [
        0.0,
-       0.7935
+       0.6576
       ],
-      "mean_confidence": 0.566
+      "mean_confidence": 0.5745
      },
      {
       "tier": "60-65",
-      "n": 1,
-      "correct": 1,
+      "n": 2,
+      "correct": 2,
       "accuracy": 1.0,
       "accuracy_ci": [
-       0.2065,
+       0.3424,
        1.0
       ],
-      "mean_confidence": 0.644
+      "mean_confidence": 0.6465
      },
      {
       "tier": "65+",
@@ -4426,6 +4426,19 @@
       "legacy": true
      },
      {
+      "gameId": 2026020009,
+      "date": "2026-10-01",
+      "homeTeam": "Devils",
+      "awayTeam": "Flyers",
+      "pick": "Devils",
+      "confidence": 64.9,
+      "homeScore": 3,
+      "awayScore": 2,
+      "decision": "OT",
+      "correct": true,
+      "legacy": false
+     },
+     {
       "gameId": 2026020007,
       "date": "2026-09-30",
       "homeTeam": "Avalanche",
@@ -4452,6 +4465,19 @@
       "decision": "OT",
       "correct": false,
       "legacy": true
+     },
+     {
+      "gameId": 2026020010,
+      "date": "2026-10-01",
+      "homeTeam": "Rangers",
+      "awayTeam": "Lightning",
+      "pick": "Lightning",
+      "confidence": 58.3,
+      "homeScore": 5,
+      "awayScore": 1,
+      "decision": "REG",
+      "correct": false,
+      "legacy": false
      },
      {
       "gameId": 2026020006,
@@ -4469,20 +4495,20 @@
     ]
    },
    "regular": {
-    "n": 6,
+    "n": 9,
     "n_retro_excluded": 0,
     "n_legacy": 3,
-    "n_picks": 5,
-    "n_no_lean": 1,
+    "n_picks": 7,
+    "n_no_lean": 2,
     "by_model": {
      "current": {
-      "n": 3,
-      "n_picks": 3,
-      "correct": 2,
-      "accuracy": 0.6667,
-      "accuracy_all": 0.6667,
-      "brier": 0.2278,
-      "log_loss": 0.6468
+      "n": 6,
+      "n_picks": 5,
+      "correct": 3,
+      "accuracy": 0.6,
+      "accuracy_all": 0.5833,
+      "brier": 0.2322,
+      "log_loss": 0.6557
      },
      "legacy": {
       "n": 3,
@@ -4494,38 +4520,38 @@
       "log_loss": 0.7476
      }
     },
-    "accuracy": 0.6,
+    "accuracy": 0.5714,
     "accuracy_ci": [
-     0.2307,
-     0.8824
+     0.2505,
+     0.8418
     ],
-    "correct": 3,
-    "accuracy_all": 0.5833,
-    "brier": 0.2515,
-    "log_loss": 0.6972,
-    "mean_pred_home": 0.6162,
-    "actual_home": 0.6667,
+    "correct": 4,
+    "accuracy_all": 0.5556,
+    "brier": 0.2466,
+    "log_loss": 0.6864,
+    "mean_pred_home": 0.5851,
+    "actual_home": 0.7778,
     "first_date": "2026-09-29",
-    "last_date": "2026-09-30",
+    "last_date": "2026-10-01",
     "baselines": {
      "home_rate": {
       "rate": 0.5362,
       "source": "2022-2025 home win rate",
-      "n": 6,
-      "log_loss": 0.6716,
-      "brier": 0.2392,
-      "accuracy": 0.6667
+      "n": 9,
+      "log_loss": 0.6554,
+      "brier": 0.2312,
+      "accuracy": 0.7778
      },
      "market": {
-      "n": 6,
+      "n": 9,
       "source": "odds_closing",
       "devig": "power",
-      "log_loss": 0.7117,
-      "brier": 0.2566,
-      "accuracy": 0.5833,
-      "model_log_loss_same_games": 0.6972,
-      "model_brier_same_games": 0.2515,
-      "model_accuracy_same_games": 0.5833
+      "log_loss": 0.7004,
+      "brier": 0.252,
+      "accuracy": 0.5556,
+      "model_log_loss_same_games": 0.6864,
+      "model_brier_same_games": 0.2466,
+      "model_accuracy_same_games": 0.5556
      }
     },
     "reliability": [
@@ -4565,24 +4591,24 @@
       "bin": 4,
       "lo": 0.4,
       "hi": 0.5,
-      "n": 0,
-      "mean_pred": null,
-      "actual": null
+      "n": 1,
+      "mean_pred": 0.417,
+      "actual": 1.0
      },
      {
       "bin": 5,
       "lo": 0.5,
       "hi": 0.6,
-      "n": 3,
-      "mean_pred": 0.5277,
-      "actual": 0.6667
+      "n": 4,
+      "mean_pred": 0.5215,
+      "actual": 0.75
      },
      {
       "bin": 6,
       "lo": 0.6,
       "hi": 0.7,
-      "n": 1,
-      "mean_pred": 0.644,
+      "n": 2,
+      "mean_pred": 0.6465,
       "actual": 1.0
      },
      {
@@ -4624,25 +4650,25 @@
      },
      {
       "tier": "55-60",
-      "n": 1,
+      "n": 2,
       "correct": 0,
       "accuracy": 0.0,
       "accuracy_ci": [
        0.0,
-       0.7935
+       0.6576
       ],
-      "mean_confidence": 0.566
+      "mean_confidence": 0.5745
      },
      {
       "tier": "60-65",
-      "n": 1,
-      "correct": 1,
+      "n": 2,
+      "correct": 2,
       "accuracy": 1.0,
       "accuracy_ci": [
-       0.2065,
+       0.3424,
        1.0
       ],
-      "mean_confidence": 0.644
+      "mean_confidence": 0.6465
      },
      {
       "tier": "65+",
@@ -4672,6 +4698,19 @@
       "legacy": true
      },
      {
+      "gameId": 2026020009,
+      "date": "2026-10-01",
+      "homeTeam": "Devils",
+      "awayTeam": "Flyers",
+      "pick": "Devils",
+      "confidence": 64.9,
+      "homeScore": 3,
+      "awayScore": 2,
+      "decision": "OT",
+      "correct": true,
+      "legacy": false
+     },
+     {
       "gameId": 2026020007,
       "date": "2026-09-30",
       "homeTeam": "Avalanche",
@@ -4698,6 +4737,19 @@
       "decision": "OT",
       "correct": false,
       "legacy": true
+     },
+     {
+      "gameId": 2026020010,
+      "date": "2026-10-01",
+      "homeTeam": "Rangers",
+      "awayTeam": "Lightning",
+      "pick": "Lightning",
+      "confidence": 58.3,
+      "homeScore": 5,
+      "awayScore": 1,
+      "decision": "REG",
+      "correct": false,
+      "legacy": false
      },
      {
       "gameId": 2026020006,
@@ -4813,9 +4865,9 @@
   "reasons": [
    "Backtest ROI 95% CI lower bound -9.5% is not above -2%.",
    "Backtest closing-line value -5.20% is not positive.",
-   "Only 3 graded games with market odds were predicted by the current model (logit-elo) so far (6 graded in 2026-27 in all); need 200 to compare it with the market."
+   "Only 6 graded games with market odds were predicted by the current model (logit-elo) so far (9 graded in 2026-27 in all); need 200 to compare it with the market."
   ],
-  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Only 3 graded games with market odds were predicted by the current model (logit-elo) so far (6 graded in 2026-27 in all); need 200 to compare it with the market.",
+  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Only 6 graded games with market odds were predicted by the current model (logit-elo) so far (9 graded in 2026-27 in all); need 200 to compare it with the market.",
   "backtest": {
    "n": 64,
    "roi": 0.1399,
@@ -4824,11 +4876,11 @@
    "clv_mean": -0.052
   },
   "rolling": {
-   "n": 3,
+   "n": 6,
    "window": 200,
    "model_family": "logit-elo",
-   "model_log_loss": 0.7281,
-   "market_log_loss": 0.6302
+   "model_log_loss": 0.6743,
+   "market_log_loss": 0.6541
   },
   "rule": {
    "min_ev": 0.03,
@@ -4875,7 +4927,7 @@
   ],
   "version": "logit-elo-v5-20261001-xg2-rapm",
   "type": "logistic_regression_l2",
-  "trained_at": "2026-10-01T18:38:42.981482+00:00",
+  "trained_at": "2026-10-01T23:42:01.525636+00:00",
   "features": [
    "d_xg_share",
    "d_xg_share_all",
@@ -4892,11 +4944,11 @@
    {
     "test_season": 2023,
     "n": 1399,
-    "log_loss": 0.6596,
-    "brier": 0.234,
-    "accuracy": 0.5961,
-    "calibration_slope": 0.9933,
-    "mean_pred_home": 0.518,
+    "log_loss": 0.6592,
+    "brier": 0.2338,
+    "accuracy": 0.5969,
+    "calibration_slope": 0.9894,
+    "mean_pred_home": 0.5165,
     "actual_home": 0.5368,
     "home_rate_log_loss": 0.691,
     "legacy_xgb_log_loss": 0.6757
@@ -4904,10 +4956,10 @@
    {
     "test_season": 2024,
     "n": 1206,
-    "log_loss": 0.6611,
-    "brier": 0.2346,
+    "log_loss": 0.6613,
+    "brier": 0.2347,
     "accuracy": 0.5829,
-    "calibration_slope": 1.0899,
+    "calibration_slope": 1.084,
     "mean_pred_home": 0.5309,
     "actual_home": 0.5688,
     "home_rate_log_loss": 0.6867,
@@ -4916,16 +4968,16 @@
    {
     "test_season": 2025,
     "n": 1394,
-    "log_loss": 0.6774,
-    "brier": 0.2423,
-    "accuracy": 0.5595,
-    "calibration_slope": 0.82,
-    "mean_pred_home": 0.541,
+    "log_loss": 0.6777,
+    "brier": 0.2425,
+    "accuracy": 0.5545,
+    "calibration_slope": 0.8124,
+    "mean_pred_home": 0.5411,
     "actual_home": 0.5194,
     "home_rate_log_loss": 0.6935,
     "legacy_xgb_log_loss": 0.6849
    }
   ],
-  "early_season_log_loss": 0.6767
+  "early_season_log_loss": 0.6768
  }
 }
