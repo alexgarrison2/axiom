@@ -93,10 +93,25 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                 <div className="flex flex-col gap-2 sm:hidden">{controls(true)}</div>
             </div>
 
+            <section aria-labelledby="every-pick" className="flex flex-col gap-3">
+                <h2 id="every-pick" className="heading-section">
+                    Predictions
+                </h2>
+                <GameList
+                    season={season}
+                    seasons={seasons}
+                    type={type}
+                    currentSeason={currentSeason}
+                    expected={Math.max(block?.nPicks ?? 0, tally?.picks ?? 0)}
+                    expectedNoLean={Math.max(block?.nNoLean ?? 0, tally ? tally.n - tally.picks : 0)}
+                    excluded={season === 'all' ? [] : (tallies[season]?.[type]?.excluded ?? [])}
+                />
+            </section>
+
             <section aria-labelledby="report-card" className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     <h2 id="report-card" className="heading-section">
-                        Report card
+                        Model report
                     </h2>
                     {!empty && !stale && block ? (
                         <p className="label">
@@ -123,21 +138,6 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                 )}
             </section>
 
-            <section aria-labelledby="every-pick" className="flex flex-col gap-3">
-                <h2 id="every-pick" className="heading-section">
-                    Picks
-                </h2>
-                <GameList
-                    season={season}
-                    seasons={seasons}
-                    type={type}
-                    currentSeason={currentSeason}
-                    expected={Math.max(block?.nPicks ?? 0, tally?.picks ?? 0)}
-                    expectedNoLean={Math.max(block?.nNoLean ?? 0, tally ? tally.n - tally.picks : 0)}
-                    excluded={season === 'all' ? [] : (tallies[season]?.[type]?.excluded ?? [])}
-                />
-            </section>
-
             <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-3">
                 <Ledger
                     ledger={ledger}
@@ -148,7 +148,7 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                     finals={finals}
                     title={
                         <h2 id="ledger-title" className="heading-section">
-                            Bet ledger
+                            Recommended bets
                         </h2>
                     }
                 />

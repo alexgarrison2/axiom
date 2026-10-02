@@ -11,14 +11,17 @@ import { cn } from '@/lib/utils';
 import { GlossLink } from '@/components/ui/gloss-link';
 import { isCorrect, isNoLean, isWrong, pickOf, pickProb, type ExcludedGame, type GradedGame } from './types';
 import type { GameTypeKey } from './report';
+import { summarize, type SpanSummary } from './summary';
 
 const PAGE = 50;
 
 const MORE_BTN =
     'self-center rounded-control border border-line-strong px-4 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11';
-const ROW_LI = 'border-t border-line/60 bg-surface-1 first:border-t-0 xl:[&:nth-child(2)]:border-t-0';
+const ROW_LI = 'border-t border-line/60 bg-surface-1 first:border-t-0';
 const STRIP = 'rounded-card border border-dashed border-line-strong px-3 py-2';
-const LIST_UL = 'panel grid items-start overflow-hidden xl:grid-cols-2 xl:gap-x-px xl:bg-line';
+const LIST_UL = 'panel flex flex-col overflow-hidden';
+/** One grid for the header and every row so the columns line up: result, date, final, predicted, pick, how sure, chevron. */
+const COLS = 'md:grid-cols-[2rem_4.5rem_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_1.25rem]';
 const SELECT = 'h-8 rounded-control border border-line-strong bg-surface-1 px-2 text-base uppercase tracking-[0.08em] text-fg-1 md:text-caption coarse:h-11';
 
 type ResultFilter = 'all' | 'hit' | 'miss';
@@ -115,6 +118,8 @@ export function GameList({
     const noLean = React.useMemo(() => (result === 'all' ? inWindow.filter(isNoLean) : []), [inWindow, result]);
 
     const hits = rows.filter(isCorrect).length;
+    // KPIs cover the whole filtered span (team, dates, back-filled), not just the right/wrong rows on show.
+    const summary = React.useMemo(() => summarize(inWindow), [inWindow]);
     const legacyShown = !!currentSeason && rows.some(g => g.legacy && g.season >= currentSeason);
     // Every row legacy: one LEGACY tag by the record instead of one per row.
     const allLegacy = legacyShown && rows.every(g => g.legacy);
@@ -230,18 +235,27 @@ export function GameList({
                         <span className="rounded-chip border border-line-strong px-1 text-micro text-fg-2">LEGACY</span>
                     </GlossLink>
                 ) : null}
-                <p className={cn('text-caption font-bold text-fg-1', !legacyShown && 'ml-auto')} aria-live="polite">
-                    {hits}-{rows.length - hits}
-                    {rows.length ? <span className="ml-2 font-normal text-fg-2">{((hits / rows.length) * 100).toFixed(1)}%</span> : null}
-                    <span className="ml-2 font-normal text-fg-3">n={rows.length}</span>
-                    {includeRetro ? <span className="ml-2 font-normal uppercase tracking-[0.12em] text-warn">+BF</span> : null}
+                <p className={cn('text-micro uppercase tracking-label text-fg-3', !legacyShown && 'ml-auto')} aria-live="polite">
+                    {rows.length.toLocaleString('en-US')} shown
+                    {includeRetro ? <span className="ml-2 text-warn">+BF</span> : null}
                 </p>
             </div>
+
+            <KpiStrip s={summary} />
 
             {rows.length === 0 ? (
                 <p className="label py-2">No matches</p>
             ) : (
                 <ul className={LIST_UL}>
+                    <li aria-hidden="true" className={cn('hidden items-end gap-x-3 border-b border-line bg-surface-2/60 px-4 py-2 text-micro uppercase tracking-label text-fg-3 md:grid', COLS)}>
+                        <span />
+                        <span>Date</span>
+                        <span>Final</span>
+                        <span className="text-center">Predicted</span>
+                        <span>Pick</span>
+                        <span>Confidence</span>
+                        <span />
+                    </li>
                     {rows.slice(0, shown).map(g => (
                         <GameRowItem
                             key={g.id}
@@ -264,11 +278,101 @@ export function GameList({
     );
 }
 
+/** KPI callouts for the filtered span. */
+function KpiStrip({ s }: { s: SpanSummary }) {
+    const pct = (v: number | null) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
+    const vsMkt = s.marketN >= 5 && s.modelLogLossSame != null && s.marketLogLoss != null ? s.modelLogLossSame - s.marketLogLoss : null;
+    return (
+        <div role="group" aria-label="Summary of the games shown" className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+            <Kpi label="Picks right" value={pct(s.accuracy)} sub={`${s.hits}-${s.picks - s.hits} · ${s.n} graded`} />
+            <Kpi label="Avg confidence" value={s.avgConfidence == null ? '—' : `${s.avgConfidence.toFixed(1)}%`} sub={s.accuracy != null && s.avgConfidence != null ? `hit rate ${(s.accuracy * 100 - s.avgConfidence >= 0 ? '+' : '−')}${Math.abs(s.accuracy * 100 - s.avgConfidence).toFixed(1)} pts vs confidence` : undefined} />
+            <Kpi
+                label="Log loss"
+                term="log-loss"
+                value={s.logLoss == null ? '—' : s.logLoss.toFixed(3)}
+                sub={vsMkt == null ? 'coin 0.693' : `${vsMkt <= 0 ? '▼' : '▲'} ${Math.abs(vsMkt).toFixed(3)} vs market`}
+                tone={vsMkt == null ? undefined : vsMkt <= 0 ? 'pos' : 'neg'}
+            />
+            <Kpi label="Goals error" value={s.totalGoalsMae == null ? '—' : s.totalGoalsMae.toFixed(2)} sub={s.scoreN ? `avg miss on total goals · ${s.scoreN} games` : 'no projected scores'} />
+        </div>
+    );
+}
+
+function Kpi({ label, term, value, sub, tone }: { label: string; term?: string; value: string; sub?: string; tone?: 'pos' | 'neg' }) {
+    return (
+        <div className="panel flex min-w-0 flex-col gap-1.5 px-4 py-3">
+            {term ? (
+                <GlossLink term={term} className="label self-start">
+                    {label}
+                </GlossLink>
+            ) : (
+                <span className="label">{label}</span>
+            )}
+            <span className="font-display text-[32px] font-bold leading-none text-fg-1 md:text-[40px]">{value}</span>
+            {sub ? <span className={cn('text-micro uppercase tracking-wide', tone === 'pos' ? 'text-pos' : tone === 'neg' ? 'text-neg' : 'text-fg-3')}>{sub}</span> : null}
+        </div>
+    );
+}
+
+/** How sure the model was of its pick: a bar from a coin flip (50) to a strong lean (80+), toned by whether it was right. */
+function ConfBar({ prob, ok, bar = 'max-w-24' }: { prob: number; ok: boolean; bar?: string }) {
+    const w = Math.max(0, Math.min(100, ((prob - 50) / 30) * 100));
+    return (
+        <span className="flex min-w-0 items-center gap-2">
+            <span aria-hidden="true" className={cn('relative h-1.5 w-full rounded-full bg-line', bar)}>
+                <span className={cn('absolute inset-y-0 left-0 rounded-full', ok ? 'bg-pos/80' : 'bg-neg/80')} style={{ width: `${Math.max(w, 4)}%` }} />
+            </span>
+            <span className={cn('w-10 shrink-0 text-right text-body font-bold tabular-nums', ok ? 'text-fg-1' : 'text-fg-2')}>{prob.toFixed(0)}%</span>
+        </span>
+    );
+}
+
 function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame; open: boolean; onToggle: () => void; showLegacy?: boolean }) {
     const pick = pickOf(g);
     const ok = isCorrect(g);
     const homeWon = g.homeScore > g.awayScore;
     const detailId = `pick-${g.id}`;
+    const hasXg = g.homeXg != null && g.awayXg != null;
+    const tags = (
+        <>
+            {g.decision !== 'REG' ? <span className="text-micro text-fg-3">{g.decision}</span> : null}
+            {g.type === '03' ? <span className="rounded-chip border border-playoff/50 px-1 text-micro text-playoff">PO</span> : null}
+            {g.retro ? (
+                <abbr title="Back-filled after the game, not in the report card" className="rounded-chip border border-dashed border-warn/60 px-1 text-micro text-warn no-underline">
+                    BF
+                </abbr>
+            ) : null}
+            {showLegacy && g.legacy ? (
+                <abbr title="Published by the previous site model" className="rounded-chip border border-line-strong px-1 text-micro text-fg-2 no-underline">
+                    LEGACY
+                </abbr>
+            ) : null}
+        </>
+    );
+    const final = (
+        <span className="flex min-w-0 items-center gap-2.5 text-body">
+            <Crest tri={g.away} size={28} className="drop-shadow-none" />
+            <span className={cn('w-9 font-bold', !homeWon ? 'text-fg-1' : 'text-fg-3')}>{g.away}</span>
+            <span className={cn('w-4 text-right font-display text-title font-bold tabular-nums', !homeWon ? 'text-fg-1' : 'text-fg-3')}>{g.awayScore}</span>
+            <span className="text-fg-3">–</span>
+            <span className={cn('w-4 font-display text-title font-bold tabular-nums', homeWon ? 'text-fg-1' : 'text-fg-3')}>{g.homeScore}</span>
+            <span className={cn('w-9 font-bold', homeWon ? 'text-fg-1' : 'text-fg-3')}>{g.home}</span>
+            <Crest tri={g.home} size={28} className="drop-shadow-none" />
+            <span className="flex items-center gap-1.5">{tags}</span>
+        </span>
+    );
+    const predicted = hasXg ? (
+        <span className="flex items-baseline justify-center gap-2 tabular-nums text-fg-2">
+            <span className="w-10 text-right text-body">{g.awayXg!.toFixed(1)}</span>
+            <span className="text-fg-3">–</span>
+            <span className="w-10 text-body">{g.homeXg!.toFixed(1)}</span>
+            <span className="sr-only">
+                projected goals {g.away} then {g.home}
+            </span>
+        </span>
+    ) : (
+        <span className="text-center text-fg-3">—</span>
+    );
     return (
         <li className={cn(ROW_LI, open && '!bg-surface-2')}>
             <button
@@ -276,41 +380,48 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
                 aria-expanded={open}
                 aria-controls={detailId}
                 onClick={onToggle}
-                className="grid min-h-8 w-full grid-cols-[1rem_minmax(0,1fr)_auto_1rem] items-center gap-x-2.5 px-3 py-1 text-left text-caption transition-colors hover:bg-line/80 sm:grid-cols-[1rem_3.25rem_minmax(0,1fr)_auto_1rem] coarse:min-h-11"
+                className={cn(
+                    'grid w-full grid-cols-[2rem_minmax(0,1fr)_1.25rem] items-center gap-x-3 gap-y-2 px-3 py-3.5 text-left text-body transition-colors hover:bg-line/80 md:gap-x-3 md:px-4 coarse:min-h-11',
+                    COLS,
+                )}
             >
-                <span aria-hidden="true" className={cn('font-bold', ok ? 'text-pos' : 'text-neg')}>
+                <span
+                    aria-hidden="true"
+                    className={cn('flex h-7 w-7 items-center justify-center rounded-full text-body font-bold md:row-auto', ok ? 'bg-pos/15 text-pos' : 'bg-neg/15 text-neg')}
+                >
                     {ok ? '✓' : '✕'}
                 </span>
-                <span className="hidden text-fg-3 sm:block">{shortDate(g.date)}</span>
-                <span className="flex min-w-0 flex-wrap items-center gap-x-1.5">
-                    <Crest tri={g.away} size={22} className="drop-shadow-none" />
-                    <span className={cn(!homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
-                        {g.away} {g.awayScore}
+                <span className="hidden text-fg-3 md:block">{shortDate(g.date)}</span>
+                {/* Phone: the matchup, then a line with date, projected score, pick and confidence. */}
+                <span className="flex min-w-0 flex-col gap-2.5 md:hidden">
+                    {final}
+                    <span className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 text-caption text-fg-3">
+                        <span className="whitespace-nowrap tabular-nums">
+                            {shortDate(g.date)}
+                            {hasXg ? (
+                                <>
+                                    <span aria-hidden="true"> · </span>
+                                    <span className="uppercase">xG</span> {g.awayXg!.toFixed(1)} – {g.homeXg!.toFixed(1)}
+                                </>
+                            ) : null}
+                        </span>
+                        <span className="flex items-center gap-2 whitespace-nowrap">
+                            <span className="sr-only">Pick</span>
+                            <Crest tri={pick} size={22} className="drop-shadow-none" />
+                            <span className="font-bold text-fg-1">{pick}</span>
+                            <ConfBar prob={pickProb(g)} ok={ok} bar="w-12" />
+                        </span>
                     </span>
-                    <span className="text-fg-3">@</span>
-                    <Crest tri={g.home} size={22} className="drop-shadow-none" />
-                    <span className={cn(homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
-                        {g.home} {g.homeScore}
-                    </span>
-                    {g.decision !== 'REG' ? <span className="text-micro text-fg-3">{g.decision}</span> : null}
-                    {g.type === '03' ? <span className="rounded-chip border border-playoff/50 px-1 text-micro text-playoff">PO</span> : null}
-                    {g.retro ? (
-                        <abbr title="Back-filled after the game, not in the report card" className="rounded-chip border border-dashed border-warn/60 px-1 text-micro text-warn no-underline">
-                            BF
-                        </abbr>
-                    ) : null}
-                    {showLegacy && g.legacy ? (
-                        <abbr title="Published by the previous site model" className="rounded-chip border border-line-strong px-1 text-micro text-fg-2 no-underline">
-                            LEGACY
-                        </abbr>
-                    ) : null}
-                    <span className="text-micro text-fg-3 sm:hidden">{shortDate(g.date)}</span>
                 </span>
-                <span className="flex items-center gap-1.5">
+                <span className="hidden min-w-0 md:block">{final}</span>
+                <span className="hidden md:block">{predicted}</span>
+                <span className="hidden items-center gap-2 whitespace-nowrap md:flex">
                     <span className="sr-only">Pick</span>
-                    <Crest tri={pick} size={22} className="drop-shadow-none" />
+                    <Crest tri={pick} size={24} className="drop-shadow-none" />
                     <span className="font-bold text-fg-1">{pick}</span>
-                    <span className="w-8 text-right font-bold text-fg-2">{pickProb(g).toFixed(0)}%</span>
+                </span>
+                <span className="hidden md:block">
+                    <ConfBar prob={pickProb(g)} ok={ok} />
                     <span className="sr-only">{ok ? '— right' : '— wrong'}. Details for {g.away} at {g.home}, {shortDate(g.date)}</span>
                 </span>
                 <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-3 transition-transform', open && 'rotate-180')}>
@@ -318,15 +429,12 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
                 </svg>
             </button>
             {open ? (
-                <dl id={detailId} className="grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-line px-3 py-2 text-caption sm:grid-cols-5">
+                <dl id={detailId} className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line px-4 py-3 text-caption sm:grid-cols-5">
                     <Detail label={`Model ${g.home}`} value={`${g.homeProb.toFixed(1)}%`} />
                     <Detail label={`Mkt ${g.home}`} value={g.placeholderOdds ? 'Placeholder' : g.marketProb != null ? `${g.marketProb.toFixed(1)}%` : '—'} />
-                    <Detail label="xG" value={g.homeXg != null && g.awayXg != null ? `${g.away} ${g.awayXg.toFixed(2)} · ${g.home} ${g.homeXg.toFixed(2)}` : '—'} />
+                    <Detail label="xG" value={hasXg ? `${g.away} ${g.awayXg!.toFixed(2)} · ${g.home} ${g.homeXg!.toFixed(2)}` : '—'} />
                     <Detail label="Brier · LL" value={`${Number.isFinite(g.brier) ? g.brier.toFixed(3) : '—'} · ${Number.isFinite(g.logLoss) ? g.logLoss.toFixed(3) : '—'}`} />
-                    <Detail
-                        label="Frozen"
-                        value={g.retro ? 'Back-filled' : g.snapshotUtc ? (formatTime(g.snapshotUtc, 'datetime') ?? 'Pregame') : 'Pregame'}
-                    />
+                    <Detail label="Frozen" value={g.retro ? 'Back-filled' : g.snapshotUtc ? (formatTime(g.snapshotUtc, 'datetime') ?? 'Pregame') : 'Pregame'} />
                 </dl>
             ) : (
                 <div id={detailId} hidden />
@@ -424,7 +532,7 @@ function ListSkeleton({ rows, more, after }: { rows: number; more: boolean; afte
             <ul aria-hidden="true" className={LIST_UL}>
                 {Array.from({ length: rows }, (_, i) => (
                     <li key={i} className={ROW_LI}>
-                        <div className="min-h-8 coarse:min-h-11" />
+                        <div className="min-h-[4.25rem]" />
                     </li>
                 ))}
             </ul>

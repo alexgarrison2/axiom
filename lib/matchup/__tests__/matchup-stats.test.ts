@@ -154,6 +154,16 @@ describe('percentiles and advantage', () => {
     });
 });
 
+describe('last N filter', () => {
+    it('keeps each team\'s most recent N games after the other filters', () => {
+        const gs = [1, 2, 3, 4, 5, 6].map(i => game({ id: `g${i}`, date: `2026-10-0${i}` } as never, 0));
+        const ids = (last: 'all' | 5 | 10) => filterGames(gs, { location: 'all', rest: 'all', starter: null, last }).map(g => g.row.id);
+        expect(ids('all')).toHaveLength(6);
+        expect(ids(5)).toEqual(['g2', 'g3', 'g4', 'g5', 'g6']);
+        expect(ids(10)).toHaveLength(6);
+    });
+});
+
 describe('league reference', () => {
     it('ranks each slice (location × rest) separately and skips teams under the minimum', () => {
         const byTeam = new Map<string, MatchupGame[]>([

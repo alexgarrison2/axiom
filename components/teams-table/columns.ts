@@ -154,6 +154,12 @@ const STATE = G('Game state', ['time_leading_per_game', 'time_trailing_per_game'
 const COMEBACKS = G('Leads & comebacks', ['bl', 'bl_3p', 'bl_2plus', 'bl_3plus', 'cw', 'cw_3p', 'cw_2plus', 'cw_3plus']);
 const EN = G('Empty net', ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga']);
 
+const RATINGS_GROUPS: SectionGroup[] = [
+    G('xG ratings', ['xgf_rating', 'xga_rating', 'xgf_rolling', 'xga_rolling', 'xgf_5v5', 'xga_5v5']),
+    G('Lineup NET', ['lineup_rating', 'f1_impact', 'f2_impact', 'f3_impact', 'f4_impact', 'd1_impact', 'd2_impact', 'd3_impact', 'f_impact', 'd_impact']),
+    G('RAPM & goalie', ['rapm_f', 'rapm_d', 'goalie_impact']),
+];
+
 export const SECTIONS: Section[] = [
     {
         key: 'overview',
@@ -172,13 +178,21 @@ export const SECTIONS: Section[] = [
         label: 'Ratings',
         groups: [
             RECORD_MIN(),
-            G('xG ratings', ['xgf_rating', 'xga_rating', 'xgf_rolling', 'xga_rolling', 'xgf_5v5', 'xga_5v5']),
-            G('Lineup NET', ['lineup_rating', 'f1_impact', 'f2_impact', 'f3_impact', 'f4_impact', 'd1_impact', 'd2_impact', 'd3_impact', 'f_impact', 'd_impact']),
-            G('RAPM & goalie', ['rapm_f', 'rapm_d', 'goalie_impact']),
+            ...RATINGS_GROUPS,
         ],
     },
     { key: 'all', label: 'All', groups: [RECORD, GOALS, PP, PK, SAVES, SHOTS, XG, STATE, COMEBACKS, EN] },
 ];
+
+/** The default league table: every group, in order. Users hide columns from here. */
+export const COLUMN_GROUPS: SectionGroup[] = [RECORD, GOALS, PP, PK, SAVES, SHOTS, XG, STATE, COMEBACKS, EN, ...RATINGS_GROUPS];
+
+/** One-click column presets: the columns of each section. */
+export const PRESETS: { key: string; label: string; cols: string[] }[] = SECTIONS.filter(sec => sec.key !== 'all').map(sec => ({
+    key: sec.key,
+    label: sec.label,
+    cols: [...new Set(sec.groups.flatMap(g => g.cols))],
+}));
 
 function RECORD_MIN(): SectionGroup {
     return G('Record', ['gp', 'points', 'pt_pct']);

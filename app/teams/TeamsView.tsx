@@ -9,7 +9,7 @@ import { buildLeaguePayload } from '@/utils/team-stats/server';
 export default function TeamsView({ season }: { season: string }) {
     const payload = buildLeaguePayload(season);
     return (
-        <main className="page pb-tabbar pt-4 md:pb-10 md:pt-6">
+        <main className="page pb-tabbar pt-3 md:pb-6 md:pt-4">
             <TeamsTable initial={payload} />
         </main>
     );
