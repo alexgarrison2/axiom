@@ -289,11 +289,11 @@ def explain_coefficients(model, cols):
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
-def model_version(training_date: datetime, cols=None, xg_version=None) -> str:
+def model_version(training_date: datetime, cols=None, xg_version=None, ratings=None) -> str:
     """``logit-elo-v5-YYYYMMDD`` plus the input tags of models trained on xG v2 (``-xg2``) and
-    with the RAPM v2 lineup term (``-rapm``) and the lineup finishing term ``bu_d_fin`` (``-fin``),
-    so two models trained the same day stay apart in
-    the graded record (model_report groups by version within the ``logit-elo`` family)."""
+    with the RAPM v2 lineup term (``-rapm``), the lineup finishing term ``bu_d_fin`` (``-fin``) and
+    the lineup term rebuilt from player ratings v3 (``-r3``), so two models trained the same day stay
+    apart in the graded record (model_report groups by version within the ``logit-elo`` family)."""
     v = f"{MODEL_FAMILY}-v{MODEL_GENERATION}-{training_date.strftime('%Y%m%d')}"
     if xg_version == 'v2':
         v += '-xg2'
@@ -301,6 +301,8 @@ def model_version(training_date: datetime, cols=None, xg_version=None) -> str:
         v += '-rapm'
     if cols is not None and any(c in cols for c in F.BU_FIN_COLUMNS):
         v += '-fin'
+    if ratings == 'v3' and cols is not None and any(c in cols for c in F.BU_COLUMNS):
+        v += '-r3'
     return v
 
 
@@ -369,7 +371,8 @@ def train(cols=None, save=True, legacy=True, verbose=True, M=None, xg_source=Non
         print(f"  final C={C_final}; home-ice logit {home_logit:.3f} (p={1 / (1 + np.exp(-home_logit)):.3f}); betas {betas}")
 
     meta = {
-        'model_version': model_version(now, cols, F.history_xg_version()),
+        'model_version': model_version(now, cols, F.history_xg_version(),
+                                       ((prev_meta or {}).get('bu_lineup') or {}).get('ratings')),
         'model_type': 'logistic_regression_l2',
         'training_date': now.isoformat(),
         'training_seasons': sorted(int(s) for s in usable['season'].unique()),

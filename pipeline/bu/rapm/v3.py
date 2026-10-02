@@ -773,3 +773,150 @@ def prior_grid(engine: Engine, S: str, rec: Recency, sh: Shrink, grid=G_GRID, lo
         if log:
             log(f"  [v3] {S} prior g={g:g}: {len(out[-1].ev)} EV, {len(out[-1].st)} PP/PK players")
     return out
+
+
+# ----------------------------------------------------------------------- FIN with game recency
+
+FIN_PRIOR_XG = 60.0         # finishing.PRIOR_XG; re-tuned with game weights (v3 validation report)
+FIN_LEAGUE_PSEUDO = 500.0   # finishing.LEAGUE_PSEUDO_G: this season's league goals / xG ratio, shrunk to 1
+
+
+def season_ratio(pg: pd.DataFrame) -> float:
+    """League EV goals per xG of a completed season (finishing: each season's xG scaled to 1)."""
+    x = float(pg["x"].sum())
+    return float(pg["g"].sum()) / x if x > 0 else 1.0
+
+
+def fin_sums(pg: pd.DataFrame, w: np.ndarray, ratio: float) -> pd.DataFrame:
+    """Per player weighted (g, x x ratio, s) of player-game rows ``pg`` with per-row weights ``w``."""
+    m = np.asarray(w) > 0
+    if not m.any():
+        return pd.DataFrame(columns=["g", "x", "s"], dtype=float)
+    df = pd.DataFrame({"player_id": pg["player_id"].to_numpy()[m], "g": pg["g"].to_numpy()[m] * w[m],
+                       "x": pg["x"].to_numpy()[m] * w[m] * ratio, "s": pg["s"].to_numpy()[m] * w[m]})
+    return df.groupby("player_id")[["g", "x", "s"]].sum()
+
+
+def add_sums(*parts) -> pd.DataFrame:
+    parts = [p for p in parts if p is not None and len(p)]
+    if not parts:
+        return pd.DataFrame(columns=["g", "x", "s"], dtype=float)
+    return pd.concat(parts).groupby(level=0).sum()
+
+
+def fin_values(sums: pd.DataFrame, groups: dict, prior_xg: float = FIN_PRIOR_XG) -> pd.DataFrame:
+    """mult and FIN (goals above xG per 60, as a forward / as a defenceman) from weighted sums
+    (``finishing.FinState.fin`` with the position-group volume prior refit on the same sums)."""
+    from .finishing import MU_DEFAULT, VOL_PSEUDO_S
+    if not len(sums):
+        return pd.DataFrame(columns=["mult", "fin_f", "fin_d"], dtype=float)
+    grp = np.array(["D" if groups.get(int(p)) == "D" else "F" for p in sums.index])
+    mu = {}
+    for g_ in ("F", "D"):
+        m = grp == g_
+        s_ = float(sums["s"].to_numpy()[m].sum())
+        mu[g_] = float(sums["x"].to_numpy()[m].sum()) / s_ if s_ > 3600 * 100 else MU_DEFAULT[g_]
+    g, x, s = sums["g"].to_numpy(float), sums["x"].to_numpy(float), sums["s"].to_numpy(float)
+    mult = (g + prior_xg) / (x + prior_xg)
+    out = pd.DataFrame({"mult": mult}, index=sums.index)
+    for g_ in ("F", "D"):
+        vol = (x + VOL_PSEUDO_S * mu[g_]) / (s + VOL_PSEUDO_S) * 3600.0
+        out[f"fin_{g_.lower()}"] = (mult - 1.0) * vol
+    return out
+
+
+def fin_pre(engine: "Engine", S: str, g: float, rec: Recency) -> pd.DataFrame:
+    """Weighted finishing sums of every game before season S at in-season count g."""
+    L0 = engine.clock.season_start(S)
+    parts = []
+    for s, x in engine.inp.items():
+        if s >= str(S) or not len(x.fin_pg):
+            continue
+        L = engine.clock.before(x.fin_pg["d"].to_numpy(dtype="datetime64[D]"))
+        parts.append(fin_sums(x.fin_pg, rec.weight(g + (L0 - L)), season_ratio(x.fin_pg)))
+    return add_sums(*parts)
+
+
+def fin_in(engine: "Engine", S: str, asof, rec: Recency) -> pd.DataFrame:
+    """This season's weighted sums as of ``asof`` (games up to d - LAG_DAYS; xG at the running
+    league ratio)."""
+    x = engine.inp[str(S)]
+    pg = x.fin_pg
+    if not len(pg):
+        return add_sums()
+    d = pg["d"].to_numpy(dtype="datetime64[D]")
+    cutoff = np.datetime64(asof, "D") - np.timedelta64(LAG_DAYS, "D")
+    ok = d <= cutoff
+    ratio = (float(pg["g"].to_numpy()[ok].sum()) + FIN_LEAGUE_PSEUDO) / (float(pg["x"].to_numpy()[ok].sum())
+                                                                        + FIN_LEAGUE_PSEUDO)
+    w = np.where(ok, rec.weight(float(engine.clock.before([asof])[0]) - engine.clock.before(d)), 0.0)
+    return fin_sums(pg, w, ratio)
+
+
+def interp_sums(a: pd.DataFrame, b: pd.DataFrame, t: float) -> pd.DataFrame:
+    """Linear interpolation of two weighted-sum tables (missing rows = 0)."""
+    if t <= 0:
+        return a
+    idx = a.index.union(b.index)
+    return a.reindex(idx).fillna(0.0) * (1 - t) + b.reindex(idx).fillna(0.0) * t
+
+
+# ----------------------------------------------------------------------- expected TOI per game by state
+
+TOI_STATES = ("ev", "pp", "pk")
+TOI_HALF_LIFE = {"ev": 10.0, "pp": 20.0, "pk": 10.0}   # player games; tuned on 2019-23 (v3_validation.json "toi")
+TOI_PSEUDO = 3.0
+
+
+def toi_state(toi: pd.DataFrame, cutoff, half_life: dict = TOI_HALF_LIFE) -> pd.DataFrame:
+    """EWMA sums over each player's own games up to ``cutoff``: columns w_<s>, x_<s> (seconds) per
+    state; the newest game has weight 1, the k-th older 0.5 ** (k / half_life)."""
+    cols = [f"{a}_{s}" for s in TOI_STATES for a in ("w", "x")]
+    t = toi[toi["d"] <= np.datetime64(cutoff, "D")]
+    if not len(t):
+        return pd.DataFrame(columns=cols, dtype=float)
+    t = t.sort_values(["player_id", "d", "game_id"])
+    k = t.groupby("player_id").cumcount(ascending=False).to_numpy(float)
+    out = {}
+    for s in TOI_STATES:
+        w = 0.5 ** (k / half_life[s])
+        out[f"w_{s}"] = w
+        out[f"x_{s}"] = w * t[f"{s}_s"].to_numpy(float)
+    df = pd.DataFrame(out)
+    df["player_id"] = t["player_id"].to_numpy()
+    return df.groupby("player_id")[cols].sum()
+
+
+def roll_toi_state(state: pd.DataFrame, toi_new: pd.DataFrame, half_life: dict = TOI_HALF_LIFE) -> pd.DataFrame:
+    """Season-start EWMA state + this season's games: the old sums decay by 0.5 ** (n / h), n = the
+    player's games since."""
+    new = toi_state(toi_new, np.datetime64("2999-01-01"), half_life)
+    n = toi_new.groupby("player_id").size() if len(toi_new) else pd.Series(dtype=float)
+    idx = state.index.union(new.index)
+    st = state.reindex(idx).fillna(0.0)
+    nn = n.reindex(idx).fillna(0.0).to_numpy(float)
+    out = new.reindex(idx).fillna(0.0)
+    for s in TOI_STATES:
+        f = 0.5 ** (nn / half_life[s])
+        out[f"w_{s}"] = out[f"w_{s}"].to_numpy() + st[f"w_{s}"].to_numpy() * f
+        out[f"x_{s}"] = out[f"x_{s}"].to_numpy() + st[f"x_{s}"].to_numpy() * f
+    return out
+
+
+def toi_pos_means(toi: pd.DataFrame, groups: dict) -> dict:
+    """Mean seconds per game played by state and position group (the shrinkage target)."""
+    if not len(toi):
+        return {g: {s: 0.0 for s in TOI_STATES} for g in ("F", "D")}
+    grp = np.array(["D" if groups.get(int(p)) == "D" else "F" for p in toi["player_id"]])
+    return {g: {s: float(toi[f"{s}_s"].to_numpy()[grp == g].mean()) if (grp == g).any() else 0.0
+                for s in TOI_STATES} for g in ("F", "D")}
+
+
+def expected_toi(state: pd.DataFrame, groups: dict, pos_means: dict, pseudo: float = TOI_PSEUDO) -> pd.DataFrame:
+    """Expected minutes per game by state: (EWMA sum + pseudo x position mean) / (weights + pseudo)."""
+    out = pd.DataFrame(index=state.index)
+    grp = np.array(["D" if groups.get(int(p)) == "D" else "F" for p in state.index])
+    for s in TOI_STATES:
+        pm = np.array([pos_means[g][s] for g in grp])
+        out[f"toi_{s}"] = (state[f"x_{s}"].to_numpy() + pseudo * pm) / (state[f"w_{s}"].to_numpy() + pseudo) / 60.0
+    return out

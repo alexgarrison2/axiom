@@ -198,6 +198,7 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
         replay(state, history, season_shares(paths, [season], games), games, lineups, pos_group)
     ratings, cov, src = _ratings_table(paths, season, seed)
     fin = fin_table(paths, season)
+    v3 = v3_table(paths, season)
     means = seed.rookie.means
     rookie = {g: [means.get((g, "all", "o"), 0.0), means.get((g, "all", "d"), 0.0)] for g in ("F", "D")}
     teams = {}
@@ -218,6 +219,7 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
            "shares": _state_json(state), "history": _history_json(history),
            "teams": {**sp.get("teams", {}), **teams},
            "fin": fin,
+           "v3": v3,
            "crosswalk": None}
     if crosswalk is not None and len(crosswalk):
         cols = ["player_id", "norm", "last", "team", "sweater", "rank"]
@@ -241,6 +243,19 @@ def fin_table(paths, season: str, pack: str | None = None) -> dict | None:
         return None
     return {"pack": os.path.basename(pack or FN.pack_path(season)), "season_games": int(n),
             "prior_xg": st.prior_xg, "columns": ["player_id", "fin_f", "fin_d"], "rows": FN.bundle_rows(st)}
+
+
+def v3_table(paths, season: str, pack: str | None = None) -> dict | None:
+    """The bundle's ``v3`` table: player ratings v3 (``bu.rapm.v3_pack.bundle_table``: the committed
+    ``ratings_pack_<S>.json.gz`` rolled through the season's games in the refresh's caches), the
+    source of the site's ``player_ratings.json``; None without a ratings pack for the season.
+    Never raises: a failure leaves the v2 term untouched (the export then keeps its last file)."""
+    try:
+        from bu.rapm import v3_pack as P3
+        return P3.bundle_table(paths, season, pack_file=pack)
+    except Exception as e:  # noqa: BLE001
+        print(f"  [serve] v3 ratings table failed: {type(e).__name__}: {e}")
+        return None
 
 
 def team_ids_from_lake(lake, seasons) -> dict:

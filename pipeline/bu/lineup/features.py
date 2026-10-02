@@ -126,6 +126,21 @@ def fin_player_games(paths, seasons, source: str | None, games: pd.DataFrame) ->
     return pg.sort_values(["avail", "game_id"], kind="stable").reset_index(drop=True)
 
 
+def v3_fin_tables(paths, seasons) -> dict | None:
+    """{(season, asof date): FIN table} from ``ratings/fin_season=S.parquet`` (ratings v3), or None
+    when a season has none (then the v2 FinState replay is used)."""
+    out = {}
+    for s in seasons:
+        p = os.path.join(os.path.dirname(paths.ratings(s)), f"fin_season={s}.parquet")
+        if not os.path.exists(p):
+            return None
+        f = pd.read_parquet(p)
+        f["asof"] = pd.to_datetime(f["asof"]).values.astype("datetime64[D]")
+        for a, sub in f.groupby("asof"):
+            out[(s, a)] = sub
+    return out
+
+
 def build(paths, seasons: list[str], log=print, fin: bool = True) -> pd.DataFrame:
     lake = paths.lake
     games, lineups, pos_group = lineup_tables(lake, seasons)
@@ -178,11 +193,14 @@ def build(paths, seasons: list[str], log=print, fin: bool = True) -> pd.DataFram
         rm = (summ["seasons"].get(s) or {}).get("rookie", {}).get("means", {})
         rookie[s] = {g: (rm.get(f"{g}|all|o", 0.0), rm.get(f"{g}|all|d", 0.0)) for g in ("F", "D")}
 
-    # finishing talent (bu.rapm.finishing): point-in-time FIN of every dressed skater
-    fpg = fin_player_games(paths, seasons, summ.get("xg_source"), games) if fin else None
+    # finishing talent: ratings v3 tables (bu.rapm.v3_pack.asof_backfill: FIN as of each date, game
+    # recency) when the state has them for every season, else bu.rapm.finishing's FinState replay
+    v3fin = v3_fin_tables(paths, seasons) if fin else None
+    fpg = fin_player_games(paths, seasons, summ.get("xg_source"), games) if (fin and v3fin is None) else None
     if fin and fpg is None:
         log("  [lineup] no xG cache for every season: FIN columns skipped")
     fstate = FinState() if fpg is not None else None
+    v3f_key, v3f_map = None, {}
     f_ptr, f_av = 0, (fpg["avail"].to_numpy() if fpg is not None else None)
 
     state = ShareState()
@@ -243,7 +261,7 @@ def build(paths, seasons: list[str], log=print, fin: bool = True) -> pd.DataFram
                     row.update({f"bu_{side}_off": np.nan, f"bu_{side}_def": np.nan, f"bu_{side}_n": len(pids),
                                 f"bu_{side}_rated": 0, f"bu_{side}_delta": np.nan,
                                 f"bu_{side}_net_asof": np.nan, f"bu_{side}_delta_asof": np.nan})
-                    if fstate is not None:
+                    if fstate is not None or v3fin is not None:
                         row[f"bu_{side}_fin"] = np.nan
                     continue
                 s_ = lineup_shares(state, pids, groups)
@@ -252,9 +270,19 @@ def build(paths, seasons: list[str], log=print, fin: bool = True) -> pd.DataFram
                     a_ = actual.get((int(g["game_id"]), int(p_)))
                     if a_ is not None:
                         toi_err.append((S, abs(e_ - a_), abs(l_ - a_)))
-                t = side_term(state, pids, groups, rate, history[tid],
-                              fin=(lambda ps, gs: [fstate.fin(p_, g_) for p_, g_ in zip(ps, gs)])
-                              if fstate is not None else None)
+                if v3fin is not None and v3f_key != (S, d):
+                    tb = v3fin.get((S, d))
+                    v3f_map = {} if tb is None else {int(p_): (a_, b_) for p_, a_, b_ in
+                                                     zip(tb["player_id"], tb["fin_f"], tb["fin_d"])}
+                    v3f_key = (S, d)
+                if v3fin is not None:
+                    ffn = (lambda ps, gs: [v3f_map.get(int(p_), (0.0, 0.0))[1 if g_ == "D" else 0]
+                                           for p_, g_ in zip(ps, gs)])
+                elif fstate is not None:
+                    ffn = (lambda ps, gs: [fstate.fin(p_, g_) for p_, g_ in zip(ps, gs)])
+                else:
+                    ffn = None
+                t = side_term(state, pids, groups, rate, history[tid], fin=ffn)
                 row[f"bu_{side}_off"] = t["off"]
                 row[f"bu_{side}_def"] = t["def"]
                 row[f"bu_{side}_n"] = len(pids)
@@ -262,7 +290,7 @@ def build(paths, seasons: list[str], log=print, fin: bool = True) -> pd.DataFram
                 row[f"bu_{side}_delta"] = t["delta"]
                 row[f"bu_{side}_net_asof"] = t["net_asof"]
                 row[f"bu_{side}_delta_asof"] = t["delta_asof"]
-                if fstate is not None:
+                if fstate is not None or v3fin is not None:
                     row[f"bu_{side}_fin"] = t["fin"]
                 ok = ok and t["rated"] >= MIN_RATED
             c0, ch = cov_by.get((S, d), (np.nan, np.nan))

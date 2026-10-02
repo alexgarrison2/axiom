@@ -48,7 +48,7 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  (bu/lineup/out/serving_bundle.json.gz) is readable, carries the model's
                  columns, was built after its source data and, when fresh, is of this season
                  (age: manifest stale flag; with a stale bundle the F1 rollback model is published)
-  player_ratings public/data/player_ratings.json (RAPM v2 OFF / DEF / NET): every row named,
+  player_ratings public/data/player_ratings.json (ratings v3: impact headline + per-60 rates): every row named,
                  >= 600 current-roster skaters on >= 28 teams, v2 signs (def = xGA/60 prevented,
                  higher = better; net = off + def), same season as
                  the serving bundle and at most 3 days behind its max_source_date
@@ -832,17 +832,22 @@ def check_bu_bundle(ctx):
     return errs
 
 
-PLAYER_RATINGS_COLUMNS = ("id", "name", "team", "pos", "roster", "rated", "off", "def", "net", "toi", "gp")
+PLAYER_RATINGS_COLUMNS = ("id", "name", "team", "pos", "roster", "rated", "impact", "off_impact", "def_impact", "sd",
+                          "ev_off", "ev_def", "pp_off", "pk_def", "fin", "toi_ev_gp", "toi_pp_gp", "toi_pk_gp",
+                          "off", "def", "net", "off_total", "toi", "gp")
 PLAYER_RATINGS_MIN_ROSTER = 600
 PLAYER_RATINGS_MAX_LAG_DAYS = 3
-PLAYER_RATINGS_VERSION = 2      # def = xGA/60 prevented (higher = better), net = off + def
+PLAYER_RATINGS_VERSION = 3      # 3: per-game impact headline (ratings v3); 2: def = xGA/60 prevented, net = off + def
+PLAYER_RATINGS_TOI_MAX = {"toi_ev_gp": 30.0, "toi_pp_gp": 8.0, "toi_pk_gp": 8.0}
 
 
 def check_player_ratings(ctx):
-    """public/data/player_ratings.json (the site's RAPM v2 player ratings): readable, every row
-    named, >= PLAYER_RATINGS_MIN_ROSTER current-roster skaters across >= 28 teams, the v2 sign
-    convention (every rating higher = better: def = xGA/60 prevented, net = off + def), and not behind the committed serving bundle it is exported from (same season, as_of no
-    older than the bundle's max_source_date)."""
+    """public/data/player_ratings.json (the site's player ratings, v3): readable, every row named,
+    >= PLAYER_RATINGS_MIN_ROSTER current-roster skaters across >= 28 teams, the sign convention
+    (every rating higher = better: def = xGA/60 prevented, net = off + def, off_total = off + fin),
+    the v3 headline (impact = off_impact + def_impact, finite rates, sane expected minutes,
+    position-average baseline), and not behind the committed serving bundle it is exported from
+    (same season, as_of no older than the bundle's max_source_date)."""
     path = ctx.get("player_ratings_path") or os.path.join(PUBLIC_DATA_DIR, "player_ratings.json")
     doc = _json(path)
     if not isinstance(doc, dict):
@@ -855,7 +860,7 @@ def check_player_ratings(ctx):
     errs = []
     if int(doc.get("version") or 0) < PLAYER_RATINGS_VERSION:
         errs.append(f"player_ratings.json: version {doc.get('version')} < {PLAYER_RATINGS_VERSION} "
-                    "(def must be xGA/60 prevented, higher = better; re-export)")
+                    "(ratings v3 with the per-game impact headline; re-export)")
     unnamed = [r.get("id") for r in rows if not str(r.get("name") or "").strip()]
     if unnamed:
         errs.append(f"player_ratings.json: {len(unnamed)} rows without a name, e.g. {unnamed[:5]}")
@@ -870,13 +875,30 @@ def check_player_ratings(ctx):
            or abs(r["off"] + r["def"] - r["net"]) > 0.002]
     if bad:
         errs.append(f"player_ratings.json: {len(bad)} rows with a missing or inconsistent off/def/net, e.g. {bad[:3]}")
-    if "fin" in cols and "off_total" in cols:
-        # finishing talent (bu.rapm.finishing): off_total = off + fin; shrunk FIN stays small
-        badf = [r.get("name") for r in rows
-                if not all(isinstance(r.get(k), (int, float)) and r[k] == r[k] for k in ("fin", "off_total"))
-                or abs(r["off"] + r["fin"] - r["off_total"]) > 0.002 or abs(r["fin"]) > 0.5]
-        if badf:
-            errs.append(f"player_ratings.json: {len(badf)} rows with a missing or inconsistent fin/off_total, e.g. {badf[:3]}")
+    # finishing talent: off_total = off + fin; shrunk FIN stays small
+    badf = [r.get("name") for r in rows
+            if not all(isinstance(r.get(k), (int, float)) and r[k] == r[k] for k in ("fin", "off_total"))
+            or abs(r["off"] + r["fin"] - r["off_total"]) > 0.002 or abs(r["fin"]) > 0.5]
+    if badf:
+        errs.append(f"player_ratings.json: {len(badf)} rows with a missing or inconsistent fin/off_total, e.g. {badf[:3]}")
+    # v3 headline: impact = off_impact + def_impact (goals / 82 games), ev_* = the v2-named per-60 rates,
+    # sane expected minutes, a non-negative SD, and an average player at each position ~ 0
+    num = ("impact", "off_impact", "def_impact", "sd", "ev_off", "ev_def", "pp_off", "pk_def",
+           *PLAYER_RATINGS_TOI_MAX)
+    badi = [r.get("name") for r in rows
+            if not all(isinstance(r.get(k), (int, float)) and r[k] == r[k] for k in num)
+            or abs(r["off_impact"] + r["def_impact"] - r["impact"]) > 0.02 or r["sd"] < 0
+            or abs(r["ev_off"] - r["off"]) > 0.002 or abs(r["ev_def"] - r["def"]) > 0.002
+            or any(not (0 <= r[k] <= v) for k, v in PLAYER_RATINGS_TOI_MAX.items())]
+    if badi:
+        errs.append(f"player_ratings.json: {len(badi)} rows with a missing or inconsistent impact / rate / TOI, "
+                    f"e.g. {badi[:3]}")
+    else:
+        for g in ("F", "D"):
+            ref = [r["impact"] for r in roster if r.get("rated") and (r.get("pos") == "D") == (g == "D")]
+            if ref and abs(sum(ref) / len(ref)) > 0.5:
+                errs.append(f"player_ratings.json: mean impact of rated {g} {sum(ref) / len(ref):+.2f} "
+                            "(the position-average baseline should put it near 0)")
     if any(r.get("pos") == "G" for r in rows):
         errs.append("player_ratings.json: goalies listed (skaters only)")
     try:
