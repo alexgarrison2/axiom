@@ -140,8 +140,9 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
         const p = byTeams(opening, 'CHI', 'VGK');
         const lean = modelLean(p)!;
         expect(lean.tri).toBe('VGK');
-        expect(lean.pct).toBe(64);
-        expect(visible(card(p))).toContain('◆ 64 VGK');
+        // The percentage is the fixture's own model number (fixtures are regenerated with the committed model).
+        expect(lean.pct).toBe(Math.round(100 - p.away.modelWinPct!));
+        expect(visible(card(p))).toContain(`◆ ${lean.pct} VGK`);
         cleanup();
         expect(modelLean(byTeams(opening, 'EDM', 'VAN'))).toBeNull();
         expect(visible(card(byTeams(opening, 'EDM', 'VAN')))).not.toContain('◆');

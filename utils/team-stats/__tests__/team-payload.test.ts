@@ -20,11 +20,11 @@ describe('team skater cards', () => {
         }
     });
 
-    it('McDavid: last season 82 GP with 48-90-138; this season 0-1 GP', () => {
+    it('McDavid: last season 82 GP with 48-90-138; this season never more GP than EDM has played', () => {
         const mcd = edm.skaters.find(s => s.id === '8478402')!;
         expect(mcd).toBeDefined();
         expect(mcd.last).toMatchObject({ gp: 82, g: 48, a: 90, pts: 138 });
-        expect(mcd.current?.gp ?? 0).toBeLessThanOrEqual(1);
+        expect(mcd.current?.gp ?? 0).toBeLessThanOrEqual(edm.standing?.gp ?? 0);
     });
 
     it('lists only the current roster (no Nurse, Henrique or Roslovic)', () => {

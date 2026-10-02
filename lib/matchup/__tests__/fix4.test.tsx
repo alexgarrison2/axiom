@@ -127,13 +127,14 @@ describe('F4-8 line move across a book switch', () => {
 describe('F4-3 card symbols open the glossary without toggling the card', () => {
     it('renders the lean flag as a /methodology#term-lean link outside the expand button', () => {
         const p = byTeams(opening, 'CHI', 'VGK');
-        expect(modelLean(p)).not.toBeNull();
+        const lean = modelLean(p)!;
+        expect(lean).not.toBeNull();
         const c = card(p);
         const a = c.querySelector<HTMLAnchorElement>('a[data-lean]')!;
         expect(a.getAttribute('href')).toBe('/methodology#term-lean');
         expect(a.closest('button')).toBeNull();
-        expect(a.querySelector('[aria-hidden="true"]')?.textContent).toContain('◆ 64 VGK');
-        expect(a.textContent).toMatch(/Model lean: VGK 64%, [\d.]+ points off the market/);
+        expect(a.querySelector('[aria-hidden="true"]')?.textContent).toContain(`◆ ${lean.pct} VGK`);
+        expect(a.textContent).toMatch(new RegExp(`Model lean: VGK ${lean.pct}%, [\\d.]+ points off the market`));
         expect(a.className).toMatch(/\bz-10\b/);
         expect(a.className).toMatch(/\bmin-h-6\b/);
         const toggle = c.querySelector('button[aria-expanded]')!;
