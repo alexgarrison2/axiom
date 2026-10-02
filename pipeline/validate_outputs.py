@@ -829,6 +829,12 @@ def check_bu_bundle(ctx):
         errs.append(f"{rel}: max_source_date {src} is after built_at {b.get('built_at')}")
     if not (b.get("players") or {}).get("rows"):
         errs.append(f"{rel}: no player ratings")
+    v3 = b.get("v3") or {}
+    if fresh and str(b.get("season")) == SEASON_ID and not v3.get("rows"):
+        # the site's player ratings (v3) come from this table; a fresh bundle without it means the
+        # refresh ran without the season's ratings pack (bu/lineup/out/ratings_pack_<S>.json.gz)
+        errs.append(f"{rel}: freshly built without a v3 ratings table: commit the season's ratings pack "
+                    "(python -m bu.rapm.v3_pack pack --season <S>)")
     return errs
 
 
