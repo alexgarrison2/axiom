@@ -286,6 +286,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                                 <SortHeader
                                     direction={sort.key === 'net' ? sort.dir : null}
                                     onSort={() => onSort('net')}
+                                    align="right"
                                     title="Net: OFF + DEF, EV xG per 60 above average"
                                     className="border-b border-line md:min-w-[9.5rem]"
                                 >
@@ -384,7 +385,7 @@ function NetBar({ p }: { p: Skater }) {
     const t = ratingTone(p.net, p, STRONG.net);
     const fill = !p.rated || p.evMin < 250 ? 'bg-fg-3/50' : p.net >= 0 ? 'bg-pos/70' : 'bg-neg/70';
     return (
-        <span className="flex items-center gap-2">
+        <span className="flex items-center justify-end gap-2">
             <span aria-hidden="true" className="relative hidden h-2 w-20 shrink-0 rounded-full bg-line md:block">
                 <span className="absolute inset-y-0 left-1/2 w-px bg-fg-3/60" />
                 <span className={cn('absolute inset-y-0 rounded-full', fill)} style={p.net >= 0 ? { left: '50%', width: `${half}%` } : { right: '50%', width: `${half}%` }} />

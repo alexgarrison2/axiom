@@ -84,7 +84,7 @@ Model artifacts are committed to git (they are small enough and the lite run nee
 TypeScript uses `@/*` to map to the repo root (configured in `tsconfig.json`).
 
 ### Styling
-Tailwind CSS with the "Neon Arcade" tokens in `app/globals.css` (palette: cyan brand/active, green positive/confirmed, magenta model, amber situational, red negative; glow only on live data). Fonts via `next/font`: Chakra Petch (`font-display`: names, win %, headings) and JetBrains Mono (everything else). Primitives and their APIs are shown on `/ui-kit`. Copy is minimal: page headings are the page name only, labels are 1-2 uppercase mono words, explanations live on `/methodology`.
+Tailwind CSS with the "Neon Arcade" tokens in `app/globals.css` (palette: cyan brand/active, green positive/confirmed, magenta model, amber situational, red negative; glow only on live data). Font via `next/font`: IBM Plex Sans Condensed for everything (`font-display` and `font-mono` are aliases), tabular figures on body so number columns align. Primitives and their APIs are shown on `/ui-kit`. Copy is minimal: page headings are the page name only, labels are 1-2 uppercase mono words, explanations live on `/methodology`.
 
 ## Data sources
 

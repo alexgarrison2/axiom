@@ -1,32 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Chakra_Petch, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Sans_Condensed } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/components/SiteNav";
 import Footer from "@/components/Footer";
 import { FocusReveal } from "@/components/ui/focus-reveal";
 
-// Body face for everything that is not display type: times, odds, labels,
-// tables, nav. Variable font, one file.
-const mono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+// One family for everything: IBM Plex Sans Condensed. Narrow letterforms fit
+// dense tables and notes; numbers use tabular figures (set on body in
+// globals.css) so columns still align without a monospace face.
+const sans = IBM_Plex_Sans_Condensed({
+  variable: "--font-plex-condensed",
   subsets: ["latin"],
-  display: "swap",
-  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
-});
-
-// Display face: goalie/team names, headings (500/600/700 upright).
-const display = Chakra_Petch({
-  variable: "--font-chakra-petch",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
   fallback: ["Arial Narrow", "system-ui", "sans-serif"],
 });
 
 // Bold italic for the win-bar percentages only (.num-pct, `font-display italic`).
-// A separate face so the unused 500/600 italics are never preloaded.
-const displayItalic = Chakra_Petch({
-  variable: "--font-chakra-petch-italic",
+const sansItalic = IBM_Plex_Sans_Condensed({
+  variable: "--font-plex-condensed-italic",
   subsets: ["latin"],
   weight: "700",
   style: "italic",
@@ -84,7 +76,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${mono.variable} ${display.variable} ${displayItalic.variable}`}
+      className={`${sans.variable} ${sansItalic.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased">

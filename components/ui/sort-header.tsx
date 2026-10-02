@@ -30,16 +30,26 @@ export function SortHeader({ children, direction, onSort, align = 'left', classN
                 type="button"
                 onClick={onSort}
                 className={cn(
-                    'inline-flex min-h-8 w-full items-center gap-1 px-2 text-micro uppercase tracking-[0.12em] transition-colors hover:text-fg-1 coarse:min-h-11',
+                    'inline-flex min-h-8 w-full items-center px-2 text-micro uppercase tracking-[0.06em] transition-colors hover:text-fg-1 coarse:min-h-11',
                     align === 'right' && 'justify-end',
                     align === 'center' && 'justify-center',
                     direction ? 'text-brand' : 'text-fg-3',
                 )}
             >
-                <span>{children}</span>
-                <svg aria-hidden="true" viewBox="0 0 8 8" className={cn('h-2 w-2 shrink-0', !direction && 'invisible')}>
-                    <path d={direction === 'asc' ? 'M4 1.5 7 6H1z' : 'M4 6.5 1 2h6z'} fill="currentColor" />
-                </svg>
+                {/* The arrow is taken out of flow so the label's edge lines up with the cell values below it;
+                    the negative margin cancels the trailing letter-spacing on the last glyph. */}
+                <span className={cn('relative', align === 'right' && '-mr-[0.06em]')}>
+                    {children}
+                    {direction ? (
+                        <svg
+                            aria-hidden="true"
+                            viewBox="0 0 8 8"
+                            className={cn('absolute top-1/2 h-2 w-2 -translate-y-1/2', align === 'right' ? 'right-full mr-1' : 'left-full ml-1')}
+                        >
+                            <path d={direction === 'asc' ? 'M4 1.5 7 6H1z' : 'M4 6.5 1 2h6z'} fill="currentColor" />
+                        </svg>
+                    ) : null}
+                </span>
             </button>
         </th>
     );

@@ -10,7 +10,7 @@ import { clashSafePair, MIN_TEAM_DELTA_E } from './team-color';
  *
  * - Fill split = `pAway` (the published forecast). Team colours come from the
  *   clash-safe palette (or awayColor/homeColor overrides, ΔE-checked).
- * - Bold italic Chakra Petch % inside each fill.
+ * - Bold italic display % inside each fill.
  * - The favourite's segment glows; the underdog's is desaturated + darkened.
  * - Diagonal hatch texture over both fills.
  * - `market`: white MARKET tick at the vig-free market probability (away).

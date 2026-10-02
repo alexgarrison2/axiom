@@ -167,10 +167,14 @@ function ConferenceTable({
                         {showProjections ? (
                             <>
                                 <th scope="col" className={cn(cell, 'w-11 text-right sm:w-28 sm:text-left')}>
-                                    <abbr title="Projected points, with the 80% range of final points" className="no-underline">Proj</abbr>
+                                    <span className="sm:inline-block sm:w-7 sm:text-right">
+                                        <abbr title="Projected points, with the 80% range of final points" className="no-underline">Proj</abbr>
+                                    </span>
                                 </th>
                                 <th scope="col" className={cn(cell, 'w-[5.5rem] text-left sm:w-32')}>
-                                    <abbr title="Makes the playoffs" className="no-underline">PO%</abbr>
+                                    <span className="inline-block w-11 text-right">
+                                        <abbr title="Makes the playoffs" className="no-underline">PO%</abbr>
+                                    </span>
                                 </th>
                                 {full ? (
                                     <th scope="col" className={cn(cell, WIDE_VIS, 'w-14 text-right')}>

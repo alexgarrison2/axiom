@@ -67,9 +67,9 @@ describe('typefaces', () => {
     const root = resolve(__dirname, '../../..');
     const read = (p: string) => readFileSync(resolve(root, p), 'utf8');
 
-    it('loads Chakra Petch + JetBrains Mono via next/font', () => {
+    it('loads IBM Plex Sans Condensed via next/font', () => {
         const layout = read('app/layout.tsx');
-        expect(layout).toMatch(/import \{ Chakra_Petch, JetBrains_Mono \} from "next\/font\/google"/);
+        expect(layout).toMatch(/import \{ IBM_Plex_Sans_Condensed \} from "next\/font\/google"/);
         expect(layout).toMatch(/style: "italic"/);
     });
 

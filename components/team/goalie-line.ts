@@ -11,7 +11,7 @@ export function goalieState(status: string | null | undefined): GoalieState {
     return 'projected';
 }
 
-/** Chakra goalie-name class per state: confirmed glows green, likely is faded green, projected is grey. */
+/** Display-face goalie-name class per state: confirmed glows green, likely is faded green, projected is grey. */
 export const GOALIE_NAME: Record<GoalieState, string> = {
     confirmed: 'glow-green',
     likely: 'text-pos/70',

@@ -125,7 +125,7 @@ export default function Kit() {
                 </ul>
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                        <p className="label">Chakra Petch · display</p>
+                        <p className="label">Plex Condensed · display</p>
                         <p className="font-display text-display font-bold uppercase">Wed · Sep 30</p>
                         <p className="font-display text-[18px] font-bold tracking-[0.02em] text-pos">Sorokin</p>
                         <p className="num-pct text-[26px]">
@@ -133,7 +133,7 @@ export default function Kit() {
                         </p>
                     </div>
                     <div className="space-y-2">
-                        <p className="label">JetBrains Mono · everything else</p>
+                        <p className="label">Plex Condensed · everything else</p>
                         <p className="text-caption font-bold tracking-[0.24em]">7:00 PM</p>
                         <p className="text-[15px] font-bold text-fg-3">+117 · −138</p>
                         <p className="num-score text-[40px] leading-none">

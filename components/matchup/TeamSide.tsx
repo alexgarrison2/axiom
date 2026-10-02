@@ -93,7 +93,7 @@ function SideChip({ chip }: { chip: CardChip }) {
 
 /**
  * One side of the card: big crest on a team-colour wash (links to the team
- * page) with its fatigue chip under it, the starter's name in Chakra Petch
+ * page) with its fatigue chip under it, the starter's name in the display face
  * coloured by status, and the tiny season / vs-opponent lines. `faded` = the
  * loser of a final.
  */

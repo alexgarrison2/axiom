@@ -22,7 +22,7 @@ export interface PageHeadingProps {
 }
 
 /**
- * The page heading: the page name in Chakra Petch uppercase, optionally a
+ * The page heading: the page name in uppercase display type, optionally a
  * row of controls to its right. No eyebrow, no tagline, no subtitle.
  * Every page renders exactly one (the "h1 slot").
  */

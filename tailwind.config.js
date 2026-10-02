@@ -38,21 +38,21 @@ module.exports = {
       },
     },
     extend: {
-      /* Type scale (px / line-height). Floor is `micro` = 11px. Body is
-         JetBrains Mono, so sizes run a step smaller than a sans scale. */
+      /* Type scale (px / line-height). Floor is `micro` = 12px. Body is a
+         condensed sans, so sizes run a step larger than a monospace scale. */
       fontSize: {
-        micro: ["11px", { lineHeight: "14px" }],
-        caption: ["12px", { lineHeight: "16px" }],
-        "body-sm": ["13px", { lineHeight: "18px" }],
-        body: ["14px", { lineHeight: "20px" }],
+        micro: ["12px", { lineHeight: "15px" }],
+        caption: ["13px", { lineHeight: "17px" }],
+        "body-sm": ["14px", { lineHeight: "19px" }],
+        body: ["15px", { lineHeight: "21px" }],
         title: ["16px", { lineHeight: "20px" }],
         h2: ["22px", { lineHeight: "26px" }],
         display: ["30px", { lineHeight: "32px" }],
         hero: ["40px", { lineHeight: "40px" }],
       },
       letterSpacing: {
-        label: "0.16em",
-        chip: "0.14em",
+        label: "0.06em",
+        chip: "0.06em",
         wide: "0.08em",
       },
       colors: {
@@ -162,15 +162,15 @@ module.exports = {
         card: "var(--pad-card)",
       },
       fontWeight: {
-        // JetBrains Mono tops out at 800; Chakra Petch at 700.
+        // IBM Plex Sans Condensed tops out at 700.
         extrabold: "800",
         black: "800",
       },
       fontFamily: {
-        // Everything is JetBrains Mono except display type (font-display).
-        sans: ["var(--font-jetbrains-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
-        mono: ["var(--font-jetbrains-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
-        display: ["var(--font-chakra-petch)", "Arial Narrow", "system-ui", "sans-serif"],
+        // One family (IBM Plex Sans Condensed); font-mono kept as an alias so existing classes work.
+        sans: ["var(--font-plex-condensed)", "Arial Narrow", "system-ui", "sans-serif"],
+        mono: ["var(--font-plex-condensed)", "Arial Narrow", "system-ui", "sans-serif"],
+        display: ["var(--font-plex-condensed)", "Arial Narrow", "system-ui", "sans-serif"],
       },
       animation: {
         "fade-in": "fade-in 0.2s ease-out both",
