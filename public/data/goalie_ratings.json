@@ -1,21 +1,22 @@
 {
     "Juuse Saros": {
         "season": "2026-27",
-        "gsax_per_game": -0.08930304726060947,
-        "gsax_per_game_raw": -0.11620155547163644,
-        "gsax_per_game_season": null,
+        "gsax_per_game": -0.08640580550087043,
+        "gsax_per_game_raw": -0.11212181904279615,
+        "gsax_per_game_season": 0.010270273822412523,
         "gsax_per_game_prior": -0.11620155547163644,
-        "gsax_total": 0.0,
-        "games_played": 0,
-        "games_played_all": 107,
+        "gsax_total": 0.010270273822412523,
+        "games_played": 1,
+        "games_played_all": 108,
         "games_by_season": {
             "2024-25": 48,
-            "2025-26": 59
+            "2025-26": 59,
+            "2026-27": 1
         },
-        "seasons_tracked": 2,
-        "evidence_gp": 83.0,
-        "w_current": 0.0,
-        "regression_factor": 0.769
+        "seasons_tracked": 3,
+        "evidence_gp": 84.0,
+        "w_current": 0.03225806451612903,
+        "regression_factor": 0.771
     },
     "James Reimer": {
         "season": "2026-27",
@@ -37,30 +38,30 @@
     },
     "Kevin Lankinen": {
         "season": "2026-27",
-        "gsax_per_game": -0.23265439639590751,
-        "gsax_per_game_raw": -0.32213685654817964,
-        "gsax_per_game_season": -1.3661723997723567,
+        "gsax_per_game": -0.34680614890824313,
+        "gsax_per_game_raw": -0.47817211440378976,
+        "gsax_per_game_season": -3.3407187538500303,
         "gsax_per_game_prior": -0.2873356717740404,
-        "gsax_total": -1.3661723997723567,
-        "games_played": 1,
-        "games_played_all": 86,
+        "gsax_total": -6.6814375077000605,
+        "games_played": 2,
+        "games_played_all": 87,
         "games_by_season": {
             "2024-25": 42,
             "2025-26": 43,
-            "2026-27": 1
+            "2026-27": 2
         },
         "seasons_tracked": 3,
-        "evidence_gp": 65.0,
-        "w_current": 0.03225806451612903,
-        "regression_factor": 0.722
+        "evidence_gp": 66.0,
+        "w_current": 0.0625,
+        "regression_factor": 0.725
     },
     "Igor Shesterkin": {
         "season": "2026-27",
-        "gsax_per_game": 0.2205796012378741,
-        "gsax_per_game_raw": 0.29038327251568236,
-        "gsax_per_game_season": 1.1339248816085816,
+        "gsax_per_game": 0.22182136750061915,
+        "gsax_per_game_raw": 0.29201800278562523,
+        "gsax_per_game_season": 1.1600805659276676,
         "gsax_per_game_prior": 0.2341471652428224,
-        "gsax_total": 2.2678497632171633,
+        "gsax_total": 2.3201611318553352,
         "games_played": 2,
         "games_played_all": 105,
         "games_by_season": {
@@ -75,11 +76,11 @@
     },
     "Andrei Vasilevskiy": {
         "season": "2026-27",
-        "gsax_per_game": 0.19960350097415572,
-        "gsax_per_game_raw": 0.25213073807261777,
-        "gsax_per_game_season": -1.391211650551321,
+        "gsax_per_game": 0.20026508073977817,
+        "gsax_per_game_raw": 0.2529664177765619,
+        "gsax_per_game_season": -1.365305579729052,
         "gsax_per_game_prior": 0.3069088176934157,
-        "gsax_total": -1.391211650551321,
+        "gsax_total": -1.365305579729052,
         "games_played": 1,
         "games_played_all": 124,
         "games_by_season": {
@@ -130,11 +131,11 @@
     },
     "Darcy Kuemper": {
         "season": "2026-27",
-        "gsax_per_game": -0.06631477439831357,
-        "gsax_per_game_raw": -0.08827330896729157,
-        "gsax_per_game_season": -4.4813774062664695,
+        "gsax_per_game": -0.0654680256072262,
+        "gsax_per_game_raw": -0.08714617978180442,
+        "gsax_per_game_season": -4.446436401516368,
         "gsax_per_game_prior": 0.05816349427601437,
-        "gsax_total": -4.4813774062664695,
+        "gsax_total": -4.446436401516368,
         "games_played": 1,
         "games_played_all": 100,
         "games_by_season": {
@@ -203,11 +204,11 @@
     },
     "Jake Allen": {
         "season": "2026-27",
-        "gsax_per_game": 0.19928800795997761,
-        "gsax_per_game_raw": 0.3009655630415988,
-        "gsax_per_game_season": -0.3122614121208247,
+        "gsax_per_game": 0.19964599767424399,
+        "gsax_per_game_raw": 0.3015062005692664,
+        "gsax_per_game_season": -0.2955016487631288,
         "gsax_per_game_prior": 0.3214064622136796,
-        "gsax_total": -0.3122614121208247,
+        "gsax_total": -0.2955016487631288,
         "games_played": 1,
         "games_played_all": 61,
         "games_by_season": {
@@ -329,11 +330,11 @@
     },
     "Tristan Jarry": {
         "season": "2026-27",
-        "gsax_per_game": -0.22205447343347573,
-        "gsax_per_game_raw": -0.34016855504702664,
-        "gsax_per_game_season": -3.5087778185790452,
+        "gsax_per_game": -0.2215335440774788,
+        "gsax_per_game_raw": -0.33937053560805264,
+        "gsax_per_game_season": -3.4840392159708506,
         "gsax_per_game_prior": -0.23454824626262602,
-        "gsax_total": -3.5087778185790452,
+        "gsax_total": -3.4840392159708506,
         "games_played": 1,
         "games_played_all": 63,
         "games_by_season": {
@@ -348,29 +349,30 @@
     },
     "Karel Vejmelka": {
         "season": "2026-27",
-        "gsax_per_game": 0.06087162419381792,
-        "gsax_per_game_raw": 0.07680660434926764,
-        "gsax_per_game_season": null,
+        "gsax_per_game": 0.09981083902402978,
+        "gsax_per_game_raw": 0.12566856934113593,
+        "gsax_per_game_season": 1.5915275190971847,
         "gsax_per_game_prior": 0.07680660434926764,
-        "gsax_total": 0.0,
-        "games_played": 0,
-        "games_played_all": 122,
+        "gsax_total": 1.5915275190971847,
+        "games_played": 1,
+        "games_played_all": 123,
         "games_by_season": {
             "2024-25": 53,
-            "2025-26": 69
+            "2025-26": 69,
+            "2026-27": 1
         },
-        "seasons_tracked": 2,
-        "evidence_gp": 95.5,
-        "w_current": 0.0,
-        "regression_factor": 0.793
+        "seasons_tracked": 3,
+        "evidence_gp": 96.5,
+        "w_current": 0.03225806451612903,
+        "regression_factor": 0.794
     },
     "Carter Hart": {
         "season": "2026-27",
-        "gsax_per_game": -0.07919936168662825,
-        "gsax_per_game_raw": -0.12749165539798693,
-        "gsax_per_game_season": 0.024302488149338775,
+        "gsax_per_game": -0.07879653675835321,
+        "gsax_per_game_raw": -0.12684320551344663,
+        "gsax_per_game_season": 0.044404434570088025,
         "gsax_per_game_prior": -0.1325514601828978,
-        "gsax_total": 0.024302488149338775,
+        "gsax_total": 0.044404434570088025,
         "games_played": 1,
         "games_played_all": 41,
         "games_by_season": {
@@ -384,11 +386,11 @@
     },
     "Mackenzie Blackwood": {
         "season": "2026-27",
-        "gsax_per_game": 0.15142112835891586,
-        "gsax_per_game_raw": 0.20877761637365672,
-        "gsax_per_game_season": -1.1752637519564626,
+        "gsax_per_game": 0.1520773967007826,
+        "gsax_per_game_raw": 0.2096824712086548,
+        "gsax_per_game_season": -1.1472132520715217,
         "gsax_per_game_prior": 0.25491232865132735,
-        "gsax_total": -1.1752637519564626,
+        "gsax_total": -1.1472132520715217,
         "games_played": 1,
         "games_played_all": 92,
         "games_by_season": {
@@ -421,11 +423,11 @@
     },
     "Ilya Sorokin": {
         "season": "2026-27",
-        "gsax_per_game": 0.24568512298057438,
-        "gsax_per_game_raw": 0.32104865763719226,
-        "gsax_per_game_season": 0.42255173348509567,
+        "gsax_per_game": 0.24627898023963044,
+        "gsax_per_game_raw": 0.32182467969963974,
+        "gsax_per_game_season": 0.4466084174209688,
         "gsax_per_game_prior": 0.3176652217755955,
-        "gsax_total": 0.42255173348509567,
+        "gsax_total": 0.4466084174209688,
         "games_played": 1,
         "games_played_all": 108,
         "games_by_season": {
@@ -440,11 +442,11 @@
     },
     "Sergei Bobrovsky": {
         "season": "2026-27",
-        "gsax_per_game": -0.1847127751375809,
-        "gsax_per_game_raw": -0.23840834930548233,
-        "gsax_per_game_season": -0.7440085363650617,
+        "gsax_per_game": -0.18415287067002759,
+        "gsax_per_game_raw": -0.23768568191131467,
+        "gsax_per_game_season": -0.7216058471458644,
         "gsax_per_game_prior": -0.22155500973682968,
-        "gsax_total": -0.7440085363650617,
+        "gsax_total": -0.7216058471458644,
         "games_played": 1,
         "games_played_all": 120,
         "games_by_season": {
@@ -529,11 +531,11 @@
     },
     "Jacob Markstrom": {
         "season": "2026-27",
-        "gsax_per_game": -0.10304244693976648,
-        "gsax_per_game_raw": -0.14207367684119318,
-        "gsax_per_game_season": 2.2043410550871934,
+        "gsax_per_game": -0.10253031443531306,
+        "gsax_per_game_raw": -0.14136755475171953,
+        "gsax_per_game_season": 2.2262308398608766,
         "gsax_per_game_prior": -0.22028750123880605,
-        "gsax_total": 2.2043410550871934,
+        "gsax_total": 2.2262308398608766,
         "games_played": 1,
         "games_played_all": 88,
         "games_by_season": {
@@ -602,11 +604,11 @@
     },
     "Spencer Knight": {
         "season": "2026-27",
-        "gsax_per_game": 0.09728870024716438,
-        "gsax_per_game_raw": 0.13106949894409645,
-        "gsax_per_game_season": -0.34984103249821263,
+        "gsax_per_game": 0.09815660796287332,
+        "gsax_per_game_raw": 0.13223876350553765,
+        "gsax_per_game_season": -0.3135938310935358,
         "gsax_per_game_prior": 0.1470998499921734,
-        "gsax_total": -0.34984103249821263,
+        "gsax_total": -0.3135938310935358,
         "games_played": 1,
         "games_played_all": 88,
         "games_by_season": {
@@ -621,11 +623,11 @@
     },
     "Jeremy Swayman": {
         "season": "2026-27",
-        "gsax_per_game": 0.2298683177298494,
-        "gsax_per_game_raw": 0.29708127613039015,
-        "gsax_per_game_season": 1.8640386490554786,
+        "gsax_per_game": 0.23033033664693067,
+        "gsax_per_game_raw": 0.29767838829807997,
+        "gsax_per_game_season": 1.8825491262538618,
         "gsax_per_game_prior": 0.24484936369955387,
-        "gsax_total": 1.8640386490554786,
+        "gsax_total": 1.8825491262538618,
         "games_played": 1,
         "games_played_all": 110,
         "games_by_season": {
@@ -729,11 +731,11 @@
     },
     "Dan Vladar": {
         "season": "2026-27",
-        "gsax_per_game": 0.059084392738776186,
-        "gsax_per_game_raw": 0.07931877381369953,
-        "gsax_per_game_season": -2.7349552164536277,
+        "gsax_per_game": 0.060102096520775576,
+        "gsax_per_game_raw": 0.08068500628816447,
+        "gsax_per_game_season": -2.6926020097452144,
         "gsax_per_game_prior": 0.17312790682261042,
-        "gsax_total": -2.7349552164536277,
+        "gsax_total": -2.6926020097452144,
         "games_played": 1,
         "games_played_all": 84,
         "games_by_season": {
@@ -802,11 +804,11 @@
     },
     "Anthony Stolarz": {
         "season": "2026-27",
-        "gsax_per_game": 0.09119281542619742,
-        "gsax_per_game_raw": 0.14547425317988635,
-        "gsax_per_game_season": 1.557728231284337,
+        "gsax_per_game": 0.09170642119507444,
+        "gsax_per_game_raw": 0.14629357666833304,
+        "gsax_per_game_season": 1.5831272594261838,
         "gsax_per_game_prior": 0.09839912057640467,
-        "gsax_total": 1.557728231284337,
+        "gsax_total": 1.5831272594261838,
         "games_played": 1,
         "games_played_all": 58,
         "games_by_season": {
@@ -928,39 +930,41 @@
     },
     "Arvid Soderblom": {
         "season": "2026-27",
-        "gsax_per_game": -0.1384980116086737,
-        "gsax_per_game_raw": -0.22727878828090042,
-        "gsax_per_game_season": null,
+        "gsax_per_game": -0.18021643959994976,
+        "gsax_per_game_raw": -0.29285171434991836,
+        "gsax_per_game_season": -2.260039496420456,
         "gsax_per_game_prior": -0.22727878828090042,
-        "gsax_total": 0.0,
-        "games_played": 0,
-        "games_played_all": 54,
+        "gsax_total": -2.260039496420456,
+        "games_played": 1,
+        "games_played_all": 55,
         "games_by_season": {
             "2024-25": 30,
-            "2025-26": 24
+            "2025-26": 24,
+            "2026-27": 1
         },
-        "seasons_tracked": 2,
-        "evidence_gp": 39.0,
-        "w_current": 0.0,
-        "regression_factor": 0.609
+        "seasons_tracked": 3,
+        "evidence_gp": 40.0,
+        "w_current": 0.03225806451612903,
+        "regression_factor": 0.615
     },
     "Joey Daccord": {
         "season": "2026-27",
-        "gsax_per_game": -0.04483918445185107,
-        "gsax_per_game_raw": -0.06096838749208526,
-        "gsax_per_game_season": null,
+        "gsax_per_game": -0.008326521250395218,
+        "gsax_per_game_raw": -0.011279188360464446,
+        "gsax_per_game_season": 1.4793967855881602,
         "gsax_per_game_prior": -0.06096838749208526,
-        "gsax_total": 0.0,
-        "games_played": 0,
-        "games_played_all": 93,
+        "gsax_total": 1.4793967855881602,
+        "games_played": 1,
+        "games_played_all": 94,
         "games_by_season": {
             "2024-25": 47,
-            "2025-26": 46
+            "2025-26": 46,
+            "2026-27": 1
         },
-        "seasons_tracked": 2,
-        "evidence_gp": 69.5,
-        "w_current": 0.0,
-        "regression_factor": 0.735
+        "seasons_tracked": 3,
+        "evidence_gp": 70.5,
+        "w_current": 0.03225806451612903,
+        "regression_factor": 0.738
     },
     "Cam Talbot": {
         "season": "2026-27",
@@ -1018,29 +1022,30 @@
     },
     "Akira Schmid": {
         "season": "2026-27",
-        "gsax_per_game": -0.2083936178288435,
-        "gsax_per_game_raw": -0.3792080586721578,
-        "gsax_per_game_season": null,
+        "gsax_per_game": -0.22103165032953018,
+        "gsax_per_game_raw": -0.39645359503550653,
+        "gsax_per_game_season": -0.9138196859359686,
         "gsax_per_game_prior": -0.3792080586721578,
-        "gsax_total": 0.0,
-        "games_played": 0,
-        "games_played_all": 32,
+        "gsax_total": -0.9138196859359686,
+        "games_played": 1,
+        "games_played_all": 33,
         "games_by_season": {
             "2024-25": 3,
-            "2025-26": 29
+            "2025-26": 29,
+            "2026-27": 1
         },
-        "seasons_tracked": 2,
-        "evidence_gp": 30.5,
-        "w_current": 0.0,
-        "regression_factor": 0.55
+        "seasons_tracked": 3,
+        "evidence_gp": 31.5,
+        "w_current": 0.03225806451612903,
+        "regression_factor": 0.558
     },
     "Ukko-Pekka Luukkonen": {
         "season": "2026-27",
-        "gsax_per_game": -0.07558344381254437,
-        "gsax_per_game_raw": -0.10534070515606576,
-        "gsax_per_game_season": -3.0637491607082454,
+        "gsax_per_game": -0.07513840992506865,
+        "gsax_per_game_raw": -0.10472046107667048,
+        "gsax_per_game_season": -3.0445215942469916,
         "gsax_per_game_prior": -0.00672708997099312,
-        "gsax_total": -3.0637491607082454,
+        "gsax_total": -3.0445215942469916,
         "games_played": 1,
         "games_played_all": 87,
         "games_by_season": {
@@ -1108,21 +1113,22 @@
     },
     "Yaroslav Askarov": {
         "season": "2026-27",
-        "gsax_per_game": -0.29476083236437683,
-        "gsax_per_game_raw": -0.4337989608381395,
-        "gsax_per_game_season": null,
+        "gsax_per_game": -0.26784411518627244,
+        "gsax_per_game_raw": -0.39184602036510224,
+        "gsax_per_game_season": 0.8667421938260169,
         "gsax_per_game_prior": -0.4337989608381395,
-        "gsax_total": 0.0,
-        "games_played": 0,
-        "games_played_all": 59,
+        "gsax_total": 0.8667421938260169,
+        "games_played": 1,
+        "games_played_all": 60,
         "games_by_season": {
             "2024-25": 12,
-            "2025-26": 47
+            "2025-26": 47,
+            "2026-27": 1
         },
-        "seasons_tracked": 2,
-        "evidence_gp": 53.0,
-        "w_current": 0.0,
-        "regression_factor": 0.679
+        "seasons_tracked": 3,
+        "evidence_gp": 54.0,
+        "w_current": 0.03225806451612903,
+        "regression_factor": 0.684
     },
     "Dustin Tokarski": {
         "season": "2026-27",
@@ -1178,11 +1184,11 @@
     },
     "Joseph Woll": {
         "season": "2026-27",
-        "gsax_per_game": 0.06407244760489965,
-        "gsax_per_game_raw": 0.09033164744297327,
-        "gsax_per_game_season": 0.7921238047101609,
+        "gsax_per_game": 0.06493406587589044,
+        "gsax_per_game_raw": 0.0915463879561734,
+        "gsax_per_game_season": 0.8297807606193648,
         "gsax_per_game_prior": 0.06693857553406701,
-        "gsax_total": 0.7921238047101609,
+        "gsax_total": 0.8297807606193648,
         "games_played": 1,
         "games_played_all": 83,
         "games_by_season": {
@@ -1215,11 +1221,11 @@
     },
     "Arturs Silovs": {
         "season": "2026-27",
-        "gsax_per_game": -0.042256858592079366,
-        "gsax_per_game_raw": -0.06573289114323456,
-        "gsax_per_game_season": 1.5875859861618336,
+        "gsax_per_game": -0.0419299301245116,
+        "gsax_per_game_raw": -0.06522433574924026,
+        "gsax_per_game_season": 1.603351203375657,
         "gsax_per_game_prior": -0.12084352038673683,
-        "gsax_total": 1.5875859861618336,
+        "gsax_total": 1.603351203375657,
         "games_played": 1,
         "games_played_all": 48,
         "games_by_season": {
@@ -1340,28 +1346,29 @@
     },
     "Devon Levi": {
         "season": "2026-27",
-        "gsax_per_game": -0.05321425736560729,
-        "gsax_per_game_raw": -0.7183924744356984,
-        "gsax_per_game_season": null,
+        "gsax_per_game": -0.0896967262312022,
+        "gsax_per_game_raw": -0.8371694448245539,
+        "gsax_per_game_season": -4.400478556490221,
         "gsax_per_game_prior": -0.7183924744356984,
-        "gsax_total": 0.0,
-        "games_played": 0,
-        "games_played_all": 4,
+        "gsax_total": -4.400478556490221,
+        "games_played": 1,
+        "games_played_all": 5,
         "games_by_season": {
-            "2024-25": 4
+            "2024-25": 4,
+            "2026-27": 1
         },
-        "seasons_tracked": 1,
-        "evidence_gp": 2.0,
-        "w_current": 0.0,
-        "regression_factor": 0.074
+        "seasons_tracked": 2,
+        "evidence_gp": 3.0,
+        "w_current": 0.03225806451612903,
+        "regression_factor": 0.107
     },
     "Jet Greaves": {
         "season": "2026-27",
-        "gsax_per_game": 0.2714354336455498,
-        "gsax_per_game_raw": 0.3854839351772934,
-        "gsax_per_game_season": -0.41197019570098625,
+        "gsax_per_game": 0.2720191885449395,
+        "gsax_per_game_raw": 0.3863129652444939,
+        "gsax_per_game_season": -0.3862702636177713,
         "gsax_per_game_prior": 0.41206573953990266,
-        "gsax_total": -0.41197019570098625,
+        "gsax_total": -0.3862702636177713,
         "games_played": 1,
         "games_played_all": 65,
         "games_by_season": {
@@ -1394,21 +1401,22 @@
     },
     "Dustin Wolf": {
         "season": "2026-27",
-        "gsax_per_game": 0.05025943366192027,
-        "gsax_per_game_raw": 0.0661643177321482,
-        "gsax_per_game_season": null,
+        "gsax_per_game": 0.00024699182567468006,
+        "gsax_per_game_raw": 0.0003241767711980176,
+        "gsax_per_game_season": -1.9748800520573075,
         "gsax_per_game_prior": 0.0661643177321482,
-        "gsax_total": 0.0,
-        "games_played": 0,
-        "games_played_all": 103,
+        "gsax_total": -1.9748800520573075,
+        "games_played": 1,
+        "games_played_all": 104,
         "games_by_season": {
             "2024-25": 48,
-            "2025-26": 55
+            "2025-26": 55,
+            "2026-27": 1
         },
-        "seasons_tracked": 2,
-        "evidence_gp": 79.0,
-        "w_current": 0.0,
-        "regression_factor": 0.76
+        "seasons_tracked": 3,
+        "evidence_gp": 80.0,
+        "w_current": 0.03225806451612903,
+        "regression_factor": 0.762
     },
     "Sam Montembeault": {
         "season": "2026-27",
@@ -1499,21 +1507,22 @@
     },
     "Jesper Wallstedt": {
         "season": "2026-27",
-        "gsax_per_game": 0.18797236043800228,
-        "gsax_per_game_raw": 0.2947748379595945,
-        "gsax_per_game_season": null,
+        "gsax_per_game": 0.19606611473211116,
+        "gsax_per_game_raw": 0.30499173402772844,
+        "gsax_per_game_season": 0.6114986160717466,
         "gsax_per_game_prior": 0.2947748379595945,
-        "gsax_total": 0.0,
-        "games_played": 0,
-        "games_played_all": 45,
+        "gsax_total": 0.6114986160717466,
+        "games_played": 1,
+        "games_played_all": 46,
         "games_by_season": {
             "2024-25": 2,
-            "2025-26": 43
+            "2025-26": 43,
+            "2026-27": 1
         },
-        "seasons_tracked": 2,
-        "evidence_gp": 44.0,
-        "w_current": 0.0,
-        "regression_factor": 0.638
+        "seasons_tracked": 3,
+        "evidence_gp": 45.0,
+        "w_current": 0.03225806451612903,
+        "regression_factor": 0.643
     },
     "Matt Villalta": {
         "season": "2026-27",
@@ -1656,11 +1665,11 @@
     },
     "Jakub Dobes": {
         "season": "2026-27",
-        "gsax_per_game": 0.22701724308994048,
-        "gsax_per_game_raw": 0.3075198115615506,
-        "gsax_per_game_season": 0.5403146649739545,
+        "gsax_per_game": 0.2276179661022867,
+        "gsax_per_game_raw": 0.30833355691870046,
+        "gsax_per_game_season": 0.5655407710455993,
         "gsax_per_game_prior": 0.29975998311447044,
-        "gsax_total": 0.5403146649739545,
+        "gsax_total": 0.5655407710455993,
         "games_played": 1,
         "games_played_all": 79,
         "games_by_season": {
@@ -1832,11 +1841,11 @@
     },
     "Brandon Bussi": {
         "season": "2026-27",
-        "gsax_per_game": 0.03079718917975126,
-        "gsax_per_game_raw": 0.04870253172611828,
-        "gsax_per_game_season": 0.8322613500822944,
+        "gsax_per_game": 0.03116833790380454,
+        "gsax_per_game_raw": 0.049289464592062994,
+        "gsax_per_game_season": 0.8504562689265807,
         "gsax_per_game_prior": 0.022583904447579073,
-        "gsax_total": 0.8322613500822944,
+        "gsax_total": 0.8504562689265807,
         "games_played": 1,
         "games_played_all": 43,
         "games_by_season": {

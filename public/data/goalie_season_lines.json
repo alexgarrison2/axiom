@@ -1,7 +1,7 @@
 {
  "season_id": "20262027",
  "prev_season_id": "20252026",
- "generated_at": "2026-10-02T04:27:43Z",
+ "generated_at": "2026-10-02T13:22:26Z",
  "goalies": {
   "Adin Hill": {
    "cur": null,
@@ -15,7 +15,14 @@
    }
   },
   "Akira Schmid": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 0,
+    "ot": 1,
+    "svpct": 0.875,
+    "gaa": 3.8,
+    "gp": 1
+   },
    "prev": {
     "w": 16,
     "l": 10,
@@ -146,7 +153,14 @@
    }
   },
   "Arvid Soderblom": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 1,
+    "ot": 0,
+    "svpct": 0.8125,
+    "gaa": 6.0,
+    "gp": 1
+   },
    "prev": {
     "w": 8,
     "l": 13,
@@ -392,6 +406,17 @@
     "gaa": 2.69,
     "gp": 31
    }
+  },
+  "Devon Levi": {
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.68181,
+    "gaa": 7.02,
+    "gp": 1
+   },
+   "prev": null
   },
   "Drew Commesso": {
    "cur": null,
@@ -808,7 +833,14 @@
    }
   },
   "Karel Vejmelka": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 1.0,
+    "gaa": 0.0,
+    "gp": 1
+   },
    "prev": {
     "w": 38,
     "l": 20,
@@ -821,11 +853,11 @@
   "Kevin Lankinen": {
    "cur": {
     "w": 1,
-    "l": 0,
+    "l": 1,
     "ot": 0,
-    "svpct": 0.86486,
-    "gaa": 4.86,
-    "gp": 1
+    "svpct": 0.78947,
+    "gaa": 8.66,
+    "gp": 2
    },
    "prev": {
     "w": 11,
@@ -848,7 +880,14 @@
    }
   },
   "Leevi Merilainen": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.90909,
+    "gaa": 1.96,
+    "gp": 1
+   },
    "prev": {
     "w": 8,
     "l": 10,
@@ -1246,7 +1285,14 @@
    }
   },
   "Yaroslav Askarov": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.88461,
+    "gaa": 2.85,
+    "gp": 1
+   },
    "prev": {
     "w": 21,
     "l": 20,
