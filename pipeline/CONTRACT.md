@@ -239,13 +239,31 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   `{season_id, generated_at, baseline_generated_at, max_swing_pts, min_swing_pts, games: [...]}`.
   `games` is empty while the largest swing on the slate is under
   `min_swing_pts` (3 points).
-* `public/data/player_ratings.json` (`bu/lineup/ratings_export.py`, the site's RAPM v2
-  player ratings, EV xG/60 vs an average skater): `{version: 2, season, as_of, units, columns,
-  rows}` with columns `id, name, team, pos, roster, rated, off, def, net, toi, gp, toi_cur,
-  gp_cur`. Every rating is higher = better: `off` = xGF/60 added, `def` = xGA/60
-  **prevented** (the negated RAPM `d`; version 1 carried `d` itself, lower = better) and
-  `net = off + def`. Model internals (`bu.rapm`, the serving bundle, `bu_d_net`) keep `d`.
-  `validate_outputs.py player_ratings` gates it.
+* `public/data/player_ratings.json` (`bu/lineup/ratings_export.py`, the site's player ratings,
+  **version 3** = ratings v3, `bu/rapm/README.md` "Ratings v3"):
+  `{version: 3, kind: "player_ratings", model, season, season_label, as_of, bundle_built_at,
+  season_games, window, impact: {games: 82, goals_per_xg, weights: {w_o, w_d, w_pp, w_pk},
+  baseline, position_means: {F: {...}, D: {...}}, recency, g}, units, generated_at, columns, rows}`.
+  `rows` are arrays in `columns` order, sorted by `impact` (best first):
+
+  | column | type | meaning |
+  |---|---|---|
+  | `id`, `name`, `team`, `pos` | int, str, str, str | NHL id, name, current team, C / L / R / D |
+  | `roster`, `rated` | bool | on a current NHL roster; False = no NHL sample (his role prior) |
+  | `impact` | float (2 dp) | **headline**: goals per 82 games above an average player at his position (F / D) = `off_impact + def_impact` |
+  | `off_impact`, `def_impact` | float (2 dp) | goals / 82: EV offence + PP offence + finishing; EV defence + PK defence |
+  | `sd` | float (2 dp) | posterior SD of `impact` (EV and PP / PK rating variance; TOI and FIN taken as known) |
+  | `ev_off`, `ev_def` | float (3 dp) | EV xGF/60 added, EV xGA/60 prevented vs an average skater |
+  | `pp_off`, `pk_def` | float (3 dp) | PP xGF/60 added vs an average PP skater, PK xGA/60 prevented vs an average PK skater (not position-centred: compare within F or within D) |
+  | `fin` | float (3 dp) | EV goals above xG per 60 from his own shots, shrunk |
+  | `toi_ev_gp`, `toi_pp_gp`, `toi_pk_gp` | float (2 dp) | expected minutes per game in each state |
+  | `off`, `def`, `net`, `off_total` | float (3 dp) | v2 names kept: `off = ev_off`, `def = ev_def`, `net = off + def`, `off_total = off + fin` |
+  | `toi`, `gp`, `toi_cur`, `gp_cur` | int | EV minutes / games: the three seasons before this one + this season; this season |
+
+  Every rating is higher = better (model internals - `bu.rapm`, the serving bundle, `bu_d_net` -
+  keep the RAPM `d`, lower = better).  Version 2 had `off, def, net, toi, gp, toi_cur, gp_cur, fin,
+  off_total` only (EV per 60).  `validate_outputs.py player_ratings` gates it (v3 columns,
+  `impact = off_impact + def_impact`, sane minutes, position average near 0).
 * `public/data/clinch_status.json`:
   `{season_id, generated_at, teams: {TRI: "x" | "y" | "z" | "p" | "e" | null}}`.
 * SiteHistory snapshots (`public/data/SiteHistory/<date>.csv`) gain
