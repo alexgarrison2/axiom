@@ -219,24 +219,18 @@ def current_fin(state_root: str | None, season: str, log=print):
     season's games in the refresh's caches (``<state>/xg`` for the shooter's goals and xG,
     ``<state>/stints`` for EV time); (None, False) without a pack for the season."""
     from bu.rapm import finishing as FN
-    st = FN.read_pack(FN.pack_path(season))
+    xp = os.path.join(state_root, "xg", f"season={season}.parquet") if state_root else None
+    sp = os.path.join(state_root, "stints", f"season={season}.parquet") if state_root else None
+    have = bool(xp and os.path.exists(xp) and os.path.exists(sp))
+    if have:
+        import pandas as pd
+        st, _n = FN.season_state(season, pd.read_parquet(xp), pd.read_parquet(sp))
+    else:
+        st, _n = FN.season_state(season, None, None)
     if st is None:
         log(f"  [ratings] no fin_pack_{season}.json.gz: fin carried over / 0")
         return None, False
-    st.roll(season)
-    if not state_root:
-        return st, False
-    xp = os.path.join(state_root, "xg", f"season={season}.parquet")
-    sp = os.path.join(state_root, "stints", f"season={season}.parquet")
-    if not (os.path.exists(xp) and os.path.exists(sp)):
-        return st, False
-    import pandas as pd
-    from .toi import game_shares
-    stints = pd.read_parquet(sp)
-    stints = stints[stints["game_type"].isin([2, 3])]
-    xg = pd.read_parquet(xp)
-    st.add_games(FN.player_games(xg[xg["game_id"].isin(set(stints["game_id"]))], game_shares(stints)))
-    return st, True
+    return st, have
 
 
 # ----------------------------------------------------------------------- export

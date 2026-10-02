@@ -9,7 +9,8 @@ and refits the season from the committed season pack:
   2. ``python -m bu.rapm asof --seasons <Y> --seed <pack> --xg v2``
      the season refit from the pack's chain, with the live xG v2 artifacts as target
   3. ``python -m bu.lineup serve --season <S> --seed <pack>``
-     the bundle: pack + this season's games + current ratings + DFO-name crosswalk
+     the bundle: pack + this season's games + current ratings + DFO-name crosswalk + the FIN
+     table (committed ``fin_pack_<S>.json.gz`` + this season's games, ``bu_d_fin``)
   4. publish ``bu/lineup/out/serving_bundle.json.gz`` when its content changed or the
      committed copy is older than ``REPUBLISH_H`` (so ``built_at`` never ages past the
      36 h serving limit while the content is unchanged, e.g. over a break)
@@ -139,7 +140,11 @@ def refresh(lake_dir: str, season: str | None = None, publish: bool = True, xg: 
     summary.update({"n_games": new.get("n_games"), "max_source_date": new.get("max_source_date"),
                     "built_at": new.get("built_at"), "players": len(new["players"]["rows"]),
                     "crosswalk_rows": len((new.get("crosswalk") or {}).get("rows") or []),
+                    "fin_rows": len((new.get("fin") or {}).get("rows") or []),
                     "decision": why})
+    if not summary["fin_rows"]:
+        log(f"[bu-refresh] WARNING: no FIN table (no out/fin_pack_{season}.json.gz?): a model with bu_d_fin "
+            "is served by its no-FIN rollback (shadow.rapm)")
     if do and publish:
         os.makedirs(OUT_DIR, exist_ok=True)
         tmp = BUNDLE + ".tmp"

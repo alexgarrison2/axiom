@@ -151,9 +151,10 @@ the Kalman chain, 0.815 with the window prior.  Game level (dev folds, live feat
 the lineup term as the base): adding the team FIN term `bu_d_fin` to `bu_d_net + bu_d_delta`
 gives -0.00058 (SE 0.00040; 2023-24 -0.00067, 2024-25 -0.00048) on the Kalman ratings and
 -0.00058 on the window ratings (window + FIN vs Kalman without: -0.00072), which passes the A2
-dev rule, but it is **not wired into
-the live game model yet**: that needs the FIN term in the serving bundle / `LiveLineupTerm`, a
-joint retrain and the M3 component's holdout look (DESIGN §1.5), an owner decision.
+dev rule.  **Live since 2026-10-02** (owner approval): `bu_d_fin` is in the serving bundle /
+`LiveLineupTerm` and the game model `logit-elo-v5-20261002-xg2-rapm-fin`
+(`retrain.py --fin`, the M3 component's single 2025-26 look logged in `look_log.jsonl`); see
+`pipeline/bu/README.md` "FIN in the game model".
 
 `lineup features` and the serving bundle now read the stints cache whatever xG source built it
 (`data.cached_stints`): with the old default `ensure_stints(paths, s)` (source `v1`) they rebuilt

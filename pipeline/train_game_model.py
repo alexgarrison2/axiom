@@ -114,7 +114,9 @@ def attach_bu_features(M: pd.DataFrame, path: str = BU_FEATURES_PATH) -> pd.Data
     f = pd.read_csv(path, usecols=lambda c: c in BU_KEEP)
     ok = f['bu_ok'].astype(str).str.lower().isin(('true', '1'))
     for c in F.BU_COLUMNS:
-        f[c] = pd.to_numeric(f[c], errors='coerce').where(ok, 0.0)
+        # a table built before a column existed (e.g. bu_d_fin before m2-r4): neutral 0; a model
+        # is only trained on a column the table has (retrain.py --fin checks it is populated)
+        f[c] = pd.to_numeric(f[c], errors='coerce').where(ok, 0.0) if c in f.columns else 0.0
     f['bu_ok'] = ok
     M = M.merge(f.drop_duplicates('game_id'), on='game_id', how='left')
     for c in F.BU_COLUMNS:
@@ -289,13 +291,16 @@ def explain_coefficients(model, cols):
 
 def model_version(training_date: datetime, cols=None, xg_version=None) -> str:
     """``logit-elo-v5-YYYYMMDD`` plus the input tags of models trained on xG v2 (``-xg2``) and
-    with the RAPM v2 lineup term (``-rapm``), so two models trained the same day stay apart in
+    with the RAPM v2 lineup term (``-rapm``) and the lineup finishing term ``bu_d_fin`` (``-fin``),
+    so two models trained the same day stay apart in
     the graded record (model_report groups by version within the ``logit-elo`` family)."""
     v = f"{MODEL_FAMILY}-v{MODEL_GENERATION}-{training_date.strftime('%Y%m%d')}"
     if xg_version == 'v2':
         v += '-xg2'
-    if cols is not None and any(c in cols for c in F.BU_COLUMNS):
+    if cols is not None and any(c in cols for c in F.BU_RAPM_COLUMNS):
         v += '-rapm'
+    if cols is not None and any(c in cols for c in F.BU_FIN_COLUMNS):
+        v += '-fin'
     return v
 
 
@@ -439,7 +444,10 @@ def bu_config(cols, prev_meta=None):
             'rapm_xg_source': fmeta.get('xg_source'), 'rapm_code_version': fmeta.get('code_version'),
             'rapm_hyper': fmeta.get('hyper'),
             'serving_bundle': 'bu/lineup/out/serving_bundle.json.gz', 'max_age_h': SV.MAX_AGE_H,
-            'min_rated': SV.MIN_RATED, 'flag': 'PONYXG_BU=on|off (off, stale bundle or coverage gate: the F1 rollback model shadow.f1 is published; the joint model is logged in bu_shadow_home_win_pct)'}
+            'min_rated': SV.MIN_RATED,
+            'flag': ('PONYXG_BU=on|off|nofin (off, stale bundle or coverage gate: the F1 rollback model shadow.f1 '
+                     'is published; the joint model is logged in bu_shadow_home_win_pct; nofin, or a bundle '
+                     'without FIN for a model with bu_d_fin: the RAPM model without FIN, shadow.rapm)')}
 
 
 def save_model(model, meta, model_path=MODEL_PATH, meta_path=META_PATH):

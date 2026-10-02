@@ -50,6 +50,8 @@ amendment 2026-10-01 in `preregistration.yaml`) on 2026-27 is the clean one.
 - xG: `game_model_meta.json` `"xg_version": "v2"` released the interlock, so an unset
   `PONYXG_XG` publishes v2 xG with `xg_raw_v1` kept as the rollback column.
 
+(FIN added 2026-10-02: see "FIN in the game model" below.)
+
 **Daily bundle refresh** (`.github/workflows/bu_refresh.yml`, 09:23 / 11:23 / 17:23 UTC):
 `python -m bu.lineup.refresh --lake-dir $RUNNER_TEMP/lake` (gap-driven current-season ingest,
 seeded season refit with the xG v2 target, bundle rebuild; ~1 min), lake saved to the
@@ -75,7 +77,11 @@ fails on a missing / wrong-season / malformed bundle.
 **Season rollover**: build the next season's pack from the full lake
 (`python -m bu.lineup pack --season <S>` after `bu.rapm asof` through S-1 with the v2 target)
 and commit it before the new season's first games; until then the refresh fails (no pack), the
-bundle ages past 36 h and the term is served neutral.  Also build and commit the season's
+bundle ages past 36 h and the term is served neutral.  Also build and commit the season's FIN
+pack (`python -m bu.rapm.finishing pack --season <S> --xg <the asof xG source> --out <RAPM state>`
+-> `bu/lineup/out/fin_pack_<S>.json.gz`); without it the bundle has no FIN table, the
+refresh logs a warning, `validate_outputs.py bu_bundle` fails on the fresh bundle and the
+no-FIN rollback model (`shadow.rapm`) is published.  Also build and commit the season's
 player sample for the site ratings (`python -m bu.lineup.ratings_export sample --lake-dir <lake>
 --season <S>`: EV minutes / games of the three seasons before S, names of every lake player).
 
@@ -89,6 +95,56 @@ prior of his position group, as in the lineup term).  Exported by every bundle r
 (`bu_refresh.yml` commits it with the bundle) and by the daily full run (`refresh_pipeline.py`
 stage `player_ratings`: today's rosters), rewritten only when its content changed;
 `validate_outputs.py player_ratings` gates it.
+
+## FIN in the game model (shipped 2026-10-02)
+
+Owner approval 2026-10-02 ("Yes" to wiring FIN into the game model; no blend cap).  The live
+model is `logit-elo-v5-20261002-xg2-rapm-fin` (`python3 retrain.py --fin --promote --no-legacy`,
+report `bu/lineup/out/retrain_fin.json`): the joint model's features plus
+
+`bu_d_fin` = sum over tonight's dressed skaters of expected EV TOI share x FIN, home minus away,
+where FIN (`bu/rapm/finishing.py`, `bu/rapm/README.md` "OFF credibility pass") is the shrunk EV
+goals above xG per 60 (prior 60 xG).  Training: the `bu_d_fin` column of
+`lineup_features.csv.gz` (point in time: FIN from games up to d - 2 days, the same shares as
+`bu_d_net`; neutral 0 under the coverage gate) - the definition the dev evaluation
+(`lineup_eval_rapm_fin.json`) used.  Serving: `features.side_term(..., fin=)` on the bundle's
+`fin` table reproduces the training table to 1e-5 on the 2026-27 opening games.
+
+**Promotion rule** (fixed before the look): better than the live model on both dev seasons and
+pooled, and the single 2025-26 look (M3 FIN component, `look_log.jsonl`) not worse by more than
++0.0010 log loss per game.  Walk-forward, paired per game vs `logit-elo-v5-20261001-xg2-rapm`
+(its cv_results reproduced exactly):
+
+| Fold | n | Δ LL (SE) | Brier old → new | cal. slope new (95% CI) |
+|---|---|---|---|---|
+| 2023-24 dev | 1,399 | -0.00067 (0.00039) | 0.23378 → 0.23346 | 0.99 (0.78-1.21) |
+| 2024-25 dev | 1,206 | -0.00046 (0.00074) | 0.23469 → 0.23447 | 1.10 (0.81-1.38) |
+| dev pooled | 2,605 | **-0.00057 (0.00040)** | 0.23420 → 0.23392 | 1.04 (0.87-1.21) |
+| 2025-26 holdout look | 1,394 | **+0.00075 (0.00090)** (rule: <= +0.0010) | 0.24249 → 0.24284 | 0.80 (0.56-1.04) |
+| 2023-26 pooled | 3,999 | -0.00011 (0.00041) | 0.23709 → 0.23703 | 0.94 (0.80-1.08) |
+
+The 2025-26 look went the wrong way (point estimate; within one SE of zero) and the early-season
+2025-26 games most (+0.0024, SE 0.0022).  Against the de-vigged market (descriptive: 410 games
+Mar-Jun 2026 of one soft book, last pregame snapshot, leaky L-actual lineups): live model 0.66702,
+FIN model 0.67041, market 0.67441 log loss; FIN minus live +0.0034 (SE 0.0017), FIN minus market
+-0.0040 (SE 0.0052).  The standard `promotion_checks` gate fails on the 2025 fold (+0.00075 >
++0.0005, slope 0.80 < 0.9); the owner rule above is binding.  2026-27 live games are the clean
+test (`bu_shadow_home_win_pct` now carries the FIN model).
+
+**Missing FIN / rollbacks** (FIN is never zero-filled):
+- the bundle has no `fin` table (older refresh code, no `fin_pack_<S>` for the season): the
+  joint model without FIN (`models/shadow/game_model_rapm.pkl`, meta `shadow.rapm`, the replaced
+  `logit-elo-v5-20261001-xg2-rapm`) is published with tonight's `bu_d_net` / `bu_d_delta`;
+  without that file, the F1 rollback model.  A player missing from the table has FIN 0 (the
+  backtest's convention for a player with no shots).
+- stale bundle / coverage gate / `PONYXG_BU=off`: the F1 rollback model, as before.
+- `PONYXG_BU=nofin` (repository variable): the no-FIN joint model is the live model (its own F1
+  chain unchanged).  Full rollback: `git checkout <commit before the FIN retrain> --
+  pipeline/game_model.pkl pipeline/game_model_meta.json` (the same pickle is
+  `models/shadow/game_model_rapm.pkl`).
+
+**Refresh**: `bu_refresh.yml` needs no change: `bu.lineup serve` adds the `fin` table from the
+committed `fin_pack_<S>.json.gz` plus this season's games in the refit's xG / stints caches.
 
 ## `bu.lake`: event / shift / roster lake (M0b, DESIGN §2.1-2.3, §2.6)
 

@@ -86,3 +86,50 @@ def test_export_adds_fin_and_off_total(tmp_path, monkeypatch):
     # no pack at all and no previous value: FIN 0
     bare = RE.build_export(bundle, None, roster, None, now=now)
     assert all(dict(zip(bare["columns"], r))["fin"] == 0.0 for r in bare["rows"])
+
+
+# ── live FIN (bu_d_fin): serving bundle table and the lineup-side sum ─────────
+
+def test_season_state_adds_the_seasons_games_to_the_pack(tmp_path, monkeypatch):
+    st = FN.FinState()
+    st.roll("20252026")
+    st.add_games(_pg([(1, 1, 4, 3, 36_000), (1, 2, 1, 2, 36_000), (1, 3, 900, 900, 3_000_000)]))
+    st.roll("20262027", {1: "F", 2: "D", 3: "F"})
+    pack = FN.write_pack(str(tmp_path / "fin_pack_20262027.json.gz"),
+                         {"version": 1, "season": "20262027", "state": st.to_json()})
+    import bu.lineup.toi as TOI
+    # EV seconds per player and game (the real function needs on-ice stint columns)
+    monkeypatch.setattr(TOI, "game_shares", lambda s: pd.DataFrame(
+        {"game_id": [5, 5], "player_id": [1, 2], "ev_s": [1000.0, 900.0]}))
+    xg = pd.DataFrame({"game_id": [5, 5, 5, 6], "shooter_id": [1, 1, 2, 1], "is_goal": [True, True, False, True],
+                       "strength": ["5v5"] * 4, "empty_net_against": [False] * 4, "xg": [0.2, 0.3, 0.4, 0.1]})
+    stints = pd.DataFrame({"game_id": [5, 5, 6], "game_type": [2, 2, 1]})
+    live, n = FN.season_state("20262027", xg, stints, pack=pack)
+    assert n == 1                                    # the preseason game (type 1) is not counted
+    g, x, s = live.sums(1)
+    assert g == pytest.approx(4 + 2) and s == pytest.approx(36_000 + 1000)
+    alone, n0 = FN.season_state("20262027", None, None, pack=pack)
+    assert n0 == 0 and alone.fin(1, "F") == pytest.approx(st.fin(1, "F"))
+    assert FN.season_state("20262027", xg, stints, pack=str(tmp_path / "missing.json.gz")) == (None, 0)
+    rows = {r[0]: r for r in FN.bundle_rows(live)}
+    assert rows[1][1] == pytest.approx(live.fin(1, "F"), abs=1e-6)
+    assert rows[2][2] == pytest.approx(live.fin(2, "D"), abs=1e-6)
+    assert rows[1][1] != rows[1][2]                  # the position group sets the volume prior
+
+
+def test_side_term_fin_is_the_share_weighted_sum():
+    import numpy as np
+    from bu.lineup.features import side_term
+    from bu.lineup.toi import ShareState, lineup_shares
+    st = ShareState()
+    pids = list(range(1, 19))
+    groups = ["F"] * 12 + ["D"] * 6
+
+    def rate(p, g):
+        return np.zeros(len(p)), np.zeros(len(p)), len(p)
+
+    fin = {p: 0.01 * p for p in pids}
+    t = side_term(st, pids, groups, rate, [], fin=lambda ps, gs: [fin[p] for p in ps])
+    s_ = lineup_shares(st, pids, groups)
+    assert t["fin"] == pytest.approx(float(s_ @ np.array([fin[p] for p in pids])))
+    assert "fin" not in side_term(st, pids, groups, rate, [])

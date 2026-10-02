@@ -41,8 +41,9 @@ PROB_FLOOR, PROB_CEIL = 0.03, 0.97   # numerical guard only (no 25/75 clamp)
 # Grouping of model terms for the 'why this pick' breakdown (A11).
 TERM_GROUPS = [
     ('home_ice', 'Home ice', None),
-    # bu_d_net: tonight's dressed skaters' RAPM v2 even-strength net xG/60 (player-level EV strength)
-    ('strength_5v5', '5v5 strength', ('d_xg_share', 'd_elo', 'd_pts_pct', 'bu_d_net')),
+    # bu_d_net: tonight's dressed skaters' RAPM v2 even-strength net xG/60 (player-level EV strength);
+    # bu_d_fin: the same skaters' finishing talent (EV goals above xG / 60)
+    ('strength_5v5', '5v5 strength', ('d_xg_share', 'd_elo', 'd_pts_pct', 'bu_d_net', 'bu_d_fin')),
     ('special_teams', 'Special teams & all-situations play', ('d_xg_share_all', 'd_st')),
     ('goaltending', 'Goaltending', ('d_goalie_gsax',)),
     ('rest', 'Rest & travel', ('h_b2b', 'a_b2b', 'd_rest', 'd_travel_km', 'h_tz_shift', 'a_tz_shift')),
@@ -55,13 +56,16 @@ TERM_GROUPS = [
 OPTIONAL_GROUPS = {'lineup_goalie'}
 
 BU_ENV = 'PONYXG_BU'
-BU_MODES = ('on', 'off', 'shadow')
+BU_MODES = ('on', 'off', 'shadow', 'nofin')
 
 
 def bu_mode() -> str:
     """Rollback switch for the RAPM v2 lineup term (DESIGN §5.2 ``PONYXG_BU``).
 
-    on (default)   the live model gets tonight's bu_d_net / bu_d_delta
+    on (default)   the live model gets tonight's bu_d_net / bu_d_delta (/ bu_d_fin)
+    nofin          predict_games serves the joint model WITHOUT the FIN term (``shadow.rapm`` in
+                   the meta, models/shadow/game_model_rapm.pkl) as the live model, term on;
+                   its own F1 rollback chain is unchanged
     off | shadow   predict_games publishes the incumbent WITHOUT the term, the F1 rollback
                    model (``shadow.f1`` in the meta), as it also does per game when the term is
                    unavailable (stale bundle, coverage gate); the joint model's term-on
@@ -154,6 +158,10 @@ class MLPredictor:
         return self.available and any(c in self.feature_cols for c in F.BU_COLUMNS)
 
     @property
+    def uses_fin(self) -> bool:
+        return self.available and any(c in self.feature_cols for c in F.BU_FIN_COLUMNS)
+
+    @property
     def bu_term(self):
         """The RAPM v2 serving bundle as a ``bu.lineup.serve.LiveLineupTerm`` (loaded once), or
         None when the model does not use it or the bundle cannot be read."""
@@ -174,14 +182,19 @@ class MLPredictor:
     def bu_features(self, home_tri, away_tri, dfo_home, dfo_away):
         """``LiveLineupTerm.features`` for tonight's DailyFaceoff lines (``bu_ok`` False and
         neutral 0 features when stale / unmapped / under the coverage gate), or None when
-        the model does not use the term.  Never raises."""
+        the model does not use the term.  ``fin_ok`` False: the bundle has no FIN table; for a
+        model with ``bu_d_fin`` the result then also carries ``fin_missing`` (predict_games
+        serves the joint model without FIN, never a zero-filled FIN).  Never raises."""
         if not self.uses_bu:
             return None
         term = self.bu_term
         if term is None:
-            return {**{c: 0.0 for c in F.BU_COLUMNS}, 'bu_ok': False,
+            return {**{c: 0.0 for c in F.BU_COLUMNS}, 'bu_ok': False, 'fin_ok': False,
                     'reason': f"bundle unavailable ({self._bu_error})", 'home': None, 'away': None}
-        return term.features(home_tri, away_tri, dfo_home, dfo_away)
+        out = term.features(home_tri, away_tri, dfo_home, dfo_away)
+        if self.uses_fin and not out.get('fin_ok'):
+            out['fin_missing'] = True
+        return out
 
     @property
     def lineup_state(self):

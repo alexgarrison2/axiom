@@ -876,7 +876,7 @@ def joint_backtest(M2, M1, M1e, live_cols, folds=JOINT_FOLDS, verbose=True):
     2026-10-01, and 2026-27 live games are the clean re-test (Gate C, pre-registered)."""
     base_f1 = [c for c in live_cols if c not in F.BU_COLUMNS]
     no_lineup = [c for c in base_f1 if c not in FT_COLUMNS]
-    bu = list(F.BU_COLUMNS)
+    bu = list(F.BU_RAPM_COLUMNS)
     variants = {
         LIVE_ROW: (M1, base_f1),
         'v1 xG (shot dedupe fixed), F1 d_lineup': (M1e, base_f1),
@@ -1021,6 +1021,189 @@ def joint_main(cur_meta, args):
     return 0
 
 
+# ─── FIN: the lineup finishing term on top of the joint model (bu/rapm/finishing.py) ──
+
+FIN_REPORT = os.path.join(SCRIPT_DIR, 'bu', 'lineup', 'out', 'retrain_fin.json')
+RAPM_SHADOW_MODEL = os.path.join(SHADOW_DIR, 'game_model_rapm.pkl')
+RAPM_SHADOW_META = os.path.join(SHADOW_DIR, 'game_model_rapm_meta.json')
+FIN_HOLDOUT_TOL = 0.0010
+FIN_LOOK_COMPONENT = 'M3 finishing (FIN) lineup term'
+FIN_LOOK_NAME = FIN_LOOK_COMPONENT + ', soft holdout 2025-26'
+FIN_RULE = ('owner approval 2026-10-02 ("Yes" to wiring FIN into the game model, no blend cap): promote the '
+            'live features + bu_d_fin when it is better than the live model on BOTH dev seasons (2023-24, '
+            '2024-25: each season and pooled delta log loss < 0) and its single 2025-26 holdout look is not '
+            'worse than the live model by more than +%.4f log loss per game' % FIN_HOLDOUT_TOL)
+
+
+def _cmp(base_oos, cand_oos, seasons):
+    """Paired per-game comparison (bu.lineup.evaluate.compare_fold) plus the incumbent's
+    calibration slope CI."""
+    from bu.lineup.evaluate import compare_fold
+    b, c = base_oos[base_oos['season'].isin(seasons)], cand_oos[cand_oos['season'].isin(seasons)]
+    r = compare_fold(b, c)
+    s_, _se, ci_ = calibration_slope_ci(b['home_win'], b['p_model'])
+    r['cal_slope_ci_incumbent'] = {'slope': s_, 'lo95': ci_[0], 'hi95': ci_[1]}
+    return r
+
+
+def _fin_look(config_hash, run):
+    """The single 2025-26 look of the FIN component (DESIGN §1.5), logged in
+    bu/lineup/out/look_log.jsonl.  A logged look with the same config is returned as it was
+    recorded (the computation is deterministic, so re-running it reveals nothing new); a look
+    with another config is refused (one look per component)."""
+    from bu.lineup import evaluate as EV
+    for rec in EV.logged_looks():
+        if str(rec.get('look', '')).startswith(FIN_LOOK_COMPONENT):
+            if rec.get('config_hash') == config_hash:
+                return dict(rec['result'], logged_at=rec['at'], reused_logged_look=True)
+            return {'refused': f"the {FIN_LOOK_COMPONENT} already had its 2025-26 look (config "
+                               f"{rec.get('config_hash')}, {rec['at']}); re-test on 2026-27 live data",
+                    'previous': rec}
+    res = run()
+    rec = {'at': _now().isoformat(), 'look': FIN_LOOK_NAME, 'config_hash': config_hash, 'result': res}
+    os.makedirs(os.path.dirname(EV.LOOK_LOG), exist_ok=True)
+    with open(EV.LOOK_LOG, 'a') as f:
+        f.write(json.dumps(rec, default=float) + '\n')
+    return dict(res, logged_at=rec['at'], reused_logged_look=False)
+
+
+def archive_rapm_shadow(cur_meta, model_path=T.MODEL_PATH, out_model=RAPM_SHADOW_MODEL, out_meta=RAPM_SHADOW_META):
+    """Keep the replaced joint model (RAPM net / delta, no FIN) as a rollback: served on the
+    live xG v2 inputs with the same serving bundle; its meta keeps its own F1 shadow, so
+    loading it as the live model (PONYXG_BU=nofin) reproduces the replaced setup exactly."""
+    import shutil
+    os.makedirs(os.path.dirname(out_model), exist_ok=True)
+    shutil.copyfile(model_path, out_model)
+    meta = dict(cur_meta)
+    meta['shadow_role'] = {'role': 'rollback of the joint model with the FIN lineup term (PONYXG_BU=nofin, or '
+                                   'a serving bundle without FIN)', 'archived_at': _now().isoformat(),
+                           'xg_inputs': 'live'}
+    _write(out_meta, meta)
+    return meta
+
+
+def fin_main(cur_meta, args):
+    """Add ``bu_d_fin`` to the live joint model (FIN_RULE).  Base = the live feature set, candidate
+    = live + bu_d_fin, both on the same matrix (xG v2 inputs, committed lineup table), same
+    nested-C walk-forward; dev folds first, then the single logged 2025-26 look."""
+    from bu.lineup import evaluate as EV
+    live_cols = list(cur_meta.get('feature_columns') or F.FEATURE_COLUMNS)
+    fin = list(F.BU_FIN_COLUMNS)
+    if any(c in live_cols for c in fin):
+        print('[fin] the live model already uses the FIN term; nothing to do')
+        return 0
+    if not any(c in live_cols for c in F.BU_RAPM_COLUMNS):
+        raise SystemExit('[fin] the live model has no RAPM lineup term to add FIN to')
+    cand_cols = live_cols + fin
+    M, xg_source = T.build_matrix()
+    n_fin = int((M['bu_ok'] & (M[fin[0]] != 0)).sum())
+    print(f"[fin] {len(M)} games ({n_fin} with a non-zero {fin[0]}); live {cur_meta.get('model_version')}")
+    dev = tuple(DEV_SEASONS)
+    base_fd, base_dev = walk(M, live_cols, test_seasons=dev)
+    cand_fd, cand_dev = walk(M, cand_cols, test_seasons=dev)
+    repro = {str(f['test_season']): abs(f['log_loss'] - base_fd[f['test_season']]['log_loss'])
+             for f in cur_meta.get('cv_results', []) if f['test_season'] in base_fd}
+    print(f"[fin] live baseline reproduces game_model_meta.json cv_results (dev): max |dLL| "
+          f"{max(repro.values()) if repro else float('nan'):.2e}")
+    dev_rep = {str(S): _cmp(base_dev, cand_dev, (S,)) for S in dev}
+    dev_rep['pooled'] = _cmp(base_dev, cand_dev, dev)
+    for k, v in dev_rep.items():
+        print(f"  dev {k:>6}: delta {v['delta_ll']:+.5f} (SE {v['se']:.5f}) LL {v['ll_incumbent']:.5f} -> "
+              f"{v['ll_candidate']:.5f} Brier {v['brier_incumbent']:.5f} -> {v['brier_candidate']:.5f}")
+    dev_pass = bool(dev_rep['pooled']['delta_ll'] < 0 and all(dev_rep[str(S)]['delta_ll'] < 0 for S in dev))
+    cfg = EV.config_hash({'live_model': cur_meta.get('model_version'),
+                          'training_table_sha256': (cur_meta.get('bu_lineup') or {}).get('training_table_sha256')},
+                         cand_cols)
+    report = {'generated_at': _now().isoformat(), 'rule': FIN_RULE, 'live_model': cur_meta.get('model_version'),
+              'live_features': live_cols, 'candidate_features': cand_cols, 'config_hash': cfg,
+              'feature': {'name': fin[0], 'definition': (
+                  'sum over the dressed skaters of expected EV TOI share x FIN (bu.rapm.finishing: shrunk EV '
+                  'goals above xG per 60, prior 60 xG), home minus away: the bu_d_fin column of '
+                  'bu/lineup/out/lineup_features.csv.gz (point in time: FIN from games up to d - 2 days), '
+                  'neutral 0 under the coverage gate like bu_d_net / bu_d_delta'),
+                  'games_nonzero': n_fin},
+              'live_baseline_reproduction_max_abs_ll_diff': max(repro.values()) if repro else None,
+              'dev': dev_rep, 'dev_pass': dev_pass, 'promoted': False}
+    if not dev_pass:
+        report['decision'] = 'dev rule failed: no holdout look, not promoted'
+        _write(FIN_REPORT, report)
+        print(f"[fin] {report['decision']} ({FIN_REPORT})")
+        return 1 if args.strict else 0
+    if args.no_holdout:
+        report['decision'] = 'dev rule passed; holdout look not taken (--no-holdout)'
+        _write(FIN_REPORT, report)
+        print(f"[fin] {report['decision']} ({FIN_REPORT})")
+        return 0
+
+    H = HOLDOUT_SEASON
+    _, base_h = walk(M, live_cols, test_seasons=(H,))
+    _, cand_h = walk(M, cand_cols, test_seasons=(H,))
+    look = _fin_look(cfg, lambda: _cmp(base_h, cand_h, (H,)))
+    report['holdout'] = look
+    if 'refused' in look:
+        report['decision'] = 'holdout look refused: not promoted'
+        _write(FIN_REPORT, report)
+        print(f"[fin] {look['refused']}")
+        return 1
+    hold_pass = bool(look['delta_ll'] <= FIN_HOLDOUT_TOL)
+    report['holdout_pass'] = hold_pass
+    print(f"  holdout {H}: delta {look['delta_ll']:+.5f} (SE {look['se']:.5f}) "
+          f"{'<=' if hold_pass else '>'} +{FIN_HOLDOUT_TOL}")
+    # descriptive over all three folds: calibration, Brier, early season, the de-vigged market
+    b3 = pd.concat([base_dev, base_h], ignore_index=True)
+    c3 = pd.concat([cand_dev, cand_h], ignore_index=True)
+    folds3 = tuple(dev) + (H,)
+    report['all_folds'] = {'pooled_2023_2025': _cmp(b3, c3, folds3), str(H): _cmp(b3, c3, (H,))}
+    report['market_descriptive'] = ft_market_descriptive(b3, c3)
+    mk = report['market_descriptive']
+    if mk.get('n'):
+        print(f"  market (n {mk['n']}): LL live {mk['log_loss']['current']:.5f}, candidate "
+              f"{mk['log_loss']['candidate']:.5f}, de-vigged market {mk['log_loss']['market_devig']:.5f}")
+    passed = bool(dev_pass and hold_pass)
+    report['passed'] = passed
+    if not (args.promote and passed and not args.dry_run):
+        report['decision'] = ('rule passed; not promoted (dry run / no --promote)' if passed
+                              else 'rule failed; not promoted')
+        _write(FIN_REPORT, report)
+        print(f"[fin] {report['decision']} ({FIN_REPORT})")
+        return 1 if (args.strict and not passed) else 0
+    archive_rapm_shadow(cur_meta)
+    model, meta, _ = T.train(cols=cand_cols, save=False, legacy=not args.no_legacy, verbose=True,
+                             M=M, xg_source=xg_source, prev_meta=cur_meta)
+    carry_legacy_baselines(meta, cur_meta)
+    ok_std, std_checks = promotion_checks(meta, cur_meta)
+    pooled = report['all_folds']['pooled_2023_2025']
+    meta['bu_lineup'] = {**(meta.get('bu_lineup') or {}), 'gate': {
+        'pooled_delta_vs_previous': {'n': pooled['n'], 'delta': pooled['delta_ll'], 'se': pooled['se'],
+                                     'boot_upper95': pooled['boot_upper95'],
+                                     'boot_p_worse': 1 - pooled['p_boot_not_better']},
+        'dev_pooled': {k: dev_rep['pooled'][k] for k in ('n', 'delta_ll', 'se')},
+        'per_fold': {str(S): {'n': r['n'], 'delta': r['delta_ll'], 'se': r['se'], 'base_log_loss': r['ll_incumbent'],
+                              'cand_log_loss': r['ll_candidate']}
+                     for S, r in [(S, dev_rep[str(S)]) for S in dev] + [(H, look)]},
+        'calibration': {'slope': pooled['cal_slope_ci_candidate']['slope'],
+                        'ci95': [pooled['cal_slope_ci_candidate']['lo95'], pooled['cal_slope_ci_candidate']['hi95']]},
+        'report': os.path.relpath(FIN_REPORT, SCRIPT_DIR),
+        'previous_gate': (cur_meta.get('bu_lineup') or {}).get('gate')}}
+    meta['shadow'] = {**(cur_meta.get('shadow') or {}),
+                      'rapm': {'model': os.path.relpath(RAPM_SHADOW_MODEL, SCRIPT_DIR),
+                               'meta': os.path.relpath(RAPM_SHADOW_META, SCRIPT_DIR),
+                               'model_version': cur_meta.get('model_version'), 'xg_inputs': 'live',
+                               'dedupe': 'event', 'features': live_cols}}
+    meta['promotion'] = {'promoted_at': _now().isoformat(), 'replaced': cur_meta.get('model_version'),
+                         'rule': FIN_RULE, 'standard_gate_checks': std_checks, 'standard_gate_passed': ok_std}
+    T.save_model(model, meta)
+    report.update({'promoted': True, 'candidate_version': meta['model_version'],
+                   'decision': f"promoted {meta['model_version']}",
+                   'standard_gate_checks': std_checks, 'standard_gate_passed': ok_std,
+                   'candidate_folds': [{k: f.get(k) for k in ('test_season', 'n', 'log_loss', 'brier', 'accuracy',
+                                                                'calibration_slope', 'C')} for f in meta['cv_results']],
+                   'coefficients_raw': meta.get('coefficients_raw')})
+    _write(FIN_REPORT, report)
+    print(f"[fin] promoted {meta['model_version']} with {cand_cols} ({FIN_REPORT})")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--dry-run', action='store_true', help='evaluate gates, never promote')
@@ -1033,7 +1216,12 @@ def main(argv=None):
     ap.add_argument('--fasttrack', action='store_true',
                     help='F1 gate: lineup + starting-goalie features (models/fasttrack/fasttrack_backtest.json); '
                          'with --promote, retrain and promote the selected candidate if its gate passes')
-    ap.add_argument('--promote', action='store_true', help='with --fasttrack / --joint: promote on a passing gate')
+    ap.add_argument('--promote', action='store_true', help='with --fasttrack / --joint / --fin: promote on a passing gate')
+    ap.add_argument('--fin', action='store_true',
+                    help='add the FIN lineup finishing term bu_d_fin to the live joint model: dev folds, then the '
+                         'single logged 2025-26 look (bu/lineup/out/retrain_fin.json); with --promote, archive the '
+                         'live model as the no-FIN rollback (models/shadow/game_model_rapm.pkl) and promote')
+    ap.add_argument('--no-holdout', action='store_true', help='with --fin: dev folds only (no holdout look)')
     ap.add_argument('--joint', action='store_true',
                     help='joint retrain: xG v2 inputs + RAPM v2 lineup term replacing F1 d_lineup, vs the live '
                          'model on its v1 inputs (bu/lineup/out/joint_retrain.json); with --promote, archive the '
@@ -1044,6 +1232,8 @@ def main(argv=None):
         cur_meta = json.load(f)
     if args.joint:
         return joint_main(cur_meta, args)
+    if args.fin:
+        return fin_main(cur_meta, args)
     cols = list(cur_meta.get('feature_columns') or F.FEATURE_COLUMNS)
     M, xg_source = T.build_matrix()
     print(f"[retrain] {len(M)} games, live features {cols}")

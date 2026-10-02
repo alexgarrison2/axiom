@@ -51,9 +51,10 @@ def test_live_model_beats_legacy_and_home_rate(meta):
             f['legacy_xgb_same_games']['new_model_log_loss'] <= f['legacy_xgb_same_games']['log_loss']
         assert f['home_rate_baseline']['log_loss'] - f['log_loss'] >= 0.01
     last = max(meta['cv_results'], key=lambda f: f['test_season'])
-    if str((meta.get('promotion') or {}).get('rule', '')).startswith('owner decision 2026-10-01'):
-        # joint xG v2 + RAPM model, promoted on pooled evidence (owner decision): the pooled
-        # calibration CI must contain 1 and the latest-fold slope CI is reported in the gate
+    if str((meta.get('promotion') or {}).get('rule', '')).startswith(('owner decision 2026-10-01',
+                                                                        'owner approval 2026-10-02')):
+        # joint xG v2 + RAPM model (+ FIN, owner approval 2026-10-02), promoted on owner rules: the
+        # pooled calibration CI must contain 1 and the latest-fold slope CI is reported in the gate
         cal = meta['bu_lineup']['gate']['calibration']
         assert cal['ci95'][0] <= 1 <= cal['ci95'][1]
         assert 0.75 <= last['calibration_slope'] <= 1.25

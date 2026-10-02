@@ -282,6 +282,35 @@ def read_pack(path: str) -> FinState | None:
         return FinState.from_json(json.load(f)["state"])
 
 
+def season_state(season: str, xg: pd.DataFrame | None, stints: pd.DataFrame | None,
+                 pack: str | None = None) -> tuple[FinState | None, int]:
+    """(FinState now, this season's games counted): the season's ``fin_pack`` (every earlier
+    season) plus the season's games in the RAPM caches (``xg``: the shooter's goals and xG,
+    ``stints``: EV time; regular season + playoffs).  (None, 0) without a pack for the season.
+    Shared by the serving bundle (``bu.lineup.serve``) and the site ratings export."""
+    st = read_pack(pack or pack_path(season))
+    if st is None:
+        return None, 0
+    st.roll(str(season))
+    if xg is None or stints is None or not len(stints):
+        return st, 0
+    from bu.lineup.toi import game_shares
+    if "game_type" in stints.columns:
+        stints = stints[stints["game_type"].isin([2, 3])]
+    ids = set(stints["game_id"])
+    st.add_games(player_games(xg[xg["game_id"].isin(ids)], game_shares(stints)))
+    return st, len(ids)
+
+
+def bundle_rows(st: FinState) -> list:
+    """``[player_id, fin as a forward, fin as a defenceman]`` for every player with FIN data (the
+    position group only sets the volume prior); a player not listed has FIN 0, as in ``FinState``."""
+    out = []
+    for p in sorted(set(st.past) | set(st.cur)):
+        out.append([int(p), round(st.fin(p, "F"), 6) + 0.0, round(st.fin(p, "D"), 6) + 0.0])
+    return out
+
+
 def main(argv=None) -> int:
     import argparse
     import sys

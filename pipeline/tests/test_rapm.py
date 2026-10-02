@@ -608,3 +608,39 @@ def test_live_term_dfo_names_and_guards():
     stale = SV.LiveLineupTerm(_bundle(now, built_hours_ago=40))
     out = stale.features("AAA", "BBB", _dfo(1), _dfo(2), now=now)
     assert not out["bu_ok"] and out["bu_d_net"] == 0.0 and "stale" in out["reason"]
+
+
+def test_live_term_fin_table_and_missing_fin():
+    from datetime import datetime, timezone
+    import ml_predict as MP
+    from bu.lineup import serve as SV
+    now = datetime(2026, 10, 1, 18, tzinfo=timezone.utc)
+    b = _bundle(now)
+    rows = []
+    for team, sign in ((1, 1.0), (2, -1.0)):
+        F, D, _ = _players(team)
+        rows += [[p, sign * 0.1, sign * 0.04] for p in F + D]
+    b["fin"] = {"columns": ["player_id", "fin_f", "fin_d"], "rows": rows}
+    out = SV.LiveLineupTerm(b).features("AAA", "BBB", _dfo(1), _dfo(2), now=now)
+    # forwards' shares sum to 3 and defencemen's to 2: each side 3 x fin_f + 2 x fin_d
+    assert out["bu_ok"] and out["fin_ok"]
+    assert out["bu_d_fin"] == pytest.approx(2 * (3 * 0.1 + 2 * 0.04), rel=1e-9)
+    # a player outside the table has FIN 0, as in the backtest's FinState
+    b["fin"]["rows"] = rows[1:]
+    assert SV.LiveLineupTerm(b).features("AAA", "BBB", _dfo(1), _dfo(2), now=now)["bu_d_fin"] < out["bu_d_fin"]
+    # no FIN table (older bundle): term on, FIN unavailable (never a silent zero for a FIN model)
+    plain = SV.LiveLineupTerm(_bundle(now))
+    o2 = plain.features("AAA", "BBB", _dfo(1), _dfo(2), now=now)
+    assert o2["bu_ok"] and not o2["fin_ok"] and o2["bu_d_fin"] == 0.0
+
+    class Stub(MP.MLPredictor):
+        def __init__(self, term, cols):
+            self.available, self.feature_cols, self.meta = True, cols, {}
+            self._bu_term, self._bu_error = term, None
+
+    fin_model = Stub(plain, ["d_elo", "bu_d_net", "bu_d_delta", "bu_d_fin"])
+    assert fin_model.bu_features("AAA", "BBB", _dfo(1), _dfo(2)).get("fin_missing")
+    assert not Stub(plain, ["d_elo", "bu_d_net", "bu_d_delta"]).bu_features("AAA", "BBB", _dfo(1), _dfo(2)).get(
+        "fin_missing")
+    assert not Stub(SV.LiveLineupTerm(b), fin_model.feature_cols).bu_features("AAA", "BBB", _dfo(1), _dfo(2)).get(
+        "fin_missing")

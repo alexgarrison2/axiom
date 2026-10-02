@@ -17,8 +17,13 @@ cannot: CI has no historical lake.  So the state is cut in two small JSON files:
     names.  ``built_at`` drives the DESIGN §3.2.2 freshness rule.
 
 ``LiveLineupTerm.features(home, away, dfo_home, dfo_away)`` turns tonight's DFO projected
-lines (minus out / IR / suspended) into ``bu_d_net`` and ``bu_d_delta`` with exactly the
-per-team arithmetic of the backtest (``features.side_term``).  It never raises on bad input:
+lines (minus out / IR / suspended) into ``bu_d_net``, ``bu_d_delta`` and ``bu_d_fin`` with exactly
+the per-team arithmetic of the backtest (``features.side_term``).  ``bu_d_fin`` reads the
+bundle's ``fin`` table: each player's FIN (``bu.rapm.finishing``) from the season's committed
+``fin_pack_<S>.json.gz`` plus the season's games in the refresh's RAPM caches; a player not in
+it has FIN 0, as in the backtest.  A bundle without a ``fin`` table (older code, no fin pack for
+the season) gives ``fin_ok = False``: a model that uses ``bu_d_fin`` is then not served with a
+zero-filled FIN (``ml_predict.MLPredictor.bu_features``).  It never raises on bad input:
 a stale bundle (older than ``MAX_AGE_H``), an unknown team or fewer than ``MIN_RATED`` mapped
 and rated skaters on either side gives ``bu_ok = False`` and neutral (0) model features, the
 same policy the walk-forward used (``evaluate.attach``).
@@ -50,7 +55,9 @@ from .toi import ShareState, game_shares
 
 BUNDLE_VERSION = 1
 MAX_AGE_H = 36.0
-LIVE_COLUMNS = ("bu_d_net", "bu_d_delta")   # the dev-selected candidate (lineup_eval.json)
+RAPM_COLUMNS = ("bu_d_net", "bu_d_delta")   # the dev-selected candidate (lineup_eval.json)
+FIN_COLUMNS = ("bu_d_fin",)                 # retrain.py --fin (retrain_fin.json)
+LIVE_COLUMNS = RAPM_COLUMNS + FIN_COLUMNS
 MIN_SKATERS = 10
 
 
@@ -190,6 +197,7 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
     if len(games):
         replay(state, history, season_shares(paths, [season], games), games, lineups, pos_group)
     ratings, cov, src = _ratings_table(paths, season, seed)
+    fin = fin_table(paths, season)
     means = seed.rookie.means
     rookie = {g: [means.get((g, "all", "o"), 0.0), means.get((g, "all", "d"), 0.0)] for g in ("F", "D")}
     teams = {}
@@ -200,7 +208,8 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
     now = now or datetime.now(timezone.utc)
     out = {"version": BUNDLE_VERSION, "kind": "serving_bundle", "season": str(season),
            "built_at": now.isoformat(timespec="seconds"), "max_source_date": src,
-           "n_games": int(len(games)), "hyper": seed.hyper.as_dict(), "columns": list(LIVE_COLUMNS),
+           "n_games": int(len(games)), "hyper": seed.hyper.as_dict(),
+           "columns": list(RAPM_COLUMNS) + (list(FIN_COLUMNS) if fin is not None else []),
            "covariates": {"intercept": float(cov.get("intercept", np.nan)), "home": float(cov.get("home", np.nan))},
            "rookie": rookie,
            "players": {"columns": ["player_id", "o", "d", "rated"],
@@ -208,6 +217,7 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
                                 ratings[["player_id", "o", "d", "rated"]].itertuples(index=False)]},
            "shares": _state_json(state), "history": _history_json(history),
            "teams": {**sp.get("teams", {}), **teams},
+           "fin": fin,
            "crosswalk": None}
     if crosswalk is not None and len(crosswalk):
         cols = ["player_id", "norm", "last", "team", "sweater", "rank"]
@@ -216,6 +226,21 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
         out["crosswalk"] = {"columns": cols, "rows": [[int(p), n, la, t, None if pd.isna(s) else int(s), int(r)]
                                                       for p, n, la, t, s, r in cw.itertuples(index=False)]}
     return out
+
+
+def fin_table(paths, season: str, pack: str | None = None) -> dict | None:
+    """The bundle's ``fin`` table (``bu.rapm.finishing.season_state``): the committed season
+    ``fin_pack`` plus this season's games in the RAPM caches (``bu.rapm asof`` writes them);
+    None without a fin pack for the season (the FIN term is then unavailable)."""
+    from bu.rapm import finishing as FN
+    xp, sp = paths.xg(season), paths.stints(season)
+    have = os.path.exists(xp) and os.path.exists(sp)
+    st, n = FN.season_state(season, pd.read_parquet(xp) if have else None,
+                            pd.read_parquet(sp) if have else None, pack=pack)
+    if st is None:
+        return None
+    return {"pack": os.path.basename(pack or FN.pack_path(season)), "season_games": int(n),
+            "prior_xg": st.prior_xg, "columns": ["player_id", "fin_f", "fin_d"], "rows": FN.bundle_rows(st)}
 
 
 def team_ids_from_lake(lake, seasons) -> dict:
@@ -243,6 +268,9 @@ class LiveLineupTerm:
         self.state = _state_from_json(bundle["shares"])
         self.history = _history_from_json(bundle["history"])
         self.teams = {str(k): int(v) for k, v in (bundle.get("teams") or {}).items()}
+        fin = bundle.get("fin") or {}
+        self.fin = ({int(r[0]): (float(r[1]), float(r[2])) for r in fin["rows"]}
+                    if isinstance(fin.get("rows"), list) and "bu_d_fin" in (bundle.get("columns") or []) else None)
         cw = bundle.get("crosswalk")
         self.resolver = Resolver(pd.DataFrame(cw["rows"], columns=cw["columns"])) if cw else None
 
@@ -264,6 +292,13 @@ class LiveLineupTerm:
             o.append(a); d.append(b); rated += int(r)  # noqa: E702
         return np.array(o), np.array(d), rated
 
+    def _fin(self, pids, groups):
+        return [self.fin.get(int(p), (0.0, 0.0))[1 if g == "D" else 0] for p, g in zip(pids, groups)]
+
+    @property
+    def fin_ok(self) -> bool:
+        return self.fin is not None
+
     def resolve(self, team: str, dfo_team: dict | None) -> tuple[list, list, list]:
         """DFO projected skaters (minus out / IR / suspended) -> (pids, groups, unmapped names)."""
         pids, groups, unmapped = [], [], []
@@ -280,7 +315,7 @@ class LiveLineupTerm:
     def side(self, team: str, pids, groups) -> dict:
         tid = self.teams.get(team)
         past = list(self.history.get(tid, ())) if tid is not None else []
-        t = side_term(self.state, pids, groups, self._rate, past)
+        t = side_term(self.state, pids, groups, self._rate, past, fin=self._fin if self.fin_ok else None)
         return {"team": team, "n": len(pids), **t}
 
     def features(self, home: str, away: str, dfo_home: dict | None, dfo_away: dict | None,
@@ -290,7 +325,7 @@ class LiveLineupTerm:
         ``ids_home`` / ``ids_away``: optional already-resolved ``[(player_id, 'F'|'D'), ...]``
         lists that replace the DFO lookup (e.g. a confirmed boxscore lineup)."""
         out = {c: 0.0 for c in LIVE_COLUMNS}
-        out.update({"bu_ok": False, "reason": None, "bundle_built_at": self.b["built_at"],
+        out.update({"bu_ok": False, "fin_ok": self.fin_ok, "reason": None, "bundle_built_at": self.b["built_at"],
                     "bundle_age_h": round(self.age_hours(now), 2), "home": None, "away": None})
         try:
             if out["bundle_age_h"] > self.max_age_h:
@@ -317,6 +352,8 @@ class LiveLineupTerm:
             out["bu_ok"] = True
             out["bu_d_net"] = float(h["net"] - a["net"])
             out["bu_d_delta"] = float(h["delta"] - a["delta"])
+            if self.fin_ok:
+                out["bu_d_fin"] = float(h["fin"] - a["fin"])
             return out
         except Exception as e:      # never break the prediction run
             out["reason"] = f"error: {e}"

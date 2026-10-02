@@ -80,8 +80,13 @@ def test_attach_bu_features_neutral_policy(tmp_path):
     assert out.loc[3, "bu_d_net"] == 0.0 and out.loc[3, "bu_d_delta"] == 0.3
     assert out.loc[4, "bu_d_net"] == 0.0 and not out.loc[4, "bu_ok"]
     assert "other" not in out.columns
+    assert (out["bu_d_fin"] == 0).all()                # a table built before bu_d_fin: neutral
     missing = T.attach_bu_features(M, str(tmp_path / "nope.csv.gz"))
     assert (missing["bu_d_net"] == 0).all() and not missing["bu_ok"].any()
+    pd.DataFrame({"game_id": [1, 2], "bu_ok": [True, False], "bu_d_net": [0.5, 0.7], "bu_d_delta": [0.1, 0.2],
+                  "bu_d_fin": [0.03, 0.04]}).to_csv(p, index=False)
+    out = T.attach_bu_features(M, str(p)).set_index("game_id")
+    assert out.loc[1, "bu_d_fin"] == 0.03 and out.loc[2, "bu_d_fin"] == 0.0   # coverage gate: neutral
 
 
 def test_evaluate_attach_replaces_existing_columns():
@@ -110,7 +115,7 @@ def test_joint_checks_binding_rules():
 # ── serving: switch, shadows ─────────────────────────────────────────────────
 
 @pytest.mark.parametrize("val,expect", [(None, "on"), ("", "on"), ("on", "on"), ("OFF", "off"),
-                                        ("shadow", "shadow"), ("bogus", "on")])
+                                        ("shadow", "shadow"), ("nofin", "nofin"), ("bogus", "on")])
 def test_bu_mode(monkeypatch, val, expect):
     import ml_predict as MP
     if val is None:
@@ -123,8 +128,17 @@ def test_bu_mode(monkeypatch, val, expect):
 def test_term_groups_route_the_bu_columns():
     import ml_predict as MP
     groups = {k: cols for k, _, cols in MP.TERM_GROUPS if cols}
-    assert "bu_d_net" in groups["strength_5v5"]
+    assert "bu_d_net" in groups["strength_5v5"] and "bu_d_fin" in groups["strength_5v5"]
     assert "bu_d_delta" in groups["lineup_goalie"]
+
+
+def test_model_version_tags():
+    import train_game_model as T
+    d = datetime(2026, 10, 2, tzinfo=timezone.utc)
+    base = ["d_elo", "bu_d_net", "bu_d_delta"]
+    assert T.model_version(d, base, "v2") == "logit-elo-v5-20261002-xg2-rapm"
+    assert T.model_version(d, base + ["bu_d_fin"], "v2") == "logit-elo-v5-20261002-xg2-rapm-fin"
+    assert T.model_version(d, ["d_elo"], "v1") == "logit-elo-v5-20261002"
 
 
 class _FakeML:
@@ -237,6 +251,44 @@ def test_term_on_publishes_the_joint_model(monkeypatch, live_and_shadow):
     assert out["f1_shadow_model_win_pct"] is not None and out["f1_shadow_model_win_pct"] != out["home_model_win_pct"]
 
 
+def test_missing_fin_publishes_the_joint_model_without_fin(monkeypatch, live_and_shadow):
+    """A serving bundle without a FIN table (older refresh, no fin pack) for a model with bu_d_fin:
+    the joint model trained WITHOUT FIN (shadow.rapm) is published, not the FIN model with a
+    zero-filled bu_d_fin; without that model on disk, the F1 rollback model."""
+    import predict_games as P
+    ml, sh = live_and_shadow
+    if not ml.uses_fin:
+        pytest.skip("the live model has no FIN term")
+    bf = {"bu_d_net": 0.6, "bu_d_delta": 0.3, "bu_d_fin": 0.0, "bu_ok": True, "fin_ok": False, "fin_missing": True,
+          "reason": None, "home": {"delta": 0.2, "n": 18}, "away": {"delta": -0.1, "n": 17}}
+    out = _outputs(monkeypatch, ml, sh, bf, "on")
+    nofin = P.load_shadow(ml, pd.DataFrame(), key="rapm")
+    assert nofin is not None and not nofin.uses_fin and nofin.uses_bu
+    assert out["model_version"] == nofin.model_version == ml.meta["shadow"]["rapm"]["model_version"]
+    d = nofin.predict_detail("Maple Leafs", "Bruins", "2026-10-02", extra_features={"bu_d_net": 0.6, "bu_d_delta": 0.3})
+    assert out["home_model_win_pct"] == round(100 * d["home_win_prob"], 1)
+    assert out["bu_shadow_home_win_pct"] == out["home_win_pct"]
+    assert (out["home_lineup_score"], out["away_lineup_matched"]) == (0.2, 17)
+    monkeypatch.setattr(P, "nofin_model", lambda inp: None)
+    out = _outputs(monkeypatch, ml, sh, bf, "on")
+    assert out["model_version"] == sh.model_version
+
+
+def test_nofin_switch_serves_the_rapm_model(monkeypatch, live_and_shadow):
+    """PONYXG_BU=nofin: the joint model without FIN is the live model, its F1 chain intact."""
+    import predict_games as P
+    ml, sh = live_and_shadow
+    if not ml.uses_fin:
+        pytest.skip("the live model has no FIN term")
+    alt = P.load_shadow(ml, pd.DataFrame(), key="rapm")
+    f1 = P.load_shadow(alt, pd.DataFrame())
+    assert f1 is not None and f1.model_version == sh.model_version
+    bf = {"bu_d_net": 0.6, "bu_d_delta": 0.3, "bu_d_fin": 0.1, "bu_ok": True, "fin_ok": True, "reason": None,
+          "home": {"delta": 0.2, "n": 18}, "away": {"delta": -0.1, "n": 17}}
+    out = _outputs(monkeypatch, alt, f1, bf, "nofin")
+    assert out["model_version"] == alt.model_version and out["bu_shadow_home_win_pct"] == out["home_win_pct"]
+
+
 def test_shadow_outputs_without_bu_or_shadow():
     import predict_games as P
     inp = P.Inputs(now=datetime.now(timezone.utc), schedule=[])
@@ -312,6 +364,15 @@ def test_check_bu_bundle(tmp_path, monkeypatch):
     _write_gz(p, _bundle(now, season=V.SEASON_ID, columns=["bu_d_net"]))
     assert any("columns" in e for e in V.check_bu_bundle({"bu_bundle_path": str(p)}))
     assert any("unreadable" in e for e in V.check_bu_bundle({"bu_bundle_path": str(tmp_path / "x.gz")}))
+    # a model with bu_d_fin: a fresh bundle must carry the FIN table (else the no-FIN model is served)
+    meta["feature_columns"] = ["d_elo", "bu_d_net", "bu_d_delta", "bu_d_fin"]
+    _write_gz(p, _bundle(now, season=V.SEASON_ID))
+    assert any("FIN" in e for e in V.check_bu_bundle({"bu_bundle_path": str(p)}))
+    _write_gz(p, _bundle(now, season=V.SEASON_ID, columns=["bu_d_net", "bu_d_delta", "bu_d_fin"],
+                         fin={"columns": ["player_id", "fin_f", "fin_d"], "rows": [[1, 0.1, 0.05]]}))
+    assert V.check_bu_bundle({"bu_bundle_path": str(p)}) == []
+    _write_gz(p, _bundle(old, season=V.SEASON_ID, max_source_date=old[:10]))        # stale: F1 published
+    assert V.check_bu_bundle({"bu_bundle_path": str(p)}) == []
     meta["feature_columns"] = ["d_elo"]
     assert V.check_bu_bundle({"bu_bundle_path": str(tmp_path / "x.gz")}) == []      # model without the term
 
@@ -360,14 +421,30 @@ def test_live_model_is_the_joint_model_with_a_rollback_shadow(live_meta):
         pytest.skip("live model has no RAPM lineup term")
     assert live_meta["xg_version"] == "v2"                   # releases the bu.xg.live interlock
     assert not any(c in live_meta["feature_columns"] for c in F.LINEUP_COLUMNS)
-    assert live_meta["model_version"].endswith("-xg2-rapm")
+    fin = any(c in live_meta["feature_columns"] for c in F.BU_FIN_COLUMNS)
+    assert live_meta["model_version"].endswith("-xg2-rapm-fin" if fin else "-xg2-rapm")
+    if fin:   # the replaced joint model (no FIN) stays reachable: PONYXG_BU=nofin / a bundle without FIN
+        r = live_meta["shadow"]["rapm"]
+        assert r["model_version"].endswith("-xg2-rapm") and "bu_d_fin" not in r["features"]
+        assert os.path.exists(os.path.join(PIPELINE, r["model"])) and os.path.exists(os.path.join(PIPELINE, r["meta"]))
+        with open(os.path.join(PIPELINE, r["meta"])) as f:
+            assert json.load(f)["shadow"]["f1"] == live_meta["shadow"]["f1"]   # its own F1 chain
     sh = live_meta["shadow"]["f1"]
     assert os.path.exists(os.path.join(PIPELINE, sh["model"])) and os.path.exists(os.path.join(PIPELINE, sh["meta"]))
     assert sh["xg_inputs"] == "v1" and sh["dedupe"] == "legacy" and "d_lineup" in sh["features"]
     g = live_meta["bu_lineup"]["gate"]
     # owner decision 2026-10-01 (window prior directive): the retrain on the window-prior lineup
     # table ships unless it is worse than the model it replaces by more than +0.0010 pooled
-    window = "window prior directive" in str((live_meta.get("promotion") or {}).get("rule", ""))
+    rule = str((live_meta.get("promotion") or {}).get("rule", ""))
+    window = "window prior directive" in rule
+    if fin:   # owner approval 2026-10-02: better on both dev seasons, 2025-26 look within +0.0010
+        assert rule.startswith("owner approval 2026-10-02")
+        assert g["dev_pooled"]["delta_ll"] < 0
+        assert g["per_fold"]["2023"]["delta"] < 0 and g["per_fold"]["2024"]["delta"] < 0
+        assert g["per_fold"]["2025"]["delta"] <= 0.0010
+        assert g["previous_gate"]["pooled_delta_vs_previous"]["delta"] <= 0.0010   # the window retrain
+        assert os.path.exists(os.path.join(PIPELINE, g["report"]))
+        return
     assert g["pooled_delta_vs_previous"]["delta"] <= (0.0010 if window else 0)
     if window:   # and the replaced joint model's own gain over the F1 rollback model is kept
         assert g["previous_gate"]["pooled_delta_vs_previous"]["delta"] <= 0
@@ -380,11 +457,13 @@ def test_live_model_routes_the_bu_terms(live_meta):
     if not ml.uses_bu:
         pytest.skip("live model has no RAPM lineup term")
     d0 = ml.predict_detail("Kings", "Ducks", "2026-10-03")
-    d1 = ml.predict_detail("Kings", "Ducks", "2026-10-03", extra_features={"bu_d_net": 0.3, "bu_d_delta": 0.2})
+    d1 = ml.predict_detail("Kings", "Ducks", "2026-10-03",
+                           extra_features={"bu_d_net": 0.3, "bu_d_delta": 0.2, "bu_d_fin": 0.05})
     t0 = {t["factor"]: t["logit"] for t in d0["logit_terms"]}
     t1 = {t["factor"]: t["logit"] for t in d1["logit_terms"]}
     b = live_meta["coefficients_raw"]
-    assert abs((t1["strength_5v5"] - t0["strength_5v5"]) - 0.3 * b["bu_d_net"]) < 1e-9
+    assert abs((t1["strength_5v5"] - t0["strength_5v5"]) - 0.3 * b["bu_d_net"]
+               - 0.05 * b.get("bu_d_fin", 0.0)) < 1e-9
     assert abs((t1["lineup_goalie"] - t0["lineup_goalie"]) - 0.2 * b["bu_d_delta"]) < 1e-9
     p = d1["model_prob_raw"]
     assert abs(sum(t1.values()) - np.log(p / (1 - p))) < 1e-9

@@ -27,8 +27,9 @@ Columns (home minus away where prefixed ``bu_d_``):
   bu_h_delta, bu_a_delta, bu_d_delta        vs the team's last 10 lineups
   bu_h_n, bu_a_n, bu_h_rated, bu_a_rated    dressed skaters / with an NHL rating
   bu_*_net_asof, bu_*_delta_asof            L-asof: the team's previous dressed 18 (no injury feed)
-  bu_h_fin, bu_a_fin, bu_d_fin              sum of share x FIN (bu.rapm.finishing, goals above xG / 60);
-                                            evaluated on the dev folds, not a live model feature
+  bu_h_fin, bu_a_fin, bu_d_fin              sum of share x FIN (bu.rapm.finishing, goals above xG / 60,
+                                            games up to d - LAG_DAYS); live model feature bu_d_fin
+                                            (retrain.py --fin, bu/lineup/out/retrain_fin.json)
   bu_ok                                     both sides >= MIN_RATED rated skaters
   ratings_asof, max_source_date             leakage audit: max_source_date <= date - lag
 """
@@ -79,12 +80,14 @@ def lineup_tables(lake, seasons):
     return games, lineups, {int(p): _group(x) for p, x in zip(first["player_id"], first["position"])}
 
 
-def side_term(state: ShareState, pids, groups, rate, past_lineups) -> dict:
+def side_term(state: ShareState, pids, groups, rate, past_lineups, fin=None) -> dict:
     """One team's lineup term (shared by the backtest table and the live scorer).
 
     ``rate(pids, groups) -> (o, d, n_rated)``; ``past_lineups``: the team's previous dressed
     lineups (oldest first, at most ``BASELINE_GAMES``), re-rated with tonight's ratings and
-    shares so the team's usual lineup is exactly neutral."""
+    shares so the team's usual lineup is exactly neutral.  ``fin(pids, groups) -> FIN per
+    skater`` (goals above xG / 60): adds ``fin``, the same expected-EV-TOI-share weighted sum
+    (the ``bu_*_fin`` columns, live ``bu_d_fin``)."""
     s_ = lineup_shares(state, pids, groups)
     o, df, rated = rate(pids, groups)
     off, dfn = float(s_ @ o), float(s_ @ df)
@@ -95,11 +98,14 @@ def side_term(state: ShareState, pids, groups, rate, past_lineups) -> dict:
         past.append(float(ps @ (po - pdf)))
     net = off - dfn
     enough = len(past) >= MIN_BASELINE
-    return {"off": off, "def": dfn, "rated": int(rated), "net": net,
-            "delta": net - float(np.mean(past)) if enough else 0.0,
-            # L-asof (DESIGN §4.2): the team's previous dressed 18 instead of tonight's
-            "net_asof": past[-1] if past else np.nan,
-            "delta_asof": past[-1] - float(np.mean(past)) if enough else 0.0}
+    out = {"off": off, "def": dfn, "rated": int(rated), "net": net,
+           "delta": net - float(np.mean(past)) if enough else 0.0,
+           # L-asof (DESIGN §4.2): the team's previous dressed 18 instead of tonight's
+           "net_asof": past[-1] if past else np.nan,
+           "delta_asof": past[-1] - float(np.mean(past)) if enough else 0.0}
+    if fin is not None:
+        out["fin"] = float(s_ @ np.asarray(fin(pids, groups), dtype=float))
+    return out
 
 
 def fin_player_games(paths, seasons, source: str | None, games: pd.DataFrame) -> pd.DataFrame | None:
@@ -246,7 +252,9 @@ def build(paths, seasons: list[str], log=print, fin: bool = True) -> pd.DataFram
                     a_ = actual.get((int(g["game_id"]), int(p_)))
                     if a_ is not None:
                         toi_err.append((S, abs(e_ - a_), abs(l_ - a_)))
-                t = side_term(state, pids, groups, rate, history[tid])
+                t = side_term(state, pids, groups, rate, history[tid],
+                              fin=(lambda ps, gs: [fstate.fin(p_, g_) for p_, g_ in zip(ps, gs)])
+                              if fstate is not None else None)
                 row[f"bu_{side}_off"] = t["off"]
                 row[f"bu_{side}_def"] = t["def"]
                 row[f"bu_{side}_n"] = len(pids)
@@ -255,8 +263,7 @@ def build(paths, seasons: list[str], log=print, fin: bool = True) -> pd.DataFram
                 row[f"bu_{side}_net_asof"] = t["net_asof"]
                 row[f"bu_{side}_delta_asof"] = t["delta_asof"]
                 if fstate is not None:
-                    fv = np.array([fstate.fin(p_, g_) for p_, g_ in zip(pids, groups)])
-                    row[f"bu_{side}_fin"] = float(s_ @ fv)
+                    row[f"bu_{side}_fin"] = t["fin"]
                 ok = ok and t["rated"] >= MIN_RATED
             c0, ch = cov_by.get((S, d), (np.nan, np.nan))
             row["c_intercept"], row["c_home"] = c0, ch

@@ -229,6 +229,7 @@ class Inputs:
     existing: dict = field(default_factory=dict)         # key -> previous CSV row
     ml: object = None
     shadow: object = None                                # F1 rollback shadow MLPredictor (xG v1 inputs)
+    nofin: object = None                                 # joint model without FIN (shadow.rapm), lazy; False = unavailable
     lineup_adj: object = None
     gate_state: dict = None
     tiers: list = field(default_factory=list)
@@ -459,22 +460,35 @@ def fasttrack_lineup(game, inp, ml=None):
         return None
 
 
-def load_shadow(ml, gs=None, goalie_ratings=None):
-    """The rollback shadow named in the live model's meta (``shadow.f1``: the replaced F1 model
-    and the xG inputs it was trained on), or None.  Never raises."""
-    spec = ((getattr(ml, "meta", None) or {}).get("shadow") or {}).get("f1") or {}
+def load_shadow(ml, gs=None, goalie_ratings=None, key="f1"):
+    """A rollback model named in the live model's meta, or None.  ``key``: ``f1`` (the replaced
+    F1 model and the xG inputs it was trained on) or ``rapm`` (the joint model without the FIN
+    term, on the live inputs: it reuses ``ml``'s game table).  Never raises."""
+    spec = ((getattr(ml, "meta", None) or {}).get("shadow") or {}).get(key) or {}
     if not spec.get("model"):
         return None
     try:
         from ml_predict import MLPredictor
+        xg, dedupe = spec.get("xg_inputs") or "live", spec.get("dedupe") or "event"
+        same_inputs = xg == "live" and dedupe == "event" and getattr(ml, "xg_inputs", None) == "live"
         sh = MLPredictor(gs, goalie_ratings=goalie_ratings,
                          model_path=os.path.join(SCRIPT_DIR, spec["model"]),
                          meta_path=os.path.join(SCRIPT_DIR, spec.get("meta") or ""),
-                         xg=spec.get("xg_inputs") or "live", dedupe=spec.get("dedupe") or "event")
+                         xg=xg, dedupe=dedupe, games=getattr(ml, "games", None) if same_inputs else None)
         return sh if sh.available else None
     except Exception as e:
-        print(f"[WARN] F1 shadow model unavailable: {e}")
+        print(f"[WARN] {key} shadow model unavailable: {e}")
         return None
+
+
+def nofin_model(inp):
+    """The joint model without the FIN term (``shadow.rapm``), loaded on first use: what is
+    published when the serving bundle has no FIN table for a model with ``bu_d_fin``."""
+    if inp.nofin is None:
+        inp.nofin = load_shadow(inp.ml, None, inp.goalie_ratings, key="rapm") or False
+        if inp.nofin:
+            print(f"[ML] no-FIN rollback model {inp.nofin.model_version} loaded")
+    return inp.nofin or None
 
 
 def bu_lineup(game, inp):
@@ -529,7 +543,7 @@ def shadow_outputs(game, ctx, inp, d, p_published, q, w, bu_on_features, extra_t
     try:
         if getattr(ml, "uses_bu", False):
             if published_bu is None:
-                published_bu = bu_mode() == "on"
+                published_bu = bu_mode() in ("on", "nofin")
             if published_bu:
                 out["bu_shadow_home_win_pct"] = round(100 * p_published, 1)
             else:
@@ -616,12 +630,21 @@ def build_model_outputs(game, ctx, inp):
         # RAPM v2 lineup term (bu.lineup.serve.LiveLineupTerm): tonight's DFO lines minus
         # players out; neutral 0 when the bundle is stale or a side fails the coverage gate.
         bf = bu_lineup(game, inp)
-        on = bu_mode() == "on"
+        on = bu_mode() in ("on", "nofin")
         term_ok = bool(bf and bf.get("bu_ok"))
+        fin_missing = bool(bf and bf.get("fin_missing"))
         bu_on_features = {c: (float(bf.get(c) or 0.0) if term_ok else 0.0) for c in BU_COLUMNS}
         sh = inp.shadow
-        if on and term_ok:
+        nofin = nofin_model(inp) if (on and term_ok and fin_missing) else None
+        if on and term_ok and not fin_missing:
             published_bu = True
+            extra, extra_features, l_detail = [], bu_on_features, bu_detail(bf)
+        elif nofin is not None:
+            # The bundle has no FIN table (older refresh code, no fin pack for the season): serve
+            # the joint model trained WITHOUT bu_d_fin (shadow.rapm), never a zero-filled FIN.
+            published_bu = True
+            model = nofin
+            print(f"  [bu] {away}@{home}: no FIN in the serving bundle; publishing {nofin.model_version}")
             extra, extra_features, l_detail = [], bu_on_features, bu_detail(bf)
         elif sh is not None and getattr(sh, "available", False):
             # Term switched off (PONYXG_BU=off|shadow) or unavailable for this game (stale
@@ -632,7 +655,8 @@ def build_model_outputs(game, ctx, inp):
             # +0.0005 log loss per game vs the F1 model, logit SD -20%).
             published_bu = False
             model = sh
-            why = f"PONYXG_BU={bu_mode()}" if not on else ((bf or {}).get("reason") or "term unavailable")
+            why = f"PONYXG_BU={bu_mode()}" if not on else (
+                (bf or {}).get("reason") or ("no FIN in the bundle" if fin_missing else "term unavailable"))
             print(f"  [bu] {away}@{home}: publishing the F1 rollback model {sh.model_version} ({why})")
             extra, extra_features, l_detail = incumbent_lineup_inputs(game, inp, sh)
         else:
@@ -873,6 +897,14 @@ def load_inputs(now=None, schedule=None):
     except Exception as e:
         print(f"[WARN] ML predictor unavailable: {e}")
         inp.ml = None
+    if bu_mode() == "nofin" and getattr(inp.ml, "uses_fin", False):
+        # rollback switch: the joint model without FIN is the live model (its F1 chain below)
+        alt = load_shadow(inp.ml, gs, inp.goalie_ratings, key="rapm")
+        if alt is not None:
+            print(f"[ML] PONYXG_BU=nofin: serving {alt.model_version} instead of {inp.ml.model_version}")
+            inp.ml = alt
+        else:
+            print("[WARN] PONYXG_BU=nofin but no shadow.rapm model; serving the live model")
     inp.shadow = load_shadow(inp.ml, gs, inp.goalie_ratings)
     try:
         from lineup_adjust import LineupAdjuster

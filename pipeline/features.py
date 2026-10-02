@@ -104,7 +104,11 @@ LINEUP_COLUMNS = ('d_lineup', 'd_lineup_level')
 # expected EV TOI, home - away.  ``bu_d_net``: lineup net xG/60; ``bu_d_delta``: the same
 # minus each team's last 10 dressed lineups.  Training merges them by game id from
 # bu/lineup/out/lineup_features.csv.gz; serving uses bu.lineup.serve.LiveLineupTerm.
-BU_COLUMNS = ('bu_d_net', 'bu_d_delta')
+# ``bu_d_fin``: the same dressed skaters' finishing talent (bu.rapm.finishing FIN, shrunk EV goals
+# above xG per 60) weighted by expected EV TOI, home - away (bu/rapm/README.md "OFF credibility pass").
+BU_RAPM_COLUMNS = ('bu_d_net', 'bu_d_delta')
+BU_FIN_COLUMNS = ('bu_d_fin',)
+BU_COLUMNS = BU_RAPM_COLUMNS + BU_FIN_COLUMNS
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────

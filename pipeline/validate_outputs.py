@@ -729,8 +729,17 @@ def check_bu_bundle(ctx):
         # a stale bundle of last season means the F1 rollback model is published; a FRESH
         # one of another season means the refresh is pointed at the wrong season pack
         errs.append(f"{rel}: freshly built for season {b.get('season')} != {SEASON_ID}")
-    if not set(used) <= set(b.get("columns") or []):
-        errs.append(f"{rel}: columns {b.get('columns')} do not cover the model's {used}")
+    cols = set(b.get("columns") or [])
+    from features import BU_FIN_COLUMNS
+    rapm_used = [c for c in used if c not in BU_FIN_COLUMNS]
+    fin_used = [c for c in used if c in BU_FIN_COLUMNS]
+    if not set(rapm_used) <= cols:
+        errs.append(f"{rel}: columns {b.get('columns')} do not cover the model's {rapm_used}")
+    if fin_used and fresh and not (set(fin_used) <= cols and ((b.get("fin") or {}).get("rows"))):
+        # served by the no-FIN rollback model (shadow.rapm): a fresh bundle without FIN means the
+        # refresh ran without the season's fin pack (bu/lineup/out/fin_pack_<S>.json.gz)
+        errs.append(f"{rel}: freshly built without a FIN table (columns {b.get('columns')}); the model uses "
+                    f"{fin_used}, so the no-FIN rollback model is published: commit the season's fin pack")
     src = b.get("max_source_date")
     if built is None:
         errs.append(f"{rel}: built_at {b.get('built_at')!r} is not a timestamp")
