@@ -3,7 +3,9 @@
 This small program runs on Cloudflare every 5 minutes. When an NHL game is
 8-13 minutes from its start time, it tells GitHub to run the
 **Odds close snapshots** workflow, which saves the closing odds and lineups.
-GitHub's own timer often fires late or skips runs; Cloudflare's does not.
+It also starts the hourly **Update NHL Data** workflow at :01 past each hour
+from 12:00 to 03:00 UTC. GitHub's own timer often fires late or skips runs
+(it skipped four hours in a row on 2026-10-02); Cloudflare's does not.
 
 You need: a computer with Node.js (already installed if you can run the site
 locally), and this repository checked out. Nothing here costs money.
@@ -44,13 +46,15 @@ locally), and this repository checked out. Nothing here costs money.
    npx wrangler@4 deploy
    ```
    It prints a URL like `https://ponyxg-snapshot-trigger.<you>.workers.dev`
-   and `schedule: */5 * * * *`.
+   and two schedules: `*/5 * * * *` and `1 0-3,12-23 * * *`.
 
 7. **Check it:** open that URL in a browser. You should see
    `"token_configured": true` and the games starting in the next hour.
    (The page is read-only: it cannot start anything.)
 
-8. **Watch the first trigger:** about 10 minutes before the next game, open
+8. **Watch the first triggers:** at :01 past the next hour, GitHub → *Actions* →
+   *Update NHL Data* should show a new `workflow_dispatch` run.
+   **Snapshot trigger:** about 10 minutes before the next game, open
    GitHub → *Actions* → *Odds close snapshots*. A run with the trigger
    `worker` should appear. Live logs: `npx wrangler@4 tail`.
 

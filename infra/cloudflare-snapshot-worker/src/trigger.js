@@ -16,9 +16,13 @@
  * as SNAPSHOT_STATE (optional), dispatched game ids are also remembered for a
  * day and never re-sent.
  *
+ * A second cron (DATA_CRON, hourly through the NHL day) asks GitHub to run
+ * .github/workflows/update_data.yml in auto mode, because GitHub's own
+ * schedule for that workflow is often skipped for hours at a time.
+ *
  * Secrets / vars (see SETUP.md): GITHUB_TOKEN (secret: fine-grained token,
  * this repository only, "Actions: Read and write"), GITHUB_REPO, WORKFLOW_FILE,
- * GITHUB_REF, LEAD_MAX_MIN, CRON_INTERVAL_MIN.  The token is only ever sent
+ * GITHUB_REF, LEAD_MAX_MIN, CRON_INTERVAL_MIN, DATA_CRON, DATA_WORKFLOW_FILE.  The token is only ever sent
  * to api.github.com and is never logged or returned.
  */
 
@@ -34,7 +38,8 @@ const COUNTED_TYPES = new Set([2, 3]); // regular season, playoffs
 /** @typedef {{ get(key: string): Promise<string | null>,
  *   put(key: string, value: string, opts?: { expirationTtl?: number }): Promise<void> }} KvLike */
 /** @typedef {{ GITHUB_TOKEN?: string, GITHUB_REPO?: string, WORKFLOW_FILE?: string, GITHUB_REF?: string,
- *   LEAD_MAX_MIN?: string, CRON_INTERVAL_MIN?: string, SNAPSHOT_STATE?: KvLike }} Env */
+ *   LEAD_MAX_MIN?: string, CRON_INTERVAL_MIN?: string, DATA_CRON?: string, DATA_WORKFLOW_FILE?: string,
+ *   SNAPSHOT_STATE?: KvLike }} Env */
 /** @typedef {(input: string, init?: { method?: string, headers?: Record<string, string>, body?: string })
  *   => Promise<{ ok: boolean, status: number, json(): Promise<unknown>, text(): Promise<string> }>} FetchLike */
 
@@ -101,15 +106,33 @@ export function gamesDue(schedule, nowMs, window) {
  * @returns {Promise<{ ok: boolean, status: number, detail?: string }>}
  */
 export async function dispatchWorkflow(env, games, fetchImpl) {
+  return dispatch(env, env.WORKFLOW_FILE ?? 'odds_close.yml',
+    { window: '25', games: games.map((g) => String(g.id)).join(','), trigger: 'worker' }, fetchImpl);
+}
+
+/**
+ * Ask GitHub to run the hourly data refresh (update_data.yml, auto mode).
+ * @param {Env} env
+ * @param {FetchLike} fetchImpl
+ */
+export async function dispatchDataRefresh(env, fetchImpl) {
+  return dispatch(env, env.DATA_WORKFLOW_FILE ?? 'update_data.yml', { mode: 'auto' }, fetchImpl);
+}
+
+/**
+ * POST a workflow_dispatch for `file` with `inputs`.
+ * @param {Env} env
+ * @param {string} file
+ * @param {Record<string, string>} inputs
+ * @param {FetchLike} fetchImpl
+ * @returns {Promise<{ ok: boolean, status: number, detail?: string }>}
+ */
+async function dispatch(env, file, inputs, fetchImpl) {
   if (!env.GITHUB_TOKEN) return { ok: false, status: 0, detail: 'GITHUB_TOKEN secret is not set' };
   const repo = env.GITHUB_REPO ?? '';
   if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return { ok: false, status: 0, detail: 'GITHUB_REPO must be owner/name' };
-  const file = encodeURIComponent(env.WORKFLOW_FILE ?? 'odds_close.yml');
-  const url = `${GITHUB_API}/repos/${repo}/actions/workflows/${file}/dispatches`;
-  const body = JSON.stringify({
-    ref: env.GITHUB_REF ?? 'main',
-    inputs: { window: '25', games: games.map((g) => String(g.id)).join(','), trigger: 'worker' },
-  });
+  const url = `${GITHUB_API}/repos/${repo}/actions/workflows/${encodeURIComponent(file)}/dispatches`;
+  const body = JSON.stringify({ ref: env.GITHUB_REF ?? 'main', inputs });
   /** @type {{ ok: boolean, status: number, detail?: string }} */
   let last = { ok: false, status: 0 };
   for (let attempt = 1; attempt <= 2; attempt += 1) {

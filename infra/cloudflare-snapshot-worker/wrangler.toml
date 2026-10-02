@@ -8,8 +8,9 @@ compatibility_date = "2026-09-01"
 workers_dev = true
 
 [triggers]
-# Every 5 minutes.  Keep CRON_INTERVAL_MIN below in sync if you change it.
-crons = ["*/5 * * * *"]
+# Every 5 minutes (closing snapshots; keep CRON_INTERVAL_MIN below in sync),
+# and the hourly data refresh at :01 through the NHL day (keep DATA_CRON in sync).
+crons = ["*/5 * * * *", "1 0-3,12-23 * * *"]
 
 [vars]
 GITHUB_REPO = "alexgarrison2/axiom"
@@ -20,6 +21,10 @@ GITHUB_REF = "main"
 # starts ~1 min later, inside the 15-minute "close" window.
 LEAD_MAX_MIN = "13"
 CRON_INTERVAL_MIN = "5"
+# Hourly data refresh: .github/workflows/update_data.yml in auto mode.  Must
+# match the second cron above exactly.  Remove both to stop it.
+DATA_CRON = "1 0-3,12-23 * * *"
+DATA_WORKFLOW_FILE = "update_data.yml"
 
 # The GitHub token is a secret, never put it in this file:
 #   npx wrangler@4 secret put GITHUB_TOKEN

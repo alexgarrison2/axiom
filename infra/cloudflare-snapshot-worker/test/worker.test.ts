@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { dispatchWorkflow, etDate, gamesDue, leadWindow, runOnce } from '../src/trigger.js';
+import { dispatchDataRefresh, dispatchWorkflow, etDate, gamesDue, leadWindow, runOnce } from '../src/trigger.js';
 import worker from '../src/worker.js';
 
 type Call = { url: string; init?: { method?: string; headers?: Record<string, string>; body?: string } };
@@ -157,5 +157,42 @@ describe('scheduled handler', () => {
     expect(calls.filter((c) => c.url.includes('api.github.com'))).toHaveLength(1);
     expect(log).toHaveBeenCalledTimes(1);
     expect(String(log.mock.calls[0][0])).not.toContain('test-token-not-real');
+  });
+  it('the hourly data cron dispatches update_data.yml in auto mode, not the snapshot pass', async () => {
+    const { fn, calls } = mockFetch();
+    vi.stubGlobal('fetch', fn);
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const pending: Promise<unknown>[] = [];
+    const env = { ...ENV, DATA_CRON: '1 0-3,12-23 * * *' };
+    await worker.scheduled({ scheduledTime: at('2026-10-01T22:50:00Z'), cron: '1 0-3,12-23 * * *' }, env, { waitUntil: (p) => void pending.push(p) });
+    await Promise.all(pending);
+    vi.unstubAllGlobals();
+    expect(calls.some((c) => c.url.includes('api-web.nhle.com'))).toBe(false);
+    const gh = calls.filter((c) => c.url.includes('api.github.com'));
+    expect(gh).toHaveLength(1);
+    expect(gh[0].url).toBe('https://api.github.com/repos/owner/repo/actions/workflows/update_data.yml/dispatches');
+    expect(JSON.parse(gh[0].init!.body!)).toEqual({ ref: 'main', inputs: { mode: 'auto' } });
+    expect(String(log.mock.calls[0][0])).not.toContain('test-token-not-real');
+  });
+
+  it('the 5-minute cron still runs the snapshot pass when DATA_CRON is set', async () => {
+    const { fn, calls } = mockFetch();
+    vi.stubGlobal('fetch', fn);
+    vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const pending: Promise<unknown>[] = [];
+    const env = { ...ENV, DATA_CRON: '1 0-3,12-23 * * *' };
+    await worker.scheduled({ scheduledTime: at('2026-10-01T22:50:00Z'), cron: '*/5 * * * *' }, env, { waitUntil: (p) => void pending.push(p) });
+    await Promise.all(pending);
+    vi.unstubAllGlobals();
+    const gh = calls.filter((c) => c.url.includes('api.github.com'));
+    expect(gh).toHaveLength(1);
+    expect(gh[0].url).toContain('/workflows/odds_close.yml/dispatches');
+  });
+
+  it('dispatchDataRefresh refuses without a token', async () => {
+    const { fn, calls } = mockFetch();
+    const r = await dispatchDataRefresh({ ...ENV, GITHUB_TOKEN: undefined }, fn);
+    expect(r.ok).toBe(false);
+    expect(calls).toHaveLength(0);
   });
 });
