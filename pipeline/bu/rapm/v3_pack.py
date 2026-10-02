@@ -100,7 +100,7 @@ def build_pack(engine: V.Engine, S: str, rec: Recency, sh: V.Shrink, prior_xg: f
             "config": {"recency": rec.as_dict(), "shrink": sh.as_dict(), "prior_xg": float(prior_xg),
                        "toi_half_life": toi_half_life, "toi_pseudo": V.TOI_PSEUDO, "sigma2_ev": V.SIGMA2_EV,
                        "sigma2_st": V.SIGMA2_ST, "usage_tiers": V.USAGE_TIERS, "min_role_gp": V.MIN_ROLE_GP,
-                       "g_step": V.G_STEP, "lag_days": V.LAG_DAYS},
+                       "g_step": V.G_STEP, "lag_days": V.LAG_DAYS, "impact_weights": dict(V.IMPACT_WEIGHTS)},
             "goals_per_xg": float(gpx), "grid": grid,
             "toi": {"columns": TOI_COLS, "rows": [[int(p)] + [_r(v, 4) for v in row] for p, row in
                                                   zip(tst.index, tst[TOI_COLS[1:]].to_numpy())], "pos_means": pm},

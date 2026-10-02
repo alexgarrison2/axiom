@@ -59,17 +59,21 @@ G_STEP = 5.0
 G_GRID = tuple(np.arange(0.0, 120.0 + G_STEP / 2, G_STEP))
 COV_LAM = 3600.0 * 20
 LAG_DAYS = 2
+RECENCY = Recency(kind="decay", half_life=90.0)   # selected (v3_validation.json): per-game decay, 0 past 246 games
+IMPACT_WEIGHTS = {"w_o": 1.0, "w_d": 1.0, "w_pp": 1.0, "w_pk": 1.0}   # calibration-slope rule (v3_prereg "impact")
 
 
 @dataclass(frozen=True)
 class Shrink:
+    """Prior variances ((xG/60)^2) and role-mean mode; the defaults are the validated configuration
+    (``out/v3_validation.json``: tuning seasons 2019-20 .. 2022-23, ``v3_prereg.json``)."""
     v_o: float = 0.03
-    v_d: float = 0.015
+    v_d: float = 0.025
     role: str = "both"           # "both": usage-role means for OFF and DEF; "off": OFF only; "none"
-    v_role: float = 0.05
+    v_role: float = 0.001
     use_aging: bool = True
-    v_pp: float = 0.04
-    v_pk: float = 0.02
+    v_pp: float = 0.16
+    v_pk: float = 0.08
     v_role_st: float = 0.05         # PP / PK position-group means (light ridge)
 
     def key(self) -> str:
@@ -777,7 +781,7 @@ def prior_grid(engine: Engine, S: str, rec: Recency, sh: Shrink, grid=G_GRID, lo
 
 # ----------------------------------------------------------------------- FIN with game recency
 
-FIN_PRIOR_XG = 60.0         # finishing.PRIOR_XG; re-tuned with game weights (v3 validation report)
+FIN_PRIOR_XG = 30.0         # re-tuned with the D90 game weights (v3_validation.json "fin": 30 beats 60 by > 1 SE)
 FIN_LEAGUE_PSEUDO = 500.0   # finishing.LEAGUE_PSEUDO_G: this season's league goals / xG ratio, shrunk to 1
 
 
