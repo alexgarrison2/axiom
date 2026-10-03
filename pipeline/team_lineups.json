@@ -2869,7 +2869,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Frank Nazar",
@@ -2879,7 +2879,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Patrick Kane",
@@ -2911,7 +2911,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Tyler Bertuzzi",
@@ -2921,7 +2921,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -2994,20 +2994,20 @@
                 "number": 72,
                 "pos": "ld",
                 "id": 30427,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Bowen Byram",
-                "number": 24,
+                "name": "Ian Cole",
+                "number": 28,
                 "pos": "rd",
-                "id": 28523,
-                "ppUnit": 1,
+                "id": 1313,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -3026,7 +3026,7 @@
                 "number": 55,
                 "pos": "rd",
                 "id": 38138,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3034,24 +3034,24 @@
         ],
         "d3": [
             {
-                "name": "Ian Cole",
-                "number": 28,
+                "name": "Ethan Del Mastro",
+                "number": 38,
                 "pos": "ld",
-                "id": 1313,
+                "id": 30841,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Sam Rinzel",
-                "number": 6,
+                "name": "Kevin Korchinski",
+                "number": 14,
                 "pos": "rd",
-                "id": 34789,
-                "ppUnit": 2,
+                "id": 31513,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -3092,6 +3092,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Bowen Byram",
+                "number": 24,
+                "pos": "ir3",
+                "id": 28523,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3118,7 +3127,7 @@
                 "number": 72,
                 "pos": "sk3",
                 "id": 30427,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -3165,14 +3174,14 @@
                 "number": 55,
                 "pos": "sk4",
                 "id": 38138,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
         "lineup_source": "Ben Pope",
         "updated_at": "2026-10-03T15:51:04.062Z",
-        "fetched_at": "2026-10-03T16:02:48Z"
+        "fetched_at": "2026-10-03T17:02:33Z"
     },
     "PHI": {
         "f1": [
@@ -7949,9 +7958,19 @@
         ],
         "f2": [
             {
+                "name": "Viktor Arvidsson",
+                "number": 33,
+                "pos": "lw",
+                "id": 2453,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
                 "name": "Emmitt Finnie",
                 "number": null,
-                "pos": "lw",
+                "pos": "c",
                 "id": 33612,
                 "ppUnit": 2,
                 "injuryStatus": null,
@@ -7959,24 +7978,14 @@
                 "movement": null
             },
             {
-                "name": "J.T. Compher",
-                "number": 37,
-                "pos": "c",
-                "id": 2751,
+                "name": "Michael Brandsegg-Nyg\u00e5rd",
+                "number": null,
+                "pos": "rw",
+                "id": 38141,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Viktor Arvidsson",
-                "number": 33,
-                "pos": "rw",
-                "id": 2453,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
@@ -7991,14 +8000,14 @@
                 "movement": null
             },
             {
-                "name": "Marco Kasper",
-                "number": null,
+                "name": "J.T. Compher",
+                "number": 37,
                 "pos": "c",
-                "id": 36364,
+                "id": 2751,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Keegan Kolesar",
@@ -8033,14 +8042,14 @@
                 "movement": null
             },
             {
-                "name": "Michael Brandsegg-Nyg\u00e5rd",
-                "number": null,
+                "name": "Carter Mazur",
+                "number": 43,
                 "pos": "rw",
-                "id": 38141,
+                "id": 34532,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -8147,6 +8156,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Marco Kasper",
+                "number": null,
+                "pos": "ir3",
+                "id": 36364,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -8189,10 +8207,10 @@
         ],
         "pk2": [
             {
-                "name": "Marco Kasper",
-                "number": null,
+                "name": "Mason Appleton",
+                "number": 22,
                 "pos": "sk1",
-                "id": 36364,
+                "id": 4582,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -8227,7 +8245,7 @@
         ],
         "lineup_source": "Last Game (2026-10-02)",
         "updated_at": "2026-10-03T14:06:32.201Z",
-        "fetched_at": "2026-10-03T16:02:48Z"
+        "fetched_at": "2026-10-03T17:02:33Z"
     },
     "UTA": {
         "f1": [

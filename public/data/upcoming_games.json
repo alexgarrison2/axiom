@@ -63,7 +63,7 @@
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
         "awayGoalieConfirmed": "Linus Ullmark",
-        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieStatus": "Likely",
         "awayGoalieSource": "dailyfaceoff",
         "awayGoalieConflict": false,
         "awayGoalieAlt": null,
@@ -201,7 +201,7 @@
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
         "awayGoalieConfirmed": "Jakub Dobes",
-        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieStatus": "Confirmed",
         "awayGoalieSource": "dailyfaceoff",
         "awayGoalieConflict": false,
         "awayGoalieAlt": null,
@@ -355,8 +355,8 @@
         "awayGoalieConfirmed": "Nico Daws",
         "awayGoalieStatus": "Confirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Jake Allen",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {
@@ -396,7 +396,7 @@
         "homeTeamAbbrev": "NSH",
         "awayTeamAbbrev": "DAL",
         "homeGoalieConfirmed": "Juuse Saros",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieStatus": "Likely",
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
@@ -483,6 +483,11 @@
                 "network": "NESN",
                 "market": "A",
                 "countryCode": "US"
+            },
+            {
+                "network": "KSTC",
+                "market": "H",
+                "countryCode": "US"
             }
         ]
     },
@@ -496,11 +501,11 @@
         "awayTeam": "Blues",
         "homeTeamAbbrev": "COL",
         "awayTeamAbbrev": "STL",
-        "homeGoalieConfirmed": "Scott Wedgewood",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieConfirmed": "Mackenzie Blackwood",
+        "homeGoalieStatus": "Likely",
         "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": true,
-        "homeGoalieAlt": "Mackenzie Blackwood",
+        "homeGoalieConflict": false,
+        "homeGoalieAlt": null,
         "awayGoalieConfirmed": "Jordan Binnington",
         "awayGoalieStatus": "Likely",
         "awayGoalieSource": "dailyfaceoff",
