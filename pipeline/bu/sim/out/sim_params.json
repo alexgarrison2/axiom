@@ -673,6 +673,30 @@
   "score_with": 6.98808,
   "score_without": 6.99308
  },
+ "season_sim": {
+  "decided_at": "2026-10-03T16:40:00Z",
+  "dev_pooled": {
+   "n_team_asof": 160,
+   "playoff_ll": {
+    "LOGIT": 0.3031,
+    "SIM": 0.3084,
+    "diff": 0.0053,
+    "se": 0.0153
+   },
+   "points_mae": {
+    "LOGIT": 5.6379,
+    "SIM": 5.2682,
+    "diff": -0.3697,
+    "se": 0.2843
+   }
+  },
+  "engine": "logit",
+  "holdout_look": "not taken: the dev rule already decides; the 2025-26 look for this question stays unspent",
+  "prereg": "bu/sim/prereg_season_sim.json",
+  "question": "season_sim",
+  "reason": "rule (2) fails: dev pooled playoff log loss SIM - LOGIT = +0.0053 > 0 (points MAE rule (1) and the 2023-24 guard (3) pass)",
+  "rollout": "PONYXG_SEASON_SIM=sim switches season_simulator / game_implications to the simulator (opt-in, not validated for publication)"
+ },
  "state": {
   "criterion": "next-game Poisson log-likelihood, regular season of the fit seasons",
   "grid_goalie": [

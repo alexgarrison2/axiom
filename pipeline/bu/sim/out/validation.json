@@ -7117,7 +7117,7 @@
    }
   }
  },
- "generated_at": "2026-10-03T16:34:09+00:00",
+ "generated_at": "2026-10-03T16:38:01+00:00",
  "holdout": {
   "season": "20252026",
   "n_sims": 20000,
@@ -18803,5 +18803,317 @@
   "dev_ml_pass": true,
   "dev_derivative_pass": false,
   "generated_at": "2026-10-03T16:34:09+00:00"
+ },
+ "season_sim_dev": {
+  "prereg": "bu/sim/prereg_season_sim.json",
+  "points": {
+   "20232024": [
+    "2023-11-01",
+    "2024-01-01",
+    "2024-03-01"
+   ],
+   "20242025": [
+    "2025-01-01",
+    "2025-03-01"
+   ]
+  },
+  "n_seasons_mc": 5000,
+  "sim_version": "sim-m5-v4-20261002",
+  "scores": {
+   "pooled": {
+    "n": 160,
+    "LOGIT": {
+     "abs_err": 5.6379,
+     "err": 0.3624,
+     "ll": 0.3031,
+     "brier": 0.0986,
+     "cover80": 0.8063
+    },
+    "SIM": {
+     "abs_err": 5.2682,
+     "err": 0.0614,
+     "ll": 0.3084,
+     "brier": 0.1006,
+     "cover80": 0.825
+    },
+    "LOGIT_live": {
+     "abs_err": 5.9806,
+     "err": 0.3713,
+     "ll": 0.3122,
+     "brier": 0.1013,
+     "cover80": 0.775
+    },
+    "points_mae_SIM_minus_LOGIT": {
+     "diff": -0.3697,
+     "se_team_clustered": 0.2843
+    },
+    "playoff_ll_SIM_minus_LOGIT": {
+     "diff": 0.0053,
+     "se_team_clustered": 0.0153
+    },
+    "playoff_brier_SIM_minus_LOGIT": {
+     "diff": 0.002,
+     "se_team_clustered": 0.0055
+    }
+   },
+   "20232024": {
+    "n": 96,
+    "LOGIT": {
+     "abs_err": 6.4116,
+     "err": 0.5295,
+     "ll": 0.3284,
+     "brier": 0.1078,
+     "cover80": 0.8021
+    },
+    "SIM": {
+     "abs_err": 5.695,
+     "err": 0.184,
+     "ll": 0.3283,
+     "brier": 0.1092,
+     "cover80": 0.8438
+    },
+    "LOGIT_live": {
+     "abs_err": 6.9132,
+     "err": 0.5406,
+     "ll": 0.3439,
+     "brier": 0.1132,
+     "cover80": 0.75
+    },
+    "points_mae_SIM_minus_LOGIT": {
+     "diff": -0.7166,
+     "se_team_clustered": 0.4359
+    },
+    "playoff_ll_SIM_minus_LOGIT": {
+     "diff": -0.0001,
+     "se_team_clustered": 0.0218
+    },
+    "playoff_brier_SIM_minus_LOGIT": {
+     "diff": 0.0014,
+     "se_team_clustered": 0.0075
+    }
+   },
+   "20242025": {
+    "n": 64,
+    "LOGIT": {
+     "abs_err": 4.4772,
+     "err": 0.1117,
+     "ll": 0.2652,
+     "brier": 0.0849,
+     "cover80": 0.8125
+    },
+    "SIM": {
+     "abs_err": 4.6279,
+     "err": -0.1224,
+     "ll": 0.2785,
+     "brier": 0.0878,
+     "cover80": 0.7969
+    },
+    "LOGIT_live": {
+     "abs_err": 4.5817,
+     "err": 0.1173,
+     "ll": 0.2647,
+     "brier": 0.0835,
+     "cover80": 0.8125
+    },
+    "points_mae_SIM_minus_LOGIT": {
+     "diff": 0.1507,
+     "se_team_clustered": 0.2906
+    },
+    "playoff_ll_SIM_minus_LOGIT": {
+     "diff": 0.0133,
+     "se_team_clustered": 0.0287
+    },
+    "playoff_brier_SIM_minus_LOGIT": {
+     "diff": 0.0029,
+     "se_team_clustered": 0.0106
+    }
+   },
+   "by_asof": {
+    "20232024 2023-11-01": {
+     "n": 32,
+     "LOGIT": {
+      "abs_err": 9.1943,
+      "err": 0.6906,
+      "ll": 0.4271,
+      "brier": 0.1345,
+      "cover80": 0.7812
+     },
+     "SIM": {
+      "abs_err": 7.515,
+      "err": 0.1069,
+      "ll": 0.392,
+      "brier": 0.127,
+      "cover80": 0.8125
+     },
+     "LOGIT_live": {
+      "abs_err": 9.8635,
+      "err": 0.6886,
+      "ll": 0.4583,
+      "brier": 0.1468,
+      "cover80": 0.6875
+     },
+     "points_mae_SIM_minus_LOGIT": {
+      "diff": -1.6793,
+      "se_team_clustered": 0.923
+     },
+     "playoff_ll_SIM_minus_LOGIT": {
+      "diff": -0.035,
+      "se_team_clustered": 0.0372
+     },
+     "playoff_brier_SIM_minus_LOGIT": {
+      "diff": -0.0075,
+      "se_team_clustered": 0.0138
+     }
+    },
+    "20232024 2024-01-01": {
+     "n": 32,
+     "LOGIT": {
+      "abs_err": 6.4048,
+      "err": 0.4979,
+      "ll": 0.2971,
+      "brier": 0.0995,
+      "cover80": 0.8438
+     },
+     "SIM": {
+      "abs_err": 5.8281,
+      "err": 0.1744,
+      "ll": 0.3067,
+      "brier": 0.1028,
+      "cover80": 0.875
+     },
+     "LOGIT_live": {
+      "abs_err": 7.0734,
+      "err": 0.5164,
+      "ll": 0.3153,
+      "brier": 0.105,
+      "cover80": 0.8125
+     },
+     "points_mae_SIM_minus_LOGIT": {
+      "diff": -0.5767,
+      "se_team_clustered": 0.3845
+     },
+     "playoff_ll_SIM_minus_LOGIT": {
+      "diff": 0.0096,
+      "se_team_clustered": 0.0243
+     },
+     "playoff_brier_SIM_minus_LOGIT": {
+      "diff": 0.0033,
+      "se_team_clustered": 0.0086
+     }
+    },
+    "20232024 2024-03-01": {
+     "n": 32,
+     "LOGIT": {
+      "abs_err": 3.6357,
+      "err": 0.3999,
+      "ll": 0.2609,
+      "brier": 0.0894,
+      "cover80": 0.7812
+     },
+     "SIM": {
+      "abs_err": 3.7419,
+      "err": 0.2706,
+      "ll": 0.2862,
+      "brier": 0.0979,
+      "cover80": 0.8438
+     },
+     "LOGIT_live": {
+      "abs_err": 3.8028,
+      "err": 0.4168,
+      "ll": 0.2582,
+      "brier": 0.0879,
+      "cover80": 0.75
+     },
+     "points_mae_SIM_minus_LOGIT": {
+      "diff": 0.1062,
+      "se_team_clustered": 0.1663
+     },
+     "playoff_ll_SIM_minus_LOGIT": {
+      "diff": 0.0253,
+      "se_team_clustered": 0.018
+     },
+     "playoff_brier_SIM_minus_LOGIT": {
+      "diff": 0.0085,
+      "se_team_clustered": 0.0063
+     }
+    },
+    "20242025 2025-01-01": {
+     "n": 32,
+     "LOGIT": {
+      "abs_err": 5.5714,
+      "err": 0.2079,
+      "ll": 0.2809,
+      "brier": 0.0901,
+      "cover80": 0.8125
+     },
+     "SIM": {
+      "abs_err": 5.772,
+      "err": -0.1007,
+      "ll": 0.2927,
+      "brier": 0.0918,
+      "cover80": 0.7812
+     },
+     "LOGIT_live": {
+      "abs_err": 5.7043,
+      "err": 0.215,
+      "ll": 0.2795,
+      "brier": 0.088,
+      "cover80": 0.8125
+     },
+     "points_mae_SIM_minus_LOGIT": {
+      "diff": 0.2006,
+      "se_team_clustered": 0.5094
+     },
+     "playoff_ll_SIM_minus_LOGIT": {
+      "diff": 0.0118,
+      "se_team_clustered": 0.0445
+     },
+     "playoff_brier_SIM_minus_LOGIT": {
+      "diff": 0.0017,
+      "se_team_clustered": 0.0169
+     }
+    },
+    "20242025 2025-03-01": {
+     "n": 32,
+     "LOGIT": {
+      "abs_err": 3.383,
+      "err": 0.0154,
+      "ll": 0.2495,
+      "brier": 0.0797,
+      "cover80": 0.8125
+     },
+     "SIM": {
+      "abs_err": 3.4837,
+      "err": -0.1441,
+      "ll": 0.2644,
+      "brier": 0.0837,
+      "cover80": 0.8125
+     },
+     "LOGIT_live": {
+      "abs_err": 3.4592,
+      "err": 0.0196,
+      "ll": 0.25,
+      "brier": 0.079,
+      "cover80": 0.8125
+     },
+     "points_mae_SIM_minus_LOGIT": {
+      "diff": 0.1008,
+      "se_team_clustered": 0.1884
+     },
+     "playoff_ll_SIM_minus_LOGIT": {
+      "diff": 0.0148,
+      "se_team_clustered": 0.0187
+     },
+     "playoff_brier_SIM_minus_LOGIT": {
+      "diff": 0.004,
+      "se_team_clustered": 0.006
+     }
+    }
+   }
+  },
+  "dev_mae_pass": true,
+  "dev_ll_pass": false,
+  "guard_2023_pass": true,
+  "generated_at": "2026-10-03T16:38:01+00:00"
  }
 }
