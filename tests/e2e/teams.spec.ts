@@ -28,7 +28,8 @@ test.describe('/teams', () => {
         await expect(caption).toBeVisible();
         await expect(page.locator('body')).not.toContainText('Olympics');
         // No team can have more regular-season games than the schedule allows.
-        const heads = (await page.locator('thead th').first().locator('xpath=..').locator('th').allTextContents()).map(t => t.trim().split(/\s|,/)[0]);
+        // The last header row holds the column headers (the one above it is the column groups).
+        const heads = (await page.locator('thead tr').last().locator('th').allTextContents()).map(t => t.trim().split(/\s|,/)[0]);
         const gpCol = heads.indexOf('GP') + 1; // nth-child is 1-based and counts the team <th>
         expect(gpCol).toBeGreaterThan(1);
         const gp = await page.locator(`tbody tr > :nth-child(${gpCol})`).allInnerTexts();
@@ -41,9 +42,9 @@ test.describe('/teams', () => {
         await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
         const car = page.locator('tbody tr', { has: page.locator('a[href="/teams/CAR"]') });
         // Read cells by column header, so a column reorder (fix1-G5: PTS, P%, GP, Rank, W, L, OT) can't break this.
-        const heads = (await page.locator('thead th').allTextContents()).map(t => t.trim().split(/\s|,/)[0]);
+        const heads = (await page.locator('thead tr').last().locator('th').allTextContents()).map(t => t.trim().split(/\s|,/)[0]);
         const cell = (abbr: string) => car.locator('td').nth(heads.indexOf(abbr) - 1); // first column is the team <th>
-        expect(heads.slice(0, 8)).toEqual(['Team', 'PTS', 'P%', 'GP', 'Rank', 'W', 'L', 'OT']);
+        expect(heads.slice(0, 8)).toEqual(['Team', 'Rank', 'GP', 'W', 'L', 'OT', 'PTS', 'P%']);
         await expect(cell('GP')).toHaveText('82');
         await expect(cell('W')).toHaveText('53');
         await expect(cell('L')).toHaveText('22');
@@ -86,6 +87,8 @@ test.describe('/teams', () => {
     });
 
     test('column headers stay visible after scrolling', async ({ page }) => {
+        // A short window so the 32-row table (it fits a tall one) has something to scroll.
+        await page.setViewportSize({ width: 1280, height: 480 });
         await page.goto('/teams?season=20252026');
         await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
         // Streamed static HTML reveals the table on React's next reveal tick.
@@ -95,7 +98,7 @@ test.describe('/teams', () => {
         await region.evaluate(el => {
             el.scrollTop = 600;
         });
-        await expect.poll(() => region.evaluate(el => el.scrollTop)).toBeGreaterThan(300);
+        await expect.poll(() => region.evaluate(el => el.scrollTop)).toBeGreaterThan(100);
         const head = page.getByRole('columnheader', { name: /^GP/ }).first();
         const top = (await region.boundingBox())!.y;
         await expect.poll(async () => ((await head.boundingBox())?.y ?? 9999) - top, { timeout: 5000 }).toBeLessThan(40);

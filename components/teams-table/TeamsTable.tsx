@@ -478,11 +478,11 @@ function Row({
     const weight = sampleWeight(row.gp);
     return (
         <tr className={cn('group', pairEnd && '[&>*]:border-b-8 [&>*]:border-b-bg')}>
-            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-[19px] border-b border-line pl-1 pr-1.5 text-left font-normal md:pl-2')}>
-                <div className="flex h-[19px] items-center gap-1.5">
+            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-6 shadow-[inset_0_-1px_0_var(--line)] pl-1 pr-1.5 text-left font-normal md:pl-2')}>
+                <div className="flex h-6 items-center gap-1.5">
                     {!paired ? <span className="hidden w-4 shrink-0 text-right text-micro text-fg-3 md:inline">{idx + 1}</span> : null}
-                    <Link href={`/teams/${row.tri}`} prefetch={false} title={meta?.name} className="flex h-[19px] min-w-0 items-center gap-1.5 hover:text-brand">
-                        <Crest tri={row.tri} size={16} className="h-4 w-4 drop-shadow-none" />
+                    <Link href={`/teams/${row.tri}`} prefetch={false} title={meta?.name} className="flex h-6 min-w-0 items-center gap-1.5 hover:text-brand">
+                        <Crest tri={row.tri} size={20} className="h-5 w-5 drop-shadow-none" />
                         <span className="font-bold text-fg-1 group-hover:text-inherit">{row.tri}</span>
                         {meta ? <span className="sr-only">, {meta.name}</span> : null}
                         {paired && showStarter && row.starterName ? (
@@ -507,7 +507,7 @@ function Row({
                 </div>
             </th>
             {columns.map(({ col, groupEnd }) => {
-                const base = cn(CELL_BG, 'h-[19px] border-b border-line px-1 text-center', groupEnd && 'border-r');
+                const base = cn(CELL_BG, 'h-6 shadow-[inset_0_-1px_0_var(--line)] px-1 text-center', groupEnd && 'border-r');
                 if (col.key === 'ranking') {
                     return (
                         <td key={col.key} className={cn(base, row.isPlayoff ? 'font-bold text-fg-1' : 'text-fg-3')}>
