@@ -11,6 +11,11 @@ Model
   regressed preseason priors (Elo carried over and regressed, xG shares
   shrunk), which is what the rollover needs.  If the model is unavailable
   the old ratings-ratio model (``get_game_prob``) is the fallback.
+  With ``PONYXG_SEASON_SIM=sim`` (opt-in; the pre-registered backtest,
+  bu/sim/prereg_season_sim.json, did not promote it) each remaining game's
+  regulation / tie / OT-share split comes from the game simulator instead
+  (bu/sim/season.py: typical lineups, goalie start shares, 4,000 runs a game,
+  cached for the day; per-game logit fallback).
 * Regulation / overtime split from goal_model: the goal rates implied by
   the win probability give P(home in regulation), P(tie after 60) and the
   home share of OT/SO wins.

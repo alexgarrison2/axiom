@@ -10,7 +10,10 @@ as before (`market.py`), and the derivative markets are anchored to that publish
 "Win-% engine").  The logit game model is kept as a logged shadow (`logit_*`) and per-game
 fallback; `PONYXG_WINPCT=logit` rolls back.  Since 2026-10-03 (later the same day) its player
 ratings are **ratings v4** (`bu/rapm/README.md` "Ratings v4") instead of RAPM v2 (see "Lineup
-inputs: ratings v4"); `PONYXG_SIM_INPUTS=v2` rolls the inputs back.
+inputs: ratings v4"); `PONYXG_SIM_INPUTS=v2` rolls the inputs back.  Two further pre-registered
+questions (2026-10-03, "Player special teams and penalties", "Season projections on the
+simulator") were scored on dev and did not pass their rules; both paths are built and opt-in
+(`PONYXG_SIM_INPUTS=st`, `PONYXG_SEASON_SIM=sim`).
 
 Everything runs from `pipeline/`.  Pre-declared rules: `prereg.json` (written before any dev or
 holdout run, amendments timestamped).  Fitted parameters: `out/sim_params.json`.  Validation
@@ -438,6 +441,59 @@ PONYXG_SIM_PARAMS=$P python -m bu.sim.validate dispersion --work $W --n 2000
 python -m bu.sim.player_st dev --work $W --st-params $P        # holdout: the single logged look
 ```
 
+## Season projections on the simulator (`prereg_season_sim.json`, `season.py`, `season_backtest.py`)
+
+Question `season_sim` (pre-registered 2026-10-03 before any backtest): should
+`season_simulator.py` (playoff odds, point projections; `game_implications.py` reuses its engine)
+take each remaining game's P(home regulation win), P(tie after 60) and the home share of OT / SO
+wins from the simulator instead of the logit + `goal_model` split (TIE_SCALE 1.38)?
+
+`bu/sim/season.py` builds, per team, the simulator's inputs for future games: team / goalie state
+and league levels (the live `SimServer` state), the **typical lineup** (12 F + 6 D with the most
+dressed games in the team's last 10, ties to the most recent; rated by `LiveLineupTerm.side`:
+expected EV TOI shares x v4 ratings, FIN, player special teams when the parameters read them; live
+only, a roster guard keeps the skaters DailyFaceoff lists for the team now and tops up from its
+lines), the **expected starter** (goals-per-xG multiplier exp(sum share x log gsv) over the
+starters of the last 20 games) and rest days from the remaining schedule; market-free.  Each
+remaining game is simulated once (4,000 runs, seed by game id, a process pool), giving the
+`Engine`'s (reg win, reg loss, tie, OT share, win) tuple; playoff series use a Bradley-Terry fit to
+the simulated logits; a game the simulator cannot run falls back to the logit.  The per-game table
+is cached in `pipeline/data/season_sim_games.json` (key: simulator version, bundle, state date,
+DFO lines, day; per game id + rest days), committed by the workflow so the hourly implications
+reuse the morning's table.
+
+Backtest (walk-forward logit: `fit_logit` on seasons < S with in-fold C, `MLPredictor` on the
+archive before D; SIM: everything replayed from the lake to D; both through `Engine`, 5,000
+seasons, same seed; 160 team x as-of points):
+
+| | n | points MAE LOGIT | SIM | SIM - LOGIT (SE, team-clustered) | playoff LL LOGIT | SIM | SIM - LOGIT (SE) |
+|---|---|---|---|---|---|---|---|
+| 2023-24 (Nov 1, Jan 1, Mar 1) | 96 | 6.41 | 5.70 | -0.72 (0.44) | 0.3284 | 0.3283 | -0.0001 (0.022) |
+| 2024-25 (Jan 1, Mar 1) | 64 | 4.48 | 4.63 | +0.15 (0.29) | 0.2652 | 0.2785 | +0.0133 (0.029) |
+| dev pooled | 160 | 5.64 | **5.27** | **-0.37 (0.28)** | 0.3031 | 0.3084 | **+0.0053 (0.015)** |
+
+By as-of point (points MAE / playoff LL, LOGIT vs SIM): 2023-11-01 9.19 / 0.427 vs **7.52 / 0.392**;
+2024-01-01 6.40 / 0.297 vs 5.83 / 0.307; 2024-03-01 3.64 / 0.261 vs 3.74 / 0.286; 2025-01-01
+5.57 / 0.281 vs 5.77 / 0.293; 2025-03-01 3.38 / 0.250 vs 3.48 / 0.264.  Mean signed points error
++0.36 (LOGIT) vs +0.06 (SIM); 80% interval coverage 0.81 vs 0.83.  The in-sample live logit was
+worse than the walk-forward one (MAE 5.98, LL 0.312).
+
+**Decision: not promoted.**  Rule (1) (dev points MAE lower) and the 2023-24 guard pass; rule (2)
+(dev playoff log loss not worse) fails by +0.0053 (a third of an SE).  The simulator is clearly
+better early in the season (its lineup ratings carry the information the logit's Elo / xG state
+has not accumulated yet) and slightly worse by March, when its playoff odds are less sharp than
+it should be (the shared strength-uncertainty sigma was tuned for the logit).  `season_simulator`
+stays on the logit (`sim_params.json` `season_sim.engine = "logit"`); the 2025-26 look for this
+question was not taken.  Opt-in: repository variable `PONYXG_SEASON_SIM=sim` (`validate_outputs.py
+season_projections` then also checks the file was made by the simulator).  A next question could
+re-tune sigma for the simulator path or blend the two by GP.
+
+```bash
+cd pipeline     # PONYXG_LAKE_DIR, PONYXG_RAPM_DIR (stints for the EV TOI shares)
+python -m bu.sim.season_backtest dev --work $W --ratings-dir <ratings v4 point-in-time state> [--st-dir $T]
+python -m bu.sim.season_backtest holdout ...      # the single logged 2025-26 look
+```
+
 ## Runtime
 
 One game, 20,000 runs: ~0.13 s simulation + ~0.04 s anchoring on an idle core.  `predict_games`
@@ -446,7 +502,10 @@ pricing, on a loaded 8-core laptop.  With the simulator as the win-% engine (one
 by the win %, the breakdown's five 3,000-run counterfactuals, anchoring and pricing): lite run of
 2026-10-03, 14 pregame games in 8.9 s (0.63 s a game) on a loaded laptop.  On the v4 inputs
 (sim-m5-v4): lite run of 2026-10-03 03:06Z, 13 pregame games in 4.9 s (0.38 s a game), the whole
-lite run 31 s.  Validation: ~1 min per season on 8 workers.
+lite run 31 s.  Validation: ~1 min per season on 8 workers.  Season projections on the simulator
+(opt-in): 1,323 remaining games x 4,000 runs in 16 s on 4 workers (laptop), 0.2 s from the day's
+cache; the Monte Carlo of 5,000 seasons over the table ~7 s.  The season backtest (5 as-of points,
+both arms) ~100 s on 8 workers.
 
 ## Weaknesses (what is still heuristic)
 
@@ -464,8 +523,12 @@ lite run 31 s.  Validation: ~1 min per season on 8 workers.
 * Delayed-penalty extra attackers, stacked third penalties (dropped), misconducts and penalty
   shots are not simulated; the shootout is a league coin (50.4% home), with no shooter / goalie
   history.
-* Power-play strength is team level (no PP-unit lineups); the goalie is the expected starter all
-  game (no in-game pulls for performance).
+* Power-play strength and penalty rates are team level in the published simulator; the lineup
+  version (`out/sim_params_st.json`) improved dev ML but not the derivative score (opt-in).  The
+  goalie is the expected starter all game (no in-game pulls for performance).
+* Season projections on the simulator (opt-in) use one typical lineup all season (no injuries,
+  trades or call-ups after today) and the logit's strength-uncertainty sigma; preseason they are
+  much more spread than the logit's (2026-27 opening week: 61 to 117 projected points vs 82 to 104).
 * In-season live updates of the team / goalie state come from the gamestats + shots CSVs (score-
   adjusted 5v5 time approximated from time leading / trailing / tied), not the lake's stints; FIN
   comes from the serving bundle's `fin` table.

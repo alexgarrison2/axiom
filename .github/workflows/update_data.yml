@@ -88,10 +88,14 @@ jobs:
           #                        and the logit stays logged in logit_* (pipeline/bu/sim/README.md)
           #   PONYXG_SIM_INPUTS=v2 run the game simulator on its RAPM v2 lineup inputs
           #                        (bu/sim/out/sim_params_v2.json) instead of ratings v4
+          #                        (=st: the opt-in lineup special-teams simulator, not promoted)
+          #   PONYXG_SEASON_SIM=sim  season projections / implications from the game simulator
+          #                        (opt-in, not promoted: bu/sim/prereg_season_sim.json); =logit forces the default
           PONYXG_XG: ${{ vars.PONYXG_XG }}
           PONYXG_BU: ${{ vars.PONYXG_BU }}
           PONYXG_WINPCT: ${{ vars.PONYXG_WINPCT }}
           PONYXG_SIM_INPUTS: ${{ vars.PONYXG_SIM_INPUTS }}
+          PONYXG_SEASON_SIM: ${{ vars.PONYXG_SEASON_SIM }}
         run: python pipeline/refresh_pipeline.py --mode "$MODE"
 
       - name: Validate outputs (data contract gate)
@@ -99,6 +103,9 @@ jobs:
           # Comma-separated validate_outputs.py checks to downgrade to warnings
           # (repository variable), e.g. while a known upstream fix is pending.
           PONYXG_VALIDATE_ALLOW: ${{ vars.VALIDATE_ALLOW }}
+          # the same switches as the pipeline step (sim_inputs / season_projections read them)
+          PONYXG_SIM_INPUTS: ${{ vars.PONYXG_SIM_INPUTS }}
+          PONYXG_SEASON_SIM: ${{ vars.PONYXG_SEASON_SIM }}
         run: python pipeline/validate_outputs.py
 
       - name: Commit and push data

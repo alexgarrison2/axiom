@@ -237,3 +237,35 @@ def test_simulated_game_rows_are_runnable_and_consistent():
     for _, x in r.iterrows():
         ph, pa, pt, q, pw = SE.outcome_tuple(x)
         assert 0 < pt < 0.4 and 0.05 <= q <= 0.95 and ph + pt * q == pytest.approx(pw)
+
+
+def test_check_season_projections(tmp_path, monkeypatch):
+    import validate_outputs as Vo
+    from season import SEASON_ID
+    monkeypatch.delenv(SE.ENV, raising=False)
+    teams = [{"team": f"T{i:02d}", "make_playoffs_pct": 50.0, "point_dist": {"90": 60, "92": 40}}
+             for i in range(32)]
+    doc = {"season_id": SEASON_ID, "total_simulations": 100, "games_played": 0, "remaining_games": 1312,
+           "generated_at": "2026-10-03T12:00:00Z", "model": {"engine": "logit"}, "teams": teams}
+    p = tmp_path / "sp.json"
+    p.write_text(json.dumps(doc))
+    assert Vo.check_season_projections({"season_projections_path": str(p)}) == []
+    teams[0]["point_dist"] = {"90": 99}
+    teams[1]["make_playoffs_pct"] = 60.0
+    p.write_text(json.dumps(doc))
+    errs = Vo.check_season_projections({"season_projections_path": str(p)})
+    assert any("point_dist" in e for e in errs) and any("1600" in e for e in errs)
+
+
+def test_committed_st_parameters_are_opt_in():
+    """The player special-teams parameters are committed with their decision and their history
+    table; the live parameters record the season_sim decision."""
+    import os
+    from bu.sim import lineup_source as LS
+    from bu.sim import params as PR
+    st = load_params(os.path.join(PR.OUT_DIR, "sim_params_st.json"))
+    assert LS.has_st(st) and os.path.exists(LS.resolve(st["lineup"]["st_table"]))
+    assert all(c in st["glm"]["beta"]["pp"] for c in RT.ST_GROUPS["pp"])
+    assert st["decision"]["question"] == "sim_player_st"
+    live = load_params(PR.PARAMS_PATH)
+    assert (live.get("season_sim") or {}).get("engine") in ("sim", "logit")

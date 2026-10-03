@@ -244,6 +244,15 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   (`name -> "(W-L-O) | .SV% | GAA"`), now for the **current** season only.
 * `public/data/season_projections.json` (`season_simulator.py`):
   `{season_id, generated_at, games_played, total_simulations, model, teams: [...]}`.
+  `model.engine` (additive, 2026-10-03) is `logit` (the game model + goal_model split; the
+  published default, `bu/sim/prereg_season_sim.json` did not promote the simulator) or `sim`
+  (repository variable `PONYXG_SEASON_SIM=sim`: per-game regulation / OT splits from the game
+  simulator, `bu/sim/season.py`), with `sim_games`, `sim_runs_per_game` and `logit_fallback_games`
+  when `sim`.  `validate_outputs.py season_projections` checks the engine matches the switch and the
+  Monte Carlo is consistent (point distributions sum to the simulations, 16 playoff teams, league
+  points per game in [2, 2.5]).  `pipeline/data/season_sim_games.json` caches the simulator's
+  per-game table for the day (`{key, meta, games: {"<game id>|<home rest>|<away rest>":
+  [reg_home, reg_tie, reg_away, p_home]}}`), so `game_implications.py` reuses it.
   `public/data/season_projections_history.json` holds one snapshot per day:
   `{season_id, snapshots: [{date, generated_at, games_played, teams: {TRI: {make_playoffs_pct, avg_points, won_cup_pct}}}]}`.
 * `public/data/game_implications.json`:
@@ -384,7 +393,10 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   The `v3` / `v4` tables' `meta.intercept` (v2.4) is the EV fit's intercept (league 5v5 xGF/60 of an
   average lineup), the game simulator's lineup-term `c0` when it reads that table (its parameters'
   `lineup.ratings`, `bu/sim/lineup_source.py`; `validate_outputs.py sim_inputs` fails a fresh bundle
-  without the table or the intercept).
+  without the table or the intercept).  `LiveLineupTerm.side` adds each side's player special-teams
+  aggregates `st` (`ppo`, `pkd`, `take`, `draw`, from the table's `pp`, `pk`, `toi_*`, `pd60`,
+  `pt60`; `bu/sim/st_lineup.py`), read only by simulator parameters with an `st_table`
+  (`out/sim_params_st.json`, opt-in `PONYXG_SIM_INPUTS=st`; not promoted, `bu/sim/prereg_st.json`).
   `bu_bundle` also fails a fresh bundle without the `v4` table when `ratings_pack_v4_<S>.json.gz` is committed.
 * Historical shot files (`nhl_historical_shots.csv`, last season's
   `nhl_season_<yyyy>_<yyyy>_shots.csv`) may carry `xg_raw` (raw xG v2,
