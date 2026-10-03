@@ -26,7 +26,13 @@ game date ``d``):
 * PP: ``g_pp``, ``a1_pp``, ``a2_pp``, ``ixg_pp``, ``iff_pp``; PK: ``blk_pk``, ``tk_pk``;
 * all situations: ``pd_all`` / ``pt_all`` penalties drawn / taken in power-play units
   (``penalty_units``: minor 1, double minor 2, non-fighting major 2.5; fighting, misconducts and
-  penalty shots 0).
+  penalty shots 0) - the v4 SPM features, kept as they are;
+* ratings v5 (``v5_prereg.json``): ``pdu_all`` / ``ptu_all`` penalties drawn / taken in units that
+  actually create a power play (``pp_units``: simultaneous penalties of the two teams cancel
+  minute for minute, as the rule book's coincidental penalties do; misconducts and penalty shots
+  0; a delayed minor washed out by a goal of the other team 0), in 2-minute minor equivalents.
+  League totals track the NHL's power-play opportunities (2025-26: 7,551 units vs 7,555 PPO).
+  They feed only the impact's penalty term (``v4.penalty_rates``), not the SPM.
 
 Only regular-season and playoff games whose TOI rows exist (the on-ice check of the stints) are
 kept, so every count has its minutes.
@@ -46,9 +52,10 @@ EV_COUNTS = ["g_ev", "a1_ev", "a2_ev", "ixg_ev", "iff_ev", "icf_ev", "reb_ev", "
 PP_COUNTS = ["g_pp", "a1_pp", "a2_pp", "ixg_pp", "iff_pp"]
 PK_COUNTS = ["blk_pk", "tk_pk"]
 ALL_COUNTS = ["pd_all", "pt_all"]
-COUNT_COLS = EV_COUNTS + PP_COUNTS + PK_COUNTS + ALL_COUNTS
+PEN_PP_COUNTS = ["pdu_all", "ptu_all"]      # v5: power-play-creating units (impact term only, not SPM features)
+COUNT_COLS = EV_COUNTS + PP_COUNTS + PK_COUNTS + ALL_COUNTS + PEN_PP_COUNTS
 SEC_COLS = ["ev_s", "pp_s", "pk_s"]
-BOX_VERSION = 1
+BOX_VERSION = 2                             # 2: + pdu_all / ptu_all
 
 
 def penalty_units(desc, duration) -> np.ndarray:
@@ -58,6 +65,54 @@ def penalty_units(desc, duration) -> np.ndarray:
     u = np.select([dur == 2, dur == 4, dur == 5], [1.0, 2.0, 2.5], 0.0)
     bad = np.array([d.startswith("fighting") or d.startswith("ps-") or "misconduct" in d for d in desc], dtype=bool)
     return np.where(bad, 0.0, u)
+
+
+def pp_minutes(desc, duration) -> np.ndarray:
+    """Power-play minutes a penalty can create before cancellation: its duration for 2 / 4 / 5
+    minute penalties (fighting included: equal fighting majors cancel), 0 for misconducts (any
+    10-minute penalty), penalty shots (``ps-*``) and anything else."""
+    desc = pd.Series(desc).fillna("").astype(str).str.lower().to_numpy()
+    dur = pd.to_numeric(pd.Series(duration), errors="coerce").fillna(0).to_numpy(float)
+    m = np.where(np.isin(dur, (2.0, 4.0, 5.0)), dur, 0.0)
+    bad = np.array([d.startswith("ps-") or "misconduct" in d for d in desc], dtype=bool)
+    return np.where(bad, 0.0, m)
+
+
+def pp_units(events: pd.DataFrame) -> pd.Series:
+    """Power-play-creating units (2-minute minor equivalents) of every penalty event of ``events``
+    (a Series on the penalty rows' index).
+
+    At each stoppage (game, period, game second) the two teams' penalty minutes (``pp_minutes``)
+    cancel minute for minute (coincidental minors / majors, offsetting fights); the team with more
+    minutes is shorthanded for the excess, which is shared over that team's penalties at the
+    stoppage in proportion to their minutes.  A minor whose stoppage follows a goal of the other
+    team at the same second (a delayed penalty washed out by the goal) creates nothing."""
+    e = events[events["period_type"].astype(str) != "SO"]
+    p = e[e["type_desc"] == "penalty"]
+    if not len(p):
+        return pd.Series(dtype=float)
+    mins = pp_minutes(p["pen_desc_key"], p["pen_duration"])
+    home = p["event_team_is_home"].astype("boolean").fillna(False).to_numpy(bool)
+    g = e[e["type_desc"] == "goal"]
+    if len(g):
+        gk = pd.DataFrame({"game_id": g["game_id"].to_numpy(), "game_seconds": g["game_seconds"].to_numpy(),
+                           "so_g": g["sort_order"].to_numpy(),
+                           "home_g": g["event_team_is_home"].astype("boolean").fillna(False).to_numpy(bool)})
+        pk = pd.DataFrame({"row": np.arange(len(p)), "game_id": p["game_id"].to_numpy(),
+                           "game_seconds": p["game_seconds"].to_numpy(), "so": p["sort_order"].to_numpy(), "home": home})
+        mg = pk.merge(gk, on=["game_id", "game_seconds"])
+        mg = mg[(mg["home"] != mg["home_g"]) & (mg["so_g"] < mg["so"])]
+        wash = np.zeros(len(p), bool)
+        wash[mg["row"].to_numpy()] = True
+        mins = np.where(wash & (mins == 2.0), 0.0, mins)
+    key = pd.MultiIndex.from_arrays([p["game_id"].to_numpy(), p["period"].to_numpy(), p["game_seconds"].to_numpy()])
+    df = pd.DataFrame({"m_h": np.where(home, mins, 0.0), "m_a": np.where(home, 0.0, mins)}, index=key)
+    t = df.groupby(level=[0, 1, 2]).sum().reindex(key)
+    mh, ma = t["m_h"].to_numpy(), t["m_a"].to_numpy()
+    m_side = np.where(home, mh, ma)
+    x_side = np.clip(np.where(home, mh - ma, ma - mh), 0.0, None)
+    u = np.where(m_side > 0, mins * x_side / np.where(m_side > 0, m_side, 1.0) / 2.0, 0.0)
+    return pd.Series(u, index=p.index)
 
 
 def _state(own_sk, opp_sk, both_g) -> np.ndarray:
@@ -163,6 +218,10 @@ def player_game_counts(events: pd.DataFrame, lineups: pd.DataFrame, xg: pd.DataF
     allc = {"ev": None, "pp": None, "pk": None, "other": None}
     add(idx[pm], e.loc[pm, "pen_committed_by_id"], dict(allc, ev="pt_all", pp="pt_all", pk="pt_all", other="pt_all"), units)
     add(idx[pm], e.loc[pm, "pen_drawn_by_id"], dict(allc, ev="pd_all", pp="pd_all", pk="pd_all", other="pd_all"), units)
+    ppu = pp_units(e).reindex(e.index[pm]).fillna(0.0).to_numpy()
+    add(idx[pm], e.loc[pm, "pen_committed_by_id"], dict(allc, ev="ptu_all", pp="ptu_all", pk="ptu_all", other="ptu_all"),
+        ppu)
+    add(idx[pm], e.loc[pm, "pen_drawn_by_id"], dict(allc, ev="pdu_all", pp="pdu_all", pk="pdu_all", other="pdu_all"), ppu)
 
     r = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(columns=["game_id", "player_id", "col", "v"])
     if len(r):
@@ -177,8 +236,14 @@ def player_game_counts(events: pd.DataFrame, lineups: pd.DataFrame, xg: pd.DataF
 
 
 def pp_goal_value(events: pd.DataFrame, games: set | None = None) -> dict:
-    """League net power-play goals per penalty unit of a season: (PP goals - shorthanded goals, both
-    goalies in) / penalty units taken (``penalty_units``)."""
+    """League net power-play goals per penalty unit of a season.
+
+    ``value`` (v4): (PP goals - shorthanded goals, both goalies in) / penalty units taken
+    (``penalty_units``, coincidental penalties included).  ``value_pp`` (v5, ``v5_prereg.json``):
+    (PP goals - shorthanded goals) / power-play-creating units (``pp_units``), the manpower state
+    taken net of an extra attacker (a PP goal with the goalie pulled counts, an empty-net goal of
+    the shorthanded team is shorthanded): the NHL's net PP goals per opportunity (2025-26 regular
+    season 0.1843 vs (1595 - 205) / 7555 = 0.1840 from the NHL's team power-play report)."""
     e = events if games is None else events[events["game_id"].isin(games)]
     e = e[(e["period_type"].astype(str) != "SO")]
     g = e[(e["type_desc"] == "goal") & ~e["is_penalty_shot"].astype("boolean").fillna(False)
@@ -191,7 +256,17 @@ def pp_goal_value(events: pd.DataFrame, games: set | None = None) -> dict:
     shg = float(np.sum(own < opp))
     p = e[e["type_desc"] == "penalty"]
     units = float(penalty_units(p["pen_desc_key"], p["pen_duration"]).sum())
-    return {"ppg": ppg, "shg": shg, "units": units, "value": (ppg - shg) / units if units > 0 else 0.0}
+    ga = e[(e["type_desc"] == "goal") & ~e["is_penalty_shot"].astype("boolean").fillna(False)]
+    h = ga["event_team_is_home"].astype("boolean").fillna(False).to_numpy(bool)
+    hs, as_ = ga["sit_home_sk"].to_numpy(float), ga["sit_away_sk"].to_numpy(float)
+    hg, ag = ga["sit_home_g"].to_numpy(float), ga["sit_away_g"].to_numpy(float)
+    own_n = np.where(h, hs - (hg == 0), as_ - (ag == 0))
+    opp_n = np.where(h, as_ - (ag == 0), hs - (hg == 0))
+    ppg_all, shg_all = float(np.sum(own_n > opp_n)), float(np.sum(own_n < opp_n))
+    ppu = float(pp_units(e).sum())
+    return {"ppg": ppg, "shg": shg, "units": units, "value": (ppg - shg) / units if units > 0 else 0.0,
+            "ppg_all": ppg_all, "shg_all": shg_all, "pp_units": ppu,
+            "value_pp": (ppg_all - shg_all) / ppu if ppu > 0 else 0.0}
 
 
 def build_season(lake, season: str, toi: pd.DataFrame, xg: pd.DataFrame | None) -> tuple[pd.DataFrame, dict]:

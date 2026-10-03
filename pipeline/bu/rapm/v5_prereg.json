@@ -1,0 +1,57 @@
+{
+ "title": "Player ratings v5: structural audit of the v4 impact - power-play-creating penalty units, penalty value and shrinkage, finishing and on-ice goals in IMPACT - pre-declared rules",
+ "declared_at": "2026-10-03T05:30:00Z",
+ "declared_before": "any v5 scoring on the tuning (2019-23), dev (2023-24, 2024-25) or holdout (2025-26) seasons and any v5 sanity table. Run before this file (descriptive, no model comparison on any outcome): (1) the Rantanen audit on the 2026-27 season-start state (D90-weighted box rates, recency bands, linemates, SPM decomposition, impact components); (2) his penalties from the lake PBP vs the NHL stats API season totals 2015-26 (exact match: taken, minors, majors, misconducts, drawn); (3) league power-play-creating units, PP / SH goals and the goal value per unit for every season 2014-26 vs the NHL team power-play report (units within ~2% of official PP opportunities, PP / SH goals within 2); (4) the v5 box caches rebuilt with the new columns (the v4 columns identical in every season).",
+ "why": "owner (2026-10-03): v4 passes 19 / 21 sanity checks; both failures are Mikko Rantanen (IMPACT +0.6 goals / 82, ~245th). Do not tune anything to move one player: audit the structure of the impact and fix what is wrong, test-gated. Audit findings that define this file: coincidental / offsetting minors were counted as power-play units (about 20% of all penalties) and the goal value per unit (0.153) had them in its denominator and left out PP goals scored with the goalie pulled; drawn and taken shared one shrinkage; EV finishing (FIN) is already in off_impact (EV minutes x FIN) but was never tested as part of IMPACT; PP finishing and on-ice goals are not used.",
+ "base": "ratings v4 as shipped (v4_prereg.json, out/v4_validation.json): EV OFF / DEF and PP / PK RAPM with the SPM prior, D90 recency, FIN prior 30 xG, expected TOI, impact = goals per 82 above the position average. NOTHING in the RAPM, the SPM (its pd_all / pt_all features stay in v4 units), FIN, TOI, recency or the lineup / simulator inputs changes in this pass: every component below is an impact-only term, so the stint metric of v4 is unchanged by construction (checked: the rebuilt pack's live o / d / pp / pk / fin / toi columns must equal the committed v4 table's).",
+ "seasons": {
+  "tuning": ["20192020", "20202021", "20212022", "20222023"],
+  "dev": ["20232024", "20242025"],
+  "holdout": "20252026",
+  "holdout_rule": "one look after all dev results are written: every component's selected configuration and its reference scored in the same run, logged in bu/rapm/out/v5_look_log.jsonl; no parameter or rule change after it; reported whatever it is"
+ },
+ "components": {
+  "P1_penalty_units": {
+   "definition": "box.pp_units: at each stoppage (game, period, game second) the two teams' penalty minutes (2 / 4 / 5-minute penalties incl. fighting; misconducts, game misconducts, penalty shots 0) cancel minute for minute; the team with more minutes is shorthanded for the excess, shared over its penalties at the stoppage in proportion to their minutes; a minor following a goal of the other team at the same second (washed-out delayed penalty) counts 0. Units are 2-minute minor equivalents; per player-game columns pdu_all (drawn) / ptu_all (taken).",
+   "rule": "definitional (the impact multiplies units by a goal value per unit, so both must count the same events): the impact's penalty rates use pdu_all / ptu_all. Reported, not a gate: the predictive comparison of the v4-unit rates (rescaled to the PP-unit level by position group) vs the PP-unit rates on next-30-game PP units (Poisson deviance and the net-differential MSE below)."
+  },
+  "P2_penalty_value": {
+   "definition": "box.pp_goal_value value_pp: (PP goals - shorthanded goals, manpower net of an extra attacker, penalty shots and shootouts excluded) / power-play-creating units, all lake games with TOI rows of the last completed season (regular season + playoffs, as v4)",
+   "rule": "replaces v4's value (0.1527 for 2025-26) - same rule, corrected definition"
+  },
+  "P3_penalty_shrinkage": {
+   "model": "drawn and taken rates per 60 all-situation minutes, D90-weighted (unchanged), shrunk to the position-group rate with SEPARATE pseudo minutes t0_d (drawn) and t0_t (taken)",
+   "grid": [50, 100, 200, 400, 800, 1600, 3200],
+   "selection": "per kind, the lowest pooled tuning-season Poisson deviance of the next 30 games' PP units (v4_validate.pen_scores machinery: as-of points 0..50 games, regular-season games, rate x his all-situation minutes in the window)",
+   "ship_rule": "the selected (t0_d, t0_t) replace (400, 400) if the dev pooled deviance (drawn + taken, PP-unit target) is lower than (400, 400)'s on the same target; holdout reported - if worse than (400, 400) by more than 2 SE (players-clustered), the export keeps 400 / 400 and the owner decides",
+   "secondary": ["next-season deviance (season-start rates scored on the whole next regular season) per kind and t0", "net penalty differential MSE: per player and window, (pdu - ptu) actual vs (pd60 - pt60) x minutes / 60 predicted, next-30-game windows and next season, v5 vs v4 (v4 units, t0 400, rescaled by group)", "repeatability: split-half (odd / even games within a season) reliability of PP-unit drawn / taken per 60 for players with >= 500 all-situation minutes, season-to-season correlation for players with >= 500 minutes in both, and the empirical-Bayes t0 they imply; all seasons 2014-26, descriptive"]
+  },
+  "C1_ev_fin_in_impact": {
+   "question": "should EV FIN (goals above xG per 60 from own shots, the shipped FIN) stay in off_impact?",
+   "metric": "next-30-game EV stint GOALS MSE: v3_validate windows and scoring unchanged except the target (the same EV rows, weights and covariates with y = the attacking side's goals per 60; covariates refit on the test rows; date-clustered paired SEs); players fixed at the as-of v4 ratings",
+   "candidates": {"E0": "beta = v4 (o, d)", "E1": "o + FIN (the as-of FIN of v4: D90 sums, prior 30 xG, the player's position group)"},
+   "rule": "keep FIN in off_impact if E1's dev pooled goal MSE < E0's (paired) and its holdout is not worse than E0 by more than 2 SE; otherwise off_impact drops FIN (the fin column stays as a displayed rate)"
+  },
+  "C2_pp_fin_in_impact": {
+   "question": "add PP finishing x PP minutes to off_impact?",
+   "definition": "fin_pp = (mult - 1) x shrunk PP ixG / 60, shrunk ixG / 60 = (X_pp + VOL_PSEUDO_S mu_pp) / (S_pp + VOL_PSEUDO_S) x 3600 (finishing.VOL_PSEUDO_S, mu_pp = position group's PP ixG per PP second), X = ixG x the season's league goals-per-ixG ratio of that state; variants: 'own' mult = (G_pp + P) / (X_pp + P); 'shared' mult = (G_ev + G_pp + P) / (X_ev + X_pp + P); D90 weights on the box score (pre-season + in season up to d - 2)",
+   "grid": {"variant": ["own", "shared"], "P_xg": [15, 30, 60, 120]},
+   "metric": "next-30-game PP stint GOALS MSE (PP rows of v3, y = PP side's goals per 60), PP skaters' beta = v4 pp + fin_pp, PK skaters at v4 pk",
+   "selection": "lowest pooled tuning-season PP goal MSE among the 8 grid points and 'none' (v4 pp only)",
+   "ship_rule": "if the selection is not 'none': off_impact += 82 x PP minutes / 60 x (fin_pp - position mean) when its dev pooled PP goal MSE < 'none' (paired) and the holdout is not worse by more than 2 SE"
+  },
+  "C3_onice_goal_blend": {
+   "question": "should EV impact put a small weight on actual on-ice GF / GA (goals above xG)?",
+   "model": "residual RAPM: the v3 two-stage engine (D90, stage-1 pre-season fit + in-season ridge, d - 2) on the EV rows with target (goals - xG) per 60, prior mean 0 (no roles, no aging, no SPM), prior variance v_r for OFF and DEF; o_res / d_res = each player's on-ice goals-above-xG impact (for / against). The ridge sets the weight on actual goals (a small v_r = a small weight).",
+   "grid": {"v_r": [0.0001, 0.0003, 0.001, 0.003], "base": ["E0", "E1"]},
+   "metric": "C1's next-30-game EV stint goals MSE with beta = base + (o_res, d_res)",
+   "selection": "lowest pooled tuning-season goal MSE among the 8 candidates",
+   "ship_rule": "ev_off / ev_def in the impact add o_res / -d_res (x k EV minutes, as the xG terms) only if the selected candidate's dev pooled goal MSE is lower than C1's winner (paired) and its holdout is not worse by more than 2 SE; the displayed ev_off / ev_def stay the xG ratings"
+  }
+ },
+ "impact_formula_v5": "v4's impact with: penalty rates in PP units with t0_d / t0_t (P1, P3) and value_pp (P2); FIN term per C1; + 82 PP/60 (fin_pp - m) per C2; + 82 k EV/60 [(o_res - m) + (-(d_res) - m)] per C3. Everything is still goals per 82 games above the position average, drawn in off_impact, taken in def_impact.",
+ "export": "player_ratings.json stays version 4 (columns appended, never reordered or removed; new impact.* keys), documented in pipeline/CONTRACT.md; the bundle's v4 table gains the new rate columns; lineup / game model / simulator inputs unchanged (o, d, pp, pk, fin, toi), so per the owner rule the simulator is not re-tested unless they change",
+ "sanity_checks": {
+  "status": "the v4 CHECK LIST unchanged (21 checks: MacKinnon, McDavid, Draisaitl, Kucherov, Matthews, Pastrnak, Rantanen, Makar, Q. Hughes top 50; Rantanen above Kiviranta / Faksa / Back; those three below DAL's median; Robertson, Johnston, Rantanen, Heiskanen, Hintz, Harley in DAL's top 8), evaluated once on the shipped v5 export and on v4, reported pass / fail as is; plus DAL roster, league top 30 and Rantanen / Makar / Kiviranta / Gallagher / Caufield. Nothing in this file is chosen or changed because of it."
+ }
+}
