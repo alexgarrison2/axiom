@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { Prediction, SideDetails } from '@/types/prediction';
-import { loadJson } from '@/lib/client-data';
+import { DEPLOY, loadJson } from '@/lib/client-data';
 import { SEASON_ID } from '@/lib/season';
 import { shortSeason } from '@/utils/team-stats/season';
 import { Crest } from '@/components/ui/crest';
@@ -37,8 +37,8 @@ import type { DetailsState } from './DetailsLoading';
 type Side = 'away' | 'home';
 const SIDES: Side[] = ['away', 'home'];
 
-export const leagueRefUrl = '/api/matchup-stats/league';
-export const teamGamesUrl = (tri: string) => `/api/matchup-stats/team/${tri}`;
+export const leagueRefUrl = `/api/matchup-stats/league?v=${DEPLOY}`;
+export const teamGamesUrl = (tri: string) => `/api/matchup-stats/team/${tri}?v=${DEPLOY}`;
 
 interface Loaded {
     league: LeagueReference;

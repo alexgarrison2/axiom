@@ -22,9 +22,13 @@ export function loadJson<T>(url: string): Promise<T> {
     return p;
 }
 
+/** The deploy this page came from: part of the cached data URLs so a new deploy never reads the old deploy's payload. */
+export const DEPLOY = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? 'dev';
+
 /** Lineups, goalie tandems, injuries, recent games and news for every game on the slate. */
 export function loadMatchupDetails(): Promise<MatchupDetailsPayload> {
-    return loadJson<MatchupDetailsPayload>('/api/matchup-details');
+    // The route is cached for hours at the CDN and in the browser; the deploy in the URL keeps an old payload's shape from outliving its deploy.
+    return loadJson<MatchupDetailsPayload>(`/api/matchup-details?v=${DEPLOY}`);
 }
 
 export type GameDetails = MatchupDetails & { picks: PickSummaries };
