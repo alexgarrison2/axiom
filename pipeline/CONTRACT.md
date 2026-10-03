@@ -1,8 +1,11 @@
-# Predictions data contract (schema v2.3)
+# Predictions data contract (schema v2.4)
 
 v2.1 added the shadow columns, v2.2 the game simulator columns, v2.3 the win-% engine columns
-(`winpct_engine`, `logit_*`: the simulator became the engine of the model win %) (all additive;
-the `schema_version` column stays `2`).
+(`winpct_engine`, `logit_*`: the simulator became the engine of the model win %), v2.4 player
+ratings v4 (`player_ratings.json` version 4, the serving bundle's `v3` / `v4` tables with
+`meta.intercept`, the r4 logit's lineup term from the `v4` table) and the simulator on ratings v4
+inputs (`sim_version` `sim-m5-v4-...`; rollback `PONYXG_SIM_INPUTS=v2`) (all additive; the
+`schema_version` column stays `2`; no predictions column changed shape).
 
 `predictions_detailed.csv` is written by `pipeline/predict_games.py` to
 `data/predictions_detailed.csv` (server copy) and
@@ -98,7 +101,7 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | `side_xg` | float goals | no | Expected goals, including the expected OT goal. Backed out of the published win % (`goal_model.display_xg`), so the xG favourite is always the win % favourite. |
 | `expected_total` | float goals | no | Expected total goals (league pace × matchup pace, `goal_model.expected_total`; the pre-registered totals rule kept it over the simulator's own total, `sim_expected_total`). |
 | `side_xg_explained` | JSON list[string] | no | `["Even matchup: 3.08", "Home ice: +0.02", ...]`. The parts add up to `side_xg` (±0.02). |
-| `home_wp_breakdown` | JSON list | no | "Why this pick": `[{factor, label, wp_delta_pts, xg_home_delta, xg_away_delta}]` in order. Factors: `home_ice`, `strength_5v5`, `special_teams`, `goaltending`, `rest`, then `lineup_goalie` for a game model with a lineup feature (who dresses and who starts in net vs the team's usual: the RAPM v2 `bu_d_delta`, or the fast-track `d_lineup` / `d_goalie_swap`; DESIGN §8 F1/M2) or `lineup` for an older model (the separate `lineup_adjust` term), then `market` when there are odds. With the RAPM v2 lineup term, `strength_5v5` also carries `bu_d_net` (tonight's dressed skaters' even-strength RAPM net xG/60, home minus away) and, for a `-fin` model, `bu_d_fin` (the same skaters' finishing talent FIN, EV goals above xG per 60, expected-EV-TOI weighted, home minus away). A frozen row keeps the factor list of the model that made it. When `winpct_engine` is `sim` the factors are the simulator's own coefficient groups, `home_ice`, `strength_5v5` (tonight's lineup RAPM term, team 5v5 state, finishing), `special_teams` (PP / PK state and penalties taken / drawn), `goaltending` (the starters' goals-per-xG state), `rest` (back-to-backs), then `market`: each group's change in the simulated logit P(home win) when it is switched on from a neutral game (3,000 runs per step, same seed; `bu/sim/live.py` `breakdown`), the terms adding up exactly to the simulated win %. `50 + Σ wp_delta_pts = home_win_pct` (±0.1). Positive values favour the home team. |
+| `home_wp_breakdown` | JSON list | no | "Why this pick": `[{factor, label, wp_delta_pts, xg_home_delta, xg_away_delta}]` in order. Factors: `home_ice`, `strength_5v5`, `special_teams`, `goaltending`, `rest`, then `lineup_goalie` for a game model with a lineup feature (who dresses and who starts in net vs the team's usual: the RAPM v2 `bu_d_delta`, or the fast-track `d_lineup` / `d_goalie_swap`; DESIGN §8 F1/M2) or `lineup` for an older model (the separate `lineup_adjust` term), then `market` when there are odds. With the RAPM v2 lineup term, `strength_5v5` also carries `bu_d_net` (tonight's dressed skaters' even-strength RAPM net xG/60, home minus away) and, for a `-fin` model, `bu_d_fin` (the same skaters' finishing talent FIN, EV goals above xG per 60, expected-EV-TOI weighted, home minus away). A frozen row keeps the factor list of the model that made it. When `winpct_engine` is `sim` the factors are the simulator's own coefficient groups, `home_ice`, `strength_5v5` (tonight's lineup ratings term - ratings v4 since v2.4, RAPM v2 before -, team 5v5 state, finishing), `special_teams` (PP / PK state and penalties taken / drawn), `goaltending` (the starters' goals-per-xG state), `rest` (back-to-backs), then `market`: each group's change in the simulated logit P(home win) when it is switched on from a neutral game (3,000 runs per step, same seed; `bu/sim/live.py` `breakdown`), the terms adding up exactly to the simulated win %. `50 + Σ wp_delta_pts = home_win_pct` (±0.1). Positive values favour the home team. |
 | `pick_summary` | string | no | One sentence (≤160 chars) naming the favourite and the top 2 factors. |
 | `confidence_grade` | enum | no | `A` (favourite ≥ 65%), `B` (60-65%), `C` (< 60%). Capped at `B` while `preseason_prior`. |
 | `confidence_note` | string | yes | How that tier has done in live picks (`model_report.json`), plus the early-season note. |
@@ -131,7 +134,7 @@ passes.  Markets without a posted price still get model probabilities; their EVs
 | Column | Type | Null | Description |
 |---|---|---|---|
 | `sim_status` | enum | no | `sim`: simulated (20,000 runs). `poisson_fallback`: the simulator's bottom-up inputs were unavailable for this game (lineup term not usable: stale bundle, coverage gate; no state pack; a non-finite input), so the markets come from `goal_model`'s independent Poisson anchored to the same published win % and total. Never zero-filled. |
-| `sim_version` | string | no | Simulator parameter version (`sim-m5-YYYYMMDD`). |
+| `sim_version` | string | no | Simulator parameter version: `sim-m5-v4-YYYYMMDD` since v2.4 (rate regressions and dispersion fitted on ratings v4 lineup inputs, `bu/sim/prereg_inputs_v4.json`), `sim-m5-YYYYMMDD` for the RAPM v2 inputs (before v2.4, or `PONYXG_SIM_INPUTS=v2`). When `winpct_engine` is `sim` it is also the row's `model_version`. |
 | `sim_variant` | enum | no | `anchored` (the simulated game is tilted / paced so its home win % and expected total equal `home_win_pct` and `expected_total`), `raw`, or `poisson` (fallback). Chosen on the dev seasons by the pre-declared rule. |
 | `sim_n` | int | yes | Simulations behind the row (empty for the fallback). |
 | `sim_home_win_pct` | float % | yes | The raw simulator's own home win % (before anchoring). Since v2.3 it is `home_model_win_pct` when `winpct_engine` is `sim` (up to the 3-97% guard); a shadow otherwise. Empty for the fallback. |
@@ -340,6 +343,10 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   `spm_coef`, `asof`, `g`).  `v4` is the source of `player_ratings.json` and the table for the game
   simulator; a game model whose meta has `bu_lineup.ratings = "v4"` is served its lineup term from
   this table (`LiveLineupTerm(..., ratings="v4")`), a model without the key from `players` / `fin`.
+  The `v3` / `v4` tables' `meta.intercept` (v2.4) is the EV fit's intercept (league 5v5 xGF/60 of an
+  average lineup), the game simulator's lineup-term `c0` when it reads that table (its parameters'
+  `lineup.ratings`, `bu/sim/lineup_source.py`; `validate_outputs.py sim_inputs` fails a fresh bundle
+  without the table or the intercept).
   `bu_bundle` also fails a fresh bundle without the `v4` table when `ratings_pack_v4_<S>.json.gz` is committed.
 * Historical shot files (`nhl_historical_shots.csv`, last season's
   `nhl_season_<yyyy>_<yyyy>_shots.csv`) may carry `xg_raw` (raw xG v2,

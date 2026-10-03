@@ -20,37 +20,13 @@
   "criterion": "mean log P(final total) + log P(final margin) - LL(reg 3-way) - LL(ML), fit seasons",
   "grid": [
    {
-    "crit": -5.99514,
+    "crit": -5.9969,
     "k_game": 0.0,
-    "sd_tilt": 0.0,
-    "sd_total": {
-     "actual": 2.314,
-     "sim": 2.363
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.089
     },
-    "stretch": 1.0,
-    "tie_after_reg": {
-     "actual": 0.2251,
-     "sim": 0.2219
-    }
-   },
-   {
-    "crit": -6.00502,
-    "k_game": 30.0,
     "sd_tilt": 0.0,
-    "sd_total": {
-     "actual": 2.314,
-     "sim": 2.561
-    },
-    "stretch": 1.0,
-    "tie_after_reg": {
-     "actual": 0.2251,
-     "sim": 0.2237
-    }
-   },
-   {
-    "crit": -5.99276,
-    "k_game": 0.0,
-    "sd_tilt": 0.1,
     "sd_total": {
      "actual": 2.314,
      "sim": 2.366
@@ -58,12 +34,52 @@
     "stretch": 1.0,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2165
+     "sim": 0.2221
     }
    },
    {
-    "crit": -6.00192,
+    "crit": -6.00564,
     "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.083
+    },
+    "sd_tilt": 0.0,
+    "sd_total": {
+     "actual": 2.314,
+     "sim": 2.563
+    },
+    "stretch": 1.0,
+    "tie_after_reg": {
+     "actual": 0.2251,
+     "sim": 0.2239
+    }
+   },
+   {
+    "crit": -5.99604,
+    "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.106
+    },
+    "sd_tilt": 0.1,
+    "sd_total": {
+     "actual": 2.314,
+     "sim": 2.367
+    },
+    "stretch": 1.0,
+    "tie_after_reg": {
+     "actual": 0.2251,
+     "sim": 0.2166
+    }
+   },
+   {
+    "crit": -6.00429,
+    "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.1
+    },
     "sd_tilt": 0.1,
     "sd_total": {
      "actual": 2.314,
@@ -72,16 +88,20 @@
     "stretch": 1.0,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2186
+     "sim": 0.2185
     }
    },
    {
-    "crit": -6.00352,
+    "crit": -6.00146,
     "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.161
+    },
     "sd_tilt": 0.2,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.375
+     "sim": 2.377
     },
     "stretch": 1.0,
     "tie_after_reg": {
@@ -90,36 +110,48 @@
     }
    },
    {
-    "crit": -6.01278,
+    "crit": -6.01275,
     "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.153
+    },
     "sd_tilt": 0.2,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.574
+     "sim": 2.576
     },
     "stretch": 1.0,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2041
+     "sim": 0.2044
     }
    },
    {
-    "crit": -5.98852,
+    "crit": -5.98872,
     "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.126
+    },
     "sd_tilt": 0.0,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.386
+     "sim": 2.385
     },
     "stretch": 1.25,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.219
+     "sim": 0.2192
     }
    },
    {
-    "crit": -5.99964,
+    "crit": -5.99761,
     "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.119
+    },
     "sd_tilt": 0.0,
     "sd_total": {
      "actual": 2.314,
@@ -128,26 +160,34 @@
     "stretch": 1.25,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2208
+     "sim": 0.2213
     }
    },
    {
-    "crit": -5.9875,
+    "crit": -5.98727,
     "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.144
+    },
     "sd_tilt": 0.1,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.387
+     "sim": 2.388
     },
     "stretch": 1.25,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2136
+     "sim": 0.214
     }
    },
    {
-    "crit": -6.00149,
+    "crit": -5.99757,
     "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.136
+    },
     "sd_tilt": 0.1,
     "sd_total": {
      "actual": 2.314,
@@ -156,26 +196,34 @@
     "stretch": 1.25,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2157
+     "sim": 0.2159
     }
    },
    {
-    "crit": -5.99706,
+    "crit": -5.99824,
     "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.199
+    },
     "sd_tilt": 0.2,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.397
+     "sim": 2.399
     },
     "stretch": 1.25,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.1997
+     "sim": 0.1998
     }
    },
    {
-    "crit": -6.01015,
+    "crit": -6.00789,
     "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.191
+    },
     "sd_tilt": 0.2,
     "sd_total": {
      "actual": 2.314,
@@ -184,40 +232,52 @@
     "stretch": 1.25,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.202
+     "sim": 0.2023
     }
    },
    {
-    "crit": -5.99187,
+    "crit": -5.9892,
     "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.165
+    },
     "sd_tilt": 0.0,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.41
+     "sim": 2.409
     },
     "stretch": 1.5,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2156
+     "sim": 0.2159
     }
    },
    {
-    "crit": -6.00074,
+    "crit": -6.00014,
     "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.159
+    },
     "sd_tilt": 0.0,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.608
+     "sim": 2.606
     },
     "stretch": 1.5,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2175
+     "sim": 0.218
     }
    },
    {
-    "crit": -5.99297,
+    "crit": -5.98857,
     "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.184
+    },
     "sd_tilt": 0.1,
     "sd_total": {
      "actual": 2.314,
@@ -226,26 +286,34 @@
     "stretch": 1.5,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2106
+     "sim": 0.2107
     }
    },
    {
-    "crit": -6.00165,
+    "crit": -5.99723,
     "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.177
+    },
     "sd_tilt": 0.1,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.612
+     "sim": 2.61
     },
     "stretch": 1.5,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2125
+     "sim": 0.2129
     }
    },
    {
-    "crit": -5.99963,
+    "crit": -5.99959,
     "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.241
+    },
     "sd_tilt": 0.2,
     "sd_total": {
      "actual": 2.314,
@@ -254,27 +322,71 @@
     "stretch": 1.5,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.1969
+     "sim": 0.1976
     }
    },
    {
-    "crit": -6.01189,
+    "crit": -6.01121,
     "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.233
+    },
     "sd_tilt": 0.2,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.625
+     "sim": 2.622
     },
     "stretch": 1.5,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.1993
+     "sim": 0.1995
     }
    },
    {
-    "crit": -6.00132,
+    "crit": -6.00224,
     "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.211
+    },
     "sd_tilt": 0.0,
+    "sd_total": {
+     "actual": 2.314,
+     "sim": 2.437
+    },
+    "stretch": 1.75,
+    "tie_after_reg": {
+     "actual": 0.2251,
+     "sim": 0.2126
+    }
+   },
+   {
+    "crit": -6.01008,
+    "k_game": 30.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.203
+    },
+    "sd_tilt": 0.0,
+    "sd_total": {
+     "actual": 2.314,
+     "sim": 2.634
+    },
+    "stretch": 1.75,
+    "tie_after_reg": {
+     "actual": 0.2251,
+     "sim": 0.2145
+    }
+   },
+   {
+    "crit": -6.0004,
+    "k_game": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.228
+    },
+    "sd_tilt": 0.1,
     "sd_total": {
      "actual": 2.314,
      "sim": 2.439
@@ -282,13 +394,17 @@
     "stretch": 1.75,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2119
+     "sim": 0.2075
     }
    },
    {
-    "crit": -6.01263,
+    "crit": -6.01083,
     "k_game": 30.0,
-    "sd_tilt": 0.0,
+    "mean_total": {
+     "actual": 6.105,
+     "sim": 6.221
+    },
+    "sd_tilt": 0.1,
     "sd_total": {
      "actual": 2.314,
      "sim": 2.638
@@ -296,79 +412,50 @@
     "stretch": 1.75,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.2138
+     "sim": 0.2098
     }
    },
    {
-    "crit": -6.0016,
-    "k_game": 0.0,
-    "sd_tilt": 0.1,
-    "sd_total": {
-     "actual": 2.314,
-     "sim": 2.442
-    },
-    "stretch": 1.75,
-    "tie_after_reg": {
-     "actual": 0.2251,
-     "sim": 0.2069
-    }
-   },
-   {
-    "crit": -6.01009,
-    "k_game": 30.0,
-    "sd_tilt": 0.1,
-    "sd_total": {
-     "actual": 2.314,
-     "sim": 2.643
-    },
-    "stretch": 1.75,
-    "tie_after_reg": {
-     "actual": 0.2251,
-     "sim": 0.2089
-    }
-   },
-   {
-    "crit": -6.01285,
+    "crit": -6.00885,
     "k_game": 0.0,
     "mean_total": {
      "actual": 6.105,
-     "sim": 6.326
+     "sim": 6.287
     },
     "sd_tilt": 0.2,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.455
+     "sim": 2.453
     },
     "stretch": 1.75,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.1938
+     "sim": 0.1946
     }
    },
    {
-    "crit": -6.01838,
+    "crit": -6.01821,
     "k_game": 30.0,
     "mean_total": {
      "actual": 6.105,
-     "sim": 6.318
+     "sim": 6.278
     },
     "sd_tilt": 0.2,
     "sd_total": {
      "actual": 2.314,
-     "sim": 2.656
+     "sim": 2.652
     },
     "stretch": 1.75,
     "tie_after_reg": {
      "actual": 0.2251,
-     "sim": 0.1962
+     "sim": 0.1971
     }
    }
   ],
   "k_game": 0.0,
   "k_team": 0.0,
   "n_sims": 2000,
-  "note": "grid run by validate.cmd_dispersion; its last 2 points and the final scale refit completed by the same code after the job hit its time limit",
-  "scale": 1.01804,
+  "scale": 1.02004,
   "sd_tilt": 0.1,
   "seasons": [
    "20172018",
@@ -383,21 +470,21 @@
  "glm": {
   "beta": {
    "conv": {
-    "const": -0.007022,
-    "fin_rel": 0.938551,
-    "gsv": 0.852447,
+    "const": -0.001073,
+    "fin_rel": 1.00589,
+    "gsv": 0.851691,
     "home": -0.007826,
-    "st_fin": 0.751511
+    "st_fin": 0.614272
    },
    "ev": {
-    "b2b": -0.038742,
-    "b2b_opp": 0.043651,
-    "bu_miss": -0.193501,
-    "bu_rel": 0.681213,
-    "const": -0.005836,
-    "home": 0.06999,
-    "st_def": 0.351193,
-    "st_off": 0.384147
+    "b2b": -0.038225,
+    "b2b_opp": 0.043377,
+    "bu_miss": 0.160595,
+    "bu_rel": 0.787092,
+    "const": -0.000623,
+    "home": 0.070071,
+    "st_def": 0.290163,
+    "st_off": 0.235543
    },
    "pen": {
     "const": -0.009517,
@@ -412,30 +499,31 @@
     "st_pp": 1.180372
    }
   },
+  "lineup_source": "v4",
   "report": {
    "conv": {
-    "dispersion": 0.95,
+    "dispersion": 0.951,
     "n": 14232,
     "se": {
-     "const": 0.00592,
-     "fin_rel": 0.22535,
-     "gsv": 0.11264,
-     "home": 0.0097,
-     "st_fin": 0.18709
+     "const": 0.00551,
+     "fin_rel": 0.32554,
+     "gsv": 0.1127,
+     "home": 0.00971,
+     "st_fin": 0.23331
     }
    },
    "ev": {
     "dispersion": 0.186,
     "n": 14232,
     "se": {
-     "b2b": 0.00729,
-     "b2b_opp": 0.00709,
-     "bu_miss": 0.20597,
-     "bu_rel": 0.05078,
-     "const": 0.00314,
-     "home": 0.00525,
-     "st_def": 0.05831,
-     "st_off": 0.05851
+     "b2b": 0.00728,
+     "b2b_opp": 0.00708,
+     "bu_miss": 0.13686,
+     "bu_rel": 0.05415,
+     "const": 0.00302,
+     "home": 0.00524,
+     "st_def": 0.05886,
+     "st_off": 0.06393
     }
    },
    "pen": {
@@ -467,6 +555,40 @@
    "20212022",
    "20222023"
   ]
+ },
+ "lineup": {
+  "history_table": "bu/lineup/out/lineup_features_v4.csv.gz",
+  "name": "v4",
+  "ratings": "v4",
+  "serving_bundle": "bu/lineup/out/serving_bundle.json.gz"
+ },
+ "lineup_promotion": {
+  "decided_at": "2026-10-03T02:48:18Z",
+  "dev_pooled": {
+   "derivative_V2": 6.32554,
+   "derivative_V4": 6.32449,
+   "derivative_diff": -0.00107,
+   "derivative_se": 0.00254,
+   "ml_V2": 0.6588,
+   "ml_V4": 0.65815,
+   "ml_diff": -0.00065,
+   "ml_se": 0.0007,
+   "n": 2375
+  },
+  "holdout_2025_26": {
+   "derivative_V2": 6.34283,
+   "derivative_V4": 6.3419,
+   "derivative_diff": -0.00095,
+   "ml_V2": 0.67929,
+   "ml_V4": 0.67952,
+   "ml_diff": 0.00022,
+   "ml_se": 0.00103,
+   "n": 1312
+  },
+  "prereg": "bu/sim/prereg_inputs_v4.json",
+  "question": "sim_inputs_v4",
+  "rollback": "PONYXG_SIM_INPUTS=v2 (bu/sim/out/sim_params_v2.json, sim-m5-20261002 on RAPM v2 inputs)",
+  "rule": "dev pooled ML lower, holdout ML diff <= +0.0010, dev derivative not worse: pass"
  },
  "primary": {
   "candidate": "A_sim",
@@ -1228,5 +1350,5 @@
    }
   }
  },
- "version": "sim-m5-20261002"
+ "version": "sim-m5-v4-20261002"
 }

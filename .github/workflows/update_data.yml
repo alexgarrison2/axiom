@@ -86,9 +86,12 @@ jobs:
           #   PONYXG_WINPCT=logit  publish the logit game model's win % instead of the game
           #                        simulator's; the simulator still prices the derivative markets
           #                        and the logit stays logged in logit_* (pipeline/bu/sim/README.md)
+          #   PONYXG_SIM_INPUTS=v2 run the game simulator on its RAPM v2 lineup inputs
+          #                        (bu/sim/out/sim_params_v2.json) instead of ratings v4
           PONYXG_XG: ${{ vars.PONYXG_XG }}
           PONYXG_BU: ${{ vars.PONYXG_BU }}
           PONYXG_WINPCT: ${{ vars.PONYXG_WINPCT }}
+          PONYXG_SIM_INPUTS: ${{ vars.PONYXG_SIM_INPUTS }}
         run: python pipeline/refresh_pipeline.py --mode "$MODE"
 
       - name: Validate outputs (data contract gate)

@@ -410,3 +410,29 @@ def test_committed_sim_params_lineup_source():
         assert src["ratings"] == "v4" and p["glm"]["lineup_source"] == "v4"
         p2 = load_params(os.path.join(PR.OUT_DIR, "sim_params_v2.json"))
         assert LS.spec(p2)["name"] == "rapm_v2" and LS.spec(p2)["ratings"] == "v2"
+
+
+def test_check_sim_inputs(tmp_path, monkeypatch):
+    """validate_outputs sim_inputs: the committed state passes; a fresh bundle of this season without
+    the simulator's ratings table fails when the parameters read one."""
+    import gzip
+    from datetime import datetime, timezone
+    import validate_outputs as Vo
+    from bu.sim import params as PR
+    from season import SEASON_ID
+    monkeypatch.delenv(PR.PARAMS_ENV, raising=False)
+    monkeypatch.delenv(PR.INPUTS_ENV, raising=False)
+    assert Vo.check_sim_inputs({}) == []
+    p = load_params(PR.PARAMS_PATH)
+    p = {**p, "lineup": {**(p.get("lineup") or {}), "ratings": "v4", "name": "v4"},
+         "glm": {**p["glm"], "lineup_source": "v4"}}
+    alt = tmp_path / "p.json"
+    PR.save_params(p, str(alt))
+    monkeypatch.setenv(PR.PARAMS_ENV, str(alt))
+    b = {"version": 1, "kind": "serving_bundle", "season": SEASON_ID,
+         "built_at": datetime.now(timezone.utc).isoformat()}
+    path = tmp_path / "b.json.gz"
+    with gzip.open(path, "wt") as f:
+        json.dump(b, f)
+    errs = Vo.check_sim_inputs({"bu_bundle_path": str(path)})
+    assert len(errs) == 1 and "no v4 ratings table" in errs[0]

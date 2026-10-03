@@ -51,6 +51,9 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  (bu/lineup/out/serving_bundle.json.gz) is readable, carries the model's
                  columns, was built after its source data and, when fresh, is of this season
                  (age: manifest stale flag; with a stale bundle the F1 rollback model is published)
+  sim_inputs     the game simulator's lineup source: its point-in-time table is committed, its
+                 regressions were fitted on it and a fresh bundle carries its ratings table (v4)
+                 with rows and meta.intercept
   player_ratings public/data/player_ratings.json (ratings v3: impact headline + per-60 rates): every row named,
                  >= 600 current-roster skaters on >= 28 teams, v2 signs (def = xGA/60 prevented,
                  higher = better; net = off + def), same season as
@@ -888,6 +891,48 @@ def check_bu_bundle(ctx):
     return errs
 
 
+def check_sim_inputs(ctx):
+    """The game simulator's lineup source (bu/sim/lineup_source.py, named in the active parameters:
+    out/sim_params.json, or PONYXG_SIM_INPUTS / PONYXG_SIM_PARAMS): its point-in-time table is
+    committed and, when the source reads a ratings table of the serving bundle other than v2
+    (ratings v4 since 2026-10-03), a fresh bundle of this season carries that table with rows and
+    its intercept (otherwise every game falls back to the logit, flagged)."""
+    try:
+        from bu.sim import lineup_source as LS
+        from bu.sim.params import load_params, params_path
+        p = load_params()
+    except Exception as e:
+        return [f"simulator parameters unreadable ({type(e).__name__}: {e})"]
+    src = LS.spec(p)
+    rel_p = os.path.relpath(params_path(), PIPELINE_DIR)
+    errs = []
+    if not os.path.exists(LS.resolve(src["history_table"])):
+        errs.append(f"{rel_p}: lineup source {src['name']} history table {src['history_table']} missing")
+    if (p.get("glm") or {}).get("lineup_source", "rapm_v2") != src["name"]:
+        errs.append(f"{rel_p}: regressions fitted on {(p.get('glm') or {}).get('lineup_source')} but the lineup "
+                    f"source is {src['name']}")
+    table = str(src.get("ratings") or "v2")
+    if table == "v2":
+        return errs
+    try:
+        from bu.lineup import serve as SV
+        b = SV.read(ctx.get("bu_bundle_path") or LS.resolve(src["serving_bundle"]))
+    except Exception as e:
+        return errs + [f"{src['serving_bundle']}: unreadable ({type(e).__name__}: {e}); the simulator reads its "
+                       f"{table} table"]
+    built = _dt(b.get("built_at"))
+    fresh = built is not None and (datetime.now(timezone.utc) - built).total_seconds() / 3600 <= SV.MAX_AGE_H
+    t = b.get(table) or {}
+    if fresh and str(b.get("season")) == SEASON_ID:
+        if not t.get("rows"):
+            errs.append(f"{src['serving_bundle']}: no {table} ratings table: the simulator ({p.get('version')}) "
+                        "falls back to the logit on every game")
+        elif (t.get("meta") or {}).get("intercept") is None:
+            errs.append(f"{src['serving_bundle']}: the {table} table has no meta.intercept (the simulator's "
+                        "lineup-term c0 would come from the v2 covariate)")
+    return errs
+
+
 PLAYER_RATINGS_COLUMNS = ("id", "name", "team", "pos", "roster", "rated", "impact", "off_impact", "def_impact", "sd",
                           "ev_off", "ev_def", "pp_off", "pk_def", "fin", "toi_ev_gp", "toi_pp_gp", "toi_pk_gp",
                           "off", "def", "net", "off_total", "toi", "gp")
@@ -1007,6 +1052,7 @@ CHECKS = {
     "winpct_engine": check_winpct_engine,
     "goal_splits": check_gamestats_goals,
     "bu_bundle": check_bu_bundle,
+    "sim_inputs": check_sim_inputs,
     "player_ratings": check_player_ratings,
 }
 

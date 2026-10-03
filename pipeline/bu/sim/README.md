@@ -8,7 +8,9 @@ simulator is also the **engine of the model win %**: `home_model_win_pct` is its
 (player ratings -> tonight's lineup -> simulated game), blended with the de-vigged market exactly
 as before (`market.py`), and the derivative markets are anchored to that published win % (see
 "Win-% engine").  The logit game model is kept as a logged shadow (`logit_*`) and per-game
-fallback; `PONYXG_WINPCT=logit` rolls back.
+fallback; `PONYXG_WINPCT=logit` rolls back.  Since 2026-10-03 (later the same day) its player
+ratings are **ratings v4** (`bu/rapm/README.md` "Ratings v4") instead of RAPM v2 (see "Lineup
+inputs: ratings v4"); `PONYXG_SIM_INPUTS=v2` rolls the inputs back.
 
 Everything runs from `pipeline/`.  Pre-declared rules: `prereg.json` (written before any dev or
 holdout run, amendments timestamped).  Fitted parameters: `out/sim_params.json`.  Validation
@@ -53,7 +55,8 @@ the home team with the league rate; playoff ties play 20-minute 5v5 sudden-death
 **Rates** (`rates.py`, `state.py`, `history.py`): per attacking side, four Poisson regressions on
 point-in-time inputs (fitted on the fit seasons, `fit.py glm`):
 
-* `ev`: 5v5 xG per score-adjusted second ~ RAPM v2 lineup term (tonight's dressed skaters x
+* `ev`: 5v5 xG per score-adjusted second ~ lineup ratings term (ratings v4 since 2026-10-03,
+  RAPM v2 before; tonight's dressed skaters x
   expected EV TOI share: `log((c0 + OFF_X + DEF_Y) / c0)`), team 5v5 offence / opponent defence
   state, home, back-to-back (own / opponent);
 * `conv`: goals per xG ~ FIN of the dressed skaters (share-weighted goals above xG / 60, as a
@@ -65,8 +68,10 @@ The team / goalie state is a set of exponentially decayed sums (half-life in tea
 carry), shrunk toward the league by pseudo-exposure, tuned on the fit seasons by next-game
 Poisson likelihood.  League levels (L5, Lpp, Lpen) are decayed the same way, so the simulator
 follows the scoring environment.  Every input is as of the game date: the lineup term and FIN are
-the committed point-in-time table (`bu/lineup/out/lineup_features.csv.gz`, ratings as of d - 2
-days); live they come from the serving bundle (`LiveLineupTerm`, its `fin` table).  A strength
+the committed point-in-time table of the parameters' lineup source (`lineup_source.py`; v4:
+`bu/lineup/out/lineup_features_v4.csv.gz`, RAPM v2: `lineup_features_v2.csv.gz`, ratings as of
+d - 2 days); live they come from the serving bundle (`LiveLineupTerm`: v4 reads its `v4` table
+and intercept `meta.intercept`, v2 its `players` / `fin` tables and the RAPM covariate).  A strength
 stretch s multiplies every team-strength term (fitted on the fit seasons' outcomes, see below).
 
 **Live path** (`live.py`, `predict_games.sim_outputs`): the season-start pack
@@ -102,7 +107,11 @@ python -m bu.sim.validate holdout --work $W   # the single 2025-26 look (refused
 Season rollover: `python -m bu.sim.fit pack --work $W --season <S>` from the full lake before the
 season's first game (until then every row is the Poisson fallback, flagged).
 
-## Fitted parameters (fit seasons 2017-18 .. 2022-23, `out/sim_params.json`)
+## Fitted parameters (fit seasons 2017-18 .. 2022-23; RAPM v2 inputs, now `out/sim_params_v2.json`)
+
+The live parameters (`out/sim_params.json`, `sim-m5-v4-...`) share every structural and state
+table below; their rate regressions and dispersion are re-fitted on ratings v4 inputs (see
+"Lineup inputs: ratings v4").
 
 **State goal rates** relative to 5v5 (both goalies in; league 5v5 2.48 goals per team-hour):
 4v4 1.19, 3v3 1.16, 5v4 2.82, 5v3 7.42, 4v3 4.38, 4v5 0.38, 3v5 0.11, extra attacker 6v5 2.92 /
@@ -316,11 +325,66 @@ Per-game fallback to the logit (`winpct_engine = logit`) when the simulator cann
 Rollback: repository variable `PONYXG_WINPCT=logit`.  `validate_outputs.py winpct_engine` checks
 every row.
 
-**Next ratings (v4)**: the lineup inputs are pluggable (`lineup_source.py`): a new ratings table
-with the same per-side off / def / fin scale and its serving bundle are re-fitted with
-`python -m bu.sim.fit glm --work $W --lineup-table <csv> --lineup-bundle <json.gz> --lineup-name v4
---params-out <file>`, scored with `PONYXG_SIM_PARAMS=<file>` and promoted by a new pre-registered
-comparison (the dispersion grid, fitted with RAPM v2 inputs, should be rerun on the new inputs).
+## Lineup inputs: ratings v4 (`prereg_inputs_v4.json`, `inputs_v4.py`)
+
+The lineup inputs are pluggable (`lineup_source.py`: a point-in-time table + a serving-bundle
+ratings table on the same per-side off / def / fin scale).  Pre-registered 2026-10-03 (committed
+before any v4 simulation): **V4** = the simulator re-fitted on ratings v4 inputs vs **V2** = the
+live simulator on RAPM v2 inputs, owner's rule: V4 is promoted iff its moneyline log loss is lower
+on the dev seasons pooled, at most +0.0010 worse on the 2025-26 holdout, and its derivative score
+(the 8 derivative markets of `prereg.json`, the simulation anchored to its own win % and
+goal_model's total = the live configuration) is not worse on dev.  The same games as
+`prereg_primary.json` (all have finite v4 inputs); 20,000 runs, the live seed.
+
+Re-fit (fit seasons only; structural tables, state hyper-parameters, anchoring and totals choice
+unchanged): 5v5 xG regression on the v4 lineup term **0.79** (SE 0.05; v2 0.68), team offence 0.24
+(0.38), opponent defence 0.29 (0.35), b2b -0.038 / +0.043; conversion FIN 1.01 (0.33; v2 0.94),
+team finishing 0.61 (0.75), goalie 0.85; PP and penalty regressions do not read the lineup and are
+unchanged.  The v4 lineup term carries more of the team strength than v2's (the team-state terms
+shrink).  Dispersion grid re-run on the v4 inputs (`prereg.json` criterion, 2,000 runs): the same
+point as v2, **stretch 1.25, strength-tilt sd 0.10, no pace shock**, scale 1.020 (v2 1.018; best
+criterion -5.98727 vs -5.98852 at stretch 1.25 / no tilt, -5.98857 at 1.5 / 0.1; stretch 1.0
+-5.99604): the stretch was fitted on RAPM v2 inputs and did not move.
+
+```bash
+cd pipeline     # PONYXG_LAKE_DIR, PONYXG_RAPM_DIR as above; W holds the team-game caches
+python -m bu.sim.fit glm --work $W --lineup-table bu/lineup/out/lineup_features_v4.csv.gz \
+    --lineup-name v4 --lineup-ratings v4 --params-out $P4
+PONYXG_SIM_PARAMS=$P4 python -m bu.sim.validate dispersion --work $W --n 2000
+python -m bu.sim.inputs_v4 dev --work $W --v4-params $P4        # needs primary's logit_oos_B_* in $W
+python -m bu.sim.inputs_v4 holdout --work $W --v4-params $P4    # the single look (logged, refused twice)
+```
+
+Moneyline (raw simulator win %) log loss (Brier; calibration slope) and derivative score, paired
+per game (V4 - V2; negative favours V4):
+
+| Season | n | V2 ML | V4 ML | V4 - V2 (SE) | V2 deriv. | V4 deriv. | V4 - V2 (SE) |
+|---|---|---|---|---|---|---|---|
+| 2023-24 dev | 1,312 | 0.65820 (0.2333; 1.01) | 0.65789 (0.2331; 1.01) | -0.00031 (0.0010) | 6.3207 | 6.3199 | -0.0008 (0.0036) |
+| 2024-25 dev | 1,063 | 0.65954 (0.2337; 1.09) | 0.65847 (0.2332; 1.14) | -0.00107 (0.0010) | 6.3317 | 6.3303 | -0.0014 (0.0036) |
+| dev pooled | 2,375 | 0.65880 (0.2334; 1.04) | 0.65815 (0.2331; 1.06) | **-0.00065 (0.0007)** | 6.3255 | 6.3245 | **-0.0011 (0.0025)** |
+| 2025-26 holdout | 1,312 | 0.67929 (0.2432; 0.84) | 0.67952 (0.2433; 0.85) | **+0.00022 (0.0010)** | 6.3428 | 6.3419 | -0.0009 (0.0034) |
+
+**Decision: V4 promoted** (dev better on both, holdout +0.00022 <= +0.0010; logged in
+`out/look_log.jsonl`, question `sim_inputs_v4`, and in `out/sim_params.json` `lineup_promotion`).
+V2 reproduces its published numbers exactly (0.65880 / 6.32554 dev, 0.67929 / 6.34283 holdout).
+The two engines agree closely (correlation of logit p 0.99 dev, 0.98 holdout; SD of logit p 0.487
+vs 0.489 dev).  Per derivative market (dev pooled, V4 - V2): reg 3-way -0.0005, home -1.5 -0.0009,
+away -1.5 +0.0006, totals -0.0001 / -0.0007 / -0.0002, 1st period +0.0003 / +0.0003 (all within
+about one SE except total 6.0, -0.0007, SE 0.0002); holdout: home -1.5 +0.0012, 1st period 3-way
+-0.0010 and 2-way -0.0018, the rest within +-0.0004.  The gain is small: the simulator's win % was
+already mostly lineup-driven and v4 changes the ratings much less than it changes their spread.
+
+Descriptive: the raw v4 simulator's expected total is higher (dev mean 6.22 vs 6.06 for V2 and
+6.12 actual; holdout 6.24 vs 6.06, actual 6.25; sd of the total 2.39 vs 2.36).  It is not
+published as a market anchor (the derivative markets are anchored to goal_model's total), only as
+`sim_expected_total`.
+
+**Rollback**: repository variable `PONYXG_SIM_INPUTS=v2` loads `out/sim_params_v2.json` (the
+RAPM v2 simulator, `sim-m5-20261002`, reading the bundle's `players` / `fin` tables);
+`PONYXG_SIM_PARAMS=<file>` points at any parameter file.  Both also redirect `fit` / `validate`
+writes.  `validate_outputs.py sim_inputs` checks that the active parameters' lineup table is
+committed and that a fresh bundle carries their ratings table with its intercept.
 
 ## Runtime
 
@@ -341,7 +405,7 @@ by the win %, the breakdown's five 3,000-run counterfactuals, anchoring and pric
   are fixed at their 2017-23 values.
 * Totals are slightly over-dispersed (sd 2.35 vs 2.29-2.30 actual) even with the post-goal lull;
   the lull and score effects explain most but not all of the real under-dispersion.
-* The strength stretch (1.25) is a single fitted factor standing in for the correlation between a
+* The strength stretch (1.25, re-chosen on the v4 inputs) is a single fitted factor standing in for the correlation between a
   team's strengths across states; a joint model of PP / PK / 5v5 / finishing would replace it.
 * Delayed-penalty extra attackers, stacked third penalties (dropped), misconducts and penalty
   shots are not simulated; the shootout is a league coin (50.4% home), with no shooter / goalie
