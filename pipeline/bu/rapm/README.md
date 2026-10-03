@@ -1,4 +1,4 @@
-# `bu.rapm` and `bu.lineup`: RAPM v2 and the lineup term (M2)
+# `bu.rapm` and `bu.lineup`: RAPM v2, ratings v3 and the lineup term (M2)
 
 Design: DESIGN.md §3.2 (RAPM v2, priors, aging, eras, validation), §3.7 (TOI, lineups),
 §4 (point-in-time protocol), §1.5 (season roles, holdout looks).  Everything runs from
@@ -10,6 +10,107 @@ and the per-game feature table are committed (`bu/rapm/out/`, `bu/lineup/out/`).
 live game model** (`logit-elo-v5-20261001-xg2-rapm`: `bu_d_net + bu_d_delta` replace the F1
 `d_lineup`; `pipeline/bu/README.md` "Live").  The xG v1-target results below are kept for the
 record; their reports are archived in `out/xgv1/` and `../lineup/out/xgv1/`.
+
+## Ratings v3 (2026-10-02): game recency, OFF / DEF shrinkage, per-game impact
+
+Owner decisions 2026-10-02 after the DAL audit (Kiviranta 3rd on DAL by NET from 23 h on COL's
+fourth line, Rantanen ~0, DEF repeatability 0.41 vs OFF 0.57 and DEF over-dispersed ~25%):
+recency is counted in **games**, not seasons ("I really don't care about four seasons ago"), and
+the site's headline is a **per-game impact** in goals per 82 games, like The Athletic's Net
+Rating.  Pre-registered rules: `v3_prereg.json` (committed before any dev / holdout run, two
+amendments before them); every number below: `out/v3_validation.json`.
+
+**Model** (`v3.py`, `recency.py`, `v3_pack.py`):
+
+* *Recency* (`recency.Recency`): an observation's weight depends on how many games ago it was
+  played on the league clock (`league_index`: league-average team games, by date; summers add
+  nothing, a playoff night counts at its league average).  One weight per date, so a stint with
+  ten skaters from two teams has one weight and every Gram is additive by date.  Candidates:
+  5 x 30-game blocks (five step patterns) and per-game decay (half-lives 40 / 60 / 90), all with
+  weight exactly 0 past 246 games (three 82-game seasons).
+* *Shrinkage*: separate prior variances for OFF (`v_o`) and DEF (`v_d`), and a role-aware prior
+  mean: each player's OFF and DEF are his role's mean plus his own effect, roles = position group
+  x EV-usage tier (EV minutes per weighted game: F < 11 / 11-13 / 13-15 / 15+, D < 16 / 16-18.5 /
+  18.5+), or position x draft tier under 10 weighted games; role means fitted jointly (ridge
+  `v_role`).  Ratings are re-centred so the data-weighted average skater is 0 (the intercept and
+  strength terms absorb it exactly).
+* *PP / PK*: one row per 5v4 / 5v3 / 4v3 stint (PP side's xG/60): `PP` column of each PP skater,
+  `PK` column of each PK skater, position-group means, `v_pp` / `v_pk`, the same recency.
+* *FIN*: `finishing`'s gamma-Poisson formula on recency-weighted sums (`fin_pre` / `fin_in`).
+* *Expected TOI per game* by state: EWMA over the player's own games (half-lives tuned per
+  state), 3 pseudo-games of the position mean.
+* *Two stages*, so the live refresh needs no earlier season: the pre-season prior (every stint
+  before the season at weight `w(g + games ago at season start)`) on a grid of in-season games
+  `g` (every 5), interpolated, and this season's stints at their exact weights up to `d - 2`
+  days.  The backtest runs exactly this computation; the season pack
+  `../lineup/out/ratings_pack_<S>.json.gz` carries the grid (1.5-1.7 MB), and the pack -> live
+  path reproduces the engine to 5e-8.
+
+**Validation** (primary: next-30-game EV stint MSE, as-of points every 10 games from 0 to 50,
+covariates refit on the test rows, Gram-exact; paired SEs clustered by date):
+
+| Model | tuning 2019-23 | dev 2023-25 | holdout 2025-26 (one look) | OFF / DEF slope (dev) |
+|---|---|---|---|---|
+| **D90** (shipped: decay, half-life 90 games, 0 past 246) | -0.0029 (0.0015) | **-0.0071 (0.0022)** | **-0.0086 (0.0033)** | 1.03 / 0.96 |
+| B_geo (best 5 x 30 block: 1 / .7 / .49 / .343 / .24) | +0.0037 (0.0020) | +0.0038 (0.0029) | +0.0040 (0.0046) | 1.00 / 0.88 |
+| Kalman chain (benchmark, pre-window) | -0.0127 (0.0021) | -0.0177 (0.0029) | -0.0135 (0.0040) | 1.01 / 0.89 |
+| window (benchmark, shipped v2) | 0 | 0 | 0 | 0.95 / 0.79 |
+
+MSE minus the shipped window's (negative = better; SE clustered by date).  D90 minus B_geo:
+-0.0066 (SE 0.0012) tuning, -0.0109 (0.0016) dev, -0.0125 (0.0025) holdout.  The pre-registered
+rule picked D90; the owner, offered both before the holdout look (amendment 2), chose D90.
+Effective weights for a player who plays every game: D90 last 82 games 55%, 82-164 back 29%,
+164-246 back 16%, older 0 (games-ago bands 0-30 24%, 30-60 19%, 60-90 15%, 90-120 12%,
+120-150 10%); B_geo 74% / 26% / 0.  Other components:
+
+* shrinkage (tuning): v_o 0.03, v_d 0.025, role means for OFF and DEF with a strong ridge
+  (v_role 0.001; a weak one left DEF over-dispersed, slope ~0.72); the window's DEF slope 0.79
+  (dev) becomes 0.96;
+* PP / PK: v_pp 0.16, v_pk 0.08 (the first grid's corner; widened before any dev run), PP
+  next-30-game slopes 1.07 / 1.19 tuning, 0.86 / 0.81 dev, 0.96 / 0.78 holdout;
+* FIN: prior 30 xG on the D90 weights (beats 60 by 4.2e-5 log loss per shot, SE 1.4e-5, on the
+  tuning seasons; 1.2e-5 (1.8e-5) dev, 4.5e-5 (2.6e-5) holdout); the v2 FinState counted every
+  season since 2010-11 equally (DECAY 1.0);
+* expected TOI: EWMA half-life 10 (EV), 20 (PP), 10 (PK) player games; next-30-game RMSE 1.39 /
+  0.56 / 0.47 minutes (dev);
+* impact weights: OFF / DEF slopes 1.05 / 0.98 inside [0.85, 1.15] -> equal weights.
+
+**Game model: not changed.**  The lineup term rebuilt from v3 (`bu_d_net`, `bu_d_delta`,
+`bu_d_fin` from v3 ratings, `python3 retrain.py --ratings-v3 <table> --no-holdout`) against the live
+`logit-elo-v5-20261002-xg2-rapm-fin` on the dev seasons: D90 +0.00014 (SE 0.00042), B_geo +0.00010
+(SE 0.00058) log loss per game - the owner rule (dev pooled better) fails, so no game-model holdout
+look was taken and the serving bundle's `players` / `fin` tables stay RAPM v2 / FIN v2.  v3 lives
+in the bundle's `v3` table and the site's `player_ratings.json`.
+
+**Credibility** (2026-27 as of 2026-10-01): Kiviranta 229th by impact (v2 NET 100th), Caufield
+50th (237th), Gallagher 255th (69th), McDavid 9th, MacKinnon 3rd, Draisaitl 2nd, Q. Hughes 1st;
+still weak: Makar 202nd (EV OFF -0.16 vs the D average) and Rantanen 329th.  Weighted correlation
+with MoneyPuck 5on5 2024-26 relative xGF/60: 0.76 (v2 0.78), relative xGA/60 prevented 0.68 (0.69).
+
+**Impact** (`bu.lineup.ratings_export.impact`):
+
+    impact_82  = off_impact + def_impact                     (goals per 82 games)
+    off_impact = 82 [k EV/60 (ev_off - m) + k PP/60 (pp_off - m) + EV/60 (fin - m)]
+    def_impact = 82 [k EV/60 (ev_def - m) + k PK/60 (pk_def - m)]
+
+with EV / PP / PK the expected minutes per game, `k` the league EV goals per xG of the last
+completed season and `m` the TOI-weighted mean of each rate among rated roster skaters of the
+same position group (F / D): an average player at his position is 0 whatever his minutes.  The
+pre-registered weighting rule (OFF and DEF weighted by their calibration slopes unless both lie
+in [0.85, 1.15]) gave equal weights.  `sd`: posterior SD from the EV and PP / PK rating
+variances (TOI and FIN taken as known).
+
+**Commands** (from `pipeline/`):
+
+```bash
+# season rollover (full lake, after `bu.rapm asof` through S): the committed season pack
+python -m bu.rapm.v3_pack pack --season 20262027 --xg <asof xG source> --out <RAPM state>
+#   -> bu/lineup/out/ratings_pack_20262027.json.gz
+# daily: bu.lineup serve (bu_refresh.yml) rolls it through the season's games -> bundle "v3" table
+#        -> bu.lineup.ratings_export -> public/data/player_ratings.json (version 3)
+# validation (scripts of the run: the committed report out/v3_validation.json, looks: out/v3_look_log.jsonl)
+#   bu.rapm.v3_validate.run_candidate / mse_table / paired / pooled_slopes
+```
 
 ## Re-run on the full lake (xG v2 target, as shipped)
 
@@ -93,6 +194,7 @@ The RAPM target is chosen with `--xg` on `stints`/`validate`/`asof`: `v1` (the p
 | Crosswalk | `lineup/crosswalk.py` | NHL rosters (explicit season id) + lake rosterSpots -> ids for DFO names; `out/crosswalk_coverage.json` |
 | Live | `lineup/serve.py` | season pack -> serving bundle -> `LiveLineupTerm` (above) |
 | Game level | `lineup/evaluate.py` | incumbent `train_game_model.walk_forward` with and without the lineup columns; dev folds pick the variant; one logged holdout look |
+| Ratings v3 | `recency.py`, `v3.py`, `v3_pack.py`, `v3_validate.py` | game-recency RAPM (EV OFF / DEF with role means, PP / PK), FIN on the same weights, expected TOI by state; season pack `../lineup/out/ratings_pack_<S>.json.gz`, bundle `v3` table, site ratings (section "Ratings v3") |
 | Finishing | `finishing.py` | FIN = shrunk EV goals above xG per 60 from the player's own unblocked shots: gamma-Poisson multiplier `(G + 60) / (X + 60)` on league-scaled xG, times shrunk ixG/60; all seasons equally weighted; point-in-time `FinState` (games up to `d - 2 days`); season-start state `../lineup/out/fin_pack_<S>.json.gz` (`python -m bu.rapm.finishing pack --season S --xg <source>`, once per season next to the lineup season pack) |
 
 ## OFF credibility pass (2026-10-01): prior dynamics and finishing
