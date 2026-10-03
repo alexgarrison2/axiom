@@ -545,7 +545,8 @@ test.describe('game lifecycle', () => {
         const card = page.locator(`article#${first.anchor}`);
         await expect(card).toContainText(/FINAL · OT/i);
         await expect(card).toContainText('1-0');
-        await expect(card).toContainText(/Model pick (right|wrong)/);
+        // A coin-flip pregame (rounds to 50.0%) is graded "No lean" instead of right/wrong.
+        await expect(card).toContainText(/Model pick (right|wrong)|No lean/);
         await expect(card.locator('[role="img"][aria-label^="Pregame win probability"]')).toHaveAttribute('data-dimmed', 'true');
         await expect(card).not.toContainText('Edge');
         expect(await card.innerText()).not.toMatch(/\b\d+(\.\d)?u\b/);

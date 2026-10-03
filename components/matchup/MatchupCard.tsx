@@ -86,11 +86,21 @@ export function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: Li
             <a
                 href="/methodology#edge"
                 data-bet
-                className={cn(OVER_TOGGLE, 'text-caption font-bold uppercase tracking-[0.1em] text-pos')}
+                className={cn(OVER_TOGGLE, 'px-0 text-caption font-bold uppercase tracking-[0.1em]')}
                 title={bet.official ? 'Expected value at the book price, quarter-Kelly stake' : `Unofficial: the betting gate is closed (${p.gateReason ?? 'model not yet proven against the market'})`}
             >
-                +EV {bet.evPct.toFixed(1)}% {bet.tri}
-                {bet.units != null ? <span className="text-fg-1"> · {bet.units.toFixed(1)}u</span> : null}
+                {/* Tight pill: green EV half, black stake half in green type. */}
+                <span className="inline-flex items-stretch overflow-hidden whitespace-nowrap rounded-[4px] border border-pos shadow-[0_0_10px_rgb(var(--pos-rgb)/0.35)]">
+                    <span className="bg-pos px-1.5 py-0.5 text-black">
+                        +EV {bet.evPct.toFixed(1)}% {bet.tri}
+                    </span>
+                    {bet.units != null ? (
+                        <span className="bg-black px-1.5 py-0.5 text-pos">
+                            <span className="sr-only"> · </span>
+                            {bet.units.toFixed(1)}u
+                        </span>
+                    ) : null}
+                </span>
                 {bet.official ? null : <span className="sr-only">, unofficial: the betting gate is closed</span>}
             </a>
         );
