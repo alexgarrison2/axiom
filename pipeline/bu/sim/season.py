@@ -55,6 +55,9 @@ N_F, N_D = 12, 6
 CACHE = os.path.join(PIPELINE_DIR, "data", "season_sim_games.json")
 ENV = "PONYXG_SEASON_SIM"          # 'logit' rolls the season projections back to the game model
 QUESTION = "season_sim"
+# Season-level calibration (prereg_season_calib.json, question season_sim_calib): the identity point
+# is the uncalibrated simulator of season_sim.  sigma0 None = season_simulator.SIGMA0.
+CAL_IDENTITY = {"k_inf": 1.0, "tau_days": 0.0, "sigma0": None, "lineup_w_inf": 1.0, "lineup_tau_days": 60.0}
 
 
 def log(*a):
@@ -74,6 +77,69 @@ def mode(params: dict | None = None) -> str:
         except Exception:  # noqa: BLE001
             params = {}
     return "sim" if ((params or {}).get("season_sim") or {}).get("engine") == "sim" else "logit"
+
+
+def calibration(params: dict | None = None) -> dict:
+    """The season calibration recorded in the simulator's parameters (``season_sim.calibration``)
+    over the identity (no shrink, no lineup regression, the Engine's SIGMA0)."""
+    if params is None:
+        try:
+            from .params import load_params
+            params = load_params(missing_ok=True) or {}
+        except Exception:  # noqa: BLE001
+            params = {}
+    cal = dict(CAL_IDENTITY)
+    cal.update({k: v for k, v in (((params or {}).get("season_sim") or {}).get("calibration") or {}).items()
+                if k in CAL_IDENTITY})
+    return cal
+
+
+def decay(d, inf: float, tau: float):
+    """inf + (1 - inf) exp(-d / tau) for d days ahead (tau <= 0: inf for every d)."""
+    d = np.maximum(np.asarray(d, dtype=float), 0.0)
+    if tau is None or tau <= 0:
+        return np.full_like(d, float(inf))
+    return float(inf) + (1.0 - float(inf)) * np.exp(-d / float(tau))
+
+
+def _days(date: str, asof) -> int:
+    return (pd.Timestamp(date) - pd.Timestamp(asof)).days
+
+
+def lineup_scale(schedule: list, asof, cal: dict) -> dict | None:
+    """{game id: w(d)} that multiplies the typical lineup's OFF / DEF of a game d days after ``asof``
+    (C, lineup regression toward the league-average lineup); None at the identity."""
+    w_inf, tau = float(cal.get("lineup_w_inf", 1.0)), float(cal.get("lineup_tau_days", 60.0))
+    if w_inf >= 1.0:
+        return None
+    return {int(g["id"]): float(decay(_days(g["date"], asof), w_inf, tau)) for g in schedule}
+
+
+def calibrate_outcome(t: tuple, k: float, z0: float) -> tuple:
+    """(p_home_reg, p_away_reg, p_tie, q, p_home) with logit P(home win) shrunk toward ``z0`` by ``k``
+    (A); the tie probability is kept (capped so both regulation wins stay >= 0) and the home share of
+    OT / SO wins moves with P(home win) as in season_simulator.Engine.season."""
+    p, pt, q = float(t[4]), float(t[2]), float(t[3])
+    if k >= 1.0:
+        return tuple(t)
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    z = math.log(p / (1 - p))
+    p2 = 1 / (1 + math.exp(-(z0 + k * (z - z0))))
+    q2 = min(max(q + 0.5 * (p2 - p), 0.05), 0.95)
+    pt2 = min(pt, 0.95 * min(p2 / q2, (1 - p2) / (1 - q2)))
+    return (p2 - pt2 * q2, 1 - p2 - pt2 * (1 - q2), pt2, q2, p2)
+
+
+def calibrate_table(table: dict, asof, cal: dict) -> dict:
+    """The game table ((home, away, date, h_rest, a_rest) -> outcome tuple) with each game's logit
+    shrunk toward the table's home-ice baseline z0 (the mean logit of its games) by
+    k(d) = k_inf + (1 - k_inf) exp(-d / tau), d = days from ``asof`` to the game."""
+    k_inf, tau = float(cal.get("k_inf", 1.0)), float(cal.get("tau_days", 0.0))
+    if k_inf >= 1.0 or not table:
+        return dict(table)
+    ps = np.clip(np.array([v[4] for v in table.values()], dtype=float), 1e-6, 1 - 1e-6)
+    z0 = float(np.mean(np.log(ps / (1 - ps))))
+    return {key: calibrate_outcome(v, float(decay(_days(key[2], asof), k_inf, tau)), z0) for key, v in table.items()}
 
 
 # ------------------------------------------------------------------------------ expected inputs
@@ -135,9 +201,10 @@ def team_inputs(state, tid: int, gsv: float, side: dict | None, c0) -> dict:
     return out
 
 
-def game_rows(schedule: list, teams: dict, league: dict, rest: dict) -> pd.DataFrame:
+def game_rows(schedule: list, teams: dict, league: dict, rest: dict, scale: dict | None = None) -> pd.DataFrame:
     """Rate-layout rows for the remaining games (``schedule``: [{id, date, home, away}]; ``teams``:
-    key -> ``team_inputs``; ``rest``: id -> (home rest, away rest))."""
+    key -> ``team_inputs``; ``rest``: id -> (home rest, away rest); ``scale``: id -> w, the lineup
+    regression multiplying both lineups' OFF / DEF, ``lineup_scale``)."""
     rows = []
     for g in schedule:
         h, a = teams.get(g["home"]), teams.get(g["away"])
@@ -154,8 +221,9 @@ def game_rows(schedule: list, teams: dict, league: dict, rest: dict) -> pd.DataF
         r["bu_ok"] = ok
         if ok:
             r["c_intercept"] = h["c0"]
+            w = 1.0 if scale is None else float(scale.get(int(g["id"]), 1.0))
             for side, t in (("h", h), ("a", a)):
-                r[f"bu_{side}_off"], r[f"bu_{side}_def"], r[f"bu_{side}_fin"] = t["off"], t["def"], t["fin"]
+                r[f"bu_{side}_off"], r[f"bu_{side}_def"], r[f"bu_{side}_fin"] = w * t["off"], w * t["def"], t["fin"]
             r["st_ok"] = bool(h.get("st") and a.get("st"))
             if r["st_ok"]:
                 for side, t in (("h", h), ("a", a)):
@@ -230,7 +298,8 @@ class SimProbabilities:
     """``season_simulator.Probabilities`` with every precomputed game from the simulator."""
 
     def __init__(self, table: dict, fallback=None, source: str = "game simulator", meta: dict | None = None,
-                 schedule: list | None = None):
+                 schedule: list | None = None, sigma0: float | None = None):
+        self.sigma0 = sigma0              # the Engine's strength sigma for this engine (None: SIGMA0)
         self.table = table                # (home, away, date, h_rest, a_rest) -> outcome tuple
         self.fallback = fallback          # the logit Probabilities for a game the simulator could not run
         self.source = source
@@ -350,11 +419,13 @@ def live_teams(srv, term, schedule: list, lineups: dict | None = None) -> tuple[
 
 
 def live_probabilities(schedule: list, fallback=None, n: int = N_RUNS, now=None, lineups: dict | None = None,
-                       srv=None, workers: int | None = None) -> SimProbabilities | None:
+                       srv=None, workers: int | None = None, cal: dict | None = None) -> SimProbabilities | None:
     """SimProbabilities for the remaining ``schedule`` from the live simulator, or None when it cannot
     run at all (no parameters / pack / lineup bundle).  Per-game results are cached in ``CACHE`` for
     the day and the same inputs (simulator version, bundle, state date, DailyFaceoff lines), so the
-    hourly game_implications run and a re-run only simulate games whose rest days changed."""
+    hourly game_implications run and a re-run only simulate games whose rest days changed.  The
+    season calibration (``cal``, default ``calibration(srv.params)``) regresses the lineups of later
+    games before simulating, shrinks the simulated logits by days ahead, and sets the Engine sigma."""
     from season import SEASON_ID, today_local
     from . import lineup_source as LS
     from .live import SimServer
@@ -374,16 +445,19 @@ def live_probabilities(schedule: list, fallback=None, n: int = N_RUNS, now=None,
         except (OSError, ValueError):
             lineups = {}
     rest = rest_days_by_game(schedule)
+    cal = calibration(srv.params) if cal is None else {**CAL_IDENTITY, **cal}
+    asof = today_local(now)
     lu_hash = hashlib.sha256(json.dumps({t: {k: v for k, v in (x or {}).items() if k not in ("updated_at", "fetched_at")}
                                          for t, x in sorted((lineups or {}).items())}, sort_keys=True,
                                         default=str).encode()).hexdigest()[:16]
     key = {"date": today_local(now).isoformat(), "version": srv.version, "bundle": term.b.get("built_at"),
            "state": None if srv.state.max_date is None else str(pd.Timestamp(srv.state.max_date).date()),
-           "n_runs": int(n), "lineups": lu_hash}
+           "n_runs": int(n), "lineups": lu_hash,
+           "lineup_regression": [float(cal["lineup_w_inf"]), float(cal["lineup_tau_days"])]}
     cached = _read_cache(key)
     teams, detail = live_teams(srv, term, schedule, lineups)
     league = {q: srv.state.league_rate(q) for q in ("ev_goals", "ev_xg", "pp_goals", "pp_xg", "pen", "fin", "gsv")}
-    G = game_rows(schedule, teams, league, rest)
+    G = game_rows(schedule, teams, league, rest, lineup_scale(schedule, asof, cal))
     ok = runnable(G)
     gk = [f"{int(i)}|{rest[int(i)][0]}|{rest[int(i)][1]}" for i in G["game_id"]] if len(G) else []
     have = (cached or {}).get("games", {})
@@ -401,14 +475,16 @@ def live_probabilities(schedule: list, fallback=None, n: int = N_RUNS, now=None,
         g = by_id[i]
         table[(g["home"], g["away"], g["date"], *rest[i])] = outcome_tuple(
             {"reg_home": v[0], "reg_tie": v[1], "reg_away": v[2], "p_home": v[3]})
+    table = calibrate_table(table, asof, cal)
     meta = {"version": srv.version, "n_runs": int(n), "games": len(schedule), "simulated": int(len(table)),
+            "calibration": cal,
             "simulated_now": int(len(res)), "from_cache": int(len(table) - len(res)),
             "not_runnable": int((~ok).sum()) if len(ok) else 0, "seconds": round(time.time() - t0, 1), "teams": detail}
     if len(res) or cached is None or set(games) != set(have):     # unchanged: no rewrite (no commit churn)
         _write_cache(key, games, {"version": srv.version, "n_runs": int(n)})
     log(f"[season-sim] {len(table)}/{len(schedule)} games ({len(res)} simulated now, {n} runs; "
         f"{len(table) - len(res)} from the cache) in {time.time() - t0:.1f} s")
-    return SimProbabilities(table, fallback, f"game simulator ({srv.version})", meta, schedule)
+    return SimProbabilities(table, fallback, f"game simulator ({srv.version})", meta, schedule, sigma0=cal.get("sigma0"))
 
 
 def _read_cache(key: dict):

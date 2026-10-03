@@ -242,8 +242,12 @@ OUTCOMES = ("home_reg_win", "home_otw", "away_otw", "away_reg_win")
 class Engine:
     """Vectorised season simulation with common random numbers."""
 
-    def __init__(self, standings, schedule, probs, n_sims=SIMULATIONS, seed=SEED, sigma0=SIGMA0,
+    def __init__(self, standings, schedule, probs, n_sims=SIMULATIONS, seed=SEED, sigma0=None,
                  playoff_date=None):
+        if sigma0 is None:      # the probabilities' own strength sigma (the calibrated simulator), else SIGMA0
+            sigma0 = getattr(probs, "sigma0", None)
+            sigma0 = SIGMA0 if sigma0 is None else float(sigma0)
+        self.sigma0 = sigma0
         self.standings = standings
         self.teams = sorted(standings)
         self.idx = {t: i for i, t in enumerate(self.teams)}
@@ -480,11 +484,12 @@ def summarize(engine, res, now_iso):
         "games_played": gp,
         "remaining_games": len(engine.schedule),
         "total_simulations": n,
-        "model": {"probabilities": engine.probs.source, "strength_sigma0_logit": SIGMA0,
+        "model": {"probabilities": engine.probs.source, "strength_sigma0_logit": engine.sigma0,
                   "strength_sigma_gp_half": SIGMA_GP, "seed": SEED,
                   "engine": "sim" if hasattr(engine.probs, "table") else "logit",
                   **({"sim_games": len(engine.probs.table), "sim_runs_per_game": (engine.probs.meta or {}).get("n_runs"),
-                      "logit_fallback_games": int(getattr(engine.probs, "n_fallback", 0))}
+                      "logit_fallback_games": int(getattr(engine.probs, "n_fallback", 0)),
+                      "calibration": (engine.probs.meta or {}).get("calibration")}
                      if hasattr(engine.probs, "table") else {})},
         "teams": teams,
     }

@@ -314,14 +314,14 @@ def team_rows(S, Dt, proj, final, made):
     return rows
 
 
-def summarize(T: pd.DataFrame) -> dict:
-    """Per arm means and paired SIM - LOGIT differences (SE clustered by team)."""
-    out = {"n": int((T["arm"] == "SIM").sum())}
-    for arm in ("LOGIT", "SIM", "LOGIT_live"):
+def summarize(T: pd.DataFrame, arm_a: str = "SIM", arms=("LOGIT", "SIM", "LOGIT_live")) -> dict:
+    """Per arm means and paired ``arm_a`` - LOGIT differences (SE clustered by team)."""
+    out = {"n": int((T["arm"] == arm_a).sum())}
+    for arm in arms:
         x = T[T["arm"] == arm]
         if len(x):
             out[arm] = {k: round(float(x[k].mean()), 4) for k in ("abs_err", "err", "ll", "brier", "cover80")}
-    a = T[T["arm"] == "SIM"].set_index(["season", "asof", "team"])
+    a = T[T["arm"] == arm_a].set_index(["season", "asof", "team"])
     b = T[T["arm"] == "LOGIT"].set_index(["season", "asof", "team"]).loc[a.index]
     for k, name in (("abs_err", "points_mae"), ("ll", "playoff_ll"), ("brier", "playoff_brier")):
         d = (a[k] - b[k]).reset_index()
@@ -329,7 +329,7 @@ def summarize(T: pd.DataFrame) -> dict:
         g = d.groupby("team")[k].agg(["sum", "size"])
         # cluster-robust SE of the mean (a team's errors at several as-of points are correlated)
         se = float(np.sqrt(((g["sum"] - g["size"] * m) ** 2).sum()) / n) if len(g) > 1 else float("nan")
-        out[f"{name}_SIM_minus_LOGIT"] = {"diff": round(float(d[k].mean()), 4), "se_team_clustered": round(se, 4)}
+        out[f"{name}_{arm_a}_minus_LOGIT"] = {"diff": round(float(d[k].mean()), 4), "se_team_clustered": round(se, 4)}
     return out
 
 
