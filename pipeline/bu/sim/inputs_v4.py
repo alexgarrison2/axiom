@@ -4,8 +4,8 @@
     python -m bu.sim.inputs_v4 dev --work <dir> --v4-params <v4 params.json>
     python -m bu.sim.inputs_v4 holdout --work <dir> --v4-params <v4 params.json>   # the single look
 
-Arms: ``V2`` = the live parameters (``out/sim_params.json`` at the time of the run, or
-``--v2-params``), ``V4`` = the parameters re-fitted on the v4 inputs (``fit glm --lineup-name v4``
+Arms: ``V2`` = the RAPM v2 parameters (``out/sim_params_v2.json`` since the promotion, the live
+``out/sim_params.json`` before it, or ``--v2-params``), ``V4`` = the parameters re-fitted on the v4 inputs (``fit glm --lineup-name v4``
 then ``validate dispersion``).  Each arm's point-in-time inputs are ``history_inputs*.parquet`` in
 ``--work`` (written by ``fit glm``).
 
@@ -37,7 +37,7 @@ from . import markets as MK
 from . import primary as P
 from . import rates as RT
 from . import validate as V
-from .params import PARAMS_PATH, load_params
+from .params import OUT_DIR, PARAMS_PATH, load_params
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PREREG = os.path.join(HERE, "prereg_inputs_v4.json")
@@ -120,7 +120,9 @@ def game_set(work: str, seasons, inputs: dict) -> pd.DataFrame:
 
 
 def arm_params(v4_params: str, v2_params: str | None) -> dict:
-    p2 = load_params(v2_params or PARAMS_PATH)
+    # after the promotion the live file is V4 and V2 is kept as out/sim_params_v2.json
+    v2_default = os.path.join(OUT_DIR, "sim_params_v2.json")
+    p2 = load_params(v2_params or (v2_default if os.path.exists(v2_default) else PARAMS_PATH))
     p4 = load_params(v4_params)
     if (p4.get("lineup") or {}).get("name") != "v4":
         raise SystemExit(f"{v4_params} is not a v4 lineup-source parameter set")
@@ -276,7 +278,7 @@ def main(argv=None) -> int:
     ap.add_argument("cmd", choices=["dev", "holdout"])
     ap.add_argument("--work", required=True)
     ap.add_argument("--v4-params", required=True)
-    ap.add_argument("--v2-params", default=None, help="default: out/sim_params.json")
+    ap.add_argument("--v2-params", default=None, help="default: out/sim_params_v2.json (the rollback file), else out/sim_params.json")
     ap.add_argument("--workers", type=int, default=8)
     a = ap.parse_args(argv)
     t0 = time.time()
