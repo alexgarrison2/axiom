@@ -68,8 +68,13 @@ below Rantanen.  MoneyPuck (2024-26): impact vs gameScore / GP 0.789 (v3 0.721),
 **Game level** (`../lineup/out/retrain_v4.json`, look in `../lineup/out/look_log.jsonl`): the live
 feature set on the lineup table rebuilt from v4 (`lineup_features_v4.csv.gz`) vs the live model:
 dev pooled -0.00035 (SE 0.00056; 2023-24 -0.00045, 2024-25 -0.00023), 2025-26 +0.00079 (SE 0.00122)
-<= +0.0010: the owner rule passes (pooled 2023-26 +0.00005, i.e. neutral).  Served from the bundle's
-`v4` table when the model meta says `bu_lineup.ratings = "v4"` (`LiveLineupTerm(ratings=...)`).
+<= +0.0010: the owner rule passes (pooled 2023-26 +0.00005, i.e. neutral), so it was promoted:
+`logit-elo-v5-20261003-xg2-rapm-fin-r4` (the v4 table is now `lineup_features.csv.gz`, the v2 one
+`lineup_features_v2.csv.gz`; the replaced model is kept in `models/shadow/game_model_rapm_fin.pkl`).
+It is served from the bundle's `v4` table because its meta says `bu_lineup.ratings = "v4"`
+(`LiveLineupTerm(ratings=...)`; on this season's 8 table games the live term tracks the table's
+`bu_d_net` at r 0.976, FIN at 0.982, vs 0.966 / 0.09 when served from the v2 tables).  Rollback:
+copy the shadow model over `game_model.pkl` / `game_model_meta.json` (or restore them from git).
 
 **Commands** (from `pipeline/`):
 

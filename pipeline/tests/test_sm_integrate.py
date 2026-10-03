@@ -428,7 +428,9 @@ def test_live_model_is_the_joint_model_with_a_rollback_shadow(live_meta):
     assert live_meta["xg_version"] == "v2"                   # releases the bu.xg.live interlock
     assert not any(c in live_meta["feature_columns"] for c in F.LINEUP_COLUMNS)
     fin = any(c in live_meta["feature_columns"] for c in F.BU_FIN_COLUMNS)
-    assert live_meta["model_version"].endswith("-xg2-rapm-fin" if fin else "-xg2-rapm")
+    ratings = (live_meta.get("bu_lineup") or {}).get("ratings")       # v3 / v4: lineup table from player ratings
+    tag = ("-xg2-rapm-fin" if fin else "-xg2-rapm") + (f"-r{ratings[1]}" if ratings in ("v3", "v4") else "")
+    assert live_meta["model_version"].endswith(tag)
     if fin:   # the replaced joint model (no FIN) stays reachable: PONYXG_BU=nofin / a bundle without FIN
         r = live_meta["shadow"]["rapm"]
         assert r["model_version"].endswith("-xg2-rapm") and "bu_d_fin" not in r["features"]
@@ -443,6 +445,12 @@ def test_live_model_is_the_joint_model_with_a_rollback_shadow(live_meta):
     # table ships unless it is worse than the model it replaces by more than +0.0010 pooled
     rule = str((live_meta.get("promotion") or {}).get("rule", ""))
     window = "window prior directive" in rule
+    if fin and ratings in ("v3", "v4"):   # owner rule (v3 / v4 prereg): dev pooled better, 2025-26 look <= +0.0010
+        assert rule.startswith(f"owner rule (bu/rapm/{ratings}_prereg.json")
+        assert g["dev_pooled"]["delta_ll"] < 0 and g["per_fold"]["2025"]["delta"] <= 0.0010
+        assert os.path.exists(os.path.join(PIPELINE, g["report"]))
+        assert g["previous_gate"]["report"] == "bu/lineup/out/retrain_fin.json"   # the FIN model it replaced
+        return
     if fin:   # owner approval 2026-10-02: better on both dev seasons, 2025-26 look within +0.0010
         assert rule.startswith("owner approval 2026-10-02")
         assert g["dev_pooled"]["delta_ll"] < 0

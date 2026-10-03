@@ -52,7 +52,9 @@ def test_live_model_beats_legacy_and_home_rate(meta):
         assert f['home_rate_baseline']['log_loss'] - f['log_loss'] >= 0.01
     last = max(meta['cv_results'], key=lambda f: f['test_season'])
     if str((meta.get('promotion') or {}).get('rule', '')).startswith(('owner decision 2026-10-01',
-                                                                        'owner approval 2026-10-02')):
+                                                                        'owner approval 2026-10-02',
+                                                                        'owner rule (bu/rapm/v3_prereg.json',
+                                                                        'owner rule (bu/rapm/v4_prereg.json')):
         # joint xG v2 + RAPM model (+ FIN, owner approval 2026-10-02), promoted on owner rules: the
         # pooled calibration CI must contain 1 and the latest-fold slope CI is reported in the gate
         cal = meta['bu_lineup']['gate']['calibration']
