@@ -1,7 +1,7 @@
 {
  "season_id": "20262027",
  "prev_season_id": "20252026",
- "generated_at": "2026-10-03T03:02:59Z",
+ "generated_at": "2026-10-03T12:04:17Z",
  "goalies": {
   "Adin Hill": {
    "cur": null,
@@ -235,11 +235,11 @@
   "Carter Hart": {
    "cur": {
     "w": 1,
-    "l": 0,
+    "l": 1,
     "ot": 0,
-    "svpct": 0.92307,
-    "gaa": 2.0,
-    "gp": 1
+    "svpct": 0.86956,
+    "gaa": 3.06,
+    "gp": 2
    },
    "prev": {
     "w": 11,
@@ -604,7 +604,14 @@
    }
   },
   "Jake Oettinger": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 1,
+    "ot": 0,
+    "svpct": 0.90909,
+    "gaa": 2.06,
+    "gp": 1
+   },
    "prev": {
     "w": 35,
     "l": 12,
@@ -645,12 +652,12 @@
   },
   "Jeremy Swayman": {
    "cur": {
-    "w": 1,
+    "w": 2,
     "l": 0,
     "ot": 0,
-    "svpct": 1.0,
-    "gaa": 0.0,
-    "gp": 1
+    "svpct": 0.94736,
+    "gaa": 1.47,
+    "gp": 2
    },
    "prev": {
     "w": 31,
@@ -709,7 +716,14 @@
    }
   },
   "Joel Hofer": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 1.0,
+    "gaa": 0.0,
+    "gp": 1
+   },
    "prev": {
     "w": 24,
     "l": 13,
@@ -941,7 +955,14 @@
    }
   },
   "Lukas Dostal": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.9,
+    "gaa": 3.0,
+    "gp": 1
+   },
    "prev": {
     "w": 30,
     "l": 20,
@@ -1182,7 +1203,14 @@
    }
   },
   "Stuart Skinner": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 0,
+    "ot": 1,
+    "svpct": 0.86666,
+    "gaa": 3.79,
+    "gp": 1
+   },
    "prev": {
     "w": 23,
     "l": 17,
