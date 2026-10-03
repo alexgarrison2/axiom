@@ -4,13 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Prediction, RecentGame, Side, SideData } from '@/types/prediction';
 import { loadJson } from '@/lib/client-data';
 import { lastName, shortDate } from '@/lib/matchup/format';
-import { unpackTeamGames, type MatchupGame, type TeamGamesPayload } from '@/lib/matchup/matchup-stats';
-import { FORM_STATS, baselineGames, buildEntries, entryStartedBy, fmtRecord, recordOfEntries, streakOfEntries, summarize, type FormEntry, type Outcome } from '@/lib/matchup/form';
+import { refKey, unpackTeamGames, type LeagueReference, type MatchupGame, type TeamGamesPayload } from '@/lib/matchup/matchup-stats';
+import { FORM_STATS, baselineGames, buildEntries, entryStartedBy, fmtRank, fmtRecord, leagueRank, recordOfEntries, streakOfEntries, summarize, type FormEntry, type Outcome } from '@/lib/matchup/form';
 import { Crest } from '@/components/ui/crest';
 import { clashSafePair } from '@/components/ui/team-color';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
-import { teamGamesUrl } from './MatchupPanel';
+import { leagueRefUrl, teamGamesUrl } from './MatchupPanel';
 import RecentGamesList from '@/components/RecentGamesList';
 import type { DetailsState } from './DetailsLoading';
 
@@ -23,7 +23,7 @@ const OUTCOME: Record<Outcome, { text: string; cls: string; label: string }> = {
 
 /** Game-log columns: date, opponent, result + score, xG split, shots, goalie. Shots appear once the column is wide enough. */
 const COLS =
-    'grid grid-cols-[2.9rem_minmax(0,1fr)_4.5rem_4.25rem] items-center gap-x-2.5 cq-sm:grid-cols-[3.25rem_minmax(0,1fr)_4.5rem_5.5rem_3.5rem_minmax(0,6rem)] cq-xl:grid-cols-[3.25rem_minmax(0,1fr)_4.5rem_5.5rem_3.25rem_3.25rem_3.25rem_minmax(0,6rem)] cq-2xl:grid-cols-[3.25rem_minmax(0,1fr)_4.5rem_5.5rem_3.25rem_3.25rem_3.25rem_3.25rem_3.25rem_minmax(0,6rem)]';
+    'grid grid-cols-[2.9rem_2.25rem_4.75rem_minmax(0,1fr)] items-center gap-x-2.5 cq-sm:grid-cols-[2.9rem_minmax(2.25rem,1fr)_4.75rem_4.5rem_6rem_6rem] cq-xl:grid-cols-[3.25rem_minmax(2.25rem,1fr)_4.75rem_5rem_6.25rem_6.25rem_3.25rem_3.25rem_3.25rem]';
 
 /** The xG split of one game as a tiny bar: our share in the team's colour, theirs left dark. */
 function XgBar({ f, a, color }: { f: number; a: number; color: string }) {
@@ -54,6 +54,35 @@ function StarterDot({ started, goalie }: { started: boolean; goalie: string | nu
     );
 }
 
+/**
+ * One dot per power play: filled when it scored (PP, cyan) or was scored on
+ * (PK, orange), outlined when it did not. The label says goals/opportunities.
+ */
+function SpecialDots({ opps, goals, color, what }: { opps: number; goals: number; color: string; what: string }) {
+    if (opps <= 0) return <span className="text-fg-3">—</span>;
+    const shown = Math.min(opps, 6);
+    return (
+        <span className="flex items-center gap-1.5" role="img" aria-label={`${goals} ${what} on ${opps} ${opps === 1 ? 'opportunity' : 'opportunities'}`}>
+            <span aria-hidden="true" className="flex gap-[3px]">
+                {Array.from({ length: shown }, (_, i) => (
+                    <i
+                        key={i}
+                        className="inline-block h-2 w-2 rounded-full border"
+                        style={{
+                            borderColor: `color-mix(in srgb, ${color} 70%, transparent)`,
+                            background: i < goals ? color : 'transparent',
+                            boxShadow: i < goals ? `0 0 6px color-mix(in srgb, ${color} 60%, transparent)` : undefined,
+                        }}
+                    />
+                ))}
+            </span>
+            <span aria-hidden="true" className="text-micro font-bold tabular-nums text-fg-2">
+                {goals}/{opps}
+            </span>
+        </span>
+    );
+}
+
 /** One game on one line, aligned to the column header above. A game the log has not caught up with shows its result and score only. */
 function GameRow({ e, goalie, color }: { e: FormEntry; goalie: string | null; color: string }) {
     const o = OUTCOME[e.outcome];
@@ -63,10 +92,10 @@ function GameRow({ e, goalie, color }: { e: FormEntry; goalie: string | null; co
     return (
         <li className={cn(COLS, 'min-h-11 border-b border-line py-1.5 last:border-0')}>
             <span className="flex flex-col text-micro leading-tight tabular-nums text-fg-3">{shortDate(e.date)}</span>
-            <span className="flex min-w-0 items-center gap-1.5 text-caption font-bold text-fg-1">
-                <span className="w-3 shrink-0 text-center text-micro font-normal text-fg-3">{e.home ? 'vs' : '@'}</span>
-                <Crest tri={e.opp} size={28} className="drop-shadow-none" />
-                {e.opp}
+            <span className="flex min-w-0 items-center gap-1 text-micro text-fg-3" title={`${e.home ? 'vs' : '@'} ${e.opp}`}>
+                <span className="w-3 shrink-0 text-center">{e.home ? 'vs' : '@'}</span>
+                <Crest tri={e.opp} size={32} className="drop-shadow-none" />
+                <span className="sr-only">{e.opp}</span>
             </span>
             <span className="flex items-center gap-1.5 tabular-nums">
                 <span
@@ -83,20 +112,14 @@ function GameRow({ e, goalie, color }: { e: FormEntry; goalie: string | null; co
                     {e.gf}-{e.ga}
                     {e.extra && e.outcome === 'W' ? <span className="ml-0.5 text-micro font-normal text-fg-3">{e.extra}</span> : null}
                 </span>
-                <span className="cq-sm:hidden">
-                    <StarterDot started={started} goalie={goalie} />
-                </span>
+                <StarterDot started={started} goalie={goalie} />
             </span>
             {r ? <XgBar f={r.xgf} a={r.xga} color={color} /> : <span>{dash}</span>}
-            <span className="hidden text-caption tabular-nums text-fg-2 cq-sm:block">{r ? `${r.sf}-${r.sa}` : dash}</span>
+            <span className="hidden cq-sm:block">{r ? <SpecialDots opps={r.ppo} goals={r.ppg} color="var(--pp)" what="power-play goals" /> : dash}</span>
+            <span className="hidden cq-sm:block">{r ? <SpecialDots opps={r.pko} goals={r.ppga} color="var(--pk)" what="power-play goals against" /> : dash}</span>
+            <span className="hidden text-caption tabular-nums text-fg-2 cq-xl:block">{r ? `${r.sf}-${r.sa}` : dash}</span>
             <span className="hidden text-caption tabular-nums text-fg-2 cq-xl:block">{r && r.cf + r.ca > 0 ? ((r.cf / (r.cf + r.ca)) * 100).toFixed(0) : dash}</span>
             <span className="hidden text-caption tabular-nums text-fg-2 cq-xl:block">{r ? `${r.hdf}-${r.hda}` : dash}</span>
-            <span className="hidden text-caption tabular-nums text-fg-2 cq-2xl:block">{r && r.ppo > 0 ? `${r.ppg}/${r.ppo}` : dash}</span>
-            <span className="hidden text-caption tabular-nums text-fg-2 cq-2xl:block">{r && r.pko > 0 ? `${r.pko - r.ppga}/${r.pko}` : dash}</span>
-            <span className="hidden min-w-0 items-center gap-1.5 text-micro text-fg-3 cq-sm:flex">
-                <StarterDot started={started} goalie={goalie} />
-                <span className={cn('truncate', started && 'text-fg-1')}>{e.starter ? lastName(e.starter) : ''}</span>
-            </span>
         </li>
     );
 }
@@ -126,7 +149,85 @@ function Situation({ s, home }: { s: SideData; home: boolean }) {
     );
 }
 
-function TeamForm({ p, side, games, recent, n, className }: { p: Prediction; side: Side; games: MatchupGame[]; recent: RecentGame[]; n: 5 | 10; className?: string }) {
+type StatRow = { st: (typeof FORM_STATS)[number]; v: number | null; base: number | null; rank: ReturnType<typeof leagueRank> };
+
+/** Rank colour by league third: cyan for the top, amber for the bottom, quiet in between (no red-yellow-green). */
+const tier = (pos: number) => (pos >= 0.67 ? { text: 'text-brand', fill: 'bg-brand' } : pos <= 0.33 ? { text: 'text-amber', fill: 'bg-amber' } : { text: 'text-fg-2', fill: 'bg-fg-3/60' });
+
+/**
+ * The last-N numbers as a scorecard: stat, value, where that value ranks in
+ * the league (1st ... Last, "T-" for ties) with a rail that fills as the rank
+ * improves, and this season's value for comparison.
+ */
+function StatBoard({ rows, n, entriesLength }: { rows: StatRow[]; n: number; entriesLength: number }) {
+    const of = rows.find(r => r.rank)?.rank?.of;
+    const ranked = of != null;
+    return (
+        <div className="flex flex-col">
+            <dl className="flex flex-col divide-y divide-line rounded-[12px] border border-line bg-well px-3">
+                {rows.map(({ st, v, base, rank }) => {
+                    const t = rank ? tier(rank.pos) : null;
+                    return (
+                        <div
+                            key={st.key}
+                            className={cn(
+                                'grid min-h-10 items-center gap-x-2.5 py-1',
+                                ranked ? 'grid-cols-[3.25rem_3.5rem_3.75rem_minmax(0,1fr)] cq-md:grid-cols-[3.25rem_3.5rem_3.75rem_minmax(0,1fr)_4.25rem]' : 'grid-cols-[3.25rem_3.5rem_minmax(0,1fr)]',
+                            )}
+                        >
+                            <dt className="text-micro uppercase tracking-wide text-fg-3" title={st.name}>
+                                {st.label}
+                            </dt>
+                            <dd className="font-display text-[22px] font-bold leading-6 tabular-nums text-fg-1">{v != null ? st.fmt(v) : '—'}</dd>
+                            {ranked ? (
+                                <>
+                                    <dd className={cn('text-caption font-bold tabular-nums', t?.text ?? 'text-fg-3')}>
+                                        {rank ? fmtRank(rank) : null}
+                                        {rank ? (
+                                            <span className="sr-only">
+                                                {' '}
+                                                of {rank.of} teams, {st.name}
+                                            </span>
+                                        ) : null}
+                                    </dd>
+                                    <dd aria-hidden="true" className="relative h-1.5 min-w-0 overflow-hidden rounded-full bg-track">
+                                        {rank ? <span className={cn('absolute inset-y-0 left-0 rounded-full', t!.fill)} style={{ width: `${Math.max(6, rank.pos * 100)}%` }} /> : null}
+                                    </dd>
+                                    <dd className="hidden text-right text-micro tabular-nums text-fg-3 cq-md:block">{base != null ? `Szn ${st.fmt(base)}` : ''}</dd>
+                                </>
+                            ) : (
+                                <dd className="text-right text-micro tabular-nums text-fg-3">{base != null ? `Season ${st.fmt(base)}` : ''}</dd>
+                            )}
+                        </div>
+                    );
+                })}
+            </dl>
+            {entriesLength > 0 && of ? (
+                <p className="pt-1.5 text-micro uppercase tracking-wide text-fg-3">
+                    League rank · last {n} games · {of} teams
+                </p>
+            ) : null}
+        </div>
+    );
+}
+
+function TeamForm({
+    p,
+    side,
+    games,
+    recent,
+    league,
+    n,
+    className,
+}: {
+    p: Prediction;
+    side: Side;
+    games: MatchupGame[];
+    recent: RecentGame[];
+    league: LeagueReference | null;
+    n: 5 | 10;
+    className?: string;
+}) {
     const s = p[side];
     const color = clashSafePair(p.away.team.triCode, p.home.team.triCode)[side];
     const tri = s.team.triCode;
@@ -168,19 +269,14 @@ function TeamForm({ p, side, games, recent, n, className }: { p: Prediction; sid
 
             <div className="min-w-0 [container-type:inline-size]">
                 {entries.length ? (
-                    <dl className="grid grid-cols-3 gap-1.5 cq-xl:grid-cols-6">
-                        {FORM_STATS.map(st => {
+                    <StatBoard
+                        entriesLength={entries.length}
+                        n={n}
+                        rows={FORM_STATS.map(st => {
                             const v = st.key === 'gf_gp' || st.key === 'ga_gp' ? (gfga?.[st.key] ?? null) : complete ? sum.values[st.key] : null;
-                            const base = sum.baseline[st.key];
-                            return (
-                                <div key={st.key} className="flex flex-col gap-0.5 rounded-[10px] border border-line bg-well px-2.5 py-2">
-                                    <dt className="text-micro uppercase tracking-wide text-fg-3">{st.label}</dt>
-                                    <dd className="font-display text-[22px] font-bold leading-6 tabular-nums text-fg-1">{v != null ? st.fmt(v) : '—'}</dd>
-                                    {base != null ? <dd className="text-micro tabular-nums text-fg-3">Season {st.fmt(base)}</dd> : null}
-                                </div>
-                            );
+                            return { st, v, base: sum.baseline[st.key] ?? null, rank: leagueRank(league?.ref[refKey('all', 'all', n)]?.[st.key], v, st.higherBetter) };
                         })}
-                    </dl>
+                    />
                 ) : null}
             </div>
 
@@ -192,18 +288,32 @@ function TeamForm({ p, side, games, recent, n, className }: { p: Prediction; sid
                             <span>Opp</span>
                             <span>Result</span>
                             <span>xG</span>
-                            <span className="hidden cq-sm:block">Shots</span>
+                            <span className="hidden cq-sm:block" style={{ color: 'var(--pp)' }}>
+                                PP
+                            </span>
+                            <span className="hidden cq-sm:block" style={{ color: 'var(--pk)' }}>
+                                PK
+                            </span>
+                            <span className="hidden cq-xl:block">Shots</span>
                             <span className="hidden cq-xl:block">CF%</span>
                             <span className="hidden cq-xl:block">HD</span>
-                            <span className="hidden cq-2xl:block">PP</span>
-                            <span className="hidden cq-2xl:block">PK</span>
-                            <span className="hidden cq-sm:block">Goalie</span>
                         </div>
                         <ol aria-label={`${s.team.commonName} last ${entries.length} games`} className="flex flex-col">
                             {entries.map(e => (
                                 <GameRow key={e.key} e={e} goalie={s.goalie} color={color} />
                             ))}
                         </ol>
+                        <p className="hidden items-center gap-3 pt-1.5 text-micro uppercase tracking-wide text-fg-3 cq-sm:flex">
+                            <span className="flex items-center gap-1.5">
+                                <i className="inline-block h-2 w-2 rounded-full" style={{ background: 'var(--pp)' }} /> PP goal
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <i className="inline-block h-2 w-2 rounded-full" style={{ background: 'var(--pk)' }} /> PP goal against
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <i className="inline-block h-2 w-2 rounded-full border border-fg-3" /> No goal
+                            </span>
+                        </p>
                     </div>
                 </div>
             ) : (
@@ -226,7 +336,7 @@ function TeamForm({ p, side, games, recent, n, className }: { p: Prediction; sid
 
 const EMPTY: RecentGame[] = [];
 
-type Load = { status: 'loading' } | { status: 'error' } | { status: 'ready'; games: Record<Side, MatchupGame[]> };
+type Load = { status: 'loading' } | { status: 'error' } | { status: 'ready'; games: Record<Side, MatchupGame[]>; league: LeagueReference | null };
 
 /**
  * Each team's recent form: results strip, last-N numbers against the season,
@@ -243,8 +353,8 @@ export function FormPanel({ p, state }: { p: Prediction; state: DetailsState }) 
 
     useEffect(() => {
         let live = true;
-        Promise.all([loadJson<TeamGamesPayload>(teamGamesUrl(away)), loadJson<TeamGamesPayload>(teamGamesUrl(home))]).then(
-            ([a, h]) => live && setLoad({ status: 'ready', games: { away: unpackTeamGames(a), home: unpackTeamGames(h) } }),
+        Promise.all([loadJson<TeamGamesPayload>(teamGamesUrl(away)), loadJson<TeamGamesPayload>(teamGamesUrl(home)), loadJson<LeagueReference>(leagueRefUrl).catch(() => null)]).then(
+            ([a, h, league]) => live && setLoad({ status: 'ready', games: { away: unpackTeamGames(a), home: unpackTeamGames(h) }, league }),
             () => live && setLoad({ status: 'error' }),
         );
         return () => {
@@ -312,6 +422,7 @@ export function FormPanel({ p, state }: { p: Prediction; state: DetailsState }) 
                         p={p}
                         side={sd}
                         games={load.games[sd]}
+                        league={load.league}
                         recent={state.status === 'ready' && state.data ? state.data[sd].recent : EMPTY}
                         n={num}
                         className={side !== sd ? 'hidden cq-lg:grid' : undefined}

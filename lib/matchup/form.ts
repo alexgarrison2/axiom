@@ -7,7 +7,7 @@
  * simply has fewer games. Tonight's game is never part of the form, and a
  * game can only count if it was played before tonight's date.
  */
-import { goalieMatchKey, sideValues, type MatchupGame } from './matchup-stats';
+import { goalieMatchKey, ordinal, sideValues, type MatchupGame } from './matchup-stats';
 import { SEASON_ID, SEASON_START_DATE } from '../season';
 import type { RecentGame } from '../../types/prediction';
 
@@ -77,13 +77,13 @@ export function startedBy(game: MatchupGame, goalie: string | null | undefined):
 
 export type FormStatKey = 'gf_gp' | 'ga_gp' | 'xgf_pct' | 'cf_pct' | 'pp_pct' | 'pk_pct';
 
-export const FORM_STATS: { key: FormStatKey; label: string; fmt: (v: number) => string }[] = [
-    { key: 'gf_gp', label: 'GF/GM', fmt: v => v.toFixed(1) },
-    { key: 'ga_gp', label: 'GA/GM', fmt: v => v.toFixed(1) },
-    { key: 'xgf_pct', label: 'xGF%', fmt: v => v.toFixed(1) },
-    { key: 'cf_pct', label: 'CF%', fmt: v => v.toFixed(1) },
-    { key: 'pp_pct', label: 'PP%', fmt: v => v.toFixed(1) },
-    { key: 'pk_pct', label: 'PK%', fmt: v => v.toFixed(1) },
+export const FORM_STATS: { key: FormStatKey; label: string; name: string; higherBetter: boolean; fmt: (v: number) => string }[] = [
+    { key: 'gf_gp', label: 'GF/GM', name: 'Goals for per game', higherBetter: true, fmt: v => v.toFixed(1) },
+    { key: 'ga_gp', label: 'GA/GM', name: 'Goals against per game', higherBetter: false, fmt: v => v.toFixed(1) },
+    { key: 'xgf_pct', label: 'xGF%', name: '5v5 expected goals share', higherBetter: true, fmt: v => v.toFixed(1) },
+    { key: 'cf_pct', label: 'CF%', name: 'Shot attempt share', higherBetter: true, fmt: v => v.toFixed(1) },
+    { key: 'pp_pct', label: 'PP%', name: 'Power play', higherBetter: true, fmt: v => v.toFixed(1) },
+    { key: 'pk_pct', label: 'PK%', name: 'Penalty kill', higherBetter: true, fmt: v => v.toFixed(1) },
 ];
 
 /** Fewer current-season games than this and "season" is no baseline worth printing. */
@@ -190,4 +190,43 @@ export function streakOfEntries(entries: FormEntry[]): { outcome: Outcome; n: nu
 export function entryStartedBy(e: FormEntry, goalie: string | null | undefined): boolean {
     const key = goalieMatchKey(goalie);
     return !!key && goalieMatchKey(e.starter) === key;
+}
+
+// ── league rank ─────────────────────────────────────────────────────────────
+
+/** Fewer ranked teams than this and "3rd" says nothing: no rank is shown. */
+export const MIN_RANKED_TEAMS = 8;
+
+export interface LeagueRank {
+    /** 1 = best in the league (by the stat's own direction). */
+    rank: number;
+    /** Teams ranked, this one included. */
+    of: number;
+    /** Another team has the same value. */
+    tied: boolean;
+    /** No team has a worse value: shown as "Last". */
+    worst: boolean;
+    /** 0 (worst) to 1 (best), for the marker on the rank track. */
+    pos: number;
+}
+
+/**
+ * Where a value stands among every team's value over the same window (the
+ * league reference's ascending list). Ties share the better rank; a team the
+ * reference left out (too few games) is ranked as if added to it.
+ */
+export function leagueRank(ref: number[] | undefined, v: number | null, higherBetter: boolean): LeagueRank | null {
+    if (!ref || v == null || !Number.isFinite(v)) return null;
+    const eps = 0.0006;
+    const equal = ref.filter(x => Math.abs(x - v) <= eps).length;
+    const better = ref.filter(x => (higherBetter ? x > v + eps : x < v - eps)).length;
+    const worse = ref.filter(x => (higherBetter ? x < v - eps : x > v + eps)).length;
+    const of = equal === 0 ? ref.length + 1 : ref.length;
+    if (of < MIN_RANKED_TEAMS) return null;
+    return { rank: better + 1, of, tied: equal > 1, worst: worse === 0, pos: of > 1 ? (of - (better + 1)) / (of - 1) : 1 };
+}
+
+/** "3rd", "T-3rd", and "Last" / "T-Last" for the bottom. */
+export function fmtRank(r: LeagueRank): string {
+    return `${r.tied ? 'T-' : ''}${r.worst ? 'Last' : ordinal(r.rank)}`;
 }
