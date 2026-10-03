@@ -108,10 +108,10 @@ test.describe('home slate', () => {
         await page.goto('/');
         await settle(page);
         const nodes = await page.evaluate(() => document.getElementsByTagName('*').length);
-        // A fixed shell plus ~160 nodes per game (its card and its rail row), so a 13-game night
-        // with an edge or lean on most cards stays in budget while real bloat still fails.
+        // A fixed shell (~260 nodes) plus ~105 per collapsed card (13 games: ~1,600). The desktop
+        // rail + pane is client-only and mounts at xl only, so it never counts here.
         const games = await page.locator('article[id]').count();
-        expect(nodes).toBeLessThanOrEqual(Math.max(2500, 600 + 160 * games));
+        expect(nodes).toBeLessThanOrEqual(Math.max(2500, 600 + 120 * games));
         const hiddenFocusables = await page.evaluate(() => {
             const sel = 'a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])';
             return Array.from(document.querySelectorAll(sel)).filter(el => el.closest('[hidden]') || el.closest('[aria-expanded="false"] ~ *[hidden]')).length;
@@ -223,6 +223,24 @@ test.describe('home slate', () => {
         const old = labels.find(t => /^lineups/i.test(t.trim()));
         expect(sim ?? who ?? old).toBeTruthy();
         if (who) expect(who).toMatch(/(\+\d+\.\d [A-Z]{3}|0\.0)/);
+    });
+
+    test.describe('in a zone the server is not in', () => {
+        // Zone-dependent text in server HTML (a puck drop in the server's zone) is a hydration
+        // mismatch: React throws away the server DOM and re-renders, and a tap in that window is lost.
+        test.use({ timezoneId: 'Pacific/Honolulu' });
+        test('hydrates without errors at phone, laptop and rail + pane widths', async ({ page }) => {
+            const errors: string[] = [];
+            page.on('pageerror', e => errors.push(e.message));
+            for (const width of [390, 1200, 1600]) {
+                await page.setViewportSize({ width, height: 900 });
+                for (const url of ['/', pregameSlate()]) {
+                    await page.goto(url);
+                    await settle(page, 250);
+                }
+            }
+            expect(errors).toEqual([]);
+        });
     });
 
     test('tapping inside an expanded card keeps it open; Collapse closes it', async ({ page }) => {

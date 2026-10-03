@@ -1,14 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, useTransition } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState, useSyncExternalStore, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Prediction } from '@/types/prediction';
 import { biggestGames, findImplication, type GameImplicationsData } from '@/utils/implications';
 import { MatchupCard } from '@/components/matchup/MatchupCard';
-import { SlatePane } from '@/components/matchup/SlatePane';
 import { ArchiveCard } from '@/components/matchup/ArchiveCard';
 import { BiggestGames } from '@/components/matchup/SlateStrips';
 import { useLiveScores } from '@/hooks/useLiveScores';
+import { XL_QUERY, useMediaQuery } from '@/hooks/useMediaQuery';
 import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
 import { bothOpeners } from '@/lib/matchup/pills';
 import { hasPrediction } from '@/lib/matchup/edge';
@@ -39,6 +39,24 @@ export interface PredictionsViewerProps {
 
 const noopSubscribe = () => () => {};
 
+/*
+ * The desktop rail + pane (xl and up) is a second rendering of the slate. It
+ * mounts in the browser only, once the viewport is wide enough: phones never
+ * download its code, the Details tabs its pinned card opens, or its markup.
+ * The Details chunk is fetched alongside it so the pane opens in one round trip.
+ */
+const SlatePane = lazy(() => Promise.all([import('@/components/matchup/SlatePane'), import('@/components/matchup/Details')]).then(([m]) => ({ default: m.SlatePane })));
+
+/** Rail + pane placeholder at xl until the pane mounts: same columns, roughly the same heights, no content. */
+function PaneSkeleton({ games, className }: { games: number; className?: string }) {
+    return (
+        <div aria-hidden="true" className={cn('grid-cols-[22.5rem_minmax(0,1fr)] items-start gap-4', className)}>
+            <div className="panel motion-safe:animate-pulse" style={{ height: `calc(${games} * 128px + 40px)` }} />
+            <div className="panel h-[54rem] motion-safe:animate-pulse" />
+        </div>
+    );
+}
+
 export default function PredictionsViewer({
     predictions,
     implications,
@@ -56,6 +74,8 @@ export default function PredictionsViewer({
     const [picked, setDate] = useState<string | null>(null);
     const [target, setTarget] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
+    // Server and hydration render false: the rail + pane is client-only (see SlatePane above).
+    const wide = useMediaQuery(XL_QUERY);
 
     const dates = useMemo(() => [...new Set(predictions.map(p => p.date))].sort(), [predictions]);
     const date = picked ?? (explicitDate || today === serverToday ? initialDate : defaultDate(dates, today));
@@ -214,9 +234,15 @@ export default function PredictionsViewer({
                                 </li>
                             ))}
                         </ul>
-                        <div className="hidden xl:block">
-                            <SlatePane slate={slate} live={live} implications={implications} playoffOdds={playoffOdds} series={series} focusAnchor={target} heading={weekdayDate(headDate)} />
-                        </div>
+                        {wide ? (
+                            <Suspense fallback={<PaneSkeleton games={slate.length} className="hidden xl:grid" />}>
+                                <div className="hidden xl:block">
+                                    <SlatePane slate={slate} live={live} implications={implications} playoffOdds={playoffOdds} series={series} focusAnchor={target} heading={weekdayDate(headDate)} />
+                                </div>
+                            </Suspense>
+                        ) : (
+                            <PaneSkeleton games={slate.length} className="hidden xl:grid" />
+                        )}
                     </>
                 ) : (
                     <div className="panel flex flex-col items-center gap-2 border-dashed px-6 py-10 text-center">
