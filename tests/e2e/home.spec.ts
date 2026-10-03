@@ -130,7 +130,7 @@ test.describe('home slate', () => {
     test('collapsed cards: both tricodes, win bar with market tick, labels and numbers only', async ({ page }) => {
         await page.goto('/');
         await settle(page);
-        for (const card of await page.locator('article').all()) {
+        for (const card of await page.locator('article[id]').all()) {
             const text = await card.innerText();
             const tris = text.match(/\b[A-Z]{3}\b/g) ?? [];
             expect(new Set(tris).size).toBeGreaterThanOrEqual(2);
@@ -175,7 +175,7 @@ test.describe('home slate', () => {
 
     test('shows units only beside a +EV bet', async ({ page }) => {
         await page.goto('/');
-        for (const card of await page.locator('article').all()) {
+        for (const card of await page.locator('article[id]').all()) {
             const text = await card.innerText();
             if (!/\+EV/i.test(text)) expect(text).not.toMatch(/\b\d+(\.\d)?u\b/);
         }
@@ -200,7 +200,7 @@ test.describe('home slate', () => {
     test('the why-this-pick waterfall fits a 390px phone', async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
         await page.goto(pregameSlate());
-        const card = page.locator('article').first();
+        const card = page.locator('article[id]').first();
         await card.locator('h2 button[aria-expanded]').click();
         await card.getByRole('radio', { name: 'Why' }).click();
         await expect(card.getByRole('heading', { name: /^Why: / })).toHaveCount(1);
@@ -210,7 +210,7 @@ test.describe('home slate', () => {
 
     test('the why panel shows the lineup / starting-goalie bar when the model has it', async ({ page }) => {
         await page.goto(pregameSlate());
-        const card = page.locator('article').first();
+        const card = page.locator('article[id]').first();
         await card.locator('h2 button[aria-expanded]').click();
         await card.getByRole('radio', { name: 'Why' }).click();
         const rows = card.locator('section[aria-labelledby^="why-"] li');
@@ -227,7 +227,7 @@ test.describe('home slate', () => {
 
     test('tapping inside an expanded card keeps it open; Collapse closes it', async ({ page }) => {
         await page.goto(pregameSlate());
-        const card = page.locator('article').first();
+        const card = page.locator('article[id]').first();
         const toggle = card.locator('h2 button[aria-expanded]');
         await toggle.click();
         await card.getByRole('radio', { name: 'Lines' }).click();
@@ -310,7 +310,7 @@ test.describe('home slate', () => {
         });
         await page.goto('/');
         await settle(page);
-        const card = page.locator('article').filter({ has: page.locator('[role="img"][aria-label*="Market:"]') }).first();
+        const card = page.locator('article[id]').filter({ has: page.locator('[role="img"][aria-label*="Market:"]') }).first();
         test.skip((await card.count()) === 0, 'no game with a market on this slate');
         await card.locator('h2 button[aria-expanded]').click();
         await card.getByRole('radio', { name: 'Odds' }).click();
@@ -383,7 +383,7 @@ test.describe('home slate', () => {
         // slate (the last loop date can be an archive of finals with no market).
         await page.goto(pregameSlate());
         await settle(page, 300);
-        const card = page.locator('article').filter({ has: page.locator('[role="img"][aria-label*="Market:"]') }).first();
+        const card = page.locator('article[id]').filter({ has: page.locator('[role="img"][aria-label*="Market:"]') }).first();
         test.skip((await card.count()) === 0, 'no priced game');
         const toggle = card.locator('h2 button[aria-expanded]');
         if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
@@ -585,7 +585,7 @@ test.describe('game lifecycle', () => {
             return scoresFor(route, ids.map(id => ({ id, state: 'OFF', away: 3, home: 2, period: 3, periodType: 'REG', clock: '00:00', last: 'REG' })));
         });
         await page.reload();
-        await expect(page.locator('article').first()).toContainText('FINAL');
+        await expect(page.locator('article[id]').first()).toContainText('FINAL');
         await page.evaluate(() => {
             Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
             document.dispatchEvent(new Event('visibilitychange'));
