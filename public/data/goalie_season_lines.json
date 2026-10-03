@@ -1,7 +1,7 @@
 {
  "season_id": "20262027",
  "prev_season_id": "20252026",
- "generated_at": "2026-10-03T02:03:51Z",
+ "generated_at": "2026-10-03T03:02:59Z",
  "goalies": {
   "Adin Hill": {
    "cur": null,
@@ -173,11 +173,11 @@
   "Brandon Bussi": {
    "cur": {
     "w": 0,
-    "l": 0,
+    "l": 1,
     "ot": 1,
-    "svpct": 0.95,
-    "gaa": 0.92,
-    "gp": 1
+    "svpct": 0.87234,
+    "gaa": 2.88,
+    "gp": 2
    },
    "prev": {
     "w": 31,
@@ -923,7 +923,14 @@
    }
   },
   "Logan Thompson": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.93939,
+    "gaa": 2.0,
+    "gp": 1
+   },
    "prev": {
     "w": 31,
     "l": 21,
