@@ -5,26 +5,19 @@ import { WinBar } from '@/components/ui/win-bar';
 import { Crest } from '@/components/ui/crest';
 import { clashSafePair } from '@/components/ui/team-color';
 import { forecastPair, hasMarket, hasPrediction } from '@/lib/matchup/edge';
-import { hasScore, phaseOf, type LiveGame } from '@/lib/matchup/lifecycle';
+import { hasScore, liveClock, phaseOf, type LiveGame } from '@/lib/matchup/lifecycle';
 import { fmtOdds, lastName } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
-import { StatusLine } from './StatusLine';
-import { useHydrated } from './GameTime';
 import { Flag, coinFlipFinal } from './MatchupCard';
 import { GOALIE_TONE, goalieStatus } from './TeamSide';
 import { GoalieGlyph } from './GoalieGlyph';
 
-/** Puck drop as "6:00p" in the viewer's zone (Eastern until hydrated): small and grey, it is not the point of the row. */
-function RailTime({ iso }: { iso: string }) {
-    const hydrated = useHydrated();
+/** Puck drop as "6:00p" in the viewer's zone (Eastern until hydrated). */
+export function railTimeLabel(iso: string, hydrated: boolean): string | null {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return null;
     const t = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: hydrated ? undefined : 'America/New_York' });
-    return (
-        <time dateTime={iso} className="text-micro font-medium tabular-nums text-fg-3">
-            {t.replace(/\s?([AP])M$/i, (_, x: string) => x.toLowerCase())}
-        </time>
-    );
+    return t.replace(/\s?([AP])M$/i, (_, x: string) => x.toLowerCase());
 }
 
 /** A team's projected starter, in the status colour the card uses (confirmed glows green, likely fades, projected is grey). */
@@ -80,6 +73,8 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
     const awayLost = phase === 'final' && scored && live.away.score < live.home.score;
     const homeLost = phase === 'final' && scored && live.home.score < live.away.score;
     const showOurs = phase !== 'final' && hasPrediction(p);
+    // The model call-out (+EV or lean) sits beside the model's diamond on the bar; with no diamond it stays in the middle of the footer.
+    const calloutAtDiamond = phase === 'pre' && model != null;
     return (
         <button
             type="button"
@@ -91,12 +86,12 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
                 selected ? 'text-fg-1' : 'hover:bg-surface-2/60',
             )}
         >
-            <span className="flex min-h-6 items-center justify-between gap-2">
-                {phase === 'pre' ? <RailTime iso={p.startTimeUtc} /> : <StatusLine p={p} phase={phase} live={live} />}
-                <span className="shrink-0 text-center">
-                    <Flag p={p} phase={phase} live={live} />
+            {phase !== 'final' ? (
+                <span className="flex items-center justify-between gap-2">
+                    <Starter p={p} side="away" />
+                    <Starter p={p} side="home" />
                 </span>
-            </span>
+            ) : null}
             <span className="grid grid-cols-[3.5rem_minmax(0,1fr)_3.5rem] items-center gap-2">
                 <Crest tri={a} size={56} className={cn('h-14 w-14', awayLost && 'opacity-50 grayscale-[40%]')} />
                 <span className="flex min-w-0 flex-col gap-1">
@@ -110,21 +105,31 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
                         </span>
                     ) : null}
                     {forecast ? (
-                        <WinBar
-                            away={a}
-                            home={h}
-                            pAway={forecast.away / 100}
-                            market={market}
-                            model={model}
-                            awayColor={colors.away}
-                            homeColor={colors.home}
-                            size="sm"
-                            animate={false}
-                            dimmed={started}
-                            digits={coinFlipFinal(p, phase) ? 1 : 0}
-                            label={started ? 'Pregame win probability' : 'Our forecast win probability'}
-                            className="pointer-events-none"
-                        />
+                        <span className="relative block">
+                            <WinBar
+                                away={a}
+                                home={h}
+                                pAway={forecast.away / 100}
+                                market={market}
+                                model={model}
+                                awayColor={colors.away}
+                                homeColor={colors.home}
+                                size="sm"
+                                animate={false}
+                                dimmed={started}
+                                digits={coinFlipFinal(p, phase) ? 1 : 0}
+                                label={started ? 'Pregame win probability' : 'Our forecast win probability'}
+                                className={cn('pointer-events-none', calloutAtDiamond && 'pb-4')}
+                            />
+                            {calloutAtDiamond && model != null ? (
+                                <span
+                                    className="absolute top-[26px] whitespace-nowrap leading-none"
+                                    style={model > 0.55 ? { right: `calc(${(1 - model) * 100}% + 10px)` } : { left: `calc(${model * 100}% + 10px)` }}
+                                >
+                                    <Flag p={p} phase={phase} live={live} />
+                                </span>
+                            ) : null}
+                        </span>
                     ) : (
                         <span className="flex h-7 items-center justify-center rounded-bar border border-dashed border-line bg-track text-micro uppercase tracking-wide text-fg-3">
                             {started ? 'No pick' : 'No forecast'}
@@ -133,16 +138,24 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
                 </span>
                 <Crest tri={h} size={56} className={cn('h-14 w-14', homeLost && 'opacity-50 grayscale-[40%]')} />
             </span>
-            {phase !== 'final' ? (
-                <span className="flex items-center justify-between gap-2">
-                    <Starter p={p} side="away" />
-                    <Starter p={p} side="home" />
+            <span className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-baseline gap-2">
+                <End p={p} side="away" showOurs={showOurs} />
+                <span className="text-center">
+                    {phase === 'live' ? (
+                        <span className="text-micro font-bold uppercase tracking-wide text-pos">{liveClock(live)}</span>
+                    ) : calloutAtDiamond ? null : (
+                        <Flag p={p} phase={phase} live={live} />
+                    )}
+                </span>
+                <span className="flex justify-end">
+                    <End p={p} side="home" showOurs={showOurs} />
+                </span>
+            </span>
+            {phase === 'pre' ? (
+                <span className="sr-only">
+                    Puck drop <time dateTime={p.startTimeUtc}>{railTimeLabel(p.startTimeUtc, true)}</time>
                 </span>
             ) : null}
-            <span className="flex items-baseline justify-between gap-2">
-                <End p={p} side="away" showOurs={showOurs} />
-                <End p={p} side="home" showOurs={showOurs} />
-            </span>
             <span className="sr-only">
                 {p.away.team.commonName} at {p.home.team.commonName}
             </span>

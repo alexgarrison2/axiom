@@ -1,14 +1,24 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Prediction } from '@/types/prediction';
 import { findImplication, type GameImplicationsData } from '@/utils/implications';
 import { cardAnchor, phaseOf, type LiveMap } from '@/lib/matchup/lifecycle';
 import { weekdayDate } from '@/lib/matchup/format';
 import { MatchupCard } from './MatchupCard';
-import { GameRailItem } from './GameRailItem';
+import { GameRailItem, railTimeLabel } from './GameRailItem';
+import { useHydrated } from './GameTime';
 import type { Tab } from './Details';
+import { cn } from '@/lib/utils';
 import styles from './slate.module.css';
+
+/** The rail heading a game sits under: LIVE, FINAL, or its puck drop ("6:00p") so games starting together share one heading. */
+function groupLabel(p: Prediction, live: LiveMap[string] | undefined, hydrated: boolean): string {
+    const phase = phaseOf(p, live);
+    if (phase === 'live') return 'Live';
+    if (phase === 'final') return 'Final';
+    return railTimeLabel(p.startTimeUtc, hydrated) ?? 'Tonight';
+}
 
 /** The game to open first: the one the URL names, else the first live game, else the first on the slate. */
 function defaultId(slate: Prediction[], live: LiveMap, anchor: string | null): string | null {
@@ -43,6 +53,7 @@ export function SlatePane({
 }) {
     const [picked, setPicked] = useState<{ id: string; dir: 'up' | 'down' | null } | null>(null);
     const [tab, setTab] = useState<Tab>('form');
+    const hydrated = useHydrated();
     const listRef = useRef<HTMLUListElement>(null);
     const paneRef = useRef<HTMLDivElement>(null);
     const [bar, setBar] = useState<{ top: number; height: number } | null>(null);
@@ -101,7 +112,7 @@ export function SlatePane({
     return (
         <div className="grid grid-cols-[22.5rem_minmax(0,1fr)] items-start gap-4">
             <nav aria-label={`Games, ${heading}`} className="sticky top-[var(--appbar-h)] -m-3 max-h-[calc(100dvh-var(--appbar-h))] overflow-y-auto p-3 overscroll-contain scrollbar-hide">
-                <ul ref={listRef} onKeyDown={onKey} className="panel relative flex flex-col divide-y divide-line p-1.5">
+                <ul ref={listRef} onKeyDown={onKey} className="panel relative flex flex-col p-1.5">
                     {bar ? (
                         <span
                             aria-hidden="true"
@@ -109,11 +120,22 @@ export function SlatePane({
                             style={{ top: bar.top, height: bar.height }}
                         />
                     ) : null}
-                    {slate.map(p => (
-                        <li key={p.id} className="relative">
-                            <GameRailItem p={p} live={live[p.id] ?? null} selected={p.id === selectedId} onSelect={() => select(p.id)} />
-                        </li>
-                    ))}
+                    {slate.map((p, i) => {
+                        const group = groupLabel(p, live[p.id], hydrated);
+                        const first = i === 0 || groupLabel(slate[i - 1], live[slate[i - 1].id], hydrated) !== group;
+                        return (
+                            <Fragment key={p.id}>
+                                {first ? (
+                                    <li aria-hidden="true" className={cn('px-3 pb-0.5 text-micro font-bold uppercase tracking-[0.14em] text-fg-3', i === 0 ? 'pt-1.5' : 'pt-3')}>
+                                        {group}
+                                    </li>
+                                ) : null}
+                                <li className={cn('relative', !first && 'border-t border-line')}>
+                                    <GameRailItem p={p} live={live[p.id] ?? null} selected={p.id === selectedId} onSelect={() => select(p.id)} />
+                                </li>
+                            </Fragment>
+                        );
+                    })}
                 </ul>
             </nav>
             <div ref={paneRef} className="min-w-0 scroll-mt-[calc(var(--appbar-h)+12px)]" aria-label={`${weekdayDate(selected.date)} game`} role="region">
