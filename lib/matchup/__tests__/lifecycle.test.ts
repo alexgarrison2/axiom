@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cardAnchor, defaultDate, finalLabel, liveClock, modelCorrect, phaseOf, pollInterval, slateDone, sortSlate, type LiveGame } from '../lifecycle';
-import { dayLabel, fmtTime, easternDate } from '../format';
+import { dayLabel, fmtTime, easternDate, slateDate } from '../format';
 import { byTeams, fixture } from './fixtures';
 
 const opening = fixture('opening_night');
@@ -52,6 +52,24 @@ describe('game lifecycle (E1)', () => {
     it('renders 21:00Z as 5:00 PM EDT in America/New_York', () => {
         expect(fmtTime('2026-09-29T21:00:00Z', 'America/New_York')).toBe('5:00 PM EDT');
         expect(easternDate(new Date('2026-09-30T03:30:00Z'))).toBe('2026-09-29');
+    });
+
+    it('keeps last night as the slate day until 3:00 am ET (wall clock, across DST)', () => {
+        // EDT (UTC-4): 23:59, 00:30 and 02:59 ET belong to Oct 3's slate; 03:00 ET starts Oct 4.
+        expect(slateDate(new Date('2026-10-04T03:59:00Z'))).toBe('2026-10-03');
+        expect(slateDate(new Date('2026-10-04T04:30:00Z'))).toBe('2026-10-03');
+        expect(slateDate(new Date('2026-10-04T06:59:00Z'))).toBe('2026-10-03');
+        expect(slateDate(new Date('2026-10-04T07:00:00Z'))).toBe('2026-10-04');
+        expect(slateDate(new Date('2026-10-04T16:00:00Z'))).toBe('2026-10-04');
+        // EST (UTC-5): 02:30 ET is 07:30Z; 03:00 ET is 08:00Z.
+        expect(slateDate(new Date('2026-12-02T07:30:00Z'))).toBe('2026-12-01');
+        expect(slateDate(new Date('2026-12-02T08:00:00Z'))).toBe('2026-12-02');
+        // Fall-back night (Nov 1, 2026): 02:30 EST is still Oct 31's slate.
+        expect(slateDate(new Date('2026-11-01T07:30:00Z'))).toBe('2026-10-31');
+        expect(slateDate(new Date('2026-11-01T08:00:00Z'))).toBe('2026-11-01');
+        // The default slate follows it: at 00:30 ET last night's games are still the default.
+        expect(defaultDate(['2026-10-03', '2026-10-04'], slateDate(new Date('2026-10-04T04:30:00Z')))).toBe('2026-10-03');
+        expect(defaultDate(['2026-10-03', '2026-10-04'], slateDate(new Date('2026-10-04T07:00:00Z')))).toBe('2026-10-04');
     });
 
     it('labels date tabs Today / Tomorrow', () => {

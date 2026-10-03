@@ -115,10 +115,26 @@ export function fmtClock(iso: string, timeZone?: string): string {
     return dateFormatter('en-US', { hour: 'numeric', minute: '2-digit', ...(timeZone ? { timeZone } : {}) }).format(d);
 }
 
-/** Today's NHL slate date (Eastern) as YYYY-MM-DD. */
+/** The Eastern calendar date as YYYY-MM-DD. */
 export function easternDate(now: Date = new Date()): string {
     const p = dateFormatter('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
     return p; // en-CA formats as YYYY-MM-DD
+}
+
+/** Wall-clock hour (0-23) on the Eastern clock at which the slate day rolls over. */
+export const SLATE_ROLLOVER_HOUR = 3;
+
+/**
+ * Today's NHL slate date (Eastern, YYYY-MM-DD): the Eastern date, except that
+ * the previous night's slate stays "today" until 3:00 am ET, so late West-coast
+ * games still running after midnight are shown under Tonight, not Yesterday.
+ * A pure function of the clock (no live scores), so the server render and the
+ * browser's hydration agree at any instant.
+ */
+export function slateDate(now: Date = new Date()): string {
+    const h = Number(dateFormatter('en-US', { timeZone: 'America/New_York', hour: 'numeric', hourCycle: 'h23' }).format(now));
+    const d = easternDate(now);
+    return h < SLATE_ROLLOVER_HOUR ? addDays(d, -1) : d;
 }
 
 export function addDays(ymd: string, n: number): string {

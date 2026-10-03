@@ -614,14 +614,17 @@ test.describe('URL state and routes', () => {
         await expect(nav.locator('a[aria-current]')).toHaveCount(1);
     });
 
-    test('just after midnight ET the last game day is the default and other days still open by URL', async ({ page }) => {
-        // 00:30 ET on the last slate's day: the window between midnight and the morning rebuild.
+    test('until 3:00 am ET last night stays Tonight, and other days still open by URL', async ({ page }) => {
+        // Just after midnight ET the night after the last slate (05:30Z = 01:30 EDT / 00:30 EST): its late
+        // West-coast games can still be on, so it is still the default slate and its chip still says Tonight.
         const last = pregameSlate().split('=')[1];
-        await page.clock.setFixedTime(new Date(`${last}T04:30:00Z`));
+        const next = new Date(Date.parse(`${last}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+        await page.clock.setFixedTime(new Date(`${next}T05:30:00Z`));
         await page.goto('/');
         await settle(page);
         const nav = page.getByRole('navigation', { name: 'Game day' });
         await expect(nav.getByRole('link').last()).toHaveAttribute('aria-current', 'date');
+        await expect(nav.getByRole('link').last()).toContainText('Tonight');
         await expect(nav.locator('a[aria-current]')).toHaveCount(1);
         const others = nav.locator('a:not([aria-current])');
         test.skip((await others.count()) === 0, 'a single game day');
@@ -633,6 +636,18 @@ test.describe('URL state and routes', () => {
         await expect(page).toHaveURL(new RegExp(`\\${href.replace('/', '')}$`));
         await expect(nav.locator(`a[href="${href}"]`)).toHaveAttribute('aria-current', 'date');
         await expect(nav.locator('a[aria-current]')).toHaveCount(1);
+    });
+
+    test('from 3:00 am ET the night before is Yesterday', async ({ page }) => {
+        // 08:30Z the night after the last slate = 04:30 EDT / 03:30 EST: the slate day has rolled over.
+        const last = pregameSlate().split('=')[1];
+        const next = new Date(Date.parse(`${last}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+        await page.clock.setFixedTime(new Date(`${next}T08:30:00Z`));
+        await page.goto('/');
+        await settle(page);
+        const nav = page.getByRole('navigation', { name: 'Game day' });
+        await expect(nav.locator(`a[href="/?date=${last}"]`)).toContainText('Yesterday');
+        await expect(nav.getByRole('link', { name: /Tonight/ })).toHaveCount(0);
     });
 
     test('an off day shows the next game day', async ({ page }) => {

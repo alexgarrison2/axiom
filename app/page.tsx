@@ -4,7 +4,7 @@ import { getImplications, getPlayoffOdds, getPlayoffSeries, getPredictions } fro
 import PredictionsViewer from '@/components/PredictionsViewer';
 import { defaultDate } from '@/lib/matchup/lifecycle';
 import { compactForClient } from '@/lib/matchup/parse';
-import { addDays, easternDate } from '@/lib/matchup/format';
+import { addDays, slateDate } from '@/lib/matchup/format';
 import { validDate, isFinalState, slateTitle, type ArchiveSlate } from '@/lib/matchup/archive';
 import { getArchiveSlate } from '@/lib/matchup/archive-server';
 
@@ -40,7 +40,7 @@ async function slateDates(): Promise<string[]> {
 
 /** Dated title that follows ?date=, e.g. "NHL predictions for Thu, Oct 1 | Pony xG". */
 export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
-    const today = easternDate();
+    const today = slateDate();
     const date = requested(await searchParams, today) ?? defaultDate(await slateDates(), today) ?? today;
     return { title: { absolute: slateTitle(date, today) } };
 }
@@ -48,7 +48,7 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
     const sp = await searchParams;
     const predictions = await loadPredictions();
-    const today = easternDate();
+    const today = slateDate();
     const dates = [...new Set(predictions.map(p => p.date))].sort();
     const asked = requested(sp, today);
     const initialDate = asked ?? defaultDate(dates, today);

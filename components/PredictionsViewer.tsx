@@ -11,7 +11,7 @@ import { useLiveScores } from '@/hooks/useLiveScores';
 import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
 import { bothOpeners } from '@/lib/matchup/pills';
 import { hasPrediction } from '@/lib/matchup/edge';
-import { easternDate, railHeading, railLabel, weekdayDate } from '@/lib/matchup/format';
+import { railHeading, railLabel, slateDate, weekdayDate } from '@/lib/matchup/format';
 import { slateRecord, slateTitle, type ArchiveSlate } from '@/lib/matchup/archive';
 import { WinBarLegend } from '@/components/ui/win-bar';
 import { READING_HREF } from '@/lib/matchup/glossary-links';
@@ -22,7 +22,7 @@ export interface PredictionsViewerProps {
     predictions: Prediction[];
     implications: GameImplicationsData | null;
     playoffOdds: Record<string, number>;
-    /** Eastern slate date when the page was rendered. */
+    /** Slate date (Eastern, rolling over at 3:00 am ET: lib/matchup/format slateDate) when the page was rendered. */
     today: string;
     /** Date shown on first paint (from ?date= when valid, else the default slate). */
     initialDate: string | null;
@@ -51,7 +51,7 @@ export default function PredictionsViewer({
 }: PredictionsViewerProps) {
     const router = useRouter();
     // A cached page may have been rendered on an earlier day: "today" is re-derived in the browser.
-    const today = useSyncExternalStore(noopSubscribe, easternDate, () => serverToday);
+    const today = useSyncExternalStore(noopSubscribe, slateDate, () => serverToday);
     const [picked, setDate] = useState<string | null>(null);
     const [target, setTarget] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
