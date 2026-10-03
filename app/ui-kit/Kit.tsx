@@ -287,7 +287,7 @@ export default function Kit() {
                     <CardContent className="flex items-center justify-between">
                         <span className="flex items-center gap-2 sm:gap-3">
                             <Crest tri="NYI" size={56} className="h-10 w-10 sm:h-14 sm:w-14" />
-                            <span className="glow-green font-display text-[15px] font-bold sm:text-[18px]">SOROKIN</span>
+                            <span className="glow-blue font-display text-[15px] font-bold sm:text-[18px]">SOROKIN</span>
                         </span>
                         <span className="text-caption text-fg-3">@</span>
                         <span className="flex items-center gap-3">
@@ -358,7 +358,7 @@ export default function Kit() {
                         <span aria-hidden="true" className="live-dot" />
                         2ND 14:22
                     </span>
-                    <span className="glow-green font-display text-[18px] font-bold">Confirmed</span>
+                    <span className="glow-blue font-display text-[18px] font-bold">Confirmed</span>
                     <span className="font-display text-[18px] font-bold text-pos opacity-75">Likely</span>
                     <span className="font-display text-[18px] font-bold text-fg-2">Projected</span>
                 </div>

@@ -26,8 +26,8 @@ export function goalieStatus(s: string | null | undefined) {
 
 /** Goalie-name colour by status. Only a confirmed starter glows. */
 export const GOALIE_TONE: Record<GoalieTone, string> = {
-    conf: 'glow-green',
-    likely: 'text-pos/75',
+    conf: 'glow-blue',
+    likely: 'text-goalie/85',
     proj: 'text-fg-2',
 };
 

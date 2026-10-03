@@ -23,7 +23,7 @@ function Ev({ o, gated }: { o: MarketOutcome | undefined; gated: boolean }) {
 }
 
 /** Shared column template: outcome | book | Pony | win % | edge. Header and every row use it so the columns line up. */
-const GRID = 'grid grid-cols-[minmax(4.5rem,7rem)_2.5rem_2.5rem_2.5rem_2.75rem] items-center gap-x-1.5 coarse:gap-x-2';
+const GRID = 'grid grid-cols-[minmax(4.25rem,7rem)_2.5rem_2.5rem_2.5rem_3.5rem] items-center gap-x-1.5 coarse:gap-x-2';
 
 /** One outcome as one line: who, the book price, Pony's price, Pony's win %, and the edge when it is positive. */
 function Outcome({ o, tag, gated, tri }: { o: MarketOutcome | undefined; tag: string; gated: boolean; tri?: string }) {

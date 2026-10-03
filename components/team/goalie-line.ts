@@ -11,10 +11,10 @@ export function goalieState(status: string | null | undefined): GoalieState {
     return 'projected';
 }
 
-/** Display-face goalie-name class per state: confirmed glows green, likely is faded green, projected is grey. */
+/** Display-face goalie-name class per state: confirmed glows blue, likely is faded blue, projected is grey. */
 export const GOALIE_NAME: Record<GoalieState, string> = {
-    confirmed: 'glow-green',
-    likely: 'text-pos/70',
+    confirmed: 'glow-blue',
+    likely: 'text-goalie/85',
     projected: 'text-fg-2',
 };
 

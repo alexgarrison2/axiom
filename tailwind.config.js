@@ -78,6 +78,7 @@ module.exports = {
         "line-strong": "var(--line-strong)",
         brand: { DEFAULT: token("brand"), ink: "var(--brand-ink)" },
         pos: token("pos"),
+        goalie: token("goalie"),
         neg: token("neg"),
         warn: token("warn"),
         info: token("info"),

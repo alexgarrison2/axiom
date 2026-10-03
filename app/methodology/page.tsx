@@ -294,13 +294,13 @@ export default function MethodologyPage() {
                                 <Key
                                     sample={
                                         <span className="flex items-center gap-2 font-display text-caption font-semibold uppercase">
-                                            <span className="glow-green">Conf</span>
+                                            <span className="glow-blue">Conf</span>
                                             <span className="text-pos/60">Likely</span>
                                             <span className="text-fg-2">Proj</span>
                                         </span>
                                     }
                                 >
-                                    Goalie names by status: <span className="text-pos">green</span> confirmed, <span className="text-pos/70">faded green</span>{' '}
+                                    Goalie names by status: <span className="text-goalie">blue</span> confirmed, <span className="text-goalie/85">faded blue</span>{' '}
                                     likely, grey projected. The tiny line under a name is this season&apos;s W-L-OTL · SV% · GAA, and head-to-head against
                                     tonight&apos;s opponent when there is one.
                                 </Key>
@@ -477,7 +477,7 @@ export default function MethodologyPage() {
                             <p>
                                 Goalie strength is measured by <strong>goals saved above expected (GSAx)</strong>: expected goals against minus goals
                                 actually allowed. Starting goalies come from team and beat-reporter reports (DailyFaceoff, ESPN). The name&apos;s colour
-                                carries the status — green confirmed, faded green likely, grey projected — with no extra words on the card.
+                                carries the status — blue confirmed, faded blue likely, grey projected — with no extra words on the card.
                             </p>
                         </Section>
 
