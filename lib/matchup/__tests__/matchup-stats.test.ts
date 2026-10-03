@@ -155,6 +155,13 @@ describe('percentiles and advantage', () => {
 });
 
 describe('last N filter', () => {
+    it('settles last N before the starter filter, so the window matches the league reference', () => {
+        const gs = [1, 2, 3, 4, 5, 6].map(i => game({ id: `g${i}`, date: `2026-10-0${i}`, starter: i % 2 ? 'A. One' : 'B. Two' } as never, 0));
+        const ids = filterGames(gs, { location: 'all', rest: 'all', starter: 'A. One', last: 5 }).map(g => g.row.id);
+        // last 5 = g2..g6, of which g3 and g5 were started by A. One (not "last 5 of A. One's games")
+        expect(ids).toEqual(['g3', 'g5']);
+    });
+
     it('keeps each team\'s most recent N games after the other filters', () => {
         const gs = [1, 2, 3, 4, 5, 6].map(i => game({ id: `g${i}`, date: `2026-10-0${i}` } as never, 0));
         const ids = (last: 'all' | 5 | 10) => filterGames(gs, { location: 'all', rest: 'all', starter: null, last }).map(g => g.row.id);

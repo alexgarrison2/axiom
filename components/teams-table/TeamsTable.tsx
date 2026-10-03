@@ -261,7 +261,9 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     }, [model, columns, payload]);
 
     // A sort key from another section (sessions persist it) falls back to points.
-    const activeSort = columns.some(c => c.col.key === sort.key) ? sort : { key: 'points', dir: 'desc' as SortDir };
+    // Until the idle expansion the column set is partial, so a sort on a column that is only not rendered yet still holds.
+    const sortable = columns.some(c => c.col.key === sort.key) || (!expanded && COLUMN_BY_KEY.has(sort.key) && !hiddenSet.has(sort.key));
+    const activeSort = sortable ? sort : { key: 'points', dir: 'desc' as SortDir };
 
     const sorted = React.useMemo(() => {
         if (!model) return [];
