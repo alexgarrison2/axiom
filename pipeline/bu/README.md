@@ -84,17 +84,28 @@ refresh logs a warning, `validate_outputs.py bu_bundle` fails on the fresh bundl
 no-FIN rollback model (`shadow.rapm`) is published.  Also build and commit the season's
 player sample for the site ratings (`python -m bu.lineup.ratings_export sample --lake-dir <lake>
 --season <S>`: EV minutes / games of the three seasons before S, names of every lake player).
+And build and commit the season's **ratings v3 pack** (`python -m bu.rapm.v3_pack pack --season <S>
+--xg <the asof xG source> --out <RAPM state>` from the full lake, after `bu.rapm asof` through S so
+the season's aging curve is in `prior_pack/season=S` -> `bu/lineup/out/ratings_pack_<S>.json.gz`,
+~1.7 MB); without it the bundle has no `v3` table, `validate_outputs.py bu_bundle` fails on the
+fresh bundle and the site's `player_ratings.json` is not re-exported (the last file stays).
 
-**Site player ratings** (`bu/lineup/ratings_export.py` -> `public/data/player_ratings.json`):
-the one player rating the site shows (/players, team pages, the matchup Lines tab).  One row per
-rated skater plus every rostered skater, every rating higher = better: `off` (EV xGF/60 impact,
-the bundle's `o`), `def` (EV xGA/60 *prevented*, `-d`; file version 2, v1 carried `d`), `net = off + def`
-(= `o - d`), the EV sample (`toi` minutes, `gp`) over the last three seasons +
-this one, `roster` (on a current NHL roster) and `rated` (False = no NHL sample yet: the rookie
-prior of his position group, as in the lineup term).  Exported by every bundle refresh
-(`bu_refresh.yml` commits it with the bundle) and by the daily full run (`refresh_pipeline.py`
-stage `player_ratings`: today's rosters), rewritten only when its content changed;
-`validate_outputs.py player_ratings` gates it.
+**Site player ratings: ratings v3** (`bu/lineup/ratings_export.py` -> `public/data/player_ratings.json`,
+version 3; model and validation: `bu/rapm/README.md` "Ratings v3"; schema: `pipeline/CONTRACT.md`):
+the one player rating the site shows (/players, team pages, the matchup Lines tab).  Headline
+`impact` = goals per 82 games above an average player at his position (F / D) = `off_impact`
+(EV offence + PP offence + finishing) + `def_impact` (EV defence + PK defence), each rate times his
+expected minutes per game in the state; per-60 rates `ev_off`, `ev_def`, `pp_off`, `pk_def`, `fin`
+and expected minutes `toi_ev_gp`, `toi_pp_gp`, `toi_pk_gp` as secondary columns; `sd` = posterior SD
+of `impact`; the v2 names `off` (= `ev_off`), `def` (= `ev_def`), `net = off + def`, `off_total =
+off + fin`, the EV sample (`toi`, `gp`, `toi_cur`, `gp_cur`), `roster` and `rated` stay.  Source: the
+serving bundle's `v3` table (`bu.lineup serve` rolls the season's ratings pack through the season's
+games: in-season weights move with every game, so the daily refresh rolls the recency forward).
+Exported by every bundle refresh (`bu_refresh.yml` commits it with the bundle) and by the daily full
+run (`refresh_pipeline.py` stage `player_ratings`: today's rosters), rewritten only when its content
+changed; `validate_outputs.py player_ratings` gates it.  The game model is unaffected: ratings v3
+in the lineup term did not beat the live model on the dev seasons (`bu/rapm/README.md`), so the
+bundle's `players` / `fin` tables (`bu_d_net`, `bu_d_delta`, `bu_d_fin`) stay RAPM v2 / FIN v2.
 
 ## FIN in the game model (shipped 2026-10-02)
 
@@ -150,14 +161,17 @@ committed `fin_pack_<S>.json.gz` plus this season's games in the refit's xG / st
 
 A continuous-time Monte Carlo of every game (regulation, 3v3 OT, shootout; penalties and power
 plays, pulled goalies, score effects, a post-goal lull, a strength-tilt shock), with rates built
-from the RAPM v2 lineup term, FIN, the expected starters and a point-in-time team state.  It
+from the lineup ratings term and FIN (ratings v4 since 2026-10-03, RAPM v2 before), the expected
+starters and a point-in-time team state.  It
 prices every market in `odds.json` (regulation 3-way, puck line, totals with pushes, 1st-period
 3-way and 2-way) in `predictions_detailed.csv` (CONTRACT "Game simulator"), anchored to the
 published win % and total.  Since 2026-10-03 its own win % is the model win % (before the
 unchanged market blend), promoted by the pre-registered comparison `bu/sim/prereg_primary.json`
 (dev 2023-25 log loss 0.6588 vs the logit's 0.6595; holdout 2025-26 0.6793 vs 0.6792, inside the
 +0.0010 margin); the logit game model is a logged shadow (`logit_*`) and the per-game fallback,
-and `PONYXG_WINPCT=logit` rolls back.  Derivative EVs are INFO ONLY until the live closing-line
+and `PONYXG_WINPCT=logit` rolls back.  Its lineup inputs moved to ratings v4 by
+`bu/sim/prereg_inputs_v4.json` (dev ML 0.65815 vs 0.65880 on RAPM v2, derivative score -0.0011;
+holdout +0.0002, inside the +0.0010 margin); `PONYXG_SIM_INPUTS=v2` rolls back.  Derivative EVs are INFO ONLY until the live closing-line
 test of `bu/sim/prereg.json` passes.  Model, fitted parameters and validation:
 `bu/sim/README.md`.
 

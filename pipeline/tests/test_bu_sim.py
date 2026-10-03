@@ -360,3 +360,79 @@ def test_lineup_source_is_pluggable(tmp_path, monkeypatch):
     PR.save_params({"version": "x"}, str(alt))
     monkeypatch.setenv(PR.PARAMS_ENV, str(alt))
     assert PR.load_params()["version"] == "x"
+
+
+def test_lineup_source_reads_its_own_ratings_table(monkeypatch):
+    """The simulator reuses the game model's loaded term only when it reads the same ratings table
+    of the bundle (the r4 logit serves v4; a v2-fitted simulator must not get v4 inputs)."""
+    from bu.lineup import serve as SV
+    from bu.sim import lineup_source as LS
+    loads = []
+
+    class Term:
+        def __init__(self, ratings):
+            self.ratings_source = ratings
+
+    monkeypatch.setattr(SV.LiveLineupTerm, "load", classmethod(lambda cls, path, **kw: loads.append(kw) or
+                                                               Term(kw.get("ratings"))))
+    path = LS.resolve(LS.DEFAULT["serving_bundle"])
+    model_v4 = Term("v4")
+    t = LS.live_term(LS.spec(None), {path: model_v4})
+    assert t is not model_v4 and t.ratings_source == "v2" and loads == [{"ratings": "v2"}]
+    v4 = {"lineup": {"name": "v4", "history_table": "x.csv", "ratings": "v4"}}
+    assert LS.live_term(LS.spec(v4), {path: model_v4}) is model_v4 and len(loads) == 1
+    assert LS.spec(None)["history_table"].endswith("lineup_features_v2.csv.gz")
+
+
+def test_sim_inputs_switch(tmp_path, monkeypatch):
+    from bu.sim import params as PR
+    monkeypatch.delenv(PR.PARAMS_ENV, raising=False)
+    monkeypatch.setattr(PR, "OUT_DIR", str(tmp_path))
+    (tmp_path / "sim_params_v2.json").write_text("{}")
+    monkeypatch.setenv(PR.INPUTS_ENV, "v2")
+    assert PR.params_path() == str(tmp_path / "sim_params_v2.json")
+    monkeypatch.setenv(PR.INPUTS_ENV, "../etc")            # unknown / unsafe: the default file
+    assert PR.params_path() == PR.PARAMS_PATH
+    monkeypatch.setenv(PR.PARAMS_ENV, "/x/p.json")         # an explicit file wins
+    assert PR.params_path() == "/x/p.json"
+
+
+def test_committed_sim_params_lineup_source():
+    """The committed simulator parameters name their lineup source; a v4 source reads the bundle's
+    v4 table and the v2 rollback parameters (then committed) are the RAPM v2 source."""
+    import os
+    from bu.sim import lineup_source as LS
+    from bu.sim import params as PR
+    p = load_params(PR.PARAMS_PATH)
+    src = LS.spec(p)
+    assert src["name"] in ("rapm_v2", "v4") and os.path.exists(LS.resolve(src["history_table"]))
+    if src["name"] == "v4":
+        assert src["ratings"] == "v4" and p["glm"]["lineup_source"] == "v4"
+        p2 = load_params(os.path.join(PR.OUT_DIR, "sim_params_v2.json"))
+        assert LS.spec(p2)["name"] == "rapm_v2" and LS.spec(p2)["ratings"] == "v2"
+
+
+def test_check_sim_inputs(tmp_path, monkeypatch):
+    """validate_outputs sim_inputs: the committed state passes; a fresh bundle of this season without
+    the simulator's ratings table fails when the parameters read one."""
+    import gzip
+    from datetime import datetime, timezone
+    import validate_outputs as Vo
+    from bu.sim import params as PR
+    from season import SEASON_ID
+    monkeypatch.delenv(PR.PARAMS_ENV, raising=False)
+    monkeypatch.delenv(PR.INPUTS_ENV, raising=False)
+    assert Vo.check_sim_inputs({}) == []
+    p = load_params(PR.PARAMS_PATH)
+    p = {**p, "lineup": {**(p.get("lineup") or {}), "ratings": "v4", "name": "v4"},
+         "glm": {**p["glm"], "lineup_source": "v4"}}
+    alt = tmp_path / "p.json"
+    PR.save_params(p, str(alt))
+    monkeypatch.setenv(PR.PARAMS_ENV, str(alt))
+    b = {"version": 1, "kind": "serving_bundle", "season": SEASON_ID,
+         "built_at": datetime.now(timezone.utc).isoformat()}
+    path = tmp_path / "b.json.gz"
+    with gzip.open(path, "wt") as f:
+        json.dump(b, f)
+    errs = Vo.check_sim_inputs({"bu_bundle_path": str(path)})
+    assert len(errs) == 1 and "no v4 ratings table" in errs[0]

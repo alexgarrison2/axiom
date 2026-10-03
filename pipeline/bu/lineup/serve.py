@@ -198,6 +198,8 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
         replay(state, history, season_shares(paths, [season], games), games, lineups, pos_group)
     ratings, cov, src = _ratings_table(paths, season, seed)
     fin = fin_table(paths, season)
+    v3 = v3_table(paths, season)
+    v4 = v4_table(paths, season)
     means = seed.rookie.means
     rookie = {g: [means.get((g, "all", "o"), 0.0), means.get((g, "all", "d"), 0.0)] for g in ("F", "D")}
     teams = {}
@@ -218,6 +220,8 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
            "shares": _state_json(state), "history": _history_json(history),
            "teams": {**sp.get("teams", {}), **teams},
            "fin": fin,
+           "v3": v3,
+           "v4": v4,
            "crosswalk": None}
     if crosswalk is not None and len(crosswalk):
         cols = ["player_id", "norm", "last", "team", "sweater", "rank"]
@@ -243,6 +247,33 @@ def fin_table(paths, season: str, pack: str | None = None) -> dict | None:
             "prior_xg": st.prior_xg, "columns": ["player_id", "fin_f", "fin_d"], "rows": FN.bundle_rows(st)}
 
 
+def v3_table(paths, season: str, pack: str | None = None) -> dict | None:
+    """The bundle's ``v3`` table: player ratings v3 (``bu.rapm.v3_pack.bundle_table``: the committed
+    ``ratings_pack_<S>.json.gz`` rolled through the season's games in the refresh's caches), the
+    source of the site's ``player_ratings.json``; None without a ratings pack for the season.
+    Never raises: a failure leaves the v2 term untouched (the export then keeps its last file)."""
+    try:
+        from bu.rapm import v3_pack as P3
+        return P3.bundle_table(paths, season, pack_file=pack)
+    except Exception as e:  # noqa: BLE001
+        print(f"  [serve] v3 ratings table failed: {type(e).__name__}: {e}")
+        return None
+
+
+def v4_table(paths, season: str, pack: str | None = None) -> dict | None:
+    """The bundle's ``v4`` table: player ratings v4 (``bu.rapm.v4_pack.bundle_table``: v3's columns plus
+    the box-score priors ``spm_o`` / ``spm_d`` / ``spm_pp`` / ``spm_pk`` and the penalty rates ``pd60`` /
+    ``pt60``; ``meta.pen_value`` goals per penalty unit), the source of the site's ``player_ratings.json``
+    (version 4) and of the game simulator's player ratings; None without a v4 ratings pack (the export
+    then falls back to the ``v3`` table).  Never raises."""
+    try:
+        from bu.rapm import v4_pack as P4
+        return P4.bundle_table(paths, season, pack_file=pack)
+    except Exception as e:  # noqa: BLE001
+        print(f"  [serve] v4 ratings table failed: {type(e).__name__}: {e}")
+        return None
+
+
 def team_ids_from_lake(lake, seasons) -> dict:
     g = read_table(lake, "games", seasons, columns=["home_abbrev", "home_team_id"])
     if g.empty:
@@ -255,22 +286,49 @@ def team_ids_from_lake(lake, seasons) -> dict:
 class LiveLineupTerm:
     """Tonight's lineup term from a serving bundle (see module docstring)."""
 
-    def __init__(self, bundle: dict, max_age_h: float = MAX_AGE_H):
+    def __init__(self, bundle: dict, max_age_h: float = MAX_AGE_H, ratings: str = "v2"):
+        """``ratings``: the player ratings the model was trained on (game_model_meta.json
+        ``bu_lineup.ratings``): 'v2' = the bundle's ``players`` / ``rookie`` / ``fin`` tables (RAPM v2),
+        'v3' / 'v4' = the bundle's ``v3`` / ``v4`` table (o, d, rated, fin; rookies at its
+        ``meta.low_role``), the same ratings the walk-forward feature table was built from."""
         if int(bundle.get("version", 0)) != BUNDLE_VERSION or bundle.get("kind") != "serving_bundle":
             raise ValueError("not a serving bundle of version %s" % BUNDLE_VERSION)
         self.b = bundle
         self.max_age_h = float(max_age_h)
         self.built_at = datetime.fromisoformat(bundle["built_at"])
-        cols = bundle["players"]["columns"]
-        self.ratings = {int(r[0]): (float(r[cols.index("o")]), float(r[cols.index("d")]), bool(r[cols.index("rated")]))
-                        for r in bundle["players"]["rows"]}
-        self.rookie = {g: tuple(v) for g, v in bundle["rookie"].items()}
+        self.ratings_source = str(ratings or "v2")
+        rt = None
+        if self.ratings_source != "v2":
+            rt = bundle.get(self.ratings_source)
+            if not rt or not isinstance(rt.get("rows"), list) or not rt["rows"]:
+                raise ValueError(f"the bundle has no {self.ratings_source} ratings table")
+        if rt is None:
+            cols = bundle["players"]["columns"]
+            self.ratings = {int(r[0]): (float(r[cols.index("o")]), float(r[cols.index("d")]),
+                                        bool(r[cols.index("rated")])) for r in bundle["players"]["rows"]}
+            self.rookie = {g: tuple(v) for g, v in bundle["rookie"].items()}
+        else:
+            cols = rt["columns"]
+            io, id_, ir = cols.index("o"), cols.index("d"), cols.index("rated")
+            self.ratings = {int(r[0]): (float(r[io]), float(r[id_]), bool(r[ir])) for r in rt["rows"]}
+            low = (rt.get("meta") or {}).get("low_role") or {}
+            self.rookie = {g: (float(v[0]), float(v[1])) for g, v in low.items()} or \
+                {g: tuple(v) for g, v in bundle["rookie"].items()}
         self.state = _state_from_json(bundle["shares"])
         self.history = _history_from_json(bundle["history"])
         self.teams = {str(k): int(v) for k, v in (bundle.get("teams") or {}).items()}
         fin = bundle.get("fin") or {}
         self.fin = ({int(r[0]): (float(r[1]), float(r[2])) for r in fin["rows"]}
                     if isinstance(fin.get("rows"), list) and "bu_d_fin" in (bundle.get("columns") or []) else None)
+        if rt is not None and "fin" in rt["columns"] and "bu_d_fin" in (bundle.get("columns") or []):
+            jf = rt["columns"].index("fin")       # v3 / v4: FIN at the player's own position group
+            self.fin = {int(r[0]): (float(r[jf]), float(r[jf])) for r in rt["rows"]}
+        # the lineup term's intercept c0 (league 5v5 xGF/60 of an average lineup; the game simulator's
+        # log((c0 + OFF + DEF) / c0)): the ratings table's own EV intercept when it records one, else
+        # the bundle's RAPM v2 covariate
+        cov0 = (bundle.get("covariates") or {}).get("intercept")
+        ti = ((rt or {}).get("meta") or {}).get("intercept")
+        self.intercept = float(ti) if ti is not None else (float(cov0) if cov0 is not None else None)
         cw = bundle.get("crosswalk")
         self.resolver = Resolver(pd.DataFrame(cw["rows"], columns=cw["columns"])) if cw else None
 

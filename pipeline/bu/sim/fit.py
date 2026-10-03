@@ -460,6 +460,9 @@ def main(argv=None) -> int:
                     help="glm: a new lineup source's history table (lineup_source.REQUIRED columns)")
     ap.add_argument("--lineup-bundle", default=None, help="glm: that source's serving bundle (LiveLineupTerm)")
     ap.add_argument("--lineup-name", default=None, help="glm: short name of the source (e.g. v4)")
+    ap.add_argument("--lineup-ratings", default=None,
+                    help="glm: the bundle's ratings table the live term reads (v2 / v3 / v4; default: the "
+                         "name when it is v3 / v4, else v2)")
     ap.add_argument("--params-out", default=None, help="write the parameters here instead of out/sim_params.json")
     args = ap.parse_args(argv)
     if args.step in ("structural", "all"):
@@ -481,8 +484,10 @@ def main(argv=None) -> int:
         p = load_params()
         src = LS.spec(p)
         if args.lineup_table:     # a new ratings source: refit the regressions on it
-            src = {"name": args.lineup_name or "custom", "history_table": args.lineup_table,
-                   "serving_bundle": args.lineup_bundle or LS.DEFAULT["serving_bundle"]}
+            name = args.lineup_name or "custom"
+            src = {"name": name, "history_table": args.lineup_table,
+                   "serving_bundle": args.lineup_bundle or LS.DEFAULT["serving_bundle"],
+                   "ratings": args.lineup_ratings or (name if name in ("v3", "v4") else "v2")}
             p["lineup"] = src
             p["version"] = f"sim-m5-{src['name']}-{time.strftime('%Y%m%d')}"
         tg = build_team_games(ALL_SEASONS, se_dict(p["structural"]["score_effects"]), args.work)

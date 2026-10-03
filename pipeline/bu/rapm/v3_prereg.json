@@ -1,0 +1,181 @@
+{
+ "title": "Player ratings v3: pre-declared tuning, selection and validation rules",
+ "declared_at": "2026-10-02T21:00:00Z",
+ "declared_before": "any v3 run on the dev seasons (2023-24, 2024-25) or the holdout (2025-26); one pilot on the tuning season 2021-22 (shrinkage ranges, role-mean ridge) was run before this file to set the grid",
+ "owner_decisions": {
+  "recency": "by games, not seasons: lead candidate the last 5 x 30-game blocks with stepped weights; also a per-game exponential decay (half-lives 40 / 60 / 90); benchmarks only: the shipped 3-season window prior (1 / 0.5 / 0.25, v_new 0.04) and the Kalman chain (v_new 0.02, kappa 1.25); anything 3+ seasons back must carry ~0 weight in what ships",
+  "headline": "per-game impact like The Athletic: goals per 82 games from EV offense, EV defense, PP offense, PK defense and finishing, scaled by expected TOI per game in each state; per-60 rates stay as secondary columns"
+ },
+ "seasons": {
+  "tuning": [
+   "20192020",
+   "20202021",
+   "20212022",
+   "20222023"
+  ],
+  "dev": [
+   "20232024",
+   "20242025"
+  ],
+  "holdout": "20252026",
+  "holdout_rule": "one look, every candidate of this file scored in the same run, logged in bu/rapm/out/v3_look_log.jsonl; no parameter or rule change after it; reported whatever it is"
+ },
+ "recency_indexing": "games ago = league-average team games played between the game date and the as-of date (bu/rapm/recency.py: 2 x games / teams per date, cumulative; summers add nothing, playoff nights count at their league average); one weight per date, so a stint with ten skaters has one weight",
+ "two_stage": "stage 1: weighted fit of every stint before the season (weight w(g + games ago at season start)), computed on a grid every 5 in-season games g and interpolated linearly (means, precisions), summarised per player; stage 2: this season's stints up to d - 2 days at their exact weights, ridged toward the stage-1 prior; the backtest runs exactly this two-stage computation (the live path rebuilds it from a committed pack)",
+ "primary_metric": {
+  "name": "next-30-game stint MSE",
+  "definition": "for every scored season and as-of point g in {0, 10, 20, 30, 40, 50} games per team played this season (first date with >= g), ratings as of that date (games up to d - 2 days); scored on every EV stint row (both attacking sides: xGF and xGA given the lineups) of the regular-season games in the next 30 games per team; players fixed at the ratings, the covariates (league level, home, score, zone, strength, back-to-back) refit on the test rows; weighted (stint seconds) MSE of the attacking side's xG/60; Gram-exact (bu/rapm/v3_validate.py)",
+  "pooling": "sum of SSE over every (season, as-of point) divided by the summed weights",
+  "paired_se": "differences between two candidates clustered by game date (a date's differences summed over the up to three overlapping windows it sits in)"
+ },
+ "secondary_metrics": [
+  "next-season stint MSE: the season-start ratings (g = 0) scored on the whole regular season",
+  "calibration slopes: on the same test rows, residual ~ a * (sum of attackers' OFF) + b * (sum of defenders' DEF), covariates partialled out per window, pooled; target a = b = 1",
+  "PP: the same next-30-game metric on PP rows (PP side's xG/60; PP_off of the PP skaters, PK_def of the PK skaters), calibration slopes",
+  "game level: walk-forward log loss of the game model with bu_d_net / bu_d_delta / bu_d_fin rebuilt from v3 vs the live model logit-elo-v5-20261002-xg2-rapm-fin"
+ ],
+ "ev_candidates": {
+  "recency": {
+   "B_lin10": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     0.9,
+     0.8,
+     0.7,
+     0.6
+    ]
+   },
+   "B_lin15": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     0.85,
+     0.7,
+     0.55,
+     0.4
+    ]
+   },
+   "B_lin20": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     0.8,
+     0.6,
+     0.4,
+     0.2
+    ]
+   },
+   "B_geo": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     0.7,
+     0.49,
+     0.343,
+     0.24
+    ]
+   },
+   "B_flat": {
+    "kind": "blocks",
+    "block_games": 30,
+    "steps": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "D40": {
+    "kind": "decay",
+    "half_life": 40
+   },
+   "D60": {
+    "kind": "decay",
+    "half_life": 60
+   },
+   "D90": {
+    "kind": "decay",
+    "half_life": 90
+   },
+   "truncation": "every candidate has weight exactly 0 beyond 246 games ago (three 82-game seasons); the blocks stop at 150"
+  },
+  "shrinkage_grid_per_recency": {
+   "role 'both' (OFF and DEF means by position x EV-usage tier, position x draft tier under 10 weighted games)": {
+    "v_o": [
+     0.03,
+     0.045,
+     0.065
+    ],
+    "v_d": [
+     0.01,
+     0.017,
+     0.025
+    ],
+    "v_role": [
+     0.001,
+     0.003
+    ]
+   },
+   "role 'none' (fixed rookie means by position x draft tier, the v2 target)": {
+    "v_o": [
+     0.03,
+     0.045,
+     0.065
+    ],
+    "v_d": [
+     0.01,
+     0.017,
+     0.025
+    ]
+   },
+   "usage tiers (EV minutes per weighted game)": {
+    "F": [
+     11.0,
+     13.0,
+     15.0
+    ],
+    "D": [
+     16.0,
+     18.5
+    ]
+   },
+   "fixed": "aging steps on earlier seasons' rows (the season's aging curve, fitted on earlier seasons), covariate ridge 20 h toward the last season's, sigma2 1160 per second"
+  },
+  "benchmarks": [
+   "window: the shipped season-start window prior + this season's stints at full weight (reproduces bu.rapm asof exactly)",
+   "kalman: the Kalman chain prior (v_new 0.02, kappa 1.25) + this season at full weight"
+  ]
+ },
+ "selection_rule": "the candidate (recency x shrinkage) with the lowest pooled tuning-season primary MSE wins; if the best block-weight candidate is within one paired SE of the overall best, the block candidate is chosen (the owner's lead form). Dev and holdout are reported for the chosen candidate, the benchmarks and the best candidate of every recency, never used to re-select",
+ "st_rule": "with the chosen recency and v_role: v_pp in {0.01, 0.02, 0.04, 0.08} x v_pk in {0.005, 0.01, 0.02, 0.04} (position-group means with a light ridge 0.05, sigma2 2800 per second); lowest pooled tuning-season PP next-30-game MSE",
+ "fin_rule": "FIN (bu/rapm/finishing.py gamma-Poisson multiplier x shrunk ixG/60) with the chosen EV recency (same game weights) and PRIOR_XG in {30, 45, 60, 90, 120}: held-out shot log loss vs xG alone on the tuning seasons (every EV unblocked shot scored with the shooter's multiplier as of d - 2 days); keep PRIOR_XG 60 unless the best value beats it by more than one paired SE (game-clustered); the other recency candidates are reported descriptively",
+ "toi_rule": "expected TOI per game by state (EV / PP / PK): player-game EWMA with half-life h in {5, 10, 20, 40} of his own games, shrunk to the position-group mean with 3 pseudo-games; per state, lowest pooled tuning-season RMSE against the realised mean TOI per game played over the next 30 games (players with >= 5 games in the window, as-of points as the primary metric)",
+ "impact": {
+  "formula": "impact_82 = 82 x k x [EV_TOI/60 x (w_o x OFF_ev + w_d x DEF_ev) + PP_TOI/60 x w_pp x PP_off + PK_TOI/60 x w_pk x PK_def] + 82 x EV_TOI/60 x FIN; k = league goals per xG (EV, the last completed season); TOI = expected minutes per game in the state",
+  "centering": "every per-60 component is centred on its TOI-weighted mean among rated roster skaters of the same position group (F / D), so an average player at his position is 0 whatever his minutes (The Athletic's baseline: position-average per game)",
+  "weights_rule": "from the chosen configuration's pooled tuning-season calibration slopes: if both the OFF and the DEF slope lie in [0.85, 1.15], w_o = w_d = 1 (equal weight); otherwise each component's weight is its slope clipped to [0.5, 1.0]; the same rule for (w_pp, w_pk) with the PP slopes",
+  "exports": "impact, off_impact (EV OFF + PP + FIN parts), def_impact (EV DEF + PK parts), all in goals per 82 games, plus the per-60 rates and the posterior SD of impact"
+ },
+ "game_model_rule": "owner rule: the retrained game model with v3 bu_d_net / bu_d_delta / bu_d_fin is promoted only if its dev pooled (2023-24 + 2024-25) walk-forward log loss is lower than the live model's (paired per game) and the single 2025-26 look is not worse than +0.0010 per game; the look is logged in bu/lineup/out/look_log.jsonl. Otherwise the live game model and the v2 serving bundle stay, and only the site's player ratings move to v3",
+ "descriptive": "credibility tables (DAL roster, league top 30, named players), correlation with MoneyPuck 5on5 relative xGF/60 and xGA/60 (free skater data), effective weight tables",
+ "amendments": [
+  {
+   "at": "2026-10-02T22:40:00Z",
+   "before": "any dev / holdout run (none has been made)",
+   "change": "(1) PP / PK grid extended: v_pp in {0.08, 0.16, 0.32, 0.64} x v_pk in {0.04, 0.08, 0.16, 0.32}, same rule (lowest pooled tuning-season PP next-30-game MSE); (2) EV grid edge: for the selected recency, v_o in {0.015, 0.02} is also scored at the selected (role, v_d, v_role); the lowest pooled tuning MSE among the selected point and these two wins",
+   "why": "tuning seasons only: the PP / PK optimum of the first grid sat at its corner (v_pp 0.08, v_pk 0.04) with calibration slopes still above 1 (PP 1.20-1.24, PK 1.43-1.54: under-dispersed), and the EV optimum sat at the v_o edge 0.03 for every block recency (OFF slope ~1.0)"
+  },
+  {
+   "at": "2026-10-02T23:05:00Z",
+   "before": "any dev / holdout look at the result (dev runs launched, not read); no holdout run",
+   "change": "two pre-declared alternatives go to dev and the holdout: (A) the rule's pick D90 (per-game decay, half-life 90, 0 past 246 games; v_o 0.03, v_d 0.025, role both, v_role 0.001; PP 0.16 / PK 0.08; FIN prior 30) and (B) the owner's lead block form B_geo (5 x 30 games 1 / .7 / .49 / .343 / .24; its own tuned priors v_o 0.03, v_d 0.025, role both, v_role 0.003; PP 0.16 / PK 0.08 (its own extended-grid optimum); FIN prior by the same one-SE rule on its own weights). The owner may override the rule's pick on recency grounds (D90 puts ~16% of a full-time player's weight on games 164-246 back, B_geo nothing past 150) BEFORE the holdout look; the holdout look is taken once, for the shipped alternative, after that choice",
+   "why": "owner decision: 'I really don't care about four seasons ago at all' - the decay keeps weight on two to three seasons back, the block form does not; the tuning-season cost of B_geo is +0.0066 MSE (SE 0.0012)"
+  }
+ ]
+}
