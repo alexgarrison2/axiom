@@ -222,7 +222,7 @@ def test_committed_player_ratings():
     assert V.check_player_ratings({}) == []
     doc = json.load(open(os.path.join(ROOT, "public", "data", "player_ratings.json")))
     ros = [dict(zip(doc["columns"], r)) for r in doc["rows"] if r[doc["columns"].index("roster")]]
-    assert len(ros) >= 700 and all(r["name"] for r in ros)
+    assert len(ros) >= RE.MIN_ROSTER_SKATERS and all(r["name"] for r in ros)
     top = [r["name"] for r in sorted(ros, key=lambda r: -r["impact"])[:25]]
     for name in ("Connor McDavid", "Nathan MacKinnon"):
         assert name in top, (name, top)
