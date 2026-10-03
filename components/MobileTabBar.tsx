@@ -4,7 +4,7 @@ import * as React from 'react';
 import { IntentLink } from './IntentLink';
 import { usePathname } from 'next/navigation';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { BookOpen, Ellipsis, ListOrdered, Newspaper, Shield, Target, Trophy, Users } from 'lucide-react';
+import { BookOpen, Ellipsis, ListOrdered, Newspaper, Shield, Target, Ticket, Trophy, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DialogClose } from '@/components/ui/dialog';
 import { NAV_ITEMS, isActive, isItemActive, playoffsLink, type NavItem } from './nav-items';
@@ -24,6 +24,7 @@ const ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> 
     tonight: RinkIcon,
     teams: Shield,
     players: Users,
+    props: Ticket,
     accuracy: Target,
     standings: ListOrdered,
     news: Newspaper,

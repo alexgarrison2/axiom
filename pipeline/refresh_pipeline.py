@@ -616,6 +616,7 @@ def pregame_stages(r, phase, mode):
     r.run("clinch_status", _call, "fetch_clinch_status", title="Clinch indicators")
     r.run("player_boxscores", _call, "backfill_player_stats", title="Per-player boxscore stats")
     r.run("odds", _call, "fetch_odds", "fetch_odds", title="Pregame odds + closing lines")
+    r.run("player_props", _call, "fetch_props", "fetch_props", title="Bovada player props")
     # Goalie season lines move with every game, so the lite run refreshes them too.
     r.run("goalie_stats", _call, "fetch_nhl_goalie_stats", "fetch_nhl_goalie_stats", title="Goalie season lines")
     if phase["playoffs"]:
@@ -626,6 +627,8 @@ def pregame_stages(r, phase, mode):
 
 def post_predict_stages(r, phase):
     r.run("snapshot", _call, "snapshot_predictions", "snapshot", title="SiteHistory snapshot")
+    # Uses the game model's expected goals, so it runs after predict.
+    r.run("props_board", _call, "prop_board", title="Props page board")
     if phase["playoffs"]:
         r.skip("implications", "playoffs in progress (series odds replace implications)")
     elif phase["min_team_gp"] < IMPLICATIONS_MIN_GP:
@@ -690,6 +693,7 @@ def run_full(r, phase, rescore_all=False):
     r.run("enrich_pbp", _call, "enrich_pbp", "main", [], title="On-ice players for PBP")
     r.run("raw_pbp", stage_raw_pbp, title="Append raw PBP to data/historical_pbp")
     r.run("player_models", stage_player_models, state, phase["games_played"], title="Player impact")
+    r.run("skater_games", _call, "fetch_skater_games", title="Per-game skater logs (props)")
     r.run("lineups_all", stage_lineups_all, title="DailyFaceoff lineups (all 32 teams)")
     r.run("contracts", stage_contracts, title="Contracts (weekly by stored fetched_at)")
     r.run("player_news", _call, "fetch_dailyfaceoff", "fetch_player_news", title="Player news")

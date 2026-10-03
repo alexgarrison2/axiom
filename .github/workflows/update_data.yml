@@ -138,6 +138,9 @@ jobs:
               pipeline/player_news.json public/data/player_news.json public/data/playoff_player_news.json
           # Odds (pregame lines + frozen closing lines)
           add data/odds.json public/data/odds.json pipeline/odds.json public/data/odds_closing.json
+          # Player props: Bovada lines (+ per-day archive), per-game skater logs, the /props board
+          add pipeline/player_props.json pipeline/prop_lines/*.csv pipeline/nhl_season_*_skater_games.csv \
+              public/data/props.json
           # Season game data (current season file names come from pipeline/season.py)
           add pipeline/nhl_season_*_gamestats.csv pipeline/nhl_season_*_shots.csv pipeline/nhl_season_*_shifts.csv \
               pipeline/pending_failed.json data/gamestats.csv public/data/gamestats.csv \
