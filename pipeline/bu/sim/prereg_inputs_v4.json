@@ -1,0 +1,44 @@
+{
+ "title": "Simulator lineup inputs: ratings v4 vs RAPM v2 (pre-declared re-fit, comparison and promotion rule)",
+ "declared_at": "2026-10-03T02:12:00Z",
+ "declared_before": "any re-fit of the simulator on ratings v4 inputs and any dev / holdout simulation with them; the comparison code (bu/sim/inputs_v4.py) is written after this file is committed",
+ "question": "sim_inputs_v4: should the game simulator (the engine of the published model win %) read its per-side lineup inputs (5v5 OFF / DEF lineup term and FIN) from player ratings v4 instead of RAPM v2?",
+ "prior_knowledge": {
+  "statement": "The v2 simulator's dev and holdout numbers are public (bu/sim/out/validation.json primary_dev / primary_holdout; the 2025-26 holdout was looked at once for question primary_winpct). Ratings v4 had its own single 2025-26 holdout look on rating validation (bu/rapm/out/v4_look_log.jsonl: EV stint xG deviance) and the r4 logit game model was promoted on a walk-forward that includes 2025-26 (bu/lineup/out/retrain_v4.json). Nobody has simulated a game with v4 inputs: the v4 simulator's ML and derivative numbers on 2023-26 are unknown. This is a new question; the holdout look for it is logged under question = 'sim_inputs_v4'.",
+  "known_v2_numbers": {
+   "dev_pooled_ml_log_loss_A_sim": 0.6588,
+   "holdout_ml_log_loss_A_sim": 0.67929,
+   "dev_pooled_derivative_score_sim_gm": 6.32554,
+   "holdout_derivative_score_sim_gm": 6.34283
+  }
+ },
+ "seasons": {
+  "fit": ["20172018", "20182019", "20192020", "20202021", "20212022", "20222023"],
+  "dev": ["20232024", "20242025"],
+  "holdout": "20252026"
+ },
+ "games": "exactly the games of prereg_primary.json (bu/sim/primary.py game_set: regular season, finite simulator inputs, a walk-forward logit row; dev 2,375, holdout 1,312), further restricted to games whose v4 inputs are finite too (bu.sim.rates.finite_inputs on the v4 point-in-time inputs). Both arms are scored on the same games; the count dropped is reported.",
+ "arms": {
+  "V2": "the live simulator, unchanged: bu/sim/out/sim_params.json version sim-m5-20261002 (RAPM v2 lineup term + FIN from bu/lineup/out/lineup_features_v2.csv.gz; serving bundle players / fin tables)",
+  "V4": "the same simulator with every RAPM v2 lineup input replaced by ratings v4 (point-in-time table bu/lineup/out/lineup_features_v4.csv.gz: per-side bu_{h,a}_off / def (v4 EV o / d, TOI-share weighted, as of d - 2 days), bu_{h,a}_fin (v4 FIN), c_intercept (the v4 EV fit's intercept); live: the serving bundle's v4 table via LiveLineupTerm(ratings='v4'), intercept meta.intercept)"
+ },
+ "v4_refit_procedure": {
+  "unchanged": "structural tables (state ratios, score effects, pull curves, penalties, OT / SO), the team / goalie state hyper-parameters, the anchoring variant ('anchored') and the totals choice (goal_model's expected total) are copied from V2; nothing is tuned on dev or holdout",
+  "glm": "python -m bu.sim.fit glm --lineup-table bu/lineup/out/lineup_features_v4.csv.gz --lineup-name v4 --lineup-ratings v4 --params-out <v4 params>: the four rate regressions (5v5 xG, conversion, PP, penalties) re-fitted on the fit seasons with the v4 point-in-time inputs (same design, rest terms included)",
+  "dispersion": "python -m bu.sim.validate dispersion (PONYXG_SIM_PARAMS=<v4 params>): re-run on the fit seasons with the v4 inputs and re-fitted regressions, exactly as prereg.json rule 'dispersion' with its 2026-10-02T16:40 amendment: overall scale from the mean total, then strength stretch {1.0, 1.25, 1.5, 1.75} x strength-tilt sd {0, 0.1, 0.2} x pace shock {0 (none), 30}, criterion mean log P(final total) + log P(final margin) - LL(reg 3-way) - LL(ML), 2,000 runs a game, scale refit once at the chosen point. The stretch was fitted on RAPM v2 inputs; v4's lineup term has a different spread, so it is re-chosen here (fit seasons only)."
+ },
+ "simulation": "20,000 runs a game, base seed 20261002, seed = SHA-256(base, game id) (as live and as prereg_primary)",
+ "metrics": {
+  "ml": "mean per-game moneyline log loss of the raw simulator's P(home win, OT / SO included), p clipped to [1e-6, 1 - 1e-6] (the published model win % before the market blend)",
+  "derivative": "the derivative score of prereg.json (sum over reg3, pl_home, pl_away, tot55, tot60, tot65, p1_3w, p1_2w of the mean per-game log loss) of each arm's simulation anchored (tilt + pace, bu.sim.anchor) to its own raw win % and goal_model's expected total: the live derivative configuration (history has no market to blend with), = pairing 'sim_gm' of prereg_primary",
+  "differences": "paired per game (V4 - V2), SE = sd / sqrt(n), per season and pooled; negative favours V4",
+  "secondary": "Brier, logistic calibration slope / intercept, SD of logit p, mean p vs home win rate, per-market derivative log loss, distribution checks (sd of the total, regulation ties, margins)"
+ },
+ "promotion_rule": {
+  "pass": "V4 replaces V2 iff (1) dev pooled ML log loss V4 < V2 (strictly), AND (2) holdout ML log loss V4 - V2 <= +0.0010 (owner's rule), AND (3) dev pooled derivative score V4 - V2 <= 0 (not worse on dev)",
+  "holdout_look": "one look at 2025-26, run only after the dev results are written to bu/sim/out/validation.json (section inputs_v4_dev); logged in bu/sim/out/look_log.jsonl with question = 'sim_inputs_v4'; the code refuses a second look; both arms' holdout numbers (ML and derivative) are reported whatever they are",
+  "if_pass": "bu/sim/out/sim_params.json becomes the V4 parameters (lineup source v4: history table lineup_features_v4.csv.gz, bundle v4 table); the V2 parameters are kept as bu/sim/out/sim_params_v2.json and the repository variable PONYXG_SIM_INPUTS=v2 (or PONYXG_SIM_PARAMS=<file>) rolls back without a commit",
+  "if_fail": "nothing changes in the published path; the V4 parameters are kept as bu/sim/out/sim_params_v4.json for a later question"
+ },
+ "amendments": []
+}
