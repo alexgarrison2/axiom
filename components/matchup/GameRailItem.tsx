@@ -6,11 +6,13 @@ import { Crest } from '@/components/ui/crest';
 import { clashSafePair } from '@/components/ui/team-color';
 import { forecastPair, hasMarket, hasPrediction } from '@/lib/matchup/edge';
 import { hasScore, phaseOf, type LiveGame } from '@/lib/matchup/lifecycle';
-import { fmtOdds } from '@/lib/matchup/format';
+import { fmtOdds, lastName } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
 import { StatusLine } from './StatusLine';
 import { useHydrated } from './GameTime';
 import { Flag, coinFlipFinal } from './MatchupCard';
+import { GOALIE_TONE, goalieStatus } from './TeamSide';
+import { GoalieGlyph } from './GoalieGlyph';
 
 /** Puck drop as "6:00p" in the viewer's zone (Eastern until hydrated): small and grey, it is not the point of the row. */
 function RailTime({ iso }: { iso: string }) {
@@ -22,6 +24,22 @@ function RailTime({ iso }: { iso: string }) {
         <time dateTime={iso} className="text-micro font-medium tabular-nums text-fg-3">
             {t.replace(/\s?([AP])M$/i, (_, x: string) => x.toLowerCase())}
         </time>
+    );
+}
+
+/** A team's projected starter, in the status colour the card uses (confirmed glows green, likely fades, projected is grey). */
+function Starter({ p, side }: { p: Prediction; side: 'away' | 'home' }) {
+    const s = p[side];
+    if (!s.goalie) return <span className="text-micro uppercase tracking-wide text-fg-disabled">TBD</span>;
+    const st = goalieStatus(s.goalieStatus);
+    return (
+        <span className={cn('min-w-0 truncate font-display text-micro font-bold uppercase tracking-[0.02em]', GOALIE_TONE[st.tone])} title={`${s.goalie} · ${st.label}`}>
+            <GoalieGlyph tone={st.tone} />
+            {lastName(s.goalie)}
+            <span className="sr-only">
+                , {s.team.commonName} goalie, {st.label.toLowerCase()} starter
+            </span>
+        </span>
     );
 }
 
@@ -115,6 +133,12 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
                 </span>
                 <Crest tri={h} size={56} className={cn('h-14 w-14', homeLost && 'opacity-50 grayscale-[40%]')} />
             </span>
+            {phase !== 'final' ? (
+                <span className="flex items-center justify-between gap-2">
+                    <Starter p={p} side="away" />
+                    <Starter p={p} side="home" />
+                </span>
+            ) : null}
             <span className="flex items-baseline justify-between gap-2">
                 <End p={p} side="away" showOurs={showOurs} />
                 <End p={p} side="home" showOurs={showOurs} />
