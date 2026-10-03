@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-03T02:04:43.071162+00:00",
+ "generated_at": "2026-10-03T03:18:58.540651+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -5029,9 +5029,9 @@
    "2025-26",
    "2026-27"
   ],
-  "version": "logit-elo-v5-20261002-xg2-rapm-fin",
+  "version": "logit-elo-v5-20261003-xg2-rapm-fin-r4",
   "type": "logistic_regression_l2",
-  "trained_at": "2026-10-02T12:48:58.725444+00:00",
+  "trained_at": "2026-10-03T01:56:19.732282+00:00",
   "features": [
    "d_xg_share",
    "d_xg_share_all",
@@ -5049,11 +5049,11 @@
    {
     "test_season": 2023,
     "n": 1399,
-    "log_loss": 0.6585,
-    "brier": 0.2335,
-    "accuracy": 0.5919,
-    "calibration_slope": 0.994,
-    "mean_pred_home": 0.5167,
+    "log_loss": 0.6581,
+    "brier": 0.2332,
+    "accuracy": 0.5969,
+    "calibration_slope": 1.0145,
+    "mean_pred_home": 0.5173,
     "actual_home": 0.5368,
     "home_rate_log_loss": 0.691,
     "legacy_xgb_log_loss": 0.6757
@@ -5061,11 +5061,11 @@
    {
     "test_season": 2024,
     "n": 1206,
-    "log_loss": 0.6608,
-    "brier": 0.2345,
-    "accuracy": 0.5879,
-    "calibration_slope": 1.0964,
-    "mean_pred_home": 0.5307,
+    "log_loss": 0.6606,
+    "brier": 0.2343,
+    "accuracy": 0.592,
+    "calibration_slope": 1.1214,
+    "mean_pred_home": 0.5304,
     "actual_home": 0.5688,
     "home_rate_log_loss": 0.6867,
     "legacy_xgb_log_loss": 0.6703
@@ -5073,16 +5073,16 @@
    {
     "test_season": 2025,
     "n": 1394,
-    "log_loss": 0.6784,
-    "brier": 0.2428,
-    "accuracy": 0.5603,
-    "calibration_slope": 0.798,
-    "mean_pred_home": 0.5411,
+    "log_loss": 0.6792,
+    "brier": 0.2432,
+    "accuracy": 0.5488,
+    "calibration_slope": 0.7802,
+    "mean_pred_home": 0.5413,
     "actual_home": 0.5194,
     "home_rate_log_loss": 0.6935,
     "legacy_xgb_log_loss": 0.6849
    }
   ],
-  "early_season_log_loss": 0.6771
+  "early_season_log_loss": 0.6761
  }
 }
