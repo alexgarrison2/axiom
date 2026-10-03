@@ -22,7 +22,7 @@ import { compareOfficial, computeStandings, officialKeysOf } from '@/utils/team-
 import { DIVISION_OF, DIVISIONS, DIVISION_LABEL, TEAM_TRICODES } from '@/utils/team-stats/teams';
 import type { Division, GameRow, LeaguePayload, Matchup, PackedGames, PeriodFilter, TeamStat } from '@/utils/team-stats/types';
 import {
-    COLUMN_BY_KEY, COLUMN_GROUPS, HEAT_BAD, HEAT_FULL_GP, HEAT_GOOD, HEAT_MAX_ALPHA, PRESETS, columnValue, heatTint, leaguePercentile, sampleWeight,
+    COLUMN_BY_KEY, COLUMN_GROUPS, DEFAULT_HIDDEN, SSR_GROUPS, HEAT_BAD, HEAT_FULL_GP, HEAT_GOOD, HEAT_MAX_ALPHA, PRESETS, columnValue, heatTint, leaguePercentile, sampleWeight,
     type StatColumn,
 } from './columns';
 import { RangeFields } from './FilterFields';
@@ -73,7 +73,9 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const [season, setSeason] = React.useState<string>(initial?.season ?? SEASON_ID);
     const [payloads, setPayloads] = React.useState<Record<string, LeaguePayload>>(() => (initial ? { [initial.season]: initial } : {}));
     const [filters, setFilters] = React.useState<TableFilters>(DEFAULT_FILTERS);
-    const [hidden, setHidden] = React.useState<string[]>([]);
+    const [hidden, setHidden] = React.useState<string[]>(DEFAULT_HIDDEN);
+    // The server HTML carries only SSR_GROUPS; the other default columns are added once the page is idle.
+    const [expanded, setExpanded] = React.useState(false);
     const [perGameOpen, setPerGameOpen] = React.useState(false);
     const [sort, setSort] = React.useState<{ key: string; dir: SortDir }>({ key: 'points', dir: 'desc' });
     const [games, setGames] = React.useState<Record<string, GameRow[]>>({});
@@ -97,6 +99,12 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         if (saved.sort?.key && COLUMN_BY_KEY.has(saved.sort.key)) setSort({ key: saved.sort.key, dir: saved.sort.dir === 'asc' ? 'asc' : 'desc' });
         if (saved.filters) setFilters(sanitizeFilters(saved.filters, { playoffs: true, bracket: true }));
         setHydrated(true);
+        if ('requestIdleCallback' in window) {
+            const id = window.requestIdleCallback(() => setExpanded(true));
+            return () => window.cancelIdleCallback(id);
+        }
+        const id = globalThis.setTimeout(() => setExpanded(true), 0);
+        return () => globalThis.clearTimeout(id);
     }, []);
 
     // Re-validate filters whenever the season (and what it allows) changes.
@@ -217,13 +225,13 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     // Every group in order; a column shows unless the user hid it (rating columns need the ratings file).
     const columns: { col: StatColumn; groupEnd: boolean; group: string }[] = React.useMemo(
         () =>
-            COLUMN_GROUPS.flatMap(g => {
+            COLUMN_GROUPS.filter(g => expanded || SSR_GROUPS.includes(g.name)).flatMap(g => {
                 const cols = g.cols
                     .map(k => COLUMN_BY_KEY.get(k))
                     .filter((c): c is StatColumn => !!c && !hiddenSet.has(c.key) && !(c.rating && ratingsMissing));
                 return cols.map((col, i) => ({ col, groupEnd: i === cols.length - 1, group: g.name }));
             }),
-        [hiddenSet, ratingsMissing],
+        [hiddenSet, ratingsMissing, expanded],
     );
     const groupSpans = React.useMemo(() => {
         const out: { name: string; n: number }[] = [];
@@ -747,6 +755,9 @@ function ColumnPicker({ hidden, setHidden, ratingsMissing, extra }: { hidden: st
         <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-1">
                 <span className="mr-1 text-micro uppercase tracking-wide text-fg-3">Columns</span>
+                <FilterChip className={CHIP} selected={isPreset(allKeys.filter(k => !DEFAULT_HIDDEN.includes(k)))} onSelectedChange={() => setHidden(DEFAULT_HIDDEN)}>
+                    Default
+                </FilterChip>
                 <FilterChip className={CHIP} selected={hidden.length === 0} onSelectedChange={() => setHidden([])}>
                     All
                 </FilterChip>

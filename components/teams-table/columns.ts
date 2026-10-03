@@ -187,6 +187,16 @@ export const SECTIONS: Section[] = [
 /** The default league table: every group, in order. Users hide columns from here. */
 export const COLUMN_GROUPS: SectionGroup[] = [RECORD, GOALS, PP, PK, SAVES, SHOTS, XG, STATE, COMEBACKS, EN, ...RATINGS_GROUPS];
 
+/**
+ * Columns off until asked for: leads & comebacks, empty net and the rating columns. The page is
+ * budgeted at 3000 DOM nodes and every default column costs one cell per team, so the default
+ * view stays under that; "All" in the column bar turns everything on.
+ */
+export const DEFAULT_HIDDEN: string[] = [...COMEBACKS.cols, ...EN.cols, ...RATINGS_GROUPS.flatMap(g => g.cols)];
+
+/** Groups rendered into the server HTML (the HTML budget is 400KB); the rest of the default columns follow once the page is interactive. */
+export const SSR_GROUPS = ['Record', 'Goals'];
+
 /** One-click column presets: the columns of each section. */
 export const PRESETS: { key: string; label: string; cols: string[] }[] = SECTIONS.filter(sec => sec.key !== 'all').map(sec => ({
     key: sec.key,
