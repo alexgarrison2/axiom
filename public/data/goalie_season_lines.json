@@ -1,7 +1,7 @@
 {
  "season_id": "20262027",
  "prev_season_id": "20252026",
- "generated_at": "2026-10-02T17:01:38Z",
+ "generated_at": "2026-10-03T02:03:51Z",
  "goalies": {
   "Adin Hill": {
    "cur": null,
@@ -448,7 +448,14 @@
    }
   },
   "Dylan Garand": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 1.0,
+    "gaa": 0.0,
+    "gp": 1
+   },
    "prev": {
     "w": 2,
     "l": 0,
@@ -731,7 +738,14 @@
    }
   },
   "John Gibson": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 1,
+    "ot": 0,
+    "svpct": 0.95,
+    "gaa": 1.02,
+    "gp": 1
+   },
    "prev": {
     "w": 29,
     "l": 22,

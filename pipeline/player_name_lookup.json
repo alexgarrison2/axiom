@@ -70,6 +70,7 @@
     "michael bunting": "8478047",
     "alexander petrovic": "8475755",
     "david perron": "8474102",
+    "dylan larkin": "8477946",
     "john leonard": "8481077",
     "james van riemsdyk": "8474037",
     "sheldon dries": "8480326",
@@ -144,9 +145,9 @@
     "kevin gravel": "8475857",
     "cole o'hara": "8483696",
     "jordan oesterle": "8477851",
+    "ryan ufko": "8482715",
     "brady martin": "8485405",
     "joakim kemell": "8483465",
-    "andreas englund": "8477971",
     "adam boqvist": "8480871",
     "cole mcward": "8484287",
     "isaiah george": "8483448",
@@ -167,10 +168,10 @@
     "olle lycksell": "8480245",
     "jorian donovan": "8483435",
     "xavier bourgault": "8482673",
+    "dennis gilbert": "8478502",
     "artem zub": "8482245",
     "arthur kaliyev": "8481560",
     "kurtis macdermid": "8477073",
-    "warren foegele": "8477998",
     "lassi thomson": "8481575",
     "ty murchison": "8482804",
     "rodrigo abols": "8479022",
@@ -468,7 +469,6 @@
     "thomas harley": "8481581",
     "tyler seguin": "8475794",
     "arttu hyry": "8484938",
-    "dylan larkin": "8477946",
     "justin faulk": "8475753",
     "albert johansson": "8481607",
     "andrew copp": "8477429",
@@ -619,8 +619,8 @@
     "roman josi": "8474600",
     "jonathan marchessault": "8476539",
     "nicolas hague": "8479980",
-    "ryan ufko": "8482715",
     "matthew wood": "8484241",
+    "andreas englund": "8477971",
     "ryan o'reilly": "8475158",
     "adam wilsby": "8482482",
     "nick perbix": "8480246",
@@ -684,11 +684,11 @@
     "jake sanderson": "8482105",
     "drake batherson": "8480208",
     "cameron crotty": "8480075",
-    "dennis gilbert": "8478502",
     "carter yakemchuk": "8484759",
     "hayden hodgson": "8478173",
     "tim stutzle": "8482116",
     "thomas chabot": "8478469",
+    "warren foegele": "8477998",
     "tyler kleven": "8482095",
     "carl grundstrom": "8479336",
     "christian dvorak": "8477989",
@@ -1496,6 +1496,13 @@
         "team": "DET"
       }
     ],
+    "larkin": [
+      {
+        "pid": "8477946",
+        "full_name": "dylan larkin",
+        "team": "DET"
+      }
+    ],
     "leonard": [
       {
         "pid": "8481077",
@@ -2079,6 +2086,13 @@
         "team": "NSH"
       }
     ],
+    "ufko": [
+      {
+        "pid": "8482715",
+        "full_name": "ryan ufko",
+        "team": "NSH"
+      }
+    ],
     "martin": [
       {
         "pid": "8485405",
@@ -2090,13 +2104,6 @@
       {
         "pid": "8483465",
         "full_name": "joakim kemell",
-        "team": "NSH"
-      }
-    ],
-    "englund": [
-      {
-        "pid": "8477971",
-        "full_name": "andreas englund",
         "team": "NSH"
       }
     ],
@@ -2250,6 +2257,13 @@
         "team": "OTT"
       }
     ],
+    "gilbert": [
+      {
+        "pid": "8478502",
+        "full_name": "dennis gilbert",
+        "team": "OTT"
+      }
+    ],
     "zub": [
       {
         "pid": "8482245",
@@ -2268,13 +2282,6 @@
       {
         "pid": "8477073",
         "full_name": "kurtis macdermid",
-        "team": "OTT"
-      }
-    ],
-    "foegele": [
-      {
-        "pid": "8477998",
-        "full_name": "warren foegele",
         "team": "OTT"
       }
     ],
@@ -4348,13 +4355,6 @@
         "team": "DAL"
       }
     ],
-    "larkin": [
-      {
-        "pid": "8477946",
-        "full_name": "dylan larkin",
-        "team": "DET"
-      }
-    ],
     "faulk": [
       {
         "pid": "8475753",
@@ -5310,11 +5310,11 @@
         "team": "NSH"
       }
     ],
-    "ufko": [
+    "englund": [
       {
-        "pid": "8482715",
-        "full_name": "ryan ufko",
-        "team": "NSH"
+        "pid": "8477971",
+        "full_name": "andreas englund",
+        "team": "DET"
       }
     ],
     "o'reilly": [
@@ -5726,13 +5726,6 @@
         "team": "OTT"
       }
     ],
-    "gilbert": [
-      {
-        "pid": "8478502",
-        "full_name": "dennis gilbert",
-        "team": "BUF"
-      }
-    ],
     "yakemchuk": [
       {
         "pid": "8484759",
@@ -5758,6 +5751,13 @@
       {
         "pid": "8478469",
         "full_name": "thomas chabot",
+        "team": "OTT"
+      }
+    ],
+    "foegele": [
+      {
+        "pid": "8477998",
+        "full_name": "warren foegele",
         "team": "OTT"
       }
     ],

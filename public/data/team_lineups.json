@@ -333,7 +333,7 @@
                 "id": 2132,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -547,6 +547,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Aleksander Barkov",
+                "number": 16,
+                "pos": "ir3",
+                "id": 2132,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -557,7 +566,7 @@
                 "id": 2132,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Sam Reinhart",
@@ -625,9 +634,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jameson Olive",
-        "updated_at": "2026-10-02T01:38:43.491Z",
-        "fetched_at": "2026-10-02T01:54:51Z"
+        "lineup_source": "Last Game (2026-10-01)",
+        "updated_at": "2026-10-02T14:11:09.399Z",
+        "fetched_at": "2026-10-03T02:03:44Z"
     },
     "TOR": {
         "f1": [

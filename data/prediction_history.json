@@ -36509,5 +36509,141 @@
     "homeOdds": 124.0,
     "awayOdds": -148.0,
     "modelVersion": "logit-elo-v5-20261001-xg2-rapm"
+  },
+  {
+    "gameId": 2026020017,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-02",
+    "homeTeam": "Red Wings",
+    "awayTeam": "Rangers",
+    "homeScore": 0,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 3.21,
+    "awayXg": 2.88,
+    "homeWinProb": 55.4,
+    "predictedWinner": "Red Wings",
+    "actualWinner": "Rangers",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.3069,
+    "logLoss": 0.8074,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-02T21:35:00Z",
+    "startUtc": "2026-10-02T22:30:00Z",
+    "marketHomeProb": 54.5,
+    "modelHomeProb": 59.0,
+    "homeOdds": -130.0,
+    "awayOdds": 110.0,
+    "modelVersion": "logit-elo-v5-20261002-xg2-rapm-fin",
+    "simStatus": "sim",
+    "simHomeProb": 50.8,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.337,
+        "ll": 1.0877,
+        "naive_ll": 1.0044,
+        "market_p": 0.3645
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.659,
+        "ll": 0.417,
+        "naive_ll": 0.3694,
+        "market_p": 0.6925
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.457,
+        "ll": 0.7831,
+        "naive_ll": 0.8026,
+        "market_p": 0.4453
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.302,
+        "ll": 1.1973,
+        "naive_ll": 1.1461,
+        "market_p": 0.3172
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.453,
+        "ll": 0.7919,
+        "naive_ll": 0.7774,
+        "market_p": 0.4663
+      }
+    }
+  },
+  {
+    "gameId": 2026020018,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-02",
+    "homeTeam": "Hurricanes",
+    "awayTeam": "Capitals",
+    "homeScore": 2,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.25,
+    "awayXg": 2.83,
+    "homeWinProb": 56.9,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Capitals",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.3238,
+    "logLoss": 0.8416,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-02T22:03:00Z",
+    "startUtc": "2026-10-02T23:00:00Z",
+    "marketHomeProb": 57.7,
+    "modelHomeProb": 53.8,
+    "homeOdds": -148.0,
+    "awayOdds": 124.0,
+    "modelVersion": "logit-elo-v5-20261002-xg2-rapm-fin",
+    "simStatus": "sim",
+    "simHomeProb": 55.8,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.328,
+        "ll": 1.1147,
+        "naive_ll": 1.043,
+        "market_p": 0.341
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.658,
+        "ll": 0.4186,
+        "naive_ll": 0.3877,
+        "market_p": 0.654
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.43,
+        "ll": 0.844,
+        "naive_ll": 0.8268,
+        "market_p": 0.4546
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.294,
+        "ll": 1.2242,
+        "naive_ll": 1.1714,
+        "market_p": 0.3069
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.441,
+        "ll": 0.8187,
+        "naive_ll": 0.8023,
+        "market_p": 0.4402
+      }
+    }
   }
 ]
