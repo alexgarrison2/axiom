@@ -392,7 +392,9 @@ One game, 20,000 runs: ~0.13 s simulation + ~0.04 s anchoring on an idle core.  
 on 2026-10-02 (18 games, today and tomorrow): 3.4 s for the whole slate including anchoring and
 pricing, on a loaded 8-core laptop.  With the simulator as the win-% engine (one simulation shared
 by the win %, the breakdown's five 3,000-run counterfactuals, anchoring and pricing): lite run of
-2026-10-03, 14 pregame games in 8.9 s (0.63 s a game) on a loaded laptop.  Validation: ~1 min per season on 8 workers.
+2026-10-03, 14 pregame games in 8.9 s (0.63 s a game) on a loaded laptop.  On the v4 inputs
+(sim-m5-v4): lite run of 2026-10-03 03:06Z, 13 pregame games in 4.9 s (0.38 s a game), the whole
+lite run 31 s.  Validation: ~1 min per season on 8 workers.
 
 ## Weaknesses (what is still heuristic)
 
