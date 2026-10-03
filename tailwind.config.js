@@ -203,6 +203,8 @@ module.exports = {
       addVariant("cq-sm", "@container (min-width: 30rem)");
       addVariant("cq-md", "@container (min-width: 34rem)");
       addVariant("cq-lg", "@container (min-width: 44rem)");
+      addVariant("cq-xl", "@container (min-width: 40rem)");
+      addVariant("cq-2xl", "@container (min-width: 48rem)");
     },
   ],
 };

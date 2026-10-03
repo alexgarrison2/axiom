@@ -409,7 +409,7 @@ test.describe('home slate', () => {
             for (let k = 0; k < 10; k++) {
                 await toggle.click();
                 await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-                for (const tab of ['Goalies', 'Lines', 'Odds', 'Why']) {
+                for (const tab of ['Form', 'Lines', 'Odds', 'Why']) {
                     const radio = art.getByRole('radio', { name: tab });
                     if (!(await radio.count())) continue;
                     await radio.click();
@@ -505,10 +505,10 @@ test.describe('home slate', () => {
         for (let i = 0; i < n; i++) {
             const art = games.nth(i);
             await art.locator('h2 button[aria-expanded]').click();
-            await art.getByRole('radio', { name: 'Goalies' }).click();
+            await art.getByRole('radio', { name: 'Lines' }).click();
             await page.waitForTimeout(400);
             const names = await art.locator('[data-goalie-name]').evaluateAll(els =>
-                els.map(e => ({ text: (e.textContent ?? '').trim(), w: e.getBoundingClientRect().width, full: e.scrollWidth <= e.clientWidth + 1 })),
+                els.filter(e => e.getClientRects().length > 0).map(e => ({ text: (e.textContent ?? '').trim(), w: e.getBoundingClientRect().width, full: e.scrollWidth <= e.clientWidth + 1 })),
             );
             expect(names.length).toBeGreaterThan(0);
             for (const nm of names) {

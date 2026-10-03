@@ -72,7 +72,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     if (archive && initialDate && initialDate !== yesterday) extraDays.push({ date: initialDate, count: archive.games.length });
 
     return (
-        <main className="page pb-tabbar pt-4 md:pb-12 md:pt-7 [&>*]:max-w-[1192px]">
+        <main className="page pb-tabbar pt-4 md:pb-12 md:pt-7 [&>*]:max-w-[1192px] xl:max-w-[1620px] xl:px-8 xl:[&>*]:max-w-none">
             <PredictionsViewer
                 key={initialDate ?? 'none'}
                 predictions={predictions.map(compactForClient)}
