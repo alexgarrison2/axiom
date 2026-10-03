@@ -1,8 +1,7 @@
 'use client';
 
 import type { GoalieView, Prediction, SideData } from '@/types/prediction';
-import { CUR_TAG, PREV_TAG, SMALL_SAMPLE_GP, fmtSigned, fmtSv, gsaxHeadline, lastName, parseGoalieLine, relAge, shortAge, windowTag } from '@/lib/matchup/format';
-import { SeasonTag } from '@/components/ui/stat-chip';
+import { CUR_TAG, SMALL_SAMPLE_GP, fmtSigned, fmtSv, gsaxHeadline, lastName, parseGoalieLine, relAge, shortAge } from '@/lib/matchup/format';
 import { GOALIE_TONE, goalieStatus } from './TeamSide';
 import { GoalieGlyph } from './GoalieGlyph';
 import { DetailsLoading, type DetailsState } from './DetailsLoading';
@@ -60,11 +59,9 @@ function StarterTile({ s, opp, now, view }: { s: SideData; opp: string; now: Dat
     const at = shortAge(s.goalieStatusAt, now);
     const curGp = s.goalieCurGp ?? 0;
     const cur = lineParts(undefined, curGp >= 1 ? s.goalieCur : null);
-    const prev = lineParts(undefined, s.goaliePrev);
     const window = view?.gsaxSeason ?? null;
     const head = s.gsax != null ? gsaxHeadline(s.gsax, curGp) : null;
     // Until he has a real sample this season the rating is last season's (or the seasons it spans).
-    const tag = head?.prior ? (windowTag(window) ?? PREV_TAG) : null;
     return (
         <div className="tile flex min-w-0 flex-col gap-3">
             {/* The injury chip wraps under the name rather than squeezing it (never under 7 characters). */}
@@ -80,29 +77,18 @@ function StarterTile({ s, opp, now, view }: { s: SideData; opp: string; now: Dat
                 </span>
                 <InjuryTag injury={view?.injury} />
             </div>
-            {s.gsax != null && head ? (
+            {s.gsax != null && head && !head.prior ? (
                 <div className="flex items-center gap-2" title={`Regressed GSAx per game${window ? `, ${window}` : ''}${head.prior ? ` (under ${SMALL_SAMPLE_GP} GP this season)` : ''}`}>
                     <span data-gsax-headline className={cn('font-display text-[22px] font-bold leading-6 tabular-nums', TONE_CLASS[head.tone])}>
                         {fmtSigned(s.gsax)}
                     </span>
                     <span className="text-micro uppercase tracking-wide text-fg-3">GSAx/gm</span>
-                    {tag ? (
-                        <SeasonTag>
-                            {tag}
-                            <span className="sr-only"> rating</span>
-                        </SeasonTag>
-                    ) : null}
                 </div>
             ) : null}
             <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-5 gap-y-2.5 text-caption">
                 <Row k={CUR_TAG} dim={!cur}>
                     {cur ? <Figures f={cur} /> : '0 GP'}
                 </Row>
-                {prev ? (
-                    <Row k={PREV_TAG} dim>
-                        <Figures f={prev} />
-                    </Row>
-                ) : null}
                 {view?.gsaxCur != null && view.gsaxCurGp ? (
                     <Row k={`GSAx/GS ${CUR_TAG}`}>
                         <span data-gsax-cur>{fmtSigned(view.gsaxCur)}</span> <span className="text-fg-3">· {view.gsaxCurGp} GS</span>
@@ -121,8 +107,6 @@ function StarterTile({ s, opp, now, view }: { s: SideData; opp: string; now: Dat
 
 function Backup({ g }: { g: GoalieView }) {
     const cur = lineParts(g.cur);
-    const prev = lineParts(g.prev);
-    const tag = (g.cur?.gp ?? 0) < SMALL_SAMPLE_GP ? windowTag(g.gsaxSeason) : null;
     return (
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-line pt-2.5 text-caption">
             {/* Name first: the IR chip and the stat lines wrap to the next line before the name loses a letter. */}
@@ -139,16 +123,9 @@ function Backup({ g }: { g: GoalieView }) {
                         <Figures f={cur} />
                     </span>
                 ) : null}
-                {prev ? (
-                    <span className="text-fg-3">
-                        <span className="mr-2 text-micro">{PREV_TAG}</span>
-                        <Figures f={prev} />
-                    </span>
-                ) : null}
-                {g.gsaxPerGame != null ? (
+                {g.gsaxPerGame != null && (g.cur?.gp ?? 0) >= SMALL_SAMPLE_GP ? (
                     <span className="flex items-center gap-1 text-micro text-fg-3" title={g.gsaxSeason ? `Regressed GSAx per game, ${g.gsaxSeason}` : undefined}>
                         {fmtSigned(g.gsaxPerGame)} GSAx/gm
-                        {tag ? <SeasonTag>{tag}</SeasonTag> : null}
                     </span>
                 ) : null}
             </span>
@@ -156,36 +133,40 @@ function Backup({ g }: { g: GoalieView }) {
     );
 }
 
+/** One team's projected starter tile and the rest of its tandem. */
+export function GoalieSection({ p, state, side }: { p: Prediction; state: DetailsState; side: 'away' | 'home' }) {
+    const now = new Date();
+    const s = p[side];
+    const opp = p[side === 'home' ? 'away' : 'home'].team.triCode;
+    const view = state.status === 'ready' ? state.data?.[side].goalies.find(g => g.starter) : undefined;
+    return (
+        <section aria-label={`${s.team.commonName} goalies`} className="flex min-w-0 flex-col gap-1.5">
+            <h3 className="label">{s.team.triCode}</h3>
+            <StarterTile s={s} opp={opp} now={now} view={view} />
+            {state.status === 'ready' ? (
+                <DetailsLoading state={state}>
+                    {d => {
+                        const others = d[side].goalies.filter(g => !g.starter);
+                        return others.length ? (
+                            <div className="flex flex-col gap-2.5 px-1">
+                                {others.map(g => (
+                                    <Backup key={g.name} g={g} />
+                                ))}
+                            </div>
+                        ) : null;
+                    }}
+                </DetailsLoading>
+            ) : null}
+        </section>
+    );
+}
+
 /** Projected starters and the rest of each tandem, away left / home right. */
 export function GoaliesPanel({ p, state }: { p: Prediction; state: DetailsState }) {
-    const now = new Date();
     return (
         <div className="grid grid-cols-1 gap-2.5 cq-sm:grid-cols-2">
-            {(['away', 'home'] as const).map(side => {
-                const s = p[side];
-                const opp = p[side === 'home' ? 'away' : 'home'].team.triCode;
-                const view = state.status === 'ready' ? state.data?.[side].goalies.find(g => g.starter) : undefined;
-                return (
-                    <section key={side} aria-label={`${s.team.commonName} goalies`} className="flex min-w-0 flex-col gap-1.5">
-                        <h3 className="label">{s.team.triCode}</h3>
-                        <StarterTile s={s} opp={opp} now={now} view={view} />
-                        {state.status === 'ready' ? (
-                            <DetailsLoading state={state}>
-                                {d => {
-                                    const others = d[side].goalies.filter(g => !g.starter);
-                                    return others.length ? (
-                                        <div className="flex flex-col gap-2.5 px-1">
-                                            {others.map(g => (
-                                                <Backup key={g.name} g={g} />
-                                            ))}
-                                        </div>
-                                    ) : null;
-                                }}
-                            </DetailsLoading>
-                        ) : null}
-                    </section>
-                );
-            })}
+            <GoalieSection p={p} state={state} side="away" />
+            <GoalieSection p={p} state={state} side="home" />
         </div>
     );
 }

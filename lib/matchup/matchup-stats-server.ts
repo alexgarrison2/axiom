@@ -6,7 +6,6 @@ import { SEASON_ID } from '../season';
 import { loadSeasonGames, teamToTri } from '../../utils/team-stats/server';
 import { packGames } from '../../utils/team-stats/game-row';
 import { groupByTeam } from '../../utils/team-stats/filter';
-import { prevSeasonId } from '../../utils/team-stats/season';
 import { TEAM_TRICODES } from '../../utils/team-stats/teams';
 import type { GameRow } from '../../utils/team-stats/types';
 import { buildReference, restBuckets, type LeagueReference, type MatchupGame, type TeamGamesPayload } from './matchup-stats';
@@ -22,8 +21,8 @@ import { buildReference, restBuckets, type LeagueReference, type MatchupGame, ty
  * season from its pipeline file (pipeline/nhl_season_<y>_<y+1>_gamestats.csv).
  */
 
-/** Last season + this season, oldest first. Never hardcoded: rolls with lib/season.ts. */
-export const WINDOW = [prevSeasonId(SEASON_ID), SEASON_ID] as const;
+/** This season only: the matchup numbers never reach back into last season. Never hardcoded: rolls with lib/season.ts. */
+export const WINDOW = [SEASON_ID] as const;
 
 const READ = {
     current: () => fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'gamestats.csv'), 'utf8'),

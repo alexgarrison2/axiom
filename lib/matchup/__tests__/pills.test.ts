@@ -97,13 +97,13 @@ describe('getTeamPills (E2)', () => {
         expect(texts(getTeamPills(p, 'away'))).toContain('B2B');
     });
 
-    it('labels head-to-head "this season" from the second meeting, prior season before that', () => {
+    it('labels head-to-head "this season" from the second meeting; last season is never shown', () => {
         const met1 = byTeams(week3, 'NYI', 'TOR');
         expect(met1.h2hGp).toBe(1);
         expect(pillText(getGamePills(met1)[0])).toBe('H2H NYI 1-0-0');
         const never = byTeams(week3, 'TBL', 'LAK');
         expect(getGamePills(never)).toEqual([]);
-        expect(priorSeriesNote(never)).toBe('25-26 season series: TBL 1-1-0 vs LAK');
+        expect(priorSeriesNote(never)).toBeNull();
     });
 });
 

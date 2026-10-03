@@ -8,7 +8,7 @@
  * teams open), and the fatigue chips are always evaluated first-hand.
  */
 import type { Prediction, Side, SideData } from '../../types/prediction';
-import { PREV_TAG, SMALL_SAMPLE_GP } from './format';
+import { SMALL_SAMPLE_GP } from './format';
 
 export type PillTone = 'neutral' | 'pos' | 'neg' | 'warn' | 'info';
 export type PillState = 'current' | 'small' | 'prior';
@@ -52,7 +52,6 @@ const ord = (n: number) => {
 
 function rankPill(kind: 'PP' | 'PK', s: SideData): Pill | null {
     const rank = kind === 'PP' ? s.ppRank : s.pkRank;
-    const prev = kind === 'PP' ? s.ppRankPrev : s.pkRankPrev;
     if (rank != null) {
         if (rank > TOP && rank < BOTTOM) return null;
         const pct = kind === 'PP' ? s.ppPct : s.pkPct;
@@ -64,17 +63,6 @@ function rankPill(kind: 'PP' | 'PK', s: SideData): Pill | null {
             tone: rank <= TOP ? 'pos' : 'neg',
             state: 'current',
             title: `#${rank} ${kind}${pctText} · ${s.gp} GP (${ord(rank)} of 32 this season)`,
-        };
-    }
-    if (prev != null && (prev <= TOP || prev >= BOTTOM)) {
-        return {
-            key: `${kind.toLowerCase()}-prev`,
-            label: kind,
-            value: `#${prev}`,
-            tone: 'neutral',
-            state: 'prior',
-            seasonTag: PREV_TAG,
-            title: `Last season's final ${kind} rank (${PREV_TAG}): ${ord(prev)} of 32. This season's ranks appear once every team has played 10 games.`,
         };
     }
     return null;
@@ -207,7 +195,6 @@ export function getGamePills(p: Prediction): Pill[] {
     // Shown from the 2nd meeting (one meeting already played); before that
     // last season's series lives only in the tooltip-free prior note.
     if (p.h2hGp >= 1 && p.away.h2hRecord) {
-        const prev = p.away.h2hPrev ? ` Last season (${PREV_TAG}): ${p.away.team.triCode} ${p.away.h2hPrev}.` : '';
         pills.push({
             key: 'h2h',
             label: 'H2H',
@@ -215,22 +202,22 @@ export function getGamePills(p: Prediction): Pill[] {
             tone: 'neutral',
             state: p.h2hGp < 2 ? 'small' : 'current',
             n: p.h2hGp < 2 ? p.h2hGp : undefined,
-            title: `This season's meetings before tonight: ${p.away.team.triCode} ${p.away.h2hRecord} vs ${p.home.team.triCode} (${p.h2hGp} GP).${prev}`,
+            title: `This season's meetings before tonight: ${p.away.team.triCode} ${p.away.h2hRecord} vs ${p.home.team.triCode} (${p.h2hGp} GP).`,
         });
     }
     return pills;
 }
 
-/** Last season's series, for the Preview tab before the teams have met this season. */
+/** Retired: last season's series is no longer shown. */
 export function priorSeriesNote(p: Prediction): string | null {
-    if (p.h2hGp >= 1 || !p.away.h2hPrev) return null;
-    return `${PREV_TAG} season series: ${p.away.team.triCode} ${p.away.h2hPrev} vs ${p.home.team.triCode}`;
+    void p;
+    return null;
 }
 
-/** Last season's series as a tagged chip ({ tag: "25-26", text: "NYI 2-1-1" }) before the teams meet this season. */
+/** Retired: last season's series is no longer shown. */
 export function priorSeries(p: Prediction): { tag: string; text: string } | null {
-    if (p.h2hGp >= 1 || !p.away.h2hPrev) return null;
-    return { tag: PREV_TAG, text: `${p.away.team.triCode} ${p.away.h2hPrev}` };
+    void p;
+    return null;
 }
 
 /** Visible text of a pill, as rendered by <StatChip> (for tests and aria). */
