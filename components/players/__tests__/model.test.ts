@@ -112,7 +112,8 @@ describe('players model (RAPM v2 ratings)', () => {
     it('the published file ranks the stars near the top of rostered skaters', () => {
         const pub = JSON.parse(readFileSync(join(process.cwd(), 'public/data/player_ratings.json'), 'utf8'));
         const all = compactSkaters(pub, { cur: new Map(), prev: new Map() }, {});
-        expect(all.length).toBeGreaterThanOrEqual(700);
+        // 32 teams x 20+ rostered skaters (opening rosters land just under or over 700).
+        expect(all.length).toBeGreaterThanOrEqual(640);
         const top = sortSkaters(all, 'net', 'desc').slice(0, 15).map(r => r.name);
         for (const n of ['Connor McDavid', 'Nathan MacKinnon', 'Auston Matthews']) expect(top).toContain(n);
         expect(all.map(r => r.name)).not.toContain('Patrice Bergeron');
