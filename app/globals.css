@@ -35,6 +35,9 @@
     --magenta: #ff4fd8;
     --amber: #ffc53d;
     --red: #ff5470;
+    /* Special teams: power play (cyan, the brand's own charge) and penalty kill (orange, apart from amber's situational chips and red's negatives). */
+    --pp: #29e7ff;
+    --pk: #ff8a3d;
     --panel-top: #0b1019;
     --panel-bottom: #070a10;
     --panel-gradient: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));

@@ -55,6 +55,8 @@ export function SlatePane({
     const [tab, setTab] = useState<Tab>('form');
     const hydrated = useHydrated();
     const listRef = useRef<HTMLUListElement>(null);
+    const navRef = useRef<HTMLElement>(null);
+    const [stickTop, setStickTop] = useState<number | null>(null);
     const paneRef = useRef<HTMLDivElement>(null);
     const [bar, setBar] = useState<{ top: number; height: number } | null>(null);
 
@@ -88,6 +90,27 @@ export function SlatePane({
         [ids, slate, live],
     );
 
+    // The rail never scrolls on its own. Short, it sticks under the app bar. Taller than the window, it rides the page until its
+    // bottom reaches the bottom of the window and sticks there, so one page scroll shows every game.
+    useLayoutEffect(() => {
+        const nav = navRef.current;
+        if (!nav) return;
+        const place = () => {
+            const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--appbar-h')) || 52;
+            const h = nav.offsetHeight;
+            const fit = window.innerHeight - bar - 12;
+            setStickTop(h > fit ? window.innerHeight - h - 12 : bar);
+        };
+        place();
+        const ro = new ResizeObserver(place);
+        ro.observe(nav);
+        window.addEventListener('resize', place);
+        return () => {
+            ro.disconnect();
+            window.removeEventListener('resize', place);
+        };
+    }, []);
+
     // The indicator glides to the selected row.
     useLayoutEffect(() => {
         const measure = () => {
@@ -111,7 +134,7 @@ export function SlatePane({
     if (!selected) return null;
     return (
         <div className="grid grid-cols-[22.5rem_minmax(0,1fr)] items-start gap-4">
-            <nav aria-label={`Games, ${heading}`} className="sticky top-[var(--appbar-h)] -m-3 max-h-[calc(100dvh-var(--appbar-h))] overflow-y-auto p-3 overscroll-contain scrollbar-hide">
+            <nav ref={navRef} aria-label={`Games, ${heading}`} className="sticky -m-3 p-3" style={{ top: stickTop ?? 'var(--appbar-h)' }}>
                 <ul ref={listRef} onKeyDown={onKey} className="panel relative flex flex-col p-1.5">
                     {bar ? (
                         <span

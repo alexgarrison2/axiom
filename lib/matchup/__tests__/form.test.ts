@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildEntries, fmtRecord, recentGames, recordOf, resultOf, startedBy, streakOf } from '../form';
+import { buildEntries, fmtRank, fmtRecord, leagueRank, recentGames, recordOf, resultOf, startedBy, streakOf } from '../form';
 import type { MatchupGame } from '../matchup-stats';
 import { SEASON_ID } from '../../season';
 
@@ -48,5 +48,25 @@ describe('form', () => {
         expect(e[0]).toMatchObject({ outcome: 'OTL', extra: 'OT', gf: 2, ga: 3, game: null });
         expect(e[1].game).not.toBeNull();
         expect(buildEntries([], [], 'x', '2026-10-03', 5)).toEqual([]);
+    });
+
+    it('ranks a value among the league, by the stat\'s own direction', () => {
+        const ref = [1, 2, 2, 3, 4, 5, 6, 7, 8, 9]; // ascending, ten teams
+        expect(leagueRank(ref, 9, true)).toMatchObject({ rank: 1, of: 10, tied: false, worst: false });
+        expect(fmtRank(leagueRank(ref, 9, true)!)).toBe('1st');
+        expect(fmtRank(leagueRank(ref, 1, true)!)).toBe('Last');
+        // lower is better: the smallest value is 1st, the largest is last
+        expect(fmtRank(leagueRank(ref, 1, false)!)).toBe('1st');
+        expect(fmtRank(leagueRank(ref, 9, false)!)).toBe('Last');
+        // ties share the better rank and say so
+        expect(fmtRank(leagueRank(ref, 2, true)!)).toBe('T-8th');
+        // a team the reference left out is ranked as if added
+        expect(leagueRank(ref, 3.5, true)).toMatchObject({ rank: 7, of: 11 });
+    });
+
+    it('shows no rank until enough teams are ranked', () => {
+        expect(leagueRank([1, 2, 3], 2, true)).toBeNull();
+        expect(leagueRank(undefined, 2, true)).toBeNull();
+        expect(leagueRank([1, 2, 3, 4, 5, 6, 7, 8], null, true)).toBeNull();
     });
 });
