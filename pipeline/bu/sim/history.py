@@ -3,7 +3,7 @@
 ``asof_sums`` replays the team-game rows through ``state.SimState`` and records, for each row,
 the decayed sums of the team, its opponent, both starting goalies and the league as they stood
 BEFORE the game's date.  ``game_inputs`` joins them with the RAPM lineup term (the committed
-``bu/lineup/out/lineup_features.csv.gz``: point-in-time ratings as of d - 2 days, FIN, dressed
+``bu/lineup/out/lineup_features_v2.csv.gz`` (RAPM v2): point-in-time ratings as of d - 2 days, FIN, dressed
 18) and rest days, one row per game in the home / away layout the rates module expects.
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ import pandas as pd
 from .state import GOALIE_Q, LEAGUE_Q, TEAM_Q, SimState, replay, team_key
 
 PIPELINE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-LINEUP_FEATURES = os.path.join(PIPELINE_DIR, "bu", "lineup", "out", "lineup_features.csv.gz")
+LINEUP_FEATURES = os.path.join(PIPELINE_DIR, "bu", "lineup", "out", "lineup_features_v2.csv.gz")   # RAPM v2
 
 
 def asof_sums(tg: pd.DataFrame, hyper: dict | None = None) -> pd.DataFrame:

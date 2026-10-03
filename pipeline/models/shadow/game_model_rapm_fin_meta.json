@@ -1,0 +1,515 @@
+{
+  "model_version": "logit-elo-v5-20261002-xg2-rapm-fin",
+  "model_type": "logistic_regression_l2",
+  "training_date": "2026-10-02T12:48:58.725444+00:00",
+  "training_seasons": [
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "n_train": 4992,
+  "feature_columns": [
+    "d_xg_share",
+    "d_xg_share_all",
+    "d_elo",
+    "d_goalie_gsax",
+    "d_pts_pct",
+    "h_b2b",
+    "a_b2b",
+    "d_rest",
+    "bu_d_net",
+    "bu_d_delta",
+    "bu_d_fin"
+  ],
+  "feature_params": {
+    "XG_HALFLIFE": 16,
+    "OFFSEASON_KEEP": 0.5,
+    "PTS_PRIOR_GAMES": 20,
+    "ELO_K": 4.0,
+    "ELO_KX": 4.0,
+    "ELO_HFA": 35.0,
+    "ELO_OFFSEASON_REGRESSION": 0.5,
+    "GOALIE_CUR_PRIOR_GP": 30,
+    "GOALIE_SHRINK_GP": 25,
+    "GOALIE_SEASON_DECAY": [
+      1.0,
+      0.5
+    ],
+    "XG_NORM_PRIOR_GOALS": 1000.0,
+    "REST_CAP": 4
+  },
+  "xg_source": "raw_shot_xg",
+  "xg_version": "v2",
+  "game_types": [
+    "02",
+    "03"
+  ],
+  "C": 0.003,
+  "C_scores_latest_season": {
+    "0.001": 0.6689552399425021,
+    "0.003": 0.6662273262113164,
+    "0.01": 0.665887185018259,
+    "0.03": 0.6661869058205203,
+    "0.1": 0.6664763221547835,
+    "0.3": 0.66669261239568,
+    "1.0": 0.6669412387841875,
+    "best": 0.01,
+    "se_paired": {
+      "0.001": 0.0014142758898825873,
+      "0.003": 0.0006157935572100308,
+      "0.01": 0.0,
+      "0.03": 0.0003872040964449193,
+      "0.1": 0.0007205625097055919,
+      "0.3": 0.0009590146744433779,
+      "1.0": 0.0011228977183906311
+    }
+  },
+  "coefficients_raw": {
+    "d_xg_share": 1.3969454187635963,
+    "d_xg_share_all": 3.1631633514039277,
+    "d_elo": 0.09389122156213923,
+    "d_goalie_gsax": 0.1756083718174397,
+    "d_pts_pct": 0.41942780835570853,
+    "h_b2b": -0.10465794407335195,
+    "a_b2b": 0.19510123568542592,
+    "d_rest": 0.05931415597850536,
+    "bu_d_net": 0.30145347641275505,
+    "bu_d_delta": 0.43709561218858783,
+    "bu_d_fin": 0.437726781438147
+  },
+  "home_ice_logit": 0.1160866686367886,
+  "home_ice_prob_equal_teams": 0.5289891194107507,
+  "cv_results": [
+    {
+      "test_season": 2023,
+      "C": 0.01,
+      "train_n": 982,
+      "n": 1399,
+      "log_loss": 0.6585441362509831,
+      "brier": 0.2334582130794051,
+      "accuracy": 0.5918513223731237,
+      "mean_pred_home": 0.5166530195289675,
+      "actual_home": 0.5368120085775554,
+      "calibration_slope": 0.9940401591246641,
+      "calibration_intercept": 0.08676706819312378,
+      "reliability_slope": 0.9758702771042894,
+      "early": {
+        "n": 249,
+        "log_loss": 0.6718598935815293,
+        "brier": 0.2397364489597735,
+        "accuracy": 0.5582329317269076,
+        "mean_pred_home": 0.5081529543653351,
+        "actual_home": 0.5301204819277109,
+        "calibration_slope": 0.9730971320028886,
+        "calibration_intercept": 0.09240744799047484,
+        "reliability_slope": 0.8164349871245434
+      },
+      "home_rate_baseline": {
+        "rate": 0.5193482688391039,
+        "log_loss": 0.6910460348205584,
+        "early_log_loss": 0.6915641713732007
+      },
+      "inner_C_scores": {},
+      "legacy_xgb": {
+        "test_season": 2023,
+        "n": 1380,
+        "log_loss": 0.6757149486397996,
+        "brier": 0.24142186485800188,
+        "accuracy": 0.5789855072463768
+      },
+      "legacy_xgb_same_games": {
+        "n": 1380,
+        "log_loss": 0.6757149486397996,
+        "early_log_loss": 0.6834544553739393,
+        "carried_from": "logit-elo-v5-20261001-xg2-rapm"
+      }
+    },
+    {
+      "test_season": 2024,
+      "C": 0.003,
+      "train_n": 2381,
+      "n": 1206,
+      "log_loss": 0.6608200444331501,
+      "brier": 0.23446577184695117,
+      "accuracy": 0.587893864013267,
+      "mean_pred_home": 0.5307413087035899,
+      "actual_home": 0.5688225538971807,
+      "calibration_slope": 1.0964207462496531,
+      "calibration_intercept": 0.15081874924379923,
+      "reliability_slope": 1.0030012298814994,
+      "early": {
+        "n": 250,
+        "log_loss": 0.667145986978796,
+        "brier": 0.23741099551252223,
+        "accuracy": 0.604,
+        "mean_pred_home": 0.5347524038348176,
+        "actual_home": 0.524,
+        "calibration_slope": 1.4815195947869508,
+        "calibration_intercept": -0.10879876963446228,
+        "reliability_slope": 1.5055474000903488
+      },
+      "home_rate_baseline": {
+        "rate": 0.5296094078118437,
+        "log_loss": 0.6867429676292445,
+        "early_log_loss": 0.6920578634396143
+      },
+      "inner_C_scores": {
+        "0.001": 0.6653472012201479,
+        "0.003": 0.659526832693152,
+        "0.01": 0.6585441362509831,
+        "0.03": 0.6591212646355604,
+        "0.1": 0.6594333357104374,
+        "0.3": 0.6596741836452337,
+        "1.0": 0.6601753905804361,
+        "best": 0.01,
+        "se_paired": {
+          "0.001": 0.0031804152964155087,
+          "0.003": 0.001429013314539407,
+          "0.01": 0.0,
+          "0.03": 0.0008443615944369961,
+          "0.1": 0.0015449693927454158,
+          "0.3": 0.0021515339664906078,
+          "1.0": 0.002622520135817394
+        }
+      },
+      "legacy_xgb": {
+        "test_season": 2024,
+        "n": 1188,
+        "log_loss": 0.6703353475217421,
+        "brier": 0.23888842589282724,
+        "accuracy": 0.5858585858585859
+      },
+      "legacy_xgb_same_games": {
+        "n": 1188,
+        "log_loss": 0.6703353475217421,
+        "early_log_loss": 0.6840367015421664,
+        "carried_from": "logit-elo-v5-20261001-xg2-rapm"
+      }
+    },
+    {
+      "test_season": 2025,
+      "C": 0.01,
+      "train_n": 3587,
+      "n": 1394,
+      "log_loss": 0.678433120315924,
+      "brier": 0.24284273116814153,
+      "accuracy": 0.56025824964132,
+      "mean_pred_home": 0.5411375936587521,
+      "actual_home": 0.5193687230989957,
+      "calibration_slope": 0.7979934537535142,
+      "calibration_intercept": -0.05827236102631092,
+      "reliability_slope": 0.7858323883454742,
+      "early": {
+        "n": 248,
+        "log_loss": 0.6922882161924623,
+        "brier": 0.24928820862465237,
+        "accuracy": 0.5604838709677419,
+        "mean_pred_home": 0.5364175931260191,
+        "actual_home": 0.5362903225806451,
+        "calibration_slope": 0.44044641500623805,
+        "calibration_intercept": 0.07986587871515737,
+        "reliability_slope": 0.5264050432362278
+      },
+      "home_rate_baseline": {
+        "rate": 0.5427934206858098,
+        "log_loss": 0.6934996677491434,
+        "early_log_loss": 0.6905960315298606
+      },
+      "inner_C_scores": {
+        "0.001": 0.6645098824838981,
+        "0.003": 0.6601255326388095,
+        "0.01": 0.6590604126982557,
+        "0.03": 0.6591019969557337,
+        "0.1": 0.6591501106037353,
+        "0.3": 0.6592722400519717,
+        "1.0": 0.6595629114255877,
+        "best": 0.01,
+        "se_paired": {
+          "0.001": 0.0019773594818647327,
+          "0.003": 0.0008727747203489574,
+          "0.01": 0.0,
+          "0.03": 0.0005375138097071035,
+          "0.1": 0.0010008592240010011,
+          "0.3": 0.0013568544525654445,
+          "1.0": 0.001611332986764387
+        }
+      },
+      "legacy_xgb": {
+        "test_season": 2025,
+        "n": 1374,
+        "log_loss": 0.6848839396839758,
+        "brier": 0.24593510519871897,
+        "accuracy": 0.5451237263464338
+      },
+      "legacy_xgb_same_games": {
+        "n": 1374,
+        "log_loss": 0.6848839396839758,
+        "early_log_loss": 0.6935351915643508,
+        "carried_from": "logit-elo-v5-20261001-xg2-rapm"
+      }
+    }
+  ],
+  "early_season_pooled": {
+    "n": 747,
+    "log_loss": 0.6770643746482334,
+    "brier": 0.24212931781529845,
+    "accuracy": 0.5742971887550201,
+    "mean_pred_home": 0.526438754606326,
+    "actual_home": 0.5301204819277109,
+    "calibration_slope": 0.9068823176366545,
+    "calibration_intercept": 0.024701822947215554,
+    "reliability_slope": 0.8763101277120349
+  },
+  "avg_log_loss": 0.6659324336666858,
+  "avg_accuracy": 0.5800011453425703,
+  "evaluation": "season-level walk-forward: train on seasons < S, C tuned on S-1; early = either team game number <= 15",
+  "bu_lineup": {
+    "features": [
+      "bu_d_net",
+      "bu_d_delta",
+      "bu_d_fin"
+    ],
+    "training_table": "bu/lineup/out/lineup_features.csv.gz",
+    "training_table_sha256": "aec916dc379a703e8408d638ead58778a5a08004d0dc6f9f0da1c60db351ac52",
+    "rapm_xg_source": "/private/tmp/claude-501/-Users-alexgarrison-axiom/6556fcb8-f839-44c1-9ae3-5ee70b3ea620/scratchpad/int/xg_v2",
+    "rapm_code_version": "m2-r4",
+    "rapm_hyper": {
+      "v_new": 0.04,
+      "kappa": 1.25,
+      "young_old_extra": 0.25,
+      "cov_lam": 72000.0,
+      "use_aging": true,
+      "use_rookie_mean": true,
+      "q_add": 0.0,
+      "aging_scale": 1.0,
+      "window": "1,0.5,0.25"
+    },
+    "serving_bundle": "bu/lineup/out/serving_bundle.json.gz",
+    "max_age_h": 36.0,
+    "min_rated": 14,
+    "flag": "PONYXG_BU=on|off|nofin (off, stale bundle or coverage gate: the F1 rollback model shadow.f1 is published; the joint model is logged in bu_shadow_home_win_pct; nofin, or a bundle without FIN for a model with bu_d_fin: the RAPM model without FIN, shadow.rapm)",
+    "gate": {
+      "pooled_delta_vs_previous": {
+        "n": 3999,
+        "delta": -0.00011158775019435605,
+        "se": 0.0004093726026842945,
+        "boot_upper95": 0.000571967961076766,
+        "boot_p_worse": 0.5915
+      },
+      "dev_pooled": {
+        "n": 2605,
+        "delta_ll": -0.0005731612243113087,
+        "se": 0.0004013637196628036
+      },
+      "per_fold": {
+        "2023": {
+          "n": 1399,
+          "delta": -0.0006710788446027864,
+          "se": 0.00039181202722649917,
+          "base_log_loss": 0.6592152150955858,
+          "cand_log_loss": 0.6585441362509831
+        },
+        "2024": {
+          "n": 1206,
+          "delta": -0.00045957353709092925,
+          "se": 0.0007384614890809842,
+          "base_log_loss": 0.6612796179702409,
+          "cand_log_loss": 0.6608200444331501
+        },
+        "2025": {
+          "n": 1394,
+          "delta": 0.0007509652627716854,
+          "se": 0.0009034607410618441,
+          "base_log_loss": 0.6776821550531522,
+          "cand_log_loss": 0.678433120315924
+        }
+      },
+      "calibration": {
+        "slope": 0.941041175925529,
+        "ci95": [
+          0.8028355178428708,
+          1.0792468340081873
+        ]
+      },
+      "report": "bu/lineup/out/retrain_fin.json",
+      "previous_gate": {
+        "pooled_delta_vs_previous": {
+          "n": 3999,
+          "delta": 1.7602449284550497e-05,
+          "se": 0.00032916257178668026,
+          "boot_upper95": 0.0005321927373464272,
+          "boot_p_worse": 0.49250000000000005
+        },
+        "per_fold": {
+          "2023": {
+            "n": 1399,
+            "delta": -0.0004100711117317402,
+            "se": 0.0006331075147554072,
+            "base_log_loss": 0.6596252862073175,
+            "cand_log_loss": 0.6592152150955858
+          },
+          "2024": {
+            "n": 1206,
+            "delta": 0.00016432313989214286,
+            "se": 0.0003363469941207005,
+            "base_log_loss": 0.6611152948303488,
+            "cand_log_loss": 0.6612796179702409
+          },
+          "2025": {
+            "n": 1394,
+            "delta": 0.00031987659490078757,
+            "se": 0.0006352116679067142,
+            "base_log_loss": 0.6773622784582515,
+            "cand_log_loss": 0.6776821550531522
+          }
+        },
+        "calibration": {
+          "slope": 0.940620059332253,
+          "ci95": [
+            0.8022668391410508,
+            1.0789732795234552
+          ]
+        },
+        "report": "bu/lineup/out/retrain_window.json",
+        "previous_gate": {
+          "pooled_delta_vs_previous": {
+            "n": 3999,
+            "delta": -0.0015820909468003878,
+            "se": 0.0009858785317623307,
+            "boot_ci95": [
+              -0.003510299291558138,
+              0.000335905225652267
+            ],
+            "boot_p_worse": 0.0525
+          },
+          "per_fold": {
+            "2023": {
+              "n": 1399,
+              "delta": 0.00015110060764568508,
+              "se": 0.001831311044707055,
+              "base_log_loss": 0.6594741855996719,
+              "cand_log_loss": 0.6596252862073175
+            },
+            "2024": {
+              "n": 1206,
+              "delta": -0.0033446837416030903,
+              "se": 0.0011942915357570647,
+              "base_log_loss": 0.6644599785719519,
+              "cand_log_loss": 0.6611152948303488
+            },
+            "2025": {
+              "n": 1394,
+              "delta": -0.0017966161075880468,
+              "se": 0.0018849815451953134,
+              "base_log_loss": 0.6791588945658396,
+              "cand_log_loss": 0.6773622784582515
+            }
+          },
+          "calibration": {
+            "slope": 0.9468606774962995,
+            "se": 0.07107996393780107,
+            "ci95": [
+              0.8075439481782094,
+              1.0861774068143897
+            ],
+            "mean_pred_minus_actual": -0.010463208255423906
+          },
+          "report": "bu/lineup/out/joint_retrain.json"
+        }
+      }
+    }
+  },
+  "shadow": {
+    "f1": {
+      "model": "models/shadow/game_model_f1.pkl",
+      "meta": "models/shadow/game_model_f1_meta.json",
+      "model_version": "logit-elo-v5-20261001",
+      "xg_inputs": "v1",
+      "dedupe": "legacy",
+      "features": [
+        "d_xg_share",
+        "d_xg_share_all",
+        "d_elo",
+        "d_goalie_gsax",
+        "d_pts_pct",
+        "h_b2b",
+        "a_b2b",
+        "d_rest",
+        "d_lineup"
+      ]
+    },
+    "rapm": {
+      "model": "models/shadow/game_model_rapm.pkl",
+      "meta": "models/shadow/game_model_rapm_meta.json",
+      "model_version": "logit-elo-v5-20261001-xg2-rapm",
+      "xg_inputs": "live",
+      "dedupe": "event",
+      "features": [
+        "d_xg_share",
+        "d_xg_share_all",
+        "d_elo",
+        "d_goalie_gsax",
+        "d_pts_pct",
+        "h_b2b",
+        "a_b2b",
+        "d_rest",
+        "bu_d_net",
+        "bu_d_delta"
+      ]
+    }
+  },
+  "promotion": {
+    "promoted_at": "2026-10-02T12:48:58.775854+00:00",
+    "replaced": "logit-elo-v5-20261001-xg2-rapm",
+    "rule": "owner approval 2026-10-02 (\"Yes\" to wiring FIN into the game model, no blend cap): promote the live features + bu_d_fin when it is better than the live model on BOTH dev seasons (2023-24, 2024-25: each season and pooled delta log loss < 0) and its single 2025-26 holdout look is not worse than the live model by more than +0.0010 log loss per game",
+    "standard_gate_checks": [
+      {
+        "check": "2023 fold log loss <= current + 0.0005",
+        "candidate": 0.6585441362509831,
+        "current": 0.6592152150955858,
+        "passed": true
+      },
+      {
+        "check": "2023 beats home-rate by >= 0.01",
+        "gain": 0.032501898569575305,
+        "passed": true
+      },
+      {
+        "check": "2024 fold log loss <= current + 0.0005",
+        "candidate": 0.6608200444331501,
+        "current": 0.6612796179702409,
+        "passed": true
+      },
+      {
+        "check": "2024 beats home-rate by >= 0.01",
+        "gain": 0.02592292319609435,
+        "passed": true
+      },
+      {
+        "check": "2025 fold log loss <= current + 0.0005",
+        "candidate": 0.678433120315924,
+        "current": 0.6776821550531522,
+        "passed": false
+      },
+      {
+        "check": "2025 beats home-rate by >= 0.01",
+        "gain": 0.015066547433219446,
+        "passed": true
+      },
+      {
+        "check": "2025 calibration slope in [0.9, 1.1]",
+        "slope": 0.7979934537535142,
+        "passed": false
+      }
+    ],
+    "standard_gate_passed": false
+  },
+  "shadow_role": {
+    "role": "rollback of the ratings v3 / v4 lineup term: the v2 joint model with FIN, on the bundle's v2 ratings",
+    "archived_at": "2026-10-03T01:56:19.596307+00:00",
+    "xg_inputs": "live",
+    "ratings": "v2"
+  }
+}

@@ -244,13 +244,46 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   `{season_id, generated_at, baseline_generated_at, max_swing_pts, min_swing_pts, games: [...]}`.
   `games` is empty while the largest swing on the slate is under
   `min_swing_pts` (3 points).
-* `public/data/player_ratings.json` (`bu/lineup/ratings_export.py`, the site's RAPM v2
-  player ratings, EV xG/60 vs an average skater): `{version: 2, season, as_of, units, columns,
-  rows}` with columns `id, name, team, pos, roster, rated, off, def, net, toi, gp, toi_cur,
-  gp_cur`. Every rating is higher = better: `off` = xGF/60 added, `def` = xGA/60
-  **prevented** (the negated RAPM `d`; version 1 carried `d` itself, lower = better) and
-  `net = off + def`. Model internals (`bu.rapm`, the serving bundle, `bu_d_net`) keep `d`.
-  `validate_outputs.py player_ratings` gates it.
+* `public/data/player_ratings.json` (`bu/lineup/ratings_export.py`, the site's player ratings,
+  **version 3** = ratings v3, `bu/rapm/README.md` "Ratings v3"):
+  `{version: 3, kind: "player_ratings", model, season, season_label, as_of, bundle_built_at,
+  season_games, window, impact: {games: 82, goals_per_xg, weights: {w_o, w_d, w_pp, w_pk},
+  baseline, position_means: {F: {...}, D: {...}}, recency, g}, units, generated_at, columns, rows}`.
+  `rows` are arrays in `columns` order, sorted by `impact` (best first):
+
+  | column | type | meaning |
+  |---|---|---|
+  | `id`, `name`, `team`, `pos` | int, str, str, str | NHL id, name, current team, C / L / R / D |
+  | `roster`, `rated` | bool | on a current NHL roster; False = no NHL sample (his role prior) |
+  | `impact` | float (2 dp) | **headline**: goals per 82 games above an average player at his position (F / D) = `off_impact + def_impact` |
+  | `off_impact`, `def_impact` | float (2 dp) | goals / 82: EV offence + PP offence + finishing; EV defence + PK defence |
+  | `sd` | float (2 dp) | posterior SD of `impact` (EV and PP / PK rating variance; TOI and FIN taken as known) |
+  | `ev_off`, `ev_def` | float (3 dp) | EV xGF/60 added, EV xGA/60 prevented vs an average skater |
+  | `pp_off`, `pk_def` | float (3 dp) | PP xGF/60 added vs an average PP skater, PK xGA/60 prevented vs an average PK skater (not position-centred: compare within F or within D) |
+  | `fin` | float (3 dp) | EV goals above xG per 60 from his own shots, shrunk |
+  | `toi_ev_gp`, `toi_pp_gp`, `toi_pk_gp` | float (2 dp) | expected minutes per game in each state |
+  | `off`, `def`, `net`, `off_total` | float (3 dp) | v2 names kept: `off = ev_off`, `def = ev_def`, `net = off + def`, `off_total = off + fin` |
+  | `toi`, `gp`, `toi_cur`, `gp_cur` | int | EV minutes / games: the three seasons before this one + this season; this season |
+
+  Every rating is higher = better (model internals - `bu.rapm`, the serving bundle, `bu_d_net` -
+  keep the RAPM `d`, lower = better).  Version 2 had `off, def, net, toi, gp, toi_cur, gp_cur, fin,
+  off_total` only (EV per 60).  `validate_outputs.py player_ratings` gates it (v3 columns,
+  `impact = off_impact + def_impact`, sane minutes, position average near 0).
+
+  **Version 4** (current, ratings v4 = v3 + a box-score prior, `bu/rapm/README.md` "Ratings v4";
+  `model` = "Ratings v4 ..."): every v3 column with the same meaning (the RAPM components now have a
+  statistical plus-minus prior from individual box-score rates), plus `impact.pen_value` (goals per
+  penalty unit) and `impact.spm_coef`, and seven columns appended after `gp_cur`:
+
+  | column | type | meaning |
+  |---|---|---|
+  | `pen_impact` | float (2 dp) | goals / 82 from penalties drawn minus taken vs his position (82 x pen_value x all-situation minutes x rate difference); drawn is inside `off_impact`, taken inside `def_impact` |
+  | `pd60`, `pt60` | float (3 dp) | penalties drawn / taken per 60 all-situation minutes (power-play units: minor 1, double minor 2, major 2.5), recency-weighted, shrunk |
+  | `spm_off`, `spm_def` | float (3 dp) | box-score prior of `ev_off` / `ev_def`: what his individual stats alone predict (same units and signs) |
+  | `spm_pp`, `spm_pk` | float (3 dp) | box-score prior of `pp_off` / `pk_def` |
+
+  The gate requires version >= 4 and these columns finite; an export from a bundle without the `v4`
+  table falls back to version 3 (and fails the gate).
 * `public/data/clinch_status.json`:
   `{season_id, generated_at, teams: {TRI: "x" | "y" | "z" | "p" | "e" | null}}`.
 * SiteHistory snapshots (`public/data/SiteHistory/<date>.csv`) gain
@@ -300,6 +333,14 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   term) without a retrain; the joint model stays logged in `bu_shadow_home_win_pct`.
   `PONYXG_BU=nofin` publishes the joint model without the FIN term
   (`models/shadow/game_model_rapm.pkl`, `shadow.rapm`).
+  Player ratings tables: `v3` and **`v4`** (`bu/rapm/v4_pack.py` `LIVE_COLUMNS`: `player_id, group, rated,
+  o, d, o_var, d_var, od_cov, pp, pk, pp_var, pk_var, fin, toi_ev, toi_pp, toi_pk, spm_o, spm_d, spm_pp,
+  spm_pk, pd60, pt60, role`, per 60 / minutes per game, `d` / `pk` lower = better; `meta` carries
+  `goals_per_xg`, `pen_value`, `impact_weights`, `low_role` (rookie prior by F / D), `toi_pos_means`,
+  `spm_coef`, `asof`, `g`).  `v4` is the source of `player_ratings.json` and the table for the game
+  simulator; a game model whose meta has `bu_lineup.ratings = "v4"` is served its lineup term from
+  this table (`LiveLineupTerm(..., ratings="v4")`), a model without the key from `players` / `fin`.
+  `bu_bundle` also fails a fresh bundle without the `v4` table when `ratings_pack_v4_<S>.json.gz` is committed.
 * Historical shot files (`nhl_historical_shots.csv`, last season's
   `nhl_season_<yyyy>_<yyyy>_shots.csv`) may carry `xg_raw` (raw xG v2,
   walk-forward out of sample) after `python -m bu.xg.history apply`; readers

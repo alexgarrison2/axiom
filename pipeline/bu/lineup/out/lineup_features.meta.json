@@ -1,15 +1,22 @@
 {
-  "code_version": "m2-r4",
+  "code_version": "ratings-v4",
   "hyper": {
-    "v_new": 0.04,
-    "kappa": 1.25,
-    "young_old_extra": 0.25,
-    "cov_lam": 72000.0,
-    "use_aging": true,
-    "use_rookie_mean": true,
-    "q_add": 0.0,
-    "aging_scale": 1.0,
-    "window": "1,0.5,0.25"
+    "recency": {
+      "kind": "decay",
+      "half_life": 90.0,
+      "max_games": 246.0
+    },
+    "v_o": 0.01,
+    "v_d": 0.02,
+    "v_beta": 0.0001,
+    "t0": 150.0,
+    "spm": true,
+    "spm_st": true,
+    "v_beta_st": 0.0003,
+    "v_pp": 0.04,
+    "v_pk": 0.08,
+    "fin_prior_xg": 30.0,
+    "pen_t0": 400
   },
   "lag_days": 2,
   "xg_source": "/private/tmp/claude-501/-Users-alexgarrison-axiom/6556fcb8-f839-44c1-9ae3-5ee70b3ea620/scratchpad/int/xg_v2",
@@ -18,7 +25,7 @@
   "baseline_games": 10,
   "min_rated": 14,
   "degrade": null,
-  "sha256_csv": "aec916dc379a703e8408d638ead58778a5a08004d0dc6f9f0da1c60db351ac52",
+  "sha256_csv": "13f41ccc463a9b21083b9b550f1bc7d5a2abec49243abec165323d043142c03e",
   "seasons": [
     "20102011",
     "20112012",
@@ -39,5 +46,7 @@
     "20262027"
   ],
   "n_games": 20599,
-  "coverage_ok": 0.998689256760037
+  "coverage_ok": 0.998689256760037,
+  "ratings": "v4",
+  "source": "bu.rapm.v3_pack.asof_backfill on the v4 engine (bu/rapm/v4.py), 2017-18 .. 2026-27; seasons before 2017-18 carried from the v2 table (outside every fold)"
 }

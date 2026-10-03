@@ -10,8 +10,12 @@ the player adds"):
     FIN_i       = (m_i - 1) * v_i                                 goals above xG per 60
 
 over the player's own unblocked EV shots (5v5 / 4v4 / 3v3, shooter's team not facing an empty
-net, penalty shots excluded) and his EV time.  G / X / S are season sums decayed by ``DECAY``
-per season (this season and last season 1, two seasons back DECAY, then DECAY^2, ...); each completed season's xG is scaled by that
+net, penalty shots excluded) and his EV time.  In ``FinState`` G / X / S are season sums weighted
+``DECAY ** k`` for k seasons back (two seasons back DECAY, then DECAY^2, ...); the tuned ``DECAY`` is
+1.0, so every season since the first lake season (2010-11) counts EQUALLY - there is no decay in
+the v2 numbers.  Player ratings v3 (``bu.rapm.v3``: ``fin_pre`` / ``fin_in`` / ``fin_values``) use
+the same formula on game-recency-weighted sums instead (the ratings' per-game decay, nothing
+older than 246 games) with ``v3.FIN_PRIOR_XG``.  Each completed season's xG is scaled by that
 season's league EV goals/xG, the current season's by the league ratio so far (pseudo-count
 ``LEAGUE_PSEUDO_G``), so the league-average multiplier is 1 whatever the xG model's drift.
 ``mu_g`` is the league EV ixG per second of the player's position group (forwards / defence).

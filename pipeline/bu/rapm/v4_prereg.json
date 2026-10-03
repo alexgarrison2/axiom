@@ -1,0 +1,61 @@
+{
+ "title": "Player ratings v4: v3 + a box-score (statistical plus-minus) prior - pre-declared tuning, selection, validation and sanity rules",
+ "declared_at": "2026-10-03T00:47:00Z",
+ "declared_before": "any v4 run on the dev seasons (2023-24, 2024-25), the holdout (2025-26) or the 2026-27 sanity tables; one pilot on the tuning season 2021-22 only (v3 reproduction: max |SSE diff| 2e-9; 6 EV settings and 5 PP/PK settings of the SPM prior) was run before this file to set the grids",
+ "why": "owner (2026-10-02): v3 ranks Kiviranta (+0.9, 230th) above Rantanen (-0.5, 331st) and Makar 199th. On-ice RAPM cannot split credit between players who share most of their ice time (Rantanen 81% of EV time with MacKinnon in 2023-24, 73% with Johnston in 2025-26; Makar with MacKinnon / Toews) and v3 uses no individual production, so low-event fourth liners are credited by default. v4 adds the standard RPM / EPM remedy: a statistical plus-minus prior from individual box-score rates.",
+ "base": "ratings v3 as shipped (bu/rapm/v3_prereg.json, out/v3_validation.json): D90 game recency (0.5 ** (games ago / 90), 0 beyond 246 games), role means by position x EV-usage tier (v_role 0.001), two stages (pre-season prior on the 5-game grid + in-season ridge, d - 2 days), PP / PK RAPM, FIN (prior 30 xG), expected TOI by state, impact = goals per 82 games above the position average. Recency, roles, FIN and TOI are NOT re-tuned.",
+ "features": {
+  "source": "bu/rapm/box.py: per (game, player) counts from the lake's play-by-play events (free NHL API data), the RAPM xG v2 source for individual xG, the v3 TOI table; the player's side from the game's roster spots; the player's own manpower state at the event (both goalies in); regular season + playoffs, games passing the on-ice check",
+  "ev_per60": ["g_ev goals", "a1_ev primary assists", "a2_ev secondary assists", "ixg_ev individual xG", "iff_ev unblocked attempts", "icf_ev all attempts", "reb_ev rebounds created (his shot on goal followed within 3 s by a same-team attempt, nothing in between)", "rush_ev rush attempts (previous event within 4 s in his neutral / defensive zone)", "blk_ev shots blocked", "tk_ev takeaways", "gv_ev giveaways", "hit_ev hits", "fow_ev faceoffs won", "fol_ev faceoffs lost (faceoff features 0 for defencemen)"],
+  "pp_per60": ["g_pp", "a1_pp", "a2_pp", "ixg_pp", "iff_pp"],
+  "pk_per60": ["blk_pk", "tk_pk"],
+  "all_situations_per60": ["pd_all penalties drawn", "pt_all penalties taken (power-play units: minor 1, double minor 2, non-fighting major 2.5; fighting, misconducts, penalty shots 0)"],
+  "usage": ["toi_ev_gp", "toi_pp_gp", "toi_pk_gp (minutes per game, 5 pseudo games of the position mean)"],
+  "weighting": "every count and every second weighted with the same per-game D90 weight as the player's stints (pre-season: w(g + games ago at the season start); in season: w(games ago), games up to d - 2 days); as-of only, no leakage",
+  "shrinkage": "rate = (weighted count + t0 x position-group rate) / (weighted seconds + t0), t0 = EV pseudo minutes (PP / PK 0.15 t0, all situations 1.2 t0)",
+  "standardisation": "within position group (F / D): EV-seconds-weighted mean and SD of the shrunk rates over the stage-1 players, clipped at +-4 SD; the stage-1 standardisation is reused in stage 2"
+ },
+ "model": {
+  "ev": "o_i = mu_O[role] + z_i' beta_O[grp] + u_i, u_i ~ N(0, v_o); d_i = mu_D[role] + z_i' beta_D[grp] + e_i, e_i ~ N(0, v_d); beta ~ N(0, v_beta) per standardised feature, separate per position group and component; fitted JOINTLY with the players, role means and covariates in the stage-1 ridge on the weighted stints (the SPM is fitted on the on-ice stint outcomes themselves, not by a two-step regression on shrunken RAPM estimates)",
+  "pp_pk": "pp_i = mu_PP[grp] + z_i' beta_PP[grp] + ., pk_i = mu_PK[grp] + z_i' beta_PK[grp] + . (v_pp, v_pk, beta ~ N(0, v_beta_st)) on the PP rows",
+  "stage2": "in-season prior mean = stage-1 posterior mean + beta' (z(pre-season + this season) - z(pre-season)); a player without a stage-1 prior: role mean + beta' z(this season); then this season's stints ridged toward it exactly as in v3",
+  "penalties": "not in RAPM: an impact term (below)"
+ },
+ "seasons": {
+  "tuning": ["20192020", "20202021", "20212022", "20222023"],
+  "dev": ["20232024", "20242025"],
+  "holdout": "20252026",
+  "holdout_rule": "one look after the dev run, the selected v4 configuration and the references scored in the same run, logged in bu/rapm/out/v4_look_log.jsonl; no parameter or rule change after it; reported whatever it is"
+ },
+ "primary_metric": "v3's next-30-game EV stint MSE (bu/rapm/v3_validate.py, unchanged: as-of points g in {0, 10, 20, 30, 40, 50} games per team, players fixed at the as-of ratings, covariates refit on the test rows, stint-seconds-weighted MSE of the attacking side's xG/60, date-clustered paired SEs); v4 rows pair one-to-one with the logged v3 (D90), window (shipped v2) and Kalman rows",
+ "secondary_metrics": ["next-season EV stint MSE (g = 0 ratings on the whole season)", "OFF / DEF calibration slopes", "PP next-30-game stint MSE and PP / PK slopes", "penalty-rate next-30-game Poisson deviance", "game level: walk-forward log loss of the game model with bu_d_net / bu_d_delta / bu_d_fin rebuilt from v4 vs the live model"],
+ "ev_grid": {
+  "v_beta": [1e-05, 3e-05, 0.0001, 0.0003, 0.001],
+  "t0_minutes": [150, 400],
+  "v_o": [0.01, 0.015, 0.02, 0.03],
+  "v_d": [0.01, 0.015, 0.02, 0.025],
+  "fixed": "D90, role both, v_role 0.001, aging steps, PP / PK as v3 (spm_st off) while tuning EV"
+ },
+ "ev_selection_rule": "lowest pooled tuning-season primary MSE over the 160 grid points. If the pick sits on a grid edge of v_beta, v_o or v_d, the next value beyond that edge (v_beta x 3 / 3; v_o, v_d +- 0.005, never below 0.005) is scored at the picked other values, once, and the lower pooled tuning MSE wins",
+ "st_grid": {"v_beta_st": [3e-05, 0.0001, 0.0003, 0.001], "v_pp": [0.04, 0.08, 0.16], "v_pk": [0.04, 0.08, 0.16], "reference": "spm_st off at v3's v_pp 0.16 / v_pk 0.08"},
+ "st_selection_rule": "with the selected EV configuration: lowest pooled tuning-season PP next-30-game MSE among the 36 SPM points and the reference",
+ "penalty_rule": "rates of penalties drawn / taken per 60 all-situation minutes with the D90 weights, shrunk to the position-group rate with t0_pen pseudo minutes, t0_pen in {50, 100, 200, 400, 800, 1600}: lowest pooled tuning-season Poisson deviance of the next 30 games' penalty units (drawn + taken, as-of points as the primary metric). Value of a penalty unit = league net power-play goals (PP goals - shorthanded goals, both goalies in) per penalty unit of the last completed season (bu/rapm/box.pp_goal_value)",
+ "impact": {
+  "formula": "v3's impact_82 (EV OFF / DEF, PP OFF, PK DEF, FIN, each x expected minutes, k = goals per xG) + 82 x v_pen x TOI_all / 60 x [(pd60 - m_pd) - (pt60 - m_pt)], TOI_all = expected EV + PP + PK minutes per game, m = TOI_all-weighted mean of the rated roster skaters of the position group; drawn goes to off_impact, taken to def_impact (The Athletic's split)",
+  "weights_rule": "v3's: w_o = w_d = 1 if both pooled tuning-season EV calibration slopes of the selected configuration lie in [0.85, 1.15], else each slope clipped to [0.5, 1]; the same for (w_pp, w_pk) with the PP slopes"
+ },
+ "ship_rule": "v4 replaces v3 as the site's player ratings only if the selected configuration's dev pooled (2023-24 + 2024-25) primary MSE is lower than v3's (paired point estimate < 0). The holdout look is reported; if v4 is worse than v3 on 2025-26 by more than 2 paired SEs, the export stays v3 and the owner decides. The PP / PK SPM ships only if its dev pooled PP MSE is lower than v3's PP / PK (else v3's PP / PK under v4 EV)",
+ "game_model_rule": "the owner rule: the game model retrained with bu_d_net / bu_d_delta / bu_d_fin rebuilt from v4 is promoted only if its dev pooled walk-forward log loss is lower than the live model's (paired per game) and its single 2025-26 look is not worse than +0.0010 per game (logged in bu/lineup/out/look_log.jsonl, component 'Ratings v4 lineup term'); otherwise the live game model stays and only the site's player ratings (and the bundle's v4 table for the simulator) move",
+ "sanity_checks": {
+  "status": "a written CHECK LIST, not a fitting target: no hyperparameter, feature or rule of this file is chosen or changed because of it; evaluated once on the shipped configuration's 2026-27 season-start export (and on v3 for comparison) and reported pass / fail as is",
+  "universe": "current-roster skaters of the export (player_ratings.json rows with roster = true), ranked by impact",
+  "checks": [
+   "MacKinnon, McDavid, Draisaitl, Kucherov, Matthews, Pastrnak, Rantanen, Makar, Q. Hughes each in the league top 50 by impact (9 checks)",
+   "Rantanen above Kiviranta, above Faksa, above Bäck (3 checks)",
+   "Kiviranta, Faksa, Bäck each below DAL's median roster skater by impact (3 checks)",
+   "Robertson, Johnston, Rantanen, Heiskanen, Hintz, Harley each in DAL's top 8 by impact (6 checks)"
+  ]
+ },
+ "moneypuck_secondary": "correlations (5on5 TOI-weighted, roster skaters with >= 300 5on5 minutes in 2024-25 + 2025-26, MoneyPuck free skater files): ev_off vs on-ice rel xGF/60, ev_def vs rel xGA/60 prevented, ev_off + ev_def vs the sum, ev_off + fin vs rel xGF/60 + GAx/60 (as v3); individual: impact and off_impact vs MoneyPuck all-situations points / 60 and gameScore / game; reported for v4, v3 and v2, not used for selection",
+ "descriptive": ["SPM coefficients per feature, component and position group at the 2026-27 season start (which individual stats matter)", "credibility tables: league top 30, DAL full roster, named players", "share of each player's impact from the SPM prior vs his own on-ice data"]
+}

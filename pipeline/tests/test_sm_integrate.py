@@ -325,7 +325,9 @@ def test_load_shadow_needs_a_shadow_spec():
 def _bundle(built_at, n_games=10, season="20262027", **kw):
     b = {"version": 1, "kind": "serving_bundle", "season": season, "built_at": built_at,
          "max_source_date": "2026-09-30", "n_games": n_games, "columns": ["bu_d_net", "bu_d_delta"],
-         "players": {"columns": ["player_id", "o", "d", "rated"], "rows": [[1, 0.1, 0.0, True]]}}
+         "players": {"columns": ["player_id", "o", "d", "rated"], "rows": [[1, 0.1, 0.0, True]]},
+         "v3": {"columns": ["player_id", "o", "d"], "rows": [[1, 0.1, 0.0]], "meta": {}},
+         "v4": {"columns": ["player_id", "o", "d"], "rows": [[1, 0.1, 0.0]], "meta": {}}}
     b.update(kw)
     return b
 
@@ -363,6 +365,10 @@ def test_check_bu_bundle(tmp_path, monkeypatch):
     assert V.check_bu_bundle({"bu_bundle_path": str(p)}) == []
     _write_gz(p, _bundle(now, season=V.SEASON_ID, columns=["bu_d_net"]))
     assert any("columns" in e for e in V.check_bu_bundle({"bu_bundle_path": str(p)}))
+    _write_gz(p, _bundle(now, season=V.SEASON_ID, v3=None))                         # site ratings source missing
+    assert any("v3" in e for e in V.check_bu_bundle({"bu_bundle_path": str(p)}))
+    _write_gz(p, _bundle(now, season=V.SEASON_ID, v4=None))                         # v4 pack committed, no table
+    assert any("v4" in e for e in V.check_bu_bundle({"bu_bundle_path": str(p)}))
     assert any("unreadable" in e for e in V.check_bu_bundle({"bu_bundle_path": str(tmp_path / "x.gz")}))
     # a model with bu_d_fin: a fresh bundle must carry the FIN table (else the no-FIN model is served)
     meta["feature_columns"] = ["d_elo", "bu_d_net", "bu_d_delta", "bu_d_fin"]
@@ -422,7 +428,9 @@ def test_live_model_is_the_joint_model_with_a_rollback_shadow(live_meta):
     assert live_meta["xg_version"] == "v2"                   # releases the bu.xg.live interlock
     assert not any(c in live_meta["feature_columns"] for c in F.LINEUP_COLUMNS)
     fin = any(c in live_meta["feature_columns"] for c in F.BU_FIN_COLUMNS)
-    assert live_meta["model_version"].endswith("-xg2-rapm-fin" if fin else "-xg2-rapm")
+    ratings = (live_meta.get("bu_lineup") or {}).get("ratings")       # v3 / v4: lineup table from player ratings
+    tag = ("-xg2-rapm-fin" if fin else "-xg2-rapm") + (f"-r{ratings[1]}" if ratings in ("v3", "v4") else "")
+    assert live_meta["model_version"].endswith(tag)
     if fin:   # the replaced joint model (no FIN) stays reachable: PONYXG_BU=nofin / a bundle without FIN
         r = live_meta["shadow"]["rapm"]
         assert r["model_version"].endswith("-xg2-rapm") and "bu_d_fin" not in r["features"]
@@ -437,6 +445,12 @@ def test_live_model_is_the_joint_model_with_a_rollback_shadow(live_meta):
     # table ships unless it is worse than the model it replaces by more than +0.0010 pooled
     rule = str((live_meta.get("promotion") or {}).get("rule", ""))
     window = "window prior directive" in rule
+    if fin and ratings in ("v3", "v4"):   # owner rule (v3 / v4 prereg): dev pooled better, 2025-26 look <= +0.0010
+        assert rule.startswith(f"owner rule (bu/rapm/{ratings}_prereg.json")
+        assert g["dev_pooled"]["delta_ll"] < 0 and g["per_fold"]["2025"]["delta"] <= 0.0010
+        assert os.path.exists(os.path.join(PIPELINE, g["report"]))
+        assert g["previous_gate"]["report"] == "bu/lineup/out/retrain_fin.json"   # the FIN model it replaced
+        return
     if fin:   # owner approval 2026-10-02: better on both dev seasons, 2025-26 look within +0.0010
         assert rule.startswith("owner approval 2026-10-02")
         assert g["dev_pooled"]["delta_ll"] < 0

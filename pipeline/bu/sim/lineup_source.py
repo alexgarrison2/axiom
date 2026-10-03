@@ -38,8 +38,14 @@ import pandas as pd
 PIPELINE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT = {
     "name": "rapm_v2",
-    "history_table": "bu/lineup/out/lineup_features.csv.gz",
+    # the RAPM v2 point-in-time table (ratings v4 made ``lineup_features.csv.gz`` the v4 table, the
+    # game model's; the v2 copy is ``lineup_features_v2.csv.gz``, byte-identical to the one the
+    # simulator was fitted on)
+    "history_table": "bu/lineup/out/lineup_features_v2.csv.gz",
     "serving_bundle": "bu/lineup/out/serving_bundle.json.gz",
+    # the bundle's ratings table the live term reads (``LiveLineupTerm(ratings=...)``): 'v2' = its
+    # ``players`` / ``rookie`` / ``fin`` tables, 'v3' / 'v4' = that table
+    "ratings": "v2",
 }
 REQUIRED = ["game_id", "bu_ok", "c_intercept", "bu_h_off", "bu_h_def", "bu_a_off", "bu_a_def", "bu_h_fin",
             "bu_a_fin"]
@@ -68,14 +74,17 @@ def history_table(source) -> pd.DataFrame:
 
 
 def live_term(source: dict, loaded: dict | None = None):
-    """``LiveLineupTerm`` of the source's serving bundle (``loaded``: {abs path: term} already in
-    memory, e.g. the game model's own), or None when it cannot be read."""
+    """``LiveLineupTerm`` of the source's serving bundle and ratings table (``loaded``: {abs path:
+    term} already in memory, e.g. the game model's own, reused only when it reads the same ratings
+    table: the game model may serve its lineup term from another table of the same bundle), or None
+    when it cannot be read."""
     path = resolve(source["serving_bundle"])
-    if loaded and path in loaded:
+    ratings = str(source.get("ratings") or "v2")
+    if loaded and path in loaded and str(getattr(loaded[path], "ratings_source", "v2")) == ratings:
         return loaded[path]
     try:
         from bu.lineup.serve import LiveLineupTerm
-        return LiveLineupTerm.load(path)
+        return LiveLineupTerm.load(path, ratings=ratings)
     except Exception as e:      # missing bundle: every row falls back, flagged
         print(f"[sim] lineup source {source.get('name')}: bundle unavailable ({type(e).__name__}: {e})")
         return None
