@@ -4,3 +4,5 @@
 {"season": "20252026", "question": "sim_inputs_v4", "at": "2026-10-03T02:48:18+00:00", "versions": {"V2": "sim-m5-20261002", "V4": "sim-m5-v4-20261002"}, "n_games": 1312, "ml_V4_minus_V2": {"diff": 0.00022, "se": 0.00103, "n": 1312}, "promote_v4": true}
 {"season": "20252026", "question": "sim_player_st", "stage": "started", "at": "2026-10-03T16:53:24+00:00"}
 {"season": "20252026", "question": "sim_player_st", "at": "2026-10-03T16:55:52+00:00", "versions": {"V4": "sim-m5-v4-20261002", "ST": "sim-m5-v4_st-20261003"}, "n_games": 1312, "ml_ST_minus_V4": {"diff": 0.0006, "se": 0.00063, "n": 1312}, "promote_st": true}
+{"season": "20252026", "question": "season_sim_calib", "stage": "started", "at": "2026-10-03T17:14:26+00:00"}
+{"season": "20252026", "question": "season_sim_calib", "at": "2026-10-03T17:15:16+00:00", "sim_version": "sim-m5-v4-20261002", "calibration": {"k_inf": 1.0, "tau_days": 0.0, "sigma0": 0.2, "lineup_w_inf": 1.0, "lineup_tau_days": 60.0}, "points_mae_CAL_minus_LOGIT": {"diff": 0.1115, "se_team_clustered": 0.3323}, "playoff_ll_CAL_minus_LOGIT": {"diff": 0.0109, "se_team_clustered": 0.029}, "promote_cal": false}
