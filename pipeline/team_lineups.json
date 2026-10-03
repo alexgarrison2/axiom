@@ -2252,14 +2252,14 @@
     "VAN": {
         "f1": [
             {
-                "name": "Jake DeBrusk",
-                "number": 74,
+                "name": "Marco Rossi",
+                "number": 23,
                 "pos": "lw",
-                "id": 2490,
+                "id": 29821,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Elias Pettersson",
@@ -2326,21 +2326,21 @@
                 "movement": null
             },
             {
-                "name": "Max Sasson",
-                "number": null,
+                "name": "Aatu Raty",
+                "number": 54,
                 "pos": "c",
-                "id": 30007,
+                "id": 34668,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Brendan Gallagher",
                 "number": 11,
                 "pos": "rw",
                 "id": 1791,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2358,21 +2358,21 @@
                 "movement": null
             },
             {
-                "name": "Marco Rossi",
-                "number": 23,
+                "name": "Max Sasson",
+                "number": null,
                 "pos": "c",
-                "id": 29821,
-                "ppUnit": 1,
+                "id": 30007,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Jonathan Lekkerimaki",
                 "number": 88,
                 "pos": "rw",
                 "id": 36365,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2482,6 +2482,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Jake DeBrusk",
+                "number": 74,
+                "pos": "ir3",
+                "id": 2490,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -2560,9 +2569,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-01)",
-        "updated_at": "2026-10-02T14:08:55.290Z",
-        "fetched_at": "2026-10-03T12:04:09Z"
+        "lineup_source": "Ben Kuzma",
+        "updated_at": "2026-10-03T18:51:28.188Z",
+        "fetched_at": "2026-10-03T18:53:50Z"
     },
     "VGK": {
         "f1": [
@@ -7149,7 +7158,7 @@
                 "id": 2099,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -7195,6 +7204,17 @@
                 "gameTimeDecision": false
             }
         ],
+        "ir": [
+            {
+                "name": "Jacob Trouba",
+                "number": 65,
+                "pos": "ir1",
+                "id": 2099,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            }
+        ],
         "pk1": [
             {
                 "name": "Alexander Wennberg",
@@ -7230,7 +7250,7 @@
                 "id": 2099,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "pk2": [
@@ -7272,8 +7292,8 @@
             }
         ],
         "lineup_source": "Max Miller",
-        "updated_at": "2026-10-03T17:25:43.020Z",
-        "fetched_at": "2026-10-03T18:03:22Z"
+        "updated_at": "2026-10-03T18:11:02.601Z",
+        "fetched_at": "2026-10-03T18:53:50Z"
     },
     "SEA": {
         "f1": [
@@ -9563,14 +9583,14 @@
         ],
         "f3": [
             {
-                "name": "Connor Zary",
-                "number": 47,
+                "name": "Brennan Othmann",
+                "number": 78,
                 "pos": "lw",
-                "id": 29510,
+                "id": 30831,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Ryan Strome",
@@ -9798,9 +9818,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Pat Steinberg",
-        "updated_at": "2026-10-02T18:05:42.231Z",
-        "fetched_at": "2026-10-03T12:04:09Z"
+        "lineup_source": "Derek Wills",
+        "updated_at": "2026-10-03T18:47:15.958Z",
+        "fetched_at": "2026-10-03T18:53:50Z"
     },
     "NSH": {
         "f1": [
