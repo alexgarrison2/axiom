@@ -54,6 +54,7 @@ ALL_T0_FRAC = 1.2                   # all-situation pseudo minutes = 1.2 x EV
 Z_CLIP = 4.0
 SUM_COLS = COUNT_COLS + SEC_COLS + ["gp"]
 PEN_T0 = 400.0                      # pseudo minutes of the impact's penalty rates (tuned: v4_validation "pen")
+IMPACT_WEIGHTS = {"w_o": 1.0, "w_d": 1.0, "w_pp": 1.0, "w_pk": 1.0}   # calibration-slope rule (v4_prereg "impact")
 
 
 @dataclass(frozen=True)
@@ -81,6 +82,9 @@ class Shrink4(V.Shrink):
 
     def as_dict(self) -> dict:
         return asdict(self)
+
+
+SHRINK = Shrink4()                  # the selected configuration (v4_validation.json), set after tuning
 
 
 # ----------------------------------------------------------------------- weighted box sums and features

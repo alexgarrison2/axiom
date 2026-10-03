@@ -57,7 +57,8 @@ BUNDLE = os.path.join(OUT_DIR, "serving_bundle.json.gz")
 PUBLIC_FILE = os.path.join(REPO_ROOT, "public", "data", "player_ratings.json")
 
 VERSION = 1                 # player sample file
-RATINGS_VERSION = 3         # site file; 3: per-game impact headline (ratings v3); 2: def = -d, net = off + def
+RATINGS_VERSION = 4         # site file; 4: + box-score prior and penalties (ratings v4); 3: per-game impact
+                            # headline (ratings v3); 2: def = -d, net = off + def
 WINDOW = 3                  # completed seasons in the sample (toi / gp) before the current one
 MIN_ROSTER_SKATERS = 600    # an export with fewer named roster skaters is not written
 GAMES = 82
@@ -66,6 +67,7 @@ COLUMNS = ["id", "name", "team", "pos", "roster", "rated",
            "impact", "off_impact", "def_impact", "sd",
            "ev_off", "ev_def", "pp_off", "pk_def", "fin", "toi_ev_gp", "toi_pp_gp", "toi_pk_gp",
            "off", "def", "net", "off_total", "toi", "gp", "toi_cur", "gp_cur"]
+COLUMNS_V4 = COLUMNS + ["pen_impact", "pd60", "pt60", "spm_off", "spm_def", "spm_pp", "spm_pk"]
 UNITS = {
     "impact": "goals per 82 games above an average player at his position (F / D): off_impact + def_impact",
     "off_impact": "goals per 82 games: EV offence + PP offence + finishing, each x his expected minutes",
@@ -82,8 +84,21 @@ UNITS = {
     "net": "off + def (EV per 60)", "off_total": "off + fin",
     "toi": "EV minutes, window seasons + this season", "gp": "games, same span",
     "toi_cur": "EV minutes this season", "gp_cur": "games this season"}
+UNITS_V4 = {
+    **UNITS,
+    "impact": "goals per 82 games above an average player at his position (F / D): off_impact + def_impact "
+              "(EV, PP / PK, finishing and penalties)",
+    "off_impact": "goals per 82 games: EV offence + PP offence + finishing + penalties drawn, each x his expected minutes",
+    "def_impact": "goals per 82 games: EV defence + PK defence - penalties taken, each x his expected minutes",
+    "pen_impact": "goals per 82 games from penalties drawn minus taken vs his position (included in off / def_impact)",
+    "pd60": "penalties drawn per 60 all-situation minutes (power-play units, shrunk)",
+    "pt60": "penalties taken per 60 all-situation minutes (power-play units, shrunk)",
+    "spm_off": "box-score prior of ev_off: what his individual stats alone predict (EV xGF/60, higher is better)",
+    "spm_def": "box-score prior of ev_def (EV xGA/60 prevented, higher is better)",
+    "spm_pp": "box-score prior of pp_off", "spm_pk": "box-score prior of pk_def"}
 VOLATILE = ("generated_at",)
 MODEL = "Ratings v3 (game-recency RAPM EV + PP / PK, FIN, xG v2 target)"
+MODEL_V4 = "Ratings v4 (game-recency RAPM EV + PP / PK with a box-score prior, FIN, penalties, xG v2 target)"
 
 
 def _season():
@@ -253,7 +268,7 @@ def _impact_rows(v3: dict) -> dict:
     return {int(r[0]): dict(zip(cols, r)) for r in v3["rows"]}
 
 
-def impact(rates: dict, means: dict, weights: dict, k: float) -> dict:
+def impact(rates: dict, means: dict, weights: dict, k: float, pen_value: float = 0.0) -> dict:
     """Per-game impact (goals per 82 games) of one player from his per-60 rates (higher = better)
     and expected minutes per game by state.
 
@@ -265,6 +280,8 @@ def impact(rates: dict, means: dict, weights: dict, k: float) -> dict:
 
         off_impact = 82 [k w_o ev / 60 (ev_off - m) + k w_pp pp / 60 (pp_off - m) + ev / 60 (fin - m)]
         def_impact = 82 [k w_d ev / 60 (ev_def - m) + k w_pk pk / 60 (pk_def - m)]
+        (v4, ``pen_value`` > 0: off_impact += 82 v_pen tall (pd60 - m), def_impact -= 82 v_pen tall (pt60 - m),
+         tall = (ev + pp + pk) / 60, v_pen = goals per penalty unit)
         impact     = off_impact + def_impact
         sd         = 82 k sqrt((ev/60)^2 (w_o^2 o_var + w_d^2 d_var - 2 w_o w_d od_cov)
                                + (pp/60)^2 w_pp^2 pp_var + (pk/60)^2 w_pk^2 pk_var)    (FIN, TOI fixed)
@@ -273,10 +290,16 @@ def impact(rates: dict, means: dict, weights: dict, k: float) -> dict:
     c = {x: rates[x] - means.get(x, 0.0) for x in ("ev_off", "ev_def", "pp_off", "pk_def", "fin")}
     off = GAMES * (k * weights["w_o"] * ev * c["ev_off"] + k * weights["w_pp"] * pp * c["pp_off"] + ev * c["fin"])
     dfn = GAMES * (k * weights["w_d"] * ev * c["ev_def"] + k * weights["w_pk"] * pk * c["pk_def"])
+    pen = 0.0
+    if pen_value and "pd60" in rates:
+        tall = ev + pp + pk
+        drawn = GAMES * pen_value * tall * (rates["pd60"] - means.get("pd60", 0.0))
+        taken = GAMES * pen_value * tall * (rates["pt60"] - means.get("pt60", 0.0))
+        off, dfn, pen = off + drawn, dfn - taken, drawn - taken
     var = (ev ** 2 * (weights["w_o"] ** 2 * rates["o_var"] + weights["w_d"] ** 2 * rates["d_var"]
                       - 2 * weights["w_o"] * weights["w_d"] * rates["od_cov"])
            + pp ** 2 * weights["w_pp"] ** 2 * rates["pp_var"] + pk ** 2 * weights["w_pk"] ** 2 * rates["pk_var"])
-    return {"off_impact": off, "def_impact": dfn, "impact": off + dfn,
+    return {"off_impact": off, "def_impact": dfn, "impact": off + dfn, "pen_impact": pen,
             "sd": GAMES * k * float(np.sqrt(max(var, 0.0)))}
 
 
@@ -284,13 +307,17 @@ def position_means(rows: list, groups: list) -> dict:
     """{group: {rate: TOI-weighted mean}} over the given rows (rated roster skaters): EV rates and
     FIN weighted by EV minutes per game, PP by PP minutes, PK by PK minutes."""
     w_of = {"ev_off": "toi_ev_gp", "ev_def": "toi_ev_gp", "fin": "toi_ev_gp", "pp_off": "toi_pp_gp",
-            "pk_def": "toi_pk_gp"}
+            "pk_def": "toi_pk_gp", "pd60": "toi_all_gp", "pt60": "toi_all_gp"}
     out = {}
     for g in ("F", "D"):
         sub = [r for r, gg in zip(rows, groups) if gg == g]
         out[g] = {}
         for rate, wcol in w_of.items():
-            w = np.array([max(float(r[wcol]), 0.0) for r in sub])
+            if sub and rate not in sub[0]:
+                continue
+            w = np.array([max(float(r[wcol]) if wcol in r else sum(float(r[c]) for c in ("toi_ev_gp", "toi_pp_gp",
+                                                                                          "toi_pk_gp")), 0.0)
+                          for r in sub])
             v = np.array([float(r[rate]) for r in sub])
             out[g][rate] = float(np.average(v, weights=w)) if len(sub) and w.sum() > 0 else 0.0
     return out
@@ -298,13 +325,17 @@ def position_means(rows: list, groups: list) -> dict:
 
 def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: dict | None,
                  prev: dict | None = None, now: datetime | None = None) -> dict:
-    """The site file (version 3) from the bundle's ``v3`` table, the season's sample file, the
-    current rosters and this season's EV sample (see the module docstring for the fallbacks)."""
+    """The site file from the bundle's ``v4`` table (version 4: v3's columns + penalties and the
+    box-score priors, ``COLUMNS_V4``), else its ``v3`` table (version 3), the season's sample file,
+    the current rosters and this season's EV sample (see the module docstring for the fallbacks)."""
     season = str(bundle["season"])
-    v3 = bundle.get("v3")
+    v4 = bundle.get("v4")
+    is4 = bool(v4) and isinstance(v4.get("rows"), list)
+    v3 = v4 if is4 else bundle.get("v3")
     if not v3 or not isinstance(v3.get("rows"), list):
-        raise RuntimeError("the serving bundle has no v3 ratings table (bu.lineup serve without a ratings pack?)")
+        raise RuntimeError("the serving bundle has no v4 / v3 ratings table (bu.lineup serve without a ratings pack?)")
     meta = v3.get("meta") or {}
+    pen_value = float(meta.get("pen_value") or 0.0) if is4 else 0.0
     k = float(meta.get("goals_per_xg") or 1.0)
     weights = {**DEFAULT_WEIGHTS, **(meta.get("impact_weights") or {})}
     table = _impact_rows(v3)
@@ -346,6 +377,9 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
                      "toi_pp_gp": float(t["toi_pp"]), "toi_pk_gp": float(t["toi_pk"]), "o_var": float(t["o_var"]),
                      "d_var": float(t["d_var"]), "od_cov": float(t["od_cov"]), "pp_var": float(t["pp_var"]),
                      "pk_var": float(t["pk_var"])}
+            if is4:
+                rates.update({"pd60": float(t["pd60"]), "pt60": float(t["pt60"]), "spm_off": float(t["spm_o"]),
+                              "spm_def": -float(t["spm_d"]), "spm_pp": float(t["spm_pp"]), "spm_pk": -float(t["spm_pk"])})
         else:      # rostered, no NHL sample: the low-sample role prior of his position group
             o, d, pp, pk = (low.get(grp) or [0.0, 0.0, 0.0, 0.0])[:4]
             tm = toi_means.get(grp) or {}
@@ -356,6 +390,9 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
                      "toi_pk_gp": float(tm.get("pk", 0.0)) / 60.0, "o_var": float(vv.get("o", 0.0)),
                      "d_var": float(vv.get("d", 0.0)), "od_cov": 0.0, "pp_var": float(vv.get("pp", 0.0)),
                      "pk_var": float(vv.get("pk", 0.0))}
+            if is4:      # position-average penalty rates (filled below), the low role's box-score prior
+                rates.update({"pd60": None, "pt60": None, "spm_off": float(o), "spm_def": -float(d),
+                              "spm_pp": float(pp), "spm_pk": -float(pk)})
         # This season's EV minutes are rounded on their own and the window's added to them, so a
         # run that carries them over from the previous export (no stints: the daily full run)
         # writes exactly what the bundle refresh wrote, not a +-1 minute churn.
@@ -371,19 +408,26 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
                      c_min, c_gp))
     ref = [(b[7], b[4]) for b in base if b[5] and b[6]]
     means = position_means([r for r, _ in ref], [g for _, g in ref])
+    if is4:
+        for b in base:
+            for c in ("pd60", "pt60"):
+                if b[7].get(c) is None:
+                    b[7][c] = means[b[4]].get(c, 0.0)
     rows = []
     for pid, name, team, pos, grp, ros, rated, r, toi, gp, c_min, c_gp in base:
-        im = impact(r, means[grp], weights, k)
+        im = impact(r, means[grp], weights, k, pen_value)
         rd = lambda x, n=3: round(float(x), n) + 0.0  # noqa: E731
         off, dfn, fin = rd(r["ev_off"]), rd(r["ev_def"]), rd(r["fin"])
         rows.append([pid, name, team, pos, ros, rated, rd(im["impact"], 2), rd(im["off_impact"], 2),
                      rd(im["def_impact"], 2), rd(im["sd"], 2), off, dfn, rd(r["pp_off"]), rd(r["pk_def"]), fin,
                      rd(r["toi_ev_gp"], 2), rd(r["toi_pp_gp"], 2), rd(r["toi_pk_gp"], 2),
-                     off, dfn, rd(off + dfn), rd(off + fin), toi, gp, c_min, c_gp])
+                     off, dfn, rd(off + dfn), rd(off + fin), toi, gp, c_min, c_gp]
+                    + ([rd(im["pen_impact"], 2), rd(r["pd60"]), rd(r["pt60"]), rd(r["spm_off"]), rd(r["spm_def"]),
+                        rd(r["spm_pp"]), rd(r["spm_pk"])] if is4 else []))
     rows.sort(key=lambda r: (-r[6], r[1]))
     now = now or datetime.now(timezone.utc)
     return {
-        "version": RATINGS_VERSION, "kind": "player_ratings", "model": MODEL,
+        "version": RATINGS_VERSION if is4 else 3, "kind": "player_ratings", "model": MODEL_V4 if is4 else MODEL,
         "season": season, "season_label": season_label(season),
         "as_of": meta.get("max_source_date") or bundle.get("max_source_date"),
         "bundle_built_at": bundle.get("built_at"), "season_games": int(bundle.get("n_games") or 0),
@@ -392,9 +436,10 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
                    "baseline": "position average (F / D): every per-60 rate centred on its TOI-weighted mean "
                                "among rated roster skaters of the group",
                    "position_means": {g: {kk: round(v, 4) for kk, v in m.items()} for g, m in means.items()},
-                   "recency": meta.get("recency"), "g": meta.get("g")},
-        "units": UNITS, "generated_at": now.isoformat(timespec="seconds"),
-        "columns": COLUMNS, "rows": rows,
+                   "recency": meta.get("recency"), "g": meta.get("g"),
+                   **({"pen_value": round(pen_value, 4), "spm_coef": meta.get("spm_coef")} if is4 else {})},
+        "units": UNITS_V4 if is4 else UNITS, "generated_at": now.isoformat(timespec="seconds"),
+        "columns": COLUMNS_V4 if is4 else COLUMNS, "rows": rows,
     }
 
 

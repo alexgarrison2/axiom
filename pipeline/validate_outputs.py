@@ -835,6 +835,11 @@ def check_bu_bundle(ctx):
         # refresh ran without the season's ratings pack (bu/lineup/out/ratings_pack_<S>.json.gz)
         errs.append(f"{rel}: freshly built without a v3 ratings table: commit the season's ratings pack "
                     "(python -m bu.rapm.v3_pack pack --season <S>)")
+    v4p = os.path.join(PIPELINE_DIR, "bu", "lineup", "out", f"ratings_pack_v4_{b.get('season')}.json.gz")
+    if fresh and str(b.get("season")) == SEASON_ID and os.path.exists(v4p) and not (b.get("v4") or {}).get("rows"):
+        # ratings v4 (site file version 4 and the simulator's ratings) come from this table
+        errs.append(f"{rel}: freshly built without a v4 ratings table although {os.path.basename(v4p)} is "
+                    "committed (bu.lineup serve: v4_table failed?)")
     return errs
 
 
@@ -844,6 +849,7 @@ PLAYER_RATINGS_COLUMNS = ("id", "name", "team", "pos", "roster", "rated", "impac
 PLAYER_RATINGS_MIN_ROSTER = 600
 PLAYER_RATINGS_MAX_LAG_DAYS = 3
 PLAYER_RATINGS_VERSION = 3      # 3: per-game impact headline (ratings v3); 2: def = xGA/60 prevented, net = off + def
+PLAYER_RATINGS_V4_COLUMNS = ("pen_impact", "pd60", "pt60", "spm_off", "spm_def", "spm_pp", "spm_pk")
 PLAYER_RATINGS_TOI_MAX = {"toi_ev_gp": 30.0, "toi_pp_gp": 8.0, "toi_pk_gp": 8.0}
 
 
@@ -905,6 +911,19 @@ def check_player_ratings(ctx):
             if ref and abs(sum(ref) / len(ref)) > 0.5:
                 errs.append(f"player_ratings.json: mean impact of rated {g} {sum(ref) / len(ref):+.2f} "
                             "(the position-average baseline should put it near 0)")
+    if int(doc.get("version") or 0) >= 4:
+        # v4: penalty term inside the impact, box-score priors present and finite
+        miss4 = [c for c in PLAYER_RATINGS_V4_COLUMNS if c not in cols]
+        if miss4:
+            errs.append(f"player_ratings.json: version 4 without columns {miss4}")
+        else:
+            bad4 = [r.get("name") for r in rows
+                    if not all(isinstance(r.get(k), (int, float)) and r[k] == r[k] for k in PLAYER_RATINGS_V4_COLUMNS)
+                    or abs(r["pen_impact"]) > 15 or r["pd60"] < 0 or r["pt60"] < 0
+                    or any(abs(r[k]) > 2 for k in ("spm_off", "spm_def", "spm_pp", "spm_pk"))]
+            if bad4:
+                errs.append(f"player_ratings.json: {len(bad4)} rows with a missing or implausible penalty / "
+                            f"box-score prior value, e.g. {bad4[:3]}")
     if any(r.get("pos") == "G" for r in rows):
         errs.append("player_ratings.json: goalies listed (skaters only)")
     try:

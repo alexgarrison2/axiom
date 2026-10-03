@@ -268,7 +268,7 @@ def live_table(pack: Pack, inputs_cur: "V.SeasonInputs | None", games_cur: pd.Da
 # ----------------------------------------------------------------------- point-in-time backfill (feature table)
 
 def asof_backfill(engine: V.Engine, S: str, rec: Recency, sh: V.Shrink, out_root: str, prior_xg: float,
-                  log=print) -> None:
+                  log=print, interp=None) -> None:
     """Ratings for every game date of season S in the ``bu.rapm asof`` layout under ``out_root``
     (``ratings/season=S``, ``cov_season=S``, ``prior_season=S``) plus ``fin_season=S`` (FIN as of
     each date), so ``bu.lineup.features`` builds the lineup term from v3."""
@@ -292,7 +292,7 @@ def asof_backfill(engine: V.Engine, S: str, rec: Recency, sh: V.Shrink, out_root
             pr, fp = grid[gs[k]], fgrid[gs[k]]
         else:
             a = (g - gs[k]) / V.G_STEP
-            pr = V.interpolate([grid[gs[k]], grid[gs[k + 1]]], g, sh)
+            pr = (interp or V.interpolate)([grid[gs[k]], grid[gs[k + 1]]], g, sh)   # v4: v4.interpolate4
             fp = V.interp_sums(fgrid[gs[k]], fgrid[gs[k + 1]], a)
         res = engine.stage2(S, d, rec, sh, pr, st=False)
         beta = res["beta_ev"]

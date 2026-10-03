@@ -199,6 +199,7 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
     ratings, cov, src = _ratings_table(paths, season, seed)
     fin = fin_table(paths, season)
     v3 = v3_table(paths, season)
+    v4 = v4_table(paths, season)
     means = seed.rookie.means
     rookie = {g: [means.get((g, "all", "o"), 0.0), means.get((g, "all", "d"), 0.0)] for g in ("F", "D")}
     teams = {}
@@ -220,6 +221,7 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
            "teams": {**sp.get("teams", {}), **teams},
            "fin": fin,
            "v3": v3,
+           "v4": v4,
            "crosswalk": None}
     if crosswalk is not None and len(crosswalk):
         cols = ["player_id", "norm", "last", "team", "sweater", "rank"]
@@ -255,6 +257,20 @@ def v3_table(paths, season: str, pack: str | None = None) -> dict | None:
         return P3.bundle_table(paths, season, pack_file=pack)
     except Exception as e:  # noqa: BLE001
         print(f"  [serve] v3 ratings table failed: {type(e).__name__}: {e}")
+        return None
+
+
+def v4_table(paths, season: str, pack: str | None = None) -> dict | None:
+    """The bundle's ``v4`` table: player ratings v4 (``bu.rapm.v4_pack.bundle_table``: v3's columns plus
+    the box-score priors ``spm_o`` / ``spm_d`` / ``spm_pp`` / ``spm_pk`` and the penalty rates ``pd60`` /
+    ``pt60``; ``meta.pen_value`` goals per penalty unit), the source of the site's ``player_ratings.json``
+    (version 4) and of the game simulator's player ratings; None without a v4 ratings pack (the export
+    then falls back to the ``v3`` table).  Never raises."""
+    try:
+        from bu.rapm import v4_pack as P4
+        return P4.bundle_table(paths, season, pack_file=pack)
+    except Exception as e:  # noqa: BLE001
+        print(f"  [serve] v4 ratings table failed: {type(e).__name__}: {e}")
         return None
 
 
