@@ -1,0 +1,59 @@
+{
+ "title": "Simulator as the primary win-% engine: pre-declared comparison and promotion rules",
+ "declared_at": "2026-10-03T00:40:00Z",
+ "declared_before": "any run of the comparison code (bu/sim/primary.py) on the dev seasons or the holdout; the code is written after this file is committed",
+ "owner_intent": "predictions come bottom up: player ratings -> lineup -> game simulation -> win %. The simulator becomes the engine of the model win % (before the unchanged market blend) if it is at least as good as the live logit game model by the rule below.",
+ "prior_knowledge": {
+  "statement": "This look is NOT blind for candidate A. bu/sim/out/validation.json (M5 validation, 2026-10-02) already reports the moneyline of the raw simulator against the walk-forward game-model probability it was anchored to, on the same games, seed and number of runs used here. The holdout ML numbers were part of the single 2025-26 derivative look (look_log.jsonl, 2026-10-02T14:48:53Z). Nothing in the simulator has been changed or tuned since that look; this file fixes the owner's promotion rule, the game set, the stacked candidates and the totals question before any new number is computed. Candidates C1 / C2 and the totals rule below have never been evaluated.",
+  "known_numbers": {
+   "dev_pooled_ml_log_loss": {"raw_sim": 0.6588, "logit_walk_forward": 0.65945, "n": 2375},
+   "dev_2023_24_ml_log_loss": {"raw_sim": 0.6582, "logit_walk_forward": 0.65875},
+   "dev_2024_25_ml_log_loss": {"raw_sim": 0.65954, "logit_walk_forward": 0.66031},
+   "holdout_2025_26_ml_log_loss": {"raw_sim": 0.67929, "logit_walk_forward": 0.67918, "n": 1312},
+   "holdout_ml_calibration_slope": {"raw_sim": 0.845, "logit_walk_forward": 0.768},
+   "holdout_totals": "raw simulator totals better calibrated than goal_model's total (over 5.5 slope 0.93 vs 0.55); dev: anchored (goal_model total) over 5.5 log loss 0.6863 vs raw 0.6876"
+  }
+ },
+ "seasons": {
+  "dev": ["20232024", "20242025"],
+  "holdout": "20252026",
+  "stack_training": "C2 only: the game model's own walk-forward training seasons (2022-23 onward, seasons before the test season); the simulator's 2022-23 probabilities are from a fit season of its rate regressions and strength stretch (in-sample for the sim term in the 2023-24 fold: biased toward the sim, declared)"
+ },
+ "games": "regular-season games (type 02) with finite simulator inputs (bu.sim.rates.finite_inputs) AND a walk-forward logit probability; the game model's archive has no games 2024-10-04 .. 2024-11-04, so 2024-25 has 1,063 scored games (dev total 2,375); holdout 1,312. Every candidate and the logit are scored on exactly the same games.",
+ "comparator": {
+  "B_logit": "the live game model: train_game_model.walk_forward with train_game_model.live_feature_columns() (logit-elo-v5 + bu_d_net / bu_d_delta / bu_d_fin, L2 strength C tuned inside each fold's training seasons), rebuilt fresh for this comparison; no market blend (history has none)"
+ },
+ "candidates": {
+  "A_sim": "the raw simulator win % (P(home wins incl. OT / SO)): its own rates from the RAPM v2 lineup term + FIN, team 5v5 / PP / PK / penalty / finishing state, the starters' goalie state, home ice and rest; NO anchoring. Parameters: bu/sim/out/sim_params.json version sim-m5-20261002 (unchanged), 20,000 runs a game, base seed 20261002 (seed = SHA-256(base, game id), as live)",
+  "C1_avg": "fixed-weight average in logit space: p = sigmoid(0.5 logit p_sim + 0.5 logit p_logit); nothing fitted",
+  "C2_stack": "the game model with one more feature, sim_logit = logit(p_sim), same walk-forward (same folds, same C tuning, StandardScaler) as B_logit",
+  "stacked_choice": "the stacked candidate is whichever of C1 / C2 has the lower dev pooled log loss; ties (|diff| < 0.0002) go to C1 (simpler, no retrain)"
+ },
+ "metrics": {
+  "primary": "mean per-game moneyline log loss (p clipped to [1e-6, 1 - 1e-6]) of P(home win, OT / SO included)",
+  "secondary": "Brier; logistic recalibration slope / intercept of the outcome on logit p; 10-bin reliability; mean p vs home win rate",
+  "differences": "paired per game (candidate - B_logit), SE = sd / sqrt(n), per season and pooled; negative favours the candidate"
+ },
+ "promotion_rule": {
+  "pass": "a candidate passes iff (1) its dev pooled log loss is strictly lower than B_logit's on the same games AND (2) on the holdout its log loss minus B_logit's is <= +0.0010 (owner's rule)",
+  "order": "A_sim is promoted if it passes. Only if A_sim fails is the stacked candidate (stacked_choice) promoted, if it passes. Otherwise nothing changes in the published path.",
+  "holdout_look": "one look at 2025-26 for this question, run only after the dev results are written; logged in bu/sim/out/look_log.jsonl with question = 'primary_winpct'; the code refuses a second look; every candidate's holdout numbers are reported whatever they are"
+ },
+ "totals": {
+  "question": "with the derivative markets anchored to the published win %, should the expected total they are anchored to be goal_model.expected_total (T_gm, today) or the simulator's own expected total (T_sim)?",
+  "pairing": "the win % used is the promoted candidate's (A_sim -> p_sim; stacked -> its p; none promoted -> p_logit); the simulator is anchored (tilt + pace, bu.sim.anchor) to (p, T); with p = p_sim and T = T_sim this is the raw simulator",
+  "score": "sum of the mean per-game log loss of over 5.5, over / push / under 6.0 (3-class) and over 6.5",
+  "rule": "use T_sim iff its dev pooled score is strictly lower than T_gm's AND on the holdout T_sim's score minus T_gm's is <= +0.0010; otherwise keep T_gm",
+  "reported": "per season and pooled: the three markets' log loss / Brier, over 5.5 calibration slope, mean expected total vs actual, the full derivative score (prereg.json derivative_set) of both variants"
+ },
+ "market_comparison": "descriptive only (no rule): 2025-26 games in public/data/SiteHistory with a last pregame moneyline (site_history.last_pregame, de-vigged with market.devig power) that are also in the holdout set: log loss of the market, B_logit, every candidate, and each model blended with the market at the live weight (market.blend_weight(), 0.738)",
+ "diagnostics": "descriptive only (no rule), dev seasons: (D1) residual information: logistic regression of the outcome with offset logit p_sim on the standardised logit features (each feature's coefficient / SE), and with offset logit p_logit on the simulator's component log-ratios; (D2) ablations of the raw simulator, each group's coefficients set to 0 (home ice; RAPM lineup term; team 5v5 state; finishing (FIN + team); opposing goalie; special teams (PP / PK state); penalties; rest): ML log loss change; (D3) calibration in the large and slope of A_sim and B_logit",
+ "live_if_promoted": {
+  "published": "home_model_win_pct = the promoted engine's probability; the market blend (market.py, 20% model early ramping to the fitted 0.738 by 20 GP) unchanged; home_win_pct = blend",
+  "shadow": "the logit's model probability and its blend logged every run in new columns",
+  "fallback": "per game: when the simulator cannot run for the game (lineup term unavailable, inputs not finite, pack / params missing) the logit is published for that game and flagged",
+  "rollback": "repository variable PONYXG_WINPCT=logit publishes the logit everywhere (the simulator still runs as a shadow)",
+  "derivatives": "anchored to the published (blended) win % and to the total chosen by the totals rule"
+ },
+ "amendments": []
+}
