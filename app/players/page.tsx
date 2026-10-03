@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { PageHeading } from '@/components/ui/page-heading';
 import SkaterStatsTable from '@/components/SkaterStatsTable';
-import { compactSkaters, DEFAULT_FILTER, filterSkaters, sortSkaters } from '@/components/players/model';
+import { compactSkaters, DEFAULT_FILTER, filterSkaters, headlineKey, sortSkaters } from '@/components/players/model';
 import { readBio, readRatingsDoc } from '@/lib/players/server';
 import { statLines } from '@/lib/players/stats-server';
 import { asOfLabel, parseRatings } from '@/lib/players/ratings';
@@ -14,14 +14,15 @@ const label = (start: number) => `${start}-${String(start + 1).slice(2)}`;
 
 export const metadata: Metadata = {
     title: 'Players',
-    description: 'NHL skater ratings: even-strength offence, defence and net impact per 60 minutes (RAPM), adjusted for linemates, opponents and zone starts.',
+    description: 'NHL skater ratings: goals per 82 games above an average forward or defenceman from even strength, power play, penalty kill, finishing and penalties, plus per-60 rates.',
     alternates: { canonical: '/players' },
 };
 
 export default function PlayersPage() {
     const doc = readRatingsDoc();
     const all = compactSkaters(doc, statLines(), readBio());
-    const defaults = sortSkaters(filterSkaters(all, DEFAULT_FILTER), 'net', 'desc');
+    // IMPACT (goals per 82) best first; a v2 file without it opens on NET per 60.
+    const defaults = sortSkaters(filterSkaters(all, DEFAULT_FILTER), headlineKey(all), 'desc');
     const preview = { rows: defaults.slice(0, 50), total: defaults.length };
     const meta = parseRatings(doc);
     // Counting stats open on this season once any skater has played; last season stays a toggle away.

@@ -77,37 +77,43 @@ describe('/methodology glossary anchors', () => {
         expect(html).not.toMatch(/rest and travel/);
     });
 
-    it('defines NET = OFF + DEF exactly as the published ratings file computes it', async () => {
+    it('defines the even-strength NET = EV OFF + EV DEF exactly as the published ratings file computes it', async () => {
         type Doc = { columns: string[]; rows: unknown[][] };
         const doc = JSON.parse(readFileSync(join(process.cwd(), 'public/data/player_ratings.json'), 'utf8')) as Doc;
         const c = (k: string) => doc.columns.indexOf(k);
         expect(doc.rows.length).toBeGreaterThan(700);
         for (const r of doc.rows) expect(Math.abs((r[c('off')] as number) + (r[c('def')] as number) - (r[c('net')] as number))).toBeLessThan(0.002);
-        expect(GLOSSARY['player-net'].detail).toMatch(/NET = OFF \+ DEF/);
+        expect(GLOSSARY['player-net'].detail).toMatch(/NET = EV OFF \+ EV DEF/);
         expect(GLOSSARY['player-def'].short).toMatch(/Higher is better/);
         expect(GLOSSARY['player-def'].short).not.toMatch(/Lower is better/);
-        // The old composite is gone from the glossary and the page.
-        expect(Object.keys(GLOSSARY)).not.toContain('player-impact');
         const html = await renderPage();
+        // The old z-score composite never comes back.
         expect(html).not.toMatch(/50\/20\/20\/10|standard deviations from the average player/);
-        expect(html).toMatch(/NET<\/strong> = OFF \+ DEF/);
+        expect(html).toMatch(/NET<\/strong> = EV OFF \+ EV DEF/);
         expect(html).not.toMatch(/xG against, lower is better/);
-        expect(html).toMatch(/DEF<\/strong> \(xG against prevented\)/);
     });
 
-    it('defines OFF+FIN = OFF + FIN and keeps FIN out of NET', async () => {
+    it('defines IMPACT = OFF + DEF in goals per 82 exactly as the published ratings file computes it', async () => {
         type Doc = { columns: string[]; rows: unknown[][] };
         const doc = JSON.parse(readFileSync(join(process.cwd(), 'public/data/player_ratings.json'), 'utf8')) as Doc;
         const c = (k: string) => doc.columns.indexOf(k);
-        if (c('fin') >= 0 && c('off_total') >= 0) {
-            for (const r of doc.rows) expect(Math.abs((r[c('off')] as number) + (r[c('fin')] as number) - (r[c('off_total')] as number))).toBeLessThan(0.002);
+        // v3+ files (2 dp columns); a v2 file has no impact columns yet.
+        if (c('impact') >= 0) {
+            for (const r of doc.rows) expect(Math.abs((r[c('off_impact')] as number) + (r[c('def_impact')] as number) - (r[c('impact')] as number))).toBeLessThan(0.016);
         }
-        expect(GLOSSARY['player-fin'].label).toBe('FIN');
-        expect(GLOSSARY['player-off-fin'].label).toBe('OFF+FIN');
-        expect(GLOSSARY['player-fin'].short).toMatch(/Not part of NET/);
-        expect(GLOSSARY_ANCHORS).toEqual(expect.arrayContaining(['term-player-fin', 'term-player-off-fin']));
+        expect(GLOSSARY['player-impact'].label).toBe('IMPACT');
+        expect(GLOSSARY['player-impact'].short).toMatch(/82 games/);
+        expect(GLOSSARY['player-impact'].short).toMatch(/IMPACT = OFF \+ DEF/);
+        expect(GLOSSARY['player-impact'].detail).toMatch(/90-game half-life/);
+        expect(GLOSSARY['player-off'].short).toMatch(/Goals per 82 games/);
+        expect(GLOSSARY['player-pen'].short).toMatch(/inside OFF and DEF/);
+        expect(GLOSSARY['player-fin'].short).toMatch(/Part of OFF, not of NET/);
+        expect(GLOSSARY_ANCHORS).toEqual(expect.arrayContaining(['term-player-impact', 'term-player-off', 'term-player-def', 'term-player-pen', 'term-player-rates', 'term-player-fin']));
+        expect(Object.keys(GLOSSARY)).not.toContain('player-off-fin');
         const html = await renderPage();
-        expect(html).toMatch(/OFF\+FIN<\/strong> = OFF \+ FIN/);
+        expect(html).toMatch(/IMPACT<\/strong> = OFF \+ DEF/);
+        expect(html).toMatch(/90-game half-life/);
+        expect(html).not.toMatch(/OFF\+FIN/);
     });
 
     it('keeps every term id addressable', () => {
