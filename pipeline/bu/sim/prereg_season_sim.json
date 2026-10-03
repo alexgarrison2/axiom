@@ -1,0 +1,29 @@
+{
+ "title": "Season projections on the game simulator (pre-declared backtest and promotion rule)",
+ "declared_at": "2026-10-03T16:05:00Z",
+ "declared_before": "any season-projection backtest with either arm at the as-of points below (the code, bu/sim/season.py, is written after this file is committed). The single-game dev / holdout numbers of both engines are public (validation.json primary_*, inputs_v4_*); nobody has projected a season with the simulator.",
+ "question": "season_sim: should season_simulator.py (season_projections.json: playoff odds, point projections, and game_implications.py which reuses its engine) take each remaining regular-season game's outcome probabilities (regulation win / OT-SO win / OT-SO loss) from the M5 game simulator instead of the logit game model + goal_model split?",
+ "arms": {
+  "LOGIT": "the current path: ml_predict.MLPredictor.predict_detail(home, away, date, rest) for each remaining game, split by goal_model with TIE_SCALE 1.38 (season_simulator.Probabilities). For the backtest the logit's coefficients are walk-forward (train_game_model.fit_logit on the usable games of seasons < S, live feature set, C by train_game_model.tune_C inside those seasons) so neither arm has seen the season it projects; its state is MLPredictor(games = archive games before D). The in-sample live model is reported descriptively.",
+  "SIM": "per remaining game, the simulator with the live parameters (bu/sim/out/sim_params.json as it stands once question sim_player_st is decided; that decision is made before this backtest runs), raw (no anchoring, no market blend), 4,000 runs a game, seed SHA-256(20261002, game id): P(home regulation win), P(tie after 60), and the home share of OT / SO wins from the simulated games. Inputs as of D: team and goalie state replayed through every game before D; league levels; expected lineup = per team the 12 forwards and 6 defencemen with the most dressed games in its last 10 games before D (ties: most recent appearance), rated with the ratings as of D (v4 EV OFF / DEF / FIN with the expected EV TOI shares, the same side_term as the live lineup term; player special teams if sim_player_st passes); expected starter = goals-per-xG multiplier exp(sum_g share_g log gsv_g) over the goalies who started the team's last 20 games before D, share = starts / 20; rest days from the remaining schedule (as LOGIT). Playoff series use a Bradley-Terry fit to the simulated regular-season logits (not scored here)."
+ },
+ "common": "season_simulator.Engine unchanged for both arms: 5,000 seasons, strength uncertainty SIGMA0 0.20 / SIGMA_GP 40, the same seed per (season, as-of point) for both arms (common random numbers), NHL tiebreak order (points, RW, ROW, W) and bracket. Standings at D and the remaining schedule from the lake (regular-season games before / on or after D); divisions and conferences from the NHL standings of that season.",
+ "as_of_points": {
+  "dev": {"20232024": ["2023-11-01", "2024-01-01", "2024-03-01"], "20242025": ["2025-01-01", "2025-03-01"]},
+  "holdout": {"20252026": ["2025-11-01", "2026-01-01", "2026-03-01"]},
+  "note": "2024-11-01 is excluded: the logit's archive (nhl_historical_gamestats.csv) has no 2024-25 game before 2024-11-05, so LOGIT would project it from a preseason state while 10+ games were played. LOGIT's 2024-25 state misses October 2024 at the later points too; guard (3) below protects against that advantage."
+ },
+ "metrics": {
+  "points_mae": "PRIMARY. mean over teams x as-of points of |mean simulated final points - actual final points| (final points from the lake's regular-season outcomes)",
+  "playoff_ll": "mean log loss of P(makes the playoffs) (clipped to [0.001, 0.999]) against the actual playoff field (the bracket rule applied to the actual final table, cross-checked with the NHL clinch indicators)",
+  "secondary": "playoff Brier, mean signed points error, 80% interval coverage of final points, paired differences with SEs clustered by team, per season and per as-of point"
+ },
+ "promotion_rule": {
+  "pass": "SIM replaces LOGIT iff (1) dev pooled points MAE SIM < LOGIT (strictly), AND (2) dev pooled playoff log loss SIM <= LOGIT, AND (3) 2023-24 alone (complete logit archive) points MAE SIM - LOGIT <= +0.25, AND (4) holdout 2025-26 points MAE SIM - LOGIT <= +0.25 points, AND (5) holdout playoff log loss SIM - LOGIT <= +0.010",
+  "margins": "+0.25 points of MAE and +0.010 of playoff log loss are about half the paired SE expected from 96 team x as-of points of one season (the analogue of the +0.0010 ML margin, ~0.5 SE of 1,312 games)",
+  "holdout_look": "one look at 2025-26, run only after the dev results are written to bu/sim/out/validation.json (section season_sim_dev); logged in bu/sim/out/look_log.jsonl with question = 'season_sim'; refused a second time",
+  "if_pass": "season_simulator.py uses SIM probabilities for every remaining game (per-game fallback to LOGIT when the simulator cannot run a game, flagged), the per-game table is cached for the day so game_implications.py reuses it; repository variable PONYXG_SEASON_SIM=logit rolls back",
+  "if_fail": "season_simulator.py keeps LOGIT; the SIM path stays available behind PONYXG_SEASON_SIM=sim for a later question"
+ },
+ "amendments": []
+}

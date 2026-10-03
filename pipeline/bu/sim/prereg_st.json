@@ -1,0 +1,49 @@
+{
+ "title": "Simulator special teams and penalties from the player model (pre-declared re-fit, comparison and promotion rule)",
+ "declared_at": "2026-10-03T16:00:00Z",
+ "declared_before": "any re-fit of the simulator with lineup special-teams / penalty inputs and any dev / holdout simulation with them. Done before this file: the per-date player tables (ratings v4 PP / PK, expected TOI, v5 penalty rates; replica of bu.rapm.v4_pack.live_table checked against the live bundle's v4 table, r >= 0.996 on every column) and the per-game history table bu/lineup/out/lineup_st_v4.csv.gz (descriptive means / SDs by season only; no regression, no outcome was looked at).",
+ "question": "sim_player_st: should the simulator's power-play / penalty-kill xG and penalty-taking rate regressions read the dressed lineup's player ratings (v4 PP OFF / PK DEF RAPM with SPM priors, expected PP / PK TOI, v5 penalties drawn / taken per 60) in addition to the team-level state?",
+ "prior_knowledge": {
+  "statement": "The live simulator's (sim-m5-v4) dev and holdout numbers are public (bu/sim/out/validation.json inputs_v4_dev / inputs_v4_holdout). The 2025-26 holdout has been looked at for questions primary_winpct and sim_inputs_v4 (bu/sim/out/look_log.jsonl), and ratings v4 / v5 each had a single stint-level holdout look (bu/rapm/out/v4_look_log.jsonl, v5_look_log.jsonl). Nobody has simulated a game with lineup special-teams inputs. Ablation of the v2 simulator (dev, prereg_primary diagnostics): special teams +0.0009 (SE 0.0008), penalties +0.0004 (SE 0.0005) ML log loss when removed, so the expected gain is small. This is a new question; its holdout look is logged under question = 'sim_player_st'.",
+  "known_v4_numbers": {
+   "dev_pooled_ml_log_loss": 0.65815,
+   "holdout_ml_log_loss": 0.67952,
+   "dev_pooled_derivative_score": 6.32449,
+   "holdout_derivative_score": 6.3419
+  }
+ },
+ "seasons": {
+  "fit": ["20172018", "20182019", "20192020", "20202021", "20212022", "20222023"],
+  "dev": ["20232024", "20242025"],
+  "holdout": "20252026"
+ },
+ "inputs": {
+  "player_table": "per game date d of 2017-18 .. 2026-27, every rated skater's v4 table columns as bu.rapm.v4_pack.live_table would publish them on d (games up to d - 2 days): pp, pk (stage-1 grid with variances interpolated at the in-season game count, stage-2 PP / PK fit with SPM shift), toi_ev / toi_pp / toi_pk (v3 EWMA expected minutes), pd60 / pt60 (v5 penalty rates, all penalties rescaled to PP-creating units, 800 / 400 pseudo minutes). Code: bu.sim.st_lineup.player_table_asof",
+  "side_aggregates": "per side, over the dressed skaters (history: lake lineups, L-actual like the 5v5 lineup table; live: tonight's DailyFaceoff lines through LiveLineupTerm): ppo = sum pp_i x 5 toi_pp_i / sum toi_pp; pkd = sum pk_i x 4 toi_pk_i / sum toi_pk; take = 5 sum pt60_i toi_i / sum toi_i; draw = 5 sum pd60_i toi_i / sum toi_i (toi = ev + pp + pk minutes); a skater missing from the table takes his position group's role mean / mean minutes / group penalty rate. Code: bu.sim.st_lineup.aggregate",
+  "features": "attacking side X vs Y: PP regression + lu_ppo = ppo_X / (3600 lg_pp_xg) and lu_pkd = pkd_Y / (3600 lg_pp_xg); penalty regression + lu_take = log(take_X / (3600 lg_pen)) and lu_draw = log(draw_Y / (3600 lg_pen)) (lg_* the point-in-time league levels the simulator already uses); all four 0 when either side's aggregates are unavailable"
+ },
+ "games": "exactly the games of prereg_inputs_v4.json (prereg_primary game set: regular season, finite inputs, a walk-forward logit row; dev 2,375, holdout 1,312), further restricted to games whose ST history row is complete (st_ok); both arms on the same games, the count dropped reported",
+ "arms": {
+  "V4": "the live simulator, unchanged: bu/sim/out/sim_params.json version sim-m5-v4-20261002 (ratings v4 5v5 lineup term + FIN; team-level PP / PK and penalty states)",
+  "ST": "V4 with the four lineup terms added to the PP and penalty regressions (team-state terms kept), re-fitted"
+ },
+ "st_refit_procedure": {
+  "unchanged": "structural tables, team / goalie state hyper-parameters, the 5v5 xG and conversion regressions (their features do not change; a re-fit must reproduce V4's coefficients, checked), the anchoring variant and the totals choice; nothing tuned on dev or holdout",
+  "glm": "python -m bu.sim.fit glm with the V4 lineup source plus st_table bu/lineup/out/lineup_st_v4.csv.gz: the PP regression on [st_pp, st_pk, lu_ppo, lu_pkd, home] and the penalty regression on [st_take, st_draw, lu_take, lu_draw, home], fit seasons, regular season, same quasi-Poisson IRLS and ridge as V4",
+  "dispersion": "python -m bu.sim.validate dispersion on the ST parameters exactly as prereg_inputs_v4.json (scale, stretch {1.0, 1.25, 1.5, 1.75} x strength-tilt sd {0, 0.1, 0.2} x pace shock {0, 30}, same criterion, 2,000 runs a game, fit seasons)"
+ },
+ "simulation": "20,000 runs a game, base seed 20261002, seed = SHA-256(base, game id), as live",
+ "metrics": {
+  "ml": "mean per-game moneyline log loss of the raw simulator's P(home win), p clipped to [1e-6, 1 - 1e-6]",
+  "derivative": "the derivative score of prereg.json (sum over reg3, pl_home, pl_away, tot55, tot60, tot65, p1_3w, p1_2w of mean per-game log loss), each arm anchored to its own raw win % and goal_model's expected total (the live configuration, pairing sim_gm)",
+  "differences": "paired per game (ST - V4), SE = sd / sqrt(n), per season and pooled; negative favours ST",
+  "secondary": "Brier, calibration slope, per-market derivative log loss, distribution checks; the fitted coefficients (with SEs) of the four lineup terms; descriptive per-team PP xG / penalty fit on the dev seasons"
+ },
+ "promotion_rule": {
+  "pass": "ST replaces V4 iff (1) dev pooled ML log loss ST < V4 (strictly), AND (2) holdout ML log loss ST - V4 <= +0.0010 (owner's rule), AND (3) dev pooled derivative score ST - V4 <= 0",
+  "holdout_look": "one look at 2025-26, only after the dev results are written to bu/sim/out/validation.json (section player_st_dev); logged in bu/sim/out/look_log.jsonl with question = 'sim_player_st'; the code refuses a second look; both arms' holdout ML and derivative numbers reported whatever they are",
+  "if_pass": "bu/sim/out/sim_params.json becomes the ST parameters; V4 kept as bu/sim/out/sim_params_v4.json and repository variable PONYXG_SIM_INPUTS=v4 rolls back (v2 stays available as PONYXG_SIM_INPUTS=v2)",
+  "if_fail": "nothing changes in the published path; the ST parameters are kept as bu/sim/out/sim_params_st.json"
+ },
+ "amendments": []
+}
