@@ -233,11 +233,18 @@ def blocked(Z: np.ndarray, grp: np.ndarray) -> np.ndarray:
 
 # ----------------------------------------------------------------------- penalty rates (impact term)
 
-def penalty_rates(sums: pd.DataFrame, groups: dict, t0: float = PEN_T0, mu: dict | None = None) -> pd.DataFrame:
+PEN_COLS_V4 = ("pd_all", "pt_all")         # v4: penalty units incl. coincidental penalties
+PEN_COLS_V5 = ("pdu_all", "ptu_all")        # v5: power-play-creating units (box.pp_units)
+
+
+def penalty_rates(sums: pd.DataFrame, groups: dict, t0=PEN_T0, mu: dict | None = None,
+                  cols: tuple = PEN_COLS_V4) -> pd.DataFrame:
     """Drawn / taken penalty units per 60 of all-situation TOI, shrunk to the position-group rate with
-    ``t0`` pseudo minutes; ``mu``: {grp: (drawn, taken) per second} (default: from ``sums``)."""
+    ``t0`` pseudo minutes (one number, or ``(t0_drawn, t0_taken)``); ``mu``: {grp: (drawn, taken) per
+    second} (default: from ``sums``); ``cols``: the (drawn, taken) count columns of ``sums``."""
     if not len(sums):
         return pd.DataFrame(columns=["pd60", "pt60"], dtype=float)
+    cd, ct = cols
     grp = _groups(sums.index, groups)
     sec = sums[SEC_COLS].to_numpy(float).sum(axis=1)
     if mu is None:
@@ -245,13 +252,14 @@ def penalty_rates(sums: pd.DataFrame, groups: dict, t0: float = PEN_T0, mu: dict
         for g in ("F", "D"):
             m = grp == g
             s = sec[m].sum()
-            mu[g] = ((float(sums["pd_all"].to_numpy()[m].sum()) / s, float(sums["pt_all"].to_numpy()[m].sum()) / s)
+            mu[g] = ((float(sums[cd].to_numpy()[m].sum()) / s, float(sums[ct].to_numpy()[m].sum()) / s)
                      if s > 0 else (0.0, 0.0))
-    T = 60.0 * float(t0)
+    t_d, t_t = (t0, t0) if np.isscalar(t0) else tuple(t0)
+    Td, Tt = 60.0 * float(t_d), 60.0 * float(t_t)
     md = np.array([mu[g][0] for g in grp])
     mt = np.array([mu[g][1] for g in grp])
-    return pd.DataFrame({"pd60": (sums["pd_all"].to_numpy(float) + md * T) / (sec + T) * 3600.0,
-                         "pt60": (sums["pt_all"].to_numpy(float) + mt * T) / (sec + T) * 3600.0}, index=sums.index)
+    return pd.DataFrame({"pd60": (sums[cd].to_numpy(float) + md * Td) / (sec + Td) * 3600.0,
+                         "pt60": (sums[ct].to_numpy(float) + mt * Tt) / (sec + Tt) * 3600.0}, index=sums.index)
 
 
 # ----------------------------------------------------------------------- joint solve (players + roles + SPM)
