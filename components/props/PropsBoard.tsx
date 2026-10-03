@@ -376,7 +376,7 @@ export default function PropsBoard({ src, games: serverGames, slateDate, seasons
                                 {head('szn', seasons.cur, 'Over this season (last season lives in the row detail)', 'hidden md:table-cell')}
                                 {head('streak', 'Strk', 'Games in a row over the line', 'hidden xl:table-cell')}
                                 {priced ? head('imp', 'Book', 'Posted over price; implied chance (two-way lines de-vigged, one-way prices include the vig)', 'hidden lg:table-cell', 'right') : null}
-                                {priced ? head('fair', 'Fair', 'pony xG chance of the over, and its fair price', 'hidden lg:table-cell', 'right') : null}
+                                {priced ? head('fair', 'Fair', 'pony xG fair price for the over, and its chance', 'hidden lg:table-cell', 'right') : null}
                                 {priced ? head('edge', 'Edge', 'pony xG minus book implied, in percentage points', 'md:min-w-[5rem]', 'right') : null}
                             </tr>
                         </thead>
@@ -518,8 +518,8 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
                     <td className={cn(CELL_BG, 'hidden h-11 whitespace-nowrap border-b border-line px-2 text-right lg:table-cell')}>
                         {r.fair != null ? (
                             <span className="flex flex-col items-end leading-tight">
-                                <span className="text-model">{Math.round(r.fair * 100)}%</span>
-                                <span className="text-micro text-fg-3">{fairAmerican(r.fair)}</span>
+                                <span className="text-model">{fairAmerican(r.fair)}</span>
+                                <span className="text-micro text-fg-3">{Math.round(r.fair * 100)}%</span>
                             </span>
                         ) : (
                             <span className="text-fg-disabled">—</span>
@@ -533,7 +533,7 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
                                 <EdgeValue e={r.edge} />
                                 {r.fair != null ? (
                                     <span className="flex flex-col items-end whitespace-nowrap pr-1 text-micro leading-[14px] lg:hidden">
-                                        <span className="text-model">{Math.round(r.fair * 100)}%</span>
+                                        <span className="text-model">{fairAmerican(r.fair)}</span>
                                         {book ? <span className="text-fg-2">{american(book.over)}</span> : null}
                                     </span>
                                 ) : null}

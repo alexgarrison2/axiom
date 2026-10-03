@@ -116,7 +116,9 @@ export function PropDetail({ r, cat, doc, seasons }: { r: Row; cat: Category; do
                                         <RateText r={prevRate(p, l)} />
                                     </td>
                                     <td className="py-1.5 text-right text-fg-1">{b ? american(b.over) : <span className="text-fg-disabled">—</span>}</td>
-                                    <td className="py-1.5 text-right text-model">{f != null ? `${Math.round(f * 100)}%` : '—'}</td>
+                                    <td className="py-1.5 text-right text-model" title={f != null ? `${Math.round(f * 100)}%` : undefined}>
+                                        {fairAmerican(f)}
+                                    </td>
                                     <td className={cn('py-1.5 text-right', e == null ? 'text-fg-disabled' : e > 0 ? 'text-pos' : 'text-neg')}>
                                         {e == null ? '—' : `${e > 0 ? '+' : ''}${(e * 100).toFixed(1)}`}
                                     </td>
