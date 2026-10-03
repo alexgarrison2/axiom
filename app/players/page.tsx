@@ -23,7 +23,8 @@ export default function PlayersPage() {
     const all = compactSkaters(doc, statLines(), readBio());
     // IMPACT (goals per 82) best first; a v2 file without it opens on NET per 60.
     const defaults = sortSkaters(filterSkaters(all, DEFAULT_FILTER), headlineKey(all), 'desc');
-    const preview = { rows: defaults.slice(0, 50), total: defaults.length };
+    // First screen only (the full list loads right after); 50 rows put the HTML over its 400 KB budget.
+    const preview = { rows: defaults.slice(0, 30), total: defaults.length };
     const meta = parseRatings(doc);
     // Counting stats open on this season once any skater has played; last season stays a toggle away.
     const curStarted = all.some(p => (p.cur?.gp ?? 0) > 0);
