@@ -746,7 +746,7 @@ def write_manifest(r, mode, phase):
 FULL_WINDOW_UTC = range(12, 15)   # 12:00-14:59 UTC (7-10 am ET): last night's games are final
 FULL_MIN_INTERVAL_HOURS = 20       # one successful full run per morning window
 FULL_CATCH_UP_HOURS = 36           # outside the window, force a full run if none succeeded for this long
-FULL_UNSCRAPED_RETRY_HOURS = 3     # min gap between full attempts triggered by unstored final games
+FULL_UNSCRAPED_RETRY_HOURS = 0.9   # min gap between full attempts triggered by unstored final games (hourly cron)
 
 
 def has_unscraped_finals():
