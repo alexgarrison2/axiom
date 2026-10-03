@@ -549,6 +549,58 @@ export default function MethodologyPage() {
                             </dl>
                         </Section>
 
+                        <Section id="props" index={++i} title="Player props">
+                            <p>
+                                The Props page takes one stat at a time (shots on goal, goals, points, assists, power-play points). Each row is a skater
+                                on tonight&apos;s slate, on the line and power-play unit DailyFaceoff lists for him.
+                            </p>
+                            <dl>
+                                <Key
+                                    sample={
+                                        <span aria-hidden="true" className="relative flex h-6 w-24 items-end gap-[2px]">
+                                            {[1, 3, 0, 2, 4, 1, 2, 3].map((v, n) => (
+                                                <span key={n} className={v >= 2 ? 'w-[5px] bg-brand' : 'w-[5px] bg-[var(--mute)]'} style={{ height: `${Math.max(2, v * 5)}px`, opacity: n < 3 ? 0.5 : 1 }} />
+                                            ))}
+                                            <span className="absolute inset-x-0 bottom-[7px] border-t border-fg-1/70" />
+                                        </span>
+                                    }
+                                >
+                                    <strong>The tape</strong>: his last 20 games, oldest to newest, one bar per game. The rule is the line; a bar that
+                                    crosses it cashed the over and is lit. Early in a season the tape reaches back into last season&apos;s games, drawn faded
+                                    behind a seam.
+                                </Key>
+                                <Key sample={<span className="label text-fg-1">L5 · L10 · L20</span>}>
+                                    Share of his last 5, 10 and 20 games over the line, then this season; last season&apos;s rate is in the opened row.{' '}
+                                    <strong>Heating up</strong>: his last five at least 25 points above that baseline.
+                                </Key>
+                                <Key sample={<span className="label text-model">Fair</span>}>
+                                    The pony xG chance of the over. His shots, goals, assists, points and power-play points per minute, recent games weighted
+                                    (60-game half-life), are shrunk toward his position&apos;s league rate, multiplied by his expected minutes (last few
+                                    games weighted) and adjusted for the matchup: the opponent&apos;s shots allowed for shots on goal, the game model&apos;s
+                                    expected goals for his team for the scoring props. Shots on goal use a negative binomial, the rest a Poisson count.
+                                </Key>
+                                <Key sample={<span className="label text-fg-1">Book</span>}>
+                                    Bovada&apos;s posted over price and its implied chance. Two-way lines (shots on goal) have the vig removed; one-way prices
+                                    (anytime goal, points, assists, power-play points, marked *) still include it, so their edge reads low.
+                                </Key>
+                                <Key sample={<span className="label text-pos">Edge</span>}>
+                                    Fair minus book, in percentage points.
+                                </Key>
+                                <Key sample={<span className="label text-warn">Elite linemate</span>}>
+                                    A plus-money point scorer on the same forward line or power-play unit as a teammate priced -200 or shorter to record a
+                                    point.
+                                </Key>
+                            </dl>
+                            <p>
+                                <strong>Validation.</strong> Replayed over the 2025-26 season from mid-November (35,261 skater games, each priced from
+                                earlier games only), the fair chances beat both the league base rate and the skater&apos;s own last-10 hit rate on every
+                                prop by log loss: shots on goal o1.5 0.612 against 0.684 for the base rate and 0.786 for last-10, anytime goal 0.401
+                                against 0.431 and 0.500, 1+ point 0.600 against 0.649 and 0.734. Predicted and observed rates agree within about a point
+                                in every 10% bin. A raw last-10 hit rate predicts worse than the league average: the tape shows form, the fair price is
+                                the number to bet against.
+                            </p>
+                        </Section>
+
                         <Section id="data-sources" index={++i} title="Data sources">
                             <dl>
                                 <Key sample={<span className="label text-fg-1">NHL</span>}>
@@ -566,6 +618,7 @@ export default function MethodologyPage() {
                                 </Key>
                                 <Key sample={<span className="label text-fg-1">DailyFaceoff</span>}>Projected lines, starting-goalie confirmations and player news.</Key>
                                 <Key sample={<span className="label text-fg-1">ESPN</span>}>Injury reports and probable goalies.</Key>
+                                <Key sample={<span className="label text-fg-1">Bovada</span>}>Player prop prices, refreshed hourly before puck drop.</Key>
                             </dl>
                             <p>
                                 The data pipeline runs hourly from late morning to late evening Eastern on game days. The dot in the top bar shows when it

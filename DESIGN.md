@@ -1,0 +1,333 @@
+---
+name: pony xG
+description: NHL predictions and xG analytics, model price against the market on a near-black scoreboard.
+colors:
+  bg: "#05070b"
+  surface-1: "#0a0e15"
+  surface-2: "#0f1622"
+  surface-3: "#101a29"
+  well: "#070a10"
+  track: "#0c121c"
+  panel-top: "#0b1019"
+  panel-bottom: "#070a10"
+  line: "#152031"
+  line-strong: "#23405f"
+  ink: "#e8eef8"
+  text-2: "#8e99ad"
+  text-3: "#7a869b"
+  mute: "#3b475c"
+  brand-cyan: "#29e7ff"
+  brand-ink: "#05070b"
+  pos-green: "#3dff8f"
+  neg-red: "#ff5470"
+  model-magenta: "#ff4fd8"
+  warn-amber: "#ffc53d"
+  goalie-blue: "#4d9fff"
+  info-ice: "#9fb0c8"
+  pk-orange: "#ff8a3d"
+typography:
+  display:
+    fontFamily: "IBM Plex Sans Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "30px"
+    fontWeight: 700
+    lineHeight: 1
+    letterSpacing: "0.01em"
+  headline:
+    fontFamily: "IBM Plex Sans Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "18px"
+    fontWeight: 700
+    lineHeight: "22px"
+    letterSpacing: "0.04em"
+  title:
+    fontFamily: "IBM Plex Sans Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "16px"
+    fontWeight: 700
+    lineHeight: "20px"
+  body:
+    fontFamily: "IBM Plex Sans Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 400
+    lineHeight: "19px"
+    fontFeature: "\"tnum\" 1, \"lnum\" 1"
+  caption:
+    fontFamily: "IBM Plex Sans Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: "17px"
+    fontFeature: "\"tnum\" 1, \"lnum\" 1"
+  label:
+    fontFamily: "IBM Plex Sans Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 500
+    lineHeight: "15px"
+    letterSpacing: "0.16em"
+  pct:
+    fontFamily: "IBM Plex Sans Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "30px"
+    fontWeight: 700
+    lineHeight: "32px"
+rounded:
+  chip: "4px"
+  control: "8px"
+  segmented: "10px"
+  bar: "12px"
+  card: "16px"
+  full: "9999px"
+spacing:
+  card-phone: "14px"
+  card: "16px"
+  cell: "8px"
+  gutter-phone: "16px"
+  gutter: "24px"
+  appbar: "56px"
+  tabbar: "56px"
+components:
+  button-primary:
+    backgroundColor: "{colors.brand-cyan}"
+    textColor: "{colors.brand-ink}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.control}"
+    padding: "0 16px"
+    height: "36px"
+  button-outline:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    padding: "0 16px"
+    height: "36px"
+  button-ghost:
+    backgroundColor: "transparent"
+    textColor: "{colors.text-3}"
+    rounded: "{rounded.control}"
+    padding: "0 16px"
+    height: "36px"
+  segmented:
+    backgroundColor: "{colors.well}"
+    rounded: "{rounded.segmented}"
+    padding: "3px"
+  segmented-option:
+    textColor: "{colors.text-3}"
+    typography: "{typography.label}"
+    rounded: "7px"
+    padding: "0 12px"
+    height: "32px"
+  segmented-option-selected:
+    backgroundColor: "{colors.surface-3}"
+    textColor: "{colors.brand-cyan}"
+  filter-chip:
+    textColor: "{colors.text-3}"
+    typography: "{typography.label}"
+    rounded: "{rounded.full}"
+    padding: "0 14px"
+    height: "34px"
+  filter-chip-selected:
+    textColor: "{colors.brand-cyan}"
+  input:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.control}"
+    padding: "8px 12px"
+    height: "36px"
+  card:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.card}"
+    padding: "{spacing.card}"
+  stat-chip:
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.chip}"
+    padding: "2px 8px"
+    height: "24px"
+  table-header-cell:
+    backgroundColor: "{colors.bg}"
+    textColor: "{colors.text-3}"
+    typography: "{typography.label}"
+    padding: "0 8px"
+    height: "32px"
+  table-cell:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.text-2}"
+    padding: "0 8px"
+    height: "32px"
+  hit-rate-cell:
+    textColor: "{colors.text-2}"
+    rounded: "{rounded.chip}"
+    width: "44px"
+    height: "32px"
+  edge-chip:
+    textColor: "{colors.pos-green}"
+    rounded: "{rounded.chip}"
+    padding: "2px 4px"
+  edge-chip-strong:
+    backgroundColor: "rgba(61, 255, 143, 0.10)"
+    textColor: "{colors.pos-green}"
+  situational-tag:
+    textColor: "{colors.warn-amber}"
+    rounded: "{rounded.chip}"
+    padding: "0 4px"
+---
+
+# Design System: pony xG
+
+## Overview
+
+**Creative North Star: "Neon Arcade"**
+
+A rink-side scoreboard after dark. Near-black panels sit on a faint 48px grid under a soft cyan top glow; numbers are the content, set in one narrow face with tabular figures so every column lines up. Colour is signal, never decoration: each neon hue owns one meaning (cyan is active and hit, green and red are edge sign, magenta is the model's own number, amber is situational context), and light only blooms around data that is live right now.
+
+The system is dense and scan-first. Tables run 32px rows with sticky headers and a sticky first column; controls are compact uppercase segmented groups and pill chips; cards are flat gradient panels with a 1px hairline. Copy is minimal by rule: a page heading is the page name only, labels are one or two uppercase words, and explanations live on `/methodology`, not inline.
+
+Honesty about samples is visual, not verbal. Prior-season and thin-sample values are dimmed, dashed, or tagged with a small season tag ("25-26"), so last season's number never reads as tonight's. Team identity arrives through big, unpadded crests and a soft team-colour wash on each side, with values placed on their team's side.
+
+**Key Characteristics:**
+- Dark only (`color-scheme: dark`); depth by tonal layering and hairlines, not shadows.
+- One family, IBM Plex Sans Condensed, 400-700, tabular lining figures on body.
+- One meaning per hue; single-hue intensity for magnitude, never a red-yellow-green ramp.
+- Glow is reserved for live data: active control, confirmed goalie, live dot, model lean, strong positive edge.
+- Uppercase letter-spaced labels; page name only as heading; no eyebrows or taglines.
+- Prior-season data dimmed and tagged, never styled as current.
+
+## Colors
+
+A near-black ink field with five saturated neons, each bound to exactly one job.
+
+### Primary
+- **Arcade Cyan** (brand-cyan): Brand, active and focus. The selected segment's text, the selected filter chip's edge glow, the 2px focus ring, sort indicators, the PP1 chip, and on `/props` a game that cleared the line (lit tape bar, hit-rate wash). Solid cyan fill is reserved for the single primary button, with near-black text (brand-ink) on it.
+
+### Secondary
+- **Goal-Light Green** (pos-green): Positive. Plus edges, confirmed goalies, model-correct grades, the live dot.
+- **Siren Red** (neg-red): Negative. Minus edges, destructive actions, model misses.
+- **Model Magenta** (model-magenta): The model's own number. Raw model marker, model lean, and on `/props` the pony xG fair percentage and unposted fair prices. Also the playoff token.
+
+### Tertiary
+- **Situational Amber** (warn-amber): Context that changes tonight's read, not a judgement. Back-to-back and other situational chips, a promoted lineup unit (amber edge + up arrow), a linemate boost ("w/ Name"), a top-8 soft matchup rank, the small-sample `n=` tag, rookie marks.
+- **Goalie Blue** (goalie-blue): Starting-goalie status only, kept distinct from cyan and green.
+- **Penalty-Kill Orange** (pk-orange): Penalty kill in special-teams dots; power play uses cyan.
+- **Ice Grey** (info-ice): Neutral information that must never read as neon.
+
+### Neutral
+- **Rink Black** (bg): Page field; also the opaque strip behind sticky table headers and control bars (at 95% with backdrop blur for bars).
+- **Panel** (surface-1): Card and table body surface; the panel gradient runs panel-top to panel-bottom.
+- **Inset** (surface-2) and **Raised** (surface-3): Tracks and insets; the selected segment fill.
+- **Well** (well): Segmented and tab containers. **Track** (track): empty win-bar track.
+- **Hairline** (line) and **Hover Edge** (line-strong): Every border, divider and zebra mix; line-strong on hover and on input edges.
+- **Ink** (ink): Data, names, headings. **Secondary** (text-2): secondary values. **Dim** (text-3): labels, AA on every surface. **Mute** (mute): separators, decoration, missed-game bars; never data text.
+
+### Named Rules
+**The One Meaning Rule.** Each neon owns one job: cyan active/hit, green positive, red negative, magenta model, amber situational, blue goalie. Never borrow a hue for decoration or for a second meaning.
+
+**The Single-Hue Intensity Rule.** Magnitude is shown as the strength of one hue, never as a traffic light. Hit-rate cells are a cyan wash whose alpha is the rate (0.04 + 0.34 x rate); samples under 5 games get no wash and dim text.
+
+**The Live Glow Rule.** Glow appears only on live data: the active control, confirmed goalie, live dot, favourite's bar segment, model lean, and an edge of +5.0 or more. Everything else is flat.
+
+## Typography
+
+**Display Font:** IBM Plex Sans Condensed (with Arial Narrow, system-ui)
+**Body Font:** IBM Plex Sans Condensed
+**Label/Mono Font:** IBM Plex Sans Condensed (`font-mono` and `font-display` are aliases of the one family)
+
+**Character:** One narrow grotesque doing every job. Condensed letterforms let dense tables breathe; tabular lining figures (on body) keep number columns aligned without a monospace face. Hierarchy comes from weight, case and tracking, not from a second family.
+
+### Hierarchy
+- **Display** (700, 24px phone / 30px md, line-height 1, uppercase): The page heading, page name only, one per page.
+- **Headline** (700, 18px/22px, 0.04em, uppercase): Section H2.
+- **Title** (700, 16px/20px): Card titles, player names in detail views.
+- **Body** (400, 14px/19px, tabular): Default page text. Table cells run 12-13px in the same face.
+- **Caption** (400, 13px/17px): Controls at md+, detail tables, inputs at md+.
+- **Label** (500, 12px/15px, 0.16em, uppercase, dim): The 1-2 word label. Table headers use 0.06em; segmented options 0.12em. 12px (`micro`) is the floor.
+- **Pct** (700 italic, display sizes): Bold italic win percentage; scoreboard numbers are bold with -0.02em tracking.
+
+### Named Rules
+**The 12px Floor Rule.** Nothing is smaller than 12px; legacy smaller sizes are lifted to 12px in the stylesheet and flagged by lint.
+
+**The Page Name Rule.** A page heading is the page name, nothing else: no eyebrow, no tagline, no subtitle. The heading component accepts but does not render eyebrow and description props.
+
+## Layout
+
+One content edge for nav, pages and footer: 1400px max width, 16px gutters on phones, 24px from 768px. Pages add only vertical rhythm (16px gaps between page blocks are typical). The app bar is 52px on phones and 56px from md; below md a fixed 56px bottom tab bar takes over navigation, and scroll padding keeps focus clear of both bars.
+
+Data pages stack: heading row (title left, compact controls right) then a sticky control bar, then a meta line, then the table. The control bar pins under the app bar, bleeds to the page edge, and sits on 95% rink black with backdrop blur and a hairline under it; it holds the primary segmented control, a secondary segmented control, search (right-aligned at md), and a horizontally scrolling chip row on phones that wraps at md.
+
+Tables scroll inside their own region with edge fades; the first column is sticky with a right-edge shadow; the header row is sticky. On `/props` the column header pins beneath the sticky control bar from xl (1280px) by tracking the bar's measured height; below xl the table scrolls in its region. Default rows are 32px; `/props` rows are 44px so the 32px tape fits. Columns that are secondary drop out below xl or md rather than shrinking. Matchup cards lay out by their own width with container queries.
+
+Touch targets grow to 44px on coarse pointers across chips, segments and buttons.
+
+## Elevation & Depth
+
+Flat by default. Depth is tonal: rink black field, gradient panels (panel-top to panel-bottom) with a 1px hairline, inset wells for control groups, and zebra rows mixed from the hairline colour into the panel colour so sticky cells stay opaque. Card shadow is explicitly none. The only shadows are glows bound to live state, plus one structural shadow: the sticky first column's soft right-edge shadow that separates it from scrolled cells.
+
+### Shadow Vocabulary
+- **Brand glow** (`box-shadow: 0 0 16px rgba(41,231,255,0.18), inset 0 0 12px rgba(41,231,255,0.12)`): Selected filter chip and active control.
+- **Strong edge glow** (`box-shadow: 0 0 12px rgba(61,255,143,0.25)` on a 10% green fill): Edge chip at +5.0 or higher.
+- **Text glows** (`text-shadow: 0 0 10-12px` of the hue at 0.45-0.5): Live green, goalie blue, model magenta, cyan values.
+- **Sticky column edge** (`box-shadow: 4px 0 8px -6px rgba(0,0,0,0.8)`): Structural, sticky first column only.
+
+### Named Rules
+**The Flat-At-Rest Rule.** Panels never cast shadows. A hover brightens the hairline to line-strong; it does not lift.
+
+## Shapes
+
+A tight radius ladder by role: 4px chips and tags, 7px segment options inside a 10px well, 8px controls and inputs, 10px inset tiles, 12px bars, 16px cards and table regions, full pills for filter chips and dots. Borders are 1px hairlines everywhere; dashed borders mean a thin or prior-season sample (amber-tinted dashed for small samples, mute dashed for prior season). Win bars carry a fine 115-degree diagonal hatch over each fill. Micro-chart bars use 1px corners (2px at detail size).
+
+## Components
+
+### Buttons
+Compact, uppercase, letter-spaced; solid colour is rare.
+- **Shape:** Gently squared (8px), 36px tall (32px small, 44px large and on touch).
+- **Primary:** Solid cyan with rink-black text, bold uppercase caption; only for the one primary action. Hover brightens 10%.
+- **Outline / Secondary / Ghost:** Hairline outline in ink (hover edge brightens); raised fill whose text turns cyan on hover; dim text that brightens to ink.
+- **Destructive:** Red text with a half-strength red edge, 10% red fill on hover.
+
+### Segmented control
+The site's one view switcher (views, seasons, categories, lines). A radiogroup in a 10px well with a hairline and 3px inset; options are 7px-rounded uppercase labels at 0.12em, 32px tall (28px small). Selected = raised fill with cyan text; unselected dim, brightening on hover. Arrow keys move and select.
+
+### Chips
+- **Filter chip:** Full pill, 34px tall, hairline edge, dim uppercase label. Selected = cyan text, 60% cyan edge, brand glow. Optional bold count after the label; game chips lead with two 24px crests. Unpriced games sit at 60% opacity.
+- **Stat chip:** 4px label + value chip. Current = hairline; small sample = amber-tinted dashed edge with an amber `n=` tag; prior season = mute dashed edge, secondary value, and a season tag.
+- **Situational tag:** Amber-edged lineup unit with a promotion arrow; amber text for a linemate boost or soft-matchup rank. PP1 is cyan-edged; other units are hairline and dim.
+
+### Cards / Containers
+- **Corner Style:** 16px.
+- **Background:** Panel gradient; optional team-colour radial wash at 22% behind each side.
+- **Shadow Strategy:** None (see Elevation).
+- **Border:** 1px hairline; line-strong on hover when interactive.
+- **Internal Padding:** 14px phone, 16px md+.
+
+### Inputs / Fields
+Panel fill, 1px hairline (hover edge on hover), 8px radius, 36px tall, caption text at md, dim placeholder with label tracking. Focus is the global 2px cyan ring at 2px offset.
+
+### Navigation
+Top app bar on md+ and a fixed bottom tab bar below md; active item cyan with glow, others dim. Focus everywhere is the single 2px cyan outline.
+
+### Dense table
+Rink-black sticky header (32px, uppercase dim labels at 0.06em, hairline under). Body cells on the panel colour with opaque zebra (40% hairline mix) and hover (85% mix); sticky first column with crest, name (cyan on row hover), and a dim meta line. Sort headers put the indicator in cyan. Missing values are an em dash in the disabled colour.
+
+### Hit Tape (signature, `/props`)
+A per-game bar micro-chart, oldest to newest, one bar per game against the line. Bars that cleared the line are solid cyan; misses are mute; zero games are a 2px stub in the hover-edge colour. Last season's games sit at 50% opacity behind a 1px dim seam. The line is a solid ink hairline at 70% that slides to the new threshold (200ms ease-out) while the bars re-light; reduced motion disables both. Sizes: row (6px bars, 2px gap, 32px tall), compact (4px bars), detail (20px bars, 7px gaps, 84px plot, value above and opponent below each bar). A legend of three swatches (over, under, prior season) sits in the meta line.
+
+### Hit-rate cell (`/props`)
+A 44px (48px md) by 32px chip centred in the cell: rate on top, `hits/n` in micro dim below, on a cyan wash whose alpha follows the rate. Rates of 60%+ go semibold ink; under 5 games the wash drops and text dims.
+
+### Edge chip (`/props`)
+Right-aligned signed value in tenths ("+6.2"), green above zero, red below, secondary at zero. At +5.0 or more it gains a 10% green fill and the strong edge glow. Fair percentage beside it is magenta.
+
+## Do's and Don'ts
+
+### Do:
+- **Do** bind every neon to its one meaning: cyan active/hit, green positive, red negative, magenta model (fair %), amber situational (promoted line, linemate boost, soft matchup, small sample), blue goalie.
+- **Do** show magnitude as single-hue intensity (cyan wash alpha 0.04 + 0.34 x rate).
+- **Do** dim and tag prior-season values (50% opacity, mute dashed edge, "25-26" season tag) and mark samples under 5 games.
+- **Do** keep table headers and control bars on opaque rink black (95% plus blur for bars) with a hairline beneath, and zebra by mixing the hairline into the panel colour.
+- **Do** use big team crests with no padding, and place values on their team's side.
+- **Do** keep labels to 1-2 uppercase words and the page heading to the page name.
+- **Do** honour reduced motion; transitions are 200ms ease-out, transform and fill only.
+
+### Don't:
+- **Don't** use red-yellow-green scales or any traffic-light ramp for magnitude.
+- **Don't** add glow to anything that is not live data; panels have no shadow.
+- **Don't** add eyebrows, taglines or explanatory subtitles above or below page headings.
+- **Don't** set text below 12px or use the mute colour for data.
+- **Don't** introduce a second typeface; weight, case and tracking carry hierarchy.
+- **Don't** use solid cyan fills except the single primary action and lit data marks (tape bars, swatches).

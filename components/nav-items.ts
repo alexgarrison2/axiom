@@ -18,6 +18,7 @@ export const NAV_ITEMS: NavItem[] = [
     { key: 'tonight', label: 'Tonight', href: '/', primary: true },
     { key: 'teams', label: 'Teams', href: '/teams', primary: true },
     { key: 'players', label: 'Players', href: '/players', primary: true },
+    { key: 'props', label: 'Props', href: '/props', primary: true },
     { key: 'standings', label: 'Standings', href: '/standings', also: ['/playoffs'] },
     { key: 'accuracy', label: 'Accuracy', href: '/accuracy', primary: true },
     { key: 'news', label: 'News', href: '/news' },

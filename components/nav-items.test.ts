@@ -3,7 +3,7 @@ import { NAV_ITEMS, isItemActive, playoffsLink, shortSeason } from './nav-items'
 
 describe('nav items', () => {
     it('is one fixed set that ends with the methodology link', () => {
-        expect(NAV_ITEMS.map(i => i.href)).toEqual(['/', '/teams', '/players', '/standings', '/accuracy', '/news', '/methodology']);
+        expect(NAV_ITEMS.map(i => i.href)).toEqual(['/', '/teams', '/players', '/props', '/standings', '/accuracy', '/news', '/methodology']);
         expect(NAV_ITEMS.some(i => 'playoffsOnly' in i)).toBe(false);
     });
 
