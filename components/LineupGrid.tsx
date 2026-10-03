@@ -28,6 +28,17 @@ const ord = (n: number) => {
     return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
 };
 
+const PP_NAME: Record<number, string> = { 0: 'text-fg-2', 1: 'font-bold text-warn', 2: 'text-fg-1' };
+
+function PpLegend() {
+    return (
+        <p aria-hidden="true" className="flex items-center gap-2 text-micro uppercase tracking-wide text-fg-3">
+            <span className="font-bold text-warn">PP1</span>
+            <span className="text-fg-1">PP2</span>
+        </p>
+    );
+}
+
 function Player({ pl }: { pl: LineupPlayerView | undefined }) {
     if (!pl) return <span className="block text-center text-fg-3">–</span>;
     return (
@@ -36,16 +47,15 @@ function Player({ pl }: { pl: LineupPlayerView | undefined }) {
                 {pl.movement === 'up' ? <span aria-label="moved up" className="text-micro text-pos">▲</span> : null}
                 {pl.movement === 'down' ? <span aria-label="moved down" className="text-micro text-neg">▼</span> : null}
                 {pl.movement === 'new' ? <span aria-label="new to the lineup" className="text-micro text-warn">+</span> : null}
-                <span className={cn('truncate text-caption', pl.ppUnit === 1 ? 'font-bold text-fg-1' : 'text-fg-1')}>{pl.display}</span>
+                {/* Power-play unit by name colour (legend under the tables): PP1 yellow, PP2 white, others dimmer. */}
+                <span className={cn('truncate text-caption', PP_NAME[pl.ppUnit ?? 0] ?? PP_NAME[0])}>
+                    {pl.display}
+                    {pl.ppUnit ? <span className="sr-only">, power play unit {pl.ppUnit}</span> : null}
+                </span>
             </span>
-            {pl.value82 != null || pl.ppUnit ? (
-                <span className="flex items-center gap-1 text-micro tabular-nums">
-                    {pl.value82 != null ? (
-                        <span className={impactTone(pl.value82)} title="Impact: goals above a positional average per 82 games, all situations (the Players page number)">
-                            {fmtSigned(pl.value82, 1)}
-                        </span>
-                    ) : null}
-                    {pl.ppUnit ? <span className={pl.ppUnit === 1 ? 'text-warn' : 'text-fg-3'}>PP{pl.ppUnit}</span> : null}
+            {pl.value82 != null ? (
+                <span className={cn('text-micro tabular-nums', impactTone(pl.value82))} title="Impact: goals above a positional average per 82 games, all situations (the Players page number)">
+                    {fmtSigned(pl.value82, 1)}
                 </span>
             ) : null}
         </span>
@@ -205,6 +215,7 @@ export default function LineupGrid({
                     <p className="text-micro uppercase tracking-wide text-fg-3">Players: impact per 82 · Lines and totals: even-strength xG/60</p>
                     <Table keys={FWD} cols={['LW', 'C', 'RW']} d={d} label={`${team.commonName} forward lines`} />
                     <Table keys={DEF} cols={['LD', 'RD']} d={d} label={`${team.commonName} defence pairs`} />
+                    {[...FWD, ...DEF].some(k => d.lines[k]?.some(pl => pl?.ppUnit)) ? <PpLegend /> : null}
                 </>
             ) : (
                 <p className="label">No lineup yet</p>
