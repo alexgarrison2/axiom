@@ -674,6 +674,51 @@
   "score_without": 6.99308
  },
  "season_sim": {
+  "calib_decision": {
+   "decided_at": "2026-10-03T17:15:16Z",
+   "dev_pooled": {
+    "n_team_asof": 160,
+    "playoff_ll": {
+     "CAL": 0.3084,
+     "LOGIT": 0.3031,
+     "diff": 0.0053,
+     "se": 0.0153
+    },
+    "points_mae": {
+     "CAL": 5.2682,
+     "LOGIT": 5.6379,
+     "diff": -0.3697,
+     "se": 0.2843
+    }
+   },
+   "holdout_20252026": {
+    "n_team_asof": 96,
+    "playoff_ll": {
+     "CAL": 0.4651,
+     "LOGIT": 0.4542,
+     "diff": 0.0109,
+     "se": 0.029
+    },
+    "points_mae": {
+     "CAL": 6.4057,
+     "LOGIT": 6.2942,
+     "diff": 0.1115,
+     "se": 0.3323
+    }
+   },
+   "note": "CAL is the identity, so the season_sim_calib look scored the uncalibrated simulator on 2025-26: question season_sim's own look is spent in effect",
+   "prereg": "bu/sim/prereg_season_calib.json",
+   "question": "season_sim_calib",
+   "result": "not promoted: rule (4) fails, holdout playoff log loss CAL - LOGIT = +0.0109 > +0.010 (rules (1)-(3) pass)",
+   "tuning": "348 candidates on 2017-18, 2018-19, 2021-22, 2022-23 (Nov 1 / Jan 1 / Mar 1, 378 team x as-of points): the identity was chosen (J = points MAE + 25 x playoff LL 14.902; best 14.898 within 0.02 but two knobs); logit shrink and lineup regression only made J worse"
+  },
+  "calibration": {
+   "k_inf": 1.0,
+   "lineup_tau_days": 60.0,
+   "lineup_w_inf": 1.0,
+   "sigma0": 0.2,
+   "tau_days": 0.0
+  },
   "decided_at": "2026-10-03T16:40:00Z",
   "dev_pooled": {
    "n_team_asof": 160,
@@ -695,7 +740,7 @@
   "prereg": "bu/sim/prereg_season_sim.json",
   "question": "season_sim",
   "reason": "rule (2) fails: dev pooled playoff log loss SIM - LOGIT = +0.0053 > 0 (points MAE rule (1) and the 2023-24 guard (3) pass)",
-  "rollout": "PONYXG_SEASON_SIM=sim switches season_simulator / game_implications to the simulator (opt-in, not validated for publication)"
+  "rollout": "PONYXG_SEASON_SIM=sim switches season_simulator / game_implications to the simulator with season_sim.calibration (the identity: the uncalibrated simulator); opt-in, not promoted (prereg_season_sim.json, prereg_season_calib.json)"
  },
  "state": {
   "criterion": "next-game Poisson log-likelihood, regular season of the fit seasons",

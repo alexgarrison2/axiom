@@ -15,7 +15,10 @@ Model
   bu/sim/prereg_season_sim.json, did not promote it) each remaining game's
   regulation / tie / OT-share split comes from the game simulator instead
   (bu/sim/season.py: typical lineups, goalie start shares, 4,000 runs a game,
-  cached for the day; per-game logit fallback).
+  cached for the day; per-game logit fallback), with the season calibration in
+  sim_params.json season_sim.calibration (days-ahead logit shrink, strength
+  sigma, lineup regression; bu/sim/prereg_season_calib.json tuned it to the
+  identity and did not promote the simulator either).
 * Regulation / overtime split from goal_model: the goal rates implied by
   the win probability give P(home in regulation), P(tie after 60) and the
   home share of OT/SO wins.

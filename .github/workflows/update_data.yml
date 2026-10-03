@@ -90,7 +90,8 @@ jobs:
           #                        (bu/sim/out/sim_params_v2.json) instead of ratings v4
           #                        (=st: the opt-in lineup special-teams simulator, not promoted)
           #   PONYXG_SEASON_SIM=sim  season projections / implications from the game simulator
-          #                        (opt-in, not promoted: bu/sim/prereg_season_sim.json); =logit forces the default
+          #                        (opt-in, not promoted: bu/sim/prereg_season_sim.json,
+          #                        prereg_season_calib.json); =logit forces the default
           PONYXG_XG: ${{ vars.PONYXG_XG }}
           PONYXG_BU: ${{ vars.PONYXG_BU }}
           PONYXG_WINPCT: ${{ vars.PONYXG_WINPCT }}

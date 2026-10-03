@@ -13,7 +13,9 @@ ratings are **ratings v4** (`bu/rapm/README.md` "Ratings v4") instead of RAPM v2
 inputs: ratings v4"); `PONYXG_SIM_INPUTS=v2` rolls the inputs back.  Two further pre-registered
 questions (2026-10-03, "Player special teams and penalties", "Season projections on the
 simulator") were scored on dev and did not pass their rules; both paths are built and opt-in
-(`PONYXG_SIM_INPUTS=st`, `PONYXG_SEASON_SIM=sim`).
+(`PONYXG_SIM_INPUTS=st`, `PONYXG_SEASON_SIM=sim`).  A calibrated version of the season path
+("Calibrated season projections", `prereg_season_calib.json`) chose no calibration on its tuning
+seasons, passed dev and missed the holdout playoff log-loss margin by 0.0009: still opt-in.
 
 Everything runs from `pipeline/`.  Pre-declared rules: `prereg.json` (written before any dev or
 holdout run, amendments timestamped).  Fitted parameters: `out/sim_params.json`.  Validation
@@ -494,6 +496,61 @@ python -m bu.sim.season_backtest dev --work $W --ratings-dir <ratings v4 point-i
 python -m bu.sim.season_backtest holdout ...      # the single logged 2025-26 look
 ```
 
+### Calibrated season projections (`prereg_season_calib.json`, `season_calib.py`)
+
+Question `season_sim_calib` (pre-registered 2026-10-03 before any tuning or scoring): once its
+season-level calibration is tuned on seasons it does not report on, should the simulator drive the
+season projections?  Three knobs (`season.calibration()`, read from `sim_params.json`
+`season_sim.calibration`; the identity is the uncalibrated simulator above):
+
+* **A, logit shrink by days ahead** (`k_inf`, `tau_days`): each game's logit P(home win) shrunk toward
+  the table's home-ice baseline by k(d) = k_inf + (1 - k_inf) exp(-d / tau) (`calibrate_table`);
+* **B, strength sigma** (`sigma0`): the Engine's per-season team effect sigma0 sqrt(40 / (40 + GP)),
+  re-estimated for the simulator (`SimProbabilities.sigma0`; the Engine takes it when no sigma is passed);
+* **C, lineup regression** (`lineup_w_inf`, tau 60 days): the typical lineup's OFF / DEF multiplied by
+  w(d) before the game is simulated (`lineup_scale`, `game_rows(scale=)`).
+
+Tuning: the full grid (8 k_inf x 4 tau, 4 sigma0, 3 w_inf: 348 candidates) on 2017-18, 2018-19,
+2021-22, 2022-23 at Nov 1 / Jan 1 / Mar 1 (378 team x as-of points; 2019-20 and 2020-21 excluded:
+COVID stop / 56-game realigned divisions), 3,000 seasons each, objective J = points MAE + 25 x
+playoff log loss (25 makes the +0.25-point and +0.010 margins equal).  **The identity won**: J
+14.902 (MAE 6.63, LL 0.331); the lowest J, 14.898 (sigma0 0, w 0.75), is within the pre-declared
+0.02 tie band with two knobs.  Shrinking hurt at every month (k 0.9: 14.98, 0.7: 15.35, 0.5: 16.01;
+Nov 1 alone 20.42 at k 1 vs 20.65 at 0.9), lineup regression hurt (w 0.75: 14.94, 0.5: 15.05),
+sigma was flat (0.1: 14.901, 0.3: 14.986).  A descriptive opening-night check on 2018-19 and
+2022-23 (not part of the rule) agreed: the raw simulator's projected points (sd 12, 58 to 119)
+score about as well as the best shrink (J 21.82 vs 21.70 at k 0.8, sigma 0), against final-points
+sds of 13.7 and 18.9.  The simulator's preseason spread is not what costs it; the logit's (sd ~5)
+looks too narrow.
+
+| | n | points MAE LOGIT | CAL | CAL - LOGIT (SE) | playoff LL LOGIT | CAL | CAL - LOGIT (SE) |
+|---|---|---|---|---|---|---|---|
+| dev pooled (as season_sim) | 160 | 5.64 | 5.27 | -0.37 (0.28) | 0.3031 | 0.3084 | +0.0053 (0.015) |
+| holdout 2025-26 | 96 | 6.29 | 6.41 | +0.11 (0.33) | 0.4542 | 0.4651 | **+0.0109** (0.029) |
+
+Holdout by point (MAE / LL, LOGIT vs CAL): 2025-11-01 9.57 / 0.630 vs 10.09 / 0.658; 2026-01-01
+5.51 / 0.429 vs 5.42 / 0.435; 2026-03-01 3.80 / 0.304 vs 3.71 / 0.303.  P(playoffs) reliability
+by decile is in `out/validation.json` (`season_calib_dev`, `season_calib_holdout`).
+
+**Decision: not promoted.**  Rules (1) dev MAE not worse, (2) dev LL within 1 SE and (3) holdout
+MAE within +0.25 pass; (4) holdout LL within +0.010 fails by 0.0009 (a thirtieth of its SE).
+`season_simulator` stays on the logit; `PONYXG_SEASON_SIM=sim` runs the simulator with
+`season_sim.calibration` (the identity).  Because the chosen calibration is the identity, this
+look scored the uncalibrated simulator on 2025-26, so question `season_sim`'s own holdout look is
+spent in effect; a further season-engine question needs 2026-27 as its holdout.
+
+2026-27 preseason (2026-10-03, 21 games played, 5,000 seasons): LOGIT 82.3 to 103.8 projected
+points (sd 4.9), playoff odds 16.9% to 82.6%; simulator (raw = CAL) 61.1 to 117.4 (sd 12.2), 0.4% to
+98.7% (COL 117.4 / 98.7% vs 103.8 / 82.6%; VAN 61.1 / 0.4% vs 83.7 / 19.6%).
+
+```bash
+cd pipeline     # PONYXG_LAKE_DIR, PONYXG_RAPM_DIR
+python -m bu.sim.season_calib tune --work $W --ratings-dir $R --out $O     # tuning seasons only
+python -m bu.sim.season_calib dev ...           # CAL and SIM_raw vs LOGIT
+python -m bu.sim.season_calib holdout ...       # the single logged look (question season_sim_calib)
+python -m bu.sim.season_calib preseason --out $O
+```
+
 ## Runtime
 
 One game, 20,000 runs: ~0.13 s simulation + ~0.04 s anchoring on an idle core.  `predict_games`
@@ -529,8 +586,10 @@ both arms) ~100 s on 8 workers.
   version (`out/sim_params_st.json`) improved dev ML but not the derivative score (opt-in).  The
   goalie is the expected starter all game (no in-game pulls for performance).
 * Season projections on the simulator (opt-in) use one typical lineup all season (no injuries,
-  trades or call-ups after today) and the logit's strength-uncertainty sigma; preseason they are
-  much more spread than the logit's (2026-27 opening week: 61 to 117 projected points vs 82 to 104).
+  trades or call-ups after today); preseason they are much more spread than the logit's (2026-27
+  opening week: 61 to 117 projected points vs 82 to 104).  Re-tuning sigma, shrinking far-ahead
+  games or regressing future lineups did not score better on 2017-23 (`prereg_season_calib.json`),
+  but those seasons are in the simulator's fit window and the tuning has no preseason point.
 * In-season live updates of the team / goalie state come from the gamestats + shots CSVs (score-
   adjusted 5v5 time approximated from time leading / trailing / tied), not the lake's stints; FIN
   comes from the serving bundle's `fin` table.

@@ -110,3 +110,27 @@ def test_prereg_is_declared():
     assert d["question"].startswith(SC.QUESTION)
     assert set(d["tuning"]["seasons_and_points"]) == set(SC.TUNE)
     assert d["as_of_points"]["dev"] == SC.DEV and d["as_of_points"]["holdout"] == SC.HOLDOUT
+
+
+def test_check_season_projections_sigma(tmp_path, monkeypatch):
+    import validate_outputs as Vo
+    from season import SEASON_ID
+    monkeypatch.setenv(SE.ENV, "sim")
+    teams = [{"team": f"T{i:02d}", "make_playoffs_pct": 50.0, "point_dist": {"90": 60, "92": 40}} for i in range(32)]
+    doc = {"season_id": SEASON_ID, "total_simulations": 100, "games_played": 0, "remaining_games": 1312,
+           "generated_at": "2026-10-03T12:00:00Z", "teams": teams,
+           "model": {"engine": "sim", "strength_sigma0_logit": 0.2, "calibration": {**SE.CAL_IDENTITY, "sigma0": 0.2}}}
+    p = tmp_path / "sp.json"
+    p.write_text(json.dumps(doc))
+    assert Vo.check_season_projections({"season_projections_path": str(p)}) == []
+    doc["model"]["strength_sigma0_logit"] = 0.1
+    p.write_text(json.dumps(doc))
+    assert any("sigma" in e for e in Vo.check_season_projections({"season_projections_path": str(p)}))
+
+
+def test_live_parameters_record_the_calib_decision():
+    from bu.sim.params import load_params
+    ss = load_params()["season_sim"]
+    assert ss["calib_decision"]["question"] == SC.QUESTION
+    assert set(ss["calibration"]) == set(SE.CAL_IDENTITY)
+    assert ss["engine"] == ("sim" if "not promoted" not in ss["calib_decision"]["result"] else "logit")

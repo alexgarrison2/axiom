@@ -248,7 +248,10 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   published default, `bu/sim/prereg_season_sim.json` did not promote the simulator) or `sim`
   (repository variable `PONYXG_SEASON_SIM=sim`: per-game regulation / OT splits from the game
   simulator, `bu/sim/season.py`), with `sim_games`, `sim_runs_per_game` and `logit_fallback_games`
-  when `sim`.  `validate_outputs.py season_projections` checks the engine matches the switch and the
+  when `sim`, plus `calibration` (`sim_params.json` `season_sim.calibration`, additive 2026-10-03;
+  `bu/sim/prereg_season_calib.json` chose the identity and did not promote it either), and
+  `strength_sigma0_logit` is the sigma the Engine ran.  `validate_outputs.py season_projections`
+  checks the engine matches the switch, a simulator file ran its calibration's sigma, and the
   Monte Carlo is consistent (point distributions sum to the simulations, 16 playoff teams, league
   points per game in [2, 2.5]).  `pipeline/data/season_sim_games.json` caches the simulator's
   per-game table for the day (`{key, meta, games: {"<game id>|<home rest>|<away rest>":

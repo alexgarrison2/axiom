@@ -948,7 +948,8 @@ def check_season_projections(ctx):
     selects (bu/sim/season.py; a recent logit file while 'sim' is selected means the simulator path
     failed), and the Monte Carlo is consistent: every team's point distribution sums to the
     simulations, 16 playoff teams a season, league points per game in [2, 2.5] (an OT / SO loser
-    adds a point)."""
+    adds a point); a simulator file ran the strength sigma of its recorded calibration
+    (prereg_season_calib.json)."""
     path = ctx.get("season_projections_path") or os.path.join(PUBLIC_DATA_DIR, "season_projections.json")
     if not os.path.exists(path):
         return []
@@ -990,6 +991,12 @@ def check_season_projections(ctx):
     if want == "sim" and eng != "sim" and recent and rem > 0:
         errs.append("season projections were made by the logit although the season_sim engine is 'sim' "
                     "(the simulator path failed: see the season_simulator log)")
+    model = sp.get("model") or {}
+    cal = model.get("calibration") or {}
+    if eng == "sim" and cal.get("sigma0") is not None and model.get("strength_sigma0_logit") is not None \
+            and abs(float(cal["sigma0"]) - float(model["strength_sigma0_logit"])) > 1e-9:
+        errs.append(f"season projections ran the simulator with strength sigma {model['strength_sigma0_logit']} "
+                    f"but its calibration (season_sim.calibration) says {cal['sigma0']}")
     return errs
 
 
