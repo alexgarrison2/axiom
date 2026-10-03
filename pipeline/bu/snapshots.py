@@ -492,6 +492,10 @@ PUBLISHED_FIELDS = {
     # Rollback shadow of the replaced live model (Gate C/E incumbent once BU is live).
     "f1_shadow_model_pct": "f1_shadow_model_win_pct",
     "f1_shadow_home_win_pct": "f1_shadow_home_win_pct",
+    # Win-% engine (contract v2.3, bu/sim/prereg_primary.json): home_model_pct is the game
+    # simulator's when winpct_engine = sim; the logit game model is logged next to it.
+    "winpct_engine": "winpct_engine",
+    "logit_model_pct": "logit_model_win_pct", "logit_home_win_pct": "logit_home_win_pct",
 }
 
 

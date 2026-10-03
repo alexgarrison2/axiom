@@ -326,7 +326,9 @@ comparison (the dispersion grid, fitted with RAPM v2 inputs, should be rerun on 
 
 One game, 20,000 runs: ~0.13 s simulation + ~0.04 s anchoring on an idle core.  `predict_games`
 on 2026-10-02 (18 games, today and tomorrow): 3.4 s for the whole slate including anchoring and
-pricing, on a loaded 8-core laptop.  Validation: ~1 min per season on 8 workers.
+pricing, on a loaded 8-core laptop.  With the simulator as the win-% engine (one simulation shared
+by the win %, the breakdown's five 3,000-run counterfactuals, anchoring and pricing): lite run of
+2026-10-03, 14 pregame games in 8.9 s (0.63 s a game) on a loaded laptop.  Validation: ~1 min per season on 8 workers.
 
 ## Weaknesses (what is still heuristic)
 
