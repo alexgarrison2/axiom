@@ -15,11 +15,14 @@ import { glossaryHref } from '@/lib/glossary';
 import { signed } from '@/lib/players/ratings';
 import { CELL_BG } from '@/components/teams-table/table-style';
 import {
+    COLOR_MIN_EV,
     DEFAULT_FILTER,
     FIRST_DIR,
     MIN_EV_OPTIONS,
+    SPECIAL_TEAMS_MIN_GP,
     STRONG,
     filterSkaters,
+    headlineKey,
     ratingTone,
     sortSkaters,
     valueOf,
@@ -32,10 +35,11 @@ import {
 const PAGE = 50;
 
 /** Phone column sets (a wide screen shows every column). */
-type ColumnSet = 'rating' | 'scoring';
-const SET_LABELS: Record<ColumnSet, string> = { rating: 'Rating', scoring: 'Scoring' };
+type ColumnSet = 'impact' | 'rates' | 'scoring';
+const SET_LABELS: Record<ColumnSet, string> = { impact: 'Impact', rates: 'Rates', scoring: 'Scoring' };
 
-type Group = 'rating' | 'count';
+/** impact: goals / 82 · rate: per 60 (+ the EV sample) · count: the season's counting stats. */
+type Group = 'impact' | 'rate' | 'count';
 
 interface Column {
     key: Exclude<SortKey, 'name'>;
@@ -55,23 +59,31 @@ const mmss = (sec: number | null) => {
 };
 const thousands = (n: number) => n.toLocaleString('en-US');
 
-function Rating({ v, p, strong, bold = false }: { v: number | null | undefined; p: Skater; strong: number; bold?: boolean }) {
+/** A signed rating, toned past `strong` with a real sample; `muted` greys it (no role there). */
+function Rating({ v, p, strong, digits = 2, muted = false }: { v: number | null | undefined; p: Skater; strong: number; digits?: number; muted?: boolean }) {
     if (v == null) return <span className="text-fg-3">—</span>;
-    const t = ratingTone(v, p, strong);
+    const t = muted ? null : ratingTone(v, p, strong);
     return (
-        <span className={cn(t ? TONE[t] : p.rated ? 'text-fg-2' : 'text-fg-3', bold && 'font-bold')}>
-            {signed(v)}
+        <span className={cn(t ? TONE[t] : p.rated && !muted ? 'text-fg-2' : 'text-fg-3')}>
+            {signed(v, digits)}
             {!p.rated ? <span className="sr-only"> (rookie prior)</span> : null}
         </span>
     );
 }
 
+const lowPp = (p: Skater) => p.ppGp != null && p.ppGp < SPECIAL_TEAMS_MIN_GP;
+const lowPk = (p: Skater) => p.pkGp != null && p.pkGp < SPECIAL_TEAMS_MIN_GP;
+
 const COLUMNS: Column[] = [
-    { key: 'off', label: 'OFF', title: 'Offence: EV xG for per 60 above average', group: 'rating', sets: ['rating'], render: p => <Rating v={p.off} p={p} strong={STRONG.off} /> },
-    { key: 'fin', label: 'FIN', title: 'Finishing: EV goals above xG per 60 on his own shots (not in NET)', group: 'rating', sets: ['rating'], render: p => <Rating v={p.fin} p={p} strong={STRONG.fin} /> },
-    { key: 'offTotal', label: 'OFF+FIN', title: 'OFF + FIN per 60', group: 'rating', sets: ['rating'], render: p => <Rating v={p.offTotal} p={p} strong={STRONG.offTotal} /> },
-    { key: 'def', label: 'DEF', title: 'Defence: EV xG against per 60 prevented vs average', group: 'rating', sets: ['rating'], render: p => <Rating v={p.def} p={p} strong={STRONG.def} /> },
-    { key: 'evMin', label: 'EV MIN', title: 'Even-strength minutes behind the rating (last three seasons + this one)', group: 'rating', sets: ['rating'], render: p => <span className={p.evMin < 250 ? 'text-fg-3' : undefined}>{thousands(p.evMin)}</span> },
+    { key: 'offImp', label: 'OFF', title: 'Offence, goals per 82: EV and PP offence, finishing, penalties drawn', group: 'impact', sets: ['impact'], render: p => <Rating v={p.offImp} p={p} strong={STRONG.offImp} digits={1} /> },
+    { key: 'defImp', label: 'DEF', title: 'Defence, goals per 82: EV and PK defence, minus penalties taken', group: 'impact', sets: ['impact'], render: p => <Rating v={p.defImp} p={p} strong={STRONG.defImp} digits={1} /> },
+    { key: 'pen', label: 'PEN', title: 'Penalties, goals per 82: drawn minus taken (inside OFF and DEF)', group: 'impact', sets: ['impact'], render: p => <Rating v={p.pen} p={p} strong={STRONG.pen} digits={1} /> },
+    { key: 'evOff', label: 'EV OFF', title: 'Even-strength xG for per 60 added, vs his position average', group: 'rate', sets: ['rates'], render: p => <Rating v={p.evOff} p={p} strong={STRONG.evOff} /> },
+    { key: 'evDef', label: 'EV DEF', title: 'Even-strength xG against per 60 prevented, vs his position average', group: 'rate', sets: ['rates'], render: p => <Rating v={p.evDef} p={p} strong={STRONG.evDef} /> },
+    { key: 'pp', label: 'PP', title: 'Power-play xG for per 60 added, vs his position average (grey: under 0:30 PP a game)', group: 'rate', sets: ['rates'], render: p => <Rating v={p.pp} p={p} strong={STRONG.pp} muted={lowPp(p)} /> },
+    { key: 'pk', label: 'PK', title: 'Penalty-kill xG against per 60 prevented, vs his position average (grey: under 0:30 PK a game)', group: 'rate', sets: ['rates'], render: p => <Rating v={p.pk} p={p} strong={STRONG.pk} muted={lowPk(p)} /> },
+    { key: 'fin', label: 'FIN', title: 'Finishing: EV goals above xG per 60 on his own shots, shrunk', group: 'rate', sets: ['rates'], render: p => <Rating v={p.fin} p={p} strong={STRONG.fin} /> },
+    { key: 'evMin', label: 'EV MIN', title: 'Even-strength minutes behind the rating (last three seasons + this one)', group: 'rate', sets: ['rates'], render: p => <span className={p.evMin < COLOR_MIN_EV ? 'text-fg-3' : undefined}>{thousands(p.evMin)}</span> },
     { key: 'gp', label: 'GP', title: 'Games played', group: 'count', sets: ['scoring'], render: (p, s) => valueOf(p, 'gp', s) ?? 0 },
     { key: 'g', label: 'G', title: 'Goals', group: 'count', sets: ['scoring'], render: (p, s) => valueOf(p, 'g', s) ?? '—' },
     { key: 'a', label: 'A', title: 'Assists', group: 'count', sets: ['scoring'], render: (p, s) => valueOf(p, 'a', s) ?? '—' },
@@ -80,8 +92,11 @@ const COLUMNS: Column[] = [
     { key: 'sogPg', label: 'SOG/GP', title: 'Shots on goal per game', group: 'count', sets: ['scoring'], render: (p, s) => dec(valueOf(p, 'sogPg', s)) },
 ];
 
+/** The first column of each group after the headline gets a divider on wide screens. */
+const GROUP_START = new Set<SortKey>(['evOff', 'gp']);
+
 export interface SkaterStatsTableProps {
-    /** Server-rendered first page of the default view (NET, best first), so the table paints without every skater in the HTML. */
+    /** Server-rendered first page of the default view (headline, best first), so the table paints without every skater in the HTML. */
     preview?: { rows: Skater[]; total: number };
     /** URL of the full compact list, fetched after first paint. */
     src: string;
@@ -97,10 +112,11 @@ const short = (label: string) => label.replace(/^\d{2}(\d{2})-(\d{2})$/, '$1-$2'
 export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultSeason = 'cur' }: SkaterStatsTableProps) {
     const [players, setPlayers] = React.useState<Skater[] | null>(null);
     const [filter, setFilter] = React.useState<SkaterFilter>(DEFAULT_FILTER);
-    const [sort, setSort] = React.useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'net', dir: 'desc' });
+    const firstHeadline = headlineKey(preview?.rows ?? []);
+    const [sort, setSort] = React.useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: firstHeadline, dir: 'desc' });
     const [season, setSeason] = React.useState<StatSeason>(defaultSeason);
     const [page, setPage] = React.useState(0);
-    const [set, setSet] = React.useState<ColumnSet>('rating');
+    const [chosenSet, setSet] = React.useState<ColumnSet>(firstHeadline === 'impact' ? 'impact' : 'rates');
     const ids = { search: React.useId(), team: React.useId(), ev: React.useId(), cols: React.useId() };
     const tableTop = React.useRef<HTMLDivElement>(null);
     const filterBar = React.useRef<HTMLDivElement>(null);
@@ -116,7 +132,15 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
         };
     }, [src, preview]);
 
-    const rows = React.useMemo(() => sortSkaters(filterSkaters(players ?? preview?.rows ?? [], filter), sort.key, sort.dir, season), [players, preview, filter, sort, season]);
+    const list = players ?? preview?.rows;
+    const headline = headlineKey(list ?? []);
+    // A v2 file (no impact column) opens on NET per 60; the impact-only columns are hidden.
+    const sortKey: SortKey = sort.key === 'impact' && headline === 'net' ? 'net' : sort.key;
+    const columns = React.useMemo(() => COLUMNS.filter(c => c.group === 'count' || (list ?? []).some(p => valueOf(p, c.key, 'cur') != null)), [list]);
+    const setOptions = (Object.keys(SET_LABELS) as ColumnSet[]).filter(s => s !== 'impact' || columns.some(c => c.sets.includes('impact')));
+    const set: ColumnSet = setOptions.includes(chosenSet) ? chosenSet : setOptions[0];
+
+    const rows = React.useMemo(() => sortSkaters(filterSkaters(list ?? [], filter), sortKey, sort.dir, season), [list, filter, sortKey, sort.dir, season]);
     const total = players ? rows.length : preview?.total ?? rows.length;
     const pages = Math.max(1, Math.ceil(rows.length / PAGE));
     const current = Math.min(page, pages - 1);
@@ -128,14 +152,14 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
         setPage(0);
     };
     const onSort = (key: SortKey) => {
-        setSort(s => (s.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: FIRST_DIR[key] ?? 'desc' }));
+        setSort(s => ((s.key === 'impact' && headline === 'net' ? 'net' : s.key) === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: FIRST_DIR[key] ?? 'desc' }));
         setPage(0);
     };
     const goPage = (p: number) => {
         setPage(p);
         tableTop.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     };
-    const colClass = (c: Column) => (c.sets.includes(set) ? 'table-cell' : 'hidden md:table-cell');
+    const colClass = (c: Column) => cn(c.sets.includes(set) ? 'table-cell' : 'hidden md:table-cell', GROUP_START.has(c.key) && 'md:border-l md:border-l-line');
     /** Focusing the table region scrolls it under the sticky filter bar; nudge it so the header row shows. */
     const revealRegion = (e: React.FocusEvent<HTMLDivElement>) => {
         if (e.target !== e.currentTarget) return;
@@ -147,13 +171,17 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
         });
     };
 
-    const list = players ?? preview?.rows;
     if (!list) return <div aria-busy="true" className="h-96 rounded-card border border-line bg-surface-1/60" />;
     if (!list.length) return <p className="panel label p-card">No ratings</p>;
 
-    const sortName = sort.key === 'name' ? 'name' : sort.key === 'net' ? 'NET' : (COLUMNS.find(c => c.key === sort.key)?.label ?? sort.key);
-    const nRating = COLUMNS.filter(c => c.group === 'rating').length;
-    const nCount = COLUMNS.filter(c => c.group === 'count').length;
+    const headLabel = headline === 'impact' ? 'IMPACT' : 'NET';
+    const sortName = sortKey === 'name' ? 'name' : sortKey === headline ? headLabel : (COLUMNS.find(c => c.key === sortKey)?.label ?? sortKey);
+    const nImpact = columns.filter(c => c.group === 'impact').length;
+    const nRate = columns.filter(c => c.group === 'rate').length;
+    const nCount = columns.filter(c => c.group === 'count').length;
+    /** Units of the headline group: goals per 82 (v3+) or EV xG per 60 (v2). */
+    const headUnit = headline === 'impact' ? 'GOALS / 82' : 'EV / 60';
+    const phoneUnit = set === 'rates' ? 'Per 60' : headline === 'impact' ? 'Goals / 82' : 'EV / 60';
 
     return (
         <div className="flex flex-col gap-3">
@@ -175,7 +203,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                             onChange={e => setSet(e.target.value as ColumnSet)}
                             className="h-10 rounded-control border border-line bg-well px-2 text-base uppercase text-fg-1"
                         >
-                            {(Object.keys(SET_LABELS) as ColumnSet[]).map(k => (
+                            {setOptions.map(k => (
                                 <option key={k} value={k}>
                                     {SET_LABELS[k]}
                                 </option>
@@ -248,11 +276,10 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                     <span className="text-fg-1">{total}</span> {total === 1 ? 'skater' : 'skaters'}
                     {total > PAGE ? ` · ${current * PAGE + 1}–${Math.min(total, current * PAGE + PAGE)}` : ''}
                 </p>
-                {asOf ? (
-                    <p className="md:hidden">
-                        Rtg <span className="text-fg-2">{asOf}</span>
-                    </p>
-                ) : null}
+                <p className="md:hidden">
+                    {phoneUnit}
+                    {asOf ? <span className="text-fg-2"> · {asOf}</span> : null}
+                </p>
             </div>
 
             {rows.length === 0 ? (
@@ -261,45 +288,62 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                 <ScrollRegion label="Skater ratings table" onFocus={revealRegion} className="scroll-mt-filterbar rounded-card border border-line bg-surface-1">
                     <table className="w-full min-w-full font-mono text-caption tabular-nums md:min-w-[1040px]">
                         <caption className="sr-only">
-                            Skaters sorted by {sortName}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}. Ratings as of {asOf ?? 'the latest refresh'}; counting stats {seasonLabel} regular season.
+                            Skaters sorted by {sortName}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}. Ratings as of {asOf ?? 'the latest refresh'}
+                            {headline === 'impact' ? ': impact, offence, defence and penalties in goals per 82 games, rates per 60 minutes' : ''}; counting stats {seasonLabel} regular
+                            season.
                         </caption>
                         <thead className="scroll-mt-filterbar bg-bg">
                             <tr className="hidden md:table-row">
                                 <td className="sticky left-0 z-10 bg-bg" />
-                                <th scope="colgroup" colSpan={1 + nRating} className="border-b border-line px-2 pb-0.5 pt-1.5 text-left text-micro font-medium uppercase tracking-label text-fg-3">
-                                    <Link href={glossaryHref('player-net')} className="inline-flex min-h-6 items-center hover:text-brand focus-visible:text-brand">
-                                        RTG / 60{asOf ? <span className="text-fg-2"> · {asOf}</span> : null}
+                                <th scope="colgroup" colSpan={1 + nImpact} className="border-b border-line px-2 pb-0.5 pt-1.5 text-left text-micro font-medium uppercase tracking-label text-fg-3">
+                                    <Link
+                                        href={glossaryHref(headline === 'impact' ? 'player-impact' : 'player-net')}
+                                        className="inline-flex min-h-6 items-center hover:text-brand focus-visible:text-brand"
+                                    >
+                                        {headUnit}
+                                        {asOf ? <span className="text-fg-2">&nbsp;· {asOf}</span> : null}
                                     </Link>
                                 </th>
-                                <th scope="colgroup" colSpan={nCount} className="border-b border-line px-2 pb-0.5 pt-1.5 text-right text-micro font-medium uppercase tracking-label text-fg-3">
+                                {nRate ? (
+                                    <th scope="colgroup" colSpan={nRate} className="border-b border-l border-line px-2 pb-0.5 pt-1.5 text-left text-micro font-medium uppercase tracking-label text-fg-3">
+                                        <Link href={glossaryHref('player-rates')} className="inline-flex min-h-6 items-center hover:text-brand focus-visible:text-brand">
+                                            PER 60
+                                        </Link>
+                                    </th>
+                                ) : null}
+                                <th scope="colgroup" colSpan={nCount} className="border-b border-l border-line px-2 pb-0.5 pt-1.5 text-right text-micro font-medium uppercase tracking-label text-fg-3">
                                     {seasonLabel}
                                 </th>
                             </tr>
                             <tr>
                                 <SortHeader
-                                    direction={sort.key === 'name' ? sort.dir : null}
+                                    direction={sortKey === 'name' ? sort.dir : null}
                                     onSort={() => onSort('name')}
-                                    className="sticky left-0 z-10 w-[9rem] min-w-[9rem] border-b border-line bg-bg md:w-72"
+                                    className="sticky left-0 z-10 w-[9rem] min-w-[9rem] border-b border-line bg-bg md:w-64"
                                 >
                                     Player
                                 </SortHeader>
                                 <SortHeader
-                                    direction={sort.key === 'net' ? sort.dir : null}
-                                    onSort={() => onSort('net')}
+                                    direction={sortKey === headline ? sort.dir : null}
+                                    onSort={() => onSort(headline)}
                                     align="right"
-                                    title="Net: OFF (cyan) + DEF (magenta), EV xG per 60 above average. White tick = NET, grey line = FIN"
+                                    title={
+                                        headline === 'impact'
+                                            ? 'Impact: goals per 82 games above his position average. Bar: OFF (cyan) then DEF (magenta); white tick = IMPACT'
+                                            : 'Net: EV OFF (cyan) + EV DEF (magenta), EV xG per 60 above average. White tick = NET'
+                                    }
                                     className="border-b border-line md:min-w-[9.5rem]"
                                 >
-                                    NET
+                                    {headLabel}
                                 </SortHeader>
-                                {COLUMNS.map(c => (
+                                {columns.map(c => (
                                     <SortHeader
                                         key={c.key}
                                         align="right"
                                         title={c.title}
-                                        direction={sort.key === c.key ? sort.dir : null}
+                                        direction={sortKey === c.key ? sort.dir : null}
                                         onSort={() => onSort(c.key)}
-                                        className={cn('whitespace-nowrap border-b border-line', c.key === 'gp' && 'md:border-l md:border-l-line', colClass(c))}
+                                        className={cn('whitespace-nowrap border-b border-line', colClass(c))}
                                     >
                                         {c.label}
                                     </SortHeader>
@@ -309,7 +353,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                         <tbody>
                             {visible.map((p, i) => (
                                 <tr key={p.id} className="group">
-                                    <th scope="row" className={cn(CELL_BG, 'sticky left-0 z-10 h-8 w-[9rem] min-w-[9rem] border-b border-line px-2 text-left font-normal md:w-72')}>
+                                    <th scope="row" className={cn(CELL_BG, 'sticky left-0 z-10 h-8 w-[9rem] min-w-[9rem] border-b border-line px-2 text-left font-normal md:w-64')}>
                                         <span className="flex items-center gap-2">
                                             <span className="hidden w-7 shrink-0 text-right text-micro text-fg-3 md:inline">{current * PAGE + i + 1}</span>
                                             <TeamLogo tri={p.team} size={18} />
@@ -327,13 +371,10 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                                         </span>
                                     </th>
                                     <td className={cn(CELL_BG, 'h-8 border-b border-line px-2')}>
-                                        <NetBar p={p} />
+                                        {headline === 'impact' ? <ImpactBar p={p} /> : <NetBar p={p} />}
                                     </td>
-                                    {COLUMNS.map(c => (
-                                        <td
-                                            key={c.key}
-                                            className={cn(CELL_BG, 'h-8 border-b border-line px-2 text-right text-fg-2', c.key === 'gp' && 'md:border-l md:border-l-line', colClass(c))}
-                                        >
+                                    {columns.map(c => (
+                                        <td key={c.key} className={cn(CELL_BG, 'h-8 whitespace-nowrap border-b border-line px-2 text-right text-fg-2', colClass(c))}>
                                             {c.render(p, season)}
                                         </td>
                                     ))}
@@ -378,42 +419,64 @@ function shortName(name: string): string {
 }
 
 /**
- * NET as a waterfall around 0 (±1.0 xG/60 full scale): OFF runs out from zero,
- * DEF continues from where OFF ended, and the white tick is where that lands
- * (NET = OFF + DEF). FIN is not in NET, so it rides as a thin line underneath.
+ * A headline as a waterfall around 0: OFF runs out from zero, DEF continues
+ * from where OFF ended, and the white tick is where that lands (the total).
+ * `scale` is the full-scale value either side of zero.
  */
-const NET_SCALE = 1;
-const pct = (v: number) => 50 + (Math.max(-NET_SCALE, Math.min(NET_SCALE, v)) / NET_SCALE) * 50;
-function Seg({ from, to, className }: { from: number; to: number; className: string }) {
-    const a = pct(Math.min(from, to));
-    const b = pct(Math.max(from, to));
-    return <span className={cn('absolute rounded-full', className)} style={{ left: `${a}%`, width: `${Math.max(b - a, 1.5)}%` }} />;
+function Waterfall({ off, def, total, scale, dim, title }: { off: number; def: number; total: number; scale: number; dim: boolean; title: string }) {
+    const pct = (v: number) => 50 + (Math.max(-scale, Math.min(scale, v)) / scale) * 50;
+    const seg = (from: number, to: number) => {
+        const a = pct(Math.min(from, to));
+        const b = pct(Math.max(from, to));
+        return { left: `${a}%`, width: `${Math.max(b - a, 1.5)}%` };
+    };
+    return (
+        <span aria-hidden="true" className="relative hidden h-5 w-32 shrink-0 md:block" title={title}>
+            <span className="absolute inset-x-0 top-[6px] h-2 rounded-full bg-line" />
+            <span className="absolute inset-y-0 left-1/2 w-px bg-fg-3/50" />
+            <span className={cn('absolute inset-0 transition-opacity', dim && 'opacity-50')}>
+                <span className="absolute inset-x-0 top-[6px] h-2">
+                    <span className="absolute inset-y-0 rounded-full bg-brand" style={seg(0, off)} />
+                    <span className="absolute inset-y-[1px] rounded-full bg-magenta" style={seg(off, off + def)} />
+                </span>
+                <span className="absolute top-[2px] h-[16px] w-[2px] -translate-x-1/2 rounded-full bg-fg-1" style={{ left: `${pct(total)}%` }} />
+            </span>
+        </span>
+    );
 }
-function NetBar({ p }: { p: Skater }) {
-    const t = ratingTone(p.net, p, STRONG.net);
-    const dim = !p.rated || p.evMin < 250;
+
+function Headline({ v, p, strong, digits }: { v: number | null; p: Skater; strong: number; digits: number }) {
+    const t = v == null ? null : ratingTone(v, p, strong);
+    return (
+        <span className={cn('w-12 text-right font-bold', t ? TONE[t] : p.rated ? 'text-fg-1' : 'text-fg-3')}>
+            {v == null ? '—' : signed(v, digits)}
+            {!p.rated ? <span className="sr-only"> (rookie prior)</span> : null}
+        </span>
+    );
+}
+
+/** IMPACT (goals / 82): OFF + DEF, ±20 goals full scale. */
+function ImpactBar({ p }: { p: Skater }) {
+    const dim = !p.rated || p.evMin < COLOR_MIN_EV;
+    const off = p.offImp ?? 0;
+    const def = p.defImp ?? 0;
+    const total = p.impact ?? off + def;
+    const sd = p.sd != null ? ` ± ${p.sd.toFixed(1)}` : '';
     return (
         <span className="flex items-center justify-end gap-2">
-            <span aria-hidden="true" className="relative hidden h-5 w-32 shrink-0 md:block" title={`OFF ${signed(p.off)} + DEF ${signed(p.def)} = NET ${signed(p.net)}${p.fin != null ? ` · FIN ${signed(p.fin)}` : ''}`}>
-                <span className="absolute inset-x-0 top-[7px] h-2 rounded-full bg-line" />
-                <span className="absolute inset-y-0 left-1/2 w-px bg-fg-3/50" />
-                <span className={cn('absolute inset-0 transition-opacity', dim && 'opacity-50')}>
-                    <span className="absolute inset-x-0 top-[7px] h-2">
-                        <Seg from={0} to={p.off} className="inset-y-0 bg-brand" />
-                        <Seg from={p.off} to={p.off + p.def} className="inset-y-[1px] bg-magenta" />
-                    </span>
-                    {p.fin != null ? (
-                        <span className="absolute inset-x-0 top-[17px] h-[3px]">
-                            <Seg from={0} to={p.fin} className="inset-y-0 bg-fg-2" />
-                        </span>
-                    ) : null}
-                    <span className="absolute top-[3px] h-[16px] w-[2px] -translate-x-1/2 rounded-full bg-fg-1" style={{ left: `${pct(p.net)}%` }} />
-                </span>
-            </span>
-            <span className={cn('w-12 text-right font-bold', t ? TONE[t] : p.rated ? 'text-fg-1' : 'text-fg-3')}>
-                {signed(p.net)}
-                {!p.rated ? <span className="sr-only"> (rookie prior)</span> : null}
-            </span>
+            <Waterfall off={off} def={def} total={total} scale={20} dim={dim} title={`OFF ${signed(off, 1)} + DEF ${signed(def, 1)} = IMPACT ${signed(total, 1)}${sd}`} />
+            <Headline v={p.impact} p={p} strong={STRONG.impact} digits={1} />
+        </span>
+    );
+}
+
+/** NET (EV xG / 60, v2 files): EV OFF + EV DEF, ±1.0 full scale. */
+function NetBar({ p }: { p: Skater }) {
+    const dim = !p.rated || p.evMin < COLOR_MIN_EV;
+    return (
+        <span className="flex items-center justify-end gap-2">
+            <Waterfall off={p.evOff} def={p.evDef} total={p.net} scale={1} dim={dim} title={`EV OFF ${signed(p.evOff)} + EV DEF ${signed(p.evDef)} = NET ${signed(p.net)}`} />
+            <Headline v={p.net} p={p} strong={STRONG.net} digits={2} />
         </span>
     );
 }

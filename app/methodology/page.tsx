@@ -493,14 +493,21 @@ export default function MethodologyPage() {
 
                         <Section id="players" index={++i} title="Players & standings">
                             <p>
-                                <strong>Player ratings</strong> are expected goals per 60 minutes at even strength, compared with an average skater:{' '}
-                                <strong>OFF</strong> (xG for), <strong>DEF</strong> (xG against prevented) and <strong>NET</strong> = OFF + DEF,
-                                all higher = better. A ridge regression (RAPM) over every even-strength shift since 2010-11 separates each
-                                skater from his linemates, opponents, score, zone starts and home ice. Each season starts from the previous estimate plus
-                                an aging step and is updated daily with this season&apos;s games (the date beside the ratings is the last game day in),
-                                so early in a season they are mostly built on the last three seasons; <strong>EV MIN</strong> shows that sample. The same
-                                ratings drive the lineup term of the game model and the Lines tab. <strong>FIN</strong> (finishing) is goals above xG per 60
-                                on the player’s own even-strength shots, shrunk toward average; <strong>OFF+FIN</strong> = OFF + FIN. FIN is not part of NET.
+                                <strong>IMPACT</strong> is the goals a skater adds over 82 games compared with an average forward or defenceman:
+                                even strength, power play, penalty kill, finishing and penalties, each scaled by his expected ice time.{' '}
+                                <strong>IMPACT</strong> = OFF + DEF, all higher = better: <strong>OFF</strong> (goals/82) is even-strength and power-play
+                                chances created, finishing and penalties drawn; <strong>DEF</strong> (goals/82) is even-strength and penalty-kill chances
+                                prevented, minus penalties taken; <strong>PEN</strong> is the penalty part of both.
+                            </p>
+                            <p>
+                                The per-60 rates behind it, against his position&apos;s average: <strong>EV OFF</strong> and <strong>EV DEF</strong> (xG for
+                                created, xG against prevented at even strength), <strong>PP</strong> and <strong>PK</strong> (the same on special teams,
+                                grey under 30 seconds a game) and <strong>FIN</strong> (goals above xG on his own shots, shrunk). A ridge regression (RAPM)
+                                separates each skater from his linemates, opponents, score, zone starts and home ice; a box-score prior steadies small
+                                samples and rookies start from a prior for their position. Recent games weigh most (90-game half-life) and nothing older
+                                than about three seasons counts; the date beside the ratings is the last game day in, and <strong>EV MIN</strong> shows the
+                                sample. The same ratings feed the team tables (as even-strength <strong>NET</strong> = EV OFF + EV DEF), the Lines tab and
+                                the game model&apos;s lineup term.
                             </p>
                             <p id="standings" className="scroll-mt-[calc(var(--appbar-h)+16px)]">
                                 <strong>Playoff odds</strong> come from simulating the rest of the season thousands of times with the same game model. On
