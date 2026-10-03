@@ -2,3 +2,5 @@
 {"season": "20252026", "question": "primary_winpct", "at": "2026-10-03T01:20:51+00:00", "version": "sim-m5-20261002", "n_games": 1312, "promoted": "A_sim", "use_sim_total": false}
 {"season": "20252026", "question": "sim_inputs_v4", "stage": "started", "at": "2026-10-03T02:44:55+00:00"}
 {"season": "20252026", "question": "sim_inputs_v4", "at": "2026-10-03T02:48:18+00:00", "versions": {"V2": "sim-m5-20261002", "V4": "sim-m5-v4-20261002"}, "n_games": 1312, "ml_V4_minus_V2": {"diff": 0.00022, "se": 0.00103, "n": 1312}, "promote_v4": true}
+{"season": "20252026", "question": "sim_player_st", "stage": "started", "at": "2026-10-03T16:53:24+00:00"}
+{"season": "20252026", "question": "sim_player_st", "at": "2026-10-03T16:55:52+00:00", "versions": {"V4": "sim-m5-v4-20261002", "ST": "sim-m5-v4_st-20261003"}, "n_games": 1312, "ml_ST_minus_V4": {"diff": 0.0006, "se": 0.00063, "n": 1312}, "promote_st": true}
