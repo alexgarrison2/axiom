@@ -75,6 +75,7 @@ const lowPp = (p: Skater) => p.ppGp != null && p.ppGp < SPECIAL_TEAMS_MIN_GP;
 const lowPk = (p: Skater) => p.pkGp != null && p.pkGp < SPECIAL_TEAMS_MIN_GP;
 
 const COLUMNS: Column[] = [
+    { key: 'prod', label: 'PROD', title: 'Production: Game Score per 82 games above his position average. Descriptive; IMPACT is the rating', group: 'impact', sets: ['scoring'], render: p => <Rating v={p.prod} p={p} strong={STRONG.prod} digits={0} /> },
     { key: 'offImp', label: 'OFF', title: 'Offence, goals per 82: EV and PP offence, finishing, penalties drawn', group: 'impact', sets: ['impact'], render: p => <Rating v={p.offImp} p={p} strong={STRONG.offImp} digits={1} /> },
     { key: 'defImp', label: 'DEF', title: 'Defence, goals per 82: EV and PK defence, minus penalties taken', group: 'impact', sets: ['impact'], render: p => <Rating v={p.defImp} p={p} strong={STRONG.defImp} digits={1} /> },
     { key: 'pen', label: 'PEN', title: 'Penalties, goals per 82: drawn minus taken (inside OFF and DEF)', group: 'impact', sets: ['impact'], render: p => <Rating v={p.pen} p={p} strong={STRONG.pen} digits={1} /> },
@@ -92,8 +93,8 @@ const COLUMNS: Column[] = [
     { key: 'sogPg', label: 'SOG/GP', title: 'Shots on goal per game', group: 'count', sets: ['scoring'], render: (p, s) => dec(valueOf(p, 'sogPg', s)) },
 ];
 
-/** The first column of each group after the headline gets a divider on wide screens. */
-const GROUP_START = new Set<SortKey>(['evOff', 'gp']);
+/** The first column of each group after the headline gets a divider on wide screens (PROD, a separate measure, sits between two). */
+const GROUP_START = new Set<SortKey>(['prod', 'offImp', 'evOff', 'gp']);
 
 export interface SkaterStatsTableProps {
     /** Server-rendered first page of the default view (headline, best first), so the table paints without every skater in the HTML. */
@@ -179,9 +180,10 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
     const nImpact = columns.filter(c => c.group === 'impact').length;
     const nRate = columns.filter(c => c.group === 'rate').length;
     const nCount = columns.filter(c => c.group === 'count').length;
-    /** Units of the headline group: goals per 82 (v3+) or EV xG per 60 (v2). */
-    const headUnit = headline === 'impact' ? 'GOALS / 82' : 'EV / 60';
-    const phoneUnit = set === 'rates' ? 'Per 60' : headline === 'impact' ? 'Goals / 82' : 'EV / 60';
+    /** Units of the headline group: goals per 82 (v3+; per 82 once PROD, Game Score, sits in it) or EV xG per 60 (v2). */
+    const hasProd = columns.some(c => c.key === 'prod');
+    const headUnit = headline === 'impact' ? (hasProd ? 'PER 82' : 'GOALS / 82') : 'EV / 60';
+    const phoneUnit = set === 'rates' ? 'Per 60' : headline === 'impact' ? (hasProd && set === 'scoring' ? 'Per 82' : 'Goals / 82') : 'EV / 60';
 
     return (
         <div className="flex flex-col gap-3">
@@ -289,7 +291,9 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                     <table className="w-full min-w-full font-mono text-caption tabular-nums md:min-w-[1040px]">
                         <caption className="sr-only">
                             Skaters sorted by {sortName}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}. Ratings as of {asOf ?? 'the latest refresh'}
-                            {headline === 'impact' ? ': impact, offence, defence and penalties in goals per 82 games, rates per 60 minutes' : ''}; counting stats {seasonLabel} regular
+                            {headline === 'impact' ? ': impact, offence, defence and penalties in goals per 82 games' : ''}
+                            {headline === 'impact' && hasProd ? ', production in Game Score per 82 games' : ''}
+                            {headline === 'impact' ? ', rates per 60 minutes' : ''}; counting stats {seasonLabel} regular
                             season.
                         </caption>
                         <thead className="scroll-mt-filterbar bg-bg">

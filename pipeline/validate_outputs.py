@@ -57,7 +57,9 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
   player_ratings public/data/player_ratings.json (ratings v3: impact headline + per-60 rates): every row named,
                  >= 600 current-roster skaters on >= 28 teams, v2 signs (def = xGA/60 prevented,
                  higher = better; net = off + def), same season as
-                 the serving bundle and at most 3 days behind its max_source_date
+                 the serving bundle and at most 3 days behind its max_source_date; the production
+                 score (prod / gs_pg) consistent and position-centred when present, and present
+                 when the bundle carries a prod table
 
 ``--freshness`` instead only checks that manifest.generated_at is under 26 h
 old during the season (the daily freshness workflow).
@@ -940,6 +942,7 @@ PLAYER_RATINGS_MIN_ROSTER = 600
 PLAYER_RATINGS_MAX_LAG_DAYS = 3
 PLAYER_RATINGS_VERSION = 4      # 4: ratings v4 (box-score prior, penalties); 3: per-game impact headline (ratings v3); 2: def = xGA/60 prevented
 PLAYER_RATINGS_V4_COLUMNS = ("pen_impact", "pd60", "pt60", "spm_off", "spm_def", "spm_pp", "spm_pk")
+PLAYER_RATINGS_PROD_COLUMNS = ("prod", "gs_pg")   # production score (bu.rapm.prod), descriptive; appended to v4
 PLAYER_RATINGS_TOI_MAX = {"toi_ev_gp": 30.0, "toi_pp_gp": 8.0, "toi_pk_gp": 8.0}
 
 
@@ -1019,6 +1022,8 @@ def check_player_ratings(ctx):
                     if not isinstance(r.get("fin_pp"), (int, float)) or r["fin_pp"] != r["fin_pp"] or abs(r["fin_pp"]) > 2]
             if bad5:
                 errs.append(f"player_ratings.json: {len(bad5)} rows with a missing or implausible fin_pp, e.g. {bad5[:3]}")
+    if "prod" in cols:
+        errs += _check_prod(doc, cols, rows, roster)
     if any(r.get("pos") == "G" for r in rows):
         errs.append("player_ratings.json: goalies listed (skaters only)")
     try:
@@ -1026,6 +1031,8 @@ def check_player_ratings(ctx):
         b = SV.read(ctx.get("bu_bundle_path") or os.path.join(PIPELINE_DIR, "bu", "lineup", "out", "serving_bundle.json.gz"))
     except Exception:
         b = None
+    if b and isinstance(b.get("prod"), dict) and "prod" not in cols and str(doc.get("season")) == str(b.get("season")):
+        errs.append("player_ratings.json: the serving bundle has a prod table but the file has no prod column; re-export")
     if b:
         if str(doc.get("season")) != str(b.get("season")):
             errs.append(f"player_ratings.json: season {doc.get('season')} != serving bundle {b.get('season')}")
@@ -1036,6 +1043,34 @@ def check_player_ratings(ctx):
             if a is None or (m is not None and (m - a).days > PLAYER_RATINGS_MAX_LAG_DAYS):
                 errs.append(f"player_ratings.json: as_of {doc.get('as_of')} is behind the serving bundle "
                             f"({b.get('max_source_date')}) by > {PLAYER_RATINGS_MAX_LAG_DAYS} days; re-export")
+    return errs
+
+
+def _check_prod(doc, cols, rows, roster):
+    """The production score columns (``bu.rapm.prod`` via ``ratings_export.prod_columns``): both present and
+    finite, Game Score per game in a sane range, ``prod = games x (gs_pg - position mean)`` and the
+    rated roster skaters' mean near 0 at each position (the games-weighted mean is 0 by construction)."""
+    errs = []
+    miss = [c for c in PLAYER_RATINGS_PROD_COLUMNS if c not in cols]
+    if miss:
+        return [f"player_ratings.json: prod without columns {miss}"]
+    meta = doc.get("prod") or {}
+    pm = meta.get("position_means") or {}
+    games = meta.get("games") or 82
+    if not all(isinstance(pm.get(g), (int, float)) for g in ("F", "D")):
+        return ["player_ratings.json: prod columns without prod.position_means {F, D}"]
+    bad = [r.get("name") for r in rows
+           if not all(isinstance(r.get(k), (int, float)) and r[k] == r[k] for k in PLAYER_RATINGS_PROD_COLUMNS)
+           or not (-0.5 <= r["gs_pg"] <= 4.0) or abs(r["prod"]) > 250
+           or abs(games * (r["gs_pg"] - pm["D" if r.get("pos") == "D" else "F"]) - r["prod"]) > 0.1]
+    if bad:
+        errs.append(f"player_ratings.json: {len(bad)} rows with a missing or inconsistent prod / gs_pg, e.g. {bad[:3]}")
+        return errs
+    for g in ("F", "D"):
+        ref = [r["prod"] for r in roster if r.get("rated") and (r.get("pos") == "D") == (g == "D")]
+        if ref and abs(sum(ref) / len(ref)) > 10:
+            errs.append(f"player_ratings.json: mean prod of rated {g} {sum(ref) / len(ref):+.1f} "
+                        "(the position-average baseline should put it near 0)")
     return errs
 
 

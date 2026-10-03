@@ -15,6 +15,8 @@ const doc = JSON.parse(readFileSync(join(process.cwd(), 'public/data/player_rati
 const HAS_IMPACT = doc.columns.includes('impact');
 const HAS_PEN = doc.columns.includes('pen_impact');
 const HAS_PP = doc.columns.includes('pp_off');
+/** The descriptive production score (prod / gs_pg appended to the file): PROD right after the headline. */
+const HAS_PROD = HAS_IMPACT && doc.columns.includes('prod');
 const HEAD = HAS_IMPACT ? 'IMPACT' : 'NET';
 
 const num = (s: string) => Number(s.replace('−', '-').replace(/[^\d.+-]/g, ''));
@@ -33,6 +35,7 @@ async function column(page: Page, name: string): Promise<string[]> {
 
 /** Rating columns this file has (the rest are hidden), in table order. */
 const RATING_COLS = [
+    ...(HAS_PROD ? ['PROD'] : []),
     ...(HAS_IMPACT ? ['OFF', 'DEF'] : []),
     ...(HAS_PEN ? ['PEN'] : []),
     'EV OFF',
@@ -42,7 +45,7 @@ const RATING_COLS = [
     'EV MIN',
 ];
 /** The phone column set that shows a column. */
-const SET_OF: Record<string, string> = { OFF: 'impact', DEF: 'impact', PEN: 'impact' };
+const SET_OF: Record<string, string> = { OFF: 'impact', DEF: 'impact', PEN: 'impact', PROD: 'scoring' };
 
 test.describe('/players', () => {
     test(`ranks skaters by ${HEAD}, best first, with the impact and per-60 columns`, async ({ page, isMobile }) => {
@@ -118,7 +121,7 @@ test.describe('/players', () => {
         await page.goto('/players');
         await settle(page);
         const groups = page.locator('thead th[scope="colgroup"]');
-        await expect(groups.first()).toContainText(HAS_IMPACT ? 'GOALS / 82' : 'EV / 60');
+        await expect(groups.first()).toContainText(HAS_PROD ? 'PER 82' : HAS_IMPACT ? 'GOALS / 82' : 'EV / 60');
         await expect(groups.first()).toContainText(/· [A-Z]{3} \d{1,2}/);
         await expect(groups.nth(1)).toHaveText('PER 60');
         await page.getByRole('button', { name: 'D', exact: true }).click();
@@ -154,6 +157,7 @@ test.describe('/players at 375px', () => {
             const visible = (await page.locator('thead tr').last().locator('th:visible').allInnerTexts()).map(label);
             expect(visible.slice(0, 2), s).toEqual(['PLAYER', HEAD]);
             if (s === 'impact') expect(visible).toEqual(['PLAYER', HEAD, 'OFF', 'DEF', ...(HAS_PEN ? ['PEN'] : [])]);
+            if (s === 'scoring' && HAS_PROD) expect(visible[2], s).toBe('PROD');
             expect(await horizontalOverflow(page), s).toBeLessThanOrEqual(1);
         }
     });

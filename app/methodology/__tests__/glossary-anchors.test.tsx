@@ -108,6 +108,9 @@ describe('/methodology glossary anchors', () => {
         expect(GLOSSARY['player-off'].short).toMatch(/Goals per 82 games/);
         expect(GLOSSARY['player-pen'].short).toMatch(/inside OFF and DEF/);
         expect(GLOSSARY['player-fin'].short).toMatch(/Part of OFF, not of NET/);
+        expect(GLOSSARY['player-prod'].label).toBe('PROD');
+        expect(GLOSSARY['player-prod'].short).toMatch(/Game Score/);
+        expect(GLOSSARY['player-prod'].short).toMatch(/IMPACT is the predictive rating/);
         expect(GLOSSARY_ANCHORS).toEqual(expect.arrayContaining(['term-player-impact', 'term-player-off', 'term-player-def', 'term-player-pen', 'term-player-rates', 'term-player-fin']));
         expect(Object.keys(GLOSSARY)).not.toContain('player-off-fin');
         const html = await renderPage();

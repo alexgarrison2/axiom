@@ -11,6 +11,33 @@ live game model** (`logit-elo-v5-20261001-xg2-rapm`: `bu_d_net + bu_d_delta` rep
 `d_lineup`; `pipeline/bu/README.md` "Live").  The xG v1-target results below are kept for the
 record; their reports are archived in `out/xgv1/` and `../lineup/out/xgv1/`.
 
+## Production score (2026-10-03): PROD, descriptive, next to IMPACT
+
+Owner request: an Athletic-style production measure beside the predictive rating, clearly separate.
+`prod.py`: Dom Luszczyszyn's public Game Score (2016) per player-game from the lake PBP (G, A1, A2,
+SOG, blocks of the other team's shots, penalties drawn / taken without misconducts, faceoffs, on-ice
+5v5 CF / CA / GF / GA with both goalies in; every dressed skater of a game with shifts gets a row),
+weighted with the ratings' D90 game recency, shrunk with K pseudo-games of the F / D mean:
+`gs_pg = (sum w GS + K m) / (sum w + K)`, `prod = 82 (gs_pg - m)`, `m` the games-weighted mean of the
+roster skaters with a sample (computed in `ratings_export.prod_columns`).  No rating, impact, lineup
+or simulator input changes.
+
+**K** (`out/prod_validation.json`, tuning seasons 2019-23 only: season-start sums predict that
+season's GS / GP, players with >= 10 games, games-weighted MSE): K 0 0.0371, 2 0.0326, 4 0.03225,
+**5 0.03224**, 10 0.0328, 20 0.0347, 60 0.0436 -> K = 5 (next-season r 0.80-0.84 vs 0.74-0.82 raw).
+
+**As shipped** (2026-27, 21 games): PROD vs IMPACT r 0.83 (rated roster skaters, 250+ EV min; F 0.83,
+D 0.85); vs MoneyPuck 2024-26 gameScore / GP (GP >= 40, icetime-weighted) 0.96 (`gs_pg` 0.99; IMPACT
+0.80).  SD 22 Game Score / 82 vs IMPACT 4.4 goals / 82: Game Score credits a goal about 2.75 times
+(scorer, two assisters, five on-ice skaters) plus shots, blocks and faceoffs, so it is not in goals.
+
+```bash
+# season rollover (full lake): the committed pre-season sums on the ratings' g grid
+python -m bu.rapm.prod pack --season 20262027 --lake-dir <full lake>  # -> bu/lineup/out/prod_pack_<S>.json.gz
+python -m bu.rapm.prod tune --lake-dir <full lake>                    # -> out/prod_validation.json
+# daily: bu.lineup serve -> bundle "prod" table -> ratings_export -> player_ratings.json prod / gs_pg
+```
+
 ## Ratings v5 (2026-10-03): the v4 impact, audited (penalties, finishing)
 
 Why: v4 passed 19 / 21 sanity checks; both failures were Rantanen (+0.6 goals / 82, 245th).  Owner

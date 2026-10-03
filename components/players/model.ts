@@ -41,6 +41,8 @@ export interface Skater {
     sd: number | null;
     /** Goals / 82 from penalties drawn minus taken (inside offImp / defImp). Null before v4. */
     pen: number | null;
+    /** Production: recency-weighted Game Score per 82 above the position average (descriptive). Null: no column. */
+    prod: number | null;
     /** EV xGF/60 added (vs the position average when the file has position means). */
     evOff: number;
     /** EV xGA/60 prevented (higher is better; same baseline as evOff). */
@@ -66,6 +68,7 @@ export type StatSeason = 'cur' | 'prev';
 
 export type SortKey =
     | 'impact'
+    | 'prod'
     | 'offImp'
     | 'defImp'
     | 'pen'
@@ -139,6 +142,7 @@ export function compactSkaters(
             defImp: r2(p.defImpact),
             sd: r2(p.sd),
             pen: r2(p.penImpact),
+            prod: p.prod == null ? null : round(p.prod, 1),
             evOff: rate(p.off, 'ev_off')!,
             evDef: rate(p.def, 'ev_def')!,
             pp: rate(p.ppOff, 'pp_off'),
@@ -165,6 +169,7 @@ export function headlineKey(rows: Skater[]): 'impact' | 'net' {
 export function valueOf(p: Skater, key: Exclude<SortKey, 'name'>, season: StatSeason): number | null {
     switch (key) {
         case 'impact':
+        case 'prod':
         case 'offImp':
         case 'defImp':
         case 'pen':
@@ -221,10 +226,12 @@ export function ratingTone(v: number, p: Pick<Skater, 'rated' | 'evMin'>, strong
 
 /**
  * Thresholds ≈ the top / bottom tenth of rostered skaters with 250+ EV minutes
- * (goals / 82 for impact, offImp, defImp, pen; per 60 for the rates; net is the v2 EV rating).
+ * (goals / 82 for impact, offImp, defImp, pen; Game Score / 82 for prod; per 60 for the rates;
+ * net is the v2 EV rating).
  */
 export const STRONG = {
     impact: 5,
+    prod: 25,
     offImp: 4,
     defImp: 2.5,
     pen: 0.9,

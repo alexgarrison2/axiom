@@ -500,6 +500,11 @@ export default function MethodologyPage() {
                                 prevented, minus penalties taken; <strong>PEN</strong> is the penalty part of both.
                             </p>
                             <p>
+                                <strong>PROD</strong>: production score, a recency-weighted Game Score (goals, assists, shots, on-ice 5v5 shots and goals,
+                                penalties, faceoffs, blocks) per 82 games above his position&apos;s average. Descriptive, like The Athletic&apos;s;{' '}
+                                <strong>IMPACT</strong> is the predictive rating.
+                            </p>
+                            <p>
                                 The per-60 rates behind it, against his position&apos;s average: <strong>EV OFF</strong> and <strong>EV DEF</strong> (xG for
                                 created, xG against prevented at even strength), <strong>PP</strong> and <strong>PK</strong> (the same on special teams,
                                 grey under 30 seconds a game) and <strong>FIN</strong> (goals above xG on his own shots, shrunk). A ridge regression (RAPM)

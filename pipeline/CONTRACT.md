@@ -7,7 +7,8 @@ ratings v4 (`player_ratings.json` version 4, the serving bundle's `v3` / `v4` ta
 inputs (`sim_version` `sim-m5-v4-...`; rollback `PONYXG_SIM_INPUTS=v2`) (all additive; the
 `schema_version` column stays `2`; no predictions column changed shape).  Ratings v5 (impact-only:
 `player_ratings.json` gains `fin_pp` and `impact.pen_units` / `pen_t0` / `fin_pp`, the bundle's `v4`
-table `fin_pp`; still version 4) is additive too.
+table `fin_pp`; still version 4) is additive too, as is the production score (`player_ratings.json`
+`prod` / `gs_pg` and key `prod`, the bundle's `prod` table; still version 4).
 
 `predictions_detailed.csv` is written by `pipeline/predict_games.py` to
 `data/predictions_detailed.csv` (server copy) and
@@ -305,6 +306,24 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   | `fin_pp` | float (3 dp) | PP goals above xG per 60 PP minutes from his own shots, shrunk (multiplier shared with his EV shots, prior 30 xG); `off_impact` includes 82 x PP minutes / 60 x (`fin_pp` - position mean) |
 
   `validate_outputs.py player_ratings` checks `fin_pp` finite and |fin_pp| <= 2 when present.
+
+  **Production score** (2026-10-03, still `version: 4`, `bu/rapm/prod.py`, `bu/rapm/README.md`
+  "Production score"): a descriptive measure next to the rating, not part of `impact`.  New top-level
+  key `prod: {games, pseudo_games, position_means: {F, D}, weights, asof, g, recency, definition}` and
+  two columns appended after `fin_pp` (after `spm_pk` in a v4-impact file):
+
+  | column | type | meaning |
+  |---|---|---|
+  | `prod` | float (2 dp) | `games` x (`gs_pg` - his position's mean): Game Score per 82 games above an average F / D (0 for a player with no games in the window) |
+  | `gs_pg` | float (3 dp) | Game Score per game (Luszczyszyn 2016: 0.75 G + 0.7 A1 + 0.55 A2 + 0.075 SOG + 0.05 BLK + 0.15 PD - 0.15 PT + 0.01 FOW - 0.01 FOL + 0.05 CF - 0.05 CA + 0.15 GF - 0.15 GA, CF / CA / GF / GA on-ice 5v5), weighted with the ratings' game recency (half-life 90 games, 0 past 246) and shrunk with `pseudo_games` (5) of the position mean |
+
+  `position_means` is the games-weighted mean Game Score per game of the roster skaters with a
+  sample.  Source: the serving bundle's `prod` table (`player_id, group, n, sw, sgs`: games with
+  weight, weighted games, weighted Game Score; `meta` `pack`, `g`, `asof` (the `v4` table's),
+  `pseudo_games`, `weights`, `recency`), from the committed `bu/lineup/out/prod_pack_<S>.json.gz`
+  plus this season's lake games.  `validate_outputs.py player_ratings` checks both columns finite,
+  `gs_pg` in [-0.5, 4], `prod` = `games` x (`gs_pg` - mean) and the rated roster mean within 10 of 0 at
+  each position when present, and fails a file without them when the bundle has a `prod` table.
 * `public/data/clinch_status.json`:
   `{season_id, generated_at, teams: {TRI: "x" | "y" | "z" | "p" | "e" | null}}`.
 * SiteHistory snapshots (`public/data/SiteHistory/<date>.csv`) gain

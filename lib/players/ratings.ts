@@ -13,6 +13,9 @@
  *   pp_off / pk_def  PP xGF/60 added, PK xGA/60 prevented (not position-centred)
  *   fin              shrunk EV goals above xG per 60 on his own shots
  *   net              off + def (the v2 headline; team pages and lineups still use it)
+ * Production (appended to v4; descriptive, not a rating):
+ *   prod   recency-weighted Game Score per 82 games above the F / D average
+ *   gs_pg  the shrunk Game Score per game behind it
  *
  * Pure helpers (no fs) shared by /players, the team pages, the teams table
  * and the matchup Lines tab.
@@ -60,6 +63,10 @@ export interface PlayerRating {
     /** v4: penalties drawn / taken per 60 (power-play units). */
     pd60?: number;
     pt60?: number;
+    /** Production score: recency-weighted Game Score per 82 games above the F / D average (descriptive). */
+    prod?: number;
+    /** Recency-weighted Game Score per game, shrunk (the level behind prod). */
+    gsPg?: number;
 }
 
 /** Per-60 columns with a position (F / D) mean in v3+ files. */
@@ -137,6 +144,8 @@ export function parseRatings(doc: unknown): Ratings {
         penImpact: ix('pen_impact'),
         pd60: ix('pd60'),
         pt60: ix('pt60'),
+        prod: ix('prod'),
+        gsPg: ix('gs_pg'),
     };
     if (I.id < 0 || I.off < 0 || I.def < 0) return empty;
     const byId = new Map<number, PlayerRating>();
@@ -177,6 +186,8 @@ export function parseRatings(doc: unknown): Ratings {
             penImpact: opt(r, I.penImpact),
             pd60: opt(r, I.pd60),
             pt60: opt(r, I.pt60),
+            prod: opt(r, I.prod),
+            gsPg: opt(r, I.gsPg),
         });
     }
     return {

@@ -231,6 +231,13 @@ export const GLOSSARY = {
         anchor: 'players',
         aliases: ['impact', 'goals per 82', 'player rating', 'net rating', 'goals above average'],
     },
+    'player-prod': {
+        label: 'PROD',
+        title: 'Production score (Game Score per 82 games)',
+        short: 'Production score: recency-weighted Game Score (goals, assists, shots, on-ice 5v5 shots and goals, penalties, faceoffs, blocks) per 82 games above his position’s average. Descriptive, like The Athletic’s; IMPACT is the predictive rating.',
+        anchor: 'players',
+        aliases: ['prod', 'production', 'game score', 'GS', 'GS/GP'],
+    },
     'player-off': {
         label: 'OFF',
         title: 'Offensive impact',

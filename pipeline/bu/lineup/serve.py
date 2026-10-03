@@ -200,6 +200,7 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
     fin = fin_table(paths, season)
     v3 = v3_table(paths, season)
     v4 = v4_table(paths, season)
+    prod = prod_table(paths, season, v4)
     means = seed.rookie.means
     rookie = {g: [means.get((g, "all", "o"), 0.0), means.get((g, "all", "d"), 0.0)] for g in ("F", "D")}
     teams = {}
@@ -222,6 +223,7 @@ def build_bundle(paths, season: str, seed_path: str, *, crosswalk: pd.DataFrame 
            "fin": fin,
            "v3": v3,
            "v4": v4,
+           "prod": prod,
            "crosswalk": None}
     if crosswalk is not None and len(crosswalk):
         cols = ["player_id", "norm", "last", "team", "sweater", "rank"]
@@ -271,6 +273,19 @@ def v4_table(paths, season: str, pack: str | None = None) -> dict | None:
         return P4.bundle_table(paths, season, pack_file=pack)
     except Exception as e:  # noqa: BLE001
         print(f"  [serve] v4 ratings table failed: {type(e).__name__}: {e}")
+        return None
+
+
+def prod_table(paths, season: str, v4: dict | None = None, pack: str | None = None) -> dict | None:
+    """The bundle's ``prod`` table: recency-weighted Game Score sums (``bu.rapm.prod.bundle_table``: the
+    committed ``prod_pack_<S>.json.gz`` plus this season's lake games) as of the ``v4`` table's ``asof`` /
+    ``g``; the source of ``player_ratings.json``'s descriptive ``prod`` / ``gs_pg``.  Never raises."""
+    try:
+        from bu.rapm import prod as PR
+        meta = (v4 or {}).get("meta") or {}
+        return PR.bundle_table(paths, season, asof=meta.get("asof"), g=meta.get("g"), pack_file=pack)
+    except Exception as e:  # noqa: BLE001
+        print(f"  [serve] prod table failed: {type(e).__name__}: {e}")
         return None
 
 

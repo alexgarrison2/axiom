@@ -69,6 +69,7 @@ COLUMNS = ["id", "name", "team", "pos", "roster", "rated",
            "off", "def", "net", "off_total", "toi", "gp", "toi_cur", "gp_cur"]
 COLUMNS_V4 = COLUMNS + ["pen_impact", "pd60", "pt60", "spm_off", "spm_def", "spm_pp", "spm_pk"]
 COLUMNS_V5 = COLUMNS_V4 + ["fin_pp"]     # ratings v5 impact (still file version 4: columns only appended)
+PROD_COLUMNS = ["prod", "gs_pg"]          # production score (bu.rapm.prod; still version 4: appended)
 UNITS = {
     "impact": "goals per 82 games above an average player at his position (F / D): off_impact + def_impact",
     "off_impact": "goals per 82 games: EV offence + PP offence + finishing, each x his expected minutes",
@@ -107,6 +108,10 @@ UNITS_V5 = {
             "scaled by the share of his position's penalties that create a power play; shrunk)",
     "fin_pp": "PP goals above xG per 60 PP minutes from his own shots, shrunk (higher is better; in off_impact x his "
               "PP minutes)"}
+UNITS_PROD = {
+    "prod": "production score, descriptive (not a rating): recency-weighted NHL Game Score (Luszczyszyn 2016) per "
+            "game, shrunk, as Game Score per 82 games above an average player at his position (F / D)",
+    "gs_pg": "recency-weighted Game Score per game, shrunk to his position's mean (the level behind prod)"}
 VOLATILE = ("generated_at",)
 MODEL = "Ratings v3 (game-recency RAPM EV + PP / PK, FIN, xG v2 target)"
 MODEL_V4 = "Ratings v4 (game-recency RAPM EV + PP / PK with a box-score prior, FIN, penalties, xG v2 target)"
@@ -446,6 +451,12 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
                     + ([rd(im["pen_impact"], 2), rd(r["pd60"]), rd(r["pt60"]), rd(r["spm_off"]), rd(r["spm_def"]),
                         rd(r["spm_pp"]), rd(r["spm_pk"])] if is4 else [])
                     + ([rd(r["fin_pp"])] if is5 else []))
+    prod_meta = None
+    pt = bundle.get("prod")
+    if isinstance(pt, dict) and isinstance(pt.get("rows"), list):
+        prod_cols, prod_meta = prod_columns(pt, base)
+        for r, (pid, *_rest) in zip(rows, base):
+            r.extend(prod_cols[pid])
     rows.sort(key=lambda r: (-r[6], r[1]))
     now = now or datetime.now(timezone.utc)
     v5meta = {"pen_units": meta.get("pen_units"), "pen_t0": meta.get("pen_t0"), "fin_pp": meta.get("fin_pp")} if is5 else {}
@@ -462,9 +473,45 @@ def build_export(bundle: dict, sample: dict | None, roster: dict | None, cur: di
                    "position_means": {g: {kk: round(v, 4) for kk, v in m.items()} for g, m in means.items()},
                    "recency": meta.get("recency"), "g": meta.get("g"),
                    **({"pen_value": round(pen_value, 4), "spm_coef": meta.get("spm_coef")} if is4 else {}), **v5meta},
-        "units": UNITS_V5 if is5 else UNITS_V4 if is4 else UNITS, "generated_at": now.isoformat(timespec="seconds"),
-        "columns": COLUMNS_V5 if is5 else COLUMNS_V4 if is4 else COLUMNS, "rows": rows,
+        **({"prod": prod_meta} if prod_meta else {}),
+        "units": {**(UNITS_V5 if is5 else UNITS_V4 if is4 else UNITS), **(UNITS_PROD if prod_meta else {})},
+        "generated_at": now.isoformat(timespec="seconds"),
+        "columns": (COLUMNS_V5 if is5 else COLUMNS_V4 if is4 else COLUMNS) + (PROD_COLUMNS if prod_meta else []),
+        "rows": rows,
     }
+
+
+def prod_columns(table: dict, base: list) -> tuple[dict, dict]:
+    """({player_id: [prod, gs_pg]}, meta) from the bundle's ``prod`` table (``bu.rapm.prod``): Game Score
+    per game shrunk with ``meta.pseudo_games`` to the position mean ``m`` (games-weighted, over the roster
+    skaters with a sample) and ``prod = 82 (gs_pg - m)``; a player without games is at ``m`` (prod 0)."""
+    from bu.rapm.prod import shrink
+    cols = table["columns"]
+    t = {int(r[0]): dict(zip(cols, r)) for r in table["rows"]}
+    meta = table.get("meta") or {}
+    k = float(meta.get("pseudo_games") or 0.0)
+    games = int(meta.get("games") or GAMES)
+    num, den = {"F": 0.0, "D": 0.0}, {"F": 0.0, "D": 0.0}
+    for b in base:
+        pid, grp, ros = b[0], b[4], b[5]
+        x = t.get(pid)
+        if ros and x and float(x["sw"]) > 0:
+            num[grp] += float(x["sgs"])
+            den[grp] += float(x["sw"])
+    m = {g: num[g] / den[g] if den[g] > 0 else 0.0 for g in ("F", "D")}
+    out = {}
+    for b in base:
+        pid, grp = b[0], b[4]
+        x = t.get(pid) or {"sw": 0.0, "sgs": 0.0}
+        gs = float(shrink([float(x["sw"])], [float(x["sgs"])], [m[grp]], k)[0][0])
+        out[pid] = [round(games * (gs - m[grp]), 2) + 0.0, round(gs, 3) + 0.0]
+    return out, {"games": games, "pseudo_games": k, "position_means": {g: round(v, 4) for g, v in m.items()},
+                 "weights": meta.get("weights"), "asof": meta.get("asof"), "g": meta.get("g"),
+                 "recency": meta.get("recency"),
+                 "definition": "Game Score per game (Luszczyszyn 2016: 0.75 G + 0.7 A1 + 0.55 A2 + 0.075 SOG + 0.05 BLK "
+                               "+ 0.15 PD - 0.15 PT + 0.01 FOW - 0.01 FOL + 0.05 CF - 0.05 CA + 0.15 GF - 0.15 GA, "
+                               "CF / CA / GF / GA on-ice 5v5), recency-weighted like the ratings, shrunk with "
+                               "pseudo_games of the position mean; prod = games x (gs_pg - mean)"}
 
 
 def summary(doc: dict) -> dict:

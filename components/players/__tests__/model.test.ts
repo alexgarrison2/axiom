@@ -138,6 +138,20 @@ describe('players model', () => {
         expect(sortSkaters(withHole, 'pen', 'asc').at(-1)?.name).toBe('Quinn Hughes');
     });
 
+    it('PROD (appended prod / gs_pg columns): parsed by name, sortable best first, null without the column', () => {
+        const PROD = { 8480800: [59.06, 1.119], 8478402: [87.57, 1.628], 8475913: [12.4, 0.71], 8480801: [40.14, 1.05], 8476923: [-3.2, 0.36], 8484790: [0, 0.399] } as Record<number, number[]>;
+        const withProd = { ...v4, columns: [...V4_COLS, 'prod', 'gs_pg'], rows: V4_ROWS.map(r => [...r, ...PROD[r[0] as number]]) };
+        expect(parseRatings(withProd).byId.get(8478402)).toMatchObject({ prod: 87.57, gsPg: 1.628, impact: 17.89 });
+        expect(parseRatings(v4).byId.get(8478402)?.prod).toBeUndefined();
+        const sk = compactSkaters(withProd, noLines, {});
+        expect(sk.find(p => p.name === 'Connor McDavid')?.prod).toBe(87.6);
+        expect(sortSkaters(sk, 'prod', 'desc').map(p => p.name).slice(0, 2)).toEqual(['Connor McDavid', 'Quinn Hughes']);
+        expect(FIRST_DIR.prod ?? 'desc').toBe('desc');
+        expect(compactSkaters(v4, noLines, {}).every(p => p.prod === null)).toBe(true);
+        const mc = sk.find(p => p.name === 'Connor McDavid')!;
+        expect(ratingTone(mc.prod!, mc, 25)).toBe('pos');
+    });
+
     it('filters by position, team, rookies and EV sample', () => {
         expect(filterSkaters(rows, { ...DEFAULT_FILTER, pos: 'D' }).map(r => r.name)).toEqual(['Jordan Spence']);
         expect(filterSkaters(rows, { ...DEFAULT_FILTER, team: 'VGK' }).map(r => r.name)).toEqual(['Mark Stone']);
