@@ -34,6 +34,8 @@ interface Entry {
     id: number;
     /** NET, EV xG/60 above average; null for a skater with no NHL sample yet (rookie prior). */
     impact: number | null;
+    /** Players-page IMPACT (goals per 82 above the position average); null for an unrated skater. */
+    value82: number | null;
     /** RAPM components behind the NET (EV xG/60 above average); null when unrated or absent from the file. */
     off: number | null;
     def: number | null;
@@ -51,7 +53,7 @@ export function buildIndex(ratings: Ratings): ImpactIndex {
     return {
         resolve(name, team, def) {
             const p = find(name, team, null, def);
-            return p ? { id: p.id, impact: p.rated ? p.net : null, off: p.rated ? p.off : null, def: p.rated ? p.def : null, fin: p.rated ? (p.fin ?? null) : null } : null;
+            return p ? { id: p.id, impact: p.rated ? p.net : null, value82: p.rated ? (p.impact ?? null) : null, off: p.rated ? p.off : null, def: p.rated ? p.def : null, fin: p.rated ? (p.fin ?? null) : null } : null;
         },
     };
 }
@@ -163,6 +165,7 @@ export function lineupView(ctx: LeagueContext, lineup: DfoLineup | null | undefi
                 ppUnit: p.ppUnit === 1 || p.ppUnit === 2 ? p.ppUnit : null,
                 movement: p.movement && MOVES.has(p.movement) ? (p.movement as LineupPlayerView['movement']) : null,
                 impact: e?.impact != null ? Math.round(e.impact * 100) / 100 : null,
+                value82: e?.value82 != null ? Math.round(e.value82 * 10) / 10 : null,
             };
         });
         const total = slotTotal(ctx.index, lineup, team, key, req);

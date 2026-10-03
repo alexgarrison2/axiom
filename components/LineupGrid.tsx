@@ -7,11 +7,11 @@ import { STRONG } from '@/components/players/model';
 const FWD = ['f1', 'f2', 'f3', 'f4'];
 const DEF = ['d1', 'd2', 'd3'];
 
-/** Player NET (RAPM, EV xG/60) colour: only the top / bottom tenth of skaters get colour. */
-function impactTone(net: number | null): string {
-    if (net == null) return 'text-fg-3';
-    if (net >= STRONG.net) return 'text-pos';
-    if (net > -STRONG.net) return 'text-fg-3';
+/** Player IMPACT (goals per 82, the Players page number) colour: only clearly strong or weak skaters get colour. */
+function impactTone(v: number | null): string {
+    if (v == null) return 'text-fg-3';
+    if (v >= STRONG.impact) return 'text-pos';
+    if (v > -STRONG.impact) return 'text-fg-3';
     return 'text-neg';
 }
 
@@ -38,9 +38,13 @@ function Player({ pl }: { pl: LineupPlayerView | undefined }) {
                 {pl.movement === 'new' ? <span aria-label="new to the lineup" className="text-micro text-warn">+</span> : null}
                 <span className={cn('truncate text-caption', pl.ppUnit === 1 ? 'font-bold text-fg-1' : 'text-fg-1')}>{pl.display}</span>
             </span>
-            {pl.impact != null || pl.ppUnit ? (
+            {pl.value82 != null || pl.ppUnit ? (
                 <span className="flex items-center gap-1 text-micro tabular-nums">
-                    {pl.impact != null ? <span className={impactTone(pl.impact)}>{fmtSigned(pl.impact)}</span> : null}
+                    {pl.value82 != null ? (
+                        <span className={impactTone(pl.value82)} title="Impact: goals above a positional average per 82 games, all situations (the Players page number)">
+                            {fmtSigned(pl.value82, 1)}
+                        </span>
+                    ) : null}
                     {pl.ppUnit ? <span className={pl.ppUnit === 1 ? 'text-warn' : 'text-fg-3'}>PP{pl.ppUnit}</span> : null}
                 </span>
             ) : null}
@@ -157,7 +161,7 @@ function LineupSummary({ grade }: { grade: NonNullable<SideDetails['grade']> }) 
 
 /**
  * One team's projected lineup: forward lines and defence pairs with each
- * player's NET rating (RAPM, EV xG/60), line ranks, the lineup source age and injuries.
+ * player's impact (the Players page number, goals per 82), line ranks (even-strength xG/60), the lineup source age and injuries.
  * Presentational: the data comes from /api/matchup-details.
  */
 export default function LineupGrid({
@@ -198,6 +202,7 @@ export default function LineupGrid({
             {d.grade?.parts ? <LineupSummary grade={d.grade} /> : null}
             {hasLines ? (
                 <>
+                    <p className="text-micro uppercase tracking-wide text-fg-3">Players: impact per 82 · Lines and totals: even-strength xG/60</p>
                     <Table keys={FWD} cols={['LW', 'C', 'RW']} d={d} label={`${team.commonName} forward lines`} />
                     <Table keys={DEF} cols={['LD', 'RD']} d={d} label={`${team.commonName} defence pairs`} />
                 </>

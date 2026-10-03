@@ -219,8 +219,10 @@ export interface LineupPlayerView {
     pos: string;
     ppUnit: number | null;
     movement: 'up' | 'down' | 'new' | null;
-    /** RAPM NET, EV xG/60 above average (player_ratings.json), keyed by NHL id; null = no NHL sample yet. */
+    /** RAPM NET, EV xG/60 above average (player_ratings.json), keyed by NHL id; null = no NHL sample yet. Feeds the line and lineup totals. */
     impact: number | null;
+    /** The Players page IMPACT: all-situations goals above a positional average per 82 games; null = unrated. */
+    value82: number | null;
 }
 
 export interface LineImpact {
