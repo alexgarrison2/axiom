@@ -59,6 +59,13 @@ PUBLIC_DATA = os.path.join(REPO_ROOT, "public", "data")
 
 SCHEMA_VERSION = 2
 
+# Win-% engine (bu/sim/prereg_primary.json): 'sim' publishes the game simulator's own win % as
+# the model probability (before the unchanged market blend); 'logit' the logit game model.
+# Rollback without a code change: repository variable PONYXG_WINPCT=logit.
+WINPCT_ENV = "PONYXG_WINPCT"
+WINPCT_MODES = ("sim", "logit")
+PROB_FLOOR, PROB_CEIL = 0.03, 0.97      # the same numerical guard as ml_predict
+
 STATUS_PREGAME = "pregame"
 STATUS_FROZEN = "frozen"
 STATUS_NO_PREGAME = "no_pregame_prediction"
@@ -87,7 +94,11 @@ FROZEN_COLUMNS = [
     # Shadows (schema v2.1, additive, not displayed): see shadow_outputs()
     "bu_shadow_home_win_pct", "f1_shadow_model_win_pct", "f1_shadow_home_win_pct",
     # Game simulator (schema v2.2, additive): every market we have odds for, see sim_outputs()
-] + SIM_COLUMNS
+] + SIM_COLUMNS + [
+    # Win-% engine (schema v2.3, additive): which engine made home_model_win_pct, and the logit
+    # game model's own model-only / blended home win % and total, logged every run (rollback shadow)
+    "winpct_engine", "logit_model_win_pct", "logit_home_win_pct", "logit_expected_total",
+]
 
 
 def _side_cols(*names):
@@ -207,6 +218,22 @@ def price_of(v):
     except (TypeError, ValueError):
         return None
     return x if abs(x) >= 100 else None
+
+
+def winpct_mode(sim=None) -> str:
+    """'sim' or 'logit': the PONYXG_WINPCT variable, else the engine the pre-registered
+    comparison promoted (``primary.winpct`` in the simulator's parameters), else 'logit'."""
+    v = (os.environ.get(WINPCT_ENV) or "").strip().lower()
+    if v in WINPCT_MODES:
+        return v
+    prim = (getattr(sim, "params", None) or {}).get("primary") or {}
+    return prim.get("winpct") if prim.get("winpct") in WINPCT_MODES else "logit"
+
+
+def sim_total_mode(sim=None) -> str:
+    """'sim' when the pre-registered totals rule chose the simulator's own expected total."""
+    prim = (getattr(sim, "params", None) or {}).get("primary") or {}
+    return "sim" if prim.get("total") == "sim" else "gm"
 
 
 # ── inputs ───────────────────────────────────────────────────────────────────
@@ -522,11 +549,19 @@ def bu_detail(bf):
 
 
 def sim_lineup(game, inp, bf):
-    """The RAPM v2 lineup term with FIN for the simulator: the live model's own ``bf`` when it has
-    one, else the serving bundle read directly (a model without the term still gets simulated);
-    the bundle's RAPM intercept is added (the term's 5v5 xGF/60 = intercept + OFF + opposing DEF)."""
+    """The lineup term with FIN for the simulator: the live model's own ``bf`` when the simulator's
+    lineup source (``bu/sim/lineup_source.py``) is the game model's serving bundle, else that
+    source's bundle read directly (a model without the term still gets simulated); the bundle's
+    intercept is added (the term's 5v5 xGF/60 = intercept + OFF + opposing DEF)."""
     ml = inp.ml
     term = getattr(ml, "bu_term", None) if ml is not None else None
+    if inp.sim is not None and hasattr(inp.sim, "lineup_term"):
+        rel = ((getattr(ml, "meta", None) or {}).get("bu_lineup") or {}).get(
+            "serving_bundle", "bu/lineup/out/serving_bundle.json.gz")
+        path = rel if os.path.isabs(rel) else os.path.join(SCRIPT_DIR, rel)
+        own = inp.sim.lineup_term({path: term} if term is not None else None)
+        if own is not None and own is not term:
+            term, bf = own, None
     if bf is None and term is not None:
         h, a = game.get("homeTeamAbbrev"), game.get("awayTeamAbbrev")
         try:
@@ -540,23 +575,51 @@ def sim_lineup(game, inp, bf):
     return dict(bf, c_intercept=cov.get("intercept"))
 
 
-def sim_outputs(game, ctx, inp, p_pub, total_pub, go, bf):
+def _sim_rest(ctx):
+    return {s: (ctx.get(f"_{s}_model_rest") if ctx.get(f"_{s}_model_rest") is not None
+                else (1 if ctx.get(f"{s}_is_b2b") else None)) for s in SIDES}
+
+
+def sim_run(game, ctx, inp, bf):
+    """(SimRun, None) when the simulator can run this game at its own rates, else (None, why).
+    Never raises."""
+    if inp.sim is None:
+        return None, "simulator not loaded"
+    h, a = game.get("homeTeamAbbrev"), game.get("awayTeamAbbrev")
+    t0 = time.time()
+    try:
+        rest = _sim_rest(ctx)
+        return inp.sim.run(game.get("id"), h, a, h_goalie=ctx.get("home_goalie_confirmed") or None,
+                           a_goalie=ctx.get("away_goalie_confirmed") or None, bf=sim_lineup(game, inp, bf),
+                           h_rest=rest["home"], a_rest=rest["away"],
+                           game_type=int(str(ctx.get("game_type") or "02")))
+    except Exception as e:
+        print(f"  [WARN] simulator {a}@{h}: {e}")
+        return None, f"error: {type(e).__name__}: {e}"
+    finally:
+        inp.sim_stats["seconds"] += time.time() - t0
+
+
+def sim_outputs(game, ctx, inp, p_pub, total_pub, go, bf, run=None, why=None):
     """Simulator columns (bu.sim.live.COLUMNS) for one pregame row: all derivative markets,
     anchored to the published win % and total; Poisson fallback flagged in ``sim_status``.
+    ``run`` / ``why``: the game as already simulated by ``sim_run`` (else simulated here).
     Never raises."""
     if inp.sim is None:
         return {}
     h, a = game.get("homeTeamAbbrev"), game.get("awayTeamAbbrev")
     t0 = time.time()
     try:
-        rest = {s: (ctx.get(f"_{s}_model_rest") if ctx.get(f"_{s}_model_rest") is not None
-                    else (1 if ctx.get(f"{s}_is_b2b") else None)) for s in SIDES}
+        if run is None and why is None:
+            run, why = sim_run(game, ctx, inp, bf)
+        rest = _sim_rest(ctx)
         return inp.sim.game(game.get("id"), h, a, p_pub, total_pub,
                             h_goalie=ctx.get("home_goalie_confirmed") or None,
                             a_goalie=ctx.get("away_goalie_confirmed") or None,
-                            bf=sim_lineup(game, inp, bf), h_rest=rest["home"], a_rest=rest["away"],
+                            h_rest=rest["home"], a_rest=rest["away"],
                             game_type=int(str(ctx.get("game_type") or "02")), odds=go,
-                            home_name=game["homeTeam"], away_name=game["awayTeam"])
+                            home_name=game["homeTeam"], away_name=game["awayTeam"],
+                            run=run, why=why or ("not simulated" if run is None else None))
     except Exception as e:
         print(f"  [WARN] simulator {a}@{h}: {e}")
         return {}
@@ -721,7 +784,32 @@ def build_model_outputs(game, ctx, inp):
                           extra_terms=extra, extra_features=extra_features)
     if d is None:
         return None
-    p_model = float(d["home_win_prob"])
+    p_logit = float(d["home_win_prob"])
+    total_logit = float(d["expected_total"])
+    # Win-% engine: the simulator's own win % (its rates from tonight's lineup, goalies, special
+    # teams, home ice, rest) when it can run this game, else the logit game model (flagged).
+    srun, why_sim = sim_run(game, ctx, inp, bf) if inp.sim is not None else (None, "simulator not loaded")
+    engine = winpct_mode(inp.sim)
+    terms = None
+    if engine == "sim" and srun is not None:
+        try:
+            p_model = min(max(srun.p_home, PROB_FLOOR), PROB_CEIL)
+            t0 = time.time()
+            terms = inp.sim.breakdown(srun, p_model)
+            inp.sim_stats["seconds"] += time.time() - t0
+            total = srun.total if sim_total_mode(inp.sim) == "sim" else total_logit
+            model_version = inp.sim.version
+        except Exception as e:      # never break the run: the logit publishes this game
+            print(f"  [WARN] simulator win % {away}@{home}: {e}")
+            why_sim, terms = f"breakdown failed: {e}", None
+    if terms is None:
+        if engine == "sim":
+            print(f"  [winpct] {away}@{home}: logit published ({why_sim})")
+        engine = "logit"
+        p_model = p_logit
+        terms = [(t["factor"], t["label"], float(t["logit"])) for t in d["logit_terms"]]
+        total = total_logit
+        model_version = d.get("model_version") or getattr(model, "model_version", "")
     go = inp.odds.get(str(game.get("id"))) or {}
     hp = price_of(go.get("home_ml", go.get(home)))
     ap = price_of(go.get("away_ml", go.get(away)))
@@ -729,8 +817,7 @@ def build_model_outputs(game, ctx, inp):
                                market_source=go.get("source"), fetched_at=go.get("fetched_at"))
     q = priced["market_prob_home"]
     w = priced["blend_weight"]
-    terms = [(t["factor"], t["label"], float(t["logit"])) for t in d["logit_terms"]]
-    rows, p_final = goal_model.wp_breakdown(terms, d["expected_total"],
+    rows, p_final = goal_model.wp_breakdown(terms, total,
                                             market_logit=_logit(q) if q is not None else None,
                                             blend_weight=w if q is not None else None)
     p = float(priced["blended_prob_home"])
@@ -738,7 +825,6 @@ def build_model_outputs(game, ctx, inp):
         print(f"  [WARN] breakdown {p_final:.4f} vs published {p:.4f} for {away}@{home}")
     win_pct = round(100 * p, 1)
     wp = round_to_sum([r["wp_delta_pts"] for r in rows], win_pct - 50, 2)
-    total = d["expected_total"]
     hx, ax = goal_model.display_xg(p, total)
     hx, ax = round(hx, 2), round(ax, 2)
     bx, bax = goal_model.display_xg(0.5, total)
@@ -759,7 +845,7 @@ def build_model_outputs(game, ctx, inp):
     units, side = priced["units"], priced["bet_side"]
     wager = f"{side.title()} {units} {'Unit' if units == 1.0 else 'Units'}" if (units and side) else "No Bet"
     out = {
-        "model_version": d.get("model_version") or getattr(model, "model_version", ""),
+        "model_version": model_version,
         "preseason_prior": preseason,
         "home_model_win_pct": round(100 * p_model, 1), "away_model_win_pct": round(100 * (1 - p_model), 1),
         "home_win_pct": win_pct, "away_win_pct": round(100 - win_pct, 1),
@@ -794,13 +880,20 @@ def build_model_outputs(game, ctx, inp):
         "home_lineup_matched": l_detail["home"]["matched"] if l_detail else None,
         "away_lineup_matched": l_detail["away"]["matched"] if l_detail else None,
     }
-    out.update(shadow_outputs(game, ctx, inp, d, p, q, w, bu_on_features, extra, published_bu=published_bu))
+    # The logit game model, logged every run (rollback shadow): model-only, blended %, total
+    p_logit_pub = market.blend(p_logit, q, w) if q is not None else p_logit
+    out.update({"winpct_engine": engine, "logit_model_win_pct": round(100 * p_logit, 1),
+                "logit_home_win_pct": round(100 * p_logit_pub, 1), "logit_expected_total": round(total_logit, 2)})
+    # The BU / F1 shadows keep their meaning (blends of the logit models): for them 'published'
+    # is the logit's own blend.
+    out.update(shadow_outputs(game, ctx, inp, d, p_logit_pub, q, w, bu_on_features, extra,
+                              published_bu=published_bu))
     for k in ("total_line", "total_over", "total_under", "three_way_tie"):
         out[k] = go.get(k)
     for side_, team in (("home", home), ("away", away)):
         for k in ("puckline", "puckline_spread", "1p_ml", "three_way"):
             out[f"{side_}_{k}"] = go.get(f"{team}_{k}")
-    out.update(sim_outputs(game, ctx, inp, p, total, go, bf))
+    out.update(sim_outputs(game, ctx, inp, p, total, go, bf, run=srun, why=why_sim))
     return out
 
 

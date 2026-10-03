@@ -385,11 +385,12 @@ def poisson_glm(X: np.ndarray, y: np.ndarray, offset: np.ndarray, l2: float = 1e
     return b, np.sqrt(np.diag(cov)), phi
 
 
-def history_table(tg: pd.DataFrame, hyper: dict) -> pd.DataFrame:
-    """Per-game point-in-time inputs (history.game_inputs) for every lake game."""
+def history_table(tg: pd.DataFrame, hyper: dict, lineup: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Per-game point-in-time inputs (history.game_inputs) for every lake game; ``lineup``: a
+    lineup source's history table (``lineup_source.history_table``; default RAPM v2)."""
     from .history import asof_sums, game_inputs, team_rels
     S = asof_sums(tg, hyper)
-    return game_inputs(tg, team_rels(S, hyper))
+    return game_inputs(tg, team_rels(S, hyper), lineup=lineup)
 
 
 def glm_design(tg: pd.DataFrame, G: pd.DataFrame, seasons) -> dict:
@@ -455,6 +456,11 @@ def main(argv=None) -> int:
     ap.add_argument("step", choices=["structural", "teamgames", "hyper", "glm", "pack", "all"])
     ap.add_argument("--season", default=None, help="pack: the season the pack starts (default: current)")
     ap.add_argument("--work", required=True, help="scratch dir for caches")
+    ap.add_argument("--lineup-table", default=None,
+                    help="glm: a new lineup source's history table (lineup_source.REQUIRED columns)")
+    ap.add_argument("--lineup-bundle", default=None, help="glm: that source's serving bundle (LiveLineupTerm)")
+    ap.add_argument("--lineup-name", default=None, help="glm: short name of the source (e.g. v4)")
+    ap.add_argument("--params-out", default=None, help="write the parameters here instead of out/sim_params.json")
     args = ap.parse_args(argv)
     if args.step in ("structural", "all"):
         p = load_params(missing_ok=True) or {}
@@ -471,13 +477,21 @@ def main(argv=None) -> int:
         save_params(p)
         log(f"[fit] state hyper: {p['state']['hyper']}")
     if args.step in ("glm", "all"):
+        from . import lineup_source as LS
         p = load_params()
+        src = LS.spec(p)
+        if args.lineup_table:     # a new ratings source: refit the regressions on it
+            src = {"name": args.lineup_name or "custom", "history_table": args.lineup_table,
+                   "serving_bundle": args.lineup_bundle or LS.DEFAULT["serving_bundle"]}
+            p["lineup"] = src
+            p["version"] = f"sim-m5-{src['name']}-{time.strftime('%Y%m%d')}"
         tg = build_team_games(ALL_SEASONS, se_dict(p["structural"]["score_effects"]), args.work)
-        G = history_table(tg, p["state"]["hyper"])
-        G.to_parquet(os.path.join(args.work, "history_inputs.parquet"), index=False)
+        G = history_table(tg, p["state"]["hyper"], lineup=LS.history_table(src))
+        G.to_parquet(os.path.join(args.work, LS.history_inputs_name(p)), index=False)
         F = glm_design(tg, G, FIT_SEASONS)
-        p["glm"] = {**fit_glms(F), "seasons": FIT_SEASONS}
-        save_params(p)
+        p["glm"] = {**fit_glms(F), "seasons": FIT_SEASONS, "lineup_source": src["name"]}
+        save_params(p, args.params_out)
+        log(f"[fit] glm on lineup source {src['name']} -> {args.params_out or PARAMS_PATH}")
     if args.step in ("pack", "all"):
         from season import SEASON_ID
         from .params import state_pack_path

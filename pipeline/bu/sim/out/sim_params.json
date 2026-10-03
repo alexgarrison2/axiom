@@ -468,6 +468,27 @@
    "20222023"
   ]
  },
+ "primary": {
+  "candidate": "A_sim",
+  "decided_at": "2026-10-03T01:20:51+00:00",
+  "ml_log_loss": {
+   "dev_pooled": {
+    "logit": 0.65945,
+    "n": 2375,
+    "sim": 0.6588
+   },
+   "holdout": {
+    "logit": 0.67918,
+    "n": 1312,
+    "sim": 0.67929
+   }
+  },
+  "prereg": "bu/sim/prereg_primary.json",
+  "rollback": "PONYXG_WINPCT=logit",
+  "rule": "dev pooled ML log loss < logit and holdout - logit <= +0.0010; totals: same form for T_sim vs T_gm",
+  "total": "gm",
+  "winpct": "sim"
+ },
  "rest": {
   "keep_b2b": true,
   "paired_with_minus_without": {

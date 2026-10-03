@@ -55,8 +55,8 @@ Key pipeline scripts:
 | `nhl_scraper_poc.py` | Scrapes NHL API boxscores and play-by-play into the season CSVs |
 | `xg_model.py` | XGBoost shot model (spatial bins + shot attributes), isotonic-calibrated |
 | `team_ratings.py` | Team power ratings and goalie ratings |
-| `ml_predict.py` / `train_game_model.py` | Game-outcome model (`game_model.pkl`) used by predictions |
-| `predict_games.py` | Builds `predictions_detailed.csv` (xG, win %, odds, EV) |
+| `ml_predict.py` / `train_game_model.py` | Logit game-outcome model (`game_model.pkl`): logged shadow and per-game fallback of the win % |
+| `predict_games.py` | Builds `predictions_detailed.csv` (xG, win %, odds, EV); the model win % comes from the game simulator `bu/sim/` (rollback `PONYXG_WINPCT=logit`) |
 | `fetch_upcoming.py` | Schedule and starting goalies |
 | `fetch_odds.py` | Market lines |
 | `fetch_dailyfaceoff.py` | Line combinations, starting goalies and news |

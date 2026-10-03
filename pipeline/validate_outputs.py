@@ -43,6 +43,9 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
                  every predicted row has its own model-only % and model_version,
                  and that % is rebuilt from the row's factor breakdown (so a
                  model % equal to the market % is a coincidence, not a copy)
+  winpct_engine  every pregame row names the engine of its model % (sim / logit) and logs the
+                 logit's own %; a sim row was simulated, carries the simulator version and its
+                 model % is the simulated %; a logit row's model % is the logit's
   goal_splits    current-season goals_ev + goals_pp + goals_sh + emptynet_goalsfor == goals_for
   bu_bundle      when the live game model uses the RAPM v2 lineup term: its serving bundle
                  (bu/lineup/out/serving_bundle.json.gz) is readable, carries the model's
@@ -679,6 +682,48 @@ def check_sim_markets(ctx):
     return errs
 
 
+def check_winpct_engine(ctx):
+    """predictions_detailed.csv win-% engine (contract v2.3): every pregame row says which engine
+    made home_model_win_pct and logs the logit's own %. A 'sim' row was simulated (sim_status
+    'sim'), carries the simulator's version and its model % is the raw simulated % (3-97% guard);
+    a 'logit' row's model % is the logit's. Rows frozen before v2.3 are skipped."""
+    errs = []
+    for path in ctx.get("pred_files", PRED_FILES):
+        if not os.path.exists(path):
+            continue
+        name = os.path.relpath(path, REPO_ROOT)
+        rows = _rows(path)
+        if not rows or "winpct_engine" not in rows[0]:
+            continue
+        for r in rows:
+            st = r.get("prediction_status")
+            if st not in ("pregame", "frozen") or _blank(r.get("home_win_pct")):
+                continue
+            eng = r.get("winpct_engine")
+            if _blank(eng) and st == "frozen":
+                continue
+            gid = r.get("game_id")
+            if eng not in ("sim", "logit"):
+                errs.append(f"{name} {gid}: winpct_engine {eng!r}")
+                continue
+            pm, pl = _num(r.get("home_model_win_pct")), _num(r.get("logit_model_win_pct"))
+            if pl is None or _num(r.get("logit_home_win_pct")) is None:
+                errs.append(f"{name} {gid}: no logit shadow (logit_model_win_pct / logit_home_win_pct)")
+                continue
+            if eng == "logit":
+                if pm is None or abs(pm - pl) > 0.051:
+                    errs.append(f"{name} {gid}: logit engine but model % {pm} != logit % {pl}")
+                continue
+            ps = _num(r.get("sim_home_win_pct"))
+            if r.get("sim_status") != "sim" or ps is None:
+                errs.append(f"{name} {gid}: sim engine without a simulated game (sim_status {r.get('sim_status')!r})")
+            elif pm is None or abs(pm - min(max(ps, 3.0), 97.0)) > 0.051:
+                errs.append(f"{name} {gid}: sim engine but model % {pm} != simulated % {ps}")
+            if not str(r.get("model_version") or "").startswith("sim-"):
+                errs.append(f"{name} {gid}: sim engine with model_version {r.get('model_version')!r}")
+    return errs
+
+
 def model_pct_from_breakdown(row):
     """Home model-only win % rebuilt from the row's own factor breakdown, or None.
 
@@ -912,6 +957,7 @@ CHECKS = {
     "fair_odds": check_fair_odds,
     "sim_markets": check_sim_markets,
     "model_independent": check_model_independent,
+    "winpct_engine": check_winpct_engine,
     "goal_splits": check_gamestats_goals,
     "bu_bundle": check_bu_bundle,
     "player_ratings": check_player_ratings,

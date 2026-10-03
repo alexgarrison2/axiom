@@ -37,6 +37,22 @@ from .state import SimState, rows_from_season_csvs
 PIPELINE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 N_SIMS = 20000
 BASE_SEED = 20261002
+BREAKDOWN_N = 3000          # runs per counterfactual of the 'why this pick' breakdown
+# 'Why this pick' for a simulated win %: the simulator's coefficient groups, switched on one at a
+# time (common random numbers: same seed) from a neutral game (league-average teams, no home ice);
+# each group's term is the change in logit P(home win).  Computed in this order (the last,
+# 5v5 strength, also absorbs the 3,000- vs 20,000-run Monte Carlo gap so the terms add up exactly
+# to the published model logit), displayed in the game model's factor order.
+BREAKDOWN_GROUPS = [
+    ("home_ice", "Home ice", [("ev", "home"), ("conv", "home"), ("pp", "home"), ("pen", "home")]),
+    ("rest", "Rest", [("ev", "b2b"), ("ev", "b2b_opp")]),
+    ("goaltending", "Goaltending", [("conv", "gsv")]),
+    ("special_teams", "Special teams & penalties", [("pp", "st_pp"), ("pp", "st_pk"), ("pen", "st_take"),
+                                                    ("pen", "st_draw")]),
+    ("strength_5v5", "5v5 strength (lineup, team, finishing)",
+     [("ev", "bu_rel"), ("ev", "st_off"), ("ev", "st_def"), ("conv", "fin_rel"), ("conv", "st_fin")]),
+]
+DISPLAY_ORDER = ["home_ice", "strength_5v5", "special_teams", "goaltending", "rest"]
 GATE_REASON = ("INFO ONLY: derivative-market prices await the live closing-line test "
                "(bu/sim/prereg.json live_test)")
 
@@ -131,6 +147,23 @@ def poisson_dist(p_home: float, total: float) -> Dist:
 
 # ------------------------------------------------------------------------------ server
 
+class SimRun:
+    """One game simulated at its own (raw) rates: what the win-% engine, the breakdown and the
+    market pricer share, so the game is simulated once per run."""
+
+    def __init__(self, game_id, row: dict, rates, outcomes, seed: int):
+        self.game_id, self.row, self.R, self.o, self.seed = game_id, row, rates, outcomes, seed
+        self.raw = MK.summarize(outcomes)
+
+    @property
+    def p_home(self) -> float:
+        return float(self.raw["p_home"])
+
+    @property
+    def total(self) -> float:
+        return float(self.raw["exp_total"])
+
+
 class SimServer:
     def __init__(self, params: dict, state: SimState | None, team_ids: dict, n: int = N_SIMS):
         self.params = params
@@ -186,6 +219,14 @@ class SimServer:
                 print(f"[sim] WARNING: {srv.error}; state pack only")
         return srv
 
+    def lineup_term(self, loaded: dict | None = None):
+        """The ``LiveLineupTerm`` of the parameters' lineup source (``lineup_source.py``), reusing
+        an already loaded one ({abs path: term}, e.g. the game model's) when it is the same bundle."""
+        if not hasattr(self, "_term"):
+            from . import lineup_source as LS
+            self._term = LS.live_term(LS.spec(self.params), loaded) if self.params else None
+        return self._term
+
     @property
     def available(self) -> bool:
         return bool(self.params) and self.state is not None and self.S is not None
@@ -215,34 +256,79 @@ class SimServer:
         return row
 
     # ---------------------------------------------------------------- one game
-    def game(self, game_id, home_tri, away_tri, p_pub: float, total_pub: float, *, h_goalie=None, a_goalie=None,
-             bf=None, h_rest=None, a_rest=None, game_type=2, odds=None, home_name=None, away_name=None) -> dict:
-        """All COLUMNS for one pregame row.  ``p_pub`` / ``total_pub``: the published (blended)
-        home win probability and expected total; ``odds``: the game's odds.json entry."""
-        dist, info, raw_p, raw_total, why = None, {}, None, None, None
+    def run(self, game_id, home_tri, away_tri, *, h_goalie=None, a_goalie=None, bf=None, h_rest=None,
+            a_rest=None, game_type=2):
+        """(SimRun, None) for a game the simulator can run, else (None, why).  Never raises."""
         try:
             if not self.available:
-                why = self.error or "simulator unavailable"
-            elif not (bf and bf.get("bu_ok")):
-                why = f"lineup term unavailable ({(bf or {}).get('reason') or 'no bundle'})"
-            else:
-                row = self.inputs_row(home_tri, away_tri, h_goalie, a_goalie, bf, h_rest, a_rest, game_type)
-                g = pd.DataFrame([row])
-                fin_ok = np.isfinite(row.get("bu_h_fin", np.nan)) and np.isfinite(row.get("bu_a_fin", np.nan))
-                if not RT.finite_inputs(g)[0] or not np.isfinite(row.get("c_intercept", np.nan)) or not fin_ok:
-                    why = "non-finite simulator inputs"
+                return None, self.error or "simulator unavailable"
+            if not (bf and bf.get("bu_ok")):
+                return None, f"lineup term unavailable ({(bf or {}).get('reason') or 'no bundle'})"
+            row = self.inputs_row(home_tri, away_tri, h_goalie, a_goalie, bf, h_rest, a_rest, game_type)
+            g = pd.DataFrame([row])
+            fin_ok = np.isfinite(row.get("bu_h_fin", np.nan)) and np.isfinite(row.get("bu_a_fin", np.nan))
+            if not RT.finite_inputs(g)[0] or not np.isfinite(row.get("c_intercept", np.nan)) or not fin_ok:
+                return None, "non-finite simulator inputs"
+            R = RT.build_rates(g, self.params)
+            seed = EN.game_seed(BASE_SEED, int(game_id))
+            return SimRun(game_id, row, R, EN.simulate_game(R, 0, self.S, self.n, seed), seed), None
+        except Exception as e:      # never break the prediction run
+            return None, f"error: {type(e).__name__}: {e}"
+
+    def _group_params(self):
+        """Parameter sets of the breakdown: neutral, then each BREAKDOWN_GROUPS group switched on."""
+        if getattr(self, "_gp", None) is None:
+            zero = json.loads(json.dumps(self.params))
+            for _, _, terms in BREAKDOWN_GROUPS:
+                for grp, c in terms:
+                    zero["glm"]["beta"][grp][c] = 0.0
+            steps = [json.loads(json.dumps(zero))]
+            cur = zero
+            for _, _, terms in BREAKDOWN_GROUPS:
+                cur = json.loads(json.dumps(cur))
+                for grp, c in terms:
+                    cur["glm"]["beta"][grp][c] = self.params["glm"]["beta"][grp].get(c, 0.0)
+                steps.append(cur)
+            self._gp = steps
+        return self._gp
+
+    def breakdown(self, run: SimRun, p_model: float | None = None, n: int = BREAKDOWN_N) -> list:
+        """[(factor, label, logit delta)] in DISPLAY_ORDER whose sum is logit(p_model) (default
+        the run's own win %): each group's change in logit P(home win) when it is switched on,
+        from a neutral game, re-simulated with the same seed."""
+        g = pd.DataFrame([run.row])
+        ps = []
+        steps = self._group_params()
+        for k, prm in enumerate(steps[:-1]):
+            R = RT.build_rates(g, prm)
+            ps.append(MK.summarize(EN.simulate_game(R, 0, self.S, n, run.seed))["p_home"])
+        p_full = run.p_home if p_model is None else float(p_model)
+        z = [RT.logit(min(max(p, 1e-4), 1 - 1e-4)) for p in ps + [p_full]]
+        delta = {name: z[k + 1] - z[k] for k, (name, _, _) in enumerate(BREAKDOWN_GROUPS)}
+        delta["home_ice"] += z[0]                 # the neutral game's own edge (shootout home rate)
+        label = {name: lab for name, lab, _ in BREAKDOWN_GROUPS}
+        return [(f, label[f], float(delta[f])) for f in DISPLAY_ORDER]
+
+    def game(self, game_id, home_tri, away_tri, p_pub: float, total_pub: float, *, h_goalie=None, a_goalie=None,
+             bf=None, h_rest=None, a_rest=None, game_type=2, odds=None, home_name=None, away_name=None,
+             run: SimRun | None = None, why: str | None = None) -> dict:
+        """All COLUMNS for one pregame row.  ``p_pub`` / ``total_pub``: the published (blended)
+        home win probability and expected total; ``odds``: the game's odds.json entry.  ``run`` /
+        ``why``: an already simulated game (or the reason it could not be), from ``run()``."""
+        dist, info, raw_p, raw_total = None, {}, None, None
+        if run is None and why is None:
+            run, why = self.run(game_id, home_tri, away_tri, h_goalie=h_goalie, a_goalie=a_goalie, bf=bf,
+                                h_rest=h_rest, a_rest=a_rest, game_type=game_type)
+        try:
+            if run is not None:
+                raw_p, raw_total = run.p_home, run.total
+                if self.variant == "anchored" and p_pub is not None and total_pub is not None:
+                    o2, w, ainfo = AN.anchor_game(run.R, 0, self.S, self.n, run.seed, float(p_pub), float(total_pub),
+                                                  o=run.o)
+                    dist = Dist(MK.summarize(o2, w=w), "sim")
+                    info = {k: (round(v, 4) if isinstance(v, float) else v) for k, v in ainfo.items()}
                 else:
-                    R = RT.build_rates(g, self.params)
-                    seed = EN.game_seed(BASE_SEED, int(game_id))
-                    o = EN.simulate_game(R, 0, self.S, self.n, seed)
-                    raw = MK.summarize(o)
-                    raw_p, raw_total = raw["p_home"], raw["exp_total"]
-                    if self.variant == "anchored" and p_pub is not None and total_pub is not None:
-                        o2, w, ainfo = AN.anchor_game(R, 0, self.S, self.n, seed, float(p_pub), float(total_pub), o=o)
-                        dist = Dist(MK.summarize(o2, w=w), "sim")
-                        info = {k: (round(v, 4) if isinstance(v, float) else v) for k, v in ainfo.items()}
-                    else:
-                        dist = Dist(raw, "sim")
+                    dist = Dist(run.raw, "sim")
         except Exception as e:      # never break the prediction run
             why = f"error: {type(e).__name__}: {e}"
             dist = None

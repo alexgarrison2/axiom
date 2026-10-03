@@ -1,7 +1,8 @@
-# Predictions data contract (schema v2.2)
+# Predictions data contract (schema v2.3)
 
-v2.1 added the shadow columns, v2.2 the game simulator columns (both additive; the
-`schema_version` column stays `2`).
+v2.1 added the shadow columns, v2.2 the game simulator columns, v2.3 the win-% engine columns
+(`winpct_engine`, `logit_*`: the simulator became the engine of the model win %) (all additive;
+the `schema_version` column stays `2`).
 
 `predictions_detailed.csv` is written by `pipeline/predict_games.py` to
 `data/predictions_detailed.csv` (server copy) and
@@ -73,9 +74,13 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | Column | Type | Null | Description |
 |---|---|---|---|
 | `predicted_at` | ISO-8601 UTC | no | When the model outputs were computed. It only changes when an output changes. |
-| `model_version` | string | no | Game model version (`logit-elo-v5-...`). |
+| `model_version` | string | no | Version of the engine that made `side_model_win_pct`: the game simulator's parameter version (`sim-m5-YYYYMMDD`) when `winpct_engine` is `sim`, else the logit game model (`logit-elo-v5-...`). |
 | `preseason_prior` | bool | no | `True` while either team has fewer than 10 regular-season GP (the model is running mostly on priors). |
-| `side_model_win_pct` | float % | no | Model-only win probability, before the market blend. |
+| `side_model_win_pct` | float % | no | Model-only win probability, before the market blend. Since v2.3 the game simulator's own win % (`winpct_engine` = `sim`: player ratings → tonight's lineup → simulated game; `bu/sim/prereg_primary.json`), or the logit game model when the simulator cannot run the game or `PONYXG_WINPCT=logit`. |
+| `winpct_engine` | enum | no | `sim` or `logit`: which engine made `side_model_win_pct`. `logit` per game when the simulator's inputs are unavailable (lineup term stale / under the coverage gate: `sim_status` = `poisson_fallback`, reason in `sim_detail`), everywhere when the repository variable `PONYXG_WINPCT=logit` (rollback). Empty on rows frozen before v2.3. |
+| `logit_model_win_pct` | float % | no | Shadow, not displayed: the logit game model's model-only home win % (its rollback chain included: F1 / no-FIN models per `side_lineup_score`). Equals `home_model_win_pct` when `winpct_engine` is `logit`. |
+| `logit_home_win_pct` | float % | no | The same, blended with the market like `home_win_pct` (same price and `blend_weight`). |
+| `logit_expected_total` | float goals | no | `goal_model.expected_total` of the logit's features (league pace × matchup pace). |
 | `side_win_pct` | float % | no | **Published** win probability: the model blended with the de-vigged market (`market.py`). Home + away = 100. |
 | `side_model_odds` | string | no | Fair American odds of the **model-only** probability `side_model_win_pct` (`-125`, `+105`). Before fix1-G1 this held the published line; rows frozen before then are relabelled on read. |
 | `side_blend_odds` | string | no | Fair American odds of the **published** probability `side_win_pct` (the blend). Both lines are computed from the rounded percentages and agree with them to within 1 cent (validate_outputs `fair_odds`). |
@@ -91,9 +96,9 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | `market_source` | string | yes | Odds source (`bovada`, `draftkings`, ...). |
 | `market_fetched_at` | ISO-8601 UTC | yes | When that line was fetched. |
 | `side_xg` | float goals | no | Expected goals, including the expected OT goal. Backed out of the published win % (`goal_model.display_xg`), so the xG favourite is always the win % favourite. |
-| `expected_total` | float goals | no | Expected total goals (league pace × matchup pace). |
+| `expected_total` | float goals | no | Expected total goals (league pace × matchup pace, `goal_model.expected_total`; the pre-registered totals rule kept it over the simulator's own total, `sim_expected_total`). |
 | `side_xg_explained` | JSON list[string] | no | `["Even matchup: 3.08", "Home ice: +0.02", ...]`. The parts add up to `side_xg` (±0.02). |
-| `home_wp_breakdown` | JSON list | no | "Why this pick": `[{factor, label, wp_delta_pts, xg_home_delta, xg_away_delta}]` in order. Factors: `home_ice`, `strength_5v5`, `special_teams`, `goaltending`, `rest`, then `lineup_goalie` for a game model with a lineup feature (who dresses and who starts in net vs the team's usual: the RAPM v2 `bu_d_delta`, or the fast-track `d_lineup` / `d_goalie_swap`; DESIGN §8 F1/M2) or `lineup` for an older model (the separate `lineup_adjust` term), then `market` when there are odds. With the RAPM v2 lineup term, `strength_5v5` also carries `bu_d_net` (tonight's dressed skaters' even-strength RAPM net xG/60, home minus away) and, for a `-fin` model, `bu_d_fin` (the same skaters' finishing talent FIN, EV goals above xG per 60, expected-EV-TOI weighted, home minus away). A frozen row keeps the factor list of the model that made it. `50 + Σ wp_delta_pts = home_win_pct` (±0.1). Positive values favour the home team. |
+| `home_wp_breakdown` | JSON list | no | "Why this pick": `[{factor, label, wp_delta_pts, xg_home_delta, xg_away_delta}]` in order. Factors: `home_ice`, `strength_5v5`, `special_teams`, `goaltending`, `rest`, then `lineup_goalie` for a game model with a lineup feature (who dresses and who starts in net vs the team's usual: the RAPM v2 `bu_d_delta`, or the fast-track `d_lineup` / `d_goalie_swap`; DESIGN §8 F1/M2) or `lineup` for an older model (the separate `lineup_adjust` term), then `market` when there are odds. With the RAPM v2 lineup term, `strength_5v5` also carries `bu_d_net` (tonight's dressed skaters' even-strength RAPM net xG/60, home minus away) and, for a `-fin` model, `bu_d_fin` (the same skaters' finishing talent FIN, EV goals above xG per 60, expected-EV-TOI weighted, home minus away). A frozen row keeps the factor list of the model that made it. When `winpct_engine` is `sim` the factors are the simulator's own coefficient groups, `home_ice`, `strength_5v5` (tonight's lineup RAPM term, team 5v5 state, finishing), `special_teams` (PP / PK state and penalties taken / drawn), `goaltending` (the starters' goals-per-xG state), `rest` (back-to-backs), then `market`: each group's change in the simulated logit P(home win) when it is switched on from a neutral game (3,000 runs per step, same seed; `bu/sim/live.py` `breakdown`), the terms adding up exactly to the simulated win %. `50 + Σ wp_delta_pts = home_win_pct` (±0.1). Positive values favour the home team. |
 | `pick_summary` | string | no | One sentence (≤160 chars) naming the favourite and the top 2 factors. |
 | `confidence_grade` | enum | no | `A` (favourite ≥ 65%), `B` (60-65%), `C` (< 60%). Capped at `B` while `preseason_prior`. |
 | `confidence_note` | string | yes | How that tier has done in live picks (`model_report.json`), plus the early-season note. |
@@ -129,7 +134,7 @@ passes.  Markets without a posted price still get model probabilities; their EVs
 | `sim_version` | string | no | Simulator parameter version (`sim-m5-YYYYMMDD`). |
 | `sim_variant` | enum | no | `anchored` (the simulated game is tilted / paced so its home win % and expected total equal `home_win_pct` and `expected_total`), `raw`, or `poisson` (fallback). Chosen on the dev seasons by the pre-declared rule. |
 | `sim_n` | int | yes | Simulations behind the row (empty for the fallback). |
-| `sim_home_win_pct` | float % | yes | Shadow, not displayed: the raw simulator's own home win % (before anchoring). Empty for the fallback. |
+| `sim_home_win_pct` | float % | yes | The raw simulator's own home win % (before anchoring). Since v2.3 it is `home_model_win_pct` when `winpct_engine` is `sim` (up to the 3-97% guard); a shadow otherwise. Empty for the fallback. |
 | `sim_expected_total` | float goals | yes | The raw simulator's expected total (shootout winner counts 1 goal). |
 | `side_reg_pct` | float % | no | Regulation 3-way: the side leads after 60 minutes. |
 | `reg_tie_pct` | float % | no | Regulation 3-way: tied after 60 minutes. |
@@ -279,6 +284,9 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   probability of the outcome when there was a price).
 * SiteHistory also gains `home_inc_model%` / `home_inc%` (the F1 rollback shadow,
   `f1_shadow_model_win_pct` / `f1_shadow_home_win_pct`).
+* SiteHistory gains (v2.3) `winpct_engine`, `logit_model%` and `logit%` (`logit_model_win_pct` /
+  `logit_home_win_pct`): the logit game model's record is kept every run after the simulator
+  became the win-% engine, for a rollback (`PONYXG_WINPCT=logit`) and the live comparison.
 * RAPM v2 lineup term (`pipeline/bu/lineup/out/serving_bundle.json.gz`, rebuilt by the daily
   `bu_refresh.yml` workflow, see `pipeline/bu/README.md`): `built_at`, `max_source_date`,
   `n_games`, current ratings, TOI-share state, team lineup histories, the DFO-name

@@ -326,8 +326,12 @@ def naive_frame(pred: pd.DataFrame, p_col="p_home", t_col="exp_total") -> pd.Dat
 
 # ---------------------------------------------------------------------------- inputs
 
-def history_inputs(work: str) -> pd.DataFrame:
-    return pd.read_parquet(os.path.join(work, "history_inputs.parquet"))
+def history_inputs(work: str, params: dict | None = None) -> pd.DataFrame:
+    """Point-in-time inputs built with the parameters' lineup source (``lineup_source.py``)."""
+    from .lineup_source import history_inputs_name
+    if params is None:
+        params = load_params(missing_ok=True)
+    return pd.read_parquet(os.path.join(work, history_inputs_name(params)))
 
 
 def game_model_targets(work: str) -> pd.DataFrame:

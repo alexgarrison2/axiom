@@ -3,9 +3,12 @@
 A Monte Carlo of each game, built bottom up: who is dressed and who starts in net set each
 team's rates in every skater / goalie state, and 20,000 simulated games give the probability of
 every market we have a price for (moneyline, regulation 3-way, puck line +-1.5, the game total
-including pushes on whole lines, the 1st-period 3-way and 2-way markets).  The published
-moneyline stays the validated, market-blended game model (`home_win_pct`); the simulator is
-anchored to it (see "Anchoring") and its own raw win % is kept as a shadow.
+including pushes on whole lines, the 1st-period 3-way and 2-way markets).  Since 2026-10-03 the
+simulator is also the **engine of the model win %**: `home_model_win_pct` is its own raw win %
+(player ratings -> tonight's lineup -> simulated game), blended with the de-vigged market exactly
+as before (`market.py`), and the derivative markets are anchored to that published win % (see
+"Win-% engine").  The logit game model is kept as a logged shadow (`logit_*`) and per-game
+fallback; `PONYXG_WINPCT=logit` rolls back.
 
 Everything runs from `pipeline/`.  Pre-declared rules: `prereg.json` (written before any dev or
 holdout run, amendments timestamped).  Fitted parameters: `out/sim_params.json`.  Validation
@@ -240,6 +243,84 @@ simulator's game-to-game totals were better calibrated in 2025-26, slope 0.90 vs
 model's total it is anchored to; both under-shot the season's 6.25 goals a game); the pre-declared rule picked "anchored" on dev by
 0.0013, so it stays: a candidate for the next pre-registered change is "anchor the win % only and
 keep the simulator's own total".
+
+## Win-% engine (`primary.py`, `prereg_primary.json`)
+
+Pre-registered 2026-10-03 (committed before any run of the comparison) with the owner's rule: a
+candidate replaces the logit game model as the source of the model win % if its moneyline log
+loss is **lower on the dev seasons pooled** and **at most +0.0010 worse on the 2025-26 holdout**.
+Candidates, in pre-declared order: **A** the raw simulator (no anchoring; its own rates from the
+lineup RAPM term + FIN, team state, goalies, special teams, home ice, rest), then the better (on
+dev) of **C1** a 50/50 logit-space average of the simulator and the logit and **C2** the game
+model with `logit(p_sim)` as an extra feature.  Comparator **B**: the live logit's walk-forward
+probability (`train_game_model.walk_forward`, live feature set, C tuned inside each fold),
+rebuilt fresh.  Same games for everyone: regular season with finite simulator inputs and a
+walk-forward logit (the archive has no games 2024-10-04 .. 11-04).  Not blind for A: the
+moneyline of this exact comparison was in the M5 validation report (disclosed in the prereg).
+
+```bash
+cd pipeline
+python -m bu.sim.primary dev --work $W       # dev: candidates, totals, diagnostics, ablations
+python -m bu.sim.primary holdout --work $W   # the single 2025-26 look (logged, refused twice)
+```
+
+Moneyline log loss (Brier; logistic calibration slope), differences paired per game vs B:
+
+| Season | n | B logit | A sim | A - B (SE) | C1 avg | C1 - B (SE) | C2 stack | C2 - B (SE) |
+|---|---|---|---|---|---|---|---|---|
+| 2023-24 dev | 1,312 | 0.65875 (0.2336; 0.97) | 0.65820 (0.2333; 1.01) | -0.00056 (0.0025) | 0.65742 | -0.00134 (0.0013) | 0.65886 | +0.00011 (0.0004) |
+| 2024-25 dev | 1,063 | 0.66031 (0.2342; 1.10) | 0.65954 (0.2337; 1.09) | -0.00077 (0.0025) | 0.65911 | -0.00120 (0.0012) | 0.65968 | -0.00063 (0.0004) |
+| dev pooled | 2,375 | 0.65945 (0.2339; 1.02) | 0.65880 (0.2335; 1.04) | **-0.00065 (0.0018)** | 0.65817 | -0.00128 (0.0009) | 0.65923 | -0.00022 (0.0003) |
+| 2025-26 holdout | 1,312 | 0.67918 (0.2432; 0.77) | 0.67929 (0.2433; 0.85) | **+0.00011 (0.0021)** | 0.67853 | -0.00065 (0.0011) | 0.67805 | -0.00113 (0.0007) |
+
+**Decision: A (the raw simulator) is promoted** (dev better, holdout +0.00011 <= +0.0010; recorded
+in `out/sim_params.json` `primary` and `out/look_log.jsonl`).  C1 and C2 pass too and are a bit
+better on the holdout, but the pre-declared order prefers the bottom-up engine.  The simulator's
+predictions are less spread (SD of logit p 0.49 vs 0.51 dev, 0.41 vs 0.46 holdout) and better
+calibrated on the holdout (slope 0.85 vs 0.77); its mean p sits closer to the home win rate on
+dev (0.540 vs 0.522 for a rate of 0.552).
+
+Market (descriptive, 328 holdout games with a last pregame SiteHistory price, Mar-Apr 2026;
+blend weight 0.738): de-vigged market 0.6763; logit 0.6714 (blend 0.6715); simulator 0.6731
+(blend 0.6732, -0.0031 vs the market, SE 0.0036; +0.0017 vs the logit blend, SE 0.0034).
+
+**Totals** (rule: the simulator's own expected total replaces `goal_model.expected_total` as
+the derivative anchor only if it is better on dev and not worse than +0.0010 on the holdout;
+score = summed log loss of over 5.5, over / push / under 6.0, over 6.5, simulator anchored to the
+promoted win % and either total): dev pooled T_sim - T_gm **+0.0039** (SE 0.0066; 2023-24 +0.0048,
+2024-25 +0.0027), holdout **-0.0172** (SE 0.0086).  Fails on dev, so **`expected_total` stays
+goal_model's** and the derivative markets are anchored to (published win %, goal_model total).
+The holdout says the opposite (over 5.5 slope 0.93 with the sim's total vs 0.55): 2025-26 scored
+6.25 goals a game and the simulator's game-to-game spread of totals tracked it better.  A next
+pre-registered test should use the 2026-27 live totals closes.
+
+**Diagnostics** (dev, descriptive).  Ablations of the raw simulator (each coefficient group set
+to 0; ML log loss change, SE): RAPM lineup term +0.0091 (0.0024), home ice +0.0041 (0.0015),
+team 5v5 state +0.0019 (0.0012), rest +0.0016 (0.0007), finishing +0.0009 (0.0012), special teams
++0.0009 (0.0008), penalties +0.0004 (0.0005), opposing goalie +0.0000 (0.0012).  What the logit
+features add to the simulator (offset logistic): LR chi2 16.0 on 11 df (all-situations xG share
++0.32 per SD, SE 0.14; rest days +0.10, SE 0.06; the rest within noise).  What the simulator's
+components add to the logit: chi2 7.3 on 7 df.  Jointly, logit(y) ~ 0.39 logit p_sim + 0.67
+logit p_logit (SEs 0.27 / 0.26): the two carry largely the same information.
+
+**Live** (`predict_games.build_model_outputs`): each pregame game is simulated once
+(`SimServer.run`, 20,000 runs); `home_model_win_pct` = its win % (3-97% guard), `model_version` =
+the simulator version, the "why this pick" breakdown = the simulator's coefficient groups
+switched on one at a time from a neutral game (`SimServer.breakdown`, 3,000 runs a step, same
+seed; terms add up exactly to the model logit), then `market.price_game` blends as before and the
+same simulation is anchored to the published win % for the derivative markets.  The logit runs
+every time and is logged (`logit_model_win_pct`, `logit_home_win_pct`, `logit_expected_total`;
+SiteHistory `logit_model%` / `logit%`; the BU / F1 shadows stay blends of the logit models).
+Per-game fallback to the logit (`winpct_engine = logit`) when the simulator cannot run the game
+(lineup term stale / under the coverage gate, missing pack or parameters, non-finite inputs).
+Rollback: repository variable `PONYXG_WINPCT=logit`.  `validate_outputs.py winpct_engine` checks
+every row.
+
+**Next ratings (v4)**: the lineup inputs are pluggable (`lineup_source.py`): a new ratings table
+with the same per-side off / def / fin scale and its serving bundle are re-fitted with
+`python -m bu.sim.fit glm --work $W --lineup-table <csv> --lineup-bundle <json.gz> --lineup-name v4
+--params-out <file>`, scored with `PONYXG_SIM_PARAMS=<file>` and promoted by a new pre-registered
+comparison (the dispersion grid, fitted with RAPM v2 inputs, should be rerun on the new inputs).
 
 ## Runtime
 

@@ -275,3 +275,88 @@ def test_history_grades_sim_markets():
         assert m["ll"] is not None and m["naive_ll"] is not None
     assert g["reg3"]["market_p"] is not None
     assert GH.grade_sim_markets({"p_home": 0.5, "sim_markets": float("nan")}, res) is None
+
+
+# ---------------------------------------------------------------- win-% engine (prereg_primary.json)
+
+def _sim_inputs_row(**kw):
+    row = {"game_type": 2, "lg_ev_goals": 2.5 / 3600, "lg_ev_xg": 2.4 / 3600, "lg_pp_goals": 7.0 / 3600,
+           "lg_pp_xg": 6.5 / 3600, "lg_pen": 0.0008, "lg_fin": 1.0, "lg_gsv": 1.0,
+           "bu_ok": True, "c_intercept": 2.5, "bu_h_off": 0.15, "bu_h_def": -0.05, "bu_a_off": -0.05,
+           "bu_a_def": 0.10, "bu_h_fin": 0.05, "bu_a_fin": -0.02, "h_rest": 2, "a_rest": 1}
+    for s, k in (("h", 1.04), ("a", 0.97)):
+        for q in ("ev_off", "pp", "take", "fin"):
+            row[f"{s}_t_{q}"] = k
+        for q in ("ev_def", "pk", "draw"):
+            row[f"{s}_t_{q}"] = 2 - k
+        row[f"{s}_g_gsv"] = 1.0 if s == "h" else 1.03
+    row.update(kw)
+    return row
+
+
+def _sim_run(params, n=4000, gid=2026020099):
+    from bu.sim.live import SimRun
+    row = _sim_inputs_row()
+    R = RT.build_rates(pd.DataFrame([row]), params)
+    seed = EN.game_seed(20261002, gid)
+    S = EN.Structure(params["structural"], params.get("dispersion"))
+    return SimRun(gid, row, R, EN.simulate_game(R, 0, S, n, seed), seed)
+
+
+def test_breakdown_adds_up_to_the_simulated_win_pct(params):
+    from bu.sim.live import DISPLAY_ORDER
+    srv = SimServer(params, SimState(), {"HOM": 1, "AWY": 2}, n=4000)
+    run = _sim_run(params)
+    terms = srv.breakdown(run, n=2000)
+    assert [t[0] for t in terms] == DISPLAY_ORDER
+    assert sum(t[2] for t in terms) == pytest.approx(RT.logit(run.p_home), abs=1e-9)
+    d = {t[0]: t[2] for t in terms}
+    assert d["home_ice"] > 0 and d["strength_5v5"] > 0          # home is the stronger lineup
+    assert d["rest"] > 0                                         # the away team is on a back-to-back
+    # an explicit model probability (after the 3-97% guard) is what the terms add up to
+    assert sum(t[2] for t in srv.breakdown(run, 0.6, n=2000)) == pytest.approx(RT.logit(0.6), abs=1e-9)
+
+
+def test_game_reuses_a_run_and_keeps_the_raw_shadow(params):
+    srv = SimServer(params, SimState(), {"HOM": 1, "AWY": 2}, n=4000)
+    run = _sim_run(params)
+    row = srv.game(2026020099, "HOM", "AWY", 0.55, 6.0, run=run, odds=ODDS, home_name="Home", away_name="Away")
+    assert row["sim_status"] == "sim" and row["sim_variant"] == "anchored"
+    assert row["sim_home_win_pct"] == round(100 * run.p_home, 1)
+    assert json.loads(row["sim_detail"])["anchor"]["p"] == pytest.approx(0.55, abs=0.002)
+    fb = srv.game(2026020099, "HOM", "AWY", 0.55, 6.0, run=None, why="lineup term unavailable (x)", odds=ODDS)
+    assert fb["sim_status"] == "poisson_fallback"
+
+
+def test_winpct_mode_switch(monkeypatch):
+    import predict_games as P
+
+    class Srv:
+        params = {"primary": {"winpct": "sim", "total": "gm"}}
+    monkeypatch.delenv("PONYXG_WINPCT", raising=False)
+    assert P.winpct_mode(Srv()) == "sim" and P.sim_total_mode(Srv()) == "gm"
+    assert P.winpct_mode(None) == "logit"              # nothing promoted: the logit
+    monkeypatch.setenv("PONYXG_WINPCT", "logit")       # rollback variable
+    assert P.winpct_mode(Srv()) == "logit"
+    monkeypatch.setenv("PONYXG_WINPCT", "bogus")
+    assert P.winpct_mode(Srv()) == "sim"
+
+
+def test_lineup_source_is_pluggable(tmp_path, monkeypatch):
+    from bu.sim import lineup_source as LS
+    from bu.sim import params as PR
+    assert LS.spec(None)["name"] == "rapm_v2" and LS.history_inputs_name({}) == "history_inputs.parquet"
+    p = {"lineup": {"name": "v4", "history_table": str(tmp_path / "v4.csv")}}
+    assert LS.spec(p)["serving_bundle"] == LS.DEFAULT["serving_bundle"]
+    assert LS.history_inputs_name(p) == "history_inputs_v4.parquet"
+    pd.DataFrame([{**{c: 1 for c in LS.REQUIRED}, "bu_ok": "True", "extra": 3}]).to_csv(tmp_path / "v4.csv",
+                                                                                        index=False)
+    t = LS.history_table(LS.spec(p))
+    assert bool(t["bu_ok"].iloc[0]) and "extra" not in t
+    pd.DataFrame([{"game_id": 1}]).to_csv(tmp_path / "bad.csv", index=False)
+    with pytest.raises(ValueError):
+        LS.history_table(str(tmp_path / "bad.csv"))
+    alt = tmp_path / "params.json"
+    PR.save_params({"version": "x"}, str(alt))
+    monkeypatch.setenv(PR.PARAMS_ENV, str(alt))
+    assert PR.load_params()["version"] == "x"

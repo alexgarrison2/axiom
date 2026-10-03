@@ -83,8 +83,12 @@ jobs:
           #   PONYXG_XG=v1|shadow  publish xG v1 again (pipeline/bu/xg/README.md "Rollback")
           #   PONYXG_BU=off        publish the F1 rollback model (no RAPM lineup term); the joint
           #                        model stays logged in bu_shadow_home_win_pct (pipeline/bu/README.md)
+          #   PONYXG_WINPCT=logit  publish the logit game model's win % instead of the game
+          #                        simulator's; the simulator still prices the derivative markets
+          #                        and the logit stays logged in logit_* (pipeline/bu/sim/README.md)
           PONYXG_XG: ${{ vars.PONYXG_XG }}
           PONYXG_BU: ${{ vars.PONYXG_BU }}
+          PONYXG_WINPCT: ${{ vars.PONYXG_WINPCT }}
         run: python pipeline/refresh_pipeline.py --mode "$MODE"
 
       - name: Validate outputs (data contract gate)

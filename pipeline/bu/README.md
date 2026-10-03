@@ -153,8 +153,12 @@ plays, pulled goalies, score effects, a post-goal lull, a strength-tilt shock), 
 from the RAPM v2 lineup term, FIN, the expected starters and a point-in-time team state.  It
 prices every market in `odds.json` (regulation 3-way, puck line, totals with pushes, 1st-period
 3-way and 2-way) in `predictions_detailed.csv` (CONTRACT "Game simulator"), anchored to the
-published win % and total; its raw win % is a shadow.  Derivative EVs are INFO ONLY until the
-live closing-line test of `bu/sim/prereg.json` passes.  Model, fitted parameters and validation:
+published win % and total.  Since 2026-10-03 its own win % is the model win % (before the
+unchanged market blend), promoted by the pre-registered comparison `bu/sim/prereg_primary.json`
+(dev 2023-25 log loss 0.6588 vs the logit's 0.6595; holdout 2025-26 0.6793 vs 0.6792, inside the
++0.0010 margin); the logit game model is a logged shadow (`logit_*`) and the per-game fallback,
+and `PONYXG_WINPCT=logit` rolls back.  Derivative EVs are INFO ONLY until the live closing-line
+test of `bu/sim/prereg.json` passes.  Model, fitted parameters and validation:
 `bu/sim/README.md`.
 
 ## `bu.lake`: event / shift / roster lake (M0b, DESIGN §2.1-2.3, §2.6)
