@@ -90,7 +90,7 @@ describe('G1-2 goalie rating headline', () => {
 describe('G1-1 Lines tab season tag', () => {
     const side = (grade: boolean) =>
         ({
-            lines: { f1: [{ playerId: 1, name: 'A B', display: 'B', pos: 'C', ppUnit: null, movement: null, impact: 0.4 }] },
+            lines: { f1: [{ playerId: 1, name: 'A B', display: 'B', pos: 'C', ppUnit: null, movement: null, impact: 0.4, value82: 4.2 }] },
             lineImpacts: { f1: null },
             grade: grade ? { value: 6.7, rank: 4, outOf: 32 } : null,
             lineupSource: null,
