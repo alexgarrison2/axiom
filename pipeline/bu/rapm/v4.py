@@ -84,7 +84,8 @@ class Shrink4(V.Shrink):
         return asdict(self)
 
 
-SHRINK = Shrink4()                  # the selected configuration (v4_validation.json), set after tuning
+# the selected configuration (out/v4_validation.json "chosen" / "chosen_st": v4_prereg rules on 2019-23)
+SHRINK = Shrink4(v_o=0.01, v_d=0.02, v_beta=1e-4, t0=150.0, spm=True, spm_st=True, v_beta_st=3e-4, v_pp=0.04, v_pk=0.08)
 
 
 # ----------------------------------------------------------------------- weighted box sums and features
