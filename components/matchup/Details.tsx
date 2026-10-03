@@ -56,9 +56,11 @@ export default function Details({ p, phase, implication, onCollapse }: DetailsPr
     return (
         <div className="relative flex flex-col gap-3 border-t border-dashed border-line px-3 pb-2 pt-3 cq-md:px-4">
             <Segmented label={`${game} details`} options={TABS} value={tab} onChange={setTab} size="sm" block optionClassName="px-1.5 tracking-[0.06em] cq-md:px-3 cq-md:tracking-[0.12em]" />
+            {/* Focusable: a tall panel (e.g. Goalies on a phone) scrolls inside its 640px cap, and keyboard users must reach it. */}
             <div
                 id={panelId}
                 role="region"
+                tabIndex={0}
                 aria-label={`${TABS.find(t => t.value === tab)?.label ?? 'Details'}: ${game}`}
                 className="max-h-[640px] overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-width:thin]"
             >
