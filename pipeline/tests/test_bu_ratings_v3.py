@@ -312,7 +312,8 @@ def test_check_player_ratings_v3(tmp_path):
         json.dump(b, f)
     p.write_text(json.dumps(doc))
     ctx = {"player_ratings_path": str(p), "bu_bundle_path": str(bp)}
-    assert Vo.check_player_ratings(ctx) == []
+    errs = Vo.check_player_ratings(ctx)          # a v3 file is now only short of the v4 version
+    assert errs and all("version" in e for e in errs)
     bad = json.loads(json.dumps(doc))
     bad["rows"][0][bad["columns"].index("impact")] = 99.0
     p.write_text(json.dumps(bad))
@@ -328,7 +329,7 @@ def test_committed_v3_files():
     """The committed site file and ratings pack are v3 and the gate passes on them."""
     import validate_outputs as Vo
     doc = json.load(open(os.path.join(ROOT, "public", "data", "player_ratings.json")))
-    assert doc["version"] == 3 and Vo.check_player_ratings({}) == []
+    assert doc["version"] >= 3 and Vo.check_player_ratings({}) == []
     pk = P3.read_pack(P3.pack_path(doc["season"]))
     assert pk is not None and pk["config"]["recency"]["max_games"] <= 246
     assert Recency.from_dict(pk["config"]["recency"]).effective_table()["by_82_game_season_back"]["S-3"] == 0

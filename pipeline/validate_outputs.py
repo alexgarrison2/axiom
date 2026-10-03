@@ -848,7 +848,7 @@ PLAYER_RATINGS_COLUMNS = ("id", "name", "team", "pos", "roster", "rated", "impac
                           "off", "def", "net", "off_total", "toi", "gp")
 PLAYER_RATINGS_MIN_ROSTER = 600
 PLAYER_RATINGS_MAX_LAG_DAYS = 3
-PLAYER_RATINGS_VERSION = 3      # 3: per-game impact headline (ratings v3); 2: def = xGA/60 prevented, net = off + def
+PLAYER_RATINGS_VERSION = 4      # 4: ratings v4 (box-score prior, penalties); 3: per-game impact headline (ratings v3); 2: def = xGA/60 prevented
 PLAYER_RATINGS_V4_COLUMNS = ("pen_impact", "pd60", "pt60", "spm_off", "spm_def", "spm_pp", "spm_pk")
 PLAYER_RATINGS_TOI_MAX = {"toi_ev_gp": 30.0, "toi_pp_gp": 8.0, "toi_pk_gp": 8.0}
 
@@ -872,7 +872,7 @@ def check_player_ratings(ctx):
     errs = []
     if int(doc.get("version") or 0) < PLAYER_RATINGS_VERSION:
         errs.append(f"player_ratings.json: version {doc.get('version')} < {PLAYER_RATINGS_VERSION} "
-                    "(ratings v3 with the per-game impact headline; re-export)")
+                    "(ratings v4: box-score prior and penalties; re-export from a bundle with the v4 table)")
     unnamed = [r.get("id") for r in rows if not str(r.get("name") or "").strip()]
     if unnamed:
         errs.append(f"player_ratings.json: {len(unnamed)} rows without a name, e.g. {unnamed[:5]}")

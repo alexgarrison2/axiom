@@ -301,8 +301,8 @@ def model_version(training_date: datetime, cols=None, xg_version=None, ratings=N
         v += '-rapm'
     if cols is not None and any(c in cols for c in F.BU_FIN_COLUMNS):
         v += '-fin'
-    if ratings == 'v3' and cols is not None and any(c in cols for c in F.BU_COLUMNS):
-        v += '-r3'
+    if ratings in ('v3', 'v4') and cols is not None and any(c in cols for c in F.BU_COLUMNS):
+        v += '-r' + ratings[1]          # -r3 / -r4 (ratings v4: box-score prior)
     return v
 
 

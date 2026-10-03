@@ -170,7 +170,9 @@ class MLPredictor:
             path = rel if os.path.isabs(rel) else os.path.join(self.pipeline_dir, rel)
             try:
                 from bu.lineup.serve import LiveLineupTerm
-                self._bu_term = LiveLineupTerm.load(path)
+                # the ratings the model's lineup table was built from (v2 bundle tables, or the v3 / v4 table)
+                self._bu_term = LiveLineupTerm.load(path, ratings=(self.meta.get('bu_lineup') or {}).get('ratings')
+                                                    or 'v2')
                 print(f"[ML] RAPM lineup bundle: built {self._bu_term.b['built_at']} "
                       f"({self._bu_term.age_hours():.1f} h old), {self._bu_term.b['n_games']} games of "
                       f"{self._bu_term.b['season']}, max source date {self._bu_term.b.get('max_source_date')}")

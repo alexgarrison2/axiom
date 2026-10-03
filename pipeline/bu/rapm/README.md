@@ -11,6 +11,78 @@ live game model** (`logit-elo-v5-20261001-xg2-rapm`: `bu_d_net + bu_d_delta` rep
 `d_lineup`; `pipeline/bu/README.md` "Live").  The xG v1-target results below are kept for the
 record; their reports are archived in `out/xgv1/` and `../lineup/out/xgv1/`.
 
+## Ratings v4 (2026-10-03): v3 + a box-score (statistical plus-minus) prior
+
+Why: v3 still ranked Kiviranta (+0.9) above Rantanen (-0.5) and Makar 199th.  On-ice RAPM cannot
+split credit between players who share most of their ice time (Rantanen 81% of his EV time with
+MacKinnon in 2023-24, 73% with Johnston in 2025-26), and v3 used no individual production, so a
+low-event fourth liner was credited by default.  v4 is the RPM / EPM remedy, pre-registered in
+`v4_prereg.json` before any dev / holdout look (one 2021-22 pilot set the grids).
+
+**Model** (`box.py`, `v4.py`): per player-game individual counts from the lake play-by-play, split by
+the player's own manpower state (EV: goals, primary / secondary assists, individual xG v2,
+unblocked and all attempts, rebounds and rush attempts created, blocks, takeaways, giveaways,
+hits, faceoffs won / lost; PP: goals, assists, ixG, attempts; PK: blocks, takeaways; all
+situations: penalties drawn / taken; usage: EV / PP / PK minutes per game), weighted with the same
+D90 game recency as the stints, shrunk to the position rate with `t0` pseudo minutes and
+standardised within F / D.  Each RAPM component's prior mean is `role mean + z' beta`, with `beta`
+(per feature, component and position group, ridge `v_beta`) fitted JOINTLY with the players in the
+stage-1 ridge on the stint outcomes (no two-step regression on shrunken RAPM estimates).  In
+season the prior mean follows the box score (`b0 += beta' (z(pre + season) - z(pre))`).
+Penalties enter the impact directly: `82 x pen_value x all-situation minutes x (pd60 - m) - (pt60 - m)`
+(`pen_value` = league net PP goals per penalty unit of the last season, 0.153 for 2025-26), drawn in
+`off_impact`, taken in `def_impact`.
+
+**Selection** (tuning 2019-23 only, `out/v4_validation.json`): `v_beta 1e-4`, `t0 150` min,
+`v_o 0.01` (the grid edge; 0.005 scored worse), `v_d 0.02`; PP / PK `v_pp 0.04`, `v_pk 0.08`,
+`v_beta_st 3e-4`; penalty pseudo minutes 400 (Poisson deviance; also best on dev and holdout).
+Calibration slopes 0.98 / 1.01 (EV), 1.06 / 1.13 (PP) -> impact weights 1.
+
+Next-30-game EV stint MSE, minus v3 (D90) on the same rows (paired, date-clustered SE):
+
+| | tuning 2019-23 | dev 2023-25 | holdout 2025-26 (single logged look) |
+|---|---|---|---|
+| **v4** | **-0.0138 (0.0018)** | **-0.0051 (0.0024)** | **-0.0122 (0.0033)** |
+| v2 window (shipped before v3) | +0.0029 | +0.0071 | +0.0086 |
+| Kalman chain | -0.0098 | -0.0105 | -0.0049 |
+| v4 next-season MSE | -0.0145 | -0.0069 | -0.0162 (z -4.9) |
+| v4 PP MSE vs v3 PP / PK | -0.189 (z -6.8) | -0.116 (z -2.7) | -0.181 (z -2.9) |
+
+Dev seasons: 2023-24 -0.0025 (0.0036), 2024-25 -0.0077 (0.0030); every tuning season better.
+The ship rule (dev pooled below v3) passes for EV and PP / PK.
+
+**Which individual stats matter** (2026-27 season start, xG/60 per SD, forwards; DEF in the
+prevented sign): EV OFF ixG +.049, primary assists +.029, rebounds created +.024, secondary assists
++.020, penalties drawn +.019, EV minutes +.018, giveaways +.018 (a possession proxy), goals +.014,
+unblocked attempts +.014, takeaways +.012; blocks -.009, hits -.007.  EV DEF: PK minutes +.024,
+hits +.017, takeaways +.015, blocks +.012, goals -.010, PP minutes -.014.  PP OFF: PP ixG +.064,
+PP attempts +.048, PP primary assists +.047, PP minutes +.046.  Full table: the bundle's
+`v4.meta.spm_coef` / `player_ratings.json` `impact.spm_coef`.
+
+**Sanity list** (a written check, not a target; 2026-27 season start): 19 / 21 pass (v3: 16 / 21).
+Fails: Rantanen top 50 (245th, +0.6: EV OFF +.14 but EV DEF -.09 and -0.9 goals of penalties) and
+Rantanen in DAL's top 8 (9th).  Makar 24th (v3 202nd); Kiviranta, Faksa, Bäck below DAL's median and
+below Rantanen.  MoneyPuck (2024-26): impact vs gameScore / GP 0.789 (v3 0.721), vs points / 60
+0.559 (0.494); EV OFF vs 5on5 rel xGF/60 0.768 (0.761); EV DEF vs rel xGA/60 prevented 0.651 (0.675).
+
+**Game level** (`../lineup/out/retrain_v4.json`, look in `../lineup/out/look_log.jsonl`): the live
+feature set on the lineup table rebuilt from v4 (`lineup_features_v4.csv.gz`) vs the live model:
+dev pooled -0.00035 (SE 0.00056; 2023-24 -0.00045, 2024-25 -0.00023), 2025-26 +0.00079 (SE 0.00122)
+<= +0.0010: the owner rule passes (pooled 2023-26 +0.00005, i.e. neutral).  Served from the bundle's
+`v4` table when the model meta says `bu_lineup.ratings = "v4"` (`LiveLineupTerm(ratings=...)`).
+
+**Commands** (from `pipeline/`):
+
+```bash
+# season rollover (full lake, after `bu.rapm asof` through S): the committed v4 season pack
+python -m bu.rapm.v4_pack pack --season 20262027 --xg <asof xG source> --out <RAPM state>
+#   -> bu/lineup/out/ratings_pack_v4_20262027.json.gz (v3 pack + SPM coefficients / standardisation / box sums)
+# daily: bu.lineup serve -> bundle "v4" table (v3 columns + spm_o/d/pp/pk, pd60, pt60; meta.pen_value,
+#        spm_coef) -> bu.lineup.ratings_export -> public/data/player_ratings.json (version 4)
+# validation: bu.rapm.v4_validate.run_candidate (v3_validate scoring), out/v4_validation.json,
+#   the stint look: out/v4_look_log.jsonl; game model: retrain.py --ratings-v4 <table> [--promote]
+```
+
 ## Ratings v3 (2026-10-02): game recency, OFF / DEF shrinkage, per-game impact
 
 Owner decisions 2026-10-02 after the DAL audit (Kiviranta 3rd on DAL by NET from 23 h on COL's

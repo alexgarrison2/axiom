@@ -179,6 +179,9 @@ def _big_doc(season="20262027", as_of="2026-09-30"):
     b = _bundle(season, as_of)
     b["v3"]["rows"] = [[i, "D" if i % 3 == 0 else "F", True, 0.01 * (i % 50), 0.01 * (i % 7) - 0.03, 0.01, 0.004, 0.0,
                         0.1, -0.1, 0.04, 0.02, 0.0, 15.0, 1.5, 1.5, ""] for i in range(1, 701)]
+    from bu.rapm.v4_pack import LIVE_COLUMNS as C4     # the site file is version 4 (ratings v4 table)
+    b["v4"] = {"columns": C4, "rows": [r[:-1] + [r[3], r[4], 0.0, 0.0, 0.5, 0.5, ""] for r in b["v3"]["rows"]],
+               "meta": dict(b["v3"]["meta"], pen_value=0.15)}
     return RE.build_export(b, None, roster, None, now=NOW)
 
 
@@ -227,7 +230,7 @@ def test_committed_player_ratings():
     for name in ("Connor McDavid", "Nathan MacKinnon"):
         assert name in top, (name, top)
     # signs: DEF is xGA/60 prevented, NET = OFF + DEF, impact = off_impact + def_impact
-    assert doc["version"] == 3
+    assert doc["version"] == 4 and "pen_impact" in doc["columns"]   # ratings v4
     assert all(abs(r["off"] + r["def"] - r["net"]) <= 0.002 for r in ros)
     assert all(abs(r["off_impact"] + r["def_impact"] - r["impact"]) <= 0.02 for r in ros)
 

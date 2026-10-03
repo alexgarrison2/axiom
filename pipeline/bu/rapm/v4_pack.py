@@ -49,7 +49,7 @@ def _spm_json(p: V4.Prior4) -> dict:
     return {"stats": p.stats.to_json() if p.stats is not None else None,
             "coef": {c: {g: [r(x, 8) for x in v] for g, v in d.items()} for c, d in (p.coef or {}).items()},
             "box_columns": V4.SUM_COLS,
-            "box": [[int(i)] + [r(x, 1 if c in V4.SEC_COLS else 4) for c, x in zip(V4.SUM_COLS, row)]
+            "box": [[int(i)] + [r(x, 0 if c in V4.SEC_COLS else 2) for c, x in zip(V4.SUM_COLS, row)]
                     for i, row in zip(box.index, box[V4.SUM_COLS].to_numpy())]}
 
 

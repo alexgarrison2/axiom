@@ -1219,6 +1219,14 @@ V3_RULE = ('owner rule (bu/rapm/v3_prereg.json "game_model_rule"): the live feat
            'single 2025-26 look is not worse than +%.4f per game' % V3_HOLDOUT_TOL)
 
 
+V4_REPORT = os.path.join(SCRIPT_DIR, 'bu', 'lineup', 'out', 'retrain_v4.json')
+V4_LOOK_COMPONENT = 'Ratings v4 lineup term'
+V4_RULE = ('owner rule (bu/rapm/v4_prereg.json "game_model_rule"): the live feature set retrained on the lineup '
+           'table rebuilt from ratings v4 (bu_d_net / bu_d_delta / bu_d_fin) is promoted only if its dev pooled '
+           '(2023-24 + 2024-25) walk-forward log loss is lower than the live model\'s (paired per game) and the '
+           'single 2025-26 look is not worse than +%.4f per game' % V3_HOLDOUT_TOL)
+
+
 def _component_look(component, name, config_hash, run):
     """One logged 2025-26 look per component (``_fin_look`` for any component)."""
     from bu.lineup import evaluate as EV
@@ -1237,38 +1245,42 @@ def _component_look(component, name, config_hash, run):
 
 
 def archive_fin_shadow(cur_meta, model_path=T.MODEL_PATH, out_model=FIN_SHADOW_MODEL, out_meta=FIN_SHADOW_META):
-    """Keep the replaced v2 joint model (RAPM v2 net / delta + FIN v2) as a rollback, served from the
-    serving bundle's v2 tables (``players_v2`` / ``fin_v2``) with ``PONYXG_BU=v2``."""
+    """Keep the replaced v2 joint model (RAPM v2 net / delta + FIN v2) as a rollback (models/shadow/): its
+    meta has no ``bu_lineup.ratings``, so ``ml_predict`` serves it from the bundle's v2 ``players`` / ``fin``
+    tables; to roll back, copy it over game_model.pkl / game_model_meta.json (or restore them from git)."""
     import shutil
     os.makedirs(os.path.dirname(out_model), exist_ok=True)
     shutil.copyfile(model_path, out_model)
     meta = dict(cur_meta)
-    meta['shadow_role'] = {'role': 'rollback of the ratings v3 lineup term (PONYXG_BU=v2): the v2 joint model with '
+    meta['shadow_role'] = {'role': 'rollback of the ratings v3 / v4 lineup term: the v2 joint model with '
                                    'FIN, on the bundle\'s v2 ratings', 'archived_at': _now().isoformat(),
                            'xg_inputs': 'live', 'ratings': 'v2'}
     _write(out_meta, meta)
     return meta
 
 
-def v3_main(cur_meta, args):
+def v3_main(cur_meta, args, ver='v3'):
     """Live feature set on the v3 lineup table vs the live model on the committed (v2) table: dev folds,
-    then the single logged 2025-26 look (V3_RULE); with --promote, archive the live model as the v2
+    then the single logged 2025-26 look (RULE); with --promote, archive the live model as the v2
     rollback and promote (the v3 table becomes lineup_features.csv.gz, the v2 one is kept)."""
     import hashlib
     import shutil
     from bu.lineup import evaluate as EV
-    table = args.ratings_v3
+    table = args.ratings_v3 if ver == 'v3' else args.ratings_v4
+    REPORT = V3_REPORT if ver == 'v3' else V4_REPORT          # ratings v4: its own report and look component
+    COMPONENT = V3_LOOK_COMPONENT if ver == 'v3' else V4_LOOK_COMPONENT
+    RULE = V3_RULE if ver == 'v3' else V4_RULE
     live_cols = list(cur_meta.get('feature_columns') or F.FEATURE_COLUMNS)
     M, xg_source = T.build_matrix()
     Mc = T.attach_bu_features(M.copy(), path=table)
     sha = hashlib.sha256(open(table, 'rb').read()).hexdigest()
-    print(f"[v3] {len(M)} games; live {cur_meta.get('model_version')} {live_cols}; v3 table {table} ({sha[:12]})")
+    print(f"[{ver}] {len(M)} games; live {cur_meta.get('model_version')} {live_cols}; v3 table {table} ({sha[:12]})")
     dev = tuple(DEV_SEASONS)
     base_fd, base_dev = walk(M, live_cols, test_seasons=dev)
     cand_fd, cand_dev = walk(Mc, live_cols, test_seasons=dev)
     repro = {str(f['test_season']): abs(f['log_loss'] - base_fd[f['test_season']]['log_loss'])
              for f in cur_meta.get('cv_results', []) if f['test_season'] in base_fd}
-    print(f"[v3] live baseline reproduces game_model_meta.json cv_results (dev): max |dLL| "
+    print(f"[{ver}] live baseline reproduces game_model_meta.json cv_results (dev): max |dLL| "
           f"{max(repro.values()) if repro else float('nan'):.2e}")
     dev_rep = {str(S): _cmp(base_dev, cand_dev, (S,)) for S in dev}
     dev_rep['pooled'] = _cmp(base_dev, cand_dev, dev)
@@ -1277,31 +1289,31 @@ def v3_main(cur_meta, args):
               f"{v['ll_candidate']:.5f} Brier {v['brier_incumbent']:.5f} -> {v['brier_candidate']:.5f}")
     dev_pass = bool(dev_rep['pooled']['delta_ll'] < 0)
     cfg = EV.config_hash({'live_model': cur_meta.get('model_version'), 'v3_table_sha256': sha}, live_cols)
-    report = {'generated_at': _now().isoformat(), 'rule': V3_RULE, 'live_model': cur_meta.get('model_version'),
-              'features': live_cols, 'v3_table': os.path.relpath(table, SCRIPT_DIR) if table.startswith(SCRIPT_DIR)
+    report = {'generated_at': _now().isoformat(), 'rule': RULE, 'live_model': cur_meta.get('model_version'),
+              'features': live_cols, 'v3_table' if ver == 'v3' else 'ratings_table': os.path.relpath(table, SCRIPT_DIR) if table.startswith(SCRIPT_DIR)
               else os.path.basename(table), 'v3_table_sha256': sha, 'config_hash': cfg,
               'live_baseline_reproduction_max_abs_ll_diff': max(repro.values()) if repro else None,
               'dev': dev_rep, 'dev_pass': dev_pass, 'promoted': False}
     if not dev_pass:
         report['decision'] = 'dev rule failed: no holdout look, not promoted'
-        _write(args.report or V3_REPORT, report)
-        print(f"[v3] {report['decision']} ({args.report or V3_REPORT})")
+        _write(args.report or REPORT, report)
+        print(f"[{ver}] {report['decision']} ({args.report or REPORT})")
         return 1 if args.strict else 0
     if args.no_holdout:
         report['decision'] = 'dev rule passed; holdout look not taken (--no-holdout)'
-        _write(args.report or V3_REPORT, report)
-        print(f"[v3] {report['decision']} ({args.report or V3_REPORT})")
+        _write(args.report or REPORT, report)
+        print(f"[{ver}] {report['decision']} ({args.report or REPORT})")
         return 0
     H = HOLDOUT_SEASON
     _, base_h = walk(M, live_cols, test_seasons=(H,))
     _, cand_h = walk(Mc, live_cols, test_seasons=(H,))
-    look = _component_look(V3_LOOK_COMPONENT, V3_LOOK_COMPONENT + ', soft holdout 2025-26', cfg,
+    look = _component_look(COMPONENT, COMPONENT + ', soft holdout 2025-26', cfg,
                            lambda: _cmp(base_h, cand_h, (H,)))
     report['holdout'] = look
     if 'refused' in look:
         report['decision'] = 'holdout look refused: not promoted'
-        _write(V3_REPORT, report)
-        print(f"[v3] {look['refused']}")
+        _write(REPORT, report)
+        print(f"[{ver}] {look['refused']}")
         return 1
     hold_pass = bool(look['delta_ll'] <= V3_HOLDOUT_TOL)
     report['holdout_pass'] = hold_pass
@@ -1317,8 +1329,8 @@ def v3_main(cur_meta, args):
     if not (args.promote and passed and not args.dry_run):
         report['decision'] = ('rule passed; not promoted (dry run / no --promote)' if passed
                               else 'rule failed; not promoted')
-        _write(V3_REPORT, report)
-        print(f"[v3] {report['decision']} ({V3_REPORT})")
+        _write(REPORT, report)
+        print(f"[{ver}] {report['decision']} ({REPORT})")
         return 1 if (args.strict and not passed) else 0
     archive_fin_shadow(cur_meta)
     if os.path.abspath(table) != os.path.abspath(T.BU_FEATURES_PATH):
@@ -1329,31 +1341,31 @@ def v3_main(cur_meta, args):
     carry_legacy_baselines(meta, cur_meta)
     ok_std, std_checks = promotion_checks(meta, cur_meta)
     pooled = report['all_folds']['pooled_2023_2025']
-    meta['bu_lineup'] = {**(meta.get('bu_lineup') or {}), 'ratings': 'v3', 'gate': {
-        'rule': V3_RULE, 'dev_pooled': {k: dev_rep['pooled'][k] for k in ('n', 'delta_ll', 'se')},
+    meta['bu_lineup'] = {**(meta.get('bu_lineup') or {}), 'ratings': ver, 'gate': {
+        'rule': RULE, 'dev_pooled': {k: dev_rep['pooled'][k] for k in ('n', 'delta_ll', 'se')},
         'per_fold': {str(S): {'n': r['n'], 'delta': r['delta_ll'], 'se': r['se'], 'base_log_loss': r['ll_incumbent'],
                               'cand_log_loss': r['ll_candidate']}
                      for S, r in [(S, dev_rep[str(S)]) for S in dev] + [(H, look)]},
         'pooled_delta_vs_previous': {'n': pooled['n'], 'delta': pooled['delta_ll'], 'se': pooled['se']},
         'calibration': {'slope': pooled['cal_slope_ci_candidate']['slope'],
                         'ci95': [pooled['cal_slope_ci_candidate']['lo95'], pooled['cal_slope_ci_candidate']['hi95']]},
-        'report': os.path.relpath(V3_REPORT, SCRIPT_DIR), 'previous_gate': (cur_meta.get('bu_lineup') or {}).get('gate')}}
-    meta['model_version'] = T.model_version(_now(), live_cols, meta.get('xg_version'), ratings='v3')
+        'report': os.path.relpath(REPORT, SCRIPT_DIR), 'previous_gate': (cur_meta.get('bu_lineup') or {}).get('gate')}}
+    meta['model_version'] = T.model_version(_now(), live_cols, meta.get('xg_version'), ratings=ver)
     meta['shadow'] = {**(cur_meta.get('shadow') or {}),
                       'rapm_fin': {'model': os.path.relpath(FIN_SHADOW_MODEL, SCRIPT_DIR),
                                    'meta': os.path.relpath(FIN_SHADOW_META, SCRIPT_DIR),
                                    'model_version': cur_meta.get('model_version'), 'xg_inputs': 'live',
                                    'dedupe': 'event', 'features': live_cols, 'ratings': 'v2'}}
     meta['promotion'] = {'promoted_at': _now().isoformat(), 'replaced': cur_meta.get('model_version'),
-                         'rule': V3_RULE, 'standard_gate_checks': std_checks, 'standard_gate_passed': ok_std}
+                         'rule': RULE, 'standard_gate_checks': std_checks, 'standard_gate_passed': ok_std}
     T.save_model(model, meta)
     report.update({'promoted': True, 'candidate_version': meta['model_version'],
                    'decision': f"promoted {meta['model_version']}", 'standard_gate_checks': std_checks,
                    'standard_gate_passed': ok_std,
                    'candidate_folds': [{k: f.get(k) for k in ('test_season', 'n', 'log_loss', 'brier', 'accuracy',
                                                                 'calibration_slope', 'C')} for f in meta['cv_results']]})
-    _write(V3_REPORT, report)
-    print(f"[v3] promoted {meta['model_version']} ({V3_REPORT})")
+    _write(REPORT, report)
+    print(f"[{ver}] promoted {meta['model_version']} ({REPORT})")
     return 0
 
 
@@ -1381,6 +1393,9 @@ def main(argv=None):
                          'bu/lineup/out/lineup_features_v3.csv.gz) vs the live model: dev folds, then the single logged '
                          '2025-26 look (bu/lineup/out/retrain_v3.json); with --promote, archive the live model as the '
                          'v2 rollback (models/shadow/game_model_rapm_fin.pkl) and promote')
+    ap.add_argument('--ratings-v4', default=None, metavar='TABLE',
+                    help='as --ratings-v3 with the lineup table rebuilt from player ratings v4 (box-score prior; '
+                         'bu/lineup/out/retrain_v4.json, look component "Ratings v4 lineup term")')
     ap.add_argument('--joint', action='store_true',
                     help='joint retrain: xG v2 inputs + RAPM v2 lineup term replacing F1 d_lineup, vs the live '
                          'model on its v1 inputs (bu/lineup/out/joint_retrain.json); with --promote, archive the '
@@ -1395,6 +1410,8 @@ def main(argv=None):
         return fin_main(cur_meta, args)
     if args.ratings_v3:
         return v3_main(cur_meta, args)
+    if args.ratings_v4:
+        return v3_main(cur_meta, args, ver='v4')
     cols = list(cur_meta.get('feature_columns') or F.FEATURE_COLUMNS)
     M, xg_source = T.build_matrix()
     print(f"[retrain] {len(M)} games, live features {cols}")

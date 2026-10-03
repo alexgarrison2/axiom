@@ -264,6 +264,21 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   keep the RAPM `d`, lower = better).  Version 2 had `off, def, net, toi, gp, toi_cur, gp_cur, fin,
   off_total` only (EV per 60).  `validate_outputs.py player_ratings` gates it (v3 columns,
   `impact = off_impact + def_impact`, sane minutes, position average near 0).
+
+  **Version 4** (current, ratings v4 = v3 + a box-score prior, `bu/rapm/README.md` "Ratings v4";
+  `model` = "Ratings v4 ..."): every v3 column with the same meaning (the RAPM components now have a
+  statistical plus-minus prior from individual box-score rates), plus `impact.pen_value` (goals per
+  penalty unit) and `impact.spm_coef`, and seven columns appended after `gp_cur`:
+
+  | column | type | meaning |
+  |---|---|---|
+  | `pen_impact` | float (2 dp) | goals / 82 from penalties drawn minus taken vs his position (82 x pen_value x all-situation minutes x rate difference); drawn is inside `off_impact`, taken inside `def_impact` |
+  | `pd60`, `pt60` | float (3 dp) | penalties drawn / taken per 60 all-situation minutes (power-play units: minor 1, double minor 2, major 2.5), recency-weighted, shrunk |
+  | `spm_off`, `spm_def` | float (3 dp) | box-score prior of `ev_off` / `ev_def`: what his individual stats alone predict (same units and signs) |
+  | `spm_pp`, `spm_pk` | float (3 dp) | box-score prior of `pp_off` / `pk_def` |
+
+  The gate requires version >= 4 and these columns finite; an export from a bundle without the `v4`
+  table falls back to version 3 (and fails the gate).
 * `public/data/clinch_status.json`:
   `{season_id, generated_at, teams: {TRI: "x" | "y" | "z" | "p" | "e" | null}}`.
 * SiteHistory snapshots (`public/data/SiteHistory/<date>.csv`) gain
@@ -310,6 +325,14 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   term) without a retrain; the joint model stays logged in `bu_shadow_home_win_pct`.
   `PONYXG_BU=nofin` publishes the joint model without the FIN term
   (`models/shadow/game_model_rapm.pkl`, `shadow.rapm`).
+  Player ratings tables: `v3` and **`v4`** (`bu/rapm/v4_pack.py` `LIVE_COLUMNS`: `player_id, group, rated,
+  o, d, o_var, d_var, od_cov, pp, pk, pp_var, pk_var, fin, toi_ev, toi_pp, toi_pk, spm_o, spm_d, spm_pp,
+  spm_pk, pd60, pt60, role`, per 60 / minutes per game, `d` / `pk` lower = better; `meta` carries
+  `goals_per_xg`, `pen_value`, `impact_weights`, `low_role` (rookie prior by F / D), `toi_pos_means`,
+  `spm_coef`, `asof`, `g`).  `v4` is the source of `player_ratings.json` and the table for the game
+  simulator; a game model whose meta has `bu_lineup.ratings = "v4"` is served its lineup term from
+  this table (`LiveLineupTerm(..., ratings="v4")`), a model without the key from `players` / `fin`.
+  `bu_bundle` also fails a fresh bundle without the `v4` table when `ratings_pack_v4_<S>.json.gz` is committed.
 * Historical shot files (`nhl_historical_shots.csv`, last season's
   `nhl_season_<yyyy>_<yyyy>_shots.csv`) may carry `xg_raw` (raw xG v2,
   walk-forward out of sample) after `python -m bu.xg.history apply`; readers

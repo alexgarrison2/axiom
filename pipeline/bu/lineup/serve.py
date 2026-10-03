@@ -286,22 +286,43 @@ def team_ids_from_lake(lake, seasons) -> dict:
 class LiveLineupTerm:
     """Tonight's lineup term from a serving bundle (see module docstring)."""
 
-    def __init__(self, bundle: dict, max_age_h: float = MAX_AGE_H):
+    def __init__(self, bundle: dict, max_age_h: float = MAX_AGE_H, ratings: str = "v2"):
+        """``ratings``: the player ratings the model was trained on (game_model_meta.json
+        ``bu_lineup.ratings``): 'v2' = the bundle's ``players`` / ``rookie`` / ``fin`` tables (RAPM v2),
+        'v3' / 'v4' = the bundle's ``v3`` / ``v4`` table (o, d, rated, fin; rookies at its
+        ``meta.low_role``), the same ratings the walk-forward feature table was built from."""
         if int(bundle.get("version", 0)) != BUNDLE_VERSION or bundle.get("kind") != "serving_bundle":
             raise ValueError("not a serving bundle of version %s" % BUNDLE_VERSION)
         self.b = bundle
         self.max_age_h = float(max_age_h)
         self.built_at = datetime.fromisoformat(bundle["built_at"])
-        cols = bundle["players"]["columns"]
-        self.ratings = {int(r[0]): (float(r[cols.index("o")]), float(r[cols.index("d")]), bool(r[cols.index("rated")]))
-                        for r in bundle["players"]["rows"]}
-        self.rookie = {g: tuple(v) for g, v in bundle["rookie"].items()}
+        self.ratings_source = str(ratings or "v2")
+        rt = None
+        if self.ratings_source != "v2":
+            rt = bundle.get(self.ratings_source)
+            if not rt or not isinstance(rt.get("rows"), list) or not rt["rows"]:
+                raise ValueError(f"the bundle has no {self.ratings_source} ratings table")
+        if rt is None:
+            cols = bundle["players"]["columns"]
+            self.ratings = {int(r[0]): (float(r[cols.index("o")]), float(r[cols.index("d")]),
+                                        bool(r[cols.index("rated")])) for r in bundle["players"]["rows"]}
+            self.rookie = {g: tuple(v) for g, v in bundle["rookie"].items()}
+        else:
+            cols = rt["columns"]
+            io, id_, ir = cols.index("o"), cols.index("d"), cols.index("rated")
+            self.ratings = {int(r[0]): (float(r[io]), float(r[id_]), bool(r[ir])) for r in rt["rows"]}
+            low = (rt.get("meta") or {}).get("low_role") or {}
+            self.rookie = {g: (float(v[0]), float(v[1])) for g, v in low.items()} or \
+                {g: tuple(v) for g, v in bundle["rookie"].items()}
         self.state = _state_from_json(bundle["shares"])
         self.history = _history_from_json(bundle["history"])
         self.teams = {str(k): int(v) for k, v in (bundle.get("teams") or {}).items()}
         fin = bundle.get("fin") or {}
         self.fin = ({int(r[0]): (float(r[1]), float(r[2])) for r in fin["rows"]}
                     if isinstance(fin.get("rows"), list) and "bu_d_fin" in (bundle.get("columns") or []) else None)
+        if rt is not None and "fin" in rt["columns"] and "bu_d_fin" in (bundle.get("columns") or []):
+            jf = rt["columns"].index("fin")       # v3 / v4: FIN at the player's own position group
+            self.fin = {int(r[0]): (float(r[jf]), float(r[jf])) for r in rt["rows"]}
         cw = bundle.get("crosswalk")
         self.resolver = Resolver(pd.DataFrame(cw["rows"], columns=cw["columns"])) if cw else None
 
