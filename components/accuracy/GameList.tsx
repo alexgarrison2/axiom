@@ -6,18 +6,22 @@ import { Slider } from '@/components/ui/slider';
 import { formatTime } from '@/lib/format/time';
 import { TEAM_CODES } from '@/components/ui/team-color';
 import { Crest } from '@/components/ui/crest';
-import { shortDate } from '@/components/views/format';
+import { shortDate, signed } from '@/components/views/format';
 import { cn } from '@/lib/utils';
 import { GlossLink } from '@/components/ui/gloss-link';
 import { isCorrect, isNoLean, isWrong, pickOf, pickProb, type ExcludedGame, type GradedGame } from './types';
 import type { GameTypeKey } from './report';
-import { summarize, type SpanSummary } from './summary';
+import { groupByDay, summarize, vsMarket, type DayGroup, type DayShape, type SpanSummary } from './summary';
 
-const PAGE = 50;
+/** Days listed before More (about a month of slates). */
+const PAGE = 30;
 
 const MORE_BTN =
     'self-center rounded-control border border-line-strong px-4 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11';
 const ROW_LI = 'border-t border-line/60 bg-surface-1 first:border-t-0';
+const DAY_LI = 'border-t border-line first:border-t-0';
+/** Fixed day-row height, shared with the loading placeholder so nothing shifts. */
+const DAY_H = 'min-h-14';
 const STRIP = 'rounded-card border border-dashed border-line-strong px-3 py-2';
 const LIST_UL = 'panel flex flex-col overflow-hidden';
 /** One grid for the header and every row so the columns line up: result, date, final, predicted, pick, how sure, chevron. */
@@ -52,6 +56,7 @@ export function GameList({
     type,
     currentSeason,
     expected = 0,
+    shape,
     expectedNoLean = 0,
     excluded = [],
 }: {
@@ -61,6 +66,8 @@ export function GameList({
     currentSeason?: string;
     /** Live graded picks the report counts for this view; sizes the loading placeholder so nothing shifts. */
     expected?: number;
+    /** Days with a pick and picks on the newest day for this view (live picks); sizes the placeholder exactly. */
+    shape?: DayShape;
     /** Coin flips (no lean) the report counts for this view; reserves the no-lean strip while loading. */
     expectedNoLean?: number;
     /** Finals deliberately left out of grading, with a reason. */
@@ -74,7 +81,14 @@ export function GameList({
     const [shown, setShown] = React.useState(PAGE);
     const [range, setRange] = React.useState<[number, number] | null>(null);
     const [open, setOpen] = React.useState<number | null>(null);
+    /** Expanded days; null until the reader toggles one, which means "the newest day only". */
+    const [openDays, setOpenDays] = React.useState<ReadonlySet<string> | null>(null);
     const teamId = React.useId();
+    /** A filter changed: back to the first page with only the newest day open. */
+    const refilter = () => {
+        setShown(PAGE);
+        setOpenDays(null);
+    };
 
     const key = `${season}#${attempt}`;
     React.useEffect(() => {
@@ -95,6 +109,7 @@ export function GameList({
         setShown(PAGE);
         setRange(null);
         setOpen(null);
+        setOpenDays(null);
     }, [season, type, includeRetro]);
 
     const loading = !games || games.key !== key;
@@ -116,6 +131,17 @@ export function GameList({
         [inWindow, result],
     );
     const noLean = React.useMemo(() => (result === 'all' ? inWindow.filter(isNoLean) : []), [inWindow, result]);
+    // Days summarise exactly the filtered games: with All, a day's coin flips count toward its log loss as in the KPIs.
+    const days = React.useMemo(() => groupByDay(result === 'all' ? inWindow : rows), [inWindow, rows, result]);
+    const pageDays = days.slice(0, shown);
+    const openSet = openDays ?? new Set(days.length ? [days[0].date] : []);
+    const allOpen = pageDays.every(d => openSet.has(d.date));
+    const toggleDay = (date: string) => {
+        const next = new Set(openSet);
+        if (next.has(date)) next.delete(date);
+        else next.add(date);
+        setOpenDays(next);
+    };
 
     // KPIs cover the whole filtered span (team, dates, back-filled), not just the right/wrong rows on show.
     const summary = React.useMemo(() => summarize(inWindow), [inWindow]);
@@ -128,8 +154,10 @@ export function GameList({
     if (loading)
         return (
             <ListSkeleton
-                rows={Math.min(PAGE, expected)}
-                more={expected > PAGE}
+                // Without a known shape, assume ~7 picks a day.
+                days={Math.min(PAGE, shape?.days ?? Math.ceil(expected / 7))}
+                openRows={shape?.lastDay ?? Math.min(expected, 7)}
+                more={(shape?.days ?? Math.ceil(expected / 7)) > PAGE}
                 after={
                     <>
                         {expectedNoLean ? <StripPlaceholder /> : null}
@@ -171,7 +199,7 @@ export function GameList({
                     value={team}
                     onChange={e => {
                         setTeam(e.target.value);
-                        setShown(PAGE);
+                        refilter();
                     }}
                     className={SELECT}
                 >
@@ -188,7 +216,7 @@ export function GameList({
                     value={result}
                     onChange={v => {
                         setResult(v);
-                        setShown(PAGE);
+                        refilter();
                     }}
                     options={RESULT_OPTIONS}
                 />
@@ -220,7 +248,7 @@ export function GameList({
                             minStepsBetweenThumbs={0}
                             onValueChange={v => {
                                 setRange([v[0], v[1]] as [number, number]);
-                                setShown(PAGE);
+                                refilter();
                             }}
                             className="flex-1"
                         />
@@ -234,10 +262,32 @@ export function GameList({
                         <span className="rounded-chip border border-line-strong px-1 text-micro text-fg-2">LEGACY</span>
                     </GlossLink>
                 ) : null}
-                <p className={cn('text-micro uppercase tracking-label text-fg-3', !legacyShown && 'ml-auto')} aria-live="polite">
-                    {rows.length.toLocaleString('en-US')} shown
-                    {includeRetro ? <span className="ml-2 text-warn">+BF</span> : null}
-                </p>
+                <div className={cn('flex items-center gap-3', !legacyShown && 'ml-auto')}>
+                    <p className="text-micro uppercase tracking-label text-fg-3" aria-live="polite">
+                        {rows.length.toLocaleString('en-US')} shown
+                        {includeRetro ? <span className="ml-2 text-warn">+BF</span> : null}
+                    </p>
+                    {pageDays.length > 1 ? (
+                        <button
+                            type="button"
+                            aria-label={allOpen ? 'Collapse all days' : 'Expand all days'}
+                            title={allOpen ? 'Collapse all' : 'Expand all'}
+                            onClick={() => setOpenDays(allOpen ? new Set() : new Set(pageDays.map(d => d.date)))}
+                            className="-my-1 inline-flex h-8 w-8 items-center justify-center rounded-control border border-line-strong text-fg-2 transition-colors hover:border-brand hover:text-brand coarse:h-11 coarse:w-11"
+                        >
+                            <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4">
+                                <path
+                                    d={allOpen ? 'M4 7l4-4 4 4M4 13l4-4 4 4' : 'M4 3l4 4 4-4M4 9l4 4 4-4'}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </button>
+                    ) : null}
+                </div>
             </div>
 
             <KpiStrip s={summary} />
@@ -255,20 +305,24 @@ export function GameList({
                         <span>Confidence</span>
                         <span />
                     </li>
-                    {rows.slice(0, shown).map(g => (
-                        <GameRowItem
-                            key={g.id}
-                            game={g}
-                            showLegacy={!allLegacy && !!currentSeason && g.season >= currentSeason}
-                            open={open === g.id}
-                            onToggle={() => setOpen(o => (o === g.id ? null : g.id))}
-                        />
+                    {pageDays.map(d => (
+                        <DayItem key={d.date} day={d} open={openSet.has(d.date)} onToggle={() => toggleDay(d.date)}>
+                            {d.picks.map(g => (
+                                <GameRowItem
+                                    key={g.id}
+                                    game={g}
+                                    showLegacy={!allLegacy && !!currentSeason && g.season >= currentSeason}
+                                    open={open === g.id}
+                                    onToggle={() => setOpen(o => (o === g.id ? null : g.id))}
+                                />
+                            ))}
+                        </DayItem>
                     ))}
                 </ul>
             )}
-            {rows.length > shown ? (
+            {days.length > shown ? (
                 <button type="button" onClick={() => setShown(s => s + PAGE)} className={MORE_BTN}>
-                    More · {(rows.length - shown).toLocaleString('en-US')}
+                    More · {(days.length - shown).toLocaleString('en-US')} days
                 </button>
             ) : null}
             {noLean.length ? <NoLeanList games={noLean} /> : null}
@@ -323,6 +377,119 @@ function ConfBar({ prob, ok, bar = 'max-w-24' }: { prob: number; ok: boolean; ba
             </span>
             <span className={cn('w-10 shrink-0 text-right text-body font-bold tabular-nums', ok ? 'text-fg-1' : 'text-fg-2')}>{prob.toFixed(0)}%</span>
         </span>
+    );
+}
+
+/** "Thu · Oct 2" for a YYYY-MM-DD game date. */
+function dayLabel(iso: string): string {
+    const d = new Date(`${iso}T12:00:00Z`);
+    if (Number.isNaN(d.getTime())) return iso;
+    return `${d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' })} · ${shortDate(iso)}`;
+}
+
+const MICRO = 'text-micro uppercase tracking-label text-fg-3';
+
+/**
+ * One day of picks: a summary row on the game grid (record and hit rate under Final, goals error under
+ * Predicted, log loss vs the market under Pick, average confidence under Confidence) that expands to the
+ * day's game rows. Collapsed days keep their rows out of the DOM.
+ */
+function DayItem({ day, open, onToggle, children }: { day: DayGroup; open: boolean; onToggle: () => void; children: React.ReactNode }) {
+    const s = day.summary;
+    const listId = `day-${day.date}`;
+    const misses = s.picks - s.hits;
+    const hitPct = s.accuracy == null ? '—' : `${Math.round(s.accuracy * 100)}%`;
+    const d = vsMarket(s);
+    const shownD = d == null ? null : signed(d, 3);
+    const tone = d == null || shownD?.startsWith('±') ? 'text-fg-2' : d < 0 ? 'text-pos' : 'text-neg';
+    const ll = (
+        <span className="flex flex-col items-end leading-none md:flex-row md:items-baseline md:gap-2" title={d == null ? undefined : 'Log loss, model minus market'}>
+            <span aria-hidden="true" className={MICRO}>
+                vs mkt
+            </span>
+            <span className={cn('text-body font-bold tabular-nums', tone)}>{shownD ?? '—'}</span>
+            <span className="sr-only">{d == null ? 'no market prices' : `log loss vs market${d < 0 ? ', better' : d > 0 ? ', worse' : ''}`}, </span>
+        </span>
+    );
+    return (
+        <li data-day={day.date} className={DAY_LI}>
+            <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={listId}
+                onClick={onToggle}
+                className={cn(
+                    'grid w-full grid-cols-[minmax(0,1fr)_auto_auto_1.25rem] items-center gap-x-3 px-3 py-2 text-left transition-colors md:px-4',
+                    DAY_H,
+                    COLS,
+                    open ? 'bg-surface-3 hover:bg-line' : 'bg-surface-2/70 hover:bg-line/80',
+                )}
+            >
+                <span className="flex min-w-0 flex-col gap-0.5 md:col-span-2">
+                    <span className="whitespace-nowrap text-body font-bold text-fg-1">{dayLabel(day.date)}</span>
+                    <span className="sr-only">, </span>
+                    <span className={MICRO}>
+                        {s.picks} {s.picks === 1 ? 'game' : 'games'}
+                    </span>
+                    <span className="sr-only">, </span>
+                </span>
+                <span className="flex min-w-0 items-baseline gap-2.5 md:items-center">
+                    <span className="whitespace-nowrap font-display text-title font-bold tabular-nums text-fg-1">
+                        <span className="sr-only">Record </span>
+                        {s.hits}-{misses}
+                        <span className="sr-only">, </span>
+                    </span>
+                    <span className="text-body tabular-nums text-fg-2">
+                        {hitPct}
+                        <span className="sr-only"> right, </span>
+                    </span>
+                    <span aria-hidden="true" className="hidden min-w-0 flex-wrap items-center gap-[3px] lg:flex">
+                        {day.picks.map(g => (
+                            <span key={g.id} className={cn('h-2 w-2 rounded-full', isCorrect(g) ? 'bg-pos/80' : 'bg-neg/80')} />
+                        ))}
+                    </span>
+                </span>
+                <span className="hidden items-baseline justify-center gap-2 md:flex">
+                    <span aria-hidden="true" className={MICRO}>
+                        Goals
+                    </span>
+                    <span className="text-body tabular-nums text-fg-2">
+                        <span className="sr-only">goals error </span>
+                        {s.totalGoalsMae == null ? '—' : `±${s.totalGoalsMae.toFixed(1)}`}
+                        <span className="sr-only">, </span>
+                    </span>
+                </span>
+                <span className="justify-self-end md:justify-self-start">{ll}</span>
+                <span className="hidden min-w-0 items-center gap-2 md:flex">
+                    <span aria-hidden="true" className={MICRO}>
+                        Avg
+                    </span>
+                    {s.avgConfidence == null ? (
+                        <span className="text-fg-3">—</span>
+                    ) : (
+                        <>
+                            <span aria-hidden="true" className="relative h-1.5 w-full max-w-[4.5rem] rounded-full bg-line">
+                                <span className="absolute inset-y-0 left-0 rounded-full bg-fg-2/70" style={{ width: `${Math.max(4, Math.min(100, ((s.avgConfidence - 50) / 30) * 100))}%` }} />
+                            </span>
+                            <span className="w-10 shrink-0 text-right text-body font-bold tabular-nums text-fg-1">
+                                <span className="sr-only">average confidence </span>
+                                {s.avgConfidence.toFixed(0)}%
+                            </span>
+                        </>
+                    )}
+                </span>
+                <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-2 transition-transform', open && 'rotate-180')}>
+                    <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </button>
+            {open ? (
+                <ul id={listId} aria-label={`Picks, ${dayLabel(day.date)}`} className="border-t border-line/60">
+                    {children}
+                </ul>
+            ) : (
+                <div id={listId} hidden />
+            )}
+        </li>
     );
 }
 
@@ -513,8 +680,8 @@ function StripPlaceholder() {
  * row, one phone/desktop-height row per expected pick up to a page, the More button), so the rows
  * replace it without moving anything below.
  */
-function ListSkeleton({ rows, more, after }: { rows: number; more: boolean; after: React.ReactNode }) {
-    if (!rows) {
+function ListSkeleton({ days, openRows, more, after }: { days: number; openRows: number; more: boolean; after: React.ReactNode }) {
+    if (!days) {
         return (
             <div aria-busy="true" className="flex flex-col gap-2">
                 <p className="label invisible">0 graded</p>
@@ -533,9 +700,18 @@ function ListSkeleton({ rows, more, after }: { rows: number; more: boolean; afte
             </div>
             <ul aria-hidden="true" className={LIST_UL}>
                 <li className="hidden h-[34px] border-b border-line md:block" />
-                {Array.from({ length: rows }, (_, i) => (
-                    <li key={i} className={ROW_LI}>
-                        <div className="min-h-[6.9rem] md:min-h-[3.6rem]" />
+                {Array.from({ length: days }, (_, i) => (
+                    <li key={i} className={DAY_LI}>
+                        <div className={DAY_H} />
+                        {i === 0 && openRows ? (
+                            <ul className="border-t border-line/60">
+                                {Array.from({ length: openRows }, (_, j) => (
+                                    <li key={j} className={ROW_LI}>
+                                        <div className="min-h-[6.9rem] md:min-h-[3.6rem]" />
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : null}
                     </li>
                 ))}
             </ul>

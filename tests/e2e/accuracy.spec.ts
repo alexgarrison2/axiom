@@ -120,6 +120,94 @@ test.describe('/accuracy', () => {
         expect(axe, formatAxe(axe)).toEqual([]);
     });
 
+    test('picks group by day: newest open, the rest expand by click or keyboard', async ({ page }) => {
+        await page.goto('/accuracy?season=2025-26');
+        const picks = page.locator('section[aria-labelledby="every-pick"]');
+        const days = picks.locator('[data-day]');
+        await expect(days.first()).toBeVisible();
+        expect(await days.count()).toBeGreaterThan(2);
+        const dates = await days.evaluateAll(els => els.map(e => e.getAttribute('data-day') ?? ''));
+        expect(dates).toEqual([...dates].sort().reverse());
+
+        const head = (i: number) => days.nth(i).locator(':scope > button');
+        const rowsOf = (i: number) => days.nth(i).locator(':scope > ul > li');
+        await expect(head(0)).toHaveAttribute('aria-expanded', 'true');
+        expect(await rowsOf(0).count()).toBeGreaterThan(0);
+        // Collapsed days keep their game rows out of the DOM.
+        await expect(head(1)).toHaveAttribute('aria-expanded', 'false');
+        await expect(rowsOf(1)).toHaveCount(0);
+        const controls = await head(1).getAttribute('aria-controls');
+        await expect(page.locator(`[id="${controls}"]`)).toBeHidden();
+
+        // Click opens the day: one row per pick, and its record matches the ✓/✕ badges.
+        await head(1).click();
+        await expect(head(1)).toHaveAttribute('aria-expanded', 'true');
+        const text = (await head(1).textContent()) ?? '';
+        const n = Number(text.match(/(\d+) games?/i)![1]);
+        await expect(rowsOf(1)).toHaveCount(n);
+        const [hits, misses] = text.match(/(\d+)-(\d+)/)!.slice(1).map(Number);
+        expect(hits + misses).toBe(n);
+        await expect(rowsOf(1).locator('button > span:first-child').filter({ hasText: '✓' })).toHaveCount(hits);
+
+        // Keyboard: Enter opens, Space closes.
+        await head(2).focus();
+        await page.keyboard.press('Enter');
+        await expect(head(2)).toHaveAttribute('aria-expanded', 'true');
+        await expect(rowsOf(2).first()).toBeVisible();
+        await page.keyboard.press('Space');
+        await expect(head(2)).toHaveAttribute('aria-expanded', 'false');
+        await expect(rowsOf(2)).toHaveCount(0);
+
+        // Expand all / collapse all.
+        await picks.getByRole('button', { name: /expand all days/i }).click();
+        const count = await days.count();
+        await expect(picks.locator('[data-day] > button[aria-expanded="true"]')).toHaveCount(count);
+        await picks.getByRole('button', { name: /collapse all days/i }).click();
+        await expect(picks.locator('[data-day] > button[aria-expanded="true"]')).toHaveCount(0);
+    });
+
+    test('filters reshape the day summaries', async ({ page }) => {
+        await page.goto('/accuracy?season=2025-26');
+        const picks = page.locator('section[aria-labelledby="every-pick"]');
+        const days = picks.locator('[data-day]');
+        await expect(days.first()).toBeVisible();
+        // Unfiltered, some day has more than one game.
+        expect((await days.locator(':scope > button').allTextContents()).some(t => /\b([2-9]|\d\d) games\b/.test(t))).toBe(true);
+
+        // Team: every listed game involves the team, and the newest open day is that team's.
+        await picks.getByLabel('Team').selectOption('EDM');
+        await expect(days.locator(':scope > button').filter({ hasText: /\b([2-9]|\d\d) games\b/ })).toHaveCount(0);
+        await expect(days.first().locator(':scope > button')).toHaveAttribute('aria-expanded', 'true');
+        const rows = days.first().locator(':scope > ul > li');
+        for (const t of await rows.allTextContents()) expect(t).toContain('EDM');
+        for (const t of await days.locator(':scope > button').allTextContents()) expect(t).toMatch(/\b1 game\b/i);
+
+        // ✓ only: every day is a perfect record; ✕ only: every day is 0-N.
+        await picks.getByRole('radio', { name: 'Right' }).click();
+        for (const t of await days.locator(':scope > button').allTextContents()) expect(t).toMatch(/\d+-0,\s*100%/);
+        await picks.getByRole('radio', { name: 'Wrong' }).click();
+        for (const t of await days.locator(':scope > button').allTextContents()) expect(t).toMatch(/0-\d+,\s*0%/);
+    });
+
+    test('375px: day summaries fit with no horizontal overflow', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 812 });
+        await page.goto('/accuracy?season=2025-26');
+        const days = page.locator('section[aria-labelledby="every-pick"] [data-day]');
+        await expect(days.first()).toBeVisible();
+        await days.nth(1).locator(':scope > button').click();
+        await settle(page, 300);
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+        expect(overflow).toBeLessThanOrEqual(0);
+        // The condensed row still carries date, record, hit rate and the market delta.
+        const head = days.first().locator(':scope > button');
+        await expect(head).toContainText(/\w{3} · \w{3} \d+/);
+        await expect(head).toContainText(/\d+-\d+/);
+        await expect(head).toContainText(/\d+%/);
+        await expect(head).toContainText(/vs mkt/i);
+        const box = (await head.boundingBox())!;
+        expect(box.x + box.width).toBeLessThanOrEqual(375);
+    });
+
     test('no layout shift when the picks load (desktop)', async ({ page }, info) => {
         test.skip(info.project.name !== 'desktop', 'desktop footer is in view at 1440×900');
         await page.addInitScript(() => {

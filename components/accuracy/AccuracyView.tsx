@@ -15,6 +15,7 @@ import { GameList } from './GameList';
 import { Ledger } from './Ledger';
 import { blockVerdict, CI_MIN_N, compareLogLoss, deltaText, modelLabelOf, SIGNAL_N, type Verdict, type VerdictWord } from './verdict';
 import type { BetFinal, LedgerData, SeasonTally } from './types';
+import type { DayShape } from './summary';
 
 export interface AccuracyViewProps {
     report: AccuracyReport;
@@ -26,6 +27,8 @@ export interface AccuracyViewProps {
     tallies?: Record<string, Partial<Record<GameTypeKey, SeasonTally>>>;
     /** Finals for ledger bets still listed as pending. */
     finals?: Record<number, BetFinal>;
+    /** Per season and game type: days with a live pick and picks on the newest day (sizes the pick list placeholder). */
+    shapes?: Record<string, Partial<Record<GameTypeKey, DayShape>>>;
 }
 
 const TYPE_OPTIONS: { value: GameTypeKey; label: string }[] = [
@@ -40,7 +43,7 @@ const dec4 = (v: number | null | undefined) => (v == null ? '—' : v.toFixed(4)
 /** Calibration and confidence tiers need at least this many games to show anything but noise. */
 const CHART_N = 30;
 
-export function AccuracyView({ report, ledger, seasons, currentSeason, tallies = {}, finals = {} }: AccuracyViewProps) {
+export function AccuracyView({ report, ledger, seasons, currentSeason, tallies = {}, finals = {}, shapes }: AccuracyViewProps) {
     const [season, setSeason] = React.useState<string>(currentSeason);
     const [type, setType] = React.useState<GameTypeKey>('all');
 
@@ -78,6 +81,13 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
     const empty = !stale && (!block || block.n === 0);
     const priorSeason = seasons.find(s => s !== currentSeason && (report.seasons[s]?.all?.n ?? 0) > 0);
     const seasonWord = season === 'all' ? 'all seasons' : season;
+    const shape = React.useMemo<DayShape | undefined>(() => {
+        if (!shapes) return undefined;
+        if (season !== 'all') return shapes[season]?.[type];
+        // Seasons never share a date: days add up, and the newest day is the newest season's.
+        const list = seasons.map(s => shapes[s]?.[type]).filter((x): x is DayShape => !!x);
+        return { days: list.reduce((a, x) => a + x.days, 0), lastDay: list.find(x => x.days > 0)?.lastDay ?? 0 };
+    }, [shapes, season, seasons, type]);
 
     const controls = (mobile: boolean) => (
         <>
@@ -103,6 +113,7 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                     type={type}
                     currentSeason={currentSeason}
                     expected={Math.max(block?.nPicks ?? 0, tally?.picks ?? 0)}
+                    shape={shape}
                     expectedNoLean={Math.max(block?.nNoLean ?? 0, tally ? tally.n - tally.picks : 0)}
                     excluded={season === 'all' ? [] : (tallies[season]?.[type]?.excluded ?? [])}
                 />

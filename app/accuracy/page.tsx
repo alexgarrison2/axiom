@@ -4,6 +4,7 @@ import { loadExcludedGames, loadGradedGames, loadLedger, loadLedgerRaw, loadRepo
 import { reconcileLedger } from '@/components/accuracy/ledger-data';
 import type { SeasonTally } from '@/components/accuracy/types';
 import type { GameTypeKey } from '@/components/accuracy/report';
+import { dayShape, type DayShape } from '@/components/accuracy/summary';
 import { AccuracyView } from '@/components/accuracy/AccuracyView';
 
 // Rebuilt with every data refresh (each pipeline commit redeploys).
@@ -30,11 +31,21 @@ export default function AccuracyPage() {
         .reverse();
     // The current season is reconciled against the graded list so a report that lags a refresh never contradicts it.
     const tallies: Record<string, Record<GameTypeKey, SeasonTally>> = { [CURRENT]: tallyByType(graded, CURRENT, loadExcludedGames(CURRENT, graded)) };
+    // Day count and newest-day picks per view (live picks), so the day list's placeholder matches it exactly.
+    const shapes: Record<string, Record<GameTypeKey, DayShape>> = {};
+    for (const s of seasons) {
+        const live = graded.filter(g => g.season === s && !g.retro);
+        shapes[s] = {
+            all: dayShape(live),
+            regular: dayShape(live.filter(g => g.type === '02')),
+            playoffs: dayShape(live.filter(g => g.type === '03')),
+        };
+    }
 
     return (
         <main className="pb-tabbar">
             <div className="page py-5 md:py-7">
-                <AccuracyView report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} tallies={tallies} finals={finals} />
+                <AccuracyView report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} tallies={tallies} finals={finals} shapes={shapes} />
             </div>
         </main>
     );
