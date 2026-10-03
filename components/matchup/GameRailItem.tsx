@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Flag, coinFlipFinal } from './MatchupCard';
 import { GOALIE_TONE, goalieStatus } from './TeamSide';
 import { GoalieGlyph } from './GoalieGlyph';
+import { useHydrated } from './GameTime';
 
 /** Puck drop as "6:00p" in the viewer's zone (Eastern until hydrated). */
 export function railTimeLabel(iso: string, hydrated: boolean): string | null {
@@ -73,6 +74,8 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
     const awayLost = phase === 'final' && scored && live.away.score < live.home.score;
     const homeLost = phase === 'final' && scored && live.home.score < live.away.score;
     const showOurs = phase !== 'final' && hasPrediction(p);
+    // Eastern until hydrated, like every other clock: the server's own zone would not match the viewer's.
+    const hydrated = useHydrated();
     return (
         <button
             type="button"
@@ -143,7 +146,7 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
             </span>
             {phase === 'pre' ? (
                 <span className="sr-only">
-                    Puck drop <time dateTime={p.startTimeUtc}>{railTimeLabel(p.startTimeUtc, true)}</time>
+                    Puck drop <time dateTime={p.startTimeUtc}>{railTimeLabel(p.startTimeUtc, hydrated)}</time>
                 </span>
             ) : null}
             <span className="sr-only">
