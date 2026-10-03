@@ -139,7 +139,9 @@ jobs:
               pipeline/player_name_lookup.json pipeline/team_lineup_baselines.json public/data/team_lineup_baselines.json \
               public/data/player_bio.json public/data/contracts.json public/data/player_ratings.json
           # Season context
+          # (season_sim_games.json: the day's simulated per-game table, so the hourly implications reuse it)
           add pipeline/data/season_projections.json public/data/season_projections.json \
+              pipeline/data/season_sim_games.json \
               pipeline/game_implications.json public/data/game_implications.json \
               public/data/clinch_status.json public/data/playoff_series.json \
               pipeline/goalie_playoff_career_stats.json public/data/goalie_playoff_career_stats.json \

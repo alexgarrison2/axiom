@@ -913,6 +913,8 @@ def check_sim_inputs(ctx):
     if (p.get("glm") or {}).get("lineup_source", "rapm_v2") != src["name"]:
         errs.append(f"{rel_p}: regressions fitted on {(p.get('glm') or {}).get('lineup_source')} but the lineup "
                     f"source is {src['name']}")
+    if LS.has_st(src) and not os.path.exists(LS.resolve(src["st_table"])):
+        errs.append(f"{rel_p}: player special-teams table {src['st_table']} missing")
     table = str(src.get("ratings") or "v2")
     if table == "v2":
         return errs
@@ -932,6 +934,62 @@ def check_sim_inputs(ctx):
         elif (t.get("meta") or {}).get("intercept") is None:
             errs.append(f"{src['serving_bundle']}: the {table} table has no meta.intercept (the simulator's "
                         "lineup-term c0 would come from the v2 covariate)")
+        if t.get("rows") and LS.has_st(src):
+            from bu.sim.st_lineup import PLAYER_COLS
+            miss = [c for c in PLAYER_COLS if c not in (t.get("columns") or [])]
+            if miss:
+                errs.append(f"{src['serving_bundle']}: the {table} table lacks {miss}: the simulator's player "
+                            "special teams would be neutral on every game")
+    return errs
+
+
+def check_season_projections(ctx):
+    """season_projections.json: made by the engine the season_sim decision / PONYXG_SEASON_SIM
+    selects (bu/sim/season.py; a recent logit file while 'sim' is selected means the simulator path
+    failed), and the Monte Carlo is consistent: every team's point distribution sums to the
+    simulations, 16 playoff teams a season, league points per game in [2, 2.5] (an OT / SO loser
+    adds a point)."""
+    path = ctx.get("season_projections_path") or os.path.join(PUBLIC_DATA_DIR, "season_projections.json")
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path) as f:
+            sp = json.load(f)
+    except (OSError, ValueError) as e:
+        return [f"season_projections.json unreadable: {e}"]
+    if str(sp.get("season_id")) != SEASON_ID or not sp.get("teams"):
+        return []
+    errs = []
+    n = int(sp.get("total_simulations") or 0)
+    teams = sp["teams"]
+    for t in teams:
+        pd_ = sum(int(v) for v in (t.get("point_dist") or {}).values())
+        if n and pd_ != n:
+            errs.append(f"{t.get('team')}: point_dist sums to {pd_}, not {n}")
+    made = sum(float(t.get("make_playoffs_pct") or 0) for t in teams)
+    if len(teams) == 32 and abs(made - 1600.0) > 1.0:
+        errs.append(f"make_playoffs_pct sums to {made:.1f}, not 1600 (16 playoff teams)")
+    rem = int(sp.get("remaining_games") or 0)
+    if rem > 0 and len(teams) == 32:
+        gp = int(sp.get("games_played") or 0)
+        try:
+            base = sum(int(k) * int(v) for t in teams for k, v in t["point_dist"].items()) / max(n, 1)
+            ppg = base / (gp + rem)
+            if not 2.0 <= ppg <= 2.5:
+                errs.append(f"projected league points per game {ppg:.3f} outside [2, 2.5]")
+        except (KeyError, ValueError, TypeError):
+            pass
+    try:
+        from bu.sim import season as SEASIM
+        want = SEASIM.mode()
+    except Exception:  # noqa: BLE001
+        want = "logit"
+    eng = (sp.get("model") or {}).get("engine") or "logit"
+    gen = _dt(sp.get("generated_at"))
+    recent = gen is not None and (datetime.now(timezone.utc) - gen).total_seconds() < 36 * 3600
+    if want == "sim" and eng != "sim" and recent and rem > 0:
+        errs.append("season projections were made by the logit although the season_sim engine is 'sim' "
+                    "(the simulator path failed: see the season_simulator log)")
     return errs
 
 
@@ -1093,6 +1151,7 @@ CHECKS = {
     "goal_splits": check_gamestats_goals,
     "bu_bundle": check_bu_bundle,
     "sim_inputs": check_sim_inputs,
+    "season_projections": check_season_projections,
     "player_ratings": check_player_ratings,
 }
 

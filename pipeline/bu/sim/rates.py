@@ -7,6 +7,12 @@ Per attacking side X against Y (features are built identically for history and l
   pp    log E[PP xG]        = p0 + p . [st_pp, st_pk, home]
   pen   log E[calls taken]  = q0 + q . [st_take, st_draw, home]
 
+with, when the parameters' lineup source has a special-teams table (``lineup_source`` ``st_table``,
+``prereg_st.json``), the lineup's player special teams added to the last two (``ST_GROUPS``):
+
+  pp   + [lu_ppo, lu_pkd]     the dressed skaters' PP OFF / the opponent's PK DEF (ratings v4)
+  pen  + [lu_take, lu_draw]   their penalties taken / the opponent's drawn per 60 (ratings v5)
+
   bu_rel   log((c0 + OFF_X + DEF_Y) / c0): the RAPM v2 lineup term's own 5v5 xGF/60 for X in
            this matchup (tonight's dressed skaters x expected EV TOI share), relative to the
            RAPM intercept; 0 when the term is unavailable (``bu_miss`` = 1)
@@ -17,6 +23,9 @@ Per attacking side X against Y (features are built identically for history and l
            taken / drawn by the opponent, team finishing
   gsv      log goals-per-xG multiplier of the opponent's starting goalie (shrunk)
   home     +0.5 home, -0.5 away;  b2b  the team played yesterday
+  lu_*     ``bu.sim.st_lineup``: lu_ppo = ppo_X / (3600 lg_pp_xg), lu_pkd = pkd_Y / (3600 lg_pp_xg),
+           lu_take = log(take_X / (3600 lg_pen)), lu_draw = log(draw_Y / (3600 lg_pen)); 0 when
+           the side aggregates are unavailable
 
 The coefficients are fitted by ``bu.sim.fit glm`` on the fit seasons.  The engine multiplies
 the league's point-in-time goal rates by these multipliers (``GameRates``).
@@ -35,6 +44,14 @@ GROUPS = {
     "pp": ["st_pp", "st_pk", "home"],
     "pen": ["st_take", "st_draw", "home"],
 }
+ST_GROUPS = {"pp": ["lu_ppo", "lu_pkd"], "pen": ["lu_take", "lu_draw"]}
+ALL_COLUMNS = {g: cols + ST_GROUPS.get(g, []) for g, cols in GROUPS.items()}
+
+
+def groups_for(st: bool) -> dict:
+    """The regression design: ``GROUPS``, plus ``ST_GROUPS`` when the lineup source has player
+    special teams (``lineup_source`` ``st_table``)."""
+    return {g: list(cols) + (ST_GROUPS.get(g, []) if st else []) for g, cols in GROUPS.items()}
 
 
 def _log(x):
@@ -76,6 +93,10 @@ def side_features(g: pd.DataFrame, side: str) -> pd.DataFrame:
     orest = pd.to_numeric(g.get(f"{o}_rest"), errors="coerce") if f"{o}_rest" in g else pd.Series(np.nan, index=g.index)
     f["b2b"] = (rest == 1).astype(float).to_numpy()
     f["b2b_opp"] = (orest == 1).astype(float).to_numpy()
+    from .st_lineup import side_frame
+    st = side_frame(g, side)
+    for c in st.columns:
+        f[c] = st[c].to_numpy()
     return f
 
 
@@ -87,7 +108,9 @@ def linear(beta: dict, f: pd.DataFrame, group: str, stretch: float = 1.0) -> np.
     (``bu.sim.validate dispersion``)."""
     b = beta[group]
     z = np.full(len(f), float(b.get("const", 0.0)))
-    for c in GROUPS[group]:
+    for c in ALL_COLUMNS[group]:
+        if c not in b:          # a parameter set fitted without that term (e.g. no player ST)
+            continue
         k = 1.0 if c == "home" else float(stretch)
         z = z + k * float(b.get(c, 0.0)) * f[c].to_numpy(dtype=float)
     return z

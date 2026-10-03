@@ -422,17 +422,33 @@ class Engine:
 
 # ── entry points ─────────────────────────────────────────────────────────────
 
-def make_probabilities(team_map):
+def make_probabilities(team_map, schedule=None):
+    """The per-game probabilities of the remaining ``schedule``: the game simulator's
+    (bu/sim/season.py) when the pre-registered season_sim decision or PONYXG_SEASON_SIM says
+    'sim', else (and per game when the simulator cannot run it) the logit game model."""
+    logit = None
     try:
         from ml_predict import MLPredictor
         from season import read_season_csv
         ml = MLPredictor(read_season_csv("gamestats"))
         if ml.available:
-            return Probabilities(team_map, ml=ml)
+            logit = Probabilities(team_map, ml=ml)
     except Exception as e:
         print(f"[WARN] game model unavailable for the simulation ({e}); using ratings")
-    from paths import TEAM_RATINGS_FILE
-    return Probabilities(team_map, ratings=load_json(TEAM_RATINGS_FILE))
+    if logit is None:
+        from paths import TEAM_RATINGS_FILE
+        logit = Probabilities(team_map, ratings=load_json(TEAM_RATINGS_FILE))
+    if schedule is not None:
+        try:
+            from bu.sim import season as SEASIM
+            if SEASIM.mode() == "sim":
+                sp = SEASIM.live_probabilities(schedule, fallback=logit)
+                if sp is not None:
+                    return sp
+                print("[WARN] game simulator unavailable for the season projections; using the logit")
+        except Exception as e:      # never break the projections
+            print(f"[WARN] season simulator path failed ({type(e).__name__}: {e}); using the logit")
+    return logit
 
 
 def summarize(engine, res, now_iso):
@@ -460,7 +476,11 @@ def summarize(engine, res, now_iso):
         "remaining_games": len(engine.schedule),
         "total_simulations": n,
         "model": {"probabilities": engine.probs.source, "strength_sigma0_logit": SIGMA0,
-                  "strength_sigma_gp_half": SIGMA_GP, "seed": SEED},
+                  "strength_sigma_gp_half": SIGMA_GP, "seed": SEED,
+                  "engine": "sim" if hasattr(engine.probs, "table") else "logit",
+                  **({"sim_games": len(engine.probs.table), "sim_runs_per_game": (engine.probs.meta or {}).get("n_runs"),
+                      "logit_fallback_games": int(getattr(engine.probs, "n_fallback", 0))}
+                     if hasattr(engine.probs, "table") else {})},
         "teams": teams,
     }
 
@@ -497,7 +517,7 @@ def full_simulation_loop(n_sims=SIMULATIONS, now=None, standings=None, schedule=
     team_map = build_team_map(teams_csv)
     standings = standings or fetch_current_standings(now)
     schedule = fetch_remaining_schedule(now) if schedule is None else schedule
-    probs = probs or make_probabilities(team_map)
+    probs = probs or make_probabilities(team_map, schedule)
     print(f"Simulating {n_sims} seasons ({len(schedule)} remaining games, {probs.source})...")
     engine = Engine(standings, schedule, probs, n_sims=n_sims)
     res = engine.run()

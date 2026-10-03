@@ -411,8 +411,9 @@ def glm_design(tg: pd.DataFrame, G: pd.DataFrame, seasons) -> dict:
     return F
 
 
-def fit_glms(F: pd.DataFrame) -> dict:
+def fit_glms(F: pd.DataFrame, groups: dict | None = None) -> dict:
     from .rates import GROUPS
+    GROUPS = groups or GROUPS
     specs = {
         "ev": ("ev_xg", lambda d: np.log(d["ev_adj"] * d["lg_ev_xg"]), lambda d: d["ev_adj"] > 0),
         "conv": ("gf_vg", lambda d: np.log(d["xg_vg"] * d["lg_fin"]), lambda d: d["xg_vg"] > 0),
@@ -463,6 +464,9 @@ def main(argv=None) -> int:
     ap.add_argument("--lineup-ratings", default=None,
                     help="glm: the bundle's ratings table the live term reads (v2 / v3 / v4; default: the "
                          "name when it is v3 / v4, else v2)")
+    ap.add_argument("--st-table", default=None,
+                    help="glm: a player special-teams history table (bu.sim.st_lineup, prereg_st.json) added to the "
+                         "lineup source: the PP / penalty regressions gain the lineup terms")
     ap.add_argument("--params-out", default=None, help="write the parameters here instead of out/sim_params.json")
     args = ap.parse_args(argv)
     if args.step in ("structural", "all"):
@@ -490,11 +494,16 @@ def main(argv=None) -> int:
                    "ratings": args.lineup_ratings or (name if name in ("v3", "v4") else "v2")}
             p["lineup"] = src
             p["version"] = f"sim-m5-{src['name']}-{time.strftime('%Y%m%d')}"
+        if args.st_table:         # player special teams on top of the source (prereg_st.json)
+            src = {**src, "st_table": args.st_table, "name": f"{src['name']}_st"}
+            p["lineup"] = src
+            p["version"] = f"sim-m5-{src['name']}-{time.strftime('%Y%m%d')}"
+        from .rates import groups_for
         tg = build_team_games(ALL_SEASONS, se_dict(p["structural"]["score_effects"]), args.work)
         G = history_table(tg, p["state"]["hyper"], lineup=LS.history_table(src))
         G.to_parquet(os.path.join(args.work, LS.history_inputs_name(p)), index=False)
         F = glm_design(tg, G, FIT_SEASONS)
-        p["glm"] = {**fit_glms(F), "seasons": FIT_SEASONS, "lineup_source": src["name"]}
+        p["glm"] = {**fit_glms(F, groups_for(LS.has_st(src))), "seasons": FIT_SEASONS, "lineup_source": src["name"]}
         save_params(p, args.params_out)
         log(f"[fit] glm on lineup source {src['name']} -> {args.params_out or PARAMS_PATH}")
     if args.step in ("pack", "all"):

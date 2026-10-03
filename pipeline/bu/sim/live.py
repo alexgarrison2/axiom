@@ -48,7 +48,8 @@ BREAKDOWN_GROUPS = [
     ("rest", "Rest", [("ev", "b2b"), ("ev", "b2b_opp")]),
     ("goaltending", "Goaltending", [("conv", "gsv")]),
     ("special_teams", "Special teams & penalties", [("pp", "st_pp"), ("pp", "st_pk"), ("pen", "st_take"),
-                                                    ("pen", "st_draw")]),
+                                                    ("pen", "st_draw"), ("pp", "lu_ppo"), ("pp", "lu_pkd"),
+                                                    ("pen", "lu_take"), ("pen", "lu_draw")]),
     ("strength_5v5", "5v5 strength (lineup, team, finishing)",
      [("ev", "bu_rel"), ("ev", "st_off"), ("ev", "st_def"), ("conv", "fin_rel"), ("conv", "st_fin")]),
 ]
@@ -253,6 +254,13 @@ class SimServer:
                 row[f"bu_{side}_off"] = float(s.get("off"))
                 row[f"bu_{side}_def"] = float(s.get("def"))
                 row[f"bu_{side}_fin"] = float(s["fin"]) if s.get("fin") is not None else float("nan")
+            # player special teams / penalties (prereg_st.json): read only by parameters fitted with them
+            sth, sta = (bf["home"] or {}).get("st"), (bf["away"] or {}).get("st")
+            row["st_ok"] = bool(sth and sta)
+            if row["st_ok"]:
+                for side, s in (("h", sth), ("a", sta)):
+                    for f in ("ppo", "pkd", "take", "draw"):
+                        row[f"st_{side}_{f}"] = float(s[f])
         return row
 
     # ---------------------------------------------------------------- one game

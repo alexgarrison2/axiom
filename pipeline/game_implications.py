@@ -141,8 +141,11 @@ def compute_game_implications(n_sims=N_SIMS, now=None, engine=None, upcoming=Non
 
     if engine is None:
         team_map = build_team_map(load_csv(os.path.join(SCRIPT_DIR, "nhl_teams.csv")))
-        engine = Engine(fetch_current_standings(now), fetch_remaining_schedule(now),
-                        make_probabilities(team_map), n_sims=n_sims)
+        schedule = fetch_remaining_schedule(now)
+        # the same per-game probabilities as season_projections.json (the simulator's are cached for
+        # the day by bu/sim/season.py, so this reuses the season simulation's table)
+        engine = Engine(fetch_current_standings(now), schedule, make_probabilities(team_map, schedule),
+                        n_sims=n_sims)
     games = implications(engine, today_games)
     mx = max((g["swing_pts"] for g in games), default=0.0)
     doc["max_swing_pts"] = mx

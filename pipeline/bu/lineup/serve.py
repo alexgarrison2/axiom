@@ -346,6 +346,22 @@ class LiveLineupTerm:
         self.intercept = float(ti) if ti is not None else (float(cov0) if cov0 is not None else None)
         cw = bundle.get("crosswalk")
         self.resolver = Resolver(pd.DataFrame(cw["rows"], columns=cw["columns"])) if cw else None
+        # player special teams / penalties of the ratings table (v4: pp, pk, expected minutes, v5 penalty
+        # rates), aggregated per side for the game simulator (bu.sim.st_lineup, prereg_st.json)
+        self.st_lookup, self.st_fb = None, None
+        from bu.sim.st_lineup import PLAYER_COLS, fallbacks
+        if rt is not None and all(c in rt["columns"] for c in PLAYER_COLS):
+            try:
+                tab = pd.DataFrame(rt["rows"], columns=rt["columns"])
+                self.st_lookup = {int(p): tuple(float(v) for v in vals) for p, *vals in
+                                  tab[["player_id", *PLAYER_COLS]].itertuples(index=False, name=None)}
+                meta = rt.get("meta") or {}
+                low = meta.get("low_role") or {}
+                role = {g: (float(v[2]), float(v[3])) for g, v in low.items() if len(v) >= 4} or None
+                self.st_fb = fallbacks(tab, role, meta.get("toi_pos_means"), None)
+            except Exception as e:  # noqa: BLE001  (the 5v5 term is unaffected)
+                print(f"  [serve] player special teams unavailable: {type(e).__name__}: {e}")
+                self.st_lookup, self.st_fb = None, None
 
     @classmethod
     def load(cls, path: str, **kw) -> "LiveLineupTerm":
@@ -389,7 +405,11 @@ class LiveLineupTerm:
         tid = self.teams.get(team)
         past = list(self.history.get(tid, ())) if tid is not None else []
         t = side_term(self.state, pids, groups, self._rate, past, fin=self._fin if self.fin_ok else None)
-        return {"team": team, "n": len(pids), **t}
+        out = {"team": team, "n": len(pids), **t}
+        if self.st_lookup is not None:
+            from bu.sim.st_lineup import aggregate
+            out["st"] = aggregate(self.st_lookup, pids, groups, self.st_fb)
+        return out
 
     def features(self, home: str, away: str, dfo_home: dict | None, dfo_away: dict | None,
                  now: datetime | None = None, ids_home=None, ids_away=None) -> dict:

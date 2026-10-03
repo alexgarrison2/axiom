@@ -26,6 +26,11 @@ Swapping in a new ratings table (e.g. ratings v4 with a production-based prior):
   3. score it: ``PONYXG_SIM_PARAMS=<new params.json> python -m bu.sim.validate ...`` / a new
      pre-registered comparison; promote by committing the new params as ``out/sim_params.json``.
 
+Optional ``st_table`` (``prereg_st.json``): the per-game player special-teams table
+(``bu.sim.st_lineup``: ``st_ok``, ``st_{h,a}_{ppo,pkd,take,draw}``) merged into the history inputs;
+with it the PP and penalty regressions read the lineup terms (``rates.ST_GROUPS``) and the live term
+adds each side's ``st`` aggregates from the bundle's ``v4`` table.
+
 Nothing else changes: ``SimServer`` loads the bundle named in the parameters when it differs
 from the game model's own, so the simulator and the logit can run on different ratings.
 """
@@ -51,6 +56,14 @@ REQUIRED = ["game_id", "bu_ok", "c_intercept", "bu_h_off", "bu_h_def", "bu_a_off
             "bu_a_fin"]
 
 
+def has_st(params_or_spec: dict | None) -> bool:
+    """True when the lineup source carries player special teams (``st_table``, ``prereg_st.json``):
+    the rate regressions then read ``rates.ST_GROUPS`` and the live term adds each side's ``st``."""
+    s = params_or_spec or {}
+    s = s.get("lineup", s) if "lineup" in s or "glm" in s else s
+    return bool((s or {}).get("st_table"))
+
+
 def spec(params: dict | None) -> dict:
     """The lineup source of a parameter set (the RAPM v2 default when absent)."""
     return {**DEFAULT, **((params or {}).get("lineup") or {})}
@@ -70,7 +83,13 @@ def history_table(source) -> pd.DataFrame:
     f["bu_ok"] = f["bu_ok"].astype(str).str.lower().isin(("true", "1"))
     f["game_id"] = pd.to_numeric(f["game_id"], errors="coerce").astype("int64")
     keep = [c for c in f.columns if c == "game_id" or c.startswith("bu_") or c.startswith("c_")]
-    return f[keep].drop_duplicates("game_id")
+    f = f[keep].drop_duplicates("game_id")
+    if isinstance(source, dict) and source.get("st_table"):
+        from .st_lineup import load_history
+        st = load_history(resolve(source["st_table"])).drop(columns=["st_h_n", "st_a_n"], errors="ignore")
+        f = f.merge(st, on="game_id", how="left")
+        f["st_ok"] = f["st_ok"].astype("boolean").fillna(False).astype(bool)
+    return f
 
 
 def live_term(source: dict, loaded: dict | None = None):
