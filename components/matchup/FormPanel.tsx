@@ -55,11 +55,12 @@ function StarterDot({ started, goalie }: { started: boolean; goalie: string | nu
 }
 
 /**
- * One dot per power play: filled when it worked, outlined when it did not. For
- * the power play (cyan) that is a goal scored; for the penalty kill (orange) it
- * is a penalty killed, so 5/5 is a perfect kill. The label is successes/opportunities.
+ * One dot per power play: filled when it ended in a goal, outlined when it did
+ * not: a goal scored on the power play (cyan), a goal allowed on the penalty
+ * kill (orange). The label can count something else: the PK label reads kills
+ * over opportunities (5/5 = a perfect kill), so `shown` overrides the filled count.
  */
-function SpecialDots({ opps, goals, color, what }: { opps: number; goals: number; color: string; what: string }) {
+function SpecialDots({ opps, goals, label, color, what }: { opps: number; goals: number; label?: number; color: string; what: string }) {
     if (opps <= 0) return <span className="text-fg-3">—</span>;
     const shown = Math.min(opps, 6);
     return (
@@ -78,7 +79,7 @@ function SpecialDots({ opps, goals, color, what }: { opps: number; goals: number
                 ))}
             </span>
             <span aria-hidden="true" className="text-micro font-bold tabular-nums text-fg-2">
-                {goals}/{opps}
+                {label ?? goals}/{opps}
             </span>
         </span>
     );
@@ -117,7 +118,7 @@ function GameRow({ e, goalie, color }: { e: FormEntry; goalie: string | null; co
             </span>
             {r ? <XgBar f={r.xgf} a={r.xga} color={color} /> : <span>{dash}</span>}
             <span className="hidden cq-sm:block">{r ? <SpecialDots opps={r.ppo} goals={r.ppg} color="var(--pp)" what="power-play goals" /> : dash}</span>
-            <span className="hidden cq-sm:block">{r ? <SpecialDots opps={r.pko} goals={Math.max(0, r.pko - r.ppga)} color="var(--pk)" what="penalties killed" /> : dash}</span>
+            <span className="hidden cq-sm:block">{r ? <SpecialDots opps={r.pko} goals={r.ppga} label={Math.max(0, r.pko - r.ppga)} color="var(--pk)" what="power-play goals against" /> : dash}</span>
             <span className="hidden text-caption tabular-nums text-fg-2 cq-xl:block">{r ? `${r.sf}-${r.sa}` : dash}</span>
             <span className="hidden text-caption tabular-nums text-fg-2 cq-xl:block">{r && r.cf + r.ca > 0 ? ((r.cf / (r.cf + r.ca)) * 100).toFixed(0) : dash}</span>
             <span className="hidden text-caption tabular-nums text-fg-2 cq-xl:block">{r ? `${r.hdf}-${r.hda}` : dash}</span>
@@ -309,10 +310,10 @@ function TeamForm({
                                 <i className="inline-block h-2 w-2 rounded-full" style={{ background: 'var(--pp)' }} /> PP goal
                             </span>
                             <span className="flex items-center gap-1.5">
-                                <i className="inline-block h-2 w-2 rounded-full" style={{ background: 'var(--pk)' }} /> PK kill
+                                <i className="inline-block h-2 w-2 rounded-full" style={{ background: 'var(--pk)' }} /> PP goal against
                             </span>
                             <span className="flex items-center gap-1.5">
-                                <i className="inline-block h-2 w-2 rounded-full border border-fg-3" /> Missed / allowed
+                                <i className="inline-block h-2 w-2 rounded-full border border-fg-3" /> No goal
                             </span>
                         </p>
                     </div>
